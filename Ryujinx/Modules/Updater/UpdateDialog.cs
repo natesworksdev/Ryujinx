@@ -22,16 +22,18 @@ namespace Ryujinx.Modules
 
         private readonly MainWindow _mainWindow;
         private readonly string     _buildUrl;
+        private readonly long       _buildSize;
         private          bool       _restartQuery;
 
-        public UpdateDialog(MainWindow mainWindow, Version newVersion, string buildUrl) : this(new Builder("Ryujinx.Modules.Updater.UpdateDialog.glade"), mainWindow, newVersion, buildUrl) { }
+        public UpdateDialog(MainWindow mainWindow, Version newVersion, string buildUrl, long buildSize) : this(new Builder("Ryujinx.Modules.Updater.UpdateDialog.glade"), mainWindow, newVersion, buildUrl, buildSize) { }
 
-        private UpdateDialog(Builder builder, MainWindow mainWindow, Version newVersion, string buildUrl) : base(builder.GetObject("UpdateDialog").Handle)
+        private UpdateDialog(Builder builder, MainWindow mainWindow, Version newVersion, string buildUrl, long buildSize) : base(builder.GetObject("UpdateDialog").Handle)
         {
             builder.Autoconnect(this);
 
             _mainWindow = mainWindow;
             _buildUrl   = buildUrl;
+            _buildSize = buildSize;
 
             Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.Resources.Logo_Ryujinx.png");
             MainText.Text      = "Do you want to update Ryujinx to the latest version?";
@@ -73,7 +75,8 @@ namespace Ryujinx.Modules
                 SecondaryText.Text = "";
                 _restartQuery      = true;
 
-                _ = Updater.UpdateRyujinx(this, _buildUrl);
+                //_ = 
+                    Updater.UpdateRyujinx(this, _buildUrl, _buildSize);
             }
         }
 

@@ -7,11 +7,13 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Ui;
 using Ryujinx.Ui.Widgets;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Ryujinx.Modules
@@ -28,6 +30,7 @@ namespace Ryujinx.Modules
         private static string _buildVer;
         private static string _platformExt;
         private static string _buildUrl;
+        private static long _buildSize;
         
         private const string AppveyorApiUrl = "https://ci.appveyor.com/api";
 
@@ -57,7 +60,7 @@ namespace Ryujinx.Modules
 
             try
             {
-                currentVersion = Version.Parse(Program.Version);
+                currentVersion = Version.Parse("1.0");//Program.Version);
             }
             catch
             {
@@ -79,6 +82,31 @@ namespace Ryujinx.Modules
                     _jobId    = (string)buildToken["jobs"][0]["jobId"];
                     _buildVer = (string)buildToken["version"];
                     _buildUrl = $"{AppveyorApiUrl}/buildjobs/{_jobId}/artifacts/ryujinx-{_buildVer}-{_platformExt}";
+
+                    string fetchedArtifactJson = await jsonClient.DownloadStringTaskAsync($"{AppveyorApiUrl}/buildjobs/{_jobId}/artifacts");
+                    JArray artifactRoot = JArray.Parse(fetchedArtifactJson);
+
+                    int artifactIndex = -1;
+
+                    switch(_platformExt)
+                    {
+                        case "linux_x64.tar.gz":
+                            artifactIndex = 0;
+                            break;
+                        case "osx_x64.zip":
+                            artifactIndex = 1;
+                            break;
+                        case "win_x64.zip":
+                            artifactIndex = 2;
+                            break;
+                    }
+
+                    if(artifactIndex == -1)
+                    {
+                        GtkDialog.CreateErrorDialog("Couldn't determine platform");
+                    }
+
+                    _buildSize = long.Parse((string)artifactRoot[artifactIndex]["size"]);
 
                     // If build not done, assume no new update are availaible.
                     if ((string)buildToken["jobs"][0]["status"] != "success")
@@ -126,11 +154,11 @@ namespace Ryujinx.Modules
             }
 
             // Show a message asking the user if they want to update
-            UpdateDialog updateDialog = new UpdateDialog(mainWindow, newVersion, _buildUrl);
+            UpdateDialog updateDialog = new UpdateDialog(mainWindow, newVersion, _buildUrl, _buildSize);
             updateDialog.Show();
         }
 
-        public static async Task UpdateRyujinx(UpdateDialog updateDialog, string downloadUrl)
+        public static void UpdateRyujinx(UpdateDialog updateDialog, string downloadUrl, long buildSize)
         {
             // Empty update dir, although it shouldn't ever have anything inside it
             if (Directory.Exists(UpdateDir))
@@ -147,25 +175,71 @@ namespace Ryujinx.Modules
             updateDialog.ProgressBar.Value    = 0;
             updateDialog.ProgressBar.MaxValue = 100;
 
-            using (WebClient client = new WebClient())
+            int MaxConnections = 8;
+            long chunkSize = buildSize / MaxConnections;
+            int completedRequests = 0;
+            int[] progressPercentage = new int[MaxConnections];
+            int totalProgress = 0;
+            List<byte[]> list = new List<byte[]>(MaxConnections);
+            for(int i = 0; i < MaxConnections; i++)
             {
-                client.DownloadProgressChanged += (_, args) =>
+                list.Add(new byte[0]);
+            }
+            for (int i = 0; i < MaxConnections; i++)
+            {
+                using (WebClient client = new WebClient())
                 {
-                    updateDialog.ProgressBar.Value = args.ProgressPercentage;
-                };
+                    client.Headers.Add("Range", $"bytes={chunkSize * i}-{chunkSize*(i+1) - 1}");
+                    client.DownloadProgressChanged += (_, args) =>
+                    {
+                        int index = (int)args.UserState;
+                        Interlocked.Add(ref totalProgress, -1 * progressPercentage[index]);
+                        Interlocked.Exchange(ref progressPercentage[index], args.ProgressPercentage);
+                        Interlocked.Add(ref totalProgress, args.ProgressPercentage);
+                        updateDialog.ProgressBar.Value = totalProgress / MaxConnections;
+                    };
 
-                await client.DownloadFileTaskAsync(downloadUrl, updateFile);
+                    client.DownloadDataCompleted += (_, args) =>
+                    {
+                        int index = (int)args.UserState;
+                        list[index] = args.Result;
+                        Interlocked.Increment(ref completedRequests);
+
+                        if(Interlocked.Equals(completedRequests, MaxConnections))
+                        {
+                            byte[] finalFile = new byte[buildSize];
+                            int k = 0;
+                            for(int i = 0; i < MaxConnections; i++)
+                            {
+                                for(int j = 0; j < list[i].Length; j++)
+                                {
+                                    finalFile[k++] = list[i][j];
+                                }
+                            }
+
+                            File.WriteAllBytes(updateFile, finalFile);
+
+                            ContinueUpdate(updateDialog, updateFile);
+                        }
+                    };
+
+                    client.DownloadDataAsync(new Uri(downloadUrl), i);
+                }
             }
 
+        }
+        
+        private static async void ContinueUpdate(UpdateDialog updateDialog, string updateFile)
+        {
             // Extract Update
-            updateDialog.MainText.Text     = "Extracting Update...";
+            updateDialog.MainText.Text = "Extracting Update...";
             updateDialog.ProgressBar.Value = 0;
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                using (Stream         inStream   = File.OpenRead(updateFile))
-                using (Stream         gzipStream = new GZipInputStream(inStream))
-                using (TarInputStream tarStream  = new TarInputStream(gzipStream, Encoding.ASCII))
+                using (Stream inStream = File.OpenRead(updateFile))
+                using (Stream gzipStream = new GZipInputStream(inStream))
+                using (TarInputStream tarStream = new TarInputStream(gzipStream, Encoding.ASCII))
                 {
                     updateDialog.ProgressBar.MaxValue = inStream.Length;
 
@@ -201,8 +275,8 @@ namespace Ryujinx.Modules
             }
             else
             {
-                using (Stream  inStream = File.OpenRead(updateFile))
-                using (ZipFile zipFile  = new ZipFile(inStream))
+                using (Stream inStream = File.OpenRead(updateFile))
+                using (ZipFile zipFile = new ZipFile(inStream))
                 {
                     updateDialog.ProgressBar.MaxValue = zipFile.Count;
 
@@ -216,7 +290,7 @@ namespace Ryujinx.Modules
 
                             Directory.CreateDirectory(Path.GetDirectoryName(outPath));
 
-                            using (Stream     zipStream = zipFile.GetInputStream(zipEntry))
+                            using (Stream zipStream = zipFile.GetInputStream(zipEntry))
                             using (FileStream outStream = File.OpenWrite(outPath))
                             {
                                 zipStream.CopyTo(outStream);
@@ -238,8 +312,8 @@ namespace Ryujinx.Modules
 
             string[] allFiles = Directory.GetFiles(HomeDir, "*", SearchOption.AllDirectories);
 
-            updateDialog.MainText.Text        = "Renaming Old Files...";
-            updateDialog.ProgressBar.Value    = 0;
+            updateDialog.MainText.Text = "Renaming Old Files...";
+            updateDialog.ProgressBar.Value = 0;
             updateDialog.ProgressBar.MaxValue = allFiles.Length;
 
             // Replace old files
@@ -267,8 +341,8 @@ namespace Ryujinx.Modules
 
                 Application.Invoke(delegate
                 {
-                    updateDialog.MainText.Text        = "Adding New Files...";
-                    updateDialog.ProgressBar.Value    = 0;
+                    updateDialog.MainText.Text = "Adding New Files...";
+                    updateDialog.ProgressBar.Value = 0;
                     updateDialog.ProgressBar.MaxValue = Directory.GetFiles(UpdatePublishDir, "*", SearchOption.AllDirectories).Length;
                 });
 
@@ -277,15 +351,14 @@ namespace Ryujinx.Modules
 
             Directory.Delete(UpdateDir, true);
 
-            updateDialog.MainText.Text      = "Update Complete!";
+            updateDialog.MainText.Text = "Update Complete!";
             updateDialog.SecondaryText.Text = "Do you want to restart Ryujinx now?";
-            updateDialog.Modal              = true;
+            updateDialog.Modal = true;
 
             updateDialog.ProgressBar.Hide();
             updateDialog.YesButton.Show();
             updateDialog.NoButton.Show();
         }
-
         public static bool CanUpdate(bool showWarnings)
         {
             if (RuntimeInformation.OSArchitecture != Architecture.X64)
@@ -308,7 +381,7 @@ namespace Ryujinx.Modules
                 return false;
             }
 
-            if (Program.Version.Contains("dirty"))
+            if (!Program.Version.Contains("dirty"))
             {
                 if (showWarnings)
                 {
