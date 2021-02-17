@@ -11,6 +11,9 @@ namespace Ryujinx.HLE.HOS.Tamper.Atmosphere
     {
         public ITamperProgram Compile(IEnumerable<string> rawInstructions, ulong exeAddress, ulong heapAddress, ITamperedProcess process)
         {
+            Logger.Debug?.Print(LogClass.TamperMachine, $"Executable address: {exeAddress:X16}");
+            Logger.Debug?.Print(LogClass.TamperMachine, $"Heap address: {heapAddress:X16}");
+
             try
             {
                 return CompileImpl(rawInstructions, exeAddress, heapAddress, process);

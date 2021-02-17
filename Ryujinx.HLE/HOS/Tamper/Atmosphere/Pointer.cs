@@ -1,4 +1,6 @@
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Tamper.Atmosphere.Operations;
+using System.Runtime.CompilerServices;
 
 namespace Ryujinx.HLE.HOS.Tamper.Atmosphere
 {
@@ -20,7 +22,11 @@ namespace Ryujinx.HLE.HOS.Tamper.Atmosphere
 
         public void Set<T>(T value) where T : unmanaged
         {
-            _process.WriteMemory(_position.Get<ulong>(), value);
+            ulong position = _position.Get<ulong>();
+
+            Logger.Debug?.Print(LogClass.TamperMachine, $"0x{position:X16}@{Unsafe.SizeOf<T>()}: {value:X}");
+
+            _process.WriteMemory(position, value);
         }
     }
 }

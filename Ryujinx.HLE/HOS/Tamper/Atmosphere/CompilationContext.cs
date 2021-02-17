@@ -40,7 +40,7 @@ namespace Ryujinx.HLE.HOS.Tamper.Atmosphere
                 return register;
             }
 
-            register = new Register();
+            register = new Register($"R_{index:X2}");
             Registers.Add(index, register);
 
             return register;
@@ -53,7 +53,7 @@ namespace Ryujinx.HLE.HOS.Tamper.Atmosphere
                 return register;
             }
 
-            register = new Register();
+            register = new Register($"S_{index:X2}");
             SavedRegisters.Add(index, register);
 
             return register;
@@ -66,7 +66,7 @@ namespace Ryujinx.HLE.HOS.Tamper.Atmosphere
                 return register;
             }
 
-            register = new Register();
+            register = new Register($"T_{index:X2}");
             SavedRegisters.Add(index, register);
 
             return register;
