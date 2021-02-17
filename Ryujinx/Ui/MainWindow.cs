@@ -921,15 +921,18 @@ namespace Ryujinx.Ui
                 if (Directory.Exists(ConfigurationState.Instance.Logger.CustomLogDirectory)) { 
                     logPath = ConfigurationState.Instance.Logger.CustomLogDirectory;
                 }
+
                 else
                 {
                     logPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
                 }
             }
+
             else
             {
                  logPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
             }
+
             new DirectoryInfo(logPath).Create();
 
             OpenHelper.OpenFolder(logPath);
