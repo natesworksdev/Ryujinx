@@ -2,7 +2,7 @@ using Ryujinx.HLE.HOS.Kernel.Process;
 
 namespace Ryujinx.HLE.HOS.Tamper
 {
-    internal interface ITamperedProcess
+    interface ITamperedProcess
     {
         ProcessState State { get; }
         T ReadMemory<T>(ulong va) where T : unmanaged;

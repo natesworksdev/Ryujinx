@@ -2,7 +2,7 @@ using Ryujinx.HLE.HOS.Tamper.Atmosphere.Operations;
 
 namespace Ryujinx.HLE.HOS.Tamper.Atmosphere
 {
-    internal class Register : IOperand
+    class Register : IOperand
     {
         private ulong _register = 0;
 

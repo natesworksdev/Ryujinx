@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Tamper.Atmosphere.Conditions
 {
-    internal class InputMask : ICondition
+    class InputMask : ICondition
     {
         private long _mask;
         private Parameter<long> _input;

@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Tamper.Atmosphere.Operations
 {
-    internal interface IOperation
+    interface IOperation
     {
         void Execute();
     }

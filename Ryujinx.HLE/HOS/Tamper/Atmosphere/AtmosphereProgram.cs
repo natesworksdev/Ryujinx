@@ -3,7 +3,7 @@ using Ryujinx.HLE.HOS.Tamper.Atmosphere.Operations;
 
 namespace Ryujinx.HLE.HOS.Tamper.Atmosphere
 {
-    internal class AtmosphereProgram : ITamperProgram
+    class AtmosphereProgram : ITamperProgram
     {
         private Parameter<long> _pressedKeys;
         private IOperation _entryPoint;

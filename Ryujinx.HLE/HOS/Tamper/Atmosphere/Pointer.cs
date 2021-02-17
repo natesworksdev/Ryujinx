@@ -2,7 +2,7 @@ using Ryujinx.HLE.HOS.Tamper.Atmosphere.Operations;
 
 namespace Ryujinx.HLE.HOS.Tamper.Atmosphere
 {
-    internal class Pointer : IOperand
+    class Pointer : IOperand
     {
         private IOperand _position;
         private ITamperedProcess _process;

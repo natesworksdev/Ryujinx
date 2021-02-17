@@ -2,7 +2,7 @@ using Ryujinx.Common.Logging;
 
 namespace Ryujinx.HLE.HOS.Tamper.Atmosphere.Operations
 {
-    internal class OpLog<T> : IOperation where T : unmanaged
+    class OpLog<T> : IOperation where T : unmanaged
     {
         int _logId;
         IOperand _source;

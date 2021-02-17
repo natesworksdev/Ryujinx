@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Tamper.Atmosphere.Operations
 {
-    internal class OpAdd<T> : IOperation where T : unmanaged
+    class OpAdd<T> : IOperation where T : unmanaged
     {
         IOperand _destination;
         IOperand _lhs;

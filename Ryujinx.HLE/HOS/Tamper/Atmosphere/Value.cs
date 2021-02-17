@@ -2,7 +2,7 @@ using Ryujinx.HLE.HOS.Tamper.Atmosphere.Operations;
 
 namespace Ryujinx.HLE.HOS.Tamper.Atmosphere
 {
-    internal class Value<P> : IOperand where P : unmanaged
+    class Value<P> : IOperand where P : unmanaged
     {
         private P _value;
 

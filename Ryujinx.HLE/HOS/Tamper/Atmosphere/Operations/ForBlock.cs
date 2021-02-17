@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Tamper.Atmosphere.Operations
 {
-    internal class ForBlock : IOperation
+    class ForBlock : IOperation
     {
         private ulong _count;
         private Register _register;

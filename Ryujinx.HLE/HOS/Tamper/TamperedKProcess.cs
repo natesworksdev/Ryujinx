@@ -3,7 +3,7 @@ using Ryujinx.HLE.HOS.Kernel.Process;
 
 namespace Ryujinx.HLE.HOS.Tamper
 {
-    internal class TamperedKProcess : ITamperedProcess
+    class TamperedKProcess : ITamperedProcess
     {
         private KProcess _process;
 

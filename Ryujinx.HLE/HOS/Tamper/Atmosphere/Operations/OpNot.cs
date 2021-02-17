@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Tamper.Atmosphere.Operations
 {
-    internal class OpNot<T> : IOperation where T : unmanaged
+    class OpNot<T> : IOperation where T : unmanaged
     {
         IOperand _destination;
         IOperand _source;

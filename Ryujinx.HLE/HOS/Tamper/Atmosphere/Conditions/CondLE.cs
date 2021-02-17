@@ -2,7 +2,7 @@ using Ryujinx.HLE.HOS.Tamper.Atmosphere.Operations;
 
 namespace Ryujinx.HLE.HOS.Tamper.Atmosphere.Conditions
 {
-    internal class CondLE<T> : ICondition where T : unmanaged
+    class CondLE<T> : ICondition where T : unmanaged
     {
         private IOperand _lhs;
         private IOperand _rhs;
