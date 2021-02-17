@@ -65,7 +65,7 @@ namespace Ryujinx.Audio.Backends.OpenAL
             {
                 throw new ArgumentException($"{direction}");
             }
-            else if (SupportsChannelCount(channelCount))
+            else if (!SupportsChannelCount(channelCount))
             {
                 throw new ArgumentException($"{channelCount}");
             }
