@@ -86,28 +86,13 @@ namespace Ryujinx.Modules
                 using (WebClient jsonClient = new WebClient())
                 {
                     // Fetch latest build information
-                    string  fetchedJson = await jsonClient.DownloadStringTaskAsync($"{AppveyorApiUrl}/projects/gdkchan/ryujinx/branch/master");
-                    JObject jsonRoot    = JObject.Parse(fetchedJson);
-                    JToken  buildToken  = jsonRoot["build"];
+                    string fetchedJson = await jsonClient.DownloadStringTaskAsync($"{AppveyorApiUrl}/projects/gdkchan/ryujinx/branch/master");
+                    JObject jsonRoot = JObject.Parse(fetchedJson);
+                    JToken buildToken = jsonRoot["build"];
 
-                    _jobId    = (string)buildToken["jobs"][0]["jobId"];
+                    _jobId = (string)buildToken["jobs"][0]["jobId"];
                     _buildVer = (string)buildToken["version"];
                     _buildUrl = $"{AppveyorApiUrl}/buildjobs/{_jobId}/artifacts/ryujinx-{_buildVer}-{_platformExt}";
-
-                    // Fetch build size information
-                    try
-                    {
-                        string fetchedArtifactJson = await jsonClient.DownloadStringTaskAsync($"{AppveyorApiUrl}/buildjobs/{_jobId}/artifacts");
-                        JArray artifactRoot = JArray.Parse(fetchedArtifactJson);
-                    
-                        _buildSize = long.Parse((string)artifactRoot[artifactIndex]["size"]);
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.Warning?.Print(LogClass.Application, e.Message);
-                        Logger.Warning?.Print(LogClass.Application, "Couldn't determine build size for update, will use single-threaded updater");
-                        _buildSize = -1;
-                    }
 
                     // If build not done, assume no new update are availaible.
                     if ((string)buildToken["jobs"][0]["status"] != "success")
@@ -154,6 +139,23 @@ namespace Ryujinx.Modules
                 return;
             }
 
+            // Fetch build size information to learn chunk sizes.
+            using (WebClient jsonClient = new WebClient()) { 
+                try
+                {
+                    string fetchedArtifactJson = await jsonClient.DownloadStringTaskAsync($"{AppveyorApiUrl}/buildjobs/{_jobId}/artifacts");
+                    JArray artifactRoot = JArray.Parse(fetchedArtifactJson);
+
+                    _buildSize = long.Parse((string)artifactRoot[artifactIndex]["size"]);
+                }
+                catch (Exception e)
+                {
+                    Logger.Warning?.Print(LogClass.Application, e.Message);
+                    Logger.Warning?.Print(LogClass.Application, "Couldn't determine build size for update, will use single-threaded updater");
+                    _buildSize = -1;
+                }
+            }
+
             // Show a message asking the user if they want to update
             UpdateDialog updateDialog = new UpdateDialog(mainWindow, newVersion, _buildUrl, _buildSize);
             updateDialog.Show();
@@ -178,77 +180,110 @@ namespace Ryujinx.Modules
 
             if(buildSize >= 0)
             {
-                // Multi-Threaded Updater
-                long chunkSize = buildSize / ConnectionCount;
-                int completedRequests = 0;
-                int totalProgressPercentage = 0;
-                int[] progressPercentage = new int[ConnectionCount];
-
-                List<byte[]> list = new List<byte[]>(ConnectionCount);
-                for (int i = 0; i < ConnectionCount; i++)
-                {
-                    list.Add(new byte[0]);
-                }
-                for (int i = 0; i < ConnectionCount; i++)
-                {
-                    using (WebClient client = new WebClient())
-                    {
-                        client.Headers.Add("Range", $"bytes={chunkSize * i}-{chunkSize * (i + 1) - 1}");
-                        client.DownloadProgressChanged += (_, args) =>
-                        {
-                            int index = (int)args.UserState;
-                            Interlocked.Add(ref totalProgressPercentage, -1 * progressPercentage[index]);
-                            Interlocked.Exchange(ref progressPercentage[index], args.ProgressPercentage);
-                            Interlocked.Add(ref totalProgressPercentage, args.ProgressPercentage);
-                            updateDialog.ProgressBar.Value = totalProgressPercentage / ConnectionCount;
-                        };
-
-                        client.DownloadDataCompleted += (_, args) =>
-                        {
-                            int index = (int)args.UserState;
-                            list[index] = args.Result;
-                            Interlocked.Increment(ref completedRequests);
-
-                            if (Interlocked.Equals(completedRequests, ConnectionCount))
-                            {
-                                byte[] finalFile = new byte[buildSize];
-                                int k = 0;
-                                for (int i = 0; i < ConnectionCount; i++)
-                                {
-                                    for (int j = 0; j < list[i].Length; j++)
-                                    {
-                                        finalFile[k++] = list[i][j];
-                                    }
-                                }
-
-                                File.WriteAllBytes(updateFile, finalFile);
-
-                                InstallUpdate(updateDialog, updateFile);
-                            }
-                        };
-
-                        client.DownloadDataAsync(new Uri(downloadUrl), i);
-                    }
-                }
+                DoUpdateWithMultipleThreads(updateDialog, downloadUrl, updateFile, buildSize);
             }
             else
             {
-                // Single-Threaded Updater
+                DoUpdateWithSingleThread(updateDialog, downloadUrl, updateFile);
+            }
+        }
+
+        private static void DoUpdateWithMultipleThreads(UpdateDialog updateDialog, string downloadUrl, string updateFile, long buildSize)
+        {
+            // Multi-Threaded Updater
+            long chunkSize = buildSize / ConnectionCount;
+            int completedRequests = 0;
+            int totalProgressPercentage = 0;
+            int[] progressPercentage = new int[ConnectionCount];
+
+            List<byte[]> list = new List<byte[]>(ConnectionCount);
+            List<WebClient> webClients = new List<WebClient>(ConnectionCount);
+
+            for (int i = 0; i < ConnectionCount; i++)
+            {
+                list.Add(new byte[0]);
+            }
+            for (int i = 0; i < ConnectionCount; i++)
+            {
                 using (WebClient client = new WebClient())
                 {
+                    webClients.Add(client);
+                    client.Headers.Add("Range", $"bytes={chunkSize * i}-{chunkSize * (i + 1) - 1}");
                     client.DownloadProgressChanged += (_, args) =>
                     {
-                        updateDialog.ProgressBar.Value = args.ProgressPercentage;
+                        int index = (int)args.UserState;
+                        Interlocked.Add(ref totalProgressPercentage, -1 * progressPercentage[index]);
+                        Interlocked.Exchange(ref progressPercentage[index], args.ProgressPercentage);
+                        Interlocked.Add(ref totalProgressPercentage, args.ProgressPercentage);
+                        updateDialog.ProgressBar.Value = totalProgressPercentage / ConnectionCount;
                     };
 
                     client.DownloadDataCompleted += (_, args) =>
                     {
-                        File.WriteAllBytes(updateFile, args.Result);
-                        InstallUpdate(updateDialog, updateFile);
+                        int index = (int)args.UserState;
+                        if (args.Cancelled)
+                        {
+                            webClients[index].Dispose();
+                            return;
+                        }
+
+                        list[index] = args.Result;
+                        Interlocked.Increment(ref completedRequests);
+
+                        if (Interlocked.Equals(completedRequests, ConnectionCount))
+                        {
+                            byte[] finalFile = new byte[buildSize];
+                            int k = 0;
+                            for (int i = 0; i < ConnectionCount; i++)
+                            {
+                                for (int j = 0; j < list[i].Length; j++)
+                                {
+                                    finalFile[k++] = list[i][j];
+                                }
+                            }
+
+                            File.WriteAllBytes(updateFile, finalFile);
+
+                            InstallUpdate(updateDialog, updateFile);
+                        }
                     };
 
-                    client.DownloadDataAsync(new Uri(downloadUrl));
+                    try
+                    {
+                        client.DownloadDataAsync(new Uri(downloadUrl), i);
+                    }
+                    catch (WebException e)
+                    {
+                        Logger.Warning?.Print(LogClass.Application, e.Message);
+                        Logger.Warning?.Print(LogClass.Application, $"Multi-Threaded update failed, falling back to single-threaded updater.");
+                        for(int j = 0; j < webClients.Count; j++)
+                        {
+                            webClients[j].CancelAsync();
+                        }
+
+                        DoUpdateWithSingleThread(updateDialog, downloadUrl, updateFile);
+                        return;
+                    }
                 }
+            }
+        }
+        private static void DoUpdateWithSingleThread(UpdateDialog updateDialog, string downloadUrl, string updateFile)
+        {
+            // Single-Threaded Updater
+            using (WebClient client = new WebClient())
+            {
+                client.DownloadProgressChanged += (_, args) =>
+                {
+                    updateDialog.ProgressBar.Value = args.ProgressPercentage;
+                };
+
+                client.DownloadDataCompleted += (_, args) =>
+                {
+                    File.WriteAllBytes(updateFile, args.Result);
+                    InstallUpdate(updateDialog, updateFile);
+                };
+
+                client.DownloadDataAsync(new Uri(downloadUrl));
             }
         }
         
