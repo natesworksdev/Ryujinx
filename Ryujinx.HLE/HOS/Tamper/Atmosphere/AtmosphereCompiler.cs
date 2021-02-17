@@ -119,7 +119,10 @@ namespace Ryujinx.HLE.HOS.Tamper.Atmosphere
                 position++;
             }
 
-            // TODO check block stack size
+            if (context.BlockStack.Count != 1)
+            {
+                throw new TamperCompilationException($"Reached end of compilation with unmatched conditional(s) or loop(s)");
+            }
 
             return new AtmosphereProgram(process, context.PressedKeys, new Block(context.CurrentOperations));
         }
