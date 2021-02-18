@@ -155,12 +155,6 @@ namespace Ryujinx.Tests.Cpu
             }
         }
 
-        private static ulong[] _8B_()
-        {
-            return new ulong[] { 0x0000000000000000ul, 0x7F7F7F7F7F7F7F7Ful,
-                                 0x8080808080808080ul, 0xFFFFFFFFFFFFFFFFul };
-        }
-
         private static IEnumerable<ulong> _GenPopCnt8B_()
         {
             for (ulong cnt = 0ul; cnt <= 255ul; cnt++)
@@ -233,39 +227,30 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise, Description("VCNT.8 <Vd>, <Vm>")]
-        public void Vcnt([Range(0u, 3u)] uint rd,
-                         [Range(0u, 3u)] uint rm,
-                         [ValueSource("_8B_")]          [Random(RndCnt)] ulong z,
-                         [ValueSource("_GenPopCnt8B_")] [Random(RndCnt)] ulong a,
+        [Test, Pairwise, Description("VCNT.8 D0, D0 | VCNT.8 Q0, Q0")]
+        public void Vcnt([Values(0u, 1u)] uint rd,
+                         [Values(0u, 1u)] uint rm,
+                         [ValueSource(nameof(_GenPopCnt8B_))] [Random(RndCnt)] ulong d0,
                          [Values] bool q)
         {
-            uint opcode = 0xf3b00500;
+            ulong d1 = ~d0; // It's expensive to have a second generator.
+
+            uint opcode = 0xf3b00500u; // VCNT.8 D0, D0
 
             if (q)
             {
-                opcode |= 1 << 6;
+                opcode |= 1u << 6;
 
                 rd &= ~1u;
                 rm &= ~1u;
             }
 
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
-            opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
+            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
 
-            V128 v0 = MakeVectorE0E1(z, z);
-            V128 v1;
+            V128 v0 = MakeVectorE0E1(d0, d1);
 
-            if (q)
-            {
-                v1 = MakeVectorE0E1(a, a);
-            }
-            else
-            {
-                v1 = MakeVectorE0(a);
-            }
-
-            SingleOpcode(opcode, v0: v0, v1: v1);
+            SingleOpcode(opcode, v0: v0);
 
             CompareAgainstUnicorn();
         }

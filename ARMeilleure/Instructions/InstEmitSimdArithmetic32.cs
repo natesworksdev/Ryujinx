@@ -139,11 +139,6 @@ namespace ARMeilleure.Instructions
         {
             OpCode32SimdCmpZ op = (OpCode32SimdCmpZ)context.CurrOp;
 
-            if (op.Size != 0)
-            {
-                throw new InvalidOperationException($"Invalid Vcnt size {op.Size}. Elements must be bytes.");
-            }
-
             Operand res = GetVecA32(op.Qd);
 
             int elems = op.GetBytesCount();
@@ -159,7 +154,7 @@ namespace ARMeilleure.Instructions
                 }
                 else
                 {
-                    de = context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.CountSetBits8)), me);
+                    de = EmitCountSetBits8(context, me);
                 }
 
                 res = EmitVectorInsert(context, res, de, op.Id + index, op.Size);
