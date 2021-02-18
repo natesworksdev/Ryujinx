@@ -64,10 +64,7 @@ namespace Ryujinx
             }
 
             // Make process DPI aware for proper window sizing on high-res screens.
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Environment.OSVersion.Version.Major >= 6)
-            {
-                SetProcessDPIAware();
-            }
+            ForceDpiAware.Windows();
 
             // Delete backup files after updating.
             Task.Run(Updater.CleanupUpdate);
@@ -168,9 +165,6 @@ namespace Ryujinx
 
             Application.Run();
         }
-
-        [System.Runtime.InteropServices.DllImport("user32.dll")]
-        private static extern bool SetProcessDPIAware();
 
         private static void PrintSystemInfo()
         {
