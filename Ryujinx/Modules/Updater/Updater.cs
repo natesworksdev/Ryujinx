@@ -41,21 +41,22 @@ namespace Ryujinx.Modules
 
             Running = true;
             mainWindow.UpdateMenuItem.Sensitive = false;
+
             int artifactIndex = -1;
             // Detect current platform
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                _platformExt = "osx_x64.zip";
+                _platformExt  = "osx_x64.zip";
                 artifactIndex = 1;
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                _platformExt = "win_x64.zip";
+                _platformExt  = "win_x64.zip";
                 artifactIndex = 2;
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                _platformExt = "linux_x64.tar.gz";
+                _platformExt  = "linux_x64.tar.gz";
                 artifactIndex = 0;
             }
 
@@ -86,11 +87,11 @@ namespace Ryujinx.Modules
                 using (WebClient jsonClient = new WebClient())
                 {
                     // Fetch latest build information
-                    string fetchedJson = await jsonClient.DownloadStringTaskAsync($"{AppveyorApiUrl}/projects/gdkchan/ryujinx/branch/master");
-                    JObject jsonRoot = JObject.Parse(fetchedJson);
-                    JToken buildToken = jsonRoot["build"];
+                    string  fetchedJson = await jsonClient.DownloadStringTaskAsync($"{AppveyorApiUrl}/projects/gdkchan/ryujinx/branch/master");
+                    JObject jsonRoot    = JObject.Parse(fetchedJson);
+                    JToken  buildToken  = jsonRoot["build"];
 
-                    _jobId = (string)buildToken["jobs"][0]["jobId"];
+                    _jobId    = (string)buildToken["jobs"][0]["jobId"];
                     _buildVer = (string)buildToken["version"];
                     _buildUrl = $"{AppveyorApiUrl}/buildjobs/{_jobId}/artifacts/ryujinx-{_buildVer}-{_platformExt}";
 
