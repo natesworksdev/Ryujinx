@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+
 namespace Ryujinx.Common.System
 {
     public static class ForceDpiAware
     {
+        [DllImport("user32.dll")]
+        private static extern bool SetProcessDPIAware();
+
         /// <summary>
         /// Marks the application as DPI-Aware when running on the Windows operating system.
         /// </summary>
@@ -15,8 +19,5 @@ namespace Ryujinx.Common.System
                 SetProcessDPIAware();
             }
         }
-
-        [DllImport("user32.dll")]
-        private static extern bool SetProcessDPIAware();
     }
 }

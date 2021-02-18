@@ -12,7 +12,6 @@ using Ryujinx.Ui.Widgets;
 using System;
 using System.IO;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace Ryujinx
@@ -23,13 +22,13 @@ namespace Ryujinx
 
         public static string ConfigurationPath { get; set; }
 
-        private static readonly double StandardDpiScale = 96.0;
+        private static readonly double StandardDpiScale  = 96.0;
 
-        private static readonly double UserDpiScale = System.Drawing.Graphics.FromHwnd(IntPtr.Zero).DpiX;
+        private static readonly double MaxScaleFactor    = 1.25;
 
-        private static readonly double MaxScaleFactor = 1.25;
+        private static readonly double UserDpiScale      = System.Drawing.Graphics.FromHwnd(IntPtr.Zero).DpiX;
 
-        public static double WindowScaleFactor = Math.Min(UserDpiScale / StandardDpiScale, MaxScaleFactor);
+        public  static readonly double WindowScaleFactor = Math.Min(UserDpiScale / StandardDpiScale, MaxScaleFactor);
 
         static void Main(string[] args)
         {
