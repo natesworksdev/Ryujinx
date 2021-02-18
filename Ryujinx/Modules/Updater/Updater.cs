@@ -31,7 +31,7 @@ namespace Ryujinx.Modules
         private static string _buildVer;
         private static string _platformExt;
         private static string _buildUrl;
-        private static long _buildSize;
+        private static long   _buildSize;
         
         private const string AppveyorApiUrl = "https://ci.appveyor.com/api";
 
@@ -157,11 +157,11 @@ namespace Ryujinx.Modules
             }
 
             // Show a message asking the user if they want to update
-            UpdateDialog updateDialog = new UpdateDialog(mainWindow, newVersion, _buildUrl, _buildSize);
+            UpdateDialog updateDialog = new UpdateDialog(mainWindow, newVersion, _buildUrl);
             updateDialog.Show();
         }
 
-        public static void UpdateRyujinx(UpdateDialog updateDialog, string downloadUrl, long buildSize)
+        public static void UpdateRyujinx(UpdateDialog updateDialog, string downloadUrl)
         {
             // Empty update dir, although it shouldn't ever have anything inside it
             if (Directory.Exists(UpdateDir))
@@ -178,9 +178,9 @@ namespace Ryujinx.Modules
             updateDialog.ProgressBar.Value    = 0;
             updateDialog.ProgressBar.MaxValue = 100;
 
-            if(buildSize >= 0)
+            if(_buildSize >= 0)
             {
-                DoUpdateWithMultipleThreads(updateDialog, downloadUrl, updateFile, buildSize);
+                DoUpdateWithMultipleThreads(updateDialog, downloadUrl, updateFile);
             }
             else
             {
@@ -188,10 +188,12 @@ namespace Ryujinx.Modules
             }
         }
 
-        private static void DoUpdateWithMultipleThreads(UpdateDialog updateDialog, string downloadUrl, string updateFile, long buildSize)
+        private static void DoUpdateWithMultipleThreads(UpdateDialog updateDialog, string downloadUrl, string updateFile)
         {
             // Multi-Threaded Updater
-            long chunkSize = buildSize / ConnectionCount;
+            long chunkSize = _buildSize / ConnectionCount;
+            long remainderChunk = _buildSize % ConnectionCount;
+
             int completedRequests = 0;
             int totalProgressPercentage = 0;
             int[] progressPercentage = new int[ConnectionCount];
@@ -208,7 +210,14 @@ namespace Ryujinx.Modules
                 using (WebClient client = new WebClient())
                 {
                     webClients.Add(client);
-                    client.Headers.Add("Range", $"bytes={chunkSize * i}-{chunkSize * (i + 1) - 1}");
+                    if (i == ConnectionCount - 1)
+                    {
+                        client.Headers.Add("Range", $"bytes={chunkSize * i}-{(chunkSize * (i + 1) - 1) + remainderChunk}");
+                    }
+                    else
+                    {
+                        client.Headers.Add("Range", $"bytes={chunkSize * i}-{chunkSize * (i + 1) - 1}");
+                    }
                     client.DownloadProgressChanged += (_, args) =>
                     {
                         int index = (int)args.UserState;
@@ -221,6 +230,7 @@ namespace Ryujinx.Modules
                     client.DownloadDataCompleted += (_, args) =>
                     {
                         int index = (int)args.UserState;
+
                         if (args.Cancelled)
                         {
                             webClients[index].Dispose();
@@ -232,19 +242,28 @@ namespace Ryujinx.Modules
 
                         if (Interlocked.Equals(completedRequests, ConnectionCount))
                         {
-                            byte[] finalFile = new byte[buildSize];
+                            byte[] finalFile = new byte[_buildSize];
                             int k = 0;
-                            for (int i = 0; i < ConnectionCount; i++)
+                            for (int connectionIndex = 0; connectionIndex < ConnectionCount; connectionIndex++)
                             {
-                                for (int j = 0; j < list[i].Length; j++)
+                                for (int j = 0; j < list[connectionIndex].Length; j++)
                                 {
-                                    finalFile[k++] = list[i][j];
+                                    finalFile[k++] = list[connectionIndex][j];
                                 }
                             }
 
                             File.WriteAllBytes(updateFile, finalFile);
 
-                            InstallUpdate(updateDialog, updateFile);
+                            try
+                            {
+                                InstallUpdate(updateDialog, updateFile);
+                            }
+                            catch(Exception e)
+                            {
+                                Logger.Warning?.Print(LogClass.Application, e.Message);
+                                Logger.Warning?.Print(LogClass.Application, $"Multi-Threaded update failed, falling back to single-threaded updater.");
+                                DoUpdateWithSingleThread(updateDialog, downloadUrl, updateFile);
+                            }
                         }
                     };
 
