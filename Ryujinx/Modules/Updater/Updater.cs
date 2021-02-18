@@ -141,13 +141,14 @@ namespace Ryujinx.Modules
             }
 
             // Fetch build size information to learn chunk sizes.
-            using (WebClient jsonClient = new WebClient()) { 
+            using (WebClient buildSizeClient = new WebClient()) { 
                 try
                 {
-                    string fetchedArtifactJson = await jsonClient.DownloadStringTaskAsync($"{AppveyorApiUrl}/buildjobs/{_jobId}/artifacts");
-                    JArray artifactRoot = JArray.Parse(fetchedArtifactJson);
+                    buildSizeClient.Headers.Add("Range", "bytes=0-0");
+                    await buildSizeClient.DownloadDataTaskAsync(new Uri(_buildUrl));
 
-                    _buildSize = long.Parse((string)artifactRoot[artifactIndex]["size"]);
+                    string contentRange = buildSizeClient.ResponseHeaders["Content-Range"];
+                    _buildSize          = long.Parse(contentRange.Substring(contentRange.IndexOf('/') + 1));
                 }
                 catch (Exception e)
                 {
