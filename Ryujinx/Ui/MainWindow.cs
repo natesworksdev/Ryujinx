@@ -1102,14 +1102,10 @@ namespace Ryujinx.Ui
 
         private void Settings_Pressed(object sender, EventArgs args)
         {
-            using (System.Drawing.Graphics graphics = System.Drawing.Graphics.FromHwnd(IntPtr.Zero))
-            {
-                var window = new SettingsWindow(this, _virtualFileSystem, _contentManager);
-                double scaleFactor = Math.Min(graphics.DpiX / 96.0, 1.25);
-                window.SetSizeRequest((int)(window.DefaultWidth * scaleFactor), (int)(window.DefaultHeight * scaleFactor));
+            SettingsWindow window = new SettingsWindow(this, _virtualFileSystem, _contentManager);
+            window.SetSizeRequest((int)(window.DefaultWidth * Program.WindowScaleFactor), (int)(window.DefaultHeight * Program.WindowScaleFactor));
 
-                window.Show();
-            }
+            window.Show();
         }
 
         private void Simulate_WakeUp_Message_Pressed(object sender, EventArgs args)
@@ -1130,14 +1126,10 @@ namespace Ryujinx.Ui
 
         private void About_Pressed(object sender, EventArgs args)
         {
-            using (System.Drawing.Graphics graphics = System.Drawing.Graphics.FromHwnd(IntPtr.Zero))
-            {
-                var window = new AboutWindow();
-                double scaleFactor = Math.Min(graphics.DpiX / 96.0, 1.25);
-                window.SetSizeRequest((int)(window.DefaultWidth * scaleFactor), (int)(window.DefaultHeight * scaleFactor));
+            AboutWindow window = new AboutWindow();
+            window.SetSizeRequest((int)(window.DefaultWidth * Program.WindowScaleFactor), (int)(window.DefaultHeight * Program.WindowScaleFactor));
 
-                window.Show();
-            }
+            window.Show();
         }
 
         private void Fav_Toggled(object sender, EventArgs args)

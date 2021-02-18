@@ -564,14 +564,10 @@ namespace Ryujinx.Ui.Windows
         {
             ((ToggleButton)sender).SetStateFlags(StateFlags.Normal, true);
 
-            using (System.Drawing.Graphics graphics = System.Drawing.Graphics.FromHwnd(IntPtr.Zero))
-            {
-                var window = new ControllerWindow(playerIndex);
-                double scaleFactor = Math.Min(graphics.DpiX / 96.0, 1.25);
-                window.SetSizeRequest((int)(window.DefaultWidth * scaleFactor), (int)(window.DefaultHeight * scaleFactor));
+            ControllerWindow window = new ControllerWindow(playerIndex);
+            window.SetSizeRequest((int)(window.DefaultWidth * Program.WindowScaleFactor), (int)(window.DefaultHeight * Program.WindowScaleFactor));
 
-                window.Show();
-            }
+            window.Show();
         }
 
         private void SaveToggle_Activated(object sender, EventArgs args)

@@ -22,6 +22,14 @@ namespace Ryujinx
 
         public static string ConfigurationPath { get; set; }
 
+        private static readonly double StandardDpiScale = 96.0;
+
+        private static readonly double UserDpiScale = System.Drawing.Graphics.FromHwnd(IntPtr.Zero).DpiX;
+
+        private static readonly double MaxScaleFactor = 1.25;
+
+        public static double WindowScaleFactor = Math.Min(UserDpiScale / StandardDpiScale, MaxScaleFactor);
+
         static void Main(string[] args)
         {
             // Parse Arguments.
@@ -53,6 +61,9 @@ namespace Ryujinx
                     launchPathArg = arg;
                 }
             }
+
+            // Make process DPI aware for proper window sizing on high-res screens.
+            SetProcessDPIAware();
 
             // Delete backup files after updating.
             Task.Run(Updater.CleanupUpdate);
@@ -153,6 +164,9 @@ namespace Ryujinx
 
             Application.Run();
         }
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern bool SetProcessDPIAware();
 
         private static void PrintSystemInfo()
         {
