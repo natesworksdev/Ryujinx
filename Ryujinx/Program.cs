@@ -63,12 +63,6 @@ namespace Ryujinx
                 }
             }
 
-            // Make process DPI aware for proper window sizing on high-res screens.
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Environment.OSVersion.Version.Major >= 6)
-            {
-                SetProcessDPIAware();
-            }
-
             // Delete backup files after updating.
             Task.Run(Updater.CleanupUpdate);
 
