@@ -236,19 +236,16 @@ namespace ARMeilleure.Instructions
 
         public static Operand EmitCountSetBits8(ArmEmitterContext context, Operand me) // "size" is 8 (SIMD&FP Inst.).
         {
-            Operand me0 = context.Add
-            (
-                context.BitwiseAnd(context.ShiftRightUI(me, Const(1)), Const(me.Type, 0x55L)),
-                context.BitwiseAnd(me, Const(me.Type, 0x55L))
-            );
+            Operand me0 = context.Subtract(me, context.BitwiseAnd(context.ShiftRightUI(me, Const(1)), Const(me.Type, 0x55L)));
 
+            Operand c1 = Const(me.Type, 0x33L);
             Operand me1 = context.Add
             (
-                context.BitwiseAnd(context.ShiftRightUI(me0, Const(2)), Const(me.Type, 0x33L)),
-                context.BitwiseAnd(me0, Const(me.Type, 0x33L))
+                context.BitwiseAnd(context.ShiftRightUI(me0, Const(2)), c1),
+                context.BitwiseAnd(me0, c1)
             );
 
-            return context.Add(context.ShiftRightUI(me1, Const(4)), context.BitwiseAnd(me1, Const(me.Type, 0x0fL)));
+            return context.BitwiseAnd(context.Add(me1, context.ShiftRightUI(me1, Const(4))), Const(me.Type, 0x0fL));
         }
 
         public static void EmitScalarUnaryOpF(ArmEmitterContext context, Intrinsic inst32, Intrinsic inst64)
