@@ -263,6 +263,7 @@ namespace Ryujinx.Modules
                                 Logger.Warning?.Print(LogClass.Application, e.Message);
                                 Logger.Warning?.Print(LogClass.Application, $"Multi-Threaded update failed, falling back to single-threaded updater.");
                                 DoUpdateWithSingleThread(updateDialog, downloadUrl, updateFile);
+                                return;
                             }
                         }
                     };
@@ -279,7 +280,6 @@ namespace Ryujinx.Modules
                         {
                             webClients[j].CancelAsync();
                         }
-
                         DoUpdateWithSingleThread(updateDialog, downloadUrl, updateFile);
                         return;
                     }
