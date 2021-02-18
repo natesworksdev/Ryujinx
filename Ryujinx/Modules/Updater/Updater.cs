@@ -310,13 +310,13 @@ namespace Ryujinx.Modules
         private static async void InstallUpdate(UpdateDialog updateDialog, string updateFile)
         {
             // Extract Update
-            updateDialog.MainText.Text = "Extracting Update...";
+            updateDialog.MainText.Text     = "Extracting Update...";
             updateDialog.ProgressBar.Value = 0;
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                using (Stream inStream = File.OpenRead(updateFile))
-                using (Stream gzipStream = new GZipInputStream(inStream))
+                using (Stream inStream          = File.OpenRead(updateFile))
+                using (Stream gzipStream        = new GZipInputStream(inStream))
                 using (TarInputStream tarStream = new TarInputStream(gzipStream, Encoding.ASCII))
                 {
                     updateDialog.ProgressBar.MaxValue = inStream.Length;
@@ -353,8 +353,8 @@ namespace Ryujinx.Modules
             }
             else
             {
-                using (Stream inStream = File.OpenRead(updateFile))
-                using (ZipFile zipFile = new ZipFile(inStream))
+                using (Stream  inStream = File.OpenRead(updateFile))
+                using (ZipFile zipFile  = new ZipFile(inStream))
                 {
                     updateDialog.ProgressBar.MaxValue = zipFile.Count;
 
@@ -368,7 +368,7 @@ namespace Ryujinx.Modules
 
                             Directory.CreateDirectory(Path.GetDirectoryName(outPath));
 
-                            using (Stream zipStream = zipFile.GetInputStream(zipEntry))
+                            using (Stream zipStream     = zipFile.GetInputStream(zipEntry))
                             using (FileStream outStream = File.OpenWrite(outPath))
                             {
                                 zipStream.CopyTo(outStream);
@@ -390,8 +390,8 @@ namespace Ryujinx.Modules
 
             string[] allFiles = Directory.GetFiles(HomeDir, "*", SearchOption.AllDirectories);
 
-            updateDialog.MainText.Text = "Renaming Old Files...";
-            updateDialog.ProgressBar.Value = 0;
+            updateDialog.MainText.Text        = "Renaming Old Files...";
+            updateDialog.ProgressBar.Value    = 0;
             updateDialog.ProgressBar.MaxValue = allFiles.Length;
 
             // Replace old files
@@ -419,8 +419,8 @@ namespace Ryujinx.Modules
 
                 Application.Invoke(delegate
                 {
-                    updateDialog.MainText.Text = "Adding New Files...";
-                    updateDialog.ProgressBar.Value = 0;
+                    updateDialog.MainText.Text        = "Adding New Files...";
+                    updateDialog.ProgressBar.Value    = 0;
                     updateDialog.ProgressBar.MaxValue = Directory.GetFiles(UpdatePublishDir, "*", SearchOption.AllDirectories).Length;
                 });
 
@@ -429,14 +429,15 @@ namespace Ryujinx.Modules
 
             Directory.Delete(UpdateDir, true);
 
-            updateDialog.MainText.Text = "Update Complete!";
+            updateDialog.MainText.Text      = "Update Complete!";
             updateDialog.SecondaryText.Text = "Do you want to restart Ryujinx now?";
-            updateDialog.Modal = true;
+            updateDialog.Modal              = true;
 
             updateDialog.ProgressBar.Hide();
             updateDialog.YesButton.Show();
             updateDialog.NoButton.Show();
         }
+
         public static bool CanUpdate(bool showWarnings)
         {
             if (RuntimeInformation.OSArchitecture != Architecture.X64)
