@@ -18,17 +18,16 @@ namespace Ryujinx
 {
     class Program
     {
+
+        private static readonly double StandardDpiScale = 96.0;
+        private static readonly double MaxScaleFactor   = 1.25;
+        private static readonly double UserDpiScale     = System.Drawing.Graphics.FromHwnd(IntPtr.Zero).DpiX;
+
+        public static readonly double WindowScaleFactor = Math.Min(UserDpiScale / StandardDpiScale, MaxScaleFactor);
+
         public static string Version { get; private set; }
 
         public static string ConfigurationPath { get; set; }
-
-        private static readonly double StandardDpiScale  = 96.0;
-
-        private static readonly double MaxScaleFactor    = 1.25;
-
-        private static readonly double UserDpiScale      = System.Drawing.Graphics.FromHwnd(IntPtr.Zero).DpiX;
-
-        public  static readonly double WindowScaleFactor = Math.Min(UserDpiScale / StandardDpiScale, MaxScaleFactor);
 
         static void Main(string[] args)
         {
