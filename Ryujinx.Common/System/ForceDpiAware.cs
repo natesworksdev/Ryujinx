@@ -9,6 +9,9 @@ namespace Ryujinx.Common.System
         [DllImport("user32.dll")]
         private static extern bool SetProcessDPIAware();
 
+        private static readonly double _standardDpiScale = 96.0;
+        private static readonly double _maxScaleFactor   = 1.25;
+
         /// <summary>
         /// Marks the application as DPI-Aware when running on the Windows operating system.
         /// </summary>
@@ -21,9 +24,10 @@ namespace Ryujinx.Common.System
             }
         }
 
-        public static double GetUserDpiScale()
+        public static double GetWindowScaleFactor()
         {
-            double userDpiScale = 96.0;
+            double userDpiScale;
+
             try
             {
                 userDpiScale = global::System.Drawing.Graphics.FromHwnd(IntPtr.Zero).DpiX;
@@ -33,7 +37,8 @@ namespace Ryujinx.Common.System
                 Logger.Warning?.Print(LogClass.Application, $"Couldn't determine monitor DPI: {e.Message}");
                 userDpiScale = 96.0;
             }
-            return userDpiScale;
+
+            return Math.Min(userDpiScale / _standardDpiScale, _maxScaleFactor);
         }
     }
 }
