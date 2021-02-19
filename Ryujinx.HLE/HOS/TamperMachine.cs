@@ -140,18 +140,18 @@ namespace Ryujinx.HLE.HOS
 
         public void UpdateInput(List<GamepadInput> gamepadInputs)
         {
-            // Look for the input of the player one.
+            // Look for the input of the player one or the handheld.
             foreach (GamepadInput input in gamepadInputs)
             {
-                if (input.PlayerId == PlayerIndex.Player1)
+                if (input.PlayerId == PlayerIndex.Player1 || input.PlayerId == PlayerIndex.Handheld)
                 {
                     Thread.VolatileWrite(ref _pressedKeys, (long)input.Buttons);
+
                     return;
                 }
             }
 
             // Clear the input because player one is not conected.
-            // TODO: Fallback to another?
             Thread.VolatileWrite(ref _pressedKeys, 0);
         }
     }
