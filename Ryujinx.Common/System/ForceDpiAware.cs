@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Common.Logging;
-using global::System;
+using System;
+using System.Drawing;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.Common.System
@@ -30,7 +31,7 @@ namespace Ryujinx.Common.System
 
             try
             {
-                userDpiScale = global::System.Drawing.Graphics.FromHwnd(IntPtr.Zero).DpiX;
+                userDpiScale = Graphics.FromHwnd(IntPtr.Zero).DpiX;
             }
             catch (Exception e)
             {
