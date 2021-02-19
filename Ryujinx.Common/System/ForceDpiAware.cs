@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Ryujinx.Common.Logging;
+using global::System;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.Common.System
@@ -18,6 +19,21 @@ namespace Ryujinx.Common.System
             {
                 SetProcessDPIAware();
             }
+        }
+
+        public static double GetUserDpiScale()
+        {
+            double userDpiScale = 96.0;
+            try
+            {
+                userDpiScale = global::System.Drawing.Graphics.FromHwnd(IntPtr.Zero).DpiX;
+            }
+            catch (Exception e)
+            {
+                Logger.Warning?.Print(LogClass.Application, $"Couldn't determine monitor DPI: {e.Message}");
+                userDpiScale = 96.0;
+            }
+            return userDpiScale;
         }
     }
 }

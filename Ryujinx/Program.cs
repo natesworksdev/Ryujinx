@@ -19,18 +19,23 @@ namespace Ryujinx
     class Program
     {
 
-        private static readonly double StandardDpiScale = 96.0;
-        private static readonly double MaxScaleFactor   = 1.25;
-        private static readonly double UserDpiScale     = System.Drawing.Graphics.FromHwnd(IntPtr.Zero).DpiX;
+        private static readonly double _standardDpiScale = 96.0;
+        private static readonly double _maxScaleFactor   = 1.25;
+        private static double          _userDpiScale;
+        private static double          _windowScaleFactor;
+        public static  double WindowScaleFactor => _windowScaleFactor;
 
-        public static readonly double WindowScaleFactor = Math.Min(UserDpiScale / StandardDpiScale, MaxScaleFactor);
+        static Program()
+        {
+            
+        }
 
         public static string Version { get; private set; }
 
         public static string ConfigurationPath { get; set; }
 
         static void Main(string[] args)
-        {
+        { 
             // Parse Arguments.
             string launchPathArg      = null;
             string baseDirPathArg     = null;
@@ -63,6 +68,8 @@ namespace Ryujinx
 
             // Make process DPI aware for proper window sizing on high-res screens.
             ForceDpiAware.Windows();
+            _userDpiScale      = ForceDpiAware.GetUserDpiScale();
+            _windowScaleFactor = Math.Min(_userDpiScale / _standardDpiScale, _maxScaleFactor);
 
             // Delete backup files after updating.
             Task.Run(Updater.CleanupUpdate);
