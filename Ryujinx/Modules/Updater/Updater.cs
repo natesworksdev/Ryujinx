@@ -71,7 +71,7 @@ namespace Ryujinx.Modules
 
             try
             {
-                currentVersion = Version.Parse("1.0");//Program.Version);
+                currentVersion = Version.Parse(Program.Version);
             }
             catch
             {
@@ -461,15 +461,15 @@ namespace Ryujinx.Modules
                 return false;
             }
 
-            //if (Program.Version.Contains("dirty"))
-            //{
-            //    if (showWarnings)
-            //    {
-            //        GtkDialog.CreateWarningDialog("You Cannot update a Dirty build of Ryujinx!", "Please download Ryujinx at https://ryujinx.org/ if you are looking for a supported version.");
-            //    }
+            if (Program.Version.Contains("dirty"))
+            {
+                if (showWarnings)
+                {
+                    GtkDialog.CreateWarningDialog("You Cannot update a Dirty build of Ryujinx!", "Please download Ryujinx at https://ryujinx.org/ if you are looking for a supported version.");
+                }
 
-            //    return false;
-            //}
+                return false;
+            }
 
             return true;
         }
