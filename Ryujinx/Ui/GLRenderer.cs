@@ -615,7 +615,14 @@ namespace Ryujinx.Ui
 
                 currentButton |= _device.Hid.UpdateStickButtons(leftJoystick, rightJoystick);
 
-                motionDevice.Poll(inputConfig, inputConfig.Slot);
+                HotkeyButtons currentHotkeyButtons = KeyboardController.GetHotkeyButtons(OpenTK.Input.Keyboard.GetState());
+                if (currentHotkeyButtons.HasFlag(HotkeyButtons.MotionButton))
+                {
+                    motionDevice.PollRandomData(inputConfig);
+                }
+                else {
+                    motionDevice.Poll(inputConfig, inputConfig.Slot);
+                }
 
                 SixAxisInput sixAxisInput = new SixAxisInput()
                 {
@@ -640,7 +647,14 @@ namespace Ryujinx.Ui
                 {
                     if (!inputConfig.MirrorInput)
                     {
-                        motionDevice.Poll(inputConfig, inputConfig.AltSlot);
+                        if (currentHotkeyButtons.HasFlag(HotkeyButtons.MotionButton))
+                        {
+                            motionDevice.PollRandomData(inputConfig);
+                        }
+                        else
+                        {
+                            motionDevice.Poll(inputConfig, inputConfig.AltSlot);
+                        }
 
                         sixAxisInput = new SixAxisInput()
                         {

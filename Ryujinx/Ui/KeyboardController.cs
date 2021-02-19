@@ -11,6 +11,7 @@ namespace Ryujinx.Ui
     public enum HotkeyButtons
     {
         ToggleVSync = 1 << 0,
+        MotionButton = 1 << 1,
     }
 
     public class KeyboardController
@@ -106,6 +107,11 @@ namespace Ryujinx.Ui
             if (keyboard[(Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ToggleVsync])
             {
                 buttons |= HotkeyButtons.ToggleVSync;
+            }
+
+            if (keyboard[(Key)ConfigurationState.Instance.Hid.Hotkeys.Value.MotionButton])
+            {
+                buttons |= HotkeyButtons.MotionButton;
             }
 
             return buttons;

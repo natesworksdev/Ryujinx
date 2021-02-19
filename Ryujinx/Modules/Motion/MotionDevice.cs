@@ -67,6 +67,29 @@ namespace Ryujinx.Modules.Motion
             Orientation[8] = Math.Clamp(orientation.M33, -1f, 1f);
         }
 
+        public void PollRandomData(InputConfig config)
+        {
+            var random = new Random();
+            Orientation = new float[9];
+
+            if (!config.EnableMotion)
+            {
+                Accelerometer = new Vector3();
+                Gyroscope = new Vector3();
+
+                return;
+            }
+
+            Gyroscope = new Vector3(random.Next(-2000, 2000) * 0.001f);
+            Accelerometer = new Vector3(random.Next(-2000, 2000) * 0.001f);
+            Rotation = Vector3.Zero;
+
+            Orientation[0] = 1f;
+            Orientation[4] = 1f;
+            Orientation[8] = 1f;
+
+        }
+
         private static Vector3 Truncate(Vector3 value, int decimals)
         {
             float power = MathF.Pow(10, decimals);

@@ -1431,7 +1431,8 @@
       "type": "object",
       "title": "Hotkey Controls",
       "required": [
-        "toggle_vsync"
+        "toggle_vsync",
+        "motion_button"
       ],
       "properties": {
         "toggle_vsync": {
@@ -1439,6 +1440,12 @@
           "$ref": "#/definitions/key",
           "title": "Toggle VSync",
           "default": "Tab"
+        },
+        "motion_button": {
+          "$id": "#/properties/hotkeys/properties/motion_button",
+          "$ref": "#/definitions/key",
+          "title": "Motion Button",
+          "default": "Grave"
         }
       }
     },

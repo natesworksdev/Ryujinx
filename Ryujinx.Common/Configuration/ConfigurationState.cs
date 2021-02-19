@@ -517,7 +517,8 @@ namespace Ryujinx.Configuration
             Hid.EnableKeyboard.Value               = false;
             Hid.Hotkeys.Value = new KeyboardHotkeys
             {
-                ToggleVsync = Key.Tab
+                ToggleVsync = Key.Tab,
+                MotionButton = Key.Grave
             };
             Hid.InputConfig.Value = new List<InputConfig>
             {
@@ -716,7 +717,7 @@ namespace Ryujinx.Configuration
 
                 configurationFileFormat.Hotkeys = new KeyboardHotkeys
                 {
-                    ToggleVsync = Key.Tab
+                    ToggleVsync = Key.Tab,
                 };
 
                 configurationFileUpdated = true;
@@ -800,6 +801,18 @@ namespace Ryujinx.Configuration
                 Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 22.");
 
                 configurationFileFormat.HideCursorOnIdle = false;
+
+                configurationFileUpdated = true;
+            }
+
+            if (configurationFileFormat.Version < 23)
+            {
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 23.");
+
+                configurationFileFormat.Hotkeys = new KeyboardHotkeys
+                {
+                    MotionButton = Key.Grave,
+                };
 
                 configurationFileUpdated = true;
             }
