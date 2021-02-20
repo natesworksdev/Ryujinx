@@ -331,9 +331,9 @@ namespace Ryujinx.Modules
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                using (Stream          inStream = File.OpenRead(updateFile))
-                using (Stream        gzipStream = new GZipInputStream(inStream))
-                using (TarInputStream tarStream = new TarInputStream(gzipStream, Encoding.ASCII))
+                using (Stream          inStream  = File.OpenRead(updateFile))
+                using (Stream         gzipStream = new GZipInputStream(inStream))
+                using (TarInputStream tarStream  = new TarInputStream(gzipStream, Encoding.ASCII))
                 {
                     updateDialog.ProgressBar.MaxValue = inStream.Length;
 
@@ -369,8 +369,8 @@ namespace Ryujinx.Modules
             }
             else
             {
-                using (Stream inStream = File.OpenRead(updateFile))
-                using (ZipFile zipFile = new ZipFile(inStream))
+                using (Stream  inStream = File.OpenRead(updateFile))
+                using (ZipFile zipFile  = new ZipFile(inStream))
                 {
                     updateDialog.ProgressBar.MaxValue = zipFile.Count;
 
