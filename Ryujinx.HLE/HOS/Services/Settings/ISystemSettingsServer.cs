@@ -30,7 +30,8 @@ namespace Ryujinx.HLE.HOS.Services.Settings
         public ResultCode GetFirmwareVersion2(ServiceCtx context)
         {
             long replyPos  = context.Request.RecvListBuff[0].Position;
-            long replySize = context.Request.RecvListBuff[0].Size;
+
+            context.Response.PtrBuff[0] = context.Response.PtrBuff[0].WithSize(0x100L);
 
             byte[] firmwareData = GetFirmwareData(context.Device);
 
@@ -216,6 +217,18 @@ namespace Ryujinx.HLE.HOS.Services.Settings
             {
                 Logger.Error?.Print(LogClass.ServiceSet, $"{askedSetting} not found!");
             }
+
+            return ResultCode.Success;
+        }
+
+       [Command(60)]
+        // IsUserSystemClockAutomaticCorrectionEnabled() -> bool
+        public ResultCode IsUserSystemClockAutomaticCorrectionEnabled(ServiceCtx context)
+        {
+            // NOTE: When set to true, is automatically synced with the internet.
+            context.ResponseData.Write(true);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet, "Stubbed");
 
             return ResultCode.Success;
         }

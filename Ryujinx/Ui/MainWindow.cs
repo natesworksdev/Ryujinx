@@ -157,6 +157,17 @@ namespace Ryujinx.Ui
             if (ConfigurationState.Instance.Ui.GuiColumns.FileSizeColumn)   _fileSizeToggle.Active   = true;
             if (ConfigurationState.Instance.Ui.GuiColumns.PathColumn)       _pathToggle.Active       = true;
 
+            _favToggle.Toggled        += Fav_Toggled;
+            _iconToggle.Toggled       += Icon_Toggled;
+            _appToggle.Toggled        += App_Toggled;
+            _developerToggle.Toggled  += Developer_Toggled;
+            _versionToggle.Toggled    += Version_Toggled;
+            _timePlayedToggle.Toggled += TimePlayed_Toggled;
+            _lastPlayedToggle.Toggled += LastPlayed_Toggled;
+            _fileExtToggle.Toggled    += FileExt_Toggled;
+            _fileSizeToggle.Toggled   += FileSize_Toggled;
+            _pathToggle.Toggled       += Path_Toggled;
+
             _gameTable.Model = _tableStore = new ListStore(
                 typeof(bool),
                 typeof(Gdk.Pixbuf),
@@ -1102,7 +1113,10 @@ namespace Ryujinx.Ui
 
         private void Settings_Pressed(object sender, EventArgs args)
         {
-            new SettingsWindow(this, _virtualFileSystem, _contentManager).Show();
+            SettingsWindow settingsWindow = new SettingsWindow(this, _virtualFileSystem, _contentManager);
+
+            settingsWindow.SetSizeRequest((int)(settingsWindow.DefaultWidth * Program.WindowScaleFactor), (int)(settingsWindow.DefaultHeight * Program.WindowScaleFactor));
+            settingsWindow.Show();
         }
 
         private void Simulate_WakeUp_Message_Pressed(object sender, EventArgs args)
@@ -1123,7 +1137,10 @@ namespace Ryujinx.Ui
 
         private void About_Pressed(object sender, EventArgs args)
         {
-            new AboutWindow().Show();
+            AboutWindow aboutWindow = new AboutWindow();
+
+            aboutWindow.SetSizeRequest((int)(aboutWindow.DefaultWidth * Program.WindowScaleFactor), (int)(aboutWindow.DefaultHeight * Program.WindowScaleFactor));
+            aboutWindow.Show();
         }
 
         private void Fav_Toggled(object sender, EventArgs args)
@@ -1142,7 +1159,7 @@ namespace Ryujinx.Ui
             UpdateColumns();
         }
 
-        private void Title_Toggled(object sender, EventArgs args)
+        private void App_Toggled(object sender, EventArgs args)
         {
             ConfigurationState.Instance.Ui.GuiColumns.AppColumn.Value = _appToggle.Active;
 
