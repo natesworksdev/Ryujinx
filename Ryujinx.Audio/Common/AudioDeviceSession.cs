@@ -79,7 +79,7 @@ namespace Ryujinx.Audio.Common
         /// <summary>
         /// The session on the device driver.
         /// </summary>
-        private HardwareDeviceSession _hardwareDeviceSession;
+        private IHardwareDeviceSession _hardwareDeviceSession;
 
         /// <summary>
         /// Max number of buffers that can be registered to the device driver at a time.
@@ -92,7 +92,7 @@ namespace Ryujinx.Audio.Common
         /// <param name="deviceSession">The device driver session associated</param>
         /// <param name="bufferEvent">The release buffer event</param>
         /// <param name="bufferRegisteredLimit">The max number of buffers that can be registered to the device driver at a time</param>
-        public AudioDeviceSession(HardwareDeviceSession deviceSession, IWritableEvent bufferEvent, uint bufferRegisteredLimit = 4)
+        public AudioDeviceSession(IHardwareDeviceSession deviceSession, IWritableEvent bufferEvent, uint bufferRegisteredLimit = 4)
         {
             _bufferEvent = bufferEvent;
             _hardwareDeviceSession = deviceSession;

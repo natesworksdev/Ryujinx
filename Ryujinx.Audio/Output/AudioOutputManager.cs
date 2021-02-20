@@ -44,7 +44,7 @@ namespace Ryujinx.Audio.Output
         /// <summary>
         /// The device driver.
         /// </summary>
-        private HardwareDeviceDriver _deviceDriver;
+        private IHardwareDeviceDriver _deviceDriver;
 
         /// <summary>
         /// The events linked to each session.
@@ -81,7 +81,7 @@ namespace Ryujinx.Audio.Output
         /// </summary>
         /// <param name="deviceDriver">The device driver.</param>
         /// <param name="sessionRegisterEvents">The events associated to each session.</param>
-        public void Initialize(HardwareDeviceDriver deviceDriver, IWritableEvent[] sessionRegisterEvents)
+        public void Initialize(IHardwareDeviceDriver deviceDriver, IWritableEvent[] sessionRegisterEvents)
         {
             _deviceDriver = deviceDriver;
             _sessionsBufferEvents = sessionRegisterEvents;
@@ -177,7 +177,7 @@ namespace Ryujinx.Audio.Output
         /// <returns>The list of all audio outputs name</returns>
         public string[] ListAudioOuts()
         {
-            return new string[] { "DeviceOut" };
+            return new string[] { Constants.DefaultDeviceOutputName };
         }
 
         /// <summary>
@@ -207,7 +207,7 @@ namespace Ryujinx.Audio.Output
 
             _sessionsBufferEvents[sessionId].Clear();
 
-            HardwareDeviceSession deviceSession = _deviceDriver.OpenDeviceSession(HardwareDeviceDriver.Direction.Output, memoryManager, sampleFormat, parameter.SampleRate, parameter.ChannelCount);
+            IHardwareDeviceSession deviceSession = _deviceDriver.OpenDeviceSession(IHardwareDeviceDriver.Direction.Output, memoryManager, sampleFormat, parameter.SampleRate, parameter.ChannelCount);
 
             AudioOutputSystem audioOut = new AudioOutputSystem(this, _lock, deviceSession, _sessionsBufferEvents[sessionId]);
 

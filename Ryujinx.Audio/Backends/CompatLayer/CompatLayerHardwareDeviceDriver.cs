@@ -24,15 +24,15 @@ using Ryujinx.Memory;
 using System;
 using System.Threading;
 
-using static Ryujinx.Audio.Integration.HardwareDeviceDriver;
+using static Ryujinx.Audio.Integration.IHardwareDeviceDriver;
 
 namespace Ryujinx.Audio.Backends.CompatLayer
 {
-    public class CompatLayerHardwareDeviceDriver : HardwareDeviceDriver
+    public class CompatLayerHardwareDeviceDriver : IHardwareDeviceDriver
     {
-        private HardwareDeviceDriver _realDriver;
+        private IHardwareDeviceDriver _realDriver;
 
-        public CompatLayerHardwareDeviceDriver(HardwareDeviceDriver realDevice)
+        public CompatLayerHardwareDeviceDriver(IHardwareDeviceDriver realDevice)
         {
             _realDriver = realDevice;
         }
@@ -63,7 +63,7 @@ namespace Ryujinx.Audio.Backends.CompatLayer
             };
         }
 
-        public HardwareDeviceSession OpenDeviceSession(Direction direction, IVirtualMemoryManager memoryManager, SampleFormat sampleFormat, uint sampleRate, uint channelCount)
+        public IHardwareDeviceSession OpenDeviceSession(Direction direction, IVirtualMemoryManager memoryManager, SampleFormat sampleFormat, uint sampleRate, uint channelCount)
         {
             if (channelCount == 0)
             {
@@ -89,7 +89,7 @@ namespace Ryujinx.Audio.Backends.CompatLayer
 
             uint hardwareChannelCount = SelectHardwareChannelCount(channelCount);
 
-            HardwareDeviceSession realSession = _realDriver.OpenDeviceSession(direction, memoryManager, sampleFormat, sampleRate, hardwareChannelCount);
+            IHardwareDeviceSession realSession = _realDriver.OpenDeviceSession(direction, memoryManager, sampleFormat, sampleRate, hardwareChannelCount);
 
             if (hardwareChannelCount == channelCount)
             {
@@ -133,7 +133,7 @@ namespace Ryujinx.Audio.Backends.CompatLayer
             return sampleRate == Constants.TargetSampleRate;
         }
 
-        public HardwareDeviceDriver GetRealDeviceDriver()
+        public IHardwareDeviceDriver GetRealDeviceDriver()
         {
             return _realDriver;
         }

@@ -22,13 +22,13 @@ using System;
 
 namespace Ryujinx.Audio.Backends.Dummy
 {
-    class DummyHardwareDeviceSessionInput : HardwareDeviceSession
+    class DummyHardwareDeviceSessionInput : IHardwareDeviceSession
     {
         private float _volume;
-        private HardwareDeviceDriver _manager;
+        private IHardwareDeviceDriver _manager;
         private IVirtualMemoryManager _memoryManager;
 
-        public DummyHardwareDeviceSessionInput(HardwareDeviceDriver manager, IVirtualMemoryManager memoryManager, SampleFormat requestedSampleFormat, uint requestedSampleRate, uint requestedChannelCount)
+        public DummyHardwareDeviceSessionInput(IHardwareDeviceDriver manager, IVirtualMemoryManager memoryManager, SampleFormat requestedSampleFormat, uint requestedSampleRate, uint requestedChannelCount)
         {
             _volume = 1.0f;
             _manager = manager;
@@ -51,7 +51,7 @@ namespace Ryujinx.Audio.Backends.Dummy
             return _volume;
         }
 
-        public void PrepareToClose() {}
+        public void PrepareToClose() { }
 
         public void QueueBuffer(AudioBuffer buffer)
         {

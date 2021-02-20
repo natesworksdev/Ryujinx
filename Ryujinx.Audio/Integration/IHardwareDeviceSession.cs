@@ -20,7 +20,7 @@ using System;
 
 namespace Ryujinx.Audio.Integration
 {
-    public interface HardwareDeviceSession : IDisposable
+    public interface IHardwareDeviceSession : IDisposable
     {
         bool RegisterBuffer(AudioBuffer buffer);
 

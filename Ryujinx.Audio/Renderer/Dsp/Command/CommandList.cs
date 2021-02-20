@@ -39,7 +39,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
 
         public IVirtualMemoryManager MemoryManager { get; }
 
-        public HardwareDevice OutputDevice { get; private set; }
+        public IHardwareDevice OutputDevice { get; private set; }
 
         public CommandList(AudioRenderSystem renderSystem) : this(renderSystem.MemoryManager,
                                                                   renderSystem.GetMixBuffer(),
@@ -85,7 +85,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
             return (ulong)PerformanceCounter.ElapsedNanoseconds - StartTime;
         }
 
-        public void Process(HardwareDevice outputDevice)
+        public void Process(IHardwareDevice outputDevice)
         {
             OutputDevice = outputDevice;
 

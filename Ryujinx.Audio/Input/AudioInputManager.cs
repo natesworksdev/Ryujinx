@@ -44,7 +44,7 @@ namespace Ryujinx.Audio.Input
         /// <summary>
         /// The device driver.
         /// </summary>
-        private HardwareDeviceDriver _deviceDriver;
+        private IHardwareDeviceDriver _deviceDriver;
 
         /// <summary>
         /// The events linked to each session.
@@ -81,7 +81,7 @@ namespace Ryujinx.Audio.Input
         /// </summary>
         /// <param name="deviceDriver">The device driver.</param>
         /// <param name="sessionRegisterEvents">The events associated to each session.</param>
-        public void Initialize(HardwareDeviceDriver deviceDriver, IWritableEvent[] sessionRegisterEvents)
+        public void Initialize(IHardwareDeviceDriver deviceDriver, IWritableEvent[] sessionRegisterEvents)
         {
             _deviceDriver = deviceDriver;
             _sessionsBufferEvents = sessionRegisterEvents;
@@ -183,7 +183,7 @@ namespace Ryujinx.Audio.Input
                 // TODO: Detect if the driver supports audio input
             }
 
-            return new string[] { "BuiltInHeadset" };
+            return new string[] { Constants.DefaultDeviceInputName };
         }
 
         /// <summary>
@@ -213,7 +213,7 @@ namespace Ryujinx.Audio.Input
 
             _sessionsBufferEvents[sessionId].Clear();
 
-            HardwareDeviceSession deviceSession = _deviceDriver.OpenDeviceSession(HardwareDeviceDriver.Direction.Input, memoryManager, sampleFormat, parameter.SampleRate, parameter.ChannelCount);
+            IHardwareDeviceSession deviceSession = _deviceDriver.OpenDeviceSession(IHardwareDeviceDriver.Direction.Input, memoryManager, sampleFormat, parameter.SampleRate, parameter.ChannelCount);
 
             AudioInputSystem audioIn = new AudioInputSystem(this, _lock, deviceSession, _sessionsBufferEvents[sessionId]);
 

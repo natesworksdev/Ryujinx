@@ -89,7 +89,7 @@ namespace Ryujinx.Audio.Backends.CompatLayer
             }
             else
             {
-                throw new NotImplementedException($"Downmixing from {_userChannelCount} to {_realSession.RequestedChannelCount} not implemented!");
+                throw new NotImplementedException($"Downmixing from {_userChannelCount} to {_realSession.RequestedChannelCount} not implemented.");
             }
 
             byte[] downmixedBuffer = MemoryMarshal.Cast<short, byte>(downmixedBufferPCM16).ToArray();

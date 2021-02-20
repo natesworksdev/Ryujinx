@@ -19,7 +19,7 @@ using Ryujinx.Audio.Integration;
 namespace Ryujinx.Audio.Common
 {
     /// <summary>
-    /// Represent an audio buffer that will be used by an <see cref="HardwareDeviceSession"/>.
+    /// Represent an audio buffer that will be used by an <see cref="IHardwareDeviceSession"/>.
     /// </summary>
     public class AudioBuffer
     {

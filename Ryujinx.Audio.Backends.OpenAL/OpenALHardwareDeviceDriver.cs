@@ -5,11 +5,11 @@ using Ryujinx.Memory;
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using static Ryujinx.Audio.Integration.HardwareDeviceDriver;
+using static Ryujinx.Audio.Integration.IHardwareDeviceDriver;
 
 namespace Ryujinx.Audio.Backends.OpenAL
 {
-    public class OpenALHardwareDeviceDriver : HardwareDeviceDriver
+    public class OpenALHardwareDeviceDriver : IHardwareDeviceDriver
     {
         private object _lock = new object();
 
@@ -49,7 +49,7 @@ namespace Ryujinx.Audio.Backends.OpenAL
             }
         }
 
-        public HardwareDeviceSession OpenDeviceSession(Direction direction, IVirtualMemoryManager memoryManager, SampleFormat sampleFormat, uint sampleRate, uint channelCount)
+        public IHardwareDeviceSession OpenDeviceSession(Direction direction, IVirtualMemoryManager memoryManager, SampleFormat sampleFormat, uint sampleRate, uint channelCount)
         {
             if (channelCount == 0)
             {

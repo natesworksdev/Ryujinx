@@ -286,7 +286,7 @@ namespace Ryujinx.Ui
             _virtualFileSystem.Reload();
 
             IRenderer renderer = new Renderer();
-            HardwareDeviceDriver deviceDriver = new DummyHardwareDeviceDriver();
+            IHardwareDeviceDriver deviceDriver = new DummyHardwareDeviceDriver();
 
             if (ConfigurationState.Instance.System.AudioBackend.Value == AudioBackend.SoundIo)
             {

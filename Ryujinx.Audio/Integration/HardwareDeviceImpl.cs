@@ -21,18 +21,18 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Audio.Integration
 {
-    public class HardwareDeviceImpl : HardwareDevice
+    public class HardwareDeviceImpl : IHardwareDevice
     {
-        private HardwareDeviceSession _session;
+        private IHardwareDeviceSession _session;
         private uint _channelCount;
         private uint _sampleRate;
         private uint _currentBufferTag;
 
         private byte[] _buffer;
 
-        public HardwareDeviceImpl(HardwareDeviceDriver deviceDriver, uint channelCount, uint sampleRate)
+        public HardwareDeviceImpl(IHardwareDeviceDriver deviceDriver, uint channelCount, uint sampleRate)
         {
-            _session = deviceDriver.OpenDeviceSession(HardwareDeviceDriver.Direction.Output, null, SampleFormat.PcmInt16, sampleRate, channelCount);
+            _session = deviceDriver.OpenDeviceSession(IHardwareDeviceDriver.Direction.Output, null, SampleFormat.PcmInt16, sampleRate, channelCount);
             _channelCount = channelCount;
             _sampleRate = sampleRate;
             _currentBufferTag = 0;

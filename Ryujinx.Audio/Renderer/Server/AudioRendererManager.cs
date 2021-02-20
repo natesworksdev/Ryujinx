@@ -74,7 +74,7 @@ namespace Ryujinx.Audio.Renderer.Server
         /// <summary>
         /// The audio device driver to create audio outputs.
         /// </summary>
-        private HardwareDeviceDriver _deviceDriver;
+        private IHardwareDeviceDriver _deviceDriver;
 
         /// <summary>
         /// The <see cref="AudioProcessor"/> instance associated to this manager.
@@ -102,7 +102,7 @@ namespace Ryujinx.Audio.Renderer.Server
         /// </summary>
         /// <param name="sessionSystemEvents">The events associated to each session.</param>
         /// <param name="deviceDriver">The device driver to use to create audio outputs.</param>
-        public void Initialize(IWritableEvent[] sessionSystemEvents, HardwareDeviceDriver deviceDriver)
+        public void Initialize(IWritableEvent[] sessionSystemEvents, IHardwareDeviceDriver deviceDriver)
         {
             _sessionsSystemEvent = sessionSystemEvents;
             _deviceDriver = deviceDriver;

@@ -24,9 +24,9 @@ using System.Text;
 namespace Ryujinx.Audio.Renderer.Utils
 {
     /// <summary>
-    /// A <see cref="HardwareDevice"/> that outputs to a wav file.
+    /// A <see cref="IHardwareDevice"/> that outputs to a wav file.
     /// </summary>
-    public class FileHardwareDevice : HardwareDevice
+    public class FileHardwareDevice : IHardwareDevice
     {
         private FileStream _stream;
         private uint _channelCount;

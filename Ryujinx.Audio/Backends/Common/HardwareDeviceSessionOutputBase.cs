@@ -21,7 +21,7 @@ using Ryujinx.Memory;
 
 namespace Ryujinx.Audio.Backends.Common
 {
-    public abstract class HardwareDeviceSessionOutputBase : HardwareDeviceSession
+    public abstract class HardwareDeviceSessionOutputBase : IHardwareDeviceSession
     {
         public IVirtualMemoryManager MemoryManager { get; }
         public SampleFormat RequestedSampleFormat { get; }

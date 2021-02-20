@@ -49,7 +49,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
         private RendererSession[] _sessionCommandList;
         private Thread _workerThread;
 
-        public HardwareDevice[] OutputDevices { get; private set; }
+        public IHardwareDevice[] OutputDevices { get; private set; }
 
         private long _lastTime;
         private long _playbackEnds;
@@ -60,7 +60,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
             _event = new ManualResetEvent(false);
         }
 
-        private static uint GetHardwareChannelCount(HardwareDeviceDriver deviceDriver)
+        private static uint GetHardwareChannelCount(IHardwareDeviceDriver deviceDriver)
         {
             // Get the real device driver (In case the compat layer is on top of it).
             deviceDriver = deviceDriver.GetRealDeviceDriver();
@@ -76,9 +76,9 @@ namespace Ryujinx.Audio.Renderer.Dsp
             }
         }
 
-        public void Start(HardwareDeviceDriver deviceDriver)
+        public void Start(IHardwareDeviceDriver deviceDriver)
         {
-            OutputDevices = new HardwareDevice[Constants.AudioRendererSessionCountMax];
+            OutputDevices = new IHardwareDevice[Constants.AudioRendererSessionCountMax];
 
             // TODO: before enabling this, we need up-mixing from stereo to 5.1.
             //uint channelCount = GetHardwareChannelCount(deviceDriver);
@@ -114,7 +114,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
                 throw new InvalidOperationException("Audio Processor Stop response was invalid!");
             }
 
-            foreach (HardwareDevice device in OutputDevices)
+            foreach (IHardwareDevice device in OutputDevices)
             {
                 device.Dispose();
             }

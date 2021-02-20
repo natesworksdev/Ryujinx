@@ -50,7 +50,7 @@ namespace Ryujinx.Audio.Backends.OpenAL
             }
         }
 
-        public override void PrepareToClose() {}
+        public override void PrepareToClose() { }
 
         private void StartIfNotPlaying()
         {

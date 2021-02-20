@@ -45,8 +45,6 @@ namespace Ryujinx.Audio
         /// </summary>
         private Thread _workerThread;
 
-        private bool _workerThreadStarted;
-
         /// <summary>
         /// Create a new <see cref="AudioManager"/>.
         /// </summary>

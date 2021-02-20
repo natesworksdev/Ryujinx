@@ -53,7 +53,7 @@ namespace Ryujinx.Audio.Backends.SoundIo
             return _outputStream.Volume;
         }
 
-        public override void PrepareToClose() {}
+        public override void PrepareToClose() { }
 
         public override void QueueBuffer(AudioBuffer buffer)
         {
@@ -426,7 +426,6 @@ namespace Ryujinx.Audio.Backends.SoundIo
                     needUpdate = true;
                 }
 
-                // NOTE: Not entirely sure if I should do that here.
                 _playedSampleCount += playedAudioBufferSampleCount;
             }
 

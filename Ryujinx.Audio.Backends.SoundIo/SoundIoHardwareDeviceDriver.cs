@@ -6,11 +6,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
-using static Ryujinx.Audio.Integration.HardwareDeviceDriver;
+using static Ryujinx.Audio.Integration.IHardwareDeviceDriver;
 
 namespace Ryujinx.Audio.Backends.SoundIo
 {
-    public class SoundIoHardwareDeviceDriver : HardwareDeviceDriver
+    public class SoundIoHardwareDeviceDriver : IHardwareDeviceDriver
     {
         private object _lock = new object();
 
@@ -124,7 +124,7 @@ namespace Ryujinx.Audio.Backends.SoundIo
             return _updateRequiredEvent;
         }
 
-        public HardwareDeviceSession OpenDeviceSession(Direction direction, IVirtualMemoryManager memoryManager, SampleFormat sampleFormat, uint sampleRate, uint channelCount)
+        public IHardwareDeviceSession OpenDeviceSession(Direction direction, IVirtualMemoryManager memoryManager, SampleFormat sampleFormat, uint sampleRate, uint channelCount)
         {
             if (channelCount == 0)
             {
@@ -199,7 +199,7 @@ namespace Ryujinx.Audio.Backends.SoundIo
 
             SoundIOOutStream result = _audioDevice.CreateOutStream();
 
-            result.Name = $"Ryujinx";
+            result.Name ="Ryujinx";
             result.Layout = SoundIOChannelLayout.GetDefault((int)requestedChannelCount);
             result.Format = driverSampleFormat;
             result.SampleRate = (int)requestedSampleRate;

@@ -25,7 +25,7 @@ namespace Ryujinx.Audio.Integration
     /// <summary>
     /// Represent an hardware device driver used in <see cref="Output.AudioOutputSystem"/>.
     /// </summary>
-    public interface HardwareDeviceDriver : IDisposable
+    public interface IHardwareDeviceDriver : IDisposable
     {
         public enum Direction
         {
@@ -33,7 +33,7 @@ namespace Ryujinx.Audio.Integration
             Output
         }
 
-        HardwareDeviceSession OpenDeviceSession(Direction direction, IVirtualMemoryManager memoryManager, SampleFormat sampleFormat, uint sampleRate, uint channelCount);
+        IHardwareDeviceSession OpenDeviceSession(Direction direction, IVirtualMemoryManager memoryManager, SampleFormat sampleFormat, uint sampleRate, uint channelCount);
 
         ManualResetEvent GetUpdateRequiredEvent();
 
@@ -42,7 +42,7 @@ namespace Ryujinx.Audio.Integration
         bool SupportsSampleFormat(SampleFormat sampleFormat);
         bool SupportsChannelCount(uint channelCount);
 
-        HardwareDeviceDriver GetRealDeviceDriver()
+        IHardwareDeviceDriver GetRealDeviceDriver()
         {
             return this;
         }

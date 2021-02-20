@@ -20,11 +20,11 @@ using Ryujinx.Audio.Integration;
 using Ryujinx.Memory;
 using System.Threading;
 
-using static Ryujinx.Audio.Integration.HardwareDeviceDriver;
+using static Ryujinx.Audio.Integration.IHardwareDeviceDriver;
 
 namespace Ryujinx.Audio.Backends.Dummy
 {
-    public class DummyHardwareDeviceDriver : HardwareDeviceDriver
+    public class DummyHardwareDeviceDriver : IHardwareDeviceDriver
     {
         private ManualResetEvent _updateRequiredEvent;
 
@@ -33,7 +33,7 @@ namespace Ryujinx.Audio.Backends.Dummy
             _updateRequiredEvent = new ManualResetEvent(false);
         }
 
-        public HardwareDeviceSession OpenDeviceSession(Direction direction, IVirtualMemoryManager memoryManager, SampleFormat sampleFormat, uint sampleRate, uint channelCount)
+        public IHardwareDeviceSession OpenDeviceSession(Direction direction, IVirtualMemoryManager memoryManager, SampleFormat sampleFormat, uint sampleRate, uint channelCount)
         {
             if (sampleRate == 0)
             {

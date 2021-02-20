@@ -73,7 +73,7 @@ namespace Ryujinx.Audio.Output
         /// <param name="parentLock">The lock of the manager</param>
         /// <param name="deviceSession">The hardware device session</param>
         /// <param name="bufferEvent">The buffer release event of the audio output</param>
-        public AudioOutputSystem(AudioOutputManager manager, object parentLock, HardwareDeviceSession deviceSession, IWritableEvent bufferEvent)
+        public AudioOutputSystem(AudioOutputManager manager, object parentLock, IHardwareDeviceSession deviceSession, IWritableEvent bufferEvent)
         {
             _manager = manager;
             _parentLock = parentLock;
@@ -86,7 +86,7 @@ namespace Ryujinx.Audio.Output
         /// <returns>The default device name on the system.</returns>
         private static string GetDeviceDefaultName()
         {
-            return "DeviceOut";
+            return Constants.DefaultDeviceOutputName;
         }
 
         /// <summary>

@@ -75,7 +75,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
 
         public void Process(CommandList context)
         {
-            HardwareDevice device = context.OutputDevice;
+            IHardwareDevice device = context.OutputDevice;
 
             if (device.GetSampleRate() == Constants.TargetSampleRate)
             {

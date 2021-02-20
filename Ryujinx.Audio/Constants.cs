@@ -23,6 +23,16 @@ namespace Ryujinx.Audio
     public static class Constants
     {
         /// <summary>
+        /// The default device output name.
+        /// </summary>
+        public const string DefaultDeviceOutputName = "DeviceOut";
+
+        /// <summary>
+        /// The default device input name.
+        /// </summary>
+        public const string DefaultDeviceInputName = "BuiltInHeadset";
+
+        /// <summary>
         /// The maximum number of channels supported. (6 channels for 5.1 surround)
         /// </summary>
         public const int ChannelCountMax = 6;

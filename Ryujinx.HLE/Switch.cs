@@ -23,7 +23,7 @@ namespace Ryujinx.HLE
 {
     public class Switch : IDisposable
     {
-        public HardwareDeviceDriver AudioDeviceDriver { get; private set; }
+        public IHardwareDeviceDriver AudioDeviceDriver { get; private set; }
 
         internal MemoryBlock Memory { get; private set; }
 
@@ -49,7 +49,7 @@ namespace Ryujinx.HLE
 
         public bool EnableDeviceVsync { get; set; } = true;
 
-        public Switch(VirtualFileSystem fileSystem, ContentManager contentManager, UserChannelPersistence userChannelPersistence, IRenderer renderer, HardwareDeviceDriver audioDeviceDriver)
+        public Switch(VirtualFileSystem fileSystem, ContentManager contentManager, UserChannelPersistence userChannelPersistence, IRenderer renderer, IHardwareDeviceDriver audioDeviceDriver)
         {
             if (renderer == null)
             {

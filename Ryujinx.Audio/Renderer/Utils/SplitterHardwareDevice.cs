@@ -20,12 +20,12 @@ using System;
 
 namespace Ryujinx.Audio.Renderer.Utils
 {
-    public class SplitterHardwareDevice : HardwareDevice
+    public class SplitterHardwareDevice : IHardwareDevice
     {
-        private HardwareDevice _baseDevice;
-        private HardwareDevice _secondaryDevice;
+        private IHardwareDevice _baseDevice;
+        private IHardwareDevice _secondaryDevice;
 
-        public SplitterHardwareDevice(HardwareDevice baseDevice, HardwareDevice secondaryDevice)
+        public SplitterHardwareDevice(IHardwareDevice baseDevice, IHardwareDevice secondaryDevice)
         {
             _baseDevice = baseDevice;
             _secondaryDevice = secondaryDevice;

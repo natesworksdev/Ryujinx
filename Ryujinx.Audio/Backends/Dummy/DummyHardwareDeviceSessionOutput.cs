@@ -26,11 +26,11 @@ namespace Ryujinx.Audio.Backends.Dummy
     internal class DummyHardwareDeviceSessionOutput : HardwareDeviceSessionOutputBase
     {
         private float _volume;
-        private HardwareDeviceDriver _manager;
+        private IHardwareDeviceDriver _manager;
 
         private ulong _playedSampleCount;
 
-        public DummyHardwareDeviceSessionOutput(HardwareDeviceDriver manager, IVirtualMemoryManager memoryManager, SampleFormat requestedSampleFormat, uint requestedSampleRate, uint requestedChannelCount) : base(memoryManager, requestedSampleFormat, requestedSampleRate, requestedChannelCount)
+        public DummyHardwareDeviceSessionOutput(IHardwareDeviceDriver manager, IVirtualMemoryManager memoryManager, SampleFormat requestedSampleFormat, uint requestedSampleRate, uint requestedChannelCount) : base(memoryManager, requestedSampleFormat, requestedSampleRate, requestedChannelCount)
         {
             _volume = 1.0f;
             _manager = manager;
@@ -51,7 +51,7 @@ namespace Ryujinx.Audio.Backends.Dummy
             return _volume;
         }
 
-        public override void PrepareToClose() {}
+        public override void PrepareToClose() { }
 
         public override void QueueBuffer(AudioBuffer buffer)
         {
@@ -65,11 +65,11 @@ namespace Ryujinx.Audio.Backends.Dummy
             _volume = volume;
         }
 
-        public override void Start() {}
+        public override void Start() { }
 
-        public override void Stop() {}
+        public override void Stop() { }
 
-        public override void UnregisterBuffer(AudioBuffer buffer) {}
+        public override void UnregisterBuffer(AudioBuffer buffer) { }
 
         public override bool WasBufferFullyConsumed(AudioBuffer buffer)
         {

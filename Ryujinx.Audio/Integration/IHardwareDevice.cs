@@ -23,7 +23,7 @@ namespace Ryujinx.Audio.Integration
     /// <summary>
     /// Represent an hardware device used in <see cref="Renderer.Dsp.Command.DeviceSinkCommand"/>
     /// </summary>
-    public interface HardwareDevice : IDisposable
+    public interface IHardwareDevice : IDisposable
     {
         /// <summary>
         /// Get the supported sample rate of this device.
