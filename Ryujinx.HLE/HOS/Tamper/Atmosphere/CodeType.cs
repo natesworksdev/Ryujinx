@@ -111,6 +111,6 @@ namespace Ryujinx.HLE.HOS.Tamper.Atmosphere
         /// <summary>
         /// Code type 0xFFF writes a debug log.
         /// </summary>
-        DebugLog = 0xFFF,
+        DebugLog = 0xFFF
     }
 }

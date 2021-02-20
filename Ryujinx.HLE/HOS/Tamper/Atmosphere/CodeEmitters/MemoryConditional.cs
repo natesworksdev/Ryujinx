@@ -16,8 +16,8 @@ namespace Ryujinx.HLE.HOS.Tamper.Atmosphere.CodeEmitters
         private const int ValueImmediateIndex = 16;
 
         private const int OffsetImmediateSize = 10;
-        private const int ValueImmediate4 = 8;
-        private const int ValueImmediate8 = 16;
+        private const int ValueImmediateSize4 = 8;
+        private const int ValueImmediateSize8 = 16;
 
         public static ICondition Emit(byte[] instruction, CompilationContext context)
         {
@@ -35,7 +35,7 @@ namespace Ryujinx.HLE.HOS.Tamper.Atmosphere.CodeEmitters
             ulong address = InstructionHelper.GetImmediate(instruction, OffsetImmediateIndex, OffsetImmediateSize);
             Pointer sourceMemory = MemoryHelper.EmitPointer(memoryRegion, address, context);
 
-            int valueSize = operationWidth > 4 ? ValueImmediate4 : ValueImmediate8;
+            int valueSize = operationWidth > 4 ? ValueImmediateSize4 : ValueImmediateSize8;
             ulong value = InstructionHelper.GetImmediate(instruction, ValueImmediateIndex, valueSize);
             Value<ulong> compareToValue = new Value<ulong>(value);
 

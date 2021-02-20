@@ -28,6 +28,7 @@ namespace Ryujinx.HLE.HOS.Tamper.Atmosphere
         public static Pointer EmitPointer(ulong addressImmediate, CompilationContext context)
         {
             Value<ulong> addressImmediateValue = new Value<ulong>(addressImmediate);
+
             return new Pointer(addressImmediateValue, context.Process);
         }
 
@@ -41,6 +42,7 @@ namespace Ryujinx.HLE.HOS.Tamper.Atmosphere
             Value<ulong> offsetImmediateValue = new Value<ulong>(offsetImmediate);
             Value<ulong> finalAddressValue = new Value<ulong>(0);
             EmitAdd(finalAddressValue, addressRegister, offsetImmediateValue, context);
+
             return new Pointer(finalAddressValue, context.Process);
         }
 
@@ -48,6 +50,7 @@ namespace Ryujinx.HLE.HOS.Tamper.Atmosphere
         {
             Value<ulong> finalAddressValue = new Value<ulong>(0);
             EmitAdd(finalAddressValue, addressRegister, offsetRegister, context);
+
             return new Pointer(finalAddressValue, context.Process);
         }
 
@@ -58,24 +61,28 @@ namespace Ryujinx.HLE.HOS.Tamper.Atmosphere
             EmitAdd(finalOffsetValue, offsetRegister, offsetImmediateValue, context);
             Value<ulong> finalAddressValue = new Value<ulong>(0);
             EmitAdd(finalAddressValue, addressRegister, finalOffsetValue, context);
+
             return new Pointer(finalAddressValue, context.Process);
         }
 
         public static Pointer EmitPointer(MemoryRegion memoryRegion, ulong offsetImmediate, CompilationContext context)
         {
             offsetImmediate += GetAddressShift(memoryRegion, context);
+
             return EmitPointer(offsetImmediate, context);
         }
 
         public static Pointer EmitPointer(MemoryRegion memoryRegion, Register offsetRegister, CompilationContext context)
         {
             ulong offsetImmediate = GetAddressShift(memoryRegion, context);
+
             return EmitPointer(offsetRegister, offsetImmediate, context);
         }
 
         public static Pointer EmitPointer(MemoryRegion memoryRegion, Register offsetRegister, ulong offsetImmediate, CompilationContext context)
         {
             offsetImmediate += GetAddressShift(memoryRegion, context);
+
             return EmitPointer(offsetRegister, offsetImmediate, context);
         }
     }

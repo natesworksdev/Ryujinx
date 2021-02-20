@@ -19,6 +19,7 @@ namespace Ryujinx.HLE.HOS.Tamper.Atmosphere.CodeEmitters
             // The Keypad Values are the direct output of hidKeysDown().
 
             ulong inputMask = InstructionHelper.GetImmediate(instruction, InputMaskIndex, InputMaskSize);
+
             return new InputMask((long)inputMask, context.PressedKeys);
         }
     }

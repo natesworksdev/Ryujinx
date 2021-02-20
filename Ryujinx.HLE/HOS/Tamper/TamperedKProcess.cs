@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Tamper
             ulong size = (ulong)Unsafe.SizeOf<T>();
             if (!_process.CpuMemory.IsRangeMapped(va, size))
             {
-                throw new TamperExecutionException($"Unmapped memory access of {size} bytes of at {va:X}");
+                throw new TamperExecutionException($"Unmapped memory access of {size} bytes at 0x{va:X16}");
             }
         }
 

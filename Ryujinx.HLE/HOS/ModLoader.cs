@@ -61,7 +61,7 @@ namespace Ryujinx.HLE.HOS
                 Name = name;
                 Path = path;
                 Instructions = instructions;
-        }
+            }
         }
 
         // Title dependent mods
@@ -221,27 +221,34 @@ namespace Ryujinx.HLE.HOS
                 else if (StrEquals(CheatDir, modDir.Name))
                 {
                     for (int i = 0; i < QueryCheatsDir(mods, modDir); i++)
+                    {
                         types.Append('C');
+                    }
                 }
                 else
                 {
                     var romfs = new DirectoryInfo(Path.Combine(modDir.FullName, RomfsDir));
                     var exefs = new DirectoryInfo(Path.Combine(modDir.FullName, ExefsDir));
                     var cheat = new DirectoryInfo(Path.Combine(modDir.FullName, CheatDir));
+
                     if (romfs.Exists)
                     {
                         mods.RomfsDirs.Add(mod = new Mod<DirectoryInfo>(modDir.Name, romfs));
                         types.Append('R');
                     }
+
                     if (exefs.Exists)
                     {
                         mods.ExefsDirs.Add(mod = new Mod<DirectoryInfo>(modDir.Name, exefs));
                         types.Append('E');
                     }
+
                     if (cheat.Exists)
                     {
                         for (int i = 0; i < QueryCheatsDir(mods, cheat); i++)
+                        {
                             types.Append('C');
+                        }
                     }
                 }
 
@@ -265,14 +272,19 @@ namespace Ryujinx.HLE.HOS
 
         private static int QueryCheatsDir(ModCache mods, DirectoryInfo cheatsDir)
         {
-            if (!cheatsDir.Exists) return 0;
+            if (!cheatsDir.Exists)
+            {
+                return 0;
+            }
 
             int numMods = 0;
 
             foreach (FileInfo file in cheatsDir.EnumerateFiles())
             {
                 if (!StrEquals(CheatExtension, file.Extension))
+                {
                     continue;
+                }
 
                 string cheatId = Path.GetFileNameWithoutExtension(file.Name);
 
@@ -281,14 +293,13 @@ namespace Ryujinx.HLE.HOS
                     continue;
                 }
 
-                if (!UInt64.TryParse(cheatId, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out ulong buildId))
+                if (!ulong.TryParse(cheatId, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out _))
                 {
                     continue;
                 }
 
                 // A cheat file can contain several cheats for the same executable, so the file must be parsed in
                 // order to properly enumerate them.
-
                 mods.Cheats.AddRange(GetCheatsInFile(file));
             }
 
@@ -311,7 +322,6 @@ namespace Ryujinx.HLE.HOS
                     if (line.StartsWith('['))
                     {
                         // This line starts a new cheat section.
-
                         if (!line.EndsWith(']') || line.Length < 3)
                         {
                             // Skip the entire file if there's any error while parsing the cheat file.
@@ -334,7 +344,6 @@ namespace Ryujinx.HLE.HOS
                     else if (line.Length > 0)
                     {
                         // The line contains an instruction.
-
                         instructions.Add(line);
                     }
                 }
@@ -616,7 +625,7 @@ namespace Ryujinx.HLE.HOS
         {
             if (tamperInfo == null || tamperInfo.BuildIds == null || tamperInfo.CodeAddresses == null)
             {
-                Logger.Error?.Print(LogClass.ModLoader, $"Unable to install cheat because the associated process is invalid");
+                Logger.Error?.Print(LogClass.ModLoader, "Unable to install cheat because the associated process is invalid");
             }
 
             if (!AppMods.TryGetValue(titleId, out ModCache mods) || mods.Cheats.Count == 0)
@@ -634,7 +643,7 @@ namespace Ryujinx.HLE.HOS
 
                 if (!processExes.TryGetValue(cheatId, out ulong exeAddress))
                 {
-                    Logger.Warning?.Print(LogClass.ModLoader, $"Skipping cheat '{cheat.Name}' because no executable match its bid={cheatId} (check if the game title and version are correct)");
+                    Logger.Warning?.Print(LogClass.ModLoader, $"Skipping cheat '{cheat.Name}' because no executable matches its BuildId {cheatId} (check if the game title and version are correct)");
 
                     continue;
                 }

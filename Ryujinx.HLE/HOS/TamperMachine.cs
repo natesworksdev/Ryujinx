@@ -20,10 +20,6 @@ namespace Ryujinx.HLE.HOS
         private ConcurrentQueue<ITamperProgram> _programs = new ConcurrentQueue<ITamperProgram>();
         private long _pressedKeys = 0;
 
-        public TamperMachine()
-        {
-        }
-
         private void Activate()
         {
             if (_tamperThread == null || !_tamperThread.IsAlive)

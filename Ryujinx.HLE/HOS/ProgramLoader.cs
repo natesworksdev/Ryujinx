@@ -211,6 +211,7 @@ namespace Ryujinx.HLE.HOS
                 Logger.Error?.Print(LogClass.Loader, $"Process initialization failed setting resource limit values.");
 
                 tamperInfo = null;
+
                 return false;
             }
 
@@ -223,6 +224,7 @@ namespace Ryujinx.HLE.HOS
                 Logger.Error?.Print(LogClass.Loader, $"Process initialization failed due to invalid ACID flags.");
 
                 tamperInfo = null;
+
                 return false;
             }
 
@@ -240,6 +242,7 @@ namespace Ryujinx.HLE.HOS
                 Logger.Error?.Print(LogClass.Loader, $"Process initialization returned error \"{result}\".");
 
                 tamperInfo = null;
+
                 return false;
             }
 
@@ -254,6 +257,7 @@ namespace Ryujinx.HLE.HOS
                     Logger.Error?.Print(LogClass.Loader, $"Process initialization returned error \"{result}\".");
 
                     tamperInfo = null;
+
                     return false;
                 }
             }
