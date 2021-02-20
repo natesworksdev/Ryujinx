@@ -43,6 +43,7 @@ namespace Ryujinx.Modules
             mainWindow.UpdateMenuItem.Sensitive = false;
 
             int artifactIndex = -1;
+
             // Detect current platform
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
@@ -63,6 +64,7 @@ namespace Ryujinx.Modules
             if (artifactIndex == -1)
             {
                 GtkDialog.CreateErrorDialog("Your platform is not supported!");
+
                 return;
             }
 
@@ -141,18 +143,19 @@ namespace Ryujinx.Modules
             }
 
             // Fetch build size information to learn chunk sizes.
-            using (WebClient buildSizeClient = new WebClient()) { 
+            using (WebClient buildSizeClient = new WebClient()) 
+            { 
                 try
                 {
                     buildSizeClient.Headers.Add("Range", "bytes=0-0");
                     await buildSizeClient.DownloadDataTaskAsync(new Uri(_buildUrl));
 
                     string contentRange = buildSizeClient.ResponseHeaders["Content-Range"];
-                    _buildSize          = long.Parse(contentRange.Substring(contentRange.IndexOf('/') + 1));
+                    _buildSize = long.Parse(contentRange.Substring(contentRange.IndexOf('/') + 1));
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
-                    Logger.Warning?.Print(LogClass.Application, e.Message);
+                    Logger.Warning?.Print(LogClass.Application, ex.Message);
                     Logger.Warning?.Print(LogClass.Application, "Couldn't determine build size for update, will use single-threaded updater");
                     _buildSize = -1;
                 }
@@ -274,10 +277,11 @@ namespace Ryujinx.Modules
                     {
                         client.DownloadDataAsync(new Uri(downloadUrl), i);
                     }
-                    catch (WebException e)
+                    catch (WebException ex)
                     {
-                        Logger.Warning?.Print(LogClass.Application, e.Message);
+                        Logger.Warning?.Print(LogClass.Application, ex.Message);
                         Logger.Warning?.Print(LogClass.Application, $"Multi-Threaded update failed, falling back to single-threaded updater.");
+                        
                         for(int j = 0; j < webClients.Count; j++)
                         {
                             webClients[j].CancelAsync();
@@ -316,8 +320,8 @@ namespace Ryujinx.Modules
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                using (Stream          inStream = File.OpenRead(updateFile))
-                using (Stream        gzipStream = new GZipInputStream(inStream))
+                using (Stream inStream          = File.OpenRead(updateFile))
+                using (Stream gzipStream        = new GZipInputStream(inStream))
                 using (TarInputStream tarStream = new TarInputStream(gzipStream, Encoding.ASCII))
                 {
                     updateDialog.ProgressBar.MaxValue = inStream.Length;
@@ -354,8 +358,8 @@ namespace Ryujinx.Modules
             }
             else
             {
-                using (Stream  inStream = File.OpenRead(updateFile))
-                using (ZipFile  zipFile = new ZipFile(inStream))
+                using (Stream inStream = File.OpenRead(updateFile))
+                using (ZipFile zipFile = new ZipFile(inStream))
                 {
                     updateDialog.ProgressBar.MaxValue = zipFile.Count;
 
@@ -369,7 +373,7 @@ namespace Ryujinx.Modules
 
                             Directory.CreateDirectory(Path.GetDirectoryName(outPath));
 
-                            using (Stream     zipStream = zipFile.GetInputStream(zipEntry))
+                            using (Stream zipStream     = zipFile.GetInputStream(zipEntry))
                             using (FileStream outStream = File.OpenWrite(outPath))
                             {
                                 zipStream.CopyTo(outStream);
