@@ -16,24 +16,40 @@ namespace Ryujinx.HLE.HOS.Tamper
             this._process = process;
         }
 
-        private void AssertMemoryRegion<T>(ulong va) where T : unmanaged
+        private void AssertMemoryRegion<T>(ulong va, bool isWrite) where T : unmanaged
         {
             ulong size = (ulong)Unsafe.SizeOf<T>();
-            if (!_process.CpuMemory.IsRangeMapped(va, size))
+
+            // TODO (Caian): This double check is workaround because CpuMemory.IsRangeMapped reports
+            // some addresses as mapped even though they are not, i. e. 4 bytes from 0xffffffffffffff70.
+            if (!_process.CpuMemory.IsMapped(va) || !_process.CpuMemory.IsRangeMapped(va, size))
             {
                 throw new TamperExecutionException($"Unmapped memory access of {size} bytes at 0x{va:X16}");
+            }
+
+            if (!isWrite)
+            {
+                return;
+            }
+
+            // TODO (Caian): It is unknown how PPTC behaves if the tamper modifies memory regions
+            // belonging to code. So for now just disallow code tampering.
+            if ((va >= _process.MemoryManager.CodeRegionStart) && (va + size <= _process.MemoryManager.CodeRegionEnd))
+            {
+                throw new CodeRegionTamperedException($"Writing {size} bytes to address 0x{va:X16} alters code");
             }
         }
 
         public T ReadMemory<T>(ulong va) where T : unmanaged
         {
-            AssertMemoryRegion<T>(va);
+            AssertMemoryRegion<T>(va, false);
+
             return _process.CpuMemory.Read<T>(va);
         }
 
         public void WriteMemory<T>(ulong va, T value) where T : unmanaged
         {
-            AssertMemoryRegion<T>(va);
+            AssertMemoryRegion<T>(va, true);
             _process.CpuMemory.Write(va, value);
         }
 

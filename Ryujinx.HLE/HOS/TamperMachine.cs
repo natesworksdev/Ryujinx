@@ -1,4 +1,5 @@
 using Ryujinx.Common.Logging;
+using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Services.Hid;
@@ -11,9 +12,6 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS
 {
-
-    // TODO: Disable PTC and Force JIT invalidation when tampering program region of memory?
-
     public class TamperMachine
     {
         private Thread _tamperThread = null;
@@ -111,15 +109,25 @@ namespace Ryujinx.HLE.HOS
                 return true;
             }
 
-            // Re-enqueue the tampering program because the process is still valid.
-            _programs.Enqueue(program);
-
             Logger.Debug?.Print(LogClass.TamperMachine, "Running tampering program");
+
+            bool removeProgram = false;
 
             try
             {
                 ControllerKeys pressedKeys = (ControllerKeys)Thread.VolatileRead(ref _pressedKeys);
                 program.Execute(pressedKeys);
+            }
+            catch (CodeRegionTamperedException ex)
+            {
+                removeProgram = true;
+
+                Logger.Error?.Print(LogClass.TamperMachine, $"Removing tampering program from the list because it alters the code region");
+
+                if (!String.IsNullOrEmpty(ex.Message))
+                {
+                    Logger.Error?.Print(LogClass.TamperMachine, ex.Message);
+                }
             }
             catch (Exception ex)
             {
@@ -129,6 +137,12 @@ namespace Ryujinx.HLE.HOS
                 {
                     Logger.Debug?.Print(LogClass.TamperMachine, ex.Message);
                 }
+            }
+
+            if (!removeProgram)
+            {
+                // Re-enqueue the tampering program because it and its process are still valid.
+                _programs.Enqueue(program);
             }
 
             return true;
