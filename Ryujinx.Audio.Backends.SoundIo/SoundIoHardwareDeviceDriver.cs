@@ -199,7 +199,7 @@ namespace Ryujinx.Audio.Backends.SoundIo
 
             SoundIOOutStream result = _audioDevice.CreateOutStream();
 
-            result.Name ="Ryujinx";
+            result.Name = "Ryujinx";
             result.Layout = SoundIOChannelLayout.GetDefault((int)requestedChannelCount);
             result.Format = driverSampleFormat;
             result.SampleRate = (int)requestedSampleRate;
