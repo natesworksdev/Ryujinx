@@ -13,13 +13,15 @@ namespace Ryujinx.Cpu
     /// <summary>
     /// Represents a CPU memory manager.
     /// </summary>
-    public sealed class MemoryManager : IMemoryManager, IVirtualMemoryManager, IDisposable
+    public sealed class MemoryManager : IMemoryManager, IVirtualMemoryManager, IWritableBlock, IDisposable
     {
         public const int PageBits = 12;
         public const int PageSize = 1 << PageBits;
         public const int PageMask = PageSize - 1;
 
         private const int PteSize = 8;
+
+        private const int PointerTagBit = 62;
 
         private readonly InvalidAccessHandler _invalidAccessHandler;
 
@@ -131,7 +133,7 @@ namespace Ryujinx.Cpu
         /// <exception cref="InvalidMemoryRegionException">Throw for unhandled invalid or unmapped memory accesses</exception>
         public T Read<T>(ulong va) where T : unmanaged
         {
-            return MemoryMarshal.Cast<byte, T>(GetSpan(va, Unsafe.SizeOf<T>()))[0];
+            return MemoryMarshal.Cast<byte, T>(GetSpan(va, Unsafe.SizeOf<T>(), true))[0];
         }
 
         /// <summary>
@@ -202,12 +204,12 @@ namespace Ryujinx.Cpu
             WriteImpl(va, data);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         /// <summary>
         /// Writes data to CPU mapped memory.
         /// </summary>
         /// <param name="va">Virtual address to write the data into</param>
         /// <param name="data">Data to be written</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void WriteImpl(ulong va, ReadOnlySpan<byte> data)
         {
             try
@@ -556,11 +558,12 @@ namespace Ryujinx.Cpu
             // Protection is inverted on software pages, since the default value is 0.
             protection = (~protection) & MemoryPermission.ReadAndWrite;
 
-            long tag = (long)protection << 48;
-            if (tag > 0)
+            long tag = protection switch
             {
-                tag |= long.MinValue; // If any protection is present, the whole pte is negative.
-            }
+                MemoryPermission.None => 0L,
+                MemoryPermission.Write => 2L << PointerTagBit,
+                _ => 3L << PointerTagBit
+            };
 
             ulong endVa = (va + size + PageMask) & ~(ulong)PageMask;
             long invTagMask = ~(0xffffL << 48);
@@ -628,7 +631,7 @@ namespace Ryujinx.Cpu
             // tracking using host guard pages in future, but also supporting platforms where this is not possible.
 
             // Write tag includes read protection, since we don't have any read actions that aren't performed before write too.
-            long tag = (write ? 3L : 1L) << 48;
+            long tag = (write ? 3L : 1L) << PointerTagBit;
 
             ulong endVa = (va + size + PageMask) & ~(ulong)PageMask;
 

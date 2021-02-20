@@ -1,6 +1,5 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
-using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.Graphics.Texture;
 using System;
 using System.Collections.Generic;
@@ -10,7 +9,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// <summary>
     /// Texture pool.
     /// </summary>
-    class TexturePool : Pool<Texture>
+    class TexturePool : Pool<Texture, TextureDescriptor>
     {
         private int _sequenceNumber;
 
@@ -54,18 +53,19 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 TextureInfo info = GetInfo(descriptor, out int layerSize);
 
-                // Bad address. We can't add a texture with a invalid address
-                // to the cache.
-                if (info.Address == MemoryManager.PteUnmapped)
+                texture = Context.Methods.TextureManager.FindOrCreateTexture(TextureSearchFlags.ForSampler, info, layerSize);
+
+                // If this happens, then the texture address is invalid, we can't add it to the cache.
+                if (texture == null)
                 {
                     return null;
                 }
 
-                texture = Context.Methods.TextureManager.FindOrCreateTexture(info, TextureSearchFlags.ForSampler, layerSize);
-
                 texture.IncrementReferenceCount();
 
                 Items[id] = texture;
+
+                DescriptorCache[id] = descriptor;
             }
             else
             {
@@ -93,16 +93,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Gets the texture descriptor from a given texture ID.
-        /// </summary>
-        /// <param name="id">ID of the texture. This is effectively a zero-based index</param>
-        /// <returns>The texture descriptor</returns>
-        public TextureDescriptor GetDescriptor(int id)
-        {
-            return Context.PhysicalMemory.Read<TextureDescriptor>(Address + (ulong)id * DescriptorSize);
-        }
-
-        /// <summary>
         /// Implementation of the texture pool range invalidation.
         /// </summary>
         /// <param name="address">Start address of the range of the texture pool</param>
@@ -123,7 +113,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                     // If the descriptors are the same, the texture is the same,
                     // we don't need to remove as it was not modified. Just continue.
-                    if (texture.IsExactMatch(GetInfo(descriptor, out _), TextureSearchFlags.Strict) != TextureMatchQuality.NoMatch)
+                    if (descriptor.Equals(ref DescriptorCache[id]))
                     {
                         continue;
                     }
@@ -143,9 +133,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>The texture information</returns>
         private TextureInfo GetInfo(TextureDescriptor descriptor, out int layerSize)
         {
-            ulong address = Context.MemoryManager.Translate(descriptor.UnpackAddress());
-            bool addressIsValid = address != MemoryManager.PteUnmapped;
-
             int width         = descriptor.UnpackWidth();
             int height        = descriptor.UnpackHeight();
             int depthOrLayers = descriptor.UnpackDepth();
@@ -183,9 +170,11 @@ namespace Ryujinx.Graphics.Gpu.Image
             uint format = descriptor.UnpackFormat();
             bool srgb   = descriptor.UnpackSrgb();
 
+            ulong gpuVa = descriptor.UnpackAddress();
+
             if (!FormatTable.TryGetTextureFormat(format, srgb, out FormatInfo formatInfo))
             {
-                if (addressIsValid && (int)format > 0)
+                if (Context.MemoryManager.IsMapped(gpuVa) && (int)format > 0)
                 {
                     Logger.Error?.Print(LogClass.Gpu, $"Invalid texture format 0x{format:X} (sRGB: {srgb}).");
                 }
@@ -204,7 +193,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             int maxLod = descriptor.UnpackMaxLevelInclusive();
 
             // Linear textures don't support mipmaps, so we don't handle this case here.
-            if ((minLod != 0 || maxLod + 1 != levels) && target != Target.TextureBuffer && !isLinear && addressIsValid)
+            if ((minLod != 0 || maxLod + 1 != levels) && target != Target.TextureBuffer && !isLinear)
             {
                 int depth  = TextureInfo.GetDepth(target, depthOrLayers);
                 int layers = TextureInfo.GetLayers(target, depthOrLayers);
@@ -224,12 +213,12 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 layerSize = sizeInfo.LayerSize;
 
-                if (minLod != 0)
+                if (minLod != 0 && minLod < levels)
                 {
                     // If the base level is not zero, we additionally add the mip level offset
                     // to the address, this allows the texture manager to find the base level from the
                     // address if there is a overlapping texture on the cache that can contain the new texture.
-                    address += (ulong)sizeInfo.GetMipOffset(minLod);
+                    gpuVa += (ulong)sizeInfo.GetMipOffset(minLod);
 
                     width  = Math.Max(1, width  >> minLod);
                     height = Math.Max(1, height >> minLod);
@@ -274,7 +263,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
 
             return new TextureInfo(
-                address,
+                gpuVa,
                 width,
                 height,
                 depthOrLayers,

@@ -22,6 +22,7 @@ using Ryujinx.Ui.Windows;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -110,6 +111,7 @@ namespace Ryujinx.Ui
             DefaultWidth  = monitorWidth  < 1280 ? monitorWidth  : 1280;
             DefaultHeight = monitorHeight < 760  ? monitorHeight : 760;
 
+            Icon  = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.Resources.Logo_Ryujinx.png");
             Title = $"Ryujinx {Program.Version}";
 
             // Hide emulation context status bar.
@@ -154,6 +156,17 @@ namespace Ryujinx.Ui
             if (ConfigurationState.Instance.Ui.GuiColumns.FileExtColumn)    _fileExtToggle.Active    = true;
             if (ConfigurationState.Instance.Ui.GuiColumns.FileSizeColumn)   _fileSizeToggle.Active   = true;
             if (ConfigurationState.Instance.Ui.GuiColumns.PathColumn)       _pathToggle.Active       = true;
+
+            _favToggle.Toggled        += Fav_Toggled;
+            _iconToggle.Toggled       += Icon_Toggled;
+            _appToggle.Toggled        += App_Toggled;
+            _developerToggle.Toggled  += Developer_Toggled;
+            _versionToggle.Toggled    += Version_Toggled;
+            _timePlayedToggle.Toggled += TimePlayed_Toggled;
+            _lastPlayedToggle.Toggled += LastPlayed_Toggled;
+            _fileExtToggle.Toggled    += FileExt_Toggled;
+            _fileSizeToggle.Toggled   += FileSize_Toggled;
+            _pathToggle.Toggled       += Path_Toggled;
 
             _gameTable.Model = _tableStore = new ListStore(
                 typeof(bool),
@@ -552,6 +565,8 @@ namespace Ryujinx.Ui
                 _windowsMultimediaTimerResolution = new WindowsMultimediaTimerResolution(1);
             }
 
+            DisplaySleep.Prevent();
+
             GlRendererWidget = new GlRenderer(_emulationContext, ConfigurationState.Instance.Logger.GraphicsDebugLevel);
 
             Application.Invoke(delegate
@@ -591,7 +606,6 @@ namespace Ryujinx.Ui
                     ToggleExtraWidgets(true);
                 }
 
-                _viewBox.Remove(GlRendererWidget);
                 GlRendererWidget.Exit();
 
                 if(GlRendererWidget.Window != Window && GlRendererWidget.Window != null)
@@ -603,7 +617,9 @@ namespace Ryujinx.Ui
 
                 _windowsMultimediaTimerResolution?.Dispose();
                 _windowsMultimediaTimerResolution = null;
+                DisplaySleep.Restore();
 
+                _viewBox.Remove(GlRendererWidget);
                 _viewBox.Add(_gameTableWindow);
 
                 _gameTableWindow.Expand = true;
@@ -711,6 +727,7 @@ namespace Ryujinx.Ui
 
                     // Wait for the other thread to dispose the HLE context before exiting.
                     _deviceExitStatus.WaitOne();
+                    GlRendererWidget.Dispose();
                 }
             }
 
@@ -1029,6 +1046,11 @@ namespace Ryujinx.Ui
                         thread.Start();
                     }
                 }
+                catch (LibHac.MissingKeyException ex)
+                {
+                    Logger.Error?.Print(LogClass.Application, ex.ToString());
+                    UserErrorDialog.CreateUserErrorDialog(UserError.NoKeys);
+                }
                 catch (Exception ex)
                 {
                     GtkDialog.CreateErrorDialog(ex.Message);
@@ -1091,7 +1113,10 @@ namespace Ryujinx.Ui
 
         private void Settings_Pressed(object sender, EventArgs args)
         {
-            new SettingsWindow(this, _virtualFileSystem, _contentManager).Show();
+            SettingsWindow settingsWindow = new SettingsWindow(this, _virtualFileSystem, _contentManager);
+
+            settingsWindow.SetSizeRequest((int)(settingsWindow.DefaultWidth * Program.WindowScaleFactor), (int)(settingsWindow.DefaultHeight * Program.WindowScaleFactor));
+            settingsWindow.Show();
         }
 
         private void Simulate_WakeUp_Message_Pressed(object sender, EventArgs args)
@@ -1112,7 +1137,10 @@ namespace Ryujinx.Ui
 
         private void About_Pressed(object sender, EventArgs args)
         {
-            new AboutWindow().Show();
+            AboutWindow aboutWindow = new AboutWindow();
+
+            aboutWindow.SetSizeRequest((int)(aboutWindow.DefaultWidth * Program.WindowScaleFactor), (int)(aboutWindow.DefaultHeight * Program.WindowScaleFactor));
+            aboutWindow.Show();
         }
 
         private void Fav_Toggled(object sender, EventArgs args)
@@ -1131,7 +1159,7 @@ namespace Ryujinx.Ui
             UpdateColumns();
         }
 
-        private void Title_Toggled(object sender, EventArgs args)
+        private void App_Toggled(object sender, EventArgs args)
         {
             ConfigurationState.Instance.Ui.GuiColumns.AppColumn.Value = _appToggle.Active;
 
