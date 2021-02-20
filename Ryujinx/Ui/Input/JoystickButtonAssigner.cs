@@ -52,7 +52,7 @@ namespace Ryujinx.Ui.Input
         {
             List<ControllerInputId> pressedButtons = _detector.GetPressedButtons();
 
-            // Reverse list so axis button take precedence when more than one button is recognized
+            // Reverse list so axis button take precedence when more than one button is recognized.
             pressedButtons.Reverse();
 
             return pressedButtons.Count > 0 ? pressedButtons[0].ToString() : "";
