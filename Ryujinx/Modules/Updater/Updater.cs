@@ -157,6 +157,7 @@ namespace Ryujinx.Modules
                 {
                     Logger.Warning?.Print(LogClass.Application, ex.Message);
                     Logger.Warning?.Print(LogClass.Application, "Couldn't determine build size for update, will use single-threaded updater");
+
                     _buildSize = -1;
                 }
             }
@@ -210,11 +211,13 @@ namespace Ryujinx.Modules
             {
                 list.Add(new byte[0]);
             }
+
             for (int i = 0; i < ConnectionCount; i++)
             {
                 using (WebClient client = new WebClient())
                 {
                     webClients.Add(client);
+
                     if (i == ConnectionCount - 1)
                     {
                         client.Headers.Add("Range", $"bytes={chunkSize * i}-{(chunkSize * (i + 1) - 1) + remainderChunk}");
@@ -223,12 +226,15 @@ namespace Ryujinx.Modules
                     {
                         client.Headers.Add("Range", $"bytes={chunkSize * i}-{chunkSize * (i + 1) - 1}");
                     }
+
                     client.DownloadProgressChanged += (_, args) =>
                     {
                         int index = (int)args.UserState;
+
                         Interlocked.Add(ref totalProgressPercentage, -1 * progressPercentage[index]);
                         Interlocked.Exchange(ref progressPercentage[index], args.ProgressPercentage);
                         Interlocked.Add(ref totalProgressPercentage, args.ProgressPercentage);
+
                         updateDialog.ProgressBar.Value = totalProgressPercentage / ConnectionCount;
                     };
 
@@ -239,6 +245,7 @@ namespace Ryujinx.Modules
                         if (args.Cancelled)
                         {
                             webClients[index].Dispose();
+
                             return;
                         }
 
@@ -248,12 +255,12 @@ namespace Ryujinx.Modules
                         if (Interlocked.Equals(completedRequests, ConnectionCount))
                         {
                             byte[] finalFile = new byte[_buildSize];
-                            int k = 0;
+                            int j = 0;
                             for (int connectionIndex = 0; connectionIndex < ConnectionCount; connectionIndex++)
                             {
-                                for (int j = 0; j < list[connectionIndex].Length; j++)
+                                for (int k = 0; k < list[connectionIndex].Length; k++)
                                 {
-                                    finalFile[k++] = list[connectionIndex][j];
+                                    finalFile[j++] = list[connectionIndex][k];
                                 }
                             }
 
@@ -267,6 +274,7 @@ namespace Ryujinx.Modules
                             {
                                 Logger.Warning?.Print(LogClass.Application, e.Message);
                                 Logger.Warning?.Print(LogClass.Application, $"Multi-Threaded update failed, falling back to single-threaded updater.");
+
                                 DoUpdateWithSingleThread(updateDialog, downloadUrl, updateFile);
                                 return;
                             }
@@ -286,7 +294,9 @@ namespace Ryujinx.Modules
                         {
                             webClients[j].CancelAsync();
                         }
+
                         DoUpdateWithSingleThread(updateDialog, downloadUrl, updateFile);
+
                         return;
                     }
                 }
