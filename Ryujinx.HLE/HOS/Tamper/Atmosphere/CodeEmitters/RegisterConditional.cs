@@ -88,7 +88,7 @@ namespace Ryujinx.HLE.HOS.Tamper.Atmosphere.CodeEmitters
                     sourceOperand = MemoryHelper.EmitPointer(addressRegister, offsetRegister, context);
                     break;
                 case OffsetImmediate:
-                    valueImmediateSize = operationWidth > 4 ? ValueImmediateSize8 : ValueImmediateSize16;
+                    valueImmediateSize = operationWidth <= 4 ? ValueImmediateSize8 : ValueImmediateSize16;
                     valueImmediate = InstructionHelper.GetImmediate(instruction, ValueImmediateIndex, valueImmediateSize);
                     sourceOperand = new Value<ulong>(valueImmediate);
                     break;

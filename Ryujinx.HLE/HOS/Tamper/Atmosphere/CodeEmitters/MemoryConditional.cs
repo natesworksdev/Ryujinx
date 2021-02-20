@@ -35,7 +35,7 @@ namespace Ryujinx.HLE.HOS.Tamper.Atmosphere.CodeEmitters
             ulong address = InstructionHelper.GetImmediate(instruction, OffsetImmediateIndex, OffsetImmediateSize);
             Pointer sourceMemory = MemoryHelper.EmitPointer(memoryRegion, address, context);
 
-            int valueSize = operationWidth > 4 ? ValueImmediateSize4 : ValueImmediateSize8;
+            int valueSize = operationWidth <= 4 ? ValueImmediateSize4 : ValueImmediateSize8;
             ulong value = InstructionHelper.GetImmediate(instruction, ValueImmediateIndex, valueSize);
             Value<ulong> compareToValue = new Value<ulong>(value);
 

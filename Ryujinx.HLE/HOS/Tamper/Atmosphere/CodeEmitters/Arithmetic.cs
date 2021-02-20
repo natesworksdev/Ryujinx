@@ -63,7 +63,7 @@ namespace Ryujinx.HLE.HOS.Tamper.Atmosphere.CodeEmitters
                     break;
                 case 1:
                     // Use an immediate as right-hand side.
-                    int immediateSize = operationWidth > 4 ? RightHandSideImmediate8 : RightHandSideImmediate16;
+                    int immediateSize = operationWidth <= 4 ? RightHandSideImmediate8 : RightHandSideImmediate16;
                     ulong immediate = InstructionHelper.GetImmediate(instruction, RightHandSideImmediateIndex, immediateSize);
                     rightHandSideOperand = new Value<ulong>(immediate);
                     break;

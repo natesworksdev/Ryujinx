@@ -31,7 +31,7 @@
 
             Pointer dstMem = MemoryHelper.EmitPointer(memoryRegion, offsetRegister, offsetImmediate, context);
 
-            int valueImmediateSize = operationWidth > 4 ? ValueImmediateSize8 : ValueImmediateSize16;
+            int valueImmediateSize = operationWidth <= 4 ? ValueImmediateSize8 : ValueImmediateSize16;
             ulong valueImmediate = InstructionHelper.GetImmediate(instruction, ValueImmediateIndex, valueImmediateSize);
             Value<ulong> storeValue = new Value<ulong>(valueImmediate);
 
