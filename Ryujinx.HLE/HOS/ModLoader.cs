@@ -632,6 +632,8 @@ namespace Ryujinx.HLE.HOS
                 Logger.Error?.Print(LogClass.ModLoader, "Unable to install cheat because the associated process is invalid");
             }
 
+            Logger.Info?.Print(LogClass.ModLoader, $"Build ids found for title {titleId:X16}:\n    {String.Join("\n    ", tamperInfo.BuildIds)}");
+
             if (!AppMods.TryGetValue(titleId, out ModCache mods) || mods.Cheats.Count == 0)
             {
                 return;
