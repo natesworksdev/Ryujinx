@@ -137,7 +137,7 @@ namespace Ryujinx.HLE.HOS
                 NsoExecutable nso => BitConverter.ToString(nso.BuildId.Bytes.ToArray()),
                 NroExecutable nro => BitConverter.ToString(nro.Header.BuildId),
                 _ => ""
-            }).Replace("-", ""));
+            }).Replace("-", "").ToUpper());
 
             ulong[] nsoBase = new ulong[executables.Length];
 

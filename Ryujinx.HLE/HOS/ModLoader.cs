@@ -639,7 +639,7 @@ namespace Ryujinx.HLE.HOS
 
             foreach (var cheat in cheats)
             {
-                string cheatId = Path.GetFileNameWithoutExtension(cheat.Path.Name);
+                string cheatId = Path.GetFileNameWithoutExtension(cheat.Path.Name).ToUpper();
 
                 if (!processExes.TryGetValue(cheatId, out ulong exeAddress))
                 {
