@@ -64,7 +64,7 @@ namespace Ryujinx.Ui.Input
 
             ControllerInputId pressedButton;
 
-            //Buttons
+            // Buttons
             for (int i = 0; i != capabilities.ButtonCount; i++)
             {
                 if (_currState.IsButtonDown(i) && _prevState.IsButtonUp(i))
