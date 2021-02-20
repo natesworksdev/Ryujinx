@@ -35,7 +35,7 @@ namespace Ryujinx.Ui.Input
         {
             _prevState = _currState;
             _currState = Joystick.GetState(_index);
-            
+
             CollectButtonStats();
         }
 
