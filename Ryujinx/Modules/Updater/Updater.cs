@@ -288,6 +288,7 @@ namespace Ryujinx.Modules
 
         public static bool CanUpdate(bool showWarnings)
         {
+#if !DISABLE_UPDATER
             if (RuntimeInformation.OSArchitecture != Architecture.X64)
             {
                 if (showWarnings)
@@ -312,13 +313,21 @@ namespace Ryujinx.Modules
             {
                 if (showWarnings)
                 {
-                    GtkDialog.CreateWarningDialog("You Cannot update a Dirty build of Ryujinx!", "Please download Ryujinx at https://ryujinx.org/ if you are looking for a supported version.");
+                    GtkDialog.CreateWarningDialog("You cannot update a Dirty build of Ryujinx!", "Please download Ryujinx at https://ryujinx.org/ if you are looking for a supported version.");
                 }
 
                 return false;
             }
 
             return true;
+#else
+            if (showWarnings)
+            {
+                GtkDialog.CreateWarningDialog("Updater Disabled!", "Please download Ryujinx at https://ryujinx.org/ if you are looking for a supported version.");
+            }
+            return false;
+
+#endif
         }
 
         private static void MoveAllFilesOver(string root, string dest, UpdateDialog dialog)
