@@ -331,7 +331,7 @@ namespace Ryujinx.Modules
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                using (Stream          inStream  = File.OpenRead(updateFile))
+                using (Stream         inStream   = File.OpenRead(updateFile))
                 using (Stream         gzipStream = new GZipInputStream(inStream))
                 using (TarInputStream tarStream  = new TarInputStream(gzipStream, Encoding.ASCII))
                 {
