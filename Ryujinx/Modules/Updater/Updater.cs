@@ -303,6 +303,7 @@ namespace Ryujinx.Modules
                 }
             }
         }
+
         private static void DoUpdateWithSingleThread(UpdateDialog updateDialog, string downloadUrl, string updateFile)
         {
             // Single-Threaded Updater
