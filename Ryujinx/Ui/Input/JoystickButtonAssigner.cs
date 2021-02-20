@@ -89,7 +89,7 @@ namespace Ryujinx.Ui.Input
                 _detector.AddInput(pressedButton, axisValue);
             }
 
-            //Hats
+            // Hats
             for (int i = 0; i != capabilities.HatCount; i++)
             {
                 string currPos = GetHatPosition(_currState.GetHat((JoystickHat)i));
