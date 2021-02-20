@@ -276,6 +276,7 @@ namespace Ryujinx.Modules
                                 Logger.Warning?.Print(LogClass.Application, $"Multi-Threaded update failed, falling back to single-threaded updater.");
 
                                 DoUpdateWithSingleThread(updateDialog, downloadUrl, updateFile);
+
                                 return;
                             }
                         }
@@ -290,7 +291,7 @@ namespace Ryujinx.Modules
                         Logger.Warning?.Print(LogClass.Application, ex.Message);
                         Logger.Warning?.Print(LogClass.Application, $"Multi-Threaded update failed, falling back to single-threaded updater.");
                         
-                        for(int j = 0; j < webClients.Count; j++)
+                        for (int j = 0; j < webClients.Count; j++)
                         {
                             webClients[j].CancelAsync();
                         }
@@ -330,8 +331,8 @@ namespace Ryujinx.Modules
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                using (Stream inStream          = File.OpenRead(updateFile))
-                using (Stream gzipStream        = new GZipInputStream(inStream))
+                using (Stream          inStream = File.OpenRead(updateFile))
+                using (Stream        gzipStream = new GZipInputStream(inStream))
                 using (TarInputStream tarStream = new TarInputStream(gzipStream, Encoding.ASCII))
                 {
                     updateDialog.ProgressBar.MaxValue = inStream.Length;
@@ -383,7 +384,7 @@ namespace Ryujinx.Modules
 
                             Directory.CreateDirectory(Path.GetDirectoryName(outPath));
 
-                            using (Stream zipStream     = zipFile.GetInputStream(zipEntry))
+                            using (Stream     zipStream = zipFile.GetInputStream(zipEntry))
                             using (FileStream outStream = File.OpenWrite(outPath))
                             {
                                 zipStream.CopyTo(outStream);
