@@ -233,7 +233,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Gets the number of 2d slices of the texture.
+        /// Gets the number of 2D slices of the texture.
         /// Returns 6 for cubemap textures, layer faces for cubemap array textures, and DepthOrLayers for everything else.
         /// </summary>
         /// <returns>The number of texture slices</returns>

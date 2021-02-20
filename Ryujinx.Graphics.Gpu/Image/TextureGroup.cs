@@ -1,4 +1,5 @@
 ﻿using Ryujinx.Cpu.Tracking;
+using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Texture;
 using Ryujinx.Memory.Range;
 using System;
@@ -28,7 +29,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         private int _layers;
         private int _levels;
 
-        private MultiRange _textureRange => Storage.Range;
+        private MultiRange TextureRange => Storage.Range;
 
         /// <summary>
         /// The views list from the storage texture.
@@ -47,7 +48,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             Storage = storage;
             _context = context;
 
-            _is3D = storage.Info.Target == GAL.Target.Texture3D;
+            _is3D = storage.Info.Target == Target.Texture3D;
             _layers = storage.Info.GetSlices();
             _levels = storage.Info.Levels;
         }
@@ -71,7 +72,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Consume the dirty flags for a given texture. The state is shared between views of the same layers and levels.
         /// </summary>
         /// <param name="texture">The texture being used</param>
-        /// <returns>True if a flag was dirty, false otherwise.</returns>
+        /// <returns>True if a flag was dirty, false otherwise</returns>
         public bool ConsumeDirty(Texture texture)
         {
             (int baseHandle, int regionCount) = EvaluateRelevantHandles(texture);
@@ -86,7 +87,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     if (handle.Dirty)
                     {
                         handle.Reprotect();
-                        dirty |= true;
+                        dirty = true;
                     }
                 }
             }
@@ -118,8 +119,8 @@ namespace Ryujinx.Graphics.Gpu.Image
                     if (handle.Dirty)
                     {
                         handle.Reprotect();
-                        dirty |= true;
-                        handleDirty |= true;
+                        dirty = true;
+                        handleDirty = true;
                     }
                     else
                     {
@@ -151,23 +152,23 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Synchronize part of the storage texture, represented by a given range of handles.
         /// Only handles marked by the _loadNeeded array will be synchronized.
         /// </summary>
-        /// <param name="baseRegion"></param>
-        /// <param name="regionCount"></param>
-        private void SynchronizePartial(int baseRegion, int regionCount)
+        /// <param name="baseHandle">The base index of the range of handles</param>
+        /// <param name="regionCount">The number of handles to synchronize</param>
+        private void SynchronizePartial(int baseHandle, int regionCount)
         {
             ReadOnlySpan<byte> fullData = _context.PhysicalMemory.GetSpan(Storage.Range);
 
             for (int i = 0; i < regionCount; i++)
             {
-                if (_loadNeeded[baseRegion + i])
+                if (_loadNeeded[baseHandle + i])
                 {
-                    var info = GetHandleInformation(baseRegion + i);
-                    int offsetIndex = info.index;
+                    var info = GetHandleInformation(baseHandle + i);
+                    int offsetIndex = info.Index;
 
                     // Only one of these will be greater than 1, as partial sync is only called when there are sub-image views.
-                    for (int layer = 0; layer < info.layers; layer++)
+                    for (int layer = 0; layer < info.Layers; layer++)
                     {
-                        for (int level = 0; level < info.levels; level++)
+                        for (int level = 0; level < info.Levels; level++)
                         {
                             int offset = _allOffsets[offsetIndex];
                             int endOffset = (offsetIndex + 1 == _allOffsets.Length) ? (int)Storage.Size : _allOffsets[offsetIndex + 1];
@@ -175,9 +176,9 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                             ReadOnlySpan<byte> data = fullData.Slice(offset, size);
 
-                            data = Storage.ConvertToHostCompatibleFormat(data, info.baseLevel, true);
+                            data = Storage.ConvertToHostCompatibleFormat(data, info.BaseLevel, true);
 
-                            Storage.SetData(data, info.baseLayer, info.baseLevel);
+                            Storage.SetData(data, info.BaseLayer, info.BaseLevel);
 
                             offsetIndex++;
                         }
@@ -211,8 +212,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Evaluate the range of tracking handles which a view texture overlaps with.
         /// </summary>
         /// <param name="texture">The texture to get handles for</param>
-        /// <returns></returns>
-        private (int baseHandle, int regionCount) EvaluateRelevantHandles(Texture texture)
+        /// <returns>The base index of the range of handles for the given texture, and the number of handles it covers</returns>
+        private (int BaseHandle, int RegionCount) EvaluateRelevantHandles(Texture texture)
         {
             if (texture == Storage || !(_hasMipViews || _hasLayerViews))
             {
@@ -264,7 +265,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="level">The level to return</param>
         /// <returns>Start index and count of offsets for the given level</returns>
-        private (int index, int count) Get3DLevelRange(int level)
+        private (int Index, int Count) Get3DLevelRange(int level)
         {
             int index = 0;
             int count = _layers; // Depth. Halves with each mip level.
@@ -283,7 +284,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="handleIndex">The index of the handle</param>
         /// <returns>The layers and levels that the handle covers, and its index in the offsets array</returns>
-        private (int baseLayer, int baseLevel, int levels, int layers, int index) GetHandleInformation(int handleIndex)
+        private (int BaseLayer, int BaseLevel, int Levels, int Layers, int Index) GetHandleInformation(int handleIndex)
         {
             int baseLayer;
             int baseLevel;
@@ -338,7 +339,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             if (_is3D)
             {
-                return _allOffsets[texture.FirstLayer + Get3DLevelRange(texture.FirstLevel).index];
+                return _allOffsets[texture.FirstLayer + Get3DLevelRange(texture.FirstLevel).Index];
             }
             else
             {
@@ -391,9 +392,9 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             var result = new List<CpuRegionHandle>();
 
-            for (int i = 0; i < _textureRange.Count; i++)
+            for (int i = 0; i < TextureRange.Count; i++)
             {
-                MemoryRange item = _textureRange.GetSubRange(i);
+                MemoryRange item = TextureRange.GetSubRange(i);
                 int subRangeSize = (int)item.Size;
 
                 int sliceStart = Math.Clamp(offset, 0, subRangeSize);
@@ -569,11 +570,11 @@ namespace Ryujinx.Graphics.Gpu.Image
             if (!(_hasMipViews || _hasLayerViews))
             {
                 // Single dirty region.
-                var cpuRegionHandles = new CpuRegionHandle[_textureRange.Count];
+                var cpuRegionHandles = new CpuRegionHandle[TextureRange.Count];
 
-                for (int i = 0; i < _textureRange.Count; i++)
+                for (int i = 0; i < TextureRange.Count; i++)
                 {
-                    var currentRange = _textureRange.GetSubRange(i);
+                    var currentRange = TextureRange.GetSubRange(i);
                     cpuRegionHandles[i] = GenerateHandle(currentRange.Address, currentRange.Size);
                 }
 
@@ -636,7 +637,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="handle">The handle this flush action is for</param>
         /// <param name="address">The address of the flushing memory access</param>
-        /// <param name="address">The size of the flushing memory access</param>
+        /// <param name="size">The size of the flushing memory access</param>
         public void FlushAction(TextureGroupHandle handle, ulong address, ulong size)
         {
             Storage.ExternalFlush(address, size);

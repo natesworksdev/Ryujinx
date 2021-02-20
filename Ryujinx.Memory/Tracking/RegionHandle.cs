@@ -25,6 +25,7 @@ namespace Ryujinx.Memory.Tracking
         private RegionSignal _preAction; // Action to perform before a read or write. This will block the memory access.
         private readonly List<VirtualRegion> _regions;
         private readonly MemoryTracking _tracking;
+        private bool _disposed;
 
         internal MemoryPermission RequiredPermission => _preAction != null ? MemoryPermission.None : (Dirty ? MemoryPermission.ReadAndWrite : MemoryPermission.Read);
         internal RegionSignal PreAction => _preAction;
@@ -138,21 +139,17 @@ namespace Ryujinx.Memory.Tracking
             return Address < address + size && address < EndAddress;
         }
 
-        bool disposed;
-
         /// <summary>
         /// Dispose the handle. Within the tracking lock, this removes references from virtual and physical regions.
         /// </summary>
         public void Dispose()
         {
-            if (disposed)
+            if (_disposed)
             {
-                throw new Exception("Double Dispose!");
+                throw new ObjectDisposedException(GetType().FullName);
             }
-            else
-            {
-                disposed = true;
-            }
+
+            _disposed = true;
 
             lock (_tracking.TrackingLock)
             {
