@@ -184,7 +184,7 @@ namespace Ryujinx.Modules
             updateDialog.ProgressBar.Value    = 0;
             updateDialog.ProgressBar.MaxValue = 100;
 
-            if(_buildSize >= 0)
+            if (_buildSize >= 0)
             {
                 DoUpdateWithMultipleThreads(updateDialog, downloadUrl, updateFile);
             }
@@ -270,7 +270,7 @@ namespace Ryujinx.Modules
                             {
                                 InstallUpdate(updateDialog, updateFile);
                             }
-                            catch(Exception e)
+                            catch (Exception e)
                             {
                                 Logger.Warning?.Print(LogClass.Application, e.Message);
                                 Logger.Warning?.Print(LogClass.Application, $"Multi-Threaded update failed, falling back to single-threaded updater.");
