@@ -80,7 +80,7 @@ namespace Ryujinx.Ui.Input
                 }
             }
 
-            //Axis
+            // Axis
             for (int i = 0; i != capabilities.AxisCount; i++)
             {
                 float axisValue = _currState.GetAxis(i);
