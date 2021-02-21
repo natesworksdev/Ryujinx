@@ -336,7 +336,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 return;
             }
 
-            Group.CreateCopyDependency(contained, layer, level, copyTo);
+            Group.CreateCopyDependency(contained, FirstLayer + layer, FirstLevel + level, copyTo);
         }
 
         /// <summary>
