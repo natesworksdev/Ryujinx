@@ -8,7 +8,6 @@
     {
         public TextureGroupHandle Handle;
         public TextureDependency Other;
-        public bool Dirty;
 
         public TextureDependency(TextureGroupHandle handle)
         {
@@ -17,7 +16,6 @@
 
         public void SignalModified()
         {
-            Other.Dirty = true;
             Other.Handle.DeferCopy(Handle);
         }
     }

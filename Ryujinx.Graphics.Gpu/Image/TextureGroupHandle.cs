@@ -160,9 +160,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Create a copy dependency between this handle, and another.
         /// </summary>
         /// <param name="other">The handle to create a copy dependency to</param>
-        /// <param name="copyToThis">True if the dirty flag needs to be set for the dependancy on this side</param>
-        /// <param name="copyToOther">True if the dirty flag needs to be set for the dependancy on the other side</param>
-        public void CreateCopyDependency(TextureGroupHandle other, bool copyToThis = false, bool copyToOther = false)
+        /// <param name="copyToOther">True if a copy should be deferred to all of the other handle's dependencies.</param>
+        public void CreateCopyDependency(TextureGroupHandle other, bool copyToOther = false)
         {
             // Does this dependency already exist?
             foreach (TextureDependency existing in Dependencies)
@@ -170,14 +169,6 @@ namespace Ryujinx.Graphics.Gpu.Image
                 if (existing.Other.Handle == other)
                 {
                     // Do not need to create it again. May need to set the dirty flag.
-                    if (copyToThis)
-                    {
-                        existing.Other.SignalModified();
-                    } 
-                    if (copyToOther)
-                    {
-                        existing.SignalModified();
-                    }
                     return;
                 }
             }
@@ -191,15 +182,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             dependency.Other = otherDependency;
             otherDependency.Other = dependency;
 
-            if (copyToThis)
-            {
-                otherDependency.SignalModified();
-            }
-            if (copyToOther)
-            {
-                dependency.SignalModified();
-            }
-
             Dependencies.Add(dependency);
             other.Dependencies.Add(otherDependency);
 
@@ -209,16 +191,21 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 if (existing != dependency && existing.Other.Handle != other)
                 {
-                    existing.Other.Handle.CreateCopyDependency(other, copyToThis, copyToOther);
+                    existing.Other.Handle.CreateCopyDependency(other);
                 }
             }
 
-            // All of the other handle's dependencies must depend on the this.
+            // All of the other handle's dependencies must depend on this.
             foreach (TextureDependency existing in other.Dependencies.ToArray())
             {
                 if (existing != otherDependency && existing.Other.Handle != this)
                 {
-                    existing.Other.Handle.CreateCopyDependency(this, copyToOther, copyToThis);
+                    existing.Other.Handle.CreateCopyDependency(this);
+
+                    if (copyToOther)
+                    {
+                        existing.Other.Handle.DeferCopy(this);
+                    }
                 }
             }
         }
@@ -302,7 +289,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             foreach (TextureDependency dependency in old.Dependencies.ToArray())
             {
-                CreateCopyDependency(dependency.Other.Handle, dependency.Dirty, dependency.Other.Dirty);
+                CreateCopyDependency(dependency.Other.Handle);
 
                 if (dependency.Other.Handle.DeferredCopy == old)
                 {

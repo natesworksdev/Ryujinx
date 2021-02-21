@@ -826,7 +826,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             EnsureFullSubdivision();
             otherGroup.EnsureFullSubdivision();
 
-            // The first layer and level for the given texture are already defined in _its_ storage, though they 
+            // Get the location of each texture within its storage, so we can find the handles to apply the dependency to.
 
             int targetIndex = GetOffsetIndex(firstLayer, firstLevel);
             int otherIndex = GetOffsetIndex(other.FirstLayer, other.FirstLevel);
@@ -841,7 +841,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 TextureGroupHandle handle = _handles[targetIndex++];
                 TextureGroupHandle otherHandle = other.Group._handles[otherIndex++];
 
-                handle.CreateCopyDependency(otherHandle);
+                handle.CreateCopyDependency(otherHandle, copyTo);
 
                 // If "copyTo" is true, this texture must copy to the other.
                 // Otherwise, it must copy to this texture.
@@ -854,8 +854,6 @@ namespace Ryujinx.Graphics.Gpu.Image
                 {
                     handle.Copy(otherHandle);
                 }
-
-                if (handle.Handles[0].Dirty || otherHandle.Handles[0].Dirty) { }
             }
         }
 
