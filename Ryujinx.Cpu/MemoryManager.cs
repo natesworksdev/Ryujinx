@@ -345,6 +345,23 @@ namespace Ryujinx.Cpu
             return ref _backingMemory.GetRef<T>(GetPhysicalAddressInternal(va));
         }
 
+        /// <summary>
+        /// Cumputes the number of pages in a virtual address range.
+        /// </summary>
+        /// <param name="va">Virtual address of the range</param>
+        /// <param name="size">Size of the range</param>
+        /// <param name="startVa">The virtual address of the beginning of the first page</param>
+        /// <remarks>This function does differentiate between allocated and unallocated pages.</remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int GetPagesCount(ulong va, ulong size, out ulong startVa)
+        {
+            // WARNING: Always check if ulong does not overflow during the operations.
+            startVa = va & ~(ulong)PageMask;
+            ulong vaSpan = (va - startVa + size + PageMask) & ~(ulong)PageMask;
+
+            return (int)(vaSpan / PageSize);
+        }
+
         private void ThrowMemoryNotContiguous() => throw new MemoryNotContiguousException();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -358,11 +375,7 @@ namespace Ryujinx.Cpu
                 return false;
             }
 
-            ulong endVa = (va + (ulong)size + PageMask) & ~(ulong)PageMask;
-
-            va &= ~(ulong)PageMask;
-
-            int pages = (int)((endVa - va) / PageSize);
+            int pages = GetPagesCount(va, (ulong)size, out va);
 
             for (int page = 0; page < pages - 1; page++)
             {
@@ -396,11 +409,7 @@ namespace Ryujinx.Cpu
                 return null;
             }
 
-            ulong endVa = (va + size + PageMask) & ~(ulong)PageMask;
-
-            va &= ~(ulong)PageMask;
-
-            int pages = (int)((endVa - va) / PageSize);
+            int pages = GetPagesCount(va, size, out va);
 
             List<(ulong, ulong)> regions = new List<(ulong, ulong)>();
 
@@ -485,11 +494,9 @@ namespace Ryujinx.Cpu
                 return true;
             }
 
-            ulong endVa = (va + size + PageMask) & ~(ulong)PageMask;
+            int pages = GetPagesCount(va, size, out va);
 
-            va &= ~(ulong)PageMask;
-
-            while (va < endVa)
+            for (int page = 0; page < pages; page++)
             {
                 if (!IsMapped(va))
                 {
