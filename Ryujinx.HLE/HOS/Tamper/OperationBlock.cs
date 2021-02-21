@@ -1,4 +1,4 @@
-﻿using Ryujinx.HLE.HOS.Tamper.Atmosphere.Operations;
+﻿using Ryujinx.HLE.HOS.Tamper.Operations;
 using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Tamper
