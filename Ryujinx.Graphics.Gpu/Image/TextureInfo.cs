@@ -239,7 +239,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>The number of texture slices</returns>
         public int GetSlices()
         {
-            if (Target == Target.CubemapArray)
+            if (Target == Target.Texture3D || Target == Target.Texture2DArray || Target == Target.Texture2DMultisampleArray)
+            {
+                return DepthOrLayers;
+            }
+            else if (Target == Target.CubemapArray)
             {
                 return DepthOrLayers * 6;
             }
@@ -249,7 +253,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
             else
             {
-                return DepthOrLayers;
+                return 1;
             }
         }
 

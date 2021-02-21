@@ -236,6 +236,27 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Checks if the potential child texture fits within the level and layer bounds of the parent.
+        /// </summary>
+        /// <param name="parent">Texture information for the parent</param>
+        /// <param name="child">Texture information for the child</param>
+        /// <param name="layer">Base layer of the child texture</param>
+        /// <param name="level">Base level of the child texture</param>
+        /// <returns></returns>
+        public static TextureViewCompatibility ViewSubImagesInBounds(TextureInfo parent, TextureInfo child, int layer, int level)
+        {
+            if (level + child.Levels <= parent.Levels &&
+                layer + child.GetSlices() <= parent.GetSlices())
+            {
+                return TextureViewCompatibility.Full;
+            }
+            else
+            {
+                return TextureViewCompatibility.Incompatible;
+            }
+        }
+
+        /// <summary>
         /// Checks if the texture sizes of the supplied texture informations match.
         /// </summary>
         /// <param name="lhs">Texture information to compare</param>
@@ -382,10 +403,22 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="lhs">Texture information of the texture view</param>
         /// <param name="rhs">Texture information of the texture view</param>
-        /// <returns>True if the formats are compatible, false otherwise</returns>
-        public static bool ViewFormatCompatible(TextureInfo lhs, TextureInfo rhs)
+        /// <returns>How view compatible the formats are</returns>
+        public static TextureViewCompatibility ViewFormatCompatible(TextureInfo lhs, TextureInfo rhs)
         {
-            return FormatCompatible(lhs.FormatInfo, rhs.FormatInfo);
+            if (FormatCompatible(lhs.FormatInfo, rhs.FormatInfo))
+            {
+                if (lhs.FormatInfo.IsCompressed != rhs.FormatInfo.IsCompressed)
+                {
+                    return TextureViewCompatibility.CopyOnly;
+                }
+                else
+                {
+                    return TextureViewCompatibility.Full;
+                }
+            }
+
+            return TextureViewCompatibility.Incompatible;
         }
 
         /// <summary>

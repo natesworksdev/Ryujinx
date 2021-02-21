@@ -7,6 +7,8 @@ namespace Ryujinx.Graphics.Texture
         private readonly int[] _mipOffsets;
 
         private readonly int _levels;
+        private readonly int _depth;
+        private readonly bool _is3D;
 
         public readonly int[] AllOffsets;
         public int LayerSize { get; }
@@ -15,24 +17,30 @@ namespace Ryujinx.Graphics.Texture
         public SizeInfo(int size)
         {
             _mipOffsets = new int[] { 0 };
-            AllOffsets = new int[] { 0 };
+            AllOffsets  = new int[] { 0 };
+            _depth      = 1;
             _levels     = 1;
             LayerSize   = size;
             TotalSize   = size;
+            _is3D       = false;
         }
 
         internal SizeInfo(
             int[] mipOffsets,
             int[] allOffsets,
+            int   depth,
             int   levels,
             int   layerSize,
-            int   totalSize)
+            int   totalSize,
+            bool  is3D)
         {
             _mipOffsets = mipOffsets;
-            AllOffsets = allOffsets;
+            AllOffsets  = allOffsets;
+            _depth      = depth;
             _levels     = levels;
             LayerSize   = layerSize;
             TotalSize   = totalSize;
+            _is3D       = is3D;
         }
 
         public int GetMipOffset(int level)
@@ -57,8 +65,25 @@ namespace Ryujinx.Graphics.Texture
                 return false;
             }
 
-            firstLayer = index / _levels;
-            firstLevel = index - (firstLayer * _levels);
+            if (_is3D)
+            {
+                firstLayer = index;
+                firstLevel = 0;
+
+                int levelDepth = _depth;
+
+                while (firstLayer >= levelDepth)
+                {
+                    firstLayer -= levelDepth;
+                    firstLevel++;
+                    levelDepth = Math.Max(levelDepth >> 1, 1);
+                }
+            }
+            else
+            {
+                firstLayer = index / _levels;
+                firstLevel = index - (firstLayer * _levels);
+            }
 
             return true;
         }

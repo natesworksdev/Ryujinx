@@ -1,4 +1,5 @@
-﻿using Ryujinx.Cpu.Tracking;
+﻿using Ryujinx.Common;
+using Ryujinx.Cpu.Tracking;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Texture;
 using Ryujinx.Memory.Range;
@@ -15,10 +16,19 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// </summary>
     class TextureGroup : IDisposable
     {
+        private const int StrideAlignment = 32;
+        private const int GobAlignment = 64;
+
         /// <summary>
         /// The storage texture associated with this group.
         /// </summary>
         public Texture Storage { get; }
+
+        /// <summary>
+        /// Indicates if the texture has copy dependencies. If true, then all modifications
+        /// must be signalled to the group, rather than skipping ones still to be flushed.
+        /// </summary>
+        public bool HasCopyDependencies { get; set; }
 
         private GpuContext _context;
 
@@ -111,21 +121,41 @@ namespace Ryujinx.Graphics.Gpu.Image
                 TextureGroupHandle group = _handles[baseHandle + i];
 
                 bool modified = group.Modified;
-
                 bool handleDirty = false;
+                bool handleModified = false;
 
                 foreach (CpuRegionHandle handle in group.Handles)
                 {
                     if (handle.Dirty)
                     {
                         handle.Reprotect();
-                        dirty = true;
                         handleDirty = true;
                     }
                     else
                     {
-                        anyModified |= modified;
+                        handleModified |= modified;
                     }
+                }
+
+                // Evaluate if any copy dependencies need to be fulfilled. A few rules:
+                // If the copy handle needs to be synchronized, prefer our own state.
+                // If we need to be synchronized and there is a copy present, prefer the copy. 
+
+                if (group.NeedsCopy && group.Copy())
+                {
+                    anyModified |= true; // The copy target has been modified.
+                    handleDirty = false;
+                }
+                else
+                {
+                    anyModified |= handleModified;
+                    dirty |= handleDirty;
+                }
+
+                if (group.NeedsCopy)
+                {
+                    // The texture we copied from is still being written to. Copy from it again the next time this texture is used.
+                    texture.SignalGroupDirty();
                 }
 
                 _loadNeeded[baseHandle + i] = handleDirty;
@@ -190,8 +220,9 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <summary>
         /// Signal that a texture in the group has been modified by the GPU.
         /// </summary>
-        /// <param name="texture">The texture that has been modified.</param>
-        public void SignalModified(Texture texture)
+        /// <param name="texture">The texture that has been modified</param>
+        /// <param name="registerAction">True if the flushing read action should be registered, false otherwise</param>
+        public void SignalModified(Texture texture, bool registerAction)
         {
             (int baseHandle, int regionCount) = EvaluateRelevantHandles(texture);
 
@@ -199,13 +230,67 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 TextureGroupHandle group = _handles[baseHandle + i];
 
-                group.Modified = true;
+                group.SignalModified();
 
-                foreach (CpuRegionHandle handle in group.Handles)
+                if (registerAction)
                 {
-                    handle.RegisterAction((address, size) => FlushAction(group, address, size));
+                    RegisterAction(group);
                 }
             }
+        }
+
+        /// <summary>
+        /// Signal that a texture in the group is actively bound, or has been unbound by the GPU.
+        /// </summary>
+        /// <param name="texture">The texture that has been modified</param>
+        /// <param name="bound">True if this texture is being bound, false if unbound</param>
+        /// <param name="registerAction">True if the flushing read action should be registered, false otherwise</param>
+        public void SignalModifying(Texture texture, bool bound, bool registerAction)
+        {
+            (int baseHandle, int regionCount) = EvaluateRelevantHandles(texture);
+
+            for (int i = 0; i < regionCount; i++)
+            {
+                TextureGroupHandle group = _handles[baseHandle + i];
+
+                group.SignalModifying(bound);
+
+                if (registerAction)
+                {
+                    RegisterAction(group);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Register a read/write action to flush for a texture group.
+        /// </summary>
+        /// <param name="group">The group to register an action for.</param>
+        public void RegisterAction(TextureGroupHandle group)
+        {
+            foreach (CpuRegionHandle handle in group.Handles)
+            {
+                handle.RegisterAction((address, size) => FlushAction(group, address, size));
+            }
+        }
+
+        /// <summary>
+        /// Calculate a single view's data size. This is used to better affirm the bounds of 2D sub-images,
+        /// and is particularly useful for layer strided Texture2DArrays, where a handle's calculated size
+        /// shouldn't cover anything between layers, such as mip levels.
+        /// </summary>
+        /// <param name="level">The level of the view</param>
+        /// <returns>The view's size in bytes</returns>
+        private int CalculateViewDataSize(int level)
+        {
+            int blockWidth = BitUtils.DivRoundUp(Storage.Info.Width, Storage.Info.FormatInfo.BlockWidth);
+
+            int width = Math.Max(blockWidth >> level, 1) * Storage.Info.FormatInfo.BytesPerPixel;
+            width = BitUtils.AlignUp(width, Storage.Info.IsLinear ? StrideAlignment : GobAlignment);
+
+            int height = Math.Max(BitUtils.DivRoundUp(Storage.Info.Height, Storage.Info.FormatInfo.BlockHeight) >> level, 1);
+
+            return width * height;
         }
 
         /// <summary>
@@ -220,8 +305,22 @@ namespace Ryujinx.Graphics.Gpu.Image
                 return (0, _handles.Length);
             }
 
-            int targetLayerHandles = _hasLayerViews ? texture.Info.GetSlices() : 1;
-            int targetLevelHandles = _hasMipViews ? texture.Info.Levels : 1;
+            return EvaluateRelevantHandles(texture.FirstLayer, texture.FirstLevel, texture.Info.GetSlices(), texture.Info.Levels);
+        }
+
+        /// <summary>
+        /// Evaluate the range of tracking handles which a view texture overlaps with, 
+        /// using the view's position and slice/level counts.
+        /// </summary>
+        /// <param name="firstLayer">The first layer of the texture</param>
+        /// <param name="firstLevel">The first level of the texture</param>
+        /// <param name="slices">The slice count of the texture</param>
+        /// <param name="levels">The level count of the texture</param>
+        /// <returns>The base index of the range of handles for the given parameters, and the number of handles it covers</returns>
+        private (int BaseHandle, int RegionCount) EvaluateRelevantHandles(int firstLayer, int firstLevel, int slices, int levels)
+        {
+            int targetLayerHandles = _hasLayerViews ? slices : 1;
+            int targetLevelHandles = _hasMipViews ? levels : 1;
 
             if (_is3D)
             {
@@ -231,16 +330,15 @@ namespace Ryujinx.Graphics.Gpu.Image
                 {
                     // When there are no layer views, the mips are at a consistent offset.
 
-                    return (texture.FirstLevel, targetLevelHandles);
+                    return (firstLevel, targetLevelHandles);
                 }
                 else
                 {
                     // NOTE: Will also have mip views, or only one level in storage.
 
-                    (int levelIndex, int layerCount) = Get3DLevelRange(texture.FirstLevel);
+                    (int levelIndex, int layerCount) = Get3DLevelRange(firstLevel);
 
-                    int totalSize = Math.Min(layerCount, texture.Info.DepthOrLayers);
-                    int levels = texture.Info.Levels;
+                    int totalSize = Math.Min(layerCount, slices);
 
                     while (levels-- > 1)
                     {
@@ -248,7 +346,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                         totalSize += layerCount;
                     }
 
-                    return (texture.FirstLayer + levelIndex, totalSize);
+                    return (firstLayer + levelIndex, totalSize);
                 }
             }
             else
@@ -256,7 +354,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 // Future layers come after all mipmaps of the last.
                 int levelHandles = _hasMipViews ? _levels : 1;
 
-                return (texture.FirstLevel + (texture.FirstLayer) * levelHandles, targetLevelHandles + (targetLayerHandles - 1) * levelHandles);
+                return (firstLevel + firstLayer * levelHandles, targetLevelHandles + (targetLayerHandles - 1) * levelHandles);
             }
         }
 
@@ -331,19 +429,58 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Gets the layer and level for a given view.
+        /// </summary>
+        /// <param name="index">The index of the view</param>
+        /// <returns>The layer and level of the specified view</returns>
+        private (int BaseLayer, int BaseLevel) GetLayerLevelForView(int index)
+        {
+            if (_is3D)
+            {
+                int baseLevel = 0;
+
+                int layerLevels = _layers;
+
+                while (index >= layerLevels)
+                {
+                    index -= layerLevels;
+                    baseLevel++;
+                    layerLevels = Math.Max(layerLevels >> 1, 1);
+                }
+
+                return (index, baseLevel);
+            }
+            else
+            {
+                return (index / _levels, index % _levels);
+            }
+        }
+
+        /// <summary>
         /// Find the byte offset of a given texture relative to the storage.
         /// </summary>
         /// <param name="texture">The texture to locate</param>
         /// <returns>The offset of the texture in bytes</returns>
         public int FindOffset(Texture texture)
         {
+            return _allOffsets[GetOffsetIndex(texture.FirstLayer, texture.FirstLevel)];
+        }
+
+        /// <summary>
+        /// Find the offset index of a given layer and level.
+        /// </summary>
+        /// <param name="layer">The view layer</param>
+        /// <param name="level">The view level</param>
+        /// <returns>The offset index of the given layer and level</returns>
+        public int GetOffsetIndex(int layer, int level)
+        {
             if (_is3D)
             {
-                return _allOffsets[texture.FirstLayer + Get3DLevelRange(texture.FirstLevel).Index];
+                return layer + Get3DLevelRange(level).Index;
             }
             else
             {
-                return _allOffsets[texture.FirstLevel + texture.FirstLayer * _levels];
+                return level + layer * _levels;
             }
         }
 
@@ -414,7 +551,14 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
             }
 
-            var groupHandle = new TextureGroupHandle(this, _allOffsets[viewStart], (ulong)size, _views, result.ToArray());
+            (int firstLayer, int firstLevel) = GetLayerLevelForView(viewStart);
+
+            if (_hasLayerViews && _hasMipViews)
+            {
+                size = CalculateViewDataSize(firstLevel);
+            }
+
+            var groupHandle = new TextureGroupHandle(this, _allOffsets[viewStart], (ulong)size, _views, firstLayer, firstLevel, result.ToArray());
 
             foreach (CpuRegionHandle handle in result)
             {
@@ -494,13 +638,17 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                     foreach (var oldGroup in oldHandles)
                     {
-                        foreach (var oldHandle in oldGroup.Handles)
+                        if (group.OverlapsWith(oldGroup.Offset, oldGroup.Size))
                         {
-                            if (handle.OverlapsWith(oldHandle.Address, oldHandle.Size))
+                            foreach (var oldHandle in oldGroup.Handles)
                             {
-                                dirty |= oldHandle.Dirty;
-                                group.Modified |= oldGroup.Modified;
+                                if (handle.OverlapsWith(oldHandle.Address, oldHandle.Size))
+                                {
+                                    dirty |= oldHandle.Dirty;
+                                }
                             }
+                            
+                            group.Inherit(oldGroup);
                         }
                     }
 
@@ -523,6 +671,17 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="other">The texture group to inherit from</param>
         public void Inherit(TextureGroup other)
         {
+            bool layerViews = _hasLayerViews || other._hasLayerViews;
+            bool mipViews = _hasMipViews || other._hasMipViews;
+
+            if (layerViews != _hasLayerViews || mipViews != _hasMipViews)
+            {
+                _hasLayerViews = layerViews;
+                _hasMipViews = mipViews;
+
+                RecalculateHandleRegions();
+            }
+
             InheritHandles(other._handles, _handles);
         }
 
@@ -578,7 +737,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     cpuRegionHandles[i] = GenerateHandle(currentRange.Address, currentRange.Size);
                 }
 
-                var groupHandle = new TextureGroupHandle(this, 0, Storage.Size, _views, cpuRegionHandles);
+                var groupHandle = new TextureGroupHandle(this, 0, Storage.Size, _views, 0, 0, cpuRegionHandles);
 
                 foreach (CpuRegionHandle handle in cpuRegionHandles)
                 {
@@ -597,11 +756,12 @@ namespace Ryujinx.Graphics.Gpu.Image
                 int layerHandles = _hasLayerViews ? _layers : 1;
                 int levelHandles = _hasMipViews ? _levels : 1;
 
-                handles = new TextureGroupHandle[layerHandles * levelHandles];
                 int handleIndex = 0;
 
                 if (_is3D)
                 {
+                    var handlesList = new List<TextureGroupHandle>();
+
                     for (int i = 0; i < levelHandles; i++)
                     {
                         for (int j = 0; j < layerHandles; j++)
@@ -610,12 +770,18 @@ namespace Ryujinx.Graphics.Gpu.Image
                             viewStart += j;
                             views = _hasLayerViews ? 1 : views; // A layer view is also a mip view.
 
-                            handles[handleIndex++] = GenerateHandles(viewStart, views);
+                            handlesList.Add(GenerateHandles(viewStart, views));
                         }
+
+                        layerHandles = Math.Max(1, layerHandles >> 1);
                     }
+
+                    handles = handlesList.ToArray();
                 } 
                 else
                 {
+                    handles = new TextureGroupHandle[layerHandles * levelHandles];
+
                     for (int i = 0; i < layerHandles; i++)
                     {
                         for (int j = 0; j < levelHandles; j++)
@@ -630,6 +796,67 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
 
             ReplaceHandles(handles);
+        }
+
+        /// <summary>
+        /// Ensure that there is a handle for each potential texture view. Required for copy dependencies to work.
+        /// </summary>
+        private void EnsureFullSubdivision()
+        {
+            if (!(_hasLayerViews && _hasMipViews))
+            {
+                _hasLayerViews = true;
+                _hasMipViews = true;
+
+                RecalculateHandleRegions();
+            }
+        }
+
+        /// <summary>
+        /// Create a copy dependency between this texture group, and a texture at a given layer/level offset.
+        /// </summary>
+        /// <param name="other">The view compatible texture to create a dependency to</param>
+        /// <param name="firstLayer">The base layer of the given texture relative to the storage</param>
+        /// <param name="firstLevel">The base level of the given texture relative to the storage</param>
+        /// <param name="copyTo">True if this texture is first copied to the given one, false for the opposite direction</param>
+        public void CreateCopyDependency(Texture other, int firstLayer, int firstLevel, bool copyTo)
+        {
+            TextureGroup otherGroup = other.Group;
+
+            EnsureFullSubdivision();
+            otherGroup.EnsureFullSubdivision();
+
+            // The first layer and level for the given texture are already defined in _its_ storage, though they 
+
+            int targetIndex = GetOffsetIndex(firstLayer, firstLevel);
+            int otherIndex = GetOffsetIndex(other.FirstLayer, other.FirstLevel);
+
+            int layers = other.Info.GetSlices();
+            int levels = other.Info.Levels;
+
+            int handles = layers * levels;
+
+            for (int i = 0; i < handles; i++)
+            {
+                TextureGroupHandle handle = _handles[targetIndex++];
+                TextureGroupHandle otherHandle = other.Group._handles[otherIndex++];
+
+                handle.CreateCopyDependency(otherHandle);
+
+                // If "copyTo" is true, this texture must copy to the other.
+                // Otherwise, it must copy to this texture.
+
+                if (copyTo)
+                {
+                    otherHandle.Copy(handle);
+                }
+                else
+                {
+                    handle.Copy(otherHandle);
+                }
+
+                if (handle.Handles[0].Dirty || otherHandle.Handles[0].Dirty) { }
+            }
         }
 
         /// <summary>
@@ -660,10 +887,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             foreach (TextureGroupHandle group in _handles)
             {
-                foreach (CpuRegionHandle handle in group.Handles)
-                {
-                    handle.Dispose();
-                }
+                group.Dispose();
             }
         }
     }
