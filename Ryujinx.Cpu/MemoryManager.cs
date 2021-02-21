@@ -346,12 +346,12 @@ namespace Ryujinx.Cpu
         }
 
         /// <summary>
-        /// Cumputes the number of pages in a virtual address range.
+        /// Computes the number of pages in a virtual address range.
         /// </summary>
         /// <param name="va">Virtual address of the range</param>
         /// <param name="size">Size of the range</param>
         /// <param name="startVa">The virtual address of the beginning of the first page</param>
-        /// <remarks>This function does differentiate between allocated and unallocated pages.</remarks>
+        /// <remarks>This function does not differentiate between allocated and unallocated pages.</remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int GetPagesCount(ulong va, ulong size, out ulong startVa)
         {
