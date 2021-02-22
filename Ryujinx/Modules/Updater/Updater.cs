@@ -258,7 +258,7 @@ namespace Ryujinx.Modules
                             for (int connectionIndex = 0, destinationOffset = 0; connectionIndex < ConnectionCount; connectionIndex++)
                             {
                                 Array.Copy(list[connectionIndex], 0, mergedFileBytes, destinationOffset, list[connectionIndex].Length);
-                                destinationOffset += list[connectionIndex].Length
+                                destinationOffset += list[connectionIndex].Length;
                             }
 
                             File.WriteAllBytes(updateFile, mergedFileBytes);
