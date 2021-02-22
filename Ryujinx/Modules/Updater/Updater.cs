@@ -255,9 +255,10 @@ namespace Ryujinx.Modules
                         if (Interlocked.Equals(completedRequests, ConnectionCount))
                         {
                             byte[] mergedFileBytes = new byte[_buildSize];
-                            for (int connectionIndex = 0, destinationOffset = 0; connectionIndex < ConnectionCount; connectionIndex++, destinationOffset += list[connectionIndex].Length)
+                            for (int connectionIndex = 0, destinationOffset = 0; connectionIndex < ConnectionCount; connectionIndex++)
                             {
                                 Array.Copy(list[connectionIndex], 0, mergedFileBytes, destinationOffset, list[connectionIndex].Length);
+                                destinationOffset += list[connectionIndex].Length
                             }
 
                             File.WriteAllBytes(updateFile, mergedFileBytes);
