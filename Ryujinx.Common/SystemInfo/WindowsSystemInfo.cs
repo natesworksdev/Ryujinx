@@ -28,21 +28,6 @@ namespace Ryujinx.Common.SystemInfo
                 Logger.Error?.Print(LogClass.Application, $"GlobalMemoryStatusEx failed. Error {Marshal.GetLastWin32Error():X}");
             }
 
-            // Alternative WMI path
-            ManagementObjectCollection memObjs = GetWMIObjects("root\\CIMV2", "SELECT * FROM Win32_OperatingSystem");
-
-            if (memObjs != null)
-            {
-                foreach (var memObj in memObjs)
-                {
-                    // Entries are in KB
-                    _ = ulong.TryParse(memObj["TotalVisibleMemorySize"].ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out ulong totalKB);
-                    _ = ulong.TryParse(memObj["FreePhysicalMemory"].ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out ulong availableKB);
-
-                    return (totalKB * 1024, availableKB * 1024);
-                }
-            }
-
             return (0, 0);
         }
 

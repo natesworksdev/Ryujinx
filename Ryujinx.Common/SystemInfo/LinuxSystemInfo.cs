@@ -37,10 +37,8 @@ namespace Ryujinx.Common.SystemInfo
             ParseKeyValues("/proc/meminfo", memDict);
 
             // Entries are in KB
-            _ = ulong.TryParse(memDict["MemTotal"]?.Split(' ')[0],
-                NumberStyles.Integer, CultureInfo.InvariantCulture, out ulong totalKB);
-            _ = ulong.TryParse(memDict["MemAvailable"]?.Split(' ')[0],
-                NumberStyles.Integer, CultureInfo.InvariantCulture, out ulong availableKB);
+            ulong.TryParse(memDict["MemTotal"]?.Split(' ')[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out ulong totalKB);
+            ulong.TryParse(memDict["MemAvailable"]?.Split(' ')[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out ulong availableKB);
 
             CpuName = $"{cpuName} ; {LogicalCoreCount} logical";
             RamTotal = totalKB * 1024;
@@ -51,7 +49,8 @@ namespace Ryujinx.Common.SystemInfo
         {
             if (!File.Exists(filePath))
             {
-                Logger.Error?.Print(LogClass.Application, $"File '{filePath}' not found");
+                Logger.Error?.Print(LogClass.Application, $"File \"{filePath}\" not found");
+
                 return;
             }
 
