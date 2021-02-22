@@ -33,6 +33,9 @@ namespace Ryujinx.Modules
         
         private const string AppveyorApiUrl = "https://ci.appveyor.com/api";
 
+        // On Windows, GtkSharp.Dependencies adds these extra dirs that must be cleaned during updates.
+        private static readonly string[] WindowsDependencyDirs = new string[] { "bin", "etc", "lib", "share" };
+
         public static async Task BeginParse(MainWindow mainWindow, bool showVersionUpToDate)
         {
             if (Running) return;
@@ -320,17 +323,14 @@ namespace Ryujinx.Modules
             return true;
         }
 
-        // NOTE: This method should always reflect the latest build layout
+        // NOTE: This method should always reflect the latest build layout.
         private static IEnumerable<string> EnumerateFilesToDelete()
         {
-            var files = Directory.EnumerateFiles(HomeDir); // all files directly in base dir
+            var files = Directory.EnumerateFiles(HomeDir); // All files directly in base dir.
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                // On Windows, GtkSharp.Dependencies adds these extra dirs
-                // the other dependencies are just files in the base dir so they got marked above
-                string[] dependencyDirs = new string[] { "bin", "etc", "lib", "share" };
-                foreach (string dir in dependencyDirs)
+                foreach (string dir in WindowsDependencyDirs)
                 {
                     string dirPath = Path.Combine(HomeDir, dir);
                     if (Directory.Exists(dirPath))
