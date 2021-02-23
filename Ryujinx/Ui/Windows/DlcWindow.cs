@@ -81,6 +81,7 @@ namespace Ryujinx.Ui.Windows
                     Logger.Error?.PrintMsg(LogClass.Application, "DLC files have been moved or deleted; purging dlc.json file located at " + _dlcJsonPath);
                     GtkDialog.CreateErrorDialog("DLC files have been moved or deleted; please re-add your DLC.");
                     File.Delete(_dlcJsonPath);
+                    Dispose();
                     break; // don't handle current dlc.
                 }
                 TreeIter parentIter = ((TreeStore)_dlcTreeView.Model).AppendValues(false, "", dlcContainer.Path);
