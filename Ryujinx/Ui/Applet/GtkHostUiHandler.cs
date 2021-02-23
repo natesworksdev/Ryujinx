@@ -183,5 +183,34 @@ namespace Ryujinx.Ui.Applet
 
             return showDetails;
         }
+
+        public void StartProgressReport(ProgressReportType type, Func<(int Value, int Total)> queryProgress, AutoResetEvent stopEvent, int refreshRateMs)
+        {
+            ThreadPool.QueueUserWorkItem(_ =>
+            {
+                _parent.LoadingStatusLabel.Visible = true;
+                _parent.LoadingStatusBar.Visible = true;
+
+                try
+                {
+                    do
+                    {
+                        var (value, total) = queryProgress();
+
+                        Application.Invoke(delegate
+                        {
+                            _parent.LoadingStatusLabel.Text = $"{type} : {value}/{total}";
+                            _parent.LoadingStatusBar.Fraction = (double)value / total;
+                        });
+                    }
+                    while (!stopEvent.WaitOne(refreshRateMs));
+                }
+                catch (ObjectDisposedException) {} // In case stopEvent is disposed
+
+                _parent.LoadingStatusLabel.Visible = false;
+                _parent.LoadingStatusBar.Visible = false;
+            });
+
+        }
     }
 }

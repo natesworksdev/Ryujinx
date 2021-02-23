@@ -1,3 +1,4 @@
+using Ryujinx.Common.HostUiBridge;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Engine;
 using Ryujinx.Graphics.Gpu.Engine.GPFifo;
@@ -107,11 +108,11 @@ namespace Ryujinx.Graphics.Gpu
         /// <summary>
         /// Initialize the GPU shader cache.
         /// </summary>
-        public void InitializeShaderCache()
+        public void InitializeShaderCache(IHostUiHandler uiHandler)
         {
             HostInitalized.WaitOne();
 
-            Methods.ShaderCache.Initialize();
+            Methods.ShaderCache.Initialize(uiHandler);
         }
 
         /// <summary>

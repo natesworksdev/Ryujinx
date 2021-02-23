@@ -5,6 +5,7 @@ using ARMeilleure.Memory;
 using ARMeilleure.Translation.Cache;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
+using Ryujinx.Common.HostUiBridge;
 using Ryujinx.Common.Logging;
 using System;
 using System.Buffers.Binary;
@@ -52,13 +53,15 @@ namespace ARMeilleure.Translation.PTC
 
         private static readonly ManualResetEvent _waitEvent;
 
-        private static readonly AutoResetEvent _loggerEvent;
+        private static readonly AutoResetEvent _loadedEvent;
 
         private static readonly object _lock;
 
         private static bool _disposed;
 
         private static volatile int _translateCount;
+        private static int _totalTranslateCount;
+        private static IHostUiHandler _uiHandler;
 
         internal static PtcJumpTable PtcJumpTable { get; private set; }
 
@@ -78,7 +81,7 @@ namespace ARMeilleure.Translation.PTC
 
             _waitEvent = new ManualResetEvent(true);
 
-            _loggerEvent = new AutoResetEvent(false);
+            _loadedEvent = new AutoResetEvent(false);
 
             _lock = new object();
 
@@ -95,7 +98,7 @@ namespace ARMeilleure.Translation.PTC
             Disable();
         }
 
-        public static void Initialize(string titleIdText, string displayVersion, bool enabled)
+        public static void Initialize(string titleIdText, string displayVersion, bool enabled, IHostUiHandler uiHandler)
         {
             Wait();
 
@@ -135,6 +138,8 @@ namespace ARMeilleure.Translation.PTC
 
             CachePathActual = Path.Combine(workPathActual, DisplayVersion);
             CachePathBackup = Path.Combine(workPathBackup, DisplayVersion);
+
+            _uiHandler = uiHandler;
 
             PreLoad();
             PtcProfiler.PreLoad();
@@ -769,8 +774,16 @@ namespace ARMeilleure.Translation.PTC
             }
 
             _translateCount = 0;
+            _totalTranslateCount = profiledFuncsToTranslate.Count;
 
-            ThreadPool.QueueUserWorkItem(TranslationLogger, profiledFuncsToTranslate.Count);
+            if (_uiHandler != null)
+            {
+                _uiHandler.StartProgressReport(ProgressReportType.PTC, () => (_translateCount, _totalTranslateCount), _loadedEvent, 100);
+            }
+            else
+            {
+                ThreadPool.QueueUserWorkItem(TranslationLogger, profiledFuncsToTranslate.Count);
+            }
 
             void TranslateFuncs()
             {
@@ -819,7 +832,7 @@ namespace ARMeilleure.Translation.PTC
 
             threads.Clear();
 
-            _loggerEvent.Set();
+            _loadedEvent.Set();
 
             PtcJumpTable.Initialize(jumpTable);
 
@@ -841,7 +854,7 @@ namespace ARMeilleure.Translation.PTC
             {
                 Logger.Info?.Print(LogClass.Ptc, $"{_translateCount} of {profiledFuncsToTranslateCount} functions translated");
             }
-            while (!_loggerEvent.WaitOne(refreshRate * 1000));
+            while (!_loadedEvent.WaitOne(refreshRate * 1000));
 
             Logger.Info?.Print(LogClass.Ptc, $"{_translateCount} of {profiledFuncsToTranslateCount} functions translated");
         }
@@ -961,7 +974,7 @@ namespace ARMeilleure.Translation.PTC
                 Wait();
                 _waitEvent.Dispose();
 
-                _loggerEvent.Dispose();
+                _loadedEvent.Dispose();
 
                 DisposeMemoryStreams();
             }

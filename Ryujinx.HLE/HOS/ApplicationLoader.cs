@@ -525,7 +525,7 @@ namespace Ryujinx.HLE.HOS
             Graphics.Gpu.GraphicsConfig.TitleId = TitleIdText;
             _device.Gpu.HostInitalized.Set();
 
-            Ptc.Initialize(TitleIdText, DisplayVersion, usePtc);
+            Ptc.Initialize(TitleIdText, DisplayVersion, usePtc, _device.UiHandler);
 
             ProgramLoader.LoadNsos(_device.System.KernelContext, metaData, executables: programs);
         }

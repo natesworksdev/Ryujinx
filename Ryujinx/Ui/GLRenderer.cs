@@ -416,7 +416,7 @@ namespace Ryujinx.Ui
             GL.Clear(ClearBufferMask.ColorBufferBit);
             SwapBuffers();
 
-            _device.Gpu.InitializeShaderCache();
+            _device.Gpu.InitializeShaderCache(_device.UiHandler);
             Translator.IsReadyForTranslation.Set();
 
             while (_isActive)

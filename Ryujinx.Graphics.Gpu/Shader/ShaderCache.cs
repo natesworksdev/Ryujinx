@@ -1,4 +1,5 @@
 using Ryujinx.Common;
+using Ryujinx.Common.HostUiBridge;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Shader.Cache;
@@ -9,6 +10,7 @@ using Ryujinx.Graphics.Shader.Translation;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 
 namespace Ryujinx.Graphics.Gpu.Shader
 {
@@ -36,6 +38,11 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// </summary>
         private const ulong ShaderCodeGenVersion = 1961;
 
+        // Helper variables for UI progress bar
+        private int _loadingCurrent;
+        private int _loadingTotal;
+        private AutoResetEvent _loadedEvent;
+
         /// <summary>
         /// Creates a new instance of the shader cache.
         /// </summary>
@@ -50,12 +57,14 @@ namespace Ryujinx.Graphics.Gpu.Shader
             _gpPrograms = new Dictionary<ShaderAddresses, List<ShaderBundle>>();
             _gpProgramsDiskCache = new Dictionary<Hash128, ShaderBundle>();
             _cpProgramsDiskCache = new Dictionary<Hash128, ShaderBundle>();
+
+            _loadedEvent = new AutoResetEvent(false);
         }
 
         /// <summary>
         /// Initialize the cache.
         /// </summary>
-        internal void Initialize()
+        internal void Initialize(IHostUiHandler uiHandler)
         {
             if (GraphicsConfig.EnableShaderCache && GraphicsConfig.TitleId != null)
             {
@@ -76,11 +85,27 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
                 ReadOnlySpan<Hash128> guestProgramList = _cacheManager.GetGuestProgramList();
 
+                if (uiHandler != null)
+                {
+                    _loadingCurrent = 0;
+                    _loadingTotal = guestProgramList.Length;
+                    _loadedEvent.Reset();
+
+                    uiHandler.StartProgressReport(ProgressReportType.Shaders, () => (_loadingCurrent, _loadingTotal), _loadedEvent, 100);
+                }
+
                 for (int programIndex = 0; programIndex < guestProgramList.Length; programIndex++)
                 {
                     Hash128 key = guestProgramList[programIndex];
 
-                    Logger.Info?.Print(LogClass.Gpu, $"Compiling shader {key} ({programIndex + 1} / {guestProgramList.Length})");
+                    if (uiHandler != null)
+                    {
+                        _loadingCurrent = programIndex;
+                    }
+                    else
+                    {
+                        Logger.Info?.Print(LogClass.Gpu, $"Compiling shader {key} ({programIndex + 1} / {guestProgramList.Length})");   
+                    }
 
                     byte[] hostProgramBinary = _cacheManager.GetHostProgramByHash(ref key);
                     bool hasHostCache = hostProgramBinary != null;
@@ -314,6 +339,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                     _cacheManager.Synchronize();
                 }
 
+                _loadedEvent.Set();
                 Logger.Info?.Print(LogClass.Gpu, "Shader cache loaded.");
             }
         }
@@ -788,6 +814,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             }
 
             _cacheManager?.Dispose();
+            _loadedEvent.Dispose();
         }
     }
 }
