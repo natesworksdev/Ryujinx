@@ -1,6 +1,6 @@
 using Ryujinx.HLE.HOS.Applets;
 using Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.ApplicationProxy.Types;
-
+using Ryujinx.Common.Status;
 namespace Ryujinx.HLE
 {
     public interface IHostUiHandler
@@ -32,16 +32,19 @@ namespace Ryujinx.HLE
         /// <param name="value">The value associated to the <paramref name="kind"/>.</param>
         void ExecuteProgram(Switch device, ProgramSpecifyKind kind, ulong value);
 
+        /// <summary>
         /// Displays a Message Dialog box specific to Error Applet and blocks until it is closed.
         /// </summary>
         /// <returns>False when OK is pressed, True when another button (Details) is pressed.</returns>
         bool DisplayErrorAppletDialog(string title, string message, string[] buttonsText);
 
-        /// Shows and changes the status
+        /// <summary>
+        /// Shows and changes the Status
         /// </summary>
-        void ShowStatus(object o, Common.Status.StatusChangedEventArgs args);
+        void ShowStatus(object o, StatusChangedEventArgs args);
 
-        /// Disable the Status
+        /// <summary>
+        /// Disables the Status
         /// </summary>
         void DisableStatus(object o, System.EventArgs args);
     }

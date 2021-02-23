@@ -9,6 +9,7 @@ using Ryujinx.Graphics.Shader.Translation;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Ryujinx.Common.Status;
 
 namespace Ryujinx.Graphics.Gpu.Shader
 {
@@ -82,8 +83,9 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
                     Logger.Info?.Print(LogClass.Gpu, $"Compiling shader {key} ({programIndex + 1} / {guestProgramList.Length})");
                     
-                    if ((programIndex+1) % 5==0) { 
-                        Common.Status.StatusChanged.ChangeStatus(programIndex + 1, guestProgramList.Length, "ShaderCache");
+                    if ((programIndex+1) % 5 == 0) 
+                    {
+                        StatusHandler.ChangeStatus(programIndex + 1, guestProgramList.Length, StatusType.ShaderCache);
                     }
                     
                     byte[] hostProgramBinary = _cacheManager.GetHostProgramByHash(ref key);
@@ -315,7 +317,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                     _cacheManager.Synchronize();
                 }
 
-                Common.Status.StatusChanged.DisableStatus();
+                StatusHandler.DisableStatus();
                 Logger.Info?.Print(LogClass.Gpu, "Shader cache loaded.");
             }
         }

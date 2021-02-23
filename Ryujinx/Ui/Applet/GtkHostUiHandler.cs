@@ -16,8 +16,8 @@ namespace Ryujinx.Ui.Applet
         public GtkHostUiHandler(Window parent)
         {
             _parent = parent;
-            StatusChanged.StatusChangedEvent += ShowStatus;
-            StatusChanged.StatusDisableEvent += DisableStatus;
+            StatusHandler.StatusChangedEvent += ShowStatus;
+            StatusHandler.StatusDisableEvent += DisableStatus;
         }
 
         public bool DisplayMessageDialog(ControllerAppletUiArgs args)
@@ -192,23 +192,27 @@ namespace Ryujinx.Ui.Applet
 
         public void ShowStatus(object o, StatusChangedEventArgs args)
         {
-            MainWindow window = ((MainWindow)_parent);
+            MainWindow window = (MainWindow)_parent;
             Application.Invoke(delegate
             {
-                window._statusProgressBar.Visible = true;
-                window._statusProgressBar.Fraction = ((double)((double)args.Current / (double)args.Total));
-                window._status.Visible = true;
-                window._status.Text =  args.ClassName+": "+ args.Current.ToString()+ " / "+args.Total.ToString();
+                if (!window.StatusProgressBar.Visible)
+                {
+                    window.StatusProgressBar.Visible = true;
+                    window.Status.Visible = true;
+                }
+                
+                window.StatusProgressBar.Fraction = (double)((double)args.Current / (double)args.Total);
+                window.Status.Text = $"{args.StatusType}: {args.Current}/{args.Total}";
             });
         }
 
-        public void DisableStatus(object o,EventArgs args)
+        public void DisableStatus(object o, EventArgs args)
         {
             MainWindow window = ((MainWindow)_parent);
             Application.Invoke(delegate
             {
-                window._statusProgressBar.Visible = false;
-                window._status.Visible = false;
+                window.StatusProgressBar.Visible = false;
+                window.Status.Visible = false;
             });
         }
     }

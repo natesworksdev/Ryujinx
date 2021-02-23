@@ -5,6 +5,7 @@ using ARMeilleure.Memory;
 using ARMeilleure.Translation.Cache;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
+using Ryujinx.Common.Status;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Concurrent;
@@ -736,10 +737,10 @@ namespace ARMeilleure.Translation.PTC
             do
             {
                 Logger.Info?.Print(LogClass.Ptc, $"{_translateCount} of {profiledFuncsToTranslateCount} functions translated");
-                Ryujinx.Common.Status.StatusChanged.ChangeStatus(_translateCount, profiledFuncsToTranslateCount, "PPTC");
+                StatusHandler.ChangeStatus(_translateCount, profiledFuncsToTranslateCount, StatusType.PPTC);
             }
             while (!_loggerEvent.WaitOne(refreshRate * 1000));
-            Ryujinx.Common.Status.StatusChanged.DisableStatus();
+            StatusHandler.DisableStatus();
             Logger.Info?.Print(LogClass.Ptc, $"{_translateCount} of {profiledFuncsToTranslateCount} functions translated");
         }
 

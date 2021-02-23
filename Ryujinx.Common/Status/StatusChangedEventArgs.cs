@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Ryujinx.Common.Status
 {
@@ -10,12 +6,13 @@ namespace Ryujinx.Common.Status
     {
         public readonly int Current;
         public readonly int Total;
-        public readonly string ClassName;
-        public  StatusChangedEventArgs(int current,int total, string className)
+        public readonly StatusType StatusType;
+
+        public StatusChangedEventArgs(int current, int total, StatusType statusType)
         {
             Current = current;
             Total = total;
-            ClassName = className;
+            StatusType = statusType;
         }
     }
 }

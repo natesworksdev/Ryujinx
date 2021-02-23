@@ -86,14 +86,17 @@ namespace Ryujinx.Ui
         [GUI] TreeSelection   _gameTableSelection;
         [GUI] ScrolledWindow  _gameTableWindow;
         [GUI] Label           _gpuName;
-        [GUI] public readonly Label _status;
+        [GUI] Label           _status;
         [GUI] Label           _progressLabel;
         [GUI] Label           _firmwareVersionLabel;
         [GUI] ProgressBar      _progressBar;
-        [GUI] public readonly ProgressBar _statusProgressBar;
+        [GUI] ProgressBar     _statusProgressBar;
         [GUI] Box             _viewBox;
         [GUI] Label           _vSyncStatus;
         [GUI] Box             _listStatusBox;
+
+        public ProgressBar StatusProgressBar => _statusProgressBar;
+        public Label       Status            =>  _status;
 
 #pragma warning restore CS0649, IDE0044, CS0169
 
@@ -139,7 +142,7 @@ namespace Ryujinx.Ui
             _fullScreen.Activated         += FullScreen_Toggled;
 
             GlRenderer.StatusUpdatedEvent += Update_StatusBar;
-            
+
             if (ConfigurationState.Instance.Ui.StartFullscreen)
             {
                 _startFullScreen.Active = true;
