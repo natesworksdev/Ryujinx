@@ -18,7 +18,7 @@ namespace Ryujinx.Common.SystemInfo
 
         private static (ulong Total, ulong Available) GetMemoryStats()
         {
-            MEMORYSTATUSEX memStatus = new MEMORYSTATUSEX();
+            MemoryStatusEx memStatus = new MemoryStatusEx();
             if (GlobalMemoryStatusEx(memStatus))
             {
                 return (memStatus.TotalPhys, memStatus.AvailPhys); // Bytes
@@ -47,7 +47,7 @@ namespace Ryujinx.Common.SystemInfo
         }
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-        private class MEMORYSTATUSEX
+        private class MemoryStatusEx
         {
             public uint Length;
             public uint MemoryLoad;
@@ -59,15 +59,15 @@ namespace Ryujinx.Common.SystemInfo
             public ulong AvailVirtual;
             public ulong AvailExtendedVirtual;
 
-            public MEMORYSTATUSEX()
+            public MemoryStatusEx()
             {
-                Length = (uint)Marshal.SizeOf(typeof(MEMORYSTATUSEX));
+                Length = (uint)Marshal.SizeOf(typeof(MemoryStatusEx));
             }
         }
 
         [return: MarshalAs(UnmanagedType.Bool)]
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern bool GlobalMemoryStatusEx([In, Out] MEMORYSTATUSEX lpBuffer);
+        private static extern bool GlobalMemoryStatusEx([In, Out] MemoryStatusEx lpBuffer);
 
         private static ManagementObjectCollection GetWMIObjects(string scope, string query)
         {
