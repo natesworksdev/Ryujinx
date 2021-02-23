@@ -210,7 +210,6 @@ namespace Ryujinx.Ui.Applet
                 _parent.LoadingStatusLabel.Visible = false;
                 _parent.LoadingStatusBar.Visible = false;
             });
-
         }
     }
 }
