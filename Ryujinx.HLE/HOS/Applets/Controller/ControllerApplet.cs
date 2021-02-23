@@ -1,7 +1,9 @@
 using System;
+using System.Linq;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Ryujinx.Common.HostUiBridge;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE;
@@ -83,8 +85,8 @@ namespace Ryujinx.HLE.HOS.Applets
                 {
                     PlayerCountMin = playerMin,
                     PlayerCountMax = playerMax,
-                    SupportedStyles = (ControllerType)privateArg.NpadStyleSet,
-                    SupportedPlayers = _system.Device.Hid.Npads.GetSupportedPlayers(),
+                    SupportedStyles = (Common.Configuration.Hid.ControllerType)privateArg.NpadStyleSet,
+                    SupportedPlayers = _system.Device.Hid.Npads.GetSupportedPlayers().Select(p => (Common.Configuration.Hid.PlayerIndex)p),
                     IsDocked = _system.State.DockedMode
                 };
 

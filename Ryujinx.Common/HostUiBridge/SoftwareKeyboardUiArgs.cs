@@ -1,4 +1,4 @@
-namespace Ryujinx.HLE.HOS.Applets
+namespace Ryujinx.Common.HostUiBridge
 {
     public struct SoftwareKeyboardUiArgs
     {

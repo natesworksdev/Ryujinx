@@ -1,7 +1,7 @@
-using Ryujinx.HLE.HOS.Services.Hid;
+using Ryujinx.Common.Configuration.Hid;
 using System.Collections.Generic;
 
-namespace Ryujinx.HLE.HOS.Applets
+namespace Ryujinx.Common.HostUiBridge
 {
     public struct ControllerAppletUiArgs
     {

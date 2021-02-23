@@ -4,6 +4,7 @@ using LibHac.Common;
 using LibHac.Fs;
 using LibHac.Ns;
 using Ryujinx.Common;
+using Ryujinx.Common.HostUiBridge;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
@@ -419,7 +420,8 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
             Logger.Stub?.PrintStub(LogClass.ServiceAm, new { kind, value });
 
-            context.Device.UiHandler.ExecuteProgram(context.Device, kind, value);
+            context.Device.UserChannelPersistence.ExecuteProgram(kind, value);
+            context.Device.UiHandler.ProgramChange();
 
             return ResultCode.Success;
         }

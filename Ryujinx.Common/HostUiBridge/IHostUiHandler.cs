@@ -1,7 +1,6 @@
-using Ryujinx.HLE.HOS.Applets;
-using Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.ApplicationProxy.Types;
 
-namespace Ryujinx.HLE
+
+namespace Ryujinx.Common.HostUiBridge
 {
     public interface IHostUiHandler
     {
@@ -25,12 +24,9 @@ namespace Ryujinx.HLE
         bool DisplayMessageDialog(ControllerAppletUiArgs args);
 
         /// <summary>
-        /// Tell the UI that we need to transisition to another program.
+        /// Tell the UI that we need to transition to another program.
         /// </summary>
-        /// <param name="device">The device instance.</param>
-        /// <param name="kind">The program kind.</param>
-        /// <param name="value">The value associated to the <paramref name="kind"/>.</param>
-        void ExecuteProgram(Switch device, ProgramSpecifyKind kind, ulong value);
+        void ProgramChange();
 
         /// Displays a Message Dialog box specific to Error Applet and blocks until it is closed.
         /// </summary>

@@ -1,7 +1,5 @@
 using Gtk;
-using Ryujinx.HLE;
-using Ryujinx.HLE.HOS.Applets;
-using Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.ApplicationProxy.Types;
+using Ryujinx.Common.HostUiBridge;
 using Ryujinx.Ui.Widgets;
 using System;
 using System.Threading;
@@ -129,9 +127,8 @@ namespace Ryujinx.Ui.Applet
             return error || okPressed;
         }
 
-        public void ExecuteProgram(HLE.Switch device, ProgramSpecifyKind kind, ulong value)
+        public void ProgramChange()
         {
-            device.UserChannelPersistence.ExecuteProgram(kind, value);
             ((MainWindow)_parent).GlRendererWidget?.Exit();
         }
 
