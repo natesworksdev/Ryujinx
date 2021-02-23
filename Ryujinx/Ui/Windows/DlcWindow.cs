@@ -75,6 +75,13 @@ namespace Ryujinx.Ui.Windows
 
             foreach (DlcContainer dlcContainer in _dlcContainerList)
             {
+                if (!File.Exists(dlcContainer.Path))
+                {
+                    Console.WriteLine("DLC's have been deleted or moved, deleting " + _dlcJsonPath);
+                    GtkDialog.CreateErrorDialog("Your DLC's have been moved or deleted, please re-add them.");
+                    File.Delete(_dlcJsonPath);
+                    break; // don't handle current dlc.
+                }
                 TreeIter parentIter = ((TreeStore)_dlcTreeView.Model).AppendValues(false, "", dlcContainer.Path);
 
                 using FileStream containerFile = File.OpenRead(dlcContainer.Path);
