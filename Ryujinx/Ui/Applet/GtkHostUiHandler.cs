@@ -8,9 +8,9 @@ namespace Ryujinx.Ui.Applet
 {
     internal class GtkHostUiHandler : IHostUiHandler
     {
-        private readonly Window _parent;
+        private readonly MainWindow _parent;
 
-        public GtkHostUiHandler(Window parent)
+        public GtkHostUiHandler(MainWindow parent)
         {
             _parent = parent;
         }
@@ -129,7 +129,7 @@ namespace Ryujinx.Ui.Applet
 
         public void ProgramChange()
         {
-            ((MainWindow)_parent).GlRendererWidget?.Exit();
+            _parent.GlRendererWidget?.Exit();
         }
 
         public bool DisplayErrorAppletDialog(string title, string message, string[] buttons)
