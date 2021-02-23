@@ -77,8 +77,8 @@ namespace Ryujinx.Ui.Windows
             {
                 if (!File.Exists(dlcContainer.Path))
                 {
-                    Console.WriteLine("DLC's have been deleted or moved, deleting " + _dlcJsonPath);
-                    GtkDialog.CreateErrorDialog("Your DLC's have been moved or deleted, please re-add them.");
+                    Console.WriteLine("DLC files has been moved or deleted; purging dlc.json file located at " + _dlcJsonPath);
+                    GtkDialog.CreateErrorDialog("DLC files have been moved or deleted; please re-add your DLC.");
                     File.Delete(_dlcJsonPath);
                     break; // don't handle current dlc.
                 }
