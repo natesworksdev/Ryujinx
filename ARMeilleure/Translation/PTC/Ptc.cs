@@ -740,6 +740,7 @@ namespace ARMeilleure.Translation.PTC
                 StatusHandler.ChangeStatus(_translateCount, profiledFuncsToTranslateCount, StatusType.PPTC);
             }
             while (!_loggerEvent.WaitOne(refreshRate * 1000));
+
             StatusHandler.DisableStatus();
             Logger.Info?.Print(LogClass.Ptc, $"{_translateCount} of {profiledFuncsToTranslateCount} functions translated");
         }
