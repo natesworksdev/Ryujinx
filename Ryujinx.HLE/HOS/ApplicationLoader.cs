@@ -331,14 +331,20 @@ namespace Ryujinx.HLE.HOS
             {
                 List<DlcContainer> dlcContainerList = JsonHelper.DeserializeFromFile<List<DlcContainer>>(titleAocMetadataPath);
 
+                bool dlcValid = true;
                 foreach (DlcContainer dlcContainer in dlcContainerList)
                 {
                     if (!File.Exists(dlcContainer.Path))
                     {
-                        Logger.Error?.PrintMsg(LogClass.Loader,"DLC files have been moved or deleted. Please use the DLC manager.");
+                        Logger.Error?.PrintMsg(LogClass.Loader, "DLC files have been moved or deleted. Please use the DLC manager.");
                         //_device.UiHandler.DisplayMessageDialog("DLC Issue.","DLC files have been moved or deleted. Please use the DLC manager.");
-                        break;
+                        dlcValid = false;
                     }
+                }
+
+                foreach (DlcContainer dlcContainer in dlcContainerList)
+                {
+                    if (!dlcValid) break;
                     foreach (DlcNca dlcNca in dlcContainer.DlcNcaList)
                     {
                         _contentManager.AddAocItem(dlcNca.TitleId, dlcContainer.Path, dlcNca.Path, dlcNca.Enabled);
