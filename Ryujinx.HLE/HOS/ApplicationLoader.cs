@@ -335,7 +335,7 @@ namespace Ryujinx.HLE.HOS
                 {
                     if (!File.Exists(dlcContainer.Path))
                     {
-                        Console.WriteLine("DLC files have been moved or deleted. Please use the DLC manager.");
+                        Logger.Warning?.PrintMsg(LogClass.Loader,"DLC files have been moved or deleted. Please use the DLC manager.");
                         //_device.UiHandler.DisplayMessageDialog("DLC Issue.","DLC files have been moved or deleted. Please use the DLC manager.");
                         break;
                     }

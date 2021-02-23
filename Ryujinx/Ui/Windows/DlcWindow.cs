@@ -5,6 +5,7 @@ using LibHac.Fs.Fsa;
 using LibHac.FsSystem;
 using LibHac.FsSystem.NcaUtils;
 using Ryujinx.Common.Configuration;
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.Ui.Widgets;
 using System;
@@ -77,7 +78,7 @@ namespace Ryujinx.Ui.Windows
             {
                 if (!File.Exists(dlcContainer.Path))
                 {
-                    Console.WriteLine("DLC files have been moved or deleted; purging dlc.json file located at " + _dlcJsonPath);
+                    Logger.Error?.PrintMsg(LogClass.Application, "DLC files have been moved or deleted; purging dlc.json file located at " + _dlcJsonPath);
                     GtkDialog.CreateErrorDialog("DLC files have been moved or deleted; please re-add your DLC.");
                     File.Delete(_dlcJsonPath);
                     break; // don't handle current dlc.
