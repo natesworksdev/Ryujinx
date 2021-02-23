@@ -339,6 +339,7 @@ namespace Ryujinx.HLE.HOS
                         Logger.Error?.PrintMsg(LogClass.Loader, "DLC files have been moved or deleted. Please use the DLC manager.");
                         //_device.UiHandler.DisplayMessageDialog("DLC Issue.","DLC files have been moved or deleted. Please use the DLC manager.");
                         dlcValid = false;
+                        break;
                     }
                 }
 
