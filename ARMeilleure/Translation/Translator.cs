@@ -12,8 +12,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime;
 using System.Threading;
 
+using static ARMeilleure.Common.BitMapPool;
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 using static ARMeilleure.IntermediateRepresentation.OperationHelper;
 
@@ -149,10 +151,12 @@ namespace ARMeilleure.Translation
 
                 ClearJitCache();
 
-                ResetPools();
+                DisposePools();
 
                 _jumpTable.Dispose();
                 _jumpTable = null;
+
+                GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
             }
         }
 
@@ -208,7 +212,7 @@ namespace ARMeilleure.Translation
 
             Logger.EndPass(PassName.Decoding);
 
-            PreparePool(highCq);
+            PreparePool(highCq ? 1 : 0);
 
             Logger.StartPass(PassName.Translation);
 
@@ -241,13 +245,15 @@ namespace ARMeilleure.Translation
             {
                 func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, options);
 
-                ReturnPool(highCq);
+                ResetPool(highCq ? 1 : 0);
             }
-            else using (PtcInfo ptcInfo = new PtcInfo())
+            else
             {
+                using PtcInfo ptcInfo = new PtcInfo();
+
                 func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, options, ptcInfo);
 
-                ReturnPool(highCq);
+                ResetPool(highCq ? 1 : 0);
 
                 Hash128 hash = Ptc.ComputeHash(memory, address, funcSize);
 
@@ -257,22 +263,23 @@ namespace ARMeilleure.Translation
             return new TranslatedFunction(func, funcSize, highCq);
         }
 
-        internal static void PreparePool(bool highCq)
+        internal static void PreparePool(int groupId = 0)
         {
-            PrepareOperandPool(highCq);
-            PrepareOperationPool(highCq);
+            PrepareOperandPool(groupId);
+            PrepareOperationPool(groupId);
         }
 
-        internal static void ReturnPool(bool highCq)
+        internal static void ResetPool(int groupId = 0)
         {
-            ReturnOperandPool(highCq);
-            ReturnOperationPool(highCq);
+            ResetOperationPool(groupId);
+            ResetOperandPool(groupId);
         }
 
-        internal static void ResetPools()
+        internal static void DisposePools()
         {
-            ResetOperandPools();
-            ResetOperationPools();
+            DisposeOperandPools();
+            DisposeOperationPools();
+            DisposeBitMapPools();
         }
 
         private struct Range
