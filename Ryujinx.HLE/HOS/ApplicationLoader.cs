@@ -299,6 +299,7 @@ namespace Ryujinx.HLE.HOS
 
         private void LoadNca(Nca mainNca, Nca patchNca, Nca controlNca)
         {
+            int invalidDlcCount = 0;
             if (mainNca.Header.ContentType != NcaContentType.Program)
             {
                 Logger.Error?.Print(LogClass.Loader, "Selected NCA is not a \"Program\" NCA");
@@ -331,7 +332,6 @@ namespace Ryujinx.HLE.HOS
             {
                 List<DlcContainer> dlcContainerList = JsonHelper.DeserializeFromFile<List<DlcContainer>>(titleAocMetadataPath);
 
-                int invalidDlcCount = 0;
                 foreach (DlcContainer dlcContainer in dlcContainerList)
                 {
                     if (!File.Exists(dlcContainer.Path))
@@ -343,11 +343,6 @@ namespace Ryujinx.HLE.HOS
                     {
                         _contentManager.AddAocItem(dlcNca.TitleId, dlcContainer.Path, dlcNca.Path, dlcNca.Enabled);
                     }
-                }
-                if (invalidDlcCount>0)
-                {
-                    Logger.Error?.PrintMsg(LogClass.Loader, invalidDlcCount + " DLC files have been moved or deleted. Please use the DLC manager.");
-                    //_device.UiHandler.DisplayMessageDialog("DLC Issue.","DLC files have been moved or deleted. Please use the DLC manager.");
                 }
             }
 
@@ -425,6 +420,8 @@ namespace Ryujinx.HLE.HOS
             LoadExeFs(codeFs, metaData);
 
             Logger.Info?.Print(LogClass.Loader, $"Application Loaded: {TitleName} v{DisplayVersion} [{TitleIdText}] [{(TitleIs64Bit ? "64-bit" : "32-bit")}]");
+            if (invalidDlcCount>0)
+                throw new Exception(invalidDlcCount + " DLC files have been moved or deleted. Please use the DLC manager.");
         }
 
         // Sets TitleId, so be sure to call before using it

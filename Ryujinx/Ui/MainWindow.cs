@@ -486,32 +486,46 @@ namespace Ryujinx.Ui
                 }
                 else if (File.Exists(path))
                 {
-                    switch (System.IO.Path.GetExtension(path).ToLowerInvariant())
+                    try
                     {
-                        case ".xci":
-                            Logger.Info?.Print(LogClass.Application, "Loading as XCI.");
-                            _emulationContext.LoadXci(path);
-                            break;
-                        case ".nca":
-                            Logger.Info?.Print(LogClass.Application, "Loading as NCA.");
-                            _emulationContext.LoadNca(path);
-                            break;
-                        case ".nsp":
-                        case ".pfs0":
-                            Logger.Info?.Print(LogClass.Application, "Loading as NSP.");
-                            _emulationContext.LoadNsp(path);
-                            break;
-                        default:
-                            Logger.Info?.Print(LogClass.Application, "Loading as homebrew.");
-                            try
-                            {
-                                _emulationContext.LoadProgram(path);
-                            }
-                            catch (ArgumentOutOfRangeException)
-                            {
-                                Logger.Error?.Print(LogClass.Application, "The file which you have specified is unsupported by Ryujinx.");
-                            }
-                            break;
+                        switch (System.IO.Path.GetExtension(path).ToLowerInvariant())
+                        {
+                            case ".xci":
+                                Logger.Info?.Print(LogClass.Application, "Loading as XCI.");
+                                _emulationContext.LoadXci(path);
+                                break;
+                            case ".nca":
+                                Logger.Info?.Print(LogClass.Application, "Loading as NCA.");
+                                _emulationContext.LoadNca(path);
+                                break;
+                            case ".nsp":
+                            case ".pfs0":
+                                Logger.Info?.Print(LogClass.Application, "Loading as NSP.");
+                                _emulationContext.LoadNsp(path);
+                                break;
+                            default:
+                                Logger.Info?.Print(LogClass.Application, "Loading as homebrew.");
+                                try
+                                {
+                                    _emulationContext.LoadProgram(path);
+                                }
+                                catch (ArgumentOutOfRangeException)
+                                {
+                                    Logger.Error?.Print(LogClass.Application, "The file which you have specified is unsupported by Ryujinx.");
+                                }
+                                break;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Error?.PrintMsg(LogClass.Loader, e.Message);
+                        bool continueGame = GtkDialog.CreateChoiceDialog("An error occurred while trying to load the game!",
+                           e.Message, "Would you like to continue?");
+                        if (!continueGame)
+                        {
+                            Logger.Warning?.PrintMsg(LogClass.Application, "Stopped loading game due to an exception!");
+                            return;
+                        }
                     }
                 }
                 else
