@@ -74,8 +74,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             _allOffsets = size.AllOffsets;
 
-            _hasLayerViews = hasLayerViews;
-            _hasMipViews = hasMipViews;
+            (_hasLayerViews, _hasMipViews) = PropagateGranularity(hasLayerViews, hasMipViews);
 
             RecalculateHandleRegions();
         }
@@ -299,6 +298,25 @@ namespace Ryujinx.Graphics.Gpu.Image
             int height = Math.Max(BitUtils.DivRoundUp(Storage.Info.Height, Storage.Info.FormatInfo.BlockHeight) >> level, 1);
 
             return width * height;
+        }
+
+        /// <summary>
+        /// Propagates the mip/layer view flags depending on the texture type.
+        /// When the most granular type of subresource has views, the other type of subresource must be segmented granularly too.
+        /// </summary>
+        /// <returns>The input values after propagation</returns>
+        private (bool HasLayerViews, bool HasMipViews) PropagateGranularity(bool hasLayerViews, bool hasMipViews)
+        {
+            if (_is3D)
+            {
+                hasMipViews |= hasLayerViews;
+            }
+            else
+            {
+                hasLayerViews |= hasMipViews;
+            }
+
+            return (hasLayerViews, hasMipViews);
         }
 
         /// <summary>
@@ -641,6 +659,8 @@ namespace Ryujinx.Graphics.Gpu.Image
                         mipViews = true;
                     }
                 }
+
+                (layerViews, mipViews) = PropagateGranularity(layerViews, mipViews);
 
                 if (layerViews != _hasLayerViews || mipViews != _hasMipViews)
                 {
