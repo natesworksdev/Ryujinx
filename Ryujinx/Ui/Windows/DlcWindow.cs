@@ -74,22 +74,14 @@ namespace Ryujinx.Ui.Windows
             _dlcTreeView.AppendColumn("TitleId", new CellRendererText(), "text",   1);
             _dlcTreeView.AppendColumn("Path",    new CellRendererText(), "text",   2);
 
-            bool dlcValid = true;
+            int invalidDlcCount = 0;           
             foreach (DlcContainer dlcContainer in _dlcContainerList)
             {
                 if (!File.Exists(dlcContainer.Path))
                 {
-                    Logger.Error?.PrintMsg(LogClass.Application, "DLC files have been moved or deleted; purging dlc.json file located at " + _dlcJsonPath);
-                    GtkDialog.CreateErrorDialog("DLC files have been moved or deleted; please re-add your DLC.");
-                    File.Delete(_dlcJsonPath);
-                    dlcValid = false;
-                    break; // don't handle current dlc.
+                    invalidDlcCount++;
+                    continue; // skip invalid dlc (next save, no invalid dlc!)
                 }
-            }
-           
-            foreach (DlcContainer dlcContainer in _dlcContainerList)
-            {
-                if (!dlcValid) break;
                 TreeIter parentIter = ((TreeStore)_dlcTreeView.Model).AppendValues(false, "", dlcContainer.Path);
 
                 using FileStream containerFile = File.OpenRead(dlcContainer.Path);
@@ -106,6 +98,11 @@ namespace Ryujinx.Ui.Windows
                         ((TreeStore)_dlcTreeView.Model).AppendValues(parentIter, dlcNca.Enabled, nca.Header.TitleId.ToString("X16"), dlcNca.Path);
                     }
                 }
+            }
+            if(invalidDlcCount>0)
+            {
+                Logger.Error?.PrintMsg(LogClass.Application, "DLC files have been moved or deleted; skipping " + invalidDlcCount +" DLC files");
+                GtkDialog.CreateErrorDialog(invalidDlcCount + " DLC files have been moved or deleted; please re-add your DLC.");
             }
         }
 
