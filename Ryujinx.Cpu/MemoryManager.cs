@@ -218,6 +218,8 @@ namespace Ryujinx.Cpu
         {
             try
             {
+                AssertValidAddressAndSize(va, (ulong)data.Length);
+
                 if (IsContiguousAndMapped(va, data.Length))
                 {
                     data.CopyTo(_backingMemory.GetSpan(GetPhysicalAddressInternal(va), data.Length));
@@ -454,6 +456,8 @@ namespace Ryujinx.Cpu
 
             try
             {
+                AssertValidAddressAndSize(va, (ulong)data.Length);
+
                 int offset = 0, size;
 
                 if ((va & PageMask) != 0)

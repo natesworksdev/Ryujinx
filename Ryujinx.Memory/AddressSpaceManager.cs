@@ -142,6 +142,8 @@ namespace Ryujinx.Memory
                 return;
             }
 
+            AssertValidAddressAndSize(va, (ulong)data.Length);
+
             if (IsContiguousAndMapped(va, data.Length))
             {
                 data.CopyTo(_backingMemory.GetSpan(GetPhysicalAddressInternal(va), data.Length));
@@ -326,6 +328,8 @@ namespace Ryujinx.Memory
             {
                 return;
             }
+
+            AssertValidAddressAndSize(va, (ulong)data.Length);
 
             int offset = 0, size;
 
