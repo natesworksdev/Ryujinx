@@ -328,14 +328,13 @@ namespace Ryujinx.Modules
         
         private static void SetUnixPermissions()
         {
-            string ryuBin  = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx");
+            string ryuBin = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx");
 
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 UnixFileInfo unixFileInfo = new UnixFileInfo(ryuBin);
                 unixFileInfo.FileAccessPermissions |= FileAccessPermissions.UserExecute;
             }
-
         }
 
         private static async void InstallUpdate(UpdateDialog updateDialog, string updateFile)
