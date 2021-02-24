@@ -521,7 +521,7 @@ namespace Ryujinx.Ui
                     {
                         Logger.Error?.PrintMsg(LogClass.Loader, e.Message);
                         bool continueGame = GtkDialog.CreateChoiceDialog("An error occurred while trying to load the game!",
-                           e.Message, "Would you like to continue? (pressing no will restart ryujinx)");
+                           e.Message, "Would you like to continue playing? (pressing no will restart ryujinx)");
                         if (!continueGame)
                         {
                             Logger.Warning?.PrintMsg(LogClass.Application, "Stopped loading game due to an exception!");
