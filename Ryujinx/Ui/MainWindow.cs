@@ -520,11 +520,11 @@ namespace Ryujinx.Ui
                     catch (Exception e)
                     {
                         Logger.Error?.PrintMsg(LogClass.Loader, e.Message);
-                        bool continueGame = GtkDialog.CreateChoiceDialog("An error occurred while trying to load the game!",
-                           e.Message, "Would you like to continue playing? (pressing no will restart ryujinx)");
+                        bool continueGame = GtkDialog.CreateChoiceDialog("Game Load Error",
+                           e.Message, "Continue loading anyway? Pressing \"No\" will restart the emulator.");
                         if (!continueGame)
                         {
-                            Logger.Warning?.PrintMsg(LogClass.Application, "Stopped loading game due to an exception!");
+                            Logger.Warning?.PrintMsg(LogClass.Application, "Game launch was aborted due to an exception");
                             string ryuName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "Ryujinx.exe" : "Ryujinx";
                             string ryuExe = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ryuName);
                             string ryuArg = string.Join(" ", Environment.GetCommandLineArgs().AsEnumerable().Skip(1).ToArray());
