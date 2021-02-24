@@ -397,14 +397,9 @@ namespace Ryujinx.Ui.Windows
                 ConfigurationState.Instance.System.TimeZone.Value = _systemTimeZoneEntry.Text;
             }
 
-            if(ConfigurationState.Instance.Graphics.EnableVsync.Value != _vSyncToggle.Active)
+            if (ConfigurationState.Instance.Graphics.EnableVsync.Value != _vSyncToggle.Active)
             {
-                Logger.Notice.Print(LogClass.Application, $"Vsync changed to: {_vSyncToggle.Active}");
-            }
-
-            if(ConfigurationState.Instance.System.EnableDockedMode.Value != _dockedModeToggle.Active)
-            {
-                Logger.Notice.Print(LogClass.Application, $"IsDocked changed to: {_dockedModeToggle.Active}");
+                Logger.Notice.Print(LogClass.Application, $"Vsync toggled to: {_vSyncToggle.Active}");
             }
 
             ConfigurationState.Instance.Logger.EnableError.Value               = _errorLogToggle.Active;

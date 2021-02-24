@@ -7,6 +7,7 @@ using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
+using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
 using Ryujinx.Graphics.OpenGL;
 using Ryujinx.HLE;
@@ -658,6 +659,8 @@ namespace Ryujinx.Ui
                     !_prevHotkeyButtons.HasFlag(HotkeyButtons.ToggleVSync))
                 {
                     _device.EnableDeviceVsync = !_device.EnableDeviceVsync;
+
+                    Logger.Notice.Print(LogClass.Application, $"Vsync toggled to: {_device.EnableDeviceVsync}");
                 }
 
                 _prevHotkeyButtons = currentHotkeyButtons;
