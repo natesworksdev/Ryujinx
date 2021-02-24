@@ -22,6 +22,7 @@ using Ryujinx.Ui.Windows;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -520,10 +521,15 @@ namespace Ryujinx.Ui
                     {
                         Logger.Error?.PrintMsg(LogClass.Loader, e.Message);
                         bool continueGame = GtkDialog.CreateChoiceDialog("An error occurred while trying to load the game!",
-                           e.Message, "Would you like to continue?");
+                           e.Message, "Would you like to continue? (pressing no will restart ryujinx)");
                         if (!continueGame)
                         {
                             Logger.Warning?.PrintMsg(LogClass.Application, "Stopped loading game due to an exception!");
+                            string ryuName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "Ryujinx.exe" : "Ryujinx";
+                            string ryuExe = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ryuName);
+                            string ryuArg = string.Join(" ", Environment.GetCommandLineArgs().AsEnumerable().Skip(1).ToArray());
+                            Process.Start(ryuExe, ryuArg);
+                            Environment.Exit(0);
                             return;
                         }
                     }
