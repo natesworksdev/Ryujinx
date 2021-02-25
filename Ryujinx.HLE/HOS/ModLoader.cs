@@ -332,7 +332,7 @@ namespace Ryujinx.HLE.HOS
                         }
 
                         // Add the previous section to the list.
-                        if (instructions.Count != 0 || !StrEquals(cheatName, DefaultCheatName))
+                        if (instructions.Count != 0)
                         {
                             cheats.Add(new Cheat($"<{cheatName} Cheat>", cheatFile, instructions));
                         }
@@ -349,7 +349,7 @@ namespace Ryujinx.HLE.HOS
                 }
 
                 // Add the last section being processed.
-                if (instructions.Count != 0 || !StrEquals(cheatName, DefaultCheatName))
+                if (instructions.Count != 0)
                 {
                     cheats.Add(new Cheat($"<{cheatName} Cheat>", cheatFile, instructions));
                 }
