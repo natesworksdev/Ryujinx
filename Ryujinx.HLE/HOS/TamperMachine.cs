@@ -108,9 +108,10 @@ namespace Ryujinx.HLE.HOS
                 return true;
             }
 
-            Logger.Debug?.Print(LogClass.TamperMachine, "Running tampering program");
+            // Re-enqueue the tampering program because the process is still valid.
+            _programs.Enqueue(program);
 
-            bool removeProgram = false;
+            Logger.Debug?.Print(LogClass.TamperMachine, "Running tampering program");
 
             try
             {
@@ -119,13 +120,11 @@ namespace Ryujinx.HLE.HOS
             }
             catch (CodeRegionTamperedException ex)
             {
-                removeProgram = true;
-
-                Logger.Error?.Print(LogClass.TamperMachine, $"Removing tampering program from the list because it alters the code region");
+                Logger.Debug?.Print(LogClass.TamperMachine, $"Prevented tampering program from modifing code memory");
 
                 if (!String.IsNullOrEmpty(ex.Message))
                 {
-                    Logger.Error?.Print(LogClass.TamperMachine, ex.Message);
+                    Logger.Debug?.Print(LogClass.TamperMachine, ex.Message);
                 }
             }
             catch (Exception ex)
@@ -136,12 +135,6 @@ namespace Ryujinx.HLE.HOS
                 {
                     Logger.Debug?.Print(LogClass.TamperMachine, ex.Message);
                 }
-            }
-
-            if (!removeProgram)
-            {
-                // Re-enqueue the tampering program because it and its process are still valid.
-                _programs.Enqueue(program);
             }
 
             return true;
