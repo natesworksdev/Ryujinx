@@ -37,7 +37,7 @@ namespace Ryujinx.Audio.Backends.Dummy
         {
             if (sampleRate == 0)
             {
-                sampleRate = 48000;
+                sampleRate = Constants.TargetSampleRate;
             }
 
             if (channelCount == 0)

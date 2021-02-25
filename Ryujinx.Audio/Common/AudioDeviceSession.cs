@@ -331,17 +331,6 @@ namespace Ryujinx.Audio.Common
         {
             // NOTE: On hardware, there is another RegisterBuffer method taking an handle.
             // This variant of the call always return false (stubbed?) as a result this logic will never succeed.
-            /*if (_hardwareDeviceSession.RegisterBuffer(buffer, handle))
-            {
-                if (RegisterBuffer(buffer))
-                {
-                    FlushToHardware();
-
-                    return true;
-                }
-
-                _hardwareDeviceSession.UnregisterBuffer(buffer);
-            }*/
 
             return false;
         }

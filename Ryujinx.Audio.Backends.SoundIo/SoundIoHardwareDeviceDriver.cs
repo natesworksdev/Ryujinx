@@ -161,21 +161,15 @@ namespace Ryujinx.Audio.Backends.SoundIo
 
         public static SoundIOFormat GetSoundIoFormat(SampleFormat format)
         {
-            switch (format)
+            return format switch
             {
-                case SampleFormat.PcmInt8:
-                    return SoundIOFormat.S8;
-                case SampleFormat.PcmInt16:
-                    return SoundIOFormat.S16LE;
-                case SampleFormat.PcmInt24:
-                    return SoundIOFormat.S24LE;
-                case SampleFormat.PcmInt32:
-                    return SoundIOFormat.S32LE;
-                case SampleFormat.PcmFloat:
-                    return SoundIOFormat.Float32LE;
-                default:
-                    throw new NotImplementedException($"Unsupported sample format {format}");
-            }
+                SampleFormat.PcmInt8 => SoundIOFormat.S8,
+                SampleFormat.PcmInt16 => SoundIOFormat.S16LE,
+                SampleFormat.PcmInt24 => SoundIOFormat.S24LE,
+                SampleFormat.PcmInt32 => SoundIOFormat.S32LE,
+                SampleFormat.PcmFloat => SoundIOFormat.Float32LE,
+                _ => throw new ArgumentException ($"Unsupported sample format {format}"),
+            };
         }
 
         internal SoundIOOutStream OpenStream(SampleFormat requestedSampleFormat, uint requestedSampleRate, uint requestedChannelCount)

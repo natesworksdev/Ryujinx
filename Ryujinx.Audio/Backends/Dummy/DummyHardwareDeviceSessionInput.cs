@@ -43,7 +43,7 @@ namespace Ryujinx.Audio.Backends.Dummy
         public ulong GetPlayedSampleCount()
         {
             // Not implemented for input.
-            throw new InvalidOperationException();
+            throw new NotSupportedException();
         }
 
         public float GetVolume()
