@@ -37,7 +37,7 @@ namespace Ryujinx.HLE.HOS.Tamper.CodeEmitters
             // C0TcS1Mr
             // C0TcS2Ra aaaaaaaa
             // C0TcS3Rr
-            // C0TcS400 VVVVVVVV(VVVVVVVV)
+            // C0TcS400 VVVVVVVV (VVVVVVVV)
             // C0TcS5X0
             // T: Width of memory write(1, 2, 4, or 8 bytes).
             // c: Condition to use, see below.

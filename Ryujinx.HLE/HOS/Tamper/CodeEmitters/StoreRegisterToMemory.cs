@@ -61,7 +61,7 @@ namespace Ryujinx.HLE.HOS.Tamper.CodeEmitters
                     break;
                 case OffsetImmediate:
                     // *(#a) = $S
-                    destinationMemory = MemoryHelper.EmitPointer(immediate, context);
+                    destinationMemory = MemoryHelper.EmitPointer(addressRegister, immediate, context);
                     break;
                 case MemoryRegionWithOffsetRegister:
                     // *(?x + $R) = $S
