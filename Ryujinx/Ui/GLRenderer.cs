@@ -660,7 +660,7 @@ namespace Ryujinx.Ui
                 {
                     _device.EnableDeviceVsync = !_device.EnableDeviceVsync;
 
-                    Logger.Notice.Print(LogClass.Application, $"Vsync toggled to: {_device.EnableDeviceVsync}");
+                    Logger.Info?.Print(LogClass.Application, $"Vsync toggled to: {_device.EnableDeviceVsync}");
                 }
 
                 _prevHotkeyButtons = currentHotkeyButtons;

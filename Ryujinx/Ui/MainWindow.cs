@@ -842,7 +842,7 @@ namespace Ryujinx.Ui
         {
             _emulationContext.EnableDeviceVsync = !_emulationContext.EnableDeviceVsync;
 
-            Logger.Notice.Print(LogClass.Application, $"VSync toggled to: {_emulationContext.EnableDeviceVsync}");
+            Logger.Info?.Print(LogClass.Application, $"VSync toggled to: {_emulationContext.EnableDeviceVsync}");
         }
 
         private void DockedMode_Clicked(object sender, ButtonReleaseEventArgs args)

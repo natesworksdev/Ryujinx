@@ -138,9 +138,9 @@ namespace Ryujinx.HLE
             Hid.RefreshInputConfig(ConfigurationState.Instance.Hid.InputConfig.Value);
             ConfigurationState.Instance.Hid.InputConfig.Event += Hid.RefreshInputConfigEvent;
 
-            Logger.Notice.Print(LogClass.Application, $"AudioBackend: {ConfigurationState.Instance.System.AudioBackend.Value}");
-            Logger.Notice.Print(LogClass.Application, $"IsDocked: {ConfigurationState.Instance.System.EnableDockedMode.Value}");
-            Logger.Notice.Print(LogClass.Application, $"Vsync: {ConfigurationState.Instance.Graphics.EnableVsync.Value}");
+            Logger.Info?.Print(LogClass.Application, $"AudioBackend: {ConfigurationState.Instance.System.AudioBackend.Value}");
+            Logger.Info?.Print(LogClass.Application, $"IsDocked: {ConfigurationState.Instance.System.EnableDockedMode.Value}");
+            Logger.Info?.Print(LogClass.Application, $"Vsync: {ConfigurationState.Instance.Graphics.EnableVsync.Value}");
         }
 
         public static IntegrityCheckLevel GetIntegrityCheckLevel()

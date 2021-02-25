@@ -397,11 +397,6 @@ namespace Ryujinx.Ui.Windows
                 ConfigurationState.Instance.System.TimeZone.Value = _systemTimeZoneEntry.Text;
             }
 
-            if (ConfigurationState.Instance.Graphics.EnableVsync.Value != _vSyncToggle.Active)
-            {
-                Logger.Notice.Print(LogClass.Application, $"Vsync toggled to: {_vSyncToggle.Active}");
-            }
-
             ConfigurationState.Instance.Logger.EnableError.Value               = _errorLogToggle.Active;
             ConfigurationState.Instance.Logger.EnableWarn.Value                = _warningLogToggle.Active;
             ConfigurationState.Instance.Logger.EnableInfo.Value                = _infoLogToggle.Active;
@@ -441,7 +436,8 @@ namespace Ryujinx.Ui.Windows
                 if (audioBackend != ConfigurationState.Instance.System.AudioBackend.Value)
                 { 
                     ConfigurationState.Instance.System.AudioBackend.Value = audioBackend;
-                    Logger.Notice.Print(LogClass.Application, $"AudioBackend changed to: {audioBackend}");
+
+                    Logger.Info?.Print(LogClass.Application, $"AudioBackend toggled to: {audioBackend}");
                 }
             }
 

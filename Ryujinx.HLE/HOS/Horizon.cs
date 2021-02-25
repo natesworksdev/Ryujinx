@@ -289,7 +289,7 @@ namespace Ryujinx.HLE.HOS
                 // Reconfigure controllers
                 Device.Hid.RefreshInputConfig(ConfigurationState.Instance.Hid.InputConfig.Value);
 
-                Logger.Notice.Print(LogClass.Application, $"IsDocked toggled to: {State.DockedMode}");
+                Logger.Info?.Print(LogClass.Application, $"IsDocked toggled to: {State.DockedMode}");
             }
         }
 
