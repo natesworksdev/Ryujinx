@@ -80,6 +80,24 @@ namespace Ryujinx.Graphics.Gpu
         internal Capabilities Capabilities => _caps.Value;
 
         /// <summary>
+        /// Passthrough for ShaderCache.ShaderCacheStateChanged event
+        /// </summary>
+        public event Action<bool> ShaderCacheStateChanged
+        {
+            add => Methods.ShaderCache.ShaderCacheStateChanged += value;
+            remove => Methods.ShaderCache.ShaderCacheStateChanged -= value;
+        }
+
+        /// <summary>
+        /// Passthrough for ShaderCache.ShaderCacheProgressChanged event
+        /// </summary>
+        public event Action<int, int> ShaderCacheProgressChanged
+        {
+            add => Methods.ShaderCache.ShaderCacheProgressChanged += value;
+            remove => Methods.ShaderCache.ShaderCacheProgressChanged -= value;
+        }
+
+        /// <summary>
         /// Creates a new instance of the GPU emulation context.
         /// </summary>
         /// <param name="renderer">Host renderer</param>

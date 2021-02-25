@@ -99,6 +99,8 @@ namespace Ryujinx.Ui
         [GUI] Label           _loadingStatusLabel;
         [GUI] ProgressBar     _loadingStatusBar;
 
+        private string        _loadingStatusTitle = "";
+
 #pragma warning restore CS0649, IDE0044, CS0169
 
         public MainWindow() : this(new Builder("Ryujinx.Ui.MainWindow.glade")) { }
@@ -335,6 +337,48 @@ namespace Ryujinx.Ui
             _emulationContext.Initialize();
         }
 
+        private void SetupProgressUiHandlers()
+        {
+            Ptc.PtcTranslationStateChanged -= PtcStatusChanged;
+            Ptc.PtcTranslationStateChanged += PtcStatusChanged;
+
+            Ptc.PtcTranslationProgressChanged -= LoadingProgressChanged;
+            Ptc.PtcTranslationProgressChanged += LoadingProgressChanged;
+
+            _emulationContext.Gpu.ShaderCacheStateChanged -= ShaderCacheStatusChanged;
+            _emulationContext.Gpu.ShaderCacheStateChanged += ShaderCacheStatusChanged;
+
+            _emulationContext.Gpu.ShaderCacheProgressChanged -= LoadingProgressChanged;
+            _emulationContext.Gpu.ShaderCacheProgressChanged += LoadingProgressChanged;
+        }
+
+        private void ShaderCacheStatusChanged(bool state)
+        {
+            _loadingStatusTitle = "Shaders";
+            Application.Invoke(delegate
+            {
+                _loadingStatusBar.Visible = _loadingStatusLabel.Visible = state;
+            });
+        }
+
+        private void PtcStatusChanged(bool state)
+        {
+            _loadingStatusTitle = "PTC";
+            Application.Invoke(delegate
+            {
+                _loadingStatusBar.Visible = _loadingStatusLabel.Visible = state;
+            });
+        }
+
+        private void LoadingProgressChanged(int value, int total)
+        {
+            Application.Invoke(delegate
+            {
+                _loadingStatusBar.Fraction = (double)value / total;
+                _loadingStatusLabel.Text = $"{_loadingStatusTitle} : {value}/{total}";
+            });
+        }
+
         public void UpdateGameTable()
         {
             if (_updatingGameTable || _gameLoaded)
@@ -532,6 +576,8 @@ namespace Ryujinx.Ui
                 _currentEmulatedGamePath = path;
 
                 _deviceExitStatus.Reset();
+
+                SetupProgressUiHandlers();
 
                 Translator.IsReadyForTranslation.Reset();
 #if MACOS_BUILD
