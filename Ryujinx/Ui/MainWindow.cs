@@ -92,10 +92,12 @@ namespace Ryujinx.Ui
         [GUI] Label           _gpuName;
         [GUI] Label           _progressLabel;
         [GUI] Label           _firmwareVersionLabel;
-        [GUI] LevelBar        _progressBar;
+        [GUI] ProgressBar     _progressBar;
         [GUI] Box             _viewBox;
         [GUI] Label           _vSyncStatus;
         [GUI] Box             _listStatusBox;
+        [GUI] Label           _loadingStatusLabel;
+        [GUI] ProgressBar     _loadingStatusBar;
 
 #pragma warning restore CS0649, IDE0044, CS0169
 
@@ -775,7 +777,7 @@ namespace Ryujinx.Ui
                     barValue = (float)args.NumAppsLoaded / args.NumAppsFound;
                 }
 
-                _progressBar.Value = barValue;
+                _progressBar.Fraction = barValue;
 
                 // Reset the vertical scrollbar to the top when titles finish loading
                 if (args.NumAppsLoaded == args.NumAppsFound)
