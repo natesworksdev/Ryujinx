@@ -138,7 +138,7 @@ namespace Ryujinx.Modules
             {
                 if (showVersionUpToDate)
                 {
-                    GtkDialog.CreateUpdaterInfoDialog("You are already using the most updated version of Ryujinx!", "");
+                    GtkDialog.CreateUpdaterInfoDialog("You are already using the latest version of Ryujinx!", "");
                 }
 
                 Running = false;
