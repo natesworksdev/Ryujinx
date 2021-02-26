@@ -22,7 +22,7 @@ namespace Ryujinx.Ui.Windows
     {
         private readonly PlayerIndex _playerIndex;
         private readonly InputConfig _inputConfig;
-
+        private readonly string      _gameId;
         private bool _isWaitingForInput;
 
 #pragma warning disable CS0649, IDE0044
@@ -91,18 +91,27 @@ namespace Ryujinx.Ui.Windows
         [GUI] Image        _controllerImage;
 #pragma warning restore CS0649, IDE0044
 
-        public ControllerWindow(PlayerIndex controllerId) : this(new Builder("Ryujinx.Ui.Windows.ControllerWindow.glade"), controllerId) { }
+        public ControllerWindow(PlayerIndex controllerId, string gameId = null) : this(new Builder("Ryujinx.Ui.Windows.ControllerWindow.glade"), controllerId, gameId) { }
 
-        private ControllerWindow(Builder builder, PlayerIndex controllerId) : base(builder.GetObject("_controllerWin").Handle)
+        private ControllerWindow(Builder builder, PlayerIndex controllerId, string gameId) : base(builder.GetObject("_controllerWin").Handle)
         {
             Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.Resources.Logo_Ryujinx.png");
 
             builder.Autoconnect(this);
 
             _playerIndex = controllerId;
-            _inputConfig = ConfigurationState.Instance.Hid.InputConfig.Value.Find(inputConfig => inputConfig.PlayerIndex == _playerIndex);
+            _gameId      = gameId;
 
-            Title = $"Ryujinx - Controller Settings - {_playerIndex}";
+            if (gameId != null)
+            {
+                Title = $"Ryujinx - Controller Settings - {_playerIndex}";
+                _inputConfig = GameConfigurationState.Instance.Hid.InputConfig.Value.Find(inputConfig => inputConfig.PlayerIndex == _playerIndex);
+            }
+            else
+            {
+                Title = $"Ryujinx - Controller Settings - {_playerIndex}";
+                _inputConfig = ConfigurationState.Instance.Hid.InputConfig.Value.Find(inputConfig => inputConfig.PlayerIndex == _playerIndex);
+            }
 
             if (_playerIndex == PlayerIndex.Handheld)
             {
@@ -925,7 +934,15 @@ namespace Ryujinx.Ui.Windows
             InputConfig inputConfig = GetValues();
 
             var newConfig = new List<InputConfig>();
-            newConfig.AddRange(ConfigurationState.Instance.Hid.InputConfig.Value);
+
+            if (_gameId != null)
+            {
+                newConfig.AddRange(GameConfigurationState.Instance.Hid.InputConfig.Value);
+            }
+            else
+            {
+                newConfig.AddRange(ConfigurationState.Instance.Hid.InputConfig.Value);
+            }
 
             if (_inputConfig == null && inputConfig != null)
             {
@@ -947,9 +964,28 @@ namespace Ryujinx.Ui.Windows
 
             // Atomically replace and signal input change.
             // NOTE: Do not modify InputConfig.Value directly as other code depends on the on-change event.
-            ConfigurationState.Instance.Hid.InputConfig.Value = newConfig;
 
-            ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+            if (_gameId != null)
+            { 
+                GameConfigurationState.Instance.Hid.InputConfig.Value = newConfig;
+
+                string localConfigurationPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"{_gameId}.json");
+                string appDataConfigurationPath = System.IO.Path.Combine(AppDataManager.BaseDirPath, $"{_gameId}.json");
+
+                // Now load the configuration as the other subsystems are now registered
+                string ConfigurationPath = File.Exists(localConfigurationPath)
+                    ? localConfigurationPath
+                    : File.Exists(appDataConfigurationPath)
+                        ? appDataConfigurationPath
+                        : null;
+
+                GameConfigurationState.Instance.ToFileFormat().SaveConfig(ConfigurationPath);
+            }
+            else
+            {
+                ConfigurationState.Instance.Hid.InputConfig.Value = newConfig;
+                ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+            }
 
             Dispose();
         }

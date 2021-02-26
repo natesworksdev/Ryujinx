@@ -1161,7 +1161,7 @@ namespace Ryujinx.Ui
 
         private void Settings_Pressed(object sender, EventArgs args)
         {
-            SettingsWindow settingsWindow = new SettingsWindow(this, _virtualFileSystem, _contentManager);
+            SettingsWindow settingsWindow = new SettingsWindow(this, _virtualFileSystem, _contentManager, _emulationContext?.Application?.TitleName, _emulationContext?.Application?.TitleIdText);
 
             settingsWindow.SetSizeRequest((int)(settingsWindow.DefaultWidth * Program.WindowScaleFactor), (int)(settingsWindow.DefaultHeight * Program.WindowScaleFactor));
             settingsWindow.Show();

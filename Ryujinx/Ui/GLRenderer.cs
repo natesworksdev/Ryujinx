@@ -519,7 +519,7 @@ namespace Ryujinx.Ui
 
             HideCursorIdle();
 
-            foreach (InputConfig inputConfig in ConfigurationState.Instance.Hid.InputConfig.Value)
+            foreach (InputConfig inputConfig in GameConfigurationState.Instance.Hid.InputConfig.Value)
             {
                 ControllerKeys   currentButton = 0;
                 JoystickPosition leftJoystick  = new JoystickPosition();
