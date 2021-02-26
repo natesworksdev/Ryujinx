@@ -127,42 +127,42 @@ namespace Ryujinx.Ui.Windows
             LoadGameSpecificConfiguration();
             
             // Setup Currents.
-            if (ConfigurationState.Instance.Logger.EnableFileLog)
+            if (GameConfigurationState.Instance.Logger.EnableFileLog && ConfigurationState.Instance.Logger.EnableFileLog)
             {
                 _fileLogToggle.Click();
             }
 
-            if (ConfigurationState.Instance.Logger.EnableError)
+            if (GameConfigurationState.Instance.Logger.EnableError && ConfigurationState.Instance.Logger.EnableError)
             {
                 _errorLogToggle.Click();
             }
 
-            if (ConfigurationState.Instance.Logger.EnableWarn)
+            if (GameConfigurationState.Instance.Logger.EnableWarn && ConfigurationState.Instance.Logger.EnableWarn)
             {
                 _warningLogToggle.Click();
             }
 
-            if (ConfigurationState.Instance.Logger.EnableInfo)
+            if (GameConfigurationState.Instance.Logger.EnableInfo && ConfigurationState.Instance.Logger.EnableInfo)
             {
                 _infoLogToggle.Click();
             }
 
-            if (ConfigurationState.Instance.Logger.EnableStub)
+            if (GameConfigurationState.Instance.Logger.EnableStub && ConfigurationState.Instance.Logger.EnableStub)
             {
                 _stubLogToggle.Click();
             }
 
-            if (ConfigurationState.Instance.Logger.EnableDebug)
+            if (GameConfigurationState.Instance.Logger.EnableDebug && ConfigurationState.Instance.Logger.EnableDebug)
             {
                 _debugLogToggle.Click();
             }
 
-            if (ConfigurationState.Instance.Logger.EnableGuest)
+            if (GameConfigurationState.Instance.Logger.EnableGuest && ConfigurationState.Instance.Logger.EnableGuest)
             {
                 _guestLogToggle.Click();
             }
 
-            if (ConfigurationState.Instance.Logger.EnableFsAccessLog)
+            if (GameConfigurationState.Instance.Logger.EnableFsAccessLog && ConfigurationState.Instance.Logger.EnableFsAccessLog)
             {
                 _fsAccessLogToggle.Click();
             }
@@ -172,9 +172,9 @@ namespace Ryujinx.Ui.Windows
                 _graphicsDebugLevel.Append(level.ToString(), level.ToString());
             }
 
-            _graphicsDebugLevel.SetActiveId(ConfigurationState.Instance.Logger.GraphicsDebugLevel.Value.ToString());
+            _graphicsDebugLevel.SetActiveId(GameConfigurationState.Instance.Logger.GraphicsDebugLevel.Value.ToString());
 
-            if (ConfigurationState.Instance.System.EnableDockedMode)
+            if (GameConfigurationState.Instance.System.EnableDockedMode && ConfigurationState.Instance.System.EnableDockedMode)
             {
                 _dockedModeToggle.Click();
             }
@@ -199,32 +199,32 @@ namespace Ryujinx.Ui.Windows
                 _hideCursorOnIdleToggle.Click();
             }
 
-            if (ConfigurationState.Instance.Graphics.EnableVsync)
+            if (GameConfigurationState.Instance.Graphics.EnableVsync && ConfigurationState.Instance.Graphics.EnableVsync)
             {
                 _vSyncToggle.Click();
             }
 
-            if (ConfigurationState.Instance.Graphics.EnableShaderCache)
+            if (GameConfigurationState.Instance.Graphics.EnableShaderCache && ConfigurationState.Instance.Graphics.EnableShaderCache)
             {
                 _shaderCacheToggle.Click();
             }
 
-            if (ConfigurationState.Instance.System.EnablePtc)
+            if (GameConfigurationState.Instance.System.EnablePtc && ConfigurationState.Instance.System.EnablePtc)
             {
                 _ptcToggle.Click();
             }
 
-            if (ConfigurationState.Instance.System.EnableFsIntegrityChecks)
+            if (GameConfigurationState.Instance.System.EnableFsIntegrityChecks && ConfigurationState.Instance.System.EnableFsIntegrityChecks)
             {
                 _fsicToggle.Click();
             }
 
-            if (ConfigurationState.Instance.System.IgnoreMissingServices)
+            if (GameConfigurationState.Instance.System.IgnoreMissingServices && ConfigurationState.Instance.System.IgnoreMissingServices)
             {
                 _ignoreToggle.Click();
             }
 
-            if (ConfigurationState.Instance.Hid.EnableKeyboard)
+            if (GameConfigurationState.Instance.Hid.EnableKeyboard && ConfigurationState.Instance.Hid.EnableKeyboard)
             {
                 _directKeyboardAccess.Click();
             }
@@ -267,18 +267,18 @@ namespace Ryujinx.Ui.Windows
 
             _systemTimeZoneCompletion.MatchFunc = TimeZoneMatchFunc;
 
-            _systemLanguageSelect.SetActiveId(ConfigurationState.Instance.System.Language.Value.ToString());
-            _systemRegionSelect.SetActiveId(ConfigurationState.Instance.System.Region.Value.ToString());
-            _resScaleCombo.SetActiveId(ConfigurationState.Instance.Graphics.ResScale.Value.ToString());
-            _anisotropy.SetActiveId(ConfigurationState.Instance.Graphics.MaxAnisotropy.Value.ToString());
-            _aspectRatio.SetActiveId(((int)ConfigurationState.Instance.Graphics.AspectRatio.Value).ToString());
+            _systemLanguageSelect.SetActiveId(GameConfigurationState.Instance.System.Language.Value.ToString());
+            _systemRegionSelect.SetActiveId(GameConfigurationState.Instance.System.Region.Value.ToString());
+            _resScaleCombo.SetActiveId(GameConfigurationState.Instance.Graphics.ResScale.Value.ToString());
+            _anisotropy.SetActiveId(GameConfigurationState.Instance.Graphics.MaxAnisotropy.Value.ToString());
+            _aspectRatio.SetActiveId(((int)GameConfigurationState.Instance.Graphics.AspectRatio.Value).ToString());
 
             _custThemePath.Buffer.Text           = ConfigurationState.Instance.Ui.CustomThemePath;
-            _resScaleText.Buffer.Text            = ConfigurationState.Instance.Graphics.ResScaleCustom.Value.ToString();
+            _resScaleText.Buffer.Text            = GameConfigurationState.Instance.Graphics.ResScaleCustom.Value.ToString();
             _resScaleText.Visible                = _resScaleCombo.ActiveId == "-1";
-            _graphicsShadersDumpPath.Buffer.Text = ConfigurationState.Instance.Graphics.ShadersDumpPath;
-            _fsLogSpinAdjustment.Value           = ConfigurationState.Instance.System.FsGlobalAccessLogMode;
-            _systemTimeOffset                    = ConfigurationState.Instance.System.SystemTimeOffset;
+            _graphicsShadersDumpPath.Buffer.Text = GameConfigurationState.Instance.Graphics.ShadersDumpPath;
+            _fsLogSpinAdjustment.Value           = GameConfigurationState.Instance.System.FsGlobalAccessLogMode;
+            _systemTimeOffset                    = GameConfigurationState.Instance.System.SystemTimeOffset;
 
             _gameDirsBox.AppendColumn("", new CellRendererText(), "text", 0);
             _gameDirsBoxStore  = new ListStore(typeof(string));
@@ -309,7 +309,7 @@ namespace Ryujinx.Ui.Windows
             _audioBackendSelect.EntryTextColumn = 0;
             _audioBackendSelect.Entry.IsEditable = false;
 
-            switch (ConfigurationState.Instance.System.AudioBackend.Value)
+            switch (GameConfigurationState.Instance.System.AudioBackend.Value)
             {
                 case AudioBackend.OpenAl:
                     _audioBackendSelect.SetActiveIter(openAlIter);
@@ -384,6 +384,8 @@ namespace Ryujinx.Ui.Windows
 
         private void LoadGameSpecificConfiguration()
         {
+            GameConfigurationState.Instance.LoadDefault();
+
             // Game-Specific Configurations
             if (_gameTitle != null && _gameId != null)
             {
@@ -404,7 +406,6 @@ namespace Ryujinx.Ui.Windows
                     // No configuration, we load the default values and save it to disk
                     ConfigurationPath = appDataConfigurationPath;
 
-                    GameConfigurationState.Instance.LoadDefault();
                     GameConfigurationState.Instance.ToFileFormat().SaveConfig(ConfigurationPath);
                 }
                 else
@@ -473,7 +474,16 @@ namespace Ryujinx.Ui.Windows
                     GameConfigurationState.Instance.System.AudioBackend.Value = (AudioBackend)_audioBackendStore.GetValue(activeIter, 1);
                 }
 
-                GameConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+                string localConfigurationPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"{_gameId}.json");
+                string appDataConfigurationPath = System.IO.Path.Combine(AppDataManager.BaseDirPath, $"{_gameId}.json");
+
+                string ConfigurationPath = File.Exists(localConfigurationPath)
+                    ? localConfigurationPath
+                    : File.Exists(appDataConfigurationPath)
+                        ? appDataConfigurationPath
+                        : null;
+
+                GameConfigurationState.Instance.ToFileFormat().SaveConfig(ConfigurationPath);
             }
             else
             {
