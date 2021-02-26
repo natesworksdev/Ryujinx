@@ -68,7 +68,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="views">All views of the storage texture, used to calculate overlaps</param>
         /// <param name="firstLayer">The first layer of this handle in the storage texture</param>
         /// <param name="firstLevel">The first level of this handle in the storage texture</param>
-        /// <param name="handles">The memory tracking handles that represent cover the handle</param>
+        /// <param name="handles">The memory tracking handles that cover this handle</param>
         public TextureGroupHandle(TextureGroup group, int offset, ulong size, List<Texture> views, int firstLayer, int firstLevel, CpuRegionHandle[] handles)
         {
             _group = group;
@@ -160,7 +160,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Create a copy dependency between this handle, and another.
         /// </summary>
         /// <param name="other">The handle to create a copy dependency to</param>
-        /// <param name="copyToOther">True if a copy should be deferred to all of the other handle's dependencies.</param>
+        /// <param name="copyToOther">True if a copy should be deferred to all of the other handle's dependencies</param>
         public void CreateCopyDependency(TextureGroupHandle other, bool copyToOther = false)
         {
             // Does this dependency already exist?

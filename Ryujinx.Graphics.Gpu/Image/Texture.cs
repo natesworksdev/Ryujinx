@@ -215,13 +215,13 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
             else
             {
-                // Don't update this texture the next time we synchronize.
-                ConsumeModified();
-
                 _hasData = true;
 
                 if (!isView)
                 {
+                    // Don't update this texture the next time we synchronize.
+                    ConsumeModified();
+
                     if (ScaleMode == TextureScaleMode.Scaled)
                     {
                         // Don't need to start at 1x as there is no data to scale, just go straight to the target scale.
@@ -567,13 +567,10 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Checks if the memory for this texture was modified, and returns true if it was.
         /// The modified flags are consumed as a result.
         /// </summary>
-        /// <remarks>
-        /// If there is no memory tracking for this texture, it will always report as modified.
-        /// </remarks>
         /// <returns>True if the texture was modified, false otherwise.</returns>
         public bool ConsumeModified()
         {
-            return Group?.ConsumeDirty(this) != false;
+            return Group.ConsumeDirty(this);
         }
 
         /// <summary>
@@ -599,10 +596,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (_hasData)
             {
-                if (Group != null)
-                {
-                    Group.SynchronizeMemory(this);
-                }
+                Group.SynchronizeMemory(this);
             }
             else
             {

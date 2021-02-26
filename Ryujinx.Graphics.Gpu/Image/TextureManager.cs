@@ -953,7 +953,6 @@ namespace Ryujinx.Graphics.Gpu.Image
                 {
                     Texture overlap = _textureOverlaps[index];
 
-                    if (overlap.Info.Target == Target.Cubemap && texture.Info.Target == Target.CubemapArray) { }
                     OverlapInfo oInfo = _overlapInfo[index];
 
                     if (overlap.Group == texture.Group)

@@ -68,6 +68,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <summary>
         /// Initialize a new texture group's dirty regions and offsets.
         /// </summary>
+        /// <param name="size">Size info for the storage texture</param>
         /// <param name="hasLayerViews">True if the storage will have layer views</param>
         /// <param name="hasMipViews">True if the storage will have mip views</param>
         public void Initialize(ref SizeInfo size, bool hasLayerViews, bool hasMipViews)
@@ -272,7 +273,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <summary>
         /// Register a read/write action to flush for a texture group.
         /// </summary>
-        /// <param name="group">The group to register an action for.</param>
+        /// <param name="group">The group to register an action for</param>
         public void RegisterAction(TextureGroupHandle group)
         {
             foreach (CpuRegionHandle handle in group.Handles)
@@ -304,6 +305,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Propagates the mip/layer view flags depending on the texture type.
         /// When the most granular type of subresource has views, the other type of subresource must be segmented granularly too.
         /// </summary>
+        /// <param name="hasLayerViews">True if the storage has layer views</param>
+        /// <param name="hasMipViews">True if the storage has mip views</param>
         /// <returns>The input values after propagation</returns>
         private (bool HasLayerViews, bool HasMipViews) PropagateGranularity(bool hasLayerViews, bool hasMipViews)
         {
@@ -573,7 +576,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="address">The start address of the tracked region</param>
         /// <param name="size">The size of the tracked region</param>
-        /// <returns></returns>
+        /// <returns>A CpuRegionHandle covering the given range</returns>
         private CpuRegionHandle GenerateHandle(ulong address, ulong size)
         {
             return _context.PhysicalMemory.BeginTracking(address, size);

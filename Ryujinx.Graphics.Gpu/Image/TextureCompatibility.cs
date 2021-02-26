@@ -215,7 +215,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="lhs">Texture information of the texture view</param>
         /// <param name="rhs">Texture information of the texture view to match against</param>
         /// <param name="level">Mipmap level of the texture view in relation to this texture</param>
-        /// <returns>True if the sizes are compatible, false otherwise</returns>
+        /// <returns>The view compatibility level of the view sizes</returns>
         public static TextureViewCompatibility ViewSizeMatches(TextureInfo lhs, TextureInfo rhs, int level)
         {
             Size size = GetAlignedSize(lhs, level);
@@ -242,7 +242,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="child">Texture information for the child</param>
         /// <param name="layer">Base layer of the child texture</param>
         /// <param name="level">Base level of the child texture</param>
-        /// <returns></returns>
+        /// <returns>Full compatiblity if the child's layer and level count fit within the parent, incompatibile otherwise</returns>
         public static TextureViewCompatibility ViewSubImagesInBounds(TextureInfo parent, TextureInfo child, int layer, int level)
         {
             if (level + child.Levels <= parent.Levels &&
@@ -403,7 +403,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="lhs">Texture information of the texture view</param>
         /// <param name="rhs">Texture information of the texture view</param>
-        /// <returns>How view compatible the formats are</returns>
+        /// <returns>The view compatibility level of the texture formats</returns>
         public static TextureViewCompatibility ViewFormatCompatible(TextureInfo lhs, TextureInfo rhs)
         {
             if (FormatCompatible(lhs.FormatInfo, rhs.FormatInfo))
