@@ -284,7 +284,7 @@ namespace Ryujinx.Ui
             IRenderer  renderer    = new Renderer();
             IAalOutput audioEngine = new DummyAudioOut();
 
-            if (ConfigurationState.Instance.System.AudioBackend.Value == AudioBackend.SoundIo)
+            if (GameConfigurationState.Instance.System.AudioBackend.Value == AudioBackend.SoundIo)
             {
                 if (SoundIoAudioOut.IsSupported)
                 {
@@ -295,7 +295,7 @@ namespace Ryujinx.Ui
                     Logger.Warning?.Print(LogClass.Audio, "SoundIO is not supported, falling back to dummy audio out.");
                 }
             }
-            else if (ConfigurationState.Instance.System.AudioBackend.Value == AudioBackend.OpenAl)
+            else if (GameConfigurationState.Instance.System.AudioBackend.Value == AudioBackend.OpenAl)
             {
                 if (OpenALAudioOut.IsSupported)
                 {
@@ -309,7 +309,7 @@ namespace Ryujinx.Ui
                     {
                         Logger.Warning?.Print(LogClass.Audio, "Found SoundIO, changing configuration.");
 
-                        ConfigurationState.Instance.System.AudioBackend.Value = AudioBackend.SoundIo;
+                        GameConfigurationState.Instance.System.AudioBackend.Value = AudioBackend.SoundIo;
                         SaveConfig();
 
                         audioEngine = new SoundIoAudioOut();
@@ -402,6 +402,8 @@ namespace Ryujinx.Ui
                 PerformanceCheck();
 
                 Logger.RestartTime();
+
+                LoadGameConfiguration();
 
                 InitializeSwitchInstance();
 
@@ -567,7 +569,7 @@ namespace Ryujinx.Ui
 
             DisplaySleep.Prevent();
 
-            GlRendererWidget = new GlRenderer(_emulationContext, ConfigurationState.Instance.Logger.GraphicsDebugLevel);
+            GlRendererWidget = new GlRenderer(_emulationContext, GameConfigurationState.Instance.Logger.GraphicsDebugLevel);
 
             Application.Invoke(delegate
             {
@@ -693,13 +695,13 @@ namespace Ryujinx.Ui
 
         public void UpdateGraphicsConfig()
         {
-            int   resScale       = ConfigurationState.Instance.Graphics.ResScale;
-            float resScaleCustom = ConfigurationState.Instance.Graphics.ResScaleCustom;
+            int   resScale       = GameConfigurationState.Instance.Graphics.ResScale;
+            float resScaleCustom = GameConfigurationState.Instance.Graphics.ResScaleCustom;
 
             Graphics.Gpu.GraphicsConfig.ResScale          = (resScale == -1) ? resScaleCustom : resScale;
-            Graphics.Gpu.GraphicsConfig.MaxAnisotropy     = ConfigurationState.Instance.Graphics.MaxAnisotropy;
-            Graphics.Gpu.GraphicsConfig.ShadersDumpPath   = ConfigurationState.Instance.Graphics.ShadersDumpPath;
-            Graphics.Gpu.GraphicsConfig.EnableShaderCache = ConfigurationState.Instance.Graphics.EnableShaderCache;
+            Graphics.Gpu.GraphicsConfig.MaxAnisotropy     = GameConfigurationState.Instance.Graphics.MaxAnisotropy;
+            Graphics.Gpu.GraphicsConfig.ShadersDumpPath   = GameConfigurationState.Instance.Graphics.ShadersDumpPath;
+            Graphics.Gpu.GraphicsConfig.EnableShaderCache = GameConfigurationState.Instance.Graphics.EnableShaderCache;
         }
 
         public void SaveConfig()
@@ -1059,6 +1061,52 @@ namespace Ryujinx.Ui
             else
             {
                 fileChooser.Dispose();
+            }
+        }
+
+        private void LoadGameConfiguration()
+        {
+            _gameTableSelection.GetSelected(out TreeIter treeIter);
+
+            string gameId;
+
+            try
+            {
+                gameId = _tableStore.GetValue(treeIter, 2).ToString().Split("\n")[1].ToLower();
+            } 
+            catch(Exception e)
+            {
+                gameId = "Config";
+            }
+
+            string localConfigurationPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"{gameId}.json");
+            string appDataConfigurationPath = System.IO.Path.Combine(AppDataManager.BaseDirPath, $"{gameId}.json");
+
+            // Now load the configuration as the other subsystems are now registered
+            string ConfigurationPath = File.Exists(localConfigurationPath)
+                ? localConfigurationPath
+                : File.Exists(appDataConfigurationPath)
+                    ? appDataConfigurationPath
+                    : null;
+
+            if (ConfigurationPath == null)
+            {
+                // No configuration, we load the default values and save it to disk
+                ConfigurationPath = appDataConfigurationPath;
+
+                GameConfigurationState.Instance.ToFileFormat().SaveConfig(ConfigurationPath);
+            }
+            else
+            {
+                if (ConfigurationFileFormat.TryLoad(ConfigurationPath, out ConfigurationFileFormat configurationFileFormat))
+                {
+                    GameConfigurationState.Instance.Load(configurationFileFormat, ConfigurationPath);
+                }
+                else
+                {
+                    GameConfigurationState.Instance.LoadDefault();
+                    Logger.Warning?.PrintMsg(LogClass.Application, $"Failed to load game config! Loading the default config instead.\nFailed config location {ConfigurationPath}");
+                }
             }
         }
 

@@ -1,6 +1,7 @@
 using LibHac.FsSystem;
 using Ryujinx.Audio;
 using Ryujinx.Common;
+using Ryujinx.Common.Configuration;
 using Ryujinx.Configuration;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu;
@@ -111,36 +112,36 @@ namespace Ryujinx.HLE
 
         public void Initialize()
         {
-            System.State.SetLanguage((SystemLanguage)ConfigurationState.Instance.System.Language.Value);
+            System.State.SetLanguage((SystemLanguage)GameConfigurationState.Instance.System.Language.Value);
 
-            System.State.SetRegion((RegionCode)ConfigurationState.Instance.System.Region.Value);
+            System.State.SetRegion((RegionCode)GameConfigurationState.Instance.System.Region.Value);
 
-            EnableDeviceVsync = ConfigurationState.Instance.Graphics.EnableVsync;
+            EnableDeviceVsync = GameConfigurationState.Instance.Graphics.EnableVsync;
 
-            System.State.DockedMode = ConfigurationState.Instance.System.EnableDockedMode;
+            System.State.DockedMode = GameConfigurationState.Instance.System.EnableDockedMode;
 
             System.PerformanceState.PerformanceMode = System.State.DockedMode ? PerformanceMode.Boost : PerformanceMode.Default;
 
-            System.EnablePtc = ConfigurationState.Instance.System.EnablePtc;
+            System.EnablePtc = GameConfigurationState.Instance.System.EnablePtc;
 
             System.FsIntegrityCheckLevel = GetIntegrityCheckLevel();
 
-            System.GlobalAccessLogMode = ConfigurationState.Instance.System.FsGlobalAccessLogMode;
+            System.GlobalAccessLogMode = GameConfigurationState.Instance.System.FsGlobalAccessLogMode;
 
-            ServiceConfiguration.IgnoreMissingServices = ConfigurationState.Instance.System.IgnoreMissingServices;
-            ConfigurationState.Instance.System.IgnoreMissingServices.Event += (object _, ReactiveEventArgs<bool> args) =>
+            ServiceConfiguration.IgnoreMissingServices = GameConfigurationState.Instance.System.IgnoreMissingServices;
+            GameConfigurationState.Instance.System.IgnoreMissingServices.Event += (object _, ReactiveEventArgs<bool> args) =>
             {
                 ServiceConfiguration.IgnoreMissingServices = args.NewValue;
             };
 
             // Configure controllers
-            Hid.RefreshInputConfig(ConfigurationState.Instance.Hid.InputConfig.Value);
-            ConfigurationState.Instance.Hid.InputConfig.Event += Hid.RefreshInputConfigEvent;
+            Hid.RefreshInputConfig(GameConfigurationState.Instance.Hid.InputConfig.Value);
+            GameConfigurationState.Instance.Hid.InputConfig.Event += Hid.RefreshInputConfigEvent;
         }
 
         public static IntegrityCheckLevel GetIntegrityCheckLevel()
         {
-            return ConfigurationState.Instance.System.EnableFsIntegrityChecks
+            return GameConfigurationState.Instance.System.EnableFsIntegrityChecks
                 ? IntegrityCheckLevel.ErrorOnInvalid
                 : IntegrityCheckLevel.None;
         }
@@ -206,7 +207,7 @@ namespace Ryujinx.HLE
         {
             if (disposing)
             {
-                ConfigurationState.Instance.Hid.InputConfig.Event -= Hid.RefreshInputConfigEvent;
+                GameConfigurationState.Instance.Hid.InputConfig.Event -= Hid.RefreshInputConfigEvent;
 
                 System.Dispose();
                 Host1x.Dispose();

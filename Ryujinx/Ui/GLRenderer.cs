@@ -180,8 +180,8 @@ namespace Ryujinx.Ui
             {
                 if (toggleDockedMode)
                 {
-                    ConfigurationState.Instance.System.EnableDockedMode.Value =
-                        !ConfigurationState.Instance.System.EnableDockedMode.Value;
+                    GameConfigurationState.Instance.System.EnableDockedMode.Value =
+                        !GameConfigurationState.Instance.System.EnableDockedMode.Value;
                 }
             }
 
@@ -444,7 +444,7 @@ namespace Ryujinx.Ui
 
                 if (_ticks >= _ticksPerFrame)
                 {
-                    string dockedMode = ConfigurationState.Instance.System.EnableDockedMode ? "Docked" : "Handheld";
+                    string dockedMode = GameConfigurationState.Instance.System.EnableDockedMode ? "Docked" : "Handheld";
                     float scale = Graphics.Gpu.GraphicsConfig.ResScale;
                     if (scale != 1)
                     {
@@ -454,7 +454,7 @@ namespace Ryujinx.Ui
                     StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
                         _device.EnableDeviceVsync,
                         dockedMode,
-                        ConfigurationState.Instance.Graphics.AspectRatio.Value.ToText(),
+                        GameConfigurationState.Instance.Graphics.AspectRatio.Value.ToText(),
                         $"Game: {_device.Statistics.GetGameFrameRate():00.00} FPS",
                         $"FIFO: {_device.Statistics.GetFifoPercent():0.00} %",
                         $"GPU:  {_renderer.GpuVendor}"));
@@ -560,7 +560,7 @@ namespace Ryujinx.Ui
                             Dy = rightJoystickDy
                         };
 
-                        if (ConfigurationState.Instance.Hid.EnableKeyboard)
+                        if (GameConfigurationState.Instance.Hid.EnableKeyboard)
                         {
                             hidKeyboard = keyboardController.GetKeysDown();
                         }
@@ -574,7 +574,7 @@ namespace Ryujinx.Ui
                             };
                         }
 
-                        if (ConfigurationState.Instance.Hid.EnableKeyboard)
+                        if (GameConfigurationState.Instance.Hid.EnableKeyboard)
                         {
                             _device.Hid.Keyboard.Update(hidKeyboard.Value);
                         }
@@ -670,7 +670,7 @@ namespace Ryujinx.Ui
             // OpenTK always captures mouse events, even if out of focus, so check if window is focused.
             if (_isFocused && _mousePressed)
             {
-                float aspectWidth = SwitchPanelHeight * ConfigurationState.Instance.Graphics.AspectRatio.Value.ToFloat();
+                float aspectWidth = SwitchPanelHeight * GameConfigurationState.Instance.Graphics.AspectRatio.Value.ToFloat();
 
                 int screenWidth  = AllocatedWidth;
                 int screenHeight = AllocatedHeight;
