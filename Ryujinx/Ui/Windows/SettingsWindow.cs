@@ -128,42 +128,42 @@ namespace Ryujinx.Ui.Windows
             LoadGameSpecificConfiguration();
             
             // Setup Currents.
-            if (GameConfigurationState.Instance.Logger.EnableFileLog && ConfigurationState.Instance.Logger.EnableFileLog)
+            if (GameConfigurationState.Instance.Logger.EnableFileLog)
             {
                 _fileLogToggle.Click();
             }
 
-            if (GameConfigurationState.Instance.Logger.EnableError && ConfigurationState.Instance.Logger.EnableError)
+            if (GameConfigurationState.Instance.Logger.EnableError)
             {
                 _errorLogToggle.Click();
             }
 
-            if (GameConfigurationState.Instance.Logger.EnableWarn && ConfigurationState.Instance.Logger.EnableWarn)
+            if (GameConfigurationState.Instance.Logger.EnableWarn)
             {
                 _warningLogToggle.Click();
             }
 
-            if (GameConfigurationState.Instance.Logger.EnableInfo && ConfigurationState.Instance.Logger.EnableInfo)
+            if (GameConfigurationState.Instance.Logger.EnableInfo)
             {
                 _infoLogToggle.Click();
             }
 
-            if (GameConfigurationState.Instance.Logger.EnableStub && ConfigurationState.Instance.Logger.EnableStub)
+            if (GameConfigurationState.Instance.Logger.EnableStub)
             {
                 _stubLogToggle.Click();
             }
 
-            if (GameConfigurationState.Instance.Logger.EnableDebug && ConfigurationState.Instance.Logger.EnableDebug)
+            if (GameConfigurationState.Instance.Logger.EnableDebug)
             {
                 _debugLogToggle.Click();
             }
 
-            if (GameConfigurationState.Instance.Logger.EnableGuest && ConfigurationState.Instance.Logger.EnableGuest)
+            if (GameConfigurationState.Instance.Logger.EnableGuest)
             {
                 _guestLogToggle.Click();
             }
 
-            if (GameConfigurationState.Instance.Logger.EnableFsAccessLog && ConfigurationState.Instance.Logger.EnableFsAccessLog)
+            if (GameConfigurationState.Instance.Logger.EnableFsAccessLog)
             {
                 _fsAccessLogToggle.Click();
             }
@@ -175,7 +175,7 @@ namespace Ryujinx.Ui.Windows
 
             _graphicsDebugLevel.SetActiveId(GameConfigurationState.Instance.Logger.GraphicsDebugLevel.Value.ToString());
 
-            if (GameConfigurationState.Instance.System.EnableDockedMode && ConfigurationState.Instance.System.EnableDockedMode)
+            if (GameConfigurationState.Instance.System.EnableDockedMode)
             {
                 _dockedModeToggle.Click();
             }
@@ -200,32 +200,32 @@ namespace Ryujinx.Ui.Windows
                 _hideCursorOnIdleToggle.Click();
             }
 
-            if (GameConfigurationState.Instance.Graphics.EnableVsync && ConfigurationState.Instance.Graphics.EnableVsync)
+            if (GameConfigurationState.Instance.Graphics.EnableVsync)
             {
                 _vSyncToggle.Click();
             }
 
-            if (GameConfigurationState.Instance.Graphics.EnableShaderCache && ConfigurationState.Instance.Graphics.EnableShaderCache)
+            if (GameConfigurationState.Instance.Graphics.EnableShaderCache)
             {
                 _shaderCacheToggle.Click();
             }
 
-            if (GameConfigurationState.Instance.System.EnablePtc && ConfigurationState.Instance.System.EnablePtc)
+            if (GameConfigurationState.Instance.System.EnablePtc)
             {
                 _ptcToggle.Click();
             }
 
-            if (GameConfigurationState.Instance.System.EnableFsIntegrityChecks && ConfigurationState.Instance.System.EnableFsIntegrityChecks)
+            if (GameConfigurationState.Instance.System.EnableFsIntegrityChecks)
             {
                 _fsicToggle.Click();
             }
 
-            if (GameConfigurationState.Instance.System.IgnoreMissingServices && ConfigurationState.Instance.System.IgnoreMissingServices)
+            if (GameConfigurationState.Instance.System.IgnoreMissingServices)
             {
                 _ignoreToggle.Click();
             }
 
-            if (GameConfigurationState.Instance.Hid.EnableKeyboard && ConfigurationState.Instance.Hid.EnableKeyboard)
+            if (GameConfigurationState.Instance.Hid.EnableKeyboard)
             {
                 _directKeyboardAccess.Click();
             }
