@@ -121,7 +121,7 @@ namespace Ryujinx.Ui.Windows
 
             // Game-Specific Configurations
             Title += gameTitle != null && gameId != null ? $" - {gameTitle} ({gameId}" : "";
-            GameConfigurationState gameConfigurationState = gameConfigurationState.Lo
+            
 
             // Setup Currents.
             if (ConfigurationState.Instance.Logger.EnableFileLog)
