@@ -88,7 +88,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 _progressReportEvent.Reset();
                 _shaderCount = 0;
 
-                ShaderCacheStateChanged(true);
+                ShaderCacheStateChanged?.Invoke(true);
                 ThreadPool.QueueUserWorkItem(ProgressLogger, guestProgramList.Length);
 
                 for (int programIndex = 0; programIndex < guestProgramList.Length; programIndex++)
@@ -330,7 +330,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 }
 
                 _progressReportEvent.Set();
-                ShaderCacheStateChanged(false);
+                ShaderCacheStateChanged?.Invoke(false);
 
                 Logger.Info?.Print(LogClass.Gpu, $"Shader cache loaded {_shaderCount} entries.");
             }
@@ -346,7 +346,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             int totalCount = (int)state;
             do
             {
-                ShaderCacheProgressChanged(_shaderCount, totalCount);
+                ShaderCacheProgressChanged?.Invoke(_shaderCount, totalCount);
             }
             while (!_progressReportEvent.WaitOne(refreshRate));
         }

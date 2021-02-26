@@ -776,7 +776,7 @@ namespace ARMeilleure.Translation.PTC
 
             ThreadPool.QueueUserWorkItem(TranslationLogger, profiledFuncsToTranslate.Count);
 
-            PtcTranslationStateChanged(true);
+            PtcTranslationStateChanged?.Invoke(true);
 
             void TranslateFuncs()
             {
@@ -826,7 +826,7 @@ namespace ARMeilleure.Translation.PTC
             threads.Clear();
 
             _loggerEvent.Set();
-            PtcTranslationStateChanged(false);
+            PtcTranslationStateChanged?.Invoke(false);
 
             PtcJumpTable.Initialize(jumpTable);
 
@@ -846,7 +846,7 @@ namespace ARMeilleure.Translation.PTC
 
             do
             {
-                PtcTranslationProgressChanged(_translateCount, profiledFuncsToTranslateCount);
+                PtcTranslationProgressChanged?.Invoke(_translateCount, profiledFuncsToTranslateCount);
             }
             while (!_loggerEvent.WaitOne(refreshRate));
 

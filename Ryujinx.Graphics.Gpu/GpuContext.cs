@@ -80,7 +80,8 @@ namespace Ryujinx.Graphics.Gpu
         internal Capabilities Capabilities => _caps.Value;
 
         /// <summary>
-        /// Passthrough for ShaderCache.ShaderCacheStateChanged event
+        /// Signaled when shader cache begins and ends loading.
+        /// Signals true when loading has started, false when ended.
         /// </summary>
         public event Action<bool> ShaderCacheStateChanged
         {
@@ -89,7 +90,8 @@ namespace Ryujinx.Graphics.Gpu
         }
 
         /// <summary>
-        /// Passthrough for ShaderCache.ShaderCacheProgressChanged event
+        /// Signaled while shader cache is loading to indicate current progress.
+        /// Provides current and total number of shaders loaded.
         /// </summary>
         public event Action<int, int> ShaderCacheProgressChanged
         {
