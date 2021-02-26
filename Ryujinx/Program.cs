@@ -86,6 +86,9 @@ namespace Ryujinx
             // Initialize the configuration.
             ConfigurationState.Initialize();
 
+            // Initialize the game configuration.
+            GameConfigurationState.Initialize();
+
             // Initialize the logger system.
             LoggerModule.Initialize();
 

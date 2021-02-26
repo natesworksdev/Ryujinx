@@ -12,7 +12,7 @@ using static Ryujinx.Configuration.ConfigurationState;
 
 namespace Ryujinx.Common.Configuration
 {
-    class GameConfigurationState
+    public class GameConfigurationState
     {
         /// <summary>
         /// Logger configuration section
