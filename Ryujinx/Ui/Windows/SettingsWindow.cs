@@ -80,6 +80,7 @@ namespace Ryujinx.Ui.Windows
         [GUI] ComboBoxText    _aspectRatio;
         [GUI] ComboBoxText    _resScaleCombo;
         [GUI] Entry           _resScaleText;
+        [GUI] ToggleButton    _resetToggle;
         [GUI] ToggleButton    _configureController1;
         [GUI] ToggleButton    _configureController2;
         [GUI] ToggleButton    _configureController3;
@@ -426,6 +427,8 @@ namespace Ryujinx.Ui.Windows
                 {
                     widget.Sensitive = false;
                 }
+
+                _resetToggle.Visible = true;
             }
         }
 
@@ -697,6 +700,24 @@ namespace Ryujinx.Ui.Windows
         private void ApplyToggle_Activated(object sender, EventArgs args)
         {
             SaveSettings();
+        }
+
+        private void ResetToggle_Activated(object sender, EventArgs args)
+        {
+            GameConfigurationState.Instance.LoadDefault();
+
+            string localConfigurationPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"{_gameId}.json");
+            string appDataConfigurationPath = System.IO.Path.Combine(AppDataManager.BaseDirPath, $"{_gameId}.json");
+
+            // Now load the configuration as the other subsystems are now registered
+            string ConfigurationPath = File.Exists(localConfigurationPath)
+                ? localConfigurationPath
+                : File.Exists(appDataConfigurationPath)
+                    ? appDataConfigurationPath
+                    : null;
+
+            GameConfigurationState.Instance.ToFileFormat().SaveConfig(ConfigurationPath);
+            Dispose();
         }
 
         private void CloseToggle_Activated(object sender, EventArgs args)
