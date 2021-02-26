@@ -327,89 +327,36 @@ namespace Ryujinx.Common.Configuration
 
         public void LoadDefault()
         {
-            Graphics.ResScale.Value = 1;
-            Graphics.ResScaleCustom.Value = 1.0f;
-            Graphics.MaxAnisotropy.Value = -1.0f;
-            Graphics.AspectRatio.Value = AspectRatio.Fixed16x9;
-            Graphics.ShadersDumpPath.Value = "";
-            Logger.EnableDebug.Value = false;
-            Logger.EnableStub.Value = true;
-            Logger.EnableInfo.Value = true;
-            Logger.EnableWarn.Value = true;
-            Logger.EnableError.Value = true;
-            Logger.EnableGuest.Value = true;
-            Logger.EnableFsAccessLog.Value = false;
-            Logger.FilteredClasses.Value = Array.Empty<LogClass>();
-            Logger.GraphicsDebugLevel.Value = GraphicsDebugLevel.None;
-            Logger.EnableFileLog.Value = true;
-            System.Language.Value = Language.AmericanEnglish;
-            System.Region.Value = Region.USA;
-            System.TimeZone.Value = "UTC";
-            System.SystemTimeOffset.Value = 0;
-            System.EnableDockedMode.Value = true;
-            Graphics.EnableVsync.Value = true;
-            Graphics.EnableShaderCache.Value = true;
-            System.EnablePtc.Value = true;
-            System.EnableFsIntegrityChecks.Value = true;
-            System.FsGlobalAccessLogMode.Value = 0;
-            System.AudioBackend.Value = AudioBackend.OpenAl;
-            System.IgnoreMissingServices.Value = false;
-            Hid.EnableKeyboard.Value = false;
-            Hid.Hotkeys.Value = new KeyboardHotkeys
-            {
-                ToggleVsync = Key.Tab
-            };
-            Hid.InputConfig.Value = new List<InputConfig>
-            {
-                new KeyboardConfig
-                {
-                    Index          = 0,
-                    ControllerType = ControllerType.JoyconPair,
-                    PlayerIndex    = PlayerIndex.Player1,
-                    LeftJoycon     = new NpadKeyboardLeft
-                    {
-                        StickUp     = Key.W,
-                        StickDown   = Key.S,
-                        StickLeft   = Key.A,
-                        StickRight  = Key.D,
-                        StickButton = Key.F,
-                        DPadUp      = Key.Up,
-                        DPadDown    = Key.Down,
-                        DPadLeft    = Key.Left,
-                        DPadRight   = Key.Right,
-                        ButtonMinus = Key.Minus,
-                        ButtonL     = Key.E,
-                        ButtonZl    = Key.Q,
-                        ButtonSl    = Key.Home,
-                        ButtonSr    = Key.End
-                    },
-                    RightJoycon    = new NpadKeyboardRight
-                    {
-                        StickUp     = Key.I,
-                        StickDown   = Key.K,
-                        StickLeft   = Key.J,
-                        StickRight  = Key.L,
-                        StickButton = Key.H,
-                        ButtonA     = Key.Z,
-                        ButtonB     = Key.X,
-                        ButtonX     = Key.C,
-                        ButtonY     = Key.V,
-                        ButtonPlus  = Key.Plus,
-                        ButtonR     = Key.U,
-                        ButtonZr    = Key.O,
-                        ButtonSl    = Key.PageUp,
-                        ButtonSr    = Key.PageDown
-                    },
-                    EnableMotion  = false,
-                    MirrorInput   = false,
-                    Slot          = 0,
-                    AltSlot       = 0,
-                    Sensitivity   = 100,
-                    GyroDeadzone  = 1,
-                    DsuServerHost = "127.0.0.1",
-                    DsuServerPort = 26760
-                }
-            };
+            Graphics.ResScale.Value = ConfigurationState.Instance.Graphics.ResScale.Value;
+            Graphics.ResScaleCustom.Value = ConfigurationState.Instance.Graphics.ResScaleCustom.Value;
+            Graphics.MaxAnisotropy.Value = ConfigurationState.Instance.Graphics.MaxAnisotropy.Value;
+            Graphics.AspectRatio.Value = ConfigurationState.Instance.Graphics.AspectRatio.Value;
+            Graphics.ShadersDumpPath.Value = ConfigurationState.Instance.Graphics.ShadersDumpPath.Value;
+            Logger.EnableDebug.Value = ConfigurationState.Instance.Logger.EnableDebug.Value;
+            Logger.EnableStub.Value = ConfigurationState.Instance.Logger.EnableStub.Value;
+            Logger.EnableInfo.Value = ConfigurationState.Instance.Logger.EnableInfo.Value;
+            Logger.EnableWarn.Value = ConfigurationState.Instance.Logger.EnableWarn.Value;
+            Logger.EnableError.Value = ConfigurationState.Instance.Logger.EnableError.Value;
+            Logger.EnableGuest.Value = ConfigurationState.Instance.Logger.EnableGuest.Value;
+            Logger.EnableFsAccessLog.Value = ConfigurationState.Instance.Logger.EnableFsAccessLog.Value;
+            Logger.FilteredClasses.Value = ConfigurationState.Instance.Logger.FilteredClasses.Value;
+            Logger.GraphicsDebugLevel.Value = ConfigurationState.Instance.Logger.GraphicsDebugLevel.Value;
+            Logger.EnableFileLog.Value = ConfigurationState.Instance.Logger.EnableFileLog.Value;
+            System.Language.Value = ConfigurationState.Instance.System.Language.Value;
+            System.Region.Value = ConfigurationState.Instance.System.Region.Value;
+            System.TimeZone.Value = ConfigurationState.Instance.System.TimeZone.Value;
+            System.SystemTimeOffset.Value = ConfigurationState.Instance.System.SystemTimeOffset.Value;
+            System.EnableDockedMode.Value = ConfigurationState.Instance.System.EnableDockedMode.Value;
+            Graphics.EnableVsync.Value = ConfigurationState.Instance.Graphics.EnableVsync.Value;
+            Graphics.EnableShaderCache.Value = ConfigurationState.Instance.Graphics.EnableShaderCache.Value;
+            System.EnablePtc.Value = ConfigurationState.Instance.System.EnablePtc.Value;
+            System.EnableFsIntegrityChecks.Value = ConfigurationState.Instance.System.EnableFsIntegrityChecks.Value;
+            System.FsGlobalAccessLogMode.Value = ConfigurationState.Instance.System.FsGlobalAccessLogMode.Value;
+            System.AudioBackend.Value = ConfigurationState.Instance.System.AudioBackend.Value;
+            System.IgnoreMissingServices.Value = ConfigurationState.Instance.System.IgnoreMissingServices.Value;
+            Hid.EnableKeyboard.Value = ConfigurationState.Instance.Hid.EnableKeyboard;
+            Hid.Hotkeys.Value = ConfigurationState.Instance.Hid.Hotkeys.Value;
+            Hid.InputConfig.Value = ConfigurationState.Instance.Hid.InputConfig.Value;
         }
 
         public void Load(ConfigurationFileFormat configurationFileFormat, string configurationFilePath)

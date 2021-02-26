@@ -94,11 +94,6 @@ namespace Ryujinx.Ui.Windows
 
         private SettingsWindow(MainWindow parent, Builder builder, VirtualFileSystem virtualFileSystem, HLE.FileSystem.Content.ContentManager contentManager, String gameTitle, String gameId) : base(builder.GetObject("_settingsWin").Handle)
         {
-            if (gameId != null)
-            {
-                Title += $" - {gameTitle} ({gameId})";
-            }
-
             Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.Resources.Logo_Ryujinx.png");
 
             _parent = parent;
@@ -123,6 +118,10 @@ namespace Ryujinx.Ui.Windows
             _systemTimeZoneEntry.FocusOutEvent += TimeZoneEntry_FocusOut;
 
             _resScaleCombo.Changed += (sender, args) => _resScaleText.Visible = _resScaleCombo.ActiveId == "-1";
+
+            // Game-Specific Configurations
+            Title += gameTitle != null && gameId != null ? $" - {gameTitle} ({gameId}" : "";
+            GameConfigurationState gameConfigurationState = gameConfigurationState.Lo
 
             // Setup Currents.
             if (ConfigurationState.Instance.Logger.EnableFileLog)
