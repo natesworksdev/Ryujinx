@@ -12,6 +12,7 @@ using LibHac.Ns;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
+using Ryujinx.HLE.FileSystem.Content;
 using Ryujinx.HLE.HOS;
 using Ryujinx.Ui.Helper;
 using Ryujinx.Ui.Windows;
@@ -31,6 +32,7 @@ namespace Ryujinx.Ui.Widgets
     {
         private readonly MainWindow                             _parent;
         private readonly VirtualFileSystem                      _virtualFileSystem;
+        private readonly ContentManager                         _contentManager;
         private readonly BlitStruct<ApplicationControlProperty> _controlData;
 
         private readonly string _titleFilePath;
@@ -41,13 +43,14 @@ namespace Ryujinx.Ui.Widgets
         private MessageDialog _dialog;
         private bool          _cancel;
 
-        public GameTableContextMenu(MainWindow parent, VirtualFileSystem virtualFileSystem, string titleFilePath, string titleName, string titleId, BlitStruct<ApplicationControlProperty> controlData)
+        public GameTableContextMenu(MainWindow parent, VirtualFileSystem virtualFileSystem, ContentManager contentManager, string titleFilePath, string titleName, string titleId, BlitStruct<ApplicationControlProperty> controlData)
         {
             _parent = parent;
 
             InitializeComponent();
 
             _virtualFileSystem = virtualFileSystem;
+            _contentManager    = contentManager;
             _titleFilePath     = titleFilePath;
             _titleName         = titleName;
             _titleIdText       = titleId;
@@ -426,6 +429,13 @@ namespace Ryujinx.Ui.Widgets
         //
         // Events
         //
+
+        private void ChangeGameConfiguration_Clicked(object sender, EventArgs args)
+        {
+            SettingsWindow settingsWindow = new SettingsWindow(_parent, _virtualFileSystem, _contentManager, _titleName, _titleIdText);
+            settingsWindow.Show();
+        }
+
         private void OpenSaveUserDir_Clicked(object sender, EventArgs args)
         {
             SaveDataFilter saveDataFilter = new SaveDataFilter();

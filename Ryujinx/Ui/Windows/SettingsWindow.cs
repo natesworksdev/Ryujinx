@@ -90,10 +90,15 @@ namespace Ryujinx.Ui.Windows
 
 #pragma warning restore CS0649, IDE0044
 
-        public SettingsWindow(MainWindow parent, VirtualFileSystem virtualFileSystem, HLE.FileSystem.Content.ContentManager contentManager, String gameId = null) : this(parent, new Builder("Ryujinx.Ui.Windows.SettingsWindow.glade"), virtualFileSystem, contentManager, gameId) { }
+        public SettingsWindow(MainWindow parent, VirtualFileSystem virtualFileSystem, HLE.FileSystem.Content.ContentManager contentManager, String gameTitle = null, String gameId = null) : this(parent, new Builder("Ryujinx.Ui.Windows.SettingsWindow.glade"), virtualFileSystem, contentManager, gameTitle, gameId) { }
 
-        private SettingsWindow(MainWindow parent, Builder builder, VirtualFileSystem virtualFileSystem, HLE.FileSystem.Content.ContentManager contentManager, String gameId) : base(builder.GetObject("_settingsWin").Handle)
+        private SettingsWindow(MainWindow parent, Builder builder, VirtualFileSystem virtualFileSystem, HLE.FileSystem.Content.ContentManager contentManager, String gameTitle, String gameId) : base(builder.GetObject("_settingsWin").Handle)
         {
+            if (gameId != null)
+            {
+                Title += $" - {gameTitle} ({gameId})";
+            }
+
             Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.Resources.Logo_Ryujinx.png");
 
             _parent = parent;
