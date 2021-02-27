@@ -137,47 +137,15 @@ namespace Ryujinx.Ui.Windows
             bool enableGuestog     = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.Logger.EnableGuest)) ? GameConfigurationState.Instance.Logger.EnableGuest : GlobalConfigurationState.Instance.Logger.EnableGuest;
             bool enableFsAccessLog = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.Logger.EnableFsAccessLog)) ? GameConfigurationState.Instance.Logger.EnableFsAccessLog : GlobalConfigurationState.Instance.Logger.EnableFsAccessLog;
 
-            // Setup Currents.
-            if (enableFileLog)
-            {
-                _fileLogToggle.Click();
-            }
-
-            if (enableErrorLog)
-            {
-                _errorLogToggle.Click();
-            }
-
-            if (enableWarnLog)
-            {
-                _warningLogToggle.Click();
-            }
-
-            if (enableInfoLog)
-            {
-                _infoLogToggle.Click();
-            }
-
-            if (enableStubLog)
-            {
-                _stubLogToggle.Click();
-            }
-
-            if (enableDebugLog)
-            {
-                _debugLogToggle.Click();
-            }
-
-            if (enableGuestog)
-            {
-                _guestLogToggle.Click();
-            }
-
-            if (enableFsAccessLog)
-            {
-                _fsAccessLogToggle.Click();
-            }
-
+            _fileLogToggle.Active = enableFileLog;
+            _errorLogToggle.Active = enableErrorLog;
+            _warningLogToggle.Active = enableWarnLog;
+            _infoLogToggle.Active = enableInfoLog;
+            _stubLogToggle.Active = enableStubLog;
+            _debugLogToggle.Active = enableDebugLog;
+            _guestLogToggle.Active = enableGuestog;
+            _fsAccessLogToggle.Active = enableFsAccessLog;
+            
             foreach (GraphicsDebugLevel level in Enum.GetValues(typeof(GraphicsDebugLevel)))
             {
                 _graphicsDebugLevel.Append(level.ToString(), level.ToString());
@@ -194,65 +162,19 @@ namespace Ryujinx.Ui.Windows
 
             _graphicsDebugLevel.SetActiveId(graphicsDebugLevel);
 
-            if (enableDockedMode)
-            {
-                _dockedModeToggle.Click();
-            }
+            _dockedModeToggle.Active = enableDockedMode;
+            _vSyncToggle.Active = enableVsync;
+            _shaderCacheToggle.Active = enableShaderCache;
+            _ptcToggle.Active = enablePtc;
+            _fsicToggle.Active = enableFsIntegrityChecks;
+            _ignoreToggle.Active = ignoreMissingServices;
+            _directKeyboardAccess.Active = enableKeyboard;
 
-            if (GlobalConfigurationState.Instance.EnableDiscordIntegration)
-            {
-                _discordToggle.Click();
-            }
-
-            if (GlobalConfigurationState.Instance.CheckUpdatesOnStart)
-            {
-                _checkUpdatesToggle.Click();
-            }
-
-            if (GlobalConfigurationState.Instance.ShowConfirmExit)
-            {
-                _showConfirmExitToggle.Click();
-            }
-
-            if (GlobalConfigurationState.Instance.HideCursorOnIdle)
-            {
-                _hideCursorOnIdleToggle.Click();
-            }
-
-            if (enableVsync)
-            {
-                _vSyncToggle.Click();
-            }
-
-            if (enableShaderCache)
-            {
-                _shaderCacheToggle.Click();
-            }
-
-            if (enablePtc)
-            {
-                _ptcToggle.Click();
-            }
-
-            if (enableFsIntegrityChecks)
-            {
-                _fsicToggle.Click();
-            }
-
-            if (ignoreMissingServices)
-            {
-                _ignoreToggle.Click();
-            }
-
-            if (enableKeyboard)
-            {
-                _directKeyboardAccess.Click();
-            }
-
-            if (GlobalConfigurationState.Instance.Ui.EnableCustomTheme)
-            {
-                _custThemeToggle.Click();
-            }
+            _discordToggle.Active          = GlobalConfigurationState.Instance.EnableDiscordIntegration;
+            _checkUpdatesToggle.Active     = GlobalConfigurationState.Instance.CheckUpdatesOnStart;
+            _showConfirmExitToggle.Active  = GlobalConfigurationState.Instance.ShowConfirmExit;
+            _hideCursorOnIdleToggle.Active = GlobalConfigurationState.Instance.HideCursorOnIdle;
+            _custThemeToggle.Active        = GlobalConfigurationState.Instance.Ui.EnableCustomTheme;
 
             // Custom EntryCompletion Columns. If added to glade, need to override more signals
             ListStore tzList = new ListStore(typeof(string), typeof(string), typeof(string));
@@ -518,6 +440,7 @@ namespace Ryujinx.Ui.Windows
                         : null;
 
                 GameConfigurationState.Instance.ToFileFormat().SaveConfig(ConfigurationPath);
+                _parent.UpdateGraphicsConfig();
             }
             else
             {
