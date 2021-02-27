@@ -942,7 +942,7 @@ namespace Ryujinx.Ui.Windows
 
             var newConfig = new List<InputConfig>();
 
-            if (_gameId != null)
+            if (_gameId != null && GameConfigurationState.Instance.Overrides(_playerIndex.ToString()))
             {
                 newConfig.AddRange(GameConfigurationState.Instance.Hid.InputConfig.Value);
             }
