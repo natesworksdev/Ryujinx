@@ -1,5 +1,6 @@
 using Gtk;
-using Ryujinx.Audio;
+using Ryujinx.Audio.Backends.OpenAL;
+using Ryujinx.Audio.Backends.SoundIo;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
