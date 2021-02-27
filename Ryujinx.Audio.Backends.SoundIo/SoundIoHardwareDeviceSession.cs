@@ -411,22 +411,25 @@ namespace Ryujinx.Audio.Backends.SoundIo
 
             bool needUpdate = false;
 
-            while (availaibleSampleCount > 0 && _queuedBuffers.TryPeek(out SoundIoAudioBuffer driverBuffer))
+            lock (_lock)
             {
-                ulong sampleStillNeeded = driverBuffer.SampleCount - driverBuffer.SamplePlayed;
-                ulong playedAudioBufferSampleCount = Math.Min(sampleStillNeeded, availaibleSampleCount);
-
-                driverBuffer.SamplePlayed += playedAudioBufferSampleCount;
-                availaibleSampleCount -= playedAudioBufferSampleCount;
-
-                if (driverBuffer.SamplePlayed == driverBuffer.SampleCount)
+                while (availaibleSampleCount > 0 && _queuedBuffers.TryPeek(out SoundIoAudioBuffer driverBuffer))
                 {
-                    _queuedBuffers.TryDequeue(out _);
+                    ulong sampleStillNeeded = driverBuffer.SampleCount - driverBuffer.SamplePlayed;
+                    ulong playedAudioBufferSampleCount = Math.Min(sampleStillNeeded, availaibleSampleCount);
 
-                    needUpdate = true;
+                    driverBuffer.SamplePlayed += playedAudioBufferSampleCount;
+                    availaibleSampleCount -= playedAudioBufferSampleCount;
+
+                    if (driverBuffer.SamplePlayed == driverBuffer.SampleCount)
+                    {
+                        _queuedBuffers.TryDequeue(out _);
+
+                        needUpdate = true;
+                    }
+
+                    _playedSampleCount += playedAudioBufferSampleCount;
                 }
-
-                _playedSampleCount += playedAudioBufferSampleCount;
             }
 
             // Notify the output if needed.
