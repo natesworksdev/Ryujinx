@@ -21,7 +21,7 @@ namespace Ryujinx.Modules.Motion
 
         public void RegisterController(PlayerIndex player)
         {
-            InputConfig config = ConfigurationState.Instance.Hid.InputConfig.Value.Find(x => x.PlayerIndex == player);
+            InputConfig config = GlobalConfigurationState.Instance.Hid.InputConfig.Value.Find(x => x.PlayerIndex == player);
 
             if (config != null && config.EnableMotion)
             {

@@ -328,7 +328,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             bool flipX = item.Transform.HasFlag(NativeWindowTransform.FlipX);
             bool flipY = item.Transform.HasFlag(NativeWindowTransform.FlipY);
 
-            AspectRatio aspectRatio = ConfigurationState.Instance.Graphics.AspectRatio.Value;
+            AspectRatio aspectRatio = GlobalConfigurationState.Instance.Graphics.AspectRatio.Value;
             bool        isStretched = aspectRatio == AspectRatio.Stretched;
 
             ImageCrop crop = new ImageCrop(

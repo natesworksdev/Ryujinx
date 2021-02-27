@@ -9,26 +9,26 @@ namespace Ryujinx.Ui.Helper
     {
         public static void ApplyTheme()
         {
-            if (!ConfigurationState.Instance.Ui.EnableCustomTheme)
+            if (!GlobalConfigurationState.Instance.Ui.EnableCustomTheme)
             {
                 return;
             }
 
-            if (File.Exists(ConfigurationState.Instance.Ui.CustomThemePath) && (Path.GetExtension(ConfigurationState.Instance.Ui.CustomThemePath) == ".css"))
+            if (File.Exists(GlobalConfigurationState.Instance.Ui.CustomThemePath) && (Path.GetExtension(GlobalConfigurationState.Instance.Ui.CustomThemePath) == ".css"))
             {
                 CssProvider cssProvider = new CssProvider();
 
-                cssProvider.LoadFromPath(ConfigurationState.Instance.Ui.CustomThemePath);
+                cssProvider.LoadFromPath(GlobalConfigurationState.Instance.Ui.CustomThemePath);
 
                 StyleContext.AddProviderForScreen(Gdk.Screen.Default, cssProvider, 800);
             }
             else
             {
-                Logger.Warning?.Print(LogClass.Application, $"The \"custom_theme_path\" section in \"Config.json\" contains an invalid path: \"{ConfigurationState.Instance.Ui.CustomThemePath}\".");
+                Logger.Warning?.Print(LogClass.Application, $"The \"custom_theme_path\" section in \"Config.json\" contains an invalid path: \"{GlobalConfigurationState.Instance.Ui.CustomThemePath}\".");
 
-                ConfigurationState.Instance.Ui.CustomThemePath.Value   = "";
-                ConfigurationState.Instance.Ui.EnableCustomTheme.Value = false;
-                ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+                GlobalConfigurationState.Instance.Ui.CustomThemePath.Value   = "";
+                GlobalConfigurationState.Instance.Ui.EnableCustomTheme.Value = false;
+                GlobalConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
             }
         }
     }

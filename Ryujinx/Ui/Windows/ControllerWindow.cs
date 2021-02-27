@@ -110,7 +110,7 @@ namespace Ryujinx.Ui.Windows
             else
             {
                 Title = $"Ryujinx - Controller Settings - {_playerIndex}";
-                _inputConfig = ConfigurationState.Instance.Hid.InputConfig.Value.Find(inputConfig => inputConfig.PlayerIndex == _playerIndex);
+                _inputConfig = GlobalConfigurationState.Instance.Hid.InputConfig.Value.Find(inputConfig => inputConfig.PlayerIndex == _playerIndex);
             }
 
             if (_playerIndex == PlayerIndex.Handheld)
@@ -941,7 +941,7 @@ namespace Ryujinx.Ui.Windows
             }
             else
             {
-                newConfig.AddRange(ConfigurationState.Instance.Hid.InputConfig.Value);
+                newConfig.AddRange(GlobalConfigurationState.Instance.Hid.InputConfig.Value);
             }
 
             if (_inputConfig == null && inputConfig != null)
@@ -983,8 +983,8 @@ namespace Ryujinx.Ui.Windows
             }
             else
             {
-                ConfigurationState.Instance.Hid.InputConfig.Value = newConfig;
-                ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+                GlobalConfigurationState.Instance.Hid.InputConfig.Value = newConfig;
+                GlobalConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
             }
 
             Dispose();

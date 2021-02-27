@@ -126,44 +126,53 @@ namespace Ryujinx.Ui.Windows
 
             // Game-specific configuration
             LoadGameSpecificConfiguration();
-            
+
+            bool enableFileLog     = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.Logger.EnableFileLog)) ? GameConfigurationState.Instance.Logger.EnableFileLog : GlobalConfigurationState.Instance.Logger.EnableFileLog;
+            bool enableErrorLog    = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.Logger.EnableError)) ? GameConfigurationState.Instance.Logger.EnableError : GlobalConfigurationState.Instance.Logger.EnableError;
+            bool enableWarnLog     = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.Logger.EnableWarn)) ? GameConfigurationState.Instance.Logger.EnableWarn : GlobalConfigurationState.Instance.Logger.EnableWarn;
+            bool enableInfoLog     = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.Logger.EnableInfo)) ? GameConfigurationState.Instance.Logger.EnableInfo : GlobalConfigurationState.Instance.Logger.EnableInfo;
+            bool enableStubLog     = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.Logger.EnableStub)) ? GameConfigurationState.Instance.Logger.EnableStub : GlobalConfigurationState.Instance.Logger.EnableStub;
+            bool enableDebugLog    = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.Logger.EnableDebug)) ? GameConfigurationState.Instance.Logger.EnableDebug : GlobalConfigurationState.Instance.Logger.EnableDebug;
+            bool enableGuestog     = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.Logger.EnableGuest)) ? GameConfigurationState.Instance.Logger.EnableGuest : GlobalConfigurationState.Instance.Logger.EnableGuest;
+            bool enableFsAccessLog = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.Logger.EnableFsAccessLog)) ? GameConfigurationState.Instance.Logger.EnableFsAccessLog : GlobalConfigurationState.Instance.Logger.EnableFsAccessLog;
+
             // Setup Currents.
-            if (GameConfigurationState.Instance.Logger.EnableFileLog)
+            if (enableFileLog)
             {
                 _fileLogToggle.Click();
             }
 
-            if (GameConfigurationState.Instance.Logger.EnableError)
+            if (enableErrorLog)
             {
                 _errorLogToggle.Click();
             }
 
-            if (GameConfigurationState.Instance.Logger.EnableWarn)
+            if (enableWarnLog)
             {
                 _warningLogToggle.Click();
             }
 
-            if (GameConfigurationState.Instance.Logger.EnableInfo)
+            if (enableInfoLog)
             {
                 _infoLogToggle.Click();
             }
 
-            if (GameConfigurationState.Instance.Logger.EnableStub)
+            if (enableStubLog)
             {
                 _stubLogToggle.Click();
             }
 
-            if (GameConfigurationState.Instance.Logger.EnableDebug)
+            if (enableDebugLog)
             {
                 _debugLogToggle.Click();
             }
 
-            if (GameConfigurationState.Instance.Logger.EnableGuest)
+            if (enableGuestog)
             {
                 _guestLogToggle.Click();
             }
 
-            if (GameConfigurationState.Instance.Logger.EnableFsAccessLog)
+            if (enableFsAccessLog)
             {
                 _fsAccessLogToggle.Click();
             }
@@ -173,64 +182,73 @@ namespace Ryujinx.Ui.Windows
                 _graphicsDebugLevel.Append(level.ToString(), level.ToString());
             }
 
-            _graphicsDebugLevel.SetActiveId(GameConfigurationState.Instance.Logger.GraphicsDebugLevel.Value.ToString());
+            string graphicsDebugLevel    = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.Logger.GraphicsDebugLevel)) ? GameConfigurationState.Instance.Logger.GraphicsDebugLevel.Value.ToString() : GlobalConfigurationState.Instance.Logger.GraphicsDebugLevel.Value.ToString();
+            bool enableDockedMode        = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.System.EnableDockedMode)) ? GameConfigurationState.Instance.System.EnableDockedMode : GlobalConfigurationState.Instance.System.EnableDockedMode;
+            bool enablePtc               = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.System.EnablePtc)) ? GameConfigurationState.Instance.System.EnablePtc : GlobalConfigurationState.Instance.System.EnablePtc;
+            bool enableFsIntegrityChecks = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.System.EnableFsIntegrityChecks)) ? GameConfigurationState.Instance.System.EnableFsIntegrityChecks : GlobalConfigurationState.Instance.System.EnableFsIntegrityChecks;
+            bool enableVsync             = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.Graphics.EnableVsync)) ? GameConfigurationState.Instance.Graphics.EnableVsync : GlobalConfigurationState.Instance.Graphics.EnableVsync;
+            bool enableShaderCache       = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.Graphics.EnableShaderCache)) ? GameConfigurationState.Instance.Graphics.EnableShaderCache : GlobalConfigurationState.Instance.Graphics.EnableShaderCache;
+            bool ignoreMissingServices   = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.System.IgnoreMissingServices)) ? GameConfigurationState.Instance.System.IgnoreMissingServices : GlobalConfigurationState.Instance.System.IgnoreMissingServices;
+            bool enableKeyboard          = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.Hid.EnableKeyboard)) ? GameConfigurationState.Instance.Hid.EnableKeyboard : GlobalConfigurationState.Instance.Hid.EnableKeyboard;
 
-            if (GameConfigurationState.Instance.System.EnableDockedMode)
+            _graphicsDebugLevel.SetActiveId(graphicsDebugLevel);
+
+            if (enableDockedMode)
             {
                 _dockedModeToggle.Click();
             }
 
-            if (ConfigurationState.Instance.EnableDiscordIntegration)
+            if (GlobalConfigurationState.Instance.EnableDiscordIntegration)
             {
                 _discordToggle.Click();
             }
 
-            if (ConfigurationState.Instance.CheckUpdatesOnStart)
+            if (GlobalConfigurationState.Instance.CheckUpdatesOnStart)
             {
                 _checkUpdatesToggle.Click();
             }
 
-            if (ConfigurationState.Instance.ShowConfirmExit)
+            if (GlobalConfigurationState.Instance.ShowConfirmExit)
             {
                 _showConfirmExitToggle.Click();
             }
 
-            if (ConfigurationState.Instance.HideCursorOnIdle)
+            if (GlobalConfigurationState.Instance.HideCursorOnIdle)
             {
                 _hideCursorOnIdleToggle.Click();
             }
 
-            if (GameConfigurationState.Instance.Graphics.EnableVsync)
+            if (enableVsync)
             {
                 _vSyncToggle.Click();
             }
 
-            if (GameConfigurationState.Instance.Graphics.EnableShaderCache)
+            if (enableShaderCache)
             {
                 _shaderCacheToggle.Click();
             }
 
-            if (GameConfigurationState.Instance.System.EnablePtc)
+            if (enablePtc)
             {
                 _ptcToggle.Click();
             }
 
-            if (GameConfigurationState.Instance.System.EnableFsIntegrityChecks)
+            if (enableFsIntegrityChecks)
             {
                 _fsicToggle.Click();
             }
 
-            if (GameConfigurationState.Instance.System.IgnoreMissingServices)
+            if (ignoreMissingServices)
             {
                 _ignoreToggle.Click();
             }
 
-            if (GameConfigurationState.Instance.Hid.EnableKeyboard)
+            if (enableKeyboard)
             {
                 _directKeyboardAccess.Click();
             }
 
-            if (ConfigurationState.Instance.Ui.EnableCustomTheme)
+            if (GlobalConfigurationState.Instance.Ui.EnableCustomTheme)
             {
                 _custThemeToggle.Click();
             }
@@ -274,7 +292,7 @@ namespace Ryujinx.Ui.Windows
             _anisotropy.SetActiveId(GameConfigurationState.Instance.Graphics.MaxAnisotropy.Value.ToString());
             _aspectRatio.SetActiveId(((int)GameConfigurationState.Instance.Graphics.AspectRatio.Value).ToString());
 
-            _custThemePath.Buffer.Text           = ConfigurationState.Instance.Ui.CustomThemePath;
+            _custThemePath.Buffer.Text           = GlobalConfigurationState.Instance.Ui.CustomThemePath;
             _resScaleText.Buffer.Text            = GameConfigurationState.Instance.Graphics.ResScaleCustom.Value.ToString();
             _resScaleText.Visible                = _resScaleCombo.ActiveId == "-1";
             _graphicsShadersDumpPath.Buffer.Text = GameConfigurationState.Instance.Graphics.ShadersDumpPath;
@@ -285,7 +303,7 @@ namespace Ryujinx.Ui.Windows
             _gameDirsBoxStore  = new ListStore(typeof(string));
             _gameDirsBox.Model = _gameDirsBoxStore;
 
-            foreach (string gameDir in ConfigurationState.Instance.Ui.GameDirs.Value)
+            foreach (string gameDir in GlobalConfigurationState.Instance.Ui.GameDirs.Value)
             {
                 _gameDirsBoxStore.AppendValues(gameDir);
             }
@@ -507,48 +525,48 @@ namespace Ryujinx.Ui.Windows
 
                 if (_validTzRegions.Contains(_systemTimeZoneEntry.Text))
                 {
-                    ConfigurationState.Instance.System.TimeZone.Value = _systemTimeZoneEntry.Text;
+                    GlobalConfigurationState.Instance.System.TimeZone.Value = _systemTimeZoneEntry.Text;
                 }
 
-                ConfigurationState.Instance.Logger.EnableError.Value = _errorLogToggle.Active;
-                ConfigurationState.Instance.Logger.EnableWarn.Value = _warningLogToggle.Active;
-                ConfigurationState.Instance.Logger.EnableInfo.Value = _infoLogToggle.Active;
-                ConfigurationState.Instance.Logger.EnableStub.Value = _stubLogToggle.Active;
-                ConfigurationState.Instance.Logger.EnableDebug.Value = _debugLogToggle.Active;
-                ConfigurationState.Instance.Logger.EnableGuest.Value = _guestLogToggle.Active;
-                ConfigurationState.Instance.Logger.EnableFsAccessLog.Value = _fsAccessLogToggle.Active;
-                ConfigurationState.Instance.Logger.EnableFileLog.Value = _fileLogToggle.Active;
-                ConfigurationState.Instance.Logger.GraphicsDebugLevel.Value = Enum.Parse<GraphicsDebugLevel>(_graphicsDebugLevel.ActiveId);
-                ConfigurationState.Instance.System.EnableDockedMode.Value = _dockedModeToggle.Active;
-                ConfigurationState.Instance.EnableDiscordIntegration.Value = _discordToggle.Active;
-                ConfigurationState.Instance.CheckUpdatesOnStart.Value = _checkUpdatesToggle.Active;
-                ConfigurationState.Instance.ShowConfirmExit.Value = _showConfirmExitToggle.Active;
-                ConfigurationState.Instance.HideCursorOnIdle.Value = _hideCursorOnIdleToggle.Active;
-                ConfigurationState.Instance.Graphics.EnableVsync.Value = _vSyncToggle.Active;
-                ConfigurationState.Instance.Graphics.EnableShaderCache.Value = _shaderCacheToggle.Active;
-                ConfigurationState.Instance.System.EnablePtc.Value = _ptcToggle.Active;
-                ConfigurationState.Instance.System.EnableFsIntegrityChecks.Value = _fsicToggle.Active;
-                ConfigurationState.Instance.System.IgnoreMissingServices.Value = _ignoreToggle.Active;
-                ConfigurationState.Instance.Hid.EnableKeyboard.Value = _directKeyboardAccess.Active;
-                ConfigurationState.Instance.Ui.EnableCustomTheme.Value = _custThemeToggle.Active;
-                ConfigurationState.Instance.System.Language.Value = Enum.Parse<Language>(_systemLanguageSelect.ActiveId);
-                ConfigurationState.Instance.System.Region.Value = Enum.Parse<Configuration.System.Region>(_systemRegionSelect.ActiveId);
-                ConfigurationState.Instance.System.SystemTimeOffset.Value = _systemTimeOffset;
-                ConfigurationState.Instance.Ui.CustomThemePath.Value = _custThemePath.Buffer.Text;
-                ConfigurationState.Instance.Graphics.ShadersDumpPath.Value = _graphicsShadersDumpPath.Buffer.Text;
-                ConfigurationState.Instance.Ui.GameDirs.Value = gameDirs;
-                ConfigurationState.Instance.System.FsGlobalAccessLogMode.Value = (int)_fsLogSpinAdjustment.Value;
-                ConfigurationState.Instance.Graphics.MaxAnisotropy.Value = float.Parse(_anisotropy.ActiveId, CultureInfo.InvariantCulture);
-                ConfigurationState.Instance.Graphics.AspectRatio.Value = Enum.Parse<AspectRatio>(_aspectRatio.ActiveId);
-                ConfigurationState.Instance.Graphics.ResScale.Value = int.Parse(_resScaleCombo.ActiveId);
-                ConfigurationState.Instance.Graphics.ResScaleCustom.Value = resScaleCustom;
+                GlobalConfigurationState.Instance.Logger.EnableError.Value = _errorLogToggle.Active;
+                GlobalConfigurationState.Instance.Logger.EnableWarn.Value = _warningLogToggle.Active;
+                GlobalConfigurationState.Instance.Logger.EnableInfo.Value = _infoLogToggle.Active;
+                GlobalConfigurationState.Instance.Logger.EnableStub.Value = _stubLogToggle.Active;
+                GlobalConfigurationState.Instance.Logger.EnableDebug.Value = _debugLogToggle.Active;
+                GlobalConfigurationState.Instance.Logger.EnableGuest.Value = _guestLogToggle.Active;
+                GlobalConfigurationState.Instance.Logger.EnableFsAccessLog.Value = _fsAccessLogToggle.Active;
+                GlobalConfigurationState.Instance.Logger.EnableFileLog.Value = _fileLogToggle.Active;
+                GlobalConfigurationState.Instance.Logger.GraphicsDebugLevel.Value = Enum.Parse<GraphicsDebugLevel>(_graphicsDebugLevel.ActiveId);
+                GlobalConfigurationState.Instance.System.EnableDockedMode.Value = _dockedModeToggle.Active;
+                GlobalConfigurationState.Instance.EnableDiscordIntegration.Value = _discordToggle.Active;
+                GlobalConfigurationState.Instance.CheckUpdatesOnStart.Value = _checkUpdatesToggle.Active;
+                GlobalConfigurationState.Instance.ShowConfirmExit.Value = _showConfirmExitToggle.Active;
+                GlobalConfigurationState.Instance.HideCursorOnIdle.Value = _hideCursorOnIdleToggle.Active;
+                GlobalConfigurationState.Instance.Graphics.EnableVsync.Value = _vSyncToggle.Active;
+                GlobalConfigurationState.Instance.Graphics.EnableShaderCache.Value = _shaderCacheToggle.Active;
+                GlobalConfigurationState.Instance.System.EnablePtc.Value = _ptcToggle.Active;
+                GlobalConfigurationState.Instance.System.EnableFsIntegrityChecks.Value = _fsicToggle.Active;
+                GlobalConfigurationState.Instance.System.IgnoreMissingServices.Value = _ignoreToggle.Active;
+                GlobalConfigurationState.Instance.Hid.EnableKeyboard.Value = _directKeyboardAccess.Active;
+                GlobalConfigurationState.Instance.Ui.EnableCustomTheme.Value = _custThemeToggle.Active;
+                GlobalConfigurationState.Instance.System.Language.Value = Enum.Parse<Language>(_systemLanguageSelect.ActiveId);
+                GlobalConfigurationState.Instance.System.Region.Value = Enum.Parse<Configuration.System.Region>(_systemRegionSelect.ActiveId);
+                GlobalConfigurationState.Instance.System.SystemTimeOffset.Value = _systemTimeOffset;
+                GlobalConfigurationState.Instance.Ui.CustomThemePath.Value = _custThemePath.Buffer.Text;
+                GlobalConfigurationState.Instance.Graphics.ShadersDumpPath.Value = _graphicsShadersDumpPath.Buffer.Text;
+                GlobalConfigurationState.Instance.Ui.GameDirs.Value = gameDirs;
+                GlobalConfigurationState.Instance.System.FsGlobalAccessLogMode.Value = (int)_fsLogSpinAdjustment.Value;
+                GlobalConfigurationState.Instance.Graphics.MaxAnisotropy.Value = float.Parse(_anisotropy.ActiveId, CultureInfo.InvariantCulture);
+                GlobalConfigurationState.Instance.Graphics.AspectRatio.Value = Enum.Parse<AspectRatio>(_aspectRatio.ActiveId);
+                GlobalConfigurationState.Instance.Graphics.ResScale.Value = int.Parse(_resScaleCombo.ActiveId);
+                GlobalConfigurationState.Instance.Graphics.ResScaleCustom.Value = resScaleCustom;
 
                 if (_audioBackendSelect.GetActiveIter(out TreeIter activeIter))
                 {
-                    ConfigurationState.Instance.System.AudioBackend.Value = (AudioBackend)_audioBackendStore.GetValue(activeIter, 1);
+                    GlobalConfigurationState.Instance.System.AudioBackend.Value = (AudioBackend)_audioBackendStore.GetValue(activeIter, 1);
                 }
 
-                ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+                GlobalConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
                 _parent.UpdateGraphicsConfig();
                 ThemeHelper.ApplyTheme();
             }

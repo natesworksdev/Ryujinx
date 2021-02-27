@@ -49,7 +49,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
         public string SanityCheckDeviceLocationName()
         {
-            string locationName = ConfigurationState.Instance.System.TimeZone;
+            string locationName = GlobalConfigurationState.Instance.System.TimeZone;
 
             if (IsLocationNameValid(locationName))
             {
@@ -58,7 +58,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
             Logger.Warning?.Print(LogClass.ServiceTime, $"Invalid device TimeZone {locationName}, switching back to UTC");
 
-            ConfigurationState.Instance.System.TimeZone.Value = "UTC";
+            GlobalConfigurationState.Instance.System.TimeZone.Value = "UTC";
 
             return "UTC";
         }

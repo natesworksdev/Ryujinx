@@ -158,7 +158,7 @@ namespace Ryujinx.HLE.HOS
             TimeSpanType systemTime = TimeSpanType.FromSeconds((long)rtcValue);
 
             // Configure and setup internal offset
-            TimeSpanType internalOffset = TimeSpanType.FromSeconds(ConfigurationState.Instance.System.SystemTimeOffset);
+            TimeSpanType internalOffset = TimeSpanType.FromSeconds(GlobalConfigurationState.Instance.System.SystemTimeOffset);
 
             TimeSpanType systemTimeOffset = new TimeSpanType(systemTime.NanoSeconds + internalOffset.NanoSeconds);
 
@@ -198,7 +198,7 @@ namespace Ryujinx.HLE.HOS
 
             SurfaceFlinger = new SurfaceFlinger(device);
 
-            ConfigurationState.Instance.System.EnableDockedMode.Event += OnDockedModeChange;
+            GlobalConfigurationState.Instance.System.EnableDockedMode.Event += OnDockedModeChange;
 
             InitLibHacHorizon();
             InitializeAudioRenderer();
@@ -286,7 +286,7 @@ namespace Ryujinx.HLE.HOS
                 SignalDisplayResolutionChange();
 
                 // Reconfigure controllers
-                Device.Hid.RefreshInputConfig(ConfigurationState.Instance.Hid.InputConfig.Value);
+                Device.Hid.RefreshInputConfig(GlobalConfigurationState.Instance.Hid.InputConfig.Value);
             }
         }
 
@@ -315,7 +315,7 @@ namespace Ryujinx.HLE.HOS
         {
             if (!_isDisposed && disposing)
             {
-                ConfigurationState.Instance.System.EnableDockedMode.Event -= OnDockedModeChange;
+                GlobalConfigurationState.Instance.System.EnableDockedMode.Event -= OnDockedModeChange;
 
                 _isDisposed = true;
 

@@ -28,7 +28,7 @@ namespace Ryujinx.Modules
                 Timestamps = new Timestamps(DateTime.UtcNow)
             };
 
-            ConfigurationState.Instance.EnableDiscordIntegration.Event += Update;
+            GlobalConfigurationState.Instance.EnableDiscordIntegration.Event += Update;
         }
 
         private static void Update(object sender, ReactiveEventArgs<bool> e)

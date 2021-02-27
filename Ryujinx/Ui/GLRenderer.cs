@@ -158,7 +158,7 @@ namespace Ryujinx.Ui
                     {
                         if (keyboard.IsKeyDown(OpenTK.Input.Key.Escape))
                         {
-                            if (!ConfigurationState.Instance.ShowConfirmExit || GtkDialog.CreateExitDialog())
+                            if (!GlobalConfigurationState.Instance.ShowConfirmExit || GtkDialog.CreateExitDialog())
                             {
                                 Exit();
                             }
@@ -315,7 +315,7 @@ namespace Ryujinx.Ui
 
         private void ResetCursorIdle()
         {
-           if (ConfigurationState.Instance.HideCursorOnIdle)
+           if (GlobalConfigurationState.Instance.HideCursorOnIdle)
            {
                _lastCursorMoveTime = DateTime.Now;
            }
@@ -328,7 +328,7 @@ namespace Ryujinx.Ui
 
         private void HideCursorIdle()
         {
-           if (ConfigurationState.Instance.HideCursorOnIdle)
+           if (GlobalConfigurationState.Instance.HideCursorOnIdle)
            {
                TimeSpan elapsedTime = DateTime.Now.Subtract(_lastCursorMoveTime);
 

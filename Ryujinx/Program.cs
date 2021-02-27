@@ -84,7 +84,7 @@ namespace Ryujinx
             AppDataManager.Initialize(baseDirPathArg);
 
             // Initialize the configuration.
-            ConfigurationState.Initialize();
+            GlobalConfigurationState.Initialize();
 
             // Initialize the game configuration.
             GameConfigurationState.Initialize();
@@ -110,25 +110,25 @@ namespace Ryujinx
                 // No configuration, we load the default values and save it to disk
                 ConfigurationPath = appDataConfigurationPath;
 
-                ConfigurationState.Instance.LoadDefault();
-                ConfigurationState.Instance.ToFileFormat().SaveConfig(ConfigurationPath);
+                GlobalConfigurationState.Instance.LoadDefault();
+                GlobalConfigurationState.Instance.ToFileFormat().SaveConfig(ConfigurationPath);
             }
             else
             {
                 if (ConfigurationFileFormat.TryLoad(ConfigurationPath, out ConfigurationFileFormat configurationFileFormat))
                 {
-                    ConfigurationState.Instance.Load(configurationFileFormat, ConfigurationPath);
+                    GlobalConfigurationState.Instance.Load(configurationFileFormat, ConfigurationPath);
                 }
                 else
                 {
-                    ConfigurationState.Instance.LoadDefault();
+                    GlobalConfigurationState.Instance.LoadDefault();
                     Logger.Warning?.PrintMsg(LogClass.Application, $"Failed to load config! Loading the default config instead.\nFailed config location {ConfigurationPath}");
                 }
             }
 
             if (startFullscreenArg)
             {
-                ConfigurationState.Instance.Ui.StartFullscreen.Value = true;
+                GlobalConfigurationState.Instance.Ui.StartFullscreen.Value = true;
             }
 
             // Logging system information.
@@ -157,7 +157,7 @@ namespace Ryujinx
                 mainWindow.LoadApplication(launchPathArg);
             }
 
-            if (ConfigurationState.Instance.CheckUpdatesOnStart.Value && Updater.CanUpdate(false))
+            if (GlobalConfigurationState.Instance.CheckUpdatesOnStart.Value && Updater.CanUpdate(false))
             {
                 Updater.BeginParse(mainWindow, false).ContinueWith(task =>
                 {
