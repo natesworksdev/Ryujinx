@@ -282,14 +282,14 @@ namespace Ryujinx.Ui
         {
             _virtualFileSystem.Reload();
 
-            IRenderer  renderer    = new Renderer();
-            IAalOutput audioEngine = new DummyAudioOut();
+            IRenderer renderer = new Renderer();
+            IHardwareDeviceDriver deviceDriver = new DummyHardwareDeviceDriver();
 
             if (GameConfigurationState.Instance.System.AudioBackend.Value == AudioBackend.SoundIo)
             {
-                if (SoundIoAudioOut.IsSupported)
+                if (SoundIoHardwareDeviceDriver.IsSupported)
                 {
-                    audioEngine = new SoundIoAudioOut();
+                    deviceDriver = new SoundIoHardwareDeviceDriver();
                 }
                 else
                 {
@@ -298,22 +298,22 @@ namespace Ryujinx.Ui
             }
             else if (GameConfigurationState.Instance.System.AudioBackend.Value == AudioBackend.OpenAl)
             {
-                if (OpenALAudioOut.IsSupported)
+                if (OpenALHardwareDeviceDriver.IsSupported)
                 {
-                    audioEngine = new OpenALAudioOut();
+                    deviceDriver = new OpenALHardwareDeviceDriver();
                 }
                 else
                 {
                     Logger.Warning?.Print(LogClass.Audio, "OpenAL is not supported, trying to fall back to SoundIO.");
 
-                    if (SoundIoAudioOut.IsSupported)
+                    if (SoundIoHardwareDeviceDriver.IsSupported)
                     {
                         Logger.Warning?.Print(LogClass.Audio, "Found SoundIO, changing configuration.");
 
                         GameConfigurationState.Instance.System.AudioBackend.Value = AudioBackend.SoundIo;
                         SaveConfig();
 
-                        audioEngine = new SoundIoAudioOut();
+                        deviceDriver = new SoundIoHardwareDeviceDriver();
                     }
                     else
                     {
@@ -322,7 +322,7 @@ namespace Ryujinx.Ui
                 }
             }
 
-            _emulationContext = new HLE.Switch(_virtualFileSystem, _contentManager, _userChannelPersistence, renderer, audioEngine)
+            _emulationContext = new HLE.Switch(_virtualFileSystem, _contentManager, _userChannelPersistence, renderer, deviceDriver)
             {
                 UiHandler = _uiHandler
             };

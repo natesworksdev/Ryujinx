@@ -286,8 +286,8 @@ namespace Ryujinx.Ui.Windows
 
             Task.Run(() =>
             {
-                openAlIsSupported  = OpenALAudioOut.IsSupported;
-                soundIoIsSupported = SoundIoAudioOut.IsSupported;
+                openAlIsSupported  = OpenALHardwareDeviceDriver.IsSupported;
+                soundIoIsSupported = SoundIoHardwareDeviceDriver.IsSupported;
             });
 
             // This function runs whenever the dropdown is opened
