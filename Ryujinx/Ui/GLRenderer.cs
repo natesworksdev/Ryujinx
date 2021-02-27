@@ -236,6 +236,8 @@ namespace Ryujinx.Ui
                 string titleArchSection = _device.Application.TitleIs64Bit ? " (64-bit)" : " (32-bit)";
 
                 parent.Title = $"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}";
+
+                LoggerModule.Initialize();
             });
 
             Thread renderLoopThread = new Thread(Render)
@@ -254,6 +256,9 @@ namespace Ryujinx.Ui
 
             renderLoopThread.Join();
             nvStutterWorkaround.Join();
+
+            GameConfigurationState.Instance.LoadDefault();
+            LoggerModule.Initialize();
 
             Exit();
         }
@@ -377,6 +382,10 @@ namespace Ryujinx.Ui
 
         public void Exit()
         {
+            GameConfigurationState.Instance.LoadDefault();
+
+            LoggerModule.Initialize();
+
             _dsuClient?.Dispose();
 
             if (_isStopped)

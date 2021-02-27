@@ -856,14 +856,16 @@ namespace Ryujinx.Ui
 
         private void DockedMode_Clicked(object sender, ButtonReleaseEventArgs args)
         {
-            GlobalConfigurationState.Instance.System.EnableDockedMode.Value = !GlobalConfigurationState.Instance.System.EnableDockedMode.Value;
+            GameConfigurationState.Instance.System.EnableDockedMode.Value = !GameConfigurationState.Instance.System.EnableDockedMode.Value;
+            GlobalConfigurationState.Instance.System.EnableDockedMode.Value = GameConfigurationState.Instance.System.EnableDockedMode.Value;
         }
 
         private void AspectRatio_Clicked(object sender, ButtonReleaseEventArgs args)
         {
-            AspectRatio aspectRatio = GlobalConfigurationState.Instance.Graphics.AspectRatio.Value;
+            AspectRatio aspectRatio = GameConfigurationState.Instance.Graphics.AspectRatio.Value;
 
-            GlobalConfigurationState.Instance.Graphics.AspectRatio.Value = ((int)aspectRatio + 1) > Enum.GetNames(typeof(AspectRatio)).Length - 1 ? AspectRatio.Fixed4x3 : aspectRatio + 1;
+            GameConfigurationState.Instance.Graphics.AspectRatio.Value   = ((int)aspectRatio + 1) > Enum.GetNames(typeof(AspectRatio)).Length - 1 ? AspectRatio.Fixed4x3 : aspectRatio + 1;
+            GlobalConfigurationState.Instance.Graphics.AspectRatio.Value = GameConfigurationState.Instance.Graphics.AspectRatio.Value;
         }
 
         private void Row_Clicked(object sender, ButtonReleaseEventArgs args)

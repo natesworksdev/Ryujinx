@@ -91,9 +91,9 @@ namespace Ryujinx.Ui.Windows
         [GUI] Image        _controllerImage;
 #pragma warning restore CS0649, IDE0044
 
-        public ControllerWindow(PlayerIndex controllerId, string gameId = null) : this(new Builder("Ryujinx.Ui.Windows.ControllerWindow.glade"), controllerId, gameId) { }
+        public ControllerWindow(PlayerIndex controllerId, string gameTitle = null, string gameId = null) : this(new Builder("Ryujinx.Ui.Windows.ControllerWindow.glade"), controllerId, gameTitle, gameId) { }
 
-        private ControllerWindow(Builder builder, PlayerIndex controllerId, string gameId) : base(builder.GetObject("_controllerWin").Handle)
+        private ControllerWindow(Builder builder, PlayerIndex controllerId, string gameTitle, string gameId) : base(builder.GetObject("_controllerWin").Handle)
         {
             Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.Resources.Logo_Ryujinx.png");
 
@@ -104,7 +104,7 @@ namespace Ryujinx.Ui.Windows
 
             if (gameId != null)
             {
-                Title = $"Ryujinx - Controller Settings - {_playerIndex}";
+                Title = $"Ryujinx - Controller Settings - {_playerIndex} - {gameTitle} ({gameId})";
                 if(GameConfigurationState.Instance.Overrides(_playerIndex.ToString()))
                 {
                     _inputConfig = GameConfigurationState.Instance.Hid.InputConfig.Value.Find(inputConfig => inputConfig.PlayerIndex == _playerIndex);

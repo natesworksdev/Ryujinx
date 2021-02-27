@@ -689,7 +689,7 @@ namespace Ryujinx.Ui.Windows
         {
             ((ToggleButton)sender).SetStateFlags(StateFlags.Normal, true);
 
-            ControllerWindow controllerWindow = new ControllerWindow(playerIndex, _gameId);
+            ControllerWindow controllerWindow = new ControllerWindow(playerIndex, _gameTitle, _gameId);
 
             controllerWindow.SetSizeRequest((int)(controllerWindow.DefaultWidth * Program.WindowScaleFactor), (int)(controllerWindow.DefaultHeight * Program.WindowScaleFactor));
             controllerWindow.Show();

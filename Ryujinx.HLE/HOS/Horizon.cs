@@ -9,6 +9,7 @@ using Ryujinx.Audio.Output;
 using Ryujinx.Audio.Renderer.Device;
 using Ryujinx.Audio.Renderer.Server;
 using Ryujinx.Common;
+using Ryujinx.Common.Configuration;
 using Ryujinx.Configuration;
 using Ryujinx.HLE.FileSystem.Content;
 using Ryujinx.HLE.HOS.Font;
@@ -203,7 +204,14 @@ namespace Ryujinx.HLE.HOS
 
             SurfaceFlinger = new SurfaceFlinger(device);
 
-            GlobalConfigurationState.Instance.System.EnableDockedMode.Event += OnDockedModeChange;
+            if (GameConfigurationState.Instance.Overrides(nameof(GlobalConfigurationState.Instance.System.EnableDockedMode)))
+            {
+                GameConfigurationState.Instance.System.EnableDockedMode.Event += OnDockedModeChange;
+            }
+            else
+            {
+                GlobalConfigurationState.Instance.System.EnableDockedMode.Event += OnDockedModeChange;
+            }
 
             InitLibHacHorizon();
             InitializeAudioRenderer();
@@ -310,7 +318,7 @@ namespace Ryujinx.HLE.HOS
                 SignalDisplayResolutionChange();
 
                 // Reconfigure controllers
-                Device.Hid.RefreshInputConfig(GlobalConfigurationState.Instance.Hid.InputConfig.Value);
+                Device.Hid.RefreshInputConfig(GameConfigurationState.Instance.Hid.InputConfig.Value);
             }
         }
 
@@ -340,6 +348,7 @@ namespace Ryujinx.HLE.HOS
             if (!_isDisposed && disposing)
             {
                 GlobalConfigurationState.Instance.System.EnableDockedMode.Event -= OnDockedModeChange;
+                GameConfigurationState.Instance.System.EnableDockedMode.Event   -= OnDockedModeChange;
 
                 _isDisposed = true;
 

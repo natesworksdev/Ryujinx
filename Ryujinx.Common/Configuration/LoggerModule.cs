@@ -1,4 +1,5 @@
 ﻿using Ryujinx.Common;
+using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using System;
 using System.IO;
@@ -9,15 +10,15 @@ namespace Ryujinx.Configuration
     {
         public static void Initialize()
         {
-            GlobalConfigurationState.Instance.Logger.EnableDebug.Event       += ReloadEnableDebug;
-            GlobalConfigurationState.Instance.Logger.EnableStub.Event        += ReloadEnableStub;
-            GlobalConfigurationState.Instance.Logger.EnableInfo.Event        += ReloadEnableInfo;
-            GlobalConfigurationState.Instance.Logger.EnableWarn.Event        += ReloadEnableWarning;
-            GlobalConfigurationState.Instance.Logger.EnableError.Event       += ReloadEnableError;
-            GlobalConfigurationState.Instance.Logger.EnableGuest.Event       += ReloadEnableGuest;
-            GlobalConfigurationState.Instance.Logger.EnableFsAccessLog.Event += ReloadEnableFsAccessLog;
-            GlobalConfigurationState.Instance.Logger.FilteredClasses.Event   += ReloadFilteredClasses;
-            GlobalConfigurationState.Instance.Logger.EnableFileLog.Event     += ReloadFileLogger;
+            GameConfigurationState.Instance.Logger.EnableDebug.Event       += ReloadEnableDebug;
+            GameConfigurationState.Instance.Logger.EnableStub.Event        += ReloadEnableStub;
+            GameConfigurationState.Instance.Logger.EnableInfo.Event        += ReloadEnableInfo;
+            GameConfigurationState.Instance.Logger.EnableWarn.Event        += ReloadEnableWarning;
+            GameConfigurationState.Instance.Logger.EnableError.Event       += ReloadEnableError;
+            GameConfigurationState.Instance.Logger.EnableGuest.Event       += ReloadEnableGuest;
+            GameConfigurationState.Instance.Logger.EnableFsAccessLog.Event += ReloadEnableFsAccessLog;
+            GameConfigurationState.Instance.Logger.FilteredClasses.Event   += ReloadFilteredClasses;
+            GameConfigurationState.Instance.Logger.EnableFileLog.Event     += ReloadFileLogger;
         }
 
         private static void ReloadEnableDebug(object sender, ReactiveEventArgs<bool> e)
