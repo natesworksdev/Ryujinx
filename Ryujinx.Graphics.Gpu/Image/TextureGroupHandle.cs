@@ -318,7 +318,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 handle.Dispose();
             }
 
-            foreach (TextureDependency dependency in Dependencies)
+            foreach (TextureDependency dependency in Dependencies.ToArray())
             {
                 dependency.Other.Handle.RemoveDependency(dependency.Other);
             }
