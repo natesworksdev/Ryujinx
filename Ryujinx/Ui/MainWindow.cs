@@ -711,6 +711,12 @@ namespace Ryujinx.Ui
             Graphics.Gpu.GraphicsConfig.MaxAnisotropy     = maxAnisotropy;
             Graphics.Gpu.GraphicsConfig.ShadersDumpPath   = shadersDumpPath;
             Graphics.Gpu.GraphicsConfig.EnableShaderCache = enableShaderCache;
+
+            if (_gameLoaded)
+            {
+                bool enableVsync = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.Graphics.EnableVsync)) ? GameConfigurationState.Instance.Graphics.EnableVsync.Value : GlobalConfigurationState.Instance.Graphics.EnableVsync.Value;
+                _emulationContext.EnableDeviceVsync = enableVsync;
+            }
         }
 
         public void SaveConfig()
@@ -1104,6 +1110,7 @@ namespace Ryujinx.Ui
             {
                 // No configuration, we load the default values and save it to disk
                 ConfigurationPath = appDataConfigurationPath;
+                GameConfigurationState.Instance.LoadDefault();
 
                 GameConfigurationState.Instance.ToFileFormat().SaveConfig(ConfigurationPath);
             }
