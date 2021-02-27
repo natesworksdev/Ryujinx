@@ -4,6 +4,7 @@ using Gtk;
 using LibHac.Common;
 using LibHac.Ns;
 using Ryujinx.Audio;
+using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.System;
@@ -695,13 +696,17 @@ namespace Ryujinx.Ui
 
         public void UpdateGraphicsConfig()
         {
-            int   resScale       = GameConfigurationState.Instance.Graphics.ResScale;
-            float resScaleCustom = GameConfigurationState.Instance.Graphics.ResScaleCustom;
+            int resScale         = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.Graphics.ResScale)) ? GameConfigurationState.Instance.Graphics.ResScale.Value : GlobalConfigurationState.Instance.Graphics.ResScale.Value;
+            float resScaleCustom = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.Graphics.ResScaleCustom)) ? GameConfigurationState.Instance.Graphics.ResScaleCustom.Value : GlobalConfigurationState.Instance.Graphics.ResScaleCustom.Value;
+
+            ReactiveObject<float> maxAnisotropy    = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.Graphics.MaxAnisotropy)) ? GameConfigurationState.Instance.Graphics.MaxAnisotropy : GlobalConfigurationState.Instance.Graphics.MaxAnisotropy;
+            ReactiveObject<string> shadersDumpPath = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.Graphics.ShadersDumpPath)) ? GameConfigurationState.Instance.Graphics.ShadersDumpPath : GlobalConfigurationState.Instance.Graphics.ShadersDumpPath;
+            ReactiveObject<bool> enableShaderCache = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.Graphics.EnableShaderCache)) ? GameConfigurationState.Instance.Graphics.EnableShaderCache : GlobalConfigurationState.Instance.Graphics.EnableShaderCache;
 
             Graphics.Gpu.GraphicsConfig.ResScale          = (resScale == -1) ? resScaleCustom : resScale;
-            Graphics.Gpu.GraphicsConfig.MaxAnisotropy     = GameConfigurationState.Instance.Graphics.MaxAnisotropy;
-            Graphics.Gpu.GraphicsConfig.ShadersDumpPath   = GameConfigurationState.Instance.Graphics.ShadersDumpPath;
-            Graphics.Gpu.GraphicsConfig.EnableShaderCache = GameConfigurationState.Instance.Graphics.EnableShaderCache;
+            Graphics.Gpu.GraphicsConfig.MaxAnisotropy     = maxAnisotropy;
+            Graphics.Gpu.GraphicsConfig.ShadersDumpPath   = shadersDumpPath;
+            Graphics.Gpu.GraphicsConfig.EnableShaderCache = enableShaderCache;
         }
 
         public void SaveConfig()
