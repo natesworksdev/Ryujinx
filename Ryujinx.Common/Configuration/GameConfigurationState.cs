@@ -1,13 +1,7 @@
 ﻿using Ryujinx.Common.Configuration.Hid;
-using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
-using Ryujinx.Configuration.Hid;
-using Ryujinx.Configuration.System;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static Ryujinx.Common.Configuration.IConfigurationState;
 
 namespace Ryujinx.Common.Configuration

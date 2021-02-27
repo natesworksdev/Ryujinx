@@ -2,7 +2,6 @@ using LibHac.FsSystem;
 using Ryujinx.Audio;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
-using Ryujinx.Configuration;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu;
 using Ryujinx.Graphics.Host1x;
