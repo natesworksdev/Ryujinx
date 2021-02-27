@@ -42,6 +42,7 @@ namespace Ryujinx.Graphics.Texture
 
             int[] allOffsets = new int[is3D ? Calculate3DOffsetCount(levels, depth) : levels * layers * depth];
             int[] mipOffsets = new int[levels];
+            int[] sliceSizes = new int[levels];
 
             int mipGobBlocksInY = gobBlocksInY;
             int mipGobBlocksInZ = gobBlocksInZ;
@@ -106,8 +107,9 @@ namespace Ryujinx.Graphics.Texture
                 }
 
                 mipOffsets[level] = layerSize;
+                sliceSizes[level] = totalBlocksOfGobsInY * robSize;
 
-                layerSize += totalBlocksOfGobsInZ * totalBlocksOfGobsInY * robSize;
+                layerSize += totalBlocksOfGobsInZ * sliceSizes[level];
 
                 depthLevelOffset += d;
             }
@@ -150,7 +152,7 @@ namespace Ryujinx.Graphics.Texture
                 }
             }
 
-            return new SizeInfo(mipOffsets, allOffsets, depth, levels, layerSize, totalSize, is3D);
+            return new SizeInfo(mipOffsets, allOffsets, sliceSizes, depth, levels, layerSize, totalSize, is3D);
         }
 
         public static SizeInfo GetLinearTextureSize(int stride, int height, int blockHeight)
@@ -159,7 +161,7 @@ namespace Ryujinx.Graphics.Texture
             // so we only need to handle a single case (2D textures without mipmaps).
             int totalSize = stride * BitUtils.DivRoundUp(height, blockHeight);
 
-            return new SizeInfo(new int[] { 0 }, new int[] { 0 }, 1, 1, totalSize, totalSize, false);
+            return new SizeInfo(totalSize);
         }
 
         private static int AlignLayerSize(

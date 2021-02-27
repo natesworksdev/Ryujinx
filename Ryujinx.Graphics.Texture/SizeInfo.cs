@@ -11,6 +11,7 @@ namespace Ryujinx.Graphics.Texture
         private readonly bool _is3D;
 
         public readonly int[] AllOffsets;
+        public readonly int[] SliceSizes;
         public int LayerSize { get; }
         public int TotalSize { get; }
 
@@ -18,6 +19,7 @@ namespace Ryujinx.Graphics.Texture
         {
             _mipOffsets = new int[] { 0 };
             AllOffsets  = new int[] { 0 };
+            SliceSizes  = new int[] { size };
             _depth      = 1;
             _levels     = 1;
             LayerSize   = size;
@@ -28,6 +30,7 @@ namespace Ryujinx.Graphics.Texture
         internal SizeInfo(
             int[] mipOffsets,
             int[] allOffsets,
+            int[] sliceSizes,
             int   depth,
             int   levels,
             int   layerSize,
@@ -36,6 +39,7 @@ namespace Ryujinx.Graphics.Texture
         {
             _mipOffsets = mipOffsets;
             AllOffsets  = allOffsets;
+            SliceSizes  = sliceSizes;
             _depth      = depth;
             _levels     = levels;
             LayerSize   = layerSize;
