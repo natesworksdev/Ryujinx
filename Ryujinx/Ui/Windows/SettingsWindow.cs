@@ -1,5 +1,6 @@
 using Gtk;
 using Ryujinx.Audio;
+using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Logging;
@@ -286,18 +287,29 @@ namespace Ryujinx.Ui.Windows
 
             _systemTimeZoneCompletion.MatchFunc = TimeZoneMatchFunc;
 
-            _systemLanguageSelect.SetActiveId(GameConfigurationState.Instance.System.Language.Value.ToString());
-            _systemRegionSelect.SetActiveId(GameConfigurationState.Instance.System.Region.Value.ToString());
-            _resScaleCombo.SetActiveId(GameConfigurationState.Instance.Graphics.ResScale.Value.ToString());
-            _anisotropy.SetActiveId(GameConfigurationState.Instance.Graphics.MaxAnisotropy.Value.ToString());
-            _aspectRatio.SetActiveId(((int)GameConfigurationState.Instance.Graphics.AspectRatio.Value).ToString());
+            string systemLanguage = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.System.Language)) ? GameConfigurationState.Instance.System.Language.Value.ToString() : GlobalConfigurationState.Instance.System.Language.Value.ToString();
+            string systemRegion = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.System.Region)) ? GameConfigurationState.Instance.System.Region.Value.ToString() : GlobalConfigurationState.Instance.System.Region.Value.ToString();
+            string resScale = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.Graphics.ResScale)) ? GameConfigurationState.Instance.Graphics.ResScale.Value.ToString() : GlobalConfigurationState.Instance.Graphics.ResScale.Value.ToString();
+            string anisotropy = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.Graphics.MaxAnisotropy)) ? GameConfigurationState.Instance.Graphics.MaxAnisotropy.Value.ToString() : GlobalConfigurationState.Instance.Graphics.MaxAnisotropy.Value.ToString();
+            int aspectRatio = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.Graphics.AspectRatio)) ? (int)GameConfigurationState.Instance.Graphics.AspectRatio.Value: (int)GlobalConfigurationState.Instance.Graphics.AspectRatio.Value;
+            
+            string resScaleCustom = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.Graphics.ResScaleCustom)) ? GameConfigurationState.Instance.Graphics.ResScaleCustom.Value.ToString() : GlobalConfigurationState.Instance.Graphics.ResScaleCustom.Value.ToString();
+            ReactiveObject<string> shadersDumpPath = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.Graphics.ShadersDumpPath)) ? GameConfigurationState.Instance.Graphics.ShadersDumpPath : GlobalConfigurationState.Instance.Graphics.ShadersDumpPath;
+            ReactiveObject<int> fsGlobalAccessLogMode = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.System.FsGlobalAccessLogMode)) ? GameConfigurationState.Instance.System.FsGlobalAccessLogMode : GlobalConfigurationState.Instance.System.FsGlobalAccessLogMode;
+            ReactiveObject<long> systemTimeOffset = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.System.SystemTimeOffset)) ? GameConfigurationState.Instance.System.SystemTimeOffset : GlobalConfigurationState.Instance.System.SystemTimeOffset;
+
+            _systemLanguageSelect.SetActiveId(systemLanguage);
+            _systemRegionSelect.SetActiveId(systemRegion);
+            _resScaleCombo.SetActiveId(resScale);
+            _anisotropy.SetActiveId(anisotropy);
+            _aspectRatio.SetActiveId(aspectRatio.ToString());
 
             _custThemePath.Buffer.Text           = GlobalConfigurationState.Instance.Ui.CustomThemePath;
-            _resScaleText.Buffer.Text            = GameConfigurationState.Instance.Graphics.ResScaleCustom.Value.ToString();
+            _resScaleText.Buffer.Text            = resScaleCustom;
             _resScaleText.Visible                = _resScaleCombo.ActiveId == "-1";
-            _graphicsShadersDumpPath.Buffer.Text = GameConfigurationState.Instance.Graphics.ShadersDumpPath;
-            _fsLogSpinAdjustment.Value           = GameConfigurationState.Instance.System.FsGlobalAccessLogMode;
-            _systemTimeOffset                    = GameConfigurationState.Instance.System.SystemTimeOffset;
+            _graphicsShadersDumpPath.Buffer.Text = shadersDumpPath;
+            _fsLogSpinAdjustment.Value           = fsGlobalAccessLogMode;
+            _systemTimeOffset                    = systemTimeOffset;
 
             _gameDirsBox.AppendColumn("", new CellRendererText(), "text", 0);
             _gameDirsBoxStore  = new ListStore(typeof(string));
@@ -328,7 +340,8 @@ namespace Ryujinx.Ui.Windows
             _audioBackendSelect.EntryTextColumn = 0;
             _audioBackendSelect.Entry.IsEditable = false;
 
-            switch (GameConfigurationState.Instance.System.AudioBackend.Value)
+            AudioBackend audioBackend = GameConfigurationState.Instance.Overrides(nameof(GameConfigurationState.Instance.System.AudioBackend)) ? GameConfigurationState.Instance.System.AudioBackend.Value : GlobalConfigurationState.Instance.System.AudioBackend.Value;
+            switch (audioBackend)
             {
                 case AudioBackend.OpenAl:
                     _audioBackendSelect.SetActiveIter(openAlIter);
