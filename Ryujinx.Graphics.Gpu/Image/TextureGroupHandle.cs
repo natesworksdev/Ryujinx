@@ -143,7 +143,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <summary>
         /// Signal that a copy dependent texture has been modified, and must have its data copied to this one.
         /// </summary>
-        /// <param name="copyFrom">The texture handle that must defer a copy to this one.</param>
+        /// <param name="copyFrom">The texture handle that must defer a copy to this one</param>
         public void DeferCopy(TextureGroupHandle copyFrom)
         {
             DeferredCopy = copyFrom;

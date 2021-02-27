@@ -10,6 +10,7 @@
         /// The handle that owns this dependency.
         /// </summary>
         public TextureGroupHandle Handle;
+
         /// <summary>
         /// The other dependency linked to this one, which belongs to another handle.
         /// </summary>

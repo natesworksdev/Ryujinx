@@ -242,7 +242,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="child">Texture information for the child</param>
         /// <param name="layer">Base layer of the child texture</param>
         /// <param name="level">Base level of the child texture</param>
-        /// <returns>Full compatiblity if the child's layer and level count fit within the parent, incompatibile otherwise</returns>
+        /// <returns>Full compatiblity if the child's layer and level count fit within the parent, incompatible otherwise</returns>
         public static TextureViewCompatibility ViewSubImagesInBounds(TextureInfo parent, TextureInfo child, int layer, int level)
         {
             if (level + child.Levels <= parent.Levels &&
