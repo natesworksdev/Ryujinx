@@ -234,12 +234,6 @@ namespace Ryujinx.Common.Configuration
             }
         }
 
-        public abstract ConfigurationFileFormat ToFileFormat();
-
-        public abstract void LoadDefault();
-
-        public abstract void Load(ConfigurationFileFormat configurationFileFormat, string configurationFilePath);
-
     }
 }
 

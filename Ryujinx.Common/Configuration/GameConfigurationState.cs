@@ -35,15 +35,6 @@ namespace Ryujinx.Common.Configuration
             _overrides = new HashSet<string>();
         }
 
-        public object GetConfiguration(string configurationName)
-        {
-            if(Overrides(configurationName))
-            {
-                return this.GetType().GetProperty(configurationName).GetValue(this);
-            }
-            return GlobalConfigurationState.Instance.GetType().GetProperty(configurationName).GetValue(GlobalConfigurationState.Instance, null);
-        }
-
         public bool Override(string configurationName)
         {
             return _overrides.Add(configurationName);
@@ -54,7 +45,7 @@ namespace Ryujinx.Common.Configuration
             return _overrides.Contains(configurationName);
         }
 
-        public ConfigurationFileFormat ToFileFormat()
+        public GameConfigurationFileFormat ToFileFormat()
         {
             List<ControllerConfig> controllerConfigList = new List<ControllerConfig>();
             List<KeyboardConfig> keyboardConfigList = new List<KeyboardConfig>();
@@ -146,10 +137,8 @@ namespace Ryujinx.Common.Configuration
             _overrides = new HashSet<string>();
         }
 
-        public void Load(ConfigurationFileFormat configurationFileFormat, string configurationFilePath)
+        public void Load(GameConfigurationFileFormat gameConfigurationFileFormat, string configurationFilePath)
         {
-            GameConfigurationFileFormat gameConfigurationFileFormat = (GameConfigurationFileFormat)configurationFileFormat;
-
             List<InputConfig> inputConfig = new List<InputConfig>();
             inputConfig.AddRange(gameConfigurationFileFormat.ControllerConfig);
             inputConfig.AddRange(gameConfigurationFileFormat.KeyboardConfig);

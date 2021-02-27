@@ -301,6 +301,12 @@ namespace Ryujinx.Ui.Windows
                     _ => throw new ArgumentOutOfRangeException()
                 };
             });
+
+            if (gameTitle != null && gameId != null)
+            {
+                // Setup Override Event Listeners
+                SetupOverrideEventListeners();
+            }
         }
 
         private void UpdateSystemTimeSpinners()
@@ -336,6 +342,49 @@ namespace Ryujinx.Ui.Windows
             _systemTimeMinuteSpin.ValueChanged += SystemTimeSpin_ValueChanged;
         }
 
+        private void SetupOverrideEventListeners()
+        {
+            _errorLogToggle.Clicked += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.Logger.EnableError)); };
+            _warningLogToggle.Clicked += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.Logger.EnableWarn)); };
+            _infoLogToggle.Clicked += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.Logger.EnableInfo)); };
+            _stubLogToggle.Clicked += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.Logger.EnableStub)); };
+            _debugLogToggle.Clicked += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.Logger.EnableDebug)); };
+            _fileLogToggle.Clicked += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.Logger.EnableFileLog)); };
+            _guestLogToggle.Clicked += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.Logger.EnableGuest)); };
+            _fsAccessLogToggle.Clicked += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.Logger.EnableFsAccessLog)); };
+            _dockedModeToggle.Clicked += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.System.EnableDockedMode)); };
+            _vSyncToggle.Clicked += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.Graphics.EnableVsync)); };
+            _shaderCacheToggle.Clicked += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.Graphics.EnableShaderCache)); };
+            _ptcToggle.Clicked += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.System.EnablePtc)); };
+            _fsicToggle.Clicked += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.System.EnableFsIntegrityChecks)); };
+            _ignoreToggle.Clicked += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.System.IgnoreMissingServices)); };
+            _directKeyboardAccess.Clicked += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.Hid.EnableKeyboard)); };
+            _systemLanguageSelect.Changed += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.System.Language)); };
+            _systemRegionSelect.Changed += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.System.Region)); };
+            _systemTimeZoneEntry.Changed += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.System.TimeZone)); };
+            _audioBackendSelect.Changed += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.System.AudioBackend)); };
+            _systemTimeYearSpin.Changed += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.System.SystemTimeOffset)); }; 
+            _systemTimeMonthSpin.Changed += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.System.SystemTimeOffset)); }; 
+            _systemTimeDaySpin.Changed += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.System.SystemTimeOffset)); }; 
+            _systemTimeHourSpin.Changed += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.System.SystemTimeOffset)); };
+            _systemTimeMinuteSpin.Changed += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.System.SystemTimeOffset)); };
+            _systemTimeYearSpinAdjustment.Changed += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.System.SystemTimeOffset)); };
+            _systemTimeMonthSpinAdjustment.Changed += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.System.SystemTimeOffset)); };
+            _systemTimeDaySpinAdjustment.Changed += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.System.SystemTimeOffset)); };
+            _systemTimeHourSpinAdjustment.Changed += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.System.SystemTimeOffset)); };
+            _systemTimeMinuteSpinAdjustment.Changed += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.System.SystemTimeOffset)); };
+            _graphicsShadersDumpPath.Changed += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.Graphics.ShadersDumpPath)); };
+            _anisotropy.Changed += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.Graphics.MaxAnisotropy)); };
+            _aspectRatio.Changed += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.Graphics.AspectRatio)); };
+            _resScaleCombo.Changed += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.Graphics.ResScale)); };
+            _resScaleText.Changed += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.Graphics.ResScale)); };
+        }
+
+        private void AddOverride(string configName)
+        {
+            GameConfigurationState.Instance.Override(configName);
+        }
+
         private void LoadGameSpecificConfiguration()
         {
             GameConfigurationState.Instance.LoadDefault();
@@ -364,7 +413,7 @@ namespace Ryujinx.Ui.Windows
                 }
                 else
                 {
-                    if (ConfigurationFileFormat.TryLoad(ConfigurationPath, out ConfigurationFileFormat configurationFileFormat))
+                    if (GameConfigurationFileFormat.TryLoad(ConfigurationPath, out GameConfigurationFileFormat configurationFileFormat))
                     {
                         GameConfigurationState.Instance.Load(configurationFileFormat, ConfigurationPath);
                     }

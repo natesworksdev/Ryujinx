@@ -105,7 +105,14 @@ namespace Ryujinx.Ui.Windows
             if (gameId != null)
             {
                 Title = $"Ryujinx - Controller Settings - {_playerIndex}";
-                _inputConfig = GameConfigurationState.Instance.Hid.InputConfig.Value.Find(inputConfig => inputConfig.PlayerIndex == _playerIndex);
+                if(GameConfigurationState.Instance.Overrides(_playerIndex.ToString()))
+                {
+                    _inputConfig = GameConfigurationState.Instance.Hid.InputConfig.Value.Find(inputConfig => inputConfig.PlayerIndex == _playerIndex);
+                }
+                else
+                {
+                    _inputConfig = GlobalConfigurationState.Instance.Hid.InputConfig.Value.Find(inputConfig => inputConfig.PlayerIndex == _playerIndex);
+                }
             }
             else
             {
@@ -968,6 +975,7 @@ namespace Ryujinx.Ui.Windows
             if (_gameId != null)
             { 
                 GameConfigurationState.Instance.Hid.InputConfig.Value = newConfig;
+                GameConfigurationState.Instance.Override(_playerIndex.ToString());
 
                 string localConfigurationPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"{_gameId}.json");
                 string appDataConfigurationPath = System.IO.Path.Combine(AppDataManager.BaseDirPath, $"{_gameId}.json");
