@@ -8,15 +8,14 @@ namespace Ryujinx.Common.Configuration
 {
     public class GameConfigurationState
     {
-
         /// <summary>
         /// The default configuration instance
         /// </summary>
-        public static GameConfigurationState Instance { get; private set; }
-        public LoggerSection Logger { get; private set; }
-        public SystemSection System { get; private set; }
-        public GraphicsSection Graphics { get; private set; }
-        public HidSection Hid { get; private set; }
+        public static GameConfigurationState Instance { get; }
+        public LoggerSection Logger { get; }
+        public SystemSection System { get; }
+        public GraphicsSection Graphics { get; }
+        public HidSection Hid { get; }
 
         private HashSet<String> _overrides;
 
@@ -131,7 +130,7 @@ namespace Ryujinx.Common.Configuration
             _overrides = new HashSet<string>();
         }
 
-        public void Load(GameConfigurationFileFormat gameConfigurationFileFormat, string configurationFilePath)
+        public void Load(GameConfigurationFileFormat gameConfigurationFileFormat)
         {
             List<InputConfig> inputConfig = new List<InputConfig>();
             inputConfig.AddRange(gameConfigurationFileFormat.ControllerConfig);
@@ -168,16 +167,6 @@ namespace Ryujinx.Common.Configuration
             Hid.Hotkeys.Value = gameConfigurationFileFormat.Hotkeys;
             Hid.InputConfig.Value = inputConfig;
             _overrides = gameConfigurationFileFormat.Overrides;
-        }
-
-        public static void Initialize()
-        {
-            if (Instance != null)
-            {
-                throw new InvalidOperationException("Configuration is already initialized");
-            }
-
-            Instance = new GameConfigurationState();
         }
     }
 }

@@ -11,19 +11,19 @@ namespace Ryujinx.Common.Configuration.ConfigurationStateSection
         /// <summary>
         /// Enable or disable keyboard support (Independent from controllers binding)
         /// </summary>
-        public ReactiveObject<bool> EnableKeyboard { get; protected set; }
+        public ReactiveObject<bool> EnableKeyboard { get; }
 
         /// <summary>
         /// Hotkey Keyboard Bindings
         /// </summary>
-        public ReactiveObject<KeyboardHotkeys> Hotkeys { get; protected set; }
+        public ReactiveObject<KeyboardHotkeys> Hotkeys { get; }
 
         /// <summary>
         /// Input device configuration.
         /// NOTE: This ReactiveObject won't issue an event when the List has elements added or removed.
         /// TODO: Implement a ReactiveList class.
         /// </summary>
-        public ReactiveObject<List<InputConfig>> InputConfig { get; protected set; }
+        public ReactiveObject<List<InputConfig>> InputConfig { get; }
 
         public HidSection()
         {

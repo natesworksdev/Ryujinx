@@ -9,16 +9,16 @@ namespace Ryujinx.Common.Configuration.ConfigurationStateSection
     {
         public class Columns
         {
-            public ReactiveObject<bool> FavColumn { get; private set; }
-            public ReactiveObject<bool> IconColumn { get; private set; }
-            public ReactiveObject<bool> AppColumn { get; private set; }
-            public ReactiveObject<bool> DevColumn { get; private set; }
-            public ReactiveObject<bool> VersionColumn { get; private set; }
-            public ReactiveObject<bool> TimePlayedColumn { get; private set; }
-            public ReactiveObject<bool> LastPlayedColumn { get; private set; }
-            public ReactiveObject<bool> FileExtColumn { get; private set; }
-            public ReactiveObject<bool> FileSizeColumn { get; private set; }
-            public ReactiveObject<bool> PathColumn { get; private set; }
+            public ReactiveObject<bool> FavColumn { get; }
+            public ReactiveObject<bool> IconColumn { get; }
+            public ReactiveObject<bool> AppColumn { get; }
+            public ReactiveObject<bool> DevColumn { get; }
+            public ReactiveObject<bool> VersionColumn { get; }
+            public ReactiveObject<bool> TimePlayedColumn { get; }
+            public ReactiveObject<bool> LastPlayedColumn { get; }
+            public ReactiveObject<bool> FileExtColumn { get; }
+            public ReactiveObject<bool> FileSizeColumn { get; }
+            public ReactiveObject<bool> PathColumn { get; }
 
             public Columns()
             {

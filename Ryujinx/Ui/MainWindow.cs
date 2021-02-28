@@ -1092,9 +1092,9 @@ namespace Ryujinx.Ui
             {
                 gameId = _tableStore.GetValue(treeIter, 2).ToString().Split("\n")[1].ToLower();
             } 
-            catch(Exception e)
+            catch(Exception ex)
             {
-                Logger.Warning?.Print(LogClass.Application, $"Couldn't fetch game ID, using global configuration instead: {e.Message}");
+                Logger.Warning?.Print(LogClass.Application, $"Couldn't fetch game ID, using global configuration instead: {ex.Message}");
                 gameId = "Config";
             }
 
@@ -1102,30 +1102,30 @@ namespace Ryujinx.Ui
             string appDataConfigurationPath = System.IO.Path.Combine(AppDataManager.BaseDirPath, $"{gameId}.json");
 
             // Now load the configuration as the other subsystems are now registered
-            string ConfigurationPath = File.Exists(localConfigurationPath)
+            string configurationPath = File.Exists(localConfigurationPath)
                 ? localConfigurationPath
                 : File.Exists(appDataConfigurationPath)
                     ? appDataConfigurationPath
                     : null;
 
-            if (ConfigurationPath == null)
+            if (configurationPath == null)
             {
                 // No configuration, we load the default values and save it to disk
-                ConfigurationPath = appDataConfigurationPath;
+                configurationPath = appDataConfigurationPath;
                 GameConfigurationState.Instance.LoadDefault();
 
-                GameConfigurationState.Instance.ToFileFormat().SaveConfig(ConfigurationPath);
+                GameConfigurationState.Instance.ToFileFormat().SaveConfig(configurationPath);
             }
             else
             {
-                if (GameConfigurationFileFormat.TryLoad(ConfigurationPath, out GameConfigurationFileFormat configurationFileFormat))
+                if (GameConfigurationFileFormat.TryLoad(configurationPath, out GameConfigurationFileFormat configurationFileFormat))
                 {
-                    GameConfigurationState.Instance.Load(configurationFileFormat, ConfigurationPath);
+                    GameConfigurationState.Instance.Load(configurationFileFormat);
                 }
                 else
                 {
                     GameConfigurationState.Instance.LoadDefault();
-                    Logger.Warning?.PrintMsg(LogClass.Application, $"Failed to load game config! Loading the default config instead.\nFailed config location {ConfigurationPath}");
+                    Logger.Warning?.Print(LogClass.Application, $"Failed to load game config! Loading the default config instead.\nFailed config location {configurationPath}");
                 }
             }
         }

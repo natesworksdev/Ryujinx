@@ -416,7 +416,7 @@ namespace Ryujinx.Ui.Windows
                 {
                     if (GameConfigurationFileFormat.TryLoad(ConfigurationPath, out GameConfigurationFileFormat configurationFileFormat))
                     {
-                        GameConfigurationState.Instance.Load(configurationFileFormat, ConfigurationPath);
+                        GameConfigurationState.Instance.Load(configurationFileFormat);
                     }
                     else
                     {

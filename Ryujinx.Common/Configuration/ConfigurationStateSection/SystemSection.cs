@@ -11,52 +11,52 @@ namespace Ryujinx.Common.Configuration.ConfigurationStateSection
         /// <summary>
         /// Change System Language
         /// </summary>
-        public ReactiveObject<Language> Language { get; protected set; }
+        public ReactiveObject<Language> Language { get; }
 
         /// <summary>
         /// Change System Region
         /// </summary>
-        public ReactiveObject<Region> Region { get; protected set; }
+        public ReactiveObject<Region> Region { get; }
 
         /// <summary>
         /// Change System TimeZone
         /// </summary>
-        public ReactiveObject<string> TimeZone { get; protected set; }
+        public ReactiveObject<string> TimeZone { get; }
 
         /// <summary>
         /// System Time Offset in Seconds
         /// </summary>
-        public ReactiveObject<long> SystemTimeOffset { get; protected set; }
+        public ReactiveObject<long> SystemTimeOffset { get; }
 
         /// <summary>
         /// Enables or disables Docked Mode
         /// </summary>
-        public ReactiveObject<bool> EnableDockedMode { get; protected set; }
+        public ReactiveObject<bool> EnableDockedMode { get; }
 
         /// <summary>
         /// Enables or disables profiled translation cache persistency
         /// </summary>
-        public ReactiveObject<bool> EnablePtc { get; protected set; }
+        public ReactiveObject<bool> EnablePtc { get; }
 
         /// <summary>
         /// Enables integrity checks on Game content files
         /// </summary>
-        public ReactiveObject<bool> EnableFsIntegrityChecks { get; protected set; }
+        public ReactiveObject<bool> EnableFsIntegrityChecks { get; }
 
         /// <summary>
         /// Enables FS access log output to the console. Possible modes are 0-3
         /// </summary>
-        public ReactiveObject<int> FsGlobalAccessLogMode { get; protected set; }
+        public ReactiveObject<int> FsGlobalAccessLogMode { get; }
 
         /// <summary>
         /// The selected audio backend
         /// </summary>
-        public ReactiveObject<AudioBackend> AudioBackend { get; protected set; }
+        public ReactiveObject<AudioBackend> AudioBackend { get; }
 
         /// <summary>
         /// Enable or disable ignoring missing services
         /// </summary>
-        public ReactiveObject<bool> IgnoreMissingServices { get; protected set; }
+        public ReactiveObject<bool> IgnoreMissingServices { get; }
 
         public SystemSection()
         {
