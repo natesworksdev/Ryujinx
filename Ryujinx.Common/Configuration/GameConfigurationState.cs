@@ -1,8 +1,10 @@
 ﻿using Ryujinx.Common.Configuration.ConfigurationStateSection;
 using Ryujinx.Common.Configuration.Hid;
+using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Ryujinx.Common.Configuration
 {
@@ -128,6 +130,63 @@ namespace Ryujinx.Common.Configuration
             Hid.Hotkeys.Value = GlobalConfigurationState.Instance.Hid.Hotkeys.Value;
             Hid.InputConfig.Value = GlobalConfigurationState.Instance.Hid.InputConfig.Value;
             _overrides = new HashSet<string>();
+        }
+
+        private string ConfigurationPathFor(string gameId)
+        {
+            string localConfigurationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"{gameId}.json");
+            string appDataConfigurationPath = Path.Combine(AppDataManager.BaseDirPath, $"{gameId}.json");
+
+            // Now load the configuration as the other subsystems are now registered
+            string configurationPath = File.Exists(localConfigurationPath)
+                ? localConfigurationPath
+                : File.Exists(appDataConfigurationPath)
+                    ? appDataConfigurationPath
+                    : null;
+
+            if (configurationPath == null)
+            {
+                // No configuration, we load the default values and save it to disk
+                configurationPath = appDataConfigurationPath;
+            }
+
+            return configurationPath;
+        }
+
+        public void Load(string gameId)
+        {
+            string configurationPath = ConfigurationPathFor(gameId);
+
+            if (GameConfigurationFileFormat.TryLoad(configurationPath, out GameConfigurationFileFormat configurationFileFormat))
+            {
+                Instance.Load(configurationFileFormat);
+            }
+            else
+            {
+                Instance.LoadDefault();
+                Logging.Logger.Warning?.Print(LogClass.Application, $"Failed to load game config! Loading the default config instead.\nFailed config location {configurationPath}");
+            }
+        }
+
+
+        public void Save(string gameId)
+        {
+            string localConfigurationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"{gameId}.json");
+            string appDataConfigurationPath = Path.Combine(AppDataManager.BaseDirPath, $"{gameId}.json");
+
+            // Now load the configuration as the other subsystems are now registered
+            string configurationPath = File.Exists(localConfigurationPath)
+                ? localConfigurationPath
+                : File.Exists(appDataConfigurationPath)
+                    ? appDataConfigurationPath
+                    : null;
+
+            if(configurationPath == null)
+            {
+                configurationPath = appDataConfigurationPath;
+            }
+
+            Instance.ToFileFormat().SaveConfig(configurationPath);
         }
 
         public void Load(GameConfigurationFileFormat gameConfigurationFileFormat)

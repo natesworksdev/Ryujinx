@@ -1095,39 +1095,12 @@ namespace Ryujinx.Ui
             catch(Exception ex)
             {
                 Logger.Warning?.Print(LogClass.Application, $"Couldn't fetch game ID, using global configuration instead: {ex.Message}");
-                gameId = "Config";
-            }
-
-            string localConfigurationPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"{gameId}.json");
-            string appDataConfigurationPath = System.IO.Path.Combine(AppDataManager.BaseDirPath, $"{gameId}.json");
-
-            // Now load the configuration as the other subsystems are now registered
-            string configurationPath = File.Exists(localConfigurationPath)
-                ? localConfigurationPath
-                : File.Exists(appDataConfigurationPath)
-                    ? appDataConfigurationPath
-                    : null;
-
-            if (configurationPath == null)
-            {
-                // No configuration, we load the default values and save it to disk
-                configurationPath = appDataConfigurationPath;
                 GameConfigurationState.Instance.LoadDefault();
+                return;
+            }
 
-                GameConfigurationState.Instance.ToFileFormat().SaveConfig(configurationPath);
-            }
-            else
-            {
-                if (GameConfigurationFileFormat.TryLoad(configurationPath, out GameConfigurationFileFormat configurationFileFormat))
-                {
-                    GameConfigurationState.Instance.Load(configurationFileFormat);
-                }
-                else
-                {
-                    GameConfigurationState.Instance.LoadDefault();
-                    Logger.Warning?.Print(LogClass.Application, $"Failed to load game config! Loading the default config instead.\nFailed config location {configurationPath}");
-                }
-            }
+
+            GameConfigurationState.Instance.Load(gameId);
         }
 
         private void RefreshFirmwareLabel()
