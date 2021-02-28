@@ -274,6 +274,17 @@
                         <signal name="activate" handler="Settings_Pressed" swapped="no"/>
                       </object>
                     </child>
+                    <child>
+                      <object class="GtkMenuItem" id="_gameSettingsMenu">
+                        <property name="sensitive">False</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="tooltip_text" translatable="yes">Open game-specific settings window</property>
+                        <property name="label" translatable="yes">Game Settings</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="Game_Settings_Pressed" swapped="no"/>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>

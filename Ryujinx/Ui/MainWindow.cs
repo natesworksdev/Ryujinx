@@ -72,6 +72,7 @@ namespace Ryujinx.Ui
         [GUI] MenuItem        _fullScreen;
         [GUI] CheckMenuItem   _startFullScreen;
         [GUI] CheckMenuItem   _favToggle;
+        [GUI] MenuItem        _gameSettingsMenu;
         [GUI] MenuItem        _firmwareInstallDirectory;
         [GUI] MenuItem        _firmwareInstallFile;
         [GUI] Label           _fifoStatus;
@@ -548,7 +549,7 @@ namespace Ryujinx.Ui
 
                 windowThread.Start();
 #endif
-
+                _gameSettingsMenu.Sensitive      = true;
                 _gameLoaded                      = true;
                 _stopEmulation.Sensitive         = true;
                 _simulateWakeUpMessage.Sensitive = true;
@@ -647,6 +648,7 @@ namespace Ryujinx.Ui
                 Task.Run(RefreshFirmwareLabel);
                 Task.Run(HandleRelaunch);
 
+                _gameSettingsMenu.Sensitive         = false;
                 _stopEmulation.Sensitive            = false;
                 _simulateWakeUpMessage.Sensitive    = false;
                 _firmwareInstallFile.Sensitive      = true;
@@ -1178,6 +1180,14 @@ namespace Ryujinx.Ui
         }
 
         private void Settings_Pressed(object sender, EventArgs args)
+        {
+            SettingsWindow settingsWindow = new SettingsWindow(this, _virtualFileSystem, _contentManager);
+
+            settingsWindow.SetSizeRequest((int)(settingsWindow.DefaultWidth * Program.WindowScaleFactor), (int)(settingsWindow.DefaultHeight * Program.WindowScaleFactor));
+            settingsWindow.Show();
+        }
+
+        private void Game_Settings_Pressed(object sender, EventArgs args)
         {
             SettingsWindow settingsWindow = new SettingsWindow(this, _virtualFileSystem, _contentManager, _emulationContext?.Application?.TitleName, _emulationContext?.Application?.TitleIdText);
 
