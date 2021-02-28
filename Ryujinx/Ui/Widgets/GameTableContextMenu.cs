@@ -430,7 +430,7 @@ namespace Ryujinx.Ui.Widgets
         // Events
         //
 
-        private void ChangeGameConfiguration_Clicked(object sender, EventArgs args)
+        private void OpenGameConfiguration_Clicked(object sender, EventArgs args)
         {
             SettingsWindow settingsWindow = new SettingsWindow(_parent, _virtualFileSystem, _contentManager, _titleName, _titleIdText);
             settingsWindow.SetSizeRequest((int)(settingsWindow.DefaultWidth * Program.WindowScaleFactor), (int)(settingsWindow.DefaultHeight * Program.WindowScaleFactor));
