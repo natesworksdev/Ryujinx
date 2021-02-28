@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 
 namespace Ryujinx
 {
+    // Just to trigger CI for a test
     class Program
     {
         public static double WindowScaleFactor { get; private set; }
