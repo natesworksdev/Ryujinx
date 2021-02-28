@@ -13,7 +13,7 @@ namespace Ryujinx.Common.Configuration
         /// <summary>
         /// The default configuration instance
         /// </summary>
-        public static GameConfigurationState Instance { get; }
+        public static GameConfigurationState Instance { get; } = new GameConfigurationState();
         public LoggerSection Logger { get; }
         public SystemSection System { get; }
         public GraphicsSection Graphics { get; }
