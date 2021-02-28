@@ -193,6 +193,7 @@ namespace Ryujinx.Ui.Widgets
             _manageSubMenu.Append(_openShaderCacheDirMenuItem);
 
             Add(_openGameConfigurationMenuItem);
+            Add(new SeparatorMenuItem());
             Add(_openSaveUserDirMenuItem);
             Add(_openSaveDeviceDirMenuItem);
             Add(_openSaveBcatDirMenuItem);
