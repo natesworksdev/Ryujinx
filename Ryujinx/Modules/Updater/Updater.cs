@@ -325,8 +325,8 @@ namespace Ryujinx.Modules
             {
                 GtkDialog.CreateWarningDialog("Updater Disabled!", "Please download Ryujinx at https://ryujinx.org/ if you are looking for a supported version.");
             }
-            return false;
 
+            return false;
 #endif
         }
 
