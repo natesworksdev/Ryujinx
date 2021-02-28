@@ -14,7 +14,7 @@ namespace Ryujinx.Common.Configuration
         /// <summary>
         /// The current version of the file format
         /// </summary>
-        public new const int CurrentVersion = 23;
+        public new const int CurrentVersion = 1;
 
         /// <summary>
         /// Game-Specific Configuration Overrides
