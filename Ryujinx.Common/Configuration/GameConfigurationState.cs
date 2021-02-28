@@ -134,8 +134,19 @@ namespace Ryujinx.Common.Configuration
 
         private string ConfigurationPathFor(string gameId)
         {
+            string configurationDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config");
+            if(!Directory.Exists(configurationDirectory))
+            {
+                Directory.CreateDirectory(configurationDirectory);
+            }
+            configurationDirectory = Path.Combine(AppDataManager.BaseDirPath, "games", gameId);
+            if (!Directory.Exists(configurationDirectory))
+            {
+                Directory.CreateDirectory(configurationDirectory);
+            }
+
             string localConfigurationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config", $"{gameId}.json");
-            string appDataConfigurationPath = Path.Combine(AppDataManager.BaseDirPath, "config", $"{gameId}.json");
+            string appDataConfigurationPath = Path.Combine(AppDataManager.BaseDirPath, "games", gameId, "config.json");
 
             // Now load the configuration as the other subsystems are now registered
             string configurationPath = File.Exists(localConfigurationPath)

@@ -395,35 +395,7 @@ namespace Ryujinx.Ui.Windows
             {
                 Title += $" - {_gameTitle} ({_gameId})";
 
-                string localConfigurationPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"{_gameId}.json");
-                string appDataConfigurationPath = System.IO.Path.Combine(AppDataManager.BaseDirPath, $"{_gameId}.json");
-
-                // Now load the configuration as the other subsystems are now registered
-                string ConfigurationPath = File.Exists(localConfigurationPath)
-                    ? localConfigurationPath
-                    : File.Exists(appDataConfigurationPath)
-                        ? appDataConfigurationPath
-                        : null;
-
-                if (ConfigurationPath == null)
-                {
-                    // No configuration, we load the default values and save it to disk
-                    ConfigurationPath = appDataConfigurationPath;
-
-                    GameConfigurationState.Instance.ToFileFormat().SaveConfig(ConfigurationPath);
-                }
-                else
-                {
-                    if (GameConfigurationFileFormat.TryLoad(ConfigurationPath, out GameConfigurationFileFormat configurationFileFormat))
-                    {
-                        GameConfigurationState.Instance.Load(configurationFileFormat);
-                    }
-                    else
-                    {
-                        GameConfigurationState.Instance.LoadDefault();
-                        Logger.Warning?.PrintMsg(LogClass.Application, $"Failed to load game config! Loading the default config instead.\nFailed config location {ConfigurationPath}");
-                    }
-                }
+                GameConfigurationState.Instance.Load(_gameId);
 
                 Widget[] disabledWidgets = new Widget[] { _discordToggle, _checkUpdatesToggle, _showConfirmExitToggle, _hideCursorOnIdleToggle, _gameDirsBox, _addGameDirBox, _custThemePath, _custThemeToggle};
                 foreach(Widget widget in disabledWidgets)
@@ -480,16 +452,8 @@ namespace Ryujinx.Ui.Windows
                     GameConfigurationState.Instance.System.AudioBackend.Value = (AudioBackend)_audioBackendStore.GetValue(activeIter, 1);
                 }
 
-                string localConfigurationPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"{_gameId}.json");
-                string appDataConfigurationPath = System.IO.Path.Combine(AppDataManager.BaseDirPath, $"{_gameId}.json");
+                GameConfigurationState.Instance.Save(_gameId);
 
-                string ConfigurationPath = File.Exists(localConfigurationPath)
-                    ? localConfigurationPath
-                    : File.Exists(appDataConfigurationPath)
-                        ? appDataConfigurationPath
-                        : null;
-
-                GameConfigurationState.Instance.ToFileFormat().SaveConfig(ConfigurationPath);
                 _parent.UpdateGraphicsConfig();
             }
             else
