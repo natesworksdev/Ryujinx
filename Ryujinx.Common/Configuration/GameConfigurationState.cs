@@ -1,12 +1,12 @@
-﻿using Ryujinx.Common.Configuration.Hid;
+﻿using Ryujinx.Common.Configuration.ConfigurationStateSection;
+using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Configuration;
 using System;
 using System.Collections.Generic;
-using static Ryujinx.Common.Configuration.IConfigurationState;
 
 namespace Ryujinx.Common.Configuration
 {
-    public class GameConfigurationState : IConfigurationState
+    public class GameConfigurationState
     {
 
         /// <summary>
