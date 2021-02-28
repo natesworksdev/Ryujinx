@@ -1094,6 +1094,7 @@ namespace Ryujinx.Ui
             } 
             catch(Exception e)
             {
+                Logger.Warning?.Print(LogClass.Application, "Couldn't fetch game ID, using global configuration instead.");
                 gameId = "Config";
             }
 
