@@ -658,7 +658,7 @@ namespace Ryujinx.Ui
             _device.Hid.Npads.Update(gamepadInputs);
             _device.Hid.Npads.UpdateSixAxis(motionInputs);
 
-            if(_isFocused)
+            if (_isFocused)
             {
                 // Hotkeys
                 HotkeyButtons currentHotkeyButtons = KeyboardController.GetHotkeyButtons(OpenTK.Input.Keyboard.GetState());

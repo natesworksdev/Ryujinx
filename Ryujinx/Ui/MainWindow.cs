@@ -615,7 +615,7 @@ namespace Ryujinx.Ui
 
                 GlRendererWidget.Exit();
 
-                if(GlRendererWidget.Window != Window && GlRendererWidget.Window != null)
+                if (GlRendererWidget.Window != Window && GlRendererWidget.Window != null)
                 {
                     GlRendererWidget.Window.Dispose();
                 }

@@ -105,7 +105,7 @@ namespace Ryujinx.Ui.Windows
             if (gameId != null)
             {
                 Title = $"Ryujinx - Controller Settings - {_playerIndex} - {gameTitle} ({gameId})";
-                if(GameConfigurationState.Instance.Overrides(_playerIndex.ToString()))
+                if (GameConfigurationState.Instance.Overrides(_playerIndex.ToString()))
                 {
                     _inputConfig = GameConfigurationState.Instance.Hid.InputConfig.Value.Find(inputConfig => inputConfig.PlayerIndex == _playerIndex);
                 }
