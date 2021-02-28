@@ -3,7 +3,6 @@ using ARMeilleure.Translation.PTC;
 using Gtk;
 using LibHac.Common;
 using LibHac.Ns;
-using Ryujinx.Audio;
 using Ryujinx.Audio.Backends.Dummy;
 using Ryujinx.Audio.Backends.OpenAL;
 using Ryujinx.Audio.Backends.SoundIo;
