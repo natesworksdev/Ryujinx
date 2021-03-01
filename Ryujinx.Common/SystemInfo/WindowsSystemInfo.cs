@@ -75,13 +75,13 @@ namespace Ryujinx.Common.SystemInfo
             {
                 return new ManagementObjectSearcher(scope, query).Get();
             }
-            catch (PlatformNotSupportedException e)
+            catch (PlatformNotSupportedException ex)
             {
-                Logger.Error?.Print(LogClass.Application, $"WMI isn't available : {e.Message}");
+                Logger.Error?.Print(LogClass.Application, $"WMI isn't available : {ex.Message}");
             }
-            catch (COMException e)
+            catch (COMException ex)
             {
-                Logger.Error?.Print(LogClass.Application, $"WMI isn't available : {e.Message}");
+                Logger.Error?.Print(LogClass.Application, $"WMI isn't available : {ex.Message}");
             }
 
             return null;

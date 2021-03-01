@@ -13,12 +13,14 @@ namespace Ryujinx.Common.SystemInfo
         internal MacOSSystemInfo()
         {
             string cpuName = GetCpuidCpuName();
+
             if (cpuName == null && sysctlbyname("machdep.cpu.brand_string", out cpuName) != 0)
             {
                 cpuName = "Unknown";
             }
 
             ulong totalRAM = 0;
+
             if (sysctlbyname("hw.memsize", ref totalRAM) != 0)  // Bytes
             {
                 totalRAM = 0;
@@ -36,6 +38,7 @@ namespace Ryujinx.Common.SystemInfo
             if (sysctlbyname(name, oldValue, ref oldSize, IntPtr.Zero, 0) == -1)
             {
                 int err = Marshal.GetLastWin32Error();
+
                 Logger.Error?.Print(LogClass.Application, $"Cannot retrieve '{name}'. Error Code {err}");
 
                 return err;
