@@ -67,7 +67,7 @@ namespace Ryujinx.Ui
         private readonly ManualResetEvent _exitEvent;
         
         // Hide Cursor
-        const int CursorHideIdleTime = 8; //seconds
+        const int CursorHideIdleTime = 8; // seconds
         private static readonly Cursor _invisibleCursor = new Cursor(Display.Default, CursorType.BlankCursor);
         private long _lastCursorMoveTime;
         private bool _hideCursorOnIdle;
@@ -109,6 +109,7 @@ namespace Ryujinx.Ui
 
             _hideCursorOnIdle = ConfigurationState.Instance.HideCursorOnIdle;
             _lastCursorMoveTime = Stopwatch.GetTimestamp();
+
             ConfigurationState.Instance.HideCursorOnIdle.Event += HideCursorStateChanged;
         }
 
