@@ -381,7 +381,7 @@ namespace Ryujinx.Ui.Windows
             _resScaleText.Changed += (sender, EventArgs) => { AddOverride(nameof(GameConfigurationState.Instance.Graphics.ResScale)); };
         }
 
-        private void AddOverride(string configName)
+        private static void AddOverride(string configName)
         {
             GameConfigurationState.Instance.Override(configName);
         }
