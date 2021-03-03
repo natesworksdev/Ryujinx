@@ -107,7 +107,7 @@ namespace Ryujinx.Modules
                     {
                         if (showVersionUpToDate)
                         {
-                            GtkDialog.CreateUpdaterInfoDialog("You are already using the most updated version of Ryujinx!", "");
+                            GtkDialog.CreateUpdaterInfoDialog("You are already using the latest version of Ryujinx!", "");
                         }
 
                         return;
@@ -138,7 +138,7 @@ namespace Ryujinx.Modules
             {
                 if (showVersionUpToDate)
                 {
-                    GtkDialog.CreateUpdaterInfoDialog("You are already using the most updated version of Ryujinx!", "");
+                    GtkDialog.CreateUpdaterInfoDialog("You are already using the latest version of Ryujinx!", "");
                 }
 
                 Running = false;
@@ -440,7 +440,7 @@ namespace Ryujinx.Modules
                     }
                     catch
                     {
-                        Logger.Warning?.Print(LogClass.Application, "Updater wasn't able to rename file: " + file);
+                        Logger.Warning?.Print(LogClass.Application, "Updater was unable to rename file: " + file);
                     }
                 }
 
@@ -469,6 +469,7 @@ namespace Ryujinx.Modules
 
         public static bool CanUpdate(bool showWarnings)
         {
+#if !DISABLE_UPDATER
             if (RuntimeInformation.OSArchitecture != Architecture.X64)
             {
                 if (showWarnings)
@@ -493,13 +494,21 @@ namespace Ryujinx.Modules
             {
                 if (showWarnings)
                 {
-                    GtkDialog.CreateWarningDialog("You Cannot update a Dirty build of Ryujinx!", "Please download Ryujinx at https://ryujinx.org/ if you are looking for a supported version.");
+                    GtkDialog.CreateWarningDialog("You cannot update a Dirty build of Ryujinx!", "Please download Ryujinx at https://ryujinx.org/ if you are looking for a supported version.");
                 }
 
                 return false;
             }
 
             return true;
+#else
+            if (showWarnings)
+            {
+                GtkDialog.CreateWarningDialog("Updater Disabled!", "Please download Ryujinx at https://ryujinx.org/ if you are looking for a supported version.");
+            }
+
+            return false;
+#endif
         }
 
         // NOTE: This method should always reflect the latest build layout.
