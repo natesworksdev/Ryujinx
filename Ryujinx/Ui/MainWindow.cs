@@ -1147,7 +1147,6 @@ namespace Ryujinx.Ui
                 return;
             }
 
-
             GameConfigurationState.Load(gameId);
         }
 
