@@ -977,7 +977,7 @@ namespace Ryujinx.Ui.Windows
                 GameConfigurationState.Instance.Hid.InputConfig.Value = newConfig;
                 GameConfigurationState.Instance.Override(_playerIndex.ToString());
 
-                GameConfigurationState.Instance.Save(_gameId);
+                GameConfigurationState.Save(_gameId);
             }
             else
             {

@@ -132,7 +132,7 @@ namespace Ryujinx.Common.Configuration
             _overrides = new HashSet<string>();
         }
 
-        private string ConfigurationPathFor(string gameId)
+        private static string ConfigurationPathFor(string gameId)
         {
             string configurationDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config");
             if(!Directory.Exists(configurationDirectory))
@@ -164,7 +164,7 @@ namespace Ryujinx.Common.Configuration
             return configurationPath;
         }
 
-        public void Load(string gameId)
+        public static void Load(string gameId)
         {
             string configurationPath = ConfigurationPathFor(gameId);
 
@@ -180,7 +180,7 @@ namespace Ryujinx.Common.Configuration
         }
 
 
-        public void Save(string gameId)
+        public static void Save(string gameId)
         {
             string configurationPath = ConfigurationPathFor(gameId);
 

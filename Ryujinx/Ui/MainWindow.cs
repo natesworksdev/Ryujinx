@@ -1148,7 +1148,7 @@ namespace Ryujinx.Ui
             }
 
 
-            GameConfigurationState.Instance.Load(gameId);
+            GameConfigurationState.Load(gameId);
         }
 
         private void RefreshFirmwareLabel()

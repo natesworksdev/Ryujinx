@@ -395,7 +395,7 @@ namespace Ryujinx.Ui.Windows
             {
                 Title += $" - {_gameTitle} ({_gameId})";
 
-                GameConfigurationState.Instance.Load(_gameId);
+                GameConfigurationState.Load(_gameId);
 
                 Widget[] disabledWidgets = new Widget[] { _discordToggle, _checkUpdatesToggle, _showConfirmExitToggle, _hideCursorOnIdleToggle, _gameDirsBox, _addGameDirBox, _custThemePath, _custThemeToggle};
                 foreach(Widget widget in disabledWidgets)
@@ -452,7 +452,7 @@ namespace Ryujinx.Ui.Windows
                     GameConfigurationState.Instance.System.AudioBackend.Value = (AudioBackend)_audioBackendStore.GetValue(activeIter, 1);
                 }
 
-                GameConfigurationState.Instance.Save(_gameId);
+                GameConfigurationState.Save(_gameId);
 
                 _parent.UpdateGraphicsConfig();
             }
