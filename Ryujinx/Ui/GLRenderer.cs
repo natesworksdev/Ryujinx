@@ -107,10 +107,10 @@ namespace Ryujinx.Ui
 
             _exitEvent = new ManualResetEvent(false);
 
-            _hideCursorOnIdle = ConfigurationState.Instance.HideCursorOnIdle;
+            _hideCursorOnIdle = GlobalConfigurationState.Instance.HideCursorOnIdle;
             _lastCursorMoveTime = Stopwatch.GetTimestamp();
 
-            ConfigurationState.Instance.HideCursorOnIdle.Event += HideCursorStateChanged;
+            GlobalConfigurationState.Instance.HideCursorOnIdle.Event += HideCursorStateChanged;
         }
 
         private void HideCursorStateChanged(object sender, ReactiveEventArgs<bool> state)
@@ -153,7 +153,7 @@ namespace Ryujinx.Ui
 
         private void GLRenderer_Destroyed(object sender, EventArgs e)
         {
-            ConfigurationState.Instance.HideCursorOnIdle.Event -= HideCursorStateChanged;
+            GlobalConfigurationState.Instance.HideCursorOnIdle.Event -= HideCursorStateChanged;
 
             _dsuClient?.Dispose();
             Dispose();
