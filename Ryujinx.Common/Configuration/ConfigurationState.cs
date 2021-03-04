@@ -364,6 +364,16 @@ namespace Ryujinx.Configuration
         /// Shows or hides the console
         /// </summary>
         public ReactiveObject<bool> ShowConsole { get; private set; }
+		
+        /// <summary>
+        /// Show "Confirm Exit" Dialog
+        /// </summary>
+        public ReactiveObject<bool> ShowConfirmExit { get; private set; }
+
+        /// <summary>
+        /// Hide Cursor on Idle
+        /// </summary>
+        public ReactiveObject<bool> HideCursorOnIdle { get; private set; }
 
         private ConfigurationState()
         {
@@ -375,6 +385,8 @@ namespace Ryujinx.Configuration
             EnableDiscordIntegration = new ReactiveObject<bool>();
             CheckUpdatesOnStart      = new ReactiveObject<bool>();
             ShowConsole              = new ReactiveObject<bool>();
+            ShowConfirmExit          = new ReactiveObject<bool>();
+            HideCursorOnIdle         = new ReactiveObject<bool>();
         }
 
         public ConfigurationFileFormat ToFileFormat()
@@ -420,6 +432,8 @@ namespace Ryujinx.Configuration
                 EnableDiscordIntegration  = EnableDiscordIntegration,
                 CheckUpdatesOnStart       = CheckUpdatesOnStart,
                 ShowConsole               = ShowConsole,
+                ShowConfirmExit           = ShowConfirmExit,
+                HideCursorOnIdle          = HideCursorOnIdle,
                 EnableVsync               = Graphics.EnableVsync,
                 EnableShaderCache         = Graphics.EnableShaderCache,
                 EnablePtc                 = System.EnablePtc,
@@ -479,10 +493,12 @@ namespace Ryujinx.Configuration
             System.Region.Value                    = Region.USA;
             System.TimeZone.Value                  = "UTC";
             System.SystemTimeOffset.Value          = 0;
-            System.EnableDockedMode.Value          = false;
+            System.EnableDockedMode.Value          = true;
             EnableDiscordIntegration.Value         = true;
             CheckUpdatesOnStart.Value              = true;
             ShowConsole.Value                      = true;
+            ShowConfirmExit.Value                  = true;
+            HideCursorOnIdle.Value                 = false;
             Graphics.EnableVsync.Value             = true;
             Graphics.EnableShaderCache.Value       = true;
             System.EnablePtc.Value                 = true;
@@ -783,6 +799,22 @@ namespace Ryujinx.Configuration
                 Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 21.");
 
                 configurationFileFormat.ShowConsole = true;
+			}
+			
+            if (configurationFileFormat.Version < 20)
+            {
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 20.");
+
+                configurationFileFormat.ShowConfirmExit = true;
+
+                configurationFileUpdated = true;
+            }
+
+            if (configurationFileFormat.Version < 22)
+            {
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 22.");
+
+                configurationFileFormat.HideCursorOnIdle = false;
 
                 configurationFileUpdated = true;
             }
@@ -814,6 +846,8 @@ namespace Ryujinx.Configuration
             EnableDiscordIntegration.Value         = configurationFileFormat.EnableDiscordIntegration;
             CheckUpdatesOnStart.Value              = configurationFileFormat.CheckUpdatesOnStart;
             ShowConsole.Value                      = configurationFileFormat.ShowConsole;
+            ShowConfirmExit.Value                  = configurationFileFormat.ShowConfirmExit;
+            HideCursorOnIdle.Value                 = configurationFileFormat.HideCursorOnIdle;
             Graphics.EnableVsync.Value             = configurationFileFormat.EnableVsync;
             Graphics.EnableShaderCache.Value       = configurationFileFormat.EnableShaderCache;
             System.EnablePtc.Value                 = configurationFileFormat.EnablePtc;

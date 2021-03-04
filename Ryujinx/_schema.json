@@ -1171,7 +1171,7 @@
       "type": "boolean",
       "title": "Enable Docked Mode",
       "description": "Enables or disables Docked Mode",
-      "default": false,
+      "default": true,
       "examples": [
         true,
         false
@@ -1204,7 +1204,24 @@
       "type": "boolean",
       "title": "Shows or hides the console",
       "description": "Shows or hides the console",
+	},
+    "show_confirm_exit": {
+      "$id": "#/properties/show_confirm_exit",
+      "type": "boolean",
+      "title": "Show \"Confirm Exit\" Dialog",
+      "description": "Check to shows the \"Confirm Exit\" dialog when closing Ryujinx.",
       "default": true,
+      "examples": [
+        true,
+        false
+      ]
+    },
+      "hide_cursor_on_idle": {
+      "$id": "#/properties/hide_cursor_on_idle",
+      "type": "boolean",
+      "title": "Hide Cursor On Idle",
+      "description": "Hides the cursor after being idle for 5 seconds",
+      "default": false,
       "examples": [
         true,
         false
@@ -1224,7 +1241,7 @@
     "enable_ptc": {
       "$id": "#/properties/enable_ptc",
       "type": "boolean",
-      "title": "Enable Profiled Persistent Translation Cache",
+      "title": "Enable PPTC (Profiled Persistent Translation Cache)",
       "description": "Enables or disables profiled translation cache persistency",
       "default": true,
       "examples": [

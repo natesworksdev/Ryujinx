@@ -9,6 +9,8 @@ namespace Ryujinx.Graphics.GAL
 
         void BeginTransformFeedback(PrimitiveTopology topology);
 
+        void ClearBuffer(BufferHandle destination, int offset, int size, uint value);
+
         void ClearRenderTargetColor(int index, uint componentMask, ColorF color);
 
         void ClearRenderTargetDepthStencil(
@@ -66,8 +68,7 @@ namespace Ryujinx.Graphics.GAL
 
         void SetSampler(int binding, ISampler sampler);
 
-        void SetScissorEnable(int index, bool enable);
-        void SetScissor(int index, int x, int y, int width, int height);
+        void SetScissor(int index, bool enable, int x, int y, int width, int height);
 
         void SetStencilTest(StencilTestDescriptor stencilTest);
 

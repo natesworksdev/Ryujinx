@@ -144,9 +144,10 @@ namespace ARMeilleure.Decoders
             SetA64("101100100xxxxxxxxxxxxxxxxxxxxxxx", InstName.Orr,             InstEmit.Orr,             OpCodeAluImm.Create);
             SetA64("00101010xx0xxxxx0xxxxxxxxxxxxxxx", InstName.Orr,             InstEmit.Orr,             OpCodeAluRs.Create);
             SetA64("10101010xx0xxxxxxxxxxxxxxxxxxxxx", InstName.Orr,             InstEmit.Orr,             OpCodeAluRs.Create);
-            SetA64("1111100110xxxxxxxxxxxxxxxxxxxxxx", InstName.Pfrm,            InstEmit.Pfrm,            OpCodeMemImm.Create);
-            SetA64("11111000100xxxxxxxxx00xxxxxxxxxx", InstName.Pfrm,            InstEmit.Pfrm,            OpCodeMemImm.Create);
-            SetA64("11011000xxxxxxxxxxxxxxxxxxxxxxxx", InstName.Pfrm,            InstEmit.Pfrm,            OpCodeMemLit.Create);
+            SetA64("1111100110xxxxxxxxxxxxxxxxxxxxxx", InstName.Prfm,            InstEmit.Prfm,            OpCodeMemImm.Create); // immediate
+            SetA64("11111000100xxxxxxxxx00xxxxxxxxxx", InstName.Prfm,            InstEmit.Prfm,            OpCodeMemImm.Create); // prfum (unscaled offset)
+            SetA64("11011000xxxxxxxxxxxxxxxxxxxxxxxx", InstName.Prfm,            InstEmit.Prfm,            OpCodeMemLit.Create); // literal
+            SetA64("11111000101xxxxxxxxx10xxxxxxxxxx", InstName.Prfm,            InstEmit.Prfm,            OpCodeMemReg.Create); // register
             SetA64("x101101011000000000000xxxxxxxxxx", InstName.Rbit,            InstEmit.Rbit,            OpCodeAlu.Create);
             SetA64("1101011001011111000000xxxxx00000", InstName.Ret,             InstEmit.Ret,             OpCodeBReg.Create);
             SetA64("x101101011000000000001xxxxxxxxxx", InstName.Rev16,           InstEmit.Rev16,           OpCodeAlu.Create);
@@ -311,6 +312,7 @@ namespace ARMeilleure.Decoders
             SetA64("0>0011100<1xxxxx111101xxxxxxxxxx", InstName.Fmax_V,          InstEmit.Fmax_V,          OpCodeSimdReg.Create);
             SetA64("000111100x1xxxxx011010xxxxxxxxxx", InstName.Fmaxnm_S,        InstEmit.Fmaxnm_S,        OpCodeSimdReg.Create);
             SetA64("0>0011100<1xxxxx110001xxxxxxxxxx", InstName.Fmaxnm_V,        InstEmit.Fmaxnm_V,        OpCodeSimdReg.Create);
+            SetA64("011111100x110000110010xxxxxxxxxx", InstName.Fmaxnmp_S,       InstEmit.Fmaxnmp_S,       OpCodeSimd.Create);
             SetA64("0>1011100<1xxxxx110001xxxxxxxxxx", InstName.Fmaxnmp_V,       InstEmit.Fmaxnmp_V,       OpCodeSimdReg.Create);
             SetA64("0110111000110000110010xxxxxxxxxx", InstName.Fmaxnmv_V,       InstEmit.Fmaxnmv_V,       OpCodeSimd.Create);
             SetA64("0>1011100<1xxxxx111101xxxxxxxxxx", InstName.Fmaxp_V,         InstEmit.Fmaxp_V,         OpCodeSimdReg.Create);
@@ -319,6 +321,7 @@ namespace ARMeilleure.Decoders
             SetA64("0>0011101<1xxxxx111101xxxxxxxxxx", InstName.Fmin_V,          InstEmit.Fmin_V,          OpCodeSimdReg.Create);
             SetA64("000111100x1xxxxx011110xxxxxxxxxx", InstName.Fminnm_S,        InstEmit.Fminnm_S,        OpCodeSimdReg.Create);
             SetA64("0>0011101<1xxxxx110001xxxxxxxxxx", InstName.Fminnm_V,        InstEmit.Fminnm_V,        OpCodeSimdReg.Create);
+            SetA64("011111101x110000110010xxxxxxxxxx", InstName.Fminnmp_S,       InstEmit.Fminnmp_S,       OpCodeSimd.Create);
             SetA64("0>1011101<1xxxxx110001xxxxxxxxxx", InstName.Fminnmp_V,       InstEmit.Fminnmp_V,       OpCodeSimdReg.Create);
             SetA64("0110111010110000110010xxxxxxxxxx", InstName.Fminnmv_V,       InstEmit.Fminnmv_V,       OpCodeSimd.Create);
             SetA64("0>1011101<1xxxxx111101xxxxxxxxxx", InstName.Fminp_V,         InstEmit.Fminp_V,         OpCodeSimdReg.Create);
@@ -811,6 +814,7 @@ namespace ARMeilleure.Decoders
             SetA32("111100111x11xx01xxxx0x100xx0xxxx", InstName.Vclt,     InstEmit32.Vclt_Z,   OpCode32SimdCmpZ.Create);
             SetA32("<<<<11101x11010xxxxx101x01x0xxxx", InstName.Vcmp,     InstEmit32.Vcmp,     OpCode32SimdS.Create);
             SetA32("<<<<11101x11010xxxxx101x11x0xxxx", InstName.Vcmpe,    InstEmit32.Vcmpe,    OpCode32SimdS.Create);
+            SetA32("111100111x110000xxxx01010xx0xxxx", InstName.Vcnt,     InstEmit32.Vcnt,     OpCode32SimdCmpZ.Create);
             SetA32("<<<<11101x110111xxxx101x11x0xxxx", InstName.Vcvt,     InstEmit32.Vcvt_FD,  OpCode32SimdS.Create); // FP 32 and 64, scalar.
             SetA32("<<<<11101x11110xxxxx101x11x0xxxx", InstName.Vcvt,     InstEmit32.Vcvt_FI,  OpCode32SimdCvtFI.Create); // FP32 to int.
             SetA32("<<<<11101x111000xxxx101xx1x0xxxx", InstName.Vcvt,     InstEmit32.Vcvt_FI,  OpCode32SimdCvtFI.Create); // Int to FP32.

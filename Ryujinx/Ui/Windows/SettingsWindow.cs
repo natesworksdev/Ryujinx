@@ -1,5 +1,7 @@
 using Gtk;
 using Ryujinx.Audio;
+using Ryujinx.Audio.Backends.OpenAL;
+using Ryujinx.Audio.Backends.SoundIo;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Platform;
@@ -12,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 
@@ -44,6 +47,8 @@ namespace Ryujinx.Ui.Windows
         [GUI] CheckButton     _discordToggle;
         [GUI] CheckButton     _checkUpdatesToggle;
         [GUI] CheckButton     _showConsole;
+        [GUI] CheckButton     _showConfirmExitToggle;
+        [GUI] CheckButton     _hideCursorOnIdleToggle;
         [GUI] CheckButton     _vSyncToggle;
         [GUI] CheckButton     _shaderCacheToggle;
         [GUI] CheckButton     _ptcToggle;
@@ -93,6 +98,8 @@ namespace Ryujinx.Ui.Windows
 
         private SettingsWindow(MainWindow parent, Builder builder, VirtualFileSystem virtualFileSystem, HLE.FileSystem.Content.ContentManager contentManager) : base(builder.GetObject("_settingsWin").Handle)
         {
+            Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.Resources.Logo_Ryujinx.png");
+
             _parent = parent;
 
             builder.Autoconnect(this);
@@ -182,6 +189,16 @@ namespace Ryujinx.Ui.Windows
             if (ConfigurationState.Instance.ShowConsole)
             {
                 _showConsole.Click();
+			}
+
+            if (ConfigurationState.Instance.ShowConfirmExit)
+            {
+                _showConfirmExitToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.HideCursorOnIdle)
+            {
+                _hideCursorOnIdleToggle.Click();
             }
 
             if (ConfigurationState.Instance.Graphics.EnableVsync)
@@ -323,8 +340,8 @@ namespace Ryujinx.Ui.Windows
 
             Task.Run(() =>
             {
-                openAlIsSupported  = OpenALAudioOut.IsSupported;
-                soundIoIsSupported = SoundIoAudioOut.IsSupported;
+                openAlIsSupported  = OpenALHardwareDeviceDriver.IsSupported;
+                soundIoIsSupported = SoundIoHardwareDeviceDriver.IsSupported;
             });
 
             // This function runs whenever the dropdown is opened
@@ -408,6 +425,8 @@ namespace Ryujinx.Ui.Windows
             ConfigurationState.Instance.EnableDiscordIntegration.Value         = _discordToggle.Active;
             ConfigurationState.Instance.CheckUpdatesOnStart.Value              = _checkUpdatesToggle.Active;
             ConfigurationState.Instance.ShowConsole.Value                      = _showConsole.Active;
+            ConfigurationState.Instance.ShowConfirmExit.Value                  = _showConfirmExitToggle.Active;
+            ConfigurationState.Instance.HideCursorOnIdle.Value                 = _hideCursorOnIdleToggle.Active;
             ConfigurationState.Instance.Graphics.EnableVsync.Value             = _vSyncToggle.Active;
             ConfigurationState.Instance.Graphics.EnableShaderCache.Value       = _shaderCacheToggle.Active;
             ConfigurationState.Instance.System.EnablePtc.Value                 = _ptcToggle.Active;
@@ -577,7 +596,10 @@ namespace Ryujinx.Ui.Windows
         {
             ((ToggleButton)sender).SetStateFlags(StateFlags.Normal, true);
 
-            new ControllerWindow(playerIndex).Show();
+            ControllerWindow controllerWindow = new ControllerWindow(playerIndex);
+
+            controllerWindow.SetSizeRequest((int)(controllerWindow.DefaultWidth * Program.WindowScaleFactor), (int)(controllerWindow.DefaultHeight * Program.WindowScaleFactor));
+            controllerWindow.Show();
         }
 
         private void SaveToggle_Activated(object sender, EventArgs args)

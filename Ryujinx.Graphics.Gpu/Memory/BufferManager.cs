@@ -68,9 +68,10 @@ namespace Ryujinx.Graphics.Gpu.Memory
             /// <param name="index">Buffer slot</param>
             /// <param name="address">Region virtual address</param>
             /// <param name="size">Region size in bytes</param>
-            public void SetBounds(int index, ulong address, ulong size)
+            /// <param name="flags">Buffer usage flags</param>
+            public void SetBounds(int index, ulong address, ulong size, BufferUsageFlags flags = BufferUsageFlags.None)
             {
-                Buffers[index] = new BufferBounds(address, size);
+                Buffers[index] = new BufferBounds(address, size, flags);
             }
 
             /// <summary>
@@ -219,7 +220,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="index">Index of the storage buffer</param>
         /// <param name="gpuVa">Start GPU virtual address of the buffer</param>
         /// <param name="size">Size in bytes of the storage buffer</param>
-        public void SetComputeStorageBuffer(int index, ulong gpuVa, ulong size)
+        /// <param name="flags">Buffer usage flags</param>
+        public void SetComputeStorageBuffer(int index, ulong gpuVa, ulong size, BufferUsageFlags flags)
         {
             size += gpuVa & ((ulong)_context.Capabilities.StorageBufferOffsetAlignment - 1);
 
@@ -227,7 +229,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             ulong address = TranslateAndCreateBuffer(gpuVa, size);
 
-            _cpStorageBuffers.SetBounds(index, address, size);
+            _cpStorageBuffers.SetBounds(index, address, size, flags);
         }
 
         /// <summary>
@@ -238,7 +240,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="index">Index of the storage buffer</param>
         /// <param name="gpuVa">Start GPU virtual address of the buffer</param>
         /// <param name="size">Size in bytes of the storage buffer</param>
-        public void SetGraphicsStorageBuffer(int stage, int index, ulong gpuVa, ulong size)
+        /// <param name="flags">Buffer usage flags</param>
+        public void SetGraphicsStorageBuffer(int stage, int index, ulong gpuVa, ulong size, BufferUsageFlags flags)
         {
             size += gpuVa & ((ulong)_context.Capabilities.StorageBufferOffsetAlignment - 1);
 
@@ -252,7 +255,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 _gpStorageBuffersDirty = true;
             }
 
-            _gpStorageBuffers[stage].SetBounds(index, address, size);
+            _gpStorageBuffers[stage].SetBounds(index, address, size, flags);
         }
 
         /// <summary>
@@ -386,6 +389,30 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
+        /// Handles removal of buffers written to a memory region being unmapped.
+        /// </summary>
+        /// <param name="sender">Sender object</param>
+        /// <param name="e">Event arguments</param>
+        public void MemoryUnmappedHandler(object sender, UnmapEventArgs e)
+        {
+            Buffer[] overlaps = new Buffer[10];
+            int overlapCount;
+
+            ulong address = _context.MemoryManager.Translate(e.Address);
+            ulong size = e.Size;
+
+            lock (_buffers)
+            {
+                overlapCount = _buffers.FindOverlaps(address, size, ref overlaps);
+            }
+
+            for (int i = 0; i < overlapCount; i++)
+            {
+                overlaps[i].Unmapped(address, size);
+            }
+        }
+
+        /// <summary>
         /// Performs address translation of the GPU virtual address, and creates a
         /// new buffer, if needed, for the specified range.
         /// </summary>
@@ -443,7 +470,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="size">Size in bytes of the buffer</param>
         private void CreateBufferAligned(ulong address, ulong size)
         {
-            int overlapsCount = _buffers.FindOverlapsNonOverlapping(address, size, ref _bufferOverlaps);
+            int overlapsCount;
+
+            lock (_buffers)
+            {
+                overlapsCount = _buffers.FindOverlapsNonOverlapping(address, size, ref _bufferOverlaps);
+            }
 
             if (overlapsCount != 0)
             {
@@ -463,15 +495,19 @@ namespace Ryujinx.Graphics.Gpu.Memory
                         address    = Math.Min(address,    buffer.Address);
                         endAddress = Math.Max(endAddress, buffer.EndAddress);
 
-                        buffer.SynchronizeMemory(buffer.Address, buffer.Size);
-
-                        _buffers.Remove(buffer);
+                        lock (_buffers)
+                        {
+                            _buffers.Remove(buffer);
+                        }
                     }
 
                     Buffer newBuffer = new Buffer(_context, address, endAddress - address);
                     newBuffer.SynchronizeMemory(address, endAddress - address);
 
-                    _buffers.Add(newBuffer);
+                    lock (_buffers)
+                    {
+                        _buffers.Add(newBuffer);
+                    }
 
                     for (int index = 0; index < overlapsCount; index++)
                     {
@@ -479,7 +515,10 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                         int dstOffset = (int)(buffer.Address - newBuffer.Address);
 
+                        buffer.SynchronizeMemory(buffer.Address, buffer.Size);
+
                         buffer.CopyTo(newBuffer, dstOffset);
+                        newBuffer.InheritModifiedRanges(buffer);
 
                         buffer.Dispose();
                     }
@@ -493,7 +532,10 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 // No overlap, just create a new buffer.
                 Buffer buffer = new Buffer(_context, address, size);
 
-                _buffers.Add(buffer);
+                lock (_buffers)
+                {
+                    _buffers.Add(buffer);
+                }
             }
 
             ShrinkOverlapsBufferIfNeeded();
@@ -549,7 +591,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 if (bounds.Address != 0)
                 {
-                    sRanges[bindingInfo.Binding] = GetBufferRange(bounds.Address, bounds.Size);
+                    // The storage buffer size is not reliable (it might be lower than the actual size),
+                    // so we bind the entire buffer to allow otherwise out of range accesses to work.
+                    sRanges[bindingInfo.Binding] = GetBufferRangeTillEnd(
+                        bounds.Address,
+                        bounds.Size,
+                        bounds.Flags.HasFlag(BufferUsageFlags.Write));
                 }
             }
 
@@ -722,7 +769,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                     if (bounds.Address != 0)
                     {
-                        ranges[bindingInfo.Binding] = GetBufferRange(bounds.Address, bounds.Size);
+                        ranges[bindingInfo.Binding] = isStorage
+                            ? GetBufferRangeTillEnd(bounds.Address, bounds.Size, bounds.Flags.HasFlag(BufferUsageFlags.Write))
+                            : GetBufferRange(bounds.Address, bounds.Size, bounds.Flags.HasFlag(BufferUsageFlags.Write));
                     }
                 }
             }
@@ -818,7 +867,51 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 dstOffset,
                 (int)size);
 
-            dstBuffer.Flush(dstAddress, size);
+            if (srcBuffer.IsModified(srcAddress, size))
+            {
+                dstBuffer.SignalModified(dstAddress, size);
+            }
+            else
+            {
+                // Optimization: If the data being copied is already in memory, then copy it directly instead of flushing from GPU.
+
+                dstBuffer.ClearModified(dstAddress, size);
+                _context.PhysicalMemory.WriteUntracked(dstAddress, _context.PhysicalMemory.GetSpan(srcAddress, (int)size));
+            }
+        }
+
+        /// <summary>
+        /// Clears a buffer at a given address with the specified value.
+        /// </summary>
+        /// <remarks>
+        /// Both the address and size must be aligned to 4 bytes.
+        /// </remarks>
+        /// <param name="gpuVa">GPU virtual address of the region to clear</param>
+        /// <param name="size">Number of bytes to clear</param>
+        /// <param name="value">Value to be written into the buffer</param>
+        public void ClearBuffer(GpuVa gpuVa, ulong size, uint value)
+        {
+            ulong address = TranslateAndCreateBuffer(gpuVa.Pack(), size);
+
+            Buffer buffer = GetBuffer(address, size);
+
+            int offset = (int)(address - buffer.Address);
+
+            _context.Renderer.Pipeline.ClearBuffer(buffer.Handle, offset, (int)size, value);
+
+            buffer.SignalModified(address, size);
+        }
+
+        /// <summary>
+        /// Gets a buffer sub-range starting at a given memory address.
+        /// </summary>
+        /// <param name="address">Start address of the memory range</param>
+        /// <param name="size">Size in bytes of the memory range</param>
+        /// <param name="write">Whether the buffer will be written to by this use</param>
+        /// <returns>The buffer sub-range starting at the given memory address</returns>
+        private BufferRange GetBufferRangeTillEnd(ulong address, ulong size, bool write = false)
+        {
+            return GetBuffer(address, size, write).GetRange(address);
         }
 
         /// <summary>
@@ -826,10 +919,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         /// <param name="address">Start address of the memory range</param>
         /// <param name="size">Size in bytes of the memory range</param>
+        /// <param name="write">Whether the buffer will be written to by this use</param>
         /// <returns>The buffer sub-range for the given range</returns>
-        private BufferRange GetBufferRange(ulong address, ulong size)
+        private BufferRange GetBufferRange(ulong address, ulong size, bool write = false)
         {
-            return GetBuffer(address, size).GetRange(address, size);
+            return GetBuffer(address, size, write).GetRange(address, size);
         }
 
         /// <summary>
@@ -838,20 +932,32 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         /// <param name="address">Start address of the memory range</param>
         /// <param name="size">Size in bytes of the memory range</param>
+        /// <param name="write">Whether the buffer will be written to by this use</param>
         /// <returns>The buffer where the range is fully contained</returns>
-        private Buffer GetBuffer(ulong address, ulong size)
+        private Buffer GetBuffer(ulong address, ulong size, bool write = false)
         {
             Buffer buffer;
 
             if (size != 0)
             {
-                buffer = _buffers.FindFirstOverlap(address, size);
+                lock (_buffers)
+                {
+                    buffer = _buffers.FindFirstOverlap(address, size);
+                }
 
                 buffer.SynchronizeMemory(address, size);
+
+                if (write)
+                {
+                    buffer.SignalModified(address, size);
+                }
             }
             else
             {
-                buffer = _buffers.FindFirstOverlap(address, 1);
+                lock (_buffers)
+                {
+                    buffer = _buffers.FindFirstOverlap(address, 1);
+                }
             }
 
             return buffer;
@@ -866,7 +972,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             if (size != 0)
             {
-                Buffer buffer = _buffers.FindFirstOverlap(address, size);
+                Buffer buffer;
+
+                lock (_buffers)
+                {
+                    buffer = _buffers.FindFirstOverlap(address, size);
+                }
 
                 buffer.SynchronizeMemory(address, size);
             }
@@ -878,9 +989,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         public void Dispose()
         {
-            foreach (Buffer buffer in _buffers)
+            lock (_buffers)
             {
-                buffer.Dispose();
+                foreach (Buffer buffer in _buffers)
+                {
+                    buffer.Dispose();
+                }
             }
         }
     }
