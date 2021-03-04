@@ -259,11 +259,11 @@ namespace Ryujinx.Ui.Widgets
 
                         if (mainNca == null)
                         {
-                            Logger.Error?.Print(LogClass.Application, "Extraction failed. The main NCA is not present in the selected file.");
+                            Logger.Error?.Print(LogClass.Application, "Extraction failure. The main NCA is not present in the selected file.");
 
                             Gtk.Application.Invoke(delegate
                             {
-                                GtkDialog.CreateErrorDialog("Extraction failed. The main NCA is not present in the selected file.");
+                                GtkDialog.CreateErrorDialog("Extraction failure. The main NCA is not present in the selected file.");
                             });
 
                             return;
