@@ -395,7 +395,7 @@ namespace Ryujinx.Ui
         {
             if (_gameLoaded)
             {
-                GtkDialog.CreateInfoDialog("A game has already been loaded", "Please close it first and try again.");
+                GtkDialog.CreateInfoDialog("A game has already been loaded", "Please close the game and try again.");
             }
             else
             {
@@ -502,14 +502,14 @@ namespace Ryujinx.Ui
                             _emulationContext.LoadNsp(path);
                             break;
                         default:
-                            Logger.Info?.Print(LogClass.Application, "Loading as homebrew.");
+                            Logger.Info?.Print(LogClass.Application, "Loading as HomeBrew.");
                             try
                             {
                                 _emulationContext.LoadProgram(path);
                             }
                             catch (ArgumentOutOfRangeException)
                             {
-                                Logger.Error?.Print(LogClass.Application, "The file which you have specified is unsupported by Ryujinx.");
+                                Logger.Error?.Print(LogClass.Application, "The file which you have specified is not supported by Ryujinx.");
                             }
                             break;
                     }
@@ -1133,7 +1133,7 @@ namespace Ryujinx.Ui
             {
                 Updater.BeginParse(this, true).ContinueWith(task =>
                 {
-                    Logger.Error?.Print(LogClass.Application, $"Updater Error: {task.Exception}");
+                    Logger.Error?.Print(LogClass.Application, $"Error updating: {task.Exception}");
                 }, TaskContinuationOptions.OnlyOnFaulted);
             }
         }
