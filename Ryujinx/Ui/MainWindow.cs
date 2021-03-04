@@ -552,7 +552,7 @@ namespace Ryujinx.Ui
                             _emulationContext.LoadNsp(path);
                             break;
                         default:
-                            Logger.Info?.Print(LogClass.Application, "Loading as HomeBrew.");
+                            Logger.Info?.Print(LogClass.Application, "Loading as Homebrew.");
                             try
                             {
                                 _emulationContext.LoadProgram(path);
