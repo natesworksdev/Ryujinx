@@ -16,7 +16,7 @@
 </p>
 
 <h5 align="center">
-    As of January 2021, Ryujinx has been tested on over 3,000 commercial titles: ~2,300 boot past menus and into gameplay, with approximately 1,350 of those being considered playable. See the compatibility list <a href="https://github.com/Ryujinx/Ryujinx-Games-List/issues" target="_blank">here</a>.
+    As of February 2021, Ryujinx has been tested on over 3,200 titles: ~2,500 boot past menus and into gameplay, with approximately 1,700 of those being considered playable. See the compatibility list <a href="https://github.com/Ryujinx/Ryujinx-Games-List/issues" target="_blank">here</a>.
 </h5>
 
 ## Usage
@@ -104,7 +104,7 @@ If you'd like to donate, please take a look at our [Patreon](https://www.patreon
 ## License
 
 This software is licensed under the terms of the MIT license.
-The Ryujinx.Audio.Renderer project is licensed under the terms of the LGPLv3 license.
+The Ryujinx.Audio project is licensed under the terms of the LGPLv3 license.
 This project makes use of code authored by the libvpx project, licensed under BSD and the ffmpeg project, licensed under LGPLv3.
 See [LICENSE.txt](LICENSE.txt) and [THIRDPARTY.md](Ryujinx/THIRDPARTY.md) for more details.
  

@@ -5,6 +5,7 @@ using Ryujinx.Ui;
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.Modules
@@ -23,7 +24,7 @@ namespace Ryujinx.Modules
         private readonly string     _buildUrl;
         private          bool       _restartQuery;
 
-        public UpdateDialog(MainWindow mainWindow, Version newVersion, string buildUrl) : this(new Builder("Ryujinx..Modules.Updater.UpdateDialog.glade"), mainWindow, newVersion, buildUrl) { }
+        public UpdateDialog(MainWindow mainWindow, Version newVersion, string buildUrl) : this(new Builder("Ryujinx.Modules.Updater.UpdateDialog.glade"), mainWindow, newVersion, buildUrl) { }
 
         private UpdateDialog(Builder builder, MainWindow mainWindow, Version newVersion, string buildUrl) : base(builder.GetObject("UpdateDialog").Handle)
         {
@@ -32,6 +33,7 @@ namespace Ryujinx.Modules
             _mainWindow = mainWindow;
             _buildUrl   = buildUrl;
 
+            Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.Resources.Logo_Ryujinx.png");
             MainText.Text      = "Do you want to update Ryujinx to the latest version?";
             SecondaryText.Text = $"{Program.Version} -> {newVersion}";
 
@@ -40,7 +42,7 @@ namespace Ryujinx.Modules
             YesButton.Clicked += YesButton_Clicked;
             NoButton.Clicked  += NoButton_Clicked;
         }
-        
+
         private void YesButton_Clicked(object sender, EventArgs args)
         {
             if (_restartQuery)
@@ -48,12 +50,6 @@ namespace Ryujinx.Modules
                 string ryuName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "Ryujinx.exe" : "Ryujinx";
                 string ryuExe  = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ryuName);
                 string ryuArg  = string.Join(" ", Environment.GetCommandLineArgs().AsEnumerable().Skip(1).ToArray());
-
-                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    UnixFileInfo unixFileInfo = new UnixFileInfo(ryuExe);
-                    unixFileInfo.FileAccessPermissions |= FileAccessPermissions.UserExecute;
-                }
 
                 Process.Start(ryuExe, ryuArg);
 
@@ -71,7 +67,7 @@ namespace Ryujinx.Modules
                 SecondaryText.Text = "";
                 _restartQuery      = true;
 
-                _ = Updater.UpdateRyujinx(this, _buildUrl);
+                Updater.UpdateRyujinx(this, _buildUrl);
             }
         }
 

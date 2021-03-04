@@ -138,7 +138,7 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkMenuItem" id="SimulateWakeUpMessage">
+                      <object class="GtkMenuItem" id="_simulateWakeUpMessage">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="tooltip_text" translatable="yes">Simulate a Wake-up Message</property>
@@ -171,7 +171,6 @@
                                 <property name="tooltip_text" translatable="yes">Enable or Disable Favorite Games Column in the game list</property>
                                 <property name="label" translatable="yes">Enable Favorite Games Column</property>
                                 <property name="use_underline">True</property>
-                                <signal name="toggled" handler="Fav_Toggled" swapped="no"/>
                               </object>
                             </child>
                             <child>
@@ -181,7 +180,6 @@
                                 <property name="tooltip_text" translatable="yes">Enable or Disable Icon Column in the game list</property>
                                 <property name="label" translatable="yes">Enable Icon Column</property>
                                 <property name="use_underline">True</property>
-                                <signal name="toggled" handler="Icon_Toggled" swapped="no"/>
                               </object>
                             </child>
                             <child>
@@ -191,7 +189,6 @@
                                 <property name="tooltip_text" translatable="yes">Enable or Disable Title Name/ID Column in the game list</property>
                                 <property name="label" translatable="yes">Enable Title Name/ID Column</property>
                                 <property name="use_underline">True</property>
-                                <signal name="toggled" handler="Title_Toggled" swapped="no"/>
                               </object>
                             </child>
                             <child>
@@ -201,7 +198,6 @@
                                 <property name="tooltip_text" translatable="yes">Enable or Disable Developer Column in the game list</property>
                                 <property name="label" translatable="yes">Enable Developer Column</property>
                                 <property name="use_underline">True</property>
-                                <signal name="toggled" handler="Developer_Toggled" swapped="no"/>
                               </object>
                             </child>
                             <child>
@@ -211,7 +207,6 @@
                                 <property name="tooltip_text" translatable="yes">Enable or Disable Version Column in the game list</property>
                                 <property name="label" translatable="yes">Enable Version Column</property>
                                 <property name="use_underline">True</property>
-                                <signal name="toggled" handler="Version_Toggled" swapped="no"/>
                               </object>
                             </child>
                             <child>
@@ -221,7 +216,6 @@
                                 <property name="tooltip_text" translatable="yes">Enable or Disable Time Played Column in the game list</property>
                                 <property name="label" translatable="yes">Enable Time Played Column</property>
                                 <property name="use_underline">True</property>
-                                <signal name="toggled" handler="TimePlayed_Toggled" swapped="no"/>
                               </object>
                             </child>
                             <child>
@@ -231,7 +225,6 @@
                                 <property name="tooltip_text" translatable="yes">Enable or Disable Last Played Column in the game list</property>
                                 <property name="label" translatable="yes">Enable Last Played Column</property>
                                 <property name="use_underline">True</property>
-                                <signal name="toggled" handler="LastPlayed_Toggled" swapped="no"/>
                               </object>
                             </child>
                             <child>
@@ -241,7 +234,6 @@
                                 <property name="tooltip_text" translatable="yes">Enable or Disable file extension column in the game list</property>
                                 <property name="label" translatable="yes">Enable File Ext Column</property>
                                 <property name="use_underline">True</property>
-                                <signal name="toggled" handler="FileExt_Toggled" swapped="no"/>
                               </object>
                             </child>
                             <child>
@@ -251,7 +243,6 @@
                                 <property name="tooltip_text" translatable="yes">Enable or Disable File Size Column in the game list</property>
                                 <property name="label" translatable="yes">Enable File Size Column</property>
                                 <property name="use_underline">True</property>
-                                <signal name="toggled" handler="FileSize_Toggled" swapped="no"/>
                               </object>
                             </child>
                             <child>
@@ -261,7 +252,6 @@
                                 <property name="tooltip_text" translatable="yes">Enable or Disable Path Column in the game list</property>
                                 <property name="label" translatable="yes">Enable Path Column</property>
                                 <property name="use_underline">True</property>
-                                <signal name="toggled" handler="Path_Toggled" swapped="no"/>
                               </object>
                             </child>
                           </object>
@@ -469,13 +459,14 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLevelBar" id="_progressBar">
+                      <object class="GtkProgressBar" id="_progressBar">
                         <property name="width_request">200</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="halign">start</property>
                         <property name="margin_left">10</property>
                         <property name="margin_right">5</property>
+                        <property name="margin_bottom">6</property>
                       </object>
                       <packing>
                         <property name="expand">True</property>
@@ -650,6 +641,7 @@
                         <property name="can_focus">False</property>
                         <property name="halign">start</property>
                         <property name="margin_left">5</property>
+                        <property name="margin_right">5</property>
                       </object>
                       <packing>
                         <property name="expand">True</property>
@@ -664,16 +656,34 @@
                     <property name="position">1</property>
                   </packing>
                 </child>
-                <child>
-                  <object class="GtkSeparator">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">3</property>
-                  </packing>
+                  <child>
+                    <object class="GtkLabel" id="_loadingStatusLabel">
+                      <property name="can_focus">False</property>
+                      <property name="margin_left">5</property>
+                      <property name="margin_right">5</property>
+                      <property name="label" translatable="yes">0/0 </property>
+                      <property name="visible">False</property>
+                    </object>
+                    <packing>
+                      <property name="expand">False</property>
+                      <property name="fill">True</property>
+                      <property name="position">11</property>
+                    </packing>
+                  </child>
+                  <child>
+                    <object class="GtkProgressBar" id="_loadingStatusBar">
+                      <property name="width_request">200</property>
+                      <property name="can_focus">False</property>
+                      <property name="margin_left">5</property>
+                      <property name="margin_right">5</property>
+                      <property name="margin_bottom">6</property>
+                      <property name="visible">False</property>
+                    </object>
+                    <packing>
+                      <property name="expand">False</property>
+                      <property name="fill">True</property>
+                      <property name="position">12</property>
+                    </packing>
                 </child>
                 <child>
                   <object class="GtkBox">

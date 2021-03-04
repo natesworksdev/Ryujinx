@@ -210,6 +210,11 @@ namespace ARMeilleure.Instructions
 
         public static Operand X86GetElements(ArmEmitterContext context, long e1, long e0)
         {
+            return X86GetElements(context, (ulong)e1, (ulong)e0);
+        }
+
+        public static Operand X86GetElements(ArmEmitterContext context, ulong e1, ulong e0)
+        {
             Operand vector0 = context.VectorCreateScalar(Const(e0));
             Operand vector1 = context.VectorCreateScalar(Const(e1));
 
@@ -227,6 +232,18 @@ namespace ARMeilleure.Instructions
             }
 
             throw new ArgumentException($"Invalid rounding mode \"{roundMode}\".");
+        }
+
+        public static Operand EmitCountSetBits8(ArmEmitterContext context, Operand op) // "size" is 8 (SIMD&FP Inst.).
+        {
+            Debug.Assert(op.Type == OperandType.I32 || op.Type == OperandType.I64);
+
+            Operand op0 = context.Subtract(op, context.BitwiseAnd(context.ShiftRightUI(op, Const(1)), Const(op.Type, 0x55L)));
+
+            Operand c1 = Const(op.Type, 0x33L);
+            Operand op1 = context.Add(context.BitwiseAnd(context.ShiftRightUI(op0, Const(2)), c1), context.BitwiseAnd(op0, c1));
+
+            return context.BitwiseAnd(context.Add(op1, context.ShiftRightUI(op1, Const(4))), Const(op.Type, 0x0fL));
         }
 
         public static void EmitScalarUnaryOpF(ArmEmitterContext context, Intrinsic inst32, Intrinsic inst64)
@@ -1116,6 +1133,49 @@ namespace ARMeilleure.Instructions
             Operand res = emit(emit(part0, part1), emit(part2, part3));
 
             context.Copy(GetVec(op.Rd), context.VectorZeroUpper96(res));
+        }
+
+        public static void EmitScalarPairwiseOpF(ArmEmitterContext context, Func2I emit)
+        {
+            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+
+            OperandType type = (op.Size & 1) != 0 ? OperandType.FP64 : OperandType.FP32;
+
+            Operand ne0 = context.VectorExtract(type, GetVec(op.Rn), 0);
+            Operand ne1 = context.VectorExtract(type, GetVec(op.Rn), 1);
+
+            Operand res = context.VectorInsert(context.VectorZero(), emit(ne0, ne1), 0);
+
+            context.Copy(GetVec(op.Rd), res);
+        }
+
+        public static void EmitSse2ScalarPairwiseOpF(ArmEmitterContext context, Func2I emit)
+        {
+            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+
+            Operand n = GetVec(op.Rn);
+
+            Operand op0, op1;
+
+            if ((op.Size & 1) == 0)
+            {
+                const int sm0 = 2 << 6 | 2 << 4 | 2 << 2 | 0 << 0;
+                const int sm1 = 2 << 6 | 2 << 4 | 2 << 2 | 1 << 0;
+
+                Operand zeroN = context.VectorZeroUpper64(n);
+
+                op0 = context.AddIntrinsic(Intrinsic.X86Pshufd, zeroN, Const(sm0));
+                op1 = context.AddIntrinsic(Intrinsic.X86Pshufd, zeroN, Const(sm1));
+            }
+            else /* if ((op.Size & 1) == 1) */
+            {
+                Operand zero = context.VectorZero();
+
+                op0 = context.AddIntrinsic(Intrinsic.X86Movlhps, n, zero);
+                op1 = context.AddIntrinsic(Intrinsic.X86Movhlps, zero, n);
+            }
+
+            context.Copy(GetVec(op.Rd), emit(op0, op1));
         }
 
         public static void EmitVectorPairwiseOpF(ArmEmitterContext context, Func2I emit)

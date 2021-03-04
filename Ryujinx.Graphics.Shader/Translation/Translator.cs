@@ -36,22 +36,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             return new TranslatorContext(address, cfg, config);
         }
 
-        public static TranslatorContext CreateContext(
-            ulong addressA,
-            ulong addressB,
-            IGpuAccessor gpuAccessor,
-            TranslationFlags flags,
-            TranslationCounts counts = null)
-        {
-            counts ??= new TranslationCounts();
-
-            Block[][] cfgA = DecodeShader(addressA, gpuAccessor, flags | TranslationFlags.VertexA, counts, out ShaderConfig configA);
-            Block[][] cfgB = DecodeShader(addressB, gpuAccessor, flags, counts, out ShaderConfig configB);
-
-            return new TranslatorContext(addressA, addressB, cfgA, cfgB, configA, configB);
-        }
-
-        internal static ShaderProgram Translate(FunctionCode[] functions, ShaderConfig config, out ShaderProgramInfo shaderProgramInfo, int sizeA = 0)
+        internal static ShaderProgram Translate(FunctionCode[] functions, ShaderConfig config, out ShaderProgramInfo shaderProgramInfo)
         {
             var cfgs = new ControlFlowGraph[functions.Length];
             var frus = new RegisterUsage.FunctionRegisterUsage[functions.Length];
@@ -88,7 +73,6 @@ namespace Ryujinx.Graphics.Shader.Translation
                     RegisterUsage.FixupCalls(cfg.Blocks, frus);
 
                     Dominance.FindDominators(cfg);
-
                     Dominance.FindDominanceFrontiers(cfg.Blocks);
 
                     Ssa.Rename(cfg.Blocks);
@@ -114,7 +98,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             string glslCode = program.Code;
 
-            return new ShaderProgram(config.Stage, glslCode, config.Size, sizeA);
+            return new ShaderProgram(config.Stage, glslCode);
         }
 
         private static Block[][] DecodeShader(

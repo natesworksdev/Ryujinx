@@ -1,5 +1,7 @@
 using LibHac.FsSystem;
-using Ryujinx.Audio;
+using Ryujinx.Audio.Backends.CompatLayer;
+using Ryujinx.Audio.Integration;
+using Ryujinx.Common;
 using Ryujinx.Configuration;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu;
@@ -21,7 +23,7 @@ namespace Ryujinx.HLE
 {
     public class Switch : IDisposable
     {
-        public IAalOutput AudioOut { get; private set; }
+        public IHardwareDeviceDriver AudioDeviceDriver { get; private set; }
 
         internal MemoryBlock Memory { get; private set; }
 
@@ -47,16 +49,16 @@ namespace Ryujinx.HLE
 
         public bool EnableDeviceVsync { get; set; } = true;
 
-        public Switch(VirtualFileSystem fileSystem, ContentManager contentManager, UserChannelPersistence userChannelPersistence, IRenderer renderer, IAalOutput audioOut)
+        public Switch(VirtualFileSystem fileSystem, ContentManager contentManager, UserChannelPersistence userChannelPersistence, IRenderer renderer, IHardwareDeviceDriver audioDeviceDriver)
         {
             if (renderer == null)
             {
                 throw new ArgumentNullException(nameof(renderer));
             }
 
-            if (audioOut == null)
+            if (audioDeviceDriver == null)
             {
-                throw new ArgumentNullException(nameof(audioOut));
+                throw new ArgumentNullException(nameof(audioDeviceDriver));
             }
 
             if (userChannelPersistence == null)
@@ -66,7 +68,7 @@ namespace Ryujinx.HLE
 
             UserChannelPersistence = userChannelPersistence;
 
-            AudioOut = audioOut;
+            AudioDeviceDriver = new CompatLayerHardwareDeviceDriver(audioDeviceDriver);
 
             Memory = new MemoryBlock(1UL << 32);
 
@@ -127,6 +129,10 @@ namespace Ryujinx.HLE
             System.GlobalAccessLogMode = ConfigurationState.Instance.System.FsGlobalAccessLogMode;
 
             ServiceConfiguration.IgnoreMissingServices = ConfigurationState.Instance.System.IgnoreMissingServices;
+            ConfigurationState.Instance.System.IgnoreMissingServices.Event += (object _, ReactiveEventArgs<bool> args) =>
+            {
+                ServiceConfiguration.IgnoreMissingServices = args.NewValue;
+            };
 
             // Configure controllers
             Hid.RefreshInputConfig(ConfigurationState.Instance.Hid.InputConfig.Value);
@@ -205,7 +211,7 @@ namespace Ryujinx.HLE
 
                 System.Dispose();
                 Host1x.Dispose();
-                AudioOut.Dispose();
+                AudioDeviceDriver.Dispose();
                 FileSystem.Unload();
                 Memory.Dispose();
             }
