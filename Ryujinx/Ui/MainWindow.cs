@@ -445,7 +445,7 @@ namespace Ryujinx.Ui
         {
             if (_gameLoaded)
             {
-                GtkDialog.CreateInfoDialog("A game has already been loaded", "Please close the game and try again.");
+                GtkDialog.CreateInfoDialog("A game has already been loaded", "Please stop emulation or close the emulator before launching another game.");
             }
             else
             {
@@ -559,7 +559,7 @@ namespace Ryujinx.Ui
                             }
                             catch (ArgumentOutOfRangeException)
                             {
-                                Logger.Error?.Print(LogClass.Application, "The file which you have specified is not supported by Ryujinx.");
+                                Logger.Error?.Print(LogClass.Application, "The specified file is not supported by Ryujinx.");
                             }
                             break;
                     }
