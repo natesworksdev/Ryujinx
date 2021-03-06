@@ -59,12 +59,10 @@ namespace Ryujinx.Memory.Tracking
         }
 
         /// <summary>
-        /// Updates the protection for this virtual region, and all child physical regions.
+        /// Updates the protection for this virtual region.
         /// </summary>
         public void UpdateProtection()
         {
-            // Re-evaluate protection for all physical children.
-
             _tracking.ProtectVirtualRegion(this, GetRequiredPermission());
         }
 

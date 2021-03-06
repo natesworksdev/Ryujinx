@@ -93,7 +93,7 @@ namespace Ryujinx.Memory.Tracking
         public void Unmap(ulong va, ulong size)
         {
             // An unmapping may mean we need to re-evaluate each VirtualRegion's affected area.
-            // Find all handles that overlap with the range, we need to recalculate their physical regions
+            // Find all handles that overlap with the range, we need to notify them that the region was unmapped.
 
             lock (TrackingLock)
             {
