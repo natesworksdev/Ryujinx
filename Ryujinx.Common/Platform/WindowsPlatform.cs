@@ -4,9 +4,8 @@ using System.Runtime.Versioning;
 
 namespace Ryujinx.Common.Platform
 {
-
     [SupportedOSPlatform("windows")]
-    internal class WindowsPlatform: Platform
+    internal class WindowsPlatform : Platform
     {
         [DllImport("kernel32.dll")]
         static extern IntPtr GetConsoleWindow();
