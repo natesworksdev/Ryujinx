@@ -96,6 +96,7 @@ namespace Ryujinx.Memory.Range
             else
             {
                 var ranges = new List<MemoryRange>();
+
                 foreach (MemoryRange range in _ranges)
                 {
                     if ((long)offset <= 0)
