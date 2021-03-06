@@ -23,6 +23,7 @@
   "docked_mode": true,
   "enable_discord_integration": true,
   "check_updates_on_start": true,
+  "show_console": false,
   "show_confirm_exit": true,
   "hide_cursor_on_idle": false,
   "show_console": true,
