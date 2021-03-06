@@ -81,7 +81,7 @@ namespace Ryujinx.Memory.Range
         /// </summary>
         /// <param name="offset">Offset of the slice into the multi-range in bytes</param>
         /// <param name="size">Size of the slice in bytes</param>
-        /// <returns>A new multirange representing the given slice of this one</returns>
+        /// <returns>A new multi-range representing the given slice of this one</returns>
         public MultiRange GetSlice(ulong offset, ulong size)
         {
             if (HasSingleRange)
@@ -105,11 +105,12 @@ namespace Ryujinx.Memory.Range
                     }
                     else if (offset < range.Size)
                     {
-                        ranges.Add(new MemoryRange(range.Address + offset, Math.Min(size, range.Size - offset)));
-                        size -= range.Size;
+                        ulong sliceSize = Math.Min(size, range.Size - offset);
+                        ranges.Add(new MemoryRange(range.Address + offset, sliceSize));
+                        size -= sliceSize;
                     }
 
-                    if (size <= 0)
+                    if ((long)size <= 0)
                     {
                         break;
                     }

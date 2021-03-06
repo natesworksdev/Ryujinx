@@ -13,7 +13,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     class TexturePool : Pool<Texture, TextureDescriptor>
     {
         private int _sequenceNumber;
-        ConcurrentQueue<Texture> _dereferenceQueue = new ConcurrentQueue<Texture>();
+        private readonly ConcurrentQueue<Texture> _dereferenceQueue = new ConcurrentQueue<Texture>();
 
         /// <summary>
         /// Intrusive linked list node used on the texture pool cache.
