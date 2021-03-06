@@ -616,11 +616,13 @@ namespace Ryujinx.Ui
                 currentButton |= _device.Hid.UpdateStickButtons(leftJoystick, rightJoystick);
 
                 HotkeyButtons currentHotkeyButtons = KeyboardController.GetHotkeyButtons(OpenTK.Input.Keyboard.GetState());
+
                 if (currentHotkeyButtons.HasFlag(HotkeyButtons.MotionButton))
                 {
                     motionDevice.PollRandomData(inputConfig);
                 }
-                else {
+                else 
+                {
                     motionDevice.Poll(inputConfig, inputConfig.Slot);
                 }
 

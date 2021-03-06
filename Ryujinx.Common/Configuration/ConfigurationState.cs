@@ -717,7 +717,7 @@ namespace Ryujinx.Configuration
 
                 configurationFileFormat.Hotkeys = new KeyboardHotkeys
                 {
-                    ToggleVsync = Key.Tab,
+                    ToggleVsync = Key.Tab
                 };
 
                 configurationFileUpdated = true;
@@ -811,7 +811,8 @@ namespace Ryujinx.Configuration
 
                 configurationFileFormat.Hotkeys = new KeyboardHotkeys
                 {
-                    MotionButton = Key.Grave,
+                    ToggleVsync = Key.Tab,
+                    MotionButton = Key.Grave
                 };
 
                 configurationFileUpdated = true;
