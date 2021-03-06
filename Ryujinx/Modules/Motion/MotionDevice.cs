@@ -87,7 +87,6 @@ namespace Ryujinx.Modules.Motion
             Orientation[0] = 1f;
             Orientation[4] = 1f;
             Orientation[8] = 1f;
-
         }
 
         private static Vector3 Truncate(Vector3 value, int decimals)
@@ -97,6 +96,7 @@ namespace Ryujinx.Modules.Motion
             value.X = float.IsNegative(value.X) ? MathF.Ceiling(value.X * power) / power : MathF.Floor(value.X * power) / power;
             value.Y = float.IsNegative(value.Y) ? MathF.Ceiling(value.Y * power) / power : MathF.Floor(value.Y * power) / power;
             value.Z = float.IsNegative(value.Z) ? MathF.Ceiling(value.Z * power) / power : MathF.Floor(value.Z * power) / power;
+
             return value;
         }
     }
