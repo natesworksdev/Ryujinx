@@ -189,7 +189,7 @@ namespace Ryujinx.Ui.Windows
             if (ConfigurationState.Instance.ShowConsole)
             {
                 _showConsole.Click();
-			}
+            }
 
             if (ConfigurationState.Instance.ShowConfirmExit)
             {
@@ -236,7 +236,7 @@ namespace Ryujinx.Ui.Windows
                 _custThemeToggle.Click();
             }
 
-            //Hide specific-platform elements
+            // Hide specific-platform elements
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 _showConsole.Hide();

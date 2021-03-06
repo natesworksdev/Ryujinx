@@ -134,7 +134,7 @@ namespace Ryujinx
                 Platform.Instance.HideConsole();
             }
 
-            // Logging system informations.
+            // Logging system information.
             PrintSystemInfo();
 
             // Initialize Gtk.
