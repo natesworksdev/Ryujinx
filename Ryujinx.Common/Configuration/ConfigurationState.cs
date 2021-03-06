@@ -794,13 +794,6 @@ namespace Ryujinx.Configuration
                 configurationFileUpdated = true;
             }
 
-            if (configurationFileFormat.Version < 21)
-            {
-                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 21.");
-
-                configurationFileFormat.ShowConsole = true;
-			}
-			
             if (configurationFileFormat.Version < 20)
             {
                 Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 20.");
@@ -817,6 +810,13 @@ namespace Ryujinx.Configuration
                 configurationFileFormat.HideCursorOnIdle = false;
 
                 configurationFileUpdated = true;
+            }
+
+            if (configurationFileFormat.Version < 23)
+            {
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 23.");
+
+                configurationFileFormat.ShowConsole = false;
             }
 
             List<InputConfig> inputConfig = new List<InputConfig>();
