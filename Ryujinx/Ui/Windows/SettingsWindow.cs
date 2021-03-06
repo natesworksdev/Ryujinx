@@ -673,18 +673,8 @@ namespace Ryujinx.Ui.Windows
         private void ResetToggle_Activated(object sender, EventArgs args)
         {
             GameConfigurationState.Instance.LoadDefault();
+            GameConfigurationState.Save(_gameId);
 
-            string localConfigurationPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, $"{_gameId}.json");
-            string appDataConfigurationPath = System.IO.Path.Combine(AppDataManager.BaseDirPath, $"{_gameId}.json");
-
-            // Now load the configuration as the other subsystems are now registered
-            string ConfigurationPath = File.Exists(localConfigurationPath)
-                ? localConfigurationPath
-                : File.Exists(appDataConfigurationPath)
-                    ? appDataConfigurationPath
-                    : null;
-
-            GameConfigurationState.Instance.ToFileFormat().SaveConfig(ConfigurationPath);
             Dispose();
         }
 
