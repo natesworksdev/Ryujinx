@@ -1241,14 +1241,14 @@ namespace Ryujinx.Graphics.OpenGL
         private void RestoreComponentMask(int index)
         {
             // If the bound render target is bgra, swap the red and blue masks.
-            bool redMask = _fpIsBgra[index] == 0 ? (_componentMasks[index] & 1u) != 0 : (_componentMasks[index] & 4u) != 0;
-            bool blueMask = _fpIsBgra[index] == 0 ? (_componentMasks[index] & 4u) != 0 : (_componentMasks[index] & 1u) != 0;
+            uint redMask = _fpIsBgra[index] == 0 ? 1u : 4u;
+            uint blueMask = _fpIsBgra[index] == 0 ? 4u : 1u;
 
             GL.ColorMask(
                 index,
-                redMask,
+                (_componentMasks[index] & redMask) != 0,
                 (_componentMasks[index] & 2u) != 0,
-                blueMask,
+                (_componentMasks[index] & blueMask) != 0,
                 (_componentMasks[index] & 8u) != 0);
         }
 
