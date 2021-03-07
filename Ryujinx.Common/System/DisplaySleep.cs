@@ -6,7 +6,7 @@ namespace Ryujinx.Common.System
     public class DisplaySleep
     {
 
-        private static IntPtr _display = XOpenDisplay(IntPtr.Zero);
+        private static IntPtr _display;
 
         [Flags]
         enum EXECUTION_STATE : uint
@@ -23,7 +23,10 @@ namespace Ryujinx.Common.System
         static extern void XResetScreenSaver(IntPtr display);
 
         [DllImport("libX11", EntryPoint = "XOpenDisplay")]
-        internal extern static IntPtr XOpenDisplay(IntPtr display);
+        static extern IntPtr XOpenDisplay(IntPtr display);
+        
+        [DllImport("libX11", EntryPoint = "XCloseDisplay")]
+        static extern IntPtr XCloseDisplay(IntPtr display);
 
         static public void Prevent()
         {
@@ -31,6 +34,10 @@ namespace Ryujinx.Common.System
             {
                 SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS | EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_DISPLAY_REQUIRED);
             }
+			else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+			{
+				_display = XOpenDisplay(IntPtr.Zero);
+			}
         }
 
         static public void Restore()
@@ -39,6 +46,10 @@ namespace Ryujinx.Common.System
             {
                 SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS);  
             }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+			{
+                XCloseDisplay(IntPtr.Zero);
+			}
         }
 
         static public void PreventLinux()
