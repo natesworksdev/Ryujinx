@@ -862,7 +862,14 @@ namespace Ryujinx.Graphics.OpenGL
 
                 _framebuffer.AttachColor(index, color);
 
-                _fpIsBgra[index] = color != null && color.Format.IsBgra8() ? 1 : 0;
+                int isBgra = color != null && color.Format.IsBgra8() ? 1 : 0;
+
+                if (_fpIsBgra[index] != isBgra)
+                {
+                    _fpIsBgra[index] = isBgra;
+
+                    RestoreComponentMask(index);
+                }
             }
 
             UpdateFpIsBgra();
@@ -1233,11 +1240,15 @@ namespace Ryujinx.Graphics.OpenGL
 
         private void RestoreComponentMask(int index)
         {
+            // If the bound render target is bgra, swap the red and blue masks.
+            bool redMask = _fpIsBgra[index] == 0 ? (_componentMasks[index] & 1u) != 0 : (_componentMasks[index] & 4u) != 0;
+            bool blueMask = _fpIsBgra[index] == 0 ? (_componentMasks[index] & 4u) != 0 : (_componentMasks[index] & 1u) != 0;
+
             GL.ColorMask(
                 index,
-                (_componentMasks[index] & 1u) != 0,
+                redMask,
                 (_componentMasks[index] & 2u) != 0,
-                (_componentMasks[index] & 4u) != 0,
+                blueMask,
                 (_componentMasks[index] & 8u) != 0);
         }
 
