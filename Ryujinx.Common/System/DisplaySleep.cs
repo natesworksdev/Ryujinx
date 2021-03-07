@@ -26,7 +26,7 @@ namespace Ryujinx.Common.System
         static extern IntPtr XOpenDisplay(IntPtr display);
         
         [DllImport("libX11", EntryPoint = "XCloseDisplay")]
-        static extern IntPtr XCloseDisplay(IntPtr display);
+        static extern int XCloseDisplay(IntPtr display);
 
         static public void Prevent()
         {
@@ -48,7 +48,7 @@ namespace Ryujinx.Common.System
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
 			{
-                XCloseDisplay(IntPtr.Zero);
+                XCloseDisplay(_display);
 			}
         }
 
