@@ -19,6 +19,9 @@ namespace Ryujinx.Common.Platform
         [DllImport("kernel32.dll")]
         static extern uint GetCurrentProcessId();
 
+        private const int SW_SHOW = 5;
+        private const int SW_HIDE = 0;
+
         private uint GetWindowId()
         {
             IntPtr consoleWindow = GetConsoleWindow();
@@ -33,7 +36,7 @@ namespace Ryujinx.Common.Platform
         {
             if (GetCurrentProcessId() == GetWindowId())
             {
-                ShowWindow(GetConsoleWindow(), 5);
+                ShowWindow(GetConsoleWindow(), SW_SHOW);
             }
         }
 
@@ -41,7 +44,7 @@ namespace Ryujinx.Common.Platform
         {
             if (GetCurrentProcessId() == GetWindowId())
             {
-                ShowWindow(GetConsoleWindow(), 0);
+                ShowWindow(GetConsoleWindow(), SW_HIDE);
             }
         }
     }
