@@ -55,7 +55,10 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
         public void SetStorage(BufferRange buffer)
         {
-            if (_buffer != BufferHandle.Null && _renderer.BufferCount == _bufferCount)
+            if (_buffer != BufferHandle.Null &&
+                buffer.Offset == _bufferOffset &&
+                buffer.Size == _bufferSize &&
+                _renderer.BufferCount == _bufferCount)
             {
                 // Only rebind the buffer when more have been created.
                 return;
