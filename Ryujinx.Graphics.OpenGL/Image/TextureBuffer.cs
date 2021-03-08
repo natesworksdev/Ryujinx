@@ -6,12 +6,17 @@ namespace Ryujinx.Graphics.OpenGL.Image
 {
     class TextureBuffer : TextureBase, ITexture
     {
+        private Renderer _renderer;
         private int _bufferOffset;
         private int _bufferSize;
+        private int _bufferCount;
 
         private BufferHandle _buffer;
 
-        public TextureBuffer(TextureCreateInfo info) : base(info) {}
+        public TextureBuffer(Renderer renderer, TextureCreateInfo info) : base(info)
+        {
+            _renderer = renderer;
+        }
 
         public void CopyTo(ITexture destination, int firstLayer, int firstLevel)
         {
@@ -50,16 +55,16 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
         public void SetStorage(BufferRange buffer)
         {
-            if (buffer.Handle == _buffer &&
-                buffer.Offset == _bufferOffset &&
-                buffer.Size == _bufferSize)
+            if (_buffer != BufferHandle.Null && _renderer.BufferCount == _bufferCount)
             {
+                // Only rebind the buffer when more have been created.
                 return;
             }
 
             _buffer = buffer.Handle;
             _bufferOffset = buffer.Offset;
             _bufferSize = buffer.Size;
+            _bufferCount = _renderer.BufferCount;
 
             Bind(0);
 
