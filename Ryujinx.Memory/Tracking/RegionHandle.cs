@@ -1,4 +1,5 @@
 ﻿using Ryujinx.Memory.Range;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -11,6 +12,7 @@ namespace Ryujinx.Memory.Tracking
     public class RegionHandle : IRegionHandle, IRange
     {
         public bool Dirty { get; private set; }
+        public bool Unmapped { get; private set; }
 
         public ulong Address { get; }
         public ulong Size { get; }
@@ -19,9 +21,12 @@ namespace Ryujinx.Memory.Tracking
         internal IMultiRegionHandle Parent { get; set; }
         internal int SequenceNumber { get; set; }
 
+        private event Action _onDirty;
+
         private RegionSignal _preAction; // Action to perform before a read or write. This will block the memory access.
         private readonly List<VirtualRegion> _regions;
         private readonly MemoryTracking _tracking;
+        private bool _disposed;
 
         internal MemoryPermission RequiredPermission => _preAction != null ? MemoryPermission.None : (Dirty ? MemoryPermission.ReadAndWrite : MemoryPermission.Read);
         internal RegionSignal PreAction => _preAction;
@@ -33,10 +38,11 @@ namespace Ryujinx.Memory.Tracking
         /// <param name="tracking">Tracking object for the target memory block</param>
         /// <param name="address">Virtual address of the region to track</param>
         /// <param name="size">Size of the region to track</param>
-        /// <param name="dirty">Initial value of the dirty flag</param>
-        internal RegionHandle(MemoryTracking tracking, ulong address, ulong size, bool dirty = true)
+        /// <param name="mapped">True if the region handle starts mapped</param>
+        internal RegionHandle(MemoryTracking tracking, ulong address, ulong size, bool mapped = true)
         {
-            Dirty = dirty;
+            Dirty = mapped;
+            Unmapped = !mapped;
             Address = address;
             Size = size;
             EndAddress = address + size;
@@ -60,7 +66,12 @@ namespace Ryujinx.Memory.Tracking
 
             if (write)
             {
+                bool oldDirty = Dirty;
                 Dirty = true;
+                if (!oldDirty)
+                {
+                    _onDirty?.Invoke();
+                }
                 Parent?.SignalWrite();
             }
         }
@@ -68,9 +79,9 @@ namespace Ryujinx.Memory.Tracking
         /// <summary>
         /// Consume the dirty flag for this handle, and reprotect so it can be set on the next write.
         /// </summary>
-        public void Reprotect()
+        public void Reprotect(bool asDirty = false)
         {
-            Dirty = false;
+            Dirty = asDirty;
             lock (_tracking.TrackingLock)
             {
                 foreach (VirtualRegion region in _regions)
@@ -101,12 +112,39 @@ namespace Ryujinx.Memory.Tracking
         }
 
         /// <summary>
+        /// Register an action to perform when the region is written to.
+        /// This action will not be removed when it is called - it is called each time the dirty flag is set.
+        /// </summary>
+        /// <param name="action">Action to call on dirty</param>
+        public void RegisterDirtyEvent(Action action)
+        {
+            _onDirty += action;
+        }
+
+        /// <summary>
         /// Add a child virtual region to this handle.
         /// </summary>
         /// <param name="region">Virtual region to add as a child</param>
         internal void AddChild(VirtualRegion region)
         {
             _regions.Add(region);
+        }
+
+        /// <summary>
+        /// Signal that this handle has been mapped or unmapped.
+        /// </summary>
+        /// <param name="mapped">True if the handle has been mapped, false if unmapped</param>
+        internal void SignalMappingChanged(bool mapped)
+        {
+            if (Unmapped == mapped)
+            {
+                Unmapped = !mapped;
+
+                if (Unmapped)
+                {
+                    Dirty = false;
+                }
+            }
         }
 
         /// <summary>
@@ -121,10 +159,17 @@ namespace Ryujinx.Memory.Tracking
         }
 
         /// <summary>
-        /// Dispose the handle. Within the tracking lock, this removes references from virtual and physical regions.
+        /// Dispose the handle. Within the tracking lock, this removes references from virtual regions.
         /// </summary>
         public void Dispose()
         {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().FullName);
+            }
+
+            _disposed = true;
+
             lock (_tracking.TrackingLock)
             {
                 foreach (VirtualRegion region in _regions)
