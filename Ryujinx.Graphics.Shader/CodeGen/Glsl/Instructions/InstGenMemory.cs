@@ -26,7 +26,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             string texCall;
 
-            if (texOp.Inst == Instruction.ImageAtomic || texOp.Inst == Instruction.ImageReduce)
+            if (texOp.Inst == Instruction.ImageAtomic)
             {
                 texCall = (texOp.Flags & TextureFlags.AtomicMask) switch {
                     TextureFlags.Add        => "imageAtomicAdd",
@@ -150,7 +150,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 Append(prefix + "vec4(" + string.Join(", ", cElems) + ")");
             }
 
-            if (texOp.Inst == Instruction.ImageAtomic || texOp.Inst == Instruction.ImageReduce)
+            if (texOp.Inst == Instruction.ImageAtomic)
             {
                 int texIndex = context.FindImageDescriptorIndex(texOp);
                 context.ImageDescriptors[texIndex] = context.ImageDescriptors[texIndex].SetFlag(TextureUsageFlags.ImageStore);
