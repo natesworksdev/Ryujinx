@@ -1,5 +1,5 @@
-﻿using Ryujinx.Common.Configuration.Hid;
-using Ryujinx.Configuration;
+﻿using Ryujinx.Common.Configuration;
+using Ryujinx.Common.Configuration.Hid;
 using System;
 using System.Numerics;
 
@@ -21,7 +21,7 @@ namespace Ryujinx.Modules.Motion
 
         public void RegisterController(PlayerIndex player)
         {
-            InputConfig config = GlobalConfigurationState.Instance.Hid.InputConfig.Value.Find(x => x.PlayerIndex == player);
+            InputConfig config = GameConfigurationState.Instance.Hid.InputConfig.Value.Find(x => x.PlayerIndex == player);
 
             if (config != null && config.EnableMotion)
             {

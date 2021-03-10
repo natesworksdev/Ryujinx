@@ -4,8 +4,8 @@ using LibHac.Fs;
 using LibHac.Fs.Fsa;
 using LibHac.FsSystem;
 using LibHac.FsSystem.NcaUtils;
+using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
-using Ryujinx.Configuration;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.FileSystem.Content;
@@ -49,7 +49,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
         public string SanityCheckDeviceLocationName()
         {
-            string locationName = GlobalConfigurationState.Instance.System.TimeZone;
+            string locationName = GameConfigurationState.Instance.System.TimeZone;
 
             if (IsLocationNameValid(locationName))
             {
@@ -58,7 +58,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
             Logger.Warning?.Print(LogClass.ServiceTime, $"Invalid device TimeZone {locationName}, switching back to UTC");
 
-            GlobalConfigurationState.Instance.System.TimeZone.Value = "UTC";
+            GameConfigurationState.Instance.System.TimeZone.Value = "UTC";
 
             return "UTC";
         }

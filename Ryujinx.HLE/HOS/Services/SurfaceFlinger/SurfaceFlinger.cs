@@ -1,6 +1,5 @@
 ﻿using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
-using Ryujinx.Configuration;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap;
@@ -328,7 +327,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             bool flipX = item.Transform.HasFlag(NativeWindowTransform.FlipX);
             bool flipY = item.Transform.HasFlag(NativeWindowTransform.FlipY);
 
-            AspectRatio aspectRatio = GlobalConfigurationState.Instance.Graphics.AspectRatio.Value;
+            AspectRatio aspectRatio = GameConfigurationState.Instance.Graphics.AspectRatio.Value;
             bool        isStretched = aspectRatio == AspectRatio.Stretched;
 
             ImageCrop crop = new ImageCrop(

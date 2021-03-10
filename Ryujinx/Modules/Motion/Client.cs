@@ -1,8 +1,8 @@
 ﻿using Force.Crc32;
 using Ryujinx.Common;
+using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Logging;
-using Ryujinx.Configuration;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -320,7 +320,7 @@ namespace Ryujinx.Modules.Motion
 
                     ulong timestamp = inputData.MotionTimestamp;
 
-                    InputConfig config = GlobalConfigurationState.Instance.Hid.InputConfig.Value.Find(x => x.PlayerIndex == (PlayerIndex)clientId);
+                    InputConfig config = GameConfigurationState.Instance.Hid.InputConfig.Value.Find(x => x.PlayerIndex == (PlayerIndex)clientId);
 
                     lock (_motionData)
                     {
