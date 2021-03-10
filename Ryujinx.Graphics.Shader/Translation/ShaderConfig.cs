@@ -32,6 +32,8 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public HashSet<int> TextureHandlesForCache { get; }
 
+        public bool DiskShaderCacheIncompatible { get; private set; }
+
         public ShaderConfig(IGpuAccessor gpuAccessor, TranslationFlags flags, TranslationCounts counts)
         {
             Stage                  = ShaderStage.Compute;
@@ -118,6 +120,11 @@ namespace Ryujinx.Graphics.Shader.Translation
         public void SetUsedFeature(FeatureFlags flags)
         {
             UsedFeatures |= flags;
+        }
+
+        public void MarkDiskShaderCacheIncompatible()
+        {
+            DiskShaderCacheIncompatible = true;
         }
     }
 }
