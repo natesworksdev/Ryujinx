@@ -1,10 +1,12 @@
 using System;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace Ryujinx.Common.System
 {
     public class DisplaySleep
     {
+        private static Timer _resetTimer;
 
         private static IntPtr _display;
 
@@ -24,7 +26,7 @@ namespace Ryujinx.Common.System
 
         [DllImport("libX11", EntryPoint = "XOpenDisplay")]
         static extern IntPtr XOpenDisplay(IntPtr display);
-        
+
         [DllImport("libX11", EntryPoint = "XCloseDisplay")]
         static extern int XCloseDisplay(IntPtr display);
 
@@ -34,10 +36,6 @@ namespace Ryujinx.Common.System
             {
                 SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS | EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_DISPLAY_REQUIRED);
             }
-			else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-			{
-				_display = XOpenDisplay(IntPtr.Zero);
-			}
         }
 
         static public void Restore()
@@ -47,17 +45,21 @@ namespace Ryujinx.Common.System
                 SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS);  
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-			{
-                XCloseDisplay(_display);
-			}
+            {
+                _resetTimer.Dispose();
+            }
         }
 
-        static public void PreventLinux()
+        static private void PreventLinux(object sender)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                XResetScreenSaver(_display);
-            }
+            _display = XOpenDisplay(IntPtr.Zero);
+            XResetScreenSaver(_display);
+            XCloseDisplay(_display);
+        }
+
+        static public void ResetTimer()
+        {
+            _resetTimer = new Timer(PreventLinux, null, 0, 25000);
         }
     }
 }

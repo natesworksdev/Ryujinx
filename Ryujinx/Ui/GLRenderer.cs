@@ -8,7 +8,6 @@ using OpenTK.Input;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
-using Ryujinx.Common.System;
 using Ryujinx.Configuration;
 using Ryujinx.Graphics.OpenGL;
 using Ryujinx.HLE.HOS.Services.Hid;
@@ -524,8 +523,6 @@ namespace Ryujinx.Ui
                     }
                 });
             }
-
-            DisplaySleep.PreventLinux();
 
             List<GamepadInput> gamepadInputs = new List<GamepadInput>(NpadDevices.MaxControllers);
             List<SixAxisInput> motionInputs  = new List<SixAxisInput>(NpadDevices.MaxControllers);
