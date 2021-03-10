@@ -28,6 +28,8 @@ namespace Ryujinx.Ui.Windows
 #pragma warning disable CS0649, IDE0044
         [GUI] Adjustment   _controllerDeadzoneLeft;
         [GUI] Adjustment   _controllerDeadzoneRight;
+        [GUI] Adjustment   _rangeModifierLeft;
+        [GUI] Adjustment   _rangeModifierRight;
         [GUI] Adjustment   _controllerTriggerThreshold;
         [GUI] Adjustment   _slotNumber;
         [GUI] Adjustment   _altSlotNumber;
@@ -45,9 +47,11 @@ namespace Ryujinx.Ui.Windows
         [GUI] Grid         _leftStickKeyboard;
         [GUI] Grid         _leftStickController;
         [GUI] Box          _deadZoneLeftBox;
+        [GUI] ToggleButton _lStickRangeButton;
         [GUI] Grid         _rightStickKeyboard;
         [GUI] Grid         _rightStickController;
         [GUI] Box          _deadZoneRightBox;
+        [GUI] ToggleButton _rStickRangeButton;
         [GUI] Grid         _leftSideTriggerBox;
         [GUI] Grid         _rightSideTriggerBox;
         [GUI] Box          _triggerThresholdBox;
@@ -153,6 +157,10 @@ namespace Ryujinx.Ui.Windows
             _rSl.Clicked            += Button_Pressed;
             _rSr.Clicked            += Button_Pressed;
 
+            // Bind events for non-native buttons.
+            _lStickRangeButton.Clicked += Button_Pressed;
+            _rStickRangeButton.Clicked += Button_Pressed;
+
             // Setup current values.
             UpdateInputDeviceList();
             SetAvailableOptions();
@@ -202,12 +210,19 @@ namespace Ryujinx.Ui.Windows
                 _deadZoneLeftBox.Hide();
                 _deadZoneRightBox.Hide();
                 _triggerThresholdBox.Hide();
+
+                // Keyboard Analog Range should be from 0 to 1
+                _rangeModifierLeft.Upper  = 1f;
+                _rangeModifierRight.Upper = 1f;
             }
             else if (_inputDevice.ActiveId != null && _inputDevice.ActiveId.StartsWith("controller"))
             {
                 ShowAll();
                 _leftStickKeyboard.Hide();
                 _rightStickKeyboard.Hide();
+
+                _rangeModifierLeft.Upper  = 2f;
+                _rangeModifierRight.Upper = 2f;
             }
             else
             {
@@ -298,6 +313,10 @@ namespace Ryujinx.Ui.Windows
             _controllerDeadzoneLeft.Value     = 0;
             _controllerDeadzoneRight.Value    = 0;
             _controllerTriggerThreshold.Value = 0;
+            _lStickRangeButton.Label          = "Unbound";
+            _rStickRangeButton.Label          = "Unbound";
+            _rangeModifierLeft.Value          = 1f;
+            _rangeModifierRight.Value         = 1f;
             _mirrorInput.Active               = false;
             _enableMotion.Active              = false;
             _slotNumber.Value                 = 0;
@@ -348,6 +367,10 @@ namespace Ryujinx.Ui.Windows
                     _zR.Label                  = keyboardConfig.RightJoycon.ButtonZr.ToString();
                     _rSl.Label                 = keyboardConfig.RightJoycon.ButtonSl.ToString();
                     _rSr.Label                 = keyboardConfig.RightJoycon.ButtonSr.ToString();
+                    _lStickRangeButton.Label   = keyboardConfig.LeftStickRangeButton.ToString();
+                    _rStickRangeButton.Label   = keyboardConfig.RightStickRangeButton.ToString();
+                    _rangeModifierLeft.Value   = keyboardConfig.RangeModifierLeft;
+                    _rangeModifierRight.Value  = keyboardConfig.RangeModifierRight;
                     _slotNumber.Value          = keyboardConfig.Slot;
                     _altSlotNumber.Value       = keyboardConfig.AltSlot;
                     _sensitivity.Value         = keyboardConfig.Sensitivity;
@@ -396,6 +419,8 @@ namespace Ryujinx.Ui.Windows
                     _controllerDeadzoneLeft.Value     = controllerConfig.DeadzoneLeft;
                     _controllerDeadzoneRight.Value    = controllerConfig.DeadzoneRight;
                     _controllerTriggerThreshold.Value = controllerConfig.TriggerThreshold;
+                    _rangeModifierLeft.Value          = controllerConfig.RangeModifierLeft;
+                    _rangeModifierRight.Value         = controllerConfig.RangeModifierRight;
                     _slotNumber.Value                 = controllerConfig.Slot;
                     _altSlotNumber.Value              = controllerConfig.AltSlot;
                     _sensitivity.Value                = controllerConfig.Sensitivity;
@@ -442,14 +467,21 @@ namespace Ryujinx.Ui.Windows
                 Enum.TryParse(_rSl.Label,          out Key rButtonSl);
                 Enum.TryParse(_rSr.Label,          out Key rButtonSr);
 
+                Enum.TryParse(_lStickRangeButton.Label, out Key lStickRangeButton);
+                Enum.TryParse(_rStickRangeButton.Label, out Key rStickRangeButton);
+
                 int.TryParse(_dsuServerPort.Buffer.Text, out int port);
 
                 return new KeyboardConfig
                 {
-                    Index          = int.Parse(_inputDevice.ActiveId.Split("/")[1]),
-                    ControllerType = Enum.Parse<ControllerType>(_controllerType.ActiveId),
-                    PlayerIndex    = _playerIndex,
-                    LeftJoycon     = new NpadKeyboardLeft
+                    Index                 = int.Parse(_inputDevice.ActiveId.Split("/")[1]),
+                    ControllerType        = Enum.Parse<ControllerType>(_controllerType.ActiveId),
+                    PlayerIndex           = _playerIndex,
+                    LeftStickRangeButton  = lStickRangeButton,
+                    RightStickRangeButton = rStickRangeButton,
+                    RangeModifierLeft     = (float)_rangeModifierLeft.Value,
+                    RangeModifierRight    = (float)_rangeModifierRight.Value,
+                    LeftJoycon            = new NpadKeyboardLeft
                     {
                         StickUp     = lStickUp,
                         StickDown   = lStickDown,
@@ -526,13 +558,15 @@ namespace Ryujinx.Ui.Windows
 
                 return new ControllerConfig
                 {
-                    Index            = int.Parse(_inputDevice.ActiveId.Split("/")[1]),
-                    ControllerType   = Enum.Parse<ControllerType>(_controllerType.ActiveId),
-                    PlayerIndex      = _playerIndex,
-                    DeadzoneLeft     = (float)_controllerDeadzoneLeft.Value,
-                    DeadzoneRight    = (float)_controllerDeadzoneRight.Value,
-                    TriggerThreshold = (float)_controllerTriggerThreshold.Value,
-                    LeftJoycon       = new NpadControllerLeft
+                    Index              = int.Parse(_inputDevice.ActiveId.Split("/")[1]),
+                    ControllerType     = Enum.Parse<ControllerType>(_controllerType.ActiveId),
+                    PlayerIndex        = _playerIndex,
+                    DeadzoneLeft       = (float)_controllerDeadzoneLeft.Value,
+                    DeadzoneRight      = (float)_controllerDeadzoneRight.Value,
+                    TriggerThreshold   = (float)_controllerTriggerThreshold.Value,
+                    RangeModifierLeft  = (float)_rangeModifierLeft.Value,
+                    RangeModifierRight = (float)_rangeModifierRight.Value,
+                    LeftJoycon         = new NpadControllerLeft
                     {
                         InvertStickX = _invertLStickX.Active,
                         StickX       = lStickX,
@@ -729,9 +763,13 @@ namespace Ryujinx.Ui.Windows
                 {
                     config = new KeyboardConfig
                     {
-                        Index          = 0,
-                        ControllerType = ControllerType.JoyconPair,
-                        LeftJoycon     = new NpadKeyboardLeft
+                        Index                 = 0,
+                        ControllerType        = ControllerType.JoyconPair,
+                        LeftStickRangeButton  = Key.ShiftLeft,
+                        RightStickRangeButton = Key.Unbound,
+                        RangeModifierLeft     = 0.5f,
+                        RangeModifierRight    = 0.5f,
+                        LeftJoycon            = new NpadKeyboardLeft
                         {
                             StickUp     = Key.W,
                             StickDown   = Key.S,
@@ -779,12 +817,14 @@ namespace Ryujinx.Ui.Windows
                 {
                     config = new ControllerConfig
                     {
-                        Index            = 0,
-                        ControllerType   = ControllerType.ProController,
-                        DeadzoneLeft     = 0.1f,
-                        DeadzoneRight    = 0.1f,
-                        TriggerThreshold = 0.5f,
-                        LeftJoycon       = new NpadControllerLeft
+                        Index              = 0,
+                        ControllerType     = ControllerType.ProController,
+                        DeadzoneLeft       = 0.1f,
+                        DeadzoneRight      = 0.1f,
+                        TriggerThreshold   = 0.5f,
+                        RangeModifierLeft  = 1f,
+                        RangeModifierRight = 1f,
+                        LeftJoycon         = new NpadControllerLeft
                         {
                             StickX       = ControllerInputId.Axis0,
                             StickY       = ControllerInputId.Axis1,

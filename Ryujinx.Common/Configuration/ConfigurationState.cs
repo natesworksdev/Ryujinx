@@ -630,10 +630,14 @@ namespace Ryujinx.Configuration
                 {
                     new KeyboardConfig
                     {
-                        Index          = 0,
-                        ControllerType = ControllerType.JoyconPair,
-                        PlayerIndex    = PlayerIndex.Player1,
-                        LeftJoycon     = new NpadKeyboardLeft
+                        Index                 = 0,
+                        ControllerType        = ControllerType.JoyconPair,
+                        PlayerIndex           = PlayerIndex.Player1,
+                        LeftStickRangeButton  = Key.ShiftLeft,
+                        RightStickRangeButton = Key.Unbound,
+                        RangeModifierLeft     = 0.5f,
+                        RangeModifierRight    = 0.5f,
+                        LeftJoycon            = new NpadKeyboardLeft
                         {
                             StickUp     = Key.W,
                             StickDown   = Key.S,

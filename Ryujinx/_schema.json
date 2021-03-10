@@ -274,6 +274,40 @@
             "Handheld"
           ]
         },
+        "range_modifier_left_button": {
+          "$id": "#/definitions/keyboard_config/properties/range_modifier_left_button",
+          "description": "Controller Left Analog Stick Range Modifier Button",
+          "default": "ShiftLeft"
+        },
+        "range_modifier_right_button": {
+          "$id": "#/definitions/keyboard_config/properties/range_modifier_right_button",
+          "description": "Controller Right Analog Stick Range Modifier Button",
+          "default": "Unbound"
+        },
+        "range_modifier_left": {
+          "$id": "#/definitions/keyboard_config/properties/range_modifier_left",
+          "type": "number",
+          "title": "Left Joystick Analog Range",
+          "description": "Controller Left Analog Stick Range",
+          "default": 0.50,
+          "minimum": 0.00,
+          "maximum": 1.00,
+          "examples": [
+            0.50
+          ]
+        },
+        "range_modifier_right": {
+          "$id": "#/definitions/keyboard_config/properties/range_modifier_right",
+          "type": "number",
+          "title": "Right Joystick Analog Range",
+          "description": "Controller Right Analog Stick Range",
+          "default": 0.50,
+          "minimum": 0.00,
+          "maximum": 1.00,
+          "examples": [
+            0.50
+          ]
+        },
         "left_joycon": {
           "$id": "#/definitions/keyboard_config/properties/left_joycon",
           "type": "object",
@@ -653,6 +687,30 @@
           "maximum": 1.0,
           "examples": [
             0.5
+          ]
+        },
+        "range_modifier_left": {
+          "$id": "#/definitions/controller_config/properties/range_modifier_left",
+          "type": "number",
+          "title": "Left Joystick Analog Range",
+          "description": "Controller Left Analog Stick Range",
+          "default": 1.00,
+          "minimum": 0.00,
+          "maximum": 2.00,
+          "examples": [
+            1.50
+          ]
+        },
+        "range_modifier_right": {
+          "$id": "#/definitions/controller_config/properties/range_modifier_right",
+          "type": "number",
+          "title": "Right Joystick Analog Range",
+          "description": "Controller Right Analog Stick Range",
+          "default": 1.00,
+          "minimum": 0.00,
+          "maximum": 2.00,
+          "examples": [
+            1.50
           ]
         },
         "left_joycon": {

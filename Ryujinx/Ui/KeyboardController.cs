@@ -75,10 +75,18 @@ namespace Ryujinx.Ui
             if (keyboard[(Key)_config.LeftJoycon.StickLeft])  dx += -1;
             if (keyboard[(Key)_config.LeftJoycon.StickRight]) dx +=  1;
 
-            Vector2 stick = new Vector2(dx, dy);
-            stick.NormalizeFast();
+            if (keyboard[(Key)_config.LeftStickRangeButton])
+            {
+                return (JoystickController.ClampAxis(dx * _config.RangeModifierLeft),
+                        JoystickController.ClampAxis(dy * _config.RangeModifierLeft));
+            }
+            else
+            {
+                Vector2 stick = new Vector2(dx, dy);
+                stick.NormalizeFast();
 
-            return ((short)(stick.X * short.MaxValue), (short)(stick.Y * short.MaxValue));
+                return ((short)(stick.X * short.MaxValue), (short)(stick.Y * short.MaxValue));
+            }
         }
 
         public (short, short) GetRightStick()
@@ -93,10 +101,18 @@ namespace Ryujinx.Ui
             if (keyboard[(Key)_config.RightJoycon.StickLeft])  dx += -1;
             if (keyboard[(Key)_config.RightJoycon.StickRight]) dx +=  1;
 
-            Vector2 stick = new Vector2(dx, dy);
-            stick.NormalizeFast();
+            if (keyboard[(Key)_config.RightStickRangeButton])
+            {
+                return (JoystickController.ClampAxis(dx * _config.RangeModifierRight),
+                        JoystickController.ClampAxis(dy * _config.RangeModifierRight));
+            }
+            else
+            {
+                Vector2 stick = new Vector2(dx, dy);
+                stick.NormalizeFast();
 
-            return ((short)(stick.X * short.MaxValue), (short)(stick.Y * short.MaxValue));
+                return ((short)(stick.X * short.MaxValue), (short)(stick.Y * short.MaxValue));
+            }
         }
 
         public static HotkeyButtons GetHotkeyButtons(KeyboardState keyboard)

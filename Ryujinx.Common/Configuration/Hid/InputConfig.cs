@@ -18,6 +18,16 @@ namespace Ryujinx.Common.Configuration.Hid
         public PlayerIndex PlayerIndex { get; set; }
 
         /// <summary>
+        /// Controller Analog Stick Range Modifier
+        /// </summary>
+        public float RangeModifierLeft { get; set; }
+
+        /// <summary>
+        /// Controller Analog Stick Range Modifier
+        /// </summary>
+        public float RangeModifierRight { get; set; }
+
+        /// <summary>
         /// Motion Controller Slot
         /// </summary>
         public int Slot { get; set; }

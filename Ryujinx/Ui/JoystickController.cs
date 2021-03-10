@@ -96,7 +96,7 @@ namespace Ryujinx.Ui
                 return (0, 0);
             }
 
-            return GetStick(_config.LeftJoycon.StickX, _config.LeftJoycon.StickY, _config.DeadzoneLeft);
+            return GetStick(_config.LeftJoycon.StickX, _config.LeftJoycon.StickY, _config.DeadzoneLeft, _config.RangeModifierLeft);
         }
 
         public (short, short) GetRightStick()
@@ -106,10 +106,10 @@ namespace Ryujinx.Ui
                 return (0, 0);
             }
 
-            return GetStick(_config.RightJoycon.StickX, _config.RightJoycon.StickY, _config.DeadzoneRight);
+            return GetStick(_config.RightJoycon.StickX, _config.RightJoycon.StickY, _config.DeadzoneRight, _config.RangeModifierRight);
         }
 
-        private (short, short) GetStick(ControllerInputId stickXInputId, ControllerInputId stickYInputId, float deadzone)
+        private (short, short) GetStick(ControllerInputId stickXInputId, ControllerInputId stickYInputId, float deadzone, float modifier)
         {
             if (stickXInputId < ControllerInputId.Axis0 || stickXInputId > ControllerInputId.Axis5 || 
                 stickYInputId < ControllerInputId.Axis0 || stickYInputId > ControllerInputId.Axis5)
@@ -125,16 +125,27 @@ namespace Ryujinx.Ui
             float xValue =  jsState.GetAxis(xAxis);
             float yValue = -jsState.GetAxis(yAxis); // Invert Y-axis
 
-            return ApplyDeadzone(new Vector2(xValue, yValue), deadzone);
+            return ApplyDeadzone(new Vector2(xValue, yValue), deadzone, modifier);
         }
 
-        private (short, short) ApplyDeadzone(Vector2 axis, float deadzone)
+        private (short, short) ApplyDeadzone(Vector2 axis, float deadzone, float modifier)
         {
-            return (ClampAxis(MathF.Abs(axis.X) > deadzone ? axis.X : 0f),
-                    ClampAxis(MathF.Abs(axis.Y) > deadzone ? axis.Y : 0f));
+            axis.X = MathF.Abs(axis.X) > deadzone ? axis.X : 0f;
+            axis.Y = MathF.Abs(axis.Y) > deadzone ? axis.Y : 0f;
+
+            return ApplyModifier(axis, modifier);
         }
 
-        private static short ClampAxis(float value)
+        private (short, short) ApplyModifier(Vector2 axis, float modifier)
+        {
+            axis.X *= modifier;
+            axis.Y *= modifier;
+
+            return (ClampAxis(axis.X > 1f ? 1f : (axis.X < -1f ? -1f : axis.X)),
+                    ClampAxis(axis.Y > 1f ? 1f : (axis.Y < -1f ? -1f : axis.Y)));
+        }
+
+        public static short ClampAxis(float value)
         {
             if (value <= -short.MaxValue)
             {

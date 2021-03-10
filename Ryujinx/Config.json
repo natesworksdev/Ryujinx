@@ -1,5 +1,5 @@
 {
-  "version": 22,
+  "version": 24,
   "res_scale": 1,
   "res_scale_custom": 1,
   "max_anisotropy": -1,
@@ -59,6 +59,10 @@
       "index": 0,
       "controller_type": "JoyconPair",
       "player_index": "Player1",
+      "range_modifier_left_button": "ShiftLeft",
+      "range_modifier_right_button": "Unbound",
+      "range_modifier_left": 0.5,
+      "range_modifier_right": 0.5,
       "left_joycon": {
         "stick_up": "W",
         "stick_down": "S",
