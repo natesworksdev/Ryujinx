@@ -164,7 +164,7 @@ namespace Ryujinx.HLE.HOS
             TimeSpanType systemTime = TimeSpanType.FromSeconds((long)rtcValue);
 
             // Configure and setup internal offset
-            TimeSpanType internalOffset = TimeSpanType.FromSeconds(GlobalConfigurationState.Instance.System.SystemTimeOffset);
+            TimeSpanType internalOffset = TimeSpanType.FromSeconds(GameConfigurationState.Instance.System.SystemTimeOffset);
 
             TimeSpanType systemTimeOffset = new TimeSpanType(systemTime.NanoSeconds + internalOffset.NanoSeconds);
 
