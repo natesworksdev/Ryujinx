@@ -619,11 +619,6 @@ namespace Ryujinx.Ui
 
             DisplaySleep.Prevent();
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                DisplaySleep.ResetTimer();
-            }
-
             GlRendererWidget = new GlRenderer(_emulationContext, ConfigurationState.Instance.Logger.GraphicsDebugLevel);
 
             Application.Invoke(delegate

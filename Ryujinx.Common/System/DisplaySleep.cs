@@ -6,9 +6,9 @@ namespace Ryujinx.Common.System
 {
     public class DisplaySleep
     {
-        private static Timer _resetTimer;
+        static private Timer _resetTimer;
 
-        private static IntPtr _display;
+        static private IntPtr _display;
 
         [Flags]
         enum EXECUTION_STATE : uint
@@ -36,6 +36,10 @@ namespace Ryujinx.Common.System
             {
                 SetThreadExecutionState(EXECUTION_STATE.ES_CONTINUOUS | EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_DISPLAY_REQUIRED);
             }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                ResetTimer();
+            }
         }
 
         static public void Restore()
@@ -57,7 +61,7 @@ namespace Ryujinx.Common.System
             XCloseDisplay(_display);
         }
 
-        static public void ResetTimer()
+        static private void ResetTimer()
         {
             _resetTimer = new Timer(PreventLinux, null, 0, 25000);
         }
