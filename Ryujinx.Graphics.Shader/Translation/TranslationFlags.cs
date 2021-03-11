@@ -11,6 +11,5 @@ namespace Ryujinx.Graphics.Shader.Translation
         Compute     = 1 << 1,
         Feedback    = 1 << 2,
         DebugMode   = 1 << 3,
-        ShaderCache = 1 << 4,
     }
 }

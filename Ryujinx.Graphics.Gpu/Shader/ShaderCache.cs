@@ -148,7 +148,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                         {
                             IGpuAccessor gpuAccessor = new CachedGpuAccessor(_context, entry.Code, entry.Header.GpuAccessorHeader, entry.TextureDescriptors);
 
-                            program = Translator.CreateContext(0, gpuAccessor, DefaultFlags | TranslationFlags.ShaderCache | TranslationFlags.Compute).Translate(out shaderProgramInfo);
+                            program = Translator.CreateContext(0, gpuAccessor, DefaultFlags | TranslationFlags.Compute).Translate(out shaderProgramInfo);
                         }
 
                         if (program == null)
@@ -200,7 +200,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
                         TransformFeedbackDescriptor[] tfd = CacheHelper.ReadTransformFeedbackInformation(ref guestProgramReadOnlySpan, fileHeader);
 
-                        TranslationFlags flags = DefaultFlags | TranslationFlags.ShaderCache;
+                        TranslationFlags flags = DefaultFlags;
 
                         if (tfd != null)
                         {
@@ -460,7 +460,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 // The shader isn't currently cached, translate it and compile it.
                 ShaderCodeHolder shader = TranslateShader(shaderContexts[0]);
 
-                bool isDiskShaderCacheIncompatible = shaderContexts[0].DiskShaderCacheIncompatible;
+                bool isDiskShaderCacheIncompatible = shaderContexts[0].UsedFeatures.HasFlag(FeatureFlags.Bindless);
 
                 shader.HostShader = _context.Renderer.CompileShader(ShaderStage.Compute, shader.Program.Code);
 
@@ -580,7 +580,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
                 for (int i = 0; i < shaderContexts.Length; i++)
                 {
-                    if (shaderContexts[i] != null && shaderContexts[i].DiskShaderCacheIncompatible)
+                    if (shaderContexts[i] != null && shaderContexts[i].UsedFeatures.HasFlag(FeatureFlags.Bindless))
                     {
                         isDiskShaderCacheIncompatible = true;
                         break;

@@ -36,7 +36,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             return new TranslatorContext(address, cfg, config);
         }
 
-        private static void ScanForShaderCacheIncompatibility(BasicBlock[] blocks, ShaderConfig config)
+        private static void ScanForBindless(BasicBlock[] blocks, ShaderConfig config)
         {
             for (int blkIndex = 0; blkIndex < blocks.Length; blkIndex++)
             {
@@ -45,7 +45,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 {
                     if (node.Value is TextureOperation texOp && (texOp.Flags & TextureFlags.Bindless) != 0)
                     {
-                        config.MarkDiskShaderCacheIncompatible();
+                        config.SetUsedFeature(FeatureFlags.Bindless);
                         break;
                     }
                 }
@@ -91,15 +91,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                     Dominance.FindDominators(cfg);
                     Dominance.FindDominanceFrontiers(cfg.Blocks);
 
-                    ScanForShaderCacheIncompatibility(cfg.Blocks, config);
-
-                    // If we are from the shader cache and dealing with shader cache incompatibility, return right here!
-                    if ((config.Flags & TranslationFlags.ShaderCache) != 0 && config.DiskShaderCacheIncompatible)
-                    {
-                        shaderProgramInfo = null;
-
-                        return null;
-                    }
+                    ScanForBindless(cfg.Blocks, config);
 
                     Ssa.Rename(cfg.Blocks);
 

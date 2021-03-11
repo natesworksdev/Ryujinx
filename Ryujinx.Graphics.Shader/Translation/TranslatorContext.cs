@@ -17,7 +17,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         public ShaderStage Stage => _config.Stage;
         public int Size => _config.Size;
 
-        public bool DiskShaderCacheIncompatible => _config.DiskShaderCacheIncompatible;
+        public FeatureFlags UsedFeatures => _config.UsedFeatures;
 
         public HashSet<int> TextureHandlesForCache => _config.TextureHandlesForCache;
 
