@@ -151,15 +151,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
                             program = Translator.CreateContext(0, gpuAccessor, DefaultFlags | TranslationFlags.Compute).Translate(out shaderProgramInfo);
                         }
 
-                        if (program == null)
-                        {
-                            Logger.Error?.Print(LogClass.Gpu, $"Ignoring invalid shader {key} in cache");
-
-                            invalidEntries?.Add(key);
-
-                            continue;
-                        }
-
                         ShaderCodeHolder shader = new ShaderCodeHolder(program, shaderProgramInfo, entry.Code);
 
                         // If the host program was rejected by the gpu driver or isn't in cache, try to build from program sources again.
@@ -221,8 +212,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
                         bool isHostProgramValid = hostProgram != null;
 
-                        bool isGuestProgramValid = true;
-
                         // Reconstruct code holder.
                         for (int i = 0; i < cachedShaderEntries.Length; i++)
                         {
@@ -254,13 +243,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
                                     program = translatorContext.Translate(out shaderProgramInfo, translatorContext2);
                                 }
 
-                                if (program == null)
-                                {
-                                    isGuestProgramValid = false;
-
-                                    break;
-                                }
-
                                 // NOTE: Vertex B comes first in the shader cache.
                                 byte[] code = entry.Code.AsSpan().Slice(0, entry.Header.Size).ToArray();
                                 byte[] code2 = entry.Code.AsSpan().Slice(entry.Header.Size, entry.Header.SizeA).ToArray();
@@ -283,26 +265,10 @@ namespace Ryujinx.Graphics.Gpu.Shader
                                     program = Translator.CreateContext(0, gpuAccessor, flags, counts).Translate(out shaderProgramInfo);
                                 }
 
-                                if (program == null)
-                                {
-                                    isGuestProgramValid = false;
-
-                                    break;
-                                }
-
                                 shaders[i] = new ShaderCodeHolder(program, shaderProgramInfo, entry.Code);
                             }
 
                             shaderPrograms.Add(program);
-                        }
-
-                        if (!isGuestProgramValid)
-                        {
-                            Logger.Error?.Print(LogClass.Gpu, $"Ignoring invalid shader {key} in cache");
-
-                            invalidEntries?.Add(key);
-
-                            continue;
                         }
 
                         // If the host program was rejected by the gpu driver or isn't in cache, try to build from program sources again.
@@ -611,7 +577,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
                 gpShaders = new ShaderBundle(hostProgram, shaders);
 
-                if (isShaderCacheEnabled && isDiskShaderCacheIncompatible)
+                if (isShaderCacheEnabled && !isDiskShaderCacheIncompatible)
                 {
                     _gpProgramsDiskCache.Add(programCodeHash, gpShaders);
 
