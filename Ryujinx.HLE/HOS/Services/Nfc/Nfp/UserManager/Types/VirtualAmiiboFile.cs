@@ -7,7 +7,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp.UserManager
     {
         public uint     FileVersion    { get; set; }
         public byte[]   TagUuid        { get; set; }
-        public byte[]   AmiiboId       { get; set; }
+        public string   AmiiboId       { get; set; }
         public DateTime FirstWriteDate { get; set; }
         public DateTime LastWriteDate  { get; set; }
         public ushort   WriteCounter   { get; set; }

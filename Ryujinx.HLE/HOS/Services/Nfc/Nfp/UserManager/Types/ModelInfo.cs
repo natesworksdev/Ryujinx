@@ -6,7 +6,11 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp.UserManager
     [StructLayout(LayoutKind.Sequential, Size = 0x40)]
     struct ModelInfo
     {
-        public Array8<byte>  AmiiboId;
-        public Array56<byte> Reserved;
+        public ushort        CharacterId;
+        public byte          CharacterVariant;
+        public byte          Series;
+        public ushort        ModelNumber;
+        public byte          Type;
+        public Array57<byte> Reserved;
     }
 }

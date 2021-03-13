@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp.UserManager
         public PlayerIndex Handle;
         public NpadIdType  NpadIdType;
 
-        public byte[] AmiiboId;
+        public string AmiiboId;
 
         public bool UseRandomUuid;
     }

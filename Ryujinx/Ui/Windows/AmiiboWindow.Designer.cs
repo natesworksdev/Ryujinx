@@ -17,7 +17,9 @@ namespace Ryujinx.Ui.Windows
         private Box          _amiiboCharsBox;
         private Label        _amiiboCharsLabel;
         private ComboBoxText _amiiboCharsComboBox;
+        private CheckButton  _showAllCheckBox;
         private Image        _amiiboImage;
+        private Label        _gameUsageLabel;
 
         private void InitializeComponent()
         {
@@ -132,12 +134,29 @@ namespace Ryujinx.Ui.Windows
             _amiiboCharsComboBox = new ComboBoxText();
 
             //
+            // _showAllCheckBox
+            //
+            _showAllCheckBox = new CheckButton()
+            {
+                Label = "Show All Amiibo"
+            };
+            _showAllCheckBox.Toggled += ShowAllCheckBox_Toggled;
+
+            //
             // _amiiboImage
             //
             _amiiboImage = new Image()
             {
                 HeightRequest = 350,
                 WidthRequest  = 350
+            };
+
+            //
+            // _gameUsageLabel
+            //
+            _gameUsageLabel = new Label("")
+            {
+                MarginTop = 20
             };
 
 #pragma warning restore CS0612
@@ -147,6 +166,7 @@ namespace Ryujinx.Ui.Windows
 
         private void ShowComponent()
         {
+            _buttonBox.Add(_showAllCheckBox);
             _buttonBox.Add(_randomUuidCheckBox);
             _buttonBox.Add(_scanButton);
             _buttonBox.Add(_cancelButton);
@@ -161,6 +181,7 @@ namespace Ryujinx.Ui.Windows
             _amiiboHeadBox.Add(_amiiboCharsBox);
 
             _amiiboBox.PackStart(_amiiboHeadBox, true, true, 0);
+            _amiiboBox.PackEnd(_gameUsageLabel, false, false, 0);
             _amiiboBox.PackEnd(_amiiboImage, false, false, 0);
 
             _mainBox.Add(_amiiboBox);

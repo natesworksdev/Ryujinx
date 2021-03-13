@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
     {
         private static uint _openedApplicationAreaId;
 
-        public static byte[] GenerateUuid(byte[] amiiboId, bool useRandomUuid)
+        public static byte[] GenerateUuid(string amiiboId, bool useRandomUuid)
         {
             if (useRandomUuid)
             {
@@ -47,7 +47,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
             return uuid;
         }
 
-        public static CommonInfo GetCommonInfo(byte[] amiiboId)
+        public static CommonInfo GetCommonInfo(string amiiboId)
         {
             VirtualAmiiboFile amiiboFile = LoadAmiiboFile(amiiboId);
 
@@ -63,7 +63,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
             };
         }
 
-        public static RegisterInfo GetRegisterInfo(byte[] amiiboId)
+        public static RegisterInfo GetRegisterInfo(string amiiboId)
         {
             VirtualAmiiboFile amiiboFile = LoadAmiiboFile(amiiboId);
 
@@ -91,7 +91,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
             return registerInfo;
         }
 
-        public static bool OpenApplicationArea(byte[] amiiboId, uint applicationAreaId)
+        public static bool OpenApplicationArea(string amiiboId, uint applicationAreaId)
         {
             VirtualAmiiboFile virtualAmiiboFile = LoadAmiiboFile(amiiboId);
 
@@ -105,7 +105,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
             return false;
         }
 
-        public static byte[] GetApplicationArea(byte[] amiiboId)
+        public static byte[] GetApplicationArea(string amiiboId)
         {
             VirtualAmiiboFile virtualAmiiboFile = LoadAmiiboFile(amiiboId);
 
@@ -120,7 +120,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
             return Array.Empty<byte>();
         }
 
-        public static bool CreateApplicationArea(byte[] amiiboId, uint applicationAreaId, byte[] applicationAreaData)
+        public static bool CreateApplicationArea(string amiiboId, uint applicationAreaId, byte[] applicationAreaData)
         {
             VirtualAmiiboFile virtualAmiiboFile = LoadAmiiboFile(amiiboId);
 
@@ -140,7 +140,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
             return true;
         }
 
-        public static void SetApplicationArea(byte[] amiiboId, byte[] applicationAreaData)
+        public static void SetApplicationArea(string amiiboId, byte[] applicationAreaData)
         {
             VirtualAmiiboFile virtualAmiiboFile = LoadAmiiboFile(amiiboId);
 
@@ -164,11 +164,11 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
             }
         }
 
-        private static VirtualAmiiboFile LoadAmiiboFile(byte[] amiiboId)
+        private static VirtualAmiiboFile LoadAmiiboFile(string amiiboId)
         {
             Directory.CreateDirectory(Path.Join(AppDataManager.BaseDirPath, "system", "amiibo"));
 
-            string filePath = Path.Join(AppDataManager.BaseDirPath, "system", "amiibo", $"{BitConverter.ToString(amiiboId).Replace("-", "")}.json");
+            string filePath = Path.Join(AppDataManager.BaseDirPath, "system", "amiibo", $"{amiiboId}.json");
 
             VirtualAmiiboFile virtualAmiiboFile;
 
@@ -197,7 +197,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 
         private static void SaveAmiiboFile(VirtualAmiiboFile virtualAmiiboFile)
         {
-            string filePath = Path.Join(AppDataManager.BaseDirPath, "system", "amiibo", $"{BitConverter.ToString(virtualAmiiboFile.AmiiboId).Replace("-", "")}.json");
+            string filePath = Path.Join(AppDataManager.BaseDirPath, "system", "amiibo", $"{virtualAmiiboFile.AmiiboId}.json");
 
             File.WriteAllText(filePath, JsonSerializer.Serialize(virtualAmiiboFile));
         }

@@ -1,5 +1,4 @@
-﻿using Ryujinx.Common.Logging;
-using Ryujinx.Common.Memory;
+﻿using Ryujinx.Common.Memory;
 using Ryujinx.Cpu;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Ipc;
@@ -9,6 +8,8 @@ using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.HLE.HOS.Services.Hid.HidServer;
 using Ryujinx.HLE.HOS.Services.Nfc.Nfp.UserManager;
 using System;
+using System.Buffers.Binary;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -804,10 +805,14 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
                         {
                             ModelInfo modelInfo = new ModelInfo
                             {
-                                Reserved = new Array56<byte>()
+                                Reserved = new Array57<byte>()
                             };
 
-                            context.Device.System.NfpDevices[i].AmiiboId.CopyTo(modelInfo.AmiiboId.ToSpan());
+                            modelInfo.CharacterId      = BinaryPrimitives.ReverseEndianness(ushort.Parse(context.Device.System.NfpDevices[i].AmiiboId.Substring(0, 4), NumberStyles.HexNumber));
+                            modelInfo.CharacterVariant = byte.Parse(context.Device.System.NfpDevices[i].AmiiboId.Substring(4, 2), NumberStyles.HexNumber);
+                            modelInfo.Series           = byte.Parse(context.Device.System.NfpDevices[i].AmiiboId.Substring(12, 2), NumberStyles.HexNumber);
+                            modelInfo.ModelNumber      = ushort.Parse(context.Device.System.NfpDevices[i].AmiiboId.Substring(8, 4), NumberStyles.HexNumber);
+                            modelInfo.Type             = byte.Parse(context.Device.System.NfpDevices[i].AmiiboId.Substring(6, 2), NumberStyles.HexNumber);
 
                             context.Memory.Write((ulong)outputPosition, modelInfo);
 

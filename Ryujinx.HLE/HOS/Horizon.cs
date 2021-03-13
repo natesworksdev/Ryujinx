@@ -307,7 +307,7 @@ namespace Ryujinx.HLE.HOS
             if (NfpDevices[nfpDeviceId].State == NfpDeviceState.SearchingForTag)
             {
                 NfpDevices[nfpDeviceId].State         = NfpDeviceState.TagFound;
-                NfpDevices[nfpDeviceId].AmiiboId      = StringUtils.HexToBytes(amiiboId);
+                NfpDevices[nfpDeviceId].AmiiboId      = amiiboId;
                 NfpDevices[nfpDeviceId].UseRandomUuid = useRandomUuid;
             }
         }
