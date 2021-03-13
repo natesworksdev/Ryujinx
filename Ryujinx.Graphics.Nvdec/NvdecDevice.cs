@@ -36,10 +36,10 @@ namespace Ryujinx.Graphics.Nvdec
             switch (codecId)
             {
                 case CodecId.H264:
-                    //H264Decoder.Decode(this, _rm, ref _state.State);
+                    H264Decoder.Decode(this, _rm, ref _state.State);
                     break;
                 case CodecId.Vp9:
-                    //Vp9Decoder.Decode(this, _rm, ref _state.State);
+                    Vp9Decoder.Decode(this, _rm, ref _state.State);
                     break;
                 default:
                     Logger.Error?.Print(LogClass.Nvdec, $"Unsupported codec \"{codecId}\".");
