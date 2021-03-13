@@ -54,6 +54,7 @@ namespace Ryujinx.Ui
         private string _currentEmulatedGamePath = null;
 
         private string _lastScannedAmiiboId = "";
+        private bool   _lastScannedAmiiboShowAll = false;
 
         public GlRenderer GlRendererWidget;
 
@@ -1122,9 +1123,10 @@ namespace Ryujinx.Ui
             {
                 AmiiboWindow amiiboWindow = new AmiiboWindow
                 {
-                    LastScannedAmiiboId = _lastScannedAmiiboId,
-                    DeviceId            = deviceId,
-                    TitleId             = _emulationContext.Application.TitleIdText.ToUpper()
+                    LastScannedAmiiboShowAll = _lastScannedAmiiboShowAll,
+                    LastScannedAmiiboId      = _lastScannedAmiiboId,
+                    DeviceId                 = deviceId,
+                    TitleId                  = _emulationContext.Application.TitleIdText.ToUpper()
                 };
 
                 amiiboWindow.DeleteEvent += AmiiboWindow_DeleteEvent;
@@ -1141,7 +1143,8 @@ namespace Ryujinx.Ui
         {
             if (((AmiiboWindow)sender).AmiiboId != "")
             {
-                _lastScannedAmiiboId = ((AmiiboWindow)sender).AmiiboId;
+                _lastScannedAmiiboId      = ((AmiiboWindow)sender).AmiiboId;
+                _lastScannedAmiiboShowAll = ((AmiiboWindow)sender).LastScannedAmiiboShowAll;
 
                 _emulationContext.System.ScanAmiibo(((AmiiboWindow)sender).DeviceId, ((AmiiboWindow)sender).AmiiboId, ((AmiiboWindow)sender).UseRandomUuid);
             }

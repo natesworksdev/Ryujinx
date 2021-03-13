@@ -73,9 +73,10 @@ namespace Ryujinx.Ui.Windows
 
         public string AmiiboId { get; private set; }
 
-        public int    DeviceId            { get; set; }
-        public string TitleId             { get; set; }
-        public string LastScannedAmiiboId { get; set; }
+        public int    DeviceId                 { get; set; }
+        public string TitleId                  { get; set; }
+        public string LastScannedAmiiboId      { get; set; }
+        public bool   LastScannedAmiiboShowAll { get; set; }
 
         public bool UseRandomUuid
         {
@@ -147,7 +148,14 @@ namespace Ryujinx.Ui.Windows
             _amiiboList = JsonSerializer.Deserialize<AmiiboJson>(amiiboJsonString).Amiibo;
             _amiiboList = _amiiboList.OrderBy(amiibo => amiibo.AmiiboSeries).ToList();
 
+            if (LastScannedAmiiboShowAll)
+            {
+                _showAllCheckBox.Click();
+            }
+
             ParseAmiiboData();
+
+            _showAllCheckBox.Clicked += ShowAllCheckBox_Clicked;
         }
 
         private void ParseAmiiboData()
@@ -160,23 +168,18 @@ namespace Ryujinx.Ui.Windows
                 {
                     if (!_showAllCheckBox.Active)
                     {
-                        bool isAvailable = false;
-
                         foreach (var game in _amiiboList[i].GamesSwitch)
                         {
                             if (game != null)
                             {
                                 if (game.GameId.Contains(TitleId))
                                 {
-                                    isAvailable = true;
+                                    comboxItemList.Add(_amiiboList[i].AmiiboSeries);
+                                    _amiiboSeriesComboBox.Append(_amiiboList[i].AmiiboSeries, _amiiboList[i].AmiiboSeries);
+
+                                    break;
                                 }
                             }
-                        }
-
-                        if (isAvailable)
-                        {
-                            comboxItemList.Add(_amiiboList[i].AmiiboSeries);
-                            _amiiboSeriesComboBox.Append(_amiiboList[i].AmiiboSeries, _amiiboList[i].AmiiboSeries);
                         }
                     }
                     else
@@ -190,22 +193,24 @@ namespace Ryujinx.Ui.Windows
             _amiiboSeriesComboBox.Changed += SeriesComboBox_Changed;
             _amiiboCharsComboBox.Changed  += CharacterComboBox_Changed;
 
-            if (LastScannedAmiiboId == "")
+            if (LastScannedAmiiboId != "")
             {
-                _amiiboSeriesComboBox.Active = 0;
+                SelectLastScannedAmiibo();
             }
             else
             {
-                SelectLastScannedAmiibo();
+                _amiiboSeriesComboBox.Active = 0;
             }
         }
 
         private void SelectLastScannedAmiibo()
         {
-            if (LastScannedAmiiboId != "")
+            bool isSet = _amiiboSeriesComboBox.SetActiveId(_amiiboList.FirstOrDefault(amiibo => amiibo.Head + amiibo.Tail == LastScannedAmiiboId).AmiiboSeries);
+            isSet = _amiiboCharsComboBox.SetActiveId(LastScannedAmiiboId);
+
+            if (isSet == false)
             {
-                _amiiboSeriesComboBox.SetActiveId(_amiiboList.FirstOrDefault(amiibo => amiibo.Head + amiibo.Tail == LastScannedAmiiboId).AmiiboSeries);
-                _amiiboCharsComboBox.SetActiveId(LastScannedAmiiboId);
+                _amiiboSeriesComboBox.Active = 0;
             }
         }
 
@@ -298,23 +303,18 @@ namespace Ryujinx.Ui.Windows
                 {
                     if (!_showAllCheckBox.Active)
                     {
-                        bool isAvailable = false;
-
                         foreach (var game in amiiboSortedList[i].GamesSwitch)
                         {
                             if (game != null)
                             {
                                 if (game.GameId.Contains(TitleId))
                                 {
-                                    isAvailable = true;
+                                    comboxItemList.Add(amiiboSortedList[i].Head + amiiboSortedList[i].Tail);
+                                    _amiiboCharsComboBox.Append(amiiboSortedList[i].Head + amiiboSortedList[i].Tail, amiiboSortedList[i].Name);
+
+                                    break;
                                 }
                             }
-                        }
-
-                        if (isAvailable)
-                        {
-                            comboxItemList.Add(amiiboSortedList[i].Head + amiiboSortedList[i].Tail);
-                            _amiiboCharsComboBox.Append(amiiboSortedList[i].Head + amiiboSortedList[i].Tail, amiiboSortedList[i].Name);
                         }
                     }
                     else
@@ -374,7 +374,7 @@ namespace Ryujinx.Ui.Windows
             _ = UpdateAmiiboPreview(imageUrl);
         }
 
-        private void ShowAllCheckBox_Toggled(object sender, EventArgs e)
+        private void ShowAllCheckBox_Clicked(object sender, EventArgs e)
         {
             _amiiboImage.Pixbuf = new Gdk.Pixbuf(_amiiboLogoBytes);
 
@@ -392,12 +392,16 @@ namespace Ryujinx.Ui.Windows
 
         private void ScanButton_Pressed(object sender, EventArgs args)
         {
+            LastScannedAmiiboShowAll = _showAllCheckBox.Active;
+
             Close();
         }
 
         private void CancelButton_Pressed(object sender, EventArgs args)
         {
-            AmiiboId = "";
+            AmiiboId                 = "";
+            LastScannedAmiiboId      = "";
+            LastScannedAmiiboShowAll = false;
 
             Close();
         }

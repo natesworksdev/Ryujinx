@@ -140,7 +140,6 @@ namespace Ryujinx.Ui.Windows
             {
                 Label = "Show All Amiibo"
             };
-            _showAllCheckBox.Toggled += ShowAllCheckBox_Toggled;
 
             //
             // _amiiboImage
