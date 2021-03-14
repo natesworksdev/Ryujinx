@@ -38,7 +38,12 @@ namespace Ryujinx.Common.System
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                ResetTimer();
+                _resetTimer = new Timer((object state) =>
+                {
+                    _display = XOpenDisplay(IntPtr.Zero);
+                    XResetScreenSaver(_display);
+                    XCloseDisplay(_display);
+                }, null, 0, 25000);
             }
         }
 
@@ -52,18 +57,6 @@ namespace Ryujinx.Common.System
             {
                 _resetTimer.Dispose();
             }
-        }
-
-        static private void PreventLinux(object sender)
-        {
-            _display = XOpenDisplay(IntPtr.Zero);
-            XResetScreenSaver(_display);
-            XCloseDisplay(_display);
-        }
-
-        static private void ResetTimer()
-        {
-            _resetTimer = new Timer(PreventLinux, null, 0, 25000);
         }
     }
 }
