@@ -977,8 +977,6 @@ namespace Ryujinx.Graphics.Gpu.Image
                     {
                         // Copy only compatibility, or target texture is already a view.
 
-                        ChangeSizeIfNeeded(overlapInfo, overlap, false, sizeHint); // Force a size match for copy
-
                         overlap.SynchronizeMemory();
                         texture.CreateCopyDependency(overlap, oInfo.FirstLayer, oInfo.FirstLevel, false);
                     }
