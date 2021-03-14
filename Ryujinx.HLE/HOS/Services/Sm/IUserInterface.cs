@@ -87,14 +87,7 @@ namespace Ryujinx.HLE.HOS.Services.Sm
                 }
                 else
                 {
-                    if (ServiceConfiguration.IgnoreMissingServices)
-                    {
-                        Logger.Warning?.Print(LogClass.Service, $"Missing service {name} ignored");
-                    }
-                    else
-                    {
-                        throw new NotImplementedException(name);
-                    }
+                    throw new NotImplementedException(name);
                 }
             }
 

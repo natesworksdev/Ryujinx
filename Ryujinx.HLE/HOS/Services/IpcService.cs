@@ -101,7 +101,7 @@ namespace Ryujinx.HLE.HOS.Services
 
             bool serviceExists = service.Commands.TryGetValue(commandId, out MethodInfo processRequest);
 
-            if (ServiceConfiguration.IgnoreMissingServices || serviceExists)
+            if (serviceExists)
             {
                 ResultCode result = ResultCode.Success;
 

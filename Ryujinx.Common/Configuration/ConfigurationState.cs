@@ -218,11 +218,6 @@ namespace Ryujinx.Configuration
             /// </summary>
             public ReactiveObject<AudioBackend> AudioBackend { get; private set; }
 
-            /// <summary>
-            /// Enable or disable ignoring missing services
-            /// </summary>
-            public ReactiveObject<bool> IgnoreMissingServices { get; private set; }
-
             public SystemSection()
             {
                 Language                = new ReactiveObject<Language>();
@@ -234,7 +229,6 @@ namespace Ryujinx.Configuration
                 EnableFsIntegrityChecks = new ReactiveObject<bool>();
                 FsGlobalAccessLogMode   = new ReactiveObject<int>();
                 AudioBackend            = new ReactiveObject<AudioBackend>();
-                IgnoreMissingServices   = new ReactiveObject<bool>();
             }
         }
 
@@ -433,7 +427,6 @@ namespace Ryujinx.Configuration
                 EnableFsIntegrityChecks   = System.EnableFsIntegrityChecks,
                 FsGlobalAccessLogMode     = System.FsGlobalAccessLogMode,
                 AudioBackend              = System.AudioBackend,
-                IgnoreMissingServices     = System.IgnoreMissingServices,
                 GuiColumns                = new GuiColumns
                 {
                     FavColumn        = Ui.GuiColumns.FavColumn,
@@ -497,7 +490,6 @@ namespace Ryujinx.Configuration
             System.EnableFsIntegrityChecks.Value   = true;
             System.FsGlobalAccessLogMode.Value     = 0;
             System.AudioBackend.Value              = AudioBackend.OpenAl;
-            System.IgnoreMissingServices.Value     = false;
             Ui.GuiColumns.FavColumn.Value          = true;
             Ui.GuiColumns.IconColumn.Value         = true;
             Ui.GuiColumns.AppColumn.Value          = true;
@@ -838,7 +830,6 @@ namespace Ryujinx.Configuration
             System.EnableFsIntegrityChecks.Value   = configurationFileFormat.EnableFsIntegrityChecks;
             System.FsGlobalAccessLogMode.Value     = configurationFileFormat.FsGlobalAccessLogMode;
             System.AudioBackend.Value              = configurationFileFormat.AudioBackend;
-            System.IgnoreMissingServices.Value     = configurationFileFormat.IgnoreMissingServices;
             Ui.GuiColumns.FavColumn.Value          = configurationFileFormat.GuiColumns.FavColumn;
             Ui.GuiColumns.IconColumn.Value         = configurationFileFormat.GuiColumns.IconColumn;
             Ui.GuiColumns.AppColumn.Value          = configurationFileFormat.GuiColumns.AppColumn;

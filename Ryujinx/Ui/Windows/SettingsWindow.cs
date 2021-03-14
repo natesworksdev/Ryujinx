@@ -50,7 +50,6 @@ namespace Ryujinx.Ui.Windows
         [GUI] CheckButton     _shaderCacheToggle;
         [GUI] CheckButton     _ptcToggle;
         [GUI] CheckButton     _fsicToggle;
-        [GUI] CheckButton     _ignoreToggle;
         [GUI] CheckButton     _directKeyboardAccess;
         [GUI] ComboBoxText    _systemLanguageSelect;
         [GUI] ComboBoxText    _systemRegionSelect;
@@ -211,11 +210,6 @@ namespace Ryujinx.Ui.Windows
             if (ConfigurationState.Instance.System.EnableFsIntegrityChecks)
             {
                 _fsicToggle.Click();
-            }
-
-            if (ConfigurationState.Instance.System.IgnoreMissingServices)
-            {
-                _ignoreToggle.Click();
             }
 
             if (ConfigurationState.Instance.Hid.EnableKeyboard)
@@ -416,7 +410,6 @@ namespace Ryujinx.Ui.Windows
             ConfigurationState.Instance.Graphics.EnableShaderCache.Value       = _shaderCacheToggle.Active;
             ConfigurationState.Instance.System.EnablePtc.Value                 = _ptcToggle.Active;
             ConfigurationState.Instance.System.EnableFsIntegrityChecks.Value   = _fsicToggle.Active;
-            ConfigurationState.Instance.System.IgnoreMissingServices.Value     = _ignoreToggle.Active;
             ConfigurationState.Instance.Hid.EnableKeyboard.Value               = _directKeyboardAccess.Active;
             ConfigurationState.Instance.Ui.EnableCustomTheme.Value             = _custThemeToggle.Active;
             ConfigurationState.Instance.System.Language.Value                  = Enum.Parse<Language>(_systemLanguageSelect.ActiveId);

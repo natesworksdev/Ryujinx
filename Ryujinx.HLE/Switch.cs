@@ -128,12 +128,6 @@ namespace Ryujinx.HLE
 
             System.GlobalAccessLogMode = ConfigurationState.Instance.System.FsGlobalAccessLogMode;
 
-            ServiceConfiguration.IgnoreMissingServices = ConfigurationState.Instance.System.IgnoreMissingServices;
-            ConfigurationState.Instance.System.IgnoreMissingServices.Event += (object _, ReactiveEventArgs<bool> args) =>
-            {
-                ServiceConfiguration.IgnoreMissingServices = args.NewValue;
-            };
-
             // Configure controllers
             Hid.RefreshInputConfig(ConfigurationState.Instance.Hid.InputConfig.Value);
             ConfigurationState.Instance.Hid.InputConfig.Event += Hid.RefreshInputConfigEvent;
