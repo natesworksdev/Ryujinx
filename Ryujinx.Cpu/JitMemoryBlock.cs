@@ -1,4 +1,5 @@
 ﻿using ARMeilleure.Memory;
+using Ryujinx.Common;
 using Ryujinx.Memory;
 using System;
 
