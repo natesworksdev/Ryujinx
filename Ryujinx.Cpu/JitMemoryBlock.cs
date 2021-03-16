@@ -4,7 +4,7 @@ using System;
 
 namespace Ryujinx.Cpu
 {
-    class JitMemoryBlock : IJitMemoryBlock
+    class JitMemoryBlock : DisposableBase, IJitMemoryBlock
     {
         private readonly MemoryBlock _impl;
 
@@ -19,6 +19,9 @@ namespace Ryujinx.Cpu
         public void MapAsRx(ulong offset, ulong size) => _impl.Reprotect(offset, size, MemoryPermission.ReadAndExecute);
         public void MapAsRwx(ulong offset, ulong size) => _impl.Reprotect(offset, size, MemoryPermission.ReadWriteExecute);
 
-        public void Dispose() => _impl.Dispose();
+        protected override void DisposeManaged()
+        {
+            _impl.Dispose();
+        }
     }
 }
