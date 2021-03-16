@@ -4,8 +4,10 @@ namespace Ryujinx
 {
     /// <summary>
     /// A base class to implement IDisposable pattern for classes with unmanaged resources.
-    /// Use DisposableBase when there are only manage resources to dispose.
     /// </summary>
+    /// <remarks>
+    /// Use <see cref="DisposableBase"/> when there are only managed resources to dispose.
+    /// </remarks>
     public abstract class DisposableUnmanagedBase : IDisposable
     {
         /// <summary>
