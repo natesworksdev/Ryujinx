@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Ryujinx.Common;
+using System;
 using System.Runtime.CompilerServices;
 using System.Threading;
 

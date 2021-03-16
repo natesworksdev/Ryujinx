@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Ryujinx
+namespace Ryujinx.Common
 {
     /// <summary>
     /// A base class to implement IDisposable pattern for classes with only managed resources.
