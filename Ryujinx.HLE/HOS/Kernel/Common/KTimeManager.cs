@@ -8,28 +8,15 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
 {
     class KTimeManager : IDisposable
     {
-        private class WaitingObject
-        {
-            public IKFutureSchedulerObject Object { get; }
-            public long TimePoint { get; set; }
-
-            public WaitingObject(IKFutureSchedulerObject schedulerObj, long timePoint)
-            {
-                Object = schedulerObj;
-                TimePoint = timePoint;
-            }
-        }
-
         private readonly KernelContext _context;
         // TODO: PriorityQueue will have the best performance here.
-        private readonly IDictionary<int, WaitingObject> _waitingObjects;
+        private readonly HashSet<IKFutureSchedulerObject> _waitingObjects = new HashSet<IKFutureSchedulerObject>();
         private AutoResetEvent _waitEvent;
         private bool _keepRunning;
 
         public KTimeManager(KernelContext context)
         {
             _context = context;
-            _waitingObjects = new Dictionary<int, WaitingObject>();
             _keepRunning = true;
 
             Thread work = new Thread(WaitAndCheckScheduledObjects)
@@ -44,10 +31,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
         {
             long timePoint = PerformanceCounter.ElapsedMilliseconds + ConvertNanosecondsToMilliseconds(timeout);
 
-            var key = schedulerObj.GetHashCode();
             lock (_context.CriticalSection.Lock)
             {
-                if (_waitingObjects.TryGetValue(key, out var existing))
+                if (_waitingObjects.TryGetValue(schedulerObj, out var existing))
                 {
                     if (timePoint < existing.TimePoint)
                     {
@@ -56,7 +42,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
                 }
                 else
                 {
-                    _waitingObjects.Add(key, new WaitingObject(schedulerObj, timePoint));
+                    schedulerObj.TimePoint = timePoint;
+                    _waitingObjects.Add(schedulerObj);
                 }
             }
 
@@ -65,14 +52,12 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
 
         public void UnscheduleFutureInvocation(IKFutureSchedulerObject schedulerObj)
         {
-            var key = schedulerObj.GetHashCode();
-            if (_waitingObjects.ContainsKey(key))
+            lock (_context.CriticalSection.Lock)
             {
-                lock (_context.CriticalSection.Lock)
-                {
-                    // Call TimeUp here?
-                    _waitingObjects.Remove(key);
-                }
+                // Not calling TimeUp here, 
+                // TimeUp should only be called when the timeout expires,
+                // if it expires (the scheduler object may be signaled and remove itself from the list before that happens).
+                _waitingObjects.Remove(schedulerObj);
             }
         }
 
@@ -82,14 +67,13 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
             {
                 while (_keepRunning)
                 {
-                    KeyValuePair<int, WaitingObject> nextPair;
+                    IKFutureSchedulerObject next;
                     lock (_context.CriticalSection.Lock)
                     {
                         // TODO: PriorityQueue will has the best performance here.
-                        nextPair = _waitingObjects.OrderBy(x => x.Value.TimePoint).FirstOrDefault();
+                        next = _waitingObjects.OrderBy(x => x.TimePoint).FirstOrDefault();
                     }
 
-                    var next = nextPair.Value;
                     if (next != null)
                     {
                         long timePoint = PerformanceCounter.ElapsedMilliseconds;
@@ -98,11 +82,15 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
                             _waitEvent.WaitOne((int)(next.TimePoint - timePoint));
                         }
 
-                        lock (_context.CriticalSection.Lock)
+                        var timeUp = PerformanceCounter.ElapsedMilliseconds >= next.TimePoint;
+                        if (timeUp)
                         {
-                            if (_waitingObjects.Remove(nextPair.Key))
+                            lock (_context.CriticalSection.Lock)
                             {
-                                next.Object.TimeUp();
+                                if (_waitingObjects.Remove(next))
+                                {
+                                    next.TimeUp();
+                                }
                             }
                         }
                     }
