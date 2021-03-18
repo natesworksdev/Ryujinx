@@ -23,6 +23,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
         public KThreadContext ThreadContext { get; private set; }
 
+        public long TimePoint { get; set; }
+
         public int DynamicPriority { get; set; }
         public long AffinityMask { get; set; }
 
