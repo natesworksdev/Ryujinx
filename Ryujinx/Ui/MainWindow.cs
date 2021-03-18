@@ -1141,7 +1141,7 @@ namespace Ryujinx.Ui
 
         private void AmiiboWindow_DeleteEvent(object sender, DeleteEventArgs args)
         {
-            if (((AmiiboWindow)sender).AmiiboId != "")
+            if (((AmiiboWindow)sender).AmiiboId != "" && ((AmiiboWindow)sender).Response == ResponseType.Ok)
             {
                 _lastScannedAmiiboId      = ((AmiiboWindow)sender).AmiiboId;
                 _lastScannedAmiiboShowAll = ((AmiiboWindow)sender).LastScannedAmiiboShowAll;

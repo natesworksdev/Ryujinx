@@ -78,6 +78,8 @@ namespace Ryujinx.Ui.Windows
         public string LastScannedAmiiboId      { get; set; }
         public bool   LastScannedAmiiboShowAll { get; set; }
 
+        public ResponseType Response { get; private set; }
+
         public bool UseRandomUuid
         {
             get
@@ -394,6 +396,8 @@ namespace Ryujinx.Ui.Windows
         {
             LastScannedAmiiboShowAll = _showAllCheckBox.Active;
 
+            Response = ResponseType.Ok;
+
             Close();
         }
 
@@ -402,6 +406,8 @@ namespace Ryujinx.Ui.Windows
             AmiiboId                 = "";
             LastScannedAmiiboId      = "";
             LastScannedAmiiboShowAll = false;
+
+            Response = ResponseType.Cancel;
 
             Close();
         }
