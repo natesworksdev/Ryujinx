@@ -115,9 +115,9 @@ namespace Ryujinx.Cpu
             AssertValidAddressAndSize(va, size);
 
             UnmapEvent?.Invoke(va, size);
+            Tracking.Unmap(va, size);
 
             ulong remainingSize = size;
-            ulong oVa = va;
             while (remainingSize != 0)
             {
                 _pageTable.Write((va / PageSize) * PteSize, 0UL);
@@ -125,7 +125,6 @@ namespace Ryujinx.Cpu
                 va += PageSize;
                 remainingSize -= PageSize;
             }
-            Tracking.Unmap(oVa, size);
         }
 
         /// <summary>
@@ -627,7 +626,7 @@ namespace Ryujinx.Cpu
                 {
                     pte = Volatile.Read(ref pageRef);
                 }
-                while (Interlocked.CompareExchange(ref pageRef, (pte & invTagMask) | tag, pte) != pte);
+                while (pte != 0 && Interlocked.CompareExchange(ref pageRef, (pte & invTagMask) | tag, pte) != pte);
 
                 pageStart++;
             }
