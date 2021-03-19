@@ -1,6 +1,7 @@
 ﻿using Gtk;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
+using Ryujinx.Common.Logging;
 using Ryujinx.Ui.Widgets;
 using System;
 using System.Collections.Generic;
@@ -103,7 +104,7 @@ namespace Ryujinx.Ui.Windows
 
             _httpClient = new HttpClient()
             {
-                Timeout = TimeSpan.FromMilliseconds(5000)
+                Timeout = TimeSpan.FromMilliseconds(45000)
             };
 
             Directory.CreateDirectory(System.IO.Path.Join(AppDataManager.BaseDirPath, "system", "amiibo"));
@@ -124,28 +125,29 @@ namespace Ryujinx.Ui.Windows
         {
             string amiiboJsonString = DEFAULT_JSON;
 
-            if (File.Exists(_amiiboJsonPath))
+            try
             {
-                amiiboJsonString = File.ReadAllText(_amiiboJsonPath);
+                if (File.Exists(_amiiboJsonPath))
+                {
+                    amiiboJsonString = File.ReadAllText(_amiiboJsonPath);
 
-                if (await NeedsUpdate(JsonSerializer.Deserialize<AmiiboJson>(amiiboJsonString).LastUpdated))
+                    if (await NeedsUpdate(JsonSerializer.Deserialize<AmiiboJson>(amiiboJsonString).LastUpdated))
+                    {
+                        amiiboJsonString = await DownloadAmiiboJson();
+                    }
+                }
+                else
                 {
                     amiiboJsonString = await DownloadAmiiboJson();
                 }
             }
-            else
+            catch
             {
-                try
-                {
-                    amiiboJsonString = await DownloadAmiiboJson();
-                }
-                catch
-                {
-                    ShowInfoDialog();
+                ShowInfoDialog();
 
-                    Close();
-                }
+                Close();
             }
+
 
             _amiiboList = JsonSerializer.Deserialize<AmiiboJson>(amiiboJsonString).Amiibo;
             _amiiboList = _amiiboList.OrderBy(amiibo => amiibo.AmiiboSeries).ToList();
@@ -220,12 +222,18 @@ namespace Ryujinx.Ui.Windows
         {
             try
             {
+                Logger.Info?.Print(LogClass.Application, "Checking amiibo server for updates...");
                 HttpResponseMessage response = await _httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, "https://amiibo.ryujinx.org/"));
 
                 if (response.IsSuccessStatusCode)
                 {
+                    string needsUpdateMessage = response.Content.Headers.LastModified != oldLastModified ? "Found updates to amiibo data!" : "Your version of amiibo data is up to date!";
+                    Logger.Info?.Print(LogClass.Application, needsUpdateMessage);
+
                     return response.Content.Headers.LastModified != oldLastModified;
                 }
+
+                Logger.Warning?.Print(LogClass.Application, $"Failed to discover updates to amiibo data, server responded with error code: {response.StatusCode}");
 
                 return false;
             }
@@ -239,10 +247,14 @@ namespace Ryujinx.Ui.Windows
 
         private async Task<string> DownloadAmiiboJson()
         {
-            HttpResponseMessage response = await _httpClient.GetAsync("https://amiibo.ryujinx.org/");
+            Logger.Info?.Print(LogClass.Application, "Fetching amiibo data from server.");
+
+            HttpResponseMessage response = await _httpClient.GetAsync("https://amiibo.ryujinx.oradsaszg/");
 
             if (response.IsSuccessStatusCode)
             {
+                Logger.Info?.Print(LogClass.Application, "Amiibo data downloaded successfully!");
+
                 string amiiboJsonString = await response.Content.ReadAsStringAsync();
 
                 using (FileStream dlcJsonStream = File.Create(_amiiboJsonPath, 4096, FileOptions.WriteThrough))
@@ -254,11 +266,12 @@ namespace Ryujinx.Ui.Windows
             }
             else
             {
+                Logger.Warning?.Print(LogClass.Application, $"Amiibo data downloaded failed with error code: {response.StatusCode}");
                 GtkDialog.CreateInfoDialog($"Amiibo API", "An error occured while fetching informations from the API.");
 
                 Close();
             }
-
+            
             return DEFAULT_JSON;
         }
 
