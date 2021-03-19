@@ -238,7 +238,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             else if (lhs.IsLinear && rhs.IsLinear)
             {
                 // Copy between linear textures with matching stride.
-                int stride = BitUtils.AlignUp(Math.Max(1, lhs.Stride >> level), 32);
+                int stride = BitUtils.AlignUp(Math.Max(1, lhs.Stride >> level), Constants.StrideAlignment);
 
                 return stride == rhs.Stride ? TextureViewCompatibility.CopyOnly : TextureViewCompatibility.Incompatible;
             }
