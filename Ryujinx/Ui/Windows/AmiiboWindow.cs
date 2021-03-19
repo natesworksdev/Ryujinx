@@ -141,8 +141,9 @@ namespace Ryujinx.Ui.Windows
                     amiiboJsonString = await DownloadAmiiboJson();
                 }
             }
-            catch
+            catch (Exception ex) 
             {
+                Logger.Error?.Print(LogClass.Application, $"Failed to retrieve amiibo data, application threw an exception: {ex.Message}");
                 ShowInfoDialog();
 
                 Close();
