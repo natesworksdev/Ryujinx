@@ -10,7 +10,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
     {
         public const string Tab = "    ";
 
+        private readonly StructuredProgramInfo _info;
+
+        public StructuredFunction CurrentFunction { get; set; }
+
         public ShaderConfig Config { get; }
+
+        public bool CbIndexable => _info.UsesCbIndexing;
 
         public List<BufferDescriptor>  CBufferDescriptors { get; }
         public List<BufferDescriptor>  SBufferDescriptors { get; }
@@ -25,8 +31,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private string _indentation;
 
-        public CodeGenContext(ShaderConfig config)
+        public CodeGenContext(StructuredProgramInfo info, ShaderConfig config)
         {
+            _info = info;
             Config = config;
 
             CBufferDescriptors = new List<BufferDescriptor>();
@@ -77,19 +84,28 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             AppendLine("}" + suffix);
         }
 
+        private int FindDescriptorIndex(List<TextureDescriptor> list, AstTextureOperation texOp)
+        {
+            return list.FindIndex(descriptor =>
+                descriptor.Type == texOp.Type &&
+                descriptor.CbufSlot == texOp.CbufSlot &&
+                descriptor.HandleIndex == texOp.Handle &&
+                descriptor.Format == texOp.Format);
+        }
+
         public int FindTextureDescriptorIndex(AstTextureOperation texOp)
         {
-            AstOperand operand = texOp.GetSource(0) as AstOperand;
-            bool bindless = (texOp.Flags & TextureFlags.Bindless) > 0;
+            return FindDescriptorIndex(TextureDescriptors, texOp);
+        }
 
-            int cBufSlot = bindless ? operand.CbufSlot : 0;
-            int cBufOffset = bindless ? operand.CbufOffset : 0;
+        public int FindImageDescriptorIndex(AstTextureOperation texOp)
+        {
+            return FindDescriptorIndex(ImageDescriptors, texOp);
+        }
 
-            return TextureDescriptors.FindIndex(descriptor => 
-                descriptor.Type == texOp.Type && 
-                descriptor.HandleIndex == texOp.Handle && 
-                descriptor.CbufSlot == cBufSlot &&
-                descriptor.CbufOffset == cBufOffset);
+        public StructuredFunction GetFunction(int id)
+        {
+            return _info.Functions[id];
         }
 
         private void UpdateIndentation()

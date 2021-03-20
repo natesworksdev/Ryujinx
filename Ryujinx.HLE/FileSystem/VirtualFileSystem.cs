@@ -1,9 +1,11 @@
 using LibHac;
 using LibHac.Common;
 using LibHac.Fs;
-using LibHac.FsService;
+using LibHac.Fs.Fsa;
+using LibHac.FsSrv;
 using LibHac.FsSystem;
 using LibHac.Spl;
+using Ryujinx.Common.Configuration;
 using Ryujinx.HLE.FileSystem.Content;
 using Ryujinx.HLE.HOS;
 using System;
@@ -13,11 +15,8 @@ namespace Ryujinx.HLE.FileSystem
 {
     public class VirtualFileSystem : IDisposable
     {
-        public const string BasePath   = "Ryujinx";
-        public const string NandPath   = "bis";
-        public const string SdCardPath = "sdcard";
-        public const string SystemPath = "system";
-        public const string ModsPath   = "mods";
+        public const string NandPath   = AppDataManager.DefaultNandDir;
+        public const string SdCardPath = AppDataManager.DefaultSdcardDir;
 
         public static string SafeNandPath   = Path.Combine(NandPath, "safe");
         public static string SystemNandPath = Path.Combine(NandPath, "system");
@@ -77,19 +76,9 @@ namespace Ryujinx.HLE.FileSystem
             return fullPath;
         }
 
-        public string GetBaseModsPath()
-        {
-            var baseModsDir = Path.Combine(GetBasePath(), "mods");
-            ModLoader.EnsureBaseDirStructure(baseModsDir);
-
-            return baseModsDir;
-        }
-
-        public string GetSdCardPath() => MakeFullPath(SdCardPath);
-
+        internal string GetBasePath() => AppDataManager.BaseDirPath;
+        internal string GetSdCardPath() => MakeFullPath(SdCardPath);
         public string GetNandPath() => MakeFullPath(NandPath);
-
-        public string GetSystemPath() => MakeFullPath(SystemPath);
 
         internal string GetSavePath(ServiceCtx context, SaveInfo saveInfo, bool isDirectory = true)
         {
@@ -207,13 +196,6 @@ namespace Ryujinx.HLE.FileSystem
             return new DriveInfo(Path.GetPathRoot(GetBasePath()));
         }
 
-        public string GetBasePath()
-        {
-            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-
-            return Path.Combine(appDataPath, BasePath);
-        }
-
         public void Reload()
         {
             ReloadKeySet();
@@ -245,10 +227,12 @@ namespace Ryujinx.HLE.FileSystem
             string titleKeyFile   = null;
             string consoleKeyFile = null;
 
-            string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            if (AppDataManager.Mode == AppDataManager.LaunchMode.UserProfile)
+            {
+                LoadSetAtPath(AppDataManager.KeysDirPathUser);
+            }
 
-            LoadSetAtPath(Path.Combine(home, ".switch"));
-            LoadSetAtPath(GetSystemPath());
+            LoadSetAtPath(AppDataManager.KeysDirPath);
 
             void LoadSetAtPath(string basePath)
             {
@@ -285,7 +269,10 @@ namespace Ryujinx.HLE.FileSystem
                 {
                     Ticket ticket = new Ticket(ticketFile.AsStream());
 
-                    KeySet.ExternalKeySet.Add(new RightsId(ticket.RightsId), new AccessKey(ticket.GetTitleKey(KeySet)));
+                    if (ticket.TitleKeyType == TitleKeyType.Common)
+                    {
+                        KeySet.ExternalKeySet.Add(new RightsId(ticket.RightsId), new AccessKey(ticket.GetTitleKey(KeySet)));
+                    }
                 }
             }
         }

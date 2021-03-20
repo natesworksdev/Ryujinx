@@ -1,11 +1,12 @@
 using LibHac;
 using LibHac.Fs;
-using LibHac.FsService;
+using LibHac.FsSrv;
 using LibHac.FsSystem;
 using LibHac.FsSystem.NcaUtils;
 using LibHac.Ncm;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
+using Ryujinx.Cpu;
 using Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy;
 using System.IO;
 
@@ -17,7 +18,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
     [Service("fsp-srv")]
     class IFileSystemProxy : IpcService
     {
-        private LibHac.FsService.IFileSystemProxy _baseFileSystemProxy;
+        private LibHac.FsSrv.IFileSystemProxy _baseFileSystemProxy;
 
         public IFileSystemProxy(ServiceCtx context)
         {
@@ -32,7 +33,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         }
 
         [Command(8)]
-        // OpenFileSystemWithId(nn::fssrv::sf::FileSystemType filesystem_type, nn::ApplicationId tid, buffer<bytes<0x301>, 0x19, 0x301> path) 
+        // OpenFileSystemWithId(nn::fssrv::sf::FileSystemType filesystem_type, nn::ApplicationId tid, buffer<bytes<0x301>, 0x19, 0x301> path)
         // -> object<nn::fssrv::sf::IFileSystem> contentFs
         public ResultCode OpenFileSystemWithId(ServiceCtx context)
         {
@@ -96,7 +97,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
             Result rc = FileSystemProxyHelper.ReadFsPath(out FsPath path, context);
             if (rc.IsFailure()) return (ResultCode)rc.Value;
 
-            rc = _baseFileSystemProxy.OpenBisFileSystem(out LibHac.Fs.IFileSystem fileSystem, ref path, bisPartitionId);
+            rc = _baseFileSystemProxy.OpenBisFileSystem(out LibHac.Fs.Fsa.IFileSystem fileSystem, ref path, bisPartitionId);
             if (rc.IsFailure()) return (ResultCode)rc.Value;
 
             MakeObject(context, new FileSystemProxy.IFileSystem(fileSystem));
@@ -108,7 +109,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         // OpenSdCardFileSystem() -> object<nn::fssrv::sf::IFileSystem>
         public ResultCode OpenSdCardFileSystem(ServiceCtx context)
         {
-            Result rc = _baseFileSystemProxy.OpenSdCardFileSystem(out LibHac.Fs.IFileSystem fileSystem);
+            Result rc = _baseFileSystemProxy.OpenSdCardFileSystem(out LibHac.Fs.Fsa.IFileSystem fileSystem);
             if (rc.IsFailure()) return (ResultCode)rc.Value;
 
             MakeObject(context, new FileSystemProxy.IFileSystem(fileSystem));
@@ -135,17 +136,12 @@ namespace Ryujinx.HLE.HOS.Services.Fs
 
             // TODO: There's currently no program registry for FS to reference.
             // Workaround that by setting the application ID and owner ID if they're not already set
-            if (attribute.TitleId == TitleId.Zero)
+            if (attribute.ProgramId == ProgramId.InvalidId)
             {
-                attribute.TitleId = new TitleId(context.Process.TitleId);
+                attribute.ProgramId = new ProgramId(context.Device.Application.TitleId);
             }
 
-            if (creationInfo.OwnerId == TitleId.Zero)
-            {
-                creationInfo.OwnerId = new TitleId(context.Process.TitleId);
-            }
-
-            Logger.PrintInfo(LogClass.ServiceFs, $"Creating save with title ID {attribute.TitleId.Value:x16}");
+            Logger.Info?.Print(LogClass.ServiceFs, $"Creating save with title ID {attribute.ProgramId.Value:x16}");
 
             Result result = _baseFileSystemProxy.CreateSaveDataFileSystem(ref attribute, ref creationInfo, ref metaCreateInfo);
 
@@ -212,14 +208,9 @@ namespace Ryujinx.HLE.HOS.Services.Fs
 
             // TODO: There's currently no program registry for FS to reference.
             // Workaround that by setting the application ID and owner ID if they're not already set
-            if (attribute.TitleId == TitleId.Zero)
+            if (attribute.ProgramId == ProgramId.InvalidId)
             {
-                attribute.TitleId = new TitleId(context.Process.TitleId);
-            }
-
-            if (creationInfo.OwnerId == TitleId.Zero)
-            {
-                creationInfo.OwnerId = new TitleId(context.Process.TitleId);
+                attribute.ProgramId = new ProgramId(context.Device.Application.TitleId);
             }
 
             Result result = _baseFileSystemProxy.CreateSaveDataFileSystemWithHashSalt(ref attribute, ref creationInfo, ref metaCreateInfo, ref hashSalt);
@@ -236,12 +227,12 @@ namespace Ryujinx.HLE.HOS.Services.Fs
 
             // TODO: There's currently no program registry for FS to reference.
             // Workaround that by setting the application ID if it's not already set
-            if (attribute.TitleId == TitleId.Zero)
+            if (attribute.ProgramId == ProgramId.InvalidId)
             {
-                attribute.TitleId = new TitleId(context.Process.TitleId);
+                attribute.ProgramId = new ProgramId(context.Device.Application.TitleId);
             }
 
-            Result result = _baseFileSystemProxy.OpenSaveDataFileSystem(out LibHac.Fs.IFileSystem fileSystem, spaceId, ref attribute);
+            Result result = _baseFileSystemProxy.OpenSaveDataFileSystem(out LibHac.Fs.Fsa.IFileSystem fileSystem, spaceId, ref attribute);
 
             if (result.IsSuccess())
             {
@@ -258,7 +249,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
             SaveDataSpaceId spaceId = (SaveDataSpaceId)context.RequestData.ReadInt64();
             SaveDataAttribute attribute = context.RequestData.ReadStruct<SaveDataAttribute>();
 
-            Result result = _baseFileSystemProxy.OpenSaveDataFileSystemBySystemSaveDataId(out LibHac.Fs.IFileSystem fileSystem, spaceId, ref attribute);
+            Result result = _baseFileSystemProxy.OpenSaveDataFileSystemBySystemSaveDataId(out LibHac.Fs.Fsa.IFileSystem fileSystem, spaceId, ref attribute);
 
             if (result.IsSuccess())
             {
@@ -277,12 +268,12 @@ namespace Ryujinx.HLE.HOS.Services.Fs
 
             // TODO: There's currently no program registry for FS to reference.
             // Workaround that by setting the application ID if it's not already set
-            if (attribute.TitleId == TitleId.Zero)
+            if (attribute.ProgramId == ProgramId.InvalidId)
             {
-                attribute.TitleId = new TitleId(context.Process.TitleId);
+                attribute.ProgramId = new ProgramId(context.Device.Application.TitleId);
             }
 
-            Result result = _baseFileSystemProxy.OpenReadOnlySaveDataFileSystem(out LibHac.Fs.IFileSystem fileSystem, spaceId, ref attribute);
+            Result result = _baseFileSystemProxy.OpenReadOnlySaveDataFileSystem(out LibHac.Fs.Fsa.IFileSystem fileSystem, spaceId, ref attribute);
 
             if (result.IsSuccess())
             {
@@ -295,7 +286,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         [Command(60)]
         public ResultCode OpenSaveDataInfoReader(ServiceCtx context)
         {
-            Result result = _baseFileSystemProxy.OpenSaveDataInfoReader(out LibHac.FsService.ISaveDataInfoReader infoReader);
+            Result result = _baseFileSystemProxy.OpenSaveDataInfoReader(out ReferenceCountedDisposable<LibHac.FsSrv.ISaveDataInfoReader> infoReader);
 
             if (result.IsSuccess())
             {
@@ -310,7 +301,27 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         {
             SaveDataSpaceId spaceId = (SaveDataSpaceId)context.RequestData.ReadByte();
 
-            Result result = _baseFileSystemProxy.OpenSaveDataInfoReaderBySaveDataSpaceId(out LibHac.FsService.ISaveDataInfoReader infoReader, spaceId);
+            Result result = _baseFileSystemProxy.OpenSaveDataInfoReaderBySaveDataSpaceId(out ReferenceCountedDisposable<LibHac.FsSrv.ISaveDataInfoReader> infoReader, spaceId);
+
+            if (result.IsSuccess())
+            {
+                MakeObject(context, new ISaveDataInfoReader(infoReader));
+            }
+
+            return (ResultCode)result.Value;
+        }
+
+        [Command(62)]
+        public ResultCode OpenSaveDataInfoReaderOnlyCacheStorage(ServiceCtx context)
+        {
+            SaveDataFilter filter = new SaveDataFilter();
+            filter.SetSaveDataType(SaveDataType.Cache);
+            filter.SetProgramId(new ProgramId(context.Process.TitleId));
+
+            // FS would query the User and SdCache space IDs to find where the existing cache is (if any).
+            // We always have the SD card inserted, so we can always use SdCache for now.
+            Result result = _baseFileSystemProxy.OpenSaveDataInfoReaderBySaveDataSpaceId(
+                out ReferenceCountedDisposable<LibHac.FsSrv.ISaveDataInfoReader> infoReader, SaveDataSpaceId.SdCache);
 
             if (result.IsSuccess())
             {
@@ -345,7 +356,8 @@ namespace Ryujinx.HLE.HOS.Services.Fs
             SaveDataSpaceId spaceId = (SaveDataSpaceId)context.RequestData.ReadInt64();
             SaveDataFilter filter = context.RequestData.ReadStruct<SaveDataFilter>();
 
-            Result result = _baseFileSystemProxy.OpenSaveDataInfoReaderWithFilter(out LibHac.FsService.ISaveDataInfoReader infoReader, spaceId, ref filter);
+            Result result = _baseFileSystemProxy.OpenSaveDataInfoReaderWithFilter(
+                out ReferenceCountedDisposable<LibHac.FsSrv.ISaveDataInfoReader> infoReader, spaceId, ref filter);
 
             if (result.IsSuccess())
             {
@@ -353,6 +365,16 @@ namespace Ryujinx.HLE.HOS.Services.Fs
             }
 
             return (ResultCode)result.Value;
+        }
+
+        [Command(71)]
+        public ResultCode ReadSaveDataFileSystemExtraDataWithMaskBySaveDataAttribute(ServiceCtx context)
+        {
+            Logger.Stub?.PrintStub(LogClass.ServiceFs);
+
+            MemoryHelper.FillWithZeros(context.Memory, context.Request.ReceiveBuff[0].Position, (int)context.Request.ReceiveBuff[0].Size);
+
+            return ResultCode.Success;
         }
 
         [Command(200)]
@@ -376,10 +398,10 @@ namespace Ryujinx.HLE.HOS.Services.Fs
             // This is because AOC can be distributed over multiple containers in the emulator.
             if (context.Device.System.ContentManager.GetAocDataStorage((ulong)titleId, out LibHac.Fs.IStorage aocStorage))
             {
-                Logger.PrintInfo(LogClass.Loader, $"Opened AddOnContent Data TitleID={titleId:X16}");
+                Logger.Info?.Print(LogClass.Loader, $"Opened AddOnContent Data TitleID={titleId:X16}");
 
-                MakeObject(context, new FileSystemProxy.IStorage(aocStorage));
-                
+                MakeObject(context, new FileSystemProxy.IStorage(context.Device.FileSystem.ModLoader.ApplyRomFsMods((ulong)titleId, aocStorage)));
+
                 return ResultCode.Success;
             }
 
@@ -447,7 +469,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         // OpenDataStorageByCurrentProcess() -> object<nn::fssrv::sf::IStorage> dataStorage
         public ResultCode OpenDeviceOperator(ServiceCtx context)
         {
-            Result result = _baseFileSystemProxy.OpenDeviceOperator(out LibHac.FsService.IDeviceOperator deviceOperator);
+            Result result = _baseFileSystemProxy.OpenDeviceOperator(out LibHac.FsSrv.IDeviceOperator deviceOperator);
 
             if (result.IsSuccess())
             {
@@ -506,7 +528,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
             string message = ReadUtf8StringSend(context);
 
             // FS ends each line with a newline. Remove it because Ryujinx logging adds its own newline
-            Logger.PrintAccessLog(LogClass.ServiceFs, message.TrimEnd('\n'));
+            Logger.AccessLog?.PrintMsg(LogClass.ServiceFs, message.TrimEnd('\n'));
 
             return ResultCode.Success;
         }
@@ -527,7 +549,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         // OpenMultiCommitManager() -> object<nn::fssrv::sf::IMultiCommitManager>
         public ResultCode OpenMultiCommitManager(ServiceCtx context)
         {
-            Result result = _baseFileSystemProxy.OpenMultiCommitManager(out LibHac.FsService.IMultiCommitManager commitManager);
+            Result result = _baseFileSystemProxy.OpenMultiCommitManager(out LibHac.FsSrv.IMultiCommitManager commitManager);
 
             if (result.IsSuccess())
             {

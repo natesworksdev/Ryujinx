@@ -2,7 +2,7 @@ using Ryujinx.Graphics.Shader.Instructions;
 
 namespace Ryujinx.Graphics.Shader.Decoders
 {
-    class OpCodeTexture : OpCode, IOpCodeTexture
+    class OpCodeTexture : OpCodeTextureBase, IOpCodeTexture
     {
         public Register Rd { get; }
         public Register Ra { get; }
@@ -14,13 +14,13 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
         public int ComponentMask { get; }
 
-        public int Immediate { get; }
-
         public TextureLodMode LodMode { get; protected set; }
 
         public bool HasOffset       { get; protected set; }
         public bool HasDepthCompare { get; protected set; }
         public bool IsMultisample   { get; protected set; }
+
+        public new static OpCode Create(InstEmitter emitter, ulong address, long opCode) => new OpCodeTexture(emitter, address, opCode);
 
         public OpCodeTexture(InstEmitter emitter, ulong address, long opCode) : base(emitter, address, opCode)
         {
@@ -33,8 +33,6 @@ namespace Ryujinx.Graphics.Shader.Decoders
             Dimensions = (TextureDimensions)opCode.Extract(29, 2);
 
             ComponentMask = opCode.Extract(31, 4);
-
-            Immediate = opCode.Extract(36, 13);
 
             LodMode = (TextureLodMode)opCode.Extract(55, 3);
         }

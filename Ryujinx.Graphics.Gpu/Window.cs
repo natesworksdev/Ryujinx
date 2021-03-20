@@ -1,7 +1,10 @@
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Image;
+using Ryujinx.Graphics.Texture;
+using Ryujinx.Memory.Range;
 using System;
 using System.Collections.Concurrent;
+using System.Threading;
 
 namespace Ryujinx.Graphics.Gpu
 {
@@ -23,6 +26,11 @@ namespace Ryujinx.Graphics.Gpu
             /// Texture information.
             /// </summary>
             public TextureInfo Info { get; }
+
+            /// <summary>
+            /// Physical memory locations where the texture data is located.
+            /// </summary>
+            public MultiRange Range { get; }
 
             /// <summary>
             /// Texture crop region.
@@ -48,18 +56,21 @@ namespace Ryujinx.Graphics.Gpu
             /// Creates a new instance of the presentation texture.
             /// </summary>
             /// <param name="info">Information of the texture to be presented</param>
+            /// <param name="range">Physical memory locations where the texture data is located</param>
             /// <param name="crop">Texture crop region</param>
             /// <param name="acquireCallback">Texture acquire callback</param>
             /// <param name="releaseCallback">Texture release callback</param>
             /// <param name="userObj">User defined object passed to the release callback, can be used to identify the texture</param>
             public PresentationTexture(
                 TextureInfo                info,
+                MultiRange                 range,
                 ImageCrop                  crop,
                 Action<GpuContext, object> acquireCallback,
                 Action<object>             releaseCallback,
                 object                     userObj)
             {
                 Info            = info;
+                Range           = range;
                 Crop            = crop;
                 AcquireCallback = acquireCallback;
                 ReleaseCallback = releaseCallback;
@@ -68,6 +79,8 @@ namespace Ryujinx.Graphics.Gpu
         }
 
         private readonly ConcurrentQueue<PresentationTexture> _frameQueue;
+
+        private int _framesAvailable;
 
         /// <summary>
         /// Creates a new instance of the GPU presentation window.
@@ -112,10 +125,10 @@ namespace Ryujinx.Graphics.Gpu
             Action<object>             releaseCallback,
             object                     userObj)
         {
-            FormatInfo formatInfo = new FormatInfo(format, 1, 1, bytesPerPixel);
+            FormatInfo formatInfo = new FormatInfo(format, 1, 1, bytesPerPixel, 4);
 
             TextureInfo info = new TextureInfo(
-                address,
+                0UL,
                 width,
                 height,
                 1,
@@ -130,7 +143,22 @@ namespace Ryujinx.Graphics.Gpu
                 Target.Texture2D,
                 formatInfo);
 
-            _frameQueue.Enqueue(new PresentationTexture(info, crop, acquireCallback, releaseCallback, userObj));
+            int size = SizeCalculator.GetBlockLinearTextureSize(
+                width,
+                height,
+                1,
+                1,
+                1,
+                1,
+                1,
+                bytesPerPixel,
+                gobBlocksInY,
+                1,
+                1).TotalSize;
+
+            MultiRange range = new MultiRange(address, (ulong)size);
+
+            _frameQueue.Enqueue(new PresentationTexture(info, range, crop, acquireCallback, releaseCallback, userObj));
         }
 
         /// <summary>
@@ -146,7 +174,7 @@ namespace Ryujinx.Graphics.Gpu
             {
                 pt.AcquireCallback(_context, pt.UserObj);
 
-                Texture texture = _context.Methods.TextureManager.FindOrCreateTexture(pt.Info, TextureSearchFlags.WithUpscale);
+                Texture texture = _context.Methods.TextureManager.FindOrCreateTexture(TextureSearchFlags.WithUpscale, pt.Info, 0, null, pt.Range);
 
                 texture.SynchronizeMemory();
 
@@ -156,6 +184,30 @@ namespace Ryujinx.Graphics.Gpu
 
                 pt.ReleaseCallback(pt.UserObj);
             }
+        }
+
+        /// <summary>
+        /// Indicate that a frame on the queue is ready to be acquired.
+        /// </summary>
+        public void SignalFrameReady()
+        {
+            Interlocked.Increment(ref _framesAvailable);
+        }
+
+        /// <summary>
+        /// Determine if any frames are available, and decrement the available count if there are.
+        /// </summary>
+        /// <returns>True if a frame is available, false otherwise</returns>
+        public bool ConsumeFrameAvailable()
+        {
+            if (Interlocked.CompareExchange(ref _framesAvailable, 0, 0) != 0)
+            {
+                Interlocked.Decrement(ref _framesAvailable);
+
+                return true;
+            }
+
+            return false;
         }
     }
 }

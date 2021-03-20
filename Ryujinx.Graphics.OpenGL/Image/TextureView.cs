@@ -10,8 +10,6 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
         private readonly TextureStorage _parent;
 
-        private TextureView _emulatedViewParent;
-
         private TextureView _incompatibleFormatView;
 
         public int FirstLayer { get; private set; }
@@ -72,6 +70,15 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 (int)Info.SwizzleA.Convert()
             };
 
+            if (Info.Format.IsBgra8())
+            {
+                // Swap B <-> R for BGRA formats, as OpenGL has no support for them
+                // and we need to manually swap the components on read/write on the GPU.
+                int temp = swizzleRgba[0];
+                swizzleRgba[0] = swizzleRgba[2];
+                swizzleRgba[2] = temp;
+            }
+
             GL.TexParameter(target, TextureParameterName.TextureSwizzleRgba, swizzleRgba);
 
             int maxLevel = Info.Levels - 1;
@@ -87,36 +94,17 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
         public ITexture CreateView(TextureCreateInfo info, int firstLayer, int firstLevel)
         {
-            if (Info.IsCompressed == info.IsCompressed)
-            {
-                firstLayer += FirstLayer;
-                firstLevel += FirstLevel;
+            firstLayer += FirstLayer;
+            firstLevel += FirstLevel;
 
-                return _parent.CreateView(info, firstLayer, firstLevel);
-            }
-            else
-            {
-                // TODO: Most graphics APIs doesn't support creating a texture view from a compressed format
-                // with a non-compressed format (or vice-versa), however NVN seems to support it.
-                // So we emulate that here with a texture copy (see the first CopyTo overload).
-                // However right now it only does a single copy right after the view is created,
-                // so it doesn't work for all cases.
-                TextureView emulatedView = (TextureView)_renderer.CreateTexture(info, ScaleFactor);
-
-                emulatedView._emulatedViewParent = this;
-
-                emulatedView.FirstLayer = firstLayer;
-                emulatedView.FirstLevel = firstLevel;
-
-                return emulatedView;
-            }
+            return _parent.CreateView(info, firstLayer, firstLevel);
         }
 
         public int GetIncompatibleFormatViewHandle()
         {
-            // AMD and Intel has a bug where the view format is always ignored,
-            // it uses the parent format instead.
-            // As workaround we create a new texture with the correct
+            // AMD and Intel have a bug where the view format is always ignored;
+            // they use the parent format instead.
+            // As a workaround we create a new texture with the correct
             // format, and then do a copy after the draw.
             if (_parent.Info.Format != Format)
             {
@@ -125,7 +113,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                     _incompatibleFormatView = (TextureView)_renderer.CreateTexture(Info, ScaleFactor);
                 }
 
-                TextureCopyUnscaled.Copy(_parent.Info, _incompatibleFormatView.Info, _parent.Handle, _incompatibleFormatView.Handle, FirstLayer, 0, FirstLevel, 0, ScaleFactor);
+                _renderer.TextureCopy.CopyUnscaled(_parent, _incompatibleFormatView, FirstLayer, 0, FirstLevel, 0);
 
                 return _incompatibleFormatView.Handle;
             }
@@ -137,7 +125,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
         {
             if (_incompatibleFormatView != null)
             {
-                TextureCopyUnscaled.Copy(_incompatibleFormatView.Info, _parent.Info, _incompatibleFormatView.Handle, _parent.Handle, 0, FirstLayer, 0, FirstLevel, ScaleFactor);
+                _renderer.TextureCopy.CopyUnscaled(_incompatibleFormatView, _parent, 0, FirstLayer, 0, FirstLevel);
             }
         }
 
@@ -145,21 +133,14 @@ namespace Ryujinx.Graphics.OpenGL.Image
         {
             TextureView destinationView = (TextureView)destination;
 
-            TextureCopyUnscaled.Copy(Info, destinationView.Info, Handle, destinationView.Handle, 0, firstLayer, 0, firstLevel, ScaleFactor);
+            _renderer.TextureCopy.CopyUnscaled(this, destinationView, 0, firstLayer, 0, firstLevel);
+        }
 
-            if (destinationView._emulatedViewParent != null)
-            {
-                TextureCopyUnscaled.Copy(
-                    Info,
-                    destinationView._emulatedViewParent.Info,
-                    Handle,
-                    destinationView._emulatedViewParent.Handle,
-                    0,
-                    destinationView.FirstLayer,
-                    0,
-                    destinationView.FirstLevel,
-                    ScaleFactor);
-            }
+        public void CopyTo(ITexture destination, int srcLayer, int dstLayer, int srcLevel, int dstLevel)
+        {
+             TextureView destinationView = (TextureView)destination;
+
+            _renderer.TextureCopy.CopyUnscaled(this, destinationView, srcLayer, dstLayer, srcLevel, dstLevel, 1, 1);
         }
 
         public void CopyTo(ITexture destination, Extents2D srcRegion, Extents2D dstRegion, bool linearFilter)
@@ -189,13 +170,70 @@ namespace Ryujinx.Graphics.OpenGL.Image
             return data;
         }
 
-        private void WriteTo(IntPtr ptr)
+        public void WriteToPbo(int offset, bool forceBgra)
+        {
+            WriteTo(IntPtr.Zero + offset, forceBgra);
+        }
+
+        public int WriteToPbo2D(int offset, int layer, int level)
+        {
+            return WriteTo2D(IntPtr.Zero + offset, layer, level);
+        }
+
+        private int WriteTo2D(IntPtr data, int layer, int level)
         {
             TextureTarget target = Target.Convert();
 
             Bind(target, 0);
 
             FormatInfo format = FormatTable.GetFormatInfo(Info.Format);
+
+            PixelFormat pixelFormat = format.PixelFormat;
+            PixelType pixelType = format.PixelType;
+
+            if (target == TextureTarget.TextureCubeMap || target == TextureTarget.TextureCubeMapArray)
+            {
+                target = TextureTarget.TextureCubeMapPositiveX + (layer % 6);
+            }
+
+            int mipSize = Info.GetMipSize2D(level);
+
+            // The GL function returns all layers. Must return the offset of the layer we're interested in.
+            int resultOffset = target switch
+            {
+                TextureTarget.TextureCubeMapArray => (layer / 6) * mipSize,
+                TextureTarget.Texture1DArray => layer * mipSize,
+                TextureTarget.Texture2DArray => layer * mipSize,
+                _ => 0
+            };
+
+            if (format.IsCompressed)
+            {
+                GL.GetCompressedTexImage(target, level, data);
+            }
+            else
+            {
+                GL.GetTexImage(target, level, pixelFormat, pixelType, data);
+            }
+
+            return resultOffset;
+        }
+
+        private void WriteTo(IntPtr data, bool forceBgra = false)
+        {
+            TextureTarget target = Target.Convert();
+
+            Bind(target, 0);
+
+            FormatInfo format = FormatTable.GetFormatInfo(Info.Format);
+
+            PixelFormat pixelFormat = format.PixelFormat;
+            PixelType   pixelType   = format.PixelType;
+
+            if (forceBgra)
+            {
+                pixelFormat = PixelFormat.Bgra;
+            }
 
             int faces = 1;
 
@@ -214,20 +252,15 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
                     if (format.IsCompressed)
                     {
-                        GL.GetCompressedTexImage(target + face, level, ptr + faceOffset);
+                        GL.GetCompressedTexImage(target + face, level, data + faceOffset);
                     }
                     else
                     {
-                        GL.GetTexImage(
-                            target + face,
-                            level,
-                            format.PixelFormat,
-                            format.PixelType,
-                            ptr + faceOffset);
+                        GL.GetTexImage(target + face, level, pixelFormat, pixelType, data + faceOffset);
                     }
                 }
 
-                ptr += Info.GetMipSize(level);
+                data += Info.GetMipSize(level);
             }
         }
 
@@ -237,12 +270,197 @@ namespace Ryujinx.Graphics.OpenGL.Image
             {
                 fixed (byte* ptr = data)
                 {
-                    SetData((IntPtr)ptr, data.Length);
+                    ReadFrom((IntPtr)ptr, data.Length);
                 }
             }
         }
 
-        private void SetData(IntPtr data, int size)
+        public void SetData(ReadOnlySpan<byte> data, int layer, int level)
+        {
+            unsafe
+            {
+                fixed (byte* ptr = data)
+                {
+                    int width = Math.Max(Info.Width >> level, 1);
+                    int height = Math.Max(Info.Height >> level, 1);
+
+                    ReadFrom2D((IntPtr)ptr, layer, level, width, height);
+                }
+            }
+        }
+
+        public void ReadFromPbo(int offset, int size)
+        {
+            ReadFrom(IntPtr.Zero + offset, size);
+        }
+
+        public void ReadFromPbo2D(int offset, int layer, int level, int width, int height)
+        {
+            ReadFrom2D(IntPtr.Zero + offset, layer, level, width, height);
+        }
+
+        private void ReadFrom2D(IntPtr data, int layer, int level, int width, int height)
+        {
+            TextureTarget target = Target.Convert();
+
+            int mipSize = Info.GetMipSize2D(level);
+
+            Bind(target, 0);
+
+            FormatInfo format = FormatTable.GetFormatInfo(Info.Format);
+
+            switch (Target)
+            {
+                case Target.Texture1D:
+                    if (format.IsCompressed)
+                    {
+                        GL.CompressedTexSubImage1D(
+                            target,
+                            level,
+                            0,
+                            width,
+                            format.PixelFormat,
+                            mipSize,
+                            data);
+                    }
+                    else
+                    {
+                        GL.TexSubImage1D(
+                            target,
+                            level,
+                            0,
+                            width,
+                            format.PixelFormat,
+                            format.PixelType,
+                            data);
+                    }
+                    break;
+
+                case Target.Texture1DArray:
+                    if (format.IsCompressed)
+                    {
+                        GL.CompressedTexSubImage2D(
+                            target,
+                            level,
+                            0,
+                            layer,
+                            width,
+                            1,
+                            format.PixelFormat,
+                            mipSize,
+                            data);
+                    }
+                    else
+                    {
+                        GL.TexSubImage2D(
+                            target,
+                            level,
+                            0,
+                            layer,
+                            width,
+                            1,
+                            format.PixelFormat,
+                            format.PixelType,
+                            data);
+                    }
+                    break;
+
+                case Target.Texture2D:
+                    if (format.IsCompressed)
+                    {
+                        GL.CompressedTexSubImage2D(
+                            target,
+                            level,
+                            0,
+                            0,
+                            width,
+                            height,
+                            format.PixelFormat,
+                            mipSize,
+                            data);
+                    }
+                    else
+                    {
+                        GL.TexSubImage2D(
+                            target,
+                            level,
+                            0,
+                            0,
+                            width,
+                            height,
+                            format.PixelFormat,
+                            format.PixelType,
+                            data);
+                    }
+                    break;
+
+                case Target.Texture2DArray:
+                case Target.Texture3D:
+                case Target.CubemapArray:
+                    if (format.IsCompressed)
+                    {
+                        GL.CompressedTexSubImage3D(
+                            target,
+                            level,
+                            0,
+                            0,
+                            layer,
+                            width,
+                            height,
+                            1,
+                            format.PixelFormat,
+                            mipSize,
+                            data);
+                    }
+                    else
+                    {
+                        GL.TexSubImage3D(
+                            target,
+                            level,
+                            0,
+                            0,
+                            layer,
+                            width,
+                            height,
+                            1,
+                            format.PixelFormat,
+                            format.PixelType,
+                            data);
+                    }
+                    break;
+
+                case Target.Cubemap:
+                    if (format.IsCompressed)
+                    {
+                        GL.CompressedTexSubImage2D(
+                            TextureTarget.TextureCubeMapPositiveX + layer,
+                            level,
+                            0,
+                            0,
+                            width,
+                            height,
+                            format.PixelFormat,
+                            mipSize,
+                            data);
+                    }
+                    else
+                    {
+                        GL.TexSubImage2D(
+                            TextureTarget.TextureCubeMapPositiveX + layer,
+                            level,
+                            0,
+                            0,
+                            width,
+                            height,
+                            format.PixelFormat,
+                            format.PixelType,
+                            data);
+                    }
+                    break;
+            }
+        }
+
+        private void ReadFrom(IntPtr data, int size)
         {
             TextureTarget target = Target.Convert();
 
@@ -412,7 +630,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
             throw new NotSupportedException();
         }
 
-        public void Dispose()
+        private void DisposeHandles()
         {
             if (_incompatibleFormatView != null)
             {
@@ -425,10 +643,38 @@ namespace Ryujinx.Graphics.OpenGL.Image
             {
                 GL.DeleteTexture(Handle);
 
-                _parent.DecrementViewsCount();
-
                 Handle = 0;
             }
+        }
+
+        /// <summary>
+        /// Release the view without necessarily disposing the parent if we are the default view.
+        /// This allows it to be added to the resource pool and reused later.
+        /// </summary>
+        public void Release()
+        {
+            bool hadHandle = Handle != 0;
+
+            if (_parent.DefaultView != this)
+            {
+                DisposeHandles();
+            }
+
+            if (hadHandle)
+            {
+                _parent.DecrementViewsCount();
+            }
+        }
+
+        public void Dispose()
+        {
+            if (_parent.DefaultView == this)
+            {
+                // Remove the default view (us), so that the texture cannot be released to the cache.
+                _parent.DeleteDefault();
+            }
+
+            Release();
         }
     }
 }

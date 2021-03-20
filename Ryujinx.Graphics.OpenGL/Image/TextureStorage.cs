@@ -5,7 +5,7 @@ using System;
 
 namespace Ryujinx.Graphics.OpenGL.Image
 {
-    class TextureStorage
+    class TextureStorage : ITextureInfo 
     {
         public int Handle { get; private set; }
         public float ScaleFactor { get; private set; }
@@ -15,6 +15,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
         private readonly Renderer _renderer;
 
         private int _viewsCount;
+
+        internal ITexture DefaultView { get; private set; }
 
         public TextureStorage(Renderer renderer, TextureCreateInfo info, float scaleFactor)
         {
@@ -34,9 +36,6 @@ namespace Ryujinx.Graphics.OpenGL.Image
             GL.ActiveTexture(TextureUnit.Texture0);
 
             GL.BindTexture(target, Handle);
-
-            int width = (int)Math.Ceiling(Info.Width * ScaleFactor);
-            int height = (int)Math.Ceiling(Info.Height * ScaleFactor);
 
             FormatInfo format = FormatTable.GetFormatInfo(Info.Format);
 
@@ -58,7 +57,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                         TextureTarget1d.Texture1D,
                         Info.Levels,
                         internalFormat,
-                        width);
+                        Info.Width);
                     break;
 
                 case Target.Texture1DArray:
@@ -66,8 +65,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                         TextureTarget2d.Texture1DArray,
                         Info.Levels,
                         internalFormat,
-                        width,
-                        height);
+                        Info.Width,
+                        Info.Height);
                     break;
 
                 case Target.Texture2D:
@@ -75,8 +74,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                         TextureTarget2d.Texture2D,
                         Info.Levels,
                         internalFormat,
-                        width,
-                        height);
+                        Info.Width,
+                        Info.Height);
                     break;
 
                 case Target.Texture2DArray:
@@ -84,8 +83,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                         TextureTarget3d.Texture2DArray,
                         Info.Levels,
                         internalFormat,
-                        width,
-                        height,
+                        Info.Width,
+                        Info.Height,
                         Info.Depth);
                     break;
 
@@ -94,8 +93,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                         TextureTargetMultisample2d.Texture2DMultisample,
                         Info.Samples,
                         internalFormat,
-                        width,
-                        height,
+                        Info.Width,
+                        Info.Height,
                         true);
                     break;
 
@@ -104,8 +103,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                         TextureTargetMultisample3d.Texture2DMultisampleArray,
                         Info.Samples,
                         internalFormat,
-                        width,
-                        height,
+                        Info.Width,
+                        Info.Height,
                         Info.Depth,
                         true);
                     break;
@@ -115,8 +114,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                         TextureTarget3d.Texture3D,
                         Info.Levels,
                         internalFormat,
-                        width,
-                        height,
+                        Info.Width,
+                        Info.Height,
                         Info.Depth);
                     break;
 
@@ -125,8 +124,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                         TextureTarget2d.TextureCubeMap,
                         Info.Levels,
                         internalFormat,
-                        width,
-                        height);
+                        Info.Width,
+                        Info.Height);
                     break;
 
                 case Target.CubemapArray:
@@ -134,20 +133,22 @@ namespace Ryujinx.Graphics.OpenGL.Image
                         (TextureTarget3d)All.TextureCubeMapArray,
                         Info.Levels,
                         internalFormat,
-                        width,
-                        height,
+                        Info.Width,
+                        Info.Height,
                         Info.Depth);
                     break;
 
                 default:
-                    Logger.PrintDebug(LogClass.Gpu, $"Invalid or unsupported texture target: {target}.");
+                    Logger.Debug?.Print(LogClass.Gpu, $"Invalid or unsupported texture target: {target}.");
                     break;
             }
         }
 
         public ITexture CreateDefaultView()
         {
-            return CreateView(Info, 0, 0);
+            DefaultView = CreateView(Info, 0, 0);
+
+            return DefaultView;
         }
 
         public ITexture CreateView(TextureCreateInfo info, int firstLayer, int firstLevel)
@@ -167,12 +168,37 @@ namespace Ryujinx.Graphics.OpenGL.Image
             // If we don't have any views, then the storage is now useless, delete it.
             if (--_viewsCount == 0)
             {
-                Dispose();
+                if (DefaultView == null)
+                {
+                    Dispose();
+                }
+                else
+                {
+                    // If the default view still exists, we can put it into the resource pool.
+                    Release();
+                }
             }
+        }
+
+        /// <summary>
+        /// Release the TextureStorage to the resource pool without disposing its handle.
+        /// </summary>
+        public void Release()
+        {
+            _viewsCount = 1; // When we are used again, we will have the default view.
+
+            _renderer.ResourcePool.AddTexture((TextureView)DefaultView);
+        }
+
+        public void DeleteDefault()
+        {
+            DefaultView = null;
         }
 
         public void Dispose()
         {
+            DefaultView = null;
+
             if (Handle != 0)
             {
                 GL.DeleteTexture(Handle);

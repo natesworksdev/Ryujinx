@@ -57,17 +57,25 @@ namespace ARMeilleure.Diagnostics
         {
             DumpBlockName(block);
 
-            if (block.Next != null)
+            if (block.Frequency == BasicBlockFrequency.Cold)
             {
-                _builder.Append(" (next ");
-                DumpBlockName(block.Next);
-                _builder.Append(')');
+                _builder.Append(" cold");
             }
 
-            if (block.Branch != null)
+            if (block.SuccessorCount > 0)
             {
-                _builder.Append(" (branch ");
-                DumpBlockName(block.Branch);
+                _builder.Append(" (");
+
+                for (int i = 0; i < block.SuccessorCount; i++)
+                {
+                    DumpBlockName(block.GetSuccessor(i));
+
+                    if (i < block.SuccessorCount - 1)
+                    {
+                        _builder.Append(", ");
+                    }
+                }
+
                 _builder.Append(')');
             }
 
@@ -198,6 +206,8 @@ namespace ARMeilleure.Diagnostics
                     break;
 
                 case Operation operation:
+                    bool comparison = false;
+
                     _builder.Append(operation.Instruction);
 
                     if (operation.Instruction == Instruction.Extended)
@@ -206,16 +216,31 @@ namespace ARMeilleure.Diagnostics
 
                         _builder.Append('.').Append(intrinOp.Intrinsic);
                     }
+                    else if (operation.Instruction == Instruction.BranchIf ||
+                             operation.Instruction == Instruction.Compare)
+                    {
+                        comparison = true;
+                    }
 
                     _builder.Append(' ');
 
                     for (int index = 0; index < operation.SourcesCount; index++)
                     {
-                        DumpOperand(operation.GetSource(index));
+                        Operand source = operation.GetSource(index);
 
                         if (index < operation.SourcesCount - 1)
                         {
+                            DumpOperand(source);
+
                             _builder.Append(", ");
+                        }
+                        else if (comparison)
+                        {
+                            _builder.Append((Comparison)source.AsInt32());
+                        }
+                        else
+                        {
+                            DumpOperand(source);
                         }
                     }
                     break;

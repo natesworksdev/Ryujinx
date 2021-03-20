@@ -5,6 +5,8 @@ using System;
 using System.Diagnostics;
 using System.Reflection;
 
+using static ARMeilleure.Instructions.InstEmitHelper;
+using static ARMeilleure.Instructions.InstEmitSimdHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper32;
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
@@ -22,6 +24,13 @@ namespace ARMeilleure.Instructions
         public static void Vqrshrun(ArmEmitterContext context)
         {
             EmitRoundShrImmSaturatingNarrowOp(context, ShrImmSaturatingNarrowFlags.VectorSxZx);
+        }
+
+        public static void Vqshrn(ArmEmitterContext context)
+        {
+            OpCode32SimdShImm op = (OpCode32SimdShImm)context.CurrOp;
+
+            EmitShrImmSaturatingNarrowOp(context, op.U ? ShrImmSaturatingNarrowFlags.VectorZxZx : ShrImmSaturatingNarrowFlags.VectorSxSx);
         }
 
         public static void Vrshr(ArmEmitterContext context)
@@ -105,6 +114,38 @@ namespace ARMeilleure.Instructions
             }
         }
 
+        public static void Vshll(ArmEmitterContext context)
+        {
+            OpCode32SimdShImmLong op = (OpCode32SimdShImmLong)context.CurrOp;
+
+            Operand res = context.VectorZero();
+
+            int elems = op.GetBytesCount() >> op.Size;
+
+            for (int index = 0; index < elems; index++)
+            {
+                Operand me = EmitVectorExtract32(context, op.Qm, op.Im + index, op.Size, !op.U);
+
+                if (op.Size == 2)
+                {
+                    if (op.U)
+                    {
+                        me = context.ZeroExtend32(OperandType.I64, me);
+                    }
+                    else
+                    {
+                        me = context.SignExtend32(OperandType.I64, me);
+                    }
+                }
+
+                me = context.ShiftLeft(me, Const(op.Shift));
+
+                res = EmitVectorInsert(context, res, me, index, op.Size + 1);
+            }
+
+            context.Copy(GetVecA32(op.Qd), res);
+        }
+
         public static void Vshr(ArmEmitterContext context)
         {
             OpCode32SimdShImm op = (OpCode32SimdShImm)context.CurrOp;
@@ -127,6 +168,27 @@ namespace ARMeilleure.Instructions
             int shift = GetImmShr(op);
 
             EmitVectorUnaryNarrowOp32(context, (op1) => context.ShiftRightUI(op1, Const(shift)));
+        }
+
+        public static void Vsra(ArmEmitterContext context)
+        {
+            OpCode32SimdShImm op = (OpCode32SimdShImm)context.CurrOp;
+            int shift = GetImmShr(op);
+            int maxShift = (8 << op.Size) - 1;
+
+            if (op.U)
+            {
+                EmitVectorImmBinaryQdQmOpZx32(context, (op1, op2) =>
+                {
+                    Operand shiftRes = shift > maxShift ? Const(op2.Type, 0) : context.ShiftRightUI(op2, Const(shift));
+
+                    return context.Add(op1, shiftRes);
+                });
+            }
+            else
+            {
+                EmitVectorImmBinaryQdQmOpSx32(context, (op1, op2) => context.Add(op1, context.ShiftRightSI(op2, Const(Math.Min(maxShift, shift)))));
+            }
         }
 
         private static Operand EmitShlRegOp(ArmEmitterContext context, Operand op, Operand shiftLsB, int size, bool unsigned)
@@ -268,7 +330,7 @@ namespace ARMeilleure.Instructions
 
             context.BranchIfFalse(lblNoSat, context.BitwiseOr(gt, lt));
 
-            // TODO: Set QC (to 1) on FPSCR here.
+            context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.SetFpsrQc)));
 
             context.MarkLabel(lblNoSat);
 

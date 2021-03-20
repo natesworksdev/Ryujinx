@@ -29,10 +29,16 @@ namespace ARMeilleure.Translation
             {
                 if (_initialized) return;
 
+                Translator.PreparePool();
+
                 _directCallStubPtr       = Marshal.GetFunctionPointerForDelegate<GuestFunction>(GenerateDirectCallStub(false));
                 _directTailCallStubPtr   = Marshal.GetFunctionPointerForDelegate<GuestFunction>(GenerateDirectCallStub(true));
                 _indirectCallStubPtr     = Marshal.GetFunctionPointerForDelegate<GuestFunction>(GenerateIndirectCallStub(false));
                 _indirectTailCallStubPtr = Marshal.GetFunctionPointerForDelegate<GuestFunction>(GenerateIndirectCallStub(true));
+
+                Translator.ResetPool();
+
+                Translator.DisposePools();
 
                 _initialized = true;
             }
@@ -77,7 +83,6 @@ namespace ARMeilleure.Translation
 
             Operand address = context.Load(OperandType.I64, context.Add(nativeContextPtr, Const((long)NativeContext.GetCallAddressOffset())));
 
-            address = context.BitwiseOr(address, Const(address.Type, 1)); // Set call flag.
             Operand functionAddr = context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetFunctionAddress)), address);
             EmitCall(context, functionAddr, tailCall);
 

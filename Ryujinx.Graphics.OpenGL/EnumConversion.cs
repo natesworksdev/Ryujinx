@@ -28,7 +28,7 @@ namespace Ryujinx.Graphics.OpenGL
                     return TextureWrapMode.ClampToEdge;
             }
 
-            Logger.PrintDebug(LogClass.Gpu, $"Invalid {nameof(AddressMode)} enum value: {mode}.");
+            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(AddressMode)} enum value: {mode}.");
 
             return TextureWrapMode.Clamp;
         }
@@ -92,7 +92,7 @@ namespace Ryujinx.Graphics.OpenGL
                     return All.OneMinusConstantAlpha;
             }
 
-            Logger.PrintDebug(LogClass.Gpu, $"Invalid {nameof(BlendFactor)} enum value: {factor}.");
+            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(BlendFactor)} enum value: {factor}.");
 
             return All.Zero;
         }
@@ -104,21 +104,21 @@ namespace Ryujinx.Graphics.OpenGL
                 case BlendOp.Add:
                 case BlendOp.AddGl:
                     return BlendEquationMode.FuncAdd;
-                case BlendOp.Subtract:
-                case BlendOp.SubtractGl:
-                    return BlendEquationMode.FuncSubtract;
-                case BlendOp.ReverseSubtract:
-                case BlendOp.ReverseSubtractGl:
-                    return BlendEquationMode.FuncReverseSubtract;
                 case BlendOp.Minimum:
                 case BlendOp.MinimumGl:
                     return BlendEquationMode.Min;
                 case BlendOp.Maximum:
                 case BlendOp.MaximumGl:
                     return BlendEquationMode.Max;
+                case BlendOp.Subtract:
+                case BlendOp.SubtractGl:
+                    return BlendEquationMode.FuncSubtract;
+                case BlendOp.ReverseSubtract:
+                case BlendOp.ReverseSubtractGl:
+                    return BlendEquationMode.FuncReverseSubtract;
             }
 
-            Logger.PrintDebug(LogClass.Gpu, $"Invalid {nameof(BlendOp)} enum value: {op}.");
+            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(BlendOp)} enum value: {op}.");
 
             return BlendEquationMode.FuncAdd;
         }
@@ -133,7 +133,7 @@ namespace Ryujinx.Graphics.OpenGL
                     return TextureCompareMode.CompareRToTexture;
             }
 
-            Logger.PrintDebug(LogClass.Gpu, $"Invalid {nameof(CompareMode)} enum value: {mode}.");
+            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(CompareMode)} enum value: {mode}.");
 
             return TextureCompareMode.None;
         }
@@ -168,7 +168,7 @@ namespace Ryujinx.Graphics.OpenGL
                     return All.Always;
             }
 
-            Logger.PrintDebug(LogClass.Gpu, $"Invalid {nameof(CompareOp)} enum value: {op}.");
+            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(CompareOp)} enum value: {op}.");
 
             return All.Never;
         }
@@ -183,7 +183,7 @@ namespace Ryujinx.Graphics.OpenGL
                     return ClipDepthMode.ZeroToOne;
             }
 
-            Logger.PrintDebug(LogClass.Gpu, $"Invalid {nameof(DepthMode)} enum value: {mode}.");
+            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(DepthMode)} enum value: {mode}.");
 
             return ClipDepthMode.NegativeOneToOne;
         }
@@ -198,7 +198,7 @@ namespace Ryujinx.Graphics.OpenGL
                     return All.StencilIndex;
             }
 
-            Logger.PrintDebug(LogClass.Gpu, $"Invalid {nameof(DepthStencilMode)} enum value: {mode}.");
+            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(DepthStencilMode)} enum value: {mode}.");
 
             return All.Depth;
         }
@@ -215,7 +215,7 @@ namespace Ryujinx.Graphics.OpenGL
                     return CullFaceMode.FrontAndBack;
             }
 
-            Logger.PrintDebug(LogClass.Gpu, $"Invalid {nameof(Face)} enum value: {face}.");
+            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(Face)} enum value: {face}.");
 
             return CullFaceMode.Back;
         }
@@ -230,7 +230,7 @@ namespace Ryujinx.Graphics.OpenGL
                     return FrontFaceDirection.Ccw;
             }
 
-            Logger.PrintDebug(LogClass.Gpu, $"Invalid {nameof(FrontFace)} enum value: {frontFace}.");
+            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(FrontFace)} enum value: {frontFace}.");
 
             return FrontFaceDirection.Cw;
         }
@@ -247,7 +247,7 @@ namespace Ryujinx.Graphics.OpenGL
                     return DrawElementsType.UnsignedInt;
             }
 
-            Logger.PrintDebug(LogClass.Gpu, $"Invalid {nameof(IndexType)} enum value: {type}.");
+            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(IndexType)} enum value: {type}.");
 
             return DrawElementsType.UnsignedByte;
         }
@@ -262,7 +262,7 @@ namespace Ryujinx.Graphics.OpenGL
                     return TextureMagFilter.Linear;
             }
 
-            Logger.PrintDebug(LogClass.Gpu, $"Invalid {nameof(MagFilter)} enum value: {filter}.");
+            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(MagFilter)} enum value: {filter}.");
 
             return TextureMagFilter.Nearest;
         }
@@ -285,7 +285,7 @@ namespace Ryujinx.Graphics.OpenGL
                     return TextureMinFilter.LinearMipmapLinear;
             }
 
-            Logger.PrintDebug(LogClass.Gpu, $"Invalid {nameof(MinFilter)} enum value: {filter}.");
+            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(MinFilter)} enum value: {filter}.");
 
             return TextureMinFilter.Nearest;
         }
@@ -326,9 +326,34 @@ namespace Ryujinx.Graphics.OpenGL
                     return PrimitiveType.Patches;
             }
 
-            Logger.PrintDebug(LogClass.Gpu, $"Invalid {nameof(PrimitiveTopology)} enum value: {topology}.");
+            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(PrimitiveTopology)} enum value: {topology}.");
 
             return PrimitiveType.Points;
+        }
+
+        public static TransformFeedbackPrimitiveType ConvertToTfType(this PrimitiveTopology topology)
+        {
+            switch (topology)
+            {
+                case PrimitiveTopology.Points:
+                    return TransformFeedbackPrimitiveType.Points;
+                case PrimitiveTopology.Lines:
+                case PrimitiveTopology.LineLoop:
+                case PrimitiveTopology.LineStrip:
+                case PrimitiveTopology.LinesAdjacency:
+                case PrimitiveTopology.LineStripAdjacency:
+                    return TransformFeedbackPrimitiveType.Lines;
+                case PrimitiveTopology.Triangles:
+                case PrimitiveTopology.TriangleStrip:
+                case PrimitiveTopology.TriangleFan:
+                case PrimitiveTopology.TrianglesAdjacency:
+                case PrimitiveTopology.TriangleStripAdjacency:
+                    return TransformFeedbackPrimitiveType.Triangles;
+            }
+
+            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(PrimitiveTopology)} enum value: {topology}.");
+
+            return TransformFeedbackPrimitiveType.Points;
         }
 
         public static OpenTK.Graphics.OpenGL.StencilOp Convert(this GAL.StencilOp op)
@@ -353,7 +378,7 @@ namespace Ryujinx.Graphics.OpenGL
                     return OpenTK.Graphics.OpenGL.StencilOp.DecrWrap;
             }
 
-            Logger.PrintDebug(LogClass.Gpu, $"Invalid {nameof(GAL.StencilOp)} enum value: {op}.");
+            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(GAL.StencilOp)} enum value: {op}.");
 
             return OpenTK.Graphics.OpenGL.StencilOp.Keep;
         }
@@ -376,7 +401,7 @@ namespace Ryujinx.Graphics.OpenGL
                     return All.Alpha;
             }
 
-            Logger.PrintDebug(LogClass.Gpu, $"Invalid {nameof(SwizzleComponent)} enum value: {swizzleComponent}.");
+            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(SwizzleComponent)} enum value: {swizzleComponent}.");
 
             return All.Zero;
         }
@@ -412,7 +437,7 @@ namespace Ryujinx.Graphics.OpenGL
                     return TextureTarget.TextureBuffer;
             }
 
-            Logger.PrintDebug(LogClass.Gpu, $"Invalid {nameof(Target)} enum value: {target}.");
+            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(Target)} enum value: {target}.");
 
             return TextureTarget.Texture2D;
         }
@@ -439,7 +464,7 @@ namespace Ryujinx.Graphics.OpenGL
                     return NvViewportSwizzle.ViewportSwizzleNegativeWNv;
             }
 
-            Logger.PrintDebug(LogClass.Gpu, $"Invalid {nameof(ViewportSwizzle)} enum value: {swizzle}.");
+            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(ViewportSwizzle)} enum value: {swizzle}.");
 
             return NvViewportSwizzle.ViewportSwizzlePositiveXNv;
         }
@@ -482,7 +507,7 @@ namespace Ryujinx.Graphics.OpenGL
                     return All.Set;
             }
 
-            Logger.PrintDebug(LogClass.Gpu, $"Invalid {nameof(LogicalOp)} enum value: {op}.");
+            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(LogicalOp)} enum value: {op}.");
 
             return All.Never;
         }

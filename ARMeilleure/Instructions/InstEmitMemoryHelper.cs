@@ -124,23 +124,10 @@ namespace ARMeilleure.Instructions
 
         private static void EmitReadInt(ArmEmitterContext context, Operand address, int rt, int size)
         {
-            Operand isUnalignedAddr = EmitAddressCheck(context, address, size);
-
-            Operand lblFastPath = Label();
             Operand lblSlowPath = Label();
             Operand lblEnd      = Label();
 
-            context.BranchIfFalse(lblFastPath, isUnalignedAddr);
-
-            context.MarkLabel(lblSlowPath);
-
-            EmitReadIntFallback(context, address, rt, size);
-
-            context.Branch(lblEnd);
-
-            context.MarkLabel(lblFastPath);
-
-            Operand physAddr = EmitPtPointerLoad(context, address, lblSlowPath);
+            Operand physAddr = EmitPtPointerLoad(context, address, lblSlowPath, write: false, size);
 
             Operand value = null;
 
@@ -154,7 +141,32 @@ namespace ARMeilleure.Instructions
 
             SetInt(context, rt, value);
 
+            context.Branch(lblEnd);
+
+            context.MarkLabel(lblSlowPath, BasicBlockFrequency.Cold);
+
+            EmitReadIntFallback(context, address, rt, size);
+
             context.MarkLabel(lblEnd);
+        }
+
+        public static Operand EmitReadIntAligned(ArmEmitterContext context, Operand address, int size)
+        {
+            if ((uint)size > 4)
+            {
+                throw new ArgumentOutOfRangeException(nameof(size));
+            }
+
+            Operand physAddr = EmitPtPointerLoad(context, address, null, write: false, size);
+
+            return size switch
+            {
+                0 => context.Load8(physAddr),
+                1 => context.Load16(physAddr),
+                2 => context.Load(OperandType.I32, physAddr),
+                3 => context.Load(OperandType.I64, physAddr),
+                _ => context.Load(OperandType.V128, physAddr)
+            };
         }
 
         private static void EmitReadVector(
@@ -165,23 +177,10 @@ namespace ARMeilleure.Instructions
             int elem,
             int size)
         {
-            Operand isUnalignedAddr = EmitAddressCheck(context, address, size);
-
-            Operand lblFastPath = Label();
             Operand lblSlowPath = Label();
             Operand lblEnd      = Label();
 
-            context.BranchIfFalse(lblFastPath, isUnalignedAddr);
-
-            context.MarkLabel(lblSlowPath);
-
-            EmitReadVectorFallback(context, address, vector, rt, elem, size);
-
-            context.Branch(lblEnd);
-
-            context.MarkLabel(lblFastPath);
-
-            Operand physAddr = EmitPtPointerLoad(context, address, lblSlowPath);
+            Operand physAddr = EmitPtPointerLoad(context, address, lblSlowPath, write: false, size);
 
             Operand value = null;
 
@@ -196,6 +195,12 @@ namespace ARMeilleure.Instructions
 
             context.Copy(GetVec(rt), value);
 
+            context.Branch(lblEnd);
+
+            context.MarkLabel(lblSlowPath, BasicBlockFrequency.Cold);
+
+            EmitReadVectorFallback(context, address, vector, rt, elem, size);
+
             context.MarkLabel(lblEnd);
         }
 
@@ -206,23 +211,10 @@ namespace ARMeilleure.Instructions
 
         private static void EmitWriteInt(ArmEmitterContext context, Operand address, int rt, int size)
         {
-            Operand isUnalignedAddr = EmitAddressCheck(context, address, size);
-
-            Operand lblFastPath = Label();
             Operand lblSlowPath = Label();
             Operand lblEnd      = Label();
 
-            context.BranchIfFalse(lblFastPath, isUnalignedAddr);
-
-            context.MarkLabel(lblSlowPath);
-
-            EmitWriteIntFallback(context, address, rt, size);
-
-            context.Branch(lblEnd);
-
-            context.MarkLabel(lblFastPath);
-
-            Operand physAddr = EmitPtPointerLoad(context, address, lblSlowPath);
+            Operand physAddr = EmitPtPointerLoad(context, address, lblSlowPath, write: true, size);
 
             Operand value = GetInt(context, rt);
 
@@ -239,7 +231,41 @@ namespace ARMeilleure.Instructions
                 case 3: context.Store  (physAddr, value); break;
             }
 
+            context.Branch(lblEnd);
+
+            context.MarkLabel(lblSlowPath, BasicBlockFrequency.Cold);
+
+            EmitWriteIntFallback(context, address, rt, size);
+
             context.MarkLabel(lblEnd);
+        }
+
+        public static void EmitWriteIntAligned(ArmEmitterContext context, Operand address, Operand value, int size)
+        {
+            if ((uint)size > 4)
+            {
+                throw new ArgumentOutOfRangeException(nameof(size));
+            }
+
+            Operand physAddr = EmitPtPointerLoad(context, address, null, write: true, size);
+
+            if (size < 3 && value.Type == OperandType.I64)
+            {
+                value = context.ConvertI64ToI32(value);
+            }
+
+            if (size == 0)
+            {
+                context.Store8(physAddr, value);
+            }
+            else if (size == 1)
+            {
+                context.Store16(physAddr, value);
+            }
+            else
+            {
+                context.Store(physAddr, value);
+            }
         }
 
         private static void EmitWriteVector(
@@ -249,84 +275,100 @@ namespace ARMeilleure.Instructions
             int elem,
             int size)
         {
-            Operand isUnalignedAddr = EmitAddressCheck(context, address, size);
-
-            Operand lblFastPath = Label();
             Operand lblSlowPath = Label();
             Operand lblEnd      = Label();
 
-            context.BranchIfFalse(lblFastPath, isUnalignedAddr);
-
-            context.MarkLabel(lblSlowPath);
-
-            EmitWriteVectorFallback(context, address, rt, elem, size);
-
-            context.Branch(lblEnd);
-
-            context.MarkLabel(lblFastPath);
-
-            Operand physAddr = EmitPtPointerLoad(context, address, lblSlowPath);
+            Operand physAddr = EmitPtPointerLoad(context, address, lblSlowPath, write: true, size);
 
             Operand value = GetVec(rt);
 
             switch (size)
             {
-                case 0: context.Store8 (physAddr, context.VectorExtract8(value, elem));                  break;
-                case 1: context.Store16(physAddr, context.VectorExtract16(value, elem));                 break;
-                case 2: context.Store  (physAddr, context.VectorExtract(OperandType.FP32, value, elem)); break;
-                case 3: context.Store  (physAddr, context.VectorExtract(OperandType.FP64, value, elem)); break;
-                case 4: context.Store  (physAddr, value);                                                break;
+                case 0: context.Store8 (physAddr, context.VectorExtract8(value, elem));                 break;
+                case 1: context.Store16(physAddr, context.VectorExtract16(value, elem));                break;
+                case 2: context.Store  (physAddr, context.VectorExtract(OperandType.I32, value, elem)); break;
+                case 3: context.Store  (physAddr, context.VectorExtract(OperandType.I64, value, elem)); break;
+                case 4: context.Store  (physAddr, value);                                               break;
             }
+
+            context.Branch(lblEnd);
+
+            context.MarkLabel(lblSlowPath, BasicBlockFrequency.Cold);
+
+            EmitWriteVectorFallback(context, address, rt, elem, size);
 
             context.MarkLabel(lblEnd);
         }
 
-        private static Operand EmitAddressCheck(ArmEmitterContext context, Operand address, int size)
+        public static Operand EmitPtPointerLoad(ArmEmitterContext context, Operand address, Operand lblSlowPath, bool write, int size)
         {
-            ulong addressCheckMask = ~((1UL << context.Memory.AddressSpaceBits) - 1);
-
-            addressCheckMask |= (1u << size) - 1;
-
-            return context.BitwiseAnd(address, Const(address.Type, (long)addressCheckMask));
-        }
-
-        private static Operand EmitPtPointerLoad(ArmEmitterContext context, Operand address, Operand lblSlowPath)
-        {
-            int ptLevelBits = context.Memory.AddressSpaceBits - 12; // 12 = Number of page bits.
+            int ptLevelBits = context.Memory.AddressSpaceBits - PageBits;
             int ptLevelSize = 1 << ptLevelBits;
             int ptLevelMask = ptLevelSize - 1;
+
+            Operand addrRotated = size != 0 ? context.RotateRight(address, Const(size)) : address;
+            Operand addrShifted = context.ShiftRightUI(addrRotated, Const(PageBits - size));
 
             Operand pte = Ptc.State == PtcState.Disabled
                 ? Const(context.Memory.PageTablePointer.ToInt64())
                 : Const(context.Memory.PageTablePointer.ToInt64(), true, Ptc.PageTablePointerIndex);
 
-            int bit = PageBits;
+            Operand pteOffset = context.BitwiseAnd(addrShifted, Const(addrShifted.Type, ptLevelMask));
 
-            do
+            if (pteOffset.Type == OperandType.I32)
             {
-                Operand addrPart = context.ShiftRightUI(address, Const(bit));
-
-                bit += ptLevelBits;
-
-                if (bit < context.Memory.AddressSpaceBits)
-                {
-                    addrPart = context.BitwiseAnd(addrPart, Const(addrPart.Type, ptLevelMask));
-                }
-
-                Operand pteOffset = context.ShiftLeft(addrPart, Const(3));
-
-                if (pteOffset.Type == OperandType.I32)
-                {
-                    pteOffset = context.ZeroExtend32(OperandType.I64, pteOffset);
-                }
-
-                Operand pteAddress = context.Add(pte, pteOffset);
-
-                pte = context.Load(OperandType.I64, pteAddress);
+                pteOffset = context.ZeroExtend32(OperandType.I64, pteOffset);
             }
-            while (bit < context.Memory.AddressSpaceBits);
 
-            context.BranchIfTrue(lblSlowPath, context.ICompareLess(pte, Const(0L)));
+            pte = context.Load(OperandType.I64, context.Add(pte, context.ShiftLeft(pteOffset, Const(3))));
+
+            if (addrShifted.Type == OperandType.I32)
+            {
+                addrShifted = context.ZeroExtend32(OperandType.I64, addrShifted);
+            }
+
+            // If the VA is out of range, or not aligned to the access size, force PTE to 0 by masking it.
+            pte = context.BitwiseAnd(pte, context.ShiftRightSI(context.Add(addrShifted, Const(-(long)ptLevelSize)), Const(63)));
+
+            if (lblSlowPath != null)
+            {
+                if (write)
+                {
+                    context.BranchIf(lblSlowPath, pte, Const(0L), Comparison.LessOrEqual);
+                    pte = context.BitwiseAnd(pte, Const(0xffffffffffffUL)); // Ignore any software protection bits. (they are still used by C# memory access)
+                }
+                else
+                {
+                    pte = context.ShiftLeft(pte, Const(1));
+                    context.BranchIf(lblSlowPath, pte, Const(0L), Comparison.LessOrEqual);
+                    pte = context.ShiftRightUI(pte, Const(1));
+                }
+            }
+            else
+            {
+                // When no label is provided to jump to a slow path if the address is invalid,
+                // we do the validation ourselves, and throw if needed.
+
+                Operand lblNotWatched = Label();
+
+                // Is the page currently being tracked for read/write? If so we need to call SignalMemoryTracking.
+                context.BranchIf(lblNotWatched, pte, Const(0L), Comparison.GreaterOrEqual, BasicBlockFrequency.Cold);
+
+                // Signal memory tracking. Size here doesn't matter as address is assumed to be size aligned here.
+                context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.SignalMemoryTracking)), address, Const(1UL), Const(write ? 1 : 0));
+                context.MarkLabel(lblNotWatched);
+
+                pte = context.BitwiseAnd(pte, Const(0xffffffffffffUL)); // Ignore any software protection bits. (they are still used by C# memory access)
+
+                Operand lblNonNull = Label();
+
+                // Skip exception if the PTE address is non-null (not zero).
+                context.BranchIfTrue(lblNonNull, pte, BasicBlockFrequency.Cold);
+
+                // The call is not expected to return (it should throw).
+                context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.ThrowInvalidMemoryAccess)), address);
+                context.MarkLabel(lblNonNull);
+            }
 
             Operand pageOffset = context.BitwiseAnd(address, Const(address.Type, PageMask));
 

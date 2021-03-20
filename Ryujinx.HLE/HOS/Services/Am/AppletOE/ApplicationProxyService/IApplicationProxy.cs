@@ -5,13 +5,18 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService
 {
     class IApplicationProxy : IpcService
     {
-        public IApplicationProxy() { }
+        private readonly long _pid;
+
+        public IApplicationProxy(long pid)
+        {
+            _pid = pid;
+        }
 
         [Command(0)]
         // GetCommonStateGetter() -> object<nn::am::service::ICommonStateGetter>
         public ResultCode GetCommonStateGetter(ServiceCtx context)
         {
-            MakeObject(context, new ICommonStateGetter());
+            MakeObject(context, new ICommonStateGetter(context));
 
             return ResultCode.Success;
         }
@@ -20,7 +25,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService
         // GetSelfController() -> object<nn::am::service::ISelfController>
         public ResultCode GetSelfController(ServiceCtx context)
         {
-            MakeObject(context, new ISelfController(context.Device.System));
+            MakeObject(context, new ISelfController(context.Device.System, _pid));
 
             return ResultCode.Success;
         }
@@ -29,7 +34,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService
         // GetWindowController() -> object<nn::am::service::IWindowController>
         public ResultCode GetWindowController(ServiceCtx context)
         {
-            MakeObject(context, new IWindowController());
+            MakeObject(context, new IWindowController(_pid));
 
             return ResultCode.Success;
         }

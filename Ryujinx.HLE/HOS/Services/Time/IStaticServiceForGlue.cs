@@ -15,10 +15,12 @@ namespace Ryujinx.HLE.HOS.Services.Time
         private IStaticServiceForPsc _inner;
         private TimePermissions      _permissions;
 
-        public IStaticServiceForGlue(ServiceCtx context, TimePermissions permissions)
+        public IStaticServiceForGlue(ServiceCtx context, TimePermissions permissions) : base(context.Device.System.TimeServer)
         {
             _permissions = permissions;
             _inner       = new IStaticServiceForPsc(context, permissions);
+            _inner.TrySetServer(Server);
+            _inner.SetParent(this);
         }
 
         [Command(0)]
@@ -76,7 +78,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // SetStandardSteadyClockInternalOffset(nn::TimeSpanType internal_offset)
         public ResultCode SetStandardSteadyClockInternalOffset(ServiceCtx context)
         {
-            if ((_permissions & TimePermissions.BypassUninitialized) == 0)
+            if ((_permissions & TimePermissions.SteadyClockWritableMask) == 0)
             {
                 return ResultCode.PermissionDenied;
             }

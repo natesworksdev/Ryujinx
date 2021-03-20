@@ -15,28 +15,24 @@ namespace Ryujinx.Graphics.Gpu.Image
         public Target Target { get; }
 
         /// <summary>
-        /// Shader texture handle.
-        /// This is an index into the texture constant buffer.
+        /// For images, indicates the format specified on the shader.
         /// </summary>
-        public int Handle { get; }
+        public Format Format { get; }
 
         /// <summary>
-        /// Indicates if the texture is a bindless texture.
+        /// Shader texture host binding point.
         /// </summary>
-        /// <remarks>
-        /// For those textures, Handle is ignored.
-        /// </remarks>
-        public bool IsBindless { get; }
+        public int Binding { get; }
 
         /// <summary>
-        /// Constant buffer slot with the bindless texture handle, for bindless texture.
+        /// Constant buffer slot with the texture handle.
         /// </summary>
         public int CbufSlot { get; }
 
         /// <summary>
-        /// Constant buffer offset of the bindless texture handle, for bindless texture.
+        /// Index of the texture handle on the constant buffer at slot <see cref="CbufSlot"/>.
         /// </summary>
-        public int CbufOffset { get; }
+        public int Handle { get; }
 
         /// <summary>
         /// Flags from the texture descriptor that indicate how the texture is used.
@@ -47,39 +43,31 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Constructs the texture binding information structure.
         /// </summary>
         /// <param name="target">The shader sampler target type</param>
+        /// <param name="format">Format of the image as declared on the shader</param>
+        /// <param name="binding">The shader texture binding point</param>
+        /// <param name="cbufSlot">Constant buffer slot where the texture handle is located</param>
         /// <param name="handle">The shader texture handle (read index into the texture constant buffer)</param>
         /// <param name="flags">The texture's usage flags, indicating how it is used in the shader</param>
-        public TextureBindingInfo(Target target, int handle, TextureUsageFlags flags)
+        public TextureBindingInfo(Target target, Format format, int binding, int cbufSlot, int handle, TextureUsageFlags flags)
         {
-            Target = target;
-            Handle = handle;
-
-            IsBindless = false;
-
-            CbufSlot   = 0;
-            CbufOffset = 0;
-
-            Flags = flags;
+            Target   = target;
+            Format   = format;
+            Binding  = binding;
+            CbufSlot = cbufSlot;
+            Handle   = handle;
+            Flags    = flags;
         }
 
         /// <summary>
-        /// Constructs the bindless texture binding information structure.
+        /// Constructs the texture binding information structure.
         /// </summary>
         /// <param name="target">The shader sampler target type</param>
-        /// <param name="cbufSlot">Constant buffer slot where the bindless texture handle is located</param>
-        /// <param name="cbufOffset">Constant buffer offset of the bindless texture handle</param>
+        /// <param name="binding">The shader texture binding point</param>
+        /// <param name="cbufSlot">Constant buffer slot where the texture handle is located</param>
+        /// <param name="handle">The shader texture handle (read index into the texture constant buffer)</param>
         /// <param name="flags">The texture's usage flags, indicating how it is used in the shader</param>
-        public TextureBindingInfo(Target target, int cbufSlot, int cbufOffset, TextureUsageFlags flags)
+        public TextureBindingInfo(Target target, int binding, int cbufSlot, int handle, TextureUsageFlags flags) : this(target, (Format)0, binding, cbufSlot, handle, flags)
         {
-            Target = target;
-            Handle = 0;
-
-            IsBindless = true;
-
-            CbufSlot   = cbufSlot;
-            CbufOffset = cbufOffset;
-
-            Flags = flags;
         }
     }
 }

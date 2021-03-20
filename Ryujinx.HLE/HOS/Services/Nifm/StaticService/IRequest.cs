@@ -11,6 +11,9 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
         private KEvent _event0;
         private KEvent _event1;
 
+        private int _event0Handle;
+        private int _event1Handle;
+
         private uint _version;
 
         public IRequest(Horizon system, uint version)
@@ -27,7 +30,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
         {
             context.ResponseData.Write(1);
 
-            Logger.PrintStub(LogClass.ServiceNifm);
+            Logger.Stub?.PrintStub(LogClass.ServiceNifm);
 
             return ResultCode.Success;
         }
@@ -36,7 +39,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
         // GetResult()
         public ResultCode GetResult(ServiceCtx context)
         {
-            Logger.PrintStub(LogClass.ServiceNifm);
+            Logger.Stub?.PrintStub(LogClass.ServiceNifm);
 
             return GetResultImpl();
         }
@@ -50,17 +53,23 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
         // GetSystemEventReadableHandles() -> (handle<copy>, handle<copy>)
         public ResultCode GetSystemEventReadableHandles(ServiceCtx context)
         {
-            if (context.Process.HandleTable.GenerateHandle(_event0.ReadableEvent, out int handle0) != KernelResult.Success)
+            if (_event0Handle == 0)
             {
-                throw new InvalidOperationException("Out of handles!");
+                if (context.Process.HandleTable.GenerateHandle(_event0.ReadableEvent, out _event0Handle) != KernelResult.Success)
+                {
+                    throw new InvalidOperationException("Out of handles!");
+                }
             }
 
-            if (context.Process.HandleTable.GenerateHandle(_event1.ReadableEvent, out int handle1) != KernelResult.Success)
+            if (_event1Handle == 0)
             {
-                throw new InvalidOperationException("Out of handles!");
+                if (context.Process.HandleTable.GenerateHandle(_event1.ReadableEvent, out _event1Handle) != KernelResult.Success)
+                {
+                    throw new InvalidOperationException("Out of handles!");
+                }
             }
 
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle0, handle1);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_event0Handle, _event1Handle);
 
             return ResultCode.Success;
         }
@@ -69,7 +78,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
         // Cancel()
         public ResultCode Cancel(ServiceCtx context)
         {
-            Logger.PrintStub(LogClass.ServiceNifm);
+            Logger.Stub?.PrintStub(LogClass.ServiceNifm);
 
             return ResultCode.Success;
         }
@@ -78,7 +87,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
         // Submit()
         public ResultCode Submit(ServiceCtx context)
         {
-            Logger.PrintStub(LogClass.ServiceNifm);
+            Logger.Stub?.PrintStub(LogClass.ServiceNifm);
 
             return ResultCode.Success;
         }
@@ -87,7 +96,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
         // SetConnectionConfirmationOption(i8)
         public ResultCode SetConnectionConfirmationOption(ServiceCtx context)
         {
-            Logger.PrintStub(LogClass.ServiceNifm);
+            Logger.Stub?.PrintStub(LogClass.ServiceNifm);
 
             return ResultCode.Success;
         }
@@ -98,7 +107,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
         {
             uint themeColor = context.RequestData.ReadUInt32();
 
-            Logger.PrintStub(LogClass.ServiceNifm);
+            Logger.Stub?.PrintStub(LogClass.ServiceNifm);
 
             ResultCode result = GetResultImpl();
 
@@ -107,7 +116,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
                 return ResultCode.Unknown180;
             }
 
-            // Returns appletId, libraryAppletMode, outSize and a buffer. 
+            // Returns appletId, libraryAppletMode, outSize and a buffer.
             // Returned applet ids- (0x19, 0xf, 0xe)
             // libraryAppletMode seems to be 0 for all applets supported.
 

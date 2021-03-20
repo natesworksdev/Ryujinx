@@ -5,7 +5,7 @@ using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl.Types;
 using Ryujinx.HLE.HOS.Services.Nv.Types;
 using Ryujinx.HLE.HOS.Services.Settings;
-
+using Ryujinx.Memory;
 using System;
 using System.Text;
 using System.Threading;
@@ -20,7 +20,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
         private Switch        _device;
         private NvHostEvent[] _events;
 
-        public NvHostCtrlDeviceFile(ServiceCtx context) : base(context)
+        public NvHostCtrlDeviceFile(ServiceCtx context, IVirtualMemoryManager memory, long owner) : base(context, owner)
         {
             if (NxSettings.Settings.TryGetValue("nv!rmos_set_production_mode", out object productionModeSetting))
             {
@@ -126,7 +126,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 
             if (targetEvent != null)
             {
-                if (Owner.HandleTable.GenerateHandle(targetEvent.ReadableEvent, out eventHandle) != KernelResult.Success)
+                if (Context.Process.HandleTable.GenerateHandle(targetEvent.ReadableEvent, out eventHandle) != KernelResult.Success)
                 {
                     throw new InvalidOperationException("Out of handles!");
                 }
@@ -185,7 +185,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
                 {
                     if (stringValue.Length > 0x100)
                     {
-                        Logger.PrintError(LogClass.ServiceNv, $"{arguments.Domain}!{arguments.Parameter} String value size is too big!");
+                        Logger.Error?.Print(LogClass.ServiceNv, $"{arguments.Domain}!{arguments.Parameter} String value size is too big!");
                     }
                     else
                     {
@@ -205,7 +205,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
                     throw new NotImplementedException(nvSetting.GetType().Name);
                 }
 
-                Logger.PrintDebug(LogClass.ServiceNv, $"Got setting {arguments.Domain}!{arguments.Parameter}");
+                Logger.Debug?.Print(LogClass.ServiceNv, $"Got setting {arguments.Domain}!{arguments.Parameter}");
 
                 arguments.Configuration = settingBuffer;
 
@@ -451,11 +451,11 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
                         }
                         else
                         {
-                            Logger.PrintError(LogClass.ServiceNv, $"Invalid Event at index {eventIndex} (isWaitEventAsyncCmd: {isWaitEventAsyncCmd}, isWaitEventCmd: {isWaitEventCmd})");
+                            Logger.Error?.Print(LogClass.ServiceNv, $"Invalid Event at index {eventIndex} (isWaitEventAsyncCmd: {isWaitEventAsyncCmd}, isWaitEventCmd: {isWaitEventCmd})");
 
                             if (hostEvent != null)
                             {
-                                Logger.PrintError(LogClass.ServiceNv, hostEvent.DumpState(_device.Gpu));
+                                Logger.Error?.Print(LogClass.ServiceNv, hostEvent.DumpState(_device.Gpu));
                             }
 
                             result = NvInternalResult.InvalidInput;
@@ -464,7 +464,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
                 }
                 else
                 {
-                    Logger.PrintError(LogClass.ServiceNv, $"Invalid Event at index {eventIndex} (isWaitEventAsyncCmd: {isWaitEventAsyncCmd}, isWaitEventCmd: {isWaitEventCmd})");
+                    Logger.Error?.Print(LogClass.ServiceNv, $"Invalid Event at index {eventIndex} (isWaitEventAsyncCmd: {isWaitEventAsyncCmd}, isWaitEventCmd: {isWaitEventCmd})");
 
                     result = NvInternalResult.InvalidInput;
                 }
@@ -522,7 +522,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 
         public override void Close()
         {
-            Logger.PrintWarning(LogClass.ServiceNv, "Closing channel");
+            Logger.Warning?.Print(LogClass.ServiceNv, "Closing channel");
 
             lock (_events)
             {

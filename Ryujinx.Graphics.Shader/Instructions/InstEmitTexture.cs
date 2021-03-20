@@ -11,8 +11,12 @@ namespace Ryujinx.Graphics.Shader.Instructions
 {
     static partial class InstEmit
     {
+        private const bool Sample1DAs2D = true;
+
         public static void Suld(EmitterContext context)
         {
+            context.Config.SetUsedFeature(FeatureFlags.IntegerSampling);
+
             OpCodeImage op = (OpCodeImage)context.CurrOp;
 
             SamplerType type = ConvertSamplerType(op.Dimensions);
@@ -38,11 +42,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return context.Copy(Register(raIndex++, RegisterType.Gpr));
             }
 
-            bool isArray = op.Dimensions == ImageDimensions.Image1DArray ||
-                           op.Dimensions == ImageDimensions.Image2DArray;
-
-            Operand arrayIndex = isArray ? Ra() : null;
-
             List<Operand> sourcesList = new List<Operand>();
 
             if (op.IsBindless)
@@ -57,16 +56,24 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 sourcesList.Add(Ra());
             }
 
-            if (isArray)
+            if (Sample1DAs2D && (type & SamplerType.Mask) == SamplerType.Texture1D)
             {
-                sourcesList.Add(arrayIndex);
+                sourcesList.Add(Const(0));
+
+                type &= ~SamplerType.Mask;
+                type |= SamplerType.Texture2D;
+            }
+
+            if (type.HasFlag(SamplerType.Array))
+            {
+                sourcesList.Add(Ra());
 
                 type |= SamplerType.Array;
             }
 
             Operand[] sources = sourcesList.ToArray();
 
-            int handle = !op.IsBindless ? op.Immediate : 0;
+            int handle = !op.IsBindless ? op.HandleOffset : 0;
 
             TextureFlags flags = op.IsBindless ? TextureFlags.Bindless : TextureFlags.None;
 
@@ -186,11 +193,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return context.Copy(Register(rbIndex++, RegisterType.Gpr));
             }
 
-            bool isArray = op.Dimensions == ImageDimensions.Image1DArray ||
-                           op.Dimensions == ImageDimensions.Image2DArray;
-
-            Operand arrayIndex = isArray ? Ra() : null;
-
             List<Operand> sourcesList = new List<Operand>();
 
             if (op.IsBindless)
@@ -205,9 +207,17 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 sourcesList.Add(Ra());
             }
 
-            if (isArray)
+            if (Sample1DAs2D && (type & SamplerType.Mask) == SamplerType.Texture1D)
             {
-                sourcesList.Add(arrayIndex);
+                sourcesList.Add(Const(0));
+
+                type &= ~SamplerType.Mask;
+                type |= SamplerType.Texture2D;
+            }
+
+            if (type.HasFlag(SamplerType.Array))
+            {
+                sourcesList.Add(Ra());
 
                 type |= SamplerType.Array;
             }
@@ -228,7 +238,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
                 if (!op.IsBindless)
                 {
-                    format = context.Config.GetTextureFormat(op.Immediate);
+                    format = context.Config.GetTextureFormat(op.HandleOffset);
                 }
             }
             else
@@ -252,7 +262,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             Operand[] sources = sourcesList.ToArray();
 
-            int handle = !op.IsBindless ? op.Immediate : 0;
+            int handle = !op.IsBindless ? op.HandleOffset : 0;
 
             TextureFlags flags = op.IsBindless ? TextureFlags.Bindless : TextureFlags.None;
 
@@ -283,14 +293,14 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
         public static void Tld(EmitterContext context)
         {
-            context.UsedFeatures |= FeatureFlags.IntegerSampling;
+            context.Config.SetUsedFeature(FeatureFlags.IntegerSampling);
 
             EmitTextureSample(context, TextureFlags.IntCoords);
         }
 
         public static void TldB(EmitterContext context)
         {
-            context.UsedFeatures |= FeatureFlags.IntegerSampling;
+            context.Config.SetUsedFeature(FeatureFlags.IntegerSampling);
 
             EmitTextureSample(context, TextureFlags.IntCoords | TextureFlags.Bindless);
         }
@@ -355,6 +365,9 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
                 flags = ConvertTextureFlags(texsOp.Target);
 
+                // We don't need to handle 1D -> Buffer conversions here as
+                // only texture sample with integer coordinates can ever use buffer targets.
+
                 if ((type & SamplerType.Array) != 0)
                 {
                     Operand arrayIndex = Ra();
@@ -380,6 +393,15 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     {
                         case TextureTarget.Texture1DLodZero:
                             sourcesList.Add(Ra());
+
+                            if (Sample1DAs2D)
+                            {
+                                sourcesList.Add(ConstF(0));
+
+                                type &= ~SamplerType.Mask;
+                                type |= SamplerType.Texture2D;
+                            }
+
                             sourcesList.Add(ConstF(0));
                             break;
 
@@ -423,7 +445,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
             }
             else if (op is OpCodeTlds tldsOp)
             {
-                type = ConvertSamplerType (tldsOp.Target);
+                type = ConvertSamplerType(tldsOp.Target);
 
                 if (type == SamplerType.None)
                 {
@@ -432,11 +454,11 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     return;
                 }
 
-                context.UsedFeatures |= FeatureFlags.IntegerSampling;
+                context.Config.SetUsedFeature(FeatureFlags.IntegerSampling);
 
                 flags = ConvertTextureFlags(tldsOp.Target) | TextureFlags.IntCoords;
 
-                if (tldsOp.Target == TexelLoadTarget.Texture1DLodZero && context.Config.GpuAccessor.QueryIsTextureBuffer(tldsOp.Immediate))
+                if (tldsOp.Target == TexelLoadTarget.Texture1DLodZero && context.Config.GpuAccessor.QueryIsTextureBuffer(tldsOp.HandleOffset))
                 {
                     type   = SamplerType.TextureBuffer;
                     flags &= ~TextureFlags.LodLevel;
@@ -449,12 +471,29 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
                         if (type != SamplerType.TextureBuffer)
                         {
-                            sourcesList.Add(Const(0));
+                            if (Sample1DAs2D)
+                            {
+                                sourcesList.Add(ConstF(0));
+
+                                type &= ~SamplerType.Mask;
+                                type |= SamplerType.Texture2D;
+                            }
+
+                            sourcesList.Add(ConstF(0));
                         }
                         break;
 
                     case TexelLoadTarget.Texture1DLodLevel:
                         sourcesList.Add(Ra());
+
+                        if (Sample1DAs2D)
+                        {
+                            sourcesList.Add(ConstF(0));
+
+                            type &= ~SamplerType.Mask;
+                            type |= SamplerType.Texture2D;
+                        }
+
                         sourcesList.Add(Rb());
                         break;
 
@@ -568,7 +607,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 }
             }
 
-            int handle = op.Immediate;
+            int handle = op.HandleOffset;
 
             for (int compMask = op.ComponentMask, compIndex = 0; compMask != 0; compMask >>= 1, compIndex++)
             {
@@ -649,6 +688,15 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 sourcesList.Add(Ra());
             }
 
+            bool is1DTo2D = Sample1DAs2D && type == SamplerType.Texture1D;
+
+            if (is1DTo2D)
+            {
+                sourcesList.Add(ConstF(0));
+
+                type = SamplerType.Texture2D;
+            }
+
             if (op.IsArray)
             {
                 sourcesList.Add(arrayIndex);
@@ -679,6 +727,14 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     sourcesList.Add(context.BitfieldExtractS32(packed, Const((index & 3) * 8), Const(6)));
                 }
 
+                if (is1DTo2D)
+                {
+                    for (int index = 0; index < offsetTexelsCount; index++)
+                    {
+                        sourcesList.Add(Const(0));
+                    }
+                }
+
                 flags |= op.Offset == TextureGatherOffset.Offsets
                     ? TextureFlags.Offsets
                     : TextureFlags.Offset;
@@ -700,7 +756,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return Register(rdIndex++, RegisterType.Gpr);
             }
 
-            int handle = op.Immediate;
+            int handle = op.HandleOffset;
 
             for (int compMask = op.ComponentMask, compIndex = 0; compMask != 0; compMask >>= 1, compIndex++)
             {
@@ -786,6 +842,13 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 sourcesList.Add(Ra());
             }
 
+            if (Sample1DAs2D && type == SamplerType.Texture1D)
+            {
+                sourcesList.Add(ConstF(0));
+
+                type = SamplerType.Texture2D;
+            }
+
             if (op.IsArray)
             {
                 sourcesList.Add(arrayIndex);
@@ -807,7 +870,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return Register(rdIndex++, RegisterType.Gpr);
             }
 
-            int handle = !isBindless ? op.Immediate : 0;
+            int handle = !isBindless ? op.HandleOffset : 0;
 
             for (int compMask = op.ComponentMask, compIndex = 0; compMask != 0; compMask >>= 1, compIndex++)
             {
@@ -898,6 +961,15 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 sourcesList.Add(Ra());
             }
 
+            bool is1DTo2D = Sample1DAs2D && type == SamplerType.Texture1D;
+
+            if (is1DTo2D)
+            {
+                sourcesList.Add(ConstF(0));
+
+                type = SamplerType.Texture2D;
+            }
+
             Operand packedParams = Ra();
 
             if (op.IsArray)
@@ -911,6 +983,11 @@ namespace Ryujinx.Graphics.Shader.Instructions
             for (int dIndex = 0; dIndex < 2 * coordsCount; dIndex++)
             {
                 sourcesList.Add(Rb());
+
+                if (is1DTo2D)
+                {
+                    sourcesList.Add(ConstF(0));
+                }
             }
 
             if (op.HasOffset)
@@ -918,6 +995,11 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 for (int index = 0; index < coordsCount; index++)
                 {
                     sourcesList.Add(context.BitfieldExtractS32(packedParams, Const(16 + index * 4), Const(4)));
+                }
+
+                if (is1DTo2D)
+                {
+                    sourcesList.Add(Const(0));
                 }
 
                 flags |= TextureFlags.Offset;
@@ -937,7 +1019,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return Register(rdIndex++, RegisterType.Gpr);
             }
 
-            int handle = !op.IsBindless ? op.Immediate : 0;
+            int handle = !op.IsBindless ? op.HandleOffset : 0;
 
             for (int compMask = op.ComponentMask, compIndex = 0; compMask != 0; compMask >>= 1, compIndex++)
             {
@@ -1022,7 +1104,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return Register(rdIndex++, RegisterType.Gpr);
             }
 
-            int handle = !bindless ? op.Immediate : 0;
+            int handle = !bindless ? op.HandleOffset : 0;
 
             for (int compMask = op.ComponentMask, compIndex = 0; compMask != 0; compMask >>= 1, compIndex++)
             {
@@ -1099,7 +1181,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
             {
                 // For bindless, we don't have any way to know the texture type,
                 // so we assume it's texture buffer when the sampler type is 1D, since that's more common.
-                bool isTypeBuffer = isBindless || context.Config.GpuAccessor.QueryIsTextureBuffer(op.Immediate);
+                bool isTypeBuffer = isBindless || context.Config.GpuAccessor.QueryIsTextureBuffer(op.HandleOffset);
 
                 if (isTypeBuffer)
                 {
@@ -1112,6 +1194,13 @@ namespace Ryujinx.Graphics.Shader.Instructions
             for (int index = 0; index < coordsCount; index++)
             {
                 sourcesList.Add(Ra());
+            }
+
+            if (Sample1DAs2D && type == SamplerType.Texture1D)
+            {
+                sourcesList.Add(ConstF(0));
+
+                type = SamplerType.Texture2D;
             }
 
             if (op.IsArray)
@@ -1180,7 +1269,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return Register(rdIndex++, RegisterType.Gpr);
             }
 
-            int handle = !isBindless ? op.Immediate : 0;
+            int handle = !isBindless ? op.HandleOffset : 0;
 
             for (int compMask = op.ComponentMask, compIndex = 0; compMask != 0; compMask >>= 1, compIndex++)
             {

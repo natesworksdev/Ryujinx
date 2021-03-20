@@ -1,4 +1,6 @@
 using Ryujinx.Graphics.GAL;
+using System.Runtime.CompilerServices;
+using System.Runtime.Intrinsics;
 
 namespace Ryujinx.Graphics.Gpu.Image
 {
@@ -185,6 +187,15 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Unpacks the seamless cubemap flag.
+        /// </summary>
+        /// <returns>The seamless cubemap flag</returns>
+        public bool UnpackSeamlessCubemap()
+        {
+            return (Word1 & (1 << 9)) != 0;
+        }
+
+        /// <summary>
         /// Unpacks the reduction filter, used with texture minification linear filtering.
         /// This describes how the final value will be computed from neighbouring pixels.
         /// </summary>
@@ -234,6 +245,16 @@ namespace Ryujinx.Graphics.Gpu.Image
         public float UnpackMaxLod()
         {
             return ((Word2 >> 12) & 0xfff) * Frac8ToF32;
+        }
+
+        /// <summary>
+        /// Check if two descriptors are equal.
+        /// </summary>
+        /// <param name="other">The descriptor to compare against</param>
+        /// <returns>True if they are equal, false otherwise</returns>
+        public bool Equals(ref SamplerDescriptor other)
+        {
+            return Unsafe.As<SamplerDescriptor, Vector256<byte>>(ref this).Equals(Unsafe.As<SamplerDescriptor, Vector256<byte>>(ref other));
         }
     }
 }

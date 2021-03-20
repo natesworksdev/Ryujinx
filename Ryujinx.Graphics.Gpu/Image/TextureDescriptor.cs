@@ -1,9 +1,13 @@
+using Ryujinx.Graphics.Gpu.Shader.Cache.Definition;
+using System.Runtime.CompilerServices;
+using System.Runtime.Intrinsics;
+
 namespace Ryujinx.Graphics.Gpu.Image
 {
     /// <summary>
     /// Maxwell texture descriptor, as stored on the GPU texture pool memory region.
     /// </summary>
-    struct TextureDescriptor
+    struct TextureDescriptor : ITextureDescriptor
     {
 #pragma warning disable CS0649
         public uint Word0;
@@ -150,6 +154,15 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Unpack the width of a buffer texture.
+        /// </summary>
+        /// <returns>The texture width</returns>
+        public int UnpackBufferTextureWidth()
+        {
+            return (int)((Word4 & 0xffff) | (Word3 << 16)) + 1;
+        }
+
+        /// <summary>
         /// Unpacks the texture sRGB format flag.
         /// </summary>
         /// <returns>True if the texture is sRGB, false otherwise</returns>
@@ -226,6 +239,35 @@ namespace Ryujinx.Graphics.Gpu.Image
         public TextureMsaaMode UnpackTextureMsaaMode()
         {
             return (TextureMsaaMode)((Word7 >> 8) & 0xf);
+        }
+
+        /// <summary>
+        /// Create the equivalent of this TextureDescriptor for the shader cache.
+        /// </summary>
+        /// <returns>The equivalent of this TextureDescriptor for the shader cache.</returns>
+        public GuestTextureDescriptor ToCache()
+        {
+            GuestTextureDescriptor result = new GuestTextureDescriptor
+            {
+                Handle = uint.MaxValue,
+                Format = UnpackFormat(),
+                Target = UnpackTextureTarget(),
+                IsSrgb = UnpackSrgb(),
+                IsTextureCoordNormalized = UnpackTextureCoordNormalized(),
+
+            };
+
+            return result;
+        }
+
+        /// <summary>
+        /// Check if two descriptors are equal.
+        /// </summary>
+        /// <param name="other">The descriptor to compare against</param>
+        /// <returns>True if they are equal, false otherwise</returns>
+        public bool Equals(ref TextureDescriptor other)
+        {
+            return Unsafe.As<TextureDescriptor, Vector256<byte>>(ref this).Equals(Unsafe.As<TextureDescriptor, Vector256<byte>>(ref other));
         }
     }
 }

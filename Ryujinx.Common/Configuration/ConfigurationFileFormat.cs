@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.Utilities;
@@ -13,7 +14,7 @@ namespace Ryujinx.Configuration
         /// <summary>
         /// The current version of the file format
         /// </summary>
-        public const int CurrentVersion = 11;
+        public const int CurrentVersion = 22;
 
         public int Version { get; set; }
 
@@ -31,6 +32,11 @@ namespace Ryujinx.Configuration
         /// Max Anisotropy. Values range from 0 - 16. Set to -1 to let the game decide.
         /// </summary>
         public float MaxAnisotropy { get; set; }
+
+        /// <summary>
+        /// Aspect Ratio applied to the renderer window.
+        /// </summary>
+        public AspectRatio AspectRatio { get; set; }
 
         /// <summary>
         /// Dumps shaders in this local directory
@@ -78,6 +84,11 @@ namespace Ryujinx.Configuration
         public LogClass[] LoggingFilteredClasses { get; set; }
 
         /// <summary>
+        /// Change Graphics API debug log level
+        /// </summary>
+        public GraphicsDebugLevel LoggingGraphicsDebugLevel { get; set; }
+
+        /// <summary>
         /// Enables or disables logging to a file on disk
         /// </summary>
         public bool EnableFileLog { get; set; }
@@ -113,9 +124,29 @@ namespace Ryujinx.Configuration
         public bool EnableDiscordIntegration { get; set; }
 
         /// <summary>
+        /// Checks for updates when Ryujinx starts when enabled
+        /// </summary>
+        public bool CheckUpdatesOnStart { get; set; }
+
+        /// <summary>
+        /// Show "Confirm Exit" Dialog
+        /// </summary>
+        public bool ShowConfirmExit { get; set; }
+
+        /// <summary>
+        /// Hide Cursor on Idle
+        /// </summary>
+        public bool HideCursorOnIdle { get; set; }
+
+        /// <summary>
         /// Enables or disables Vertical Sync
         /// </summary>
         public bool EnableVsync { get; set; }
+
+        /// <summary>
+        /// Enables or disables Shader cache
+        /// </summary>
+        public bool EnableShaderCache { get; set; }
 
         /// <summary>
         /// Enables or disables multi-core scheduling of threads
@@ -173,6 +204,11 @@ namespace Ryujinx.Configuration
         public string CustomThemePath { get; set; }
 
         /// <summary>
+        /// Start games in fullscreen mode
+        /// </summary>
+        public bool StartFullscreen { get; set; }
+
+        /// <summary>
         /// Enable or disable keyboard support (Independent from controllers binding)
         /// </summary>
         public bool EnableKeyboard { get; set; }
@@ -196,9 +232,20 @@ namespace Ryujinx.Configuration
         /// Loads a configuration file from disk
         /// </summary>
         /// <param name="path">The path to the JSON configuration file</param>
-        public static ConfigurationFileFormat Load(string path)
+        public static bool TryLoad(string path, out ConfigurationFileFormat configurationFileFormat)
         {
-            return JsonHelper.DeserializeFromFile<ConfigurationFileFormat>(path);
+            try
+            {
+                configurationFileFormat = JsonHelper.DeserializeFromFile<ConfigurationFileFormat>(path);
+
+                return true;
+            }
+            catch
+            {
+                configurationFileFormat = null;
+
+                return false;
+            }
         }
 
         /// <summary>
@@ -207,7 +254,8 @@ namespace Ryujinx.Configuration
         /// <param name="path">The path to the JSON configuration file</param>
         public void SaveConfig(string path)
         {
-            File.WriteAllText(path, JsonHelper.Serialize(this, true));
+            using FileStream fileStream = File.Create(path, 4096, FileOptions.WriteThrough);
+            JsonHelper.Serialize(fileStream, this, true);
         }
     }
 }

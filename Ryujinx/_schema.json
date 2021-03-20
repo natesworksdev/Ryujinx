@@ -18,7 +18,6 @@
     "system_region",
     "docked_mode",
     "enable_vsync",
-    "enable_multicore_scheduling",
     "enable_ptc",
     "enable_fs_integrity_checks",
     "fs_global_access_log_mode",
@@ -460,6 +459,110 @@
               "default": "O"
             }
           }
+        },
+        "enable_motion": {
+          "$id": "#/definitions/keyboard_config/properties/enable_motion",
+          "type": "boolean",
+          "title": "Enable Motion Controls",
+          "description": "Enables Motion Controls",
+          "default": false,
+          "examples": [
+            true,
+            false
+          ]
+        },
+        "sensitivity": {
+          "$id": "#/definitions/keyboard_config/properties/sensitivity",
+          "type": "integer",
+          "title": "Sensitivity",
+          "description": "Gyro sensitivity",
+          "default": 100,
+          "minimum": 0,
+          "maximum": 1000,
+          "examples": [
+            90,
+            100,
+            150
+          ]
+        },
+        "gyro_deadzone": {
+          "$id": "#/definitions/keyboard_config/properties/gyro_deadzone",
+          "type": "number",
+          "title": "Gyro Deadzone",
+          "description": "Controller Left Analog Stick Deadzone",
+          "default": 1,
+          "minimum": 0.00,
+          "maximum": 100.00,
+          "examples": [
+            0.01
+          ]
+        },
+        "slot": {
+          "$id": "#/definitions/keyboard_config/properties/slot",
+          "type": "integer",
+          "title": "Slot",
+          "description": "DSU motion client slot for main controller",
+          "default": 0,
+          "minimum": 0,
+          "maximum": 4,
+          "examples": [
+            0,
+            1,
+            2,
+            3
+          ]
+        },
+        "alt_slot": {
+          "$id": "#/definitions/keyboard_config/properties/alt_slot",
+          "type": "integer",
+          "title": "Alternate Slot",
+          "description": "DSU motion client slot for secondary controller, eg Right Joycon in Paired mode",
+          "default": 0,
+          "minimum": 0,
+          "maximum": 4,
+          "examples": [
+            0,
+            1,
+            2,
+            3
+          ]
+        },
+        "mirror_input": {
+          "$id": "#/definitions/keyboard_config/properties/mirror_input",
+          "type": "boolean",
+          "title": "Mirror Motion Input",
+          "description": "Mirrors main motion input in Paired mode",
+          "default": true,
+          "examples": [
+            true,
+            false
+          ]
+        },
+        "dsu_server_port": {
+          "$id": "#/definitions/keyboard_config/properties/dsu_server_port",
+          "type": "integer",
+          "title": "DSU Server Port",
+          "description": "DSU motion server port",
+          "default": 26760,
+          "minimum": 0,
+          "maximum": 36654,
+          "examples": [
+            0,
+            1,
+            2,
+            3
+          ]
+        },
+        "dsu_server_host": {
+          "$id": "#/definitions/keyboard_config/properties/dsu_server_host",
+          "type": "string",
+          "title": "DSU Server Host Address",
+          "description": "DSU motion server host address",
+          "default": "127.0.0.1",
+          "examples": [
+            "127.0.0.1",
+            "example.host.com"
+          ]
         }
       }
     },
@@ -695,6 +798,110 @@
               "default": "Button9"
             }
           }
+        },
+        "enable_motion": {
+          "$id": "#/definitions/controller_config/properties/enable_motion",
+          "type": "boolean",
+          "title": "Enable Motion Controls",
+          "description": "Enables Motion Controls",
+          "default": false,
+          "examples": [
+            true,
+            false
+          ]
+        },
+        "sensitivity": {
+          "$id": "#/definitions/controller_config/properties/sensitivity",
+          "type": "integer",
+          "title": "Sensitivity",
+          "description": "Gyro sensitivity",
+          "default": 100,
+          "minimum": 0,
+          "maximum": 1000,
+          "examples": [
+            90,
+            100,
+            150
+          ]
+        },
+        "gyro_deadzone": {
+          "$id": "#/definitions/controller_config/properties/gyro_deadzone",
+          "type": "number",
+          "title": "Gyro Deadzone",
+          "description": "Controller Left Analog Stick Deadzone",
+          "default": 1,
+          "minimum": 0.00,
+          "maximum": 100.00,
+          "examples": [
+            0.01
+          ]
+        },
+        "slot": {
+          "$id": "#/definitions/controller_config/properties/slot",
+          "type": "integer",
+          "title": "Slot",
+          "description": "DSU motion client slot for main controller",
+          "default": 0,
+          "minimum": 0,
+          "maximum": 4,
+          "examples": [
+            0,
+            1,
+            2,
+            3
+          ]
+        },
+        "alt_slot": {
+          "$id": "#/definitions/controller_config/properties/alt_slot",
+          "type": "integer",
+          "title": "Alternate Slot",
+          "description": "DSU motion client slot for secondary controller, eg Right Joycon in Paired mode",
+          "default": 0,
+          "minimum": 0,
+          "maximum": 4,
+          "examples": [
+            0,
+            1,
+            2,
+            3
+          ]
+        },
+        "mirror_input": {
+          "$id": "#/definitions/controller_config/properties/mirror_input",
+          "type": "boolean",
+          "title": "Mirror Motion Input",
+          "description": "Mirrors main motion input in Paired mode",
+          "default": true,
+          "examples": [
+            true,
+            false
+          ]
+        },
+        "dsu_server_port": {
+          "$id": "#/definitions/controller_config/properties/dsu_server_port",
+          "type": "integer",
+          "title": "DSU Server Port",
+          "description": "DSU motion server port",
+          "default": 26760,
+          "minimum": 0,
+          "maximum": 36654,
+          "examples": [
+            0,
+            1,
+            2,
+            3
+          ]
+        },
+        "dsu_server_host": {
+          "$id": "#/definitions/controller_config/properties/dsu_server_host",
+          "type": "string",
+          "title": "DSU Server Host Address",
+          "description": "DSU motion server host address",
+          "default": "127.0.0.1",
+          "examples": [
+            "127.0.0.1",
+            "example.host.com"
+          ]
         }
       }
     }
@@ -719,7 +926,7 @@
       "type": "number",
       "title": "Custom Resolution Scale",
       "description": "A custom floating point scale applied to applicable render targets. Only active when Resolution Scale is -1.",
-      "default": 1.0,
+      "default": 1.0
     },
     "max_anisotropy": {
       "$id": "#/properties/max_anisotropy",
@@ -732,6 +939,21 @@
         4,
         8,
         16
+      ]
+    },
+    "aspect_ratio": {
+      "$id": "#/properties/aspect_ratio",
+      "type": "string",
+      "title": "Aspect Ratio applied to the renderer window.",
+      "description": "Aspect Ratio applied to the renderer window.",
+      "default": "Fixed16x9",
+      "examples": [
+        "Fixed4x3",
+        "Fixed16x9",
+        "Fixed16x10",
+        "Fixed21x9",
+        "Fixed32x9",
+        "Stretched"
       ]
     },
     "graphics_shaders_dump_path": {
@@ -949,7 +1171,7 @@
       "type": "boolean",
       "title": "Enable Docked Mode",
       "description": "Enables or disables Docked Mode",
-      "default": false,
+      "default": true,
       "examples": [
         true,
         false
@@ -966,6 +1188,39 @@
         false
       ]
     },
+    "check_updates_on_start": {
+      "$id": "#/properties/check_updates_on_start",
+      "type": "boolean",
+      "title": "Checks for updates when ryujinx starts when enabled",
+      "description": "Checks for updates when ryujinx starts when enabled",
+      "default": true,
+      "examples": [
+        true,
+        false
+      ]
+    },
+    "show_confirm_exit": {
+      "$id": "#/properties/show_confirm_exit",
+      "type": "boolean",
+      "title": "Show \"Confirm Exit\" Dialog",
+      "description": "Check to shows the \"Confirm Exit\" dialog when closing Ryujinx.",
+      "default": true,
+      "examples": [
+        true,
+        false
+      ]
+    },
+      "hide_cursor_on_idle": {
+      "$id": "#/properties/hide_cursor_on_idle",
+      "type": "boolean",
+      "title": "Hide Cursor On Idle",
+      "description": "Hides the cursor after being idle for 5 seconds",
+      "default": false,
+      "examples": [
+        true,
+        false
+      ]
+    },
     "enable_vsync": {
       "$id": "#/properties/enable_vsync",
       "type": "boolean",
@@ -977,23 +1232,12 @@
         false
       ]
     },
-    "enable_multicore_scheduling": {
-      "$id": "#/properties/enable_multicore_scheduling",
-      "type": "boolean",
-      "title": "Enable Multicore Scheduling",
-      "description": "Enables or disables multi-core scheduling of threads",
-      "default": true,
-      "examples": [
-        true,
-        false
-      ]
-    },
     "enable_ptc": {
       "$id": "#/properties/enable_ptc",
       "type": "boolean",
-      "title": "Enable Profiled Persistent Translation Cache",
+      "title": "Enable PPTC (Profiled Persistent Translation Cache)",
       "description": "Enables or disables profiled translation cache persistency",
-      "default": false,
+      "default": true,
       "examples": [
         true,
         false
@@ -1160,6 +1404,17 @@
       "description": "Path to custom GUI theme",
       "default": ""
     },
+    "start_fullscreen": {
+      "$id": "#/properties/start_fullscreen",
+      "type": "boolean",
+      "title": "Start games in fullscreen mode",
+      "description": "Start games in fullscreen mode",
+      "default": false,
+      "examples": [
+        true,
+        false
+      ]
+    },
     "enable_keyboard": {
       "$id": "#/properties/enable_keyboard",
       "type": "boolean",
@@ -1230,7 +1485,15 @@
             "button_zr": "O",
             "button_sl": "Unbound",
             "button_sr": "Unbound"
-          }
+          },
+          "slot": 0,
+          "alt_slot": 0,
+          "mirror_input": false,
+          "dsu_server_host": "127.0.0.1",
+          "dsu_server_port": 26760,
+          "sensitivity": 100,
+          "gyro_deadzone": 1,
+          "enable_motion": false
         }
       ]
     },

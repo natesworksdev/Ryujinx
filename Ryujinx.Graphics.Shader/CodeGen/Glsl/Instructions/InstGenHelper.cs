@@ -16,9 +16,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             Add(Instruction.AtomicAdd,                InstType.AtomicBinary,   "atomicAdd");
             Add(Instruction.AtomicAnd,                InstType.AtomicBinary,   "atomicAnd");
             Add(Instruction.AtomicCompareAndSwap,     InstType.AtomicTernary,  "atomicCompSwap");
-            Add(Instruction.AtomicMaxS32,             InstType.AtomicBinary,   "atomicMax");
+            Add(Instruction.AtomicMaxS32,             InstType.CallTernary,    HelperFunctionNames.AtomicMaxS32);
             Add(Instruction.AtomicMaxU32,             InstType.AtomicBinary,   "atomicMax");
-            Add(Instruction.AtomicMinS32,             InstType.AtomicBinary,   "atomicMin");
+            Add(Instruction.AtomicMinS32,             InstType.CallTernary,    HelperFunctionNames.AtomicMinS32);
             Add(Instruction.AtomicMinU32,             InstType.AtomicBinary,   "atomicMin");
             Add(Instruction.AtomicOr,                 InstType.AtomicBinary,   "atomicOr");
             Add(Instruction.AtomicSwap,               InstType.AtomicBinary,   "atomicExchange");
@@ -36,6 +36,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             Add(Instruction.BitwiseExclusiveOr,       InstType.OpBinaryCom,    "^",               7);
             Add(Instruction.BitwiseNot,               InstType.OpUnary,        "~",               0);
             Add(Instruction.BitwiseOr,                InstType.OpBinaryCom,    "|",               8);
+            Add(Instruction.Call,                     InstType.Special);
             Add(Instruction.Ceiling,                  InstType.CallUnary,      "ceil");
             Add(Instruction.Clamp,                    InstType.CallTernary,    "clamp");
             Add(Instruction.ClampU32,                 InstType.CallTernary,    "clamp");
@@ -87,13 +88,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             Add(Instruction.LoopContinue,             InstType.OpNullary,      "continue");
             Add(Instruction.PackDouble2x32,           InstType.Special);
             Add(Instruction.PackHalf2x16,             InstType.Special);
-            Add(Instruction.ShiftLeft,                InstType.OpBinary,       "<<",              3);
-            Add(Instruction.ShiftRightS32,            InstType.OpBinary,       ">>",              3);
-            Add(Instruction.ShiftRightU32,            InstType.OpBinary,       ">>",              3);
-            Add(Instruction.Shuffle,                  InstType.CallTernary,    HelperFunctionNames.Shuffle);
-            Add(Instruction.ShuffleDown,              InstType.CallTernary,    HelperFunctionNames.ShuffleDown);
-            Add(Instruction.ShuffleUp,                InstType.CallTernary,    HelperFunctionNames.ShuffleUp);
-            Add(Instruction.ShuffleXor,               InstType.CallTernary,    HelperFunctionNames.ShuffleXor);
             Add(Instruction.Maximum,                  InstType.CallBinary,     "max");
             Add(Instruction.MaximumU32,               InstType.CallBinary,     "max");
             Add(Instruction.MemoryBarrier,            InstType.CallNullary,    "memoryBarrier");
@@ -106,6 +100,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             Add(Instruction.ReciprocalSquareRoot,     InstType.CallUnary,      "inversesqrt");
             Add(Instruction.Return,                   InstType.OpNullary,      "return");
             Add(Instruction.Round,                    InstType.CallUnary,      "roundEven");
+            Add(Instruction.ShiftLeft,                InstType.OpBinary,       "<<",              3);
+            Add(Instruction.ShiftRightS32,            InstType.OpBinary,       ">>",              3);
+            Add(Instruction.ShiftRightU32,            InstType.OpBinary,       ">>",              3);
+            Add(Instruction.Shuffle,                  InstType.CallQuaternary, HelperFunctionNames.Shuffle);
+            Add(Instruction.ShuffleDown,              InstType.CallQuaternary, HelperFunctionNames.ShuffleDown);
+            Add(Instruction.ShuffleUp,                InstType.CallQuaternary, HelperFunctionNames.ShuffleUp);
+            Add(Instruction.ShuffleXor,               InstType.CallQuaternary, HelperFunctionNames.ShuffleXor);
             Add(Instruction.Sine,                     InstType.CallUnary,      "sin");
             Add(Instruction.SquareRoot,               InstType.CallUnary,      "sqrt");
             Add(Instruction.StoreLocal,               InstType.Special);
@@ -135,7 +136,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
         public static string GetSoureExpr(CodeGenContext context, IAstNode node, VariableType dstType)
         {
-            return ReinterpretCast(context, node, OperandManager.GetNodeDestType(node), dstType);
+            return ReinterpretCast(context, node, OperandManager.GetNodeDestType(context, node), dstType);
         }
 
         public static string Enclose(string expr, IAstNode node, Instruction pInst, bool isLhs)

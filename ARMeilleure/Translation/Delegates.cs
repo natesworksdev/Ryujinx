@@ -103,48 +103,42 @@ namespace ARMeilleure.Translation
 
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.Break)));
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.CheckSynchronization)));
-            SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.ClearExclusive)));
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetCntfrqEl0)));
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetCntpctEl0)));
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetCntvctEl0)));
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetCtrEl0)));
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetDczidEl0)));
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetFpcr)));
+            SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetFpcrFz)));
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetFpscr))); // A32 only.
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetFpsr)));
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetFunctionAddress)));
+            SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetFunctionAddressWithoutRejit)));
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetIndirectFunctionAddress)));
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetTpidr)));
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetTpidr32))); // A32 only.
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetTpidrEl0)));
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetTpidrEl032))); // A32 only.
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.ReadByte)));
-            SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.ReadByteExclusive)));
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.ReadUInt16)));
-            SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.ReadUInt16Exclusive)));
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.ReadUInt32)));
-            SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.ReadUInt32Exclusive)));
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.ReadUInt64)));
-            SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.ReadUInt64Exclusive)));
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.ReadVector128)));
-            SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.ReadVector128Exclusive)));
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.SetFpcr)));
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.SetFpscr))); // A32 only.
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.SetFpsr)));
+            SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.SetFpsrQc))); // A32 only.
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.SetTpidrEl0)));
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.SetTpidrEl032))); // A32 only.
+            SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.SignalMemoryTracking)));
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.SupervisorCall)));
+            SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.ThrowInvalidMemoryAccess)));
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.Undefined)));
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.WriteByte)));
-            SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.WriteByteExclusive)));
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.WriteUInt16)));
-            SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.WriteUInt16Exclusive)));
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.WriteUInt32)));
-            SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.WriteUInt32Exclusive)));
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.WriteUInt64)));
-            SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.WriteUInt64Exclusive)));
             SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.WriteVector128)));
-            SetDelegateInfo(typeof(NativeInterface).GetMethod(nameof(NativeInterface.WriteVector128Exclusive)));
 
             SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.BinarySignedSatQAcc)));
             SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.BinarySignedSatQAdd)));
@@ -154,7 +148,6 @@ namespace ARMeilleure.Translation
             SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.BinaryUnsignedSatQSub)));
             SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.CountLeadingSigns)));
             SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.CountLeadingZeros)));
-            SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.CountSetBits8)));
             SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.Crc32b)));
             SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.Crc32cb)));
             SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.Crc32ch)));
@@ -177,6 +170,7 @@ namespace ARMeilleure.Translation
             SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.HashUpper)));
             SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.InverseMixColumns)));
             SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.MixColumns)));
+            SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.PolynomialMult64_128)));
             SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.Round)));
             SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.RoundF)));
             SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF32ToS32)));

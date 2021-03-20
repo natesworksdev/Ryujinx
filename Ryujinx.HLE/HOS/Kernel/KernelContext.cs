@@ -19,12 +19,12 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public bool KernelInitialized { get; }
 
+        public bool Running { get; private set; }
+
         public Switch Device { get; }
         public MemoryBlock Memory { get; }
         public Syscall Syscall { get; }
         public SyscallHandler SyscallHandler { get; }
-
-        public CountdownEvent ThreadCounter { get; }
 
         public KResourceLimit ResourceLimit { get; }
 
@@ -36,13 +36,16 @@ namespace Ryujinx.HLE.HOS.Kernel
         public KSlabHeap UserSlabHeapPages { get; }
 
         public KCriticalSection CriticalSection { get; }
-        public KScheduler Scheduler { get; }
+        public KScheduler[] Schedulers { get; }
+        public KPriorityQueue PriorityQueue { get; }
         public KTimeManager TimeManager { get; }
         public KSynchronization Synchronization { get; }
         public KContextIdManager ContextIdManager { get; }
 
         public ConcurrentDictionary<long, KProcess> Processes { get; }
         public ConcurrentDictionary<string, KAutoObject> AutoObjectNames { get; }
+
+        public bool ThreadReselectionRequested { get; set; }
 
         private long _kipId;
         private long _processId;
@@ -53,11 +56,11 @@ namespace Ryujinx.HLE.HOS.Kernel
             Device = device;
             Memory = memory;
 
-            Syscall = new Syscall(device, this);
+            Running = true;
+
+            Syscall = new Syscall(this);
 
             SyscallHandler = new SyscallHandler(this);
-
-            ThreadCounter = new CountdownEvent(1);
 
             ResourceLimit = new KResourceLimit(this);
 
@@ -74,12 +77,18 @@ namespace Ryujinx.HLE.HOS.Kernel
                 KernelConstants.UserSlabHeapSize);
 
             CriticalSection = new KCriticalSection(this);
-            Scheduler = new KScheduler(this);
-            TimeManager = new KTimeManager();
+            Schedulers = new KScheduler[KScheduler.CpuCoresCount];
+            PriorityQueue = new KPriorityQueue();
+            TimeManager = new KTimeManager(this);
             Synchronization = new KSynchronization(this);
             ContextIdManager = new KContextIdManager();
 
-            Scheduler.StartAutoPreemptionThread();
+            for (int core = 0; core < KScheduler.CpuCoresCount; core++)
+            {
+                Schedulers[core] = new KScheduler(this, core);
+            }
+
+            StartPreemptionThread();
 
             KernelInitialized = true;
 
@@ -88,6 +97,16 @@ namespace Ryujinx.HLE.HOS.Kernel
 
             _kipId = KernelConstants.InitialKipId;
             _processId = KernelConstants.InitialProcessId;
+        }
+
+        private void StartPreemptionThread()
+        {
+            void PreemptionThreadStart()
+            {
+                KScheduler.PreemptionThreadLoop(this);
+            }
+
+            new Thread(PreemptionThreadStart) { Name = "HLE.PreemptionThread" }.Start();
         }
 
         public long NewThreadUid()
@@ -107,7 +126,13 @@ namespace Ryujinx.HLE.HOS.Kernel
 
         public void Dispose()
         {
-            Scheduler.Dispose();
+            Running = false;
+
+            for (int i = 0; i < KScheduler.CpuCoresCount; i++)
+            {
+                Schedulers[i].Dispose();
+            }
+
             TimeManager.Dispose();
         }
     }

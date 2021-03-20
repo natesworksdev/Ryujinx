@@ -6,14 +6,24 @@ namespace Ryujinx.Graphics.OpenGL.Image
 {
     class TextureBuffer : TextureBase, ITexture
     {
+        private Renderer _renderer;
         private int _bufferOffset;
         private int _bufferSize;
+        private int _bufferCount;
 
         private BufferHandle _buffer;
 
-        public TextureBuffer(TextureCreateInfo info) : base(info) {}
+        public TextureBuffer(Renderer renderer, TextureCreateInfo info) : base(info)
+        {
+            _renderer = renderer;
+        }
 
         public void CopyTo(ITexture destination, int firstLayer, int firstLevel)
+        {
+            throw new NotSupportedException();
+        }
+
+        public void CopyTo(ITexture destination, int srcLayer, int dstLayer, int srcLevel, int dstLevel)
         {
             throw new NotSupportedException();
         }
@@ -38,18 +48,26 @@ namespace Ryujinx.Graphics.OpenGL.Image
             Buffer.SetData(_buffer, _bufferOffset, data.Slice(0, Math.Min(data.Length, _bufferSize)));
         }
 
+        public void SetData(ReadOnlySpan<byte> data, int layer, int level)
+        {
+            throw new NotSupportedException();
+        }
+
         public void SetStorage(BufferRange buffer)
         {
-            if (buffer.Handle == _buffer &&
+            if (_buffer != BufferHandle.Null &&
                 buffer.Offset == _bufferOffset &&
-                buffer.Size == _bufferSize)
+                buffer.Size == _bufferSize &&
+                _renderer.BufferCount == _bufferCount)
             {
+                // Only rebind the buffer when more have been created.
                 return;
             }
 
             _buffer = buffer.Handle;
             _bufferOffset = buffer.Offset;
             _bufferSize = buffer.Size;
+            _bufferCount = _renderer.BufferCount;
 
             Bind(0);
 
@@ -66,6 +84,11 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
                 Handle = 0;
             }
+        }
+
+        public void Release()
+        {
+            Dispose();
         }
     }
 }

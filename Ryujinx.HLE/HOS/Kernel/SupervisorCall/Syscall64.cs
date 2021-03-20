@@ -25,9 +25,18 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return _syscall.SendSyncRequest(handle);
         }
 
-        public KernelResult SendSyncRequestWithUserBuffer64([R(0)] ulong messagePtr, [R(1)] ulong size, [R(2)] int handle)
+        public KernelResult SendSyncRequestWithUserBuffer64([R(0)] ulong messagePtr, [R(1)] ulong messageSize, [R(2)] int handle)
         {
-            return _syscall.SendSyncRequestWithUserBuffer(messagePtr, size, handle);
+            return _syscall.SendSyncRequestWithUserBuffer(messagePtr, messageSize, handle);
+        }
+
+        public KernelResult SendAsyncRequestWithUserBuffer64(
+            [R(1)] ulong messagePtr,
+            [R(2)] ulong messageSize,
+            [R(3)] int handle,
+            [R(1)] out int doneEventHandle)
+        {
+            return _syscall.SendAsyncRequestWithUserBuffer(messagePtr, messageSize, handle, out doneEventHandle);
         }
 
         public KernelResult CreateSession64(
@@ -52,6 +61,25 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             [R(1)] out int handleIndex)
         {
             return _syscall.ReplyAndReceive(handlesPtr, handlesCount, replyTargetHandle, timeout, out handleIndex);
+        }
+
+        public KernelResult ReplyAndReceiveWithUserBuffer64(
+            [R(1)] ulong messagePtr,
+            [R(2)] ulong messageSize,
+            [R(3)] ulong handlesPtr,
+            [R(4)] int handlesCount,
+            [R(5)] int replyTargetHandle,
+            [R(6)] long timeout,
+            [R(1)] out int handleIndex)
+        {
+            return _syscall.ReplyAndReceiveWithUserBuffer(
+                handlesPtr,
+                messagePtr,
+                messageSize,
+                handlesCount,
+                replyTargetHandle,
+                timeout,
+                out handleIndex);
         }
 
         public KernelResult CreatePort64(
@@ -105,7 +133,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return _syscall.QueryMemory(infoPtr, position, out pageInfo);
         }
 
-        public KernelResult MapSharedMemory64([R(0)] int handle, [R(1)] ulong address, [R(2)] ulong size, [R(3)] MemoryPermission permission)
+        public KernelResult MapSharedMemory64([R(0)] int handle, [R(1)] ulong address, [R(2)] ulong size, [R(3)] KMemoryPermission permission)
         {
             return _syscall.MapSharedMemory(handle, address, size, permission);
         }
@@ -118,7 +146,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         public KernelResult CreateTransferMemory64(
             [R(1)] ulong address,
             [R(2)] ulong size,
-            [R(3)] MemoryPermission permission,
+            [R(3)] KMemoryPermission permission,
             [R(1)] out int handle)
         {
             return _syscall.CreateTransferMemory(address, size, permission, out handle);
@@ -144,7 +172,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return _syscall.UnmapProcessCodeMemory(handle, dst, src, size);
         }
 
-        public KernelResult SetProcessMemoryPermission64([R(0)] int handle, [R(1)] ulong src, [R(2)] ulong size, [R(3)] MemoryPermission permission)
+        public KernelResult SetProcessMemoryPermission64([R(0)] int handle, [R(1)] ulong src, [R(2)] ulong size, [R(3)] KMemoryPermission permission)
         {
             return _syscall.SetProcessMemoryPermission(handle, src, size, permission);
         }

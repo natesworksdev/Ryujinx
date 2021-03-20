@@ -37,6 +37,8 @@ namespace ARMeilleure.State
         public ulong CntvctEl0 => CntpctEl0;
 
         public static TimeSpan ElapsedTime => _tickCounter.Elapsed;
+        public static long ElapsedTicks => _tickCounter.ElapsedTicks;
+        public static double TickFrequency => _hostTickFreq;
 
         public long TpidrEl0 { get; set; }
         public long Tpidr    { get; set; }
@@ -64,7 +66,7 @@ namespace ARMeilleure.State
             }
         }
 
-        internal bool Running { get; private set; }
+        public bool Running { get; private set; }
 
         public event EventHandler<EventArgs>              Interrupt;
         public event EventHandler<InstExceptionEventArgs> Break;

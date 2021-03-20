@@ -20,17 +20,22 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 return;
             }
 
-            // Scissor affects clears aswell.
+            // Scissor and rasterizer discard also affect clears.
             if (state.QueryModified(MethodOffset.ScissorState))
             {
                 UpdateScissorState(state);
+            }
+
+            if (state.QueryModified(MethodOffset.RasterizeEnable))
+            {
+                UpdateRasterizerState(state);
             }
 
             int index = (argument >> 6) & 0xf;
 
             UpdateRenderTargetState(state, useControl: false, singleUse: index);
 
-            TextureManager.CommitGraphicsBindings();
+            TextureManager.UpdateRenderTargets();
 
             bool clearDepth   = (argument & 1) != 0;
             bool clearStencil = (argument & 2) != 0;

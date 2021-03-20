@@ -102,7 +102,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
         private List<BsdSocket> _sockets = new List<BsdSocket>();
 
-        public IClient(ServiceCtx context, bool isPrivileged)
+        public IClient(ServiceCtx context, bool isPrivileged) : base(context.Device.System.BsdServer)
         {
             _isPrivileged = isPrivileged;
         }
@@ -245,7 +245,10 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             // bsd_error
             context.ResponseData.Write(0);
 
-            Logger.PrintStub(LogClass.ServiceBsd);
+            Logger.Stub?.PrintStub(LogClass.ServiceBsd);
+
+            // Close transfer memory immediately as we don't use it.
+            context.Device.System.KernelContext.Syscall.CloseHandle(context.Request.HandleDesc.ToCopy[0]);
 
             return ResultCode.Success;
         }
@@ -256,7 +259,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
         {
             ulong unknown0 = context.RequestData.ReadUInt64();
 
-            Logger.PrintStub(LogClass.ServiceBsd, new { unknown0 });
+            Logger.Stub?.PrintStub(LogClass.ServiceBsd, new { unknown0 });
 
             return ResultCode.Success;
         }
@@ -291,7 +294,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
             WriteBsdResult(context, -1, LinuxError.EOPNOTSUPP);
 
-            Logger.PrintStub(LogClass.ServiceBsd, new { path, flags });
+            Logger.Stub?.PrintStub(LogClass.ServiceBsd, new { path, flags });
 
             return ResultCode.Success;
         }
@@ -302,7 +305,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
         {
             WriteBsdResult(context, -1, LinuxError.EOPNOTSUPP);
 
-            Logger.PrintStub(LogClass.ServiceBsd);
+            Logger.Stub?.PrintStub(LogClass.ServiceBsd);
 
             return ResultCode.Success;
         }
@@ -380,7 +383,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
                 if (!isValidEvent)
                 {
-                    Logger.PrintWarning(LogClass.ServiceBsd, $"Unsupported Poll input event type: {Event.InputEvents}");
+                    Logger.Warning?.Print(LogClass.ServiceBsd, $"Unsupported Poll input event type: {Event.InputEvents}");
                     return WriteBsdResult(context, -1, LinuxError.EINVAL);
                 }
             }
@@ -452,7 +455,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
         {
             WriteBsdResult(context, -1, LinuxError.EOPNOTSUPP);
 
-            Logger.PrintStub(LogClass.ServiceBsd);
+            Logger.Stub?.PrintStub(LogClass.ServiceBsd);
 
             return ResultCode.Success;
         }
@@ -475,7 +478,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                 if (socketFlags != SocketFlags.None && (socketFlags & SocketFlags.OutOfBand) == 0
                     && (socketFlags & SocketFlags.Peek) == 0)
                 {
-                    Logger.PrintWarning(LogClass.ServiceBsd, $"Unsupported Recv flags: {socketFlags}");
+                    Logger.Warning?.Print(LogClass.ServiceBsd, $"Unsupported Recv flags: {socketFlags}");
                     return WriteBsdResult(context, -1, LinuxError.EOPNOTSUPP);
                 }
 
@@ -516,7 +519,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                 if (socketFlags != SocketFlags.None && (socketFlags & SocketFlags.OutOfBand) == 0
                     && (socketFlags & SocketFlags.Peek) == 0)
                 {
-                    Logger.PrintWarning(LogClass.ServiceBsd, $"Unsupported Recv flags: {socketFlags}");
+                    Logger.Warning?.Print(LogClass.ServiceBsd, $"Unsupported Recv flags: {socketFlags}");
 
                     return WriteBsdResult(context, -1, LinuxError.EOPNOTSUPP);
                 }
@@ -559,7 +562,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                 if (socketFlags != SocketFlags.None && socketFlags != SocketFlags.OutOfBand
                     && socketFlags != SocketFlags.Peek && socketFlags != SocketFlags.DontRoute)
                 {
-                    Logger.PrintWarning(LogClass.ServiceBsd, $"Unsupported Send flags: {socketFlags}");
+                    Logger.Warning?.Print(LogClass.ServiceBsd, $"Unsupported Send flags: {socketFlags}");
 
                     return WriteBsdResult(context, -1, LinuxError.EOPNOTSUPP);
                 }
@@ -602,7 +605,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                 if (socketFlags != SocketFlags.None && socketFlags != SocketFlags.OutOfBand
                     && socketFlags != SocketFlags.Peek && socketFlags != SocketFlags.DontRoute)
                 {
-                    Logger.PrintWarning(LogClass.ServiceBsd, $"Unsupported Send flags: {socketFlags}");
+                    Logger.Warning?.Print(LogClass.ServiceBsd, $"Unsupported Send flags: {socketFlags}");
 
                     return WriteBsdResult(context, -1, LinuxError.EOPNOTSUPP);
                 }
@@ -811,7 +814,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                 }
                 else
                 {
-                    Logger.PrintWarning(LogClass.ServiceBsd, $"Unsupported GetSockOpt Level: {(SocketOptionLevel)level}");
+                    Logger.Warning?.Print(LogClass.ServiceBsd, $"Unsupported GetSockOpt Level: {(SocketOptionLevel)level}");
                 }
             }
 
@@ -872,7 +875,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                     default:
                         errno = LinuxError.EOPNOTSUPP;
 
-                        Logger.PrintWarning(LogClass.ServiceBsd, $"Unsupported Ioctl Cmd: {cmd}");
+                        Logger.Warning?.Print(LogClass.ServiceBsd, $"Unsupported Ioctl Cmd: {cmd}");
                         break;
                 }
             }
@@ -946,7 +949,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                         return LinuxError.SUCCESS;
 
                     default:
-                        Logger.PrintWarning(LogClass.ServiceBsd, $"Unsupported SetSockOpt OptionName: {optionName}");
+                        Logger.Warning?.Print(LogClass.ServiceBsd, $"Unsupported SetSockOpt OptionName: {optionName}");
 
                         return LinuxError.EOPNOTSUPP;
                 }
@@ -991,7 +994,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                         return LinuxError.SUCCESS;
 
                     default:
-                        Logger.PrintWarning(LogClass.ServiceBsd, $"Unsupported SetSockOpt OptionName: {optionName}");
+                        Logger.Warning?.Print(LogClass.ServiceBsd, $"Unsupported SetSockOpt OptionName: {optionName}");
 
                         return LinuxError.EOPNOTSUPP;
                 }
@@ -1025,7 +1028,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                 }
                 else
                 {
-                    Logger.PrintWarning(LogClass.ServiceBsd, $"Unsupported SetSockOpt Level: {(SocketOptionLevel)level}");
+                    Logger.Warning?.Print(LogClass.ServiceBsd, $"Unsupported SetSockOpt Level: {(SocketOptionLevel)level}");
                 }
             }
 

@@ -60,21 +60,48 @@ namespace ARMeilleure.Instructions
             }
             else if (op.Size == 0 && op.Opc == 3) // Single -> Half.
             {
-                Operand ne = context.VectorExtract(OperandType.FP32, GetVec(op.Rn), 0);
+                if (Optimizations.UseF16c)
+                {
+                    Debug.Assert(!Optimizations.ForceLegacySse);
 
-                Operand res = context.Call(typeof(SoftFloat32_16).GetMethod(nameof(SoftFloat32_16.FPConvert)), ne);
+                    Operand n = GetVec(op.Rn);
 
-                res = context.ZeroExtend16(OperandType.I64, res);
+                    Operand res = context.AddIntrinsic(Intrinsic.X86Vcvtps2ph, n, Const(X86GetRoundControl(FPRoundingMode.ToNearest)));
+                            res = context.AddIntrinsic(Intrinsic.X86Pslldq, res, Const(14)); // VectorZeroUpper112()
+                            res = context.AddIntrinsic(Intrinsic.X86Psrldq, res, Const(14));
 
-                context.Copy(GetVec(op.Rd), EmitVectorInsert(context, context.VectorZero(), res, 0, 1));
+                    context.Copy(GetVec(op.Rd), res);
+                }
+                else
+                {
+                    Operand ne = context.VectorExtract(OperandType.FP32, GetVec(op.Rn), 0);
+
+                    Operand res = context.Call(typeof(SoftFloat32_16).GetMethod(nameof(SoftFloat32_16.FPConvert)), ne);
+
+                    res = context.ZeroExtend16(OperandType.I64, res);
+
+                    context.Copy(GetVec(op.Rd), EmitVectorInsert(context, context.VectorZero(), res, 0, 1));
+                }
             }
             else if (op.Size == 3 && op.Opc == 0) // Half -> Single.
             {
-                Operand ne = EmitVectorExtractZx(context, op.Rn, 0, 1);
+                if (Optimizations.UseF16c)
+                {
+                    Debug.Assert(!Optimizations.ForceLegacySse);
 
-                Operand res = context.Call(typeof(SoftFloat16_32).GetMethod(nameof(SoftFloat16_32.FPConvert)), ne);
+                    Operand res = context.AddIntrinsic(Intrinsic.X86Vcvtph2ps, GetVec(op.Rn));
+                            res = context.VectorZeroUpper96(res);
 
-                context.Copy(GetVec(op.Rd), context.VectorInsert(context.VectorZero(), res, 0));
+                    context.Copy(GetVec(op.Rd), res);
+                }
+                else
+                {
+                    Operand ne = EmitVectorExtractZx(context, op.Rn, 0, 1);
+
+                    Operand res = context.Call(typeof(SoftFloat16_32).GetMethod(nameof(SoftFloat16_32.FPConvert)), ne);
+
+                    context.Copy(GetVec(op.Rd), context.VectorInsert(context.VectorZero(), res, 0));
+                }
             }
             else if (op.Size == 1 && op.Opc == 3) // Double -> Half.
             {
@@ -129,18 +156,20 @@ namespace ARMeilleure.Instructions
             if (Optimizations.UseSse2 && sizeF == 1)
             {
                 Operand n = GetVec(op.Rn);
-                Operand res;
 
-                if (op.RegisterSize == RegisterSize.Simd128)
-                {
-                    res = context.AddIntrinsic(Intrinsic.X86Movhlps, n, n);
-                }
-                else
-                {
-                    res = n;
-                }
+                Operand res = op.RegisterSize == RegisterSize.Simd128 ? context.AddIntrinsic(Intrinsic.X86Movhlps, n, n) : n;
+                        res = context.AddIntrinsic(Intrinsic.X86Cvtps2pd, res);
 
-                res = context.AddIntrinsic(Intrinsic.X86Cvtps2pd, res);
+                context.Copy(GetVec(op.Rd), res);
+            }
+            else if (Optimizations.UseF16c && sizeF == 0)
+            {
+                Debug.Assert(!Optimizations.ForceLegacySse);
+
+                Operand n = GetVec(op.Rn);
+
+                Operand res = op.RegisterSize == RegisterSize.Simd128 ? context.AddIntrinsic(Intrinsic.X86Movhlps, n, n) : n;
+                        res = context.AddIntrinsic(Intrinsic.X86Vcvtph2ps, res);
 
                 context.Copy(GetVec(op.Rd), res);
             }
@@ -210,17 +239,30 @@ namespace ARMeilleure.Instructions
             {
                 Operand d = GetVec(op.Rd);
 
-                Operand res = context.VectorZeroUpper64(d);
+                Intrinsic movInst = op.RegisterSize == RegisterSize.Simd128 ? Intrinsic.X86Movlhps : Intrinsic.X86Movhlps;
 
                 Operand nInt = context.AddIntrinsic(Intrinsic.X86Cvtpd2ps, GetVec(op.Rn));
+                        nInt = context.AddIntrinsic(Intrinsic.X86Movlhps, nInt, nInt);
 
-                nInt = context.AddIntrinsic(Intrinsic.X86Movlhps, nInt, nInt);
+                Operand res = context.VectorZeroUpper64(d);
+                        res = context.AddIntrinsic(movInst, res, nInt);
 
-                Intrinsic movInst = op.RegisterSize == RegisterSize.Simd128
-                    ? Intrinsic.X86Movlhps
-                    : Intrinsic.X86Movhlps;
+                context.Copy(d, res);
+            }
+            else if (Optimizations.UseF16c && sizeF == 0)
+            {
+                Debug.Assert(!Optimizations.ForceLegacySse);
 
-                res = context.AddIntrinsic(movInst, res, nInt);
+                Operand d = GetVec(op.Rd);
+                Operand n = GetVec(op.Rn);
+
+                Intrinsic movInst = op.RegisterSize == RegisterSize.Simd128 ? Intrinsic.X86Movlhps : Intrinsic.X86Movhlps;
+
+                Operand nInt = context.AddIntrinsic(Intrinsic.X86Vcvtps2ph, n, Const(X86GetRoundControl(FPRoundingMode.ToNearest)));
+                        nInt = context.AddIntrinsic(Intrinsic.X86Movlhps, nInt, nInt);
+
+                Operand res = context.VectorZeroUpper64(d);
+                        res = context.AddIntrinsic(movInst, res, nInt);
 
                 context.Copy(d, res);
             }
@@ -494,15 +536,19 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+                EmitCvtf(context, signed: true, scalar: true);
+            }
+        }
 
-                int sizeF = op.Size & 1;
-
-                Operand res = EmitVectorLongExtract(context, op.Rn, 0, sizeF + 2);
-
-                res = EmitFPConvert(context, res, op.Size, signed: true);
-
-                context.Copy(GetVec(op.Rd), context.VectorInsert(context.VectorZero(), res, 0));
+        public static void Scvtf_S_Fixed(ArmEmitterContext context)
+        {
+            if (Optimizations.UseSse2)
+            {
+                EmitSse2ScvtfOp(context, scalar: true);
+            }
+            else
+            {
+                EmitCvtf(context, signed: true, scalar: true);
             }
         }
 
@@ -514,7 +560,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitVectorCvtf(context, signed: true);
+                EmitCvtf(context, signed: true, scalar: false);
             }
         }
 
@@ -526,7 +572,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitVectorCvtf(context, signed: true);
+                EmitCvtf(context, signed: true, scalar: false);
             }
         }
 
@@ -562,15 +608,19 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+                EmitCvtf(context, signed: false, scalar: true);
+            }
+        }
 
-                int sizeF = op.Size & 1;
-
-                Operand ne = EmitVectorLongExtract(context, op.Rn, 0, sizeF + 2);
-
-                Operand res = EmitFPConvert(context, ne, sizeF, signed: false);
-
-                context.Copy(GetVec(op.Rd), context.VectorInsert(context.VectorZero(), res, 0));
+        public static void Ucvtf_S_Fixed(ArmEmitterContext context)
+        {
+            if (Optimizations.UseSse2)
+            {
+                EmitSse2UcvtfOp(context, scalar: true);
+            }
+            else
+            {
+                EmitCvtf(context, signed: false, scalar: true);
             }
         }
 
@@ -582,7 +632,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitVectorCvtf(context, signed: false);
+                EmitCvtf(context, signed: false, scalar: false);
             }
         }
 
@@ -594,7 +644,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitVectorCvtf(context, signed: false);
+                EmitCvtf(context, signed: false, scalar: false);
             }
         }
 
@@ -742,7 +792,7 @@ namespace ARMeilleure.Instructions
             SetIntOrZR(context, op.Rd, res);
         }
 
-        private static void EmitVectorCvtf(ArmEmitterContext context, bool signed)
+        private static void EmitCvtf(ArmEmitterContext context, bool signed, bool scalar)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -753,7 +803,7 @@ namespace ARMeilleure.Instructions
 
             int fBits = GetFBits(context);
 
-            int elems = op.GetBytesCount() >> sizeI;
+            int elems = !scalar ? op.GetBytesCount() >> sizeI : 1;
 
             for (int index = 0; index < elems; index++)
             {

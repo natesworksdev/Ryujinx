@@ -1,6 +1,7 @@
 using LibHac;
 using LibHac.Common;
 using LibHac.Fs;
+using LibHac.Fs.Fsa;
 using LibHac.FsSystem;
 using LibHac.FsSystem.NcaUtils;
 using Ryujinx.Common.Logging;
@@ -29,7 +30,8 @@ namespace Ryujinx.HLE.HOS.Services.Settings
         public ResultCode GetFirmwareVersion2(ServiceCtx context)
         {
             long replyPos  = context.Request.RecvListBuff[0].Position;
-            long replySize = context.Request.RecvListBuff[0].Size;
+
+            context.Response.PtrBuff[0] = context.Response.PtrBuff[0].WithSize(0x100L);
 
             byte[] firmwareData = GetFirmwareData(context.Device);
 
@@ -186,7 +188,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
                 {
                     if (stringValue.Length + 1 > replySize)
                     {
-                        Logger.PrintError(LogClass.ServiceSet, $"{askedSetting} String value size is too big!");
+                        Logger.Error?.Print(LogClass.ServiceSet, $"{askedSetting} String value size is too big!");
                     }
                     else
                     {
@@ -209,12 +211,24 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
                 context.Memory.Write((ulong)replyPos, settingBuffer);
 
-                Logger.PrintDebug(LogClass.ServiceSet, $"{askedSetting} set value: {nxSetting} as {nxSetting.GetType()}");
+                Logger.Debug?.Print(LogClass.ServiceSet, $"{askedSetting} set value: {nxSetting} as {nxSetting.GetType()}");
             }
             else
             {
-                Logger.PrintError(LogClass.ServiceSet, $"{askedSetting} not found!");
+                Logger.Error?.Print(LogClass.ServiceSet, $"{askedSetting} not found!");
             }
+
+            return ResultCode.Success;
+        }
+
+       [Command(60)]
+        // IsUserSystemClockAutomaticCorrectionEnabled() -> bool
+        public ResultCode IsUserSystemClockAutomaticCorrectionEnabled(ServiceCtx context)
+        {
+            // NOTE: When set to true, is automatically synced with the internet.
+            context.ResponseData.Write(true);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet, "Stubbed");
 
             return ResultCode.Success;
         }

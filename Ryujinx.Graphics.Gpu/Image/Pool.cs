@@ -1,3 +1,5 @@
+using Ryujinx.Common;
+using Ryujinx.Cpu.Tracking;
 using Ryujinx.Graphics.Gpu.Memory;
 using System;
 
@@ -6,14 +8,16 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// <summary>
     /// Represents a pool of GPU resources, such as samplers or textures.
     /// </summary>
-    /// <typeparam name="T">Type of the GPU resource</typeparam>
-    abstract class Pool<T> : IDisposable
+    /// <typeparam name="T1">Type of the GPU resource</typeparam>
+    /// <typeparam name="T2">Type of the descriptor</typeparam>
+    abstract class Pool<T1, T2> : IDisposable where T2 : unmanaged
     {
         protected const int DescriptorSize = 0x20;
 
         protected GpuContext Context;
 
-        protected T[] Items;
+        protected T1[] Items;
+        protected T2[] DescriptorCache;
 
         /// <summary>
         /// The maximum ID value of resources on the pool (inclusive).
@@ -33,7 +37,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public ulong Size { get; }
 
-        private readonly (ulong, ulong)[] _modifiedRanges;
+        private readonly CpuMultiRegionHandle _memoryTracking;
+        private readonly Action<ulong, ulong> _modifiedDelegate;
 
         public Pool(GpuContext context, ulong address, int maximumId)
         {
@@ -42,14 +47,27 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             int count = maximumId + 1;
 
-            ulong size = (ulong)(uint)count * DescriptorSize;;
+            ulong size = (ulong)(uint)count * DescriptorSize;
 
-            Items = new T[count];
+            Items = new T1[count];
+            DescriptorCache = new T2[count];
 
             Address = address;
             Size    = size;
 
-            _modifiedRanges = new (ulong, ulong)[size / PhysicalMemory.PageSize];
+            _memoryTracking = context.PhysicalMemory.BeginGranularTracking(address, size);
+            _modifiedDelegate = RegionModified;
+        }
+
+
+        /// <summary>
+        /// Gets the descriptor for a given ID.
+        /// </summary>
+        /// <param name="id">ID of the descriptor. This is effectively a zero-based index</param>
+        /// <returns>The descriptor</returns>
+        public T2 GetDescriptor(int id)
+        {
+            return Context.PhysicalMemory.Read<T2>(Address + (ulong)id * DescriptorSize);
         }
 
         /// <summary>
@@ -57,7 +75,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="id">ID of the resource. This is effectively a zero-based index</param>
         /// <returns>The GPU resource with the given ID</returns>
-        public abstract T Get(int id);
+        public abstract T1 Get(int id);
 
         /// <summary>
         /// Synchronizes host memory with guest memory.
@@ -66,77 +84,40 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public void SynchronizeMemory()
         {
-            int count = Context.PhysicalMemory.QueryModified(Address, Size, ResourceName.TexturePool, _modifiedRanges);
-
-            for (int index = 0; index < count; index++)
-            {
-                (ulong mAddress, ulong mSize) = _modifiedRanges[index];
-
-                if (mAddress < Address)
-                {
-                    mAddress = Address;
-                }
-
-                ulong maxSize = Address + Size - mAddress;
-
-                if (mSize > maxSize)
-                {
-                    mSize = maxSize;
-                }
-
-                InvalidateRangeImpl(mAddress, mSize);
-            }
-        }
-
-        private void InvalidateRangeInternal(ulong offset, int size)
-        {
-            InvalidateRangeImpl(Address + offset, (ulong)size);
+            _memoryTracking.QueryModified(_modifiedDelegate);
         }
 
         /// <summary>
-        /// Invalidates a range of memory of the GPU resource pool.
-        /// Entries that falls inside the speicified range will be invalidated,
-        /// causing all the data to be reloaded from guest memory.
+        /// Indicate that a region of the pool was modified, and must be loaded from memory.
         /// </summary>
-        /// <param name="address">The start address of the range to invalidate</param>
-        /// <param name="size">The size of the range to invalidate</param>
-        public void InvalidateRange(ulong address, ulong size)
+        /// <param name="mAddress">Start address of the modified region</param>
+        /// <param name="mSize">Size of the modified region</param>
+        private void RegionModified(ulong mAddress, ulong mSize)
         {
-            ulong endAddress = address + size;
-
-            ulong texturePoolEndAddress = Address + Size;
-
-            // If the range being invalidated is not overlapping the texture pool range,
-            // then we don't have anything to do, exit early.
-            if (address >= texturePoolEndAddress || endAddress <= Address)
+            if (mAddress < Address)
             {
-                return;
+                mAddress = Address;
             }
 
-            if (address < Address)
+            ulong maxSize = Address + Size - mAddress;
+
+            if (mSize > maxSize)
             {
-                address = Address;
+                mSize = maxSize;
             }
 
-            if (endAddress > texturePoolEndAddress)
-            {
-                endAddress = texturePoolEndAddress;
-            }
-
-            size = endAddress - address;
-
-            InvalidateRangeImpl(address, size);
+            InvalidateRangeImpl(mAddress, mSize);
         }
 
         protected abstract void InvalidateRangeImpl(ulong address, ulong size);
 
-        protected abstract void Delete(T item);
+        protected abstract void Delete(T1 item);
 
         /// <summary>
         /// Performs the disposal of all resources stored on the pool.
         /// It's an error to try using the pool after disposal.
         /// </summary>
-        public void Dispose()
+        public virtual void Dispose()
         {
             if (Items != null)
             {
@@ -147,6 +128,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 Items = null;
             }
+            _memoryTracking.Dispose();
         }
     }
 }

@@ -9,9 +9,9 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
         public LogicalOperation LogicalOp { get; }
 
-        public ConditionalOperation CondOp { get; }
-
         public Register Predicate48 { get; }
+
+        public new static OpCode Create(InstEmitter emitter, ulong address, long opCode) => new OpCodeLop(emitter, address, opCode);
 
         public OpCodeLop(InstEmitter emitter, ulong address, long opCode) : base(emitter, address, opCode)
         {
@@ -19,8 +19,6 @@ namespace Ryujinx.Graphics.Shader.Decoders
             InvertB = opCode.Extract(40);
 
             LogicalOp = (LogicalOperation)opCode.Extract(41, 2);
-
-            CondOp = (ConditionalOperation)opCode.Extract(44, 2);
 
             Predicate48 = new Register(opCode.Extract(48, 3), RegisterType.Predicate);
         }

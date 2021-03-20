@@ -45,7 +45,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
             if (hasTimeout)
             {
-                Logger.PrintError(LogClass.SurfaceFlinger, "Android fence didn't signal in 3000 ms");
+                Logger.Error?.Print(LogClass.SurfaceFlinger, "Android fence didn't signal in 3000 ms");
                 Wait(gpuContext, Timeout.InfiniteTimeSpan);
             }
 
@@ -64,6 +64,20 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             }
 
             return false;
+        }
+
+        public void RegisterCallback(GpuContext gpuContext, Action callback)
+        {
+            ref NvFence fence = ref NvFences[FenceCount - 1];
+
+            if (fence.IsValid())
+            {
+                gpuContext.Synchronization.RegisterCallbackOnSyncpoint(fence.Id, fence.Value, callback);
+            }
+            else
+            {
+                callback();
+            }
         }
 
         public uint GetFlattenedSize()

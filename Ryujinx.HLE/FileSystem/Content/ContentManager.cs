@@ -1,6 +1,7 @@
 using LibHac;
 using LibHac.Common;
 using LibHac.Fs;
+using LibHac.Fs.Fsa;
 using LibHac.FsSystem;
 using LibHac.FsSystem.NcaUtils;
 using LibHac.Ncm;
@@ -208,7 +209,7 @@ namespace Ryujinx.HLE.FileSystem.Content
                     var nca = new Nca(_virtualFileSystem.KeySet, ncaFile.AsStorage());
                     if (nca.Header.ContentType != NcaContentType.Meta)
                     {
-                        Logger.PrintWarning(LogClass.Application, $"{ncaPath} is not a valid metadata file");
+                        Logger.Warning?.Print(LogClass.Application, $"{ncaPath} is not a valid metadata file");
 
                         continue;
                     }
@@ -229,11 +230,11 @@ namespace Ryujinx.HLE.FileSystem.Content
                         string ncaId = BitConverter.ToString(cnmt.ContentEntries[0].NcaId).Replace("-", "").ToLower();
                         if (!_aocData.TryAdd(cnmt.TitleId, new AocItem(containerPath, $"{ncaId}.nca", true)))
                         {
-                            Logger.PrintWarning(LogClass.Application, $"Duplicate AddOnContent detected. TitleId {cnmt.TitleId:X16}");
+                            Logger.Warning?.Print(LogClass.Application, $"Duplicate AddOnContent detected. TitleId {cnmt.TitleId:X16}");
                         }
                         else
                         {
-                            Logger.PrintInfo(LogClass.Application, $"Found AddOnContent with TitleId {cnmt.TitleId:X16}");
+                            Logger.Info?.Print(LogClass.Application, $"Found AddOnContent with TitleId {cnmt.TitleId:X16}");
                         }
                     }
                 }
@@ -244,11 +245,11 @@ namespace Ryujinx.HLE.FileSystem.Content
         {
             if (!_aocData.TryAdd(titleId, new AocItem(containerPath, ncaPath, enabled)))
             {
-                Logger.PrintWarning(LogClass.Application, $"Duplicate AddOnContent detected. TitleId {titleId:X16}");
+                Logger.Warning?.Print(LogClass.Application, $"Duplicate AddOnContent detected. TitleId {titleId:X16}");
             }
             else
             {
-                Logger.PrintInfo(LogClass.Application, $"Found AddOnContent with TitleId {titleId:X16}");
+                Logger.Info?.Print(LogClass.Application, $"Found AddOnContent with TitleId {titleId:X16}");
 
                 using (FileStream fileStream = File.OpenRead(containerPath))
                 using (PartitionFileSystem pfs = new PartitionFileSystem(fileStream.AsStorage()))
@@ -652,6 +653,15 @@ namespace Ryujinx.HLE.FileSystem.Content
 
         public SystemVersion VerifyFirmwarePackage(string firmwarePackage)
         {
+            _virtualFileSystem.Reload();
+
+            // LibHac.NcaHeader's DecryptHeader doesn't check if HeaderKey is empty and throws InvalidDataException instead
+            // So, we check it early for a better user experience.
+            if (_virtualFileSystem.KeySet.HeaderKey.IsEmpty())
+            {
+                throw new MissingKeyException("HeaderKey is empty. Cannot decrypt NCA headers.");
+            }
+
             Dictionary<ulong, List<(NcaContentType type, string path)>> updateNcas = new Dictionary<ulong, List<(NcaContentType, string)>>();
 
             if (Directory.Exists(firmwarePackage))
@@ -827,7 +837,7 @@ namespace Ryujinx.HLE.FileSystem.Content
 
                                             LibHac.Crypto.Sha256.GenerateSha256Hash(content, hash);
 
-                                            if (LibHac.Util.ArraysEqual(hash.ToArray(), meta.ContentEntries[0].Hash))
+                                            if (LibHac.Utilities.ArraysEqual(hash.ToArray(), meta.ContentEntries[0].Hash))
                                             {
                                                 updateNcas.Remove(metaEntry.TitleId);
                                             }
@@ -962,7 +972,7 @@ namespace Ryujinx.HLE.FileSystem.Content
 
                                 LibHac.Crypto.Sha256.GenerateSha256Hash(content, hash);
 
-                                if (LibHac.Util.ArraysEqual(hash.ToArray(), meta.ContentEntries[0].Hash))
+                                if (LibHac.Utilities.ArraysEqual(hash.ToArray(), meta.ContentEntries[0].Hash))
                                 {
                                     updateNcas.Remove(metaEntry.TitleId);
                                 }

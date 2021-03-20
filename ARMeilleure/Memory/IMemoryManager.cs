@@ -9,11 +9,13 @@ namespace ARMeilleure.Memory
         IntPtr PageTablePointer { get; }
 
         T Read<T>(ulong va) where T : unmanaged;
+        T ReadTracked<T>(ulong va) where T : unmanaged;
         void Write<T>(ulong va, T value) where T : unmanaged;
 
         ref T GetRef<T>(ulong va) where T : unmanaged;
-        ref T GetRefNoChecks<T>(ulong va) where T : unmanaged;
 
         bool IsMapped(ulong va);
+
+        void SignalMemoryTracking(ulong va, ulong size, bool write);
     }
 }

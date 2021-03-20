@@ -1,9 +1,10 @@
 using Ryujinx.Common;
-using Ryujinx.Cpu;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Process;
+using Ryujinx.Memory;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Ryujinx.HLE.HOS.Kernel.Memory
 {
@@ -27,11 +28,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         // needs to be split in 2, plus one block that will be the new one inserted.
         private const int MaxBlocksNeededForInsertion = 2;
 
-        private LinkedList<KMemoryBlock> _blocks;
+        private readonly LinkedList<KMemoryBlock> _blocks;
 
-        private MemoryManager _cpuMemory;
+        private readonly IVirtualMemoryManager _cpuMemory;
 
-        private KernelContext _context;
+        private readonly KernelContext _context;
 
         public ulong AddrSpaceStart { get; private set; }
         public ulong AddrSpaceEnd   { get; private set; }
@@ -73,7 +74,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
         private MersenneTwister _randomNumberGenerator;
 
-        public KMemoryManager(KernelContext context, MemoryManager cpuMemory)
+        public KMemoryManager(KernelContext context, IVirtualMemoryManager cpuMemory)
         {
             _context   = context;
             _cpuMemory = cpuMemory;
@@ -352,7 +353,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 addrSpaceStart,
                 addrSpacePagesCount,
                 MemoryState.Unmapped,
-                MemoryPermission.None,
+                KMemoryPermission.None,
                 MemoryAttribute.None));
 
             return KernelResult.Success;
@@ -362,13 +363,13 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             ulong            address,
             KPageList        pageList,
             MemoryState      state,
-            MemoryPermission permission)
+            KMemoryPermission permission)
         {
             ulong pagesCount = pageList.GetPagesCount();
 
             ulong size = pagesCount * PageSize;
 
-            if (!ValidateRegionForState(address, size, state))
+            if (!CanContain(address, size, state))
             {
                 return KernelResult.InvalidMemState;
             }
@@ -437,8 +438,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     size,
                     MemoryState.Mask,
                     stateExpected,
-                    MemoryPermission.None,
-                    MemoryPermission.None,
+                    KMemoryPermission.None,
+                    KMemoryPermission.None,
                     MemoryAttribute.Mask,
                     MemoryAttribute.None,
                     MemoryAttribute.IpcAndDeviceMapped,
@@ -467,13 +468,13 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             }
         }
 
-        public KernelResult MapNormalMemory(long address, long size, MemoryPermission permission)
+        public KernelResult MapNormalMemory(long address, long size, KMemoryPermission permission)
         {
             // TODO.
             return KernelResult.Success;
         }
 
-        public KernelResult MapIoMemory(long address, long size, MemoryPermission permission)
+        public KernelResult MapIoMemory(long address, long size, KMemoryPermission permission)
         {
             // TODO.
             return KernelResult.Success;
@@ -487,7 +488,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             ulong            regionStart,
             ulong            regionPagesCount,
             MemoryState      state,
-            MemoryPermission permission,
+            KMemoryPermission permission,
             out ulong        address)
         {
             address = 0;
@@ -496,7 +497,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
             ulong regionEndAddr = regionStart + regionSize;
 
-            if (!ValidateRegionForState(regionStart, regionSize, state))
+            if (!CanContain(regionStart, regionSize, state))
             {
                 return KernelResult.InvalidMemState;
             }
@@ -547,11 +548,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             ulong            address,
             ulong            pagesCount,
             MemoryState      state,
-            MemoryPermission permission)
+            KMemoryPermission permission)
         {
             ulong size = pagesCount * PageSize;
 
-            if (!ValidateRegionForState(address, size, state))
+            if (!CanContain(address, size, state))
             {
                 return KernelResult.InvalidMemState;
             }
@@ -596,13 +597,13 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     size,
                     MemoryState.Mask,
                     MemoryState.Heap,
-                    MemoryPermission.Mask,
-                    MemoryPermission.ReadAndWrite,
+                    KMemoryPermission.Mask,
+                    KMemoryPermission.ReadAndWrite,
                     MemoryAttribute.Mask,
                     MemoryAttribute.None,
                     MemoryAttribute.IpcAndDeviceMapped,
                     out MemoryState      state,
-                    out MemoryPermission permission,
+                    out KMemoryPermission permission,
                     out _);
 
                 success &= IsUnmapped(dst, size);
@@ -618,14 +619,14 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                     AddVaRangeToPageList(pageList, src, pagesCount);
 
-                    KernelResult result = MmuChangePermission(src, pagesCount, MemoryPermission.None);
+                    KernelResult result = MmuChangePermission(src, pagesCount, KMemoryPermission.None);
 
                     if (result != KernelResult.Success)
                     {
                         return result;
                     }
 
-                    result = MapPages(dst, pageList, MemoryPermission.None);
+                    result = MapPages(dst, pageList, KMemoryPermission.None);
 
                     if (result != KernelResult.Success)
                     {
@@ -634,7 +635,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                         return result;
                     }
 
-                    InsertBlock(src, pagesCount, state, MemoryPermission.None, MemoryAttribute.Borrowed);
+                    InsertBlock(src, pagesCount, state, KMemoryPermission.None, MemoryAttribute.Borrowed);
                     InsertBlock(dst, pagesCount, MemoryState.ModCodeStatic);
 
                     return KernelResult.Success;
@@ -657,8 +658,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     size,
                     MemoryState.Mask,
                     MemoryState.Heap,
-                    MemoryPermission.None,
-                    MemoryPermission.None,
+                    KMemoryPermission.None,
+                    KMemoryPermission.None,
                     MemoryAttribute.Mask,
                     MemoryAttribute.Borrowed,
                     MemoryAttribute.IpcAndDeviceMapped,
@@ -671,8 +672,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     PageSize,
                     MemoryState.UnmapProcessCodeMemoryAllowed,
                     MemoryState.UnmapProcessCodeMemoryAllowed,
-                    MemoryPermission.None,
-                    MemoryPermission.None,
+                    KMemoryPermission.None,
+                    KMemoryPermission.None,
                     MemoryAttribute.Mask,
                     MemoryAttribute.None,
                     MemoryAttribute.IpcAndDeviceMapped,
@@ -685,8 +686,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     size,
                     MemoryState.Mask,
                     state,
-                    MemoryPermission.None,
-                    MemoryPermission.None,
+                    KMemoryPermission.None,
+                    KMemoryPermission.None,
                     MemoryAttribute.Mask,
                     MemoryAttribute.None);
 
@@ -707,7 +708,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     }
 
                     InsertBlock(dst, pagesCount, MemoryState.Unmapped);
-                    InsertBlock(src, pagesCount, MemoryState.Heap, MemoryPermission.ReadAndWrite);
+                    InsertBlock(src, pagesCount, MemoryState.Heap, KMemoryPermission.ReadAndWrite);
 
                     return KernelResult.Success;
                 }
@@ -727,24 +728,24 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 return KernelResult.OutOfMemory;
             }
 
-            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
+            KProcess currentProcess = KernelStatic.GetCurrentProcess();
 
-            ulong currentHeapSize = GetHeapSize();
-
-            if (currentHeapSize <= size)
+            lock (_blocks)
             {
-                // Expand.
-                ulong diffSize = size - currentHeapSize;
+                ulong currentHeapSize = GetHeapSize();
 
-                lock (_blocks)
+                if (currentHeapSize <= size)
                 {
-                    if (currentProcess.ResourceLimit != null && diffSize != 0 &&
-                       !currentProcess.ResourceLimit.Reserve(LimitableResource.Memory, diffSize))
+                    // Expand.
+                    ulong sizeDelta = size - currentHeapSize;
+
+                    if (currentProcess.ResourceLimit != null && sizeDelta != 0 &&
+                        !currentProcess.ResourceLimit.Reserve(LimitableResource.Memory, sizeDelta))
                     {
                         return KernelResult.ResLimitExceeded;
                     }
 
-                    ulong pagesCount = diffSize / PageSize;
+                    ulong pagesCount = sizeDelta / PageSize;
 
                     KMemoryRegionManager region = GetMemoryRegionManager();
 
@@ -757,9 +758,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                             region.FreePages(pageList);
                         }
 
-                        if (currentProcess.ResourceLimit != null && diffSize != 0)
+                        if (currentProcess.ResourceLimit != null && sizeDelta != 0)
                         {
-                            currentProcess.ResourceLimit.Release(LimitableResource.Memory, diffSize);
+                            currentProcess.ResourceLimit.Release(LimitableResource.Memory, sizeDelta);
                         }
                     }
 
@@ -777,7 +778,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                         return KernelResult.OutOfResource;
                     }
 
-                    if (!IsUnmapped(_currentHeapAddr, diffSize))
+                    if (!IsUnmapped(_currentHeapAddr, sizeDelta))
                     {
                         CleanUpForError();
 
@@ -788,7 +789,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                         _currentHeapAddr,
                         pagesCount,
                         pageList,
-                        MemoryPermission.ReadAndWrite,
+                        KMemoryPermission.ReadAndWrite,
                         MemoryOperation.MapVa);
 
                     if (result != KernelResult.Success)
@@ -798,17 +799,14 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                         return result;
                     }
 
-                    InsertBlock(_currentHeapAddr, pagesCount, MemoryState.Heap, MemoryPermission.ReadAndWrite);
+                    InsertBlock(_currentHeapAddr, pagesCount, MemoryState.Heap, KMemoryPermission.ReadAndWrite);
                 }
-            }
-            else
-            {
-                // Shrink.
-                ulong freeAddr = HeapRegionStart + size;
-                ulong diffSize = currentHeapSize - size;
-
-                lock (_blocks)
+                else
                 {
+                    // Shrink.
+                    ulong freeAddr = HeapRegionStart + size;
+                    ulong sizeDelta = currentHeapSize - size;
+
                     if (!_blockAllocator.CanAllocate(MaxBlocksNeededForInsertion))
                     {
                         return KernelResult.OutOfResource;
@@ -816,11 +814,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                     if (!CheckRange(
                         freeAddr,
-                        diffSize,
+                        sizeDelta,
                         MemoryState.Mask,
                         MemoryState.Heap,
-                        MemoryPermission.Mask,
-                        MemoryPermission.ReadAndWrite,
+                        KMemoryPermission.Mask,
+                        KMemoryPermission.ReadAndWrite,
                         MemoryAttribute.Mask,
                         MemoryAttribute.None,
                         MemoryAttribute.IpcAndDeviceMapped,
@@ -831,7 +829,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                         return KernelResult.InvalidMemState;
                     }
 
-                    ulong pagesCount = diffSize / PageSize;
+                    ulong pagesCount = sizeDelta / PageSize;
 
                     KernelResult result = MmuUnmap(freeAddr, pagesCount);
 
@@ -840,13 +838,13 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                         return result;
                     }
 
-                    currentProcess.ResourceLimit?.Release(LimitableResource.Memory, BitUtils.AlignDown(diffSize, PageSize));
+                    currentProcess.ResourceLimit?.Release(LimitableResource.Memory, sizeDelta);
 
                     InsertBlock(freeAddr, pagesCount, MemoryState.Unmapped);
                 }
-            }
 
-            _currentHeapAddr = HeapRegionStart + size;
+                _currentHeapAddr = HeapRegionStart + size;
+            }
 
             address = HeapRegionStart;
 
@@ -889,13 +887,13 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     size,
                     MemoryState.AttributeChangeAllowed,
                     MemoryState.AttributeChangeAllowed,
-                    MemoryPermission.None,
-                    MemoryPermission.None,
+                    KMemoryPermission.None,
+                    KMemoryPermission.None,
                     MemoryAttribute.BorrowedAndIpcMapped,
                     MemoryAttribute.None,
                     MemoryAttribute.DeviceMappedAndUncached,
                     out MemoryState      state,
-                    out MemoryPermission permission,
+                    out KMemoryPermission permission,
                     out MemoryAttribute  attribute))
                 {
                     if (!_blockAllocator.CanAllocate(MaxBlocksNeededForInsertion))
@@ -935,9 +933,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     AddrSpaceEnd,
                     ~AddrSpaceEnd + 1,
                     MemoryState.Reserved,
-                    MemoryPermission.None,
+                    KMemoryPermission.None,
                     MemoryAttribute.None,
-                    MemoryPermission.None,
+                    KMemoryPermission.None,
                     0,
                     0);
             }
@@ -954,8 +952,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     size,
                     MemoryState.MapAllowed,
                     MemoryState.MapAllowed,
-                    MemoryPermission.Mask,
-                    MemoryPermission.ReadAndWrite,
+                    KMemoryPermission.Mask,
+                    KMemoryPermission.ReadAndWrite,
                     MemoryAttribute.Mask,
                     MemoryAttribute.None,
                     MemoryAttribute.IpcAndDeviceMapped,
@@ -978,18 +976,18 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                     AddVaRangeToPageList(pageList, src, pagesCount);
 
-                    KernelResult result = MmuChangePermission(src, pagesCount, MemoryPermission.None);
+                    KernelResult result = MmuChangePermission(src, pagesCount, KMemoryPermission.None);
 
                     if (result != KernelResult.Success)
                     {
                         return result;
                     }
 
-                    result = MapPages(dst, pageList, MemoryPermission.ReadAndWrite);
+                    result = MapPages(dst, pageList, KMemoryPermission.ReadAndWrite);
 
                     if (result != KernelResult.Success)
                     {
-                        if (MmuChangePermission(src, pagesCount, MemoryPermission.ReadAndWrite) != KernelResult.Success)
+                        if (MmuChangePermission(src, pagesCount, KMemoryPermission.ReadAndWrite) != KernelResult.Success)
                         {
                             throw new InvalidOperationException("Unexpected failure reverting memory permission.");
                         }
@@ -997,8 +995,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                         return result;
                     }
 
-                    InsertBlock(src, pagesCount, srcState, MemoryPermission.None, MemoryAttribute.Borrowed);
-                    InsertBlock(dst, pagesCount, MemoryState.Stack, MemoryPermission.ReadAndWrite);
+                    InsertBlock(src, pagesCount, srcState, KMemoryPermission.None, MemoryAttribute.Borrowed);
+                    InsertBlock(dst, pagesCount, MemoryState.Stack, KMemoryPermission.ReadAndWrite);
 
                     return KernelResult.Success;
                 }
@@ -1020,8 +1018,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     size,
                     MemoryState.Mask,
                     stateExpected,
-                    MemoryPermission.None,
-                    MemoryPermission.None,
+                    KMemoryPermission.None,
+                    KMemoryPermission.None,
                     MemoryAttribute.Mask,
                     MemoryAttribute.None,
                     MemoryAttribute.IpcAndDeviceMapped,
@@ -1061,8 +1059,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     size,
                     MemoryState.MapAllowed,
                     MemoryState.MapAllowed,
-                    MemoryPermission.Mask,
-                    MemoryPermission.None,
+                    KMemoryPermission.Mask,
+                    KMemoryPermission.None,
                     MemoryAttribute.Mask,
                     MemoryAttribute.Borrowed,
                     MemoryAttribute.IpcAndDeviceMapped,
@@ -1075,13 +1073,13 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     size,
                     MemoryState.Mask,
                     MemoryState.Stack,
-                    MemoryPermission.None,
-                    MemoryPermission.None,
+                    KMemoryPermission.None,
+                    KMemoryPermission.None,
                     MemoryAttribute.Mask,
                     MemoryAttribute.None,
                     MemoryAttribute.IpcAndDeviceMapped,
                     out _,
-                    out MemoryPermission dstPermission,
+                    out KMemoryPermission dstPermission,
                     out _);
 
                 if (success)
@@ -1111,7 +1109,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                         return result;
                     }
 
-                    result = MmuChangePermission(src, pagesCount, MemoryPermission.ReadAndWrite);
+                    result = MmuChangePermission(src, pagesCount, KMemoryPermission.ReadAndWrite);
 
                     if (result != KernelResult.Success)
                     {
@@ -1120,7 +1118,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                         return result;
                     }
 
-                    InsertBlock(src, pagesCount, srcState, MemoryPermission.ReadAndWrite);
+                    InsertBlock(src, pagesCount, srcState, KMemoryPermission.ReadAndWrite);
                     InsertBlock(dst, pagesCount, MemoryState.Unmapped);
 
                     return KernelResult.Success;
@@ -1132,83 +1130,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             }
         }
 
-        public KernelResult ReserveTransferMemory(ulong address, ulong size, MemoryPermission permission)
-        {
-            lock (_blocks)
-            {
-                if (CheckRange(
-                    address,
-                    size,
-                    MemoryState.TransferMemoryAllowed | MemoryState.IsPoolAllocated,
-                    MemoryState.TransferMemoryAllowed | MemoryState.IsPoolAllocated,
-                    MemoryPermission.Mask,
-                    MemoryPermission.ReadAndWrite,
-                    MemoryAttribute.Mask,
-                    MemoryAttribute.None,
-                    MemoryAttribute.IpcAndDeviceMapped,
-                    out MemoryState state,
-                    out _,
-                    out MemoryAttribute attribute))
-                {
-                    // TODO: Missing checks.
-
-                    if (!_blockAllocator.CanAllocate(MaxBlocksNeededForInsertion))
-                    {
-                        return KernelResult.OutOfResource;
-                    }
-
-                    ulong pagesCount = size / PageSize;
-
-                    attribute |= MemoryAttribute.Borrowed;
-
-                    InsertBlock(address, pagesCount, state, permission, attribute);
-
-                    return KernelResult.Success;
-                }
-                else
-                {
-                    return KernelResult.InvalidMemState;
-                }
-            }
-        }
-
-        public KernelResult ResetTransferMemory(ulong address, ulong size)
-        {
-            lock (_blocks)
-            {
-                if (CheckRange(
-                    address,
-                    size,
-                    MemoryState.TransferMemoryAllowed | MemoryState.IsPoolAllocated,
-                    MemoryState.TransferMemoryAllowed | MemoryState.IsPoolAllocated,
-                    MemoryPermission.None,
-                    MemoryPermission.None,
-                    MemoryAttribute.Mask,
-                    MemoryAttribute.Borrowed,
-                    MemoryAttribute.IpcAndDeviceMapped,
-                    out MemoryState state,
-                    out _,
-                    out _))
-                {
-                    if (!_blockAllocator.CanAllocate(MaxBlocksNeededForInsertion))
-                    {
-                        return KernelResult.OutOfResource;
-                    }
-
-                    ulong pagesCount = size / PageSize;
-
-                    InsertBlock(address, pagesCount, state, MemoryPermission.ReadAndWrite);
-
-                    return KernelResult.Success;
-                }
-                else
-                {
-                    return KernelResult.InvalidMemState;
-                }
-            }
-        }
-
-        public KernelResult SetProcessMemoryPermission(ulong address, ulong size, MemoryPermission permission)
+        public KernelResult SetProcessMemoryPermission(ulong address, ulong size, KMemoryPermission permission)
         {
             lock (_blocks)
             {
@@ -1217,20 +1139,20 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     size,
                     MemoryState.ProcessPermissionChangeAllowed,
                     MemoryState.ProcessPermissionChangeAllowed,
-                    MemoryPermission.None,
-                    MemoryPermission.None,
+                    KMemoryPermission.None,
+                    KMemoryPermission.None,
                     MemoryAttribute.Mask,
                     MemoryAttribute.None,
                     MemoryAttribute.IpcAndDeviceMapped,
                     out MemoryState      oldState,
-                    out MemoryPermission oldPermission,
+                    out KMemoryPermission oldPermission,
                     out _))
                 {
                     MemoryState newState = oldState;
 
                     // If writing into the code region is allowed, then we need
                     // to change it to mutable.
-                    if ((permission & MemoryPermission.Write) != 0)
+                    if ((permission & KMemoryPermission.Write) != 0)
                     {
                         if (oldState == MemoryState.CodeStatic)
                         {
@@ -1255,7 +1177,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                         ulong pagesCount = size / PageSize;
 
-                        MemoryOperation operation = (permission & MemoryPermission.Execute) != 0
+                        MemoryOperation operation = (permission & KMemoryPermission.Execute) != 0
                             ? MemoryOperation.ChangePermsAndAttributes
                             : MemoryOperation.ChangePermRw;
 
@@ -1303,7 +1225,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                 ulong remainingPages = remainingSize / PageSize;
 
-                KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
+                KProcess currentProcess = KernelStatic.GetCurrentProcess();
 
                 if (currentProcess.ResourceLimit != null &&
                    !currentProcess.ResourceLimit.Reserve(LimitableResource.Memory, remainingSize))
@@ -1349,10 +1271,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     address,
                     pagesCount,
                     MemoryState.Unmapped,
-                    MemoryPermission.None,
+                    KMemoryPermission.None,
                     MemoryAttribute.None,
                     MemoryState.Heap,
-                    MemoryPermission.ReadAndWrite,
+                    KMemoryPermission.ReadAndWrite,
                     MemoryAttribute.None);
             }
 
@@ -1433,7 +1355,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                     PhysicalMemoryUsage -= heapMappedSize;
 
-                    KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
+                    KProcess currentProcess = KernelStatic.GetCurrentProcess();
 
                     currentProcess.ResourceLimit?.Release(LimitableResource.Memory, heapMappedSize);
 
@@ -1489,7 +1411,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                             pagesCount,
                             srcPa,
                             true,
-                            MemoryPermission.ReadAndWrite,
+                            KMemoryPermission.ReadAndWrite,
                             MemoryOperation.MapPa);
 
                         dstVa      += pagesCount * PageSize;
@@ -1507,7 +1429,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             ulong            src,
             MemoryState      stateMask,
             MemoryState      stateExpected,
-            MemoryPermission permission,
+            KMemoryPermission permission,
             MemoryAttribute  attributeMask,
             MemoryAttribute  attributeExpected)
         {
@@ -1529,7 +1451,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             ulong            size,
             MemoryState      stateMask,
             MemoryState      stateExpected,
-            MemoryPermission permission,
+            KMemoryPermission permission,
             MemoryAttribute  attributeMask,
             MemoryAttribute  attributeExpected,
             ulong            src)
@@ -1553,7 +1475,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             ulong            serverAddress,
             MemoryState      stateMask,
             MemoryState      stateExpected,
-            MemoryPermission permission,
+            KMemoryPermission permission,
             MemoryAttribute  attributeMask,
             MemoryAttribute  attributeExpected,
             bool             toServer)
@@ -1582,17 +1504,35 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     attributeMask | MemoryAttribute.Uncached,
                     attributeExpected))
                 {
-                    KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
+                    KProcess currentProcess = KernelStatic.GetCurrentProcess();
 
-                    serverAddress = currentProcess.MemoryManager.GetDramAddressFromVa(serverAddress);
+                    while (size > 0)
+                    {
+                        ulong copySize = Math.Min(PageSize - (serverAddress & (PageSize - 1)), PageSize - (clientAddress & (PageSize - 1)));
 
-                    if (toServer)
-                    {
-                        _context.Memory.Copy(serverAddress, GetDramAddressFromVa(clientAddress), size);
-                    }
-                    else
-                    {
-                        _context.Memory.Copy(GetDramAddressFromVa(clientAddress), serverAddress, size);
+                        if (copySize > size)
+                        {
+                            copySize = size;
+                        }
+
+                        ulong serverDramAddr = currentProcess.MemoryManager.GetDramAddressFromVa(serverAddress);
+                        ulong clientDramAddr = GetDramAddressFromVa(clientAddress);
+
+                        if (serverDramAddr != clientDramAddr)
+                        {
+                            if (toServer)
+                            {
+                                _context.Memory.Copy(serverDramAddr, clientDramAddr, copySize);
+                            }
+                            else
+                            {
+                                _context.Memory.Copy(clientDramAddr, serverDramAddr, copySize);
+                            }
+                        }
+
+                        serverAddress += copySize;
+                        clientAddress += copySize;
+                        size -= copySize;
                     }
 
                     return KernelResult.Success;
@@ -1608,7 +1548,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             ulong            size,
             ulong            src,
             KMemoryManager   sourceMemMgr,
-            MemoryPermission permission,
+            KMemoryPermission permission,
             MemoryState      state,
             bool             copyData,
             out ulong        dst)
@@ -1647,7 +1587,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         private KernelResult GetPagesForMappingIntoAnotherProcess(
             ulong            address,
             ulong            size,
-            MemoryPermission permission,
+            KMemoryPermission permission,
             MemoryState      state,
             bool             copyData,
             bool             aslrDisabled,
@@ -1679,9 +1619,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 default: return KernelResult.InvalidCombination;
             }
 
-            MemoryPermission permissionMask = permission == MemoryPermission.ReadAndWrite
-                ? MemoryPermission.None
-                : MemoryPermission.Read;
+            KMemoryPermission permissionMask = permission == KMemoryPermission.ReadAndWrite
+                ? KMemoryPermission.None
+                : KMemoryPermission.Read;
 
             MemoryAttribute attributeMask = MemoryAttribute.Borrowed | MemoryAttribute.Uncached;
 
@@ -1691,6 +1631,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             }
 
             ulong addressRounded   = BitUtils.AlignUp  (address, PageSize);
+            ulong addressTruncated = BitUtils.AlignDown(address, PageSize);
             ulong endAddrRounded   = BitUtils.AlignUp  (endAddr, PageSize);
             ulong endAddrTruncated = BitUtils.AlignDown(endAddr, PageSize);
 
@@ -1703,11 +1644,16 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
             void CleanUpForError()
             {
+                if (visitedSize == 0)
+                {
+                    return;
+                }
+
                 ulong endAddrVisited = address + visitedSize;
 
-                foreach (KMemoryInfo info in IterateOverRange(address, endAddrVisited))
+                foreach (KMemoryInfo info in IterateOverRange(addressRounded, endAddrVisited))
                 {
-                    if ((info.Permission & MemoryPermission.ReadAndWrite) != permissionMask && info.IpcRefCount == 0)
+                    if ((info.Permission & KMemoryPermission.ReadAndWrite) != permissionMask && info.IpcRefCount == 0)
                     {
                         ulong blockAddress = GetAddrInRange(info, addressRounded);
                         ulong blockSize    = GetSizeInRange(info, addressRounded, endAddrVisited);
@@ -1728,46 +1674,52 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 }
             }
 
+            // Signal a read for any resources tracking reads in the region, as the other process is likely to use their data.
+            _cpuMemory.SignalMemoryTracking(addressTruncated, endAddrRounded - addressTruncated, false);
+
             lock (_blocks)
             {
                 KernelResult result;
 
-                foreach (KMemoryInfo info in IterateOverRange(address, endAddrRounded))
+                if (addressRounded < endAddrTruncated)
                 {
-                    // Check if the block state matches what we expect.
-                    if ((info.State      & stateMask)     != stateMask  ||
-                        (info.Permission & permission)    != permission ||
-                        (info.Attribute  & attributeMask) != MemoryAttribute.None)
+                    foreach (KMemoryInfo info in IterateOverRange(addressRounded, endAddrTruncated))
                     {
-                        CleanUpForError();
-
-                        return KernelResult.InvalidMemState;
-                    }
-
-                    ulong blockAddress = GetAddrInRange(info, addressRounded);
-                    ulong blockSize    = GetSizeInRange(info, addressRounded, endAddrTruncated);
-
-                    ulong blockPagesCount = blockSize / PageSize;
-
-                    if ((info.Permission & MemoryPermission.ReadAndWrite) != permissionMask && info.IpcRefCount == 0)
-                    {
-                        result = DoMmuOperation(
-                            blockAddress,
-                            blockPagesCount,
-                            0,
-                            false,
-                            permissionMask,
-                            MemoryOperation.ChangePermRw);
-
-                        if (result != KernelResult.Success)
+                        // Check if the block state matches what we expect.
+                        if ((info.State      & stateMask)     != stateMask  ||
+                            (info.Permission & permission)    != permission ||
+                            (info.Attribute  & attributeMask) != MemoryAttribute.None)
                         {
                             CleanUpForError();
 
-                            return result;
+                            return KernelResult.InvalidMemState;
                         }
-                    }
 
-                    visitedSize += blockSize;
+                        ulong blockAddress = GetAddrInRange(info, addressRounded);
+                        ulong blockSize    = GetSizeInRange(info, addressRounded, endAddrTruncated);
+
+                        ulong blockPagesCount = blockSize / PageSize;
+
+                        if ((info.Permission & KMemoryPermission.ReadAndWrite) != permissionMask && info.IpcRefCount == 0)
+                        {
+                            result = DoMmuOperation(
+                                blockAddress,
+                                blockPagesCount,
+                                0,
+                                false,
+                                permissionMask,
+                                MemoryOperation.ChangePermRw);
+
+                            if (result != KernelResult.Success)
+                            {
+                                CleanUpForError();
+
+                                return result;
+                            }
+                        }
+
+                        visitedSize += blockSize;
+                    }
                 }
 
                 result = GetPagesForIpcTransfer(address, size, copyData, aslrDisabled, region, out pageList);
@@ -1781,7 +1733,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                 if (visitedSize != 0)
                 {
-                    InsertBlock(address, visitedSize / PageSize, SetIpcMappingPermissions, permissionMask);
+                    InsertBlock(addressRounded, visitedSize / PageSize, SetIpcMappingPermissions, permissionMask);
                 }
             }
 
@@ -1796,25 +1748,31 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             MemoryRegion  region,
             out KPageList pageList)
         {
+            // When the start address is unaligned, we can't safely map the
+            // first page as it would expose other undesirable information on the
+            // target process. So, instead we allocate new pages, copy the data
+            // inside the range, and then clear the remaining space.
+            // The same also holds for the last page, if the end address
+            // (address + size) is also not aligned.
+
             pageList = null;
+
+            KPageList pages = new KPageList();
 
             ulong addressTruncated = BitUtils.AlignDown(address, PageSize);
             ulong addressRounded   = BitUtils.AlignUp  (address, PageSize);
 
             ulong endAddr = address + size;
 
-            ulong dstFirstPagePa = AllocateSinglePage(region, aslrDisabled);
-
-            if (dstFirstPagePa == 0)
-            {
-                return KernelResult.OutOfMemory;
-            }
-
-            ulong dstLastPagePa = 0;
+            ulong dstFirstPagePa = 0;
+            ulong dstLastPagePa  = 0;
 
             void CleanUpForError()
             {
-                FreeSinglePage(region, dstFirstPagePa);
+                if (dstFirstPagePa != 0)
+                {
+                    FreeSinglePage(region, dstFirstPagePa);
+                }
 
                 if (dstLastPagePa != 0)
                 {
@@ -1822,56 +1780,60 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 }
             }
 
-            ulong firstPageFillAddress = dstFirstPagePa;
-
-            if (!ConvertVaToPa(addressTruncated, out ulong srcFirstPagePa))
+            // Is the first page address aligned?
+            // If not, allocate a new page and copy the unaligned chunck.
+            if (addressTruncated < addressRounded)
             {
-                CleanUpForError();
+                dstFirstPagePa = AllocateSinglePage(region, aslrDisabled);
 
-                return KernelResult.InvalidMemState;
-            }
+                if (dstFirstPagePa == 0)
+                {
+                    return KernelResult.OutOfMemory;
+                }
 
-            ulong unusedSizeAfter;
+                ulong firstPageFillAddress = dstFirstPagePa;
 
-            // When the start address is unaligned, we can't safely map the
-            // first page as it would expose other undesirable information on the
-            // target process. So, instead we allocate new pages, copy the data
-            // inside the range, and then clear the remaining space.
-            // The same also holds for the last page, if the end address
-            // (address + size) is also not aligned.
-            if (copyData)
-            {
-                ulong unusedSizeBefore = address - addressTruncated;
+                if (!TryConvertVaToPa(addressTruncated, out ulong srcFirstPagePa))
+                {
+                    CleanUpForError();
 
-                _context.Memory.ZeroFill(dstFirstPagePa, unusedSizeBefore);
+                    return KernelResult.InvalidMemState;
+                }
 
-                ulong copySize = addressRounded <= endAddr ? addressRounded - address : size;
+                ulong unusedSizeAfter;
 
-                _context.Memory.Copy(
-                    GetDramAddressFromPa(dstFirstPagePa + unusedSizeBefore),
-                    GetDramAddressFromPa(srcFirstPagePa + unusedSizeBefore), copySize);
+                if (copyData)
+                {
+                    ulong unusedSizeBefore = address - addressTruncated;
 
-                firstPageFillAddress += unusedSizeBefore + copySize;
+                    _context.Memory.ZeroFill(GetDramAddressFromPa(dstFirstPagePa), unusedSizeBefore);
 
-                unusedSizeAfter = addressRounded > endAddr ? addressRounded - endAddr : 0;
-            }
-            else
-            {
-                unusedSizeAfter = PageSize;
-            }
+                    ulong copySize = addressRounded <= endAddr ? addressRounded - address : size;
 
-            if (unusedSizeAfter != 0)
-            {
-                _context.Memory.ZeroFill(firstPageFillAddress, unusedSizeAfter);
-            }
+                    _context.Memory.Copy(
+                        GetDramAddressFromPa(dstFirstPagePa + unusedSizeBefore),
+                        GetDramAddressFromPa(srcFirstPagePa + unusedSizeBefore), copySize);
 
-            KPageList pages = new KPageList();
+                    firstPageFillAddress += unusedSizeBefore + copySize;
 
-            if (pages.AddRange(dstFirstPagePa, 1) != KernelResult.Success)
-            {
-                CleanUpForError();
+                    unusedSizeAfter = addressRounded > endAddr ? addressRounded - endAddr : 0;
+                }
+                else
+                {
+                    unusedSizeAfter = PageSize;
+                }
 
-                return KernelResult.OutOfResource;
+                if (unusedSizeAfter != 0)
+                {
+                    _context.Memory.ZeroFill(GetDramAddressFromPa(firstPageFillAddress), unusedSizeAfter);
+                }
+
+                if (pages.AddRange(dstFirstPagePa, 1) != KernelResult.Success)
+                {
+                    CleanUpForError();
+
+                    return KernelResult.OutOfResource;
+                }
             }
 
             ulong endAddrTruncated = BitUtils.AlignDown(endAddr, PageSize);
@@ -1884,9 +1846,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 AddVaRangeToPageList(pages, addressRounded, alignedPagesCount);
             }
 
-            if (endAddrTruncated != endAddrRounded)
+            // Is the last page end address aligned?
+            // If not, allocate a new page and copy the unaligned chunck.
+            if (endAddrTruncated < endAddrRounded && (addressTruncated == addressRounded || addressTruncated < endAddrTruncated))
             {
-                // End is also not aligned...
                 dstLastPagePa = AllocateSinglePage(region, aslrDisabled);
 
                 if (dstLastPagePa == 0)
@@ -1898,12 +1861,14 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                 ulong lastPageFillAddr = dstLastPagePa;
 
-                if (!ConvertVaToPa(endAddrTruncated, out ulong srcLastPagePa))
+                if (!TryConvertVaToPa(endAddrTruncated, out ulong srcLastPagePa))
                 {
                     CleanUpForError();
 
                     return KernelResult.InvalidMemState;
                 }
+
+                ulong unusedSizeAfter;
 
                 if (copyData)
                 {
@@ -1922,9 +1887,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     unusedSizeAfter = PageSize;
                 }
 
-                _context.Memory.ZeroFill(lastPageFillAddr, unusedSizeAfter);
+                _context.Memory.ZeroFill(GetDramAddressFromPa(lastPageFillAddr), unusedSizeAfter);
 
-                if (pages.AddRange(dstFirstPagePa, 1) != KernelResult.Success)
+                if (pages.AddRange(dstLastPagePa, 1) != KernelResult.Success)
                 {
                     CleanUpForError();
 
@@ -1954,12 +1919,12 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         private KernelResult MapPagesFromAnotherProcess(
             ulong            size,
             ulong            address,
-            MemoryPermission permission,
+            KMemoryPermission permission,
             MemoryState      state,
             KPageList        pageList,
-            out ulong        mappedVa)
+            out ulong        dst)
         {
-            mappedVa = 0;
+            dst = 0;
 
             lock (_blocks)
             {
@@ -2005,7 +1970,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                 InsertBlock(va, neededPagesCount, state, permission);
 
-                mappedVa = va;
+                dst = va + (address - addressTruncated);
             }
 
             return KernelResult.Success;
@@ -2032,8 +1997,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     size,
                     MemoryState.Mask,
                     state,
-                    MemoryPermission.Read,
-                    MemoryPermission.Read,
+                    KMemoryPermission.Read,
+                    KMemoryPermission.Read,
                     MemoryAttribute.Mask,
                     MemoryAttribute.None,
                     MemoryAttribute.IpcAndDeviceMapped,
@@ -2047,16 +2012,30 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     }
 
                     ulong addressTruncated = BitUtils.AlignDown(address, PageSize);
+                    ulong addressRounded   = BitUtils.AlignUp  (address, PageSize);
+                    ulong endAddrTruncated = BitUtils.AlignDown(endAddr, PageSize);
                     ulong endAddrRounded   = BitUtils.AlignUp  (endAddr, PageSize);
 
                     ulong pagesCount = (endAddrRounded - addressTruncated) / PageSize;
+
+                    // Free pages we had to create on-demand, if any of the buffer was not page aligned.
+                    // Real kernel has page ref counting, so this is done as part of the unmap operation.
+                    if (addressTruncated != addressRounded)
+                    {
+                        FreeSinglePage(_memRegion, ConvertVaToPa(addressTruncated));
+                    }
+
+                    if (endAddrTruncated < endAddrRounded && (addressTruncated == addressRounded || addressTruncated < endAddrTruncated))
+                    {
+                        FreeSinglePage(_memRegion, ConvertVaToPa(endAddrTruncated));
+                    }
 
                     KernelResult result = DoMmuOperation(
                         addressTruncated,
                         pagesCount,
                         0,
                         false,
-                        MemoryPermission.None,
+                        KMemoryPermission.None,
                         MemoryOperation.Unmap);
 
                     if (result == KernelResult.Success)
@@ -2078,9 +2057,16 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             ulong endAddr = address + size;
 
             ulong addressRounded   = BitUtils.AlignUp  (address, PageSize);
+            ulong addressTruncated = BitUtils.AlignDown(address, PageSize);
+            ulong endAddrRounded   = BitUtils.AlignUp  (endAddr, PageSize);
             ulong endAddrTruncated = BitUtils.AlignDown(endAddr, PageSize);
 
-            ulong pagesCount = (endAddrTruncated - addressRounded) / PageSize;
+            ulong pagesCount = addressRounded < endAddrTruncated ? (endAddrTruncated - addressRounded) / PageSize : 0;
+
+            if (pagesCount == 0)
+            {
+                return KernelResult.Success;
+            }
 
             MemoryState stateMask;
 
@@ -2108,9 +2094,12 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 return KernelResult.OutOfResource;
             }
 
+            // Anything on the client side should see this memory as modified.
+            _cpuMemory.SignalMemoryTracking(addressTruncated, endAddrRounded - addressTruncated, true);
+
             lock (_blocks)
             {
-                foreach (KMemoryInfo info in IterateOverRange(address, endAddrTruncated))
+                foreach (KMemoryInfo info in IterateOverRange(addressRounded, endAddrTruncated))
                 {
                     // Check if the block state matches what we expect.
                     if ((info.State      & stateMask)     != stateMask ||
@@ -2140,41 +2129,62 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                         }
                     }
                 }
+
+                InsertBlock(addressRounded, pagesCount, RestoreIpcMappingPermissions);
+
+                return KernelResult.Success;
             }
-
-            InsertBlock(address, pagesCount, RestoreIpcMappingPermissions);
-
-            return KernelResult.Success;
         }
 
-        public KernelResult UnborrowIpcBuffer(ulong address, ulong size)
+        public KernelResult BorrowIpcBuffer(ulong address, ulong size)
         {
-            return ClearAttributesAndChangePermission(
+            return SetAttributesAndChangePermission(
                 address,
                 size,
                 MemoryState.IpcBufferAllowed,
                 MemoryState.IpcBufferAllowed,
-                MemoryPermission.None,
-                MemoryPermission.None,
+                KMemoryPermission.Mask,
+                KMemoryPermission.ReadAndWrite,
                 MemoryAttribute.Mask,
-                MemoryAttribute.Borrowed,
-                MemoryPermission.ReadAndWrite,
+                MemoryAttribute.None,
+                KMemoryPermission.None,
                 MemoryAttribute.Borrowed);
         }
 
-        private KernelResult ClearAttributesAndChangePermission(
+        public KernelResult BorrowTransferMemory(KPageList pageList, ulong address, ulong size, KMemoryPermission permission)
+        {
+            return SetAttributesAndChangePermission(
+                address,
+                size,
+                MemoryState.TransferMemoryAllowed,
+                MemoryState.TransferMemoryAllowed,
+                KMemoryPermission.Mask,
+                KMemoryPermission.ReadAndWrite,
+                MemoryAttribute.Mask,
+                MemoryAttribute.None,
+                permission,
+                MemoryAttribute.Borrowed,
+                pageList);
+        }
+
+        private KernelResult SetAttributesAndChangePermission(
             ulong            address,
             ulong            size,
             MemoryState      stateMask,
             MemoryState      stateExpected,
-            MemoryPermission permissionMask,
-            MemoryPermission permissionExpected,
+            KMemoryPermission permissionMask,
+            KMemoryPermission permissionExpected,
             MemoryAttribute  attributeMask,
             MemoryAttribute  attributeExpected,
-            MemoryPermission newPermission,
-            MemoryAttribute  attributeClearMask,
+            KMemoryPermission newPermission,
+            MemoryAttribute  attributeSetMask,
             KPageList        pageList = null)
         {
+            if (address + size <= address || !InsideAddrSpace(address, size))
+            {
+                return KernelResult.InvalidMemState;
+            }
+
             lock (_blocks)
             {
                 if (CheckRange(
@@ -2188,7 +2198,118 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     attributeExpected,
                     MemoryAttribute.IpcAndDeviceMapped,
                     out MemoryState      oldState,
-                    out MemoryPermission oldPermission,
+                    out KMemoryPermission oldPermission,
+                    out MemoryAttribute  oldAttribute))
+                {
+                    ulong pagesCount = size / PageSize;
+
+                    if (pageList != null)
+                    {
+                        AddVaRangeToPageList(pageList, address, pagesCount);
+                    }
+
+                    if (!_blockAllocator.CanAllocate(MaxBlocksNeededForInsertion))
+                    {
+                        return KernelResult.OutOfResource;
+                    }
+
+                    if (newPermission == KMemoryPermission.None)
+                    {
+                        newPermission = oldPermission;
+                    }
+
+                    if (newPermission != oldPermission)
+                    {
+                        KernelResult result = DoMmuOperation(
+                            address,
+                            pagesCount,
+                            0,
+                            false,
+                            newPermission,
+                            MemoryOperation.ChangePermRw);
+
+                        if (result != KernelResult.Success)
+                        {
+                            return result;
+                        }
+                    }
+
+                    MemoryAttribute newAttribute = oldAttribute | attributeSetMask;
+
+                    InsertBlock(address, pagesCount, oldState, newPermission, newAttribute);
+
+                    return KernelResult.Success;
+                }
+                else
+                {
+                    return KernelResult.InvalidMemState;
+                }
+            }
+        }
+
+        public KernelResult UnborrowIpcBuffer(ulong address, ulong size)
+        {
+            return ClearAttributesAndChangePermission(
+                address,
+                size,
+                MemoryState.IpcBufferAllowed,
+                MemoryState.IpcBufferAllowed,
+                KMemoryPermission.None,
+                KMemoryPermission.None,
+                MemoryAttribute.Mask,
+                MemoryAttribute.Borrowed,
+                KMemoryPermission.ReadAndWrite,
+                MemoryAttribute.Borrowed);
+        }
+
+        public KernelResult UnborrowTransferMemory(ulong address, ulong size, KPageList pageList)
+        {
+            return ClearAttributesAndChangePermission(
+                address,
+                size,
+                MemoryState.TransferMemoryAllowed,
+                MemoryState.TransferMemoryAllowed,
+                KMemoryPermission.None,
+                KMemoryPermission.None,
+                MemoryAttribute.Mask,
+                MemoryAttribute.Borrowed,
+                KMemoryPermission.ReadAndWrite,
+                MemoryAttribute.Borrowed,
+                pageList);
+        }
+
+        private KernelResult ClearAttributesAndChangePermission(
+            ulong            address,
+            ulong            size,
+            MemoryState      stateMask,
+            MemoryState      stateExpected,
+            KMemoryPermission permissionMask,
+            KMemoryPermission permissionExpected,
+            MemoryAttribute  attributeMask,
+            MemoryAttribute  attributeExpected,
+            KMemoryPermission newPermission,
+            MemoryAttribute  attributeClearMask,
+            KPageList        pageList = null)
+        {
+            if (address + size <= address || !InsideAddrSpace(address, size))
+            {
+                return KernelResult.InvalidMemState;
+            }
+
+            lock (_blocks)
+            {
+                if (CheckRange(
+                    address,
+                    size,
+                    stateMask     | MemoryState.IsPoolAllocated,
+                    stateExpected | MemoryState.IsPoolAllocated,
+                    permissionMask,
+                    permissionExpected,
+                    attributeMask,
+                    attributeExpected,
+                    MemoryAttribute.IpcAndDeviceMapped,
+                    out MemoryState      oldState,
+                    out KMemoryPermission oldPermission,
                     out MemoryAttribute  oldAttribute))
                 {
                     ulong pagesCount = size / PageSize;
@@ -2210,7 +2331,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                         return KernelResult.OutOfResource;
                     }
 
-                    if (newPermission == MemoryPermission.None)
+                    if (newPermission == KMemoryPermission.None)
                     {
                         newPermission = oldPermission;
                     }
@@ -2250,7 +2371,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
             while (address < start + pagesCount * PageSize)
             {
-                if (!ConvertVaToPa(address, out ulong pa))
+                if (!TryConvertVaToPa(address, out ulong pa))
                 {
                     throw new InvalidOperationException("Unexpected failure translating virtual address.");
                 }
@@ -2296,8 +2417,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 size,
                 MemoryState.Mask,
                 MemoryState.Unmapped,
-                MemoryPermission.Mask,
-                MemoryPermission.None,
+                KMemoryPermission.Mask,
+                KMemoryPermission.None,
                 MemoryAttribute.Mask,
                 MemoryAttribute.None,
                 MemoryAttribute.IpcAndDeviceMapped,
@@ -2311,13 +2432,13 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             ulong                size,
             MemoryState          stateMask,
             MemoryState          stateExpected,
-            MemoryPermission     permissionMask,
-            MemoryPermission     permissionExpected,
+            KMemoryPermission     permissionMask,
+            KMemoryPermission     permissionExpected,
             MemoryAttribute      attributeMask,
             MemoryAttribute      attributeExpected,
             MemoryAttribute      attributeIgnoreMask,
             out MemoryState      outState,
-            out MemoryPermission outPermission,
+            out KMemoryPermission outPermission,
             out MemoryAttribute  outAttribute)
         {
             ulong endAddr = address + size;
@@ -2327,7 +2448,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             KMemoryInfo info = node.Value.GetInfo();
 
             MemoryState      firstState      = info.State;
-            MemoryPermission firstPermission = info.Permission;
+            KMemoryPermission firstPermission = info.Permission;
             MemoryAttribute  firstAttribute  = info.Attribute;
 
             do
@@ -2343,7 +2464,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     (firstPermission & permissionMask)      != permissionExpected)
                 {
                     outState      = MemoryState.Unmapped;
-                    outPermission = MemoryPermission.None;
+                    outPermission = KMemoryPermission.None;
                     outAttribute  = MemoryAttribute.None;
 
                     return false;
@@ -2363,8 +2484,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             ulong            size,
             MemoryState      stateMask,
             MemoryState      stateExpected,
-            MemoryPermission permissionMask,
-            MemoryPermission permissionExpected,
+            KMemoryPermission permissionMask,
+            KMemoryPermission permissionExpected,
             MemoryAttribute  attributeMask,
             MemoryAttribute  attributeExpected)
         {
@@ -2401,10 +2522,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             ulong            baseAddress,
             ulong            pagesCount,
             MemoryState      oldState,
-            MemoryPermission oldPermission,
+            KMemoryPermission oldPermission,
             MemoryAttribute  oldAttribute,
             MemoryState      newState,
-            MemoryPermission newPermission,
+            KMemoryPermission newPermission,
             MemoryAttribute  newAttribute)
         {
             // Insert new block on the list only on areas where the state
@@ -2464,13 +2585,15 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             }
 
             _blockAllocator.Count += _blocks.Count - oldCount;
+
+            ValidateInternalState();
         }
 
         private void InsertBlock(
             ulong            baseAddress,
             ulong            pagesCount,
             MemoryState      state,
-            MemoryPermission permission = MemoryPermission.None,
+            KMemoryPermission permission = KMemoryPermission.None,
             MemoryAttribute  attribute  = MemoryAttribute.None)
         {
             // Inserts new block at the list, replacing and splitting
@@ -2516,25 +2639,27 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             }
 
             _blockAllocator.Count += _blocks.Count - oldCount;
+
+            ValidateInternalState();
         }
 
-        private static void SetIpcMappingPermissions(KMemoryBlock block, MemoryPermission permission)
+        private static void SetIpcMappingPermissions(KMemoryBlock block, KMemoryPermission permission)
         {
             block.SetIpcMappingPermission(permission);
         }
 
-        private static void RestoreIpcMappingPermissions(KMemoryBlock block, MemoryPermission permission)
+        private static void RestoreIpcMappingPermissions(KMemoryBlock block, KMemoryPermission permission)
         {
             block.RestoreIpcMappingPermission();
         }
 
-        private delegate void BlockMutator(KMemoryBlock block, MemoryPermission newPerm);
+        private delegate void BlockMutator(KMemoryBlock block, KMemoryPermission newPerm);
 
         private void InsertBlock(
             ulong            baseAddress,
             ulong            pagesCount,
             BlockMutator     blockMutate,
-            MemoryPermission permission = MemoryPermission.None)
+            KMemoryPermission permission = KMemoryPermission.None)
         {
             // Inserts new block at the list, replacing and splitting
             // existing blocks as needed, then calling the callback
@@ -2582,6 +2707,31 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             }
 
             _blockAllocator.Count += _blocks.Count - oldCount;
+
+            ValidateInternalState();
+        }
+
+        [Conditional("DEBUG")]
+        private void ValidateInternalState()
+        {
+            ulong expectedAddress = 0;
+
+            LinkedListNode<KMemoryBlock> node = _blocks.First;
+
+            while (node != null)
+            {
+                LinkedListNode<KMemoryBlock> newNode = node;
+
+                KMemoryBlock currBlock = node.Value;
+
+                Debug.Assert(currBlock.BaseAddress == expectedAddress);
+
+                expectedAddress = currBlock.BaseAddress + currBlock.PagesCount * PageSize;
+
+                node = newNode.Next;
+            }
+
+            Debug.Assert(expectedAddress == AddrSpaceEnd);
         }
 
         private LinkedListNode<KMemoryBlock> MergeEqualStateNeighbors(LinkedListNode<KMemoryBlock> node)
@@ -2787,13 +2937,12 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             return null;
         }
 
-        private bool ValidateRegionForState(ulong address, ulong size, MemoryState state)
+        public bool CanContain(ulong address, ulong size, MemoryState state)
         {
             ulong endAddr = address + size;
 
-            ulong regionBaseAddr = GetBaseAddrForState(state);
-
-            ulong regionEndAddr = regionBaseAddr + GetSizeForState(state);
+            ulong regionBaseAddr = GetBaseAddress(state);
+            ulong regionEndAddr = regionBaseAddr + GetSize(state);
 
             bool InsideRegion()
             {
@@ -2802,17 +2951,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                        endAddr - 1    <= regionEndAddr - 1;
             }
 
-            bool OutsideHeapRegion()
-            {
-                return endAddr <= HeapRegionStart ||
-                       address >= HeapRegionEnd;
-            }
-
-            bool OutsideMapRegion()
-            {
-                return endAddr <= AliasRegionStart ||
-                       address >= AliasRegionEnd;
-            }
+            bool OutsideHeapRegion() => endAddr <= HeapRegionStart ||  address >= HeapRegionEnd;
+            bool OutsideAliasRegion() => endAddr <= AliasRegionStart || address >= AliasRegionEnd;
 
             switch (state)
             {
@@ -2830,10 +2970,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 case MemoryState.ProcessMemory:
                 case MemoryState.CodeReadOnly:
                 case MemoryState.CodeWritable:
-                    return InsideRegion() && OutsideHeapRegion() && OutsideMapRegion();
+                    return InsideRegion() && OutsideHeapRegion() && OutsideAliasRegion();
 
                 case MemoryState.Heap:
-                    return InsideRegion() && OutsideMapRegion();
+                    return InsideRegion() && OutsideAliasRegion();
 
                 case MemoryState.IpcBuffer0:
                 case MemoryState.IpcBuffer1:
@@ -2847,7 +2987,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             throw new ArgumentException($"Invalid state value \"{state}\".");
         }
 
-        private ulong GetBaseAddrForState(MemoryState state)
+        private ulong GetBaseAddress(MemoryState state)
         {
             switch (state)
             {
@@ -2886,7 +3026,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             throw new ArgumentException($"Invalid state value \"{state}\".");
         }
 
-        private ulong GetSizeForState(MemoryState state)
+        private ulong GetSize(MemoryState state)
         {
             switch (state)
             {
@@ -2961,7 +3101,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             }
         }
 
-        private KernelResult MapPages(ulong address, KPageList pageList, MemoryPermission permission)
+        private KernelResult MapPages(ulong address, KPageList pageList, KMemoryPermission permission)
         {
             ulong currAddr = address;
 
@@ -3001,11 +3141,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 pagesCount,
                 0,
                 false,
-                MemoryPermission.None,
+                KMemoryPermission.None,
                 MemoryOperation.Unmap);
         }
 
-        private KernelResult MmuChangePermission(ulong address, ulong pagesCount, MemoryPermission permission)
+        private KernelResult MmuChangePermission(ulong address, ulong pagesCount, KMemoryPermission permission)
         {
             return DoMmuOperation(
                 address,
@@ -3021,7 +3161,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             ulong            pagesCount,
             ulong            srcPa,
             bool             map,
-            MemoryPermission permission,
+            KMemoryPermission permission,
             MemoryOperation  operation)
         {
             if (map != (operation == MemoryOperation.MapPa))
@@ -3082,7 +3222,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             ulong            address,
             ulong            pagesCount,
             KPageList        pageList,
-            MemoryPermission permission,
+            KMemoryPermission permission,
             MemoryOperation  operation)
         {
             if (operation != MemoryOperation.MapVa)
@@ -3117,7 +3257,17 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             return _cpuMemory.GetPhysicalAddress(va);
         }
 
-        public bool ConvertVaToPa(ulong va, out ulong pa)
+        public ulong ConvertVaToPa(ulong va)
+        {
+            if (!TryConvertVaToPa(va, out ulong pa))
+            {
+                throw new ArgumentException($"Invalid virtual address 0x{va:X} specified.");
+            }
+
+            return pa;
+        }
+
+        public bool TryConvertVaToPa(ulong va, out ulong pa)
         {
             pa = DramMemoryMap.DramBase + _cpuMemory.GetPhysicalAddress(va);
 

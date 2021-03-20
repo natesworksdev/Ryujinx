@@ -33,6 +33,11 @@ namespace Ryujinx.Graphics.Gpu.State
         private readonly Register[] _registers;
 
         /// <summary>
+        /// Gets or sets the shadow ram control used for this sub-channel.
+        /// </summary>
+        public ShadowRamControl ShadowRamControl { get; set; }
+
+        /// <summary>
         /// Creates a new instance of the GPU state.
         /// </summary>
         public GpuState()
@@ -72,14 +77,15 @@ namespace Ryujinx.Graphics.Gpu.State
         /// Calls a GPU method, using this state.
         /// </summary>
         /// <param name="meth">The GPU method to be called</param>
-        /// <param name="shadowCtrl">Shadow RAM control register value</param>
-        public void CallMethod(MethodParams meth, ShadowRamControl shadowCtrl)
+        public void CallMethod(MethodParams meth)
         {
             int value = meth.Argument;
 
             // Methods < 0x80 shouldn't be affected by shadow RAM at all.
             if (meth.Method >= 0x80)
             {
+                ShadowRamControl shadowCtrl = ShadowRamControl;
+
                 // TODO: Figure out what TrackWithFilter does, compared to Track.
                 if (shadowCtrl == ShadowRamControl.Track ||
                     shadowCtrl == ShadowRamControl.TrackWithFilter)
@@ -173,6 +179,11 @@ namespace Ryujinx.Graphics.Gpu.State
             {
                 Set(MethodOffset.BlendState, index, BlendState.Default);
             }
+
+            // Default Point Parameters
+            memory[(int)MethodOffset.PointSpriteEnable] = 1;
+            memory[(int)MethodOffset.PointSize] = 0x3F800000; // 1.0f
+            memory[(int)MethodOffset.PointCoordReplace] = 0x8; // Enable
         }
 
         /// <summary>
@@ -346,7 +357,7 @@ namespace Ryujinx.Graphics.Gpu.State
         /// <param name="offset">Register offset</param>
         /// <param name="index">Index for indexed data</param>
         /// <returns>The data at the specified location</returns>
-        public T Get<T>(MethodOffset offset, int index) where T : struct
+        public T Get<T>(MethodOffset offset, int index) where T : unmanaged
         {
             Register register = _registers[(int)offset];
 
@@ -364,9 +375,20 @@ namespace Ryujinx.Graphics.Gpu.State
         /// <typeparam name="T">Type of the data</typeparam>
         /// <param name="offset">Register offset</param>
         /// <returns>The data at the specified location</returns>
-        public T Get<T>(MethodOffset offset) where T : struct
+        public T Get<T>(MethodOffset offset) where T : unmanaged
         {
             return MemoryMarshal.Cast<int, T>(_memory.AsSpan().Slice((int)offset))[0];
+        }
+
+        /// <summary>
+        /// Gets a span of the data at a given register offset.
+        /// </summary>
+        /// <param name="offset">Register offset</param>
+        /// <param name="length">Length of the data in bytes</param>
+        /// <returns>The data at the specified location</returns>
+        public Span<byte> GetSpan(MethodOffset offset, int length)
+        {
+            return MemoryMarshal.Cast<int, byte>(_memory.AsSpan().Slice((int)offset)).Slice(0, length);
         }
 
         /// <summary>
@@ -376,7 +398,7 @@ namespace Ryujinx.Graphics.Gpu.State
         /// <param name="offset">Register offset</param>
         /// <param name="index">Index for indexed data</param>
         /// <param name="data">The data to set</param>
-        public void Set<T>(MethodOffset offset, int index, T data) where T : struct
+        public void Set<T>(MethodOffset offset, int index, T data) where T : unmanaged
         {
             Register register = _registers[(int)offset];
 
@@ -394,7 +416,7 @@ namespace Ryujinx.Graphics.Gpu.State
         /// <typeparam name="T">Type of the data</typeparam>
         /// <param name="offset">Register offset</param>
         /// <param name="data">The data to set</param>
-        public void Set<T>(MethodOffset offset, T data) where T : struct
+        public void Set<T>(MethodOffset offset, T data) where T : unmanaged
         {
             ReadOnlySpan<int> intSpan = MemoryMarshal.Cast<T, int>(MemoryMarshal.CreateReadOnlySpan(ref data, 1));
             intSpan.CopyTo(_memory.AsSpan().Slice((int)offset, intSpan.Length));

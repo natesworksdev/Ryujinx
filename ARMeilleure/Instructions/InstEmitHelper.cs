@@ -56,7 +56,10 @@ namespace ARMeilleure.Instructions
         {
             if (regIndex == RegisterAlias.Aarch32Pc)
             {
-                context.StoreToContext();
+                if (!IsA32Return(context))
+                {
+                    context.StoreToContext();
+                }
 
                 EmitBxWritePc(context, value);
             }
@@ -169,7 +172,7 @@ namespace ARMeilleure.Instructions
 
             SetFlag(context, PState.TFlag, mode);
 
-            Operand addr = context.ConditionalSelect(mode, context.BitwiseOr(pc, Const((int)InstEmitFlowHelper.CallFlag)), context.BitwiseAnd(pc, Const(~3)));
+            Operand addr = context.ConditionalSelect(mode, pc, context.BitwiseAnd(pc, Const(~3)));
 
             InstEmitFlowHelper.EmitVirtualJump(context, addr, isReturn);
         }

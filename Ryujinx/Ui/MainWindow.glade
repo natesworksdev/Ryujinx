@@ -65,13 +65,23 @@
                       </object>
                     </child>
                     <child>
+                      <object class="GtkMenuItem" id="OpenLogsFolder">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="tooltip_text" translatable="yes">Opens the folder where logs are written to.</property>
+                        <property name="label" translatable="yes">Open Logs Folder</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="OpenLogsFolder_Pressed" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
                       <object class="GtkSeparatorMenuItem">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkMenuItem" id="Exit">
+                      <object class="GtkMenuItem" id="ExitMenuItem">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="tooltip_text" translatable="yes">Exit Ryujinx</property>
@@ -85,7 +95,7 @@
               </object>
             </child>
             <child>
-              <object class="GtkMenuItem" id="OptionsMenu">
+              <object class="GtkMenuItem" id="_optionMenu">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">Options</property>
@@ -103,13 +113,12 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkMenuItem" id="_stopEmulation">
+                      <object class="GtkCheckMenuItem" id="_startFullScreen">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="tooltip_text" translatable="yes">Stop emualtion of the current game and return to game selection</property>
-                        <property name="label" translatable="yes">Stop Emulation</property>
+                        <property name="label" translatable="yes">Start Games in Fullscreen Mode</property>
                         <property name="use_underline">True</property>
-                        <signal name="activate" handler="StopEmulation_Pressed" swapped="no"/>
+                        <signal name="toggled" handler="StartFullScreen_Toggled" swapped="no"/>
                       </object>
                     </child>
                     <child>
@@ -136,7 +145,6 @@
                                 <property name="tooltip_text" translatable="yes">Enable or Disable Favorite Games Column in the game list</property>
                                 <property name="label" translatable="yes">Enable Favorite Games Column</property>
                                 <property name="use_underline">True</property>
-                                <signal name="toggled" handler="Fav_Toggled" swapped="no"/>
                               </object>
                             </child>
                             <child>
@@ -146,7 +154,6 @@
                                 <property name="tooltip_text" translatable="yes">Enable or Disable Icon Column in the game list</property>
                                 <property name="label" translatable="yes">Enable Icon Column</property>
                                 <property name="use_underline">True</property>
-                                <signal name="toggled" handler="Icon_Toggled" swapped="no"/>
                               </object>
                             </child>
                             <child>
@@ -156,7 +163,6 @@
                                 <property name="tooltip_text" translatable="yes">Enable or Disable Title Name/ID Column in the game list</property>
                                 <property name="label" translatable="yes">Enable Title Name/ID Column</property>
                                 <property name="use_underline">True</property>
-                                <signal name="toggled" handler="Title_Toggled" swapped="no"/>
                               </object>
                             </child>
                             <child>
@@ -166,7 +172,6 @@
                                 <property name="tooltip_text" translatable="yes">Enable or Disable Developer Column in the game list</property>
                                 <property name="label" translatable="yes">Enable Developer Column</property>
                                 <property name="use_underline">True</property>
-                                <signal name="toggled" handler="Developer_Toggled" swapped="no"/>
                               </object>
                             </child>
                             <child>
@@ -176,7 +181,6 @@
                                 <property name="tooltip_text" translatable="yes">Enable or Disable Version Column in the game list</property>
                                 <property name="label" translatable="yes">Enable Version Column</property>
                                 <property name="use_underline">True</property>
-                                <signal name="toggled" handler="Version_Toggled" swapped="no"/>
                               </object>
                             </child>
                             <child>
@@ -186,7 +190,6 @@
                                 <property name="tooltip_text" translatable="yes">Enable or Disable Time Played Column in the game list</property>
                                 <property name="label" translatable="yes">Enable Time Played Column</property>
                                 <property name="use_underline">True</property>
-                                <signal name="toggled" handler="TimePlayed_Toggled" swapped="no"/>
                               </object>
                             </child>
                             <child>
@@ -196,7 +199,6 @@
                                 <property name="tooltip_text" translatable="yes">Enable or Disable Last Played Column in the game list</property>
                                 <property name="label" translatable="yes">Enable Last Played Column</property>
                                 <property name="use_underline">True</property>
-                                <signal name="toggled" handler="LastPlayed_Toggled" swapped="no"/>
                               </object>
                             </child>
                             <child>
@@ -206,7 +208,6 @@
                                 <property name="tooltip_text" translatable="yes">Enable or Disable file extension column in the game list</property>
                                 <property name="label" translatable="yes">Enable File Ext Column</property>
                                 <property name="use_underline">True</property>
-                                <signal name="toggled" handler="FileExt_Toggled" swapped="no"/>
                               </object>
                             </child>
                             <child>
@@ -216,7 +217,6 @@
                                 <property name="tooltip_text" translatable="yes">Enable or Disable File Size Column in the game list</property>
                                 <property name="label" translatable="yes">Enable File Size Column</property>
                                 <property name="use_underline">True</property>
-                                <signal name="toggled" handler="FileSize_Toggled" swapped="no"/>
                               </object>
                             </child>
                             <child>
@@ -226,7 +226,6 @@
                                 <property name="tooltip_text" translatable="yes">Enable or Disable Path Column in the game list</property>
                                 <property name="label" translatable="yes">Enable Path Column</property>
                                 <property name="use_underline">True</property>
-                                <signal name="toggled" handler="Path_Toggled" swapped="no"/>
                               </object>
                             </child>
                           </object>
@@ -247,6 +246,56 @@
                         <property name="label" translatable="yes">Settings</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="Settings_Pressed" swapped="no"/>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkMenuItem" id="_actionMenu">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">Actions</property>
+                <property name="use_underline">True</property>
+                <child type="submenu">
+                  <object class="GtkMenu">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkMenuItem" id="_stopEmulation">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="tooltip_text" translatable="yes">Stop emulation of the current game and return to game selection</property>
+                        <property name="label" translatable="yes">Stop Emulation</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="StopEmulation_Pressed" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkMenuItem" id="_simulateWakeUpMessage">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="tooltip_text" translatable="yes">Simulate a Wake-up Message</property>
+                        <property name="label" translatable="yes">Simulate Wake-up Message</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="Simulate_WakeUp_Message_Pressed" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkMenuItem" id="_scanAmiibo">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="tooltip_text" translatable="yes">Scan an Amiibo</property>
+                        <property name="label" translatable="yes">Scan an Amiibo</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="Scan_Amiibo" swapped="no"/>
                       </object>
                     </child>
                   </object>
@@ -295,14 +344,6 @@
                         </child>
                       </object>
                     </child>
-                    <child>
-                      <object class="GtkMenuItem" id="_openDebugger">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Open Debugger</property>
-                        <property name="use_underline">True</property>
-                      </object>
-                    </child>
                   </object>
                 </child>
               </object>
@@ -318,10 +359,10 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
-                      <object class="GtkMenuItem" id="CheckUpdates">
+                      <object class="GtkMenuItem" id="UpdateMenuItem">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="tooltip_text" translatable="yes">Check for updates to Ryujinx (requires Ryujinx Installer)</property>
+                        <property name="tooltip_text" translatable="yes">Check for updates to Ryujinx</property>
                         <property name="label" translatable="yes">Check for Updates</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="Update_Pressed" swapped="no"/>
@@ -442,13 +483,14 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLevelBar" id="_progressBar">
+                      <object class="GtkProgressBar" id="_progressBar">
                         <property name="width_request">200</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="halign">start</property>
                         <property name="margin_left">10</property>
                         <property name="margin_right">5</property>
+                        <property name="margin_bottom">6</property>
                       </object>
                       <packing>
                         <property name="expand">True</property>
@@ -468,13 +510,21 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <child>
-                      <object class="GtkLabel" id="_vSyncStatus">
+                      <object class="GtkEventBox">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="halign">start</property>
-                        <property name="margin_left">5</property>
-                        <property name="margin_right">5</property>
-                        <property name="label" translatable="yes">VSync</property>
+                        <property name="margin_left">0</property>
+                        <signal name="button-release-event" handler="VSyncStatus_Clicked" swapped="no"/>
+                        <child>
+                          <object class="GtkLabel" id="_vSyncStatus">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="halign">start</property>
+                            <property name="margin_left">5</property>
+                            <property name="margin_right">5</property>
+                            <property name="label" translatable="yes">VSync</property>
+                          </object>
+                        </child>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -494,12 +544,20 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="_dockedMode">
+                      <object class="GtkEventBox">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="halign">start</property>
-                        <property name="margin_left">5</property>
-                        <property name="margin_right">5</property>
+                        <property name="margin_left">0</property>
+                        <signal name="button-release-event" handler="DockedMode_Clicked" swapped="no"/>
+                        <child>
+                          <object class="GtkLabel" id="_dockedMode">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="halign">start</property>
+                            <property name="margin_left">5</property>
+                            <property name="margin_right">5</property>
+                          </object>
+                        </child>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -519,12 +577,20 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="_hostStatus">
+                      <object class="GtkEventBox">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="halign">start</property>
-                        <property name="margin_left">5</property>
-                        <property name="margin_right">5</property>
+                        <property name="margin_left">0</property>
+                        <signal name="button-release-event" handler="AspectRatio_Clicked" swapped="no"/>
+                        <child>
+                          <object class="GtkLabel" id="_aspectRatio">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="halign">start</property>
+                            <property name="margin_left">5</property>
+                            <property name="margin_right">5</property>
+                          </object>
+                        </child>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -569,16 +635,42 @@
                       </packing>
                     </child>
                     <child>
+                      <object class="GtkLabel" id="_fifoStatus">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">start</property>
+                        <property name="margin_left">5</property>
+                        <property name="margin_right">5</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">8</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSeparator">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">9</property>
+                      </packing>
+                    </child>
+                    <child>
                       <object class="GtkLabel" id="_gpuName">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="halign">start</property>
                         <property name="margin_left">5</property>
+                        <property name="margin_right">5</property>
                       </object>
                       <packing>
                         <property name="expand">True</property>
                         <property name="fill">True</property>
-                        <property name="position">8</property>
+                        <property name="position">10</property>
                       </packing>
                     </child>
                   </object>
@@ -588,16 +680,34 @@
                     <property name="position">1</property>
                   </packing>
                 </child>
-                <child>
-                  <object class="GtkSeparator">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">3</property>
-                  </packing>
+                  <child>
+                    <object class="GtkLabel" id="_loadingStatusLabel">
+                      <property name="can_focus">False</property>
+                      <property name="margin_left">5</property>
+                      <property name="margin_right">5</property>
+                      <property name="label" translatable="yes">0/0 </property>
+                      <property name="visible">False</property>
+                    </object>
+                    <packing>
+                      <property name="expand">False</property>
+                      <property name="fill">True</property>
+                      <property name="position">11</property>
+                    </packing>
+                  </child>
+                  <child>
+                    <object class="GtkProgressBar" id="_loadingStatusBar">
+                      <property name="width_request">200</property>
+                      <property name="can_focus">False</property>
+                      <property name="margin_left">5</property>
+                      <property name="margin_right">5</property>
+                      <property name="margin_bottom">6</property>
+                      <property name="visible">False</property>
+                    </object>
+                    <packing>
+                      <property name="expand">False</property>
+                      <property name="fill">True</property>
+                      <property name="position">12</property>
+                    </packing>
                 </child>
                 <child>
                   <object class="GtkBox">

@@ -1,5 +1,7 @@
 using Ryujinx.Common;
 using Ryujinx.HLE.Exceptions;
+using Ryujinx.Common.Configuration.Hid;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 namespace Ryujinx.HLE.HOS.Services.Hid
@@ -65,19 +67,38 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             Npads       = new NpadDevices(_device, true);
         }
 
+        internal void RefreshInputConfig(List<InputConfig> inputConfig)
+        {
+            ControllerConfig[] npadConfig = new ControllerConfig[inputConfig.Count];
+
+            for (int i = 0; i < npadConfig.Length; ++i)
+            {
+                npadConfig[i].Player = (PlayerIndex)inputConfig[i].PlayerIndex;
+                npadConfig[i].Type = (ControllerType)inputConfig[i].ControllerType;
+            }
+
+            _device.Hid.Npads.Configure(npadConfig);
+        }
+
+        internal void RefreshInputConfigEvent(object _, ReactiveEventArgs<List<InputConfig>> args)
+        {
+            RefreshInputConfig(args.NewValue);
+        }
+
         public ControllerKeys UpdateStickButtons(JoystickPosition leftStick, JoystickPosition rightStick)
         {
+            const int stickButtonThreshold = short.MaxValue / 2;
             ControllerKeys result = 0;
 
-            result |= (leftStick.Dx < 0) ? ControllerKeys.LStickLeft  : result;
-            result |= (leftStick.Dx > 0) ? ControllerKeys.LStickRight : result;
-            result |= (leftStick.Dy < 0) ? ControllerKeys.LStickDown  : result;
-            result |= (leftStick.Dy > 0) ? ControllerKeys.LStickUp    : result;
+            result |= (leftStick.Dx < -stickButtonThreshold) ? ControllerKeys.LStickLeft  : result;
+            result |= (leftStick.Dx > stickButtonThreshold)  ? ControllerKeys.LStickRight : result;
+            result |= (leftStick.Dy < -stickButtonThreshold) ? ControllerKeys.LStickDown  : result;
+            result |= (leftStick.Dy > stickButtonThreshold)  ? ControllerKeys.LStickUp    : result;
 
-            result |= (rightStick.Dx < 0) ? ControllerKeys.RStickLeft  : result;
-            result |= (rightStick.Dx > 0) ? ControllerKeys.RStickRight : result;
-            result |= (rightStick.Dy < 0) ? ControllerKeys.RStickDown  : result;
-            result |= (rightStick.Dy > 0) ? ControllerKeys.RStickUp    : result;
+            result |= (rightStick.Dx < -stickButtonThreshold) ? ControllerKeys.RStickLeft  : result;
+            result |= (rightStick.Dx > stickButtonThreshold)  ? ControllerKeys.RStickRight : result;
+            result |= (rightStick.Dy < -stickButtonThreshold) ? ControllerKeys.RStickDown  : result;
+            result |= (rightStick.Dy > stickButtonThreshold)  ? ControllerKeys.RStickUp    : result;
 
             return result;
         }

@@ -2,6 +2,7 @@ using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.StructuredIr;
 using System;
 
+using static Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions.InstGenCall;
 using static Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions.InstGenHelper;
 using static Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions.InstGenMemory;
 using static Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions.InstGenPacking;
@@ -19,7 +20,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             }
             else if (node is AstOperand operand)
             {
-                return context.OperandManager.GetExpression(operand, context.Config.Stage);
+                return context.OperandManager.GetExpression(operand, context.Config, context.CbIndexable);
             }
 
             throw new ArgumentException($"Invalid node type \"{node?.GetType().Name ?? "null"}\".");
@@ -41,12 +42,18 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
                 for (int argIndex = 0; argIndex < arity; argIndex++)
                 {
+                    // For shared memory access, the second argument is unused and should be ignored.
+                    // It is there to make both storage and shared access have the same number of arguments.
+                    // For storage, both inputs are consumed when the argument index is 0, so we should skip it here.
+                    if (argIndex == 1 && (atomic || (inst & Instruction.MrMask) == Instruction.MrShared))
+                    {
+                        continue;
+                    }
+
                     if (argIndex != 0)
                     {
                         args += ", ";
                     }
-
-                    VariableType dstType = GetSrcVarType(inst, argIndex);
 
                     if (argIndex == 0 && atomic)
                     {
@@ -59,12 +66,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
                             default: throw new InvalidOperationException($"Invalid memory region \"{memRegion}\".");
                         }
-
-                        // We use the first 2 operands above.
-                        argIndex++;
                     }
                     else
                     {
+                        VariableType dstType = GetSrcVarType(inst, argIndex);
+
                         args += GetSoureExpr(context, operation.GetSource(argIndex), dstType);
                     }
                 }
@@ -81,6 +87,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             else if ((info.Type & InstType.Op) != 0)
             {
                 string op = info.OpName;
+
+                // Return may optionally have a return value (and in this case it is unary).
+                if (inst == Instruction.Return && operation.SourcesCount != 0)
+                {
+                    return $"{op} {GetSoureExpr(context, operation.GetSource(0), context.CurrentFunction.ReturnType)}";
+                }
 
                 int arity = (int)(info.Type & InstType.ArityMask);
 
@@ -116,6 +128,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             {
                 switch (inst)
                 {
+                    case Instruction.Call:
+                        return Call(context, operation);
+
                     case Instruction.ImageLoad:
                         return ImageLoadOrStore(context, operation);
 

@@ -1,3 +1,4 @@
+using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL.Image;
@@ -7,9 +8,6 @@ namespace Ryujinx.Graphics.OpenGL
 {
     class Window : IWindow, IDisposable
     {
-        private const int NativeWidth  = 1280;
-        private const int NativeHeight = 720;
-
         private readonly Renderer _renderer;
 
         private int _width;
@@ -17,12 +15,11 @@ namespace Ryujinx.Graphics.OpenGL
 
         private int _copyFramebufferHandle;
 
+        internal BackgroundContextWorker BackgroundContext { get; private set; }
+
         public Window(Renderer renderer)
         {
             _renderer = renderer;
-
-            _width  = NativeWidth;
-            _height = NativeHeight;
         }
 
         public void Present(ITexture texture, ImageCrop crop)
@@ -51,10 +48,12 @@ namespace Ryujinx.Graphics.OpenGL
             GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, drawFramebuffer);
             GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, readFramebuffer);
 
+            TextureView viewConverted = view.Format.IsBgra8() ? _renderer.TextureCopy.BgraSwap(view) : view;
+
             GL.FramebufferTexture(
                 FramebufferTarget.ReadFramebuffer,
                 FramebufferAttachment.ColorAttachment0,
-                view.Handle,
+                viewConverted.Handle,
                 0);
 
             GL.ReadBuffer(ReadBufferMode.ColorAttachment0);
@@ -97,8 +96,8 @@ namespace Ryujinx.Graphics.OpenGL
                 srcY1 = (int)Math.Ceiling(srcY1 * scale);
             }
 
-            float ratioX = MathF.Min(1f, (_height * (float)NativeWidth)  / ((float)NativeHeight * _width));
-            float ratioY = MathF.Min(1f, (_width  * (float)NativeHeight) / ((float)NativeWidth  * _height));
+            float ratioX = crop.IsStretched ? 1.0f : MathF.Min(1.0f, _height * crop.AspectRatioX / (_width  * crop.AspectRatioY));
+            float ratioY = crop.IsStretched ? 1.0f : MathF.Min(1.0f, _width  * crop.AspectRatioY / (_height * crop.AspectRatioX));
 
             int dstWidth  = (int)(_width  * ratioX);
             int dstHeight = (int)(_height * ratioY);
@@ -138,6 +137,11 @@ namespace Ryujinx.Graphics.OpenGL
 
             ((Pipeline)_renderer.Pipeline).RestoreScissor0Enable();
             ((Pipeline)_renderer.Pipeline).RestoreRasterizerDiscard();
+
+            if (viewConverted != view)
+            {
+                viewConverted.Dispose();
+            }
         }
 
         private int GetCopyFramebufferHandleLazy()
@@ -154,8 +158,15 @@ namespace Ryujinx.Graphics.OpenGL
             return handle;
         }
 
+        public void InitializeBackgroundContext(IGraphicsContext baseContext)
+        {
+            BackgroundContext = new BackgroundContextWorker(baseContext);
+        }
+
         public void Dispose()
         {
+            BackgroundContext.Dispose();
+
             if (_copyFramebufferHandle != 0)
             {
                 GL.DeleteFramebuffer(_copyFramebufferHandle);

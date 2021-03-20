@@ -2,6 +2,7 @@ using OpenTK.Graphics.OpenGL;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL.Image;
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Graphics.OpenGL
 {
@@ -12,6 +13,9 @@ namespace Ryujinx.Graphics.OpenGL
         private FramebufferAttachment _lastDsAttachment;
 
         private readonly TextureView[] _colors;
+
+        private int _colorsCount;
+        private bool _dualSourceBlend;
 
         public Framebuffer()
         {
@@ -26,21 +30,27 @@ namespace Ryujinx.Graphics.OpenGL
             return Handle;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AttachColor(int index, TextureView color)
         {
+            if (_colors[index] == color)
+            {
+                return;
+            }
+
             FramebufferAttachment attachment = FramebufferAttachment.ColorAttachment0 + index;
 
             if (HwCapabilities.Vendor == HwCapabilities.GpuVendor.Amd ||
                 HwCapabilities.Vendor == HwCapabilities.GpuVendor.Intel)
             {
                 GL.FramebufferTexture(FramebufferTarget.Framebuffer, attachment, color?.GetIncompatibleFormatViewHandle() ?? 0, 0);
-
-                _colors[index] = color;
             }
             else
             {
                 GL.FramebufferTexture(FramebufferTarget.Framebuffer, attachment, color?.Handle ?? 0, 0);
             }
+
+            _colors[index] = color;
         }
 
         public void AttachDepthStencil(TextureView depthStencil)
@@ -97,7 +107,35 @@ namespace Ryujinx.Graphics.OpenGL
             }
         }
 
+        public void SetDualSourceBlend(bool enable)
+        {
+            bool oldEnable = _dualSourceBlend;
+
+            _dualSourceBlend = enable;
+
+            // When dual source blend is used,
+            // we can only have one draw buffer.
+            if (enable)
+            {
+                GL.DrawBuffer(DrawBufferMode.ColorAttachment0);
+            }
+            else if (oldEnable)
+            {
+                SetDrawBuffersImpl(_colorsCount);
+            }
+        }
+
         public void SetDrawBuffers(int colorsCount)
+        {
+            if (_colorsCount != colorsCount && !_dualSourceBlend)
+            {
+                SetDrawBuffersImpl(colorsCount);
+            }
+
+            _colorsCount = colorsCount;
+        }
+
+        private void SetDrawBuffersImpl(int colorsCount)
         {
             DrawBuffersEnum[] drawBuffers = new DrawBuffersEnum[colorsCount];
 

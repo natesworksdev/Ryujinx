@@ -4,12 +4,12 @@ using System.Numerics;
 
 namespace ARMeilleure.Common
 {
-    class BitMap : IEnumerator<int>
+    class BitMap : IEnumerator<int>, IEnumerable<int>
     {
         private const int IntSize = 64;
         private const int IntMask = IntSize - 1;
 
-        private List<long> _masks;
+        private readonly List<long> _masks;
 
         private int _enumIndex;
         private long _enumMask;
@@ -35,7 +35,7 @@ namespace ARMeilleure.Common
             }
         }
 
-        public void Reset(int initialCapacity)
+        public BitMap Reset(int initialCapacity)
         {
             int count = (initialCapacity + IntMask) / IntSize;
 
@@ -50,6 +50,8 @@ namespace ARMeilleure.Common
             {
                 _masks.Add(0);
             }
+
+            return this;
         }
 
         public bool Set(int bit)
@@ -57,7 +59,7 @@ namespace ARMeilleure.Common
             EnsureCapacity(bit + 1);
 
             int wordIndex = bit / IntSize;
-            int wordBit   = bit & IntMask;
+            int wordBit = bit & IntMask;
 
             long wordMask = 1L << wordBit;
 
@@ -76,7 +78,7 @@ namespace ARMeilleure.Common
             EnsureCapacity(bit + 1);
 
             int wordIndex = bit / IntSize;
-            int wordBit   = bit & IntMask;
+            int wordBit = bit & IntMask;
 
             long wordMask = 1L << wordBit;
 
@@ -88,9 +90,24 @@ namespace ARMeilleure.Common
             EnsureCapacity(bit + 1);
 
             int wordIndex = bit / IntSize;
-            int wordBit   = bit & IntMask;
+            int wordBit = bit & IntMask;
 
             return (_masks[wordIndex] & (1L << wordBit)) != 0;
+        }
+
+        public int FindFirstUnset()
+        {
+            for (int index = 0; index < _masks.Count; index++)
+            {
+                long mask = _masks[index];
+
+                if (mask != -1L)
+                {
+                    return BitOperations.TrailingZeroCount(~mask) + index * IntSize;
+                }
+            }
+
+            return _masks.Count * IntSize;
         }
 
         public bool Set(BitMap map)
@@ -135,7 +152,7 @@ namespace ARMeilleure.Common
             return modified;
         }
 
- #region IEnumerable<long> Methods
+        #region IEnumerable<long> Methods
 
         // Note: The bit enumerator is embedded in this class to avoid creating garbage when enumerating.
 
@@ -145,6 +162,11 @@ namespace ARMeilleure.Common
             {
                 _masks.Add(0);
             }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
 
         public IEnumerator<int> GetEnumerator()
@@ -180,6 +202,6 @@ namespace ARMeilleure.Common
 
         public void Dispose() { }
 
-#endregion
+        #endregion
     }
 }

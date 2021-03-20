@@ -17,7 +17,8 @@ namespace Ryujinx.HLE.Loaders.Mods
             string header = reader.ReadLine();
             if (header == null || !header.StartsWith(BidHeader))
             {
-                Logger.PrintError(LogClass.ModLoader, "IPSwitch:    Malformed PCHTXT file. Skipping...");
+                Logger.Error?.Print(LogClass.ModLoader, "IPSwitch:    Malformed PCHTXT file. Skipping...");
+
                 return;
             }
 
@@ -147,19 +148,26 @@ namespace Ryujinx.HLE.Loaders.Mods
 
             MemPatch patches = new MemPatch();
 
-            bool enabled = true;
+            bool enabled = false;
             bool printValues = false;
             int offset_shift = 0;
 
             string line;
             int lineNum = 0;
 
-            static void Print(string s) => Logger.PrintInfo(LogClass.ModLoader, $"IPSwitch:    {s}");
+            static void Print(string s) => Logger.Info?.Print(LogClass.ModLoader, $"IPSwitch:    {s}");
 
-            void ParseWarn() => Logger.PrintWarning(LogClass.ModLoader, $"IPSwitch:    Parse error at line {lineNum} for bid={BuildId}");
+            void ParseWarn() => Logger.Warning?.Print(LogClass.ModLoader, $"IPSwitch:    Parse error at line {lineNum} for bid={BuildId}");
 
             while ((line = _reader.ReadLine()) != null)
             {
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    enabled = false;
+
+                    continue;
+                }
+
                 line = PreprocessLine(line);
                 lineNum += 1;
 
@@ -190,6 +198,7 @@ namespace Ryujinx.HLE.Loaders.Mods
                     if (tokens.Length < 2)
                     {
                         ParseWarn();
+
                         continue;
                     }
 
@@ -198,6 +207,7 @@ namespace Ryujinx.HLE.Loaders.Mods
                         if (tokens.Length != 3 || !ParseInt(tokens[2], out offset_shift))
                         {
                             ParseWarn();
+
                             continue;
                         }
                     }
@@ -222,12 +232,14 @@ namespace Ryujinx.HLE.Loaders.Mods
                     if (tokens.Length < 2)
                     {
                         ParseWarn();
+
                         continue;
                     }
 
                     if (!Int32.TryParse(tokens[0], System.Globalization.NumberStyles.HexNumber, null, out int offset))
                     {
                         ParseWarn();
+
                         continue;
                     }
 

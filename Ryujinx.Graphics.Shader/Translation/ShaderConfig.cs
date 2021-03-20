@@ -1,10 +1,12 @@
-using System;
+using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Shader.Translation
 {
-    struct ShaderConfig
+    class ShaderConfig
     {
         public ShaderStage Stage { get; }
+
+        public bool GpPassthrough { get; }
 
         public OutputTopology OutputTopology { get; }
 
@@ -22,36 +24,50 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public TranslationFlags Flags { get; }
 
-        public FeatureFlags UsedFeatures { get; set; }
+        public TranslationCounts Counts { get; }
 
-        public ShaderConfig(IGpuAccessor gpuAccessor, TranslationFlags flags)
+        public int Size { get; private set; }
+
+        public FeatureFlags UsedFeatures { get; private set; }
+
+        public HashSet<int> TextureHandlesForCache { get; }
+
+        public ShaderConfig(IGpuAccessor gpuAccessor, TranslationFlags flags, TranslationCounts counts)
         {
-            Stage             = ShaderStage.Compute;
-            OutputTopology    = OutputTopology.PointList;
-            MaxOutputVertices = 0;
-            LocalMemorySize   = 0;
-            ImapTypes         = null;
-            OmapTargets       = null;
-            OmapSampleMask    = false;
-            OmapDepth         = false;
-            GpuAccessor       = gpuAccessor;
-            Flags             = flags;
-            UsedFeatures      = FeatureFlags.None;
+            Stage                  = ShaderStage.Compute;
+            GpPassthrough          = false;
+            OutputTopology         = OutputTopology.PointList;
+            MaxOutputVertices      = 0;
+            LocalMemorySize        = 0;
+            ImapTypes              = null;
+            OmapTargets            = null;
+            OmapSampleMask         = false;
+            OmapDepth              = false;
+            GpuAccessor            = gpuAccessor;
+            Flags                  = flags;
+            Size                   = 0;
+            UsedFeatures           = FeatureFlags.None;
+            Counts                 = counts;
+            TextureHandlesForCache = new HashSet<int>();
         }
 
-        public ShaderConfig(ShaderHeader header, IGpuAccessor gpuAccessor, TranslationFlags flags)
+        public ShaderConfig(ShaderHeader header, IGpuAccessor gpuAccessor, TranslationFlags flags, TranslationCounts counts)
         {
-            Stage             = header.Stage;
-            OutputTopology    = header.OutputTopology;
-            MaxOutputVertices = header.MaxOutputVertexCount;
-            LocalMemorySize   = header.ShaderLocalMemoryLowSize + header.ShaderLocalMemoryHighSize;
-            ImapTypes         = header.ImapTypes;
-            OmapTargets       = header.OmapTargets;
-            OmapSampleMask    = header.OmapSampleMask;
-            OmapDepth         = header.OmapDepth;
-            GpuAccessor       = gpuAccessor;
-            Flags             = flags;
-            UsedFeatures      = FeatureFlags.None;
+            Stage                  = header.Stage;
+            GpPassthrough          = header.Stage == ShaderStage.Geometry && header.GpPassthrough;
+            OutputTopology         = header.OutputTopology;
+            MaxOutputVertices      = header.MaxOutputVertexCount;
+            LocalMemorySize        = header.ShaderLocalMemoryLowSize + header.ShaderLocalMemoryHighSize;
+            ImapTypes              = header.ImapTypes;
+            OmapTargets            = header.OmapTargets;
+            OmapSampleMask         = header.OmapSampleMask;
+            OmapDepth              = header.OmapDepth;
+            GpuAccessor            = gpuAccessor;
+            Flags                  = flags;
+            Size                   = 0;
+            UsedFeatures           = FeatureFlags.None;
+            Counts                 = counts;
+            TextureHandlesForCache = new HashSet<int>();
         }
 
         public int GetDepthRegister()
@@ -92,6 +108,16 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
 
             return format;
+        }
+
+        public void SizeAdd(int size)
+        {
+            Size += size;
+        }
+
+        public void SetUsedFeature(FeatureFlags flags)
+        {
+            UsedFeatures |= flags;
         }
     }
 }

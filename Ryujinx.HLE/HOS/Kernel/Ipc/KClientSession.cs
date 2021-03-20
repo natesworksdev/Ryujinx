@@ -2,6 +2,7 @@ using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services;
+using System;
 
 namespace Ryujinx.HLE.HOS.Kernel.Ipc
 {
@@ -13,24 +14,24 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
         public ChannelState State { get; set; }
 
-        // TODO: Remove that, we need it for now to allow HLE
-        // services implementation to work with the new IPC system.
-        public IpcService Service { get; set; }
+        public KClientPort ParentPort { get; }
 
-        public KClientSession(KernelContext context, KSession parent) : base(context)
+        public KClientSession(KernelContext context, KSession parent, KClientPort parentPort) : base(context)
         {
-            _parent = parent;
+            _parent    = parent;
+            ParentPort = parentPort;
+
+            parentPort?.IncrementReferenceCount();
 
             State = ChannelState.Open;
 
-            CreatorProcess = context.Scheduler.GetCurrentProcess();
-
+            CreatorProcess = KernelStatic.GetCurrentProcess();
             CreatorProcess.IncrementReferenceCount();
         }
 
         public KernelResult SendSyncRequest(ulong customCmdBuffAddr = 0, ulong customCmdBuffSize = 0)
         {
-            KThread currentThread = KernelContext.Scheduler.GetCurrentThread();
+            KThread currentThread = KernelStatic.GetCurrentThread();
 
             KSessionRequest request = new KSessionRequest(currentThread, customCmdBuffAddr, customCmdBuffSize);
 
@@ -49,6 +50,30 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             }
 
             return result;
+        }
+
+        public KernelResult SendAsyncRequest(KWritableEvent asyncEvent, ulong customCmdBuffAddr = 0, ulong customCmdBuffSize = 0)
+        {
+            KThread currentThread = KernelStatic.GetCurrentThread();
+
+            KSessionRequest request = new KSessionRequest(currentThread, customCmdBuffAddr, customCmdBuffSize, asyncEvent);
+
+            KernelContext.CriticalSection.Enter();
+
+            KernelResult result = _parent.ServerSession.EnqueueRequest(request);
+
+            KernelContext.CriticalSection.Leave();
+
+            return result;
+        }
+
+        public void DisconnectFromPort()
+        {
+            if (ParentPort != null)
+            {
+                ParentPort.Disconnect();
+                ParentPort.DecrementReferenceCount();
+            }
         }
 
         protected override void Destroy()

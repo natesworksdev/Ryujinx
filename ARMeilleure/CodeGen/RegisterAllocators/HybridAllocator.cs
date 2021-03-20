@@ -236,6 +236,15 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                                 }
                             }
                         }
+                        else if (node is Operation operation && operation.Instruction == Instruction.Copy)
+                        {
+                            Operation fillOp = Operation(Instruction.Fill, node.Destination, Const(info.SpillOffset));
+
+                            block.Operations.AddBefore(node, fillOp);
+                            block.Operations.Remove(node);
+
+                            node = fillOp;
+                        }
                         else
                         {
                             Operand temp = info.Temp;
@@ -426,19 +435,6 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         private static int UsesCount(Operand local)
         {
             return local.Assignments.Count + local.Uses.Count;
-        }
-
-        private static IEnumerable<BasicBlock> Successors(BasicBlock block)
-        {
-            if (block.Next != null)
-            {
-                yield return block.Next;
-            }
-
-            if (block.Branch != null)
-            {
-                yield return block.Branch;
-            }
         }
     }
 }

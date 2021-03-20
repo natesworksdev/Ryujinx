@@ -36,6 +36,11 @@ namespace Ryujinx.Graphics.Gpu
         public const int TotalGpStorageBuffers = 16;
 
         /// <summary>
+        /// Maximum number of transform feedback buffers.
+        /// </summary>
+        public const int TotalTransformFeedbackBuffers = 4;
+
+        /// <summary>
         /// Maximum number of render target color buffers.
         /// </summary>
         public const int TotalRenderTargets = 8;
@@ -64,5 +69,15 @@ namespace Ryujinx.Graphics.Gpu
         /// Maximum size of gl_ClipDistance array in shaders.
         /// </summary>
         public const int TotalClipDistances = 8;
+
+        /// <summary>
+        /// Byte alignment for texture stride.
+        /// </summary>
+        public const int StrideAlignment = 32;
+
+        /// <summary>
+        /// Byte alignment for block linear textures
+        /// </summary>
+        public const int GobAlignment = 64;
     }
 }
