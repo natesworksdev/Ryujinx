@@ -9,6 +9,7 @@ using Ryujinx.Audio.Output;
 using Ryujinx.Audio.Renderer.Device;
 using Ryujinx.Audio.Renderer.Server;
 using Ryujinx.Common;
+using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
 using Ryujinx.HLE.FileSystem.Content;
 using Ryujinx.HLE.HOS.Font;
@@ -22,6 +23,7 @@ using Ryujinx.HLE.HOS.Services.Apm;
 using Ryujinx.HLE.HOS.Services.Arp;
 using Ryujinx.HLE.HOS.Services.Audio.AudioRenderer;
 using Ryujinx.HLE.HOS.Services.Mii;
+using Ryujinx.HLE.HOS.Services.Nfc.Nfp.UserManager;
 using Ryujinx.HLE.HOS.Services.Nv;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl;
 using Ryujinx.HLE.HOS.Services.Pcv.Bpc;
@@ -33,6 +35,7 @@ using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Loaders.Executables;
 using Ryujinx.HLE.Utilities;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -64,6 +67,8 @@ namespace Ryujinx.HLE.HOS
         internal PerformanceState PerformanceState { get; private set; }
 
         internal AppletStateMgr AppletState { get; private set; }
+
+        internal List<NfpDevice> NfpDevices { get; private set; }
 
         internal ServerBase BsdServer { get; private set; }
         internal ServerBase AudRenServer { get; private set; }
@@ -112,6 +117,8 @@ namespace Ryujinx.HLE.HOS
             State = new SystemStateMgr();
 
             PerformanceState = new PerformanceState();
+
+            NfpDevices = new List<NfpDevice>();
 
             // Note: This is not really correct, but with HLE of services, the only memory
             // region used that is used is Application, so we can use the other ones for anything.
@@ -311,6 +318,8 @@ namespace Ryujinx.HLE.HOS
 
                 // Reconfigure controllers
                 Device.Hid.RefreshInputConfig(ConfigurationState.Instance.Hid.InputConfig.Value);
+
+                Logger.Info?.Print(LogClass.Application, $"IsDocked toggled to: {State.DockedMode}");
             }
         }
 
@@ -318,6 +327,33 @@ namespace Ryujinx.HLE.HOS
         {
             AppletState.Messages.Enqueue(MessageInfo.Resume);
             AppletState.MessageEvent.ReadableEvent.Signal();
+        }
+
+        public void ScanAmiibo(int nfpDeviceId, string amiiboId, bool useRandomUuid)
+        {
+            if (NfpDevices[nfpDeviceId].State == NfpDeviceState.SearchingForTag)
+            {
+                NfpDevices[nfpDeviceId].State         = NfpDeviceState.TagFound;
+                NfpDevices[nfpDeviceId].AmiiboId      = amiiboId;
+                NfpDevices[nfpDeviceId].UseRandomUuid = useRandomUuid;
+            }
+        }
+
+        public bool SearchingForAmiibo(out int nfpDeviceId)
+        {
+            nfpDeviceId = default;
+
+            for (int i = 0; i < NfpDevices.Count; i++)
+            {
+                if (NfpDevices[i].State == NfpDeviceState.SearchingForTag)
+                {
+                    nfpDeviceId = i;
+
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public void SignalDisplayResolutionChange()

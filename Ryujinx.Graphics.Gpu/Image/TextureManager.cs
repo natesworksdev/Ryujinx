@@ -429,7 +429,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 // Discount square textures that aren't depth-stencil like. (excludes game textures, cubemap faces, most 3D texture LUT, texture atlas)
                 // Detect if the texture is possibly square. Widths may be aligned, so to remove the uncertainty we align both the width and height.
 
-                int widthAlignment = (info.IsLinear ? 32 : 64) / info.FormatInfo.BytesPerPixel;
+                int widthAlignment = (info.IsLinear ? Constants.StrideAlignment : Constants.GobAlignment) / info.FormatInfo.BytesPerPixel;
 
                 bool possiblySquare = BitUtils.AlignUp(info.Width, widthAlignment) == BitUtils.AlignUp(info.Height, widthAlignment);
 
@@ -715,7 +715,9 @@ namespace Ryujinx.Graphics.Gpu.Image
                     // we know the textures are located at the same memory region.
                     // If they don't, it may still be mapped to the same physical region, so we
                     // do a more expensive check to tell if they are mapped into the same physical regions.
-                    if (overlap.Info.GpuAddress != info.GpuAddress && !_context.MemoryManager.CompareRange(overlap.Range, info.GpuAddress))
+                    // If the GPU VA for the texture has ever been unmapped, then the range must be checked regardless.
+                    if ((overlap.Info.GpuAddress != info.GpuAddress || overlap.ChangedMapping) && 
+                        !_context.MemoryManager.CompareRange(overlap.Range, info.GpuAddress))
                     {
                         continue;
                     }
@@ -974,8 +976,6 @@ namespace Ryujinx.Graphics.Gpu.Image
                     if (oInfo.Compatibility != TextureViewCompatibility.Full)
                     {
                         // Copy only compatibility, or target texture is already a view.
-
-                        ChangeSizeIfNeeded(overlapInfo, overlap, false, sizeHint); // Force a size match for copy
 
                         overlap.SynchronizeMemory();
                         texture.CreateCopyDependency(overlap, oInfo.FirstLayer, oInfo.FirstLevel, false);
