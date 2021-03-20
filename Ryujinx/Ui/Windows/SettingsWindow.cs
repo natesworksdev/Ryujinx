@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 using GUI = Gtk.Builder.ObjectAttribute;
@@ -235,7 +236,7 @@ namespace Ryujinx.Ui.Windows
             }
 
             // Hide specific-platform elements
-            if (!ConsoleHelper.IsHideSupported())
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 _showConsole.Hide();
             }
@@ -449,14 +450,7 @@ namespace Ryujinx.Ui.Windows
                 ConfigurationState.Instance.System.AudioBackend.Value = (AudioBackend)_audioBackendStore.GetValue(activeIter, 1);
             }
 
-            if (ConfigurationState.Instance.ShowConsole)
-            {
-                ConsoleHelper.ShowConsole();
-            }
-            else
-            {
-                ConsoleHelper.HideConsole();
-            }
+            ConsoleHelper.ToggleConsole(ConfigurationState.Instance.ShowConsole);
 
             ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
             _parent.UpdateGraphicsConfig();

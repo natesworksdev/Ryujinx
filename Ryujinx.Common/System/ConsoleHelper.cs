@@ -27,18 +27,11 @@ namespace Ryujinx.Common.System
         [DllImport("kernel32.dll")]
         static extern IntPtr GetConsoleWindow();
 
-        private static readonly string VERSION = Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
-
         private const int STD_OUTPUT_HANDLE = -11;
         private const int MY_CODE_PAGE = 437;
 
         private const int SW_SHOW = 5;
         private const int SW_HIDE = 0;
-
-        public static bool IsHideSupported()
-        {
-            return RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-        }
 
         private static uint GetWindowId()
         {
@@ -50,7 +43,7 @@ namespace Ryujinx.Common.System
             return dwProcessId;
         }
 
-        public static void CreateConsole()
+        private static void CreateConsole()
         {
             if (AllocConsole())
             {
@@ -62,7 +55,7 @@ namespace Ryujinx.Common.System
                 StreamWriter standardOutput = new StreamWriter(fileStream, encoding);
                 standardOutput.AutoFlush = true;
                 Console.SetOut(standardOutput);
-                Console.Title = $"Ryujinx Console {VERSION}";
+                Console.Title = $"Ryujinx Console {Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion}";
             }
             else if (GetCurrentProcessId() == GetWindowId())
             {
@@ -70,16 +63,23 @@ namespace Ryujinx.Common.System
             }
         }
 
-        public static void ShowConsole()
-        {
-            CreateConsole();
-        }
-
-        public static void HideConsole()
+        private static void HideConsole()
         {
             if (GetCurrentProcessId() == GetWindowId())
             {
                 ShowWindow(GetConsoleWindow(), SW_HIDE);
+            }
+        }
+
+        public static void ToggleConsole(bool show)
+        {
+            if (show)
+            {
+                CreateConsole();
+            }
+            else
+            {
+                HideConsole();
             }
         }
     }
