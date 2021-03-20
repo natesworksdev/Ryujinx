@@ -143,7 +143,7 @@ namespace Ryujinx
 
             if (ConfigurationState.Instance.ShowConsole)
             {
-                ConsoleHelper.ShowConsole();
+                ConsoleHelper.ToggleConsole(false);
             }
 
             // Logging system information.
