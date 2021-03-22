@@ -1,4 +1,3 @@
-using OpenTK.Input;
 using Ryujinx.Common.Configuration.Hid;
 using System.Collections.Generic;
 using System;
@@ -12,9 +11,9 @@ namespace Ryujinx.Ui.Input
 
         private double _triggerThreshold;
 
-        private JoystickState _currState;
+        // private JoystickState _currState;
 
-        private JoystickState _prevState;
+        // private JoystickState _prevState;
 
         private JoystickButtonDetector _detector;
 
@@ -27,16 +26,16 @@ namespace Ryujinx.Ui.Input
 
         public void Init()
         {
-            _currState = Joystick.GetState(_index);
-            _prevState = _currState;
+            /*_currState = Joystick.GetState(_index);
+            _prevState = _currState;*/
         }
 
         public void ReadInput()
         {
-            _prevState = _currState;
+            /*_prevState = _currState;
             _currState = Joystick.GetState(_index);
 
-            CollectButtonStats();
+            CollectButtonStats();*/
         }
 
         public bool HasAnyButtonPressed()
@@ -46,7 +45,8 @@ namespace Ryujinx.Ui.Input
 
         public bool ShouldCancel()
         {
-            return Mouse.GetState().IsAnyButtonDown || Keyboard.GetState().IsAnyKeyDown;
+            return true;
+            // return Mouse.GetState().IsAnyButtonDown || Keyboard.GetState().IsAnyKeyDown;
         }
 
         public string GetPressedButton()
@@ -59,7 +59,7 @@ namespace Ryujinx.Ui.Input
             return pressedButtons.Count > 0 ? pressedButtons[0].ToString() : "";
         }
 
-        private void CollectButtonStats()
+        /*private void CollectButtonStats()
         {
             JoystickCapabilities capabilities = Joystick.GetCapabilities(_index);
 
@@ -122,7 +122,7 @@ namespace Ryujinx.Ui.Input
             if (hatState.IsLeft) return "Left";
             if (hatState.IsRight) return "Right";
             return "";
-        }
+        }*/
 
         private class JoystickButtonDetector
         {

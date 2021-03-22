@@ -1,5 +1,4 @@
 using Gtk;
-using OpenTK.Input;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Utilities;
@@ -174,11 +173,11 @@ namespace Ryujinx.Ui.Windows
 
             for (int i = 0; i < 20; i++)
             {
-                if (KeyboardController.GetKeyboardState(i + 1).IsConnected)
+                /*if (KeyboardController.GetKeyboardState(i + 1).IsConnected)
                     _inputDevice.Append($"keyboard/{i + 1}", $"Keyboard/{i + 1}");
 
                 if (GamePad.GetState(i).IsConnected)
-                    _inputDevice.Append($"controller/{i}", $"Controller/{i} ({GamePad.GetName(i)})");
+                    _inputDevice.Append($"controller/{i}", $"Controller/{i} ({GamePad.GetName(i)})");*/
             }
 
             switch (_inputConfig)

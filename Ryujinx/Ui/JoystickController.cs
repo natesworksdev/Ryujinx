@@ -1,9 +1,7 @@
-﻿using OpenTK;
-using OpenTK.Input;
-using Ryujinx.Common.Configuration.Hid;
+﻿using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.HLE.HOS.Services.Hid;
 using System;
-
+using System.Numerics;
 using ControllerConfig = Ryujinx.Common.Configuration.Hid.ControllerConfig;
 
 namespace Ryujinx.Ui
@@ -19,7 +17,8 @@ namespace Ryujinx.Ui
 
         private bool IsEnabled()
         {
-            return Joystick.GetState(_config.Index).IsConnected;
+            return false;
+            //return Joystick.GetState(_config.Index).IsConnected;
         }
 
         public ControllerKeys GetButtons()
@@ -31,7 +30,9 @@ namespace Ryujinx.Ui
                 return 0;
             }
 
-            JoystickState joystickState = Joystick.GetState(_config.Index);
+            return 0;
+
+            /*JoystickState joystickState = Joystick.GetState(_config.Index);
 
             ControllerKeys buttons = 0;
 
@@ -57,10 +58,10 @@ namespace Ryujinx.Ui
             if (IsActivated(joystickState, _config.RightJoycon.ButtonSl))    buttons |= ControllerKeys.SlRight;
             if (IsActivated(joystickState, _config.RightJoycon.ButtonSr))    buttons |= ControllerKeys.SrRight;
 
-            return buttons;
+            return buttons;*/
         }
 
-        private bool IsActivated(JoystickState joystickState, ControllerInputId controllerInputId)
+        /*private bool IsActivated(JoystickState joystickState, ControllerInputId controllerInputId)
         {
             if (controllerInputId <= ControllerInputId.Button20)
             {
@@ -87,7 +88,7 @@ namespace Ryujinx.Ui
             }
 
             return false;
-        }
+        }*/
 
         public (short, short) GetLeftStick()
         {
@@ -117,7 +118,9 @@ namespace Ryujinx.Ui
                 return (0, 0);
             }
 
-            JoystickState jsState = Joystick.GetState(_config.Index);
+            return (0, 0);
+
+            /*JoystickState jsState = Joystick.GetState(_config.Index);
 
             int xAxis = stickXInputId - ControllerInputId.Axis0;
             int yAxis = stickYInputId - ControllerInputId.Axis0;
@@ -125,7 +128,7 @@ namespace Ryujinx.Ui
             float xValue =  jsState.GetAxis(xAxis);
             float yValue = -jsState.GetAxis(yAxis); // Invert Y-axis
 
-            return ApplyDeadzone(new Vector2(xValue, yValue), deadzone);
+            return ApplyDeadzone(new Vector2(xValue, yValue), deadzone);*/
         }
 
         private (short, short) ApplyDeadzone(Vector2 axis, float deadzone)

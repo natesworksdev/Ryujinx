@@ -1,8 +1,5 @@
 ﻿using System;
-using OpenTK;
-using OpenTK.Input;
 using Ryujinx.Common.Configuration.Hid;
-using Ryujinx.Configuration;
 using Ryujinx.HLE.HOS.Services.Hid;
 
 namespace Ryujinx.Ui
@@ -22,7 +19,7 @@ namespace Ryujinx.Ui
             _config = config;
         }
 
-        public static KeyboardState GetKeyboardState(int index)
+        /*public static KeyboardState GetKeyboardState(int index)
         {
             if (index == KeyboardConfig.AllKeyboardsIndex || index < 0)
             {
@@ -30,15 +27,15 @@ namespace Ryujinx.Ui
             }
 
             return Keyboard.GetState(index - 1);
-        }
+        }*/
 
         public ControllerKeys GetButtons()
         {
-            KeyboardState keyboard = GetKeyboardState(_config.Index);
+            //KeyboardState keyboard = GetKeyboardState(_config.Index);
 
             ControllerKeys buttons = 0;
 
-            if (keyboard[(Key)_config.LeftJoycon.StickButton]) buttons |= ControllerKeys.LStick;
+            /*if (keyboard[(Key)_config.LeftJoycon.StickButton]) buttons |= ControllerKeys.LStick;
             if (keyboard[(Key)_config.LeftJoycon.DPadUp])      buttons |= ControllerKeys.DpadUp;
             if (keyboard[(Key)_config.LeftJoycon.DPadDown])    buttons |= ControllerKeys.DpadDown;
             if (keyboard[(Key)_config.LeftJoycon.DPadLeft])    buttons |= ControllerKeys.DpadLeft;
@@ -58,14 +55,15 @@ namespace Ryujinx.Ui
             if (keyboard[(Key)_config.RightJoycon.ButtonR])     buttons |= ControllerKeys.R;
             if (keyboard[(Key)_config.RightJoycon.ButtonZr])    buttons |= ControllerKeys.Zr;
             if (keyboard[(Key)_config.RightJoycon.ButtonSl])    buttons |= ControllerKeys.SlRight;
-            if (keyboard[(Key)_config.RightJoycon.ButtonSr])    buttons |= ControllerKeys.SrRight;
+            if (keyboard[(Key)_config.RightJoycon.ButtonSr])    buttons |= ControllerKeys.SrRight;*/
 
             return buttons;
         }
 
         public (short, short) GetLeftStick()
         {
-            KeyboardState keyboard = GetKeyboardState(_config.Index);
+            return (0, 0);
+            /*KeyboardState keyboard = GetKeyboardState(_config.Index);
 
             short dx = 0;
             short dy = 0;
@@ -78,12 +76,13 @@ namespace Ryujinx.Ui
             Vector2 stick = new Vector2(dx, dy);
             stick.NormalizeFast();
 
-            return ((short)(stick.X * short.MaxValue), (short)(stick.Y * short.MaxValue));
+            return ((short)(stick.X * short.MaxValue), (short)(stick.Y * short.MaxValue));*/
         }
 
         public (short, short) GetRightStick()
         {
-            KeyboardState keyboard = GetKeyboardState(_config.Index);
+            return (0, 0);
+            /*KeyboardState keyboard = GetKeyboardState(_config.Index);
 
             short dx = 0;
             short dy = 0;
@@ -96,10 +95,10 @@ namespace Ryujinx.Ui
             Vector2 stick = new Vector2(dx, dy);
             stick.NormalizeFast();
 
-            return ((short)(stick.X * short.MaxValue), (short)(stick.Y * short.MaxValue));
+            return ((short)(stick.X * short.MaxValue), (short)(stick.Y * short.MaxValue));*/
         }
 
-        public static HotkeyButtons GetHotkeyButtons(KeyboardState keyboard)
+        /*public static HotkeyButtons GetHotkeyButtons(KeyboardState keyboard)
         {
             HotkeyButtons buttons = 0;
 
@@ -259,11 +258,11 @@ namespace Ryujinx.Ui
             new KeyMappingEntry { TargetKey = Key.CapsLock,     Target = 8 },
             new KeyMappingEntry { TargetKey = Key.ScrollLock,   Target = 9 },
             new KeyMappingEntry { TargetKey = Key.NumLock,      Target = 10 },
-        };
+        };*/
 
         public KeyboardInput GetKeysDown()
         {
-            KeyboardState keyboard = GetKeyboardState(_config.Index);
+            // KeyboardState keyboard = GetKeyboardState(_config.Index);
 
             KeyboardInput hidKeyboard = new KeyboardInput
             {
@@ -271,7 +270,7 @@ namespace Ryujinx.Ui
                 Keys     = new int[0x8]
             };
 
-            foreach (KeyMappingEntry entry in KeyMapping)
+            /*foreach (KeyMappingEntry entry in KeyMapping)
             {
                 int value = keyboard[entry.TargetKey] ? 1 : 0;
 
@@ -283,7 +282,7 @@ namespace Ryujinx.Ui
                 int value = keyboard[entry.TargetKey] ? 1 : 0;
 
                 hidKeyboard.Modifier |= value << entry.Target;
-            }
+            }*/
 
             return hidKeyboard;
         }
