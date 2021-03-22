@@ -158,7 +158,7 @@ namespace Ryujinx.Graphics.OpenGL
             return handle;
         }
 
-        public void InitializeBackgroundContext(IGraphicsContext baseContext)
+        public void InitializeBackgroundContext(IOpenGLContext baseContext)
         {
             BackgroundContext = new BackgroundContextWorker(baseContext);
         }
