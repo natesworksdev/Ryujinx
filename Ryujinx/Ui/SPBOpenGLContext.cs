@@ -36,6 +36,7 @@ namespace Ryujinx.Ui
             NativeWindowBase window = PlatformHelper.CreateWindow(FramebufferFormat.Default, 0, 0, 100, 100);
             // window.Hide();
 
+            context.Initialize(window);
             context.MakeCurrent(window);
 
             GL.LoadBindings(new OpenToolkitBindingsContext(context));
