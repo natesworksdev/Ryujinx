@@ -94,9 +94,9 @@ namespace Ryujinx.HLE.HOS.Tamper.CodeEmitters
                 case Rsh: Emit(typeof(OpRsh<>), rightHandSideOperand); break;
                 case And: Emit(typeof(OpAnd<>), rightHandSideOperand); break;
                 case Or:  Emit(typeof(OpOr<> ), rightHandSideOperand); break;
-                case Not: Emit(typeof(OpNot<>)            ); break;
+                case Not: Emit(typeof(OpNot<>)                      ); break;
                 case Xor: Emit(typeof(OpXor<>), rightHandSideOperand); break;
-                case Mov: Emit(typeof(OpMov<>)            ); break;
+                case Mov: Emit(typeof(OpMov<>)                      ); break;
                 default:
                     throw new TamperCompilationException($"Invalid arithmetic operation {operation} in Atmosphere cheat");
             }

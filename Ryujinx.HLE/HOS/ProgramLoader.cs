@@ -271,6 +271,7 @@ namespace Ryujinx.HLE.HOS
                 Logger.Error?.Print(LogClass.Loader, $"Process start returned error \"{result}\".");
 
                 tamperInfo = null;
+
                 return false;
             }
 

@@ -530,7 +530,6 @@ namespace Ryujinx.HLE.HOS
 
             ProgramLoader.LoadNsos(_device.System.KernelContext, out ProcessTamperInfo tamperInfo, metaData, executables: programs);
 
-            // TODO: Disable PPTC?
             _fileSystem.ModLoader.LoadCheats(TitleId, tamperInfo, _device.TamperMachine);
         }
 
@@ -632,7 +631,6 @@ namespace Ryujinx.HLE.HOS
 
             ProgramLoader.LoadNsos(_device.System.KernelContext, out ProcessTamperInfo tamperInfo, metaData, executables: executable);
 
-            // TODO: Disable PPTC?
             _fileSystem.ModLoader.LoadCheats(TitleId, tamperInfo, _device.TamperMachine);
         }
 
