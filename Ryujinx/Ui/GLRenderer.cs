@@ -264,7 +264,7 @@ namespace Ryujinx.Ui
 
         private static FramebufferFormat GetGraphicsMode()
         {
-            return Environment.OSVersion.Platform == PlatformID.Unix ? new FramebufferFormat(new ColorFormat(8, 8, 8, 0), 16, 0, ColorFormat.Zero, 0, 2, false) : FramebufferFormat.Default;
+            return new FramebufferFormat(new ColorFormat(8, 8, 8, 0), 16, 0, ColorFormat.Zero, 0, 2, false);
         }
 
         private void GLRenderer_ShuttingDown(object sender, EventArgs args)
