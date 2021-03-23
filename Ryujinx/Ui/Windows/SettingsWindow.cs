@@ -446,13 +446,16 @@ namespace Ryujinx.Ui.Windows
                 GameConfigurationState.Instance.Graphics.AspectRatio.Value = Enum.Parse<AspectRatio>(_aspectRatio.ActiveId);
                 GameConfigurationState.Instance.Graphics.ResScale.Value = int.Parse(_resScaleCombo.ActiveId);
                 GameConfigurationState.Instance.Graphics.ResScaleCustom.Value = resScaleCustom;
-                
-                AudioBackend audioBackend = (AudioBackend)_audioBackendStore.GetValue(activeIter, 1);
-                if (audioBackend != GameConfigurationState.Instance.System.AudioBackend.Value)
+
+                if (_audioBackendSelect.GetActiveIter(out TreeIter activeIter))
                 {
-                    GameConfigurationState.Instance.System.AudioBackend.Value = audioBackend;
-                    
-                    Logger.Info?.Print(LogClass.Application, $"AudioBackend toggled to: {audioBackend}");
+                    AudioBackend audioBackend = (AudioBackend)_audioBackendStore.GetValue(activeIter, 1);
+                    if (audioBackend != GameConfigurationState.Instance.System.AudioBackend.Value)
+                    {
+                        GameConfigurationState.Instance.System.AudioBackend.Value = audioBackend;
+
+                        Logger.Info?.Print(LogClass.Application, $"AudioBackend toggled to: {audioBackend}");
+                    }
                 }
 
                 GameConfigurationState.Save(_gameId);
