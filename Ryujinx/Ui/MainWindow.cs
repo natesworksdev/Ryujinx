@@ -33,6 +33,9 @@ using System.Threading.Tasks;
 
 using GUI = Gtk.Builder.ObjectAttribute;
 
+using PtcLoadingState = ARMeilleure.Translation.PTC.PtcLoadingState;
+using ShaderCacheLoadingState = Ryujinx.Graphics.Gpu.Shader.ShaderCacheState;
+
 namespace Ryujinx.Ui
 {
     public class MainWindow : Window
@@ -57,6 +60,9 @@ namespace Ryujinx.Ui
 
         private string _currentEmulatedGamePath = null;
 
+        private string _lastScannedAmiiboId = "";
+        private bool   _lastScannedAmiiboShowAll = false;
+
         public GlRenderer GlRendererWidget;
 
 #pragma warning disable CS0169, CS0649, IDE0044
@@ -66,8 +72,11 @@ namespace Ryujinx.Ui
         [GUI] MenuBar         _menuBar;
         [GUI] Box             _footerBox;
         [GUI] Box             _statusBar;
+        [GUI] MenuItem        _optionMenu;
+        [GUI] MenuItem        _actionMenu;
         [GUI] MenuItem        _stopEmulation;
         [GUI] MenuItem        _simulateWakeUpMessage;
+        [GUI] MenuItem        _scanAmiibo;
         [GUI] MenuItem        _fullScreen;
         [GUI] CheckMenuItem   _startFullScreen;
         [GUI] CheckMenuItem   _favToggle;
@@ -98,8 +107,6 @@ namespace Ryujinx.Ui
         [GUI] Box             _listStatusBox;
         [GUI] Label           _loadingStatusLabel;
         [GUI] ProgressBar     _loadingStatusBar;
-
-        private string        _loadingStatusTitle = "";
 
 #pragma warning restore CS0649, IDE0044, CS0169
 
@@ -141,6 +148,8 @@ namespace Ryujinx.Ui
             _applicationLibrary.ApplicationAdded        += Application_Added;
             _applicationLibrary.ApplicationCountUpdated += ApplicationCount_Updated;
 
+            _actionMenu.StateChanged += ActionMenu_StateChanged;
+
             _gameTable.ButtonReleaseEvent += Row_Clicked;
             _fullScreen.Activated         += FullScreen_Toggled;
 
@@ -151,8 +160,7 @@ namespace Ryujinx.Ui
                 _startFullScreen.Active = true;
             }
 
-            _stopEmulation.Sensitive         = false;
-            _simulateWakeUpMessage.Sensitive = false;
+            _actionMenu.Sensitive = false;
 
             if (ConfigurationState.Instance.Ui.GuiColumns.FavColumn)        _favToggle.Active        = true;
             if (ConfigurationState.Instance.Ui.GuiColumns.IconColumn)       _iconToggle.Active       = true;
@@ -339,43 +347,38 @@ namespace Ryujinx.Ui
 
         private void SetupProgressUiHandlers()
         {
-            Ptc.PtcTranslationStateChanged -= PtcStatusChanged;
-            Ptc.PtcTranslationStateChanged += PtcStatusChanged;
+            Ptc.PtcStateChanged -= ProgressHandler;
+            Ptc.PtcStateChanged += ProgressHandler;
 
-            Ptc.PtcTranslationProgressChanged -= LoadingProgressChanged;
-            Ptc.PtcTranslationProgressChanged += LoadingProgressChanged;
-
-            _emulationContext.Gpu.ShaderCacheStateChanged -= ShaderCacheStatusChanged;
-            _emulationContext.Gpu.ShaderCacheStateChanged += ShaderCacheStatusChanged;
-
-            _emulationContext.Gpu.ShaderCacheProgressChanged -= LoadingProgressChanged;
-            _emulationContext.Gpu.ShaderCacheProgressChanged += LoadingProgressChanged;
+            _emulationContext.Gpu.ShaderCacheStateChanged -= ProgressHandler;
+            _emulationContext.Gpu.ShaderCacheStateChanged += ProgressHandler;
         }
 
-        private void ShaderCacheStatusChanged(bool state)
+        private void ProgressHandler<T>(T state, int current, int total) where T : Enum
         {
-            _loadingStatusTitle = "Shaders";
-            Application.Invoke(delegate
-            {
-                _loadingStatusBar.Visible = _loadingStatusLabel.Visible = state;
-            });
-        }
+            bool visible;
+            string label;
 
-        private void PtcStatusChanged(bool state)
-        {
-            _loadingStatusTitle = "PTC";
-            Application.Invoke(delegate
+            switch (state)
             {
-                _loadingStatusBar.Visible = _loadingStatusLabel.Visible = state;
-            });
-        }
+                case PtcLoadingState ptcState:
+                    visible = ptcState != PtcLoadingState.Loaded;
+                    label = $"PTC : {current}/{total}";
+                    break;
+                case ShaderCacheLoadingState shaderCacheState:
+                    visible = shaderCacheState != ShaderCacheLoadingState.Loaded;
+                    label = $"Shaders : {current}/{total}";
+                    break;
+                default:
+                    throw new ArgumentException($"Unknown Progress Handler type {typeof(T)}");
+            }
 
-        private void LoadingProgressChanged(int value, int total)
-        {
             Application.Invoke(delegate
             {
-                _loadingStatusBar.Fraction = (double)value / total;
-                _loadingStatusLabel.Text = $"{_loadingStatusTitle} : {value}/{total}";
+                _loadingStatusLabel.Text = label;
+                _loadingStatusBar.Fraction = total > 0 ? (double)current / total : 0;
+                _loadingStatusBar.Visible = visible;
+                _loadingStatusLabel.Visible = visible;
             });
         }
 
@@ -445,7 +448,7 @@ namespace Ryujinx.Ui
         {
             if (_gameLoaded)
             {
-                GtkDialog.CreateInfoDialog("A game has already been loaded", "Please close it first and try again.");
+                GtkDialog.CreateInfoDialog("A game has already been loaded", "Please stop emulation or close the emulator before launching another game.");
             }
             else
             {
@@ -456,6 +459,8 @@ namespace Ryujinx.Ui
                 InitializeSwitchInstance();
 
                 UpdateGraphicsConfig();
+
+                SetupProgressUiHandlers();
 
                 SystemVersion firmwareVersion = _contentManager.GetCurrentFirmwareVersion();
 
@@ -552,14 +557,14 @@ namespace Ryujinx.Ui
                             _emulationContext.LoadNsp(path);
                             break;
                         default:
-                            Logger.Info?.Print(LogClass.Application, "Loading as homebrew.");
+                            Logger.Info?.Print(LogClass.Application, "Loading as Homebrew.");
                             try
                             {
                                 _emulationContext.LoadProgram(path);
                             }
                             catch (ArgumentOutOfRangeException)
                             {
-                                Logger.Error?.Print(LogClass.Application, "The file which you have specified is unsupported by Ryujinx.");
+                                Logger.Error?.Print(LogClass.Application, "The specified file is not supported by Ryujinx.");
                             }
                             break;
                     }
@@ -577,8 +582,6 @@ namespace Ryujinx.Ui
 
                 _deviceExitStatus.Reset();
 
-                SetupProgressUiHandlers();
-
                 Translator.IsReadyForTranslation.Reset();
 #if MACOS_BUILD
                 CreateGameWindow();
@@ -594,9 +597,10 @@ namespace Ryujinx.Ui
                 windowThread.Start();
 #endif
 
-                _gameLoaded                      = true;
-                _stopEmulation.Sensitive         = true;
-                _simulateWakeUpMessage.Sensitive = true;
+                _gameLoaded           = true;
+                _actionMenu.Sensitive = true;
+
+                _lastScannedAmiiboId = "";
 
                 _firmwareInstallFile.Sensitive      = false;
                 _firmwareInstallDirectory.Sensitive = false;
@@ -692,8 +696,7 @@ namespace Ryujinx.Ui
                 Task.Run(RefreshFirmwareLabel);
                 Task.Run(HandleRelaunch);
 
-                _stopEmulation.Sensitive            = false;
-                _simulateWakeUpMessage.Sensitive    = false;
+                _actionMenu.Sensitive               = false;
                 _firmwareInstallFile.Sensitive      = true;
                 _firmwareInstallDirectory.Sensitive = true;
             });
@@ -893,6 +896,8 @@ namespace Ryujinx.Ui
         private void VSyncStatus_Clicked(object sender, ButtonReleaseEventArgs args)
         {
             _emulationContext.EnableDeviceVsync = !_emulationContext.EnableDeviceVsync;
+
+            Logger.Info?.Print(LogClass.Application, $"VSync toggled to: {_emulationContext.EnableDeviceVsync}");
         }
 
         private void DockedMode_Clicked(object sender, ButtonReleaseEventArgs args)
@@ -1179,13 +1184,51 @@ namespace Ryujinx.Ui
             }
         }
 
+        private void ActionMenu_StateChanged(object o, StateChangedArgs args)
+        {
+            _scanAmiibo.Sensitive = _emulationContext != null && _emulationContext.System.SearchingForAmiibo(out int _);
+        }
+
+        private void Scan_Amiibo(object sender, EventArgs args)
+        {
+            if (_emulationContext.System.SearchingForAmiibo(out int deviceId))
+            {
+                AmiiboWindow amiiboWindow = new AmiiboWindow
+                {
+                    LastScannedAmiiboShowAll = _lastScannedAmiiboShowAll,
+                    LastScannedAmiiboId      = _lastScannedAmiiboId,
+                    DeviceId                 = deviceId,
+                    TitleId                  = _emulationContext.Application.TitleIdText.ToUpper()
+                };
+
+                amiiboWindow.DeleteEvent += AmiiboWindow_DeleteEvent;
+
+                amiiboWindow.Show();
+            }
+            else
+            {
+                GtkDialog.CreateInfoDialog($"Amiibo", "The game is currently not ready to receive Amiibo scan data. Ensure that you have an Amiibo-compatible game open and ready to receive Amiibo scan data.");
+            }
+        }
+
+        private void AmiiboWindow_DeleteEvent(object sender, DeleteEventArgs args)
+        {
+            if (((AmiiboWindow)sender).AmiiboId != "" && ((AmiiboWindow)sender).Response == ResponseType.Ok)
+            {
+                _lastScannedAmiiboId      = ((AmiiboWindow)sender).AmiiboId;
+                _lastScannedAmiiboShowAll = ((AmiiboWindow)sender).LastScannedAmiiboShowAll;
+
+                _emulationContext.System.ScanAmiibo(((AmiiboWindow)sender).DeviceId, ((AmiiboWindow)sender).AmiiboId, ((AmiiboWindow)sender).UseRandomUuid);
+            }
+        }
+
         private void Update_Pressed(object sender, EventArgs args)
         {
             if (Updater.CanUpdate(true))
             {
                 Updater.BeginParse(this, true).ContinueWith(task =>
                 {
-                    Logger.Error?.Print(LogClass.Application, $"Updater Error: {task.Exception}");
+                    Logger.Error?.Print(LogClass.Application, $"Updater error: {task.Exception}");
                 }, TaskContinuationOptions.OnlyOnFaulted);
             }
         }
