@@ -1,6 +1,6 @@
 using Ryujinx.Common;
 using Ryujinx.HLE.Exceptions;
-using Ryujinx.Common.Configuration.Hid;
+using Ryujinx.Common.Configuration.HidNew;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 

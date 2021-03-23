@@ -11,12 +11,15 @@ using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.System;
 using Ryujinx.Configuration;
+using Ryujinx.Gamepad;
+using Ryujinx.Gamepad.SDL2;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.FileSystem.Content;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
+using Ryujinx.Input;
 using Ryujinx.Modules;
 using Ryujinx.Ui.App;
 using Ryujinx.Ui.Applet;
@@ -65,6 +68,7 @@ namespace Ryujinx.Ui
         private bool   _lastScannedAmiiboShowAll = false;
 
         public GlRenderer GlRendererWidget;
+        public IGamepadDriver GamepadDriver;
 
 #pragma warning disable CS0169, CS0649, IDE0044
 
@@ -223,6 +227,9 @@ namespace Ryujinx.Ui
             };
 
             Task.Run(RefreshFirmwareLabel);
+
+            // FIXME: test on linux and check if pthread double init issue happen on Linux still with GTK3.......
+            GamepadDriver = new SDL2GamepadDriver();
         }
 
         private void WindowStateEvent_Changed(object o, WindowStateEventArgs args)
@@ -636,7 +643,7 @@ namespace Ryujinx.Ui
 
             DisplaySleep.Prevent();
 
-            GlRendererWidget = new GlRenderer(_emulationContext, ConfigurationState.Instance.Logger.GraphicsDebugLevel);
+            GlRendererWidget = new GlRenderer(_emulationContext, GamepadDriver, ConfigurationState.Instance.Logger.GraphicsDebugLevel);
 
             Application.Invoke(delegate
             {

@@ -3,6 +3,7 @@ using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Utilities;
 using Ryujinx.Configuration;
+using Ryujinx.Gamepad;
 using Ryujinx.Ui.Input;
 using Ryujinx.Ui.Widgets;
 using System;
@@ -90,10 +91,14 @@ namespace Ryujinx.Ui.Windows
         [GUI] Image        _controllerImage;
 #pragma warning restore CS0649, IDE0044
 
-        public ControllerWindow(PlayerIndex controllerId) : this(new Builder("Ryujinx.Ui.Windows.ControllerWindow.glade"), controllerId) { }
+        private IGamepadDriver _gamepadDriver;
 
-        private ControllerWindow(Builder builder, PlayerIndex controllerId) : base(builder.GetObject("_controllerWin").Handle)
+        public ControllerWindow(MainWindow mainWindow, PlayerIndex controllerId) : this(mainWindow, new Builder("Ryujinx.Ui.Windows.ControllerWindow.glade"), controllerId) { }
+
+        private ControllerWindow(MainWindow mainWindow, Builder builder, PlayerIndex controllerId) : base(builder.GetObject("_controllerWin").Handle)
         {
+            _gamepadDriver = mainWindow.GamepadDriver;
+
             Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.Resources.Logo_Ryujinx.png");
 
             builder.Autoconnect(this);
@@ -161,6 +166,31 @@ namespace Ryujinx.Ui.Windows
             {
                 SetCurrentValues();
             }
+
+            _gamepadDriver.OnGamepadConnected += HandleOnGamepadConnected;
+            _gamepadDriver.OnGamepadDisconnected += HandleOnGamepadDisconnected;
+        }
+
+        private void HandleOnGamepadDisconnected(string id)
+        {
+            Application.Invoke(delegate
+            {
+                UpdateInputDeviceList();
+            });
+        }
+
+        private void HandleOnGamepadConnected(string id)
+        {
+            Application.Invoke(delegate
+            {
+                UpdateInputDeviceList();
+            });
+        }
+
+        protected override void OnDestroyed()
+        {
+            _gamepadDriver.OnGamepadConnected -= HandleOnGamepadConnected;
+            _gamepadDriver.OnGamepadDisconnected -= HandleOnGamepadDisconnected;
         }
 
         private void UpdateInputDeviceList()
@@ -170,6 +200,18 @@ namespace Ryujinx.Ui.Windows
             _inputDevice.SetActiveId("disabled");
 
             _inputDevice.Append($"keyboard/{KeyboardConfig.AllKeyboardsIndex}", "All keyboards");
+
+            foreach (string id in _gamepadDriver.GamepadsIds)
+            {
+                IGamepad gamepad = _gamepadDriver.GetGamepad(id);
+
+                if (gamepad != null)
+                {
+                    _inputDevice.Append(id, $"Controller/{id} ({gamepad.Name})");
+
+                    gamepad.Dispose();
+                }
+            }
 
             for (int i = 0; i < 20; i++)
             {

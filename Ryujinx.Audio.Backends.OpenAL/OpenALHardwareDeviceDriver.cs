@@ -10,6 +10,8 @@ using static Ryujinx.Audio.Integration.IHardwareDeviceDriver;
 
 namespace Ryujinx.Audio.Backends.OpenAL
 {
+    // Planned for removal after SoundIO is supported with all sound devices.
+    [Obsolete]
     public class OpenALHardwareDeviceDriver : IHardwareDeviceDriver
     {
         private object _lock = new object();

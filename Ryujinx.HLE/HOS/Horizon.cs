@@ -326,7 +326,7 @@ namespace Ryujinx.HLE.HOS
                 SignalDisplayResolutionChange();
 
                 // Reconfigure controllers
-                Device.Hid.RefreshInputConfig(ConfigurationState.Instance.Hid.InputConfig.Value);
+                Device.Hid.RefreshInputConfig(ConfigurationState.Instance.Hid.InputConfigNew.Value);
             }
         }
 
