@@ -1,4 +1,5 @@
 using Microsoft.Win32.SafeHandles;
+using Ryujinx.Configuration;
 using System;
 using System.IO;
 using System.Reflection;
@@ -37,49 +38,45 @@ namespace Ryujinx.Common.System
         {
             IntPtr consoleWindow = GetConsoleWindow();
 
-            uint dwProcessId;
-            GetWindowThreadProcessId(consoleWindow, out dwProcessId);
+            GetWindowThreadProcessId(consoleWindow, out uint dwProcessId);
 
             return dwProcessId;
         }
 
-        private static void CreateConsole()
+        public static void ToggleConsole()
         {
-            if (AllocConsole())
+            if (ConfigurationState.Instance.ShowConsole)
             {
-                IntPtr stdHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-                SafeFileHandle safeFileHandle = new SafeFileHandle(stdHandle, true);
-                Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-                FileStream fileStream = new FileStream(safeFileHandle, FileAccess.Write);
-                Encoding encoding = Encoding.GetEncoding(MY_CODE_PAGE);
-                StreamWriter standardOutput = new StreamWriter(fileStream, encoding);
-                standardOutput.AutoFlush = true;
-                Console.SetOut(standardOutput);
-                Console.Title = $"Ryujinx Console {Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion}";
-            }
-            else if (GetCurrentProcessId() == GetWindowId())
-            {
-                ShowWindow(GetConsoleWindow(), SW_SHOW);
-            }
-        }
+                if (AllocConsole())
+                {
+                    IntPtr stdHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 
-        private static void HideConsole()
-        {
-            if (GetCurrentProcessId() == GetWindowId())
-            {
-                ShowWindow(GetConsoleWindow(), SW_HIDE);
-            }
-        }
+                    SafeFileHandle safeFileHandle = new SafeFileHandle(stdHandle, true);
+                    Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-        public static void ToggleConsole(bool show)
-        {
-            if (show)
-            {
-                CreateConsole();
+                    FileStream fileStream = new FileStream(safeFileHandle, FileAccess.Write);
+
+                    Encoding encoding = Encoding.GetEncoding(MY_CODE_PAGE);
+                    StreamWriter standardOutput = new StreamWriter(fileStream, encoding);
+                    standardOutput.AutoFlush = true;
+                    Console.SetOut(standardOutput);
+
+                    safeFileHandle.Dispose();
+                    standardOutput.Dispose();
+
+                    Console.Title = $"Ryujinx Console {Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion}";
+                }
+                else if (GetCurrentProcessId() == GetWindowId())
+                {
+                    ShowWindow(GetConsoleWindow(), SW_SHOW);
+                }
             }
             else
             {
-                HideConsole();
+                if (GetCurrentProcessId() == GetWindowId())
+                {
+                    ShowWindow(GetConsoleWindow(), SW_HIDE);
+                }
             }
         }
     }

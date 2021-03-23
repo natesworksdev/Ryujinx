@@ -457,7 +457,7 @@ namespace Ryujinx.Ui.Windows
                 }
             }
 
-            ConsoleHelper.ToggleConsole(ConfigurationState.Instance.ShowConsole);
+            ConsoleHelper.ToggleConsole();
 
             ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
             _parent.UpdateGraphicsConfig();
