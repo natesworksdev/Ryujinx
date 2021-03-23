@@ -525,7 +525,7 @@ namespace Ryujinx.Ui.Windows
                 ConfigurationState.Instance.System.AudioBackend.Value = (AudioBackend)_audioBackendStore.GetValue(activeIter, 1);
             }
 
-            ConsoleHelper.ToggleConsole(ConfigurationState.Instance.ShowConsole);
+            ConsoleHelper.ToggleConsole();
 
             ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
             _parent.UpdateGraphicsConfig();

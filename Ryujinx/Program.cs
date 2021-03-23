@@ -141,7 +141,7 @@ namespace Ryujinx
                 ConfigurationState.Instance.Ui.StartFullscreen.Value = true;
             }
 
-            ConsoleHelper.ToggleConsole(ConfigurationState.Instance.ShowConsole);
+            ConsoleHelper.ToggleConsole();
 
             // Logging system information.
             PrintSystemInfo();

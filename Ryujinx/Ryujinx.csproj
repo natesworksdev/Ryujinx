@@ -60,7 +60,6 @@
   <PropertyGroup>
     <EmbeddedResourceUseDependentUponConvention>false</EmbeddedResourceUseDependentUponConvention>
     <ApplicationIcon>Ryujinx.ico</ApplicationIcon>
-    <StartupObject>Ryujinx.Program</StartupObject>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'osx-x64'">
