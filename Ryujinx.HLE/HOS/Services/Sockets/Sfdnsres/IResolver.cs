@@ -6,6 +6,7 @@ using Ryujinx.Memory;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
@@ -272,9 +273,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
             if (hostEntry != null)
             {
-                IPAddress[] addresses = GetIpv4Addresses(hostEntry);
+                IEnumerable<IPAddress> addresses = GetIpv4Addresses(hostEntry);
 
-                if (addresses.Length == 0)
+                if (addresses.Count() == 0)
                 {
                     errno          = GaiError.NoData;
                     netDbErrorCode = NetDbError.NoAddress;
@@ -348,7 +349,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             return ResultCode.Success;
         }
 
-        private long SerializeHostEntries(ServiceCtx context, long outputBufferPosition, long outputBufferSize, IPHostEntry hostEntry, IPAddress[] addresses = null)
+        private long SerializeHostEntries(ServiceCtx context, long outputBufferPosition, long outputBufferSize, IPHostEntry hostEntry, IEnumerable<IPAddress> addresses = null)
         {
             long originalBufferPosition = outputBufferPosition;
             long bufferPosition         = originalBufferPosition;
@@ -379,7 +380,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             bufferPosition += 2;
 
             // Ip address count, we can only support ipv4 (blame Nintendo)
-            context.Memory.Write((ulong)bufferPosition, addresses != null ? BinaryPrimitives.ReverseEndianness(addresses.Length) : 0);
+            context.Memory.Write((ulong)bufferPosition, addresses != null ? BinaryPrimitives.ReverseEndianness(addresses.Count()) : 0);
             bufferPosition += 4;
 
             if (addresses != null)
@@ -537,19 +538,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             return bufferPosition - originalBufferPosition;
         }
 
-        private IPAddress[] GetIpv4Addresses(IPHostEntry hostEntry)
+        private IEnumerable<IPAddress> GetIpv4Addresses(IPHostEntry hostEntry)
         {
-            List<IPAddress> result = new List<IPAddress>();
-
-            foreach (IPAddress ip in hostEntry.AddressList)
-            {
-                if (ip.AddressFamily == AddressFamily.InterNetwork)
-                {
-                    result.Add(ip);
-                }
-            }
-
-            return result.ToArray();
+            return hostEntry.AddressList.Where(x => x.AddressFamily == AddressFamily.InterNetwork);
         }
 
         private NetDbError ConvertSocketErrorCodeToNetDbError(int errorCode)
