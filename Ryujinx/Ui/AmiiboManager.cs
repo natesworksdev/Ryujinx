@@ -147,6 +147,8 @@ namespace Ryujinx.Ui
                     await dlcJsonStream.WriteAsync(Encoding.UTF8.GetBytes(amiiboJsonString));
                 }
 
+                Logger.Info?.Print(LogClass.Application, "Amiibo data updated successfully!");
+
                 return amiiboJsonString;
             }
             else
