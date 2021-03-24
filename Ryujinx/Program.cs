@@ -59,6 +59,7 @@ namespace Ryujinx
             string baseDirPathArg     = null;
             bool   startFullscreenArg = false;
             bool   listGames = false;
+            bool   showVersion = false;
 
             for (int i = 0; i < args.Length; ++i)
             {
@@ -74,6 +75,22 @@ namespace Ryujinx
                     }
 
                     baseDirPathArg = args[++i];
+                }
+                else if (arg == "-v" || arg == "--version")
+                {
+                    showVersion = true;
+                }
+                else if (arg == "-h" || arg == "--help")
+                {
+                    Console.Write(@"Ryujinx [options] [file]
+
+-h, --help         Show this help
+-v, --version      Show Ryujinx version
+-f, --fullscreen   Run in fullscreen
+    --list-games   List Available games in json format
+
+");
+                    return;
                 }
                 else if (arg == "-p" || arg == "--profile")
                 {
@@ -106,6 +123,13 @@ namespace Ryujinx
 
             // Delete backup files after updating.
             Task.Run(Updater.CleanupUpdate);
+
+            Version = Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+            if (showVersion)
+            {
+                Console.Write(Version);
+                return;
+            }
 
             Console.Title = $"Ryujinx Console {Version}";
 
@@ -190,7 +214,7 @@ namespace Ryujinx
                     gameMetadataArray.Add(data);
                 };
                 applicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs, ConfigurationState.Instance.System.Language);
-                System.Console.Write(JsonHelper.Serialize(gameMetadataArray, true));
+                Console.Write(JsonHelper.Serialize(gameMetadataArray, true));
                 return;
             }
 
