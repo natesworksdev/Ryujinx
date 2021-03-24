@@ -16,10 +16,11 @@ namespace Ryujinx.Ui
     {
         private const string DEFAULT_JSON = "{ \"amiibo\": [] }";
 
-        private static HttpClient          _httpClient;
-        private static string              _amiiboJsonPath;
-        private static AmiiboJson          _amiiboJson;
-        private static List<AmiiboApi>     _amiiboApis;
+        private static HttpClient                     _httpClient;
+        private static string                         _amiiboJsonPath;
+        private static AmiiboJson                     _amiiboJson;
+        private static List<AmiiboApi>                _amiiboApis;
+        private static Dictionary<string, Gdk.Pixbuf> _amiiboPreviews;
         public static List<AmiiboApi>      AmiiboApis { get => _amiiboApis; }
 
         public static void Initialize()
@@ -28,6 +29,8 @@ namespace Ryujinx.Ui
             {
                 Timeout = TimeSpan.FromMilliseconds(5000)
             };
+
+            _amiiboPreviews = new Dictionary<string, Gdk.Pixbuf>();
 
             Directory.CreateDirectory(Path.Join(AppDataManager.BaseDirPath, "system", "amiibo"));
 
@@ -105,6 +108,32 @@ namespace Ryujinx.Ui
                 catch
                 {
                     ShowAmiiboServiceWarning();
+                }
+            }
+        }
+
+        public static async Task<Gdk.Pixbuf> GetAmiiboPreview(string imageUrl)
+        {
+            if(_amiiboPreviews.ContainsKey(imageUrl))
+            {
+                return _amiiboPreviews[imageUrl];
+            }
+            else
+            {
+                HttpResponseMessage response = await _httpClient.GetAsync(imageUrl);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    byte[] amiiboPreviewBytes = await response.Content.ReadAsByteArrayAsync();
+                    Gdk.Pixbuf result = new Gdk.Pixbuf(amiiboPreviewBytes);
+
+                    _amiiboPreviews[imageUrl] = result;
+
+                    return result;
+                }
+                else
+                {
+                    return null;
                 }
             }
         }

@@ -31,7 +31,6 @@ namespace Ryujinx.Ui.Windows
 
         private readonly byte[] _amiiboLogoBytes;
 
-        private readonly HttpClient _httpClient;
         private List<AmiiboApi>     _amiiboList;
 
         public AmiiboWindow() : base($"Ryujinx {Program.Version} - Amiibo")
@@ -39,11 +38,6 @@ namespace Ryujinx.Ui.Windows
             Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.Resources.Logo_Ryujinx.png");
 
             InitializeComponent();
-
-            _httpClient = new HttpClient()
-            {
-                Timeout = TimeSpan.FromMilliseconds(5000)
-            };
 
             _amiiboList = AmiiboManager.AmiiboApis;
 
@@ -131,18 +125,15 @@ namespace Ryujinx.Ui.Windows
 
         private async Task UpdateAmiiboPreview(string imageUrl)
         {
-            HttpResponseMessage response = await _httpClient.GetAsync(imageUrl);
+            Gdk.Pixbuf amiiboPreview = await AmiiboManager.GetAmiiboPreview(imageUrl);
 
-            if (response.IsSuccessStatusCode)
+            if (amiiboPreview != null)
             {
-                byte[]     amiiboPreviewBytes = await response.Content.ReadAsByteArrayAsync();
-                Gdk.Pixbuf amiiboPreview      = new Gdk.Pixbuf(amiiboPreviewBytes);
-
-                float ratio = Math.Min((float)_amiiboImage.AllocatedWidth  / amiiboPreview.Width,
-                                       (float)_amiiboImage.AllocatedHeight / amiiboPreview.Height);
+                float ratio = Math.Min((float)_amiiboImage.AllocatedWidth / amiiboPreview.Width,
+                                        (float)_amiiboImage.AllocatedHeight / amiiboPreview.Height);
 
                 int resizeHeight = (int)(amiiboPreview.Height * ratio);
-                int resizeWidth  = (int)(amiiboPreview.Width  * ratio);
+                int resizeWidth = (int)(amiiboPreview.Width * ratio);
 
                 _amiiboImage.Pixbuf = amiiboPreview.ScaleSimple(resizeWidth, resizeHeight, Gdk.InterpType.Bilinear);
             }
@@ -276,8 +267,6 @@ namespace Ryujinx.Ui.Windows
 
         protected override void Dispose(bool disposing)
         {
-            _httpClient.Dispose();
-
             base.Dispose(disposing);
         }
     }
