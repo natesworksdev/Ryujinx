@@ -26,7 +26,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             long bufferPosition      = context.Request.SendBuff[0].Position;
             long bufferSize          = context.Request.SendBuff[0].Size;
 
-            // TODO: This is stubbed in 2.0.0+, reverse 1.0.0 version for the sake completeness.
+            // TODO: This is stubbed in 2.0.0+, reverse 1.0.0 version for the sake of completeness.
             Logger.Stub?.PrintStub(LogClass.ServiceSfdnsres, new { cancelHandleRequest });
 
             return ResultCode.NotAllocated;
@@ -40,7 +40,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             long bufferPosition      = context.Request.ReceiveBuff[0].Position;
             long bufferSize          = context.Request.ReceiveBuff[0].Size;
 
-            // TODO: This is stubbed in 2.0.0+, reverse 1.0.0 version for the sake completeness.
+            // TODO: This is stubbed in 2.0.0+, reverse 1.0.0 version for the sake of completeness.
             Logger.Stub?.PrintStub(LogClass.ServiceSfdnsres, new { cancelHandleRequest });
 
             return ResultCode.NotAllocated;
@@ -272,9 +272,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
             if (hostEntry != null)
             {
-                List<IPAddress> addresses = GetIpv4Addresses(hostEntry);
+                IPAddress[] addresses = GetIpv4Addresses(hostEntry);
 
-                if (addresses.Count == 0)
+                if (addresses.Length == 0)
                 {
                     errno          = GaiError.NoData;
                     netDbErrorCode = NetDbError.NoAddress;
@@ -348,7 +348,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             return ResultCode.Success;
         }
 
-        private long SerializeHostEntries(ServiceCtx context, long outputBufferPosition, long outputBufferSize, IPHostEntry hostEntry, List<IPAddress> addresses = null)
+        private long SerializeHostEntries(ServiceCtx context, long outputBufferPosition, long outputBufferSize, IPHostEntry hostEntry, IPAddress[] addresses = null)
         {
             long originalBufferPosition = outputBufferPosition;
             long bufferPosition         = originalBufferPosition;
@@ -379,7 +379,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             bufferPosition += 2;
 
             // Ip address count, we can only support ipv4 (blame Nintendo)
-            context.Memory.Write((ulong)bufferPosition, addresses != null ? BinaryPrimitives.ReverseEndianness(addresses.Count) : 0);
+            context.Memory.Write((ulong)bufferPosition, addresses != null ? BinaryPrimitives.ReverseEndianness(addresses.Length) : 0);
             bufferPosition += 4;
 
             if (addresses != null)
@@ -396,7 +396,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
         private ResultCode GetAddrInfoRequestImpl(ServiceCtx context, long responseBufferPosition, long responseBufferSize, long optionsBufferPosition, long optionsBufferSize)
         {
-            bool enableNsdResolve = context.RequestData.ReadInt32() == 1;
+            bool enableNsdResolve = (context.RequestData.ReadInt32() & 1) != 0;
             uint cancelHandle     = context.RequestData.ReadUInt32();
 
             string host    = MemoryHelper.ReadAsciiString(context.Memory, context.Request.SendBuff[0].Position, context.Request.SendBuff[0].Size);
@@ -537,7 +537,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             return bufferPosition - originalBufferPosition;
         }
 
-        private List<IPAddress> GetIpv4Addresses(IPHostEntry hostEntry)
+        private IPAddress[] GetIpv4Addresses(IPHostEntry hostEntry)
         {
             List<IPAddress> result = new List<IPAddress>();
 
@@ -549,7 +549,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
                 }
             }
 
-            return result;
+            return result.ToArray();
         }
 
         private NetDbError ConvertSocketErrorCodeToNetDbError(int errorCode)

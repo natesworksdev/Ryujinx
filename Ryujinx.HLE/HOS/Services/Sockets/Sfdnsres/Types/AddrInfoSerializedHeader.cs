@@ -19,10 +19,10 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres.Types
         public AddrInfoSerializedHeader(IPAddress address, SocketType socketType)
         {
             Magic      = (uint)BinaryPrimitives.ReverseEndianness(unchecked((int)SfdnsresContants.AddrInfoMagic));
-            Flags      = BinaryPrimitives.ReverseEndianness(0);
+            Flags      = 0; // Big Endian
             Family     = BinaryPrimitives.ReverseEndianness((int)address.AddressFamily);
             SocketType = BinaryPrimitives.ReverseEndianness((int)socketType);
-            Protocol   = BinaryPrimitives.ReverseEndianness(0);
+            Protocol   = 0; // Big Endian
 
             if (address.AddressFamily == AddressFamily.InterNetwork)
             {
