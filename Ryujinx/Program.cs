@@ -60,6 +60,7 @@ namespace Ryujinx
             List<string> dirGames     = null;
             bool   startFullscreenArg = false;
             bool   listGames = false;
+            bool   runOnce = false;
             bool   showVersion = false;
 
             for (int i = 0; i < args.Length; ++i)
@@ -89,6 +90,7 @@ namespace Ryujinx
 -v, --version           Show Ryujinx version
 -f, --fullscreen        Run in fullscreen
     --list-games [dir]  List Available games in json format
+    --run-once     Don't return to game list after emulation
 
 ");
                     return;
@@ -118,6 +120,10 @@ namespace Ryujinx
 
                     dirGames = new List<string>();
                     dirGames.Add(args[++i]);
+                }
+                else if (arg == "--run-once")
+                {
+                    runOnce = true;
                 }
                 else if (launchPathArg == null)
                 {
@@ -254,7 +260,7 @@ namespace Ryujinx
 
             if (launchPathArg != null)
             {
-                mainWindow.LoadApplication(launchPathArg, startFullscreenArg);
+                mainWindow.LoadApplication(launchPathArg, startFullscreenArg, runOnce);
             }
 
             if (ConfigurationState.Instance.CheckUpdatesOnStart.Value && Updater.CanUpdate(false))

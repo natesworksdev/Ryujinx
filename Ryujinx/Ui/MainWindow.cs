@@ -678,7 +678,7 @@ namespace Ryujinx.Ui
             }
         }
 
-        public void LoadApplication(string path, bool startFullscreen = false)
+        public void LoadApplication(string path, bool startFullscreen = false, bool runOnce = false)
         {
             if (_gameLoaded)
             {
@@ -843,11 +843,11 @@ namespace Ryujinx.Ui
 
                 Translator.IsReadyForTranslation.Reset();
 #if MACOS_BUILD
-                CreateGameWindow();
+                CreateGameWindow(runOnce);
 #else
                 Thread windowThread = new Thread(() =>
                 {
-                    CreateGameWindow();
+                    CreateGameWindow(runOnce);
                 })
                 {
                     Name = "GUI.WindowThread"
@@ -954,7 +954,7 @@ namespace Ryujinx.Ui
             _firmwareInstallDirectory.Sensitive = true;
         }
 
-        private void CreateGameWindow()
+        private void CreateGameWindow(bool runOnce)
         {
             if (OperatingSystem.IsWindows())
             {
@@ -974,6 +974,11 @@ namespace Ryujinx.Ui
 
             _emulationContext.Dispose();
             _deviceExitStatus.Set();
+
+            if (runOnce)
+            {
+                End();
+            }
 
             // NOTE: Everything that is here will not be executed when you close the UI.
             Application.Invoke(delegate
