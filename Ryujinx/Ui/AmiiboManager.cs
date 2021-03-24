@@ -12,16 +12,17 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.Ui
 {
-    public class AmiiboManager
+    public static class AmiiboManager
     {
         private const string DEFAULT_JSON = "{ \"amiibo\": [] }";
 
-        private readonly HttpClient _httpClient;
-        private readonly string     _amiiboJsonPath;
-        private AmiiboJson          _amiiboJson;
-        private List<AmiiboApi>     _amiiboApis;
-        public List<AmiiboApi>      AmiiboApis { get => _amiiboApis; }
-        public AmiiboManager()
+        private static HttpClient          _httpClient;
+        private static string              _amiiboJsonPath;
+        private static AmiiboJson          _amiiboJson;
+        private static List<AmiiboApi>     _amiiboApis;
+        public static List<AmiiboApi>      AmiiboApis { get => _amiiboApis; }
+
+        public static void Initialize()
         {
             _httpClient = new HttpClient()
             {
@@ -60,7 +61,7 @@ namespace Ryujinx.Ui
             }
         }
 
-        private async Task LoadAmiiboJson(string amiiboJsonString)
+        private static async Task LoadAmiiboJson(string amiiboJsonString)
         {
             await Task.Run(() =>
             {
@@ -77,7 +78,7 @@ namespace Ryujinx.Ui
             });
         }
 
-        private async Task CheckForUpdates()
+        private static async Task CheckForUpdates()
         {
             string amiiboJsonString;
             if (File.Exists(_amiiboJsonPath))
@@ -108,7 +109,7 @@ namespace Ryujinx.Ui
             }
         }
 
-        private async Task<bool> NeedsUpdate(DateTime oldLastModified)
+        private static async Task<bool> NeedsUpdate(DateTime oldLastModified)
         {
             try
             {
@@ -129,7 +130,7 @@ namespace Ryujinx.Ui
             }
         }
 
-        private async Task<string> DownloadAmiiboJson()
+        private static async Task<string> DownloadAmiiboJson()
         {
             Logger.Info?.Print(LogClass.Application, "Downloading newer version of amiibo data..");
             HttpResponseMessage response = await _httpClient.GetAsync("https://amiibo.ryujinx.org/");
@@ -159,7 +160,7 @@ namespace Ryujinx.Ui
             return DEFAULT_JSON;
         }
 
-        private void ShowAmiiboServiceWarning()
+        private static void ShowAmiiboServiceWarning()
         {
             Logger.Warning?.Print(LogClass.Application, "Unable to connect to Amiibo API server. The service may be down or you may need to verify your internet connection is online.");
         }

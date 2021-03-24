@@ -91,7 +91,7 @@ namespace Ryujinx
             AppDataManager.Initialize(baseDirPathArg);
 
             // Setup Amiibo Data
-            AmiiboManager = new AmiiboManager();
+            AmiiboManager.Initialize();
 
             // Initialize the configuration.
             ConfigurationState.Initialize();

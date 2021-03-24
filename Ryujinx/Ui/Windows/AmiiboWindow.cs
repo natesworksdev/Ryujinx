@@ -45,7 +45,7 @@ namespace Ryujinx.Ui.Windows
                 Timeout = TimeSpan.FromMilliseconds(5000)
             };
 
-            _amiiboList = Program.AmiiboManager.AmiiboApis;
+            _amiiboList = AmiiboManager.AmiiboApis;
 
             _amiiboLogoBytes    = EmbeddedResources.Read("Ryujinx/Ui/Resources/Logo_Amiibo.png");
             _amiiboImage.Pixbuf = new Gdk.Pixbuf(_amiiboLogoBytes);
@@ -60,7 +60,7 @@ namespace Ryujinx.Ui.Windows
         {
             await Task.Run(() =>
             {
-                _amiiboList = Program.AmiiboManager.AmiiboApis;
+                _amiiboList = AmiiboManager.AmiiboApis;
 
                 if (LastScannedAmiiboShowAll)
                 {
