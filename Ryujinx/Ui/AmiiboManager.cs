@@ -53,7 +53,10 @@ namespace Ryujinx.Ui
             }
             else
             {
-                _ = CheckForUpdates();
+                Task.Run(async () =>
+                {
+                    await CheckForUpdates();
+                });
             }
         }
 
@@ -113,7 +116,7 @@ namespace Ryujinx.Ui
 
                 if (response.IsSuccessStatusCode)
                 {
-                    return response.Content.Headers.LastModified != oldLastModified;
+                    return response.Content.Headers.LastModified.Value.DateTime != oldLastModified;
                 }
 
                 return false;
@@ -135,9 +138,13 @@ namespace Ryujinx.Ui
             {
                 string amiiboJsonString = await response.Content.ReadAsStringAsync();
 
+                AmiiboJson amiiboJson = JsonSerializer.Deserialize<AmiiboJson>(amiiboJsonString);
+                DateTime lastUpdated = amiiboJson.LastUpdated;
+                amiiboJson.LastUpdated = new DateTime(lastUpdated.Year, lastUpdated.Month, lastUpdated.Day, lastUpdated.Hour, lastUpdated.Minute, lastUpdated.Second);
+                amiiboJsonString = JsonSerializer.Serialize<AmiiboJson>(amiiboJson);
                 using (FileStream dlcJsonStream = File.Create(_amiiboJsonPath, 4096, FileOptions.WriteThrough))
                 {
-                    dlcJsonStream.Write(Encoding.UTF8.GetBytes(amiiboJsonString));
+                    await dlcJsonStream.WriteAsync(Encoding.UTF8.GetBytes(amiiboJsonString));
                 }
 
                 return amiiboJsonString;

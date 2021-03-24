@@ -61,10 +61,6 @@ namespace Ryujinx
                 }
             }
 
-            // Setup Amiibo Data
-
-            AmiiboManager = new AmiiboManager();
-
             // Make process DPI aware for proper window sizing on high-res screens.
             ForceDpiAware.Windows();
             WindowScaleFactor = ForceDpiAware.GetWindowScaleFactor();
@@ -93,6 +89,9 @@ namespace Ryujinx
 
             // Setup base data directory.
             AppDataManager.Initialize(baseDirPathArg);
+
+            // Setup Amiibo Data
+            AmiiboManager = new AmiiboManager();
 
             // Initialize the configuration.
             ConfigurationState.Initialize();
