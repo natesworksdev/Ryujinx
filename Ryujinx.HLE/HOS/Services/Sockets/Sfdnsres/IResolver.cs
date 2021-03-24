@@ -225,7 +225,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             string name = Encoding.ASCII.GetString(rawName).TrimEnd('\0');
 
             // TODO: Use params.
-            bool  enableNsdResolve = context.RequestData.ReadInt32() == 1;
+            bool  enableNsdResolve = (context.RequestData.ReadInt32() & 1) != 0;
             int   timeOut          = context.RequestData.ReadInt32();
             ulong pidPlaceholder   = context.RequestData.ReadUInt64();
 
@@ -275,7 +275,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             {
                 IEnumerable<IPAddress> addresses = GetIpv4Addresses(hostEntry);
 
-                if (addresses.Count() == 0)
+                if (!addresses.Any())
                 {
                     errno          = GaiError.NoData;
                     netDbErrorCode = NetDbError.NoAddress;
