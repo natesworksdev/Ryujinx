@@ -1,76 +1,17 @@
 ﻿using Gtk;
 using Ryujinx.Common;
-using Ryujinx.Common.Configuration;
-using Ryujinx.Ui.Widgets;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using static Ryujinx.Ui.AmiiboManager;
 
 namespace Ryujinx.Ui.Windows
 {
     public partial class AmiiboWindow : Window
-    {
-        private struct AmiiboJson
-        {
-            [JsonPropertyName("amiibo")]
-            public List<AmiiboApi> Amiibo { get; set; }
-            [JsonPropertyName("lastUpdated")]
-            public DateTime LastUpdated { get; set; }
-        }
-
-        private struct AmiiboApi
-        {
-            [JsonPropertyName("name")]
-            public string Name { get; set; }
-            [JsonPropertyName("head")]
-            public string Head { get; set; }
-            [JsonPropertyName("tail")]
-            public string Tail { get; set; }
-            [JsonPropertyName("image")]
-            public string Image { get; set; }
-            [JsonPropertyName("amiiboSeries")]
-            public string AmiiboSeries { get; set; }
-            [JsonPropertyName("character")]
-            public string Character { get; set; }
-            [JsonPropertyName("gameSeries")]
-            public string GameSeries { get; set; }
-            [JsonPropertyName("type")]
-            public string Type { get; set; }
-
-            [JsonPropertyName("release")]
-            public Dictionary<string, string> Release { get; set; }
-
-            [JsonPropertyName("gamesSwitch")]
-            public List<AmiiboApiGamesSwitch> GamesSwitch { get; set; }
-        }
-
-        private class AmiiboApiGamesSwitch
-        {
-            [JsonPropertyName("amiiboUsage")]
-            public List<AmiiboApiUsage> AmiiboUsage { get; set; }
-            [JsonPropertyName("gameID")]
-            public List<string> GameId { get; set; }
-            [JsonPropertyName("gameName")]
-            public string GameName { get; set; }
-        }
-
-        private class AmiiboApiUsage
-        {
-            [JsonPropertyName("Usage")]
-            public string Usage { get; set; }
-            [JsonPropertyName("write")]
-            public bool Write { get; set; }
-        }
-
-        private const string DEFAULT_JSON = "{ \"amiibo\": [] }";
-
+    {      
         public string AmiiboId { get; private set; }
 
         public int    DeviceId                 { get; set; }
@@ -88,12 +29,10 @@ namespace Ryujinx.Ui.Windows
             }
         }
 
-        private readonly HttpClient _httpClient;
-        private readonly string     _amiiboJsonPath;
-
         private readonly byte[] _amiiboLogoBytes;
 
-        private List<AmiiboApi> _amiiboList;
+        private readonly HttpClient _httpClient;
+        private List<AmiiboApi>     _amiiboList;
 
         public AmiiboWindow() : base($"Ryujinx {Program.Version} - Amiibo")
         {
@@ -106,10 +45,7 @@ namespace Ryujinx.Ui.Windows
                 Timeout = TimeSpan.FromMilliseconds(5000)
             };
 
-            Directory.CreateDirectory(System.IO.Path.Join(AppDataManager.BaseDirPath, "system", "amiibo"));
-
-            _amiiboJsonPath = System.IO.Path.Join(AppDataManager.BaseDirPath, "system", "amiibo", "Amiibo.json");
-            _amiiboList     = new List<AmiiboApi>();
+            _amiiboList = Program.AmiiboManager.AmiiboApis;
 
             _amiiboLogoBytes    = EmbeddedResources.Read("Ryujinx/Ui/Resources/Logo_Amiibo.png");
             _amiiboImage.Pixbuf = new Gdk.Pixbuf(_amiiboLogoBytes);
@@ -122,42 +58,19 @@ namespace Ryujinx.Ui.Windows
 
         private async Task LoadContentAsync()
         {
-            string amiiboJsonString = DEFAULT_JSON;
-
-            if (File.Exists(_amiiboJsonPath))
+            await Task.Run(() =>
             {
-                amiiboJsonString = File.ReadAllText(_amiiboJsonPath);
+                _amiiboList = Program.AmiiboManager.AmiiboApis;
 
-                if (await NeedsUpdate(JsonSerializer.Deserialize<AmiiboJson>(amiiboJsonString).LastUpdated))
+                if (LastScannedAmiiboShowAll)
                 {
-                    amiiboJsonString = await DownloadAmiiboJson();
+                    _showAllCheckBox.Click();
                 }
-            }
-            else
-            {
-                try
-                {
-                    amiiboJsonString = await DownloadAmiiboJson();
-                }
-                catch
-                {
-                    ShowInfoDialog();
 
-                    Close();
-                }
-            }
+                ParseAmiiboData();
 
-            _amiiboList = JsonSerializer.Deserialize<AmiiboJson>(amiiboJsonString).Amiibo;
-            _amiiboList = _amiiboList.OrderBy(amiibo => amiibo.AmiiboSeries).ToList();
-
-            if (LastScannedAmiiboShowAll)
-            {
-                _showAllCheckBox.Click();
-            }
-
-            ParseAmiiboData();
-
-            _showAllCheckBox.Clicked += ShowAllCheckBox_Clicked;
+                _showAllCheckBox.Clicked += ShowAllCheckBox_Clicked;
+            });
         }
 
         private void ParseAmiiboData()
@@ -216,52 +129,6 @@ namespace Ryujinx.Ui.Windows
             }
         }
 
-        private async Task<bool> NeedsUpdate(DateTime oldLastModified)
-        {
-            try
-            {
-                HttpResponseMessage response = await _httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, "https://amiibo.ryujinx.org/"));
-
-                if (response.IsSuccessStatusCode)
-                {
-                    return response.Content.Headers.LastModified != oldLastModified;
-                }
-
-                return false;
-            }
-            catch
-            {
-                ShowInfoDialog();
-
-                return false;
-            }
-        }
-
-        private async Task<string> DownloadAmiiboJson()
-        {
-            HttpResponseMessage response = await _httpClient.GetAsync("https://amiibo.ryujinx.org/");
-
-            if (response.IsSuccessStatusCode)
-            {
-                string amiiboJsonString = await response.Content.ReadAsStringAsync();
-
-                using (FileStream dlcJsonStream = File.Create(_amiiboJsonPath, 4096, FileOptions.WriteThrough))
-                {
-                    dlcJsonStream.Write(Encoding.UTF8.GetBytes(amiiboJsonString));
-                }
-
-                return amiiboJsonString;
-            }
-            else
-            {
-                GtkDialog.CreateInfoDialog($"Amiibo API", "An error occured while fetching informations from the API.");
-
-                Close();
-            }
-
-            return DEFAULT_JSON;
-        }
-
         private async Task UpdateAmiiboPreview(string imageUrl)
         {
             HttpResponseMessage response = await _httpClient.GetAsync(imageUrl);
@@ -279,11 +146,6 @@ namespace Ryujinx.Ui.Windows
 
                 _amiiboImage.Pixbuf = amiiboPreview.ScaleSimple(resizeWidth, resizeHeight, Gdk.InterpType.Bilinear);
             }
-        }
-
-        private void ShowInfoDialog()
-        {
-            GtkDialog.CreateInfoDialog($"Amiibo API", "Unable to connect to Amiibo API server. The service may be down or you may need to verify your internet connection is online.");
         }
 
         //

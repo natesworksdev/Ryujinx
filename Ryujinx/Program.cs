@@ -27,6 +27,8 @@ namespace Ryujinx
         [DllImport("libX11")]
         private extern static int XInitThreads();
 
+        public static AmiiboManager AmiiboManager { get; set; }
+
         static void Main(string[] args)
         { 
             // Parse Arguments.
@@ -58,6 +60,10 @@ namespace Ryujinx
                     launchPathArg = arg;
                 }
             }
+
+            // Setup Amiibo Data
+
+            AmiiboManager = new AmiiboManager();
 
             // Make process DPI aware for proper window sizing on high-res screens.
             ForceDpiAware.Windows();
