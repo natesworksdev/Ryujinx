@@ -158,6 +158,11 @@ namespace Ryujinx.Graphics.OpenGL
             _framebuffer.SignalModified();
         }
 
+        public void CommandBufferBarrier()
+        {
+            GL.MemoryBarrier(MemoryBarrierFlags.CommandBarrierBit);
+        }
+
         public void CopyBuffer(BufferHandle source, BufferHandle destination, int srcOffset, int dstOffset, int size)
         {
             Buffer.Copy(source, destination, srcOffset, dstOffset, size);

@@ -19,6 +19,8 @@ namespace Ryujinx.Graphics.GAL
             int   stencilValue,
             int   stencilMask);
 
+        void CommandBufferBarrier();
+
         void CopyBuffer(BufferHandle source, BufferHandle destination, int srcOffset, int dstOffset, int size);
 
         void DispatchCompute(int groupsX, int groupsY, int groupsZ);
