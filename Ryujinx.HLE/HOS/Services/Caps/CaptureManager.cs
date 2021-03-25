@@ -135,10 +135,9 @@ namespace Ryujinx.HLE.HOS.Services.Caps
 
         private string GenerateFilePath(string folderPath, ApplicationAlbumEntry applicationAlbumEntry, DateTime currentDateTime, string hash)
         {
-                string fileName = $"{currentDateTime:yyyyMMddHHmmss}{applicationAlbumEntry.AlbumFileDateTime.UniqueId:00}-{hash}.jpg";
+            string fileName = $"{currentDateTime:yyyyMMddHHmmss}{applicationAlbumEntry.AlbumFileDateTime.UniqueId:00}-{hash}.jpg";
 
-                return Path.Combine(folderPath, fileName);
-            }
+            return Path.Combine(folderPath, fileName);
         }
     }
 }
