@@ -5,7 +5,7 @@ using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.IO;
-using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 
 namespace Ryujinx.HLE.HOS.Services.Caps
@@ -32,7 +32,7 @@ namespace Ryujinx.HLE.HOS.Services.Caps
             ulong appletResourceUserId = context.RequestData.ReadUInt64();
 
             // TODO: Service checks if the pid is present in an internal list and returns ResultCode.BlacklistedPid if it is.
-            //       The list content needs to be determined.
+            //       The list contents needs to be determined.
 
             ResultCode resultCode = ResultCode.OutOfRange;
 
@@ -67,7 +67,7 @@ namespace Ryujinx.HLE.HOS.Services.Caps
             }
 
             /*
-            // NOTE: Our current implementation of appletResourceUserId starts at 0, disabled it for now.
+            // NOTE: On our current implementation, appletResourceUserId starts at 0, disable it for now.
             if (appletResourceUserId == 0)
             {
                 return ResultCode.InvalidArgument;
@@ -81,7 +81,7 @@ namespace Ryujinx.HLE.HOS.Services.Caps
                 return ResultCode.NullOutputBuffer;
             }
             */
-            
+
             if (screenshotData.Length >= 0x384000)
             {
                 using (SHA256 sha256Hash = SHA256.Create())
@@ -90,7 +90,7 @@ namespace Ryujinx.HLE.HOS.Services.Caps
 
                     applicationAlbumEntry = new ApplicationAlbumEntry()
                     {
-                        Size              = (ulong)Marshal.SizeOf(typeof(ApplicationAlbumEntry)),
+                        Size              = (ulong)Unsafe.SizeOf<ApplicationAlbumEntry>(),
                         TitleId           = titleId,
                         AlbumFileDateTime = new AlbumFileDateTime()
                         {
@@ -115,7 +115,7 @@ namespace Ryujinx.HLE.HOS.Services.Caps
 
                     Directory.CreateDirectory(screenshotFolderPath);
 
-                    // NOTE: The saved JPEG file doesn't have the extra EXIF data limitation.
+                    // NOTE: The saved JPEG file doesn't have the limitation in the extra EXIF data.
                     Image.LoadPixelData<Rgba32>(screenshotData, 1280, 720).SaveAsJpegAsync(Path.Combine(screenshotFolderPath, fileName));
                 }
 
