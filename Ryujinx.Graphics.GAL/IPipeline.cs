@@ -33,6 +33,9 @@ namespace Ryujinx.Graphics.GAL
 
         void EndTransformFeedback();
 
+        void MultiDrawIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride);
+        void MultiDrawIndexedIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride);
+
         void SetAlphaTest(bool enable, float reference, CompareOp op);
 
         void SetBlendState(int index, BlendDescriptor blend);

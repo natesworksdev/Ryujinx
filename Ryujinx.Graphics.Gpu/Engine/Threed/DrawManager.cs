@@ -305,6 +305,63 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         }
 
         /// <summary>
+        /// Performs a indirect multi-draw, with parameters from a GPU buffer.
+        /// </summary>
+        /// <param name="engine">3D engine where this method is being called</param>
+        /// <param name="topology">Primitive topology</param>
+        /// <param name="indirectBuffer">GPU buffer with the draw parameters, such as count, first index, etc</param>
+        /// <param name="parameterBuffer">GPU buffer with the draw count</param>
+        /// <param name="maxDrawCount">Maximum number of draws that can be made</param>
+        /// <param name="stride">Distance in bytes between each element on the <paramref name="indirectBuffer"/> array</param>
+        public void MultiDrawIndirectCount(
+            ThreedClass engine,
+            int indexCount,
+            PrimitiveTopology topology,
+            BufferRange indirectBuffer,
+            BufferRange parameterBuffer,
+            int maxDrawCount,
+            int stride)
+        {
+            //_state.Write((int)_state.State.IndexBufferCount * 4, indexCount);
+
+            _context.Renderer.Pipeline.SetPrimitiveTopology(topology);
+            _drawState.Topology = topology;
+
+            ConditionalRenderEnabled renderEnable = ConditionalRendering.GetRenderEnable(
+                _context,
+                _channel.MemoryManager,
+                _state.State.RenderEnableAddress,
+                _state.State.RenderEnableCondition);
+
+            if (renderEnable == ConditionalRenderEnabled.False)
+            {
+                _drawState.DrawIndexed = false;
+                return;
+            }
+
+            _drawState.FirstIndex = _state.State.IndexBufferState.First;
+            _drawState.IndexCount = indexCount;
+
+            engine.UpdateState();
+
+            if (_drawState.DrawIndexed)
+            {
+                _context.Renderer.Pipeline.MultiDrawIndexedIndirectCount(indirectBuffer, parameterBuffer, maxDrawCount, stride);
+            }
+            else
+            {
+                _context.Renderer.Pipeline.MultiDrawIndirectCount(indirectBuffer, parameterBuffer, maxDrawCount, stride);
+            }
+
+            _drawState.DrawIndexed = false;
+
+            if (renderEnable == ConditionalRenderEnabled.Host)
+            {
+                _context.Renderer.Pipeline.EndHostConditionalRendering();
+            }
+        }
+
+        /// <summary>
         /// Perform any deferred draws.
         /// This is used for instanced draws.
         /// Since each instance is a separate draw, we defer the draw and accumulate the instance count.
