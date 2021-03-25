@@ -1,3 +1,4 @@
+using Ryujinx.Common.Combo;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Common.Configuration.Hid.Controller.Motion;
@@ -34,6 +35,7 @@ namespace Ryujinx.Input.HLE
         private bool _enableKeyboard;
         private bool _enableMouse;
         private Switch _device;
+        public event EventHandler<ComboPressedEventArgs> ComboPressed;
 
         public NpadManager(IGamepadDriver keyboardDriver, IGamepadDriver gamepadDriver, IGamepadDriver mouseDriver)
         {
@@ -185,6 +187,16 @@ namespace Ryujinx.Input.HLE
 
                         inputState.Buttons |= _device.Hid.UpdateStickButtons(inputState.LStick, inputState.RStick);
 
+                        ControllerKeys specialCombo1 = ControllerKeys.Minus|ControllerKeys.L|ControllerKeys.Plus|ControllerKeys.R;
+                        ControllerKeys specialCombo2 = ControllerKeys.Minus|ControllerKeys.Plus;
+
+                        if ((inputState.Buttons & specialCombo1) == specialCombo1) {
+                            OnComboPressed(new ComboPressedEventArgs(ComboType.SpecialOne));
+                        }
+                        else if ((inputState.Buttons & specialCombo2) == specialCombo2) {
+                            OnComboPressed(new ComboPressedEventArgs(ComboType.SpecialTwo));
+                        }
+
                         isJoyconPair = inputConfig.ControllerType == Common.Configuration.Hid.ControllerType.JoyconPair;
 
                         var altMotionState = isJoyconPair ? controller.GetHLEMotionState(true) : default;
@@ -268,6 +280,11 @@ namespace Ryujinx.Input.HLE
 
                 _device.TamperMachine.UpdateInput(hleInputStates);
             }
+        }
+
+        protected void OnComboPressed(ComboPressedEventArgs args)
+        {
+            ComboPressed?.Invoke(null, args);
         }
 
         internal InputConfig GetPlayerInputConfigByIndex(int index)

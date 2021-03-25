@@ -13,6 +13,7 @@ using Ryujinx.Audio.Backends.SDL2;
 using Ryujinx.Audio.Backends.SoundIo;
 using Ryujinx.Audio.Integration;
 using Ryujinx.Common;
+using Ryujinx.Common.Combo;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.System;
@@ -963,6 +964,11 @@ namespace Ryujinx.Ui
 
             DisplaySleep.Prevent();
 
+            if (runOnce)
+            {
+                RendererWidget.ComboPressed += Combo_Pressed;
+            }
+
             RendererWidget.Initialize(_emulationContext);
 
             RendererWidget.WaitEvent.WaitOne();
@@ -985,6 +991,26 @@ namespace Ryujinx.Ui
             {
                 SwitchToGameTable();
             });
+        }
+
+        private void Combo_Pressed(object sender, ComboPressedEventArgs args)
+        {
+            if (args.Combo == ComboType.SpecialOne)
+            {
+                Logger.Info?.Print(LogClass.Application, "Exit from game");
+                Thread applicationLibraryThread = new Thread(() =>
+                {
+                    End();
+                });
+                applicationLibraryThread.Name         = "GUI.ApplicationLibraryThread";
+                applicationLibraryThread.IsBackground = true;
+                applicationLibraryThread.Start();
+            }
+            else if (args.Combo == ComboType.SpecialTwo)
+            {
+                Logger.Info?.Print(LogClass.Application, "WakeupCombo");
+                Simulate_WakeUp_Message_Pressed(null, null);
+            }
         }
 
         private void RecreateFooterForMenu()
