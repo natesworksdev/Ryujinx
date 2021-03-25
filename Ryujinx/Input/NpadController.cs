@@ -134,7 +134,7 @@ namespace Ryujinx.Input
             {
                 throw new NotImplementedException();
             }
-            else if (_config is ControllerInputConfigBase controllerConfig)
+            else if (_config is StandardControllerInputConfig controllerConfig)
             {
                 (float leftAxisX, float leftAxisY) = State.GetStick(StickInputId.Left);
                 (float rightAxisX, float rightAxisY) = State.GetStick(StickInputId.Right);

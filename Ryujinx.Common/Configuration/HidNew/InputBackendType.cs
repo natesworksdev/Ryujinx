@@ -2,7 +2,8 @@
 {
     public enum InputBackendType
     {
-        KeyboardSDL2,
+        Invalid,
+        WindowKeyboard,
         GamepadSDL2,
     }
 }

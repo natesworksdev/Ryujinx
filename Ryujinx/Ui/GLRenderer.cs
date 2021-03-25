@@ -7,7 +7,6 @@ using OpenTK.Graphics.OpenGL;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.HidNew;
-using Ryujinx.Common.Configuration.HidNew.SDL2;
 using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
 using Ryujinx.Gamepad;

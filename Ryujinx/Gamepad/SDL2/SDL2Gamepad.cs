@@ -1,5 +1,5 @@
 ﻿using Ryujinx.Common.Configuration.HidNew;
-using Ryujinx.Common.Configuration.HidNew.SDL2;
+using Ryujinx.Common.Configuration.HidNew.Controller;
 using System;
 using System.Collections.Generic;
 using static SDL2.SDL;
@@ -17,7 +17,7 @@ namespace Ryujinx.Gamepad.SDL2
         }
 
 
-        private SDL2GamepadInputConfig _configuration;
+        private StandardControllerInputConfig _configuration;
 
         private static readonly SDL_GameControllerButton[] _buttonsDriverMapping = new SDL_GameControllerButton[(int)GamepadInputId.Count]
         {
@@ -98,16 +98,16 @@ namespace Ryujinx.Gamepad.SDL2
         {
             lock (_userMappingLock)
             {
-                _configuration = (SDL2GamepadInputConfig)configuration;
+                _configuration = (StandardControllerInputConfig)configuration;
 
                 _buttonsUserMapping.Clear();
 
                 // First update sticks
-                _stickUserMapping[(int)StickInputId.Left] = (StickInputId)_configuration.LeftJoycon.Joystick;
-                _stickUserMapping[(int)StickInputId.Right] = (StickInputId)_configuration.RightJoycon.Joystick;
+                _stickUserMapping[(int)StickInputId.Left] = (StickInputId)_configuration.LeftJoyconStick.Joystick;
+                _stickUserMapping[(int)StickInputId.Right] = (StickInputId)_configuration.RightJoyconStick.Joystick;
 
                 // Then left joycon
-                _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadInputId.LeftStick, From = (GamepadInputId)_configuration.LeftJoycon.StickButton });
+                _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadInputId.LeftStick, From = (GamepadInputId)_configuration.LeftJoyconStick.StickButton });
                 _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadInputId.DpadUp, From = (GamepadInputId)_configuration.LeftJoycon.DpadUp });
                 _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadInputId.DpadDown, From = (GamepadInputId)_configuration.LeftJoycon.DpadDown });
                 _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadInputId.DpadLeft, From = (GamepadInputId)_configuration.LeftJoycon.DpadLeft });
@@ -119,7 +119,7 @@ namespace Ryujinx.Gamepad.SDL2
                 _buttonsUserMapping.Add(new ButtonMappingEntry { To = (GamepadInputId)_configuration.LeftJoycon.ButtonSl, From = (GamepadInputId)_configuration.LeftJoycon.ButtonSl });
 
                 // Finally right joycon
-                _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadInputId.RightStick, From = (GamepadInputId)_configuration.RightJoycon.StickButton });
+                _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadInputId.RightStick, From = (GamepadInputId)_configuration.RightJoyconStick.StickButton });
                 _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadInputId.A, From = (GamepadInputId)_configuration.RightJoycon.ButtonA });
                 _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadInputId.B, From = (GamepadInputId)_configuration.RightJoycon.ButtonB });
                 _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadInputId.X, From = (GamepadInputId)_configuration.RightJoycon.ButtonX });
@@ -207,12 +207,12 @@ namespace Ryujinx.Gamepad.SDL2
 
             if (HasConfiguration)
             {
-                if (_configuration.LeftJoycon.InvertStickX)
+                if ((inputId == StickInputId.Left && _configuration.LeftJoyconStick.InvertStickX) || (inputId == StickInputId.Right && _configuration.RightJoyconStick.InvertStickX))
                 {
                     resultX = -resultX;
                 }
 
-                if (_configuration.LeftJoycon.InvertStickY)
+                if ((inputId == StickInputId.Left && _configuration.LeftJoyconStick.InvertStickY) || (inputId == StickInputId.Right && _configuration.RightJoyconStick.InvertStickY))
                 {
                     resultY = -resultY;
                 }

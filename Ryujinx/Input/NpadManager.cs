@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Common.Configuration.HidNew;
 using Ryujinx.Common.Configuration.HidNew.Controller;
+using Ryujinx.Common.Configuration.HidNew.Keyboard;
 using Ryujinx.Configuration;
 using Ryujinx.Gamepad;
 using Ryujinx.HLE.HOS;
@@ -50,15 +51,14 @@ namespace Ryujinx.Input
         {
             IGamepadDriver targetDriver = _gamepadDriver;
 
-            // FIXME: not working
-            /*if (config.GetType().IsGenericType && config.GetType().GetGenericTypeDefinition() == typeof(ControllerInputConfig<,>))
+            if (config is StandardControllerInputConfig)
             {
                 targetDriver = _gamepadDriver;
             }
-            else if (config is KeyboardConfig keyboardConfig)
+            else if (config is StandardKeyboardInputConfig)
             {
                 targetDriver = _keyboardDriver;
-            }*/
+            }
 
             Debug.Assert(targetDriver != null, "Unknown input configuration!");
 

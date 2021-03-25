@@ -9,10 +9,10 @@ namespace Ryujinx.Input
         public IGamepadDriver KeyboardDriver { get; private set; }
         public IGamepadDriver GamepadDriver { get; private set; }
 
-        public InputManager()
+        public InputManager(IGamepadDriver keyboardDriver, IGamepadDriver gamepadDriver)
         {
-            // TODO: Keyboard
-            GamepadDriver = new SDL2GamepadDriver();
+            KeyboardDriver = keyboardDriver;
+            GamepadDriver = gamepadDriver;
         }
 
         public NpadManager CreateNpadManager()
