@@ -445,7 +445,7 @@ namespace Ryujinx.Ui
             _device.Gpu.Renderer.Initialize(_glLogLevel);
 
             // Make sure the first frame is not transparent.
-            GL.ClearColor(0, 0, 0, 0);
+            GL.ClearColor(0, 0, 0, 1.0f);
             GL.Clear(ClearBufferMask.ColorBufferBit);
             SwapBuffers();
 
