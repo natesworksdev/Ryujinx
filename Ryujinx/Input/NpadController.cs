@@ -56,7 +56,7 @@ namespace Ryujinx.Input
             _isValid = false;
         }
 
-        public void UpdateDriverConfiguration(IGamepadDriver gamepadDriver, InputConfig config)
+        public bool UpdateDriverConfiguration(IGamepadDriver gamepadDriver, InputConfig config)
         {
             GamepadDriver = gamepadDriver;
 
@@ -65,8 +65,11 @@ namespace Ryujinx.Input
             _id = config.Id;
             _gamepad = GamepadDriver.GetGamepad(_id);
             _config = config;
-            _gamepad.SetConfiguration(_config);
             _isValid = _gamepad != null;
+
+            UpdateUserConfiguration(config);
+
+            return _isValid;
         }
 
         public void UpdateUserConfiguration(InputConfig config)

@@ -28,10 +28,25 @@ namespace Ryujinx.Input
 
             _keyboardDriver = keyboardDriver;
             _gamepadDriver = gamepadDriver;
+
+            _gamepadDriver.OnGamepadConnected += HandleOnGamepadConnected;
+            _gamepadDriver.OnGamepadDisconnected += HandleOnGamepadDisconnected;
+        }
+
+        private void HandleOnGamepadDisconnected(string obj)
+        {
+            // Force input reload
+            UpdateConfiguration(ConfigurationState.Instance.Hid.InputConfigNew.Value);
+        }
+
+        private void HandleOnGamepadConnected(string id)
+        {
+            // Force input reload
+            UpdateConfiguration(ConfigurationState.Instance.Hid.InputConfigNew.Value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DriverConfigurationUpdate(ref NpadController controller, InputConfig config)
+        private bool DriverConfigurationUpdate(ref NpadController controller, InputConfig config)
         {
             IGamepadDriver targetDriver = _gamepadDriver;
 
@@ -49,7 +64,11 @@ namespace Ryujinx.Input
 
             if (controller.GamepadDriver != targetDriver || controller.Id != config.Id)
             {
-                controller.UpdateDriverConfiguration(targetDriver, config);
+                return controller.UpdateDriverConfiguration(targetDriver, config);
+            }
+            else
+            {
+                return controller.GamepadDriver != null;
             }
         }
 
@@ -57,15 +76,26 @@ namespace Ryujinx.Input
         {
             lock (_lock)
             {
+                for (int i = 0; i < _controllers.Length; i++)
+                {
+                    _controllers[i]?.Dispose();
+                    _controllers[i] = null;
+                }
+
                 foreach (InputConfig inputConfig in inputConfigs)
                 {
-                    ref NpadController controller = ref _controllers[(int)inputConfig.PlayerIndex];
+                    NpadController controller = new NpadController();
 
-                    controller?.Dispose();
+                    bool isValid = DriverConfigurationUpdate(ref controller, inputConfig);
 
-                    controller = new NpadController();
-
-                    DriverConfigurationUpdate(ref controller, inputConfig);
+                    if (!isValid)
+                    {
+                        controller.Dispose();
+                    }
+                    else
+                    {
+                        _controllers[(int)inputConfig.PlayerIndex] = controller;
+                    }
                 }
 
                 // Enforce an update of the property that will be updated by HLE.
@@ -83,6 +113,20 @@ namespace Ryujinx.Input
                 foreach (InputConfig inputConfig in inputConfigs)
                 {
                     NpadController controller = _controllers[(int)inputConfig.PlayerIndex];
+
+                    // If this is null, we just got an update and weren't aware of it
+                    if (controller == null)
+                    {
+                        UpdateConfiguration(ConfigurationState.Instance.Hid.InputConfigNew.Value);
+
+                        controller = _controllers[(int)inputConfig.PlayerIndex];
+
+                        // If it's still null, the gamepad was disconnected, ignore.
+                        if (controller == null)
+                        {
+                            continue;
+                        }
+                    }
 
                     DriverConfigurationUpdate(ref controller, inputConfig);
 
@@ -107,9 +151,15 @@ namespace Ryujinx.Input
         {
             if (disposing)
             {
-                for (int i = 0; i < _controllers.Length; i++)
+                lock (_lock)
                 {
-                    _controllers[i]?.Dispose();
+                    _gamepadDriver.OnGamepadConnected -= HandleOnGamepadConnected;
+                    _gamepadDriver.OnGamepadDisconnected -= HandleOnGamepadDisconnected;
+
+                    for (int i = 0; i < _controllers.Length; i++)
+                    {
+                        _controllers[i]?.Dispose();
+                    }
                 }
             }
         }
