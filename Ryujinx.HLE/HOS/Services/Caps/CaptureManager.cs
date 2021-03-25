@@ -84,45 +84,61 @@ namespace Ryujinx.HLE.HOS.Services.Caps
 
             if (screenshotData.Length >= 0x384000)
             {
+                DateTime currentDateTime = DateTime.Now;
+
+                applicationAlbumEntry = new ApplicationAlbumEntry()
+                {
+                    Size              = (ulong)Unsafe.SizeOf<ApplicationAlbumEntry>(),
+                    TitleId           = titleId,
+                    AlbumFileDateTime = new AlbumFileDateTime()
+                    {
+                        Year     = (ushort)currentDateTime.Year,
+                        Month    = (byte)currentDateTime.Month,
+                        Day      = (byte)currentDateTime.Day,
+                        Hour     = (byte)currentDateTime.Hour,
+                        Minute   = (byte)currentDateTime.Minute,
+                        Second   = (byte)currentDateTime.Second,
+                        UniqueId = 0 // Incremented when there is multiple Album files with the same timestamp. Doesn't occur in our case.
+                    },
+                    AlbumStorage      = AlbumStorage.Sd,
+                    ContentType       = ContentType.Screenshot,
+                    Padding           = new Array5<byte>(),
+                    Unknown0x1f       = 1
+                };
+
                 using (SHA256 sha256Hash = SHA256.Create())
                 {
-                    DateTime currentDateTime = DateTime.Now;
-
-                    applicationAlbumEntry = new ApplicationAlbumEntry()
-                    {
-                        Size              = (ulong)Unsafe.SizeOf<ApplicationAlbumEntry>(),
-                        TitleId           = titleId,
-                        AlbumFileDateTime = new AlbumFileDateTime()
-                        {
-                            Year     = (ushort)currentDateTime.Year,
-                            Month    = (byte)currentDateTime.Month,
-                            Day      = (byte)currentDateTime.Day,
-                            Hour     = (byte)currentDateTime.Hour,
-                            Minute   = (byte)currentDateTime.Minute,
-                            Second   = (byte)currentDateTime.Second,
-                            UniqueId = 0 // Incremented when there is multiple Album files with the same timestamp. Doesn't occur in our case.
-                        },
-                        AlbumStorage      = AlbumStorage.Sd,
-                        ContentType       = ContentType.Screenshot,
-                        Padding           = new Array5<byte>(),
-                        Unknown0x1f       = 1
-                    };
-
                     // NOTE: The hex hash is a HMAC-SHA256 (first 32 bytes) using a hardcoded secret key over the titleId, we can simulate it by hashing the titleId instead.
-                    string hash                 = BitConverter.ToString(sha256Hash.ComputeHash(BitConverter.GetBytes(titleId))).Replace("-", "").Remove(0x20);
-                    string fileName             = $"{currentDateTime.ToString("yyyyMMddHHmmss")}{applicationAlbumEntry.AlbumFileDateTime.UniqueId.ToString("00")}-{hash}.jpg";
-                    string screenshotFolderPath = Path.Combine(_sdCardPath, "Nintendo", "Album", currentDateTime.Year.ToString("00"), currentDateTime.Month.ToString("00"), currentDateTime.Day.ToString("00"));
+                    string hash       = BitConverter.ToString(sha256Hash.ComputeHash(BitConverter.GetBytes(titleId))).Replace("-", "").Remove(0x20);
+                    string folderPath = Path.Combine(_sdCardPath, "Nintendo", "Album", currentDateTime.Year.ToString("00"), currentDateTime.Month.ToString("00"), currentDateTime.Day.ToString("00"));
+                    string filePath   = GenerateFilePath(folderPath, applicationAlbumEntry, currentDateTime, hash);
 
-                    Directory.CreateDirectory(screenshotFolderPath);
+                    // TODO: Handle that using the FS service implementation and return the right error code instead of throwing exceptions.
+                    Directory.CreateDirectory(folderPath);
 
+                    while (File.Exists(filePath))
+                    {
+                        applicationAlbumEntry.AlbumFileDateTime.UniqueId++;
+
+                        filePath = GenerateFilePath(folderPath, applicationAlbumEntry, currentDateTime, hash);
+                    }
+                
                     // NOTE: The saved JPEG file doesn't have the limitation in the extra EXIF data.
-                    Image.LoadPixelData<Rgba32>(screenshotData, 1280, 720).SaveAsJpegAsync(Path.Combine(screenshotFolderPath, fileName));
+                    Image.LoadPixelData<Rgba32>(screenshotData, 1280, 720).SaveAsJpegAsync(filePath);
                 }
 
                 return ResultCode.Success;
             }
 
             return ResultCode.NullInputBuffer;
+        }
+
+        private string GenerateFilePath(string folderPath, ApplicationAlbumEntry applicationAlbumEntry, DateTime currentDateTime, string hash)
+        {
+                string fileName = $"{currentDateTime:yyyyMMddHHmmss}{applicationAlbumEntry.AlbumFileDateTime.UniqueId:00}-{hash}.jpg";
+
+                return Path.Combine(folderPath, fileName);
+            }
         }
     }
 }
