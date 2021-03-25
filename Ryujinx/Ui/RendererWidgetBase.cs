@@ -7,6 +7,7 @@ using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
 using Ryujinx.Graphics.GAL;
+using Ryujinx.Graphics.GAL.Multithreading;
 using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.Input;
 using Ryujinx.Input.GTK3;
@@ -296,7 +297,15 @@ namespace Ryujinx.Ui
         public void Initialize(Switch device)
         {
             Device = device;
-            Renderer = Device.Gpu.Renderer;
+
+            IRenderer renderer = Device.Gpu.Renderer;
+
+            if (renderer is ThreadedRenderer tr)
+            {
+                renderer = tr.BaseRenderer;
+            }
+
+            Renderer = renderer;
             Renderer?.Window.SetSize(_windowWidth, _windowHeight);
 
             if (Renderer != null)
@@ -381,49 +390,53 @@ namespace Ryujinx.Ui
             Device.Gpu.InitializeShaderCache();
             Translator.IsReadyForTranslation.Set();
 
-            while (_isActive)
+            Device.Gpu.Renderer.RunLoop(() =>
             {
-                if (_isStopped)
+
+                while (_isActive)
                 {
-                    return;
-                }
-
-                _ticks += _chrono.ElapsedTicks;
-
-                _chrono.Restart();
-
-                if (Device.WaitFifo())
-                {
-                    Device.Statistics.RecordFifoStart();
-                    Device.ProcessFrame();
-                    Device.Statistics.RecordFifoEnd();
-                }
-
-                while (Device.ConsumeFrameAvailable())
-                {
-                    Device.PresentFrame(SwapBuffers);
-                }
-
-                if (_ticks >= _ticksPerFrame)
-                {
-                    string dockedMode = ConfigurationState.Instance.System.EnableDockedMode ? "Docked" : "Handheld";
-                    float scale = Graphics.Gpu.GraphicsConfig.ResScale;
-                    if (scale != 1)
+                    if (_isStopped)
                     {
-                        dockedMode += $" ({scale}x)";
+                        return;
                     }
 
-                    StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
-                        Device.EnableDeviceVsync,
-                        dockedMode,
-                        ConfigurationState.Instance.Graphics.AspectRatio.Value.ToText(),
-                        $"Game: {Device.Statistics.GetGameFrameRate():00.00} FPS",
-                        $"FIFO: {Device.Statistics.GetFifoPercent():0.00} %",
-                        $"GPU: {_gpuVendorName}"));
+                    _ticks += _chrono.ElapsedTicks;
 
-                    _ticks = Math.Min(_ticks - _ticksPerFrame, _ticksPerFrame);
+                    _chrono.Restart();
+
+                    if (Device.WaitFifo())
+                    {
+                        Device.Statistics.RecordFifoStart();
+                        Device.ProcessFrame();
+                        Device.Statistics.RecordFifoEnd();
+                    }
+
+                    while (Device.ConsumeFrameAvailable())
+                    {
+                        Device.PresentFrame(SwapBuffers);
+                    }
+
+                    if (_ticks >= _ticksPerFrame)
+                    {
+                        string dockedMode = ConfigurationState.Instance.System.EnableDockedMode ? "Docked" : "Handheld";
+                        float scale = Graphics.Gpu.GraphicsConfig.ResScale;
+                        if (scale != 1)
+                        {
+                            dockedMode += $" ({scale}x)";
+                        }
+
+                        StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
+                            Device.EnableDeviceVsync,
+                            dockedMode,
+                            ConfigurationState.Instance.Graphics.AspectRatio.Value.ToText(),
+                            $"Game: {Device.Statistics.GetGameFrameRate():00.00} FPS",
+                            $"FIFO: {Device.Statistics.GetFifoPercent():0.00} %",
+                            $"GPU: {_gpuVendorName}"));
+
+                        _ticks = Math.Min(_ticks - _ticksPerFrame, _ticksPerFrame);
+                    }
                 }
-            }
+            });
         }
 
         public void Start()
