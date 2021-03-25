@@ -203,7 +203,7 @@ namespace Ryujinx.Graphics.Gpu
 
                 _context.Renderer.Window.Present(texture.HostTexture, pt.Crop);
 
-                swapBuffersCallback();
+                //swapBuffersCallback();
 
                 pt.ReleaseCallback(pt.UserObj);
             }
