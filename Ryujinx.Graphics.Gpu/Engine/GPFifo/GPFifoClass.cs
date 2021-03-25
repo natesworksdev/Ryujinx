@@ -161,6 +161,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
         /// <param name="argument">Method call argument</param>
         public void SetReference(int argument)
         {
+            _context.Renderer.Pipeline.CommandBufferBarrier();
+
             _context.CreateHostSyncIfNeeded();
         }
 
