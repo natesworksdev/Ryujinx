@@ -26,6 +26,11 @@ namespace Ryujinx.Gamepad.GTK3
             // No operations
         }
 
+        public KeyboardStateSnaphot GetKeyboardStateSnapshot()
+        {
+            throw new NotImplementedException();
+        }
+
         public GamepadStateSnapshot GetMappedStateSnapshot()
         {
             throw new NotImplementedException();
@@ -42,6 +47,11 @@ namespace Ryujinx.Gamepad.GTK3
         }
 
         public bool IsPressed(GamepadInputId inputId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsPressed(Key key)
         {
             throw new NotImplementedException();
         }
