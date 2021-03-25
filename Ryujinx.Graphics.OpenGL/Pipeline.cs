@@ -535,6 +535,57 @@ namespace Ryujinx.Graphics.OpenGL
             _tfEnabled = false;
         }
 
+        public void MultiDrawIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride)
+        {
+            if (!_program.IsLinked)
+            {
+                Logger.Debug?.Print(LogClass.Gpu, "Draw error, shader not linked.");
+                return;
+            }
+
+            PreDraw();
+
+            GL.BindBuffer((BufferTarget)All.DrawIndirectBuffer, indirectBuffer.Handle.ToInt32());
+            GL.BindBuffer((BufferTarget)All.ParameterBuffer, parameterBuffer.Handle.ToInt32());
+
+            GL.MultiDrawArraysIndirectCount(
+                _primitiveType,
+                (IntPtr)indirectBuffer.Offset,
+                (IntPtr)parameterBuffer.Offset,
+                maxDrawCount,
+                stride);
+
+            PostDraw();
+        }
+
+        public void MultiDrawIndexedIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride)
+        {
+            if (!_program.IsLinked)
+            {
+                Logger.Debug?.Print(LogClass.Gpu, "Draw error, shader not linked.");
+                return;
+            }
+
+            PreDraw();
+
+            _vertexArray.SetRangeOfIndexBuffer();
+
+            GL.BindBuffer((BufferTarget)All.DrawIndirectBuffer, indirectBuffer.Handle.ToInt32());
+            GL.BindBuffer((BufferTarget)All.ParameterBuffer, parameterBuffer.Handle.ToInt32());
+
+            GL.MultiDrawElementsIndirectCount(
+                _primitiveType,
+                (Version46)_elementsType,
+                (IntPtr)indirectBuffer.Offset,
+                (IntPtr)parameterBuffer.Offset,
+                maxDrawCount,
+                stride);
+
+            _vertexArray.RestoreIndexBuffer();
+
+            PostDraw();
+        }
+
         public void SetAlphaTest(bool enable, float reference, CompareOp op)
         {
             if (!enable)
@@ -733,7 +784,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             EnsureVertexArray();
 
-            _vertexArray.SetIndexBuffer(buffer.Handle);
+            _vertexArray.SetIndexBuffer(buffer);
         }
 
         public void SetLogicOpState(bool enable, LogicalOp op)
