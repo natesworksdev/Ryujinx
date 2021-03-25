@@ -1,8 +1,9 @@
-using Ryujinx.Common.Configuration.Hid;
+using System;
 
 namespace Ryujinx.Ui.Input
 {
-    interface ButtonAssigner
+    // TODO: make disposable
+    interface ButtonAssigner : IDisposable
     {
         void Init();
 

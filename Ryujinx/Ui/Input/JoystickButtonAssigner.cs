@@ -1,41 +1,49 @@
-using Ryujinx.Common.Configuration.Hid;
 using System.Collections.Generic;
 using System;
 using System.IO;
+using Ryujinx.Gamepad;
 
 namespace Ryujinx.Ui.Input
 {
     class JoystickButtonAssigner : ButtonAssigner
     {
-        private int _index;
+        private IGamepad _gamepad;
 
-        private double _triggerThreshold;
+        private GamepadStateSnapshot _currState;
 
-        // private JoystickState _currState;
-
-        // private JoystickState _prevState;
+        private GamepadStateSnapshot _prevState;
 
         private JoystickButtonDetector _detector;
 
-        public JoystickButtonAssigner(int index, double triggerThreshold)
+        private bool _forStick;
+
+        public JoystickButtonAssigner(IGamepad gamepad, float triggerThreshold, bool forStick)
         {
-            _index = index;
-            _triggerThreshold = triggerThreshold;
+            _gamepad = gamepad;
             _detector = new JoystickButtonDetector();
+            _forStick = forStick;
+
+            _gamepad?.SetTriggerThreshold(triggerThreshold);
         }
 
         public void Init()
         {
-            /*_currState = Joystick.GetState(_index);
-            _prevState = _currState;*/
+            if (_gamepad != null)
+            {
+                _currState = _gamepad.GetStateSnapshot();
+                _prevState = _currState;
+            }    
         }
 
         public void ReadInput()
         {
-            /*_prevState = _currState;
-            _currState = Joystick.GetState(_index);
+            if (_gamepad != null)
+            {
+                _prevState = _currState;
+                _currState = _gamepad.GetStateSnapshot();
+            }
 
-            CollectButtonStats();*/
+            CollectButtonStats();
         }
 
         public bool HasAnyButtonPressed()
@@ -45,99 +53,105 @@ namespace Ryujinx.Ui.Input
 
         public bool ShouldCancel()
         {
-            return true;
+            // TODO: keyboard cancel
+            return _gamepad == null || !_gamepad.IsConnected;
             // return Mouse.GetState().IsAnyButtonDown || Keyboard.GetState().IsAnyKeyDown;
         }
 
         public string GetPressedButton()
         {
-            List<ControllerInputId> pressedButtons = _detector.GetPressedButtons();
+            List<GamepadInputId> pressedButtons = _detector.GetPressedButtons();
 
-            // Reverse list so axis button take precedence when more than one button is recognized.
-            pressedButtons.Reverse();
-
-            return pressedButtons.Count > 0 ? pressedButtons[0].ToString() : "";
-        }
-
-        /*private void CollectButtonStats()
-        {
-            JoystickCapabilities capabilities = Joystick.GetCapabilities(_index);
-
-            ControllerInputId pressedButton;
-
-            // Buttons
-            for (int i = 0; i != capabilities.ButtonCount; i++)
+            if (pressedButtons.Count > 0)
             {
-                if (_currState.IsButtonDown(i) && _prevState.IsButtonUp(i))
+                string result;
+
+                if (!_forStick)
                 {
-                    Enum.TryParse($"Button{i}", out pressedButton);
-                    _detector.AddInput(pressedButton, 1);
+                    result = pressedButtons[0].ToString();
+                }
+                else
+                {
+                    result = ((StickInputId)pressedButtons[0]).ToString();
                 }
 
-                if (_currState.IsButtonUp(i) && _prevState.IsButtonDown(i))
-                {
-                    Enum.TryParse($"Button{i}", out pressedButton);
-                    _detector.AddInput(pressedButton, -1);
-                }
+                return result;
             }
 
-            // Axis
-            for (int i = 0; i != capabilities.AxisCount; i++)
-            {
-                float axisValue = _currState.GetAxis(i);
-
-                Enum.TryParse($"Axis{i}", out pressedButton);
-                _detector.AddInput(pressedButton, axisValue);
-            }
-
-            // Hats
-            for (int i = 0; i != capabilities.HatCount; i++)
-            {
-                string currPos = GetHatPosition(_currState.GetHat((JoystickHat)i));
-                string prevPos = GetHatPosition(_prevState.GetHat((JoystickHat)i));
-
-                if (currPos == prevPos)
-                {
-                    continue;
-                }
-
-                if (currPos != "")
-                {
-                    Enum.TryParse($"Hat{i}{currPos}", out pressedButton);
-                    _detector.AddInput(pressedButton, 1);
-                }
-
-                if (prevPos != "")
-                {
-                    Enum.TryParse($"Hat{i}{prevPos}", out pressedButton);
-                    _detector.AddInput(pressedButton, -1);
-                }
-            }
-        }
-
-        private string GetHatPosition(JoystickHatState hatState)
-        {
-            if (hatState.IsUp) return "Up";
-            if (hatState.IsDown) return "Down";
-            if (hatState.IsLeft) return "Left";
-            if (hatState.IsRight) return "Right";
             return "";
-        }*/
+        }
+
+        private void CollectButtonStats()
+        {
+            if (_forStick)
+            {
+                for (StickInputId inputId = 0; inputId < StickInputId.Count; inputId++)
+                {
+                    (float x, float y) = _currState.GetStick(inputId);
+
+                    float value;
+
+                    if (x != 0.0f)
+                    {
+                        value = x;
+                    }
+                    else if (y != 0.0f)
+                    {
+                        value = y;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+
+                    _detector.AddInput((GamepadInputId)inputId, value);
+                }
+
+            }
+            else
+            {
+                for (GamepadInputId inputId = 0; inputId < GamepadInputId.Count; inputId++)
+                {
+                    if (_currState.IsPressed(inputId) && !_prevState.IsPressed(inputId))
+                    {
+                        _detector.AddInput(inputId, 1);
+                    }
+
+                    if (!_currState.IsPressed(inputId) && _prevState.IsPressed(inputId))
+                    {
+                        _detector.AddInput(inputId, -1);
+                    }
+                }
+            }
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _gamepad?.Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
 
         private class JoystickButtonDetector
         {
-            private Dictionary<ControllerInputId, InputSummary> _stats;
+            private Dictionary<GamepadInputId, InputSummary> _stats;
 
             public JoystickButtonDetector()
             {
-                _stats = new Dictionary<ControllerInputId, InputSummary>();
+                _stats = new Dictionary<GamepadInputId, InputSummary>();
             }
 
             public bool HasAnyButtonPressed()
             {
                 foreach (var inputSummary in _stats.Values)
                 {
-                    if (checkButtonPressed(inputSummary))
+                    if (CheckButtonPressed(inputSummary))
                     {
                         return true;
                     }
@@ -146,13 +160,13 @@ namespace Ryujinx.Ui.Input
                 return false;
             }
 
-            public List<ControllerInputId> GetPressedButtons()
+            public List<GamepadInputId> GetPressedButtons()
             {
-                List<ControllerInputId> pressedButtons = new List<ControllerInputId>();
+                List<GamepadInputId> pressedButtons = new List<GamepadInputId>();
 
                 foreach (var kvp in _stats)
                 {
-                    if (!checkButtonPressed(kvp.Value))
+                    if (!CheckButtonPressed(kvp.Value))
                     {
                         continue;
                     }
@@ -162,7 +176,7 @@ namespace Ryujinx.Ui.Input
                 return pressedButtons;
             }
 
-            public void AddInput(ControllerInputId button, float value)
+            public void AddInput(GamepadInputId button, float value)
             {
                 InputSummary inputSummary;
 
@@ -187,7 +201,7 @@ namespace Ryujinx.Ui.Input
                 return writer.ToString();
             }
 
-            private bool checkButtonPressed(InputSummary sequence)
+            private bool CheckButtonPressed(InputSummary sequence)
             {
                 float distance = Math.Abs(sequence.Min - sequence.Avg) + Math.Abs(sequence.Max - sequence.Avg);
                 return distance > 1.5; // distance range [0, 2]

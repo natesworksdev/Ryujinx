@@ -81,44 +81,19 @@ namespace Ryujinx.Ui
         private long _lastCursorMoveTime;
         private bool _hideCursorOnIdle;
         private NpadManager _npadManager;
-        private IGamepadDriver _gamepadDriver;
+        private InputManager _inputManager;
 
-        public GlRenderer(Switch device, IGamepadDriver gamepadDriver, GraphicsDebugLevel glLogLevel)
+        public GlRenderer(Switch device, InputManager inputManager, GraphicsDebugLevel glLogLevel)
             : base (GetGraphicsMode(),
             3, 3,
             glLogLevel == GraphicsDebugLevel.None
             ? OpenGLContextFlags.Compat
             : OpenGLContextFlags.Compat | OpenGLContextFlags.Debug)
         {
-            _gamepadDriver = gamepadDriver;
-            _npadManager = new NpadManager(null, _gamepadDriver);
+            _inputManager = inputManager;
+            _npadManager = inputManager.CreateNpadManager();
 
-            // Temp code to handle controller support
-            // TODO: fix controller configuration frontend
-            List<InputConfig> inputs = new List<InputConfig>();
-
-            Common.Configuration.Hid.PlayerIndex playerIndex = Common.Configuration.Hid.PlayerIndex.Player1;
-
-            foreach (string id in _gamepadDriver.GamepadsIds)
-            {
-                if (playerIndex == Common.Configuration.Hid.PlayerIndex.Handheld)
-                {
-                    break;
-                }
-
-                // Player one is a mirror for handheld too here.
-                if (playerIndex == Common.Configuration.Hid.PlayerIndex.Player1)
-                {
-                    inputs.Add(CreateGameController(id, Common.Configuration.Hid.PlayerIndex.Handheld, Common.Configuration.Hid.ControllerType.Handheld));
-                }
-
-                inputs.Add(CreateGameController(id, playerIndex++, Common.Configuration.Hid.ControllerType.JoyconPair));
-            }
-
-            _npadManager.UpdateConfiguration(inputs);
-
-            _gamepadDriver.OnGamepadConnected += HandleOnGamepadConnected;
-            _gamepadDriver.OnGamepadDisconnected += HandleOnGamepadDisconnected;
+            _npadManager.UpdateConfiguration(ConfigurationState.Instance.Hid.InputConfigNew.Value.ToList());
 
             WaitEvent = new ManualResetEvent(false);
 
@@ -152,97 +127,6 @@ namespace Ryujinx.Ui
             _lastCursorMoveTime = Stopwatch.GetTimestamp();
 
             ConfigurationState.Instance.HideCursorOnIdle.Event += HideCursorStateChanged;
-        }
-
-        private SDL2GamepadInputConfig CreateGameController(string id, Common.Configuration.Hid.PlayerIndex playerIndex, Common.Configuration.Hid.ControllerType controllerType)
-        {
-            return new SDL2GamepadInputConfig
-            {
-                PlayerIndex = playerIndex,
-                Backend = InputBackendType.GamepadSDL2,
-                ControllerType = controllerType,
-                DeadzoneLeft = 0.0f,
-                DeadzoneRight = 0.0f,
-                TriggerThreshold = 0.0f,
-                Id = id,
-
-                LeftJoycon = new Common.Configuration.HidNew.Controller.LeftJoyconControllerConfig<ConfigGamepadInputId, ConfigStickInputId>
-                {
-                    Joystick = ConfigStickInputId.Left,
-                    StickButton = ConfigGamepadInputId.LeftStick,
-                    DpadUp = ConfigGamepadInputId.DpadUp,
-                    DpadDown = ConfigGamepadInputId.DpadDown,
-                    DpadLeft = ConfigGamepadInputId.DpadLeft,
-                    DpadRight = ConfigGamepadInputId.DpadRight,
-                    ButtonMinus = ConfigGamepadInputId.Minus,
-                    ButtonL = ConfigGamepadInputId.LeftShoulder,
-                    ButtonZl = ConfigGamepadInputId.LeftTrigger,
-                    ButtonSl = ConfigGamepadInputId.Unbound,
-                    ButtonSr = ConfigGamepadInputId.Unbound,
-                    InvertStickX = false,
-                    InvertStickY = false,
-                },
-
-                RightJoycon = new Common.Configuration.HidNew.Controller.RightJoyconControllerConfig<ConfigGamepadInputId, ConfigStickInputId>
-                {
-                    Joystick = ConfigStickInputId.Right,
-                    StickButton = ConfigGamepadInputId.RightStick,
-                    ButtonA = ConfigGamepadInputId.B,
-                    ButtonB = ConfigGamepadInputId.A,
-                    ButtonX = ConfigGamepadInputId.X,
-                    ButtonY = ConfigGamepadInputId.Y,
-                    ButtonPlus = ConfigGamepadInputId.Plus,
-                    ButtonR = ConfigGamepadInputId.RightShoulder,
-                    ButtonZr = ConfigGamepadInputId.RightTrigger,
-                    ButtonSl = ConfigGamepadInputId.Unbound,
-                    ButtonSr = ConfigGamepadInputId.Unbound,
-                    InvertStickX = false,
-                    InvertStickY = false,
-                }
-            };
-        }
-
-        private void AddGamepad(string id)
-        {
-            List<InputConfig> inputs = ConfigurationState.Instance.Hid.InputConfigNew.Value;
-
-            if (inputs.Count > 9)
-            {
-                return;
-            }
-
-            Common.Configuration.Hid.PlayerIndex playerIndex = (Common.Configuration.Hid.PlayerIndex)Math.Max(inputs.Count - 1, 0);
-
-            Logger.Error?.Print(LogClass.Application, $"Adding new gamepad for player {playerIndex}");
-
-            // Player one is a mirror for handheld too here.
-            if (playerIndex == Common.Configuration.Hid.PlayerIndex.Player1)
-            {
-                inputs.Add(CreateGameController(id, Common.Configuration.Hid.PlayerIndex.Handheld, Common.Configuration.Hid.ControllerType.Handheld));
-            }
-
-            inputs.Add(CreateGameController(id, playerIndex, Common.Configuration.Hid.ControllerType.JoyconPair));
-
-            _npadManager.UpdateConfiguration(inputs.ToList());
-        }
-
-        private void RemoveGamepad(string id)
-        {
-            Logger.Error?.Print(LogClass.Application, $"Removing gamepad");
-
-            List<InputConfig> inputs = ConfigurationState.Instance.Hid.InputConfigNew.Value.Where(x => x.Id != id).ToList();
-
-            _npadManager.UpdateConfiguration(inputs);
-        }
-
-        private void HandleOnGamepadDisconnected(string id)
-        {
-            RemoveGamepad(id);
-        }
-
-        private void HandleOnGamepadConnected(string id)
-        {
-            AddGamepad(id);
         }
 
         private void HideCursorStateChanged(object sender, ReactiveEventArgs<bool> state)
@@ -287,9 +171,6 @@ namespace Ryujinx.Ui
         private void GLRenderer_Destroyed(object sender, EventArgs e)
         {
             ConfigurationState.Instance.HideCursorOnIdle.Event -= HideCursorStateChanged;
-
-            _gamepadDriver.OnGamepadConnected -= HandleOnGamepadConnected;
-            _gamepadDriver.OnGamepadDisconnected -= HandleOnGamepadDisconnected;
 
             _npadManager.Dispose();
             _dsuClient?.Dispose();

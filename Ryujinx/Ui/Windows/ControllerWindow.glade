@@ -682,7 +682,7 @@
                                             <property name="width_request">80</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
-                                            <property name="label" translatable="yes">LStick Lt/Rt</property>
+                                            <property name="label" translatable="yes">LStick</property>
                                             <property name="xalign">0</property>
                                           </object>
                                           <packing>
@@ -691,20 +691,7 @@
                                           </packing>
                                         </child>
                                         <child>
-                                          <object class="GtkLabel">
-                                            <property name="width_request">80</property>
-                                            <property name="visible">True</property>
-                                            <property name="can_focus">False</property>
-                                            <property name="label" translatable="yes">LStick Up/Dn</property>
-                                            <property name="xalign">0</property>
-                                          </object>
-                                          <packing>
-                                            <property name="left_attach">0</property>
-                                            <property name="top_attach">1</property>
-                                          </packing>
-                                        </child>
-                                        <child>
-                                          <object class="GtkToggleButton" id="_lStickX">
+                                          <object class="GtkToggleButton" id="_lStick">
                                             <property name="label" translatable="yes"> </property>
                                             <property name="width_request">65</property>
                                             <property name="visible">True</property>
@@ -714,24 +701,11 @@
                                           <packing>
                                             <property name="left_attach">1</property>
                                             <property name="top_attach">0</property>
-                                          </packing>
-                                        </child>
-                                        <child>
-                                          <object class="GtkToggleButton" id="_lStickY">
-                                            <property name="label" translatable="yes"> </property>
-                                            <property name="width_request">65</property>
-                                            <property name="visible">True</property>
-                                            <property name="can_focus">True</property>
-                                            <property name="receives_default">True</property>
-                                          </object>
-                                          <packing>
-                                            <property name="left_attach">1</property>
-                                            <property name="top_attach">1</property>
                                           </packing>
                                         </child>
                                         <child>
                                           <object class="GtkCheckButton" id="_invertLStickX">
-                                            <property name="label" translatable="yes">Invert</property>
+                                            <property name="label" translatable="yes">Invert Stick X</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">True</property>
                                             <property name="receives_default">False</property>
@@ -744,7 +718,7 @@
                                         </child>
                                         <child>
                                           <object class="GtkCheckButton" id="_invertLStickY">
-                                            <property name="label" translatable="yes">Invert</property>
+                                            <property name="label" translatable="yes">Invert Stick Y</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">True</property>
                                             <property name="receives_default">False</property>
@@ -1501,7 +1475,7 @@
                                             <property name="width_request">80</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
-                                            <property name="label" translatable="yes">RStick Lt/Rt</property>
+                                            <property name="label" translatable="yes">RStick</property>
                                             <property name="xalign">0</property>
                                           </object>
                                           <packing>
@@ -1510,20 +1484,7 @@
                                           </packing>
                                         </child>
                                         <child>
-                                          <object class="GtkLabel">
-                                            <property name="width_request">80</property>
-                                            <property name="visible">True</property>
-                                            <property name="can_focus">False</property>
-                                            <property name="label" translatable="yes">RStick Up/Dn</property>
-                                            <property name="xalign">0</property>
-                                          </object>
-                                          <packing>
-                                            <property name="left_attach">0</property>
-                                            <property name="top_attach">1</property>
-                                          </packing>
-                                        </child>
-                                        <child>
-                                          <object class="GtkToggleButton" id="_rStickX">
+                                          <object class="GtkToggleButton" id="_rStick">
                                             <property name="label" translatable="yes"> </property>
                                             <property name="width_request">65</property>
                                             <property name="visible">True</property>
@@ -1533,24 +1494,11 @@
                                           <packing>
                                             <property name="left_attach">1</property>
                                             <property name="top_attach">0</property>
-                                          </packing>
-                                        </child>
-                                        <child>
-                                          <object class="GtkToggleButton" id="_rStickY">
-                                            <property name="label" translatable="yes"> </property>
-                                            <property name="width_request">65</property>
-                                            <property name="visible">True</property>
-                                            <property name="can_focus">True</property>
-                                            <property name="receives_default">True</property>
-                                          </object>
-                                          <packing>
-                                            <property name="left_attach">1</property>
-                                            <property name="top_attach">1</property>
                                           </packing>
                                         </child>
                                         <child>
                                           <object class="GtkCheckButton" id="_invertRStickX">
-                                            <property name="label" translatable="yes">Invert</property>
+                                            <property name="label" translatable="yes">Invert Stick X</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">True</property>
                                             <property name="receives_default">False</property>
@@ -1563,7 +1511,7 @@
                                         </child>
                                         <child>
                                           <object class="GtkCheckButton" id="_invertRStickY">
-                                            <property name="label" translatable="yes">Invert</property>
+                                            <property name="label" translatable="yes">Invert Stick Y</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">True</property>
                                             <property name="receives_default">False</property>

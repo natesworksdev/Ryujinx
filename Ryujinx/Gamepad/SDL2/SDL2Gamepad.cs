@@ -41,7 +41,7 @@ namespace Ryujinx.Gamepad.SDL2
             SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_DOWN,
             SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_LEFT,
             SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_RIGHT,
-            SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_GUIDE,
+            SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_BACK,
             SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_START,
         };
 
@@ -58,6 +58,8 @@ namespace Ryujinx.Gamepad.SDL2
         private IntPtr _gamepadHandle;
         private int _joystickIndex;
 
+        private float _triggerThreshold;
+
         public SDL2Gamepad(IntPtr gamepadHandle, int joystickIndex, string driverId)
         {
             _gamepadHandle = gamepadHandle;
@@ -66,6 +68,7 @@ namespace Ryujinx.Gamepad.SDL2
 
             Name = SDL_GameControllerName(_gamepadHandle);
             Id = driverId;
+            _triggerThreshold = 0.0f;
         }
 
         public string Id { get; }
@@ -84,6 +87,11 @@ namespace Ryujinx.Gamepad.SDL2
         public void Dispose()
         {
             Dispose(true);
+        }
+
+        public void SetTriggerThreshold(float triggerThreshold)
+        {
+            _triggerThreshold = triggerThreshold;
         }
 
         public void SetConfiguration(InputConfig configuration)
@@ -121,6 +129,8 @@ namespace Ryujinx.Gamepad.SDL2
                 _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadInputId.RightTrigger, From = (GamepadInputId)_configuration.RightJoycon.ButtonZr });
                 _buttonsUserMapping.Add(new ButtonMappingEntry { To = (GamepadInputId)_configuration.RightJoycon.ButtonSr, From = (GamepadInputId)_configuration.RightJoycon.ButtonSr });
                 _buttonsUserMapping.Add(new ButtonMappingEntry { To = (GamepadInputId)_configuration.RightJoycon.ButtonSl, From = (GamepadInputId)_configuration.RightJoycon.ButtonSl });
+
+                SetTriggerThreshold(_configuration.TriggerThreshold);
             }
         }
 
@@ -219,11 +229,11 @@ namespace Ryujinx.Gamepad.SDL2
             }
             else if (inputId == GamepadInputId.LeftTrigger)
             {
-                return SDL_GameControllerGetAxis(_gamepadHandle, SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_TRIGGERLEFT) > 0;
+                return ConvertRawStickValue(SDL_GameControllerGetAxis(_gamepadHandle, SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_TRIGGERLEFT)) > _triggerThreshold;
             }
             else if (inputId == GamepadInputId.RightTrigger)
             {
-                return SDL_GameControllerGetAxis(_gamepadHandle, SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_TRIGGERRIGHT) > 0;
+                return ConvertRawStickValue(SDL_GameControllerGetAxis(_gamepadHandle, SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_TRIGGERRIGHT)) > _triggerThreshold;
             }
             else
             {

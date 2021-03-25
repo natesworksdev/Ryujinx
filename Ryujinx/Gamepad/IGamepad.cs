@@ -17,6 +17,8 @@ namespace Ryujinx.Gamepad
 
         (float, float) GetStick(StickInputId inputId);
 
+        void SetTriggerThreshold(float triggerThreshold);
+
         void SetConfiguration(InputConfig configuration);
 
         GamepadStateSnapshot GetMappedStateSnapshot();

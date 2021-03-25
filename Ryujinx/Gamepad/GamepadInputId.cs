@@ -27,7 +27,7 @@
         Minus,
         Plus,
 
-        Guide = Minus,
+        Back = Minus,
         Start = Plus,
 
         Count

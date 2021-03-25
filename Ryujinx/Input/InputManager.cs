@@ -1,29 +1,31 @@
 ﻿using Ryujinx.Gamepad;
+using Ryujinx.Gamepad.SDL2;
 using System;
 
 namespace Ryujinx.Input
 {
     public class InputManager : IDisposable
     {
-        public IGamepadDriver _keyboardDriver;
-        public IGamepadDriver _gamepadDriver;
+        public IGamepadDriver KeyboardDriver { get; private set; }
+        public IGamepadDriver GamepadDriver { get; private set; }
 
         public InputManager()
         {
-            // TODO
+            // TODO: Keyboard
+            GamepadDriver = new SDL2GamepadDriver();
         }
 
         public NpadManager CreateNpadManager()
         {
-            return new NpadManager(_keyboardDriver, _gamepadDriver);
+            return new NpadManager(KeyboardDriver, GamepadDriver);
         }
 
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
             {
-                _keyboardDriver?.Dispose();
-                _gamepadDriver?.Dispose();
+                KeyboardDriver?.Dispose();
+                GamepadDriver?.Dispose();
             }
         }
 

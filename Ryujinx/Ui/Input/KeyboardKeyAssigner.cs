@@ -48,5 +48,10 @@ namespace Ryujinx.Ui.Input
 
             return !ShouldCancel() ? keyPressed : "";
         }
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

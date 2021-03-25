@@ -1,9 +1,12 @@
 using Gtk;
 using Ryujinx.Common.Configuration;
-using Ryujinx.Common.Configuration.Hid;
+using Ryujinx.Common.Configuration.HidNew;
+using Ryujinx.Common.Configuration.HidNew.Controller;
+using Ryujinx.Common.Configuration.HidNew.SDL2;
 using Ryujinx.Common.Utilities;
 using Ryujinx.Configuration;
 using Ryujinx.Gamepad;
+using Ryujinx.Input;
 using Ryujinx.Ui.Input;
 using Ryujinx.Ui.Widgets;
 using System;
@@ -16,11 +19,14 @@ using System.Threading;
 using GUI = Gtk.Builder.ObjectAttribute;
 using Key = Ryujinx.Configuration.Hid.Key;
 
+using ConfigGamepadInputId = Ryujinx.Common.Configuration.HidNew.Controller.GamepadInputId;
+using ConfigStickInputId = Ryujinx.Common.Configuration.HidNew.Controller.StickInputId;
+
 namespace Ryujinx.Ui.Windows
 {
     public class ControllerWindow : Window
     {
-        private readonly PlayerIndex _playerIndex;
+        private readonly Common.Configuration.Hid.PlayerIndex _playerIndex;
         private readonly InputConfig _inputConfig;
 
         private bool _isWaitingForInput;
@@ -52,9 +58,8 @@ namespace Ryujinx.Ui.Windows
         [GUI] Grid         _rightSideTriggerBox;
         [GUI] Box          _triggerThresholdBox;
         [GUI] ComboBoxText _controllerType;
-        [GUI] ToggleButton _lStickX;
+        [GUI] ToggleButton _lStick;
         [GUI] CheckButton  _invertLStickX;
-        [GUI] ToggleButton _lStickY;
         [GUI] CheckButton  _invertLStickY;
         [GUI] ToggleButton _lStickUp;
         [GUI] ToggleButton _lStickDown;
@@ -68,9 +73,8 @@ namespace Ryujinx.Ui.Windows
         [GUI] ToggleButton _minus;
         [GUI] ToggleButton _l;
         [GUI] ToggleButton _zL;
-        [GUI] ToggleButton _rStickX;
+        [GUI] ToggleButton _rStick;
         [GUI] CheckButton  _invertRStickX;
-        [GUI] ToggleButton _rStickY;
         [GUI] CheckButton  _invertRStickY;
         [GUI] ToggleButton _rStickUp;
         [GUI] ToggleButton _rStickDown;
@@ -91,41 +95,40 @@ namespace Ryujinx.Ui.Windows
         [GUI] Image        _controllerImage;
 #pragma warning restore CS0649, IDE0044
 
-        private IGamepadDriver _gamepadDriver;
+        private InputManager _inputManager;
 
-        public ControllerWindow(MainWindow mainWindow, PlayerIndex controllerId) : this(mainWindow, new Builder("Ryujinx.Ui.Windows.ControllerWindow.glade"), controllerId) { }
+        public ControllerWindow(MainWindow mainWindow, Common.Configuration.Hid.PlayerIndex controllerId) : this(mainWindow, new Builder("Ryujinx.Ui.Windows.ControllerWindow.glade"), controllerId) { }
 
-        private ControllerWindow(MainWindow mainWindow, Builder builder, PlayerIndex controllerId) : base(builder.GetObject("_controllerWin").Handle)
+        private ControllerWindow(MainWindow mainWindow, Builder builder, Common.Configuration.Hid.PlayerIndex controllerId) : base(builder.GetObject("_controllerWin").Handle)
         {
-            _gamepadDriver = mainWindow.GamepadDriver;
+            _inputManager = mainWindow.InputManager;
 
             Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.Resources.Logo_Ryujinx.png");
 
             builder.Autoconnect(this);
 
             _playerIndex = controllerId;
-            _inputConfig = ConfigurationState.Instance.Hid.InputConfig.Value.Find(inputConfig => inputConfig.PlayerIndex == _playerIndex);
+            _inputConfig = ConfigurationState.Instance.Hid.InputConfigNew.Value.Find(inputConfig => inputConfig.PlayerIndex == _playerIndex);
 
             Title = $"Ryujinx - Controller Settings - {_playerIndex}";
 
-            if (_playerIndex == PlayerIndex.Handheld)
+            if (_playerIndex == Common.Configuration.Hid.PlayerIndex.Handheld)
             {
-                _controllerType.Append(ControllerType.Handheld.ToString(), "Handheld");
+                _controllerType.Append(Common.Configuration.Hid.ControllerType.Handheld.ToString(), "Handheld");
                 _controllerType.Sensitive = false;
             }
             else
             {
-                _controllerType.Append(ControllerType.ProController.ToString(), "Pro Controller");
-                _controllerType.Append(ControllerType.JoyconPair.ToString(), "Joycon Pair");
-                _controllerType.Append(ControllerType.JoyconLeft.ToString(), "Joycon Left");
-                _controllerType.Append(ControllerType.JoyconRight.ToString(), "Joycon Right");
+                _controllerType.Append(Common.Configuration.Hid.ControllerType.ProController.ToString(), "Pro Controller");
+                _controllerType.Append(Common.Configuration.Hid.ControllerType.JoyconPair.ToString(), "Joycon Pair");
+                _controllerType.Append(Common.Configuration.Hid.ControllerType.JoyconLeft.ToString(), "Joycon Left");
+                _controllerType.Append(Common.Configuration.Hid.ControllerType.JoyconRight.ToString(), "Joycon Right");
             }
 
             _controllerType.Active = 0; // Set initial value to first in list.
 
             // Bind Events.
-            _lStickX.Clicked        += Button_Pressed;
-            _lStickY.Clicked        += Button_Pressed;
+            _lStick.Clicked        += ButtonForStick_Pressed;
             _lStickUp.Clicked       += Button_Pressed;
             _lStickDown.Clicked     += Button_Pressed;
             _lStickLeft.Clicked     += Button_Pressed;
@@ -140,8 +143,7 @@ namespace Ryujinx.Ui.Windows
             _zL.Clicked             += Button_Pressed;
             _lSl.Clicked            += Button_Pressed;
             _lSr.Clicked            += Button_Pressed;
-            _rStickX.Clicked        += Button_Pressed;
-            _rStickY.Clicked        += Button_Pressed;
+            _rStick.Clicked        += ButtonForStick_Pressed;
             _rStickUp.Clicked       += Button_Pressed;
             _rStickDown.Clicked     += Button_Pressed;
             _rStickLeft.Clicked     += Button_Pressed;
@@ -167,8 +169,8 @@ namespace Ryujinx.Ui.Windows
                 SetCurrentValues();
             }
 
-            _gamepadDriver.OnGamepadConnected += HandleOnGamepadConnected;
-            _gamepadDriver.OnGamepadDisconnected += HandleOnGamepadDisconnected;
+            _inputManager.GamepadDriver.OnGamepadConnected += HandleOnGamepadConnected;
+            _inputManager.GamepadDriver.OnGamepadDisconnected += HandleOnGamepadDisconnected;
         }
 
         private void HandleOnGamepadDisconnected(string id)
@@ -189,8 +191,8 @@ namespace Ryujinx.Ui.Windows
 
         protected override void OnDestroyed()
         {
-            _gamepadDriver.OnGamepadConnected -= HandleOnGamepadConnected;
-            _gamepadDriver.OnGamepadDisconnected -= HandleOnGamepadDisconnected;
+            _inputManager.GamepadDriver.OnGamepadConnected -= HandleOnGamepadConnected;
+            _inputManager.GamepadDriver.OnGamepadDisconnected -= HandleOnGamepadDisconnected;
         }
 
         private void UpdateInputDeviceList()
@@ -199,36 +201,27 @@ namespace Ryujinx.Ui.Windows
             _inputDevice.Append("disabled", "Disabled");
             _inputDevice.SetActiveId("disabled");
 
-            _inputDevice.Append($"keyboard/{KeyboardConfig.AllKeyboardsIndex}", "All keyboards");
+            //_inputDevice.Append($"keyboard/0", "All keyboards");
 
-            foreach (string id in _gamepadDriver.GamepadsIds)
+            foreach (string id in _inputManager.GamepadDriver.GamepadsIds)
             {
-                IGamepad gamepad = _gamepadDriver.GetGamepad(id);
+                IGamepad gamepad = _inputManager.GamepadDriver.GetGamepad(id);
 
                 if (gamepad != null)
                 {
-                    _inputDevice.Append(id, $"Controller/{id} ({gamepad.Name})");
+                    _inputDevice.Append($"controller/{id}", $"Controller /{id} ({gamepad.Name})");
 
                     gamepad.Dispose();
                 }
             }
 
-            for (int i = 0; i < 20; i++)
-            {
-                /*if (KeyboardController.GetKeyboardState(i + 1).IsConnected)
-                    _inputDevice.Append($"keyboard/{i + 1}", $"Keyboard/{i + 1}");
-
-                if (GamePad.GetState(i).IsConnected)
-                    _inputDevice.Append($"controller/{i}", $"Controller/{i} ({GamePad.GetName(i)})");*/
-            }
-
             switch (_inputConfig)
             {
-                case KeyboardConfig keyboard:
+                /*case KeyboardConfig keyboard:
                     _inputDevice.SetActiveId($"keyboard/{keyboard.Index}");
-                    break;
-                case ControllerConfig controller:
-                    _inputDevice.SetActiveId($"controller/{controller.Index}");
+                    break;*/
+                case SDL2GamepadInputConfig controller:
+                    _inputDevice.SetActiveId($"controller/{controller.Id}");
                     break;
             }
         }
@@ -264,11 +257,11 @@ namespace Ryujinx.Ui.Windows
 
             SetProfiles();
 
-            if (_inputDevice.ActiveId.StartsWith("keyboard") && _inputConfig is KeyboardConfig)
+            /*if (_inputDevice.ActiveId.StartsWith("keyboard") && _inputConfig is KeyboardConfig)
             {
                 SetValues(_inputConfig);
             }
-            else if (_inputDevice.ActiveId.StartsWith("controller") && _inputConfig is ControllerConfig)
+            else */if (_inputDevice.ActiveId.StartsWith("controller") && _inputConfig is ControllerInputConfigBase)
             {
                 SetValues(_inputConfig);
             }
@@ -304,8 +297,7 @@ namespace Ryujinx.Ui.Windows
 
         private void ClearValues()
         {
-            _lStickX.Label                    = "Unbound";
-            _lStickY.Label                    = "Unbound";
+            _lStick.Label                    = "Unbound";
             _lStickUp.Label                   = "Unbound";
             _lStickDown.Label                 = "Unbound";
             _lStickLeft.Label                 = "Unbound";
@@ -320,8 +312,7 @@ namespace Ryujinx.Ui.Windows
             _zL.Label                         = "Unbound";
             _lSl.Label                        = "Unbound";
             _lSr.Label                        = "Unbound";
-            _rStickX.Label                    = "Unbound";
-            _rStickY.Label                    = "Unbound";
+            _rStick.Label                    = "Unbound";
             _rStickUp.Label                   = "Unbound";
             _rStickDown.Label                 = "Unbound";
             _rStickLeft.Label                 = "Unbound";
@@ -353,6 +344,7 @@ namespace Ryujinx.Ui.Windows
         {
             switch (config)
             {
+                /*
                 case KeyboardConfig keyboardConfig:
                     if (!_controllerType.SetActiveId(keyboardConfig.ControllerType.ToString()))
                     {
@@ -398,31 +390,30 @@ namespace Ryujinx.Ui.Windows
                     _dsuServerHost.Buffer.Text = keyboardConfig.DsuServerHost;
                     _dsuServerPort.Buffer.Text = keyboardConfig.DsuServerPort.ToString();
                     break;
-                case ControllerConfig controllerConfig:
+                */
+                case ControllerInputConfig<ConfigGamepadInputId, ConfigStickInputId> controllerConfig:
                     if (!_controllerType.SetActiveId(controllerConfig.ControllerType.ToString()))
                     {
-                        _controllerType.SetActiveId(_playerIndex == PlayerIndex.Handheld 
-                            ? ControllerType.Handheld.ToString() 
-                            : ControllerType.ProController.ToString());
+                        _controllerType.SetActiveId(_playerIndex == Common.Configuration.Hid.PlayerIndex.Handheld 
+                            ? Common.Configuration.Hid.ControllerType.Handheld.ToString() 
+                            : Common.Configuration.Hid.ControllerType.ProController.ToString());
                     }
 
-                    _lStickX.Label                    = controllerConfig.LeftJoycon.StickX.ToString();
+                    _lStick.Label                    = controllerConfig.LeftJoycon.Joystick.ToString();
                     _invertLStickX.Active             = controllerConfig.LeftJoycon.InvertStickX;
-                    _lStickY.Label                    = controllerConfig.LeftJoycon.StickY.ToString();
                     _invertLStickY.Active             = controllerConfig.LeftJoycon.InvertStickY;
                     _lStickButton.Label               = controllerConfig.LeftJoycon.StickButton.ToString();
-                    _dpadUp.Label                     = controllerConfig.LeftJoycon.DPadUp.ToString();
-                    _dpadDown.Label                   = controllerConfig.LeftJoycon.DPadDown.ToString();
-                    _dpadLeft.Label                   = controllerConfig.LeftJoycon.DPadLeft.ToString();
-                    _dpadRight.Label                  = controllerConfig.LeftJoycon.DPadRight.ToString();
+                    _dpadUp.Label                     = controllerConfig.LeftJoycon.DpadUp.ToString();
+                    _dpadDown.Label                   = controllerConfig.LeftJoycon.DpadDown.ToString();
+                    _dpadLeft.Label                   = controllerConfig.LeftJoycon.DpadLeft.ToString();
+                    _dpadRight.Label                  = controllerConfig.LeftJoycon.DpadRight.ToString();
                     _minus.Label                      = controllerConfig.LeftJoycon.ButtonMinus.ToString();
                     _l.Label                          = controllerConfig.LeftJoycon.ButtonL.ToString();
                     _zL.Label                         = controllerConfig.LeftJoycon.ButtonZl.ToString();
                     _lSl.Label                        = controllerConfig.LeftJoycon.ButtonSl.ToString();
                     _lSr.Label                        = controllerConfig.LeftJoycon.ButtonSr.ToString();
-                    _rStickX.Label                    = controllerConfig.RightJoycon.StickX.ToString();
+                    _rStick.Label                    = controllerConfig.RightJoycon.Joystick.ToString();
                     _invertRStickX.Active             = controllerConfig.RightJoycon.InvertStickX;
-                    _rStickY.Label                    = controllerConfig.RightJoycon.StickY.ToString();
                     _invertRStickY.Active             = controllerConfig.RightJoycon.InvertStickY;
                     _rStickButton.Label               = controllerConfig.RightJoycon.StickButton.ToString();
                     _a.Label                          = controllerConfig.RightJoycon.ButtonA.ToString();
@@ -437,21 +428,21 @@ namespace Ryujinx.Ui.Windows
                     _controllerDeadzoneLeft.Value     = controllerConfig.DeadzoneLeft;
                     _controllerDeadzoneRight.Value    = controllerConfig.DeadzoneRight;
                     _controllerTriggerThreshold.Value = controllerConfig.TriggerThreshold;
-                    _slotNumber.Value                 = controllerConfig.Slot;
+                    /*_slotNumber.Value                 = controllerConfig.Slot;
                     _altSlotNumber.Value              = controllerConfig.AltSlot;
                     _sensitivity.Value                = controllerConfig.Sensitivity;
                     _gyroDeadzone.Value               = controllerConfig.GyroDeadzone;
                     _enableMotion.Active              = controllerConfig.EnableMotion;
                     _mirrorInput.Active               = controllerConfig.MirrorInput;
                     _dsuServerHost.Buffer.Text        = controllerConfig.DsuServerHost;
-                    _dsuServerPort.Buffer.Text        = controllerConfig.DsuServerPort.ToString();
+                    _dsuServerPort.Buffer.Text        = controllerConfig.DsuServerPort.ToString();*/
                     break;
             }
         }
 
         private InputConfig GetValues()
         {
-            if (_inputDevice.ActiveId.StartsWith("keyboard"))
+            /*if (_inputDevice.ActiveId.StartsWith("keyboard"))
             {
                 Enum.TryParse(_lStickUp.Label,     out Key lStickUp);
                 Enum.TryParse(_lStickDown.Label,   out Key lStickDown);
@@ -533,69 +524,65 @@ namespace Ryujinx.Ui.Windows
                     DsuServerHost = _dsuServerHost.Buffer.Text,
                     DsuServerPort = port
                 };
-            }
+            }*/
             
             if (_inputDevice.ActiveId.StartsWith("controller"))
             {
-                Enum.TryParse(_lStickX.Label,      out ControllerInputId lStickX);
-                Enum.TryParse(_lStickY.Label,      out ControllerInputId lStickY);
-                Enum.TryParse(_lStickButton.Label, out ControllerInputId lStickButton);
-                Enum.TryParse(_minus.Label,        out ControllerInputId lButtonMinus);
-                Enum.TryParse(_l.Label,            out ControllerInputId lButtonL);
-                Enum.TryParse(_zL.Label,           out ControllerInputId lButtonZl);
-                Enum.TryParse(_lSl.Label,          out ControllerInputId lButtonSl);
-                Enum.TryParse(_lSr.Label,          out ControllerInputId lButtonSr);
-                Enum.TryParse(_dpadUp.Label,       out ControllerInputId lDPadUp);
-                Enum.TryParse(_dpadDown.Label,     out ControllerInputId lDPadDown);
-                Enum.TryParse(_dpadLeft.Label,     out ControllerInputId lDPadLeft);
-                Enum.TryParse(_dpadRight.Label,    out ControllerInputId lDPadRight);
+                Enum.TryParse(_lStick.Label,      out ConfigStickInputId lStickX);
+                Enum.TryParse(_lStickButton.Label, out ConfigGamepadInputId lStickButton);
+                Enum.TryParse(_minus.Label,        out ConfigGamepadInputId lButtonMinus);
+                Enum.TryParse(_l.Label,            out ConfigGamepadInputId lButtonL);
+                Enum.TryParse(_zL.Label,           out ConfigGamepadInputId lButtonZl);
+                Enum.TryParse(_lSl.Label,          out ConfigGamepadInputId lButtonSl);
+                Enum.TryParse(_lSr.Label,          out ConfigGamepadInputId lButtonSr);
+                Enum.TryParse(_dpadUp.Label,       out ConfigGamepadInputId lDPadUp);
+                Enum.TryParse(_dpadDown.Label,     out ConfigGamepadInputId lDPadDown);
+                Enum.TryParse(_dpadLeft.Label,     out ConfigGamepadInputId lDPadLeft);
+                Enum.TryParse(_dpadRight.Label,    out ConfigGamepadInputId lDPadRight);
 
-                Enum.TryParse(_rStickX.Label,      out ControllerInputId rStickX);
-                Enum.TryParse(_rStickY.Label,      out ControllerInputId rStickY);
-                Enum.TryParse(_rStickButton.Label, out ControllerInputId rStickButton);
-                Enum.TryParse(_a.Label,            out ControllerInputId rButtonA);
-                Enum.TryParse(_b.Label,            out ControllerInputId rButtonB);
-                Enum.TryParse(_x.Label,            out ControllerInputId rButtonX);
-                Enum.TryParse(_y.Label,            out ControllerInputId rButtonY);
-                Enum.TryParse(_plus.Label,         out ControllerInputId rButtonPlus);
-                Enum.TryParse(_r.Label,            out ControllerInputId rButtonR);
-                Enum.TryParse(_zR.Label,           out ControllerInputId rButtonZr);
-                Enum.TryParse(_rSl.Label,          out ControllerInputId rButtonSl);
-                Enum.TryParse(_rSr.Label,          out ControllerInputId rButtonSr);
+                Enum.TryParse(_rStick.Label,      out ConfigStickInputId rStickX);
+                Enum.TryParse(_rStickButton.Label, out ConfigGamepadInputId rStickButton);
+                Enum.TryParse(_a.Label,            out ConfigGamepadInputId rButtonA);
+                Enum.TryParse(_b.Label,            out ConfigGamepadInputId rButtonB);
+                Enum.TryParse(_x.Label,            out ConfigGamepadInputId rButtonX);
+                Enum.TryParse(_y.Label,            out ConfigGamepadInputId rButtonY);
+                Enum.TryParse(_plus.Label,         out ConfigGamepadInputId rButtonPlus);
+                Enum.TryParse(_r.Label,            out ConfigGamepadInputId rButtonR);
+                Enum.TryParse(_zR.Label,           out ConfigGamepadInputId rButtonZr);
+                Enum.TryParse(_rSl.Label,          out ConfigGamepadInputId rButtonSl);
+                Enum.TryParse(_rSr.Label,          out ConfigGamepadInputId rButtonSr);
 
                 int.TryParse(_dsuServerPort.Buffer.Text, out int port);
 
-                return new ControllerConfig
+                return new SDL2GamepadInputConfig
                 {
-                    Index            = int.Parse(_inputDevice.ActiveId.Split("/")[1]),
-                    ControllerType   = Enum.Parse<ControllerType>(_controllerType.ActiveId),
+                    Id               = _inputDevice.ActiveId.Split("/")[1].Split(" ")[0],
+                    ControllerType   = Enum.Parse<Common.Configuration.Hid.ControllerType>(_controllerType.ActiveId),
                     PlayerIndex      = _playerIndex,
                     DeadzoneLeft     = (float)_controllerDeadzoneLeft.Value,
                     DeadzoneRight    = (float)_controllerDeadzoneRight.Value,
                     TriggerThreshold = (float)_controllerTriggerThreshold.Value,
-                    LeftJoycon       = new NpadControllerLeft
+                    LeftJoycon       = new LeftJoyconControllerConfig<ConfigGamepadInputId, ConfigStickInputId>
                     {
                         InvertStickX = _invertLStickX.Active,
-                        StickX       = lStickX,
+                        Joystick     = lStickX,
                         InvertStickY = _invertLStickY.Active,
-                        StickY       = lStickY,
                         StickButton  = lStickButton,
                         ButtonMinus  = lButtonMinus,
                         ButtonL      = lButtonL,
                         ButtonZl     = lButtonZl,
                         ButtonSl     = lButtonSl,
                         ButtonSr     = lButtonSr,
-                        DPadUp       = lDPadUp,
-                        DPadDown     = lDPadDown,
-                        DPadLeft     = lDPadLeft,
-                        DPadRight    = lDPadRight
+                        DpadUp       = lDPadUp,
+                        DpadDown     = lDPadDown,
+                        DpadLeft     = lDPadLeft,
+                        DpadRight    = lDPadRight
                     },
-                    RightJoycon      = new NpadControllerRight
+                    RightJoycon      = new RightJoyconControllerConfig<ConfigGamepadInputId, ConfigStickInputId>
                     {
                         InvertStickX = _invertRStickX.Active,
-                        StickX       = rStickX,
+                        Joystick     = rStickX,
                         InvertStickY = _invertRStickY.Active,
-                        StickY       = rStickY,
                         StickButton  = rStickButton,
                         ButtonA      = rButtonA,
                         ButtonB      = rButtonB,
@@ -607,14 +594,14 @@ namespace Ryujinx.Ui.Windows
                         ButtonSl     = rButtonSl,
                         ButtonSr     = rButtonSr
                     },
-                    EnableMotion  = _enableMotion.Active,
+                    /*EnableMotion  = _enableMotion.Active,
                     MirrorInput   = _mirrorInput.Active,
                     Slot          = (int)_slotNumber.Value,
                     AltSlot       = (int)_altSlotNumber.Value,
                     Sensitivity   = (int)_sensitivity.Value,
                     GyroDeadzone  = _gyroDeadzone.Value,
                     DsuServerHost = _dsuServerHost.Buffer.Text,
-                    DsuServerPort = port
+                    DsuServerPort = port*/
                 };
             }
 
@@ -665,22 +652,19 @@ namespace Ryujinx.Ui.Windows
             _refreshInputDevicesButton.SetStateFlags(StateFlags.Normal, true);
         }
 
-        private ButtonAssigner CreateButtonAssigner()
+        private ButtonAssigner CreateButtonAssigner(bool forStick)
         {
-            int index = int.Parse(_inputDevice.ActiveId.Split("/")[1]);
+            string id = _inputDevice.ActiveId.Split("/")[1].Split(" ")[0];
 
             ButtonAssigner assigner;
 
-            if (_inputDevice.ActiveId.StartsWith("keyboard"))
+            /*if (_inputDevice.ActiveId.StartsWith("keyboard"))
             {
-                assigner = new KeyboardKeyAssigner(index);
+                assigner = new KeyboardKeyAssigner(id);
             }
-            else if (_inputDevice.ActiveId.StartsWith("controller"))
+            else */if (_inputDevice.ActiveId.StartsWith("controller"))
             {
-                // TODO: triggerThresold is passed but not used by JoystickButtonAssigner. Should it be used for key binding?.
-                // Note that, like left and right sticks, ZL and ZR triggers are treated as axis.
-                // The problem is then how to decide which axis should use triggerThresold.
-                assigner = new JoystickButtonAssigner(index, _controllerTriggerThreshold.Value);
+                assigner = new JoystickButtonAssigner(_inputManager.GamepadDriver.GetGamepad(id), (float)_controllerTriggerThreshold.Value, forStick);
             }
             else
             {
@@ -690,14 +674,14 @@ namespace Ryujinx.Ui.Windows
             return assigner;
         }
 
-        private void Button_Pressed(object sender, EventArgs args)
+        private void HandleButtonPressed(ToggleButton button, bool forStick)
         {
             if (_isWaitingForInput)
             {
                 return;
             }
 
-            ButtonAssigner assigner = CreateButtonAssigner();
+            ButtonAssigner assigner = CreateButtonAssigner(forStick);
 
             _isWaitingForInput = true;
 
@@ -718,7 +702,7 @@ namespace Ryujinx.Ui.Windows
 
                 string pressedButton = assigner.GetPressedButton();
 
-                ToggleButton button = (ToggleButton) sender;
+                assigner.Dispose();
 
                 Application.Invoke(delegate
                 {
@@ -726,15 +710,25 @@ namespace Ryujinx.Ui.Windows
                     {
                         button.Label = pressedButton;
                     }
-                    
+
                     button.Active = false;
-                    _isWaitingForInput = false;   
+                    _isWaitingForInput = false;
                 });
             });
 
             inputThread.Name = "GUI.InputThread";
             inputThread.IsBackground = true;
             inputThread.Start();
+        }
+
+        private void Button_Pressed(object sender, EventArgs args)
+        {
+            HandleButtonPressed((ToggleButton)sender, false);
+        }
+
+        private void ButtonForStick_Pressed(object sender, EventArgs args)
+        {
+            HandleButtonPressed((ToggleButton)sender, true);
         }
 
         private void SetProfiles()
@@ -766,7 +760,7 @@ namespace Ryujinx.Ui.Windows
 
             if (_profile.ActiveId == "default")
             {
-                if (_inputDevice.ActiveId.StartsWith("keyboard"))
+                /*if (_inputDevice.ActiveId.StartsWith("keyboard"))
                 {
                     config = new KeyboardConfig
                     {
@@ -816,57 +810,57 @@ namespace Ryujinx.Ui.Windows
                         DsuServerPort = 26760
                     };
                 }
-                else if (_inputDevice.ActiveId.StartsWith("controller"))
+                else */if (_inputDevice.ActiveId.StartsWith("controller"))
                 {
-                    config = new ControllerConfig
+                    config = new SDL2GamepadInputConfig
                     {
-                        Index            = 0,
-                        ControllerType   = ControllerType.ProController,
+                        Id               = null,
+                        ControllerType   = Common.Configuration.Hid.ControllerType.ProController,
                         DeadzoneLeft     = 0.1f,
                         DeadzoneRight    = 0.1f,
                         TriggerThreshold = 0.5f,
-                        LeftJoycon       = new NpadControllerLeft
+                        LeftJoycon = new LeftJoyconControllerConfig<ConfigGamepadInputId, ConfigStickInputId>
                         {
-                            StickX       = ControllerInputId.Axis0,
-                            StickY       = ControllerInputId.Axis1,
-                            StickButton  = ControllerInputId.Button8,
-                            DPadUp       = ControllerInputId.Hat0Up,
-                            DPadDown     = ControllerInputId.Hat0Down,
-                            DPadLeft     = ControllerInputId.Hat0Left,
-                            DPadRight    = ControllerInputId.Hat0Right,
-                            ButtonMinus  = ControllerInputId.Button6,
-                            ButtonL      = ControllerInputId.Button4,
-                            ButtonZl     = ControllerInputId.Axis2,
-                            ButtonSl     = ControllerInputId.Unbound,
-                            ButtonSr     = ControllerInputId.Unbound,
+                            Joystick     = ConfigStickInputId.Left,
+                            StickButton  = ConfigGamepadInputId.LeftStick,
+                            DpadUp       = ConfigGamepadInputId.DpadUp,
+                            DpadDown     = ConfigGamepadInputId.DpadDown,
+                            DpadLeft     = ConfigGamepadInputId.DpadLeft,
+                            DpadRight    = ConfigGamepadInputId.DpadRight,
+                            ButtonMinus  = ConfigGamepadInputId.Minus,
+                            ButtonL      = ConfigGamepadInputId.LeftShoulder,
+                            ButtonZl     = ConfigGamepadInputId.LeftTrigger,
+                            ButtonSl     = ConfigGamepadInputId.Unbound,
+                            ButtonSr     = ConfigGamepadInputId.Unbound,
                             InvertStickX = false,
-                            InvertStickY = false
+                            InvertStickY = false,
                         },
-                        RightJoycon      = new NpadControllerRight
+
+                        RightJoycon = new RightJoyconControllerConfig<ConfigGamepadInputId, ConfigStickInputId>
                         {
-                            StickX       = ControllerInputId.Axis3,
-                            StickY       = ControllerInputId.Axis4,
-                            StickButton  = ControllerInputId.Button9,
-                            ButtonA      = ControllerInputId.Button1,
-                            ButtonB      = ControllerInputId.Button0,
-                            ButtonX      = ControllerInputId.Button3,
-                            ButtonY      = ControllerInputId.Button2,
-                            ButtonPlus   = ControllerInputId.Button7,
-                            ButtonR      = ControllerInputId.Button5,
-                            ButtonZr     = ControllerInputId.Axis5,
-                            ButtonSl     = ControllerInputId.Unbound,
-                            ButtonSr     = ControllerInputId.Unbound,
+                            Joystick     = ConfigStickInputId.Right,
+                            StickButton  = ConfigGamepadInputId.RightStick,
+                            ButtonA      = ConfigGamepadInputId.A,
+                            ButtonB      = ConfigGamepadInputId.B,
+                            ButtonX      = ConfigGamepadInputId.X,
+                            ButtonY      = ConfigGamepadInputId.Y,
+                            ButtonPlus   = ConfigGamepadInputId.Plus,
+                            ButtonR      = ConfigGamepadInputId.RightShoulder,
+                            ButtonZr     = ConfigGamepadInputId.RightTrigger,
+                            ButtonSl     = ConfigGamepadInputId.Unbound,
+                            ButtonSr     = ConfigGamepadInputId.Unbound,
                             InvertStickX = false,
-                            InvertStickY = false
+                            InvertStickY = false,
                         },
-                        EnableMotion  = false,
+
+                        /*EnableMotion  = false,
                         MirrorInput   = false,
                         Slot          = 0,
                         AltSlot       = 0,
                         Sensitivity   = 100,
                         GyroDeadzone  = 1,
                         DsuServerHost = "127.0.0.1",
-                        DsuServerPort = 26760
+                        DsuServerPort = 26760*/
                     };
                 }
             }
@@ -888,19 +882,19 @@ namespace Ryujinx.Ui.Windows
                 {
                     using (Stream stream = File.OpenRead(path))
                     {
-                        config = JsonHelper.Deserialize<ControllerConfig>(stream);
+                        config = JsonHelper.Deserialize<SDL2GamepadInputConfig>(stream);
                     }
                 }
                 catch (JsonException)
                 {
-                    try
+                    /*try
                     {
                         using (Stream stream = File.OpenRead(path))
                         {
                             config = JsonHelper.Deserialize<KeyboardConfig>(stream);
                         }
                     }
-                    catch { }
+                    catch { }*/
                 }
             }
 
@@ -923,13 +917,13 @@ namespace Ryujinx.Ui.Windows
                 string path = System.IO.Path.Combine(GetProfileBasePath(), profileDialog.FileName);
                 string jsonString;
 
-                if (inputConfig is KeyboardConfig keyboardConfig)
+                /*if (inputConfig is KeyboardConfig keyboardConfig)
                 {
                     jsonString = JsonHelper.Serialize(keyboardConfig, true);
                 }
-                else
+                else*/
                 {
-                    jsonString = JsonHelper.Serialize(inputConfig as ControllerConfig, true);
+                    jsonString = JsonHelper.Serialize(inputConfig as SDL2GamepadInputConfig, true);
                 }
 
                 File.WriteAllText(path, jsonString);
@@ -966,7 +960,7 @@ namespace Ryujinx.Ui.Windows
             InputConfig inputConfig = GetValues();
 
             var newConfig = new List<InputConfig>();
-            newConfig.AddRange(ConfigurationState.Instance.Hid.InputConfig.Value);
+            newConfig.AddRange(ConfigurationState.Instance.Hid.InputConfigNew.Value);
 
             if (_inputConfig == null && inputConfig != null)
             {
@@ -988,7 +982,7 @@ namespace Ryujinx.Ui.Windows
 
             // Atomically replace and signal input change.
             // NOTE: Do not modify InputConfig.Value directly as other code depends on the on-change event.
-            ConfigurationState.Instance.Hid.InputConfig.Value = newConfig;
+            ConfigurationState.Instance.Hid.InputConfigNew.Value = newConfig;
 
             ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
 

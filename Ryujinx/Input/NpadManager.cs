@@ -86,6 +86,7 @@ namespace Ryujinx.Input
 
                     DriverConfigurationUpdate(ref controller, inputConfig);
 
+                    controller.UpdateUserConfiguration(inputConfig);
                     controller.Update();
 
                     GamepadInput state = controller.GetHLEState();

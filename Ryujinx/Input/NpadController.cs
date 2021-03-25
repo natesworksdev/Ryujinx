@@ -69,6 +69,16 @@ namespace Ryujinx.Input
             _isValid = _gamepad != null;
         }
 
+        public void UpdateUserConfiguration(InputConfig config)
+        {
+            _config = config;
+
+            if (_isValid)
+            {
+                _gamepad.SetConfiguration(config);
+            }
+        }
+
         public void Update()
         {
             if (_isValid && GamepadDriver != null)
