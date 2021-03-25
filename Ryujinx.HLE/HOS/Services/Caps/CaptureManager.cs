@@ -98,7 +98,7 @@ namespace Ryujinx.HLE.HOS.Services.Caps
                         Hour     = (byte)currentDateTime.Hour,
                         Minute   = (byte)currentDateTime.Minute,
                         Second   = (byte)currentDateTime.Second,
-                        UniqueId = 0 // Incremented when there is multiple Album files with the same timestamp. Doesn't occur in our case.
+                        UniqueId = 0
                     },
                     AlbumStorage      = AlbumStorage.Sd,
                     ContentType       = ContentType.Screenshot,
