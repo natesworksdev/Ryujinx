@@ -3,6 +3,7 @@ using ARMeilleure.Translation.PTC;
 using Gdk;
 using Gtk;
 using Ryujinx.Common;
+using Ryujinx.Common.Combo;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Ui.Common.Configuration;
@@ -47,6 +48,7 @@ namespace Ryujinx.Ui
         protected int WindowHeight { get; private set; }
 
         public static event EventHandler<StatusUpdatedEventArgs> StatusUpdatedEvent;
+        public event EventHandler<ComboPressedEventArgs>         ComboPressed;
 
         private bool _isActive;
         private bool _isStopped;
@@ -84,6 +86,7 @@ namespace Ryujinx.Ui
             _inputManager = inputManager;
             _inputManager.SetMouseDriver(mouseDriver);
             NpadManager = _inputManager.CreateNpadManager();
+            NpadManager.ComboPressed += Combo_Pressed;
             TouchScreenManager = _inputManager.CreateTouchScreenManager();
             _keyboardInterface = (IKeyboard)_inputManager.KeyboardDriver.GetGamepad("0");
 
@@ -708,6 +711,11 @@ namespace Ryujinx.Ui
             }
 
             return state;
+        }
+
+        private void Combo_Pressed(object sender, ComboPressedEventArgs args)
+        {
+            ComboPressed?.Invoke(null, args);
         }
     }
 }
