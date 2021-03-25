@@ -11,6 +11,6 @@ namespace Ryujinx.HLE.HOS.Services.Caps.Types
         public byte   Hour;
         public byte   Minute;
         public byte   Second;
-        public byte   UniqueId; // When there's multiple Album files with the same timestamp.
+        public byte   UniqueId;
     }
 }
