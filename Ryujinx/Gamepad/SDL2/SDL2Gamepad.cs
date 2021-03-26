@@ -120,8 +120,8 @@ namespace Ryujinx.Gamepad.SDL2
                 _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadInputId.Minus, From = (GamepadInputId)_configuration.LeftJoycon.ButtonMinus });
                 _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadInputId.LeftShoulder, From = (GamepadInputId)_configuration.LeftJoycon.ButtonL });
                 _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadInputId.LeftTrigger, From = (GamepadInputId)_configuration.LeftJoycon.ButtonZl });
-                _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadInputId.SingleRightTrigger0, From = (GamepadInputId)_configuration.RightJoycon.ButtonSr });
-                _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadInputId.SingleLeftTrigger0, From = (GamepadInputId)_configuration.RightJoycon.ButtonSl });
+                _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadInputId.SingleRightTrigger0, From = (GamepadInputId)_configuration.LeftJoycon.ButtonSr });
+                _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadInputId.SingleLeftTrigger0, From = (GamepadInputId)_configuration.LeftJoycon.ButtonSl });
 
                 // Finally right joycon
                 _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadInputId.RightStick, From = (GamepadInputId)_configuration.RightJoyconStick.StickButton });
