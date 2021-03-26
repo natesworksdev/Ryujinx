@@ -21,46 +21,52 @@ namespace Ryujinx.Ui
         private static AmiiboJson                     _amiiboJson;
         private static List<AmiiboApi>                _amiiboApis;
         private static Dictionary<string, Gdk.Pixbuf> _amiiboPreviews;
+        private static bool                           _initialized;
         public static List<AmiiboApi>      AmiiboApis { get => _amiiboApis; }
 
         public static void Initialize()
         {
-            _httpClient = new HttpClient()
+            if (!_initialized)
             {
-                Timeout = TimeSpan.FromMilliseconds(5000)
-            };
-
-            _amiiboPreviews = new Dictionary<string, Gdk.Pixbuf>();
-
-            Directory.CreateDirectory(Path.Join(AppDataManager.BaseDirPath, "system", "amiibo"));
-
-            _amiiboJsonPath = Path.Join(AppDataManager.BaseDirPath, "system", "amiibo", "Amiibo.json");
-
-            if (File.Exists(_amiiboJsonPath))
-            {
-                Task.Run(async () =>
+                _httpClient = new HttpClient()
                 {
-                    try
+                    Timeout = TimeSpan.FromMilliseconds(5000)
+                };
+
+                _amiiboPreviews = new Dictionary<string, Gdk.Pixbuf>();
+
+                Directory.CreateDirectory(Path.Join(AppDataManager.BaseDirPath, "system", "amiibo"));
+
+                _amiiboJsonPath = Path.Join(AppDataManager.BaseDirPath, "system", "amiibo", "Amiibo.json");
+
+                if (File.Exists(_amiiboJsonPath))
+                {
+                    Task.Run(async () =>
                     {
-                        string amiiboJsonString = File.ReadAllText(_amiiboJsonPath);
-                        await LoadAmiiboJson(amiiboJsonString);
+                        try
+                        {
+                            string amiiboJsonString = File.ReadAllText(_amiiboJsonPath);
+                            await LoadAmiiboJson(amiiboJsonString);
 
                         // Update if there is Amiibo data newer than the current version.
-                        await CheckForUpdates();
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Warning?.Print(LogClass.Application, $"Failed to read Amiibo JSON data: {ex.Message}");
-                        _amiiboApis = new List<AmiiboApi>();
-                    }
-                });
-            }
-            else
-            {
-                Task.Run(async () =>
+                        await UpdateAmiibos();
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Warning?.Print(LogClass.Application, $"Failed to read Amiibo JSON data: {ex.Message}");
+                            _amiiboApis = new List<AmiiboApi>();
+                        }
+                    });
+                }
+                else
                 {
-                    await CheckForUpdates();
-                });
+                    Task.Run(async () =>
+                    {
+                        await UpdateAmiibos();
+                    });
+                }
+
+                _initialized = true;
             }
         }
 
@@ -81,8 +87,9 @@ namespace Ryujinx.Ui
             });
         }
 
-        private static async Task CheckForUpdates()
+        public static async Task UpdateAmiibos()
         {
+            Logger.Info?.Print(LogClass.Application, "Checking for Amiibo Updates..");
             string amiiboJsonString;
             if (File.Exists(_amiiboJsonPath))
             {
@@ -95,6 +102,10 @@ namespace Ryujinx.Ui
                     {
                         _ = LoadAmiiboJson(amiiboJsonString);
                     }
+                }
+                else
+                {
+                    Logger.Info?.Print(LogClass.Application, "Your Amiibos are already up to date!");
                 }
             }
             else

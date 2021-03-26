@@ -90,8 +90,6 @@ namespace Ryujinx
             // Setup base data directory.
             AppDataManager.Initialize(baseDirPathArg);
 
-            // Setup Amiibo Data
-            AmiiboManager.Initialize();
 
             // Initialize the configuration.
             ConfigurationState.Initialize();
@@ -140,6 +138,9 @@ namespace Ryujinx
 
             // Logging system information.
             PrintSystemInfo();
+
+            // Setup Amiibo Data
+            AmiiboManager.Initialize();
 
             // Initialize Gtk.
             Application.Init();

@@ -3,7 +3,6 @@ using Ryujinx.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
 using static Ryujinx.Ui.AmiiboManager;
@@ -38,8 +37,6 @@ namespace Ryujinx.Ui.Windows
             Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.Resources.Logo_Ryujinx.png");
 
             InitializeComponent();
-
-            _amiiboList = AmiiboManager.AmiiboApis;
 
             _amiiboLogoBytes    = EmbeddedResources.Read("Ryujinx/Ui/Resources/Logo_Amiibo.png");
             _amiiboImage.Pixbuf = new Gdk.Pixbuf(_amiiboLogoBytes);
