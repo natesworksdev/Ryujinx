@@ -91,10 +91,10 @@ namespace Ryujinx.Configuration
             {
                 GuiColumns        = new Columns();
                 ColumnSort        = new ColumnSortSettings();
-                GameDirs          = new ReactiveObject<List<string>>();
-                EnableCustomTheme = new ReactiveObject<bool>();
-                CustomThemePath   = new ReactiveObject<string>();
-                StartFullscreen   = new ReactiveObject<bool>();
+                GameDirs          = new ReactiveObject<List<string>>(); //{ Name = "Game dir", Category = "UI" };
+                EnableCustomTheme = new ReactiveObject<bool>(); //{ Name = "Custom Theme", Category = "UI" };
+                CustomThemePath   = new ReactiveObject<string>(); //{ Name = "Custom Theme", Category = "UI" };
+                StartFullscreen   = new ReactiveObject<bool>(); //{ Name = "Fullscreen", Category = "UI" };
             }
         }
 
@@ -163,8 +163,8 @@ namespace Ryujinx.Configuration
                 EnableGuest        = new ReactiveObject<bool>();
                 EnableFsAccessLog  = new ReactiveObject<bool>();
                 FilteredClasses    = new ReactiveObject<LogClass[]>();
-                EnableFileLog      = new ReactiveObject<bool>();
-                GraphicsDebugLevel = new ReactiveObject<GraphicsDebugLevel>();
+                EnableFileLog      = new ReactiveObject<bool>(); //{ Name = "File Log", Category = "Logger" };
+                GraphicsDebugLevel = new ReactiveObject<GraphicsDebugLevel>() { Name = "Graphics level", Category = "Logger" };
             }
         }
 
@@ -268,7 +268,7 @@ namespace Ryujinx.Configuration
 
             public HidSection()
             {
-                EnableKeyboard = new ReactiveObject<bool>();
+                EnableKeyboard = new ReactiveObject<bool>() { Name = "Keyboard", Category = "Input" };
                 Hotkeys        = new ReactiveObject<KeyboardHotkeys>();
                 InputConfig    = new ReactiveObject<List<InputConfig>>();
             }
@@ -316,13 +316,13 @@ namespace Ryujinx.Configuration
 
             public GraphicsSection()
             {
-                ResScale          = new ReactiveObject<int>();
-                ResScaleCustom    = new ReactiveObject<float>();
-                MaxAnisotropy     = new ReactiveObject<float>();
-                AspectRatio       = new ReactiveObject<AspectRatio>();
-                ShadersDumpPath   = new ReactiveObject<string>();
-                EnableVsync       = new ReactiveObject<bool>();
-                EnableShaderCache = new ReactiveObject<bool>();
+                ResScale          = new ReactiveObject<int>() { Name = "Res Scale", Category = "Graphics" };
+                ResScaleCustom    = new ReactiveObject<float>() { Name = "Custom Scale", Category = "Graphics" };
+                MaxAnisotropy     = new ReactiveObject<float>() { Name = "Anisotrophy", Category = "Graphics" };
+                AspectRatio       = new ReactiveObject<AspectRatio>() { Name = "Aspect", Category = "Graphics" };
+                ShadersDumpPath   = new ReactiveObject<string>(); //{ Name = "Dump Path", Category = "Graphics" };
+                EnableVsync       = new ReactiveObject<bool>() { Name = "VSync" , Category = "Graphics"};
+                EnableShaderCache = new ReactiveObject<bool>() { Name = "Shader Cache", Category = "Graphics" };
             }
         }
 
@@ -383,10 +383,10 @@ namespace Ryujinx.Configuration
             System                   = new SystemSection();
             Graphics                 = new GraphicsSection();
             Hid                      = new HidSection();
-            EnableDiscordIntegration = new ReactiveObject<bool>();
-            CheckUpdatesOnStart      = new ReactiveObject<bool>();
-            ShowConfirmExit          = new ReactiveObject<bool>();
-            HideCursorOnIdle         = new ReactiveObject<bool>();
+            EnableDiscordIntegration = new ReactiveObject<bool>(); //{ Name = "Discord Integration", Category = "ConfigState" };
+            CheckUpdatesOnStart      = new ReactiveObject<bool>(); //{ Name = "Update on start", Category = "ConfigState" };
+            ShowConfirmExit          = new ReactiveObject<bool>(); //{ Name = "Confirm on Exit", Category = "ConfigState" };
+            HideCursorOnIdle         = new ReactiveObject<bool>(); //{ Name = "Hide Cursor on Idle", Category = "ConfigState" };
         }
 
         public ConfigurationFileFormat ToFileFormat()
