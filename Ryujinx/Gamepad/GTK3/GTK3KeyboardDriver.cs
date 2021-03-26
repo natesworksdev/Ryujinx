@@ -1,16 +1,22 @@
-﻿using Gtk;
+﻿using Gdk;
+using Gtk;
 using Ryujinx.Common.Logging;
 using System;
+using System.Collections.Generic;
+using GtkKey = Gdk.Key;
 
 namespace Ryujinx.Gamepad.GTK3
 {
     public class GTK3KeyboardDriver : IGamepadDriver
     {
         private readonly Widget _widget;
+        private HashSet<GtkKey> _pressedKeys;
+
 
         public GTK3KeyboardDriver(Widget widget)
         {
             _widget = widget;
+            _pressedKeys = new HashSet<GtkKey>();
 
             _widget.KeyPressEvent += OnKeyPress;
             _widget.KeyReleaseEvent += OnKeyRelease;
@@ -42,13 +48,37 @@ namespace Ryujinx.Gamepad.GTK3
         [GLib.ConnectBefore]
         protected void OnKeyPress(object sender, KeyPressEventArgs args)
         {
-            Logger.Error?.Print(LogClass.Application, args.Event.Key.ToString());
+            //Keymap.Default.TranslateKeyboardState()
+
+            GtkKey key = (GtkKey)Keyval.ToLower((uint)args.Event.Key);
+
+            Logger.Error?.Print(LogClass.Application, key.ToString());
+
+            _pressedKeys.Add(key);
         }
 
         [GLib.ConnectBefore]
         protected void OnKeyRelease(object sender, KeyReleaseEventArgs args)
         {
-            Logger.Error?.Print(LogClass.Application, args.Event.Key.ToString());
+            GtkKey key = (GtkKey)Keyval.ToLower((uint)args.Event.Key);
+
+            Logger.Error?.Print(LogClass.Application, key.ToString());
+
+            _pressedKeys.Remove(key);
+        }
+
+        internal bool IsPressed(Key key)
+        {
+            if (key == Key.Unbound || key == Key.Unknown)
+            {
+                return false;
+            }
+
+            GtkKey nativeKey = GTK3MappingHelper.ToGtkKey(key);
+
+            //Logger.Error?.Print(LogClass.Application, nativeKey.ToString());
+
+            return _pressedKeys.Contains(nativeKey);
         }
 
         public IGamepad GetGamepad(string id)

@@ -1,5 +1,4 @@
-﻿using Ryujinx.Configuration.Hid;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Gamepad
 {

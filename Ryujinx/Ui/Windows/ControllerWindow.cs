@@ -21,6 +21,7 @@ using Key = Ryujinx.Configuration.Hid.Key;
 using ConfigGamepadInputId = Ryujinx.Common.Configuration.HidNew.Controller.GamepadInputId;
 using ConfigStickInputId = Ryujinx.Common.Configuration.HidNew.Controller.StickInputId;
 using Ryujinx.Common.Configuration.HidNew.Keyboard;
+using Ryujinx.Gamepad.GTK3;
 
 namespace Ryujinx.Ui.Windows
 {
@@ -96,12 +97,16 @@ namespace Ryujinx.Ui.Windows
 #pragma warning restore CS0649, IDE0044
 
         private InputManager _inputManager;
+        private IGamepadDriver _gtk3KeyboardDriver;
 
         public ControllerWindow(MainWindow mainWindow, Common.Configuration.Hid.PlayerIndex controllerId) : this(mainWindow, new Builder("Ryujinx.Ui.Windows.ControllerWindow.glade"), controllerId) { }
 
         private ControllerWindow(MainWindow mainWindow, Builder builder, Common.Configuration.Hid.PlayerIndex controllerId) : base(builder.GetObject("_controllerWin").Handle)
         {
             _inputManager = mainWindow.InputManager;
+
+            // NOTE: To get input in this window, we need to bind a custom keyboard driver instead of using the InputManager one as the main window isn't focused...
+            _gtk3KeyboardDriver = new GTK3KeyboardDriver(this);
 
             Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.Resources.Logo_Ryujinx.png");
 
@@ -193,6 +198,8 @@ namespace Ryujinx.Ui.Windows
         {
             _inputManager.GamepadDriver.OnGamepadConnected -= HandleOnGamepadConnected;
             _inputManager.GamepadDriver.OnGamepadDisconnected -= HandleOnGamepadDisconnected;
+
+            _gtk3KeyboardDriver.Dispose();
         }
 
         private void UpdateInputDeviceList()
@@ -661,11 +668,23 @@ namespace Ryujinx.Ui.Windows
 
             ButtonAssigner assigner;
 
-            /*if (_inputDevice.ActiveId.StartsWith("keyboard"))
+            if (_inputDevice.ActiveId.StartsWith("keyboard"))
             {
-                assigner = new KeyboardKeyAssigner(id);
+                IKeyboard keyboard;
+
+                if (_inputManager.KeyboardDriver is GTK3KeyboardDriver)
+                {
+                    // NOTE: To get input in this window, we need to bind a custom keyboard driver instead of using the InputManager one as the main window isn't focused...
+                    keyboard = (IKeyboard)_gtk3KeyboardDriver.GetGamepad(id);
+                }
+                else
+                {
+                    keyboard = (IKeyboard)_inputManager.KeyboardDriver.GetGamepad(id);
+                }
+
+                assigner = new KeyboardKeyAssigner(keyboard);
             }
-            else */if (_inputDevice.ActiveId.StartsWith("controller"))
+            else if (_inputDevice.ActiveId.StartsWith("controller"))
             {
                 assigner = new JoystickButtonAssigner(_inputManager.GamepadDriver.GetGamepad(id), (float)_controllerTriggerThreshold.Value, forStick);
             }

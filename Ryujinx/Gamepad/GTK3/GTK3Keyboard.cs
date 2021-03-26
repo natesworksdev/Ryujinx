@@ -28,7 +28,7 @@ namespace Ryujinx.Gamepad.GTK3
 
         public KeyboardStateSnaphot GetKeyboardStateSnapshot()
         {
-            throw new NotImplementedException();
+            return IKeyboard.GetStateSnapshot(this);
         }
 
         public GamepadStateSnapshot GetMappedStateSnapshot()
@@ -53,17 +53,7 @@ namespace Ryujinx.Gamepad.GTK3
 
         public bool IsPressed(Key key)
         {
-            throw new NotImplementedException();
-        }
-
-        public void MapButtonToKey(GamepadInputId inputId, Key key)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void MapSticknToKey(StickInputId inputId, Key up, Key down, Key left, Key right)
-        {
-            throw new NotImplementedException();
+            return _driver.IsPressed(key);
         }
 
         public void SetConfiguration(InputConfig configuration)

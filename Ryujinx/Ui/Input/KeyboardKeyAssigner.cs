@@ -1,57 +1,61 @@
-using System;
-using Key = Ryujinx.Configuration.Hid.Key;
-
+using Ryujinx.Gamepad;
 namespace Ryujinx.Ui.Input
 {
     class KeyboardKeyAssigner : ButtonAssigner
     {
-        private int _index;
+        private IKeyboard _keyboard;
 
-        // private KeyboardState _keyboardState;
+        private KeyboardStateSnaphot _keyboardState;
 
-        public KeyboardKeyAssigner(int index)
+        public KeyboardKeyAssigner(IKeyboard keyboard)
         {
-            _index = index;
+            _keyboard = keyboard;
         }
 
         public void Init() { }
 
         public void ReadInput()
         {
-            // _keyboardState = KeyboardController.GetKeyboardState(_index);
+            _keyboardState = _keyboard.GetKeyboardStateSnapshot();
         }
 
         public bool HasAnyButtonPressed()
         {
-            return false;
-            // return _keyboardState.IsAnyKeyDown;
+            return GetPressedButton().Length != 0;
         }
 
         public bool ShouldCancel()
         {
-            return true;
-            // return Mouse.GetState().IsAnyButtonDown || Keyboard.GetState().IsKeyDown(OpenTK.Input.Key.Escape);
+            return /* Mouse.GetState().IsAnyButtonDown || */ _keyboardState.IsPressed(Key.Escape);
         }
 
         public string GetPressedButton()
         {
             string keyPressed = "";
 
-            foreach (Key key in Enum.GetValues(typeof(Key)))
+            for (Key key = Key.Unknown; key < Key.Count; key++)
             {
-                /*if (_keyboardState.IsKeyDown((OpenTK.Input.Key)key))
+                if (_keyboardState.IsPressed(key))
                 {
                     keyPressed = key.ToString();
                     break;
-                }*/
+                }
             }
 
             return !ShouldCancel() ? keyPressed : "";
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _keyboard?.Dispose();
+            }
+        }
+
         public void Dispose()
         {
-            throw new NotImplementedException();
+            Dispose(true);
         }
     }
 }

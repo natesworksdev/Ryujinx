@@ -122,9 +122,6 @@ namespace Ryujinx.Ui
         {
             builder.Autoconnect(this);
 
-            KeyPressEvent += OnKeyPress;
-            KeyReleaseEvent += OnKeyRelease;
-
             // Apply custom theme if needed.
             ThemeHelper.ApplyTheme();
 
@@ -241,18 +238,6 @@ namespace Ryujinx.Ui
             _fullScreen.Label = args.Event.NewWindowState.HasFlag(Gdk.WindowState.Fullscreen) ? "Exit Fullscreen" : "Enter Fullscreen";
         }
 
-        [GLib.ConnectBefore]
-        protected void OnKeyPress(object sender, KeyPressEventArgs args)
-        {
-            Logger.Error?.Print(LogClass.Application, args.Event.Key.ToString());
-        }
-
-        [GLib.ConnectBefore]
-        protected void OnKeyRelease(object sender, KeyReleaseEventArgs args)
-        {
-            Logger.Error?.Print(LogClass.Application, args.Event.Key.ToString());
-        }
-
         private void UpdateColumns()
         {
             foreach (TreeViewColumn column in _gameTable.Columns)
@@ -316,6 +301,11 @@ namespace Ryujinx.Ui
                         break;
                 }
             }
+        }
+
+        protected override void OnDestroyed()
+        {
+            InputManager.Dispose();
         }
 
         private void InitializeSwitchInstance()

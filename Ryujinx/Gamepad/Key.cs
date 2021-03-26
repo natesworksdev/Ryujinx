@@ -1,4 +1,4 @@
-﻿namespace Ryujinx.Configuration.Hid
+﻿namespace Ryujinx.Gamepad
 {
     public enum Key
     {
