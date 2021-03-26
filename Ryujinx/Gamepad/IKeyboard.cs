@@ -7,10 +7,10 @@ namespace Ryujinx.Gamepad
         // TODO: normal keyboard api and all
         bool IsPressed(Key key);
 
-        KeyboardStateSnaphot GetKeyboardStateSnapshot();
+        KeyboardStateSnapshot GetKeyboardStateSnapshot();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static KeyboardStateSnaphot GetStateSnapshot(IKeyboard keyboard)
+        public static KeyboardStateSnapshot GetStateSnapshot(IKeyboard keyboard)
         {
             bool[] keysState = new bool[(int)Key.Count];
 
@@ -19,7 +19,7 @@ namespace Ryujinx.Gamepad
                 keysState[(int)key] = keyboard.IsPressed(key);
             }
 
-            return new KeyboardStateSnaphot(keysState);
+            return new KeyboardStateSnapshot(keysState);
         }
     }
 }

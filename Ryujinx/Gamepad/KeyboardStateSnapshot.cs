@@ -1,13 +1,14 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Gamepad
 {
     // TODO: find a way to make this unmanaged to avoid increasing GC pressure.
-    public class KeyboardStateSnaphot
+    public class KeyboardStateSnapshot
     {
         private bool[] _keyPressed;
 
-        public KeyboardStateSnaphot(bool[] keyPressed)
+        public KeyboardStateSnapshot(bool[] keyPressed)
         {
             _keyPressed = keyPressed;
         }

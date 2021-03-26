@@ -137,7 +137,20 @@ namespace Ryujinx.Input
 
             if (_gamepad is IKeyboard)
             {
-                throw new NotImplementedException();
+                (float leftAxisX, float leftAxisY) = State.GetStick(StickInputId.Left);
+                (float rightAxisX, float rightAxisY) = State.GetStick(StickInputId.Right);
+
+                state.LStick = new JoystickPosition
+                {
+                    Dx = ClampAxis(leftAxisX),
+                    Dy = ClampAxis(leftAxisY)
+                };
+
+                state.RStick = new JoystickPosition
+                {
+                    Dx = ClampAxis(rightAxisX),
+                    Dy = ClampAxis(rightAxisY)
+                };
             }
             else if (_config is StandardControllerInputConfig controllerConfig)
             {
@@ -145,7 +158,7 @@ namespace Ryujinx.Input
                 (float rightAxisX, float rightAxisY) = State.GetStick(StickInputId.Right);
 
                 state.LStick = ApplyDeadzone(leftAxisX, leftAxisY, controllerConfig.DeadzoneLeft);
-                state.RStick  = ApplyDeadzone(rightAxisX, rightAxisY, controllerConfig.DeadzoneRight);
+                state.RStick = ApplyDeadzone(rightAxisX, rightAxisY, controllerConfig.DeadzoneRight);
             }
 
             return state;

@@ -5,7 +5,7 @@ namespace Ryujinx.Ui.Input
     {
         private IKeyboard _keyboard;
 
-        private KeyboardStateSnaphot _keyboardState;
+        private KeyboardStateSnapshot _keyboardState;
 
         public KeyboardKeyAssigner(IKeyboard keyboard)
         {
