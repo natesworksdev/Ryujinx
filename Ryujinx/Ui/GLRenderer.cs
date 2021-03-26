@@ -25,9 +25,11 @@ using System.Threading;
 
 using ConfigStickInputId = Ryujinx.Common.Configuration.HidNew.Controller.StickInputId;
 using ConfigGamepadInputId = Ryujinx.Common.Configuration.HidNew.Controller.GamepadInputId;
+using Ryujinx.Gamepad.GTK3;
 
 namespace Ryujinx.Ui
 {
+    using Key = Gamepad.Key;
     using Switch = HLE.Switch;
 
     public class GlRenderer : GLWidget
@@ -81,6 +83,7 @@ namespace Ryujinx.Ui
         private bool _hideCursorOnIdle;
         private NpadManager _npadManager;
         private InputManager _inputManager;
+        private IKeyboard _keyboardInterface;
 
         public GlRenderer(Switch device, InputManager inputManager, GraphicsDebugLevel glLogLevel)
             : base (GetGraphicsMode(),
@@ -91,6 +94,7 @@ namespace Ryujinx.Ui
         {
             _inputManager = inputManager;
             _npadManager = inputManager.CreateNpadManager();
+            _keyboardInterface = (IKeyboard)_inputManager.KeyboardDriver.GetGamepad("0");
 
             _npadManager.UpdateConfiguration(ConfigurationState.Instance.Hid.InputConfigNew.Value.ToList());
 
@@ -181,14 +185,13 @@ namespace Ryujinx.Ui
             _isFocused = this.ParentWindow.State.HasFlag(Gdk.WindowState.Focused);
         }
 
-        // TODO: port that
-        /*public void HandleScreenState(KeyboardState keyboard)
+        public void HandleScreenState(KeyboardStateSnapshot keyboard)
         {
-            bool toggleFullscreen =  keyboard.IsKeyDown(OpenTK.Input.Key.F11)
-                                || ((keyboard.IsKeyDown(OpenTK.Input.Key.AltLeft)
-                                ||   keyboard.IsKeyDown(OpenTK.Input.Key.AltRight))
-                                &&   keyboard.IsKeyDown(OpenTK.Input.Key.Enter))
-                                ||   keyboard.IsKeyDown(OpenTK.Input.Key.Escape);
+            bool toggleFullscreen =  keyboard.IsPressed(Key.F11)
+                                || ((keyboard.IsPressed(Key.AltLeft)
+                                ||   keyboard.IsPressed(Key.AltRight))
+                                &&   keyboard.IsPressed(Key.Enter))
+                                ||   keyboard.IsPressed(Key.Escape);
 
             bool fullScreenToggled = ParentWindow.State.HasFlag(Gdk.WindowState.Fullscreen);
 
@@ -203,7 +206,7 @@ namespace Ryujinx.Ui
                     }
                     else
                     {
-                        if (keyboard.IsKeyDown(OpenTK.Input.Key.Escape))
+                        if (keyboard.IsPressed(Key.Escape))
                         {
                             if (!ConfigurationState.Instance.ShowConfirmExit || GtkDialog.CreateExitDialog())
                             {
@@ -221,7 +224,7 @@ namespace Ryujinx.Ui
 
             _toggleFullscreen = toggleFullscreen;
 
-            bool toggleDockedMode = keyboard.IsKeyDown(OpenTK.Input.Key.F9);
+            bool toggleDockedMode = keyboard.IsPressed(Key.F9);
 
             if (toggleDockedMode != _toggleDockedMode)
             {
@@ -239,7 +242,7 @@ namespace Ryujinx.Ui
                 long cursorMoveDelta = Stopwatch.GetTimestamp() - _lastCursorMoveTime;
                 Window.Cursor = (cursorMoveDelta >= CursorHideIdleTime * Stopwatch.Frequency) ? _invisibleCursor : null;
             }
-        }*/
+        }
 
         private void GLRenderer_Initialized(object sender, EventArgs e)
         {
@@ -529,20 +532,20 @@ namespace Ryujinx.Ui
             if (_isFocused)
             {
                 // TODO: Port this
-                /*Gtk.Application.Invoke(delegate
+                Gtk.Application.Invoke(delegate
                 {
-                    KeyboardState keyboard = OpenTK.Input.Keyboard.GetState();
+                    KeyboardStateSnapshot keyboard = _keyboardInterface.GetKeyboardStateSnapshot();
 
                     HandleScreenState(keyboard);
 
-                    if (keyboard.IsKeyDown(OpenTK.Input.Key.Delete))
+                    if (keyboard.IsPressed(Key.Delete))
                     {
-                        if (!ParentWindow.State.HasFlag(Gdk.WindowState.Fullscreen))
+                        if (!ParentWindow.State.HasFlag(WindowState.Fullscreen))
                         {
                             Ptc.Continue();
                         }
                     }
-                });*/
+                });
             }
 
             _npadManager.Update(_device.Hid, _device.TamperMachine, ConfigurationState.Instance.Hid.InputConfigNew.Value);
