@@ -234,9 +234,9 @@ namespace Ryujinx.Ui.Windows
 
             switch (_inputConfig)
             {
-                /*case KeyboardConfig keyboard:
-                    _inputDevice.SetActiveId($"keyboard/{keyboard.Index}");
-                    break;*/
+                case StandardKeyboardInputConfig keyboard:
+                    _inputDevice.SetActiveId($"keyboard/{keyboard.Id}");
+                    break;
                 case StandardControllerInputConfig controller:
                     _inputDevice.SetActiveId($"controller/{controller.Id}");
                     break;
@@ -274,11 +274,11 @@ namespace Ryujinx.Ui.Windows
 
             SetProfiles();
 
-            /*if (_inputDevice.ActiveId.StartsWith("keyboard") && _inputConfig is KeyboardConfig)
+            if (_inputDevice.ActiveId.StartsWith("keyboard") && _inputConfig is StandardKeyboardInputConfig)
             {
                 SetValues(_inputConfig);
             }
-            else */if (_inputDevice.ActiveId.StartsWith("controller") && _inputConfig is StandardControllerInputConfig)
+            else if (_inputDevice.ActiveId.StartsWith("controller") && _inputConfig is StandardControllerInputConfig)
             {
                 SetValues(_inputConfig);
             }
@@ -920,14 +920,14 @@ namespace Ryujinx.Ui.Windows
                 }
                 catch (JsonException)
                 {
-                    /*try
+                    try
                     {
                         using (Stream stream = File.OpenRead(path))
                         {
-                            config = JsonHelper.Deserialize<KeyboardConfig>(stream);
+                            config = JsonHelper.Deserialize<StandardKeyboardInputConfig>(stream);
                         }
                     }
-                    catch { }*/
+                    catch { }
                 }
             }
 
@@ -950,11 +950,11 @@ namespace Ryujinx.Ui.Windows
                 string path = System.IO.Path.Combine(GetProfileBasePath(), profileDialog.FileName);
                 string jsonString;
 
-                /*if (inputConfig is KeyboardConfig keyboardConfig)
+                if (inputConfig is StandardKeyboardInputConfig keyboardConfig)
                 {
                     jsonString = JsonHelper.Serialize(keyboardConfig, true);
                 }
-                else*/
+                else
                 {
                     jsonString = JsonHelper.Serialize(inputConfig as StandardControllerInputConfig, true);
                 }
