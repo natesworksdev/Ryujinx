@@ -16,7 +16,6 @@ namespace Ryujinx.Gamepad.SDL2
             public GamepadInputId To;
         }
 
-
         private StandardControllerInputConfig _configuration;
 
         private static readonly SDL_GameControllerButton[] _buttonsDriverMapping = new SDL_GameControllerButton[(int)GamepadInputId.Count]
@@ -43,6 +42,12 @@ namespace Ryujinx.Gamepad.SDL2
             SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_RIGHT,
             SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_BACK,
             SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_START,
+
+            // Virtual buttons are invalid, ignored.
+            SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_INVALID,
+            SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_INVALID,
+            SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_INVALID,
+            SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_INVALID,
         };
 
         private object _userMappingLock = new object();
@@ -115,8 +120,8 @@ namespace Ryujinx.Gamepad.SDL2
                 _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadInputId.Minus, From = (GamepadInputId)_configuration.LeftJoycon.ButtonMinus });
                 _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadInputId.LeftShoulder, From = (GamepadInputId)_configuration.LeftJoycon.ButtonL });
                 _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadInputId.LeftTrigger, From = (GamepadInputId)_configuration.LeftJoycon.ButtonZl });
-                _buttonsUserMapping.Add(new ButtonMappingEntry { To = (GamepadInputId)_configuration.LeftJoycon.ButtonSr, From = (GamepadInputId)_configuration.LeftJoycon.ButtonSr });
-                _buttonsUserMapping.Add(new ButtonMappingEntry { To = (GamepadInputId)_configuration.LeftJoycon.ButtonSl, From = (GamepadInputId)_configuration.LeftJoycon.ButtonSl });
+                _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadInputId.SingleRightTrigger0, From = (GamepadInputId)_configuration.RightJoycon.ButtonSr });
+                _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadInputId.SingleLeftTrigger0, From = (GamepadInputId)_configuration.RightJoycon.ButtonSl });
 
                 // Finally right joycon
                 _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadInputId.RightStick, From = (GamepadInputId)_configuration.RightJoyconStick.StickButton });
@@ -127,8 +132,8 @@ namespace Ryujinx.Gamepad.SDL2
                 _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadInputId.Plus, From = (GamepadInputId)_configuration.RightJoycon.ButtonPlus });
                 _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadInputId.RightShoulder, From = (GamepadInputId)_configuration.RightJoycon.ButtonR });
                 _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadInputId.RightTrigger, From = (GamepadInputId)_configuration.RightJoycon.ButtonZr });
-                _buttonsUserMapping.Add(new ButtonMappingEntry { To = (GamepadInputId)_configuration.RightJoycon.ButtonSr, From = (GamepadInputId)_configuration.RightJoycon.ButtonSr });
-                _buttonsUserMapping.Add(new ButtonMappingEntry { To = (GamepadInputId)_configuration.RightJoycon.ButtonSl, From = (GamepadInputId)_configuration.RightJoycon.ButtonSl });
+                _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadInputId.SingleRightTrigger1, From = (GamepadInputId)_configuration.RightJoycon.ButtonSr });
+                _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadInputId.SingleLeftTrigger1, From = (GamepadInputId)_configuration.RightJoycon.ButtonSl });
 
                 SetTriggerThreshold(_configuration.TriggerThreshold);
             }
@@ -223,7 +228,7 @@ namespace Ryujinx.Gamepad.SDL2
 
         public bool IsPressed(GamepadInputId inputId)
         {
-            if (inputId == GamepadInputId.Unbound)
+            if (_buttonsDriverMapping[(int)inputId] == SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_INVALID)
             {
                 return false;
             }

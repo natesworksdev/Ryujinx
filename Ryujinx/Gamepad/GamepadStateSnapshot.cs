@@ -8,9 +8,9 @@ namespace Ryujinx.Gamepad
         // NOTE: Update Array size if JoystickInputId is changed.
         private Array2<Array2<float>> _joysticksState;
         // NOTE: Update Array size if GamepadInputId is changed.
-        private Array17<bool> _buttonsState;
+        private Array21<bool> _buttonsState;
 
-        public GamepadStateSnapshot(Array2<Array2<float>> joysticksState, Array17<bool> buttonsState)
+        public GamepadStateSnapshot(Array2<Array2<float>> joysticksState, Array21<bool> buttonsState)
         {
             _joysticksState = joysticksState;
             _buttonsState = buttonsState;

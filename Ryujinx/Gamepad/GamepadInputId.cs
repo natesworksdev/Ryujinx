@@ -30,6 +30,13 @@
         Back = Minus,
         Start = Plus,
 
+        // Virtual buttons for single joycon
+        SingleLeftTrigger0,
+        SingleRightTrigger0,
+
+        SingleLeftTrigger1,
+        SingleRightTrigger1,
+
         Count
     }
 }

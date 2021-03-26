@@ -36,6 +36,11 @@ namespace Ryujinx.Input
             new HLEButtonMappingEntry { DriverInputId = GamepadInputId.DpadRight, HLEInput = ControllerKeys.DpadRight },
             new HLEButtonMappingEntry { DriverInputId = GamepadInputId.Minus, HLEInput = ControllerKeys.Minus },
             new HLEButtonMappingEntry { DriverInputId = GamepadInputId.Plus, HLEInput = ControllerKeys.Plus },
+
+            new HLEButtonMappingEntry { DriverInputId = GamepadInputId.SingleLeftTrigger0, HLEInput = ControllerKeys.SlLeft },
+            new HLEButtonMappingEntry { DriverInputId = GamepadInputId.SingleRightTrigger0, HLEInput = ControllerKeys.SrLeft },
+            new HLEButtonMappingEntry { DriverInputId = GamepadInputId.SingleLeftTrigger1, HLEInput = ControllerKeys.SlRight },
+            new HLEButtonMappingEntry { DriverInputId = GamepadInputId.SingleRightTrigger1, HLEInput = ControllerKeys.SrRight },
         }; 
 
         private bool _isValid;
