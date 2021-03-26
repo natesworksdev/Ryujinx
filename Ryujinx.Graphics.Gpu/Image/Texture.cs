@@ -1016,6 +1016,10 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (result == TextureViewCompatibility.Full && Info.FormatInfo.Format != info.FormatInfo.Format && !_context.Capabilities.SupportsMismatchingViewFormat)
             {
+                // AMD and Intel have a bug where the view format is always ignored;
+                // they use the parent format instead.
+                // Create a copy dependency to avoid this issue.
+
                 result = TextureViewCompatibility.CopyOnly;
             }
 

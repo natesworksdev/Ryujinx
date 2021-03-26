@@ -25,7 +25,7 @@ namespace Ryujinx.Graphics.GAL
             SupportsAstcCompression          = supportsAstcCompression;
             SupportsImageLoadFormatted       = supportsImageLoadFormatted;
             SupportsNonConstantTextureOffset = supportsNonConstantTextureOffset;
-            SupportsMismatchingViewFormat     = supportsMismatchingViewFormat;
+            SupportsMismatchingViewFormat    = supportsMismatchingViewFormat;
             SupportsViewportSwizzle          = supportsViewportSwizzle;
             MaximumComputeSharedMemorySize   = maximumComputeSharedMemorySize;
             MaximumSupportedAnisotropy       = maximumSupportedAnisotropy;
