@@ -278,9 +278,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
             Operand pred = GetPredicate39(context);
             Operand res = context.ConditionalSelect(pred, resMin, resMax);
 
-            Operand dest = GetDest(context);
-
-            context.Copy(dest, res);
+            context.Copy(GetDest(context), res);
 
             SetZnFlags(context, res, op.SetCondCode);
 
