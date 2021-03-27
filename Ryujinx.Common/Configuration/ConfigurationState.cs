@@ -268,8 +268,9 @@ namespace Ryujinx.Configuration
             public ReactiveObject<KeyboardHotkeys> Hotkeys { get; private set; }
 
             /// <summary>
-            /// Input device configuration new.
+            /// Input device configuration.
             /// NOTE: This ReactiveObject won't issue an event when the List has elements added or removed.
+            /// TODO: Implement a ReactiveList class.
             /// </summary>
             public ReactiveObject<List<InputConfig>> InputConfig { get; private set; }
 
@@ -278,8 +279,6 @@ namespace Ryujinx.Configuration
                 EnableKeyboard = new ReactiveObject<bool>();
                 Hotkeys        = new ReactiveObject<KeyboardHotkeys>();
                 InputConfig    = new ReactiveObject<List<InputConfig>>();
-                // FIXME: temporary
-                InputConfig.Value = new List<InputConfig>();
             }
         }
 
@@ -853,8 +852,6 @@ namespace Ryujinx.Configuration
             Hid.EnableKeyboard.Value               = configurationFileFormat.EnableKeyboard;
             Hid.Hotkeys.Value                      = configurationFileFormat.Hotkeys;
             Hid.InputConfig.Value                  = configurationFileFormat.InputConfig;
-
-            // TODO: load new input config
 
             if (configurationFileUpdated)
             {
