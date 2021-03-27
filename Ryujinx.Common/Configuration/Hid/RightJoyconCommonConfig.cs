@@ -1,4 +1,4 @@
-﻿namespace Ryujinx.Common.Configuration.HidNew
+﻿namespace Ryujinx.Common.Configuration.Hid
 {
     public class RightJoyconCommonConfig<Button, Stick>
     {

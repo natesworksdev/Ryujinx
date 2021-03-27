@@ -224,16 +224,6 @@ namespace Ryujinx.Configuration
         public KeyboardHotkeys Hotkeys { get; set; }
 
         /// <summary>
-        /// Keyboard control bindings
-        /// </summary>
-        public List<KeyboardConfig> KeyboardConfig { get; set; }
-
-        /// <summary>
-        /// Controller control bindings
-        /// </summary>
-        public List<ControllerConfig> ControllerConfig { get; set; }
-
-        /// <summary>
         /// Loads a configuration file from disk
         /// </summary>
         /// <param name="path">The path to the JSON configuration file</param>

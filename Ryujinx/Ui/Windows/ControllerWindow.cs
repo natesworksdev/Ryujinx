@@ -1,10 +1,12 @@
 using Gtk;
 using Ryujinx.Common.Configuration;
-using Ryujinx.Common.Configuration.HidNew;
-using Ryujinx.Common.Configuration.HidNew.Controller;
+using Ryujinx.Common.Configuration.Hid;
+using Ryujinx.Common.Configuration.Hid.Controller;
+using Ryujinx.Common.Configuration.Hid.Keyboard;
 using Ryujinx.Common.Utilities;
 using Ryujinx.Configuration;
 using Ryujinx.Gamepad;
+using Ryujinx.Gamepad.GTK3;
 using Ryujinx.Input;
 using Ryujinx.Ui.Input;
 using Ryujinx.Ui.Widgets;
@@ -16,12 +18,10 @@ using System.Text.Json;
 using System.Threading;
 
 using GUI = Gtk.Builder.ObjectAttribute;
-using Key = Ryujinx.Configuration.Hid.Key;
+using Key = Ryujinx.Common.Configuration.Hid.Key;
 
-using ConfigGamepadInputId = Ryujinx.Common.Configuration.HidNew.Controller.GamepadInputId;
-using ConfigStickInputId = Ryujinx.Common.Configuration.HidNew.Controller.StickInputId;
-using Ryujinx.Common.Configuration.HidNew.Keyboard;
-using Ryujinx.Gamepad.GTK3;
+using ConfigGamepadInputId = Ryujinx.Common.Configuration.Hid.Controller.GamepadInputId;
+using ConfigStickInputId = Ryujinx.Common.Configuration.Hid.Controller.StickInputId;
 
 namespace Ryujinx.Ui.Windows
 {
@@ -789,48 +789,48 @@ namespace Ryujinx.Ui.Windows
                         Backend          = InputBackendType.WindowKeyboard,
                         Id               = null,
                         ControllerType   = Common.Configuration.Hid.ControllerType.JoyconPair,
-                        LeftJoycon = new LeftJoyconCommonConfig<Key, Key>
+                        LeftJoycon       = new LeftJoyconCommonConfig<Key, Key>
                         {
-                            DpadUp      = Key.Up,
-                            DpadDown    = Key.Down,
-                            DpadLeft    = Key.Left,
-                            DpadRight   = Key.Right,
-                            ButtonMinus = Key.Minus,
-                            ButtonL     = Key.E,
-                            ButtonZl    = Key.Q,
-                            ButtonSl    = Key.Unbound,
-                            ButtonSr    = Key.Unbound
+                            DpadUp       = Key.Up,
+                            DpadDown     = Key.Down,
+                            DpadLeft     = Key.Left,
+                            DpadRight    = Key.Right,
+                            ButtonMinus  = Key.Minus,
+                            ButtonL      = Key.E,
+                            ButtonZl     = Key.Q,
+                            ButtonSl     = Key.Unbound,
+                            ButtonSr     = Key.Unbound
                         },
 
-                        LeftJoyconStick = new JoyconConfigKeyboardStick<Key>
+                        LeftJoyconStick  = new JoyconConfigKeyboardStick<Key>
                         {
-                            StickUp     = Key.W,
-                            StickDown   = Key.S,
-                            StickLeft   = Key.A,
-                            StickRight  = Key.D,
-                            StickButton = Key.F,
+                            StickUp      = Key.W,
+                            StickDown    = Key.S,
+                            StickLeft    = Key.A,
+                            StickRight   = Key.D,
+                            StickButton  = Key.F,
                         },
 
-                        RightJoycon = new RightJoyconCommonConfig<Key, Key>
+                        RightJoycon      = new RightJoyconCommonConfig<Key, Key>
                         {
-                            ButtonA     = Key.Z,
-                            ButtonB     = Key.X,
-                            ButtonX     = Key.C,
-                            ButtonY     = Key.V,
-                            ButtonPlus  = Key.Plus,
-                            ButtonR     = Key.U,
-                            ButtonZr    = Key.O,
-                            ButtonSl    = Key.Unbound,
-                            ButtonSr    = Key.Unbound
+                            ButtonA      = Key.Z,
+                            ButtonB      = Key.X,
+                            ButtonX      = Key.C,
+                            ButtonY      = Key.V,
+                            ButtonPlus   = Key.Plus,
+                            ButtonR      = Key.U,
+                            ButtonZr     = Key.O,
+                            ButtonSl     = Key.Unbound,
+                            ButtonSr     = Key.Unbound
                         },
 
                         RightJoyconStick = new JoyconConfigKeyboardStick<Key>
                         {
-                            StickUp     = Key.I,
-                            StickDown   = Key.K,
-                            StickLeft   = Key.J,
-                            StickRight  = Key.L,
-                            StickButton = Key.H,
+                            StickUp      = Key.I,
+                            StickDown    = Key.K,
+                            StickLeft    = Key.J,
+                            StickRight   = Key.L,
+                            StickButton  = Key.H,
                         }
                     };
                 }

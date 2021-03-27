@@ -1,4 +1,4 @@
-﻿using Ryujinx.Common.Configuration.HidNew;
+﻿using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Memory;
 using System;
 using System.Runtime.CompilerServices;

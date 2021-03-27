@@ -1,12 +1,9 @@
 ﻿using ARMeilleure.Translation;
 using ARMeilleure.Translation.PTC;
 using Gdk;
-using OpenTK;
-using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
-using Ryujinx.Common.Configuration.HidNew;
 using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
 using Ryujinx.Gamepad;
@@ -18,14 +15,9 @@ using Ryujinx.Ui.Widgets;
 using SPB.Graphics;
 using SPB.Graphics.OpenGL;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-
-using ConfigStickInputId = Ryujinx.Common.Configuration.HidNew.Controller.StickInputId;
-using ConfigGamepadInputId = Ryujinx.Common.Configuration.HidNew.Controller.GamepadInputId;
-using Ryujinx.Gamepad.GTK3;
 
 namespace Ryujinx.Ui
 {
@@ -34,11 +26,6 @@ namespace Ryujinx.Ui
 
     public class GlRenderer : GLWidget
     {
-        static GlRenderer()
-        {
-            //OpenTK.Graphics.GraphicsContext.ShareContexts = true;
-        }
-
         private const int SwitchPanelWidth  = 1280;
         private const int SwitchPanelHeight = 720;
         private const int TargetFps         = 60;
@@ -68,7 +55,7 @@ namespace Ryujinx.Ui
 
         private Renderer _renderer;
 
-        private HotkeyButtons _prevHotkeyButtons;
+        private KeyboardHotkeyState _prevHotkeyState;
 
         private Client _dsuClient;
 
@@ -550,7 +537,8 @@ namespace Ryujinx.Ui
 
             _npadManager.Update(_device.Hid, _device.TamperMachine, ConfigurationState.Instance.Hid.InputConfigNew.Value);
 
-            // TODO: implement motion support again
+            // TODO: Implement motion support again
+            // TODO: Implement raw keyboard support again
             /*List<GamepadInput> gamepadInputs = new List<GamepadInput>(NpadDevices.MaxControllers);
             List<SixAxisInput> motionInputs  = new List<SixAxisInput>(NpadDevices.MaxControllers);
 
@@ -689,17 +677,15 @@ namespace Ryujinx.Ui
 
             if(_isFocused)
             {
-                // TODO: port this
-                // Hotkeys
-                /*HotkeyButtons currentHotkeyButtons = KeyboardController.GetHotkeyButtons(OpenTK.Input.Keyboard.GetState());
+                KeyboardHotkeyState currentHotkeyState = _npadManager.GetHotkeyState();
 
-                if (currentHotkeyButtons.HasFlag(HotkeyButtons.ToggleVSync) &&
-                    !_prevHotkeyButtons.HasFlag(HotkeyButtons.ToggleVSync))
+                if (currentHotkeyState.HasFlag(KeyboardHotkeyState.ToggleVSync) &&
+                    !_prevHotkeyState.HasFlag(KeyboardHotkeyState.ToggleVSync))
                 {
                     _device.EnableDeviceVsync = !_device.EnableDeviceVsync;
                 }
 
-                _prevHotkeyButtons = currentHotkeyButtons;*/
+                _prevHotkeyState = currentHotkeyState;
             }
 
             //Touchscreen

@@ -1,6 +1,6 @@
-﻿using Ryujinx.Common.Configuration.HidNew;
-using Ryujinx.Common.Configuration.HidNew.Controller;
-using Ryujinx.Common.Configuration.HidNew.Keyboard;
+﻿using Ryujinx.Common.Configuration.Hid;
+using Ryujinx.Common.Configuration.Hid.Controller;
+using Ryujinx.Common.Configuration.Hid.Keyboard;
 using Ryujinx.Configuration;
 using Ryujinx.Gamepad;
 using Ryujinx.HLE.HOS;
@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Key = Ryujinx.Gamepad.Key;
 
 namespace Ryujinx.Input
 {
@@ -167,6 +168,24 @@ namespace Ryujinx.Input
         public void Dispose()
         {
             Dispose(true);
+        }
+
+        public KeyboardHotkeyState GetHotkeyState()
+        {
+            KeyboardHotkeyState state = KeyboardHotkeyState.None;
+
+            if (_keyboardDriver != null)
+            {
+                IKeyboard keyboard = (IKeyboard)_keyboardDriver.GetGamepad("0");
+
+                if (keyboard.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ToggleVsync))
+                {
+                    state |= KeyboardHotkeyState.ToggleVSync;
+                }
+            }
+
+
+            return state;
         }
     }
 }

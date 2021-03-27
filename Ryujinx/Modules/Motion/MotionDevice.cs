@@ -1,5 +1,4 @@
 ﻿using Ryujinx.Common.Configuration.Hid;
-using Ryujinx.Configuration;
 using System;
 using System.Numerics;
 
@@ -21,7 +20,7 @@ namespace Ryujinx.Modules.Motion
 
         public void RegisterController(PlayerIndex player)
         {
-            InputConfig config = ConfigurationState.Instance.Hid.InputConfig.Value.Find(x => x.PlayerIndex == player);
+            /*InputConfig config = ConfigurationState.Instance.Hid.InputConfigNew.Value.Find(x => x.PlayerIndex == player);
 
             if (config != null && config.EnableMotion)
             {
@@ -35,11 +34,12 @@ namespace Ryujinx.Modules.Motion
                 {
                     _motionSource.RequestData((int)player, config.AltSlot);
                 }
-            }
+            }*/
         }
 
         public void Poll(InputConfig config, int slot)
         {
+            /*
             Orientation = new float[9];
 
             if (!config.EnableMotion || !_motionSource.TryGetData((int)config.PlayerIndex, slot, out MotionInput input))
@@ -65,6 +65,7 @@ namespace Ryujinx.Modules.Motion
             Orientation[6] = Math.Clamp(orientation.M31, -1f, 1f);
             Orientation[7] = Math.Clamp(orientation.M32, -1f, 1f);
             Orientation[8] = Math.Clamp(orientation.M33, -1f, 1f);
+            */
         }
 
         private static Vector3 Truncate(Vector3 value, int decimals)

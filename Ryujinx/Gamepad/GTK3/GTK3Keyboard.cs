@@ -1,11 +1,10 @@
 ﻿using OpenTK.Mathematics;
-using Ryujinx.Common.Configuration.HidNew;
-using Ryujinx.Common.Configuration.HidNew.Keyboard;
-using Ryujinx.Configuration.Hid;
+using Ryujinx.Common.Configuration.Hid;
+using Ryujinx.Common.Configuration.Hid.Keyboard;
 using System;
 using System.Collections.Generic;
 
-using ConfigKey = Ryujinx.Configuration.Hid.Key;
+using ConfigKey = Ryujinx.Common.Configuration.Hid.Key;
 
 namespace Ryujinx.Gamepad.GTK3
 {

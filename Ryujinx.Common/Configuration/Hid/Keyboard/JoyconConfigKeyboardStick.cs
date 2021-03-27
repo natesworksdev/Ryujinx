@@ -1,4 +1,4 @@
-﻿namespace Ryujinx.Common.Configuration.HidNew.Keyboard
+﻿namespace Ryujinx.Common.Configuration.Hid.Keyboard
 {
     public class JoyconConfigKeyboardStick<Key> where Key: unmanaged
     {

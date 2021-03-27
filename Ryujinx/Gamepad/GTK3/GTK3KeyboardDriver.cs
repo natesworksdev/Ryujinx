@@ -53,8 +53,6 @@ namespace Ryujinx.Gamepad.GTK3
 
             GtkKey key = (GtkKey)Keyval.ToLower((uint)args.Event.Key);
 
-            Logger.Error?.Print(LogClass.Application, key.ToString());
-
             _pressedKeys.Add(key);
         }
 
@@ -64,9 +62,6 @@ namespace Ryujinx.Gamepad.GTK3
             GtkKey key = (GtkKey)Keyval.ToLower((uint)args.Event.Key);
 
             GtkKey nativeKey = GTK3MappingHelper.ToGtkKey(Key.Z);
-
-            Logger.Error?.Print(LogClass.Application, key.ToString());
-            Logger.Error?.Print(LogClass.Application, $"{(int)nativeKey}");
 
             _pressedKeys.Remove(key);
         }
@@ -79,10 +74,6 @@ namespace Ryujinx.Gamepad.GTK3
             }
 
             GtkKey nativeKey = GTK3MappingHelper.ToGtkKey(key);
-
-            //Debug.Assert(_pressedKeys.Contains(nativeKey) == false);
-
-            //Logger.Error?.Print(LogClass.Application, nativeKey.ToString());
 
             return _pressedKeys.Contains(nativeKey);
         }

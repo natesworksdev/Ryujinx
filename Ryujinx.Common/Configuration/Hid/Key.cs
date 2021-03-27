@@ -1,4 +1,4 @@
-﻿namespace Ryujinx.Configuration.Hid
+﻿namespace Ryujinx.Common.Configuration.Hid
 {
     public enum Key
     {

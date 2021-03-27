@@ -1,4 +1,4 @@
-﻿namespace Ryujinx.Common.Configuration.HidNew.Controller
+﻿namespace Ryujinx.Common.Configuration.Hid.Controller
 {
     public enum StickInputId : byte
     {

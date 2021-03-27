@@ -320,11 +320,11 @@ namespace Ryujinx.Modules.Motion
 
                     ulong timestamp = inputData.MotionTimestamp;
 
-                    InputConfig config = ConfigurationState.Instance.Hid.InputConfig.Value.Find(x => x.PlayerIndex == (PlayerIndex)clientId);
+                    InputConfig config = ConfigurationState.Instance.Hid.InputConfigNew.Value.Find(x => x.PlayerIndex == (PlayerIndex)clientId);
 
                     lock (_motionData)
                     {
-                        int slot = inputData.Shared.Slot;
+                        /*int slot = inputData.Shared.Slot;
 
                         if (_motionData.ContainsKey(clientId))
                         {
@@ -350,7 +350,7 @@ namespace Ryujinx.Modules.Motion
                             input.Update(accelerometer, gyroscrope, timestamp, config.Sensitivity, (float)config.GyroDeadzone);
 
                             _motionData.Add(clientId, new Dictionary<int, MotionInput>() { { slot, input } });
-                        }
+                        }*/
                     }
                     break;
             }

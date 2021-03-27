@@ -1,5 +1,5 @@
-﻿using Ryujinx.Common.Configuration.HidNew;
-using Ryujinx.Common.Configuration.HidNew.Controller;
+﻿using Ryujinx.Common.Configuration.Hid;
+using Ryujinx.Common.Configuration.Hid.Controller;
 using System;
 using System.Collections.Generic;
 using static SDL2.SDL;
