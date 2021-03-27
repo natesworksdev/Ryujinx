@@ -30,7 +30,7 @@ namespace Ryujinx.Ui.Windows
 
         private readonly byte[] _amiiboLogoBytes;
 
-        private List<AmiiboApi>     _amiiboList;
+        private List<AmiiboApi> _amiiboList;
 
         public AmiiboWindow() : base($"Ryujinx {Program.Version} - Amiibo")
         {
@@ -126,11 +126,11 @@ namespace Ryujinx.Ui.Windows
 
             if (amiiboPreview != null)
             {
-                float ratio = Math.Min((float)_amiiboImage.AllocatedWidth / amiiboPreview.Width,
+                float ratio =  Math.Min((float)_amiiboImage.AllocatedWidth  / amiiboPreview.Width,
                                         (float)_amiiboImage.AllocatedHeight / amiiboPreview.Height);
 
                 int resizeHeight = (int)(amiiboPreview.Height * ratio);
-                int resizeWidth = (int)(amiiboPreview.Width * ratio);
+                int resizeWidth  = (int)(amiiboPreview.Width  * ratio);
 
                 _amiiboImage.Pixbuf = amiiboPreview.ScaleSimple(resizeWidth, resizeHeight, Gdk.InterpType.Bilinear);
             }

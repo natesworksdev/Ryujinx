@@ -90,7 +90,6 @@ namespace Ryujinx
             // Setup base data directory.
             AppDataManager.Initialize(baseDirPathArg);
 
-
             // Initialize the configuration.
             ConfigurationState.Initialize();
 

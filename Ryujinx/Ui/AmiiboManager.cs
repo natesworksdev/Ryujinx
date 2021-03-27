@@ -22,7 +22,8 @@ namespace Ryujinx.Ui
         private static List<AmiiboApi>                _amiiboApis;
         private static Dictionary<string, Gdk.Pixbuf> _amiiboPreviews;
         private static bool                           _initialized;
-        public static List<AmiiboApi>      AmiiboApis { get => _amiiboApis; }
+
+        public static List<AmiiboApi>                 AmiiboApis { get => _amiiboApis; }
 
         public static void Initialize()
         {
@@ -48,12 +49,13 @@ namespace Ryujinx.Ui
                             string amiiboJsonString = File.ReadAllText(_amiiboJsonPath);
                             await LoadAmiiboJson(amiiboJsonString);
 
-                        // Update if there is Amiibo data newer than the current version.
-                        await UpdateAmiibos();
+                            // Update if there is Amiibo data newer than the current version.
+                            await UpdateAmiibos();
                         }
                         catch (Exception ex)
                         {
                             Logger.Warning?.Print(LogClass.Application, $"Failed to read Amiibo JSON data: {ex.Message}");
+
                             _amiiboApis = new List<AmiiboApi>();
                         }
                     });
@@ -90,7 +92,9 @@ namespace Ryujinx.Ui
         public static async Task UpdateAmiibos()
         {
             Logger.Info?.Print(LogClass.Application, "Checking for Amiibo Updates..");
+
             string amiiboJsonString;
+
             if (File.Exists(_amiiboJsonPath))
             {
                 if (await NeedsUpdate(_amiiboJson.LastUpdated))
@@ -173,6 +177,7 @@ namespace Ryujinx.Ui
         private static async Task<string> DownloadAmiiboJson()
         {
             Logger.Info?.Print(LogClass.Application, "Downloading newer version of amiibo data..");
+
             HttpResponseMessage response = await _httpClient.GetAsync("https://amiibo.ryujinx.org/");
 
             if (response.IsSuccessStatusCode)
@@ -180,9 +185,11 @@ namespace Ryujinx.Ui
                 string amiiboJsonString = await response.Content.ReadAsStringAsync();
 
                 AmiiboJson amiiboJson = JsonSerializer.Deserialize<AmiiboJson>(amiiboJsonString);
+
                 DateTime lastUpdated = amiiboJson.LastUpdated;
                 amiiboJson.LastUpdated = new DateTime(lastUpdated.Year, lastUpdated.Month, lastUpdated.Day, lastUpdated.Hour, lastUpdated.Minute, lastUpdated.Second);
                 amiiboJsonString = JsonSerializer.Serialize<AmiiboJson>(amiiboJson);
+
                 using (FileStream dlcJsonStream = File.Create(_amiiboJsonPath, 4096, FileOptions.WriteThrough))
                 {
                     await dlcJsonStream.WriteAsync(Encoding.UTF8.GetBytes(amiiboJsonString));
