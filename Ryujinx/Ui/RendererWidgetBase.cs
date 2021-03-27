@@ -387,11 +387,10 @@ namespace Ryujinx.Ui
 
             _gpuVendorName = GetGpuVendorName();
 
-            Device.Gpu.InitializeShaderCache();
-            Translator.IsReadyForTranslation.Set();
-
             Device.Gpu.Renderer.RunLoop(() =>
             {
+                Device.Gpu.InitializeShaderCache();
+                Translator.IsReadyForTranslation.Set();
 
                 while (_isActive)
                 {
