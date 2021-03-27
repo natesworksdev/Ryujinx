@@ -44,7 +44,18 @@ namespace Ryujinx.Ui.Windows
             _scanButton.Sensitive         = false;
             _randomUuidCheckBox.Sensitive = false;
 
-            _ = LoadContentAsync();
+            Task.Run(async () =>
+            {
+                _ = LoadContentAsync();
+
+                if(await AmiiboManager.UpdateAmiibos())
+                {
+                    _amiiboCharsComboBox.RemoveAll();
+                    _amiiboSeriesComboBox.RemoveAll();
+
+                    _ = LoadContentAsync();
+                }
+            });
         }
 
         private async Task LoadContentAsync()

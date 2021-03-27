@@ -74,7 +74,6 @@ namespace Ryujinx.Ui
 
         [GUI] public MenuItem ExitMenuItem;
         [GUI] public MenuItem UpdateMenuItem;
-        [GUI] public MenuItem UpdateAmiiboMenuItem;
         [GUI] MenuBar         _menuBar;
         [GUI] Box             _footerBox;
         [GUI] Box             _statusBar;
@@ -1256,11 +1255,6 @@ namespace Ryujinx.Ui
                     Logger.Error?.Print(LogClass.Application, $"Updater error: {task.Exception}");
                 }, TaskContinuationOptions.OnlyOnFaulted);
             }
-        }
-
-        private void UpdateAmiibo_Pressed(object sender, EventArgs args)
-        {
-            _ = AmiiboManager.UpdateAmiibos();
         }
 
         private void About_Pressed(object sender, EventArgs args)

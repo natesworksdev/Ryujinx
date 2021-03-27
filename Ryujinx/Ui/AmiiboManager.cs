@@ -89,7 +89,12 @@ namespace Ryujinx.Ui
             });
         }
 
-        public static async Task UpdateAmiibos()
+        /// <summary>
+        /// Checks to see that there is a new version of amiibo data available for download.
+        /// </summary>
+        /// <returns><b>True</b> New data was downloaded and installed successfully.<br>
+        /// </br><b>False</b> The current version of the data is already up-to-date or an error occurred.</returns>
+        public static async Task<bool> UpdateAmiibos()
         {
             Logger.Info?.Print(LogClass.Application, "Checking for Amiibo Updates..");
 
@@ -105,11 +110,17 @@ namespace Ryujinx.Ui
                     if (amiiboJsonString != DEFAULT_JSON)
                     {
                         _ = LoadAmiiboJson(amiiboJsonString);
+
+                        return true;
                     }
+
+                    return false;
                 }
                 else
                 {
                     Logger.Info?.Print(LogClass.Application, "Your Amiibos are already up to date!");
+
+                    return false;
                 }
             }
             else
@@ -119,10 +130,14 @@ namespace Ryujinx.Ui
                     amiiboJsonString = await DownloadAmiiboJson();
                     
                     _ = LoadAmiiboJson(amiiboJsonString);
+
+                    return true;
                 }
                 catch
                 {
                     ShowAmiiboServiceWarning();
+
+                    return false;
                 }
             }
         }
