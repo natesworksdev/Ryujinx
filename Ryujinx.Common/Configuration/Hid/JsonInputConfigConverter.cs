@@ -36,6 +36,10 @@ namespace Ryujinx.Common.Configuration.Hid
                             {
                                 result = InputBackendType.Invalid;
                             }
+                            else
+                            {
+                                break;
+                            }
                         }
                     }
                 }

@@ -465,6 +465,7 @@ namespace Ryujinx.Configuration
                 StartFullscreen           = Ui.StartFullscreen,
                 EnableKeyboard            = Hid.EnableKeyboard,
                 Hotkeys                   = Hid.Hotkeys,
+                InputConfig               = Hid.InputConfig,
             };
 
             return configurationFile;
@@ -739,6 +740,68 @@ namespace Ryujinx.Configuration
                 configurationFileUpdated = true;
             }
 
+            if (configurationFileFormat.Version < 23)
+            {
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 23.");
+
+                configurationFileFormat.InputConfig = new List<InputConfig>
+                {
+                     new StandardKeyboardInputConfig
+                     {
+                            Version          = InputConfig.CurrentVersion,
+                            Backend          = InputBackendType.WindowKeyboard,
+                            Id               = "0",
+                            PlayerIndex      = PlayerIndex.Player1,
+                            ControllerType   = ControllerType.JoyconPair,
+                            LeftJoycon       = new LeftJoyconCommonConfig<Key, Key>
+                            {
+                                DpadUp       = Key.Up,
+                                DpadDown     = Key.Down,
+                                DpadLeft     = Key.Left,
+                                DpadRight    = Key.Right,
+                                ButtonMinus  = Key.Minus,
+                                ButtonL      = Key.E,
+                                ButtonZl     = Key.Q,
+                                ButtonSl     = Key.Unbound,
+                                ButtonSr     = Key.Unbound
+                            },
+
+                            LeftJoyconStick  = new JoyconConfigKeyboardStick<Key>
+                            {
+                                StickUp      = Key.W,
+                                StickDown    = Key.S,
+                                StickLeft    = Key.A,
+                                StickRight   = Key.D,
+                                StickButton  = Key.F,
+                            },
+
+                            RightJoycon      = new RightJoyconCommonConfig<Key, Key>
+                            {
+                                ButtonA      = Key.Z,
+                                ButtonB      = Key.X,
+                                ButtonX      = Key.C,
+                                ButtonY      = Key.V,
+                                ButtonPlus   = Key.Plus,
+                                ButtonR      = Key.U,
+                                ButtonZr     = Key.O,
+                                ButtonSl     = Key.Unbound,
+                                ButtonSr     = Key.Unbound
+                            },
+
+                            RightJoyconStick = new JoyconConfigKeyboardStick<Key>
+                            {
+                                StickUp      = Key.I,
+                                StickDown    = Key.K,
+                                StickLeft    = Key.J,
+                                StickRight   = Key.L,
+                                StickButton  = Key.H,
+                            }
+                     }
+                };
+
+                configurationFileUpdated = true;
+            }
+
             Graphics.ResScale.Value                = configurationFileFormat.ResScale;
             Graphics.ResScaleCustom.Value          = configurationFileFormat.ResScaleCustom;
             Graphics.MaxAnisotropy.Value           = configurationFileFormat.MaxAnisotropy;
@@ -789,6 +852,7 @@ namespace Ryujinx.Configuration
             Ui.StartFullscreen.Value               = configurationFileFormat.StartFullscreen;
             Hid.EnableKeyboard.Value               = configurationFileFormat.EnableKeyboard;
             Hid.Hotkeys.Value                      = configurationFileFormat.Hotkeys;
+            Hid.InputConfig.Value                  = configurationFileFormat.InputConfig;
 
             // TODO: load new input config
 
