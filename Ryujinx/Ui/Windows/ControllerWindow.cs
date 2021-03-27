@@ -364,9 +364,9 @@ namespace Ryujinx.Ui.Windows
                 case StandardKeyboardInputConfig keyboardConfig:
                     if (!_controllerType.SetActiveId(keyboardConfig.ControllerType.ToString()))
                     {
-                        _controllerType.SetActiveId(_playerIndex == Common.Configuration.Hid.PlayerIndex.Handheld
-                            ? Common.Configuration.Hid.ControllerType.Handheld.ToString()
-                            : Common.Configuration.Hid.ControllerType.ProController.ToString());
+                        _controllerType.SetActiveId(_playerIndex == PlayerIndex.Handheld
+                            ? ControllerType.Handheld.ToString()
+                            : ControllerType.ProController.ToString());
                     }
 
                     _lStickUp.Label            = keyboardConfig.LeftJoyconStick.StickUp.ToString();
@@ -402,9 +402,9 @@ namespace Ryujinx.Ui.Windows
                 case StandardControllerInputConfig controllerConfig:
                     if (!_controllerType.SetActiveId(controllerConfig.ControllerType.ToString()))
                     {
-                        _controllerType.SetActiveId(_playerIndex == Common.Configuration.Hid.PlayerIndex.Handheld 
-                            ? Common.Configuration.Hid.ControllerType.Handheld.ToString() 
-                            : Common.Configuration.Hid.ControllerType.ProController.ToString());
+                        _controllerType.SetActiveId(_playerIndex == PlayerIndex.Handheld
+                            ? ControllerType.Handheld.ToString()
+                            : ControllerType.ProController.ToString());
                     }
 
                     _lStick.Label                     = controllerConfig.LeftJoyconStick.Joystick.ToString();
@@ -484,8 +484,9 @@ namespace Ryujinx.Ui.Windows
 
                 return new StandardKeyboardInputConfig
                 {
+                    Version          = InputConfig.CurrentVersion,
                     Id               = _inputDevice.ActiveId.Split("/")[1],
-                    ControllerType   = Enum.Parse<Common.Configuration.Hid.ControllerType>(_controllerType.ActiveId),
+                    ControllerType   = Enum.Parse<ControllerType>(_controllerType.ActiveId),
                     PlayerIndex      = _playerIndex,
                     LeftJoycon       = new LeftJoyconCommonConfig<Key, Key>
                     {
@@ -560,8 +561,9 @@ namespace Ryujinx.Ui.Windows
 
                 return new StandardControllerInputConfig
                 {
+                    Version          = InputConfig.CurrentVersion,
                     Id               = _inputDevice.ActiveId.Split("/")[1].Split(" ")[0],
-                    ControllerType   = Enum.Parse<Common.Configuration.Hid.ControllerType>(_controllerType.ActiveId),
+                    ControllerType   = Enum.Parse<ControllerType>(_controllerType.ActiveId),
                     PlayerIndex      = _playerIndex,
                     DeadzoneLeft     = (float)_controllerDeadzoneLeft.Value,
                     DeadzoneRight    = (float)_controllerDeadzoneRight.Value,
@@ -786,9 +788,10 @@ namespace Ryujinx.Ui.Windows
                 {
                     config = new StandardKeyboardInputConfig
                     {
+                        Version          = InputConfig.CurrentVersion,
                         Backend          = InputBackendType.WindowKeyboard,
                         Id               = null,
-                        ControllerType   = Common.Configuration.Hid.ControllerType.JoyconPair,
+                        ControllerType   = ControllerType.JoyconPair,
                         LeftJoycon       = new LeftJoyconCommonConfig<Key, Key>
                         {
                             DpadUp       = Key.Up,
@@ -838,9 +841,10 @@ namespace Ryujinx.Ui.Windows
                 {
                     config = new StandardControllerInputConfig
                     {
+                        Version          = InputConfig.CurrentVersion,
                         Backend          = InputBackendType.GamepadSDL2,
                         Id               = null,
-                        ControllerType   = Common.Configuration.Hid.ControllerType.JoyconPair,
+                        ControllerType   = ControllerType.JoyconPair,
                         DeadzoneLeft     = 0.1f,
                         DeadzoneRight    = 0.1f,
                         TriggerThreshold = 0.5f,

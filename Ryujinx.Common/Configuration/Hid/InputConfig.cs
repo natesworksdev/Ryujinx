@@ -1,10 +1,14 @@
-﻿using Ryujinx.Common.Configuration.Hid;
-using System;
-
-namespace Ryujinx.Common.Configuration.Hid
+﻿namespace Ryujinx.Common.Configuration.Hid
 {
     public class InputConfig
     {
+        /// <summary>
+        /// The current version of the input file format
+        /// </summary>
+        public const int CurrentVersion = 1;
+
+        public int Version { get; set; }
+
         public InputBackendType Backend { get; set; }
 
         /// <summary>

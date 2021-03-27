@@ -529,6 +529,7 @@ namespace Ryujinx.Configuration
             {
                  new StandardKeyboardInputConfig
                  {
+                        Version          = InputConfig.CurrentVersion,
                         Backend          = InputBackendType.WindowKeyboard,
                         Id               = "0",
                         PlayerIndex      = PlayerIndex.Player1,
