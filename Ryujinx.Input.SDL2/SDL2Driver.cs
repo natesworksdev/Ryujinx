@@ -75,20 +75,20 @@ namespace Ryujinx.Input.SDL2
                 int deviceId = evnt.cbutton.which;
 
                 // SDL2 loves to be inconsistent here by providing the device id instead of the instance id (like on removed event), as such we just grab it and send it inside our system.
-                int instanceId = SDL_JoystickGetDeviceInstanceID(evnt.cbutton.which);
+                int instanceId = SDL_JoystickGetDeviceInstanceID(deviceId);
 
                 if (instanceId == -1)
                 {
                     return;
                 }
 
-                Logger.Debug?.Print(LogClass.Application, $"Added joystick instance id {evnt.cbutton.which}");
+                Logger.Warning?.Print(LogClass.Application, $"Added joystick instance id {instanceId}");
 
                 OnJoyStickConnected?.Invoke(deviceId, instanceId);
             }
             else if (evnt.type == SDL_EventType.SDL_JOYDEVICEREMOVED)
             {
-                Logger.Debug?.Print(LogClass.Application, $"Removed joystick instance id {evnt.cbutton.which}");
+                Logger.Warning?.Print(LogClass.Application, $"Removed joystick instance id {evnt.cbutton.which}");
 
                 OnJoystickDisconnected?.Invoke(evnt.cbutton.which);
             }

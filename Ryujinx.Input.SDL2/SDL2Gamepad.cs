@@ -228,17 +228,17 @@ namespace Ryujinx.Input.SDL2
 
         public bool IsPressed(GamepadInputId inputId)
         {
-            if (_buttonsDriverMapping[(int)inputId] == SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_INVALID)
-            {
-                return false;
-            }
-            else if (inputId == GamepadInputId.LeftTrigger)
+            if (inputId == GamepadInputId.LeftTrigger)
             {
                 return ConvertRawStickValue(SDL_GameControllerGetAxis(_gamepadHandle, SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_TRIGGERLEFT)) > _triggerThreshold;
             }
             else if (inputId == GamepadInputId.RightTrigger)
             {
                 return ConvertRawStickValue(SDL_GameControllerGetAxis(_gamepadHandle, SDL_GameControllerAxis.SDL_CONTROLLER_AXIS_TRIGGERRIGHT)) > _triggerThreshold;
+            }
+            else if (_buttonsDriverMapping[(int)inputId] == SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_INVALID)
+            {
+                return false;
             }
             else
             {
