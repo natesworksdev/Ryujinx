@@ -484,6 +484,7 @@ namespace Ryujinx.Ui.Windows
 
                 return new StandardKeyboardInputConfig
                 {
+                    Backend          = InputBackendType.WindowKeyboard,
                     Version          = InputConfig.CurrentVersion,
                     Id               = _inputDevice.ActiveId.Split("/")[1],
                     ControllerType   = Enum.Parse<ControllerType>(_controllerType.ActiveId),
@@ -561,6 +562,7 @@ namespace Ryujinx.Ui.Windows
 
                 return new StandardControllerInputConfig
                 {
+                    Backend          = InputBackendType.GamepadSDL2,
                     Version          = InputConfig.CurrentVersion,
                     Id               = _inputDevice.ActiveId.Split("/")[1].Split(" ")[0],
                     ControllerType   = Enum.Parse<ControllerType>(_controllerType.ActiveId),
@@ -919,19 +921,12 @@ namespace Ryujinx.Ui.Windows
                 {
                     using (Stream stream = File.OpenRead(path))
                     {
-                        config = JsonHelper.Deserialize<StandardControllerInputConfig>(stream);
+                        config = JsonHelper.Deserialize<InputConfig>(stream);
                     }
                 }
                 catch (JsonException)
                 {
-                    try
-                    {
-                        using (Stream stream = File.OpenRead(path))
-                        {
-                            config = JsonHelper.Deserialize<StandardKeyboardInputConfig>(stream);
-                        }
-                    }
-                    catch { }
+
                 }
             }
 
@@ -954,14 +949,7 @@ namespace Ryujinx.Ui.Windows
                 string path = System.IO.Path.Combine(GetProfileBasePath(), profileDialog.FileName);
                 string jsonString;
 
-                if (inputConfig is StandardKeyboardInputConfig keyboardConfig)
-                {
-                    jsonString = JsonHelper.Serialize(keyboardConfig, true);
-                }
-                else
-                {
-                    jsonString = JsonHelper.Serialize(inputConfig as StandardControllerInputConfig, true);
-                }
+                jsonString = JsonHelper.Serialize(inputConfig, true);
 
                 File.WriteAllText(path, jsonString);
             }

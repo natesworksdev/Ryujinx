@@ -5,11 +5,11 @@
         /// <summary>
         /// Left JoyCon Controller Bindings
         /// </summary>
-        public LeftJoyconCommonConfig<Button, Stick> LeftJoycon;
+        public LeftJoyconCommonConfig<Button, Stick> LeftJoycon { get; set; }
 
         /// <summary>
         /// Right JoyCon Controller Bindings
         /// </summary>
-        public RightJoyconCommonConfig<Button, Stick> RightJoycon;
+        public RightJoyconCommonConfig<Button, Stick> RightJoycon { get; set; }
     }
 }

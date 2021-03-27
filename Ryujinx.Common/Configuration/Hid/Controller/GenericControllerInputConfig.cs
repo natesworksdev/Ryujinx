@@ -5,12 +5,12 @@
         /// <summary>
         /// Left JoyCon Controller Stick Bindings
         /// </summary>
-        public JoyconConfigControllerStick<Button, Stick> LeftJoyconStick;
+        public JoyconConfigControllerStick<Button, Stick> LeftJoyconStick { get; set; }
 
         /// <summary>
         /// Right JoyCon Controller Stick Bindings
         /// </summary>
-        public JoyconConfigControllerStick<Button, Stick> RightJoyconStick;
+        public JoyconConfigControllerStick<Button, Stick> RightJoyconStick { get; set; }
 
         /// <summary>
         /// Controller Left Analog Stick Deadzone

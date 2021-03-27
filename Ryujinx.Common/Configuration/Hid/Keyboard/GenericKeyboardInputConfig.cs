@@ -5,11 +5,11 @@
         /// <summary>
         /// Left JoyCon Controller Stick Bindings
         /// </summary>
-        public JoyconConfigKeyboardStick<Key> LeftJoyconStick;
+        public JoyconConfigKeyboardStick<Key> LeftJoyconStick { get; set; }
 
         /// <summary>
         /// Right JoyCon Controller Stick Bindings
         /// </summary>
-        public JoyconConfigKeyboardStick<Key> RightJoyconStick;
+        public JoyconConfigKeyboardStick<Key> RightJoyconStick { get; set; }
     }
 }
