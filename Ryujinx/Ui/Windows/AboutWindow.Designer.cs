@@ -174,8 +174,8 @@ namespace Ryujinx.Ui.Windows
             _amiiboApiLinkLabel = new Label("AmiiboAPI (www.amiiboapi.com) is used\nin our Amiibo emulation.")
             {
                 TooltipText = "Click to open the AmiiboAPI website in your default browser.",
-                Justify = Justification.Center,
-                Attributes = new AttrList()
+                Justify     = Justification.Center,
+                Attributes  = new AttrList()
             };
             _amiiboApiLinkLabel.Attributes.Insert(new Pango.AttrScale(0.9f));
 
