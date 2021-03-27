@@ -113,7 +113,7 @@ namespace Ryujinx.Ui.Windows
             builder.Autoconnect(this);
 
             _playerIndex = controllerId;
-            _inputConfig = ConfigurationState.Instance.Hid.InputConfigNew.Value.Find(inputConfig => inputConfig.PlayerIndex == _playerIndex);
+            _inputConfig = ConfigurationState.Instance.Hid.InputConfig.Value.Find(inputConfig => inputConfig.PlayerIndex == _playerIndex);
 
             Title = $"Ryujinx - Controller Settings - {_playerIndex}";
 
@@ -993,7 +993,7 @@ namespace Ryujinx.Ui.Windows
             InputConfig inputConfig = GetValues();
 
             var newConfig = new List<InputConfig>();
-            newConfig.AddRange(ConfigurationState.Instance.Hid.InputConfigNew.Value);
+            newConfig.AddRange(ConfigurationState.Instance.Hid.InputConfig.Value);
 
             if (_inputConfig == null && inputConfig != null)
             {
@@ -1015,7 +1015,7 @@ namespace Ryujinx.Ui.Windows
 
             // Atomically replace and signal input change.
             // NOTE: Do not modify InputConfig.Value directly as other code depends on the on-change event.
-            ConfigurationState.Instance.Hid.InputConfigNew.Value = newConfig;
+            ConfigurationState.Instance.Hid.InputConfig.Value = newConfig;
 
             ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
 

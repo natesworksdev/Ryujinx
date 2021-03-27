@@ -83,7 +83,7 @@ namespace Ryujinx.Ui
             _npadManager = inputManager.CreateNpadManager();
             _keyboardInterface = (IKeyboard)_inputManager.KeyboardDriver.GetGamepad("0");
 
-            _npadManager.UpdateConfiguration(ConfigurationState.Instance.Hid.InputConfigNew.Value.ToList());
+            _npadManager.UpdateConfiguration(ConfigurationState.Instance.Hid.InputConfig.Value.ToList());
 
             WaitEvent = new ManualResetEvent(false);
 
@@ -535,7 +535,7 @@ namespace Ryujinx.Ui
                 });
             }
 
-            _npadManager.Update(_device.Hid, _device.TamperMachine, ConfigurationState.Instance.Hid.InputConfigNew.Value);
+            _npadManager.Update(_device.Hid, _device.TamperMachine, ConfigurationState.Instance.Hid.InputConfig.Value);
 
             // TODO: Implement motion support again
             // TODO: Implement raw keyboard support again

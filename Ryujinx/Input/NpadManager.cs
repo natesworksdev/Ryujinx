@@ -38,13 +38,13 @@ namespace Ryujinx.Input
         private void HandleOnGamepadDisconnected(string obj)
         {
             // Force input reload
-            UpdateConfiguration(ConfigurationState.Instance.Hid.InputConfigNew.Value);
+            UpdateConfiguration(ConfigurationState.Instance.Hid.InputConfig.Value);
         }
 
         private void HandleOnGamepadConnected(string id)
         {
             // Force input reload
-            UpdateConfiguration(ConfigurationState.Instance.Hid.InputConfigNew.Value);
+            UpdateConfiguration(ConfigurationState.Instance.Hid.InputConfig.Value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -101,7 +101,7 @@ namespace Ryujinx.Input
 
                 // Enforce an update of the property that will be updated by HLE.
                 // TODO: move that
-                ConfigurationState.Instance.Hid.InputConfigNew.Value = inputConfigs;
+                ConfigurationState.Instance.Hid.InputConfig.Value = inputConfigs;
             }
         }
 
@@ -118,7 +118,7 @@ namespace Ryujinx.Input
                     // If this is null, we just got an update and weren't aware of it
                     if (controller == null)
                     {
-                        UpdateConfiguration(ConfigurationState.Instance.Hid.InputConfigNew.Value);
+                        UpdateConfiguration(ConfigurationState.Instance.Hid.InputConfig.Value);
 
                         controller = _controllers[(int)inputConfig.PlayerIndex];
 

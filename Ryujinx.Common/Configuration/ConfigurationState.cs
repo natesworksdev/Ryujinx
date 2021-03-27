@@ -271,15 +271,15 @@ namespace Ryujinx.Configuration
             /// Input device configuration new.
             /// NOTE: This ReactiveObject won't issue an event when the List has elements added or removed.
             /// </summary>
-            public ReactiveObject<List<InputConfig>> InputConfigNew { get; private set; }
+            public ReactiveObject<List<InputConfig>> InputConfig { get; private set; }
 
             public HidSection()
             {
                 EnableKeyboard = new ReactiveObject<bool>();
                 Hotkeys        = new ReactiveObject<KeyboardHotkeys>();
-                InputConfigNew = new ReactiveObject<List<InputConfig>>();
+                InputConfig    = new ReactiveObject<List<InputConfig>>();
                 // FIXME: temporary
-                InputConfigNew.Value = new List<InputConfig>();
+                InputConfig.Value = new List<InputConfig>();
             }
         }
 
@@ -525,7 +525,7 @@ namespace Ryujinx.Configuration
             {
                 ToggleVsync = Key.Tab
             };
-            Hid.InputConfigNew.Value = new List<InputConfig>
+            Hid.InputConfig.Value = new List<InputConfig>
             {
                  new StandardKeyboardInputConfig
                  {

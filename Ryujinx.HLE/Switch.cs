@@ -151,8 +151,8 @@ namespace Ryujinx.HLE
             };
 
             // Configure controllers
-            Hid.RefreshInputConfig(ConfigurationState.Instance.Hid.InputConfigNew.Value);
-            ConfigurationState.Instance.Hid.InputConfigNew.Event += Hid.RefreshInputConfigEvent;
+            Hid.RefreshInputConfig(ConfigurationState.Instance.Hid.InputConfig.Value);
+            ConfigurationState.Instance.Hid.InputConfig.Event += Hid.RefreshInputConfigEvent;
         }
 
         public static IntegrityCheckLevel GetIntegrityCheckLevel()
@@ -223,7 +223,7 @@ namespace Ryujinx.HLE
         {
             if (disposing)
             {
-                ConfigurationState.Instance.Hid.InputConfigNew.Event -= Hid.RefreshInputConfigEvent;
+                ConfigurationState.Instance.Hid.InputConfig.Event -= Hid.RefreshInputConfigEvent;
 
                 System.Dispose();
                 Host1x.Dispose();

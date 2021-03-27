@@ -320,7 +320,7 @@ namespace Ryujinx.Modules.Motion
 
                     ulong timestamp = inputData.MotionTimestamp;
 
-                    InputConfig config = ConfigurationState.Instance.Hid.InputConfigNew.Value.Find(x => x.PlayerIndex == (PlayerIndex)clientId);
+                    InputConfig config = ConfigurationState.Instance.Hid.InputConfig.Value.Find(x => x.PlayerIndex == (PlayerIndex)clientId);
 
                     lock (_motionData)
                     {
