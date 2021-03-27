@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using static SDL2.SDL;
 
-namespace Ryujinx.Gamepad.SDL2
+namespace Ryujinx.Input.SDL2
 {
     class SDL2Gamepad : IGamepad
     {

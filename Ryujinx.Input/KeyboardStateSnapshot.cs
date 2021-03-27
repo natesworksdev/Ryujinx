@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 
-namespace Ryujinx.Gamepad
+namespace Ryujinx.Input
 {
     // TODO: find a way to make this unmanaged to avoid increasing GC pressure.
     public class KeyboardStateSnapshot

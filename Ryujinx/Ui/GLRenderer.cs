@@ -6,7 +6,6 @@ using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
-using Ryujinx.Gamepad;
 using Ryujinx.Graphics.OpenGL;
 using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.Input;
@@ -19,9 +18,11 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 
+using Key = Ryujinx.Input.Key;
+
+
 namespace Ryujinx.Ui
 {
-    using Key = Gamepad.Key;
     using Switch = HLE.Switch;
 
     public class GlRenderer : GLWidget

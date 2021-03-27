@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System;
 using System.IO;
-using Ryujinx.Gamepad;
+using Ryujinx.Input;
 
 namespace Ryujinx.Ui.Input
 {

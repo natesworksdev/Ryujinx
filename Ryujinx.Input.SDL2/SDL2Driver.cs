@@ -3,7 +3,7 @@ using System;
 using System.Threading;
 using static SDL2.SDL;
 
-namespace Ryujinx.Gamepad.SDL2
+namespace Ryujinx.Input.SDL2
 {
     public class SDL2Driver : IDisposable
     {
@@ -64,13 +64,6 @@ namespace Ryujinx.Gamepad.SDL2
             _worker = new Thread(EventWorker);
             _isRunning = true;
             _worker.Start();
-        }
-
-        private unsafe int FilterEvent(IntPtr userdata, IntPtr sdlevent)
-        {
-            HandleSDLEvent(ref *((SDL_Event*)sdlevent));
-
-            return 0;
         }
 
         private void HandleSDLEvent(ref SDL_Event evnt)

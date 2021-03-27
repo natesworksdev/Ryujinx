@@ -1,12 +1,12 @@
 ﻿using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
-using Ryujinx.Gamepad;
 using Ryujinx.HLE.HOS.Services.Hid;
+using Ryujinx.Input;
 using System;
 using System.Runtime.CompilerServices;
 
-using GamepadInputId = Ryujinx.Gamepad.GamepadInputId;
-using StickInputId = Ryujinx.Gamepad.StickInputId;
+using GamepadInputId = Ryujinx.Input.GamepadInputId;
+using StickInputId = Ryujinx.Input.StickInputId;
 
 namespace Ryujinx.Input
 {

@@ -2,14 +2,12 @@
 using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Common.Configuration.Hid.Keyboard;
 using Ryujinx.Configuration;
-using Ryujinx.Gamepad;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Hid;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using Key = Ryujinx.Gamepad.Key;
 
 namespace Ryujinx.Input
 {

@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace Ryujinx.Gamepad
+namespace Ryujinx.Input
 {
     public interface IKeyboard : IGamepad
     {

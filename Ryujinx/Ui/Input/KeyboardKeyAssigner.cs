@@ -1,4 +1,5 @@
-using Ryujinx.Gamepad;
+using Ryujinx.Input;
+
 namespace Ryujinx.Ui.Input
 {
     class KeyboardKeyAssigner : ButtonAssigner

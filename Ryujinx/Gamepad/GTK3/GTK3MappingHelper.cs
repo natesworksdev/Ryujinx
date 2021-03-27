@@ -1,7 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using GtkKey = Gdk.Key;
 
-namespace Ryujinx.Gamepad.GTK3
+namespace Ryujinx.Input.GTK3
 {
     public static class GTK3MappingHelper
     {

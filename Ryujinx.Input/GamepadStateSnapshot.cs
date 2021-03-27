@@ -1,7 +1,7 @@
 ﻿using Ryujinx.Common.Memory;
 using System.Runtime.CompilerServices;
 
-namespace Ryujinx.Gamepad
+namespace Ryujinx.Input
 {
     public struct GamepadStateSnapshot
     {

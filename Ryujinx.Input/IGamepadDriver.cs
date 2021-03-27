@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Ryujinx.Gamepad
+namespace Ryujinx.Input
 {
     public interface IGamepadDriver : IDisposable
     {

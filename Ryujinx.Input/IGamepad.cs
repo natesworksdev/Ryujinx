@@ -3,7 +3,7 @@ using Ryujinx.Common.Memory;
 using System;
 using System.Runtime.CompilerServices;
 
-namespace Ryujinx.Gamepad
+namespace Ryujinx.Input
 {
     public interface IGamepad : IDisposable
     {

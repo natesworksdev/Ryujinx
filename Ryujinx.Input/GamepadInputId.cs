@@ -1,4 +1,4 @@
-﻿namespace Ryujinx.Gamepad
+﻿namespace Ryujinx.Input
 {
     public enum GamepadInputId : byte
     {

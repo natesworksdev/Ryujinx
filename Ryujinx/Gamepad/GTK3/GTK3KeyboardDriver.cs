@@ -1,12 +1,10 @@
 ﻿using Gdk;
 using Gtk;
-using Ryujinx.Common.Logging;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using GtkKey = Gdk.Key;
 
-namespace Ryujinx.Gamepad.GTK3
+namespace Ryujinx.Input.GTK3
 {
     public class GTK3KeyboardDriver : IGamepadDriver
     {

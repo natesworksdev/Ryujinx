@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Ryujinx.Ava.Gamepad
+namespace Ryujinx.Input
 {
     [Flags]
     public enum GamepadFeaturesFlag

@@ -1,5 +1,4 @@
-﻿using Ryujinx.Gamepad;
-using Ryujinx.Gamepad.SDL2;
+﻿using Ryujinx.Input;
 using System;
 
 namespace Ryujinx.Input
