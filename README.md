@@ -110,4 +110,4 @@ See [LICENSE.txt](LICENSE.txt) and [THIRDPARTY.md](Ryujinx/THIRDPARTY.md) for mo
  
 ## Credits
 
-- [AmiiboAPI](https://www.amiiboapi.com) which is used in our Amiibo scanning implementation.
+- [AmiiboAPI](https://www.amiiboapi.com) is used in our Amiibo emulation.
