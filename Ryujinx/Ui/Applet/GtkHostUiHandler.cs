@@ -186,5 +186,10 @@ namespace Ryujinx.Ui.Applet
 
             return showDetails;
         }
+
+        public IDynamicTextInputHandler CreateDynamicTextInputHandler()
+        {
+            return new GtkDynamicTextInputHandler(_parent);
+        }
     }
 }

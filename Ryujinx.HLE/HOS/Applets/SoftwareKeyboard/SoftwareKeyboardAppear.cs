@@ -10,11 +10,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
     {
         private const int OkTextLength = 8;
 
-        /// <summary>
-        /// Some games send a Calc without intention of showing the keyboard, a
-        /// common trend observed is that this field will be != 0 in such cases.
-        /// </summary>
-        public uint ShouldBeHidden;
+        public uint Unknown1;
 
         /// <summary>
         /// The string displayed in the Submit button.
@@ -57,7 +53,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
         /// <summary>
         /// [10.0.0+] If value is 1 or 2, then keytopAsFloating=0 and footerScalable=1 in Calc.
         /// </summary>
-        public byte Unknown1;
+        public byte Unknown2;
 
         public byte Padding4;
         public byte Padding5;
