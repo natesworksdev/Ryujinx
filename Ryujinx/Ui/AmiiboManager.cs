@@ -133,9 +133,9 @@ namespace Ryujinx.Ui
 
                     return true;
                 }
-                catch
+                catch (Exception ex)
                 {
-                    ShowAmiiboServiceWarning();
+                    ShowAmiiboServiceWarning(ex.Message);
 
                     return false;
                 }
@@ -181,9 +181,9 @@ namespace Ryujinx.Ui
 
                 return false;
             }
-            catch
+            catch (Exception ex)
             {
-                ShowAmiiboServiceWarning();
+                ShowAmiiboServiceWarning(ex.Message);
 
                 return false;
             }
@@ -222,9 +222,9 @@ namespace Ryujinx.Ui
             return DEFAULT_JSON;
         }
 
-        private static void ShowAmiiboServiceWarning()
+        private static void ShowAmiiboServiceWarning(string message)
         {
-            Logger.Warning?.Print(LogClass.Application, "Unable to connect to Amiibo API server. The service may be down or you may need to verify your internet connection is online.");
+            Logger.Warning?.Print(LogClass.Application, $"Unable to connect to Amiibo API server. The service may be down or you may need to verify your internet connection is online: {message}");
         }
 
         public struct AmiiboJson
