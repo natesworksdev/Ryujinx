@@ -46,19 +46,19 @@ namespace Ryujinx.Ui
                     {
                         try
                         {
-                            string amiiboJsonString = File.ReadAllText(_amiiboJsonPath);
-                            await LoadAmiiboJson(amiiboJsonString);
+                            string amiiboJsonString = await File.ReadAllTextAsync(_amiiboJsonPath);
+                            LoadAmiiboJson(amiiboJsonString);
                         }
                         catch (Exception ex)
                         {
                             Logger.Warning?.Print(LogClass.Application, $"Failed to read Amiibo JSON data: {ex.Message}");
 
-                            await LoadAmiiboJson(DEFAULT_JSON);
+                            LoadAmiiboJson(DEFAULT_JSON);
                         }
                     }
                     else
                     {
-                        await LoadAmiiboJson(DEFAULT_JSON);
+                        LoadAmiiboJson(DEFAULT_JSON);
                     }
                 });
                 
@@ -66,21 +66,18 @@ namespace Ryujinx.Ui
             }
         }
 
-        private static async Task LoadAmiiboJson(string amiiboJsonString)
+        private static void LoadAmiiboJson(string amiiboJsonString)
         {
-            await Task.Run(() =>
+            try
             {
-                try
-                {
-                    _amiiboJson = JsonSerializer.Deserialize<AmiiboJson>(amiiboJsonString);
-                    _amiiboApis = _amiiboJson.Amiibo.OrderBy(amiibo => amiibo.AmiiboSeries).ToList();
-                }
-                catch (Exception ex)
-                {
-                    Logger.Warning?.Print(LogClass.Application, $"Failed to deserialize Amiibo JSON data: {ex.Message}");
-                    _amiiboApis = new List<AmiiboApi>();
-                }
-            });
+                _amiiboJson = JsonSerializer.Deserialize<AmiiboJson>(amiiboJsonString);
+                _amiiboApis = _amiiboJson.Amiibo.OrderBy(amiibo => amiibo.AmiiboSeries).ToList();
+            }
+            catch (Exception ex)
+            {
+                Logger.Warning?.Print(LogClass.Application, $"Failed to deserialize Amiibo JSON data: {ex.Message}");
+                _amiiboApis = new List<AmiiboApi>();
+            }
         }
 
         /// <summary>
@@ -103,7 +100,7 @@ namespace Ryujinx.Ui
                     // Don't overwrite existing configuration. != will be faster than !.Equals since DEFAULT_JSON would be assigned by reference.
                     if (amiiboJsonString != DEFAULT_JSON)
                     {
-                        await LoadAmiiboJson(amiiboJsonString);
+                        LoadAmiiboJson(amiiboJsonString);
 
                         return true;
                     }
@@ -123,7 +120,7 @@ namespace Ryujinx.Ui
                 {
                     amiiboJsonString = await DownloadAmiiboJson();
                     
-                    await LoadAmiiboJson(amiiboJsonString);
+                    LoadAmiiboJson(amiiboJsonString);
 
                     return true;
                 }

@@ -44,35 +44,32 @@ namespace Ryujinx.Ui.Windows
             _scanButton.Sensitive         = false;
             _randomUuidCheckBox.Sensitive = false;
 
+            _showAllCheckBox.Clicked      += ShowAllCheckBox_Clicked;
+
             Task.Run(async () =>
             {
-                _ = LoadContentAsync();
+                LoadContent();
 
                 if(await AmiiboManager.UpdateAmiibos())
                 {
                     _amiiboCharsComboBox.RemoveAll();
                     _amiiboSeriesComboBox.RemoveAll();
 
-                    _ = LoadContentAsync();
+                    LoadContent();
                 }
             });
         }
 
-        private async Task LoadContentAsync()
+        private void LoadContent()
         {
-            await Task.Run(() =>
+            _amiiboList = AmiiboManager.AmiiboApis;
+
+            if (LastScannedAmiiboShowAll)
             {
-                _amiiboList = AmiiboManager.AmiiboApis;
+                _showAllCheckBox.Click();
+            }
 
-                if (LastScannedAmiiboShowAll)
-                {
-                    _showAllCheckBox.Click();
-                }
-
-                ParseAmiiboData();
-
-                _showAllCheckBox.Clicked += ShowAllCheckBox_Clicked;
-            });
+            ParseAmiiboData();
         }
 
         private void ParseAmiiboData()
