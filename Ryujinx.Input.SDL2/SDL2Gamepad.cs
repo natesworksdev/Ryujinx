@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
+using Ryujinx.Common.Logging;
 using System;
 using System.Collections.Generic;
 using static SDL2.SDL;
@@ -42,6 +43,13 @@ namespace Ryujinx.Input.SDL2
             SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_DPAD_RIGHT,
             SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_BACK,
             SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_START,
+            SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_GUIDE,
+            SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_MISC1,
+            SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_PADDLE1,
+            SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_PADDLE2,
+            SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_PADDLE3,
+            SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_PADDLE4,
+            SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_TOUCHPAD,            
 
             // Virtual buttons are invalid, ignored.
             SDL_GameControllerButton.SDL_CONTROLLER_BUTTON_INVALID,
@@ -60,20 +68,43 @@ namespace Ryujinx.Input.SDL2
             StickInputId.Right
         };
 
+        public GamepadFeaturesFlag Features { get; }
+
         private IntPtr _gamepadHandle;
-        private int _joystickIndex;
 
         private float _triggerThreshold;
 
-        public SDL2Gamepad(IntPtr gamepadHandle, int joystickIndex, string driverId)
+        public SDL2Gamepad(IntPtr gamepadHandle, string driverId)
         {
             _gamepadHandle = gamepadHandle;
-            _joystickIndex = joystickIndex;
             _buttonsUserMapping = new List<ButtonMappingEntry>();
 
             Name = SDL_GameControllerName(_gamepadHandle);
             Id = driverId;
+            Features = GetFeaturesFlag();
             _triggerThreshold = 0.0f;
+        }
+
+        private GamepadFeaturesFlag GetFeaturesFlag()
+        {
+            GamepadFeaturesFlag result = GamepadFeaturesFlag.None;
+
+            if (SDL_GameControllerHasSensor(_gamepadHandle, SDL_SensorType.SDL_SENSOR_ACCEL) == SDL_bool.SDL_TRUE &&
+                SDL_GameControllerHasSensor(_gamepadHandle, SDL_SensorType.SDL_SENSOR_GYRO) == SDL_bool.SDL_TRUE)
+            {
+                result |= GamepadFeaturesFlag.Motion;
+            }
+
+            int error = SDL_GameControllerRumble(_gamepadHandle, 0, 0, 100);
+
+            if (error == 0)
+            {
+                result |= GamepadFeaturesFlag.Rumble;
+            }
+
+            Logger.Error?.Print(LogClass.Application, result.ToString());
+
+            return result;
         }
 
         public string Id { get; }
@@ -97,6 +128,17 @@ namespace Ryujinx.Input.SDL2
         public void SetTriggerThreshold(float triggerThreshold)
         {
             _triggerThreshold = triggerThreshold;
+        }
+
+        public void Rumble(float lowFrequency, float highFrequency, uint durationMs)
+        {
+            if (Features.HasFlag(GamepadFeaturesFlag.Rumble))
+            {
+                ushort lowFrequencyRaw = (ushort)(lowFrequency * ushort.MaxValue);
+                ushort highFrequencyRaw = (ushort)(highFrequency * ushort.MaxValue);
+
+                SDL_GameControllerRumble(_gamepadHandle, lowFrequencyRaw, highFrequencyRaw, durationMs);
+            }
         }
 
         public void SetConfiguration(InputConfig configuration)

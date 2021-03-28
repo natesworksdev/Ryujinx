@@ -7,6 +7,8 @@ namespace Ryujinx.Input
 {
     public interface IGamepad : IDisposable
     {
+        GamepadFeaturesFlag Features { get; }
+
         string Id { get; }
 
         string Name { get; }
@@ -20,6 +22,8 @@ namespace Ryujinx.Input
         void SetTriggerThreshold(float triggerThreshold);
 
         void SetConfiguration(InputConfig configuration);
+
+        void Rumble(float lowFrequency, float highFrequency, uint durationMs);
 
         GamepadStateSnapshot GetMappedStateSnapshot();
         GamepadStateSnapshot GetStateSnapshot();
@@ -44,7 +48,7 @@ namespace Ryujinx.Input
             }
 
             // NOTE: Update Array size if GamepadInputId is changed.
-            Array21<bool> buttonsState = default;
+            Array28<bool> buttonsState = default;
 
             for (GamepadInputId inputId = 0; inputId < GamepadInputId.Count; inputId++)
             {

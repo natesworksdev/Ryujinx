@@ -122,7 +122,7 @@ namespace Ryujinx.Input.SDL2
                 return null;
             }
 
-            return new SDL2Gamepad(gamepadHandle, joystickIndex, id);
+            return new SDL2Gamepad(gamepadHandle, id);
         }
     }
 }

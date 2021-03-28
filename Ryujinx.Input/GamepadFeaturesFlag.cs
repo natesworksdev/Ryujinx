@@ -7,7 +7,7 @@ namespace Ryujinx.Input
     {
         None,
 
-        Haptic,
+        Rumble,
         Motion
     }
 }

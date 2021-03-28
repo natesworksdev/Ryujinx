@@ -30,6 +30,18 @@
         Back = Minus,
         Start = Plus,
 
+        Guide,
+        Misc1,
+
+        // Xbox Elite paddle
+        Paddle1,
+        Paddle2,
+        Paddle3,
+        Paddle4,
+
+        // PS5 touchpad button
+        Touchpad,
+
         // Virtual buttons for single joycon
         SingleLeftTrigger0,
         SingleRightTrigger0,

@@ -38,6 +38,8 @@ namespace Ryujinx.Input.GTK3
 
         public bool IsConnected => true;
 
+        public GamepadFeaturesFlag Features => GamepadFeaturesFlag.None;
+
         public void Dispose()
         {
             // No operations
@@ -181,6 +183,11 @@ namespace Ryujinx.Input.GTK3
         }
 
         public void SetTriggerThreshold(float triggerThreshold)
+        {
+            // No operations
+        }
+
+        public void Rumble(float lowFrequency, float highFrequency, uint durationMs)
         {
             // No operations
         }

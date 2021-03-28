@@ -24,7 +24,7 @@ namespace Ryujinx.Input.SDL2
             }
         }
 
-        private const uint SdlInitFlags = SDL_INIT_EVENTS | SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC;
+        private const uint SdlInitFlags = SDL_INIT_EVENTS | SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_SENSOR;
 
         private bool _isRunning;
         private Thread _worker;
@@ -40,6 +40,12 @@ namespace Ryujinx.Input.SDL2
             {
                 return;
             }
+
+            SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "0");
+            SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, "1");
+            SDL_SetHint("SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE", "1");
+            SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
+            SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_CORRELATE_XINPUT, "1");
 
             if (SDL_Init(SdlInitFlags) != 0)
             {
