@@ -193,30 +193,37 @@ namespace Ryujinx.Ui
         {
             Logger.Info?.Print(LogClass.Application, "Downloading newer version of amiibo data..");
 
-            HttpResponseMessage response = await _httpClient.GetAsync("https://amiibo.ryujinx.org/");
-
-            if (response.IsSuccessStatusCode)
+            try
             {
-                string amiiboJsonString = await response.Content.ReadAsStringAsync();
+                HttpResponseMessage response = await _httpClient.GetAsync("https://amiibo.ryujinx.org/");
 
-                AmiiboJson amiiboJson = JsonSerializer.Deserialize<AmiiboJson>(amiiboJsonString);
-
-                DateTime lastUpdated = amiiboJson.LastUpdated;
-                amiiboJson.LastUpdated = new DateTime(lastUpdated.Year, lastUpdated.Month, lastUpdated.Day, lastUpdated.Hour, lastUpdated.Minute, lastUpdated.Second);
-                amiiboJsonString = JsonSerializer.Serialize<AmiiboJson>(amiiboJson);
-
-                using (FileStream dlcJsonStream = File.Create(_amiiboJsonPath, 4096, FileOptions.WriteThrough))
+                if (response.IsSuccessStatusCode)
                 {
-                    await dlcJsonStream.WriteAsync(Encoding.UTF8.GetBytes(amiiboJsonString));
+                    string amiiboJsonString = await response.Content.ReadAsStringAsync();
+
+                    AmiiboJson amiiboJson = JsonSerializer.Deserialize<AmiiboJson>(amiiboJsonString);
+
+                    DateTime lastUpdated = amiiboJson.LastUpdated;
+                    amiiboJson.LastUpdated = new DateTime(lastUpdated.Year, lastUpdated.Month, lastUpdated.Day, lastUpdated.Hour, lastUpdated.Minute, lastUpdated.Second);
+                    amiiboJsonString = JsonSerializer.Serialize<AmiiboJson>(amiiboJson);
+
+                    using (FileStream dlcJsonStream = File.Create(_amiiboJsonPath, 4096, FileOptions.WriteThrough))
+                    {
+                        await dlcJsonStream.WriteAsync(Encoding.UTF8.GetBytes(amiiboJsonString));
+                    }
+
+                    Logger.Info?.Print(LogClass.Application, "Amiibo data updated successfully!");
+
+                    return amiiboJsonString;
                 }
-
-                Logger.Info?.Print(LogClass.Application, "Amiibo data updated successfully!");
-
-                return amiiboJsonString;
+                else
+                {
+                    Logger.Warning?.Print(LogClass.Application, "An error occured while fetching informations from the Amiibo API.");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                Logger.Warning?.Print(LogClass.Application, "An error occured while fetching informations from the Amiibo API.");
+                ShowAmiiboServiceWarning(ex.Message);
             }
 
             return DEFAULT_JSON;
