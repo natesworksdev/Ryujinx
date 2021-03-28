@@ -36,17 +36,17 @@ namespace Ryujinx.Input
         private void HandleOnGamepadDisconnected(string obj)
         {
             // Force input reload
-            UpdateConfiguration(ConfigurationState.Instance.Hid.InputConfig.Value);
+            UpdateConfiguration(ConfigurationState.Instance.Hid.InputConfig.Value, true);
         }
 
         private void HandleOnGamepadConnected(string id)
         {
             // Force input reload
-            UpdateConfiguration(ConfigurationState.Instance.Hid.InputConfig.Value);
+            UpdateConfiguration(ConfigurationState.Instance.Hid.InputConfig.Value, true);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool DriverConfigurationUpdate(ref NpadController controller, InputConfig config)
+        private bool DriverConfigurationUpdate(ref NpadController controller, InputConfig config, bool isHotplugEvent)
         {
             IGamepadDriver targetDriver = _gamepadDriver;
 
@@ -61,7 +61,7 @@ namespace Ryujinx.Input
 
             Debug.Assert(targetDriver != null, "Unknown input configuration!");
 
-            if (controller.GamepadDriver != targetDriver || controller.Id != config.Id)
+            if (isHotplugEvent || controller.GamepadDriver != targetDriver || controller.Id != config.Id)
             {
                 return controller.UpdateDriverConfiguration(targetDriver, config);
             }
@@ -71,7 +71,7 @@ namespace Ryujinx.Input
             }
         }
 
-        public void UpdateConfiguration(List<InputConfig> inputConfigs)
+        public void UpdateConfiguration(List<InputConfig> inputConfigs, bool isHotplugEvent = false)
         {
             lock (_lock)
             {
@@ -85,7 +85,7 @@ namespace Ryujinx.Input
                 {
                     NpadController controller = new NpadController();
 
-                    bool isValid = DriverConfigurationUpdate(ref controller, inputConfig);
+                    bool isValid = DriverConfigurationUpdate(ref controller, inputConfig, isHotplugEvent);
 
                     if (!isValid)
                     {
@@ -128,7 +128,7 @@ namespace Ryujinx.Input
                         }
                     }
 
-                    DriverConfigurationUpdate(ref controller, inputConfig);
+                    DriverConfigurationUpdate(ref controller, inputConfig, false);
 
                     controller.UpdateUserConfiguration(inputConfig);
                     controller.Update();

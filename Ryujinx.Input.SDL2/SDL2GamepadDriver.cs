@@ -122,6 +122,13 @@ namespace Ryujinx.Input.SDL2
                 return null;
             }
 
+            if (id != GenerateGamepadId(joystickIndex))
+            {
+                SDL_GameControllerClose(gamepadHandle);
+
+                return null;
+            }
+
             return new SDL2Gamepad(gamepadHandle, id);
         }
     }
