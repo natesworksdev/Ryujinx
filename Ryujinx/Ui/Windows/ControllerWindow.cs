@@ -661,7 +661,11 @@ namespace Ryujinx.Ui.Windows
             SetAvailableOptions();
             SetControllerSpecificFields();
 
-            if (_inputDevice.ActiveId != null) SetProfiles();
+            if (_inputDevice.ActiveId != null)
+            {
+                SetProfiles();
+                SetValues(_inputConfig);
+            }
         }
 
         private void Controller_Changed(object sender, EventArgs args)
