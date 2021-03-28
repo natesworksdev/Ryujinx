@@ -43,7 +43,7 @@ namespace Ryujinx.Input.SDL2
 
             SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "0");
             SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, "1");
-            SDL_SetHint("SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE", "1");
+            SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE, "1");
             SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
             SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_CORRELATE_XINPUT, "1");
 
@@ -66,6 +66,10 @@ namespace Ryujinx.Input.SDL2
             SDL_EventState(SDL_EventType.SDL_JOYHATMOTION, SDL_DISABLE);
             SDL_EventState(SDL_EventType.SDL_JOYBUTTONDOWN, SDL_DISABLE);
             SDL_EventState(SDL_EventType.SDL_JOYBUTTONUP, SDL_DISABLE);
+
+            // TODO: fix missing SDL_CONTROLLERSENSORUPDATE binding
+            SDL_EventState((SDL_EventType)0x659, SDL_DISABLE);
+
 
             _worker = new Thread(EventWorker);
             _isRunning = true;

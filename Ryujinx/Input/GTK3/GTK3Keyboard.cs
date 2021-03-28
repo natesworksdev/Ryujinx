@@ -1,9 +1,8 @@
-﻿using OpenTK.Mathematics;
-using Ryujinx.Common.Configuration.Hid;
+﻿using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Keyboard;
 using System;
 using System.Collections.Generic;
-
+using System.Numerics;
 using ConfigKey = Ryujinx.Common.Configuration.Hid.Key;
 
 namespace Ryujinx.Input.GTK3
@@ -82,7 +81,7 @@ namespace Ryujinx.Input.GTK3
                 stickX -= 1;
             }
 
-            Vector2 stick = new Vector2(stickX, stickY);
+            OpenTK.Mathematics.Vector2 stick = new OpenTK.Mathematics.Vector2(stickX, stickY);
 
             stick.NormalizeFast();
 
@@ -190,6 +189,13 @@ namespace Ryujinx.Input.GTK3
         public void Rumble(float lowFrequency, float highFrequency, uint durationMs)
         {
             // No operations
+        }
+
+        public Vector3 GetMotionData(MotionInputId inputId)
+        {
+            // No operations
+
+            return Vector3.Zero;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Memory;
 using System;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Input
@@ -18,6 +19,8 @@ namespace Ryujinx.Input
         bool IsPressed(GamepadInputId inputId);
 
         (float, float) GetStick(StickInputId inputId);
+
+        Vector3 GetMotionData(MotionInputId inputId);
 
         void SetTriggerThreshold(float triggerThreshold);
 

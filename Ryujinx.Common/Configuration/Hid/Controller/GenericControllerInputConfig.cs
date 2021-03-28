@@ -26,5 +26,10 @@
         /// Controller Trigger Threshold
         /// </summary>
         public float TriggerThreshold { get; set; }
+
+        /// <summary>
+        /// Controller Motion Settings
+        /// </summary>
+        public MotionControllerConfigInputConfig Motion { get; set; }
     }
 }

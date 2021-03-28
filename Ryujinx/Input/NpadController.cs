@@ -1,8 +1,11 @@
-﻿using Ryujinx.Common.Configuration.Hid;
+﻿using Ryujinx.Common;
+using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.Input;
+using Ryujinx.Modules.Motion;
 using System;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 
 using GamepadInputId = Ryujinx.Input.GamepadInputId;
@@ -46,6 +49,8 @@ namespace Ryujinx.Input
         private bool _isValid;
         private string _id;
 
+        private MotionInput _motionInput;
+
         private IGamepad _gamepad;
         private InputConfig _config;
 
@@ -72,6 +77,8 @@ namespace Ryujinx.Input
             _config = config;
             _isValid = _gamepad != null;
 
+            _motionInput = new MotionInput();
+
             UpdateUserConfiguration(config);
 
             return _isValid;
@@ -92,6 +99,28 @@ namespace Ryujinx.Input
             if (_isValid && GamepadDriver != null)
             {
                 State = _gamepad.GetMappedStateSnapshot();
+
+                if (_config is StandardControllerInputConfig controllerConfig && controllerConfig.Motion.EnableMotion)
+                {
+                    if (controllerConfig.Motion.MotionBackend == MotionInputBackendType.GamepadDriver)
+                    {
+                        if (_gamepad.Features.HasFlag(GamepadFeaturesFlag.Motion))
+                        {
+                            Vector3 accelerometer = _gamepad.GetMotionData(MotionInputId.Accelerometer);
+                            Vector3 gyroscope = _gamepad.GetMotionData(MotionInputId.Gyroscope);
+
+                            accelerometer = new Vector3(accelerometer.X, -accelerometer.Z, accelerometer.Y);
+                            gyroscope = new Vector3(gyroscope.X, gyroscope.Z, gyroscope.Y);
+
+                            _motionInput.Update(accelerometer, gyroscope, (ulong)PerformanceCounter.ElapsedNanoseconds / 1000, controllerConfig.Motion.Sensitivity, (float)controllerConfig.Motion.GyroDeadzone);
+                        }
+                    }
+                    else if (controllerConfig.Motion.MotionBackend == MotionInputBackendType.CemuHooks)
+                    {
+                        // TODO
+                        throw new NotImplementedException();
+                    }
+                }
             }
             else
             {
@@ -122,7 +151,7 @@ namespace Ryujinx.Input
             };
         }
 
-        public GamepadInput GetHLEState()
+        public GamepadInput GetHLEInputState()
         {
             GamepadInput state = new GamepadInput();
 
@@ -162,6 +191,58 @@ namespace Ryujinx.Input
             }
 
             return state;
+        }
+
+        public SixAxisInput GetHLEMotionState()
+        {
+            float[] orientationForHLE = new float[9];
+            Vector3 gyroscope;
+            Vector3 accelerometer;
+            Vector3 rotation;
+
+            if (_gamepad.Features.HasFlag(GamepadFeaturesFlag.Motion))
+            {
+                gyroscope = Truncate(_motionInput.Gyroscrope * 0.0027f, 3);
+                accelerometer = Truncate(_motionInput.Accelerometer, 3);
+                rotation = Truncate(_motionInput.Rotation * 0.0027f, 3);
+
+                Matrix4x4 orientation = _motionInput.GetOrientation();
+
+                orientationForHLE[0] = Math.Clamp(orientation.M11, -1f, 1f);
+                orientationForHLE[1] = Math.Clamp(orientation.M12, -1f, 1f);
+                orientationForHLE[2] = Math.Clamp(orientation.M13, -1f, 1f);
+                orientationForHLE[3] = Math.Clamp(orientation.M21, -1f, 1f);
+                orientationForHLE[4] = Math.Clamp(orientation.M22, -1f, 1f);
+                orientationForHLE[5] = Math.Clamp(orientation.M23, -1f, 1f);
+                orientationForHLE[6] = Math.Clamp(orientation.M31, -1f, 1f);
+                orientationForHLE[7] = Math.Clamp(orientation.M32, -1f, 1f);
+                orientationForHLE[8] = Math.Clamp(orientation.M33, -1f, 1f);
+            }
+            else
+            {
+                gyroscope = new Vector3();
+                accelerometer = new Vector3();
+                rotation = new Vector3();
+            }
+
+            return new SixAxisInput()
+            {
+                Accelerometer = accelerometer,
+                Gyroscope     = gyroscope,
+                Rotation      = rotation,
+                Orientation   = orientationForHLE
+            };
+        }
+
+        private static Vector3 Truncate(Vector3 value, int decimals)
+        {
+            float power = MathF.Pow(10, decimals);
+
+            value.X = float.IsNegative(value.X) ? MathF.Ceiling(value.X * power) / power : MathF.Floor(value.X * power) / power;
+            value.Y = float.IsNegative(value.Y) ? MathF.Ceiling(value.Y * power) / power : MathF.Floor(value.Y * power) / power;
+            value.Z = float.IsNegative(value.Z) ? MathF.Ceiling(value.Z * power) / power : MathF.Floor(value.Z * power) / power;
+
+            return value;
         }
 
         protected virtual void Dispose(bool disposing)

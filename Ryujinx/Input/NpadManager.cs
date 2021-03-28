@@ -107,7 +107,8 @@ namespace Ryujinx.Input
         {
             lock (_lock)
             {
-                List<GamepadInput> hleStates = new List<GamepadInput>();
+                List<GamepadInput> hleInputStates = new List<GamepadInput>();
+                List<SixAxisInput> hleMotionStates = new List<SixAxisInput>(NpadDevices.MaxControllers);
 
                 foreach (InputConfig inputConfig in inputConfigs)
                 {
@@ -132,15 +133,22 @@ namespace Ryujinx.Input
                     controller.UpdateUserConfiguration(inputConfig);
                     controller.Update();
 
-                    GamepadInput state = controller.GetHLEState();
+                    GamepadInput inputState = controller.GetHLEInputState();
 
-                    state.Buttons |= hleHid.UpdateStickButtons(state.LStick, state.RStick);
+                    inputState.Buttons |= hleHid.UpdateStickButtons(inputState.LStick, inputState.RStick);
+                    inputState.PlayerId = (HLE.HOS.Services.Hid.PlayerIndex)inputConfig.PlayerIndex;
 
-                    hleStates.Add(state);
+                    hleInputStates.Add(inputState);
+
+                    SixAxisInput motionState = controller.GetHLEMotionState();
+                    motionState.PlayerId = (HLE.HOS.Services.Hid.PlayerIndex)inputConfig.PlayerIndex;
+
+                    hleMotionStates.Add(motionState);
                 }
 
-                hleHid.Npads.Update(hleStates);
-                tamperMachine.UpdateInput(hleStates);
+                hleHid.Npads.Update(hleInputStates);
+                hleHid.Npads.UpdateSixAxis(hleMotionStates);
+                tamperMachine.UpdateInput(hleInputStates);
 
                 // TODO: Six axis
             }

@@ -435,6 +435,9 @@ namespace Ryujinx.Ui.Windows
                     _controllerDeadzoneLeft.Value     = controllerConfig.DeadzoneLeft;
                     _controllerDeadzoneRight.Value    = controllerConfig.DeadzoneRight;
                     _controllerTriggerThreshold.Value = controllerConfig.TriggerThreshold;
+                    _sensitivity.Value                = controllerConfig.Motion.Sensitivity;
+                    _gyroDeadzone.Value               = controllerConfig.Motion.GyroDeadzone;
+                    _enableMotion.Active              = controllerConfig.Motion.EnableMotion;
                     /*_slotNumber.Value                 = controllerConfig.Slot;
                     _altSlotNumber.Value              = controllerConfig.AltSlot;
                     _sensitivity.Value                = controllerConfig.Sensitivity;
@@ -606,6 +609,14 @@ namespace Ryujinx.Ui.Windows
                         Joystick     = rStick,
                         InvertStickY = _invertRStickY.Active,
                         StickButton  = rStickButton,
+                    },
+
+                    Motion = new MotionControllerConfigInputConfig
+                    {
+                        MotionBackend = MotionInputBackendType.GamepadDriver,
+                        EnableMotion  = _enableMotion.Active,
+                        Sensitivity   = (int)_sensitivity.Value,
+                        GyroDeadzone  = _gyroDeadzone.Value,
                     }
                     /*EnableMotion  = _enableMotion.Active,
                     MirrorInput   = _mirrorInput.Active,
@@ -890,6 +901,14 @@ namespace Ryujinx.Ui.Windows
                             InvertStickX = false,
                             InvertStickY = false,
                         },
+
+                        Motion = new MotionControllerConfigInputConfig
+                        {
+                            MotionBackend = MotionInputBackendType.GamepadDriver,
+                            EnableMotion = false,
+                            Sensitivity  = 100,
+                            GyroDeadzone = 1,
+                        }
 
                         /*EnableMotion  = false,
                         MirrorInput   = false,

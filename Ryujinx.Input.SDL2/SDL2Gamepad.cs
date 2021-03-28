@@ -3,6 +3,7 @@ using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Common.Logging;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using static SDL2.SDL;
 
 namespace Ryujinx.Input.SDL2
@@ -83,6 +84,13 @@ namespace Ryujinx.Input.SDL2
             Id = driverId;
             Features = GetFeaturesFlag();
             _triggerThreshold = 0.0f;
+
+            // Enable motion tracking
+            if (Features.HasFlag(GamepadFeaturesFlag.Motion))
+            {
+                SDL_GameControllerSetSensorEnabled(_gamepadHandle, SDL_SensorType.SDL_SENSOR_ACCEL, SDL_bool.SDL_TRUE);
+                SDL_GameControllerSetSensorEnabled(_gamepadHandle, SDL_SensorType.SDL_SENSOR_GYRO, SDL_bool.SDL_TRUE);
+            }
         }
 
         private GamepadFeaturesFlag GetFeaturesFlag()
@@ -139,6 +147,55 @@ namespace Ryujinx.Input.SDL2
 
                 SDL_GameControllerRumble(_gamepadHandle, lowFrequencyRaw, highFrequencyRaw, durationMs);
             }
+        }
+
+        public Vector3 GetMotionData(MotionInputId inputId)
+        {
+            SDL_SensorType sensorType = SDL_SensorType.SDL_SENSOR_INVALID;
+
+            if (inputId == MotionInputId.Accelerometer)
+            {
+                sensorType = SDL_SensorType.SDL_SENSOR_ACCEL;
+            }
+            else if (inputId == MotionInputId.Gyroscope)
+            {
+                sensorType = SDL_SensorType.SDL_SENSOR_GYRO;
+            }
+
+            if (Features.HasFlag(GamepadFeaturesFlag.Motion) && sensorType != SDL_SensorType.SDL_SENSOR_INVALID)
+            {
+                float[] values = new float[3];
+
+                int result = SDL_GameControllerGetSensorData(_gamepadHandle, sensorType, values, values.Length);
+
+                if (result == 0)
+                {
+                    Vector3 value = new Vector3(values[0], values[1], values[2]);
+
+                    if (inputId == MotionInputId.Gyroscope)
+                    {
+                        return RadToDegree(value);
+                    }
+                    else if (inputId == MotionInputId.Accelerometer)
+                    {
+                        return GsToMs2(value);
+                    }
+
+                    return value;
+                }
+            }
+
+            return Vector3.Zero;
+        }
+
+        private static Vector3 RadToDegree(Vector3 rad)
+        {
+            return rad * (180 / MathF.PI);
+        }
+
+        private static Vector3 GsToMs2(Vector3 gs)
+        {
+            return gs / SDL_STANDARD_GRAVITY;
         }
 
         public void SetConfiguration(InputConfig configuration)
