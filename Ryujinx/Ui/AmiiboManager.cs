@@ -40,34 +40,28 @@ namespace Ryujinx.Ui
 
                 _amiiboJsonPath = Path.Join(AppDataManager.BaseDirPath, "system", "amiibo", "Amiibo.json");
 
-                if (File.Exists(_amiiboJsonPath))
+                Task.Run(async () =>
                 {
-                    Task.Run(async () =>
+                    if (File.Exists(_amiiboJsonPath))
                     {
                         try
                         {
                             string amiiboJsonString = File.ReadAllText(_amiiboJsonPath);
                             await LoadAmiiboJson(amiiboJsonString);
-
-                            // Update if there is Amiibo data newer than the current version.
-                            await UpdateAmiibos();
                         }
                         catch (Exception ex)
                         {
                             Logger.Warning?.Print(LogClass.Application, $"Failed to read Amiibo JSON data: {ex.Message}");
 
-                            _amiiboApis = new List<AmiiboApi>();
+                            await LoadAmiiboJson(DEFAULT_JSON);
                         }
-                    });
-                }
-                else
-                {
-                    Task.Run(async () =>
+                    }
+                    else
                     {
-                        await UpdateAmiibos();
-                    });
-                }
-
+                        await LoadAmiiboJson(DEFAULT_JSON);
+                    }
+                });
+                
                 _initialized = true;
             }
         }
@@ -109,7 +103,7 @@ namespace Ryujinx.Ui
                     // Don't overwrite existing configuration. != will be faster than !.Equals since DEFAULT_JSON would be assigned by reference.
                     if (amiiboJsonString != DEFAULT_JSON)
                     {
-                        _ = LoadAmiiboJson(amiiboJsonString);
+                        await LoadAmiiboJson(amiiboJsonString);
 
                         return true;
                     }
@@ -129,7 +123,7 @@ namespace Ryujinx.Ui
                 {
                     amiiboJsonString = await DownloadAmiiboJson();
                     
-                    _ = LoadAmiiboJson(amiiboJsonString);
+                    await LoadAmiiboJson(amiiboJsonString);
 
                     return true;
                 }
@@ -204,6 +198,10 @@ namespace Ryujinx.Ui
                     AmiiboJson amiiboJson = JsonSerializer.Deserialize<AmiiboJson>(amiiboJsonString);
 
                     DateTime lastUpdated = amiiboJson.LastUpdated;
+                    if(lastUpdated.Millisecond >= 500)
+                    {
+                        lastUpdated = lastUpdated.AddSeconds(1);
+                    }
                     amiiboJson.LastUpdated = new DateTime(lastUpdated.Year, lastUpdated.Month, lastUpdated.Day, lastUpdated.Hour, lastUpdated.Minute, lastUpdated.Second);
                     amiiboJsonString = JsonSerializer.Serialize<AmiiboJson>(amiiboJson);
 
