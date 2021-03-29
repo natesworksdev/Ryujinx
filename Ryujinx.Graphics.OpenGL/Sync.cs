@@ -26,7 +26,8 @@ namespace Ryujinx.Graphics.OpenGL
                 Handle = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags.None)
             };
 
-            GL.ClientWaitSync(handle.Handle, ClientWaitSyncFlags.SyncFlushCommandsBit, 0); // Force commands to flush up to the syncpoint.
+            // Force commands to flush up to the syncpoint.
+            GL.ClientWaitSync(handle.Handle, ClientWaitSyncFlags.SyncFlushCommandsBit, 0);
 
             lock (Handles)
             {
