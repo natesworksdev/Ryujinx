@@ -276,19 +276,19 @@
         },
         "range_modifier_left_button": {
           "$id": "#/definitions/keyboard_config/properties/range_modifier_left_button",
-          "description": "Controller Left Analog Stick Range Modifier Button",
+          "description": "Keyboard Left Analog Stick Range Modifier Button",
           "default": "ShiftLeft"
         },
         "range_modifier_right_button": {
           "$id": "#/definitions/keyboard_config/properties/range_modifier_right_button",
-          "description": "Controller Right Analog Stick Range Modifier Button",
+          "description": "Keyboard Right Analog Stick Range Modifier Button",
           "default": "Unbound"
         },
         "range_modifier_left": {
           "$id": "#/definitions/keyboard_config/properties/range_modifier_left",
           "type": "number",
           "title": "Left Joystick Analog Range",
-          "description": "Controller Left Analog Stick Range",
+          "description": "Keyboard Left Analog Stick Range",
           "default": 0.50,
           "minimum": 0.00,
           "maximum": 1.00,
@@ -300,7 +300,7 @@
           "$id": "#/definitions/keyboard_config/properties/range_modifier_right",
           "type": "number",
           "title": "Right Joystick Analog Range",
-          "description": "Controller Right Analog Stick Range",
+          "description": "Keyboard Right Analog Stick Range",
           "default": 0.50,
           "minimum": 0.00,
           "maximum": 1.00,
