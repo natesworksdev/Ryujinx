@@ -439,7 +439,7 @@ namespace Ryujinx.Ui.Windows
 
             if (_audioBackendSelect.GetActiveIter(out TreeIter activeIter))
             {
-                AudioBackend audioBackend = (AudioBackend)_audioBackendStore.GetValue(activeIter, 1);
+                ConfigurationState.Instance.System.AudioBackend.Value = (AudioBackend)_audioBackendStore.GetValue(activeIter, 1);
             }
 
             ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
