@@ -98,9 +98,9 @@ namespace Ryujinx.Ui.Windows
         private MainWindow _mainWindow;
         private IGamepadDriver _gtk3KeyboardDriver;
 
-        public ControllerWindow(MainWindow mainWindow, Common.Configuration.Hid.PlayerIndex controllerId) : this(mainWindow, new Builder("Ryujinx.Ui.Windows.ControllerWindow.glade"), controllerId) { }
+        public ControllerWindow(MainWindow mainWindow, PlayerIndex controllerId) : this(mainWindow, new Builder("Ryujinx.Ui.Windows.ControllerWindow.glade"), controllerId) { }
 
-        private ControllerWindow(MainWindow mainWindow, Builder builder, Common.Configuration.Hid.PlayerIndex controllerId) : base(builder.GetObject("_controllerWin").Handle)
+        private ControllerWindow(MainWindow mainWindow, Builder builder, PlayerIndex controllerId) : base(builder.GetObject("_controllerWin").Handle)
         {
             _mainWindow = mainWindow;
 
@@ -116,17 +116,17 @@ namespace Ryujinx.Ui.Windows
 
             Title = $"Ryujinx - Controller Settings - {_playerIndex}";
 
-            if (_playerIndex == Common.Configuration.Hid.PlayerIndex.Handheld)
+            if (_playerIndex == PlayerIndex.Handheld)
             {
-                _controllerType.Append(Common.Configuration.Hid.ControllerType.Handheld.ToString(), "Handheld");
+                _controllerType.Append(ControllerType.Handheld.ToString(), "Handheld");
                 _controllerType.Sensitive = false;
             }
             else
             {
-                _controllerType.Append(Common.Configuration.Hid.ControllerType.ProController.ToString(), "Pro Controller");
-                _controllerType.Append(Common.Configuration.Hid.ControllerType.JoyconPair.ToString(), "Joycon Pair");
-                _controllerType.Append(Common.Configuration.Hid.ControllerType.JoyconLeft.ToString(), "Joycon Left");
-                _controllerType.Append(Common.Configuration.Hid.ControllerType.JoyconRight.ToString(), "Joycon Right");
+                _controllerType.Append(ControllerType.ProController.ToString(), "Pro Controller");
+                _controllerType.Append(ControllerType.JoyconPair.ToString(), "Joycon Pair");
+                _controllerType.Append(ControllerType.JoyconLeft.ToString(), "Joycon Left");
+                _controllerType.Append(ControllerType.JoyconRight.ToString(), "Joycon Right");
             }
 
             _controllerType.Active = 0; // Set initial value to first in list.
@@ -201,6 +201,19 @@ namespace Ryujinx.Ui.Windows
             _gtk3KeyboardDriver.Dispose();
         }
 
+        private static string GetShrinkedGamepadName(string str)
+        {
+            const string ShrinkChars = "..";
+            const int MaxSize = 52;
+
+            if (str.Length > MaxSize - ShrinkChars.Length)
+            {
+                return str.Substring(0, MaxSize) + ShrinkChars;
+            }
+
+            return str;
+        }
+
         private void UpdateInputDeviceList()
         {
             _inputDevice.RemoveAll();
@@ -213,7 +226,7 @@ namespace Ryujinx.Ui.Windows
 
                 if (gamepad != null)
                 {
-                    _inputDevice.Append($"keyboard/{id}", $"{gamepad.Name}");
+                    _inputDevice.Append($"keyboard/{id}", GetShrinkedGamepadName($"{gamepad.Name} ({id})"));
 
                     gamepad.Dispose();
                 }
@@ -225,7 +238,7 @@ namespace Ryujinx.Ui.Windows
 
                 if (gamepad != null)
                 {
-                    _inputDevice.Append($"controller/{id}", $"Controller /{id} ({gamepad.Name})");
+                    _inputDevice.Append($"controller/{id}", GetShrinkedGamepadName($"{gamepad.Name} ({id})"));
 
                     gamepad.Dispose();
                 }
@@ -648,7 +661,7 @@ namespace Ryujinx.Ui.Windows
                 return System.IO.Path.Combine(AppDataManager.ProfilesDirPath, "controller");
             }
 
-            return null;
+            return AppDataManager.ProfilesDirPath;
         }
 
         //
@@ -783,17 +796,17 @@ namespace Ryujinx.Ui.Windows
 
             string basePath = GetProfileBasePath();
 
-            if (basePath == null)
+            if (!Directory.Exists(basePath))
+            {
+                Directory.CreateDirectory(basePath);
+            }
+
+            if (_inputDevice.ActiveId == null|| _inputDevice.ActiveId.Equals("disabled"))
             {
                 _profile.Append("default", "None");
             }
             else
             {
-                if (!Directory.Exists(basePath))
-                {
-                    Directory.CreateDirectory(basePath);
-                }
-
                 _profile.Append("default", "Default");
 
                 foreach (string profile in Directory.GetFiles(basePath, "*.*", SearchOption.AllDirectories))
