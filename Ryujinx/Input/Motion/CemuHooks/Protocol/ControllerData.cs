@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Ryujinx.Modules.Motion
+namespace Ryujinx.Input.Motion.CemuHooks.Protocol
 {
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     struct ControllerDataRequest

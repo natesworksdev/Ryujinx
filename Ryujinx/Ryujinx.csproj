@@ -111,4 +111,8 @@
     <EmbeddedResource Include="Modules\Updater\UpdateDialog.glade" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Modules\Motion\" />
+  </ItemGroup>
+
 </Project>

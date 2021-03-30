@@ -1,5 +1,4 @@
-﻿using Ryujinx.Input;
-using System;
+﻿using System;
 
 namespace Ryujinx.Input
 {

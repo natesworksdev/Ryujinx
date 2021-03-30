@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace Ryujinx.Modules.Motion
+namespace Ryujinx.Input.Motion
 {
     // MahonyAHRS class. Madgwick's implementation of Mayhony's AHRS algorithm.
     // See: https://x-io.co.uk/open-source-imu-and-ahrs-algorithms/
