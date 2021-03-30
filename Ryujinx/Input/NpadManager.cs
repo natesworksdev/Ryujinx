@@ -117,15 +117,7 @@ namespace Ryujinx.Input
                     // If this is null, we just got an update and weren't aware of it
                     if (controller == null)
                     {
-                        UpdateConfiguration(ConfigurationState.Instance.Hid.InputConfig.Value);
-
-                        controller = _controllers[(int)inputConfig.PlayerIndex];
-
-                        // If it's still null, the gamepad was disconnected, ignore.
-                        if (controller == null)
-                        {
-                            continue;
-                        }
+                        continue;
                     }
 
                     DriverConfigurationUpdate(ref controller, inputConfig, false);
