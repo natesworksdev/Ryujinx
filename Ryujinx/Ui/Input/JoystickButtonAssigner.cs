@@ -85,7 +85,7 @@ namespace Ryujinx.Ui.Input
         {
             if (_forStick)
             {
-                for (StickInputId inputId = 0; inputId < StickInputId.Count; inputId++)
+                for (StickInputId inputId = StickInputId.Left; inputId < StickInputId.Count; inputId++)
                 {
                     (float x, float y) = _currState.GetStick(inputId);
 
@@ -110,7 +110,7 @@ namespace Ryujinx.Ui.Input
             }
             else
             {
-                for (GamepadInputId inputId = 0; inputId < GamepadInputId.Count; inputId++)
+                for (GamepadInputId inputId = GamepadInputId.A; inputId < GamepadInputId.Count; inputId++)
                 {
                     if (_currState.IsPressed(inputId) && !_prevState.IsPressed(inputId))
                     {

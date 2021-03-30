@@ -26,7 +26,7 @@ namespace Ryujinx.Ui.Windows
 {
     public class ControllerWindow : Window
     {
-        private readonly Common.Configuration.Hid.PlayerIndex _playerIndex;
+        private readonly PlayerIndex _playerIndex;
         private readonly InputConfig _inputConfig;
 
         private bool _isWaitingForInput;
@@ -95,14 +95,14 @@ namespace Ryujinx.Ui.Windows
         [GUI] Image        _controllerImage;
 #pragma warning restore CS0649, IDE0044
 
-        private InputManager _inputManager;
+        private MainWindow _mainWindow;
         private IGamepadDriver _gtk3KeyboardDriver;
 
         public ControllerWindow(MainWindow mainWindow, Common.Configuration.Hid.PlayerIndex controllerId) : this(mainWindow, new Builder("Ryujinx.Ui.Windows.ControllerWindow.glade"), controllerId) { }
 
         private ControllerWindow(MainWindow mainWindow, Builder builder, Common.Configuration.Hid.PlayerIndex controllerId) : base(builder.GetObject("_controllerWin").Handle)
         {
-            _inputManager = mainWindow.InputManager;
+            _mainWindow = mainWindow;
 
             // NOTE: To get input in this window, we need to bind a custom keyboard driver instead of using the InputManager one as the main window isn't focused...
             _gtk3KeyboardDriver = new GTK3KeyboardDriver(this);
@@ -173,8 +173,8 @@ namespace Ryujinx.Ui.Windows
                 SetCurrentValues();
             }
 
-            _inputManager.GamepadDriver.OnGamepadConnected += HandleOnGamepadConnected;
-            _inputManager.GamepadDriver.OnGamepadDisconnected += HandleOnGamepadDisconnected;
+            mainWindow.InputManager.GamepadDriver.OnGamepadConnected += HandleOnGamepadConnected;
+            mainWindow.InputManager.GamepadDriver.OnGamepadDisconnected += HandleOnGamepadDisconnected;
         }
 
         private void HandleOnGamepadDisconnected(string id)
@@ -195,8 +195,8 @@ namespace Ryujinx.Ui.Windows
 
         protected override void OnDestroyed()
         {
-            _inputManager.GamepadDriver.OnGamepadConnected -= HandleOnGamepadConnected;
-            _inputManager.GamepadDriver.OnGamepadDisconnected -= HandleOnGamepadDisconnected;
+            _mainWindow.InputManager.GamepadDriver.OnGamepadConnected -= HandleOnGamepadConnected;
+            _mainWindow.InputManager.GamepadDriver.OnGamepadDisconnected -= HandleOnGamepadDisconnected;
 
             _gtk3KeyboardDriver.Dispose();
         }
@@ -207,9 +207,9 @@ namespace Ryujinx.Ui.Windows
             _inputDevice.Append("disabled", "Disabled");
             _inputDevice.SetActiveId("disabled");
 
-            foreach (string id in _inputManager.KeyboardDriver.GamepadsIds)
+            foreach (string id in _mainWindow.InputManager.KeyboardDriver.GamepadsIds)
             {
-                IGamepad gamepad = _inputManager.KeyboardDriver.GetGamepad(id);
+                IGamepad gamepad = _mainWindow.InputManager.KeyboardDriver.GetGamepad(id);
 
                 if (gamepad != null)
                 {
@@ -219,9 +219,9 @@ namespace Ryujinx.Ui.Windows
                 }
             }
 
-            foreach (string id in _inputManager.GamepadDriver.GamepadsIds)
+            foreach (string id in _mainWindow.InputManager.GamepadDriver.GamepadsIds)
             {
-                IGamepad gamepad = _inputManager.GamepadDriver.GetGamepad(id);
+                IGamepad gamepad = _mainWindow.InputManager.GamepadDriver.GetGamepad(id);
 
                 if (gamepad != null)
                 {
@@ -639,18 +639,16 @@ namespace Ryujinx.Ui.Windows
 
         private string GetProfileBasePath()
         {
-            string path = AppDataManager.ProfilesDirPath;
-
             if (_inputDevice.ActiveId.StartsWith("keyboard"))
             {
-                path = System.IO.Path.Combine(path, "keyboard");
+                return System.IO.Path.Combine(AppDataManager.ProfilesDirPath, "keyboard");
             }
             else if (_inputDevice.ActiveId.StartsWith("controller"))
             {
-                path = System.IO.Path.Combine(path, "controller");
+                return System.IO.Path.Combine(AppDataManager.ProfilesDirPath, "controller");
             }
 
-            return path;
+            return null;
         }
 
         //
@@ -664,7 +662,15 @@ namespace Ryujinx.Ui.Windows
             if (_inputDevice.ActiveId != null)
             {
                 SetProfiles();
-                SetValues(_inputConfig);
+
+                if (_inputDevice.ActiveId.StartsWith("keyboard") && _inputConfig is StandardKeyboardInputConfig)
+                {
+                    SetValues(_inputConfig);
+                }
+                else if (_inputDevice.ActiveId.StartsWith("controller") && _inputConfig is StandardControllerInputConfig)
+                {
+                    SetValues(_inputConfig);
+                }
             }
         }
 
@@ -690,21 +696,21 @@ namespace Ryujinx.Ui.Windows
             {
                 IKeyboard keyboard;
 
-                if (_inputManager.KeyboardDriver is GTK3KeyboardDriver)
+                if (_mainWindow.InputManager.KeyboardDriver is GTK3KeyboardDriver)
                 {
                     // NOTE: To get input in this window, we need to bind a custom keyboard driver instead of using the InputManager one as the main window isn't focused...
                     keyboard = (IKeyboard)_gtk3KeyboardDriver.GetGamepad(id);
                 }
                 else
                 {
-                    keyboard = (IKeyboard)_inputManager.KeyboardDriver.GetGamepad(id);
+                    keyboard = (IKeyboard)_mainWindow.InputManager.KeyboardDriver.GetGamepad(id);
                 }
 
                 assigner = new KeyboardKeyAssigner(keyboard);
             }
             else if (_inputDevice.ActiveId.StartsWith("controller"))
             {
-                assigner = new JoystickButtonAssigner(_inputManager.GamepadDriver.GetGamepad(id), (float)_controllerTriggerThreshold.Value, forStick);
+                assigner = new JoystickButtonAssigner(_mainWindow.InputManager.GamepadDriver.GetGamepad(id), (float)_controllerTriggerThreshold.Value, forStick);
             }
             else
             {
@@ -773,20 +779,30 @@ namespace Ryujinx.Ui.Windows
 
         private void SetProfiles()
         {
-            string basePath = GetProfileBasePath();
-            
-            if (!Directory.Exists(basePath))
-            {
-                Directory.CreateDirectory(basePath);
-            }
-
             _profile.RemoveAll();
-            _profile.Append("default", "Default");
 
-            foreach (string profile in Directory.GetFiles(basePath, "*.*", SearchOption.AllDirectories))
+            string basePath = GetProfileBasePath();
+
+            if (basePath == null)
             {
-                _profile.Append(System.IO.Path.GetFileName(profile), System.IO.Path.GetFileNameWithoutExtension(profile));
+                _profile.Append("default", "None");
             }
+            else
+            {
+                if (!Directory.Exists(basePath))
+                {
+                    Directory.CreateDirectory(basePath);
+                }
+
+                _profile.Append("default", "Default");
+
+                foreach (string profile in Directory.GetFiles(basePath, "*.*", SearchOption.AllDirectories))
+                {
+                    _profile.Append(System.IO.Path.GetFileName(profile), System.IO.Path.GetFileNameWithoutExtension(profile));
+                }
+            }
+
+            _profile.SetActiveId("default");
         }
 
         private void ProfileLoad_Activated(object sender, EventArgs args)
@@ -1025,6 +1041,11 @@ namespace Ryujinx.Ui.Windows
 
                     newConfig[index] = inputConfig;
                 }
+            }
+
+            if (_mainWindow.GlRendererWidget != null)
+            {
+                _mainWindow.GlRendererWidget.NpadManager.ReloadConfiguration(newConfig);
             }
 
             // Atomically replace and signal input change.

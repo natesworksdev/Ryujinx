@@ -36,9 +36,9 @@ namespace Ryujinx.Input
         public static GamepadStateSnapshot GetStateSnapshot(IGamepad gamepad)
         {
             // NOTE: Update Array size if JoystickInputId is changed.
-            Array2<Array2<float>> joysticksState = default;
+            Array3<Array2<float>> joysticksState = default;
 
-            for (StickInputId inputId = 0; inputId < StickInputId.Count; inputId++)
+            for (StickInputId inputId = StickInputId.Left; inputId < StickInputId.Count; inputId++)
             {
                 (float state0, float state1) = gamepad.GetStick(inputId);
 
@@ -53,7 +53,7 @@ namespace Ryujinx.Input
             // NOTE: Update Array size if GamepadInputId is changed.
             Array28<bool> buttonsState = default;
 
-            for (GamepadInputId inputId = 0; inputId < GamepadInputId.Count; inputId++)
+            for (GamepadInputId inputId = GamepadInputId.A; inputId < GamepadInputId.Count; inputId++)
             {
                 buttonsState[(int)inputId] = gamepad.IsPressed(inputId);
             }

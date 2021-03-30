@@ -2,6 +2,7 @@
 {
     public enum StickInputId : byte
     {
+        Unbound,
         Left,
         Right,
 

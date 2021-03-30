@@ -32,6 +32,7 @@ namespace Ryujinx.Ui
         private const int TargetFps         = 60;
 
         public ManualResetEvent WaitEvent { get; set; }
+        public NpadManager NpadManager { get; }
 
         public static event EventHandler<StatusUpdatedEventArgs> StatusUpdatedEvent;
 
@@ -69,7 +70,6 @@ namespace Ryujinx.Ui
         private static readonly Cursor _invisibleCursor = new Cursor(Display.Default, CursorType.BlankCursor);
         private long _lastCursorMoveTime;
         private bool _hideCursorOnIdle;
-        private NpadManager _npadManager;
         private InputManager _inputManager;
         private IKeyboard _keyboardInterface;
 
@@ -81,10 +81,10 @@ namespace Ryujinx.Ui
             : OpenGLContextFlags.Compat | OpenGLContextFlags.Debug)
         {
             _inputManager = inputManager;
-            _npadManager = inputManager.CreateNpadManager();
+            NpadManager = inputManager.CreateNpadManager();
             _keyboardInterface = (IKeyboard)_inputManager.KeyboardDriver.GetGamepad("0");
 
-            _npadManager.UpdateConfiguration(ConfigurationState.Instance.Hid.InputConfig.Value.ToList());
+            NpadManager.ReloadConfiguration(ConfigurationState.Instance.Hid.InputConfig.Value.ToList());
 
             WaitEvent = new ManualResetEvent(false);
 
@@ -145,7 +145,7 @@ namespace Ryujinx.Ui
         private void GLRenderer_ShuttingDown(object sender, EventArgs args)
         {
             _device.DisposeGpu();
-            _npadManager.Dispose();
+            NpadManager.Dispose();
             _dsuClient?.Dispose();
         }
 
@@ -163,7 +163,7 @@ namespace Ryujinx.Ui
         {
             ConfigurationState.Instance.HideCursorOnIdle.Event -= HideCursorStateChanged;
 
-            _npadManager.Dispose();
+            NpadManager.Dispose();
             _dsuClient?.Dispose();
             Dispose();
         }
@@ -536,7 +536,7 @@ namespace Ryujinx.Ui
                 });
             }
 
-            _npadManager.Update(_device.Hid, _device.TamperMachine, ConfigurationState.Instance.Hid.InputConfig.Value);
+            NpadManager.Update(_device.Hid, _device.TamperMachine, ConfigurationState.Instance.Hid.InputConfig.Value);
 
             // TODO: Implement motion support again
             // TODO: Implement raw keyboard support again
@@ -678,7 +678,7 @@ namespace Ryujinx.Ui
 
             if(_isFocused)
             {
-                KeyboardHotkeyState currentHotkeyState = _npadManager.GetHotkeyState();
+                KeyboardHotkeyState currentHotkeyState = NpadManager.GetHotkeyState();
 
                 if (currentHotkeyState.HasFlag(KeyboardHotkeyState.ToggleVSync) &&
                     !_prevHotkeyState.HasFlag(KeyboardHotkeyState.ToggleVSync))

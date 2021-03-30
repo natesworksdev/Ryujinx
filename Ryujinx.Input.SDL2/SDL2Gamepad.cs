@@ -65,6 +65,7 @@ namespace Ryujinx.Input.SDL2
 
         private StickInputId[] _stickUserMapping = new StickInputId[(int)StickInputId.Count]
         {
+            StickInputId.Unbound,
             StickInputId.Left,
             StickInputId.Right
         };
@@ -288,6 +289,11 @@ namespace Ryujinx.Input.SDL2
 
         public (float, float) GetStick(StickInputId inputId)
         {
+            if (inputId == StickInputId.Unbound)
+            {
+                return (0.0f, 0.0f);
+            }
+
             short stickX;
             short stickY;
 

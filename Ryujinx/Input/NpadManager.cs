@@ -36,17 +36,17 @@ namespace Ryujinx.Input
         private void HandleOnGamepadDisconnected(string obj)
         {
             // Force input reload
-            UpdateConfiguration(ConfigurationState.Instance.Hid.InputConfig.Value, true);
+            ReloadConfiguration(ConfigurationState.Instance.Hid.InputConfig.Value);
         }
 
         private void HandleOnGamepadConnected(string id)
         {
             // Force input reload
-            UpdateConfiguration(ConfigurationState.Instance.Hid.InputConfig.Value, true);
+            ReloadConfiguration(ConfigurationState.Instance.Hid.InputConfig.Value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool DriverConfigurationUpdate(ref NpadController controller, InputConfig config, bool isHotplugEvent)
+        private bool DriverConfigurationUpdate(ref NpadController controller, InputConfig config)
         {
             IGamepadDriver targetDriver = _gamepadDriver;
 
@@ -61,7 +61,7 @@ namespace Ryujinx.Input
 
             Debug.Assert(targetDriver != null, "Unknown input configuration!");
 
-            if (isHotplugEvent || controller.GamepadDriver != targetDriver || controller.Id != config.Id)
+            if (controller.GamepadDriver != targetDriver || controller.Id != config.Id)
             {
                 return controller.UpdateDriverConfiguration(targetDriver, config);
             }
@@ -71,7 +71,7 @@ namespace Ryujinx.Input
             }
         }
 
-        public void UpdateConfiguration(List<InputConfig> inputConfigs, bool isHotplugEvent = false)
+        public void ReloadConfiguration(List<InputConfig> inputConfigs)
         {
             lock (_lock)
             {
@@ -85,7 +85,7 @@ namespace Ryujinx.Input
                 {
                     NpadController controller = new NpadController();
 
-                    bool isValid = DriverConfigurationUpdate(ref controller, inputConfig, isHotplugEvent);
+                    bool isValid = DriverConfigurationUpdate(ref controller, inputConfig);
 
                     if (!isValid)
                     {
@@ -112,29 +112,35 @@ namespace Ryujinx.Input
 
                 foreach (InputConfig inputConfig in inputConfigs)
                 {
+                    GamepadInput inputState = default;
+                    SixAxisInput motionState = default;
+
                     NpadController controller = _controllers[(int)inputConfig.PlayerIndex];
 
-                    // If this is null, we just got an update and weren't aware of it
-                    if (controller == null)
+                    // Is a controller connected?
+                    if (controller != null)
                     {
-                        continue;
+                        DriverConfigurationUpdate(ref controller, inputConfig);
+
+                        controller.UpdateUserConfiguration(inputConfig);
+                        controller.Update();
+
+                        inputState = controller.GetHLEInputState();
+
+                        inputState.Buttons |= hleHid.UpdateStickButtons(inputState.LStick, inputState.RStick);
+
+                        motionState = controller.GetHLEMotionState();
+                    }
+                    else
+                    {
+                        // Ensure that orientation isn't null
+                        motionState.Orientation = new float[9];
                     }
 
-                    DriverConfigurationUpdate(ref controller, inputConfig, false);
-
-                    controller.UpdateUserConfiguration(inputConfig);
-                    controller.Update();
-
-                    GamepadInput inputState = controller.GetHLEInputState();
-
-                    inputState.Buttons |= hleHid.UpdateStickButtons(inputState.LStick, inputState.RStick);
                     inputState.PlayerId = (HLE.HOS.Services.Hid.PlayerIndex)inputConfig.PlayerIndex;
-
-                    hleInputStates.Add(inputState);
-
-                    SixAxisInput motionState = controller.GetHLEMotionState();
                     motionState.PlayerId = (HLE.HOS.Services.Hid.PlayerIndex)inputConfig.PlayerIndex;
 
+                    hleInputStates.Add(inputState);
                     hleMotionStates.Add(motionState);
                 }
 
