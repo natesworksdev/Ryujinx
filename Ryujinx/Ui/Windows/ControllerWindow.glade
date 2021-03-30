@@ -1588,7 +1588,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkBox" id="MotionBox">
+                                  <object class="GtkBox" id="_motionBox">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
                                     <property name="margin_left">10</property>
@@ -1627,7 +1627,7 @@
                                       </packing>
                                     </child>
                                     <child>
-                                      <object class="GtkBox">
+                                      <object class="GtkBox" id="_motionControllerSlot">
                                         <property name="visible">True</property>
                                         <property name="can_focus">False</property>
                                         <property name="spacing">10</property>
@@ -1713,7 +1713,7 @@
                                       </packing>
                                     </child>
                                     <child>
-                                      <object class="GtkBox" id="_altBox">
+                                      <object class="GtkBox" id="_motionAltBox">
                                         <property name="visible">True</property>
                                         <property name="can_focus">False</property>
                                         <property name="orientation">vertical</property>
@@ -1781,7 +1781,7 @@
                                       </packing>
                                     </child>
                                     <child>
-                                      <object class="GtkBox">
+                                      <object class="GtkBox" id="_dsuServerHostBox">
                                         <property name="visible">True</property>
                                         <property name="can_focus">False</property>
                                         <property name="spacing">30</property>
@@ -1818,7 +1818,7 @@
                                       </packing>
                                     </child>
                                     <child>
-                                      <object class="GtkBox">
+                                      <object class="GtkBox" id="_dsuServerPortBox">
                                         <property name="visible">True</property>
                                         <property name="can_focus">False</property>
                                         <property name="spacing">30</property>

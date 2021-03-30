@@ -47,7 +47,11 @@ namespace Ryujinx.Ui.Windows
         [GUI] ComboBoxText _profile;
         [GUI] ToggleButton _refreshInputDevicesButton;
         [GUI] Box          _settingsBox;
-        [GUI] Box          _altBox;
+        [GUI] Box          _motionAltBox;
+        [GUI] Box          _motionBox;
+        [GUI] Box          _dsuServerHostBox;
+        [GUI] Box          _dsuServerPortBox;
+        [GUI] Box          _motionControllerSlot;
         [GUI] Grid         _leftStickKeyboard;
         [GUI] Grid         _leftStickController;
         [GUI] Box          _deadZoneLeftBox;
@@ -265,12 +269,17 @@ namespace Ryujinx.Ui.Windows
                 _deadZoneLeftBox.Hide();
                 _deadZoneRightBox.Hide();
                 _triggerThresholdBox.Hide();
+                _motionBox.Hide();
             }
             else if (_inputDevice.ActiveId != null && _inputDevice.ActiveId.StartsWith("controller"))
             {
                 ShowAll();
                 _leftStickKeyboard.Hide();
                 _rightStickKeyboard.Hide();
+
+                _dsuServerHostBox.Hide();
+                _dsuServerPortBox.Hide();
+                _motionControllerSlot.Hide();
             }
             else
             {
@@ -300,7 +309,7 @@ namespace Ryujinx.Ui.Windows
         {
             _leftSideTriggerBox.Hide();
             _rightSideTriggerBox.Hide();
-            _altBox.Hide();
+            _motionAltBox.Hide();
 
             switch (_controllerType.ActiveId)
             {
@@ -311,7 +320,7 @@ namespace Ryujinx.Ui.Windows
                     _rightSideTriggerBox.Show();
                     break;
                 case "JoyconPair":
-                    _altBox.Show();
+                    _motionAltBox.Show();
                     break;
             }
 
