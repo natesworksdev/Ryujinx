@@ -152,9 +152,6 @@ namespace Ryujinx.Input.GTK3
 
                 _buttonsUserMapping.Clear();
 
-                // First update sticks
-                // TODO: sticks
-
                 // Then left joycon
                 _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadInputId.LeftStick, From = (Key)_configuration.LeftJoyconStick.StickButton });
                 _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadInputId.DpadUp, From = (Key)_configuration.LeftJoycon.DpadUp });

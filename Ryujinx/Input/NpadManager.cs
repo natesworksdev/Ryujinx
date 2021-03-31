@@ -147,8 +147,6 @@ namespace Ryujinx.Input
                 hleHid.Npads.Update(hleInputStates);
                 hleHid.Npads.UpdateSixAxis(hleMotionStates);
                 tamperMachine.UpdateInput(hleInputStates);
-
-                // TODO: Six axis
             }
         }
 

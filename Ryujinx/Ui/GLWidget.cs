@@ -11,7 +11,6 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Ui
 {
-    // TODO: actual implementation
     [ToolboxItem(true)]
     public class GLWidget : DrawingArea
     {

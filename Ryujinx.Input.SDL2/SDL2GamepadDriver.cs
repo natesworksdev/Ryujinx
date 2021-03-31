@@ -65,7 +65,6 @@ namespace Ryujinx.Input.SDL2
 
         private void HandleJoyStickConnected(int joystickDeviceId, int joystickInstanceId)
         {
-            // TODO: do not trust the ids sent here and scan for all gamepad.
             if (SDL_IsGameController(joystickDeviceId) == SDL_bool.SDL_TRUE)
             {
                 string id = GenerateGamepadId(joystickDeviceId);

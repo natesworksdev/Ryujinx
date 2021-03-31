@@ -519,7 +519,6 @@ namespace Ryujinx.Ui
 
             if (_isFocused)
             {
-                // TODO: Port this
                 Gtk.Application.Invoke(delegate
                 {
                     KeyboardStateSnapshot keyboard = _keyboardInterface.GetKeyboardStateSnapshot();
@@ -538,7 +537,7 @@ namespace Ryujinx.Ui
 
             NpadManager.Update(_device.Hid, _device.TamperMachine, ConfigurationState.Instance.Hid.InputConfig.Value);
 
-            // TODO: Implement motion support again
+            // TODO: Port cemu-hooks motion support again
             // TODO: Implement raw keyboard support again
             /*List<GamepadInput> gamepadInputs = new List<GamepadInput>(NpadDevices.MaxControllers);
             List<SixAxisInput> motionInputs  = new List<SixAxisInput>(NpadDevices.MaxControllers);

@@ -4,7 +4,6 @@ namespace Ryujinx.Input
 {
     public interface IKeyboard : IGamepad
     {
-        // TODO: normal keyboard api and all
         bool IsPressed(Key key);
 
         KeyboardStateSnapshot GetKeyboardStateSnapshot();

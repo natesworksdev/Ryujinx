@@ -67,8 +67,7 @@ namespace Ryujinx.Input.SDL2
             SDL_EventState(SDL_EventType.SDL_JOYBUTTONDOWN, SDL_DISABLE);
             SDL_EventState(SDL_EventType.SDL_JOYBUTTONUP, SDL_DISABLE);
 
-            // TODO: fix missing SDL_CONTROLLERSENSORUPDATE binding
-            SDL_EventState((SDL_EventType)0x659, SDL_DISABLE);
+            SDL_EventState(SDL_EventType.SDL_CONTROLLERSENSORUPDATE, SDL_DISABLE);
 
 
             _worker = new Thread(EventWorker);
