@@ -111,35 +111,44 @@ namespace Ryujinx.Graphics.Shader.Translation
             Block[][] cfg;
             ulong maxEndAddress = 0;
 
+            bool hasBindless = false;
+
             if ((flags & TranslationFlags.Compute) != 0)
             {
                 config = new ShaderConfig(gpuAccessor, flags, counts);
 
-                cfg = Decoder.Decode(gpuAccessor, address);
+                cfg = Decoder.Decode(gpuAccessor, address, out hasBindless);
             }
             else
             {
                 config = new ShaderConfig(new ShaderHeader(gpuAccessor, address), gpuAccessor, flags, counts);
 
-                cfg = Decoder.Decode(gpuAccessor, address + HeaderSize);
+                cfg = Decoder.Decode(gpuAccessor, address + HeaderSize, out hasBindless);
             }
 
-            for (int funcIndex = 0; funcIndex < cfg.Length; funcIndex++)
+            if (hasBindless)
             {
-                for (int blkIndex = 0; blkIndex < cfg[funcIndex].Length; blkIndex++)
+                config.SetUsedFeature(FeatureFlags.Bindless);
+            }
+            else // Not bindless, fill up texture handles
+            {
+                for (int funcIndex = 0; funcIndex < cfg.Length; funcIndex++)
                 {
-                    Block block = cfg[funcIndex][blkIndex];
-
-                    if (maxEndAddress < block.EndAddress)
+                    for (int blkIndex = 0; blkIndex < cfg[funcIndex].Length; blkIndex++)
                     {
-                        maxEndAddress = block.EndAddress;
-                    }
+                        Block block = cfg[funcIndex][blkIndex];
 
-                    for (int index = 0; index < block.OpCodes.Count; index++)
-                    {
-                        if (block.OpCodes[index] is OpCodeTextureBase texture)
+                        if (maxEndAddress < block.EndAddress)
                         {
-                            config.TextureHandlesForCache.Add(texture.HandleOffset);
+                            maxEndAddress = block.EndAddress;
+                        }
+
+                        for (int index = 0; index < block.OpCodes.Count; index++)
+                        {
+                            if (block.OpCodes[index] is OpCodeTextureBase texture)
+                            {
+                                config.TextureHandlesForCache.Add(texture.HandleOffset);
+                            }
                         }
                     }
                 }

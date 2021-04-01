@@ -135,9 +135,9 @@ namespace Ryujinx
             Application.Init();
 
             // Check if keys exists.
-            bool hasGlobalProdKeys = File.Exists(Path.Combine(AppDataManager.KeysDirPath, "prod.keys"));
-            bool hasAltProdKeys    = !AppDataManager.IsCustomBasePath && File.Exists(Path.Combine(AppDataManager.KeysDirPathAlt, "prod.keys"));
-            if (!hasGlobalProdKeys && !hasAltProdKeys)
+            bool hasSystemProdKeys = File.Exists(Path.Combine(AppDataManager.KeysDirPath, "prod.keys"));
+            bool hasCommonProdKeys = AppDataManager.Mode == AppDataManager.LaunchMode.UserProfile && File.Exists(Path.Combine(AppDataManager.KeysDirPathUser, "prod.keys"));
+            if (!hasSystemProdKeys && !hasCommonProdKeys)
             {
                 UserErrorDialog.CreateUserErrorDialog(UserError.NoKeys);
             }
@@ -168,16 +168,18 @@ namespace Ryujinx
         private static void PrintSystemInfo()
         {
             Logger.Notice.Print(LogClass.Application, $"Ryujinx Version: {Version}");
-            Logger.Notice.Print(LogClass.Application, $"Operating System: {SystemInfo.Instance.OsDescription}");
-            Logger.Notice.Print(LogClass.Application, $"CPU: {SystemInfo.Instance.CpuName}");
-            Logger.Notice.Print(LogClass.Application, $"Total RAM: {SystemInfo.Instance.RamSizeInMB}");
+            SystemInfo.Gather().Print();
 
             var enabledLogs = Logger.GetEnabledLevels();
             Logger.Notice.Print(LogClass.Application, $"Logs Enabled: {(enabledLogs.Count == 0 ? "<None>" : string.Join(", ", enabledLogs))}");
 
-            if (AppDataManager.IsCustomBasePath)
+            if (AppDataManager.Mode == AppDataManager.LaunchMode.Custom)
             {
-                Logger.Notice.Print(LogClass.Application, $"Custom Data Directory: {AppDataManager.BaseDirPath}");
+                Logger.Notice.Print(LogClass.Application, $"Launch Mode: Custom Path {AppDataManager.BaseDirPath}");
+            }
+            else
+            {
+                Logger.Notice.Print(LogClass.Application, $"Launch Mode: {AppDataManager.Mode}");
             }
         }
 

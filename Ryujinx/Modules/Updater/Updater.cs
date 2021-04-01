@@ -2,7 +2,9 @@ using Gtk;
 using ICSharpCode.SharpZipLib.GZip;
 using ICSharpCode.SharpZipLib.Tar;
 using ICSharpCode.SharpZipLib.Zip;
+using Mono.Unix;
 using Newtonsoft.Json.Linq;
+using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Ui;
 using Ryujinx.Ui.Widgets;
@@ -106,7 +108,7 @@ namespace Ryujinx.Modules
                     {
                         if (showVersionUpToDate)
                         {
-                            GtkDialog.CreateUpdaterInfoDialog("You are already using the most updated version of Ryujinx!", "");
+                            GtkDialog.CreateUpdaterInfoDialog("You are already using the latest version of Ryujinx!", "");
                         }
 
                         return;
@@ -137,7 +139,7 @@ namespace Ryujinx.Modules
             {
                 if (showVersionUpToDate)
                 {
-                    GtkDialog.CreateUpdaterInfoDialog("You are already using the most updated version of Ryujinx!", "");
+                    GtkDialog.CreateUpdaterInfoDialog("You are already using the latest version of Ryujinx!", "");
                 }
 
                 Running = false;
@@ -325,6 +327,17 @@ namespace Ryujinx.Modules
             }
         }
         
+        private static void SetUnixPermissions()
+        {
+            string ryuBin = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx");
+
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                UnixFileInfo unixFileInfo = new UnixFileInfo(ryuBin);
+                unixFileInfo.FileAccessPermissions |= FileAccessPermissions.UserExecute;
+            }
+        }
+
         private static async void InstallUpdate(UpdateDialog updateDialog, string updateFile)
         {
             // Extract Update
@@ -428,7 +441,7 @@ namespace Ryujinx.Modules
                     }
                     catch
                     {
-                        Logger.Warning?.Print(LogClass.Application, "Updater wasn't able to rename file: " + file);
+                        Logger.Warning?.Print(LogClass.Application, "Updater was unable to rename file: " + file);
                     }
                 }
 
@@ -444,6 +457,8 @@ namespace Ryujinx.Modules
 
             Directory.Delete(UpdateDir, true);
 
+            SetUnixPermissions();
+
             updateDialog.MainText.Text      = "Update Complete!";
             updateDialog.SecondaryText.Text = "Do you want to restart Ryujinx now?";
             updateDialog.Modal              = true;
@@ -455,6 +470,7 @@ namespace Ryujinx.Modules
 
         public static bool CanUpdate(bool showWarnings)
         {
+#if !DISABLE_UPDATER
             if (RuntimeInformation.OSArchitecture != Architecture.X64)
             {
                 if (showWarnings)
@@ -475,17 +491,35 @@ namespace Ryujinx.Modules
                 return false;
             }
 
+            if (AppDataManager.Mode == AppDataManager.LaunchMode.Portable)
+            {
+                if (showWarnings)
+                {
+                    GtkDialog.CreateWarningDialog("You cannot update a portable version of Ryujinx!", "Please use a non-portable configuration to enable updates.");
+                }
+
+                return false;
+            }
+
             if (Program.Version.Contains("dirty"))
             {
                 if (showWarnings)
                 {
-                    GtkDialog.CreateWarningDialog("You Cannot update a Dirty build of Ryujinx!", "Please download Ryujinx at https://ryujinx.org/ if you are looking for a supported version.");
+                    GtkDialog.CreateWarningDialog("You cannot update a Dirty build of Ryujinx!", "Please download Ryujinx at https://ryujinx.org/ if you are looking for a supported version.");
                 }
 
                 return false;
             }
 
             return true;
+#else
+            if (showWarnings)
+            {
+                GtkDialog.CreateWarningDialog("Updater Disabled!", "Please download Ryujinx at https://ryujinx.org/ if you are looking for a supported version.");
+            }
+
+            return false;
+#endif
         }
 
         // NOTE: This method should always reflect the latest build layout.

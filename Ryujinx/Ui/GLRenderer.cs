@@ -5,20 +5,24 @@ using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
+using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
+using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
 using Ryujinx.Graphics.OpenGL;
-using Ryujinx.HLE;
 using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.Modules.Motion;
 using Ryujinx.Ui.Widgets;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 
 namespace Ryujinx.Ui
 {
+    using Switch = HLE.Switch;
+
     public class GlRenderer : GLWidget
     {
         static GlRenderer()
@@ -42,8 +46,6 @@ namespace Ryujinx.Ui
         private double _mouseY;
         private bool   _mousePressed;
 
-        private DateTime _lastCursorMoveTime = DateTime.Now;
-
         private bool _toggleFullscreen;
         private bool _toggleDockedMode;
 
@@ -51,7 +53,7 @@ namespace Ryujinx.Ui
 
         private long _ticks = 0;
 
-        private readonly System.Diagnostics.Stopwatch _chrono;
+        private readonly Stopwatch _chrono;
 
         private readonly Switch _device;
 
@@ -65,7 +67,11 @@ namespace Ryujinx.Ui
 
         private readonly ManualResetEvent _exitEvent;
         
-        private Gdk.Cursor _invisibleCursor = new Gdk.Cursor (Gdk.Display.Default, Gdk.CursorType.BlankCursor);
+        // Hide Cursor
+        const int CursorHideIdleTime = 8; // seconds
+        private static readonly Cursor _invisibleCursor = new Cursor(Display.Default, CursorType.BlankCursor);
+        private long _lastCursorMoveTime;
+        private bool _hideCursorOnIdle;
 
         public GlRenderer(Switch device, GraphicsDebugLevel glLogLevel)
             : base (GetGraphicsMode(),
@@ -84,9 +90,9 @@ namespace Ryujinx.Ui
 
             Initialize();
 
-            _chrono = new System.Diagnostics.Stopwatch();
+            _chrono = new Stopwatch();
 
-            _ticksPerFrame = System.Diagnostics.Stopwatch.Frequency / TargetFps;
+            _ticksPerFrame = Stopwatch.Frequency / TargetFps;
 
             AddEvents((int)(EventMask.ButtonPressMask
                           | EventMask.ButtonReleaseMask
@@ -101,6 +107,28 @@ namespace Ryujinx.Ui
             _glLogLevel = glLogLevel;
 
             _exitEvent = new ManualResetEvent(false);
+
+            _hideCursorOnIdle = ConfigurationState.Instance.HideCursorOnIdle;
+            _lastCursorMoveTime = Stopwatch.GetTimestamp();
+
+            ConfigurationState.Instance.HideCursorOnIdle.Event += HideCursorStateChanged;
+        }
+
+        private void HideCursorStateChanged(object sender, ReactiveEventArgs<bool> state)
+        {
+            Gtk.Application.Invoke(delegate
+            {
+                _hideCursorOnIdle = state.NewValue;
+
+                if (_hideCursorOnIdle)
+                {
+                    _lastCursorMoveTime = Stopwatch.GetTimestamp();
+                }
+                else
+                {
+                    Window.Cursor = null;
+                }
+            });
         }
 
         private static GraphicsMode GetGraphicsMode()
@@ -126,6 +154,8 @@ namespace Ryujinx.Ui
 
         private void GLRenderer_Destroyed(object sender, EventArgs e)
         {
+            ConfigurationState.Instance.HideCursorOnIdle.Event -= HideCursorStateChanged;
+
             _dsuClient?.Dispose();
             Dispose();
         }
@@ -186,6 +216,12 @@ namespace Ryujinx.Ui
             }
 
             _toggleDockedMode = toggleDockedMode;
+
+            if (_hideCursorOnIdle)
+            {
+                long cursorMoveDelta = Stopwatch.GetTimestamp() - _lastCursorMoveTime;
+                Window.Cursor = (cursorMoveDelta >= CursorHideIdleTime * Stopwatch.Frequency) ? _invisibleCursor : null;
+            }
         }
 
         private void GLRenderer_Initialized(object sender, EventArgs e)
@@ -308,35 +344,12 @@ namespace Ryujinx.Ui
                 _mouseY = evnt.Y;
             }
 
-            ResetCursorIdle();
+            if (_hideCursorOnIdle)
+            {
+                _lastCursorMoveTime = Stopwatch.GetTimestamp();
+            } 
 
             return false;
-        }
-
-        private void ResetCursorIdle()
-        {
-           if (ConfigurationState.Instance.HideCursorOnIdle)
-           {
-               _lastCursorMoveTime = DateTime.Now;
-           }
-
-           if (Window.Cursor != null)
-           {
-               Window.Cursor = null;
-           }
-        }
-
-        private void HideCursorIdle()
-        {
-           if (ConfigurationState.Instance.HideCursorOnIdle)
-           {
-               TimeSpan elapsedTime = DateTime.Now.Subtract(_lastCursorMoveTime);
-
-               if (elapsedTime.TotalSeconds > 8)
-               {
-                   Gtk.Application.Invoke(delegate { Window.Cursor = _invisibleCursor; });
-               }
-           }
         }
 
         protected override void OnGetPreferredHeight(out int minimumHeight, out int naturalHeight)
@@ -517,8 +530,6 @@ namespace Ryujinx.Ui
 
             MotionDevice motionDevice = new MotionDevice(_dsuClient);
 
-            HideCursorIdle();
-
             foreach (InputConfig inputConfig in ConfigurationState.Instance.Hid.InputConfig.Value)
             {
                 ControllerKeys   currentButton = 0;
@@ -648,6 +659,7 @@ namespace Ryujinx.Ui
 
             _device.Hid.Npads.Update(gamepadInputs);
             _device.Hid.Npads.UpdateSixAxis(motionInputs);
+            _device.TamperMachine.UpdateInput(gamepadInputs);
 
             if(_isFocused)
             {
@@ -658,6 +670,8 @@ namespace Ryujinx.Ui
                     !_prevHotkeyButtons.HasFlag(HotkeyButtons.ToggleVSync))
                 {
                     _device.EnableDeviceVsync = !_device.EnableDeviceVsync;
+
+                    Logger.Info?.Print(LogClass.Application, $"Vsync toggled to: {_device.EnableDeviceVsync}");
                 }
 
                 _prevHotkeyButtons = currentHotkeyButtons;
