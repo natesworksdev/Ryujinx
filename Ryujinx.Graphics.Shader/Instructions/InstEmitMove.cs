@@ -63,6 +63,8 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 // TODO: Use value from Y direction GPU register.
                 case SystemRegister.YDirection: src = ConstF(1); break;
 
+                case SystemRegister.ThreadKill: src = Attribute(AttributeConsts.HelperThreadNv); break;
+
                 case SystemRegister.ThreadId:
                 {
                     Operand tidX = Attribute(AttributeConsts.ThreadIdX);

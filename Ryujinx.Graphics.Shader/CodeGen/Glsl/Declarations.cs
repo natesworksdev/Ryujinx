@@ -26,6 +26,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 context.AppendLine("#extension GL_ARB_compute_shader : enable");
             }
 
+            if (context.Config.Stage == ShaderStage.Fragment)
+            {
+                context.AppendLine("#extension GL_NV_shader_thread_group : enable");
+            }
+
             if (context.Config.GpPassthrough)
             {
                 context.AppendLine("#extension GL_NV_geometry_shader_passthrough : enable");
