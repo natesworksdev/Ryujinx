@@ -1,6 +1,7 @@
 ﻿using Ryujinx.Common;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
+using Ryujinx.Common.Configuration.Hid.Controller.Motion;
 using Ryujinx.HLE.HOS.Services.Hid;
 using System;
 using System.Numerics;

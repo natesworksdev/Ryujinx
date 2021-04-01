@@ -1,4 +1,6 @@
-﻿namespace Ryujinx.Common.Configuration.Hid.Controller
+﻿using Ryujinx.Common.Configuration.Hid.Controller.Motion;
+
+namespace Ryujinx.Common.Configuration.Hid.Controller
 {
     public class GenericControllerInputConfig<Button, Stick> : GenericInputConfigurationCommon<Button, Stick> where Button : unmanaged where Stick : unmanaged
     {
@@ -30,6 +32,6 @@
         /// <summary>
         /// Controller Motion Settings
         /// </summary>
-        public MotionControllerConfigInputConfig Motion { get; set; }
+        public MotionConfigController Motion { get; set; }
     }
 }

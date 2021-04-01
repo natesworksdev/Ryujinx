@@ -1,8 +1,9 @@
-﻿namespace Ryujinx.Common.Configuration.Hid.Controller
+﻿namespace Ryujinx.Common.Configuration.Hid.Controller.Motion
 {
-    public class MotionControllerConfigInputConfig
+    public class MotionConfigController
     {
         public MotionInputBackendType MotionBackend { get; set; }
+
         /// <summary>
         /// Gyro Sensitivity
         /// </summary>

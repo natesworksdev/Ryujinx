@@ -69,7 +69,6 @@ namespace Ryujinx.Input.SDL2
 
             SDL_EventState(SDL_EventType.SDL_CONTROLLERSENSORUPDATE, SDL_DISABLE);
 
-
             _worker = new Thread(EventWorker);
             _isRunning = true;
             _worker.Start();

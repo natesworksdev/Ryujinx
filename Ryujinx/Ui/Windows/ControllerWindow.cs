@@ -21,6 +21,7 @@ using Key = Ryujinx.Common.Configuration.Hid.Key;
 
 using ConfigGamepadInputId = Ryujinx.Common.Configuration.Hid.Controller.GamepadInputId;
 using ConfigStickInputId = Ryujinx.Common.Configuration.Hid.Controller.StickInputId;
+using Ryujinx.Common.Configuration.Hid.Controller.Motion;
 
 namespace Ryujinx.Ui.Windows
 {
@@ -633,7 +634,7 @@ namespace Ryujinx.Ui.Windows
                         StickButton  = rStickButton,
                     },
 
-                    Motion = new MotionControllerConfigInputConfig
+                    Motion = new StandardMotionConfigController
                     {
                         MotionBackend = MotionInputBackendType.GamepadDriver,
                         EnableMotion  = _enableMotion.Active,
@@ -944,7 +945,7 @@ namespace Ryujinx.Ui.Windows
                             InvertStickY = false,
                         },
 
-                        Motion = new MotionControllerConfigInputConfig
+                        Motion = new StandardMotionConfigController
                         {
                             MotionBackend = MotionInputBackendType.GamepadDriver,
                             EnableMotion = false,
