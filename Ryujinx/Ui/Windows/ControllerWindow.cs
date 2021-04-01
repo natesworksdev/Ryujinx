@@ -41,6 +41,7 @@ namespace Ryujinx.Ui.Windows
         [GUI] Adjustment   _sensitivity;
         [GUI] Adjustment   _gyroDeadzone;
         [GUI] CheckButton  _enableMotion;
+        [GUI] CheckButton  _enableCemuHooks;
         [GUI] CheckButton  _mirrorInput;
         [GUI] Entry        _dsuServerHost;
         [GUI] Entry        _dsuServerPort;
@@ -167,6 +168,7 @@ namespace Ryujinx.Ui.Windows
             _zR.Clicked             += Button_Pressed;
             _rSl.Clicked            += Button_Pressed;
             _rSr.Clicked            += Button_Pressed;
+            _enableCemuHooks.Clicked += CemuHooksCheckButtonPressed;
 
             // Setup current values.
             UpdateInputDeviceList();
@@ -180,6 +182,11 @@ namespace Ryujinx.Ui.Windows
 
             mainWindow.InputManager.GamepadDriver.OnGamepadConnected += HandleOnGamepadConnected;
             mainWindow.InputManager.GamepadDriver.OnGamepadDisconnected += HandleOnGamepadDisconnected;
+        }
+
+        private void CemuHooksCheckButtonPressed(object sender, EventArgs e)
+        {
+            UpdateCemuHooksSpecificFieldsVisibility();
         }
 
         private void HandleOnGamepadDisconnected(string id)
@@ -260,6 +267,26 @@ namespace Ryujinx.Ui.Windows
             }
         }
 
+        private void UpdateCemuHooksSpecificFieldsVisibility()
+        {
+            if (_enableCemuHooks.Active)
+            {
+                _dsuServerHostBox.Show();
+                _dsuServerPortBox.Show();
+                _motionControllerSlot.Show();
+                _motionAltBox.Show();
+                _mirrorInput.Show();
+            }
+            else
+            {
+                _dsuServerHostBox.Hide();
+                _dsuServerPortBox.Hide();
+                _motionControllerSlot.Hide();
+                _motionAltBox.Hide();
+                _mirrorInput.Hide();
+            }
+        }
+
         private void SetAvailableOptions()
         {
             if (_inputDevice.ActiveId != null && _inputDevice.ActiveId.StartsWith("keyboard"))
@@ -278,9 +305,7 @@ namespace Ryujinx.Ui.Windows
                 _leftStickKeyboard.Hide();
                 _rightStickKeyboard.Hide();
 
-                _dsuServerHostBox.Hide();
-                _dsuServerPortBox.Hide();
-                _motionControllerSlot.Hide();
+                UpdateCemuHooksSpecificFieldsVisibility();
             }
             else
             {
@@ -371,6 +396,7 @@ namespace Ryujinx.Ui.Windows
             _controllerTriggerThreshold.Value = 0;
             _mirrorInput.Active               = false;
             _enableMotion.Active              = false;
+            _enableCemuHooks.Active           = false;
             _slotNumber.Value                 = 0;
             _altSlotNumber.Value              = 0;
             _sensitivity.Value                = 100;
@@ -461,14 +487,17 @@ namespace Ryujinx.Ui.Windows
                     _sensitivity.Value                = controllerConfig.Motion.Sensitivity;
                     _gyroDeadzone.Value               = controllerConfig.Motion.GyroDeadzone;
                     _enableMotion.Active              = controllerConfig.Motion.EnableMotion;
-                    /*_slotNumber.Value                 = controllerConfig.Slot;
-                    _altSlotNumber.Value              = controllerConfig.AltSlot;
-                    _sensitivity.Value                = controllerConfig.Sensitivity;
-                    _gyroDeadzone.Value               = controllerConfig.GyroDeadzone;
-                    _enableMotion.Active              = controllerConfig.EnableMotion;
-                    _mirrorInput.Active               = controllerConfig.MirrorInput;
-                    _dsuServerHost.Buffer.Text        = controllerConfig.DsuServerHost;
-                    _dsuServerPort.Buffer.Text        = controllerConfig.DsuServerPort.ToString();*/
+                    _enableCemuHooks.Active           = controllerConfig.Motion.MotionBackend == MotionInputBackendType.CemuHooks;
+
+                    if (controllerConfig.Motion is CemuHooksMotionConfigController cemuHooksMotionConfig)
+                    {
+                        _slotNumber.Value             = cemuHooksMotionConfig.Slot;
+                        _altSlotNumber.Value          = cemuHooksMotionConfig.AltSlot;
+                        _mirrorInput.Active           = cemuHooksMotionConfig.MirrorInput;
+                        _dsuServerHost.Buffer.Text    = cemuHooksMotionConfig.DsuServerHost;
+                        _dsuServerPort.Buffer.Text    = cemuHooksMotionConfig.DsuServerPort.ToString();
+                    }
+
                     break;
             }
         }
@@ -585,6 +614,35 @@ namespace Ryujinx.Ui.Windows
 
                 int.TryParse(_dsuServerPort.Buffer.Text, out int port);
 
+
+                MotionConfigController motionConfig;
+
+                if (_enableCemuHooks.Active)
+                {
+                    motionConfig      = new CemuHooksMotionConfigController
+                    {
+                        MotionBackend = MotionInputBackendType.CemuHooks,
+                        EnableMotion  = _enableMotion.Active,
+                        Sensitivity   = (int)_sensitivity.Value,
+                        GyroDeadzone  = _gyroDeadzone.Value,
+                        MirrorInput   = _mirrorInput.Active,
+                        Slot          = (int)_slotNumber.Value,
+                        AltSlot       = (int)_altSlotNumber.Value,
+                        DsuServerHost = _dsuServerHost.Buffer.Text,
+                        DsuServerPort = port
+                    };
+                }
+                else
+                {
+                    motionConfig      = new StandardMotionConfigController
+                    {
+                        MotionBackend = MotionInputBackendType.GamepadDriver,
+                        EnableMotion  = _enableMotion.Active,
+                        Sensitivity   = (int)_sensitivity.Value,
+                        GyroDeadzone  = _gyroDeadzone.Value,
+                    };
+                }
+
                 return new StandardControllerInputConfig
                 {
                     Backend          = InputBackendType.GamepadSDL2,
@@ -633,22 +691,7 @@ namespace Ryujinx.Ui.Windows
                         InvertStickY = _invertRStickY.Active,
                         StickButton  = rStickButton,
                     },
-
-                    Motion = new StandardMotionConfigController
-                    {
-                        MotionBackend = MotionInputBackendType.GamepadDriver,
-                        EnableMotion  = _enableMotion.Active,
-                        Sensitivity   = (int)_sensitivity.Value,
-                        GyroDeadzone  = _gyroDeadzone.Value,
-                    }
-                    /*EnableMotion  = _enableMotion.Active,
-                    MirrorInput   = _mirrorInput.Active,
-                    Slot          = (int)_slotNumber.Value,
-                    AltSlot       = (int)_altSlotNumber.Value,
-                    Sensitivity   = (int)_sensitivity.Value,
-                    GyroDeadzone  = _gyroDeadzone.Value,
-                    DsuServerHost = _dsuServerHost.Buffer.Text,
-                    DsuServerPort = port*/
+                    Motion           = motionConfig
                 };
             }
 
