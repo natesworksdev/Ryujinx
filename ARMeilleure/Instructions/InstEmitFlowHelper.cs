@@ -246,7 +246,7 @@ namespace ARMeilleure.Instructions
             EmitNativeCall(context, fallbackAddr, isJump);
         }
 
-        public static void EmitDynamicTableCall(ArmEmitterContext context, Operand tableAddress, Operand address, bool isJump)
+        private static void EmitDynamicTableCall(ArmEmitterContext context, Operand tableAddress, Operand address, bool isJump)
         {
             // Loop over elements of the dynamic table. Unrolled loop.
 
