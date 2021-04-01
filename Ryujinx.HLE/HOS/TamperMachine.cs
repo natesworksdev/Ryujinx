@@ -13,6 +13,8 @@ namespace Ryujinx.HLE.HOS
 {
     public class TamperMachine
     {
+        private const int TAMPERMACHINE_SLEEP_MS = 1000 / 12;
+
         private Thread _tamperThread = null;
         private ConcurrentQueue<ITamperProgram> _programs = new ConcurrentQueue<ITamperProgram>();
         private long _pressedKeys = 0;
@@ -76,7 +78,7 @@ namespace Ryujinx.HLE.HOS
                 if (sleepCounter == 0)
                 {
                     sleepCounter = _programs.Count;
-                    Thread.Sleep(1);
+                    Thread.Sleep(TAMPERMACHINE_SLEEP_MS);
                 }
                 else
                 {
