@@ -41,7 +41,7 @@ namespace Ryujinx.Ui.Windows
         [GUI] Adjustment   _sensitivity;
         [GUI] Adjustment   _gyroDeadzone;
         [GUI] CheckButton  _enableMotion;
-        [GUI] CheckButton  _enableCemuHooks;
+        [GUI] CheckButton  _enableCemuHook;
         [GUI] CheckButton  _mirrorInput;
         [GUI] Entry        _dsuServerHost;
         [GUI] Entry        _dsuServerPort;
@@ -168,7 +168,7 @@ namespace Ryujinx.Ui.Windows
             _zR.Clicked             += Button_Pressed;
             _rSl.Clicked            += Button_Pressed;
             _rSr.Clicked            += Button_Pressed;
-            _enableCemuHooks.Clicked += CemuHooksCheckButtonPressed;
+            _enableCemuHook.Clicked += CemuHookCheckButtonPressed;
 
             // Setup current values.
             UpdateInputDeviceList();
@@ -184,9 +184,9 @@ namespace Ryujinx.Ui.Windows
             mainWindow.InputManager.GamepadDriver.OnGamepadDisconnected += HandleOnGamepadDisconnected;
         }
 
-        private void CemuHooksCheckButtonPressed(object sender, EventArgs e)
+        private void CemuHookCheckButtonPressed(object sender, EventArgs e)
         {
-            UpdateCemuHooksSpecificFieldsVisibility();
+            UpdateCemuHookSpecificFieldsVisibility();
         }
 
         private void HandleOnGamepadDisconnected(string id)
@@ -267,9 +267,9 @@ namespace Ryujinx.Ui.Windows
             }
         }
 
-        private void UpdateCemuHooksSpecificFieldsVisibility()
+        private void UpdateCemuHookSpecificFieldsVisibility()
         {
-            if (_enableCemuHooks.Active)
+            if (_enableCemuHook.Active)
             {
                 _dsuServerHostBox.Show();
                 _dsuServerPortBox.Show();
@@ -305,7 +305,7 @@ namespace Ryujinx.Ui.Windows
                 _leftStickKeyboard.Hide();
                 _rightStickKeyboard.Hide();
 
-                UpdateCemuHooksSpecificFieldsVisibility();
+                UpdateCemuHookSpecificFieldsVisibility();
             }
             else
             {
@@ -396,7 +396,7 @@ namespace Ryujinx.Ui.Windows
             _controllerTriggerThreshold.Value = 0;
             _mirrorInput.Active               = false;
             _enableMotion.Active              = false;
-            _enableCemuHooks.Active           = false;
+            _enableCemuHook.Active           = false;
             _slotNumber.Value                 = 0;
             _altSlotNumber.Value              = 0;
             _sensitivity.Value                = 100;
@@ -487,15 +487,15 @@ namespace Ryujinx.Ui.Windows
                     _sensitivity.Value                = controllerConfig.Motion.Sensitivity;
                     _gyroDeadzone.Value               = controllerConfig.Motion.GyroDeadzone;
                     _enableMotion.Active              = controllerConfig.Motion.EnableMotion;
-                    _enableCemuHooks.Active           = controllerConfig.Motion.MotionBackend == MotionInputBackendType.CemuHooks;
+                    _enableCemuHook.Active           = controllerConfig.Motion.MotionBackend == MotionInputBackendType.CemuHook;
 
-                    if (controllerConfig.Motion is CemuHooksMotionConfigController cemuHooksMotionConfig)
+                    if (controllerConfig.Motion is CemuHookMotionConfigController cemuHookMotionConfig)
                     {
-                        _slotNumber.Value             = cemuHooksMotionConfig.Slot;
-                        _altSlotNumber.Value          = cemuHooksMotionConfig.AltSlot;
-                        _mirrorInput.Active           = cemuHooksMotionConfig.MirrorInput;
-                        _dsuServerHost.Buffer.Text    = cemuHooksMotionConfig.DsuServerHost;
-                        _dsuServerPort.Buffer.Text    = cemuHooksMotionConfig.DsuServerPort.ToString();
+                        _slotNumber.Value             = cemuHookMotionConfig.Slot;
+                        _altSlotNumber.Value          = cemuHookMotionConfig.AltSlot;
+                        _mirrorInput.Active           = cemuHookMotionConfig.MirrorInput;
+                        _dsuServerHost.Buffer.Text    = cemuHookMotionConfig.DsuServerHost;
+                        _dsuServerPort.Buffer.Text    = cemuHookMotionConfig.DsuServerPort.ToString();
                     }
 
                     break;
@@ -617,11 +617,11 @@ namespace Ryujinx.Ui.Windows
 
                 MotionConfigController motionConfig;
 
-                if (_enableCemuHooks.Active)
+                if (_enableCemuHook.Active)
                 {
-                    motionConfig      = new CemuHooksMotionConfigController
+                    motionConfig      = new CemuHookMotionConfigController
                     {
-                        MotionBackend = MotionInputBackendType.CemuHooks,
+                        MotionBackend = MotionInputBackendType.CemuHook,
                         EnableMotion  = _enableMotion.Active,
                         Sensitivity   = (int)_sensitivity.Value,
                         GyroDeadzone  = _gyroDeadzone.Value,

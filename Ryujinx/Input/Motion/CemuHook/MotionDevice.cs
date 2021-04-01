@@ -2,7 +2,7 @@
 using System;
 using System.Numerics;
 
-namespace Ryujinx.Input.Motion.CemuHooks
+namespace Ryujinx.Input.Motion.CemuHook
 {
     public class MotionDevice
     {

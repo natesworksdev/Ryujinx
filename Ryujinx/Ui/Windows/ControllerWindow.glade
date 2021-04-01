@@ -1627,8 +1627,8 @@
                                       </packing>
                                     </child>
                                     <child>
-                                      <object class="GtkCheckButton" id="_enableCemuHooks">
-                                        <property name="label" translatable="yes">Use CemuHooks compatible motion</property>
+                                      <object class="GtkCheckButton" id="_enableCemuHook">
+                                        <property name="label" translatable="yes">Use CemuHook compatible motion</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
                                         <property name="receives_default">False</property>

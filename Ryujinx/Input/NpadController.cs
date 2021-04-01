@@ -111,7 +111,7 @@ namespace Ryujinx.Input
                             _motionInput.Update(accelerometer, gyroscope, (ulong)PerformanceCounter.ElapsedNanoseconds / 1000, controllerConfig.Motion.Sensitivity, (float)controllerConfig.Motion.GyroDeadzone);
                         }
                     }
-                    else if (controllerConfig.Motion.MotionBackend == MotionInputBackendType.CemuHooks)
+                    else if (controllerConfig.Motion.MotionBackend == MotionInputBackendType.CemuHook)
                     {
                         // TODO
                         throw new NotImplementedException();

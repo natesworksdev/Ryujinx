@@ -4,6 +4,6 @@
     {
         Invalid,
         GamepadDriver,
-        CemuHooks
+        CemuHook
     }
 }

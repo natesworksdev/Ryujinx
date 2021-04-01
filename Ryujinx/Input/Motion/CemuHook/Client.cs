@@ -3,7 +3,7 @@ using Ryujinx.Common;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
-using Ryujinx.Input.Motion.CemuHooks.Protocol;
+using Ryujinx.Input.Motion.CemuHook.Protocol;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,7 +12,7 @@ using System.Net.Sockets;
 using System.Numerics;
 using System.Threading.Tasks;
 
-namespace Ryujinx.Input.Motion.CemuHooks
+namespace Ryujinx.Input.Motion.CemuHook
 {
     public class Client : IDisposable
     {

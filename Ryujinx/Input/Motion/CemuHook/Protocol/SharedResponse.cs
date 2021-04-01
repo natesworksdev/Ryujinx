@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Ryujinx.Input.Motion.CemuHooks.Protocol
+namespace Ryujinx.Input.Motion.CemuHook.Protocol
 {
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct SharedResponse

@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.Common.Configuration.Hid.Controller.Motion
 {
-    public class CemuHooksMotionConfigController : MotionConfigController
+    public class CemuHookMotionConfigController : MotionConfigController
     {
         /// <summary>
         /// Motion Controller Slot
