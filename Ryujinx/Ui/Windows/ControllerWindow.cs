@@ -991,19 +991,10 @@ namespace Ryujinx.Ui.Windows
                         Motion = new StandardMotionConfigController
                         {
                             MotionBackend = MotionInputBackendType.GamepadDriver,
-                            EnableMotion = false,
+                            EnableMotion = true,
                             Sensitivity  = 100,
                             GyroDeadzone = 1,
                         }
-
-                        /*EnableMotion  = false,
-                        MirrorInput   = false,
-                        Slot          = 0,
-                        AltSlot       = 0,
-                        Sensitivity   = 100,
-                        GyroDeadzone  = 1,
-                        DsuServerHost = "127.0.0.1",
-                        DsuServerPort = 26760*/
                     };
                 }
             }
