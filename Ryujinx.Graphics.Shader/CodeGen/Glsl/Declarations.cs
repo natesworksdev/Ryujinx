@@ -15,7 +15,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         public static void Declare(CodeGenContext context, StructuredProgramInfo info)
         {
-            context.AppendLine("#version 440 core");
+            context.AppendLine("#version 450 core");
             context.AppendLine("#extension GL_ARB_gpu_shader_int64 : enable");
             context.AppendLine("#extension GL_ARB_shader_ballot : enable");
             context.AppendLine("#extension GL_ARB_shader_group_vote : enable");
@@ -24,11 +24,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             if (context.Config.Stage == ShaderStage.Compute)
             {
                 context.AppendLine("#extension GL_ARB_compute_shader : enable");
-            }
-
-            if (context.Config.Stage == ShaderStage.Fragment)
-            {
-                context.AppendLine("#extension GL_NV_shader_thread_group : enable");
             }
 
             if (context.Config.GpPassthrough)

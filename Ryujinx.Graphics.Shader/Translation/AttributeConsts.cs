@@ -55,6 +55,6 @@ namespace Ryujinx.Graphics.Shader.Translation
         public const int LeMask = 0x2000030;
         public const int LtMask = 0x2000034;
 
-        public const int HelperThreadNv = 0x2000038;
+        public const int ThreadKill = 0x2000038;
     }
 }

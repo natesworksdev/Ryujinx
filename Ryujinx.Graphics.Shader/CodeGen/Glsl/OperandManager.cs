@@ -65,7 +65,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             { AttributeConsts.GtMask,              new BuiltInAttribute("unpackUint2x32(gl_SubGroupGtMaskARB).x", VariableType.U32)  },
             { AttributeConsts.LeMask,              new BuiltInAttribute("unpackUint2x32(gl_SubGroupLeMaskARB).x", VariableType.U32)  },
             { AttributeConsts.LtMask,              new BuiltInAttribute("unpackUint2x32(gl_SubGroupLtMaskARB).x", VariableType.U32)  },
-            { AttributeConsts.HelperThreadNv,      new BuiltInAttribute("gl_HelperThreadNV",                      VariableType.Bool) },
+            { AttributeConsts.ThreadKill,          new BuiltInAttribute("gl_HelperInvocation",                    VariableType.Bool) },
 
             // Support uniforms.
             { AttributeConsts.FragmentOutputIsBgraBase + 0,  new BuiltInAttribute($"{DefaultNames.IsBgraName}[0]",  VariableType.Bool) },
