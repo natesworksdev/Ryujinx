@@ -542,7 +542,7 @@ namespace Ryujinx.Ui
                 }
                 else if (File.Exists(path))
                 {
-                    try
+                    while (true)
                     {
                         switch (System.IO.Path.GetExtension(path).ToLowerInvariant())
                         {
@@ -571,21 +571,20 @@ namespace Ryujinx.Ui
                                 }
                                 break;
                         }
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.Error?.PrintMsg(LogClass.Loader, e.Message);
-                        bool continueGame = GtkDialog.CreateChoiceDialog("Game Load Error",
-                           e.Message, "Continue loading anyway? Pressing \"No\" will restart the emulator.");
-                        if (!continueGame)
+                        if (_emulationContext.Application.dlcFailureString != null)
                         {
-                            Logger.Warning?.PrintMsg(LogClass.Application, "Game launch was aborted due to an exception");
-                            string ryuName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "Ryujinx.exe" : "Ryujinx";
-                            string ryuExe = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ryuName);
-                            string ryuArg = string.Join(" ", Environment.GetCommandLineArgs().AsEnumerable().Skip(1).ToArray());
-                            Process.Start(ryuExe, ryuArg);
-                            Environment.Exit(0);
-                            return;
+                            Logger.Error?.PrintMsg(LogClass.Loader, _emulationContext.Application.dlcFailureString);
+                            bool continueGame = GtkDialog.CreateChoiceDialog("Game Load Error",
+                               _emulationContext.Application.dlcFailureString, "Continue loading anyway?");
+                            if (!continueGame)
+                            {
+                                return;
+                            }
+                            _emulationContext.Application.dlcFailureString = null;
+                            _emulationContext.Application.ignoreDLCError = true;
+                        }else
+                        {
+                            break;
                         }
                     }
                 }

@@ -66,6 +66,10 @@ namespace Ryujinx.HLE.HOS
 
         public string TitleIdText => TitleId.ToString("x16");
 
+        public bool ignoreDLCError = false;
+        public string dlcFailureString = null;
+
+
         public ApplicationLoader(Switch device, VirtualFileSystem fileSystem, ContentManager contentManager)
         {
             _device         = device;
@@ -300,7 +304,6 @@ namespace Ryujinx.HLE.HOS
 
         private void LoadNca(Nca mainNca, Nca patchNca, Nca controlNca)
         {
-            int invalidDlcCount = 0;
             if (mainNca.Header.ContentType != NcaContentType.Program)
             {
                 Logger.Error?.Print(LogClass.Loader, "Selected NCA is not a \"Program\" NCA");
@@ -332,12 +335,28 @@ namespace Ryujinx.HLE.HOS
             if (File.Exists(titleAocMetadataPath))
             {
                 List<DlcContainer> dlcContainerList = JsonHelper.DeserializeFromFile<List<DlcContainer>>(titleAocMetadataPath);
+                int invalidDlcCount = 0;
+                foreach (DlcContainer dlcContainer in dlcContainerList)
+                {
+                    if (!File.Exists(dlcContainer.Path))
+                    {
+                        if (!ignoreDLCError)
+                        {
+                            invalidDlcCount++;
+                        }
+                    }
+                }
+
+                if(invalidDlcCount > 0)
+                {
+                    dlcFailureString = invalidDlcCount + " DLC files have been moved or deleted. Please use the DLC manager.";
+                    return;
+                }
 
                 foreach (DlcContainer dlcContainer in dlcContainerList)
                 {
                     if (!File.Exists(dlcContainer.Path))
                     {
-                        invalidDlcCount++;
                         continue;
                     }
                     foreach (DlcNca dlcNca in dlcContainer.DlcNcaList)
@@ -421,8 +440,6 @@ namespace Ryujinx.HLE.HOS
             LoadExeFs(codeFs, metaData);
 
             Logger.Info?.Print(LogClass.Loader, $"Application Loaded: {TitleName} v{DisplayVersion} [{TitleIdText}] [{(TitleIs64Bit ? "64-bit" : "32-bit")}]");
-            if (invalidDlcCount>0)
-                throw new Exception(invalidDlcCount + " DLC files have been moved or deleted. Please use the DLC manager.");
         }
 
         // Sets TitleId, so be sure to call before using it
