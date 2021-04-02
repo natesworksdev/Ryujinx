@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
+using static Ryujinx.Graphics.Shader.CodeGen.Glsl.ThreadCommon;
 using static Ryujinx.Graphics.Shader.StructuredIr.InstructionInfo;
 
 namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
@@ -52,20 +53,20 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             { AttributeConsts.FrontFacing,         new BuiltInAttribute("gl_FrontFacing",     VariableType.Bool) },
 
             // Special.
-            { AttributeConsts.FragmentOutputDepth, new BuiltInAttribute("gl_FragDepth",                           VariableType.F32)  },
-            { AttributeConsts.ThreadKill,          new BuiltInAttribute("gl_HelperInvocation",                    VariableType.Bool) },
-            { AttributeConsts.ThreadIdX,           new BuiltInAttribute("gl_LocalInvocationID.x",                 VariableType.U32)  },
-            { AttributeConsts.ThreadIdY,           new BuiltInAttribute("gl_LocalInvocationID.y",                 VariableType.U32)  },
-            { AttributeConsts.ThreadIdZ,           new BuiltInAttribute("gl_LocalInvocationID.z",                 VariableType.U32)  },
-            { AttributeConsts.CtaIdX,              new BuiltInAttribute("gl_WorkGroupID.x",                       VariableType.U32)  },
-            { AttributeConsts.CtaIdY,              new BuiltInAttribute("gl_WorkGroupID.y",                       VariableType.U32)  },
-            { AttributeConsts.CtaIdZ,              new BuiltInAttribute("gl_WorkGroupID.z",                       VariableType.U32)  },
-            { AttributeConsts.LaneId,              new BuiltInAttribute("gl_SubGroupInvocationARB",               VariableType.U32)  },
-            { AttributeConsts.EqMask,              new BuiltInAttribute("unpackUint2x32(gl_SubGroupEqMaskARB).x", VariableType.U32)  },
-            { AttributeConsts.GeMask,              new BuiltInAttribute("unpackUint2x32(gl_SubGroupGeMaskARB).x", VariableType.U32)  },
-            { AttributeConsts.GtMask,              new BuiltInAttribute("unpackUint2x32(gl_SubGroupGtMaskARB).x", VariableType.U32)  },
-            { AttributeConsts.LeMask,              new BuiltInAttribute("unpackUint2x32(gl_SubGroupLeMaskARB).x", VariableType.U32)  },
-            { AttributeConsts.LtMask,              new BuiltInAttribute("unpackUint2x32(gl_SubGroupLtMaskARB).x", VariableType.U32)  },
+            { AttributeConsts.FragmentOutputDepth, new BuiltInAttribute("gl_FragDepth",                             VariableType.F32)  },
+            { AttributeConsts.ThreadKill,          new BuiltInAttribute("gl_HelperInvocation",                      VariableType.Bool) },
+            { AttributeConsts.ThreadIdX,           new BuiltInAttribute("gl_LocalInvocationID.x",                   VariableType.U32)  },
+            { AttributeConsts.ThreadIdY,           new BuiltInAttribute("gl_LocalInvocationID.y",                   VariableType.U32)  },
+            { AttributeConsts.ThreadIdZ,           new BuiltInAttribute("gl_LocalInvocationID.z",                   VariableType.U32)  },
+            { AttributeConsts.CtaIdX,              new BuiltInAttribute("gl_WorkGroupID.x",                         VariableType.U32)  },
+            { AttributeConsts.CtaIdY,              new BuiltInAttribute("gl_WorkGroupID.y",                         VariableType.U32)  },
+            { AttributeConsts.CtaIdZ,              new BuiltInAttribute("gl_WorkGroupID.z",                         VariableType.U32)  },
+            { AttributeConsts.LaneId,              new BuiltInAttribute("(gl_SubGroupInvocationARB & 31)",          VariableType.U32)  },
+            { AttributeConsts.EqMask,              new BuiltInAttribute(GenerateUnpackMask("gl_SubGroupEqMaskARB"), VariableType.U32)  },
+            { AttributeConsts.GeMask,              new BuiltInAttribute(GenerateUnpackMask("gl_SubGroupGeMaskARB"), VariableType.U32)  },
+            { AttributeConsts.GtMask,              new BuiltInAttribute(GenerateUnpackMask("gl_SubGroupGtMaskARB"), VariableType.U32)  },
+            { AttributeConsts.LeMask,              new BuiltInAttribute(GenerateUnpackMask("gl_SubGroupLeMaskARB"), VariableType.U32)  },
+            { AttributeConsts.LtMask,              new BuiltInAttribute(GenerateUnpackMask("gl_SubGroupLtMaskARB"), VariableType.U32)  },
 
             // Support uniforms.
             { AttributeConsts.FragmentOutputIsBgraBase + 0,  new BuiltInAttribute($"{DefaultNames.IsBgraName}[0]",  VariableType.Bool) },
