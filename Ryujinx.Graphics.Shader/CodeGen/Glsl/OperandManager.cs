@@ -53,6 +53,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
             // Special.
             { AttributeConsts.FragmentOutputDepth, new BuiltInAttribute("gl_FragDepth",                           VariableType.F32)  },
+            { AttributeConsts.ThreadKill,          new BuiltInAttribute("gl_HelperInvocation",                    VariableType.Bool) },
             { AttributeConsts.ThreadIdX,           new BuiltInAttribute("gl_LocalInvocationID.x",                 VariableType.U32)  },
             { AttributeConsts.ThreadIdY,           new BuiltInAttribute("gl_LocalInvocationID.y",                 VariableType.U32)  },
             { AttributeConsts.ThreadIdZ,           new BuiltInAttribute("gl_LocalInvocationID.z",                 VariableType.U32)  },
@@ -65,7 +66,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             { AttributeConsts.GtMask,              new BuiltInAttribute("unpackUint2x32(gl_SubGroupGtMaskARB).x", VariableType.U32)  },
             { AttributeConsts.LeMask,              new BuiltInAttribute("unpackUint2x32(gl_SubGroupLeMaskARB).x", VariableType.U32)  },
             { AttributeConsts.LtMask,              new BuiltInAttribute("unpackUint2x32(gl_SubGroupLtMaskARB).x", VariableType.U32)  },
-            { AttributeConsts.ThreadKill,          new BuiltInAttribute("gl_HelperInvocation",                    VariableType.Bool) },
 
             // Support uniforms.
             { AttributeConsts.FragmentOutputIsBgraBase + 0,  new BuiltInAttribute($"{DefaultNames.IsBgraName}[0]",  VariableType.Bool) },
