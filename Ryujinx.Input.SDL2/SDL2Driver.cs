@@ -68,6 +68,7 @@ namespace Ryujinx.Input.SDL2
             SDL_EventState(SDL_EventType.SDL_JOYBUTTONUP, SDL_DISABLE);
 
             SDL_EventState(SDL_EventType.SDL_CONTROLLERSENSORUPDATE, SDL_DISABLE);
+            SDL_EventState((SDL_EventType)1625, SDL_DISABLE);
 
             _worker = new Thread(EventWorker);
             _isRunning = true;

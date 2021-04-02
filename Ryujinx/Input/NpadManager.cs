@@ -26,6 +26,10 @@ namespace Ryujinx.Input
         private readonly IGamepadDriver _keyboardDriver;
         private readonly IGamepadDriver _gamepadDriver;
 
+        private bool _isDisposed;
+
+        private List<InputConfig> _inputConfig;
+
         public NpadManager(IGamepadDriver keyboardDriver, IGamepadDriver gamepadDriver)
         {
             _controllers = new NpadController[MaxControllers];
@@ -33,17 +37,20 @@ namespace Ryujinx.Input
 
             _keyboardDriver = keyboardDriver;
             _gamepadDriver = gamepadDriver;
+            _inputConfig = ConfigurationState.Instance.Hid.InputConfig.Value;
 
             _gamepadDriver.OnGamepadConnected += HandleOnGamepadConnected;
             _gamepadDriver.OnGamepadDisconnected += HandleOnGamepadDisconnected;
         }
 
+        // TODO: move that in the input manager maybe?
         private void HandleOnGamepadDisconnected(string obj)
         {
             // Force input reload
             ReloadConfiguration(ConfigurationState.Instance.Hid.InputConfig.Value);
         }
 
+        // TODO: move that in the input manager maybe?
         private void HandleOnGamepadConnected(string id)
         {
             // Force input reload
@@ -76,7 +83,7 @@ namespace Ryujinx.Input
             }
         }
 
-        public void ReloadConfiguration(List<InputConfig> inputConfigs)
+        public void ReloadConfiguration(List<InputConfig> inputConfig)
         {
             lock (_lock)
             {
@@ -86,11 +93,11 @@ namespace Ryujinx.Input
                     _controllers[i] = null;
                 }
 
-                foreach (InputConfig inputConfig in inputConfigs)
+                foreach (InputConfig inputConfigEntry in inputConfig)
                 {
                     NpadController controller = new NpadController(_cemuHookClient);
 
-                    bool isValid = DriverConfigurationUpdate(ref controller, inputConfig);
+                    bool isValid = DriverConfigurationUpdate(ref controller, inputConfigEntry);
 
                     if (!isValid)
                     {
@@ -98,24 +105,26 @@ namespace Ryujinx.Input
                     }
                     else
                     {
-                        _controllers[(int)inputConfig.PlayerIndex] = controller;
+                        _controllers[(int)inputConfigEntry.PlayerIndex] = controller;
                     }
                 }
 
+                _inputConfig = inputConfig;
+
                 // Enforce an update of the property that will be updated by HLE.
-                // TODO: move that
-                ConfigurationState.Instance.Hid.InputConfig.Value = inputConfigs;
+                // TODO: move that in the input manager maybe?
+                ConfigurationState.Instance.Hid.InputConfig.Value = inputConfig;
             }
         }
 
-        public void Update(Hid hleHid, TamperMachine tamperMachine, List<InputConfig> inputConfigs)
+        public void Update(Hid hleHid, TamperMachine tamperMachine)
         {
             lock (_lock)
             {
                 List<GamepadInput> hleInputStates = new List<GamepadInput>();
                 List<SixAxisInput> hleMotionStates = new List<SixAxisInput>(NpadDevices.MaxControllers);
 
-                foreach (InputConfig inputConfig in inputConfigs)
+                foreach (InputConfig inputConfig in _inputConfig)
                 {
                     GamepadInput inputState = default;
                     SixAxisInput motionState = default;
@@ -161,14 +170,19 @@ namespace Ryujinx.Input
             {
                 lock (_lock)
                 {
-                    _cemuHookClient.Dispose();
-
-                    _gamepadDriver.OnGamepadConnected -= HandleOnGamepadConnected;
-                    _gamepadDriver.OnGamepadDisconnected -= HandleOnGamepadDisconnected;
-
-                    for (int i = 0; i < _controllers.Length; i++)
+                    if (!_isDisposed)
                     {
-                        _controllers[i]?.Dispose();
+                        _cemuHookClient.Dispose();
+
+                        _gamepadDriver.OnGamepadConnected -= HandleOnGamepadConnected;
+                        _gamepadDriver.OnGamepadDisconnected -= HandleOnGamepadDisconnected;
+
+                        for (int i = 0; i < _controllers.Length; i++)
+                        {
+                            _controllers[i]?.Dispose();
+                        }
+
+                        _isDisposed = true;
                     }
                 }
             }

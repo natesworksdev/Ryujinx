@@ -76,7 +76,6 @@ namespace Ryujinx.Input
 
             _id = config.Id;
             _gamepad = GamepadDriver.GetGamepad(_id);
-            _config = config;
             _isValid = _gamepad != null;
 
             UpdateUserConfiguration(config);
@@ -86,22 +85,40 @@ namespace Ryujinx.Input
 
         public void UpdateUserConfiguration(InputConfig config)
         {
-            _config = config;
-
-            if (_config is StandardControllerInputConfig controllerConfig &&
-                controllerConfig.Motion.EnableMotion &&
-                controllerConfig.Motion.MotionBackend == MotionInputBackendType.GamepadDriver)
+            if (config is StandardControllerInputConfig controllerConfig)
             {
-                _motionInput = new MotionInput();
+                bool needMotionInputUpdate = _config == null || (_config is StandardControllerInputConfig oldControllerConfig &&
+                                                                (oldControllerConfig.Motion.EnableMotion != controllerConfig.Motion.EnableMotion) &&
+                                                                (oldControllerConfig.Motion.MotionBackend != controllerConfig.Motion.MotionBackend));
+
+                if (needMotionInputUpdate)
+                {
+                    UpdateMotionInput(controllerConfig.Motion);
+                }
             }
             else
             {
+                // non controller doesn't have motions.
                 _motionInput = null;
             }
+
+            _config = config;
 
             if (_isValid)
             {
                 _gamepad.SetConfiguration(config);
+            }
+        }
+
+        private void UpdateMotionInput(MotionConfigController motionConfig)
+        {
+            if (motionConfig.MotionBackend != MotionInputBackendType.CemuHook)
+            {
+                _motionInput = new MotionInput();
+             }
+            else
+            {
+                _motionInput = null;
             }
         }
 

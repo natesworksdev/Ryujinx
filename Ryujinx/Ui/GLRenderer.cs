@@ -529,7 +529,7 @@ namespace Ryujinx.Ui
                 });
             }
 
-            NpadManager.Update(_device.Hid, _device.TamperMachine, ConfigurationState.Instance.Hid.InputConfig.Value);
+            NpadManager.Update(_device.Hid, _device.TamperMachine);
 
             // TODO: Port cemu-hooks motion support again
             // TODO: Implement raw keyboard support again
