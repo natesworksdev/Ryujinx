@@ -59,8 +59,6 @@ namespace Ryujinx.Ui
 
         private KeyboardHotkeyState _prevHotkeyState;
 
-        private Client _dsuClient;
-
         private GraphicsDebugLevel _glLogLevel;
 
         private readonly ManualResetEvent _exitEvent;
@@ -108,8 +106,6 @@ namespace Ryujinx.Ui
 
             Shown += Renderer_Shown;
 
-            _dsuClient = new Client();
-
             _glLogLevel = glLogLevel;
 
             _exitEvent = new ManualResetEvent(false);
@@ -146,7 +142,6 @@ namespace Ryujinx.Ui
         {
             _device.DisposeGpu();
             NpadManager.Dispose();
-            _dsuClient?.Dispose();
         }
 
         private void Parent_FocusOutEvent(object o, Gtk.FocusOutEventArgs args)
@@ -164,7 +159,6 @@ namespace Ryujinx.Ui
             ConfigurationState.Instance.HideCursorOnIdle.Event -= HideCursorStateChanged;
 
             NpadManager.Dispose();
-            _dsuClient?.Dispose();
             Dispose();
         }
 
@@ -398,7 +392,7 @@ namespace Ryujinx.Ui
 
         public void Exit()
         {
-            _dsuClient?.Dispose();
+            NpadManager?.Dispose();
 
             if (_isStopped)
             {

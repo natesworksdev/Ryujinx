@@ -9,10 +9,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
+using CemuHookClient = Ryujinx.Input.Motion.CemuHook.Client;
+
 namespace Ryujinx.Input
 {
     public class NpadManager : IDisposable
     {
+        private CemuHookClient _cemuHookClient;
+
         private object _lock = new object();
 
         private const int MaxControllers = 9;
@@ -25,6 +29,7 @@ namespace Ryujinx.Input
         public NpadManager(IGamepadDriver keyboardDriver, IGamepadDriver gamepadDriver)
         {
             _controllers = new NpadController[MaxControllers];
+            _cemuHookClient = new CemuHookClient();
 
             _keyboardDriver = keyboardDriver;
             _gamepadDriver = gamepadDriver;
@@ -83,7 +88,7 @@ namespace Ryujinx.Input
 
                 foreach (InputConfig inputConfig in inputConfigs)
                 {
-                    NpadController controller = new NpadController();
+                    NpadController controller = new NpadController(_cemuHookClient);
 
                     bool isValid = DriverConfigurationUpdate(ref controller, inputConfig);
 
@@ -156,6 +161,8 @@ namespace Ryujinx.Input
             {
                 lock (_lock)
                 {
+                    _cemuHookClient.Dispose();
+
                     _gamepadDriver.OnGamepadConnected -= HandleOnGamepadConnected;
                     _gamepadDriver.OnGamepadDisconnected -= HandleOnGamepadDisconnected;
 

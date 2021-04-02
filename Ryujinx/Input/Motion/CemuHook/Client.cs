@@ -1,6 +1,8 @@
 ﻿using Force.Crc32;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration.Hid;
+using Ryujinx.Common.Configuration.Hid.Controller;
+using Ryujinx.Common.Configuration.Hid.Controller.Motion;
 using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
 using Ryujinx.Input.Motion.CemuHook.Protocol;
@@ -325,33 +327,44 @@ namespace Ryujinx.Input.Motion.CemuHook
 
                     lock (_motionData)
                     {
-                        /*int slot = inputData.Shared.Slot;
-
-                        if (_motionData.ContainsKey(clientId))
+                        // Sanity check the configuration state and remove client if needed if needed.
+                        if (config is StandardControllerInputConfig controllerConfig &&
+                            controllerConfig.Motion.EnableMotion &&
+                            controllerConfig.Motion.MotionBackend == MotionInputBackendType.CemuHook &&
+                            controllerConfig.Motion is CemuHookMotionConfigController cemuHookConfig)
                         {
-                            if (_motionData[clientId].ContainsKey(slot))
-                            {
-                                MotionInput previousData = _motionData[clientId][slot];
+                            int slot = inputData.Shared.Slot;
 
-                                previousData.Update(accelerometer, gyroscrope, timestamp, config.Sensitivity, (float)config.GyroDeadzone);
+                            if (_motionData.ContainsKey(clientId))
+                            {
+                                if (_motionData[clientId].ContainsKey(slot))
+                                {
+                                    MotionInput previousData = _motionData[clientId][slot];
+
+                                    previousData.Update(accelerometer, gyroscrope, timestamp, cemuHookConfig.Sensitivity, (float)cemuHookConfig.GyroDeadzone);
+                                }
+                                else
+                                {
+                                    MotionInput input = new MotionInput();
+
+                                    input.Update(accelerometer, gyroscrope, timestamp, cemuHookConfig.Sensitivity, (float)cemuHookConfig.GyroDeadzone);
+
+                                    _motionData[clientId].Add(slot, input);
+                                }
                             }
                             else
                             {
                                 MotionInput input = new MotionInput();
 
-                                input.Update(accelerometer, gyroscrope, timestamp, config.Sensitivity, (float)config.GyroDeadzone);
+                                input.Update(accelerometer, gyroscrope, timestamp, cemuHookConfig.Sensitivity, (float)cemuHookConfig.GyroDeadzone);
 
-                                _motionData[clientId].Add(slot, input);
+                                _motionData.Add(clientId, new Dictionary<int, MotionInput>() { { slot, input } });
                             }
                         }
                         else
                         {
-                            MotionInput input = new MotionInput();
-
-                            input.Update(accelerometer, gyroscrope, timestamp, config.Sensitivity, (float)config.GyroDeadzone);
-
-                            _motionData.Add(clientId, new Dictionary<int, MotionInput>() { { slot, input } });
-                        }*/
+                            RemoveClient(clientId);
+                        }
                     }
                     break;
             }

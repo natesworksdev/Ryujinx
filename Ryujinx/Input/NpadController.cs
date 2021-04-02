@@ -7,6 +7,9 @@ using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
+using CemuHookClient = Ryujinx.Input.Motion.CemuHook.Client;
+using ConfigControllerType = Ryujinx.Common.Configuration.Hid.ControllerType;
+
 namespace Ryujinx.Input
 {
     public class NpadController : IDisposable
@@ -55,11 +58,14 @@ namespace Ryujinx.Input
 
         public string Id => _id;
 
-        public NpadController()
+        private CemuHookClient _cemuHookClient;
+
+        public NpadController(CemuHookClient cemuHookClient)
         {
             State = default;
             _id = null;
             _isValid = false;
+            _cemuHookClient = cemuHookClient;
         }
 
         public bool UpdateDriverConfiguration(IGamepadDriver gamepadDriver, InputConfig config)
@@ -73,8 +79,6 @@ namespace Ryujinx.Input
             _config = config;
             _isValid = _gamepad != null;
 
-            _motionInput = new MotionInput();
-
             UpdateUserConfiguration(config);
 
             return _isValid;
@@ -83,6 +87,17 @@ namespace Ryujinx.Input
         public void UpdateUserConfiguration(InputConfig config)
         {
             _config = config;
+
+            if (_config is StandardControllerInputConfig controllerConfig &&
+                controllerConfig.Motion.EnableMotion &&
+                controllerConfig.Motion.MotionBackend == MotionInputBackendType.GamepadDriver)
+            {
+                _motionInput = new MotionInput();
+            }
+            else
+            {
+                _motionInput = null;
+            }
 
             if (_isValid)
             {
@@ -111,17 +126,31 @@ namespace Ryujinx.Input
                             _motionInput.Update(accelerometer, gyroscope, (ulong)PerformanceCounter.ElapsedNanoseconds / 1000, controllerConfig.Motion.Sensitivity, (float)controllerConfig.Motion.GyroDeadzone);
                         }
                     }
-                    else if (controllerConfig.Motion.MotionBackend == MotionInputBackendType.CemuHook)
+                    else if (controllerConfig.Motion.MotionBackend == MotionInputBackendType.CemuHook && controllerConfig.Motion is CemuHookMotionConfigController cemuControllerConfig)
                     {
-                        // TODO
-                        throw new NotImplementedException();
+                        int clientId = (int)controllerConfig.PlayerIndex;
+
+                        // First of all ensure we are registered
+                        _cemuHookClient.RegisterClient(clientId, cemuControllerConfig.DsuServerHost, cemuControllerConfig.DsuServerPort);
+
+                        // Then request data
+                        _cemuHookClient.RequestData(clientId, cemuControllerConfig.Slot);
+
+                        if (controllerConfig.ControllerType == ConfigControllerType.JoyconPair && !cemuControllerConfig.MirrorInput)
+                        {
+                            _cemuHookClient.RequestData(clientId, cemuControllerConfig.AltSlot);
+                        }
+
+                        // Finally, get motion input data
+                        _cemuHookClient.TryGetData(clientId, cemuControllerConfig.Slot, out _motionInput);
                     }
                 }
             }
             else
             {
-                // Reset state
+                // Reset states
                 State = default;
+                _motionInput = null;
             }
         }
 
@@ -196,7 +225,7 @@ namespace Ryujinx.Input
             Vector3 accelerometer;
             Vector3 rotation;
 
-            if (_gamepad.Features.HasFlag(GamepadFeaturesFlag.Motion))
+            if (_motionInput != null)
             {
                 gyroscope = Truncate(_motionInput.Gyroscrope * 0.0027f, 3);
                 accelerometer = Truncate(_motionInput.Accelerometer, 3);
