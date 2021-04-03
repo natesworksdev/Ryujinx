@@ -41,11 +41,13 @@ namespace Ryujinx.Input.SDL2
                 return;
             }
 
-            SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "0");
-            SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, "1");
-            SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE, "1");
-            SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
-            SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_CORRELATE_XINPUT, "1");
+            // TODO: Fixes for the nuget package.
+            SDL_SetHint("SDL_JOYSTICK_HIDAPI_PS4_RUMBLE", "1");
+            SDL_SetHint("SDL_JOYSTICK_HIDAPI_PS5_RUMBLE", "1");
+            SDL_SetHint("SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS", "1");
+            SDL_SetHint("SDL_JOYSTICK_HIDAPI_CORRELATE_XINPUT", "1");
+            SDL_SetHint("SDL_JOYSTICK_HIDAPI_SWITCH_HOME_LED", "0");
+            SDL_SetHint("SDL_JOYSTICK_HIDAPI_JOY_CONS", "1");
 
             if (SDL_Init(SdlInitFlags) != 0)
             {
@@ -68,6 +70,7 @@ namespace Ryujinx.Input.SDL2
             SDL_EventState(SDL_EventType.SDL_JOYBUTTONUP, SDL_DISABLE);
 
             SDL_EventState(SDL_EventType.SDL_CONTROLLERSENSORUPDATE, SDL_DISABLE);
+            // TODO: Fixes for the nuget package.
             SDL_EventState((SDL_EventType)1625, SDL_DISABLE);
 
             _worker = new Thread(EventWorker);
