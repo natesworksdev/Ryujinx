@@ -313,6 +313,7 @@ namespace Ryujinx.HLE.HOS
 
         private void LoadNca(Nca mainNca, Nca patchNca, Nca controlNca)
         {
+            loadFailureString = null;
             if (mainNca.Header.ContentType != NcaContentType.Program)
             {
                 Logger.Error?.Print(LogClass.Loader, "Selected NCA is not a \"Program\" NCA");
