@@ -567,7 +567,7 @@ namespace Ryujinx.Ui
                                 }
                                 catch (ArgumentOutOfRangeException)
                                 {
-                                    Logger.Error?.Print(LogClass.Application, "The file which you have specified is unsupported by Ryujinx.");
+                                    Logger.Error?.Print(LogClass.Application, "The specified file is not supported by Ryujinx.");
                                 }
                                 break;
                         }
