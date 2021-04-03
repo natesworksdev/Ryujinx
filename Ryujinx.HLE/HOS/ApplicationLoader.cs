@@ -205,7 +205,7 @@ namespace Ryujinx.HLE.HOS
 
                         return GetGameUpdateDataFromPartition(fileSystem, nsp, titleIdBase.ToString("x16"), programIndex);
                     }
-                    else
+                    else if (updatePath.Trim() != "")
                     {
                         if (ignoreLoadErrorState < 1)
                         {

@@ -579,6 +579,7 @@ namespace Ryujinx.Ui
                             if (!continueGame)
                             {
                                 ApplicationLoader.ignoreLoadErrorState = 0;
+                                ApplicationLoader.loadFailureString = null;
                                 return;
                             }
                             ApplicationLoader.loadFailureString = null;
