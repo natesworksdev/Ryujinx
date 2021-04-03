@@ -51,6 +51,8 @@ namespace ARMeilleure.Translation
         private readonly ConcurrentStack<RejitRequest> _backgroundStack;
         private readonly AutoResetEvent _backgroundTranslatorEvent;
         private readonly ReaderWriterLock _backgroundTranslatorLock;
+        private readonly JitCache _jitCache;
+        internal JitCache JitCache => _jitCache;
 
         internal ConcurrentDictionary<ulong, TranslatedFunction> Functions { get; }
         internal AddressTable<ulong> FunctionTable { get; }
@@ -75,7 +77,7 @@ namespace ARMeilleure.Translation
             _backgroundTranslatorEvent = new AutoResetEvent(false);
             _backgroundTranslatorLock = new ReaderWriterLock();
 
-            JitCache.Initialize(allocator);
+            _jitCache = new JitCache(allocator);
 
             CountTable = new EntryTable<uint>();
             Functions = new ConcurrentDictionary<ulong, TranslatedFunction>();
@@ -226,7 +228,7 @@ namespace ARMeilleure.Translation
 
                 if (oldFunc != func)
                 {
-                    JitCache.Unmap(func.FuncPtr);
+                    _jitCache.Unmap(func.FuncPtr);
                     func = oldFunc;
                 }
 
@@ -297,7 +299,7 @@ namespace ARMeilleure.Translation
 
             if (!context.HasPtc)
             {
-                func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, options);
+                func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, options, _jitCache);
 
                 ResetPool(highCq ? 1 : 0);
             }
@@ -305,7 +307,7 @@ namespace ARMeilleure.Translation
             {
                 using PtcInfo ptcInfo = new PtcInfo();
 
-                func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, options, ptcInfo);
+                func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, options, _jitCache, ptcInfo);
 
                 ResetPool(highCq ? 1 : 0);
 
@@ -513,7 +515,7 @@ namespace ARMeilleure.Translation
 
             foreach (var func in Functions.Values)
             {
-                JitCache.Unmap(func.FuncPtr);
+                _jitCache.Unmap(func.FuncPtr);
 
                 func.CallCounter?.Dispose();
             }
@@ -522,7 +524,7 @@ namespace ARMeilleure.Translation
 
             while (_oldFuncs.TryDequeue(out var kv))
             {
-                JitCache.Unmap(kv.Value.FuncPtr);
+                _jitCache.Unmap(kv.Value.FuncPtr);
 
                 kv.Value.CallCounter?.Dispose();
             }

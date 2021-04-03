@@ -582,7 +582,7 @@ namespace ARMeilleure.Translation.PTC
 
                     UnwindInfo unwindInfo = ReadUnwindInfo(unwindInfosReader);
 
-                    TranslatedFunction func = FastTranslate(code, callCounter, infoEntry.GuestSize, unwindInfo, infoEntry.HighCq);
+                    TranslatedFunction func = FastTranslate(code, callCounter, infoEntry.GuestSize, unwindInfo, infoEntry.HighCq, jitCache);
 
                     translator.RegisterFunction(infoEntry.Address, func);
 
@@ -726,11 +726,12 @@ namespace ARMeilleure.Translation.PTC
             Counter<uint> callCounter,
             ulong guestSize,
             UnwindInfo unwindInfo,
-            bool highCq)
+            bool highCq,
+            JitCache jitCache)
         {
             CompiledFunction cFunc = new CompiledFunction(code, unwindInfo);
 
-            IntPtr codePtr = JitCache.Map(cFunc);
+            IntPtr codePtr = jitCache.Map(cFunc);
 
             GuestFunction gFunc = Marshal.GetDelegateForFunctionPointer<GuestFunction>(codePtr);
 

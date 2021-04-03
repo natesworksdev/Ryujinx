@@ -16,11 +16,12 @@ namespace ARMeilleure.Translation
             OperandType[]    argTypes,
             OperandType      retType,
             CompilerOptions  options,
+            JitCache         jitCache,
             PtcInfo          ptcInfo = null)
         {
             CompiledFunction func = Compile(cfg, argTypes, retType, options, ptcInfo);
 
-            IntPtr codePtr = JitCache.Map(func);
+            IntPtr codePtr = jitCache.Map(func);
 
             return Marshal.GetDelegateForFunctionPointer<T>(codePtr);
         }
