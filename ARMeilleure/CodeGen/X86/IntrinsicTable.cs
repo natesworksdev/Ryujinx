@@ -181,7 +181,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(Intrinsic.X86Xorps,        new IntrinsicInfo(X86Instruction.Xorps,        IntrinsicType.Binary));
         }
 
-        private static void Add(Intrinsic intrin, IntrinsicInfo info)
+        private static void Add(Intrinsic intrin, in IntrinsicInfo info)
         {
             _intrinTable[(int)intrin] = info;
         }

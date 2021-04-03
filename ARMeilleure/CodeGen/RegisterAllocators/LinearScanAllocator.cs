@@ -45,7 +45,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             public int IntUsedRegisters { get; set; }
             public int VecUsedRegisters { get; set; }
 
-            public AllocationContext(StackAllocator stackAlloc, RegisterMasks masks, int intervalsCount)
+            public AllocationContext(StackAllocator stackAlloc, in RegisterMasks masks, int intervalsCount)
             {
                 StackAlloc = stackAlloc;
                 Masks      = masks;
@@ -988,7 +988,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             }
         }
 
-        private static int GetRegisterId(Register register)
+        private static int GetRegisterId(in Register register)
         {
             return (register.Index << 1) | (register.Type == RegisterType.Vector ? 1 : 0);
         }

@@ -77,7 +77,7 @@ namespace ARMeilleure.CodeGen.X86
         private long _jNearPosition;
         private int  _jNearLength;
 
-        public CodeGenContext(Stream stream, AllocationResult allocResult, int maxCallArgs, int blocksCount, PtcInfo ptcInfo = null)
+        public CodeGenContext(Stream stream, in AllocationResult allocResult, int maxCallArgs, int blocksCount, PtcInfo ptcInfo = null)
         {
             _stream = stream;
 
@@ -96,7 +96,7 @@ namespace ARMeilleure.CodeGen.X86
             _ptcDisabled = ptcInfo == null;
         }
 
-        private int GetCallArgsRegionSize(AllocationResult allocResult, int maxCallArgs, out int xmmSaveRegionSize)
+        private int GetCallArgsRegionSize(in AllocationResult allocResult, int maxCallArgs, out int xmmSaveRegionSize)
         {
             // We need to add 8 bytes to the total size, as the call to this
             // function already pushed 8 bytes (the return address).

@@ -11,14 +11,14 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
     {
         private class ParallelCopy
         {
-            private struct Copy
+            private readonly struct Copy
             {
                 public Register Dest   { get; }
                 public Register Source { get; }
 
                 public OperandType Type { get; }
 
-                public Copy(Register dest, Register source, OperandType type)
+                public Copy(in Register dest, in Register source, OperandType type)
                 {
                     Dest   = dest;
                     Source = source;
@@ -35,7 +35,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 _copies = new List<Copy>();
             }
 
-            public void AddCopy(Register dest, Register source, OperandType type)
+            public void AddCopy(in Register dest, in Register source, OperandType type)
             {
                 _copies.Add(new Copy(dest, source, type));
             }
@@ -241,7 +241,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             return sequence.ToArray();
         }
 
-        private static Operand GetRegister(Register reg, OperandType type)
+        private static Operand GetRegister(in Register reg, OperandType type)
         {
             return Register(reg.Index, reg.Type, type);
         }

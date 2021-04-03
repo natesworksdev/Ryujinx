@@ -2,7 +2,7 @@ using System;
 
 namespace ARMeilleure.CodeGen.RegisterAllocators
 {
-    struct LiveRange : IComparable<LiveRange>
+    readonly struct LiveRange : IComparable<LiveRange>
     {
         public int Start { get; }
         public int End   { get; }

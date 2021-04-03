@@ -48,7 +48,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             SpillOffset = -1;
         }
 
-        public LiveInterval(Register register) : this()
+        public LiveInterval(in Register register) : this()
         {
             IsFixed  = true;
             Register = register;

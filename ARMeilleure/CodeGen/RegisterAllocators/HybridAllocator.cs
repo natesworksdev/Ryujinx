@@ -14,7 +14,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         private const int RegistersCount = 16;
         private const int MaxIROperands  = 4;
 
-        private struct BlockInfo
+        private readonly struct BlockInfo
         {
             public bool HasCall { get; }
 

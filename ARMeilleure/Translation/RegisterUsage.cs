@@ -245,7 +245,7 @@ namespace ARMeilleure.Translation
             return block.Operations.Last is Operation operation && operation.Instruction == inst;
         }
 
-        private static RegisterMask GetMask(Register register)
+        private static RegisterMask GetMask(in Register register)
         {
             long intMask = 0;
             long vecMask = 0;

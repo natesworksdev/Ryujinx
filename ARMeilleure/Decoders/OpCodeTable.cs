@@ -11,7 +11,7 @@ namespace ARMeilleure.Decoders
 
         private const int FastLookupSize = 0x1000;
 
-        private struct InstInfo
+        private readonly struct InstInfo
         {
             public int Mask  { get; }
             public int Value { get; }
@@ -1084,7 +1084,7 @@ namespace ARMeilleure.Decoders
             }
         }
 
-        private static void InsertInst(InstInfo info, ExecutionMode mode)
+        private static void InsertInst(in InstInfo info, ExecutionMode mode)
         {
             switch (mode)
             {

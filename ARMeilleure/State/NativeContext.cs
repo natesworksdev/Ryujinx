@@ -117,7 +117,7 @@ namespace ARMeilleure.State
         public int GetCounter() => GetStorage().Counter;
         public void SetCounter(int value) => GetStorage().Counter = value;
 
-        public unsafe static int GetRegisterOffset(Register reg)
+        public unsafe static int GetRegisterOffset(in Register reg)
         {
             if (reg.Type == RegisterType.Integer)
             {

@@ -2,9 +2,11 @@ using ARMeilleure.Instructions;
 
 namespace ARMeilleure.Decoders
 {
-    struct InstDescriptor
+    readonly struct InstDescriptor
     {
-        public static InstDescriptor Undefined => new InstDescriptor(InstName.Und, InstEmit.Und);
+        private static InstDescriptor s_Invalid = new InstDescriptor(InstName.Und, InstEmit.Und);
+
+        public static ref readonly InstDescriptor Undefined => ref s_Invalid;
 
         public InstName    Name    { get; }
         public InstEmitter Emitter { get; }

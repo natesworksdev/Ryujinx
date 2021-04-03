@@ -12,7 +12,7 @@ namespace ARMeilleure.CodeGen.X86
 {
     static class PreAllocator
     {
-        public static void RunPass(CompilerContext cctx, StackAllocator stackAlloc, out int maxCallArgs)
+        public static void RunPass(in CompilerContext cctx, StackAllocator stackAlloc, out int maxCallArgs)
         {
             maxCallArgs = -1;
 
@@ -954,7 +954,7 @@ namespace ARMeilleure.CodeGen.X86
         }
 
         private static Node HandleLoadArgumentWindowsAbi(
-            CompilerContext cctx,
+            in CompilerContext cctx,
             IntrusiveList<Node> nodes,
             Node node,
             Operand[] preservedArgs,
@@ -1020,7 +1020,7 @@ namespace ARMeilleure.CodeGen.X86
         }
 
         private static Node HandleLoadArgumentSystemVAbi(
-            CompilerContext cctx,
+            in CompilerContext cctx,
             IntrusiveList<Node> nodes,
             Node node,
             Operand[] preservedArgs,
@@ -1122,7 +1122,7 @@ namespace ARMeilleure.CodeGen.X86
         }
 
         private static void HandleReturnWindowsAbi(
-            CompilerContext cctx,
+            in CompilerContext cctx,
             IntrusiveList<Node> nodes,
             Node node,
             Operand[] preservedArgs,
