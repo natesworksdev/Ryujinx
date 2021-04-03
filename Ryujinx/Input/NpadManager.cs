@@ -19,6 +19,8 @@ namespace Ryujinx.Input
 
         private object _lock = new object();
 
+        private bool _blockInputUpdates;
+
         private const int MaxControllers = 9;
 
         private NpadController[] _controllers;
@@ -117,6 +119,22 @@ namespace Ryujinx.Input
             }
         }
 
+        public void UnblockInputUpdates()
+        {
+            lock (_lock)
+            {
+                _blockInputUpdates = false;
+            }
+        }
+
+        public void BlockInputUpdates()
+        {
+            lock (_lock)
+            {
+                _blockInputUpdates = true;
+            }
+        }
+
         public void Update(Hid hleHid, TamperMachine tamperMachine)
         {
             lock (_lock)
@@ -131,8 +149,8 @@ namespace Ryujinx.Input
 
                     NpadController controller = _controllers[(int)inputConfig.PlayerIndex];
 
-                    // Is a controller connected?
-                    if (controller != null)
+                    // Do we allow input updates and is a controller connected?
+                    if (!_blockInputUpdates && controller != null)
                     {
                         DriverConfigurationUpdate(ref controller, inputConfig);
 

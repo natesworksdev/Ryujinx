@@ -182,6 +182,11 @@ namespace Ryujinx.Ui.Windows
 
             mainWindow.InputManager.GamepadDriver.OnGamepadConnected += HandleOnGamepadConnected;
             mainWindow.InputManager.GamepadDriver.OnGamepadDisconnected += HandleOnGamepadDisconnected;
+
+            if (_mainWindow.GlRendererWidget != null)
+            {
+                _mainWindow.GlRendererWidget.NpadManager.BlockInputUpdates();
+            }
         }
 
         private void CemuHookCheckButtonPressed(object sender, EventArgs e)
@@ -209,6 +214,11 @@ namespace Ryujinx.Ui.Windows
         {
             _mainWindow.InputManager.GamepadDriver.OnGamepadConnected -= HandleOnGamepadConnected;
             _mainWindow.InputManager.GamepadDriver.OnGamepadDisconnected -= HandleOnGamepadDisconnected;
+
+            if (_mainWindow.GlRendererWidget != null)
+            {
+                _mainWindow.GlRendererWidget.NpadManager.UnblockInputUpdates();
+            }
 
             _gtk3KeyboardDriver.Dispose();
         }
