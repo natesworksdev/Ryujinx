@@ -27,7 +27,7 @@ namespace Ryujinx.Ui.Input
 
         public bool ShouldCancel()
         {
-            return /* Mouse.GetState().IsAnyButtonDown || */ _keyboardState.IsPressed(Key.Escape);
+            return _keyboardState.IsPressed(Key.Escape);
         }
 
         public string GetPressedButton()

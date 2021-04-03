@@ -22,6 +22,7 @@ using Key = Ryujinx.Common.Configuration.Hid.Key;
 using ConfigGamepadInputId = Ryujinx.Common.Configuration.Hid.Controller.GamepadInputId;
 using ConfigStickInputId = Ryujinx.Common.Configuration.Hid.Controller.StickInputId;
 using Ryujinx.Common.Configuration.Hid.Controller.Motion;
+using Ryujinx.Common.Logging;
 
 namespace Ryujinx.Ui.Windows
 {
@@ -103,12 +104,14 @@ namespace Ryujinx.Ui.Windows
 
         private MainWindow _mainWindow;
         private IGamepadDriver _gtk3KeyboardDriver;
+        private bool _mousePressed;
 
         public ControllerWindow(MainWindow mainWindow, PlayerIndex controllerId) : this(mainWindow, new Builder("Ryujinx.Ui.Windows.ControllerWindow.glade"), controllerId) { }
 
         private ControllerWindow(MainWindow mainWindow, Builder builder, PlayerIndex controllerId) : base(builder.GetObject("_controllerWin").Handle)
         {
             _mainWindow = mainWindow;
+            _mousePressed = false;
 
             // NOTE: To get input in this window, we need to bind a custom keyboard driver instead of using the InputManager one as the main window isn't focused...
             _gtk3KeyboardDriver = new GTK3KeyboardDriver(this);
@@ -138,7 +141,7 @@ namespace Ryujinx.Ui.Windows
             _controllerType.Active = 0; // Set initial value to first in list.
 
             // Bind Events.
-            _lStick.Clicked        += ButtonForStick_Pressed;
+            _lStick.Clicked         += ButtonForStick_Pressed;
             _lStickUp.Clicked       += Button_Pressed;
             _lStickDown.Clicked     += Button_Pressed;
             _lStickLeft.Clicked     += Button_Pressed;
@@ -153,7 +156,7 @@ namespace Ryujinx.Ui.Windows
             _zL.Clicked             += Button_Pressed;
             _lSl.Clicked            += Button_Pressed;
             _lSr.Clicked            += Button_Pressed;
-            _rStick.Clicked        += ButtonForStick_Pressed;
+            _rStick.Clicked         += ButtonForStick_Pressed;
             _rStickUp.Clicked       += Button_Pressed;
             _rStickDown.Clicked     += Button_Pressed;
             _rStickLeft.Clicked     += Button_Pressed;
@@ -800,12 +803,21 @@ namespace Ryujinx.Ui.Windows
         {
             if (_isWaitingForInput)
             {
+                button.Active = false;
+
                 return;
             }
+
+            _mousePressed = false;
+
+            ButtonPressEvent += MouseClick;
 
             ButtonAssigner assigner = CreateButtonAssigner(forStick);
 
             _isWaitingForInput = true;
+
+            // Open GTK3 keyboard for cancel operations
+            IKeyboard keyboard = (IKeyboard)_gtk3KeyboardDriver.GetGamepad("0");
 
             Thread inputThread = new Thread(() =>
             {
@@ -816,7 +828,7 @@ namespace Ryujinx.Ui.Windows
                     Thread.Sleep(10);
                     assigner.ReadInput();
 
-                    if (assigner.HasAnyButtonPressed() || assigner.ShouldCancel())
+                    if (_mousePressed || keyboard.IsPressed(Ryujinx.Input.Key.Escape) || assigner.HasAnyButtonPressed() || assigner.ShouldCancel())
                     {
                         break;
                     }
@@ -832,6 +844,8 @@ namespace Ryujinx.Ui.Windows
                     {
                         button.Label = pressedButton;
                     }
+
+                    ButtonPressEvent -= MouseClick;
 
                     button.Active = false;
                     _isWaitingForInput = false;
@@ -851,6 +865,11 @@ namespace Ryujinx.Ui.Windows
         private void ButtonForStick_Pressed(object sender, EventArgs args)
         {
             HandleButtonPressed((ToggleButton)sender, true);
+        }
+
+        private void MouseClick(object sender, ButtonPressEventArgs args)
+        {
+            _mousePressed = true;
         }
 
         private void SetProfiles()
