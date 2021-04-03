@@ -571,17 +571,18 @@ namespace Ryujinx.Ui
                                 }
                                 break;
                         }
-                        if (_emulationContext.Application.dlcFailureString != null)
+                        if (ApplicationLoader.loadFailureString != null)
                         {
-                            Logger.Error?.PrintMsg(LogClass.Loader, _emulationContext.Application.dlcFailureString);
+                            Logger.Error?.PrintMsg(LogClass.Loader, ApplicationLoader.loadFailureString);
                             bool continueGame = GtkDialog.CreateChoiceDialog("Game Load Error",
-                               _emulationContext.Application.dlcFailureString, "Continue loading anyway?");
+                               ApplicationLoader.loadFailureString, "Continue loading anyway?\n(You may lose save data)");
                             if (!continueGame)
                             {
+                                ApplicationLoader.ignoreLoadErrorState = 0;
                                 return;
                             }
-                            _emulationContext.Application.dlcFailureString = null;
-                            _emulationContext.Application.ignoreDLCError = true;
+                            ApplicationLoader.loadFailureString = null;
+                            ApplicationLoader.ignoreLoadErrorState = ApplicationLoader.ignoreSelectedState;
                         }else
                         {
                             break;

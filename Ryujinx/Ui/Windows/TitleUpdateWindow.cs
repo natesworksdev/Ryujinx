@@ -6,6 +6,7 @@ using LibHac.FsSystem;
 using LibHac.FsSystem.NcaUtils;
 using LibHac.Ns;
 using Ryujinx.Common.Configuration;
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
 using Ryujinx.Ui.Widgets;
@@ -64,10 +65,20 @@ namespace Ryujinx.Ui.Windows
             }
 
             _baseTitleInfoLabel.Text = $"Updates Available for {titleName} [{titleId.ToUpper()}]";
-            
+
+            int invalidUpdateCount = 0;
             foreach (string path in _titleUpdateWindowData.Paths)
             {
+                if(!File.Exists(path))
+                {
+                    invalidUpdateCount++;
+                }
                 AddUpdate(path);
+            }
+            if (invalidUpdateCount > 0)
+            {
+                Logger.Error?.PrintMsg(LogClass.Application, "Updates have been moved or deleted; skipping " + invalidUpdateCount + " updates");
+                GtkDialog.CreateErrorDialog(invalidUpdateCount + " updates have been moved or deleted; please re-add your updates.");
             }
 
             if (_titleUpdateWindowData.Selected == "")

@@ -66,8 +66,9 @@ namespace Ryujinx.HLE.HOS
 
         public string TitleIdText => TitleId.ToString("x16");
 
-        public bool ignoreDLCError = false;
-        public string dlcFailureString = null;
+        public static int ignoreLoadErrorState = 0;
+        public static int ignoreSelectedState = 0;
+        public static string loadFailureString = null;
 
 
         public ApplicationLoader(Switch device, VirtualFileSystem fileSystem, ContentManager contentManager)
@@ -204,6 +205,14 @@ namespace Ryujinx.HLE.HOS
 
                         return GetGameUpdateDataFromPartition(fileSystem, nsp, titleIdBase.ToString("x16"), programIndex);
                     }
+                    else
+                    {
+                        if (ignoreLoadErrorState < 1)
+                        {
+                            loadFailureString = "An update has been moved/deleted!";
+                            ignoreSelectedState = 1;
+                        }
+                    }
                 }
             }
 
@@ -315,7 +324,10 @@ namespace Ryujinx.HLE.HOS
             IFileSystem codeFs      = null;
 
             (Nca updatePatchNca, Nca updateControlNca) = GetGameUpdateData(_fileSystem, mainNca.Header.TitleId.ToString("x16"), _device.UserChannelPersistence.Index, out _);
-
+            if(loadFailureString != null)
+            {
+                return;
+            }
             if (updatePatchNca != null)
             {
                 patchNca = updatePatchNca;
@@ -340,7 +352,7 @@ namespace Ryujinx.HLE.HOS
                 {
                     if (!File.Exists(dlcContainer.Path))
                     {
-                        if (!ignoreDLCError)
+                        if (ignoreLoadErrorState < 2)
                         {
                             invalidDlcCount++;
                         }
@@ -349,7 +361,8 @@ namespace Ryujinx.HLE.HOS
 
                 if(invalidDlcCount > 0)
                 {
-                    dlcFailureString = invalidDlcCount + " DLC files have been moved or deleted. Please use the DLC manager.";
+                    loadFailureString = invalidDlcCount + " DLC files have been moved or deleted. Please use the DLC manager.";
+                    ignoreSelectedState++;
                     return;
                 }
 
