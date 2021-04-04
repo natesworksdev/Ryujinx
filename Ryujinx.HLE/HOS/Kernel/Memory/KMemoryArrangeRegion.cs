@@ -1,9 +1,9 @@
 namespace Ryujinx.HLE.HOS.Kernel.Memory
 {
-    struct KMemoryArrangeRegion
+    readonly struct KMemoryArrangeRegion
     {
-        public ulong Address { get; private set; }
-        public ulong Size    { get; private set; }
+        public ulong Address { get; }
+        public ulong Size    { get; }
 
         public ulong EndAddr => Address + Size;
 

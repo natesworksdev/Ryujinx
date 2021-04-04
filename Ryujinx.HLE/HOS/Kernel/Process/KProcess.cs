@@ -307,7 +307,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             return result;
         }
 
-        private KernelResult ParseProcessInfo(ProcessCreationInfo creationInfo)
+        private KernelResult ParseProcessInfo(in ProcessCreationInfo creationInfo)
         {
             // Ensure that the current kernel version is equal or above to the minimum required.
             uint requiredKernelVersionMajor = (uint)Capabilities.KernelReleaseVersion >> 19;

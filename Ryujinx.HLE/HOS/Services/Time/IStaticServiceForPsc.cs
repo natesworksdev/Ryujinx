@@ -402,7 +402,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
             return result;
         }
 
-        private ClockSnapshot ReadClockSnapshotFromBuffer(ServiceCtx context, IpcPtrBuffDesc ipcDesc)
+        private ClockSnapshot ReadClockSnapshotFromBuffer(ServiceCtx context, in IpcPtrBuffDesc ipcDesc)
         {
             Debug.Assert(ipcDesc.Size == Marshal.SizeOf<ClockSnapshot>());
 
@@ -416,7 +416,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
             }
         }
 
-        private void WriteClockSnapshotFromBuffer(ServiceCtx context, IpcRecvListBuffDesc ipcDesc, ClockSnapshot clockSnapshot)
+        private void WriteClockSnapshotFromBuffer(ServiceCtx context, in IpcRecvListBuffDesc ipcDesc, ClockSnapshot clockSnapshot)
         {
             MemoryHelper.Write(context.Memory, ipcDesc.Position, clockSnapshot);
         }

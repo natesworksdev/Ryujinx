@@ -45,7 +45,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
             };
         }
 
-        private static KMemoryRegionManager GetMemoryRegion(KMemoryArrangeRegion region)
+        private static KMemoryRegionManager GetMemoryRegion(in KMemoryArrangeRegion region)
         {
             return new KMemoryRegionManager(region.Address, region.Size, region.EndAddr);
         }

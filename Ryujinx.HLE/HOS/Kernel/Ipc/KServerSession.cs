@@ -17,7 +17,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             (MemoryState)0xfffce5d4 //This is invalid, shouldn't be accessed.
         };
 
-        private struct Message
+        private readonly struct Message
         {
             public ulong Address     { get; }
             public ulong DramAddress { get; }
@@ -51,7 +51,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 request.CustomCmdBuffSize) { }
         }
 
-        private struct MessageHeader
+        private readonly struct MessageHeader
         {
             public uint Word0 { get; }
             public uint Word1 { get; }
@@ -878,7 +878,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             return serverResult;
         }
 
-        private MessageHeader GetClientMessageHeader(Message clientMsg)
+        private MessageHeader GetClientMessageHeader(in Message clientMsg)
         {
             uint word0 = KernelContext.Memory.Read<uint>(clientMsg.DramAddress + 0);
             uint word1 = KernelContext.Memory.Read<uint>(clientMsg.DramAddress + 4);
@@ -887,7 +887,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             return new MessageHeader(word0, word1, word2);
         }
 
-        private MessageHeader GetServerMessageHeader(Message serverMsg)
+        private MessageHeader GetServerMessageHeader(in Message serverMsg)
         {
             KProcess currentProcess = KernelStatic.GetCurrentProcess();
 
@@ -1051,7 +1051,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             return KernelResult.Success;
         }
 
-        private void CloseAllHandles(Message message, MessageHeader header, KProcess process)
+        private void CloseAllHandles(in Message message, in MessageHeader header, KProcess process)
         {
             if (header.HasHandles)
             {

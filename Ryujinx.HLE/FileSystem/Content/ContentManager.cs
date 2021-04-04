@@ -30,11 +30,11 @@ namespace Ryujinx.HLE.FileSystem.Content
 
         private SortedDictionary<(ulong titleId, NcaContentType type), string> _contentDictionary;
 
-        private struct AocItem
+        private readonly struct AocItem
         {
             public readonly string ContainerPath;
             public readonly string NcaPath;
-            public bool Enabled;
+            public readonly bool Enabled;
 
             public AocItem(string containerPath, string ncaPath, bool enabled)
             {

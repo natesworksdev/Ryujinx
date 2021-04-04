@@ -34,7 +34,7 @@ namespace Ryujinx.HLE.HOS
         private const string AmsNroPatchDir = "nro_patches";
         private const string AmsKipPatchDir = "kip_patches";
 
-        public struct Mod<T> where T : FileSystemInfo
+        public readonly struct Mod<T> where T : FileSystemInfo
         {
             public readonly string Name;
             public readonly T Path;
@@ -46,7 +46,7 @@ namespace Ryujinx.HLE.HOS
             }
         }
 
-        public struct Cheat
+        public readonly struct Cheat
         {
             // Atmosphere identifies the executables with the first 8 bytes
             // of the build id, which is equivalent to 16 hex digits.

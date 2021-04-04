@@ -2,11 +2,11 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Ipc
 {
-    struct IpcPtrBuffDesc
+    readonly struct IpcPtrBuffDesc
     {
-        public long  Position { get; private set; }
-        public int   Index    { get; private set; }
-        public long  Size     { get; private set; }
+        public long  Position { get; }
+        public int   Index    { get; }
+        public long  Size     { get; }
 
         public IpcPtrBuffDesc(long position, int index, long size)
         {

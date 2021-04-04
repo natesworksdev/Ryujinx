@@ -21,10 +21,10 @@ namespace Ryujinx.HLE.HOS.Font
 
         private ulong _physicalAddress;
 
-        private struct FontInfo
+        private readonly struct FontInfo
         {
-            public int Offset;
-            public int Size;
+            public readonly int Offset;
+            public readonly int Size;
 
             public FontInfo(int offset, int size)
             {
