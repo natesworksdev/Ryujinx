@@ -22,8 +22,6 @@ namespace ARMeilleure.Translation.Cache
 
         private static readonly List<CacheEntry> _cacheEntries = new List<CacheEntry>();
 
-        private static readonly IDictionary<int, int> _cacheListIndexByOffset = new Dictionary<int, int>();
-
         private static readonly object _lock = new object();
         private static bool _initialized;
 
@@ -132,36 +130,20 @@ namespace ARMeilleure.Translation.Cache
 
         private static void Add(int offset, int size, in UnwindInfo unwindInfo)
         {
-
-            CacheEntry entry = new CacheEntry(offset, size, unwindInfo);
-            if (!_cacheListIndexByOffset.TryGetValue(offset, out int index))
-            {
-                index = BinarySearch(_cacheEntries, entry);
-            }
+            int index = BinarySearch(_cacheEntries, offset);
 
             if (index < 0)
             {
                 index = ~index;
             }
 
+            CacheEntry entry = new CacheEntry(offset, size, unwindInfo);
             _cacheEntries.Insert(index, entry);
-            _cacheListIndexByOffset[offset] = index;
-
-            // On insert, the original element is shifted 1 index higher
-            for (int j = index + 1; j < _cacheEntries.Count; j++)
-            {
-                _cacheListIndexByOffset[_cacheEntries[j].Offset] = j;
-            }
         }
 
         private static void Remove(int offset)
         {
-            var entry = new CacheEntry(offset, 0, default);
-
-            if (!_cacheListIndexByOffset.TryGetValue(offset, out int index))
-            {
-                index = BinarySearch(_cacheEntries, entry);
-            }
+            int index = BinarySearch(_cacheEntries, offset);
 
             if (index < 0)
             {
@@ -171,13 +153,6 @@ namespace ARMeilleure.Translation.Cache
             if (index >= 0)
             {
                 _cacheEntries.RemoveAt(index);
-
-                _cacheListIndexByOffset.Remove(offset);
-                // Shift all the other elements up
-                for (int j = index; j < _cacheEntries.Count; j++)
-                {
-                    _cacheListIndexByOffset[_cacheEntries[j].Offset] = j;
-                }
             }
         }
 
@@ -185,11 +160,7 @@ namespace ARMeilleure.Translation.Cache
         {
             lock (_lock)
             {
-                if (!_cacheListIndexByOffset.TryGetValue(offset, out int index))
-                {
-                    var tmpEntry = new CacheEntry(offset, 0, default);
-                    index = BinarySearch(_cacheEntries, tmpEntry);
-                }
+                int index = BinarySearch(_cacheEntries, offset);
 
                 if (index < 0)
                 {
@@ -213,7 +184,7 @@ namespace ARMeilleure.Translation.Cache
         /// </summary>
         /// <param name="address">Address to find</param>
         /// <returns>List index of the item, or complement index of nearest item with lower value on the list</returns>
-        private static int BinarySearch(IList<CacheEntry> list, in CacheEntry entry)
+        private static int BinarySearch(IList<CacheEntry> list, int offset)
         {
             int left = 0;
             int right = list.Count - 1;
@@ -226,7 +197,7 @@ namespace ARMeilleure.Translation.Cache
 
                 var item = list[middle];
 
-                int result = item.CompareTo(entry);
+                int result = item.Offset.CompareTo(offset);
                 if (result == 0)
                 {
                     return middle;
