@@ -52,7 +52,13 @@ namespace Ryujinx.HLE
 
         public bool EnableDeviceVsync { get; set; } = true;
 
-        public Switch(VirtualFileSystem fileSystem, ContentManager contentManager, UserChannelPersistence userChannelPersistence, IRenderer renderer, IHardwareDeviceDriver audioDeviceDriver)
+        public Switch(
+            VirtualFileSystem fileSystem,
+            ContentManager contentManager,
+            UserChannelPersistence userChannelPersistence,
+            IRenderer renderer,
+            IHardwareDeviceDriver audioDeviceDriver,
+            MemoryConfiguration memoryConfiguration)
         {
             if (renderer == null)
             {
@@ -73,7 +79,7 @@ namespace Ryujinx.HLE
 
             AudioDeviceDriver = new CompatLayerHardwareDeviceDriver(audioDeviceDriver);
 
-            Memory = new MemoryBlock(1UL << 32);
+            Memory = new MemoryBlock(memoryConfiguration.ToDramSize());
 
             Gpu = new GpuContext(renderer);
 
@@ -102,7 +108,7 @@ namespace Ryujinx.HLE
 
             FileSystem = fileSystem;
 
-            System = new Horizon(this, contentManager);
+            System = new Horizon(this, contentManager, memoryConfiguration);
             System.InitializeServices();
 
             Statistics = new PerformanceStatistics();
@@ -146,6 +152,7 @@ namespace Ryujinx.HLE
             Logger.Info?.Print(LogClass.Application, $"AudioBackend: {ConfigurationState.Instance.System.AudioBackend.Value}");
             Logger.Info?.Print(LogClass.Application, $"IsDocked: {ConfigurationState.Instance.System.EnableDockedMode.Value}");
             Logger.Info?.Print(LogClass.Application, $"Vsync: {ConfigurationState.Instance.Graphics.EnableVsync.Value}");
+            Logger.Info?.Print(LogClass.Application, $"DRAM size: {((MemoryConfiguration)ConfigurationState.Instance.System.MemoryConfiguration.Value).ToDramSizeInGb()} GB");
         }
 
         public static IntegrityCheckLevel GetIntegrityCheckLevel()
