@@ -7,7 +7,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
     {
         public int Handle { get; private set; }
 
-        public Sampler(SamplerCreateInfo info)
+        public Sampler(in SamplerCreateInfo info)
         {
             Handle = GL.GenSampler();
 

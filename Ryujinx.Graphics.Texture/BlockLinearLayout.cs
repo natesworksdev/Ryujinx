@@ -7,10 +7,10 @@ namespace Ryujinx.Graphics.Texture
 {
     class BlockLinearLayout
     {
-        private struct RobAndSliceSizes
+        private readonly struct RobAndSliceSizes
         {
-            public int RobSize;
-            public int SliceSize;
+            public readonly int RobSize;
+            public readonly int SliceSize;
 
             public RobAndSliceSizes(int robSize, int sliceSize)
             {

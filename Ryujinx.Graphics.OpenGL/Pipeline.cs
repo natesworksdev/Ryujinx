@@ -96,7 +96,7 @@ namespace Ryujinx.Graphics.OpenGL
             Buffer.Clear(destination, offset, size, value);
         }
 
-        public void ClearRenderTargetColor(int index, uint componentMask, ColorF color)
+        public void ClearRenderTargetColor(int index, uint componentMask, in ColorF color)
         {
             GL.ColorMask(
                 index,
@@ -547,7 +547,7 @@ namespace Ryujinx.Graphics.OpenGL
             GL.Enable(EnableCap.AlphaTest);
         }
 
-        public void SetBlendState(int index, BlendDescriptor blend)
+        public void SetBlendState(int index, in BlendDescriptor blend)
         {
             if (!blend.Enable)
             {
@@ -674,7 +674,7 @@ namespace Ryujinx.Graphics.OpenGL
             }
         }
 
-        public void SetDepthTest(DepthTestDescriptor depthTest)
+        public void SetDepthTest(in DepthTestDescriptor depthTest)
         {
             if (depthTest.TestEnable)
             {
@@ -725,7 +725,7 @@ namespace Ryujinx.Graphics.OpenGL
             }
         }
 
-        public void SetIndexBuffer(BufferRange buffer, IndexType type)
+        public void SetIndexBuffer(in BufferRange buffer, IndexType type)
         {
             _elementsType = type.Convert();
 
@@ -914,7 +914,7 @@ namespace Ryujinx.Graphics.OpenGL
             GL.ScissorIndexed(index, x, y, width, height);
         }
 
-        public void SetStencilTest(StencilTestDescriptor stencilTest)
+        public void SetStencilTest(in StencilTestDescriptor stencilTest)
         {
             if (!stencilTest.TestEnable)
             {

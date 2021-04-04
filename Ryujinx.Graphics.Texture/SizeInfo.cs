@@ -2,7 +2,7 @@ using System;
 
 namespace Ryujinx.Graphics.Texture
 {
-    public struct SizeInfo
+    public readonly struct SizeInfo
     {
         private readonly int[] _mipOffsets;
 

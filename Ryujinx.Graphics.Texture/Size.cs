@@ -3,7 +3,7 @@ using System;
 
 namespace Ryujinx.Graphics.Texture
 {
-    public struct Size
+    public readonly struct Size
     {
         public int Width  { get; }
         public int Height { get; }

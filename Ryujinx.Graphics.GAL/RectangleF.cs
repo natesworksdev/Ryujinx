@@ -1,6 +1,6 @@
 namespace Ryujinx.Graphics.GAL
 {
-    public struct RectangleF
+    public readonly struct RectangleF
     {
         public float X      { get; }
         public float Y      { get; }

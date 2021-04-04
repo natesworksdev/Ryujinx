@@ -341,7 +341,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             return block.Operations.Last.Value is Operation operation && operation.Inst == inst;
         }
 
-        private static RegisterMask GetMask(Register register)
+        private static RegisterMask GetMask(in Register register)
         {
             Span<long> gprMasks = stackalloc long[4];
             long predMask = 0;

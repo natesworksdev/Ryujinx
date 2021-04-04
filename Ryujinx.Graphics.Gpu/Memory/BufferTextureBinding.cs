@@ -6,7 +6,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// <summary>
     /// A buffer binding to apply to a buffer texture.
     /// </summary>
-    struct BufferTextureBinding
+    readonly struct BufferTextureBinding
     {
         /// <summary>
         /// The buffer texture.

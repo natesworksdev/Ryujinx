@@ -16,7 +16,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
         public Target Target => Info.Target;
         public Format Format => Info.Format;
 
-        public TextureBase(TextureCreateInfo info, float scaleFactor = 1f)
+        public TextureBase(in TextureCreateInfo info, float scaleFactor = 1f)
         {
             Info = info;
             ScaleFactor = scaleFactor;

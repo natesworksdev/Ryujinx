@@ -77,7 +77,7 @@ namespace Ryujinx.Graphics.Gpu.State
         /// Calls a GPU method, using this state.
         /// </summary>
         /// <param name="meth">The GPU method to be called</param>
-        public void CallMethod(MethodParams meth)
+        public void CallMethod(in MethodParams meth)
         {
             int value = meth.Argument;
 

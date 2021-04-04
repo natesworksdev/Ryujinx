@@ -167,7 +167,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         /// <param name="buffer">Buffer to be used as index buffer</param>
         /// <param name="type">Type of each index buffer element</param>
-        public void SetIndexBuffer(BufferRange buffer, IndexType type)
+        public void SetIndexBuffer(in BufferRange buffer, IndexType type)
         {
             _context.Renderer.Pipeline.SetIndexBuffer(buffer, type);
 
@@ -857,7 +857,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="bindingInfo">Binding info for the buffer texture</param>
         /// <param name="format">Format of the buffer texture</param>
         /// <param name="isImage">Whether the binding is for an image or a sampler</param>
-        public void SetBufferTextureStorage(ITexture texture, ulong address, ulong size, TextureBindingInfo bindingInfo, Format format, bool isImage)
+        public void SetBufferTextureStorage(ITexture texture, ulong address, ulong size, in TextureBindingInfo bindingInfo, Format format, bool isImage)
         {
             CreateBuffer(address, size);
 

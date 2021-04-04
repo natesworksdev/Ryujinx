@@ -1,6 +1,6 @@
 namespace Ryujinx.Graphics.GAL
 {
-    public struct Capabilities
+    public readonly struct Capabilities
     {
         public bool SupportsAstcCompression          { get; }
         public bool SupportsImageLoadFormatted       { get; }

@@ -22,7 +22,7 @@ namespace Ryujinx.Graphics.OpenGL
             _renderer = renderer;
         }
 
-        public void Present(ITexture texture, ImageCrop crop)
+        public void Present(ITexture texture, in ImageCrop crop)
         {
             GL.Disable(EnableCap.FramebufferSrgb);
 
@@ -37,7 +37,7 @@ namespace Ryujinx.Graphics.OpenGL
             _height = height;
         }
 
-        private void CopyTextureToFrameBufferRGB(int drawFramebuffer, int readFramebuffer, TextureView view, ImageCrop crop)
+        private void CopyTextureToFrameBufferRGB(int drawFramebuffer, int readFramebuffer, TextureView view, in ImageCrop crop)
         {
             bool[] oldFramebufferColorWritemask = new bool[4];
 

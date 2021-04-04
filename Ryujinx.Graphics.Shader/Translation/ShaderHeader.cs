@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         ScreenLinear = 3
     }
 
-    struct ImapPixelType
+    readonly struct ImapPixelType
     {
         public PixelImap X { get; }
         public PixelImap Y { get; }
@@ -35,7 +35,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         }
     }
 
-    struct OmapTarget
+    readonly struct OmapTarget
     {
         public bool Red   { get; }
         public bool Green { get; }

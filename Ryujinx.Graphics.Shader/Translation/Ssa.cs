@@ -23,17 +23,17 @@ namespace Ryujinx.Graphics.Shader.Translation
                 _phiMasks = new long[(RegisterConsts.TotalCount + 63) / 64];
             }
 
-            public bool TryAddOperand(Register reg, Operand operand)
+            public bool TryAddOperand(in Register reg, Operand operand)
             {
                 return _map.TryAdd(reg, operand);
             }
 
-            public bool TryGetOperand(Register reg, out Operand operand)
+            public bool TryGetOperand(in Register reg, out Operand operand)
             {
                 return _map.TryGetValue(reg, out operand);
             }
 
-            public bool AddPhi(Register reg)
+            public bool AddPhi(in Register reg)
             {
                 int key = GetKeyFromRegister(reg);
 
@@ -52,7 +52,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 return true;
             }
 
-            public bool HasPhi(Register reg)
+            public bool HasPhi(in Register reg)
             {
                 int key = GetKeyFromRegister(reg);
 
@@ -63,7 +63,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
         }
 
-        private struct Definition
+        private readonly struct Definition
         {
             public BasicBlock Block { get; }
             public Operand    Local { get; }
@@ -203,7 +203,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
         }
 
-        private static Operand FindDefinitionForCurr(DefMap[] globalDefs, BasicBlock current, Register reg)
+        private static Operand FindDefinitionForCurr(DefMap[] globalDefs, BasicBlock current, in Register reg)
         {
             if (globalDefs[current.Index].HasPhi(reg))
             {
@@ -218,7 +218,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             return Undef();
         }
 
-        private static Definition FindDefinition(DefMap[] globalDefs, BasicBlock current, Register reg)
+        private static Definition FindDefinition(DefMap[] globalDefs, BasicBlock current, in Register reg)
         {
             foreach (BasicBlock block in SelfAndImmediateDominators(current))
             {
@@ -250,7 +250,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             yield return block;
         }
 
-        private static Operand InsertPhi(DefMap[] globalDefs, BasicBlock block, Register reg)
+        private static Operand InsertPhi(DefMap[] globalDefs, BasicBlock block, in Register reg)
         {
             // This block has a Phi that has not been materialized yet, but that
             // would define a new version of the variable we're looking for. We need
@@ -296,7 +296,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
         }
 
-        private static int GetKeyFromRegister(Register reg)
+        private static int GetKeyFromRegister(in Register reg)
         {
             if (reg.Type == RegisterType.Gpr)
             {

@@ -2,7 +2,7 @@ using System;
 
 namespace Ryujinx.Graphics.GAL
 {
-    public struct TransformFeedbackDescriptor
+    public readonly struct TransformFeedbackDescriptor
     {
         public int BufferIndex { get; }
         public int Stride      { get; }

@@ -23,8 +23,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
         public void Copy(
             TextureView src,
             TextureView dst,
-            Extents2D   srcRegion,
-            Extents2D   dstRegion,
+            in Extents2D   srcRegion,
+            in Extents2D   dstRegion,
             bool        linearFilter)
         {
             TextureView srcConverted = src.Format.IsBgra8() != dst.Format.IsBgra8() ? BgraSwap(src) : src;
@@ -36,6 +36,9 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
             int levels = Math.Min(src.Info.Levels, dst.Info.Levels);
             int layers = Math.Min(src.Info.GetLayers(), dst.Info.GetLayers());
+
+            var tempSrcRegion = srcRegion;
+            var tempDstRegion = dstRegion;
 
             for (int level = 0; level < levels; level++)
             {
@@ -70,22 +73,22 @@ namespace Ryujinx.Graphics.OpenGL.Image
                     GL.Disable(IndexedEnableCap.ScissorTest, 0);
 
                     GL.BlitFramebuffer(
-                        srcRegion.X1,
-                        srcRegion.Y1,
-                        srcRegion.X2,
-                        srcRegion.Y2,
-                        dstRegion.X1,
-                        dstRegion.Y1,
-                        dstRegion.X2,
-                        dstRegion.Y2,
+                        tempSrcRegion.X1,
+                        tempSrcRegion.Y1,
+                        tempSrcRegion.X2,
+                        tempSrcRegion.Y2,
+                        tempDstRegion.X1,
+                        tempDstRegion.Y1,
+                        tempDstRegion.X2,
+                        tempDstRegion.Y2,
                         mask,
                         filter);
                 }
 
                 if (level < levels - 1)
                 {
-                    srcRegion = srcRegion.Reduce(1);
-                    dstRegion = dstRegion.Reduce(1);
+                    tempSrcRegion = tempSrcRegion.Reduce(1);
+                    tempDstRegion = tempDstRegion.Reduce(1);
                 }
             }
 

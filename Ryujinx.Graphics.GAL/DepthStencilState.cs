@@ -1,6 +1,6 @@
 namespace Ryujinx.Graphics.GAL
 {
-    public struct DepthStencilState
+    public readonly struct DepthStencilState
     {
         public bool DepthTestEnable   { get; }
         public bool DepthWriteEnable  { get; }

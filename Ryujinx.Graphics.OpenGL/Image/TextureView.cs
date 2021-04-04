@@ -92,7 +92,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
             GL.TexParameter(target, TextureParameterName.DepthStencilTextureMode, (int)Info.DepthStencilMode.Convert());
         }
 
-        public ITexture CreateView(TextureCreateInfo info, int firstLayer, int firstLevel)
+        public ITexture CreateView(in TextureCreateInfo info, int firstLayer, int firstLevel)
         {
             firstLayer += FirstLayer;
             firstLevel += FirstLevel;
@@ -143,7 +143,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
             _renderer.TextureCopy.CopyUnscaled(this, destinationView, srcLayer, dstLayer, srcLevel, dstLevel, 1, 1);
         }
 
-        public void CopyTo(ITexture destination, Extents2D srcRegion, Extents2D dstRegion, bool linearFilter)
+        public void CopyTo(ITexture destination, in Extents2D srcRegion, in Extents2D dstRegion, bool linearFilter)
         {
             _renderer.TextureCopy.Copy(this, (TextureView)destination, srcRegion, dstRegion, linearFilter);
         }
@@ -625,7 +625,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
             }
         }
 
-        public void SetStorage(BufferRange buffer)
+        public void SetStorage(in BufferRange buffer)
         {
             throw new NotSupportedException();
         }

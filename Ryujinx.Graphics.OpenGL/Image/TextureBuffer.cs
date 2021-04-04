@@ -13,7 +13,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
         private BufferHandle _buffer;
 
-        public TextureBuffer(Renderer renderer, TextureCreateInfo info) : base(info)
+        public TextureBuffer(Renderer renderer, in TextureCreateInfo info) : base(info)
         {
             _renderer = renderer;
         }
@@ -28,12 +28,12 @@ namespace Ryujinx.Graphics.OpenGL.Image
             throw new NotSupportedException();
         }
 
-        public void CopyTo(ITexture destination, Extents2D srcRegion, Extents2D dstRegion, bool linearFilter)
+        public void CopyTo(ITexture destination, in Extents2D srcRegion, in Extents2D dstRegion, bool linearFilter)
         {
             throw new NotSupportedException();
         }
 
-        public ITexture CreateView(TextureCreateInfo info, int firstLayer, int firstLevel)
+        public ITexture CreateView(in TextureCreateInfo info, int firstLayer, int firstLevel)
         {
             throw new NotSupportedException();
         }
@@ -53,7 +53,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
             throw new NotSupportedException();
         }
 
-        public void SetStorage(BufferRange buffer)
+        public void SetStorage(in BufferRange buffer)
         {
             if (_buffer != BufferHandle.Null &&
                 buffer.Offset == _bufferOffset &&

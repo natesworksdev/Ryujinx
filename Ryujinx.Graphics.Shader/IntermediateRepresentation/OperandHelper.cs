@@ -45,7 +45,7 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
             return Register(new Register(index, type));
         }
 
-        public static Operand Register(Register reg)
+        public static Operand Register(in Register reg)
         {
             if (reg.IsRZ)
             {

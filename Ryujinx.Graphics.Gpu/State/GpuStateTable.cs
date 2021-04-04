@@ -13,7 +13,7 @@ namespace Ryujinx.Graphics.Gpu.State
         /// <summary>
         /// GPU state table item, with size for structures, and count for indexed state data.
         /// </summary>
-        public struct TableItem
+        public readonly struct TableItem
         {
             /// <summary>
             /// Offset of the data.

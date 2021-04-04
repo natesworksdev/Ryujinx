@@ -3,7 +3,7 @@ namespace Ryujinx.Graphics
     /// <summary>
     /// Method call parameters.
     /// </summary>
-    struct MethodParams
+    readonly struct MethodParams
     {
         /// <summary>
         /// Method offset.

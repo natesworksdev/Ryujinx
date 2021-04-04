@@ -146,7 +146,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             return Enclose(expr, node, pInst, pInfo, isLhs);
         }
 
-        public static string Enclose(string expr, IAstNode node, Instruction pInst, InstInfo pInfo, bool isLhs = false)
+        public static string Enclose(string expr, IAstNode node, Instruction pInst, in InstInfo pInfo, bool isLhs = false)
         {
             if (NeedsParenthesis(node, pInst, pInfo, isLhs))
             {
@@ -156,7 +156,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             return expr;
         }
 
-        public static bool NeedsParenthesis(IAstNode node, Instruction pInst, InstInfo pInfo, bool isLhs)
+        public static bool NeedsParenthesis(IAstNode node, Instruction pInst, in InstInfo pInfo, bool isLhs)
         {
             // If the node isn't a operation, then it can only be a operand,
             // and those never needs to be surrounded in parenthesis.

@@ -55,7 +55,7 @@ namespace Ryujinx.Graphics.OpenGL
         /// <param name="info">The creation info for the desired texture</param>
         /// <param name="scaleFactor">The scale factor for the desired texture</param>
         /// <returns>A TextureView with the description specified, or null if one was not found.</returns>
-        public TextureView GetTextureOrNull(TextureCreateInfo info, float scaleFactor)
+        public TextureView GetTextureOrNull(in TextureCreateInfo info, float scaleFactor)
         {
             lock (_lock)
             {

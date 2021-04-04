@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.GAL
 
         void ClearBuffer(BufferHandle destination, int offset, int size, uint value);
 
-        void ClearRenderTargetColor(int index, uint componentMask, ColorF color);
+        void ClearRenderTargetColor(int index, uint componentMask, in ColorF color);
 
         void ClearRenderTargetDepthStencil(
             float depthValue,
@@ -35,18 +35,18 @@ namespace Ryujinx.Graphics.GAL
 
         void SetAlphaTest(bool enable, float reference, CompareOp op);
 
-        void SetBlendState(int index, BlendDescriptor blend);
+        void SetBlendState(int index, in BlendDescriptor blend);
 
         void SetDepthBias(PolygonModeMask enables, float factor, float units, float clamp);
         void SetDepthClamp(bool clamp);
         void SetDepthMode(DepthMode mode);
-        void SetDepthTest(DepthTestDescriptor depthTest);
+        void SetDepthTest(in DepthTestDescriptor depthTest);
 
         void SetFaceCulling(bool enable, Face face);
 
         void SetFrontFace(FrontFace frontFace);
 
-        void SetIndexBuffer(BufferRange buffer, IndexType type);
+        void SetIndexBuffer(in BufferRange buffer, IndexType type);
 
         void SetImage(int binding, ITexture texture, Format imageFormat);
 
@@ -70,7 +70,7 @@ namespace Ryujinx.Graphics.GAL
 
         void SetScissor(int index, bool enable, int x, int y, int width, int height);
 
-        void SetStencilTest(StencilTestDescriptor stencilTest);
+        void SetStencilTest(in StencilTestDescriptor stencilTest);
 
         void SetStorageBuffers(ReadOnlySpan<BufferRange> buffers);
 

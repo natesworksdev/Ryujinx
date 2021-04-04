@@ -318,7 +318,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
                     opCode is OpCodeExit;
         }
 
-        private struct PathBlockState
+        private readonly struct PathBlockState
         {
             public Block Block { get; }
 
@@ -329,9 +329,9 @@ namespace Ryujinx.Graphics.Shader.Decoders
                 PushBranchOp
             }
 
-            private RestoreType _restoreType;
+            private readonly RestoreType _restoreType;
 
-            private ulong _restoreValue;
+            private readonly ulong _restoreValue;
 
             public bool ReturningFromVisit => _restoreType != RestoreType.None;
 
@@ -382,7 +382,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
             Stack<ulong> branchStack = new Stack<ulong>();
 
-            void Push(PathBlockState pbs)
+            void Push(in PathBlockState pbs)
             {
                 // When block is null, this means we are pushing a restore operation.
                 // Restore operations are used to undo the work done inside a block

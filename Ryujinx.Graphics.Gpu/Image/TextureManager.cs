@@ -14,7 +14,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// </summary>
     class TextureManager : IDisposable
     {
-        private struct OverlapInfo
+        private readonly struct OverlapInfo
         {
             public TextureViewCompatibility Compatibility { get; }
             public int FirstLayer { get; }
@@ -395,7 +395,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="info">The texture info to check</param>
         /// <returns>True if eligible</returns>
-        public bool IsUpscaleCompatible(TextureInfo info)
+        public bool IsUpscaleCompatible(in TextureInfo info)
         {
             return (info.Target == Target.Texture2D || info.Target == Target.Texture2DArray) && !info.FormatInfo.IsCompressed && UpscaleSafeMode(info);
         }
@@ -406,7 +406,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="info">The texture info to check</param>
         /// <returns>True if safe</returns>
-        public bool UpscaleSafeMode(TextureInfo info)
+        public bool UpscaleSafeMode(in TextureInfo info)
         {
             // While upscaling works for all targets defined by IsUpscaleCompatible, we additionally blacklist targets here that
             // may have undesirable results (upscaling blur textures) or simply waste GPU resources (upscaling texture atlas).
@@ -478,7 +478,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="preferScaling">Indicates if the texture should be scaled from the start</param>
         /// <param name="sizeHint">A hint indicating the minimum used size for the texture</param>
         /// <returns>The texture</returns>
-        public Texture FindOrCreateTexture(CopyTexture copyTexture, FormatInfo formatInfo, bool preferScaling = true, Size? sizeHint = null)
+        public Texture FindOrCreateTexture(CopyTexture copyTexture, in FormatInfo formatInfo, bool preferScaling = true, in Size? sizeHint = null)
         {
             int gobBlocksInY = copyTexture.MemoryLayout.UnpackGobBlocksInY();
             int gobBlocksInZ = copyTexture.MemoryLayout.UnpackGobBlocksInZ();
@@ -532,7 +532,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="samplesInY">Number of samples in the Y direction, for MSAA</param>
         /// <param name="sizeHint">A hint indicating the minimum used size for the texture</param>
         /// <returns>The texture</returns>
-        public Texture FindOrCreateTexture(RtColorState colorState, int samplesInX, int samplesInY, Size sizeHint)
+        public Texture FindOrCreateTexture(RtColorState colorState, int samplesInX, int samplesInY, in Size sizeHint)
         {
             bool isLinear = colorState.MemoryLayout.UnpackIsLinear();
 
@@ -612,7 +612,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="samplesInY">Number of samples in the Y direction, for MSAA</param>
         /// <param name="sizeHint">A hint indicating the minimum used size for the texture</param>
         /// <returns>The texture</returns>
-        public Texture FindOrCreateTexture(RtDepthStencilState dsState, Size3D size, int samplesInX, int samplesInY, Size sizeHint)
+        public Texture FindOrCreateTexture(RtDepthStencilState dsState, Size3D size, int samplesInX, int samplesInY, in Size sizeHint)
         {
             int gobBlocksInY = dsState.MemoryLayout.UnpackGobBlocksInY();
             int gobBlocksInZ = dsState.MemoryLayout.UnpackGobBlocksInZ();
@@ -655,7 +655,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="sizeHint">A hint indicating the minimum used size for the texture</param>
         /// <param name="range">Optional ranges of physical memory where the texture data is located</param>
         /// <returns>The texture</returns>
-        public Texture FindOrCreateTexture(TextureSearchFlags flags, TextureInfo info, int layerSize = 0, Size? sizeHint = null, MultiRange? range = null)
+        public Texture FindOrCreateTexture(TextureSearchFlags flags, TextureInfo info, int layerSize = 0, in Size? sizeHint = null, MultiRange? range = null)
         {
             bool isSamplerTexture = (flags & TextureSearchFlags.ForSampler) != 0;
 
@@ -1022,7 +1022,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="texture">The texture to resize</param>
         /// <param name="isSamplerTexture">True if the texture will be used for a sampler, false otherwise</param>
         /// <param name="sizeHint">A hint indicating the minimum used size for the texture</param>
-        private void ChangeSizeIfNeeded(TextureInfo info, Texture texture, bool isSamplerTexture, Size? sizeHint)
+        private void ChangeSizeIfNeeded(in TextureInfo info, Texture texture, bool isSamplerTexture, in Size? sizeHint)
         {
             if (isSamplerTexture)
             {
@@ -1133,7 +1133,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="info">The texture information to be adjusted</param>
         /// <param name="firstLevel">The first level of the texture view</param>
         /// <returns>The adjusted texture information with the new size</returns>
-        private static TextureInfo AdjustSizes(Texture parent, TextureInfo info, int firstLevel)
+        private static TextureInfo AdjustSizes(Texture parent, in TextureInfo info, int firstLevel)
         {
             // When the texture is used as view of another texture, we must
             // ensure that the sizes are valid, otherwise data uploads would fail
@@ -1205,7 +1205,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="caps">GPU capabilities</param>
         /// <param name="scale">Texture scale factor, to be applied to the texture size</param>
         /// <returns>The texture creation information</returns>
-        public static TextureCreateInfo GetCreateInfo(TextureInfo info, Capabilities caps, float scale)
+        public static TextureCreateInfo GetCreateInfo(in TextureInfo info, in Capabilities caps, float scale)
         {
             FormatInfo formatInfo = TextureCompatibility.ToHostCompatibleFormat(info, caps);
 

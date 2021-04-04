@@ -35,7 +35,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="info">Texture information</param>
         /// <param name="caps">Host GPU capabilities</param>
         /// <returns>True if the format is incompatible, false otherwise</returns>
-        public static bool IsFormatHostIncompatible(TextureInfo info, Capabilities caps)
+        public static bool IsFormatHostIncompatible(in TextureInfo info, in Capabilities caps)
         {
             Format originalFormat = info.FormatInfo.Format;
             return ToHostCompatibleFormat(info, caps).Format != originalFormat;
@@ -52,7 +52,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="info">Texture information</param>
         /// <param name="caps">Host GPU capabilities</param>
         /// <returns>A host compatible format</returns>
-        public static FormatInfo ToHostCompatibleFormat(TextureInfo info, Capabilities caps)
+        public static FormatInfo ToHostCompatibleFormat(in TextureInfo info, in Capabilities caps)
         {
             if (!caps.SupportsAstcCompression)
             {
@@ -93,7 +93,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="lhs">First comparand</param>
         /// <param name="rhs">Second comparand</param>
         /// <returns>True if the formats are compatible, false otherwise</returns>
-        public static bool FormatCompatible(FormatInfo lhs, FormatInfo rhs)
+        public static bool FormatCompatible(in FormatInfo lhs, in FormatInfo rhs)
         {
             if (lhs.Format.IsDepthOrStencil() || rhs.Format.IsDepthOrStencil())
             {
@@ -126,7 +126,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="forSampler">Indicates that the texture will be used for shader sampling</param>
         /// <param name="forCopy">Indicates that the texture will be used as copy source or target</param>
         /// <returns>A value indicating how well the formats match</returns>
-        public static TextureMatchQuality FormatMatches(TextureInfo lhs, TextureInfo rhs, bool forSampler, bool forCopy)
+        public static TextureMatchQuality FormatMatches(in TextureInfo lhs, in TextureInfo rhs, bool forSampler, bool forCopy)
         {
             // D32F and R32F texture have the same representation internally,
             // however the R32F format is used to sample from depth textures.
@@ -167,7 +167,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="lhs">Texture information to compare</param>
         /// <param name="rhs">Texture information to compare with</param>
         /// <returns>True if the layout matches, false otherwise</returns>
-        public static bool LayoutMatches(TextureInfo lhs, TextureInfo rhs)
+        public static bool LayoutMatches(in TextureInfo lhs, in TextureInfo rhs)
         {
             if (lhs.IsLinear != rhs.IsLinear)
             {
@@ -216,7 +216,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="rhs">Texture information of the texture view to match against</param>
         /// <param name="level">Mipmap level of the texture view in relation to this texture</param>
         /// <returns>The view compatibility level of the view sizes</returns>
-        public static TextureViewCompatibility ViewSizeMatches(TextureInfo lhs, TextureInfo rhs, int level)
+        public static TextureViewCompatibility ViewSizeMatches(in TextureInfo lhs, in TextureInfo rhs, int level)
         {
             Size size = GetAlignedSize(lhs, level);
 
@@ -256,7 +256,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="layer">Base layer of the child texture</param>
         /// <param name="level">Base level of the child texture</param>
         /// <returns>Full compatiblity if the child's layer and level count fit within the parent, incompatible otherwise</returns>
-        public static TextureViewCompatibility ViewSubImagesInBounds(TextureInfo parent, TextureInfo child, int layer, int level)
+        public static TextureViewCompatibility ViewSubImagesInBounds(in TextureInfo parent, in TextureInfo child, int layer, int level)
         {
             if (level + child.Levels <= parent.Levels &&
                 layer + child.GetSlices() <= parent.GetSlices())
@@ -275,7 +275,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="lhs">Texture information to compare</param>
         /// <param name="rhs">Texture information to compare with</param>
         /// <returns>True if the size matches, false otherwise</returns>
-        public static bool SizeMatches(TextureInfo lhs, TextureInfo rhs)
+        public static bool SizeMatches(in TextureInfo lhs, in TextureInfo rhs)
         {
             return SizeMatches(lhs, rhs, alignSizes: false);
         }
@@ -287,7 +287,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="rhs">Texture information to compare with</param>
         /// <param name="level">Mipmap level of this texture to compare with</param>
         /// <returns>True if the size matches with the level, false otherwise</returns>
-        public static bool SizeMatches(TextureInfo lhs, TextureInfo rhs, int level)
+        public static bool SizeMatches(in TextureInfo lhs, in TextureInfo rhs, int level)
         {
             return Math.Max(1, lhs.Width >> level)      == rhs.Width &&
                    Math.Max(1, lhs.Height >> level)     == rhs.Height &&
@@ -301,7 +301,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="rhs">Texture information to compare with</param>
         /// <param name="alignSizes">True to align the sizes according to the texture layout for comparison</param>
         /// <returns>True if the sizes matches, false otherwise</returns>
-        public static bool SizeMatches(TextureInfo lhs, TextureInfo rhs, bool alignSizes)
+        public static bool SizeMatches(in TextureInfo lhs, in TextureInfo rhs, bool alignSizes)
         {
             if (lhs.GetLayers() != rhs.GetLayers())
             {
@@ -334,7 +334,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="info">Texture information to calculate the aligned size from</param>
         /// <param name="level">Mipmap level for texture views</param>
         /// <returns>The aligned texture size</returns>
-        public static Size GetAlignedSize(TextureInfo info, int level = 0)
+        public static Size GetAlignedSize(in TextureInfo info, int level = 0)
         {
             int width = Math.Max(1, info.Width >> level);
             int height = Math.Max(1, info.Height >> level);
@@ -374,7 +374,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="rhs">Texture information of the texture view to compare against</param>
         /// <param name="level">Start level of the texture view, in relation with the first texture</param>
         /// <returns>True if the layout is compatible, false otherwise</returns>
-        public static bool ViewLayoutCompatible(TextureInfo lhs, TextureInfo rhs, int level)
+        public static bool ViewLayoutCompatible(in TextureInfo lhs, in TextureInfo rhs, int level)
         {
             if (lhs.IsLinear != rhs.IsLinear)
             {
@@ -416,7 +416,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="lhs">Texture information of the texture view</param>
         /// <param name="rhs">Texture information of the texture view</param>
         /// <returns>The view compatibility level of the texture formats</returns>
-        public static TextureViewCompatibility ViewFormatCompatible(TextureInfo lhs, TextureInfo rhs)
+        public static TextureViewCompatibility ViewFormatCompatible(in TextureInfo lhs, in TextureInfo rhs)
         {
             if (FormatCompatible(lhs.FormatInfo, rhs.FormatInfo))
             {
@@ -441,7 +441,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="rhs">Texture information of the texture view</param>
         /// <param name="isCopy">True to check for copy rather than view compatibility</param>
         /// <returns>True if the targets are compatible, false otherwise</returns>
-        public static TextureViewCompatibility ViewTargetCompatible(TextureInfo lhs, TextureInfo rhs)
+        public static TextureViewCompatibility ViewTargetCompatible(in TextureInfo lhs, in TextureInfo rhs)
         {
             bool result = false;
             switch (lhs.Target)
@@ -494,7 +494,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="swizzleRhs">Swizzle component for the second texture</param>
         /// <param name="component">Component index, starting at 0 for red</param>
         /// <returns>True if the swizzle components functionally match, false othersize</returns>
-        private static bool SwizzleComponentMatches(TextureInfo lhs, TextureInfo rhs, SwizzleComponent swizzleLhs, SwizzleComponent swizzleRhs, int component)
+        private static bool SwizzleComponentMatches(in TextureInfo lhs, in TextureInfo rhs, SwizzleComponent swizzleLhs, SwizzleComponent swizzleRhs, int component)
         {
             int lhsComponents = lhs.FormatInfo.Components;
             int rhsComponents = rhs.FormatInfo.Components;
@@ -534,7 +534,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="lhs">Texture information to compare</param>
         /// <param name="rhs">Texture information to compare with</param>
         /// <returns>True if the texture shader sampling parameters matches, false otherwise</returns>
-        public static bool SamplerParamsMatches(TextureInfo lhs, TextureInfo rhs)
+        public static bool SamplerParamsMatches(in TextureInfo lhs, in TextureInfo rhs)
         {
             return lhs.DepthStencilMode == rhs.DepthStencilMode &&
                    SwizzleComponentMatches(lhs, rhs, lhs.SwizzleR, rhs.SwizzleR, 0) &&
@@ -549,7 +549,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="first">Texture information to compare with</param>
         /// <param name="rhs">Texture information to compare with</param>
         /// <returns>True if the texture target and samples count matches, false otherwise</returns>
-        public static bool TargetAndSamplesCompatible(TextureInfo lhs, TextureInfo rhs)
+        public static bool TargetAndSamplesCompatible(in TextureInfo lhs, in TextureInfo rhs)
         {
             return lhs.Target     == rhs.Target &&
                    lhs.SamplesInX == rhs.SamplesInX &&

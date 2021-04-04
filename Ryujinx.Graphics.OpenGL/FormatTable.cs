@@ -4,7 +4,7 @@ using System;
 
 namespace Ryujinx.Graphics.OpenGL
 {
-    struct FormatTable
+    static class FormatTable
     {
         private static FormatInfo[] Table;
         private static SizedInternalFormat[] TableImage;
@@ -218,7 +218,7 @@ namespace Ryujinx.Graphics.OpenGL
             Add(Format.R11G11B10Float,    (SizedInternalFormat)All.R11fG11fB10f);
         }
 
-        private static void Add(Format format, FormatInfo info)
+        private static void Add(Format format, in FormatInfo info)
         {
             Table[(int)format] = info;
         }

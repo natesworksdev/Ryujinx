@@ -64,12 +64,12 @@ namespace Ryujinx.Graphics.OpenGL
             return new Program(shaders, transformFeedbackDescriptors);
         }
 
-        public ISampler CreateSampler(SamplerCreateInfo info)
+        public ISampler CreateSampler(in SamplerCreateInfo info)
         {
             return new Sampler(info);
         }
 
-        public ITexture CreateTexture(TextureCreateInfo info, float scaleFactor)
+        public ITexture CreateTexture(in TextureCreateInfo info, float scaleFactor)
         {
             if (info.Target == Target.TextureBuffer)
             {

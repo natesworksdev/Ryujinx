@@ -3,7 +3,7 @@ using System;
 
 namespace Ryujinx.Graphics.GAL
 {
-    public struct TextureCreateInfo : IEquatable<TextureCreateInfo>
+    public readonly struct TextureCreateInfo : IEquatable<TextureCreateInfo>
     {
         public int Width         { get; }
         public int Height        { get; }

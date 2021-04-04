@@ -136,7 +136,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
         /// Sends a uncompressed method for processing by the graphics pipeline.
         /// </summary>
         /// <param name="meth">Method to be processed</param>
-        private void Send(MethodParams meth)
+        private void Send(in MethodParams meth)
         {
             if ((MethodOffset)meth.Method == MethodOffset.BindChannel)
             {

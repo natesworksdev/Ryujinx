@@ -18,8 +18,8 @@ namespace Ryujinx.Graphics.GAL
 
         IProgram CreateProgram(IShader[] shaders, TransformFeedbackDescriptor[] transformFeedbackDescriptors);
 
-        ISampler CreateSampler(SamplerCreateInfo info);
-        ITexture CreateTexture(TextureCreateInfo info, float scale);
+        ISampler CreateSampler(in SamplerCreateInfo info);
+        ITexture CreateTexture(in TextureCreateInfo info, float scale);
 
         void CreateSync(ulong id);
 

@@ -21,10 +21,16 @@ namespace Ryujinx.Graphics.Gpu.Image
         // This method uses much more memory so we want to avoid it if possible.
         private const int ByteComparisonSwitchThreshold = 4;
 
-        private struct TexturePoolOwner
+        private readonly struct TexturePoolOwner
         {
-            public TexturePool Pool;
-            public int ID;
+            public readonly TexturePool Pool;
+            public readonly int ID;
+
+            public TexturePoolOwner(TexturePool pool, int iD)
+            {
+                Pool = pool;
+                ID = iD;
+            }
         }
 
         private GpuContext _context;
@@ -192,7 +198,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="info">Texture information</param>
         /// <param name="sizeInfo">Size information of the texture</param>
         /// <param name="range">Physical memory ranges where the texture data is located</param>
-        private void InitializeTexture(GpuContext context, TextureInfo info, SizeInfo sizeInfo, MultiRange range)
+        private void InitializeTexture(GpuContext context, in TextureInfo info, in SizeInfo sizeInfo, MultiRange range)
         {
             _context  = context;
             _sizeInfo = sizeInfo;
@@ -272,7 +278,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="firstLayer">Start layer of the child texture on the parent texture</param>
         /// <param name="firstLevel">Start mipmap level of the child texture on the parent texture</param>
         /// <returns>The child texture</returns>
-        public Texture CreateView(TextureInfo info, SizeInfo sizeInfo, MultiRange range, int firstLayer, int firstLevel)
+        public Texture CreateView(in TextureInfo info, in SizeInfo sizeInfo, MultiRange range, int firstLayer, int firstLevel)
         {
             Texture texture = new Texture(
                 _context,
@@ -927,7 +933,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="info">Texture information to compare against</param>
         /// <param name="flags">Comparison flags</param>
         /// <returns>A value indicating how well this texture matches the given info</returns>
-        public TextureMatchQuality IsExactMatch(TextureInfo info, TextureSearchFlags flags)
+        public TextureMatchQuality IsExactMatch(in TextureInfo info, TextureSearchFlags flags)
         {
             TextureMatchQuality matchQuality = TextureCompatibility.FormatMatches(Info, info, (flags & TextureSearchFlags.ForSampler) != 0, (flags & TextureSearchFlags.ForCopy) != 0);
 
@@ -979,7 +985,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="firstLayer">Texture view initial layer on this texture</param>
         /// <param name="firstLevel">Texture view first mipmap level on this texture</param>
         /// <returns>The level of compatiblilty a view with the given parameters created from this texture has</returns>
-        public TextureViewCompatibility IsViewCompatible(TextureInfo info, MultiRange range, int layerSize, out int firstLayer, out int firstLevel)
+        public TextureViewCompatibility IsViewCompatible(in TextureInfo info, MultiRange range, int layerSize, out int firstLayer, out int firstLevel)
         {
             int offset = Range.FindOffset(range);
 
@@ -1113,7 +1119,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="hostTexture">The new host texture</param>
         /// <param name="firstLayer">The first layer of the view</param>
         /// <param name="firstLevel">The first level of the view</param>
-        public void ReplaceView(Texture parent, TextureInfo info, ITexture hostTexture, int firstLayer, int firstLevel)
+        public void ReplaceView(Texture parent, in TextureInfo info, ITexture hostTexture, int firstLayer, int firstLevel)
         {
             IncrementReferenceCount();
             parent._viewStorage.SynchronizeMemory();
@@ -1152,7 +1158,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Sets the internal texture information structure.
         /// </summary>
         /// <param name="info">The new texture information</param>
-        private void SetInfo(TextureInfo info)
+        private void SetInfo(in TextureInfo info)
         {
             Info = info;
             Target = info.Target;
@@ -1250,7 +1256,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             lock (_poolOwners)
             {
-                _poolOwners.Add(new TexturePoolOwner { Pool = pool, ID = id });
+                _poolOwners.Add(new TexturePoolOwner(pool,id));
             }
             _referenceCount++;
         }
