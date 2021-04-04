@@ -6,6 +6,7 @@ using ARMeilleure.Memory;
 using ARMeilleure.State;
 using ARMeilleure.Translation.Cache;
 using ARMeilleure.Translation.PTC;
+using Ryujinx.Common;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -254,7 +255,9 @@ namespace ARMeilleure.Translation
 
                 ResetPool(highCq ? 1 : 0);
 
-                Ptc.WriteInfoCodeRelocUnwindInfo(address, funcSize, highCq, ptcInfo);
+                Hash128 hash = Ptc.ComputeHash(memory, address, funcSize);
+
+                Ptc.WriteInfoCodeRelocUnwindInfo(address, funcSize, hash, highCq, ptcInfo);
             }
 
             return new TranslatedFunction(func, funcSize, highCq);
