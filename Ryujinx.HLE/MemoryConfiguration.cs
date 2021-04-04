@@ -58,10 +58,5 @@ namespace Ryujinx.HLE
                 _ => throw new AggregateException($"Invalid memory configuration \"{configuration}\".")
             };
         }
-
-        public static ulong ToDramSizeInGb(this MemoryConfiguration configuration)
-        {
-            return ToDramSize(configuration) / Gb;
-        }
     }
 }

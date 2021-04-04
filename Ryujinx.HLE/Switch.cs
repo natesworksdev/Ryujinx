@@ -24,6 +24,8 @@ namespace Ryujinx.HLE
 {
     public class Switch : IDisposable
     {
+        private MemoryConfiguration _memoryConfiguration;
+
         public IHardwareDeviceDriver AudioDeviceDriver { get; private set; }
 
         internal MemoryBlock Memory { get; private set; }
@@ -76,6 +78,8 @@ namespace Ryujinx.HLE
             }
 
             UserChannelPersistence = userChannelPersistence;
+
+            _memoryConfiguration = memoryConfiguration;
 
             AudioDeviceDriver = new CompatLayerHardwareDeviceDriver(audioDeviceDriver);
 
@@ -152,7 +156,7 @@ namespace Ryujinx.HLE
             Logger.Info?.Print(LogClass.Application, $"AudioBackend: {ConfigurationState.Instance.System.AudioBackend.Value}");
             Logger.Info?.Print(LogClass.Application, $"IsDocked: {ConfigurationState.Instance.System.EnableDockedMode.Value}");
             Logger.Info?.Print(LogClass.Application, $"Vsync: {ConfigurationState.Instance.Graphics.EnableVsync.Value}");
-            Logger.Info?.Print(LogClass.Application, $"DRAM size: {((MemoryConfiguration)ConfigurationState.Instance.System.MemoryConfiguration.Value).ToDramSizeInGb()} GB");
+            Logger.Info?.Print(LogClass.Application, $"MemoryConfiguration: {_memoryConfiguration}");
         }
 
         public static IntegrityCheckLevel GetIntegrityCheckLevel()

@@ -221,7 +221,7 @@ namespace Ryujinx.Configuration
             /// <summary>
             /// Defines the amount of RAM available on the emulated system, and how it is distributed
             /// </summary>
-            public ReactiveObject<int> MemoryConfiguration { get; private set; }
+            public ReactiveObject<bool> ExpandRam { get; private set; }
 
             /// <summary>
             /// Enable or disable ignoring missing services
@@ -239,7 +239,7 @@ namespace Ryujinx.Configuration
                 EnableFsIntegrityChecks = new ReactiveObject<bool>();
                 FsGlobalAccessLogMode   = new ReactiveObject<int>();
                 AudioBackend            = new ReactiveObject<AudioBackend>();
-                MemoryConfiguration     = new ReactiveObject<int>();
+                ExpandRam               = new ReactiveObject<bool>();
                 IgnoreMissingServices   = new ReactiveObject<bool>();
             }
         }
@@ -439,7 +439,7 @@ namespace Ryujinx.Configuration
                 EnableFsIntegrityChecks   = System.EnableFsIntegrityChecks,
                 FsGlobalAccessLogMode     = System.FsGlobalAccessLogMode,
                 AudioBackend              = System.AudioBackend,
-                MemoryConfiguration       = System.MemoryConfiguration,
+                ExpandRam                 = System.ExpandRam,
                 IgnoreMissingServices     = System.IgnoreMissingServices,
                 GuiColumns                = new GuiColumns
                 {
@@ -504,7 +504,7 @@ namespace Ryujinx.Configuration
             System.EnableFsIntegrityChecks.Value   = true;
             System.FsGlobalAccessLogMode.Value     = 0;
             System.AudioBackend.Value              = AudioBackend.OpenAl;
-            System.MemoryConfiguration.Value       = 0;
+            System.ExpandRam.Value                 = false;
             System.IgnoreMissingServices.Value     = false;
             Ui.GuiColumns.FavColumn.Value          = true;
             Ui.GuiColumns.IconColumn.Value         = true;
@@ -846,7 +846,7 @@ namespace Ryujinx.Configuration
             System.EnableFsIntegrityChecks.Value   = configurationFileFormat.EnableFsIntegrityChecks;
             System.FsGlobalAccessLogMode.Value     = configurationFileFormat.FsGlobalAccessLogMode;
             System.AudioBackend.Value              = configurationFileFormat.AudioBackend;
-            System.MemoryConfiguration.Value       = configurationFileFormat.MemoryConfiguration;
+            System.ExpandRam.Value                 = configurationFileFormat.ExpandRam;
             System.IgnoreMissingServices.Value     = configurationFileFormat.IgnoreMissingServices;
             Ui.GuiColumns.FavColumn.Value          = configurationFileFormat.GuiColumns.FavColumn;
             Ui.GuiColumns.IconColumn.Value         = configurationFileFormat.GuiColumns.IconColumn;

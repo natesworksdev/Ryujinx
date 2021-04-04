@@ -337,13 +337,17 @@ namespace Ryujinx.Ui
                 }
             }
 
+            var memoryConfiguration = ConfigurationState.Instance.System.ExpandRam.Value
+                ? HLE.MemoryConfiguration.MemoryConfiguration6GB
+                : HLE.MemoryConfiguration.MemoryConfiguration4GB;
+
             _emulationContext = new HLE.Switch(
                 _virtualFileSystem,
                 _contentManager,
                 _userChannelPersistence,
                 renderer,
                 deviceDriver,
-                (HLE.MemoryConfiguration)ConfigurationState.Instance.System.MemoryConfiguration.Value)
+                memoryConfiguration)
             {
                 UiHandler = _uiHandler
             };
