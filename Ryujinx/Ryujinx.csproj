@@ -110,8 +110,4 @@
     <EmbeddedResource Include="Modules\Updater\UpdateDialog.glade" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Ui\Input\" />
-  </ItemGroup>
-
 </Project>

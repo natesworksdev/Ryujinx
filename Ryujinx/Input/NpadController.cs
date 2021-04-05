@@ -43,7 +43,155 @@ namespace Ryujinx.Input
             new HLEButtonMappingEntry { DriverInputId = GamepadInputId.SingleRightTrigger0, HLEInput = ControllerKeys.SrLeft },
             new HLEButtonMappingEntry { DriverInputId = GamepadInputId.SingleLeftTrigger1, HLEInput = ControllerKeys.SlRight },
             new HLEButtonMappingEntry { DriverInputId = GamepadInputId.SingleRightTrigger1, HLEInput = ControllerKeys.SrRight },
-        }; 
+        };
+
+        class HLEKeyboardMappingEntry
+        {
+            public Key TargetKey;
+            public byte Target;
+        }
+
+        private static readonly HLEKeyboardMappingEntry[] KeyMapping = new HLEKeyboardMappingEntry[]
+        {
+            new HLEKeyboardMappingEntry { TargetKey = Key.A, Target = 0x4  },
+            new HLEKeyboardMappingEntry { TargetKey = Key.B, Target = 0x5  },
+            new HLEKeyboardMappingEntry { TargetKey = Key.C, Target = 0x6  },
+            new HLEKeyboardMappingEntry { TargetKey = Key.D, Target = 0x7  },
+            new HLEKeyboardMappingEntry { TargetKey = Key.E, Target = 0x8  },
+            new HLEKeyboardMappingEntry { TargetKey = Key.F, Target = 0x9  },
+            new HLEKeyboardMappingEntry { TargetKey = Key.G, Target = 0xA  },
+            new HLEKeyboardMappingEntry { TargetKey = Key.H, Target = 0xB  },
+            new HLEKeyboardMappingEntry { TargetKey = Key.I, Target = 0xC  },
+            new HLEKeyboardMappingEntry { TargetKey = Key.J, Target = 0xD  },
+            new HLEKeyboardMappingEntry { TargetKey = Key.K, Target = 0xE  },
+            new HLEKeyboardMappingEntry { TargetKey = Key.L, Target = 0xF  },
+            new HLEKeyboardMappingEntry { TargetKey = Key.M, Target = 0x10 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.N, Target = 0x11 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.O, Target = 0x12 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.P, Target = 0x13 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Q, Target = 0x14 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.R, Target = 0x15 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.S, Target = 0x16 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.T, Target = 0x17 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.U, Target = 0x18 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.V, Target = 0x19 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.W, Target = 0x1A },
+            new HLEKeyboardMappingEntry { TargetKey = Key.X, Target = 0x1B },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Y, Target = 0x1C },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Z, Target = 0x1D },
+
+            new HLEKeyboardMappingEntry { TargetKey = Key.Number1, Target = 0x1E },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Number2, Target = 0x1F },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Number3, Target = 0x20 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Number4, Target = 0x21 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Number5, Target = 0x22 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Number6, Target = 0x23 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Number7, Target = 0x24 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Number8, Target = 0x25 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Number9, Target = 0x26 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Number0, Target = 0x27 },
+
+            new HLEKeyboardMappingEntry { TargetKey = Key.Enter,        Target = 0x28 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Escape,       Target = 0x29 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.BackSpace,    Target = 0x2A },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Tab,          Target = 0x2B },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Space,        Target = 0x2C },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Minus,        Target = 0x2D },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Plus,         Target = 0x2E },
+            new HLEKeyboardMappingEntry { TargetKey = Key.BracketLeft,  Target = 0x2F },
+            new HLEKeyboardMappingEntry { TargetKey = Key.BracketRight, Target = 0x30 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.BackSlash,    Target = 0x31 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Tilde,        Target = 0x32 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Semicolon,    Target = 0x33 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Quote,        Target = 0x34 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Grave,        Target = 0x35 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Comma,        Target = 0x36 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Period,       Target = 0x37 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Slash,        Target = 0x38 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.CapsLock,     Target = 0x39 },
+
+            new HLEKeyboardMappingEntry { TargetKey = Key.F1,  Target = 0x3a },
+            new HLEKeyboardMappingEntry { TargetKey = Key.F2,  Target = 0x3b },
+            new HLEKeyboardMappingEntry { TargetKey = Key.F3,  Target = 0x3c },
+            new HLEKeyboardMappingEntry { TargetKey = Key.F4,  Target = 0x3d },
+            new HLEKeyboardMappingEntry { TargetKey = Key.F5,  Target = 0x3e },
+            new HLEKeyboardMappingEntry { TargetKey = Key.F6,  Target = 0x3f },
+            new HLEKeyboardMappingEntry { TargetKey = Key.F7,  Target = 0x40 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.F8,  Target = 0x41 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.F9,  Target = 0x42 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.F10, Target = 0x43 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.F11, Target = 0x44 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.F12, Target = 0x45 },
+
+            new HLEKeyboardMappingEntry { TargetKey = Key.PrintScreen, Target = 0x46 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.ScrollLock,  Target = 0x47 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Pause,       Target = 0x48 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Insert,      Target = 0x49 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Home,        Target = 0x4A },
+            new HLEKeyboardMappingEntry { TargetKey = Key.PageUp,      Target = 0x4B },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Delete,      Target = 0x4C },
+            new HLEKeyboardMappingEntry { TargetKey = Key.End,         Target = 0x4D },
+            new HLEKeyboardMappingEntry { TargetKey = Key.PageDown,    Target = 0x4E },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Right,       Target = 0x4F },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Left,        Target = 0x50 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Down,        Target = 0x51 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Up,          Target = 0x52 },
+
+            new HLEKeyboardMappingEntry { TargetKey = Key.NumLock,        Target = 0x53 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.KeypadDivide,   Target = 0x54 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.KeypadMultiply, Target = 0x55 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.KeypadSubtract, Target = 0x56 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.KeypadAdd,      Target = 0x57 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.KeypadEnter,    Target = 0x58 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Keypad1,        Target = 0x59 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Keypad2,        Target = 0x5A },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Keypad3,        Target = 0x5B },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Keypad4,        Target = 0x5C },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Keypad5,        Target = 0x5D },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Keypad6,        Target = 0x5E },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Keypad7,        Target = 0x5F },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Keypad8,        Target = 0x60 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Keypad9,        Target = 0x61 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.Keypad0,        Target = 0x62 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.KeypadDecimal,  Target = 0x63 },
+
+            new HLEKeyboardMappingEntry { TargetKey = Key.F13, Target = 0x68 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.F14, Target = 0x69 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.F15, Target = 0x6A },
+            new HLEKeyboardMappingEntry { TargetKey = Key.F16, Target = 0x6B },
+            new HLEKeyboardMappingEntry { TargetKey = Key.F17, Target = 0x6C },
+            new HLEKeyboardMappingEntry { TargetKey = Key.F18, Target = 0x6D },
+            new HLEKeyboardMappingEntry { TargetKey = Key.F19, Target = 0x6E },
+            new HLEKeyboardMappingEntry { TargetKey = Key.F20, Target = 0x6F },
+            new HLEKeyboardMappingEntry { TargetKey = Key.F21, Target = 0x70 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.F22, Target = 0x71 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.F23, Target = 0x72 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.F24, Target = 0x73 },
+
+            new HLEKeyboardMappingEntry { TargetKey = Key.ControlLeft,  Target = 0xE0 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.ShiftLeft,    Target = 0xE1 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.AltLeft,      Target = 0xE2 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.WinLeft,      Target = 0xE3 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.ControlRight, Target = 0xE4 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.ShiftRight,   Target = 0xE5 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.AltRight,     Target = 0xE6 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.WinRight,     Target = 0xE7 },
+        };
+
+        private static readonly HLEKeyboardMappingEntry[] KeyModifierMapping = new HLEKeyboardMappingEntry[]
+        {
+            new HLEKeyboardMappingEntry { TargetKey = Key.ControlLeft,  Target = 0 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.ShiftLeft,    Target = 1 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.AltLeft,      Target = 2 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.WinLeft,      Target = 3 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.ControlRight, Target = 4 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.ShiftRight,   Target = 5 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.AltRight,     Target = 6 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.WinRight,     Target = 7 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.CapsLock,     Target = 8 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.ScrollLock,   Target = 9 },
+            new HLEKeyboardMappingEntry { TargetKey = Key.NumLock,      Target = 10 },
+        };
 
         private bool _isValid;
         private string _id;
@@ -286,6 +434,39 @@ namespace Ryujinx.Input
 
             return value;
         }
+
+        public KeyboardInput? GetHLEKeyboardInput()
+        {
+            if (_gamepad is IKeyboard keyboard)
+            {
+                KeyboardStateSnapshot keyboardState = keyboard.GetKeyboardStateSnapshot();
+
+                KeyboardInput hidKeyboard = new KeyboardInput
+                {
+                    Modifier = 0,
+                    Keys = new int[0x8]
+                };
+
+                foreach (HLEKeyboardMappingEntry entry in KeyMapping)
+                {
+                    int value = keyboardState.IsPressed(entry.TargetKey) ? 1 : 0;
+
+                    hidKeyboard.Keys[entry.Target / 0x20] |= (value << (entry.Target % 0x20));
+                }
+
+                foreach (HLEKeyboardMappingEntry entry in KeyModifierMapping)
+                {
+                    int value = keyboardState.IsPressed(entry.TargetKey) ? 1 : 0;
+
+                    hidKeyboard.Modifier |= value << entry.Target;
+                }
+
+                return hidKeyboard;
+            }
+
+            return null;
+        }
+
 
         protected virtual void Dispose(bool disposing)
         {

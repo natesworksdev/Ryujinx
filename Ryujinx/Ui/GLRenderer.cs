@@ -671,7 +671,7 @@ namespace Ryujinx.Ui
 
             if(_isFocused)
             {
-                KeyboardHotkeyState currentHotkeyState = NpadManager.GetHotkeyState();
+                KeyboardHotkeyState currentHotkeyState = GetHotkeyState();
 
                 if (currentHotkeyState.HasFlag(KeyboardHotkeyState.ToggleVSync) &&
                     !_prevHotkeyState.HasFlag(KeyboardHotkeyState.ToggleVSync))
@@ -746,6 +746,26 @@ namespace Ryujinx.Ui
             _device.Hid.DebugPad.Update();
 
             return true;
+        }
+
+        [Flags]
+        private enum KeyboardHotkeyState
+        {
+            None,
+            ToggleVSync,
+        }
+
+
+        private KeyboardHotkeyState GetHotkeyState()
+        {
+            KeyboardHotkeyState state = KeyboardHotkeyState.None;
+
+            if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ToggleVsync))
+            {
+                state |= KeyboardHotkeyState.ToggleVSync;
+            }
+
+            return state;
         }
     }
 }

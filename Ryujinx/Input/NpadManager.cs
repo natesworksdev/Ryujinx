@@ -174,6 +174,16 @@ namespace Ryujinx.Input
 
                     hleInputStates.Add(inputState);
                     hleMotionStates.Add(motionState);
+
+                    if (ConfigurationState.Instance.Hid.EnableKeyboard)
+                    {
+                        KeyboardInput? hleKeyboardInput = controller.GetHLEKeyboardInput();
+
+                        if (hleKeyboardInput.HasValue)
+                        {
+                            hleHid.Keyboard.Update(hleKeyboardInput.Value);
+                        }
+                    }
                 }
 
                 hleHid.Npads.Update(hleInputStates);
@@ -209,24 +219,6 @@ namespace Ryujinx.Input
         public void Dispose()
         {
             Dispose(true);
-        }
-
-        public KeyboardHotkeyState GetHotkeyState()
-        {
-            KeyboardHotkeyState state = KeyboardHotkeyState.None;
-
-            if (_keyboardDriver != null)
-            {
-                IKeyboard keyboard = (IKeyboard)_keyboardDriver.GetGamepad("0");
-
-                if (keyboard.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ToggleVsync))
-                {
-                    state |= KeyboardHotkeyState.ToggleVSync;
-                }
-            }
-
-
-            return state;
         }
     }
 }

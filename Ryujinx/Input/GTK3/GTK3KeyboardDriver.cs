@@ -47,8 +47,6 @@ namespace Ryujinx.Input.GTK3
         [GLib.ConnectBefore]
         protected void OnKeyPress(object sender, KeyPressEventArgs args)
         {
-            //Keymap.Default.TranslateKeyboardState()
-
             GtkKey key = (GtkKey)Keyval.ToLower((uint)args.Event.Key);
 
             _pressedKeys.Add(key);
@@ -58,8 +56,6 @@ namespace Ryujinx.Input.GTK3
         protected void OnKeyRelease(object sender, KeyReleaseEventArgs args)
         {
             GtkKey key = (GtkKey)Keyval.ToLower((uint)args.Event.Key);
-
-            GtkKey nativeKey = GTK3MappingHelper.ToGtkKey(Key.Z);
 
             _pressedKeys.Remove(key);
         }
