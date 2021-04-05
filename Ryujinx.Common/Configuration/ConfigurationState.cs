@@ -853,6 +853,11 @@ namespace Ryujinx.Configuration
             Hid.Hotkeys.Value                      = configurationFileFormat.Hotkeys;
             Hid.InputConfig.Value                  = configurationFileFormat.InputConfig;
 
+            if (Hid.InputConfig.Value == null)
+            {
+                Hid.InputConfig.Value = new List<InputConfig>();
+            }
+
             if (configurationFileUpdated)
             {
                 ToFileFormat().SaveConfig(configurationFilePath);
