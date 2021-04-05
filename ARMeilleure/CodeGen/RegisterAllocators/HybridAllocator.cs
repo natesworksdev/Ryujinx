@@ -83,9 +83,10 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             int intFreeRegisters = regMasks.IntAvailableRegisters;
             int vecFreeRegisters = regMasks.VecAvailableRegisters;
 
-            BlockInfo[] blockInfo = new BlockInfo[cfg.Blocks.Count];
+            var blockInfo = new BlockInfo[cfg.Blocks.Count];
 
-            List<LocalInfo> locInfo = new List<LocalInfo>();
+            var locInfo = new List<LocalInfo>();
+            var locVisited = new HashSet<Operand>();
 
             for (int index = cfg.PostOrderBlocks.Length - 1; index >= 0; index--)
             {
@@ -135,7 +136,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         {
                             LocalInfo info;
 
-                            if (dest.Value != 0)
+                            if (!locVisited.Add(dest))
                             {
                                 info = locInfo[dest.AsInt32() - 1];
                             }
