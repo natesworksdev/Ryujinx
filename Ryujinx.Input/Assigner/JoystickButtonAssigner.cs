@@ -1,11 +1,10 @@
 using System.Collections.Generic;
 using System;
 using System.IO;
-using Ryujinx.Input;
 
-namespace Ryujinx.Ui.Input
+namespace Ryujinx.Input.Assigner
 {
-    class JoystickButtonAssigner : ButtonAssigner
+    public class JoystickButtonAssigner : ButtonAssigner
     {
         private IGamepad _gamepad;
 

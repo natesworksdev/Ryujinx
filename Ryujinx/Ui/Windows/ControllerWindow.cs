@@ -7,7 +7,6 @@ using Ryujinx.Common.Utilities;
 using Ryujinx.Configuration;
 using Ryujinx.Input;
 using Ryujinx.Input.GTK3;
-using Ryujinx.Ui.Input;
 using Ryujinx.Ui.Widgets;
 using System;
 using System.Collections.Generic;
@@ -23,6 +22,7 @@ using ConfigGamepadInputId = Ryujinx.Common.Configuration.Hid.Controller.Gamepad
 using ConfigStickInputId = Ryujinx.Common.Configuration.Hid.Controller.StickInputId;
 using Ryujinx.Common.Configuration.Hid.Controller.Motion;
 using Ryujinx.Common.Logging;
+using Ryujinx.Input.Assigner;
 
 namespace Ryujinx.Ui.Windows
 {

@@ -1,8 +1,6 @@
-using System;
-
-namespace Ryujinx.Ui.Input
+namespace Ryujinx.Input.Assigner
 {
-    interface ButtonAssigner
+    public interface ButtonAssigner
     {
         void Init();
 

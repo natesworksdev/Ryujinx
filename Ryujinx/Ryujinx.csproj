@@ -12,7 +12,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Crc32.NET" Version="1.2.0" />
     <PackageReference Include="DiscordRichPresence" Version="1.0.166" />
     <PackageReference Include="GtkSharp" Version="3.22.25.128" />
     <PackageReference Include="GtkSharp.Dependencies" Version="1.1.0" Condition="'$(RuntimeIdentifier)' != 'linux-x64' AND '$(RuntimeIdentifier)' != 'osx-x64'" />
@@ -109,6 +108,10 @@
     <EmbeddedResource Include="Ui\Windows\SettingsWindow.glade" />
     <EmbeddedResource Include="Ui\Windows\TitleUpdateWindow.glade" />
     <EmbeddedResource Include="Modules\Updater\UpdateDialog.glade" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Ui\Input\" />
   </ItemGroup>
 
 </Project>

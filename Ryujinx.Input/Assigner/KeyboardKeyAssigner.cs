@@ -1,8 +1,6 @@
-using Ryujinx.Input;
-
-namespace Ryujinx.Ui.Input
+namespace Ryujinx.Input.Assigner
 {
-    class KeyboardKeyAssigner : ButtonAssigner
+    public class KeyboardKeyAssigner : ButtonAssigner
     {
         private IKeyboard _keyboard;
 

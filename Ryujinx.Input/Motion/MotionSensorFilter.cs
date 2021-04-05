@@ -5,7 +5,7 @@ namespace Ryujinx.Input.Motion
     // MahonyAHRS class. Madgwick's implementation of Mayhony's AHRS algorithm.
     // See: https://x-io.co.uk/open-source-imu-and-ahrs-algorithms/
     // Based on: https://github.com/xioTechnologies/Open-Source-AHRS-With-x-IMU/blob/master/x-IMU%20IMU%20and%20AHRS%20Algorithms/x-IMU%20IMU%20and%20AHRS%20Algorithms/AHRS/MahonyAHRS.cs
-    public class MotionSensorFilter
+    class MotionSensorFilter
     {
         /// <summary>
         /// Sample rate coefficient.
