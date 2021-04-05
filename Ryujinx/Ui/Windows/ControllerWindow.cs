@@ -104,6 +104,7 @@ namespace Ryujinx.Ui.Windows
 
         private MainWindow _mainWindow;
         private IGamepadDriver _gtk3KeyboardDriver;
+        private IGamepad _selectedGamepad;
         private bool _mousePressed;
 
         public ControllerWindow(MainWindow mainWindow, PlayerIndex controllerId) : this(mainWindow, new Builder("Ryujinx.Ui.Windows.ControllerWindow.glade"), controllerId) { }
@@ -112,6 +113,7 @@ namespace Ryujinx.Ui.Windows
         {
             _mainWindow = mainWindow;
             _mousePressed = false;
+            _selectedGamepad = null;
 
             // NOTE: To get input in this window, we need to bind a custom keyboard driver instead of using the InputManager one as the main window isn't focused...
             _gtk3KeyboardDriver = new GTK3KeyboardDriver(this);
@@ -222,6 +224,8 @@ namespace Ryujinx.Ui.Windows
             {
                 _mainWindow.GlRendererWidget.NpadManager.UnblockInputUpdates();
             }
+
+            _selectedGamepad?.Dispose();
 
             _gtk3KeyboardDriver.Dispose();
         }
@@ -738,19 +742,46 @@ namespace Ryujinx.Ui.Windows
             SetAvailableOptions();
             SetControllerSpecificFields();
 
+            _selectedGamepad?.Dispose();
+            _selectedGamepad = null;
+
             if (_inputDevice.ActiveId != null)
             {
                 SetProfiles();
 
+                string id = GetCurrentGamepadId();
+
                 if (_inputDevice.ActiveId.StartsWith("keyboard") && _inputConfig is StandardKeyboardInputConfig)
                 {
+                    if (_mainWindow.InputManager.KeyboardDriver is GTK3KeyboardDriver)
+                    {
+                        // NOTE: To get input in this window, we need to bind a custom keyboard driver instead of using the InputManager one as the main window isn't focused...
+                        _selectedGamepad = _gtk3KeyboardDriver.GetGamepad(id);
+                    }
+                    else
+                    {
+                        _selectedGamepad = _mainWindow.InputManager.KeyboardDriver.GetGamepad(id);
+                    }
+
                     SetValues(_inputConfig);
                 }
                 else if (_inputDevice.ActiveId.StartsWith("controller") && _inputConfig is StandardControllerInputConfig)
                 {
+                    _selectedGamepad = _mainWindow.InputManager.GamepadDriver.GetGamepad(id);
+
                     SetValues(_inputConfig);
                 }
             }
+        }
+
+        private string GetCurrentGamepadId()
+        {
+            if (_inputDevice.ActiveId == null || _inputDevice.ActiveId == "disabled")
+            {
+                return null;
+            }
+
+            return _inputDevice.ActiveId.Split("/")[1].Split(" ")[0];
         }
 
         private void Controller_Changed(object sender, EventArgs args)
@@ -767,29 +798,15 @@ namespace Ryujinx.Ui.Windows
 
         private ButtonAssigner CreateButtonAssigner(bool forStick)
         {
-            string id = _inputDevice.ActiveId.Split("/")[1].Split(" ")[0];
-
             ButtonAssigner assigner;
 
             if (_inputDevice.ActiveId.StartsWith("keyboard"))
             {
-                IKeyboard keyboard;
-
-                if (_mainWindow.InputManager.KeyboardDriver is GTK3KeyboardDriver)
-                {
-                    // NOTE: To get input in this window, we need to bind a custom keyboard driver instead of using the InputManager one as the main window isn't focused...
-                    keyboard = (IKeyboard)_gtk3KeyboardDriver.GetGamepad(id);
-                }
-                else
-                {
-                    keyboard = (IKeyboard)_mainWindow.InputManager.KeyboardDriver.GetGamepad(id);
-                }
-
-                assigner = new KeyboardKeyAssigner(keyboard);
+                assigner = new KeyboardKeyAssigner((IKeyboard)_selectedGamepad);
             }
             else if (_inputDevice.ActiveId.StartsWith("controller"))
             {
-                assigner = new JoystickButtonAssigner(_mainWindow.InputManager.GamepadDriver.GetGamepad(id), (float)_controllerTriggerThreshold.Value, forStick);
+                assigner = new JoystickButtonAssigner(_selectedGamepad, (float)_controllerTriggerThreshold.Value, forStick);
             }
             else
             {
@@ -836,8 +853,6 @@ namespace Ryujinx.Ui.Windows
 
                 string pressedButton = assigner.GetPressedButton();
 
-                assigner.Dispose();
-
                 Application.Invoke(delegate
                 {
                     if (pressedButton != "")
@@ -846,6 +861,7 @@ namespace Ryujinx.Ui.Windows
                     }
 
                     ButtonPressEvent -= MouseClick;
+                    keyboard.Dispose();
 
                     button.Active = false;
                     _isWaitingForInput = false;
@@ -966,6 +982,8 @@ namespace Ryujinx.Ui.Windows
                 }
                 else if (_inputDevice.ActiveId.StartsWith("controller"))
                 {
+                    bool isNintendoStyle = _inputDevice.ActiveText.Contains("Nintendo");
+
                     config = new StandardControllerInputConfig
                     {
                         Version          = InputConfig.CurrentVersion,
@@ -998,10 +1016,10 @@ namespace Ryujinx.Ui.Windows
 
                         RightJoycon = new RightJoyconCommonConfig<ConfigGamepadInputId, ConfigStickInputId>
                         {
-                            ButtonA      = ConfigGamepadInputId.A,
-                            ButtonB      = ConfigGamepadInputId.B,
-                            ButtonX      = ConfigGamepadInputId.X,
-                            ButtonY      = ConfigGamepadInputId.Y,
+                            ButtonA      = isNintendoStyle ? ConfigGamepadInputId.A : ConfigGamepadInputId.B,
+                            ButtonB      = isNintendoStyle ? ConfigGamepadInputId.B : ConfigGamepadInputId.A,
+                            ButtonX      = isNintendoStyle ? ConfigGamepadInputId.X : ConfigGamepadInputId.Y,
+                            ButtonY      = isNintendoStyle ? ConfigGamepadInputId.Y : ConfigGamepadInputId.X,
                             ButtonPlus   = ConfigGamepadInputId.Plus,
                             ButtonR      = ConfigGamepadInputId.RightShoulder,
                             ButtonZr     = ConfigGamepadInputId.RightTrigger,

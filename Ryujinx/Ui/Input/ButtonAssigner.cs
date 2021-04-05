@@ -2,7 +2,7 @@ using System;
 
 namespace Ryujinx.Ui.Input
 {
-    interface ButtonAssigner : IDisposable
+    interface ButtonAssigner
     {
         void Init();
 

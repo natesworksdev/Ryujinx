@@ -45,18 +45,5 @@ namespace Ryujinx.Ui.Input
 
             return !ShouldCancel() ? keyPressed : "";
         }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _keyboard?.Dispose();
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-        }
     }
 }

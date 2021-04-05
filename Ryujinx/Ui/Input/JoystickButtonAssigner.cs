@@ -125,19 +125,6 @@ namespace Ryujinx.Ui.Input
             }
         }
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _gamepad?.Dispose();
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-        }
-
         private class JoystickButtonDetector
         {
             private Dictionary<GamepadInputId, InputSummary> _stats;

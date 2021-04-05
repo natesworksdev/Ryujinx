@@ -1,6 +1,5 @@
 ﻿using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
-using Ryujinx.Common.Logging;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -111,8 +110,6 @@ namespace Ryujinx.Input.SDL2
                 result |= GamepadFeaturesFlag.Rumble;
             }
 
-            Logger.Error?.Print(LogClass.Application, result.ToString());
-
             return result;
         }
 
@@ -123,9 +120,11 @@ namespace Ryujinx.Input.SDL2
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing)
+            if (disposing && _gamepadHandle != IntPtr.Zero)
             {
                 SDL_GameControllerClose(_gamepadHandle);
+
+                _gamepadHandle = IntPtr.Zero;
             }
         }
 

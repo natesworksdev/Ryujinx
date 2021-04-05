@@ -42,10 +42,9 @@ namespace Ryujinx.Input.SDL2
             }
 
             // TODO: Fixes for the nuget package.
-            SDL_SetHint("SDL_JOYSTICK_HIDAPI_PS4_RUMBLE", "1");
+            SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, "1");
             SDL_SetHint("SDL_JOYSTICK_HIDAPI_PS5_RUMBLE", "1");
-            SDL_SetHint("SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS", "1");
-            SDL_SetHint("SDL_JOYSTICK_HIDAPI_CORRELATE_XINPUT", "1");
+            SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
             SDL_SetHint("SDL_JOYSTICK_HIDAPI_SWITCH_HOME_LED", "0");
             SDL_SetHint("SDL_JOYSTICK_HIDAPI_JOY_CONS", "1");
 
@@ -80,8 +79,6 @@ namespace Ryujinx.Input.SDL2
 
         private void HandleSDLEvent(ref SDL_Event evnt)
         {
-            Logger.Error?.Print(LogClass.Application, $"{evnt.type}");
-
             if (evnt.type == SDL_EventType.SDL_JOYDEVICEADDED)
             {
                 int deviceId = evnt.cbutton.which;
@@ -94,13 +91,13 @@ namespace Ryujinx.Input.SDL2
                     return;
                 }
 
-                Logger.Warning?.Print(LogClass.Application, $"Added joystick instance id {instanceId}");
+                Logger.Debug?.Print(LogClass.Application, $"Added joystick instance id {instanceId}");
 
                 OnJoyStickConnected?.Invoke(deviceId, instanceId);
             }
             else if (evnt.type == SDL_EventType.SDL_JOYDEVICEREMOVED)
             {
-                Logger.Warning?.Print(LogClass.Application, $"Removed joystick instance id {evnt.cbutton.which}");
+                Logger.Debug?.Print(LogClass.Application, $"Removed joystick instance id {evnt.cbutton.which}");
 
                 OnJoystickDisconnected?.Invoke(evnt.cbutton.which);
             }
