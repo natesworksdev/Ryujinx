@@ -15,19 +15,37 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             Operand pred = GetPredicate39(context);
 
-            Operand res = null;
+            Operand res;
 
-            switch (op.VoteOp)
+            if (context.Config.GpuAccessor.QueryShaderMaxThreads32())
             {
-                case VoteOp.All:
-                    res = context.VoteAll(pred);
-                    break;
-                case VoteOp.Any:
-                    res = context.VoteAny(pred);
-                    break;
-                case VoteOp.AllEqual:
-                    res = context.VoteAllEqual(pred);
-                    break;
+                res = op.VoteOp switch
+                {
+                    VoteOp.All => context.VoteAll(pred),
+                    VoteOp.Any => context.VoteAny(pred),
+                    VoteOp.AllEqual => context.VoteAllEqual(pred),
+                    _ => null,
+                };
+            }
+            else
+            {
+                // Emulate vote with ballot masks.
+                // We do that when the GPU thread count is not 32,
+                // since the shader code assumes it is 32.
+                // allInvocations => ballot(pred) == ballot(true),
+                // anyInvocation => ballot(pred) != 0,
+                // allInvocationsEqual => ballot(pred) == balot(true) || ballot(pred) == 0
+                Operand ballotMask = context.Ballot(pred);
+
+                Operand AllTrue() => context.ICompareEqual(ballotMask, context.Ballot(Const(IrConsts.True)));
+
+                res = op.VoteOp switch
+                {
+                    VoteOp.All => AllTrue(),
+                    VoteOp.Any => context.ICompareNotEqual(ballotMask, Const(0)),
+                    VoteOp.AllEqual => context.BitwiseOr(AllTrue(), context.ICompareEqual(ballotMask, Const(0))),
+                    _ => null,
+                };
             }
 
             if (res != null)

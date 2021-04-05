@@ -77,7 +77,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
                 if (inst == Instruction.Ballot)
                 {
-                    return ThreadCommon.GenerateUnpackMask($"{info.OpName}({args})");
+                    return ThreadCommon.GenerateUnpackMask(context.Config, $"{info.OpName}({args})");
                 }
                 else
                 {

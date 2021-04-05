@@ -100,6 +100,7 @@ namespace Ryujinx.Graphics.OpenGL
                 HwCapabilities.SupportsViewportSwizzle,
                 HwCapabilities.MaximumComputeSharedMemorySize,
                 HwCapabilities.MaximumSupportedAnisotropy,
+                HwCapabilities.Vendor == HwCapabilities.GpuVendor.Nvidia,
                 HwCapabilities.StorageBufferOffsetAlignment);
         }
 

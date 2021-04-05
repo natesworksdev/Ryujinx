@@ -59,6 +59,11 @@
             return InputTopology.Points;
         }
 
+        bool QueryShaderMaxThreads32()
+        {
+            return true;
+        }
+
         int QueryStorageBufferOffsetAlignment()
         {
             return 16;

@@ -163,6 +163,12 @@ namespace Ryujinx.Graphics.Gpu.Shader
         }
 
         /// <summary>
+        /// Queries if the host GPU uses 32 threads per warp.
+        /// </summary>
+        /// <returns>True if 32 threads are used, false if not or unknown</returns>
+        public bool QueryShaderMaxThreads32() => _context.Capabilities.ShaderMaxThreads32;
+
+        /// <summary>
         /// Queries host storage buffer alignment required.
         /// </summary>
         /// <returns>Host storage buffer alignment in bytes</returns>

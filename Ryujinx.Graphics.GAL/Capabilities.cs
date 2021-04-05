@@ -9,6 +9,7 @@ namespace Ryujinx.Graphics.GAL
 
         public int   MaximumComputeSharedMemorySize { get; }
         public float MaximumSupportedAnisotropy     { get; }
+        public bool  ShaderMaxThreads32             { get; }
         public int   StorageBufferOffsetAlignment   { get; }
 
         public Capabilities(
@@ -18,6 +19,7 @@ namespace Ryujinx.Graphics.GAL
             bool  supportsViewportSwizzle,
             int   maximumComputeSharedMemorySize,
             float maximumSupportedAnisotropy,
+            bool  shaderMaxThreads32,
             int   storageBufferOffsetAlignment)
         {
             SupportsAstcCompression          = supportsAstcCompression;
@@ -26,6 +28,7 @@ namespace Ryujinx.Graphics.GAL
             SupportsViewportSwizzle          = supportsViewportSwizzle;
             MaximumComputeSharedMemorySize   = maximumComputeSharedMemorySize;
             MaximumSupportedAnisotropy       = maximumSupportedAnisotropy;
+            ShaderMaxThreads32               = shaderMaxThreads32;
             StorageBufferOffsetAlignment     = storageBufferOffsetAlignment;
         }
     }

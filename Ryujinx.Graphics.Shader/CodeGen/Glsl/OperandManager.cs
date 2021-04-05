@@ -5,14 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-using static Ryujinx.Graphics.Shader.CodeGen.Glsl.ThreadCommon;
 using static Ryujinx.Graphics.Shader.StructuredIr.InstructionInfo;
 
 namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 {
     class OperandManager
     {
-        private static string[] _stagePrefixes = new string[] { "cp", "vp", "tcp", "tep", "gp", "fp" };
+        private static readonly string[] StagePrefixes = new string[] { "cp", "vp", "tcp", "tep", "gp", "fp" };
 
         private struct BuiltInAttribute
         {
@@ -27,8 +26,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
         }
 
-        private static Dictionary<int, BuiltInAttribute> _builtInAttributes =
-                   new Dictionary<int, BuiltInAttribute>()
+        private static readonly Dictionary<int, BuiltInAttribute> BuiltInAttributes = new Dictionary<int, BuiltInAttribute>()
         {
             { AttributeConsts.Layer,               new BuiltInAttribute("gl_Layer",           VariableType.S32)  },
             { AttributeConsts.PointSize,           new BuiltInAttribute("gl_PointSize",       VariableType.F32)  },
@@ -53,20 +51,20 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             { AttributeConsts.FrontFacing,         new BuiltInAttribute("gl_FrontFacing",     VariableType.Bool) },
 
             // Special.
-            { AttributeConsts.FragmentOutputDepth, new BuiltInAttribute("gl_FragDepth",                             VariableType.F32)  },
-            { AttributeConsts.ThreadKill,          new BuiltInAttribute("gl_HelperInvocation",                      VariableType.Bool) },
-            { AttributeConsts.ThreadIdX,           new BuiltInAttribute("gl_LocalInvocationID.x",                   VariableType.U32)  },
-            { AttributeConsts.ThreadIdY,           new BuiltInAttribute("gl_LocalInvocationID.y",                   VariableType.U32)  },
-            { AttributeConsts.ThreadIdZ,           new BuiltInAttribute("gl_LocalInvocationID.z",                   VariableType.U32)  },
-            { AttributeConsts.CtaIdX,              new BuiltInAttribute("gl_WorkGroupID.x",                         VariableType.U32)  },
-            { AttributeConsts.CtaIdY,              new BuiltInAttribute("gl_WorkGroupID.y",                         VariableType.U32)  },
-            { AttributeConsts.CtaIdZ,              new BuiltInAttribute("gl_WorkGroupID.z",                         VariableType.U32)  },
-            { AttributeConsts.LaneId,              new BuiltInAttribute("(gl_SubGroupInvocationARB & 31)",          VariableType.U32)  },
-            { AttributeConsts.EqMask,              new BuiltInAttribute(GenerateUnpackMask("gl_SubGroupEqMaskARB"), VariableType.U32)  },
-            { AttributeConsts.GeMask,              new BuiltInAttribute(GenerateUnpackMask("gl_SubGroupGeMaskARB"), VariableType.U32)  },
-            { AttributeConsts.GtMask,              new BuiltInAttribute(GenerateUnpackMask("gl_SubGroupGtMaskARB"), VariableType.U32)  },
-            { AttributeConsts.LeMask,              new BuiltInAttribute(GenerateUnpackMask("gl_SubGroupLeMaskARB"), VariableType.U32)  },
-            { AttributeConsts.LtMask,              new BuiltInAttribute(GenerateUnpackMask("gl_SubGroupLtMaskARB"), VariableType.U32)  },
+            { AttributeConsts.FragmentOutputDepth, new BuiltInAttribute("gl_FragDepth",             VariableType.F32)  },
+            { AttributeConsts.ThreadKill,          new BuiltInAttribute("gl_HelperInvocation",      VariableType.Bool) },
+            { AttributeConsts.ThreadIdX,           new BuiltInAttribute("gl_LocalInvocationID.x",   VariableType.U32)  },
+            { AttributeConsts.ThreadIdY,           new BuiltInAttribute("gl_LocalInvocationID.y",   VariableType.U32)  },
+            { AttributeConsts.ThreadIdZ,           new BuiltInAttribute("gl_LocalInvocationID.z",   VariableType.U32)  },
+            { AttributeConsts.CtaIdX,              new BuiltInAttribute("gl_WorkGroupID.x",         VariableType.U32)  },
+            { AttributeConsts.CtaIdY,              new BuiltInAttribute("gl_WorkGroupID.y",         VariableType.U32)  },
+            { AttributeConsts.CtaIdZ,              new BuiltInAttribute("gl_WorkGroupID.z",         VariableType.U32)  },
+            { AttributeConsts.LaneId,              new BuiltInAttribute("gl_SubGroupInvocationARB", VariableType.U32)  },
+            { AttributeConsts.EqMask,              new BuiltInAttribute("gl_SubGroupEqMaskARB",     VariableType.U32)  },
+            { AttributeConsts.GeMask,              new BuiltInAttribute("gl_SubGroupGeMaskARB",     VariableType.U32)  },
+            { AttributeConsts.GtMask,              new BuiltInAttribute("gl_SubGroupGtMaskARB",     VariableType.U32)  },
+            { AttributeConsts.LeMask,              new BuiltInAttribute("gl_SubGroupLeMaskARB",     VariableType.U32)  },
+            { AttributeConsts.LtMask,              new BuiltInAttribute("gl_SubGroupLtMaskARB",     VariableType.U32)  },
 
             // Support uniforms.
             { AttributeConsts.FragmentOutputIsBgraBase + 0,  new BuiltInAttribute($"{DefaultNames.IsBgraName}[0]",  VariableType.Bool) },
@@ -79,7 +77,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             { AttributeConsts.FragmentOutputIsBgraBase + 28, new BuiltInAttribute($"{DefaultNames.IsBgraName}[7]",  VariableType.Bool) }
         };
 
-        private Dictionary<AstOperand, string> _locals;
+        private readonly Dictionary<AstOperand, string> _locals;
 
         public OperandManager()
         {
@@ -97,28 +95,16 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         public string GetExpression(AstOperand operand, ShaderConfig config, bool cbIndexable)
         {
-            switch (operand.Type)
+            return operand.Type switch
             {
-                case OperandType.Argument:
-                    return GetArgumentName(operand.Value);
-
-                case OperandType.Attribute:
-                    return GetAttributeName(operand, config);
-
-                case OperandType.Constant:
-                    return NumberFormatter.FormatInt(operand.Value);
-
-                case OperandType.ConstantBuffer:
-                    return GetConstantBufferName(operand.CbufSlot, operand.CbufOffset, config.Stage, cbIndexable);
-
-                case OperandType.LocalVariable:
-                    return _locals[operand];
-
-                case OperandType.Undefined:
-                    return DefaultNames.UndefinedName;
-            }
-
-            throw new ArgumentException($"Invalid operand type \"{operand.Type}\".");
+                OperandType.Argument => GetArgumentName(operand.Value),
+                OperandType.Attribute => GetAttributeName(operand, config),
+                OperandType.Constant => NumberFormatter.FormatInt(operand.Value),
+                OperandType.ConstantBuffer => GetConstantBufferName(operand.CbufSlot, operand.CbufOffset, config.Stage, cbIndexable),
+                OperandType.LocalVariable => _locals[operand],
+                OperandType.Undefined => DefaultNames.UndefinedName,
+                _ => throw new ArgumentException($"Invalid operand type \"{operand.Type}\".")
+            };
         }
 
         public static string GetConstantBufferName(int slot, int offset, ShaderStage stage, bool cbIndexable)
@@ -190,18 +176,20 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
             else
             {
+                int key = value & ~3;
+
                 if (value >= AttributeConsts.FragmentOutputColorBase && value < AttributeConsts.FragmentOutputColorEnd)
                 {
                     value -= AttributeConsts.FragmentOutputColorBase;
 
                     return $"{DefaultNames.OAttributePrefix}{(value >> 4)}.{swzMask}";
                 }
-                else if (_builtInAttributes.TryGetValue(value & ~3, out BuiltInAttribute builtInAttr))
+                else if (BuiltInAttributes.TryGetValue(key, out BuiltInAttribute builtInAttr))
                 {
                     // TODO: There must be a better way to handle this...
                     if (config.Stage == ShaderStage.Fragment)
                     {
-                        switch (value & ~3)
+                        switch (key)
                         {
                             case AttributeConsts.PositionX: return "(gl_FragCoord.x / fp_renderScale[0])";
                             case AttributeConsts.PositionY: return "(gl_FragCoord.y / fp_renderScale[0])";
@@ -217,7 +205,16 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                         name = $"gl_in[{indexExpr}].{name}";
                     }
 
-                    return name;
+                    return key switch
+                    {
+                        AttributeConsts.LaneId => ThreadCommon.GenerateMaskInvocation(config, name),
+                        AttributeConsts.EqMask or
+                        AttributeConsts.GeMask or
+                        AttributeConsts.GtMask or
+                        AttributeConsts.LeMask or
+                        AttributeConsts.LtMask => ThreadCommon.GenerateUnpackMask(config, name),
+                        _ => name
+                    };
                 }
             }
 
@@ -269,12 +266,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
         {
             int index = (int)stage;
 
-            if ((uint)index >= _stagePrefixes.Length)
+            if ((uint)index >= StagePrefixes.Length)
             {
                 return "invalid";
             }
 
-            return _stagePrefixes[index];
+            return StagePrefixes[index];
         }
 
         private static char GetSwizzleMask(int value)
@@ -336,7 +333,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
         {
             if (operand.Type == OperandType.Attribute)
             {
-                if (_builtInAttributes.TryGetValue(operand.Value & ~3, out BuiltInAttribute builtInAttr))
+                if (BuiltInAttributes.TryGetValue(operand.Value & ~3, out BuiltInAttribute builtInAttr))
                 {
                     return builtInAttr.Type;
                 }
