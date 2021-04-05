@@ -9,7 +9,7 @@ using Ryujinx.Configuration;
 using Ryujinx.Graphics.OpenGL;
 using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.Input;
-using Ryujinx.Input.Motion.CemuHook;
+using Ryujinx.Input.HLE;
 using Ryujinx.Ui.Widgets;
 using SPB.Graphics;
 using SPB.Graphics.OpenGL;

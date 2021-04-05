@@ -11,7 +11,7 @@ using System.Runtime.CompilerServices;
 
 using CemuHookClient = Ryujinx.Input.Motion.CemuHook.Client;
 
-namespace Ryujinx.Input
+namespace Ryujinx.Input.HLE
 {
     public class NpadManager : IDisposable
     {
@@ -169,8 +169,8 @@ namespace Ryujinx.Input
                         motionState.Orientation = new float[9];
                     }
 
-                    inputState.PlayerId = (HLE.HOS.Services.Hid.PlayerIndex)inputConfig.PlayerIndex;
-                    motionState.PlayerId = (HLE.HOS.Services.Hid.PlayerIndex)inputConfig.PlayerIndex;
+                    inputState.PlayerId = (Ryujinx.HLE.HOS.Services.Hid.PlayerIndex)inputConfig.PlayerIndex;
+                    motionState.PlayerId = (Ryujinx.HLE.HOS.Services.Hid.PlayerIndex)inputConfig.PlayerIndex;
 
                     hleInputStates.Add(inputState);
                     hleMotionStates.Add(motionState);

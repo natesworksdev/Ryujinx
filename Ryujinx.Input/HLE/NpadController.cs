@@ -10,7 +10,7 @@ using System.Runtime.CompilerServices;
 using CemuHookClient = Ryujinx.Input.Motion.CemuHook.Client;
 using ConfigControllerType = Ryujinx.Common.Configuration.Hid.ControllerType;
 
-namespace Ryujinx.Input
+namespace Ryujinx.Input.HLE
 {
     public class NpadController : IDisposable
     {
