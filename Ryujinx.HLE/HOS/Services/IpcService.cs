@@ -11,8 +11,8 @@ namespace Ryujinx.HLE.HOS.Services
 {
     abstract class IpcService
     {
-        public IReadOnlyDictionary<int, MethodInfo> HIpcCommands { get; }
-        public IReadOnlyDictionary<int, MethodInfo> TIpcCommands { get; }
+        public IReadOnlyDictionary<int, MethodInfo> HipcCommands { get; }
+        public IReadOnlyDictionary<int, MethodInfo> TipcCommands { get; }
 
         public ServerBase Server { get; private set; }
 
@@ -23,14 +23,14 @@ namespace Ryujinx.HLE.HOS.Services
 
         public IpcService(ServerBase server = null)
         {
-            HIpcCommands = Assembly.GetExecutingAssembly().GetTypes()
+            HipcCommands = Assembly.GetExecutingAssembly().GetTypes()
                 .Where(type => type == GetType())
                 .SelectMany(type => type.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public))
                 .SelectMany(methodInfo => methodInfo.GetCustomAttributes(typeof(CommandHipcAttribute))
                 .Select(command => (((CommandHipcAttribute)command).Id, methodInfo)))
                 .ToDictionary(command => command.Id, command => command.methodInfo);
 
-            TIpcCommands = Assembly.GetExecutingAssembly().GetTypes()
+            TipcCommands = Assembly.GetExecutingAssembly().GetTypes()
                 .Where(type => type == GetType())
                 .SelectMany(type => type.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public))
                 .SelectMany(methodInfo => methodInfo.GetCustomAttributes(typeof(CommandTIpcAttribute))
@@ -107,7 +107,7 @@ namespace Ryujinx.HLE.HOS.Services
             long sfciMagic = context.RequestData.ReadInt64();
             int commandId = (int)context.RequestData.ReadInt64();
 
-            bool serviceExists = service.HIpcCommands.TryGetValue(commandId, out MethodInfo processRequest);
+            bool serviceExists = service.HipcCommands.TryGetValue(commandId, out MethodInfo processRequest);
 
             if (ServiceConfiguration.IgnoreMissingServices || serviceExists)
             {
@@ -161,7 +161,7 @@ namespace Ryujinx.HLE.HOS.Services
         {
             int commandId = (int)context.Request.Type;
 
-            bool serviceExists = TIpcCommands.TryGetValue(commandId, out MethodInfo processRequest);
+            bool serviceExists = TipcCommands.TryGetValue(commandId, out MethodInfo processRequest);
 
             if (ServiceConfiguration.IgnoreMissingServices || serviceExists)
             {
