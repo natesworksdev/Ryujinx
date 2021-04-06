@@ -6,7 +6,11 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Resources
     class ThreadedProgram : IProgram
     {
         private ThreadedRenderer _renderer;
+
         public IProgram Base;
+
+        internal bool Queued;
+        internal bool Compiled;
 
         public ThreadedProgram(ThreadedRenderer renderer)
         {
@@ -28,6 +32,15 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Resources
         {
             ResultBox<byte[]> box = new ResultBox<byte[]>();
             _renderer.New<ProgramGetBinaryCommand>().Set(Ref(this), Ref(box));
+            _renderer.InvokeCommand();
+
+            return box.Result;
+        }
+
+        public ProgramLinkStatus CheckProgramLink(bool blocking)
+        {
+            ResultBox<ProgramLinkStatus> box = new ResultBox<ProgramLinkStatus>();
+            _renderer.New<ProgramCheckLinkCommand>().Set(Ref(this), blocking, Ref(box));
             _renderer.InvokeCommand();
 
             return box.Result;

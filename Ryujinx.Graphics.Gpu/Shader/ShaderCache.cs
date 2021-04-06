@@ -558,9 +558,13 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
                 IProgram hostProgram = _context.Renderer.CreateProgram(new IShader[] { shader.HostShader }, null);
 
+                /*
                 hostProgram.CheckProgramLink(true);
 
                 byte[] hostProgramBinary = HostShaderCacheEntry.Create(hostProgram.GetBinary(), new ShaderCodeHolder[] { shader });
+                */
+
+                byte[] hostProgramBinary = new byte[0];
 
                 cpShader = new ShaderBundle(hostProgram, shader);
 
@@ -702,9 +706,13 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
                 IProgram hostProgram = _context.Renderer.CreateProgram(hostShaders.ToArray(), tfd);
 
+                /*
                 hostProgram.CheckProgramLink(true);
 
                 byte[] hostProgramBinary = HostShaderCacheEntry.Create(hostProgram.GetBinary(), shaders);
+                */
+
+                byte[] hostProgramBinary = new byte[0];
 
                 gpShaders = new ShaderBundle(hostProgram, shaders);
 

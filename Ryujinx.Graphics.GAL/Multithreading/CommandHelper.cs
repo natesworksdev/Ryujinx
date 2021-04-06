@@ -18,6 +18,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 {
     static class CommandHelper
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void RunTypedCommand<T>(Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) where T : unmanaged, IGALCommand
         {
             Unsafe.As<byte, T>(ref MemoryMarshal.GetReference(memory)).Run(threaded, renderer);
@@ -40,7 +41,8 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
             return maxSize + 1; // 1 byte reserved for command size.
         }
-        
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void RunCommand(Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer)
         {
             switch ((CommandType)memory[memory.Length - 1])
@@ -68,9 +70,6 @@ namespace Ryujinx.Graphics.GAL.Multithreading
                     break;
                 case CommandType.GetCapabilities:
                     RunTypedCommand<GetCapabilitiesCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.LoadProgramBinary:
-                    RunTypedCommand<LoadProgramBinaryCommand>(memory, threaded, renderer);
                     break;
                 case CommandType.PreFrame:
                     RunTypedCommand<PreFrameCommand>(memory, threaded, renderer);
@@ -107,6 +106,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading
                     break;
                 case CommandType.ProgramGetBinary:
                     RunTypedCommand<ProgramGetBinaryCommand>(memory, threaded, renderer);
+                    break;
+                case CommandType.ProgramCheckLink:
+                    RunTypedCommand<ProgramCheckLinkCommand>(memory, threaded, renderer);
                     break;
 
                 case CommandType.SamplerDispose:
