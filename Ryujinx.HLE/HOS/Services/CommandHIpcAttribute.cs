@@ -3,10 +3,10 @@
 namespace Ryujinx.HLE.HOS.Services
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-    class CommandAttribute : Attribute
+    class CommandHipcAttribute : Attribute
     {
         public readonly int Id;
 
-        public CommandAttribute(int id) => Id = id;
+        public CommandHipcAttribute(int id) => Id = id;
     }
 }

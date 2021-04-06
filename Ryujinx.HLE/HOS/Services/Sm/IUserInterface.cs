@@ -36,7 +36,7 @@ namespace Ryujinx.HLE.HOS.Services.Sm
             _commonServer = new ServerBase(context, "CommonServer");
         }
 
-        [Command(0)]
+        [CommandHipc(0)]
         // Initialize(pid, u64 reserved)
         public ResultCode Initialize(ServiceCtx context)
         {
@@ -45,7 +45,7 @@ namespace Ryujinx.HLE.HOS.Services.Sm
             return ResultCode.Success;
         }
 
-        [Command(1)]
+        [CommandHipc(1)]
         // GetService(ServiceName name) -> handle<move, session>
         public ResultCode GetService(ServiceCtx context)
         {
@@ -111,7 +111,7 @@ namespace Ryujinx.HLE.HOS.Services.Sm
             return ResultCode.Success;
         }
 
-        [Command(2)]
+        [CommandHipc(2)]
         // RegisterService(ServiceName name, u8, u32 maxHandles) -> handle<move, port>
         public ResultCode RegisterService(ServiceCtx context)
         {
@@ -154,7 +154,7 @@ namespace Ryujinx.HLE.HOS.Services.Sm
             return ResultCode.Success;
         }
 
-        [Command(3)]
+        [CommandHipc(3)]
         // UnregisterService(ServiceName name)
         public ResultCode UnregisterService(ServiceCtx context)
         {

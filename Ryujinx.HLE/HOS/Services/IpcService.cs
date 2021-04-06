@@ -25,8 +25,8 @@ namespace Ryujinx.HLE.HOS.Services
             Commands = Assembly.GetExecutingAssembly().GetTypes()
                 .Where(type => type == GetType())
                 .SelectMany(type => type.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public))
-                .SelectMany(methodInfo => methodInfo.GetCustomAttributes(typeof(CommandAttribute))
-                .Select(command => (((CommandAttribute)command).Id, methodInfo)))
+                .SelectMany(methodInfo => methodInfo.GetCustomAttributes(typeof(CommandHipcAttribute))
+                .Select(command => (((CommandHipcAttribute)command).Id, methodInfo)))
                 .ToDictionary(command => command.Id, command => command.methodInfo);
 
             Server = server;
@@ -53,7 +53,7 @@ namespace Ryujinx.HLE.HOS.Services
             _isDomain = false;
         }
 
-        public void CallMethod(ServiceCtx context)
+        public void CallHipcMethod(ServiceCtx context)
         {
             IpcService service = this;
 
