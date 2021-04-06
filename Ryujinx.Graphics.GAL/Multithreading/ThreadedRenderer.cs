@@ -5,6 +5,7 @@ using Ryujinx.Graphics.GAL.Multithreading.Commands.Buffer;
 using Ryujinx.Graphics.GAL.Multithreading.Commands.Renderer;
 using Ryujinx.Graphics.GAL.Multithreading.Model;
 using Ryujinx.Graphics.GAL.Multithreading.Resources;
+using Ryujinx.Graphics.GAL.Multithreading.Resources.Programs;
 using Ryujinx.Graphics.Shader;
 using System;
 using System.Diagnostics;
@@ -57,6 +58,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         internal BufferMap Buffers { get; }
         internal SyncMap Sync { get; }
         internal CircularSpanPool SpanPool { get; }
+        internal ProgramQueue Programs { get; }
 
         public IPipeline Pipeline { get; }
         public IWindow Window { get; }
@@ -71,6 +73,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             Window = new ThreadedWindow(this, renderer.Window);
             Buffers = new BufferMap();
             Sync = new SyncMap();
+            Programs = new ProgramQueue(renderer);
 
             _galWorkAvailable = new ManualResetEventSlim(false);
             _invokeRun = new ManualResetEventSlim();
@@ -242,8 +245,8 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
         public IShader CompileShader(ShaderStage stage, string code)
         {
-            var shader = new ThreadedShader(this);
-            New<CompileShaderCommand>().Set(Ref(shader), stage, Ref(code));
+            var shader = new ThreadedShader(this, stage, code);
+            New<CompileShaderCommand>().Set(Ref(shader));
             QueueCommand();
 
             return shader;
@@ -261,7 +264,10 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         public IProgram CreateProgram(IShader[] shaders, TransformFeedbackDescriptor[] transformFeedbackDescriptors)
         {
             var program = new ThreadedProgram(this);
-            New<CreateProgramCommand>().Set(Ref(program), Ref(shaders), Ref(transformFeedbackDescriptors));
+            SourceProgramRequest request = new SourceProgramRequest(program, shaders, transformFeedbackDescriptors);
+            Programs.Add(request);
+
+            New<CreateProgramCommand>().Set(Ref((IProgramRequest)request));
             QueueCommand();
 
             return program;
@@ -345,7 +351,11 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         public IProgram LoadProgramBinary(byte[] programBinary)
         {
             var program = new ThreadedProgram(this);
-            New<LoadProgramBinaryCommand>().Set(Ref(program), Ref(programBinary));
+
+            BinaryProgramRequest request = new BinaryProgramRequest(program, programBinary);
+            Programs.Add(request);
+
+            New<CreateProgramCommand>().Set(Ref((IProgramRequest)request));
             QueueCommand();
 
             return program;

@@ -10,7 +10,7 @@
         CreateSync = 0x05,
         CreateTexture = 0x06,
         GetCapabilities = 0x07,
-        LoadProgramBinary = 0x08,
+        Unused = 0x08,
         PreFrame = 0x09,
         ReportCounter = 0x0a,
         ResetCounter = 0x0b,
@@ -25,6 +25,7 @@
 
         ProgramDispose = 0x30,
         ProgramGetBinary = 0x31,
+        ProgramCheckLink = 0x32,
 
         SamplerDispose = 0x40,
 
