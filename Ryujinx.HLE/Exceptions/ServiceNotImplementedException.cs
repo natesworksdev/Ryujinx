@@ -62,7 +62,7 @@ namespace Ryujinx.HLE.Exceptions
 
             if (callingType != null && callingMethod != null)
             {
-                var ipcCommands = Service.HIpcCommands;
+                var ipcCommands = Service.HipcCommands;
 
                 // Find the handler for the method called
                 var ipcHandler   = ipcCommands.FirstOrDefault(x => x.Value == callingMethod);
