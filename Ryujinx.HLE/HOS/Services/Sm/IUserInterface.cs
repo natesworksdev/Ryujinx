@@ -37,7 +37,7 @@ namespace Ryujinx.HLE.HOS.Services.Sm
         }
 
         [CommandHipc(0)]
-        [CommandTIpc(0x10)] // 12.0.0+
+        [CommandTipc(0x10)] // 12.0.0+
         // Initialize(pid, u64 reserved)
         public ResultCode Initialize(ServiceCtx context)
         {
@@ -47,7 +47,7 @@ namespace Ryujinx.HLE.HOS.Services.Sm
         }
 
         [CommandHipc(1)]
-        [CommandTIpc(0x11)] // 12.0.0+
+        [CommandTipc(0x11)] // 12.0.0+
         // GetService(ServiceName name) -> handle<move, session>
         public ResultCode GetService(ServiceCtx context)
         {
@@ -114,7 +114,7 @@ namespace Ryujinx.HLE.HOS.Services.Sm
         }
 
         [CommandHipc(2)]
-        [CommandTIpc(0x12)] // 12.0.0+
+        [CommandTipc(0x12)] // 12.0.0+
         // RegisterService(ServiceName name, u8, u32 maxHandles) -> handle<move, port>
         public ResultCode RegisterService(ServiceCtx context)
         {
@@ -158,7 +158,7 @@ namespace Ryujinx.HLE.HOS.Services.Sm
         }
 
         [CommandHipc(3)]
-        [CommandTIpc(0x13)] // 12.0.0+
+        [CommandTipc(0x13)] // 12.0.0+
         // UnregisterService(ServiceName name)
         public ResultCode UnregisterService(ServiceCtx context)
         {

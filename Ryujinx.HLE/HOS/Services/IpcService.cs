@@ -33,8 +33,8 @@ namespace Ryujinx.HLE.HOS.Services
             TipcCommands = Assembly.GetExecutingAssembly().GetTypes()
                 .Where(type => type == GetType())
                 .SelectMany(type => type.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public))
-                .SelectMany(methodInfo => methodInfo.GetCustomAttributes(typeof(CommandTIpcAttribute))
-                .Select(command => (((CommandTIpcAttribute)command).Id, methodInfo)))
+                .SelectMany(methodInfo => methodInfo.GetCustomAttributes(typeof(CommandTipcAttribute))
+                .Select(command => (((CommandTipcAttribute)command).Id, methodInfo)))
                 .ToDictionary(command => command.Id, command => command.methodInfo);
 
             Server = server;
