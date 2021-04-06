@@ -223,11 +223,10 @@ namespace ARMeilleure.Translation.PTC
         {
             using (BinaryReader headerReader = new BinaryReader(stream, EncodingCache.UTF8NoBOM, true))
             {
-                Header header = new Header();
-
-                header.Magic = headerReader.ReadString();
-
-                header.InfoFileVersion = headerReader.ReadUInt32();
+                Header header =
+                    new Header(
+                        headerReader.ReadString(),
+                        headerReader.ReadUInt32());
 
                 return header;
             }
@@ -339,18 +338,24 @@ namespace ARMeilleure.Translation.PTC
             SerializeDictionary(stream, profiledFuncs, (stream, structure) => SerializeStructure(stream, structure));
         }
 
-        private struct Header
+        private readonly struct Header
         {
-            public string Magic;
+            public readonly string Magic;
 
-            public uint InfoFileVersion;
+            public readonly uint InfoFileVersion;
+
+            public Header(string magic, uint infoFileVersion)
+            {
+                Magic = magic;
+                InfoFileVersion = infoFileVersion;
+            }
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 1/*, Size = 5*/)]
-        internal struct FuncProfile
+        internal readonly struct FuncProfile
         {
-            public ExecutionMode Mode;
-            public bool HighCq;
+            public readonly ExecutionMode Mode;
+            public readonly bool HighCq;
 
             public FuncProfile(ExecutionMode mode, bool highCq)
             {

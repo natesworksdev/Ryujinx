@@ -2,10 +2,10 @@ using ARMeilleure.State;
 
 namespace ARMeilleure.Translation
 {
-    struct RejitRequest
+    readonly struct RejitRequest
     {
-        public ulong Address;
-        public ExecutionMode Mode;
+        public readonly ulong Address;
+        public readonly ExecutionMode Mode;
 
         public RejitRequest(ulong address, ExecutionMode mode)
         {

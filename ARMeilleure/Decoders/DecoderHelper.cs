@@ -72,15 +72,33 @@ namespace ARMeilleure.Decoders
                    MoveBit(imm, 1, 49) | MoveBit( imm, 0, 48);
         }
 
-        public struct BitMask
+        public readonly struct BitMask
         {
-            public long WMask;
-            public long TMask;
-            public int  Pos;
-            public int  Shift;
-            public bool IsUndefined;
+            public readonly long WMask;
+            public readonly long TMask;
+            public readonly int Pos;
+            public readonly int Shift;
+            public readonly bool IsUndefined;
 
-            public static BitMask Invalid => new BitMask { IsUndefined = true };
+            public BitMask(long wMask, long tMask, int pos, int shift) : this()
+            {
+                WMask = wMask;
+                TMask = tMask;
+                Pos = pos;
+                Shift = shift;
+                IsUndefined = false;
+            }
+
+            public BitMask(bool isUndefined)
+            {
+                WMask = 0;
+                TMask = 0;
+                Pos = 0;
+                Shift = 0;
+                IsUndefined = isUndefined;
+            }
+
+            public static readonly BitMask Invalid = new BitMask(true);
         }
 
         public static BitMask DecodeBitMask(int opCode, bool immediate)
@@ -119,14 +137,11 @@ namespace ARMeilleure.Decoders
                 wMask &= BitUtils.FillWithOnes(size);
             }
 
-            return new BitMask()
-            {
-                WMask = BitUtils.Replicate(wMask, size),
-                TMask = BitUtils.Replicate(tMask, size),
-
-                Pos   = immS,
-                Shift = immR
-            };
+            return new BitMask(
+                BitUtils.Replicate(wMask, size),
+                BitUtils.Replicate(tMask, size),
+                immS,
+                immR);
         }
 
         public static long DecodeImm24_2(int opCode)

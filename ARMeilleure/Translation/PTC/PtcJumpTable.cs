@@ -13,11 +13,11 @@ namespace ARMeilleure.Translation.PTC
     class PtcJumpTable
     {
         [StructLayout(LayoutKind.Sequential, Pack = 1/*, Size = 16*/)]
-        public struct TableEntry<TAddress>
+        public readonly struct TableEntry<TAddress>
         {
-            public int EntryIndex;
-            public long GuestAddress;
-            public TAddress HostAddress; // int
+            public readonly int EntryIndex;
+            public readonly long GuestAddress;
+            public readonly TAddress HostAddress; // int
 
             public TableEntry(int entryIndex, long guestAddress, TAddress hostAddress)
             {

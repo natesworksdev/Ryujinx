@@ -1,11 +1,11 @@
 namespace ARMeilleure.Translation.PTC
 {
-    struct RelocEntry
+    readonly struct RelocEntry
     {
         public const int Stride = 8; // Bytes.
 
-        public int Position;
-        public int Index;
+        public readonly int Position;
+        public readonly int Index;
 
         public RelocEntry(int position, int index)
         {
