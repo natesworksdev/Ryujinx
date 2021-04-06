@@ -289,7 +289,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(X86Instruction.Xorps,        new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f57, InstructionFlags.Vex));
         }
 
-        private static void Add(X86Instruction inst, in InstructionInfo info)
+        private static void Add(X86Instruction inst, InstructionInfo info)
         {
             _instTable[(int)inst] = info;
         }

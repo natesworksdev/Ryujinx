@@ -12,7 +12,7 @@ namespace ARMeilleure.CodeGen.X86
 {
     static class PreAllocator
     {
-        public static void RunPass(in CompilerContext cctx, StackAllocator stackAlloc, out int maxCallArgs)
+        public static void RunPass(CompilerContext cctx, StackAllocator stackAlloc, out int maxCallArgs)
         {
             maxCallArgs = -1;
 

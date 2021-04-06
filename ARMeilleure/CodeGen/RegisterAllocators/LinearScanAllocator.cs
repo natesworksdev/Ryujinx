@@ -45,7 +45,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             public int IntUsedRegisters { get; set; }
             public int VecUsedRegisters { get; set; }
 
-            public AllocationContext(StackAllocator stackAlloc, in RegisterMasks masks, int intervalsCount)
+            public AllocationContext(StackAllocator stackAlloc, RegisterMasks masks, int intervalsCount)
             {
                 StackAlloc = stackAlloc;
                 Masks      = masks;

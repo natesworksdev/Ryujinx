@@ -1082,7 +1082,7 @@ namespace ARMeilleure.Decoders
             }
         }
 
-        private static void InsertInst(in InstInfo info, ExecutionMode mode)
+        private static void InsertInst(InstInfo info, ExecutionMode mode)
         {
             switch (mode)
             {

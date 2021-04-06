@@ -46,7 +46,7 @@ namespace ARMeilleure.Translation.Cache
             }
         }
 
-        public static IntPtr Map(in CompiledFunction func)
+        public static IntPtr Map(CompiledFunction func)
         {
             byte[] code = func.Code;
 
@@ -128,7 +128,7 @@ namespace ARMeilleure.Translation.Cache
             return checked(codeSize + (CodeAlignment - 1)) & ~(CodeAlignment - 1);
         }
 
-        private static void Add(int offset, int size, in UnwindInfo unwindInfo)
+        private static void Add(int offset, int size, UnwindInfo unwindInfo)
         {
             int index = BinarySearch(_cacheEntries, offset);
 
