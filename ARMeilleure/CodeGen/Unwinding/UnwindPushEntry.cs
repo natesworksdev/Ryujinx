@@ -4,10 +4,10 @@ namespace ARMeilleure.CodeGen.Unwinding
     {
         public const int Stride = 16; // Bytes.
 
-        public UnwindPseudoOp PseudoOp { get; }
-        public int PrologOffset { get; }
-        public int RegIndex { get; }
-        public int StackOffsetOrAllocSize { get; }
+        public readonly UnwindPseudoOp PseudoOp;
+        public readonly int PrologOffset;
+        public readonly int RegIndex;
+        public readonly int StackOffsetOrAllocSize;
 
         public UnwindPushEntry(UnwindPseudoOp pseudoOp, int prologOffset, int regIndex = -1, int stackOffsetOrAllocSize = -1)
         {

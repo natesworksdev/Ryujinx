@@ -2,9 +2,9 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 {
     readonly struct AllocationResult
     {
-        public int IntUsedRegisters { get; }
-        public int VecUsedRegisters { get; }
-        public int SpillRegionSize  { get; }
+        public readonly int IntUsedRegisters;
+        public readonly int VecUsedRegisters;
+        public readonly int SpillRegionSize;
 
         public AllocationResult(
             int intUsedRegisters,

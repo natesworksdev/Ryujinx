@@ -6,8 +6,8 @@ namespace ARMeilleure.Translation.Cache
 {
     readonly struct CacheEntry : IComparable<CacheEntry>
     {
-        public int Offset { get; }
-        public int Size   { get; }
+        public readonly int Offset;
+        public readonly int Size;
 
         public UnwindInfo UnwindInfo { get; }
 

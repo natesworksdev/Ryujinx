@@ -4,9 +4,9 @@ namespace ARMeilleure.CodeGen
 {
     readonly struct CompiledFunction
     {
-        public byte[] Code { get; }
+        public readonly byte[] Code;
 
-        public UnwindInfo UnwindInfo { get; }
+        public readonly UnwindInfo UnwindInfo;
 
         public CompiledFunction(byte[] code, in UnwindInfo unwindInfo)
         {

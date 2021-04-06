@@ -5,12 +5,12 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 {
     readonly struct RegisterMasks
     {
-        public int IntAvailableRegisters   { get; }
-        public int VecAvailableRegisters   { get; }
-        public int IntCallerSavedRegisters { get; }
-        public int VecCallerSavedRegisters { get; }
-        public int IntCalleeSavedRegisters { get; }
-        public int VecCalleeSavedRegisters { get; }
+        public readonly int IntAvailableRegisters;
+        public readonly int VecAvailableRegisters;
+        public readonly int IntCallerSavedRegisters;
+        public readonly int VecCallerSavedRegisters;
+        public readonly int IntCalleeSavedRegisters;
+        public readonly int VecCalleeSavedRegisters;
 
         public RegisterMasks(
             int intAvailableRegisters,

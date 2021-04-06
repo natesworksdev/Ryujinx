@@ -16,10 +16,10 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         private readonly struct BlockInfo
         {
-            public bool HasCall { get; }
+            public readonly bool HasCall;
 
-            public int IntFixedRegisters { get; }
-            public int VecFixedRegisters { get; }
+            public readonly int IntFixedRegisters;
+            public readonly int VecFixedRegisters;
 
             public BlockInfo(bool hasCall, int intFixedRegisters, int vecFixedRegisters)
             {

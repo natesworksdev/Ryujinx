@@ -8,8 +8,8 @@ namespace ARMeilleure.Translation.Cache
     {
         private readonly struct MemoryBlock : IComparable<MemoryBlock>
         {
-            public int Offset { get; }
-            public int Size { get; }
+            public readonly int Offset;
+            public readonly int Size;
 
             public MemoryBlock(int offset, int size)
             {

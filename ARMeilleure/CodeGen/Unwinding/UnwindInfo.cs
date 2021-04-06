@@ -4,8 +4,8 @@ namespace ARMeilleure.CodeGen.Unwinding
     {
         public const int Stride = 4; // Bytes.
 
-        public UnwindPushEntry[] PushEntries { get; }
-        public int PrologSize { get; }
+        public readonly UnwindPushEntry[] PushEntries;
+        public readonly int PrologSize;
 
         public UnwindInfo(UnwindPushEntry[] pushEntries, int prologSize)
         {

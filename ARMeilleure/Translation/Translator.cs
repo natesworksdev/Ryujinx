@@ -281,8 +281,8 @@ namespace ARMeilleure.Translation
 
         private readonly struct Range
         {
-            public ulong Start { get; }
-            public ulong End { get; }
+            public readonly ulong Start;
+            public readonly ulong End;
 
             public Range(ulong start, ulong end)
             {

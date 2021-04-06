@@ -13,12 +13,10 @@ namespace ARMeilleure.Decoders
 
         private readonly struct InstInfo
         {
-            public int Mask  { get; }
-            public int Value { get; }
-
-            public InstDescriptor Inst { get; }
-
-            public MakeOp MakeOp { get; }
+            public readonly int Mask;
+            public readonly int Value;
+            public readonly InstDescriptor Inst; 
+            public readonly MakeOp MakeOp;
 
             public InstInfo(int mask, int value, InstDescriptor inst, MakeOp makeOp)
             {

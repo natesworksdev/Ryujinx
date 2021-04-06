@@ -8,8 +8,8 @@ namespace ARMeilleure.Decoders
 
         public static ref readonly InstDescriptor Undefined => ref s_Invalid;
 
-        public InstName    Name    { get; }
-        public InstEmitter Emitter { get; }
+        public readonly InstName Name; 
+        public readonly InstEmitter Emitter;
 
         public InstDescriptor(InstName name, InstEmitter emitter)
         {

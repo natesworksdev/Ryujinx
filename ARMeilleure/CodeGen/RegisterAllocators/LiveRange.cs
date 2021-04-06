@@ -4,8 +4,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 {
     readonly struct LiveRange : IComparable<LiveRange>
     {
-        public int Start { get; }
-        public int End   { get; }
+        public readonly int Start;
+        public readonly int End;
 
         public LiveRange(int start, int end)
         {

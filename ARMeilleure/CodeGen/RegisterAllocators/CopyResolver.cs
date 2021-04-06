@@ -13,12 +13,11 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         {
             private readonly struct Copy
             {
-                public Register Dest   { get; }
-                public Register Source { get; }
+                public readonly Register Dest;
+                public readonly Register Source;
+                public readonly OperandType Type;
 
-                public OperandType Type { get; }
-
-                public Copy(in Register dest, in Register source, OperandType type)
+                public Copy(Register dest, Register source, OperandType type)
                 {
                     Dest   = dest;
                     Source = source;
@@ -35,7 +34,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 _copies = new List<Copy>();
             }
 
-            public void AddCopy(in Register dest, in Register source, OperandType type)
+            public void AddCopy(Register dest, Register source, OperandType type)
             {
                 _copies.Add(new Copy(dest, source, type));
             }
@@ -241,7 +240,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             return sequence.ToArray();
         }
 
-        private static Operand GetRegister(in Register reg, OperandType type)
+        private static Operand GetRegister(Register reg, OperandType type)
         {
             return Register(reg.Index, reg.Type, type);
         }

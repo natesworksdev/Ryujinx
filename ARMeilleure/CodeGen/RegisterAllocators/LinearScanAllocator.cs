@@ -988,7 +988,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             }
         }
 
-        private static int GetRegisterId(in Register register)
+        private static int GetRegisterId(Register register)
         {
             return (register.Index << 1) | (register.Type == RegisterType.Vector ? 1 : 0);
         }

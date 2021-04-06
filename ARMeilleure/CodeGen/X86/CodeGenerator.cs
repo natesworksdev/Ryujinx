@@ -1644,7 +1644,7 @@ namespace ARMeilleure.CodeGen.X86
             context.Assembler.Pshufd(dest, dest, 0xfc);
         }
 
-        private static bool MatchOperation(Node node, Instruction inst, OperandType destType, in Register destReg)
+        private static bool MatchOperation(Node node, Instruction inst, OperandType destType, Register destReg)
         {
             if (!(node is Operation operation) || node.DestinationsCount == 0)
             {

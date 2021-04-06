@@ -36,13 +36,13 @@ namespace ARMeilleure.CodeGen.X86
 
         private readonly struct InstructionInfo
         {
-            public int OpRMR     { get; }
-            public int OpRMImm8  { get; }
-            public int OpRMImm32 { get; }
-            public int OpRImm64  { get; }
-            public int OpRRM     { get; }
+            public readonly int OpRMR;
+            public readonly int OpRMImm8;
+            public readonly int OpRMImm32;
+            public readonly int OpRImm64;
+            public readonly int OpRRM;
 
-            public InstructionFlags Flags { get; }
+            public readonly InstructionFlags Flags;
 
             public InstructionInfo(
                 int              opRMR,
@@ -1347,7 +1347,7 @@ namespace ARMeilleure.CodeGen.X86
                 rexPrefix = RexWPrefix;
             }
 
-            void SetRegisterHighBit(in Register reg, int bit)
+            void SetRegisterHighBit(Register reg, int bit)
             {
                 if (reg.Index >= 8)
                 {

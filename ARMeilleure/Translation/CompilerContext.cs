@@ -4,12 +4,11 @@ namespace ARMeilleure.Translation
 {
     readonly struct CompilerContext
     {
-        public ControlFlowGraph Cfg { get; }
+        public readonly ControlFlowGraph Cfg;
+        public readonly OperandType[] FuncArgTypes;
+        public readonly OperandType FuncReturnType;
 
-        public OperandType[] FuncArgTypes   { get; }
-        public OperandType   FuncReturnType { get; }
-
-        public CompilerOptions Options { get; }
+        public readonly CompilerOptions Options;
 
         public CompilerContext(
             ControlFlowGraph cfg,
