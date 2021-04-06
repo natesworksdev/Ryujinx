@@ -11,7 +11,8 @@ namespace Ryujinx.HLE.HOS.Services
 {
     abstract class IpcService
     {
-        public IReadOnlyDictionary<int, MethodInfo> Commands { get; }
+        public IReadOnlyDictionary<int, MethodInfo> HIpcCommands { get; }
+        public IReadOnlyDictionary<int, MethodInfo> TIpcCommands { get; }
 
         public ServerBase Server { get; private set; }
 
@@ -22,11 +23,18 @@ namespace Ryujinx.HLE.HOS.Services
 
         public IpcService(ServerBase server = null)
         {
-            Commands = Assembly.GetExecutingAssembly().GetTypes()
+            HIpcCommands = Assembly.GetExecutingAssembly().GetTypes()
                 .Where(type => type == GetType())
                 .SelectMany(type => type.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public))
                 .SelectMany(methodInfo => methodInfo.GetCustomAttributes(typeof(CommandHipcAttribute))
                 .Select(command => (((CommandHipcAttribute)command).Id, methodInfo)))
+                .ToDictionary(command => command.Id, command => command.methodInfo);
+
+            TIpcCommands = Assembly.GetExecutingAssembly().GetTypes()
+                .Where(type => type == GetType())
+                .SelectMany(type => type.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public))
+                .SelectMany(methodInfo => methodInfo.GetCustomAttributes(typeof(CommandTIpcAttribute))
+                .Select(command => (((CommandTIpcAttribute)command).Id, methodInfo)))
                 .ToDictionary(command => command.Id, command => command.methodInfo);
 
             Server = server;
@@ -99,7 +107,7 @@ namespace Ryujinx.HLE.HOS.Services
             long sfciMagic = context.RequestData.ReadInt64();
             int commandId = (int)context.RequestData.ReadInt64();
 
-            bool serviceExists = service.Commands.TryGetValue(commandId, out MethodInfo processRequest);
+            bool serviceExists = service.HIpcCommands.TryGetValue(commandId, out MethodInfo processRequest);
 
             if (ServiceConfiguration.IgnoreMissingServices || serviceExists)
             {
@@ -146,6 +154,47 @@ namespace Ryujinx.HLE.HOS.Services
                 string dbgMessage = $"{service.GetType().FullName}: {commandId}";
 
                 throw new ServiceNotImplementedException(service, context, dbgMessage);
+            }
+        }
+
+        public void CallTipcMethod(ServiceCtx context)
+        {
+            int commandId = (int)context.Request.Type;
+
+            bool serviceExists = TIpcCommands.TryGetValue(commandId, out MethodInfo processRequest);
+
+            if (ServiceConfiguration.IgnoreMissingServices || serviceExists)
+            {
+                ResultCode result = ResultCode.Success;
+
+                context.ResponseData.BaseStream.Seek(0x4, SeekOrigin.Begin);
+
+                if (serviceExists)
+                {
+                    Logger.Debug?.Print(LogClass.KernelIpc, $"{GetType().Name}: {processRequest.Name}");
+
+                    result = (ResultCode)processRequest.Invoke(this, new object[] { context });
+                }
+                else
+                {
+                    string serviceName;
+
+                    DummyService dummyService = this as DummyService;
+
+                    serviceName = (dummyService == null) ? GetType().FullName : dummyService.ServiceName;
+
+                    Logger.Warning?.Print(LogClass.KernelIpc, $"Missing service {serviceName}: {commandId} ignored");
+                }
+
+                context.ResponseData.BaseStream.Seek(0, SeekOrigin.Begin);
+
+                context.ResponseData.Write((uint)result);
+            }
+            else
+            {
+                string dbgMessage = $"{GetType().FullName}: {commandId}";
+
+                throw new ServiceNotImplementedException(this, context, dbgMessage);
             }
         }
 

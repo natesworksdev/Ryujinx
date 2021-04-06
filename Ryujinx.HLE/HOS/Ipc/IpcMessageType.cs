@@ -8,5 +8,6 @@ namespace Ryujinx.HLE.HOS.Ipc
         HipcControl            = 5,
         HipcRequestWithContext = 6,
         HipcControlWithContext = 7,
+        TipcCloseSession       = 0xF
     }
 }

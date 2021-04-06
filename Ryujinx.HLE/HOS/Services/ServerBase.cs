@@ -254,7 +254,7 @@ namespace Ryujinx.HLE.HOS.Services
                         default: throw new NotImplementedException(cmdId.ToString());
                     }
                 }
-                else if (request.Type == IpcMessageType.HipcCloseSession)
+                else if (request.Type == IpcMessageType.HipcCloseSession || request.Type == IpcMessageType.TipcCloseSession)
                 {
                     _context.Syscall.CloseHandle(serverSessionHandle);
                     _sessionHandles.Remove(serverSessionHandle);
@@ -265,6 +265,31 @@ namespace Ryujinx.HLE.HOS.Services
                     }
                     _sessions.Remove(serverSessionHandle);
                     shouldReply = false;
+                }
+                // If the type is past 0xF, we are using TIPC
+                else if ((int)request.Type > 0xF)
+                {
+                    // response type is always the same as request on TIPC.
+                    response.Type = request.Type;
+
+                    using (MemoryStream resMs = new MemoryStream())
+                    {
+                        BinaryWriter resWriter = new BinaryWriter(resMs);
+
+                        ServiceCtx context = new ServiceCtx(
+                            _context.Device,
+                            process,
+                            process.CpuMemory,
+                            thread,
+                            request,
+                            response,
+                            reqReader,
+                            resWriter);
+
+                        _sessions[serverSessionHandle].CallTipcMethod(context);
+
+                        response.RawData = resMs.ToArray();
+                    }
                 }
                 else
                 {
