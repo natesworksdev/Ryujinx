@@ -751,8 +751,13 @@ namespace Ryujinx.Ui.Windows
 
                 string id = GetCurrentGamepadId();
 
-                if (_inputDevice.ActiveId.StartsWith("keyboard") && _inputConfig is StandardKeyboardInputConfig)
+                if (_inputDevice.ActiveId.StartsWith("keyboard"))
                 {
+                    if (_inputConfig is StandardKeyboardInputConfig)
+                    {
+                        SetValues(_inputConfig);
+                    }
+
                     if (_mainWindow.InputManager.KeyboardDriver is GTK3KeyboardDriver)
                     {
                         // NOTE: To get input in this window, we need to bind a custom keyboard driver instead of using the InputManager one as the main window isn't focused...
@@ -762,14 +767,15 @@ namespace Ryujinx.Ui.Windows
                     {
                         _selectedGamepad = _mainWindow.InputManager.KeyboardDriver.GetGamepad(id);
                     }
-
-                    SetValues(_inputConfig);
                 }
-                else if (_inputDevice.ActiveId.StartsWith("controller") && _inputConfig is StandardControllerInputConfig)
+                else if (_inputDevice.ActiveId.StartsWith("controller"))
                 {
-                    _selectedGamepad = _mainWindow.InputManager.GamepadDriver.GetGamepad(id);
+                    if (_inputConfig is StandardControllerInputConfig)
+                    {
+                        SetValues(_inputConfig);
+                    }
 
-                    SetValues(_inputConfig);
+                    _selectedGamepad = _mainWindow.InputManager.GamepadDriver.GetGamepad(id);
                 }
             }
         }
