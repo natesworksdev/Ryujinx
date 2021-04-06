@@ -79,7 +79,7 @@ namespace Ryujinx.Modules
 
             try
             {
-                currentVersion = Version.Parse(Program.Version);
+                currentVersion = Version.Parse("1.0.0000");
             }
             catch
             {
@@ -498,7 +498,8 @@ namespace Ryujinx.Modules
                     GtkDialog.CreateWarningDialog("You cannot update a Dirty build of Ryujinx!", "Please download Ryujinx at https://ryujinx.org/ if you are looking for a supported version.");
                 }
 
-                return false;
+                return true;
+                //return false;
             }
 
             return true;
