@@ -15,7 +15,11 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands
 
         public void Run(ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.Pipeline.SetProgram(_program.Get(threaded).Base);
+            ThreadedProgram program = _program.Get(threaded);
+
+            threaded.Programs.WaitForProgram(program);
+
+            renderer.Pipeline.SetProgram(program.Base);
         }
     }
 }
