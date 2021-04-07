@@ -1,8 +1,6 @@
 ﻿using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
 using Ryujinx.HLE.Utilities;
-using System.IO;
-using System.Reflection;
 using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
@@ -10,12 +8,10 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
     class ProfileServer
     {
         private UserProfile _profile;
-        private Stream      _profilePictureStream;
 
         public ProfileServer(UserProfile profile)
         {
-            _profile              = profile;
-            _profilePictureStream = Assembly.GetCallingAssembly().GetManifestResourceStream("Ryujinx.HLE.RyujinxProfileImage.jpg");
+            _profile = profile;
         }
 
         public ResultCode Get(ServiceCtx context)
@@ -54,7 +50,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
 
         public ResultCode GetImageSize(ServiceCtx context)
         {
-            context.ResponseData.Write(_profilePictureStream.Length);
+            context.ResponseData.Write(_profile.ImageStream.Length);
 
             return ResultCode.Success;
         }
@@ -64,13 +60,13 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
             long bufferPosition = context.Request.ReceiveBuff[0].Position;
             long bufferLen      = context.Request.ReceiveBuff[0].Size;
 
-            byte[] profilePictureData = new byte[bufferLen];
+            byte[] profileImageData = new byte[bufferLen];
 
-            _profilePictureStream.Read(profilePictureData, 0, profilePictureData.Length);
+            _profile.ImageStream.Read(profileImageData, 0, profileImageData.Length);
 
-            context.Memory.Write((ulong)bufferPosition, profilePictureData);
+            context.Memory.Write((ulong)bufferPosition, profileImageData);
 
-            context.ResponseData.Write(_profilePictureStream.Length);
+            context.ResponseData.Write(_profile.ImageStream.Length);
 
             return ResultCode.Success;
         }
@@ -100,16 +96,16 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
 
             context.Memory.Read((ulong)userDataPosition, userData);
 
-            long profilePicturePosition = context.Request.SendBuff[0].Position;
-            long profilePictureSize     = context.Request.SendBuff[0].Size;
+            long profileImagePosition = context.Request.SendBuff[0].Position;
+            long profileImageSize     = context.Request.SendBuff[0].Size;
 
-            byte[] profilePictureData = new byte[profilePictureSize];
+            byte[] profileImageData = new byte[profileImageSize];
 
-            context.Memory.Read((ulong)profilePicturePosition, profilePictureData);
+            context.Memory.Read((ulong)profileImagePosition, profileImageData);
 
             // TODO: Read the nn::account::profile::ProfileBase and store everything in the savedata.
 
-            Logger.Stub?.PrintStub(LogClass.ServiceAcc, new { userDataSize, profilePictureSize });
+            Logger.Stub?.PrintStub(LogClass.ServiceAcc, new { userDataSize, profileImageSize });
 
             return ResultCode.Success;
         }
