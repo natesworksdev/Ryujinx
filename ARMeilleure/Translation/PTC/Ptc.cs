@@ -761,7 +761,12 @@ namespace ARMeilleure.Translation.PTC
         {
             var profiledFuncsToTranslate = PtcProfiler.GetProfiledFuncsToTranslate(funcs);
 
-            if (profiledFuncsToTranslate.Count == 0)
+            _translateCount = 0;
+            _translateTotalCount = profiledFuncsToTranslate.Count;
+
+            int degreeOfParallelism = new DegreeOfParallelism(4d, 75d, 12.5d).GetDegreeOfParallelism(0, 32);
+
+            if (_translateTotalCount == 0 || degreeOfParallelism == 0)
             {
                 ResetCarriersIfNeeded();
                 PtcJumpTable.ClearIfNeeded();
@@ -771,10 +776,7 @@ namespace ARMeilleure.Translation.PTC
                 return;
             }
 
-            _translateCount = 0;
-            _translateTotalCount = profiledFuncsToTranslate.Count;
-
-            Logger.Info?.Print(LogClass.Ptc, $"{_translateCount} of {_translateTotalCount} functions translated");
+            Logger.Info?.Print(LogClass.Ptc, $"{_translateCount} of {_translateTotalCount} functions translated | Thread count: {degreeOfParallelism}");
 
             PtcStateChanged?.Invoke(PtcLoadingState.Start, _translateCount, _translateTotalCount);
 
@@ -819,11 +821,9 @@ namespace ARMeilleure.Translation.PTC
                 Translator.DisposePools();
             }
 
-            int maxDegreeOfParallelism = (Environment.ProcessorCount * 3) / 4;
-
             List<Thread> threads = new List<Thread>();
 
-            for (int i = 0; i < maxDegreeOfParallelism; i++)
+            for (int i = 0; i < degreeOfParallelism; i++)
             {
                 Thread thread = new Thread(TranslateFuncs);
                 thread.IsBackground = true;
@@ -841,7 +841,7 @@ namespace ARMeilleure.Translation.PTC
 
             PtcStateChanged?.Invoke(PtcLoadingState.Loaded, _translateCount, _translateTotalCount);
 
-            Logger.Info?.Print(LogClass.Ptc, $"{_translateCount} of {_translateTotalCount} functions translated");
+            Logger.Info?.Print(LogClass.Ptc, $"{_translateCount} of {_translateTotalCount} functions translated | Thread count: {degreeOfParallelism}");
 
             PtcJumpTable.Initialize(jumpTable);
 
