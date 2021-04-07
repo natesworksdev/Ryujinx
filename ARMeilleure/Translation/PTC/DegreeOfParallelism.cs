@@ -21,9 +21,8 @@ namespace ARMeilleure.Translation.PTC
         public int GetDegreeOfParallelism(int min, int max)
         {
             double degreeOfParallelism = (GetProcessorCount() * GetWeight(GetAvailableMemoryGiB())) / 100d;
-            int degreeOfParallelismInt = (int)Math.Round(degreeOfParallelism);
 
-            return Math.Clamp(degreeOfParallelismInt, min, max);
+            return Math.Clamp((int)Math.Round(degreeOfParallelism), min, max);
         }
 
         public static double GetProcessorCount()
