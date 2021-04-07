@@ -7,23 +7,23 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
     {
         private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-        public UserId UserId { get; private set; }
+        public UserId UserId;
 
-        public string Name { get; private set; }
+        public string Name;
 
-        public long LastModifiedTimestamp { get; private set; }
+        public long LastModifiedTimestamp;
 
-        public Stream ImageStream { get; private set; }
+        public byte[] Image;
 
-        public AccountState AccountState    { get; set; }
-        public AccountState OnlinePlayState { get; set; }
+        public AccountState AccountState;
+        public AccountState OnlinePlayState;
 
-        public UserProfile(UserId userId, string name, Stream imageStream)
+        public UserProfile(UserId userId, string name, byte[] image)
         {
             UserId = userId;
             Name   = name;
 
-            ImageStream = imageStream;
+            Image = image;
 
             LastModifiedTimestamp = 0;
 

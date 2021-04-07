@@ -50,7 +50,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
 
         public ResultCode GetImageSize(ServiceCtx context)
         {
-            context.ResponseData.Write(_profile.ImageStream.Length);
+            context.ResponseData.Write(_profile.Image.Length);
 
             return ResultCode.Success;
         }
@@ -60,13 +60,14 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
             long bufferPosition = context.Request.ReceiveBuff[0].Position;
             long bufferLen      = context.Request.ReceiveBuff[0].Size;
 
-            byte[] profileImageData = new byte[bufferLen];
+            if (_profile.Image.Length > bufferLen)
+            {
+                return ResultCode.InvalidBufferSize;
+            }
 
-            _profile.ImageStream.Read(profileImageData, 0, profileImageData.Length);
+            context.Memory.Write((ulong)bufferPosition, _profile.Image);
 
-            context.Memory.Write((ulong)bufferPosition, profileImageData);
-
-            context.ResponseData.Write(_profile.ImageStream.Length);
+            context.ResponseData.Write(_profile.Image.Length);
 
             return ResultCode.Success;
         }

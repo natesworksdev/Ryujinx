@@ -4,7 +4,6 @@ namespace Ryujinx.HLE.HOS.SystemState
 {
     public class SystemStateMgr
     {
-
         internal static string[] LanguageCodes = new string[]
         {
             "ja",

@@ -50,7 +50,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
         {
             if (context.Request.RecvListBuff.Count == 0)
             {
-                return ResultCode.InvalidInputBuffer;
+                return ResultCode.InvalidBuffer;
             }
 
             long outputPosition = context.Request.RecvListBuff[0].Position;
@@ -153,7 +153,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
             if (context.Request.SendBuff.Count == 0)
             {
-                return ResultCode.InvalidInputBuffer;
+                return ResultCode.InvalidBuffer;
             }
 
             long inputPosition = context.Request.SendBuff[0].Position;
@@ -161,7 +161,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
             if (inputSize != 0x24000)
             {
-                return ResultCode.InvalidInputBufferSize;
+                return ResultCode.InvalidBufferSize;
             }
 
             byte[] thumbnailBuffer = new byte[inputSize];
