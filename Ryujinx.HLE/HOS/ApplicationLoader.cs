@@ -66,10 +66,12 @@ namespace Ryujinx.HLE.HOS
 
         public string TitleIdText => TitleId.ToString("x16");
 
+        // Track the state (Used to determine whether to show DLC Prompt/Update Prompt)
         public static int ignoreLoadErrorState = 0;
+        // Used as a value for the button.
         public static int ignoreSelectedState = 0;
+        // Used to show the warning about a load error
         public static string loadFailureString = null;
-
 
         public ApplicationLoader(Switch device, VirtualFileSystem fileSystem, ContentManager contentManager)
         {

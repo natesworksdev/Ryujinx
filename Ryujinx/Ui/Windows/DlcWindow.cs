@@ -82,6 +82,7 @@ namespace Ryujinx.Ui.Windows
                     invalidDlcCount++;
                     continue; // skip invalid dlc (next save, no invalid dlc!)
                 }
+
                 TreeIter parentIter = ((TreeStore)_dlcTreeView.Model).AppendValues(false, "", dlcContainer.Path);
 
                 using FileStream containerFile = File.OpenRead(dlcContainer.Path);
@@ -99,7 +100,8 @@ namespace Ryujinx.Ui.Windows
                     }
                 }
             }
-            if(invalidDlcCount>0)
+
+            if(invalidDlcCount > 0)
             {
                 Logger.Error?.PrintMsg(LogClass.Application, "DLC files have been moved or deleted; skipping " + invalidDlcCount +" DLC files");
                 GtkDialog.CreateErrorDialog(invalidDlcCount + " DLC files have been moved or deleted; please re-add your DLC.");

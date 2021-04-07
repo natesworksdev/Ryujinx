@@ -75,6 +75,7 @@ namespace Ryujinx.Ui.Windows
                 }
                 AddUpdate(path);
             }
+
             if (invalidUpdateCount > 0)
             {
                 Logger.Error?.PrintMsg(LogClass.Application, "Updates have been moved or deleted; skipping " + invalidUpdateCount + " updates");

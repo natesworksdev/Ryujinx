@@ -571,6 +571,7 @@ namespace Ryujinx.Ui
                                 }
                                 break;
                         }
+
                         if (ApplicationLoader.loadFailureString != null)
                         {
                             Logger.Error?.PrintMsg(LogClass.Loader, ApplicationLoader.loadFailureString);
@@ -582,7 +583,8 @@ namespace Ryujinx.Ui
                                 return;
                             }
                             ApplicationLoader.ignoreLoadErrorState = ApplicationLoader.ignoreSelectedState;
-                        }else
+                        }
+                        else
                         {
                             break;
                         }
