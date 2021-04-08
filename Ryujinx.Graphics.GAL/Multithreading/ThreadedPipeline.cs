@@ -12,18 +12,10 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         private ThreadedRenderer _renderer;
         private IPipeline _impl;
 
-        private SetGenericBuffersDelegate _setStorageBuffers;
-        private SetGenericBuffersDelegate _setTransformFeedbackBuffers;
-        private SetGenericBuffersDelegate _setUniformBuffers;
-
         public ThreadedPipeline(ThreadedRenderer renderer, IPipeline impl)
         {
             _renderer = renderer;
             _impl = impl;
-
-            _setStorageBuffers = impl.SetStorageBuffers;
-            _setTransformFeedbackBuffers = impl.SetTransformFeedbackBuffers;
-            _setUniformBuffers = impl.SetUniformBuffers;
         }
 
         private TableRef<T> Ref<T>(T reference)
@@ -231,7 +223,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
         public void SetStorageBuffers(ReadOnlySpan<BufferRange> buffers)
         {
-            _renderer.New<SetGenericBuffersCommand>().Set(_renderer.CopySpan(buffers), Ref(_setStorageBuffers));
+            _renderer.New<SetStorageBuffersCommand>().Set(_renderer.CopySpan(buffers));
             _renderer.QueueCommand();
         }
 
@@ -243,13 +235,13 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
         public void SetTransformFeedbackBuffers(ReadOnlySpan<BufferRange> buffers)
         {
-            _renderer.New<SetGenericBuffersCommand>().Set(_renderer.CopySpan(buffers), Ref(_setTransformFeedbackBuffers));
+            _renderer.New<SetTransformFeedbackBuffersCommand>().Set(_renderer.CopySpan(buffers));
             _renderer.QueueCommand();
         }
 
         public void SetUniformBuffers(ReadOnlySpan<BufferRange> buffers)
         {
-            _renderer.New<SetGenericBuffersCommand>().Set(_renderer.CopySpan(buffers), Ref(_setUniformBuffers));
+            _renderer.New<SetUniformBuffersCommand>().Set(_renderer.CopySpan(buffers));
             _renderer.QueueCommand();
         }
 

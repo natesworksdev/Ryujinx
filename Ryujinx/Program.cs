@@ -140,7 +140,7 @@ namespace Ryujinx
             PrintSystemInfo();
 
             // Enable OGL multithreading on the driver, when available.
-            DriverUtilities.ToggleOGLThreading(true);
+            DriverUtilities.ToggleOGLThreading(false);
 
             // Initialize Gtk.
             Application.Init();
