@@ -574,9 +574,10 @@ namespace Ryujinx.Ui
                                 break;
                         }
 
+                        // Check if an error is present (0 = good, -1 = generic error)
                         if (errorState > 0)
                         {
-                            string[] loadErrors = new string[] { "An update have been moved/deleted", "DLC files have been moved/deleted" };
+                            string[] loadErrors = new string[] { "An update has been moved/deleted", "DLC files have been moved/deleted" };
                             
                             if(errorState > loadErrors.Length)
                             {

@@ -101,7 +101,7 @@ namespace Ryujinx.Ui.Windows
                 }
             }
 
-            if(invalidDlcCount > 0)
+            if (invalidDlcCount > 0)
             {
                 Logger.Error?.PrintMsg(LogClass.Application, "DLC files have been moved or deleted; skipping " + invalidDlcCount +" DLC files");
                 GtkDialog.CreateErrorDialog(invalidDlcCount + " DLC files have been moved or deleted; please re-add your DLC.");
