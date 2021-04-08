@@ -220,7 +220,7 @@ namespace Ryujinx.HLE.HOS
                 {
                     string updatePath = JsonHelper.DeserializeFromFile<TitleUpdateMetadata>(titleUpdateMetadataPath).Selected;
 
-                    if (!File.Exists(updatePath))
+                    if (!File.Exists(updatePath) && updatePath.Trim() != "")
                     {
                         return false;
                     }
