@@ -42,7 +42,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             return maxSize + 1; // 1 byte reserved for command size.
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public static void RunCommand(Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer)
         {
             switch ((CommandType)memory[memory.Length - 1])
@@ -208,8 +208,14 @@ namespace Ryujinx.Graphics.GAL.Multithreading
                 case CommandType.SetFrontFace:
                     RunTypedCommand<SetFrontFaceCommand>(memory, threaded, renderer);
                     break;
-                case CommandType.SetGenericBuffers:
-                    RunTypedCommand<SetGenericBuffersCommand>(memory, threaded, renderer);
+                case CommandType.SetStorageBuffers:
+                    RunTypedCommand<SetStorageBuffersCommand>(memory, threaded, renderer);
+                    break;
+                case CommandType.SetTransformFeedbackBuffers:
+                    RunTypedCommand<SetTransformFeedbackBuffersCommand>(memory, threaded, renderer);
+                    break;
+                case CommandType.SetUniformBuffers:
+                    RunTypedCommand<SetUniformBuffersCommand>(memory, threaded, renderer);
                     break;
                 case CommandType.SetImage:
                     RunTypedCommand<SetImageCommand>(memory, threaded, renderer);
