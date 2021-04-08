@@ -69,10 +69,12 @@ namespace Ryujinx.Ui.Windows
             int invalidUpdateCount = 0;
             foreach (string path in _titleUpdateWindowData.Paths)
             {
-                if(!File.Exists(path))
+                if (!File.Exists(path))
                 {
                     invalidUpdateCount++;
+                    continue;
                 }
+
                 AddUpdate(path);
             }
 

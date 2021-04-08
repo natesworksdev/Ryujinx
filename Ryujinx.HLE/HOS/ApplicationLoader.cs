@@ -66,13 +66,6 @@ namespace Ryujinx.HLE.HOS
 
         public string TitleIdText => TitleId.ToString("x16");
 
-        // Track the state (Used to determine whether to show DLC Prompt/Update Prompt)
-        public static int ignoreLoadErrorState = 0;
-        // Used as a value for the button.
-        public static int ignoreSelectedState = 0;
-        // Used to show the warning about a load error
-        public static string loadFailureString = null;
-
         public ApplicationLoader(Switch device, VirtualFileSystem fileSystem, ContentManager contentManager)
         {
             _device         = device;
@@ -207,21 +200,37 @@ namespace Ryujinx.HLE.HOS
 
                         return GetGameUpdateDataFromPartition(fileSystem, nsp, titleIdBase.ToString("x16"), programIndex);
                     }
-                    else if (updatePath.Trim() != "")
-                    {
-                        if (ignoreLoadErrorState < 1)
-                        {
-                            loadFailureString = "An update has been moved/deleted!";
-                            ignoreSelectedState = 1;
-                        }
-                    }
                 }
             }
 
             return (null, null);
         }
 
-        public void LoadXci(string xciFile)
+        public static bool CheckUpdateValidity(VirtualFileSystem fileSystem, string titleId, int programIndex)
+        {
+            if (ulong.TryParse(titleId, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out ulong titleIdBase))
+            {
+                // Clear the program index part.
+                titleIdBase &= 0xFFFFFFFFFFFFFFF0;
+
+                // Load update informations if existing.
+                string titleUpdateMetadataPath = Path.Combine(AppDataManager.GamesDirPath, titleIdBase.ToString("x16"), "updates.json");
+
+                if (File.Exists(titleUpdateMetadataPath))
+                {
+                    string updatePath = JsonHelper.DeserializeFromFile<TitleUpdateMetadata>(titleUpdateMetadataPath).Selected;
+
+                    if (!File.Exists(updatePath))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        public int LoadXci(string xciFile, int lastError = 0)
         {
             FileStream file = new FileStream(xciFile, FileMode.Open, FileAccess.Read);
             Xci        xci  = new Xci(_fileSystem.KeySet, file.AsStorage());
@@ -230,7 +239,7 @@ namespace Ryujinx.HLE.HOS
             {
                 Logger.Error?.Print(LogClass.Loader, "Unable to load XCI: Could not find XCI secure partition");
 
-                return;
+                return -1;
             }
 
             PartitionFileSystem securePartition = xci.OpenPartition(XciPartitionType.Secure);
@@ -247,24 +256,24 @@ namespace Ryujinx.HLE.HOS
             {
                 Logger.Error?.Print(LogClass.Loader, $"Unable to load XCI: {e.Message}");
 
-                return;
+                return -1;
             }
 
             if (mainNca == null)
             {
                 Logger.Error?.Print(LogClass.Loader, "Unable to load XCI: Could not find Main NCA");
 
-                return;
+                return -1;
             }
 
             _contentManager.LoadEntries(_device);
             _contentManager.ClearAocData();
             _contentManager.AddAocData(securePartition, xciFile, mainNca.Header.TitleId);
 
-            LoadNca(mainNca, patchNca, controlNca);
+            return LoadNca(mainNca, patchNca, controlNca, lastError);
         }
 
-        public void LoadNsp(string nspFile)
+        public int LoadNsp(string nspFile, int lastError = 0)
         {
             FileStream          file = new FileStream(nspFile, FileMode.Open, FileAccess.Read);
             PartitionFileSystem nsp  = new PartitionFileSystem(file.AsStorage());
@@ -281,14 +290,14 @@ namespace Ryujinx.HLE.HOS
             {
                 Logger.Error?.Print(LogClass.Loader, $"Unable to load NSP: {e.Message}");
 
-                return;
+                return -1;
             }
 
             if (mainNca == null)
             {
                 Logger.Error?.Print(LogClass.Loader, "Unable to load NSP: Could not find Main NCA");
 
-                return;
+                return -1;
             }
 
             if (mainNca != null)
@@ -296,41 +305,43 @@ namespace Ryujinx.HLE.HOS
                 _contentManager.ClearAocData();
                 _contentManager.AddAocData(nsp, nspFile, mainNca.Header.TitleId);
 
-                LoadNca(mainNca, patchNca, controlNca);
-
-                return;
+                return LoadNca(mainNca, patchNca, controlNca, lastError);
             }
 
             // This is not a normal NSP, it's actually a ExeFS as a NSP
             LoadExeFs(nsp);
+            return 0;
         }
 
-        public void LoadNca(string ncaFile)
+        public int LoadNca(string ncaFile, int lastError = 0)
         {
             FileStream file = new FileStream(ncaFile, FileMode.Open, FileAccess.Read);
             Nca        nca  = new Nca(_fileSystem.KeySet, file.AsStorage(false));
 
-            LoadNca(nca, null, null);
+            return LoadNca(nca, null, null, lastError);
         }
 
-        private void LoadNca(Nca mainNca, Nca patchNca, Nca controlNca)
+        // Returns an error code.
+        private int LoadNca(Nca mainNca, Nca patchNca, Nca controlNca, int lastError = 0)
         {
-            loadFailureString = null;
             if (mainNca.Header.ContentType != NcaContentType.Program)
             {
                 Logger.Error?.Print(LogClass.Loader, "Selected NCA is not a \"Program\" NCA");
 
-                return;
+                return -1;
             }
 
             IStorage    dataStorage = null;
             IFileSystem codeFs      = null;
 
-            (Nca updatePatchNca, Nca updateControlNca) = GetGameUpdateData(_fileSystem, mainNca.Header.TitleId.ToString("x16"), _device.UserChannelPersistence.Index, out _);
-            if(loadFailureString != null)
+            if (!CheckUpdateValidity(_fileSystem, mainNca.Header.TitleId.ToString("x16"), _device.UserChannelPersistence.Index)
+                && lastError < 1)
             {
-                return;
+                return 1;
             }
+
+            (Nca updatePatchNca, Nca updateControlNca) = GetGameUpdateData(_fileSystem, mainNca.Header.TitleId.ToString("x16"), _device.UserChannelPersistence.Index, out _);
+
             if (updatePatchNca != null)
             {
                 patchNca = updatePatchNca;
@@ -350,23 +361,13 @@ namespace Ryujinx.HLE.HOS
             if (File.Exists(titleAocMetadataPath))
             {
                 List<DlcContainer> dlcContainerList = JsonHelper.DeserializeFromFile<List<DlcContainer>>(titleAocMetadataPath);
-                int invalidDlcCount = 0;
+                
                 foreach (DlcContainer dlcContainer in dlcContainerList)
                 {
-                    if (!File.Exists(dlcContainer.Path))
+                    if (!File.Exists(dlcContainer.Path) && lastError < 2)
                     {
-                        if (ignoreLoadErrorState < 2)
-                        {
-                            invalidDlcCount++;
-                        }
+                        return 2;
                     }
-                }
-
-                if(invalidDlcCount > 0)
-                {
-                    loadFailureString = invalidDlcCount + " DLC files have been moved or deleted. Please use the DLC manager.";
-                    ignoreSelectedState++;
-                    return;
                 }
 
                 foreach (DlcContainer dlcContainer in dlcContainerList)
@@ -411,7 +412,7 @@ namespace Ryujinx.HLE.HOS
             {
                 Logger.Error?.Print(LogClass.Loader, "No ExeFS found in NCA");
 
-                return;
+                return -1;
             }
 
             Npdm metaData = ReadNpdm(codeFs);
@@ -456,6 +457,7 @@ namespace Ryujinx.HLE.HOS
             LoadExeFs(codeFs, metaData);
 
             Logger.Info?.Print(LogClass.Loader, $"Application Loaded: {TitleName} v{DisplayVersion} [{TitleIdText}] [{(TitleIs64Bit ? "64-bit" : "32-bit")}]");
+            return 0;
         }
 
         // Sets TitleId, so be sure to call before using it

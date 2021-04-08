@@ -542,22 +542,24 @@ namespace Ryujinx.Ui
                 }
                 else if (File.Exists(path))
                 {
+                    int errorState = 0;
+
                     while (true)
                     {
                         switch (System.IO.Path.GetExtension(path).ToLowerInvariant())
                         {
                             case ".xci":
                                 Logger.Info?.Print(LogClass.Application, "Loading as XCI.");
-                                _emulationContext.LoadXci(path);
+                                errorState = _emulationContext.LoadXci(path, errorState);
                                 break;
                             case ".nca":
                                 Logger.Info?.Print(LogClass.Application, "Loading as NCA.");
-                                _emulationContext.LoadNca(path);
+                                errorState = _emulationContext.LoadNca(path, errorState);
                                 break;
                             case ".nsp":
                             case ".pfs0":
                                 Logger.Info?.Print(LogClass.Application, "Loading as NSP.");
-                                _emulationContext.LoadNsp(path);
+                                errorState = _emulationContext.LoadNsp(path, errorState);
                                 break;
                             default:
                                 Logger.Info?.Print(LogClass.Application, "Loading as homebrew.");
@@ -572,17 +574,25 @@ namespace Ryujinx.Ui
                                 break;
                         }
 
-                        if (ApplicationLoader.loadFailureString != null)
+                        if (errorState > 0)
                         {
-                            Logger.Error?.PrintMsg(LogClass.Loader, ApplicationLoader.loadFailureString);
+                            string[] loadErrors = new string[] { "An update have been moved/deleted", "DLC files have been moved/deleted" };
+                            
+                            if(errorState > loadErrors.Length)
+                            {
+                                break;
+                            }
+
+                            string loadFailure = loadErrors[errorState - 1];
+
+                            Logger.Error?.PrintMsg(LogClass.Loader, loadFailure);
+
                             bool continueGame = GtkDialog.CreateChoiceDialog("Game Load Error",
-                               ApplicationLoader.loadFailureString, "Continue loading anyway?\n(You may lose save data)");
+                               loadFailure, "Continue loading anyway?\n(You may lose save data)");
                             if (!continueGame)
                             {
-                                ApplicationLoader.ignoreLoadErrorState = 0;
                                 return;
                             }
-                            ApplicationLoader.ignoreLoadErrorState = ApplicationLoader.ignoreSelectedState;
                         }
                         else
                         {
