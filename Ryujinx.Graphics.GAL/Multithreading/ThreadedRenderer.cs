@@ -24,7 +24,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
     public class ThreadedRenderer : IRenderer
     {
         private const int SpanPoolBytes = 4 * 1024 * 1024;
-        private const int MaxRefsPerCommand = 3;
+        private const int MaxRefsPerCommand = 2;
         private const int QueueCount = 10000;
 
         private int _elementSize;
