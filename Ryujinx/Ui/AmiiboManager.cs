@@ -87,7 +87,7 @@ namespace Ryujinx.Ui
         /// </br><b>False</b> The current version of the data is already up-to-date or an error occurred.</returns>
         public static async Task<bool> UpdateAmiibos()
         {
-            Logger.Info?.Print(LogClass.Application, "Checking for Amiibo Updates..");
+            Logger.Info?.Print(LogClass.Application, "Checking for Amiibo Updates...");
 
             string amiiboJsonString;
 
@@ -98,7 +98,7 @@ namespace Ryujinx.Ui
                     amiiboJsonString = await DownloadAmiiboJson();
 
                     // Don't overwrite existing configuration. != will be faster than !.Equals since DEFAULT_JSON would be assigned by reference.
-                    if (amiiboJsonString != DEFAULT_JSON)
+                    if (amiiboJsonString != null)
                     {
                         LoadAmiiboJson(amiiboJsonString);
 
@@ -118,7 +118,7 @@ namespace Ryujinx.Ui
             {
                 try
                 {
-                    amiiboJsonString = await DownloadAmiiboJson();
+                    amiiboJsonString = await DownloadAmiiboJson() ?? DEFAULT_JSON;
                     
                     LoadAmiiboJson(amiiboJsonString);
 
@@ -135,7 +135,7 @@ namespace Ryujinx.Ui
 
         public static async Task<Gdk.Pixbuf> GetAmiiboPreview(string imageUrl)
         {
-            if(_amiiboPreviews.ContainsKey(imageUrl))
+            if (_amiiboPreviews.ContainsKey(imageUrl))
             {
                 return _amiiboPreviews[imageUrl];
             }
@@ -182,7 +182,7 @@ namespace Ryujinx.Ui
 
         private static async Task<string> DownloadAmiiboJson()
         {
-            Logger.Info?.Print(LogClass.Application, "Downloading newer version of amiibo data..");
+            Logger.Info?.Print(LogClass.Application, "Downloading newer version of amiibo data...");
 
             try
             {
@@ -195,10 +195,12 @@ namespace Ryujinx.Ui
                     AmiiboJson amiiboJson = JsonSerializer.Deserialize<AmiiboJson>(amiiboJsonString);
 
                     DateTime lastUpdated = amiiboJson.LastUpdated;
-                    if(lastUpdated.Millisecond >= 500)
+
+                    if (lastUpdated.Millisecond >= 500)
                     {
                         lastUpdated = lastUpdated.AddSeconds(1);
                     }
+
                     amiiboJson.LastUpdated = new DateTime(lastUpdated.Year, lastUpdated.Month, lastUpdated.Day, lastUpdated.Hour, lastUpdated.Minute, lastUpdated.Second);
                     amiiboJsonString = JsonSerializer.Serialize<AmiiboJson>(amiiboJson);
 
@@ -221,7 +223,7 @@ namespace Ryujinx.Ui
                 ShowAmiiboServiceWarning(ex.Message);
             }
 
-            return DEFAULT_JSON;
+            return null;
         }
 
         private static void ShowAmiiboServiceWarning(string message)

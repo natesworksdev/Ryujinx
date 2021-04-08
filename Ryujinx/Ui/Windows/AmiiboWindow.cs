@@ -50,7 +50,7 @@ namespace Ryujinx.Ui.Windows
             {
                 LoadContent();
 
-                if(await AmiiboManager.UpdateAmiibos())
+                if (await AmiiboManager.UpdateAmiibos())
                 {
                     _amiiboCharsComboBox.RemoveAll();
                     _amiiboSeriesComboBox.RemoveAll();
