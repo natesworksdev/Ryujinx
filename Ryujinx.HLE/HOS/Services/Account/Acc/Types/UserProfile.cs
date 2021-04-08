@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 
 namespace Ryujinx.HLE.HOS.Services.Account.Acc
 {
@@ -7,16 +6,16 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
     {
         private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-        public UserId UserId;
+        public UserId UserId { get; }
 
-        public string Name;
+        public string Name { get; }
 
-        public long LastModifiedTimestamp;
+        public byte[] Image { get; }
 
-        public byte[] Image;
+        public long LastModifiedTimestamp { get; private set; }
 
-        public AccountState AccountState;
-        public AccountState OnlinePlayState;
+        public AccountState AccountState { get; set; }
+        public AccountState OnlinePlayState { get; set; }
 
         public UserProfile(UserId userId, string name, byte[] image)
         {
