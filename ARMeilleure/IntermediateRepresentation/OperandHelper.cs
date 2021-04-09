@@ -35,9 +35,9 @@ namespace ARMeilleure.IntermediateRepresentation
             return Operand().With(value);
         }
 
-        public static unsafe Operand Const<T>(ref T reference)
+        public static unsafe Operand Const<T>(ref T reference, int? index = null)
         {
-            return Operand().With((ulong)Unsafe.AsPointer(ref reference));
+            return Operand().With((long)Unsafe.AsPointer(ref reference), index != null, index);
         }
 
         public static Operand ConstF(float value)
