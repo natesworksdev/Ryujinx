@@ -66,9 +66,6 @@ namespace ARMeilleure.Translation.PTC
 
         internal static PtcState State { get; private set; }
 
-        // Progress reporting helpers
-        private static volatile int _translateCount;
-        private static volatile int _translateTotalCount;
         public static event Action<PtcLoadingState, int, int> PtcStateChanged;
 
         static Ptc()
@@ -527,12 +524,17 @@ namespace ARMeilleure.Translation.PTC
             _relocsStream.Seek(0L, SeekOrigin.Begin);
             _unwindInfosStream.Seek(0L, SeekOrigin.Begin);
 
+            // Get total entries to process for progress reporting and for looping.
+            int infoEntriesCount = GetInfosEntriesCount();
+
+            using ProgressReporter progressReporter = ProgressReporter.CreateAndStart(infoEntriesCount, PtcStateChanged);
+
             using (BinaryReader infosReader = new(_infosStream, EncodingCache.UTF8NoBOM, true))
             using (BinaryReader codesReader = new(_codesStream, EncodingCache.UTF8NoBOM, true))
             using (BinaryReader relocsReader = new(_relocsStream, EncodingCache.UTF8NoBOM, true))
             using (BinaryReader unwindInfosReader = new(_unwindInfosStream, EncodingCache.UTF8NoBOM, true))
             {
-                for (int i = 0; i < GetInfosEntriesCount(); i++)
+                for (int i = 0; i < infoEntriesCount; i++)
                 {
                     InfoEntry infoEntry = ReadInfo(infosReader);
 
@@ -570,6 +572,8 @@ namespace ARMeilleure.Translation.PTC
                         StubReloc(infoEntry.RelocEntriesCount);
                         StubUnwindInfo(unwindInfosReader);
                     }
+
+                    progressReporter.Increment();
                 }
             }
 
@@ -767,75 +771,55 @@ namespace ARMeilleure.Translation.PTC
                 return;
             }
 
-            _translateCount = 0;
-            _translateTotalCount = profiledFuncsToTranslate.Count;
-
-            PtcStateChanged?.Invoke(PtcLoadingState.Start, _translateCount, _translateTotalCount);
-
-            using AutoResetEvent progressReportEvent = new AutoResetEvent(false);
-
-            Thread progressReportThread = new Thread(ReportProgress)
+            using (ProgressReporter progressReporter = ProgressReporter.CreateAndStart(profiledFuncsToTranslate.Count, PtcStateChanged))
             {
-                Name = "Ptc.ProgressReporter",
-                Priority = ThreadPriority.Lowest,
-                IsBackground = true
-            };
-
-            progressReportThread.Start(progressReportEvent);
-
-            void TranslateFuncs()
-            {
-                while (profiledFuncsToTranslate.TryDequeue(out var item))
+                void TranslateFuncs()
                 {
-                    ulong address = item.address;
-
-                    Debug.Assert(PtcProfiler.IsAddressInStaticCodeRange(address));
-
-                    TranslatedFunction func = Translator.Translate(memory, jumpTable, address, item.mode, item.highCq);
-
-                    bool isAddressUnique = funcs.TryAdd(address, func);
-
-                    Debug.Assert(isAddressUnique, $"The address 0x{address:X16} is not unique.");
-
-                    if (func.HighCq)
+                    while (profiledFuncsToTranslate.TryDequeue(out var item))
                     {
-                        jumpTable.RegisterFunction(address, func);
+                        ulong address = item.address;
+
+                        Debug.Assert(PtcProfiler.IsAddressInStaticCodeRange(address));
+
+                        TranslatedFunction func = Translator.Translate(memory, jumpTable, address, item.mode, item.highCq);
+
+                        bool isAddressUnique = funcs.TryAdd(address, func);
+
+                        Debug.Assert(isAddressUnique, $"The address 0x{address:X16} is not unique.");
+
+                        if (func.HighCq)
+                        {
+                            jumpTable.RegisterFunction(address, func);
+                        }
+
+                        progressReporter.Increment();
+
+                        if (State != PtcState.Enabled)
+                        {
+                            break;
+                        }
                     }
 
-                    Interlocked.Increment(ref _translateCount);
-
-                    if (State != PtcState.Enabled)
-                    {
-                        break;
-                    }
+                    Translator.DisposePools();
                 }
 
-                Translator.DisposePools();
+                int maxDegreeOfParallelism = (Environment.ProcessorCount * 3) / 4;
+
+                List<Thread> threads = new List<Thread>();
+
+                for (int i = 0; i < maxDegreeOfParallelism; i++)
+                {
+                    Thread thread = new Thread(TranslateFuncs);
+                    thread.IsBackground = true;
+
+                    threads.Add(thread);
+                }
+
+                threads.ForEach((thread) => thread.Start());
+                threads.ForEach((thread) => thread.Join());
+
+                threads.Clear();
             }
-
-            int maxDegreeOfParallelism = (Environment.ProcessorCount * 3) / 4;
-
-            List<Thread> threads = new List<Thread>();
-
-            for (int i = 0; i < maxDegreeOfParallelism; i++)
-            {
-                Thread thread = new Thread(TranslateFuncs);
-                thread.IsBackground = true;
-
-                threads.Add(thread);
-            }
-
-            threads.ForEach((thread) => thread.Start());
-            threads.ForEach((thread) => thread.Join());
-
-            threads.Clear();
-
-            progressReportEvent.Set();
-            progressReportThread.Join();
-
-            PtcStateChanged?.Invoke(PtcLoadingState.Loaded, _translateCount, _translateTotalCount);
-
-            Logger.Info?.Print(LogClass.Ptc, $"{_translateCount} of {_translateTotalCount} functions translated");
 
             PtcJumpTable.Initialize(jumpTable);
 
@@ -845,27 +829,6 @@ namespace ARMeilleure.Translation.PTC
             Thread preSaveThread = new Thread(PreSave);
             preSaveThread.IsBackground = true;
             preSaveThread.Start();
-        }
-
-        private static void ReportProgress(object state)
-        {
-            const int refreshRate = 50; // ms
-
-            AutoResetEvent endEvent = (AutoResetEvent)state;
-
-            int count = 0;
-
-            do
-            {
-                int newCount = _translateCount;
-
-                if (count != newCount)
-                {
-                    PtcStateChanged?.Invoke(PtcLoadingState.Loading, newCount, _translateTotalCount);
-                    count = newCount;
-                }
-            }
-            while (!endEvent.WaitOne(refreshRate));
         }
 
         internal static void WriteInfoCodeRelocUnwindInfo(ulong address, ulong guestSize, bool highCq, PtcInfo ptcInfo)
@@ -984,6 +947,104 @@ namespace ARMeilleure.Translation.PTC
                 _waitEvent.Dispose();
 
                 DisposeMemoryStreams();
+            }
+        }
+
+        /// <summary>
+        /// Class for reporting PTC translation / loading item progress to the UI
+        /// </summary>
+        private class ProgressReporter : IDisposable
+        {
+            private bool _disposed;
+
+            private volatile int _itemsProcessed;
+            private readonly int _itemsTotal;
+
+            private readonly AutoResetEvent _progressReportEvent;
+            private readonly Thread _progressReportThread;
+            private readonly Action<PtcLoadingState, int, int> _onPtcStateChanged;
+
+            private ProgressReporter(int totalItems, Action<PtcLoadingState, int, int> onPtcStateChanged)
+            {
+                _disposed = false;
+                _itemsProcessed = 0;
+                _itemsTotal = totalItems;
+
+                _progressReportEvent = new AutoResetEvent(false);
+
+                _progressReportThread = new Thread(ReportProgress)
+                {
+                    Name = "Ptc.ProgressReporter",
+                    Priority = ThreadPriority.Lowest,
+                    IsBackground = true
+                };
+
+                _onPtcStateChanged = onPtcStateChanged;
+            }
+
+            /// <summary>
+            /// Creates a progress reporter and starts the background reporting thread
+            /// </summary>
+            /// <param name="totalItems"></param>
+            /// <param name="onPtcStateChanged"></param>
+            /// <returns></returns>
+            public static ProgressReporter CreateAndStart(int totalItems, Action<PtcLoadingState, int, int> onPtcStateChanged)
+            {
+                var reporter = new ProgressReporter(totalItems, onPtcStateChanged);
+                reporter.Start();
+
+                return reporter;
+            }
+
+            /// <summary>
+            /// Report progress for one item
+            /// </summary>
+            public void Increment()
+            {
+                Interlocked.Increment(ref _itemsProcessed);
+            }
+
+            public void Dispose()
+            {
+                if (!_disposed)
+                {
+                    _progressReportEvent.Set();
+                    _progressReportThread.Join();
+                    _onPtcStateChanged?.Invoke(PtcLoadingState.Loaded, 0, _itemsTotal);
+                    _disposed = true;
+                }
+            }
+
+            private void Start()
+            {
+                if (_disposed)
+                {
+                    throw new ObjectDisposedException(nameof(ProgressReporter));
+                }
+
+                _onPtcStateChanged?.Invoke(PtcLoadingState.Start, 0, _itemsTotal);
+                _progressReportThread.Start(_progressReportEvent);
+            }
+
+            private void ReportProgress(object state)
+            {
+                const int refreshRate = 50; // ms
+
+                AutoResetEvent endEvent = (AutoResetEvent)state;
+
+                int count = 0;
+
+                do
+                {
+                    int newCount = _itemsProcessed;
+
+                    if (count != newCount)
+                    {
+                        _onPtcStateChanged?.Invoke(PtcLoadingState.Loading, newCount, _itemsTotal);
+                        count = newCount;
+                    }
+                }
+                while (!endEvent.WaitOne(refreshRate));
             }
         }
     }
