@@ -1,4 +1,5 @@
 using ARMeilleure.Common;
+using System.Runtime.CompilerServices;
 
 namespace ARMeilleure.IntermediateRepresentation
 {
@@ -32,6 +33,11 @@ namespace ARMeilleure.IntermediateRepresentation
         public static Operand Const(ulong value)
         {
             return Operand().With(value);
+        }
+
+        public static unsafe Operand Const<T>(ref T reference)
+        {
+            return Operand().With((ulong)Unsafe.AsPointer(ref reference));
         }
 
         public static Operand ConstF(float value)
