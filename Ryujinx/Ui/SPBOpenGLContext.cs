@@ -22,6 +22,7 @@ namespace Ryujinx.Ui
 
         public void Dispose()
         {
+            _context.Dispose();
             _window.Dispose();
         }
 

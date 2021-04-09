@@ -228,7 +228,7 @@ namespace Ryujinx.Ui
 
         private void GLRenderer_Initialized(object sender, EventArgs e)
         {
-            // Release the GL exclusivity that OpenTK gave us as we aren't going to use it in GTK Thread.
+            // Release the GL exclusivity that SPB gave us as we aren't going to use it in GTK Thread.
             OpenGLContext.MakeCurrent(null);
 
             WaitEvent.Set();
