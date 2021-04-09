@@ -2,10 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Ryujinx.SDL2-CS" Version="2.0.14" />
+    <PackageReference Include="ppy.SDL2-CS" Version="1.0.225-alpha" />
   </ItemGroup>
 
   <ItemGroup>

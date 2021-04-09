@@ -166,7 +166,15 @@ namespace Ryujinx.Input.SDL2
             {
                 float[] values = new float[3];
 
-                int result = SDL_GameControllerGetSensorData(_gamepadHandle, sensorType, values, values.Length);
+                int result;
+
+                unsafe
+                {
+                    fixed (float* valuesPtr = values)
+                    {
+                        result = SDL_GameControllerGetSensorData(_gamepadHandle, sensorType, (IntPtr)valuesPtr, values.Length);
+                    }
+                }
 
                 if (result == 0)
                 {
