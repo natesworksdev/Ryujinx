@@ -224,6 +224,20 @@ namespace Ryujinx.Configuration
         public KeyboardHotkeys Hotkeys { get; set; }
 
         /// <summary>
+        /// Legacy keyboard control bindings
+        /// </summary>
+        /// <remarks>Kept for file format compatibility (to avoid possible failure when parsing configuration on old versions)</remarks>
+        /// TODO: Remove this when those older versions aren't in use anymore.
+        public List<object> KeyboardConfig { get; set; }
+
+        /// <summary>
+        /// Legacy controller control bindings
+        /// </summary>
+        /// <remarks>Kept for file format compatibility (to avoid possible failure when parsing configuration on old versions)</remarks>
+        /// TODO: Remove this when those older versions aren't in use anymore.
+        public List<object> ControllerConfig { get; set; }
+
+        /// <summary>
         /// Input configurations
         /// </summary>
         public List<InputConfig> InputConfig { get; set; }

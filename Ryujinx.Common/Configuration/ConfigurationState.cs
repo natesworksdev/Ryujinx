@@ -464,6 +464,8 @@ namespace Ryujinx.Configuration
                 StartFullscreen           = Ui.StartFullscreen,
                 EnableKeyboard            = Hid.EnableKeyboard,
                 Hotkeys                   = Hid.Hotkeys,
+                KeyboardConfig            = new List<object>(),
+                ControllerConfig          = new List<object>(),
                 InputConfig               = Hid.InputConfig,
             };
 
