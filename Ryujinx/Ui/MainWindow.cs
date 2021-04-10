@@ -3,7 +3,6 @@ using ARMeilleure.Translation.PTC;
 using Gtk;
 using LibHac.Common;
 using LibHac.Ns;
-using Ryujinx.Audio;
 using Ryujinx.Audio.Backends.Dummy;
 using Ryujinx.Audio.Backends.OpenAL;
 using Ryujinx.Audio.Backends.SoundIo;
@@ -24,9 +23,9 @@ using Ryujinx.Ui.Helper;
 using Ryujinx.Ui.Widgets;
 using Ryujinx.Ui.Windows;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -542,7 +541,7 @@ namespace Ryujinx.Ui
                 }
                 else if (File.Exists(path))
                 {
-                    int errorState = 0;
+                    ApplicationLoader.LoadErrorState errorState = 0;
 
                     while (true)
                     {
@@ -574,22 +573,22 @@ namespace Ryujinx.Ui
                                 break;
                         }
 
-                        // Check if an error is present (0 = good, -1 = generic error)
-                        if (errorState > 0)
-                        {
-                            string[] loadErrors = new string[] { "An update has been moved/deleted", "DLC files have been moved/deleted" };
-                            
-                            if(errorState > loadErrors.Length)
+                        Dictionary<ApplicationLoader.LoadErrorState, string> loadErrors = new Dictionary<ApplicationLoader.LoadErrorState, string>()
                             {
-                                break;
-                            }
+                                { ApplicationLoader.LoadErrorState.ChangedUpdate, "An update has been moved/deleted" },
+                                { ApplicationLoader.LoadErrorState.ChangedDLC, "DLC files have been moved/deleted" }
+                            };
 
-                            string loadFailure = loadErrors[errorState - 1];
+                        // Check if an error is present
+                        if (loadErrors.ContainsKey(errorState))
+                        {
+                            string loadFailureDescription = loadErrors[errorState];
 
-                            Logger.Error?.PrintMsg(LogClass.Loader, loadFailure);
+                            Logger.Error?.PrintMsg(LogClass.Loader, loadFailureDescription);
 
                             bool continueGame = GtkDialog.CreateChoiceDialog("Game Load Error",
-                               loadFailure, "Continue loading anyway?\n(You may lose save data)");
+                               loadFailureDescription, "Continue loading anyway?\n(You may lose save data)");
+
                             if (!continueGame)
                             {
                                 return;

@@ -160,17 +160,17 @@ namespace Ryujinx.HLE
             Application.LoadCart(exeFsDir, romFsFile);
         }
 
-        public int LoadXci(string xciFile, int lastError = 0)
+        public ApplicationLoader.LoadErrorState LoadXci(string xciFile, ApplicationLoader.LoadErrorState lastError = 0)
         {
             return Application.LoadXci(xciFile, lastError);
         }
 
-        public int LoadNca(string ncaFile, int lastError = 0)
+        public ApplicationLoader.LoadErrorState LoadNca(string ncaFile, ApplicationLoader.LoadErrorState lastError = 0)
         {
             return Application.LoadNca(ncaFile, lastError);
         }
 
-        public int LoadNsp(string nspFile, int lastError = 0)
+        public ApplicationLoader.LoadErrorState LoadNsp(string nspFile, ApplicationLoader.LoadErrorState lastError = 0)
         {
             return Application.LoadNsp(nspFile, lastError);
         }

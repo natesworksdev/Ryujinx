@@ -66,6 +66,14 @@ namespace Ryujinx.HLE.HOS
 
         public string TitleIdText => TitleId.ToString("x16");
 
+        public enum LoadErrorState : int
+        {
+            Generic = -1,
+            Ok = 0,
+            ChangedUpdate = 1,
+            ChangedDLC = 2
+        }
+
         public ApplicationLoader(Switch device, VirtualFileSystem fileSystem, ContentManager contentManager)
         {
             _device         = device;
@@ -230,7 +238,7 @@ namespace Ryujinx.HLE.HOS
             return true;
         }
 
-        public int LoadXci(string xciFile, int lastError = 0)
+        public LoadErrorState LoadXci(string xciFile, LoadErrorState lastError = 0)
         {
             FileStream file = new FileStream(xciFile, FileMode.Open, FileAccess.Read);
             Xci        xci  = new Xci(_fileSystem.KeySet, file.AsStorage());
@@ -239,7 +247,7 @@ namespace Ryujinx.HLE.HOS
             {
                 Logger.Error?.Print(LogClass.Loader, "Unable to load XCI: Could not find XCI secure partition");
 
-                return -1;
+                return LoadErrorState.Generic;
             }
 
             PartitionFileSystem securePartition = xci.OpenPartition(XciPartitionType.Secure);
@@ -256,14 +264,14 @@ namespace Ryujinx.HLE.HOS
             {
                 Logger.Error?.Print(LogClass.Loader, $"Unable to load XCI: {e.Message}");
 
-                return -1;
+                return LoadErrorState.Generic;
             }
 
             if (mainNca == null)
             {
                 Logger.Error?.Print(LogClass.Loader, "Unable to load XCI: Could not find Main NCA");
 
-                return -1;
+                return LoadErrorState.Generic;
             }
 
             _contentManager.LoadEntries(_device);
@@ -273,7 +281,7 @@ namespace Ryujinx.HLE.HOS
             return LoadNca(mainNca, patchNca, controlNca, lastError);
         }
 
-        public int LoadNsp(string nspFile, int lastError = 0)
+        public LoadErrorState LoadNsp(string nspFile, LoadErrorState lastError = 0)
         {
             FileStream          file = new FileStream(nspFile, FileMode.Open, FileAccess.Read);
             PartitionFileSystem nsp  = new PartitionFileSystem(file.AsStorage());
@@ -290,14 +298,14 @@ namespace Ryujinx.HLE.HOS
             {
                 Logger.Error?.Print(LogClass.Loader, $"Unable to load NSP: {e.Message}");
 
-                return -1;
+                return LoadErrorState.Generic;
             }
 
             if (mainNca == null)
             {
                 Logger.Error?.Print(LogClass.Loader, "Unable to load NSP: Could not find Main NCA");
 
-                return -1;
+                return LoadErrorState.Generic;
             }
 
             if (mainNca != null)
@@ -310,10 +318,10 @@ namespace Ryujinx.HLE.HOS
 
             // This is not a normal NSP, it's actually a ExeFS as a NSP
             LoadExeFs(nsp);
-            return 0;
+            return LoadErrorState.Ok;
         }
 
-        public int LoadNca(string ncaFile, int lastError = 0)
+        public LoadErrorState LoadNca(string ncaFile, LoadErrorState lastError = 0)
         {
             FileStream file = new FileStream(ncaFile, FileMode.Open, FileAccess.Read);
             Nca        nca  = new Nca(_fileSystem.KeySet, file.AsStorage(false));
@@ -322,22 +330,22 @@ namespace Ryujinx.HLE.HOS
         }
 
         // Returns an error code.
-        private int LoadNca(Nca mainNca, Nca patchNca, Nca controlNca, int lastError = 0)
+        private LoadErrorState LoadNca(Nca mainNca, Nca patchNca, Nca controlNca, LoadErrorState lastError = 0)
         {
             if (mainNca.Header.ContentType != NcaContentType.Program)
             {
                 Logger.Error?.Print(LogClass.Loader, "Selected NCA is not a \"Program\" NCA");
 
-                return -1;
+                return LoadErrorState.Generic;
             }
 
             IStorage    dataStorage = null;
             IFileSystem codeFs      = null;
 
             if (!CheckUpdateValidity(_fileSystem, mainNca.Header.TitleId.ToString("x16"), _device.UserChannelPersistence.Index)
-                && lastError < 1)
+                && lastError < LoadErrorState.ChangedUpdate)
             {
-                return 1;
+                return LoadErrorState.ChangedUpdate;
             }
 
             (Nca updatePatchNca, Nca updateControlNca) = GetGameUpdateData(_fileSystem, mainNca.Header.TitleId.ToString("x16"), _device.UserChannelPersistence.Index, out _);
@@ -364,9 +372,9 @@ namespace Ryujinx.HLE.HOS
                 
                 foreach (DlcContainer dlcContainer in dlcContainerList)
                 {
-                    if (!File.Exists(dlcContainer.Path) && lastError < 2)
+                    if (!File.Exists(dlcContainer.Path) && lastError < LoadErrorState.ChangedDLC)
                     {
-                        return 2;
+                        return LoadErrorState.ChangedDLC;
                     }
                 }
 
@@ -412,7 +420,7 @@ namespace Ryujinx.HLE.HOS
             {
                 Logger.Error?.Print(LogClass.Loader, "No ExeFS found in NCA");
 
-                return -1;
+                return LoadErrorState.Generic;
             }
 
             Npdm metaData = ReadNpdm(codeFs);
@@ -457,7 +465,7 @@ namespace Ryujinx.HLE.HOS
             LoadExeFs(codeFs, metaData);
 
             Logger.Info?.Print(LogClass.Loader, $"Application Loaded: {TitleName} v{DisplayVersion} [{TitleIdText}] [{(TitleIs64Bit ? "64-bit" : "32-bit")}]");
-            return 0;
+            return LoadErrorState.Ok;
         }
 
         // Sets TitleId, so be sure to call before using it
