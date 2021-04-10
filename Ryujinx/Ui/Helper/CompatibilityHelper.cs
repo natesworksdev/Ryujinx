@@ -38,7 +38,7 @@ namespace Ryujinx.Ui.Helper
 
                 try 
                 { 
-                     comp = JsonSerializer.Deserialize<CompatibilityItem[]>(await client.GetStringAsync(_githubEndpointUrl + @"repos/Ryujinx/Ryujinx-Games-List/issues?per_page=100&page=" + page.ToString()));
+                     comp = JsonSerializer.Deserialize<CompatibilityItem[]>(await client.GetStringAsync($"{_githubEndpointUrl}repos/Ryujinx/Ryujinx-Games-List/issues?per_page=100&page={page}"));
                 }
                 catch
                 {

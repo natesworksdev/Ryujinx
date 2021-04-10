@@ -121,32 +121,32 @@ namespace Ryujinx.Ui
             ThemeHelper.ApplyTheme();
 
             // Sets overridden fields.
-            int monitorWidth = Display.PrimaryMonitor.Geometry.Width * Display.PrimaryMonitor.ScaleFactor;
+            int monitorWidth  = Display.PrimaryMonitor.Geometry.Width  * Display.PrimaryMonitor.ScaleFactor;
             int monitorHeight = Display.PrimaryMonitor.Geometry.Height * Display.PrimaryMonitor.ScaleFactor;
 
-            DefaultWidth = monitorWidth < 1280 ? monitorWidth : 1280;
-            DefaultHeight = monitorHeight < 760 ? monitorHeight : 760;
+            DefaultWidth  = monitorWidth  < 1280 ? monitorWidth  : 1280;
+            DefaultHeight = monitorHeight < 760  ? monitorHeight : 760;
 
-            Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.Resources.Logo_Ryujinx.png");
+            Icon  = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.Resources.Logo_Ryujinx.png");
             Title = $"Ryujinx {Program.Version}";
 
             // Hide emulation context status bar.
             _statusBar.Hide();
 
             // Instanciate HLE objects.
-            _virtualFileSystem = VirtualFileSystem.CreateInstance();
-            _contentManager = new ContentManager(_virtualFileSystem);
+            _virtualFileSystem      = VirtualFileSystem.CreateInstance();
+            _contentManager         = new ContentManager(_virtualFileSystem);
             _userChannelPersistence = new UserChannelPersistence();
 
             // Instanciate GUI objects.
             _applicationLibrary = new ApplicationLibrary(_virtualFileSystem);
-            _uiHandler = new GtkHostUiHandler(this);
-            _deviceExitStatus = new AutoResetEvent(false);
+            _uiHandler          = new GtkHostUiHandler(this);
+            _deviceExitStatus  = new AutoResetEvent(false);
 
             WindowStateEvent += WindowStateEvent_Changed;
-            DeleteEvent += Window_Close;
+            DeleteEvent      += Window_Close;
 
-            _applicationLibrary.ApplicationAdded += Application_Added;
+            _applicationLibrary.ApplicationAdded        += Application_Added;
             _applicationLibrary.ApplicationCountUpdated += ApplicationCount_Updated;
 
             _actionMenu.StateChanged += ActionMenu_StateChanged;
@@ -163,29 +163,29 @@ namespace Ryujinx.Ui
 
             _actionMenu.Sensitive = false;
 
-            if (ConfigurationState.Instance.Ui.GuiColumns.FavColumn) _favToggle.Active = true;
-            if (ConfigurationState.Instance.Ui.GuiColumns.IconColumn) _iconToggle.Active = true;
-            if (ConfigurationState.Instance.Ui.GuiColumns.AppColumn) _appToggle.Active = true;
-            if (ConfigurationState.Instance.Ui.GuiColumns.DevColumn) _developerToggle.Active = true;
-            if (ConfigurationState.Instance.Ui.GuiColumns.VersionColumn) _versionToggle.Active = true;
-            if (ConfigurationState.Instance.Ui.GuiColumns.TimePlayedColumn) _timePlayedToggle.Active = true;
-            if (ConfigurationState.Instance.Ui.GuiColumns.LastPlayedColumn) _lastPlayedToggle.Active = true;
-            if (ConfigurationState.Instance.Ui.GuiColumns.FileExtColumn) _fileExtToggle.Active = true;
-            if (ConfigurationState.Instance.Ui.GuiColumns.FileSizeColumn) _fileSizeToggle.Active = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.FavColumn)                             _favToggle.Active = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.IconColumn)                           _iconToggle.Active = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.AppColumn)                             _appToggle.Active = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.DevColumn)                       _developerToggle.Active = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.VersionColumn)                     _versionToggle.Active = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.TimePlayedColumn)               _timePlayedToggle.Active = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.LastPlayedColumn)               _lastPlayedToggle.Active = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.FileExtColumn)                     _fileExtToggle.Active = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.FileSizeColumn)                   _fileSizeToggle.Active = true;
             if (ConfigurationState.Instance.Ui.GuiColumns.GameCompatibilityColumn) _gameCompatibilityToggle.Active = true;
-            if (ConfigurationState.Instance.Ui.GuiColumns.PathColumn) _pathToggle.Active = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.PathColumn)                           _pathToggle.Active = true;
 
-            _favToggle.Toggled += Fav_Toggled;
-            _iconToggle.Toggled += Icon_Toggled;
-            _appToggle.Toggled += App_Toggled;
-            _developerToggle.Toggled += Developer_Toggled;
-            _versionToggle.Toggled += Version_Toggled;
-            _timePlayedToggle.Toggled += TimePlayed_Toggled;
-            _lastPlayedToggle.Toggled += LastPlayed_Toggled;
-            _fileExtToggle.Toggled += FileExt_Toggled;
-            _fileSizeToggle.Toggled += FileSize_Toggled;
+            _favToggle.Toggled               += Fav_Toggled;
+            _iconToggle.Toggled              += Icon_Toggled;
+            _appToggle.Toggled               += App_Toggled;
+            _developerToggle.Toggled         += Developer_Toggled;
+            _versionToggle.Toggled           += Version_Toggled;
+            _timePlayedToggle.Toggled        += TimePlayed_Toggled;
+            _lastPlayedToggle.Toggled        += LastPlayed_Toggled;
+            _fileExtToggle.Toggled           += FileExt_Toggled;
+            _fileSizeToggle.Toggled          += FileSize_Toggled;
             _gameCompatibilityToggle.Toggled += GameCompatibility_Toggled;
-            _pathToggle.Toggled += Path_Toggled;
+            _pathToggle.Toggled              += Path_Toggled;
 
             _gameTable.Model = _tableStore = new ListStore(
                 typeof(bool),
@@ -911,7 +911,7 @@ namespace Ryujinx.Ui
         {
             _gameTableSelection.GetSelected(out TreeIter treeIter);
 
-            string path = (string)_tableStore.GetValue(treeIter, 9);
+            string path = (string)_tableStore.GetValue(treeIter, 10);
 
             LoadApplication(path);
         }
