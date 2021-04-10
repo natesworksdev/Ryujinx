@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Common.Logging;
 using System;
+using System.IO;
 using System.Threading;
 using static SDL2.SDL;
 
@@ -76,6 +77,13 @@ namespace Ryujinx.Input.SDL2
                 SDL_EventState(SDL_EventType.SDL_JOYBUTTONUP, SDL_DISABLE);
 
                 SDL_EventState(SDL_EventType.SDL_CONTROLLERSENSORUPDATE, SDL_DISABLE);
+
+                string gamepadDbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SDL_GameControllerDB.txt");
+
+                if (File.Exists(gamepadDbPath))
+                {
+                    SDL_GameControllerAddMappingsFromFile(gamepadDbPath);
+                }
 
                 _worker = new Thread(EventWorker);
                 _isRunning = true;
