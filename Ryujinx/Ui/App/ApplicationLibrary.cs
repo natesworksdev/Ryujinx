@@ -16,6 +16,7 @@ using Ryujinx.Ui.Widgets;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
@@ -424,18 +425,9 @@ namespace Ryujinx.Ui.App
 
                 if (compatibilityLabels != null)
                 {
-                    for (int i = 0; i < compatibilityLabels.Count; i++)
-                    {
-                        if (i < compatibilityLabels.Count - 1)
-                        {
-                            compatibility += compatibilityLabels[i].name + " | ";
-                        }
-                        else
-                        {
-                            compatibility += compatibilityLabels[i].name;
-                        }
-                    }
+                    compatibility = string.Join(" | ", compatibilityLabels.Select(x => x.name));
                 }
+
                 ApplicationData data = new ApplicationData
                 {
                     Favorite            = appMetadata.Favorite,

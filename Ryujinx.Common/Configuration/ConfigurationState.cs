@@ -507,7 +507,7 @@ namespace Ryujinx.Configuration
             System.EnableFsIntegrityChecks.Value        = true;
             System.FsGlobalAccessLogMode.Value          = 0;
             System.AudioBackend.Value                   = AudioBackend.OpenAl;
-            System.ExpandRam.Value                 = false;
+            System.ExpandRam.Value                      = false;
             System.IgnoreMissingServices.Value          = false;
             Ui.GuiColumns.FavColumn.Value               = true;
             Ui.GuiColumns.IconColumn.Value              = true;
