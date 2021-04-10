@@ -48,7 +48,6 @@ namespace Ryujinx.Ui.Windows
         [GUI] Entry        _dsuServerPort;
         [GUI] ComboBoxText _inputDevice;
         [GUI] ComboBoxText _profile;
-        [GUI] ToggleButton _refreshInputDevicesButton;
         [GUI] Box          _settingsBox;
         [GUI] Box          _motionAltBox;
         [GUI] Box          _motionBox;
@@ -793,13 +792,6 @@ namespace Ryujinx.Ui.Windows
         private void Controller_Changed(object sender, EventArgs args)
         {
             SetControllerSpecificFields();
-        }
-
-        private void RefreshInputDevicesButton_Pressed(object sender, EventArgs args)
-        {
-            UpdateInputDeviceList();
-
-            _refreshInputDevicesButton.SetStateFlags(StateFlags.Normal, true);
         }
 
         private ButtonAssigner CreateButtonAssigner(bool forStick)
