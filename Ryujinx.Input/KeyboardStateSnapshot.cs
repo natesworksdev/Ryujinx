@@ -2,16 +2,28 @@
 
 namespace Ryujinx.Input
 {
+    /// <summary>
+    /// A snapshot of a <see cref="IKeyboard"/>.
+    /// </summary>
     public class KeyboardStateSnapshot
     {
-        private bool[] _keyPressed;
+        private bool[] _keysState;
 
-        public KeyboardStateSnapshot(bool[] keyPressed)
+        /// <summary>
+        /// Create a new <see cref="KeyboardStateSnapshot"/>.
+        /// </summary>
+        /// <param name="keysState">The keys state</param>
+        public KeyboardStateSnapshot(bool[] keysState)
         {
-            _keyPressed = keyPressed;
+            _keysState = keysState;
         }
 
+        /// <summary>
+        /// Check if a given key is pressed.
+        /// </summary>
+        /// <param name="key">The key</param>
+        /// <returns>True if the given key is pressed</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsPressed(Key key) => _keyPressed[(int)key];
+        public bool IsPressed(Key key) => _keysState[(int)key];
     }
 }

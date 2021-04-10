@@ -812,7 +812,7 @@ namespace Ryujinx.Ui.Windows
             }
             else if (_inputDevice.ActiveId.StartsWith("controller"))
             {
-                assigner = new JoystickButtonAssigner(_selectedGamepad, (float)_controllerTriggerThreshold.Value, forStick);
+                assigner = new GamepadButtonAssigner(_selectedGamepad, (float)_controllerTriggerThreshold.Value, forStick);
             }
             else
             {
@@ -844,7 +844,7 @@ namespace Ryujinx.Ui.Windows
 
             Thread inputThread = new Thread(() =>
             {
-                assigner.Init();
+                assigner.Initialize();
 
                 while (true)
                 {

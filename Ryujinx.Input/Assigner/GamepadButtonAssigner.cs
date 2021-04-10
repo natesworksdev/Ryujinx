@@ -4,7 +4,10 @@ using System.IO;
 
 namespace Ryujinx.Input.Assigner
 {
-    public class JoystickButtonAssigner : ButtonAssigner
+    /// <summary>
+    /// <see cref="ButtonAssigner"/> implementation for regular <see cref="IGamepad"/>.
+    /// </summary>
+    public class GamepadButtonAssigner : ButtonAssigner
     {
         private IGamepad _gamepad;
 
@@ -16,7 +19,7 @@ namespace Ryujinx.Input.Assigner
 
         private bool _forStick;
 
-        public JoystickButtonAssigner(IGamepad gamepad, float triggerThreshold, bool forStick)
+        public GamepadButtonAssigner(IGamepad gamepad, float triggerThreshold, bool forStick)
         {
             _gamepad = gamepad;
             _detector = new JoystickButtonDetector();
@@ -25,7 +28,7 @@ namespace Ryujinx.Input.Assigner
             _gamepad?.SetTriggerThreshold(triggerThreshold);
         }
 
-        public void Init()
+        public void Initialize()
         {
             if (_gamepad != null)
             {
@@ -59,7 +62,7 @@ namespace Ryujinx.Input.Assigner
 
         public string GetPressedButton()
         {
-            List<GamepadInputId> pressedButtons = _detector.GetPressedButtons();
+            List<GamepadButtonInputId> pressedButtons = _detector.GetPressedButtons();
 
             if (pressedButtons.Count > 0)
             {
@@ -103,13 +106,13 @@ namespace Ryujinx.Input.Assigner
                         continue;
                     }
 
-                    _detector.AddInput((GamepadInputId)inputId, value);
+                    _detector.AddInput((GamepadButtonInputId)inputId, value);
                 }
 
             }
             else
             {
-                for (GamepadInputId inputId = GamepadInputId.A; inputId < GamepadInputId.Count; inputId++)
+                for (GamepadButtonInputId inputId = GamepadButtonInputId.A; inputId < GamepadButtonInputId.Count; inputId++)
                 {
                     if (_currState.IsPressed(inputId) && !_prevState.IsPressed(inputId))
                     {
@@ -126,11 +129,11 @@ namespace Ryujinx.Input.Assigner
 
         private class JoystickButtonDetector
         {
-            private Dictionary<GamepadInputId, InputSummary> _stats;
+            private Dictionary<GamepadButtonInputId, InputSummary> _stats;
 
             public JoystickButtonDetector()
             {
-                _stats = new Dictionary<GamepadInputId, InputSummary>();
+                _stats = new Dictionary<GamepadButtonInputId, InputSummary>();
             }
 
             public bool HasAnyButtonPressed()
@@ -146,9 +149,9 @@ namespace Ryujinx.Input.Assigner
                 return false;
             }
 
-            public List<GamepadInputId> GetPressedButtons()
+            public List<GamepadButtonInputId> GetPressedButtons()
             {
-                List<GamepadInputId> pressedButtons = new List<GamepadInputId>();
+                List<GamepadButtonInputId> pressedButtons = new List<GamepadButtonInputId>();
 
                 foreach (var kvp in _stats)
                 {
@@ -162,7 +165,7 @@ namespace Ryujinx.Input.Assigner
                 return pressedButtons;
             }
 
-            public void AddInput(GamepadInputId button, float value)
+            public void AddInput(GamepadButtonInputId button, float value)
             {
                 InputSummary inputSummary;
 

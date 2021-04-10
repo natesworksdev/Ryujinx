@@ -16,33 +16,33 @@ namespace Ryujinx.Input.HLE
     {
         private class HLEButtonMappingEntry
         {
-            public GamepadInputId DriverInputId;
+            public GamepadButtonInputId DriverInputId;
             public ControllerKeys HLEInput;
         }
 
         private static readonly HLEButtonMappingEntry[] _hleButtonMapping = new HLEButtonMappingEntry[]
         {
-            new HLEButtonMappingEntry { DriverInputId = GamepadInputId.A, HLEInput = ControllerKeys.A },
-            new HLEButtonMappingEntry { DriverInputId = GamepadInputId.B, HLEInput = ControllerKeys.B },
-            new HLEButtonMappingEntry { DriverInputId = GamepadInputId.X, HLEInput = ControllerKeys.X },
-            new HLEButtonMappingEntry { DriverInputId = GamepadInputId.Y, HLEInput = ControllerKeys.Y },
-            new HLEButtonMappingEntry { DriverInputId = GamepadInputId.LeftStick, HLEInput = ControllerKeys.LStick },
-            new HLEButtonMappingEntry { DriverInputId = GamepadInputId.RightStick, HLEInput = ControllerKeys.RStick },
-            new HLEButtonMappingEntry { DriverInputId = GamepadInputId.LeftShoulder, HLEInput = ControllerKeys.L },
-            new HLEButtonMappingEntry { DriverInputId = GamepadInputId.RightShoulder, HLEInput = ControllerKeys.R },
-            new HLEButtonMappingEntry { DriverInputId = GamepadInputId.LeftTrigger, HLEInput = ControllerKeys.Zl },
-            new HLEButtonMappingEntry { DriverInputId = GamepadInputId.RightTrigger, HLEInput = ControllerKeys.Zr },
-            new HLEButtonMappingEntry { DriverInputId = GamepadInputId.DpadUp, HLEInput = ControllerKeys.DpadUp },
-            new HLEButtonMappingEntry { DriverInputId = GamepadInputId.DpadDown, HLEInput = ControllerKeys.DpadDown },
-            new HLEButtonMappingEntry { DriverInputId = GamepadInputId.DpadLeft, HLEInput = ControllerKeys.DpadLeft },
-            new HLEButtonMappingEntry { DriverInputId = GamepadInputId.DpadRight, HLEInput = ControllerKeys.DpadRight },
-            new HLEButtonMappingEntry { DriverInputId = GamepadInputId.Minus, HLEInput = ControllerKeys.Minus },
-            new HLEButtonMappingEntry { DriverInputId = GamepadInputId.Plus, HLEInput = ControllerKeys.Plus },
+            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.A, HLEInput = ControllerKeys.A },
+            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.B, HLEInput = ControllerKeys.B },
+            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.X, HLEInput = ControllerKeys.X },
+            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.Y, HLEInput = ControllerKeys.Y },
+            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.LeftStick, HLEInput = ControllerKeys.LStick },
+            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.RightStick, HLEInput = ControllerKeys.RStick },
+            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.LeftShoulder, HLEInput = ControllerKeys.L },
+            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.RightShoulder, HLEInput = ControllerKeys.R },
+            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.LeftTrigger, HLEInput = ControllerKeys.Zl },
+            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.RightTrigger, HLEInput = ControllerKeys.Zr },
+            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.DpadUp, HLEInput = ControllerKeys.DpadUp },
+            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.DpadDown, HLEInput = ControllerKeys.DpadDown },
+            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.DpadLeft, HLEInput = ControllerKeys.DpadLeft },
+            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.DpadRight, HLEInput = ControllerKeys.DpadRight },
+            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.Minus, HLEInput = ControllerKeys.Minus },
+            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.Plus, HLEInput = ControllerKeys.Plus },
 
-            new HLEButtonMappingEntry { DriverInputId = GamepadInputId.SingleLeftTrigger0, HLEInput = ControllerKeys.SlLeft },
-            new HLEButtonMappingEntry { DriverInputId = GamepadInputId.SingleRightTrigger0, HLEInput = ControllerKeys.SrLeft },
-            new HLEButtonMappingEntry { DriverInputId = GamepadInputId.SingleLeftTrigger1, HLEInput = ControllerKeys.SlRight },
-            new HLEButtonMappingEntry { DriverInputId = GamepadInputId.SingleRightTrigger1, HLEInput = ControllerKeys.SrRight },
+            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.SingleLeftTrigger0, HLEInput = ControllerKeys.SlLeft },
+            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.SingleRightTrigger0, HLEInput = ControllerKeys.SrLeft },
+            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.SingleLeftTrigger1, HLEInput = ControllerKeys.SlRight },
+            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.SingleRightTrigger1, HLEInput = ControllerKeys.SrRight },
         };
 
         class HLEKeyboardMappingEntry

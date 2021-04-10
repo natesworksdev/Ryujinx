@@ -1,5 +1,8 @@
 ﻿namespace Ryujinx.Input
 {
+    /// <summary>
+    /// Represent a key from a keyboard.
+    /// </summary>
     public enum Key
     {
         Unknown,

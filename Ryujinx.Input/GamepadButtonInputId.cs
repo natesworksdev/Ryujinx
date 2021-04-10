@@ -1,6 +1,9 @@
 ﻿namespace Ryujinx.Input
 {
-    public enum GamepadInputId : byte
+    /// <summary>
+    /// Represent a button from a gamepad.
+    /// </summary>
+    public enum GamepadButtonInputId : byte
     {
         Unbound,
         A,
