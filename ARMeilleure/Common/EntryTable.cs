@@ -45,9 +45,9 @@ namespace ARMeilleure.Common
                     _freeHint = _allocated.FindFirstUnset();
                 }
 
-                if (_freeHint < _table.Length)
+                if (_freeHint >= 0 && _freeHint < _table.Length)
                 {
-                    index = checked(_freeHint++);
+                    index = _freeHint++;
 
                     _allocated.Set(index);
 
