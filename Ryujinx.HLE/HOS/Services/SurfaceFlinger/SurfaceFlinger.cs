@@ -286,7 +286,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             lock (Lock)
             {
                 // TODO: support multilayers (& multidisplay ?)
-                if (_layers.Count == 0)
+                if (RenderLayerId == 0)
                 {
                     return;
                 }
