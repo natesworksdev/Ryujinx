@@ -468,6 +468,20 @@ namespace Ryujinx.Ui.Widgets
             OpenHelper.OpenFolder(titleModsPath);
         }
 
+        private void OpenCompatibilityWebsite_Clicked(object sender, EventArgs args)
+        {
+            string url = CompatibilityHelper.GetIssueUrl(_titleIdText);
+
+            if (string.IsNullOrEmpty(url)) 
+            { 
+                GtkDialog.CreateErrorDialog("Can't find any Url for this game");
+            }
+            else 
+            { 
+                OpenHelper.OpenUrl(url);
+            }
+        }
+
         private void ExtractRomFs_Clicked(object sender, EventArgs args)
         {
             ExtractSection(NcaSectionType.Data);

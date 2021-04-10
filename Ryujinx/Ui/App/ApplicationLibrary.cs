@@ -11,6 +11,7 @@ using Ryujinx.Configuration.System;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.Loaders.Npdm;
+using Ryujinx.Ui.Helper;
 using Ryujinx.Ui.Widgets;
 using System;
 using System.Collections.Generic;
@@ -417,20 +418,39 @@ namespace Ryujinx.Ui.App
                     appMetadata.LastPlayed = "Never";
                 }
 
+                IList<CompatibilityLabel> compatibilityLabels = CompatibilityHelper.GetLabel(titleId);
+
+                string compatibility = "";
+
+                if (compatibilityLabels != null)
+                {
+                    for (int i = 0; i < compatibilityLabels.Count; i++)
+                    {
+                        if (i < compatibilityLabels.Count - 1)
+                        {
+                            compatibility += compatibilityLabels[i].name + " | ";
+                        }
+                        else
+                        {
+                            compatibility += compatibilityLabels[i].name;
+                        }
+                    }
+                }
                 ApplicationData data = new ApplicationData
                 {
-                    Favorite      = appMetadata.Favorite,
-                    Icon          = applicationIcon,
-                    TitleName     = titleName,
-                    TitleId       = titleId,
-                    Developer     = developer,
-                    Version       = version,
-                    TimePlayed    = ConvertSecondsToReadableString(appMetadata.TimePlayed),
-                    LastPlayed    = appMetadata.LastPlayed,
-                    FileExtension = Path.GetExtension(applicationPath).ToUpper().Remove(0, 1),
-                    FileSize      = (fileSize < 1) ? (fileSize * 1024).ToString("0.##") + "MB" : fileSize.ToString("0.##") + "GB",
-                    Path          = applicationPath,
-                    ControlHolder = controlHolder
+                    Favorite            = appMetadata.Favorite,
+                    Icon                = applicationIcon,
+                    TitleName           = titleName,
+                    TitleId             = titleId,
+                    Developer           = developer,
+                    Version             = version,
+                    TimePlayed          = ConvertSecondsToReadableString(appMetadata.TimePlayed),
+                    LastPlayed          = appMetadata.LastPlayed,
+                    FileExtension       = Path.GetExtension(applicationPath).ToUpper().Remove(0, 1),
+                    FileSize            = (fileSize < 1) ? (fileSize * 1024).ToString("0.##") + "MB" : fileSize.ToString("0.##") + "GB",
+                    Path                = applicationPath,
+                    ControlHolder       = controlHolder,
+                    CompatibilityLabels = compatibility
                 };
 
                 numApplicationsLoaded++;

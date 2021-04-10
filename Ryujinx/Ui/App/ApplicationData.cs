@@ -1,5 +1,7 @@
 ﻿using LibHac.Common;
 using LibHac.Ns;
+using Ryujinx.Ui.Helper;
+using System.Collections.Generic;
 
 namespace Ryujinx.Ui.App
 {
@@ -16,6 +18,7 @@ namespace Ryujinx.Ui.App
         public string FileExtension { get; set; }
         public string FileSize      { get; set; }
         public string Path          { get; set; }
+        public string CompatibilityLabels { get; set; }
         public BlitStruct<ApplicationControlProperty> ControlHolder { get; set; }
     }
 }

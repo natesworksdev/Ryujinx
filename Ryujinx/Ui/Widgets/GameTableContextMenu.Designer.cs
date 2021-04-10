@@ -10,6 +10,7 @@ namespace Ryujinx.Ui.Widgets
         private MenuItem _manageTitleUpdatesMenuItem;
         private MenuItem _manageDlcMenuItem;
         private MenuItem _openTitleModDirMenuItem;
+        private MenuItem _openIssueWebsite;
         private Menu     _extractSubMenu;
         private MenuItem _extractMenuItem;
         private MenuItem _extractRomFsMenuItem;
@@ -77,6 +78,15 @@ namespace Ryujinx.Ui.Widgets
                 TooltipText = "Open the directory which contains Application's Mods."
             };
             _openTitleModDirMenuItem.Activated += OpenTitleModDir_Clicked;
+
+            //
+            // _openTitleModDirMenuItem
+            //
+            _openIssueWebsite= new MenuItem("Open Compatibility Website Online")
+            {
+                TooltipText = "Opens the Github Issue containing the Compatibility Info in your default Webbrowser"
+            };
+            _openIssueWebsite.Activated += OpenCompatibilityWebsite_Clicked;
 
             //
             // _extractSubMenu
@@ -188,6 +198,7 @@ namespace Ryujinx.Ui.Widgets
             Add(_manageTitleUpdatesMenuItem);
             Add(_manageDlcMenuItem);
             Add(_openTitleModDirMenuItem);
+            Add(_openIssueWebsite);
             Add(new SeparatorMenuItem());
             Add(_manageCacheMenuItem);
             Add(_extractMenuItem);

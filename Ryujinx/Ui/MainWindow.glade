@@ -83,6 +83,7 @@
                     <child>
                       <object class="GtkMenuItem" id="ExitMenuItem">
                         <property name="visible">True</property>
+                        <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="tooltip_text" translatable="yes">Exit Ryujinx</property>
                         <property name="label" translatable="yes">Exit</property>
@@ -220,6 +221,15 @@
                               </object>
                             </child>
                             <child>
+                              <object class="GtkCheckMenuItem" id="_gameCompatibilityToggle">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="tooltip_text" translatable="yes">Enable or Disable Game Compatibility Column in the game list</property>
+                                <property name="label" translatable="yes">Enable Game Compatibility Column</property>
+                                <property name="use_underline">True</property>
+                              </object>
+                            </child>
+                            <child>
                               <object class="GtkCheckMenuItem" id="_pathToggle">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
@@ -342,6 +352,16 @@
                             </child>
                           </object>
                         </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkMenuItem" id="_downloadCompatibilityList">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="tooltip_text" translatable="yes">Download newest Game Compatibility List</property>
+                        <property name="label" translatable="yes">Download Game Compatibility List</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="Download_Compatibility_List_Pressed" swapped="no"/>
                       </object>
                     </child>
                   </object>
