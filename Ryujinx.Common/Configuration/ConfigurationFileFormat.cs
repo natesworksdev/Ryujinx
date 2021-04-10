@@ -174,6 +174,11 @@ namespace Ryujinx.Configuration
         public AudioBackend AudioBackend { get; set; }
 
         /// <summary>
+        /// Expands the RAM amount on the emulated system from 4GB to 6GB
+        /// </summary>
+        public bool ExpandRam { get; set; }
+
+        /// <summary>
         /// Enable or disable ignoring missing services
         /// </summary>
         public bool IgnoreMissingServices { get; set; }

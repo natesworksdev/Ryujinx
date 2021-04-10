@@ -221,6 +221,11 @@ namespace Ryujinx.Configuration
             public ReactiveObject<AudioBackend> AudioBackend { get; private set; }
 
             /// <summary>
+            /// Defines the amount of RAM available on the emulated system, and how it is distributed
+            /// </summary>
+            public ReactiveObject<bool> ExpandRam { get; private set; }
+
+            /// <summary>
             /// Enable or disable ignoring missing services
             /// </summary>
             public ReactiveObject<bool> IgnoreMissingServices { get; private set; }
@@ -236,6 +241,7 @@ namespace Ryujinx.Configuration
                 EnableFsIntegrityChecks = new ReactiveObject<bool>();
                 FsGlobalAccessLogMode   = new ReactiveObject<int>();
                 AudioBackend            = new ReactiveObject<AudioBackend>();
+                ExpandRam               = new ReactiveObject<bool>();
                 IgnoreMissingServices   = new ReactiveObject<bool>();
             }
         }
@@ -435,6 +441,7 @@ namespace Ryujinx.Configuration
                 EnableFsIntegrityChecks   = System.EnableFsIntegrityChecks,
                 FsGlobalAccessLogMode     = System.FsGlobalAccessLogMode,
                 AudioBackend              = System.AudioBackend,
+                ExpandRam                 = System.ExpandRam,
                 IgnoreMissingServices     = System.IgnoreMissingServices,
                 GuiColumns                = new GuiColumns
                 {
@@ -500,6 +507,7 @@ namespace Ryujinx.Configuration
             System.EnableFsIntegrityChecks.Value        = true;
             System.FsGlobalAccessLogMode.Value          = 0;
             System.AudioBackend.Value                   = AudioBackend.OpenAl;
+            System.ExpandRam.Value                 = false;
             System.IgnoreMissingServices.Value          = false;
             Ui.GuiColumns.FavColumn.Value               = true;
             Ui.GuiColumns.IconColumn.Value              = true;
@@ -519,6 +527,7 @@ namespace Ryujinx.Configuration
             Ui.CustomThemePath.Value                    = "";
             Ui.StartFullscreen.Value                    = false;
             Hid.EnableKeyboard.Value                    = false;
+          
             Hid.Hotkeys.Value = new KeyboardHotkeys
             {
                 ToggleVsync = Key.Tab
@@ -853,6 +862,7 @@ namespace Ryujinx.Configuration
             System.EnableFsIntegrityChecks.Value         = configurationFileFormat.EnableFsIntegrityChecks;
             System.FsGlobalAccessLogMode.Value           = configurationFileFormat.FsGlobalAccessLogMode;
             System.AudioBackend.Value                    = configurationFileFormat.AudioBackend;
+            System.ExpandRam.Value                 = configurationFileFormat.ExpandRam;
             System.IgnoreMissingServices.Value           = configurationFileFormat.IgnoreMissingServices;
             Ui.GuiColumns.FavColumn.Value                = configurationFileFormat.GuiColumns.FavColumn;
             Ui.GuiColumns.IconColumn.Value               = configurationFileFormat.GuiColumns.IconColumn;
