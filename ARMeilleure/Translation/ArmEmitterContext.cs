@@ -42,7 +42,7 @@ namespace ARMeilleure.Translation
         public IMemoryManager Memory { get; }
 
         public JumpTable JumpTable { get; }
-        public EntryTable<byte> CountTable { get; }
+        public EntryTable<uint> CountTable { get; }
 
         public ulong EntryAddress { get; }
         public bool HighCq { get; }
@@ -51,7 +51,7 @@ namespace ARMeilleure.Translation
         public ArmEmitterContext(
             IMemoryManager memory,
             JumpTable jumpTable,
-            EntryTable<byte> countTable,
+            EntryTable<uint> countTable,
             ulong entryAddress,
             bool highCq,
             Aarch32Mode mode)

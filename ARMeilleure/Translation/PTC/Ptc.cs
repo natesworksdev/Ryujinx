@@ -540,7 +540,8 @@ namespace ARMeilleure.Translation.PTC
             }
         }
 
-        internal static void LoadTranslations(ConcurrentDictionary<ulong, TranslatedFunction> funcs, IMemoryManager memory, JumpTable jumpTable, EntryTable<byte> countTable)
+        internal static void LoadTranslations(ConcurrentDictionary<ulong, TranslatedFunction> funcs, IMemoryManager memory,
+            JumpTable jumpTable, EntryTable<uint> countTable)
         {
             if (AreCarriersEmpty())
             {
@@ -569,7 +570,7 @@ namespace ARMeilleure.Translation.PTC
                     {
                         byte[] code = ReadCode(index, infoEntry.CodeLength);
 
-                        Counter callCounter = null;
+                        Counter<uint> callCounter = null;
 
                         if (infoEntry.RelocEntriesCount != 0)
                         {
@@ -679,7 +680,8 @@ namespace ARMeilleure.Translation.PTC
             return relocEntries;
         }
 
-        private static bool PatchCode(Span<byte> code, RelocEntry[] relocEntries, IntPtr pageTablePointer, JumpTable jumpTable, EntryTable<byte> countTable, out Counter callCounter)
+        private static bool PatchCode(Span<byte> code, RelocEntry[] relocEntries, IntPtr pageTablePointer,
+            JumpTable jumpTable, EntryTable<uint> countTable, out Counter<uint> callCounter)
         {
             callCounter = null;
 
@@ -702,7 +704,7 @@ namespace ARMeilleure.Translation.PTC
                 else if (relocEntry.Index == CountTableIndex)
                 {
                     // If we could not allocate an entry on the count table we dip.
-                    if (!Counter.TryCreate(countTable, out Counter counter))
+                    if (!Counter<uint>.TryCreate(countTable, out Counter<uint> counter))
                     {
                         return false;
                     }
@@ -745,7 +747,8 @@ namespace ARMeilleure.Translation.PTC
             return new UnwindInfo(pushEntries, prologueSize);
         }
 
-        private static TranslatedFunction FastTranslate(byte[] code, Counter callCounter, ulong guestSize, UnwindInfo unwindInfo, bool highCq)
+        private static TranslatedFunction FastTranslate(byte[] code, Counter<uint> callCounter, ulong guestSize,
+            UnwindInfo unwindInfo, bool highCq)
         {
             CompiledFunction cFunc = new CompiledFunction(code, unwindInfo);
 
@@ -794,7 +797,8 @@ namespace ARMeilleure.Translation.PTC
             }
         }
 
-        internal static void MakeAndSaveTranslations(ConcurrentDictionary<ulong, TranslatedFunction> funcs, IMemoryManager memory, JumpTable jumpTable, EntryTable<byte> countTable)
+        internal static void MakeAndSaveTranslations(ConcurrentDictionary<ulong, TranslatedFunction> funcs, IMemoryManager memory,
+            JumpTable jumpTable, EntryTable<uint> countTable)
         {
             var profiledFuncsToTranslate = PtcProfiler.GetProfiledFuncsToTranslate(funcs);
 

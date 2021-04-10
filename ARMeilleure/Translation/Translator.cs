@@ -37,7 +37,7 @@ namespace ARMeilleure.Translation
 
         private JumpTable _jumpTable;
         internal JumpTable JumpTable => _jumpTable;
-        internal EntryTable<byte> CountTable { get; }
+        internal EntryTable<uint> CountTable { get; }
 
         private volatile int _threadCount;
 
@@ -59,7 +59,7 @@ namespace ARMeilleure.Translation
             _backgroundTranslatorEvent = new AutoResetEvent(false);
             _backgroundTranslatorLock = new ReaderWriterLock();
 
-            CountTable = new EntryTable<byte>(capacity: 16 * 1024 * 1024);
+            CountTable = new EntryTable<uint>(capacity: 4 * 1024 * 1024);
 
             JitCache.Initialize(allocator);
 
@@ -239,7 +239,7 @@ namespace ARMeilleure.Translation
         internal static TranslatedFunction Translate(
             IMemoryManager memory,
             JumpTable jumpTable,
-            EntryTable<byte> countTable,
+            EntryTable<uint> countTable,
             ulong address,
             ExecutionMode mode,
             bool highCq)
@@ -256,7 +256,7 @@ namespace ARMeilleure.Translation
 
             Logger.StartPass(PassName.Translation);
 
-            Counter counter = null;
+            Counter<uint> counter = null;
 
             if (!context.HighCq)
             {
@@ -415,28 +415,22 @@ namespace ARMeilleure.Translation
             return context.GetControlFlowGraph();
         }
 
-        internal static void EmitRejitCheck(ArmEmitterContext context, out Counter counter)
+        internal static void EmitRejitCheck(ArmEmitterContext context, out Counter<uint> counter)
         {
-            if (!Counter.TryCreate(context.CountTable, out counter))
+            if (!Counter<uint>.TryCreate(context.CountTable, out counter))
             {
                 return;
             }
 
-            Operand lblRejit = Label();
-            Operand lblAdd = Label();
             Operand lblEnd = Label();
 
             Operand address = Const(ref counter.Value, Ptc.CountTableIndex);
-            Operand count = context.Load8(address);
-            context.BranchIf(lblAdd, count, Const(100), Comparison.LessUI);
-            context.BranchIf(lblRejit, count, Const(100), Comparison.Equal);
-            context.Branch(lblEnd);
+            Operand curCount = context.Load(OperandType.I32, address);
+            Operand count = context.Add(curCount, Const(1));
+            context.Store(address, count);
+            context.BranchIf(lblEnd, curCount, Const(100), Comparison.NotEqual, BasicBlockFrequency.Cold);
 
-            context.MarkLabel(lblRejit, BasicBlockFrequency.Cold);
             context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.EnqueueForRejit)), Const(context.EntryAddress));
-
-            context.MarkLabel(lblAdd, BasicBlockFrequency.Cold);
-            context.Store8(address, context.Add(count, Const(1)));
 
             context.MarkLabel(lblEnd);
         }
