@@ -110,7 +110,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 }
             }
 
-            if (configuredCount < playerMin || configuredCount > playerMax || primaryIndex == PlayerIndex.Unknown)
+            if (configuredCount < playerMin  || primaryIndex == PlayerIndex.Unknown)
             {
                 Logger.Info?.Print(LogClass.Hid, $"min{playerMin} count {configuredCount} max {playerMax} index unknown {primaryIndex == PlayerIndex.Unknown}");
                 return false;
