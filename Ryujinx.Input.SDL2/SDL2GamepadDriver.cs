@@ -22,10 +22,15 @@ namespace Ryujinx.Input.SDL2
             _gamepadsInstanceIdsMapping = new Dictionary<int, string>();
             _gamepadsIds = new List<string>();
 
+            SDL2Driver.Instance.Initialize();
             SDL2Driver.Instance.OnJoyStickConnected += HandleJoyStickConnected;
             SDL2Driver.Instance.OnJoystickDisconnected += HandleJoyStickDisconnected;
 
-            SDL2Driver.Instance.Init();
+            // Add already connected gamepads
+            for (int joystickIndex = 0; joystickIndex < SDL_NumJoysticks(); joystickIndex++)
+            {
+                HandleJoyStickConnected(joystickIndex, SDL_JoystickGetDeviceInstanceID(joystickIndex));
+            }
         }
 
         private string GenerateGamepadId(int joystickIndex)
@@ -97,6 +102,8 @@ namespace Ryujinx.Input.SDL2
                 }
 
                 _gamepadsIds.Clear();
+
+                SDL2Driver.Instance.Dispose();
             }
         }
 

@@ -228,7 +228,6 @@ namespace Ryujinx.Ui
 
             Task.Run(RefreshFirmwareLabel);
 
-            // FIXME: test on linux and check if pthread double init issue happen on Linux still with GTK3.......
             InputManager = new InputManager(new GTK3KeyboardDriver(this), new SDL2GamepadDriver());
         }
 

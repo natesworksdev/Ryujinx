@@ -5,7 +5,6 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Common.System;
 using Ryujinx.Common.SystemInfo;
 using Ryujinx.Configuration;
-using Ryujinx.Input.SDL2;
 using Ryujinx.Modules;
 using Ryujinx.Ui;
 using Ryujinx.Ui.Widgets;
@@ -169,9 +168,6 @@ namespace Ryujinx
             }
 
             Application.Run();
-
-            // TODO: Move this to a better place
-            SDL2Driver.Instance.Dispose();
         }
 
         private static void PrintSystemInfo()
