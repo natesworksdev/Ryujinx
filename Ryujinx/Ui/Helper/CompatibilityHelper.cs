@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace Ryujinx.Ui.Helper
 {
@@ -76,7 +77,19 @@ namespace Ryujinx.Ui.Helper
             {
                 if (item.title.Contains(id))
                 {
-                        return item.labels;
+                    List<CompatibilityLabel> labels = new List<CompatibilityLabel>();
+
+                    foreach(CompatibilityLabel label in item.labels.OfType<CompatibilityLabel>().ToList())
+                    {
+                        string name = convertLabel(label.name);
+                        if(!string.IsNullOrEmpty(name))
+                        {
+                            label.name = name;
+                            labels.Add(label);
+                        }
+                    }
+                    
+                    return labels.ToArray();
                 }
                 
             }
@@ -103,6 +116,33 @@ namespace Ryujinx.Ui.Helper
             }
 
             return null;
+        }
+
+        private static string convertLabel(string labelName)
+        {
+            switch (labelName)
+            {
+                case "crash":
+                    return "Crash";
+                case "slow":
+                    return "Slow";
+                case "status-ingame":
+                    return "Issues";
+                case "status-nothing":
+                    return "Nothing";
+                case "status-playable":
+                    return "Playable";
+                case "ldn-works":
+                    return "LDN works";
+                case "ldn-partial":
+                    return "LDN partially works";
+                case "gpu":
+                    return "Graphic Problems";
+                case "deadlock":
+                    return "Freeze";
+                default:
+                    return null;
+            }
         }
     }
 
