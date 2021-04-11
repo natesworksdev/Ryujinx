@@ -23,6 +23,8 @@ namespace ARMeilleure.Translation
     public class Translator
     {
         private long _nextUpdate;
+        private long _requestAdded;
+        private long _requestRemoved;
 
         private readonly IJitMemoryAllocator _allocator;
         private readonly IMemoryManager _memory;
@@ -75,6 +77,8 @@ namespace ARMeilleure.Translation
                 if (_backgroundStack.TryPop(out RejitRequest request) && 
                     _backgroundSet.TryRemove(request.Address, out _))
                 {
+                    Interlocked.Increment(ref _requestRemoved);
+
                     TranslatedFunction func = Translate(
                         _memory,
                         _jumpTable,
@@ -110,8 +114,10 @@ namespace ARMeilleure.Translation
                         {
                             Ryujinx.Common.Logging.Logger.Info?.Print(
                                 Ryujinx.Common.Logging.LogClass.Cpu,
-                                $"{_backgroundStack.Count} rejit requests remaining");
+                                $"{_backgroundStack.Count} rejit requests remaining (+{_requestAdded}:-{_requestRemoved}).");
 
+                            _requestAdded = 0;
+                            _requestRemoved = 0;
                             _nextUpdate = now + Stopwatch.Frequency * 30;
                         }
                     }
@@ -417,6 +423,8 @@ namespace ARMeilleure.Translation
 
         internal static void EmitRejitCheck(ArmEmitterContext context, out Counter<uint> counter)
         {
+            const int MinsCallForRejit = 100;
+
             if (!Counter<uint>.TryCreate(context.CountTable, out counter))
             {
                 return;
@@ -428,7 +436,7 @@ namespace ARMeilleure.Translation
             Operand curCount = context.Load(OperandType.I32, address);
             Operand count = context.Add(curCount, Const(1));
             context.Store(address, count);
-            context.BranchIf(lblEnd, curCount, Const(100), Comparison.NotEqual, BasicBlockFrequency.Cold);
+            context.BranchIf(lblEnd, curCount, Const(MinsCallForRejit), Comparison.NotEqual, BasicBlockFrequency.Cold);
 
             context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.EnqueueForRejit)), Const(context.EntryAddress));
 
@@ -470,6 +478,7 @@ namespace ARMeilleure.Translation
         {
             if (_backgroundSet.TryAdd(guestAddress, null))
             {
+                Interlocked.Increment(ref _requestAdded);
                 _backgroundStack.Push(new RejitRequest(guestAddress, mode));
                 _backgroundTranslatorEvent.Set();
             }
@@ -501,6 +510,8 @@ namespace ARMeilleure.Translation
         private void ClearRejitQueue(bool allowRequeue)
         {
             _backgroundTranslatorLock.AcquireWriterLock(Timeout.Infinite);
+
+            Interlocked.Add(ref _requestRemoved, _backgroundStack.Count);
 
             if (allowRequeue)
             {
