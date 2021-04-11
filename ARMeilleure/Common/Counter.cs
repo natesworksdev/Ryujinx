@@ -6,8 +6,9 @@ namespace ARMeilleure.Common
     /// Represents a numeric counter.
     /// </summary>
     /// <typeparam name="T">Type of the counter</typeparam>
-    class Counter<T> where T : unmanaged
+    class Counter<T> : IDisposable where T : unmanaged
     {
+        private bool _disposed;
         private readonly int _index;
         private readonly EntryTable<T> _countTable;
 
@@ -26,7 +27,18 @@ namespace ARMeilleure.Common
         /// <summary>
         /// Gets a reference to the value of the counter.
         /// </summary>
-        public ref T Value => ref _countTable.GetValue(_index);
+        public ref T Value 
+        {
+            get
+            {
+                if (_disposed)
+                {
+                    throw new ObjectDisposedException(null);
+                }
+
+                return ref _countTable.GetValue(_index); 
+            }
+        }
 
         /// <summary>
         /// Tries to create a <see cref="Counter"/> instance from the specified <see cref="EntryTable{byte}"/> instance.
@@ -63,6 +75,19 @@ namespace ARMeilleure.Common
             counter = null;
 
             return false;
+        }
+
+        /// <summary>
+        /// Releases all resources used by the <see cref="Counter{T}"/> instance.
+        /// </summary>
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                _countTable.Free(_index);
+
+                _disposed = true;
+            }
         }
     }
 }
