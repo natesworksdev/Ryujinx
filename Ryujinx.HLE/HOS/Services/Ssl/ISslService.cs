@@ -29,7 +29,8 @@ namespace Ryujinx.HLE.HOS.Services.Ssl
         // SetInterfaceVersion(u32)
         public ResultCode SetInterfaceVersion(ServiceCtx context)
         {
-            InterfaceVersion interfaceVersion = (InterfaceVersion)context.RequestData.ReadUInt32();
+            // 1 = 3.0.0+, 2 = 5.0.0+, 3 = 6.0.0+
+            uint interfaceVersion = context.RequestData.ReadUInt32();
 
             Logger.Stub?.PrintStub(LogClass.ServiceSsl, new { interfaceVersion });
 
