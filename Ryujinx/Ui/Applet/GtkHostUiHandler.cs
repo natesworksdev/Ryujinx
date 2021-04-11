@@ -11,10 +11,14 @@ namespace Ryujinx.Ui.Applet
     internal class GtkHostUiHandler : IHostUiHandler
     {
         private readonly Window _parent;
+        private readonly Gdk.Key _dynamicTextAcceptKey;
+        private readonly Gdk.Key _dynamicTextCancelKey;
 
-        public GtkHostUiHandler(Window parent)
+        public GtkHostUiHandler(Window parent, Gdk.Key dynamicTextAcceptKey, Gdk.Key dynamicTextCancelKey)
         {
             _parent = parent;
+            _dynamicTextAcceptKey = dynamicTextAcceptKey;
+            _dynamicTextCancelKey = dynamicTextCancelKey;
         }
 
         public bool DisplayMessageDialog(ControllerAppletUiArgs args)
@@ -189,7 +193,7 @@ namespace Ryujinx.Ui.Applet
 
         public IDynamicTextInputHandler CreateDynamicTextInputHandler()
         {
-            return new GtkDynamicTextInputHandler(_parent);
+            return new GtkDynamicTextInputHandler(_parent, _dynamicTextAcceptKey, _dynamicTextCancelKey);
         }
     }
 }

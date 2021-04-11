@@ -139,7 +139,7 @@ namespace Ryujinx.Ui
 
             // Instanciate GUI objects.
             _applicationLibrary = new ApplicationLibrary(_virtualFileSystem);
-            _uiHandler          = new GtkHostUiHandler(this);
+            _uiHandler          = new GtkHostUiHandler(this, Gdk.Key.Return, Gdk.Key.Page_Up); // TODO(Caian): Create UI configuration for these keys.
             _deviceExitStatus   = new AutoResetEvent(false);
 
             WindowStateEvent += WindowStateEvent_Changed;

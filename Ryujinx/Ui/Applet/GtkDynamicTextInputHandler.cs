@@ -9,24 +9,29 @@ namespace Ryujinx.Ui.Applet
         private readonly Window _parent;
         private readonly RawInputToTextEntry _inputToTextEntry = new RawInputToTextEntry();
 
+        private readonly Gdk.Key _acceptKey;
+        private readonly Gdk.Key _cancelKey;
+
         public event DynamicTextChangedEvent TextChanged;
 
-        public GtkDynamicTextInputHandler(Window parent)
+        public GtkDynamicTextInputHandler(Window parent, Gdk.Key acceptKey, Gdk.Key cancelKey)
         {
             _parent = parent;
             _parent.KeyPressEvent += HandleKeyPressEvent;
             _parent.KeyReleaseEvent += HandleKeyReleaseEvent;
+            _acceptKey = acceptKey;
+            _cancelKey = cancelKey;
         }
 
         [GLib.ConnectBefore()]
         private void HandleKeyPressEvent(object o, KeyPressEventArgs args)
         {
-            if (args.Event.Key == Gdk.Key.Return)
+            if (args.Event.Key == _acceptKey)
             {
                 InvokeTextChanged(true, false);
                 _inputToTextEntry.Text = "";
             }
-            else if (args.Event.Key == Gdk.Key.Page_Up) // TODO other key?
+            else if (args.Event.Key == _cancelKey)
             {
                 InvokeTextChanged(false, true);
                 _inputToTextEntry.Text = "";
