@@ -12,7 +12,7 @@ namespace Ryujinx.Ui.Helper
 {
     public static class CompatibilityHelper
     {
-        private const string _githubEndpointUrl = "https://api.github.com/";
+        private const string _apiUrl = "https://ryujinx-compatibility-api.herokuapp.com/";
         private static List<CompatibilityItem> _compatibilityItems = new List<CompatibilityItem>();
         private static bool _loaded = false;
 
@@ -23,40 +23,24 @@ namespace Ryujinx.Ui.Helper
                 string json = await File.ReadAllTextAsync(Path.Combine(AppDataManager.BaseDirPath, "compatibility_cache.json"));
                 _compatibilityItems = JsonSerializer.Deserialize<List<CompatibilityItem>>(json);
             }
-
             _loaded = true;
         }
 
         public async static Task<bool> DownloadCompatibilityList()
         {
-            int page = 0;
             HttpClient client = new HttpClient();
-            client.DefaultRequestHeaders.Add("User-Agent", "ryujinx-game-list");
 
-            while (true)
+            try
             {
-                CompatibilityItem[] comp;
-
-                try 
-                { 
-                     comp = JsonSerializer.Deserialize<CompatibilityItem[]>(await client.GetStringAsync($"{_githubEndpointUrl}repos/Ryujinx/Ryujinx-Games-List/issues?per_page=100&page={page}"));
-                }
-                catch
-                {
-                    return false; //403, Rate limit succeeded
-                }
-
-                if (comp.Length != 0)
-                {
-                    page++;
-                    _compatibilityItems.AddRange(comp);
-                }
-                else
-                {
-                    saveCompatibility();
-                    return true; //Everything Succeeded
-                }
+                _compatibilityItems = JsonSerializer.Deserialize<List<CompatibilityItem>>(await client.GetStringAsync(_apiUrl));
             }
+            catch
+            {
+                return false; //API Offline
+            }
+
+            saveCompatibility();
+            return true; //Everything Succeeded
         }
 
         private static void saveCompatibility() 
@@ -148,7 +132,7 @@ namespace Ryujinx.Ui.Helper
 
     public class CompatibilityItem
     {
-        public string html_url { get; set; }
+        public string url { get; set; }
         public string title { get; set; }
         public IList<CompatibilityLabel> labels { get; set; }
     }

@@ -1212,7 +1212,7 @@ namespace Ryujinx.Ui
             }
             else
             {
-                GtkDialog.CreateErrorDialog( "You exceeded the rate limit, try using an vpn or wait an hour");
+                GtkDialog.CreateErrorDialog( "Can't reach the API");
             }
         }
 
