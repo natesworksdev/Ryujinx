@@ -10,11 +10,21 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
     {
         public static void RunPass(BasicBlock[] blocks, ShaderConfig config)
         {
+            RunOptimizationPasses(blocks);
+
             for (int blkIndex = 0; blkIndex < blocks.Length; blkIndex++)
             {
                 GlobalToStorage.RunPass(blocks[blkIndex], config);
+                BindlessToIndexed.RunPass(blocks[blkIndex]);
+                BindlessElimination.RunPass(blocks[blkIndex], config);
             }
 
+            // Run optimizations one last time to remove any code that is now optimizable after above passes.
+            RunOptimizationPasses(blocks);
+        }
+
+        private static void RunOptimizationPasses(BasicBlock[] blocks)
+        {
             bool modified;
 
             do
@@ -62,7 +72,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                                 modified = true;
                             }
                             else if ((operation.Inst == Instruction.PackHalf2x16 && PropagatePack(operation)) ||
-                                     (operation.Inst == Instruction.ShuffleXor   && MatchDdxOrDdy(operation)))
+                                        (operation.Inst == Instruction.ShuffleXor   && MatchDdxOrDdy(operation)))
                             {
                                 if (DestHasNoUses(operation))
                                 {
@@ -85,27 +95,6 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                 }
             }
             while (modified);
-
-            for (int blkIndex = 0; blkIndex < blocks.Length; blkIndex++)
-            {
-                BindlessToIndexed.RunPass(blocks[blkIndex]);
-                BindlessElimination.RunPass(blocks[blkIndex], config);
-
-                // Try to eliminate any operations that are now unused.
-                LinkedListNode<INode> node = blocks[blkIndex].Operations.First;
-
-                while (node != null)
-                {
-                    LinkedListNode<INode> nextNode = node.Next;
-
-                    if (IsUnused(node.Value))
-                    {
-                        RemoveNode(blocks[blkIndex], node);
-                    }
-
-                    node = nextNode;
-                }
-            }
         }
 
         private static void PropagateCopy(Operation copyOp)
