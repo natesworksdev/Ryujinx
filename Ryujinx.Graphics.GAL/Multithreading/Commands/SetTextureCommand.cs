@@ -7,9 +7,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands
     {
         public CommandType CommandType => CommandType.SetTexture;
         private int _binding;
-        private TableRef<ThreadedTexture> _texture;
+        private TableRef<ITexture> _texture;
 
-        public void Set(int binding, TableRef<ThreadedTexture> texture)
+        public void Set(int binding, TableRef<ITexture> texture)
         {
             _binding = binding;
             _texture = texture;
@@ -17,7 +17,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands
 
         public void Run(ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.Pipeline.SetTexture(_binding, _texture.Get(threaded)?.Base);
+            renderer.Pipeline.SetTexture(_binding, ((ThreadedTexture)_texture.Get(threaded))?.Base);
         }
     }
 }

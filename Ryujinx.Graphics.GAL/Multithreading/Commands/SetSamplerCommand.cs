@@ -7,9 +7,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands
     {
         public CommandType CommandType => CommandType.SetSampler;
         private int _index;
-        private TableRef<ThreadedSampler> _sampler;
+        private TableRef<ISampler> _sampler;
 
-        public void Set(int index, TableRef<ThreadedSampler> sampler)
+        public void Set(int index, TableRef<ISampler> sampler)
         {
             _index = index;
             _sampler = sampler;
@@ -17,7 +17,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands
 
         public void Run(ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.Pipeline.SetSampler(_index, _sampler.Get(threaded)?.Base);
+            renderer.Pipeline.SetSampler(_index, ((ThreadedSampler)_sampler.Get(threaded))?.Base);
         }
     }
 }
