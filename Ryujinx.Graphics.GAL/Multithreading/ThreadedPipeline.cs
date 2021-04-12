@@ -139,7 +139,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
         public void SetImage(int binding, ITexture texture, Format imageFormat)
         {
-            _renderer.New<SetImageCommand>().Set(binding, Ref((ThreadedTexture)texture), imageFormat);
+            _renderer.New<SetImageCommand>().Set(binding, Ref(texture), imageFormat);
             _renderer.QueueCommand();
         }
 
@@ -175,7 +175,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
         public void SetProgram(IProgram program)
         {
-            _renderer.New<SetProgramCommand>().Set(Ref((ThreadedProgram)program));
+            _renderer.New<SetProgramCommand>().Set(Ref(program));
             _renderer.QueueCommand();
         }
 
@@ -193,7 +193,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
         public void SetRenderTargets(ITexture[] colors, ITexture depthStencil)
         {
-            _renderer.New<SetRenderTargetsCommand>().Set(Ref(colors.Select(color => (ThreadedTexture)color).ToArray()), Ref((ThreadedTexture)depthStencil));
+            _renderer.New<SetRenderTargetsCommand>().Set(Ref(colors.ToArray()), Ref(depthStencil));
             _renderer.QueueCommand();
         }
 
@@ -205,7 +205,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
         public void SetSampler(int binding, ISampler sampler)
         {
-            _renderer.New<SetSamplerCommand>().Set(binding, Ref((ThreadedSampler)sampler));
+            _renderer.New<SetSamplerCommand>().Set(binding, Ref(sampler));
             _renderer.QueueCommand();
         }
 
@@ -229,7 +229,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
         public void SetTexture(int binding, ITexture texture)
         {
-            _renderer.New<SetTextureCommand>().Set(binding, Ref((ThreadedTexture)texture));
+            _renderer.New<SetTextureCommand>().Set(binding, Ref(texture));
             _renderer.QueueCommand();
         }
 
