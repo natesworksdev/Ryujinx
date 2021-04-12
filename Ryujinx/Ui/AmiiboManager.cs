@@ -97,7 +97,7 @@ namespace Ryujinx.Ui
                 {
                     amiiboJsonString = await DownloadAmiiboJson();
 
-                    // Don't overwrite existing configuration. != will be faster than !.Equals since DEFAULT_JSON would be assigned by reference.
+                    // Don't overwrite existing configuration.
                     if (amiiboJsonString != null)
                     {
                         LoadAmiiboJson(amiiboJsonString);
