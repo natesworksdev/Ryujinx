@@ -109,7 +109,7 @@ namespace Ryujinx.Ui
                 }
                 else
                 {
-                    Logger.Info?.Print(LogClass.Application, "Your Amiibos are already up to date!");
+                    Logger.Info?.Print(LogClass.Application, "Amiibos are already up to date.");
 
                     return false;
                 }
@@ -209,7 +209,7 @@ namespace Ryujinx.Ui
                         await dlcJsonStream.WriteAsync(Encoding.UTF8.GetBytes(amiiboJsonString));
                     }
 
-                    Logger.Info?.Print(LogClass.Application, "Amiibo data updated successfully!");
+                    Logger.Info?.Print(LogClass.Application, "Amiibo data updated successfully.");
 
                     return amiiboJsonString;
                 }
