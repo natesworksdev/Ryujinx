@@ -12,6 +12,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
         {
             RunOptimizationPasses(blocks);
 
+            // Those passes are looking for specific patterns and only needs to run once.
             for (int blkIndex = 0; blkIndex < blocks.Length; blkIndex++)
             {
                 GlobalToStorage.RunPass(blocks[blkIndex], config);
@@ -72,7 +73,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                                 modified = true;
                             }
                             else if ((operation.Inst == Instruction.PackHalf2x16 && PropagatePack(operation)) ||
-                                        (operation.Inst == Instruction.ShuffleXor   && MatchDdxOrDdy(operation)))
+                                     (operation.Inst == Instruction.ShuffleXor   && MatchDdxOrDdy(operation)))
                             {
                                 if (DestHasNoUses(operation))
                                 {
