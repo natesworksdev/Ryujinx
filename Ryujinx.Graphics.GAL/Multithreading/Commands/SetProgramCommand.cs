@@ -6,16 +6,16 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands
     struct SetProgramCommand : IGALCommand
     {
         public CommandType CommandType => CommandType.SetProgram;
-        private TableRef<ThreadedProgram> _program;
+        private TableRef<IProgram> _program;
 
-        public void Set(TableRef<ThreadedProgram> program)
+        public void Set(TableRef<IProgram> program)
         {
             _program = program;
         }
 
         public void Run(ThreadedRenderer threaded, IRenderer renderer)
         {
-            ThreadedProgram program = _program.Get(threaded);
+            ThreadedProgram program = (ThreadedProgram)_program.Get(threaded);
 
             threaded.Programs.WaitForProgram(program);
 
