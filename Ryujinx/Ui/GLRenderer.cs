@@ -20,7 +20,6 @@ using System.Threading;
 
 using Key = Ryujinx.Input.Key;
 
-
 namespace Ryujinx.Ui
 {
     using Switch = HLE.Switch;

@@ -2,7 +2,7 @@
 
 namespace Ryujinx.Common.Configuration.Hid.Controller
 {
-    public class GenericControllerInputConfig<Button, Stick> : GenericInputConfigurationCommon<Button, Stick> where Button : unmanaged where Stick : unmanaged
+    public class GenericControllerInputConfig<Button, Stick> : GenericInputConfigurationCommon<Button> where Button : unmanaged where Stick : unmanaged
     {
         /// <summary>
         /// Left JoyCon Controller Stick Bindings

@@ -9,17 +9,19 @@ namespace Ryujinx.Input
     public enum GamepadFeaturesFlag
     {
         /// <summary>
-        /// No features are supported.
+        /// No features are supported
         /// </summary>
         None,
 
         /// <summary>
-        /// Rumble. (also named haptic)
+        /// Rumble
         /// </summary>
+        /// <remarks>Also named haptic</remarks>
         Rumble,
 
         /// <summary>
-        /// Motion. (also named sixaxis)
+        /// Motion
+        /// <remarks>Also named sixaxis</remarks>
         /// </summary>
         Motion
     }

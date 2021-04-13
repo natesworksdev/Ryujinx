@@ -536,7 +536,7 @@ namespace Ryujinx.Configuration
                         Id               = "0",
                         PlayerIndex      = PlayerIndex.Player1,
                         ControllerType   = ControllerType.JoyconPair,
-                        LeftJoycon       = new LeftJoyconCommonConfig<Key, Key>
+                        LeftJoycon       = new LeftJoyconCommonConfig<Key>
                         {
                             DpadUp       = Key.Up,
                             DpadDown     = Key.Down,
@@ -558,7 +558,7 @@ namespace Ryujinx.Configuration
                             StickButton  = Key.F,
                         },
 
-                        RightJoycon      = new RightJoyconCommonConfig<Key, Key>
+                        RightJoycon      = new RightJoyconCommonConfig<Key>
                         {
                             ButtonA      = Key.Z,
                             ButtonB      = Key.X,
@@ -754,7 +754,7 @@ namespace Ryujinx.Configuration
                             Id               = "0",
                             PlayerIndex      = PlayerIndex.Player1,
                             ControllerType   = ControllerType.JoyconPair,
-                            LeftJoycon       = new LeftJoyconCommonConfig<Key, Key>
+                            LeftJoycon       = new LeftJoyconCommonConfig<Key>
                             {
                                 DpadUp       = Key.Up,
                                 DpadDown     = Key.Down,
@@ -776,7 +776,7 @@ namespace Ryujinx.Configuration
                                 StickButton  = Key.F,
                             },
 
-                            RightJoycon      = new RightJoyconCommonConfig<Key, Key>
+                            RightJoycon      = new RightJoyconCommonConfig<Key>
                             {
                                 ButtonA      = Key.Z,
                                 ButtonB      = Key.X,

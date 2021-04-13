@@ -26,7 +26,7 @@ namespace Ryujinx.Input
         /// <param name="keyboard">The keyboard to do a snapshot of</param>
         /// <returns>A snaphost of the state of the keyboard.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static KeyboardStateSnapshot GetStateSnapshot(IKeyboard keyboard)
+        static KeyboardStateSnapshot GetStateSnapshot(IKeyboard keyboard)
         {
             bool[] keysState = new bool[(int)Key.Count];
 

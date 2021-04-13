@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.Common.Configuration.Hid.Keyboard
 {
-    public class GenericKeyboardInputConfig<Key> : GenericInputConfigurationCommon<Key, Key> where Key : unmanaged
+    public class GenericKeyboardInputConfig<Key> : GenericInputConfigurationCommon<Key> where Key : unmanaged
     {
         /// <summary>
         /// Left JoyCon Controller Stick Bindings

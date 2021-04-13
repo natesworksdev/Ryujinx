@@ -16,181 +16,193 @@ namespace Ryujinx.Input.HLE
     {
         private class HLEButtonMappingEntry
         {
-            public GamepadButtonInputId DriverInputId;
-            public ControllerKeys HLEInput;
+            public readonly GamepadButtonInputId DriverInputId;
+            public readonly ControllerKeys HLEInput;
+
+            public HLEButtonMappingEntry(GamepadButtonInputId driverInputId, ControllerKeys hleInput)
+            {
+                DriverInputId = driverInputId;
+                HLEInput = hleInput;
+            }
         }
 
         private static readonly HLEButtonMappingEntry[] _hleButtonMapping = new HLEButtonMappingEntry[]
         {
-            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.A, HLEInput = ControllerKeys.A },
-            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.B, HLEInput = ControllerKeys.B },
-            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.X, HLEInput = ControllerKeys.X },
-            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.Y, HLEInput = ControllerKeys.Y },
-            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.LeftStick, HLEInput = ControllerKeys.LStick },
-            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.RightStick, HLEInput = ControllerKeys.RStick },
-            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.LeftShoulder, HLEInput = ControllerKeys.L },
-            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.RightShoulder, HLEInput = ControllerKeys.R },
-            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.LeftTrigger, HLEInput = ControllerKeys.Zl },
-            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.RightTrigger, HLEInput = ControllerKeys.Zr },
-            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.DpadUp, HLEInput = ControllerKeys.DpadUp },
-            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.DpadDown, HLEInput = ControllerKeys.DpadDown },
-            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.DpadLeft, HLEInput = ControllerKeys.DpadLeft },
-            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.DpadRight, HLEInput = ControllerKeys.DpadRight },
-            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.Minus, HLEInput = ControllerKeys.Minus },
-            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.Plus, HLEInput = ControllerKeys.Plus },
+            new HLEButtonMappingEntry(GamepadButtonInputId.A, ControllerKeys.A),
+            new HLEButtonMappingEntry(GamepadButtonInputId.B, ControllerKeys.B),
+            new HLEButtonMappingEntry(GamepadButtonInputId.X, ControllerKeys.X),
+            new HLEButtonMappingEntry(GamepadButtonInputId.Y, ControllerKeys.Y),
+            new HLEButtonMappingEntry(GamepadButtonInputId.LeftStick, ControllerKeys.LStick),
+            new HLEButtonMappingEntry(GamepadButtonInputId.RightStick, ControllerKeys.RStick),
+            new HLEButtonMappingEntry(GamepadButtonInputId.LeftShoulder, ControllerKeys.L),
+            new HLEButtonMappingEntry(GamepadButtonInputId.RightShoulder, ControllerKeys.R),
+            new HLEButtonMappingEntry(GamepadButtonInputId.LeftTrigger, ControllerKeys.Zl),
+            new HLEButtonMappingEntry(GamepadButtonInputId.RightTrigger, ControllerKeys.Zr),
+            new HLEButtonMappingEntry(GamepadButtonInputId.DpadUp, ControllerKeys.DpadUp),
+            new HLEButtonMappingEntry(GamepadButtonInputId.DpadDown, ControllerKeys.DpadDown),
+            new HLEButtonMappingEntry(GamepadButtonInputId.DpadLeft, ControllerKeys.DpadLeft),
+            new HLEButtonMappingEntry(GamepadButtonInputId.DpadRight, ControllerKeys.DpadRight),
+            new HLEButtonMappingEntry(GamepadButtonInputId.Minus, ControllerKeys.Minus),
+            new HLEButtonMappingEntry(GamepadButtonInputId.Plus, ControllerKeys.Plus),
 
-            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.SingleLeftTrigger0, HLEInput = ControllerKeys.SlLeft },
-            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.SingleRightTrigger0, HLEInput = ControllerKeys.SrLeft },
-            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.SingleLeftTrigger1, HLEInput = ControllerKeys.SlRight },
-            new HLEButtonMappingEntry { DriverInputId = GamepadButtonInputId.SingleRightTrigger1, HLEInput = ControllerKeys.SrRight },
+            new HLEButtonMappingEntry(GamepadButtonInputId.SingleLeftTrigger0, ControllerKeys.SlLeft),
+            new HLEButtonMappingEntry(GamepadButtonInputId.SingleRightTrigger0, ControllerKeys.SrLeft),
+            new HLEButtonMappingEntry(GamepadButtonInputId.SingleLeftTrigger1, ControllerKeys.SlRight),
+            new HLEButtonMappingEntry(GamepadButtonInputId.SingleRightTrigger1, ControllerKeys.SrRight),
         };
 
-        class HLEKeyboardMappingEntry
+        private class HLEKeyboardMappingEntry
         {
-            public Key TargetKey;
-            public byte Target;
+            public readonly Key TargetKey;
+            public readonly byte Target;
+
+            public HLEKeyboardMappingEntry(Key targetKey, byte target)
+            {
+                TargetKey = targetKey;
+                Target = target;
+            }
         }
 
         private static readonly HLEKeyboardMappingEntry[] KeyMapping = new HLEKeyboardMappingEntry[]
         {
-            new HLEKeyboardMappingEntry { TargetKey = Key.A, Target = 0x4  },
-            new HLEKeyboardMappingEntry { TargetKey = Key.B, Target = 0x5  },
-            new HLEKeyboardMappingEntry { TargetKey = Key.C, Target = 0x6  },
-            new HLEKeyboardMappingEntry { TargetKey = Key.D, Target = 0x7  },
-            new HLEKeyboardMappingEntry { TargetKey = Key.E, Target = 0x8  },
-            new HLEKeyboardMappingEntry { TargetKey = Key.F, Target = 0x9  },
-            new HLEKeyboardMappingEntry { TargetKey = Key.G, Target = 0xA  },
-            new HLEKeyboardMappingEntry { TargetKey = Key.H, Target = 0xB  },
-            new HLEKeyboardMappingEntry { TargetKey = Key.I, Target = 0xC  },
-            new HLEKeyboardMappingEntry { TargetKey = Key.J, Target = 0xD  },
-            new HLEKeyboardMappingEntry { TargetKey = Key.K, Target = 0xE  },
-            new HLEKeyboardMappingEntry { TargetKey = Key.L, Target = 0xF  },
-            new HLEKeyboardMappingEntry { TargetKey = Key.M, Target = 0x10 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.N, Target = 0x11 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.O, Target = 0x12 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.P, Target = 0x13 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Q, Target = 0x14 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.R, Target = 0x15 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.S, Target = 0x16 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.T, Target = 0x17 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.U, Target = 0x18 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.V, Target = 0x19 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.W, Target = 0x1A },
-            new HLEKeyboardMappingEntry { TargetKey = Key.X, Target = 0x1B },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Y, Target = 0x1C },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Z, Target = 0x1D },
+            new HLEKeyboardMappingEntry(Key.A, 0x4),
+            new HLEKeyboardMappingEntry(Key.B, 0x5),
+            new HLEKeyboardMappingEntry(Key.C, 0x6),
+            new HLEKeyboardMappingEntry(Key.D, 0x7),
+            new HLEKeyboardMappingEntry(Key.E, 0x8),
+            new HLEKeyboardMappingEntry(Key.F, 0x9),
+            new HLEKeyboardMappingEntry(Key.G, 0xA),
+            new HLEKeyboardMappingEntry(Key.H, 0xB),
+            new HLEKeyboardMappingEntry(Key.I, 0xC),
+            new HLEKeyboardMappingEntry(Key.J, 0xD),
+            new HLEKeyboardMappingEntry(Key.K, 0xE),
+            new HLEKeyboardMappingEntry(Key.L, 0xF),
+            new HLEKeyboardMappingEntry(Key.M, 0x10),
+            new HLEKeyboardMappingEntry(Key.N, 0x11),
+            new HLEKeyboardMappingEntry(Key.O, 0x12),
+            new HLEKeyboardMappingEntry(Key.P, 0x13),
+            new HLEKeyboardMappingEntry(Key.Q, 0x14),
+            new HLEKeyboardMappingEntry(Key.R, 0x15),
+            new HLEKeyboardMappingEntry(Key.S, 0x16),
+            new HLEKeyboardMappingEntry(Key.T, 0x17),
+            new HLEKeyboardMappingEntry(Key.U, 0x18),
+            new HLEKeyboardMappingEntry(Key.V, 0x19),
+            new HLEKeyboardMappingEntry(Key.W, 0x1A),
+            new HLEKeyboardMappingEntry(Key.X, 0x1B),
+            new HLEKeyboardMappingEntry(Key.Y, 0x1C),
+            new HLEKeyboardMappingEntry(Key.Z, 0x1D),
 
-            new HLEKeyboardMappingEntry { TargetKey = Key.Number1, Target = 0x1E },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Number2, Target = 0x1F },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Number3, Target = 0x20 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Number4, Target = 0x21 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Number5, Target = 0x22 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Number6, Target = 0x23 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Number7, Target = 0x24 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Number8, Target = 0x25 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Number9, Target = 0x26 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Number0, Target = 0x27 },
+            new HLEKeyboardMappingEntry(Key.Number1, 0x1E),
+            new HLEKeyboardMappingEntry(Key.Number2, 0x1F),
+            new HLEKeyboardMappingEntry(Key.Number3, 0x20),
+            new HLEKeyboardMappingEntry(Key.Number4, 0x21),
+            new HLEKeyboardMappingEntry(Key.Number5, 0x22),
+            new HLEKeyboardMappingEntry(Key.Number6, 0x23),
+            new HLEKeyboardMappingEntry(Key.Number7, 0x24),
+            new HLEKeyboardMappingEntry(Key.Number8, 0x25),
+            new HLEKeyboardMappingEntry(Key.Number9, 0x26),
+            new HLEKeyboardMappingEntry(Key.Number0, 0x27),
 
-            new HLEKeyboardMappingEntry { TargetKey = Key.Enter,        Target = 0x28 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Escape,       Target = 0x29 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.BackSpace,    Target = 0x2A },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Tab,          Target = 0x2B },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Space,        Target = 0x2C },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Minus,        Target = 0x2D },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Plus,         Target = 0x2E },
-            new HLEKeyboardMappingEntry { TargetKey = Key.BracketLeft,  Target = 0x2F },
-            new HLEKeyboardMappingEntry { TargetKey = Key.BracketRight, Target = 0x30 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.BackSlash,    Target = 0x31 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Tilde,        Target = 0x32 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Semicolon,    Target = 0x33 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Quote,        Target = 0x34 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Grave,        Target = 0x35 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Comma,        Target = 0x36 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Period,       Target = 0x37 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Slash,        Target = 0x38 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.CapsLock,     Target = 0x39 },
+            new HLEKeyboardMappingEntry(Key.Enter,        0x28),
+            new HLEKeyboardMappingEntry(Key.Escape,       0x29),
+            new HLEKeyboardMappingEntry(Key.BackSpace,    0x2A),
+            new HLEKeyboardMappingEntry(Key.Tab,          0x2B),
+            new HLEKeyboardMappingEntry(Key.Space,        0x2C),
+            new HLEKeyboardMappingEntry(Key.Minus,        0x2D),
+            new HLEKeyboardMappingEntry(Key.Plus,         0x2E),
+            new HLEKeyboardMappingEntry(Key.BracketLeft,  0x2F),
+            new HLEKeyboardMappingEntry(Key.BracketRight, 0x30),
+            new HLEKeyboardMappingEntry(Key.BackSlash,    0x31),
+            new HLEKeyboardMappingEntry(Key.Tilde,        0x32),
+            new HLEKeyboardMappingEntry(Key.Semicolon,    0x33),
+            new HLEKeyboardMappingEntry(Key.Quote,        0x34),
+            new HLEKeyboardMappingEntry(Key.Grave,        0x35),
+            new HLEKeyboardMappingEntry(Key.Comma,        0x36),
+            new HLEKeyboardMappingEntry(Key.Period,       0x37),
+            new HLEKeyboardMappingEntry(Key.Slash,        0x38),
+            new HLEKeyboardMappingEntry(Key.CapsLock,     0x39),
 
-            new HLEKeyboardMappingEntry { TargetKey = Key.F1,  Target = 0x3a },
-            new HLEKeyboardMappingEntry { TargetKey = Key.F2,  Target = 0x3b },
-            new HLEKeyboardMappingEntry { TargetKey = Key.F3,  Target = 0x3c },
-            new HLEKeyboardMappingEntry { TargetKey = Key.F4,  Target = 0x3d },
-            new HLEKeyboardMappingEntry { TargetKey = Key.F5,  Target = 0x3e },
-            new HLEKeyboardMappingEntry { TargetKey = Key.F6,  Target = 0x3f },
-            new HLEKeyboardMappingEntry { TargetKey = Key.F7,  Target = 0x40 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.F8,  Target = 0x41 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.F9,  Target = 0x42 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.F10, Target = 0x43 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.F11, Target = 0x44 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.F12, Target = 0x45 },
+            new HLEKeyboardMappingEntry(Key.F1,  0x3a),
+            new HLEKeyboardMappingEntry(Key.F2,  0x3b),
+            new HLEKeyboardMappingEntry(Key.F3,  0x3c),
+            new HLEKeyboardMappingEntry(Key.F4,  0x3d),
+            new HLEKeyboardMappingEntry(Key.F5,  0x3e),
+            new HLEKeyboardMappingEntry(Key.F6,  0x3f),
+            new HLEKeyboardMappingEntry(Key.F7,  0x40),
+            new HLEKeyboardMappingEntry(Key.F8,  0x41),
+            new HLEKeyboardMappingEntry(Key.F9,  0x42),
+            new HLEKeyboardMappingEntry(Key.F10, 0x43),
+            new HLEKeyboardMappingEntry(Key.F11, 0x44),
+            new HLEKeyboardMappingEntry(Key.F12, 0x45),
 
-            new HLEKeyboardMappingEntry { TargetKey = Key.PrintScreen, Target = 0x46 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.ScrollLock,  Target = 0x47 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Pause,       Target = 0x48 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Insert,      Target = 0x49 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Home,        Target = 0x4A },
-            new HLEKeyboardMappingEntry { TargetKey = Key.PageUp,      Target = 0x4B },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Delete,      Target = 0x4C },
-            new HLEKeyboardMappingEntry { TargetKey = Key.End,         Target = 0x4D },
-            new HLEKeyboardMappingEntry { TargetKey = Key.PageDown,    Target = 0x4E },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Right,       Target = 0x4F },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Left,        Target = 0x50 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Down,        Target = 0x51 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Up,          Target = 0x52 },
+            new HLEKeyboardMappingEntry(Key.PrintScreen, 0x46),
+            new HLEKeyboardMappingEntry(Key.ScrollLock,  0x47),
+            new HLEKeyboardMappingEntry(Key.Pause,       0x48),
+            new HLEKeyboardMappingEntry(Key.Insert,      0x49),
+            new HLEKeyboardMappingEntry(Key.Home,        0x4A),
+            new HLEKeyboardMappingEntry(Key.PageUp,      0x4B),
+            new HLEKeyboardMappingEntry(Key.Delete,      0x4C),
+            new HLEKeyboardMappingEntry(Key.End,         0x4D),
+            new HLEKeyboardMappingEntry(Key.PageDown,    0x4E),
+            new HLEKeyboardMappingEntry(Key.Right,       0x4F),
+            new HLEKeyboardMappingEntry(Key.Left,        0x50),
+            new HLEKeyboardMappingEntry(Key.Down,        0x51),
+            new HLEKeyboardMappingEntry(Key.Up,          0x52),
 
-            new HLEKeyboardMappingEntry { TargetKey = Key.NumLock,        Target = 0x53 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.KeypadDivide,   Target = 0x54 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.KeypadMultiply, Target = 0x55 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.KeypadSubtract, Target = 0x56 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.KeypadAdd,      Target = 0x57 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.KeypadEnter,    Target = 0x58 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Keypad1,        Target = 0x59 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Keypad2,        Target = 0x5A },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Keypad3,        Target = 0x5B },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Keypad4,        Target = 0x5C },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Keypad5,        Target = 0x5D },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Keypad6,        Target = 0x5E },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Keypad7,        Target = 0x5F },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Keypad8,        Target = 0x60 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Keypad9,        Target = 0x61 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.Keypad0,        Target = 0x62 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.KeypadDecimal,  Target = 0x63 },
+            new HLEKeyboardMappingEntry(Key.NumLock,        0x53),
+            new HLEKeyboardMappingEntry(Key.KeypadDivide,   0x54),
+            new HLEKeyboardMappingEntry(Key.KeypadMultiply, 0x55),
+            new HLEKeyboardMappingEntry(Key.KeypadSubtract, 0x56),
+            new HLEKeyboardMappingEntry(Key.KeypadAdd,      0x57),
+            new HLEKeyboardMappingEntry(Key.KeypadEnter,    0x58),
+            new HLEKeyboardMappingEntry(Key.Keypad1,        0x59),
+            new HLEKeyboardMappingEntry(Key.Keypad2,        0x5A),
+            new HLEKeyboardMappingEntry(Key.Keypad3,        0x5B),
+            new HLEKeyboardMappingEntry(Key.Keypad4,        0x5C),
+            new HLEKeyboardMappingEntry(Key.Keypad5,        0x5D),
+            new HLEKeyboardMappingEntry(Key.Keypad6,        0x5E),
+            new HLEKeyboardMappingEntry(Key.Keypad7,        0x5F),
+            new HLEKeyboardMappingEntry(Key.Keypad8,        0x60),
+            new HLEKeyboardMappingEntry(Key.Keypad9,        0x61),
+            new HLEKeyboardMappingEntry(Key.Keypad0,        0x62),
+            new HLEKeyboardMappingEntry(Key.KeypadDecimal,  0x63),
 
-            new HLEKeyboardMappingEntry { TargetKey = Key.F13, Target = 0x68 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.F14, Target = 0x69 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.F15, Target = 0x6A },
-            new HLEKeyboardMappingEntry { TargetKey = Key.F16, Target = 0x6B },
-            new HLEKeyboardMappingEntry { TargetKey = Key.F17, Target = 0x6C },
-            new HLEKeyboardMappingEntry { TargetKey = Key.F18, Target = 0x6D },
-            new HLEKeyboardMappingEntry { TargetKey = Key.F19, Target = 0x6E },
-            new HLEKeyboardMappingEntry { TargetKey = Key.F20, Target = 0x6F },
-            new HLEKeyboardMappingEntry { TargetKey = Key.F21, Target = 0x70 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.F22, Target = 0x71 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.F23, Target = 0x72 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.F24, Target = 0x73 },
+            new HLEKeyboardMappingEntry(Key.F13, 0x68),
+            new HLEKeyboardMappingEntry(Key.F14, 0x69),
+            new HLEKeyboardMappingEntry(Key.F15, 0x6A),
+            new HLEKeyboardMappingEntry(Key.F16, 0x6B),
+            new HLEKeyboardMappingEntry(Key.F17, 0x6C),
+            new HLEKeyboardMappingEntry(Key.F18, 0x6D),
+            new HLEKeyboardMappingEntry(Key.F19, 0x6E),
+            new HLEKeyboardMappingEntry(Key.F20, 0x6F),
+            new HLEKeyboardMappingEntry(Key.F21, 0x70),
+            new HLEKeyboardMappingEntry(Key.F22, 0x71),
+            new HLEKeyboardMappingEntry(Key.F23, 0x72),
+            new HLEKeyboardMappingEntry(Key.F24, 0x73),
 
-            new HLEKeyboardMappingEntry { TargetKey = Key.ControlLeft,  Target = 0xE0 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.ShiftLeft,    Target = 0xE1 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.AltLeft,      Target = 0xE2 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.WinLeft,      Target = 0xE3 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.ControlRight, Target = 0xE4 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.ShiftRight,   Target = 0xE5 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.AltRight,     Target = 0xE6 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.WinRight,     Target = 0xE7 },
+            new HLEKeyboardMappingEntry(Key.ControlLeft,  0xE0),
+            new HLEKeyboardMappingEntry(Key.ShiftLeft,    0xE1),
+            new HLEKeyboardMappingEntry(Key.AltLeft,      0xE2),
+            new HLEKeyboardMappingEntry(Key.WinLeft,      0xE3),
+            new HLEKeyboardMappingEntry(Key.ControlRight, 0xE4),
+            new HLEKeyboardMappingEntry(Key.ShiftRight,   0xE5),
+            new HLEKeyboardMappingEntry(Key.AltRight,     0xE6),
+            new HLEKeyboardMappingEntry(Key.WinRight,     0xE7),
         };
 
         private static readonly HLEKeyboardMappingEntry[] KeyModifierMapping = new HLEKeyboardMappingEntry[]
         {
-            new HLEKeyboardMappingEntry { TargetKey = Key.ControlLeft,  Target = 0 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.ShiftLeft,    Target = 1 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.AltLeft,      Target = 2 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.WinLeft,      Target = 3 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.ControlRight, Target = 4 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.ShiftRight,   Target = 5 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.AltRight,     Target = 6 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.WinRight,     Target = 7 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.CapsLock,     Target = 8 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.ScrollLock,   Target = 9 },
-            new HLEKeyboardMappingEntry { TargetKey = Key.NumLock,      Target = 10 },
+            new HLEKeyboardMappingEntry(Key.ControlLeft,  0),
+            new HLEKeyboardMappingEntry(Key.ShiftLeft,    1),
+            new HLEKeyboardMappingEntry(Key.AltLeft,      2),
+            new HLEKeyboardMappingEntry(Key.WinLeft,      3),
+            new HLEKeyboardMappingEntry(Key.ControlRight, 4),
+            new HLEKeyboardMappingEntry(Key.ShiftRight,   5),
+            new HLEKeyboardMappingEntry(Key.AltRight,     6),
+            new HLEKeyboardMappingEntry(Key.WinRight,     7),
+            new HLEKeyboardMappingEntry(Key.CapsLock,     8),
+            new HLEKeyboardMappingEntry(Key.ScrollLock,   9),
+            new HLEKeyboardMappingEntry(Key.NumLock,      10),
         };
 
         private bool _isValid;
@@ -235,18 +247,18 @@ namespace Ryujinx.Input.HLE
         {
             if (config is StandardControllerInputConfig controllerConfig)
             {
-                bool needMotionInputUpdate = _config == null || (_config is StandardControllerInputConfig oldControllerConfig &&
+                bool needsMotionInputUpdate = _config == null || (_config is StandardControllerInputConfig oldControllerConfig &&
                                                                 (oldControllerConfig.Motion.EnableMotion != controllerConfig.Motion.EnableMotion) &&
                                                                 (oldControllerConfig.Motion.MotionBackend != controllerConfig.Motion.MotionBackend));
 
-                if (needMotionInputUpdate)
+                if (needsMotionInputUpdate)
                 {
                     UpdateMotionInput(controllerConfig.Motion);
                 }
             }
             else
             {
-                // non controller doesn't have motions.
+                // Non-controller doesn't have motions.
                 _motionInput = null;
             }
 

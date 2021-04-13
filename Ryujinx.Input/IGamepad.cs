@@ -50,8 +50,6 @@ namespace Ryujinx.Input
         /// </summary>
         /// <param name="inputId">The motion id</param>
         /// <returns> The values of the given motion sensors on the gamepad.</returns>
-        /// <remarks><see cref="MotionInputId.Accelerometer"/> values are in m/s^2</remarks>
-        /// <remarks><see cref="MotionInputId.Gyroscope"/> values are in degrees</remarks>
         Vector3 GetMotionData(MotionInputId inputId);
 
         /// <summary>
@@ -64,7 +62,7 @@ namespace Ryujinx.Input
         /// Set the configuration of the gamepad.
         /// </summary>
         /// <remarks>This expect config to be in the format expected by the driver</remarks>
-        /// <param name="configuration"></param>
+        /// <param name="configuration">The configuration of the gamepad</param>
         void SetConfiguration(InputConfig configuration);
 
         /// <summary>
@@ -87,14 +85,13 @@ namespace Ryujinx.Input
         /// <returns>A snaphost of the state of the gamepad.</returns>
         GamepadStateSnapshot GetStateSnapshot();
 
-
         /// <summary>
         /// Get a snaphost of the state of a gamepad.
         /// </summary>
         /// <param name="gamepad">The gamepad to do a snapshot of</param>
         /// <returns>A snaphost of the state of the gamepad.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static GamepadStateSnapshot GetStateSnapshot(IGamepad gamepad)
+        static GamepadStateSnapshot GetStateSnapshot(IGamepad gamepad)
         {
             // NOTE: Update Array size if JoystickInputId is changed.
             Array3<Array2<float>> joysticksState = default;

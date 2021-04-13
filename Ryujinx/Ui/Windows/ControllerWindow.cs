@@ -559,7 +559,7 @@ namespace Ryujinx.Ui.Windows
                     Id               = _inputDevice.ActiveId.Split("/")[1],
                     ControllerType   = Enum.Parse<ControllerType>(_controllerType.ActiveId),
                     PlayerIndex      = _playerIndex,
-                    LeftJoycon       = new LeftJoyconCommonConfig<Key, Key>
+                    LeftJoycon       = new LeftJoyconCommonConfig<Key>
                     {
                         ButtonMinus  = lButtonMinus,
                         ButtonL      = lButtonL,
@@ -579,7 +579,7 @@ namespace Ryujinx.Ui.Windows
                         StickRight   = lStickRight,
                         StickButton  = lStickButton,
                     },
-                    RightJoycon      = new RightJoyconCommonConfig<Key, Key>
+                    RightJoycon      = new RightJoyconCommonConfig<Key>
                     {
                         ButtonA      = rButtonA,
                         ButtonB      = rButtonB,
@@ -668,7 +668,7 @@ namespace Ryujinx.Ui.Windows
                     DeadzoneLeft     = (float)_controllerDeadzoneLeft.Value,
                     DeadzoneRight    = (float)_controllerDeadzoneRight.Value,
                     TriggerThreshold = (float)_controllerTriggerThreshold.Value,
-                    LeftJoycon       = new LeftJoyconCommonConfig<ConfigGamepadInputId, ConfigStickInputId>
+                    LeftJoycon       = new LeftJoyconCommonConfig<ConfigGamepadInputId>
                     {
                         ButtonMinus  = lButtonMinus,
                         ButtonL      = lButtonL,
@@ -687,7 +687,7 @@ namespace Ryujinx.Ui.Windows
                         InvertStickY = _invertLStickY.Active,
                         StickButton  = lStickButton,
                     },
-                    RightJoycon      = new RightJoyconCommonConfig<ConfigGamepadInputId, ConfigStickInputId>
+                    RightJoycon      = new RightJoyconCommonConfig<ConfigGamepadInputId>
                     {
                         ButtonA      = rButtonA,
                         ButtonB      = rButtonB,
@@ -932,7 +932,7 @@ namespace Ryujinx.Ui.Windows
                         Backend          = InputBackendType.WindowKeyboard,
                         Id               = null,
                         ControllerType   = ControllerType.JoyconPair,
-                        LeftJoycon       = new LeftJoyconCommonConfig<Key, Key>
+                        LeftJoycon       = new LeftJoyconCommonConfig<Key>
                         {
                             DpadUp       = Key.Up,
                             DpadDown     = Key.Down,
@@ -954,7 +954,7 @@ namespace Ryujinx.Ui.Windows
                             StickButton  = Key.F,
                         },
 
-                        RightJoycon      = new RightJoyconCommonConfig<Key, Key>
+                        RightJoycon      = new RightJoyconCommonConfig<Key>
                         {
                             ButtonA      = Key.Z,
                             ButtonB      = Key.X,
@@ -990,7 +990,7 @@ namespace Ryujinx.Ui.Windows
                         DeadzoneLeft     = 0.1f,
                         DeadzoneRight    = 0.1f,
                         TriggerThreshold = 0.5f,
-                        LeftJoycon = new LeftJoyconCommonConfig<ConfigGamepadInputId, ConfigStickInputId>
+                        LeftJoycon = new LeftJoyconCommonConfig<ConfigGamepadInputId>
                         {
                             DpadUp       = ConfigGamepadInputId.DpadUp,
                             DpadDown     = ConfigGamepadInputId.DpadDown,
@@ -1011,7 +1011,7 @@ namespace Ryujinx.Ui.Windows
                             InvertStickY = false,
                         },
 
-                        RightJoycon = new RightJoyconCommonConfig<ConfigGamepadInputId, ConfigStickInputId>
+                        RightJoycon = new RightJoyconCommonConfig<ConfigGamepadInputId>
                         {
                             ButtonA      = isNintendoStyle ? ConfigGamepadInputId.A : ConfigGamepadInputId.B,
                             ButtonB      = isNintendoStyle ? ConfigGamepadInputId.B : ConfigGamepadInputId.A,

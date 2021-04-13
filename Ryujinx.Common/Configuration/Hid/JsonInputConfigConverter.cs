@@ -52,15 +52,12 @@ namespace Ryujinx.Common.Configuration.Hid
         {
             InputBackendType backendType = GetInputBackendType(ref reader);
 
-            switch (backendType)
+            return backendType switch
             {
-                case InputBackendType.WindowKeyboard:
-                    return (InputConfig)JsonSerializer.Deserialize(ref reader, typeof(StandardKeyboardInputConfig), options);
-                case InputBackendType.GamepadSDL2:
-                    return (InputConfig)JsonSerializer.Deserialize(ref reader, typeof(StandardControllerInputConfig), options);
-                default:
-                    throw new JsonException($"Unknown backend type {backendType}");
-            }
+                InputBackendType.WindowKeyboard => (InputConfig)JsonSerializer.Deserialize(ref reader, typeof(StandardKeyboardInputConfig), options),
+                InputBackendType.GamepadSDL2 => (InputConfig)JsonSerializer.Deserialize(ref reader, typeof(StandardControllerInputConfig), options),
+                _ => throw new JsonException($"Unknown backend type {backendType}"),
+            };
         }
 
         public override void Write(Utf8JsonWriter writer, InputConfig value, JsonSerializerOptions options)

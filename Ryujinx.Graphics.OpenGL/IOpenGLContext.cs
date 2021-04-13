@@ -9,7 +9,7 @@ namespace Ryujinx.Graphics.OpenGL
         void MakeCurrent();
 
         // TODO: Support more APIs per platform.
-        public static bool HasContext()
+        static bool HasContext()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {

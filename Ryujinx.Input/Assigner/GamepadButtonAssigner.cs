@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace Ryujinx.Input.Assigner
 {
@@ -60,22 +61,11 @@ namespace Ryujinx.Input.Assigner
 
         public string GetPressedButton()
         {
-            List<GamepadButtonInputId> pressedButtons = _detector.GetPressedButtons();
+            IEnumerable<GamepadButtonInputId> pressedButtons = _detector.GetPressedButtons();
 
-            if (pressedButtons.Count > 0)
+            if (pressedButtons.Any())
             {
-                string result;
-
-                if (!_forStick)
-                {
-                    result = pressedButtons[0].ToString();
-                }
-                else
-                {
-                    result = ((StickInputId)pressedButtons[0]).ToString();
-                }
-
-                return result;
+                return !_forStick ? pressedButtons.First().ToString() : ((StickInputId)pressedButtons.First()).ToString();
             }
 
             return "";
@@ -135,31 +125,12 @@ namespace Ryujinx.Input.Assigner
 
             public bool HasAnyButtonPressed()
             {
-                foreach (var inputSummary in _stats.Values)
-                {
-                    if (CheckButtonPressed(inputSummary))
-                    {
-                        return true;
-                    }
-                }
-                
-                return false;
+                return _stats.Values.Any(CheckButtonPressed);
             }
 
-            public List<GamepadButtonInputId> GetPressedButtons()
+            public IEnumerable<GamepadButtonInputId> GetPressedButtons()
             {
-                List<GamepadButtonInputId> pressedButtons = new List<GamepadButtonInputId>();
-
-                foreach (var kvp in _stats)
-                {
-                    if (!CheckButtonPressed(kvp.Value))
-                    {
-                        continue;
-                    }
-                    pressedButtons.Add(kvp.Key);
-                }
-
-                return pressedButtons;
+                return _stats.Where(kvp => CheckButtonPressed(kvp.Value)).Select(kvp => kvp.Key);
             }
 
             public void AddInput(GamepadButtonInputId button, float value)
@@ -177,7 +148,7 @@ namespace Ryujinx.Input.Assigner
 
             public override string ToString()
             {
-                TextWriter writer = new StringWriter();
+                StringWriter writer = new StringWriter();
 
                 foreach (var kvp in _stats)
                 {

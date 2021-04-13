@@ -119,10 +119,9 @@ namespace Ryujinx.Input.SDL2
 
         private void EventWorker()
         {
-            // Change this... maybe
             const int WaitTimeMs = 10;
 
-            ManualResetEventSlim waitHandle = new ManualResetEventSlim(false);
+            using ManualResetEventSlim waitHandle = new ManualResetEventSlim(false);
 
             while (_isRunning)
             {
@@ -133,34 +132,33 @@ namespace Ryujinx.Input.SDL2
 
                 waitHandle.Wait(WaitTimeMs);
             }
-
-            waitHandle.Dispose();
         }
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing)
+            if (!disposing)
             {
-                lock (_lock)
+                return;
+            }
+
+            lock (_lock)
+            {
+                if (_isRunning)
                 {
-                    if (_isRunning)
+                    _refereceCount--;
+
+                    if (_refereceCount == 0)
                     {
-                        _refereceCount--;
+                        _isRunning = false;
 
-                        if (_refereceCount == 0)
-                        {
-                            _isRunning = false;
+                        _worker?.Join();
 
-                            _worker?.Join();
+                        SDL_Quit();
 
-                            SDL_Quit();
-
-                            OnJoyStickConnected = null;
-                            OnJoystickDisconnected = null;
-                        }
+                        OnJoyStickConnected = null;
+                        OnJoystickDisconnected = null;
                     }
                 }
-
             }
         }
 

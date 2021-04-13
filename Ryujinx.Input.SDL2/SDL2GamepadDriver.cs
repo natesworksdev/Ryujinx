@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-
 using static SDL2.SDL;
 
 namespace Ryujinx.Input.SDL2
@@ -79,7 +78,7 @@ namespace Ryujinx.Input.SDL2
                     return;
                 }
 
-                if(_gamepadsInstanceIdsMapping.TryAdd(joystickInstanceId, id))
+                if (_gamepadsInstanceIdsMapping.TryAdd(joystickInstanceId, id))
                 {
                     _gamepadsIds.Add(id);
 

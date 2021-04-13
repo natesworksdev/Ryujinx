@@ -11,8 +11,14 @@ namespace Ryujinx.Input.GTK3
     {
         private class ButtonMappingEntry
         {
-            public Key From;
-            public GamepadButtonInputId To;
+            public readonly GamepadButtonInputId To;
+            public readonly Key From;
+
+            public ButtonMappingEntry(GamepadButtonInputId to, Key from)
+            {
+                To = to;
+                From = from;
+            }
         }
 
         private object _userMappingLock = new object();
@@ -126,17 +132,17 @@ namespace Ryujinx.Input.GTK3
 
         public GamepadStateSnapshot GetStateSnapshot()
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public (float, float) GetStick(StickInputId inputId)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public bool IsPressed(GamepadButtonInputId inputId)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public bool IsPressed(Key key)
@@ -153,28 +159,28 @@ namespace Ryujinx.Input.GTK3
                 _buttonsUserMapping.Clear();
 
                 // Then left joycon
-                _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadButtonInputId.LeftStick, From = (Key)_configuration.LeftJoyconStick.StickButton });
-                _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadButtonInputId.DpadUp, From = (Key)_configuration.LeftJoycon.DpadUp });
-                _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadButtonInputId.DpadDown, From = (Key)_configuration.LeftJoycon.DpadDown });
-                _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadButtonInputId.DpadLeft, From = (Key)_configuration.LeftJoycon.DpadLeft });
-                _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadButtonInputId.DpadRight, From = (Key)_configuration.LeftJoycon.DpadRight });
-                _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadButtonInputId.Minus, From = (Key)_configuration.LeftJoycon.ButtonMinus });
-                _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadButtonInputId.LeftShoulder, From = (Key)_configuration.LeftJoycon.ButtonL });
-                _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadButtonInputId.LeftTrigger, From = (Key)_configuration.LeftJoycon.ButtonZl });
-                _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadButtonInputId.SingleRightTrigger0, From = (Key)_configuration.LeftJoycon.ButtonSr });
-                _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadButtonInputId.SingleLeftTrigger0, From = (Key)_configuration.LeftJoycon.ButtonSl });
+                _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.LeftStick, (Key)_configuration.LeftJoyconStick.StickButton));
+                _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.DpadUp, (Key)_configuration.LeftJoycon.DpadUp));
+                _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.DpadDown, (Key)_configuration.LeftJoycon.DpadDown));
+                _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.DpadLeft, (Key)_configuration.LeftJoycon.DpadLeft));
+                _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.DpadRight, (Key)_configuration.LeftJoycon.DpadRight));
+                _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.Minus, (Key)_configuration.LeftJoycon.ButtonMinus));
+                _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.LeftShoulder, (Key)_configuration.LeftJoycon.ButtonL));
+                _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.LeftTrigger, (Key)_configuration.LeftJoycon.ButtonZl));
+                _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.SingleRightTrigger0, (Key)_configuration.LeftJoycon.ButtonSr));
+                _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.SingleLeftTrigger0, (Key)_configuration.LeftJoycon.ButtonSl));
 
                 // Finally right joycon
-                _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadButtonInputId.RightStick, From = (Key)_configuration.RightJoyconStick.StickButton });
-                _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadButtonInputId.A, From = (Key)_configuration.RightJoycon.ButtonA });
-                _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadButtonInputId.B, From = (Key)_configuration.RightJoycon.ButtonB });
-                _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadButtonInputId.X, From = (Key)_configuration.RightJoycon.ButtonX });
-                _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadButtonInputId.Y, From = (Key)_configuration.RightJoycon.ButtonY });
-                _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadButtonInputId.Plus, From = (Key)_configuration.RightJoycon.ButtonPlus });
-                _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadButtonInputId.RightShoulder, From = (Key)_configuration.RightJoycon.ButtonR });
-                _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadButtonInputId.RightTrigger, From = (Key)_configuration.RightJoycon.ButtonZr });
-                _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadButtonInputId.SingleRightTrigger1, From = (Key)_configuration.RightJoycon.ButtonSr });
-                _buttonsUserMapping.Add(new ButtonMappingEntry { To = GamepadButtonInputId.SingleLeftTrigger1, From = (Key)_configuration.RightJoycon.ButtonSl });
+                _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.RightStick, (Key)_configuration.RightJoyconStick.StickButton));
+                _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.A, (Key)_configuration.RightJoycon.ButtonA));
+                _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.B, (Key)_configuration.RightJoycon.ButtonB));
+                _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.X, (Key)_configuration.RightJoycon.ButtonX));
+                _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.Y, (Key)_configuration.RightJoycon.ButtonY));
+                _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.Plus, (Key)_configuration.RightJoycon.ButtonPlus));
+                _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.RightShoulder, (Key)_configuration.RightJoycon.ButtonR));
+                _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.RightTrigger, (Key)_configuration.RightJoycon.ButtonZr));
+                _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.SingleRightTrigger1, (Key)_configuration.RightJoycon.ButtonSr));
+                _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.SingleLeftTrigger1, (Key)_configuration.RightJoycon.ButtonSl));
             }
         }
 

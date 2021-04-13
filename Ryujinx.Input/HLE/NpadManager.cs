@@ -45,14 +45,12 @@ namespace Ryujinx.Input.HLE
             _gamepadDriver.OnGamepadDisconnected += HandleOnGamepadDisconnected;
         }
 
-        // TODO: move that in the input manager maybe?
         private void HandleOnGamepadDisconnected(string obj)
         {
             // Force input reload
             ReloadConfiguration(ConfigurationState.Instance.Hid.InputConfig.Value);
         }
 
-        // TODO: move that in the input manager maybe?
         private void HandleOnGamepadConnected(string id)
         {
             // Force input reload
@@ -114,7 +112,7 @@ namespace Ryujinx.Input.HLE
                 _inputConfig = inputConfig;
 
                 // Enforce an update of the property that will be updated by HLE.
-                // TODO: move that in the input manager maybe?
+                // TODO: Move that in the input manager maybe?
                 ConfigurationState.Instance.Hid.InputConfig.Value = inputConfig;
             }
         }

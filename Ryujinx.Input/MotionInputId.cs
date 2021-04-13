@@ -13,11 +13,13 @@
         /// <summary>
         /// Accelerometer.
         /// </summary>
+        /// <remarks>Values are in m/s^2</remarks>
         Accelerometer,
 
         /// <summary>
         /// Gyroscope.
         /// </summary>
+        /// <remarks>Values are in degrees</remarks>
         Gyroscope
     }
 }

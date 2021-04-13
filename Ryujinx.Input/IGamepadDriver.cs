@@ -10,28 +10,28 @@ namespace Ryujinx.Input
         /// <summary>
         /// The name of the driver
         /// </summary>
-        public string DriverName { get; }
+        string DriverName { get; }
 
         /// <summary>
         /// The unique ids of the gamepads connected.
         /// </summary>
-        public ReadOnlySpan<string> GamepadsIds { get; }
+        ReadOnlySpan<string> GamepadsIds { get; }
 
         /// <summary>
         /// Event triggered when a gamepad is connected.
         /// </summary>
-        public event Action<string> OnGamepadConnected;
+        event Action<string> OnGamepadConnected;
 
         /// <summary>
         /// Event triggered when a gamepad is disconnected.
         /// </summary>
-        public event Action<string> OnGamepadDisconnected;
+        event Action<string> OnGamepadDisconnected;
 
         /// <summary>
         /// Open a gampad by its unique id.
         /// </summary>
         /// <param name="id">The unique id of the gamepad</param>
         /// <returns>An instance of <see cref="IGamepad"/> associated to the gamepad id given or null if not found</returns>
-        public IGamepad GetGamepad(string id);
+        IGamepad GetGamepad(string id);
     }
 }
