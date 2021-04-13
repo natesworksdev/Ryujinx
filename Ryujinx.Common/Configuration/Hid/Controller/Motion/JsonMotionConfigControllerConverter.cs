@@ -54,7 +54,7 @@ namespace Ryujinx.Common.Configuration.Hid.Controller.Motion
             {
                 MotionInputBackendType.GamepadDriver => (MotionConfigController)JsonSerializer.Deserialize(ref reader, typeof(StandardMotionConfigController), options),
                 MotionInputBackendType.CemuHook => (MotionConfigController)JsonSerializer.Deserialize(ref reader, typeof(CemuHookMotionConfigController), options),
-                _ => throw new JsonException($"Unknown backend type {motionBackendType}"),
+                _ => throw new InvalidOperationException($"Unknown backend type {motionBackendType}"),
             };
         }
 
@@ -69,7 +69,7 @@ namespace Ryujinx.Common.Configuration.Hid.Controller.Motion
                     JsonSerializer.Serialize(writer, value as CemuHookMotionConfigController, options);
                     break;
                 default:
-                    throw new JsonException($"Unknown motion backend type {value.MotionBackend}");
+                    throw new ArgumentException($"Unknown motion backend type {value.MotionBackend}");
             }
         }
     }
