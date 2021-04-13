@@ -42,6 +42,39 @@ namespace ARMeilleure.Common
         }
 
         /// <summary>
+        /// Releases all resources used by the <see cref="Counter{T}"/> instance.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases all unmanaged and optionally managed resources used by the <see cref="Counter{T}"/> instance.
+        /// </summary>
+        /// <param name="disposing"><see langword="true"/> to dispose managed resources also; otherwise just unmanaged resouces</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                // The index into the EntryTable is essentially an unmanaged resource since we allocate and free the
+                // resource ourselves.
+                _countTable.Free(_index);
+
+                _disposed = true;
+            }
+        }
+
+        /// <summary>
+        /// Frees resources used by <see cref="Counter{T}"/> instance.
+        /// </summary>
+        ~Counter()
+        {
+            Dispose(false);
+        }
+
+        /// <summary>
         /// Tries to create a <see cref="Counter{T}"/> instance from the specified <see cref="EntryTable{T}"/> instance.
         /// </summary>
         /// <param name="countTable"><see cref="EntryTable{T}"/> from which to create the <see cref="Counter{T}"/></param>
@@ -76,19 +109,6 @@ namespace ARMeilleure.Common
             counter = null;
 
             return false;
-        }
-
-        /// <summary>
-        /// Releases all resources used by the <see cref="Counter{T}"/> instance.
-        /// </summary>
-        public void Dispose()
-        {
-            if (!_disposed)
-            {
-                _countTable.Free(_index);
-
-                _disposed = true;
-            }
         }
     }
 }
