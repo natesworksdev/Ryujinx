@@ -1,6 +1,5 @@
 ﻿using Ryujinx.Graphics.OpenGL.Helper;
 using System;
-using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.OpenGL
 {
@@ -11,11 +10,11 @@ namespace Ryujinx.Graphics.OpenGL
         // TODO: Support more APIs per platform.
         static bool HasContext()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (OperatingSystem.IsWindows())
             {
                 return WGLHelper.GetCurrentContext() != IntPtr.Zero;
             }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            else if (OperatingSystem.IsLinux())
             {
                 return GLXHelper.GetCurrentContext() != IntPtr.Zero;
             }

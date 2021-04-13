@@ -26,8 +26,17 @@ namespace Ryujinx.Input.GTK3
 
         public ReadOnlySpan<string> GamepadsIds => _keyboardIdentifers;
 
-        public event Action<string> OnGamepadConnected;
-        public event Action<string> OnGamepadDisconnected;
+        public event Action<string> OnGamepadConnected
+        {
+            add    { }
+            remove { }
+        }
+
+        public event Action<string> OnGamepadDisconnected
+        {
+            add    { }
+            remove { }
+        }
 
         protected virtual void Dispose(bool disposing)
         {

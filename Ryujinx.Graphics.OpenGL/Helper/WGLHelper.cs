@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 namespace Ryujinx.Graphics.OpenGL.Helper
 {
-    // TODO: OS marker
+    [SupportedOSPlatform("windows")]
     internal static class WGLHelper
     {
         private const string LibraryName = "OPENGL32.DLL";

@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 namespace Ryujinx.Graphics.OpenGL.Helper
 {
-    // TODO: OS marker
+    [SupportedOSPlatform("linux")]
     internal static class GLXHelper
     {
         private const string LibraryName = "glx.dll";
