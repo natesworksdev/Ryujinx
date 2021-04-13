@@ -94,9 +94,43 @@ namespace Ryujinx.Common.Collections
 
         /// <summary>
         /// Performs a point query with a single value.
+        /// A single item with an overlapping range is returned.
+        /// </summary>
+        public TValue FindOverlap(TKey value)
+        {
+            // If the node has items, check for leaves containing the value.
+            if (items != null)
+            {
+                foreach (var o in items)
+                {
+                    if (comparer.Compare(o.From, value) > 0) break;
+                    else if (comparer.Compare(value, o.From) >= 0 && comparer.Compare(value, o.To) <= 0)
+                    {
+                        return o.Value;
+                    }
+                }
+            }
+
+            // go to the left or go to the right of the tree, depending
+            // where the query value lies compared to the center
+            var centerComp = comparer.Compare(value, center);
+            if (leftNode != null && centerComp < 0)
+            {
+                return leftNode.FindOverlap(value);
+            }
+            else if (rightNode != null && centerComp > 0)
+            {
+                return rightNode.FindOverlap(value);
+            }
+
+            return default(TValue);
+        }
+
+        /// <summary>
+        /// Performs a point query with a single value.
         /// All items with overlapping ranges are returned.
         /// </summary>
-        public IEnumerable<TValue> Query(TKey value)
+        public IEnumerable<TValue> FindOverlaps(TKey value)
         {
             var results = new List<TValue>();
 
@@ -118,18 +152,64 @@ namespace Ryujinx.Common.Collections
             // where the query value lies compared to the center
             var centerComp = comparer.Compare(value, center);
             if (leftNode != null && centerComp < 0)
-                results.AddRange(leftNode.Query(value));
+                results.AddRange(leftNode.FindOverlaps(value));
             else if (rightNode != null && centerComp > 0)
-                results.AddRange(rightNode.Query(value));
+                results.AddRange(rightNode.FindOverlaps(value));
 
             return results;
         }
 
         /// <summary>
         /// Performs a range query.
+        /// A single item with an overlapping ranges is returned.
+        /// </summary>
+        public TValue FindOverlap(TKey from, TKey to)
+        {
+            // If the node has items, check for leaves intersecting the range.
+            if (items != null)
+            {
+                foreach (var o in items)
+                {
+                    if (comparer.Compare(o.From, to) > 0) break;
+                    else if (comparer.Compare(to, o.From) >= 0 && comparer.Compare(from, o.To) <= 0)
+                    {
+                        return o.Value;
+                    }
+                }
+            }
+
+            // go to the left or go to the right of the tree, depending
+            // where the query value lies compared to the center
+            TValue defaultResult = default(TValue);
+            TValue result;
+
+            if (leftNode != null && comparer.Compare(from, center) < 0)
+            {
+                result = leftNode.FindOverlap(from, to);
+
+                if (!result.Equals(defaultResult))
+                {
+                    return result;
+                }
+            }
+            if (rightNode != null && comparer.Compare(to, center) > 0)
+            {
+                result = rightNode.FindOverlap(from, to);
+
+                if (!result.Equals(defaultResult))
+                {
+                    return result;
+                }
+            }
+
+            return defaultResult;
+        }
+
+        /// <summary>
+        /// Performs a range query.
         /// All items with overlapping ranges are returned.
         /// </summary>
-        public IEnumerable<TValue> Query(TKey from, TKey to)
+        public IEnumerable<TValue> FindOverlaps(TKey from, TKey to)
         {
             var results = new List<TValue>();
 
@@ -148,9 +228,9 @@ namespace Ryujinx.Common.Collections
             // go to the left or go to the right of the tree, depending
             // where the query value lies compared to the center
             if (leftNode != null && comparer.Compare(from, center) < 0)
-                results.AddRange(leftNode.Query(from, to));
+                results.AddRange(leftNode.FindOverlaps(from, to));
             if (rightNode != null && comparer.Compare(to, center) > 0)
-                results.AddRange(rightNode.Query(from, to));
+                results.AddRange(rightNode.FindOverlaps(from, to));
 
             return results;
         }

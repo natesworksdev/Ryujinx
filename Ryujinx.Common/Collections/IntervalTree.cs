@@ -56,20 +56,36 @@ namespace Ryujinx.Common.Collections
             items = new List<RangeValuePair<TKey, TValue>>();
         }
 
-        public IEnumerable<TValue> Query(TKey value)
+        public TValue FindOverlap(TKey value)
         {
             if (!isInSync)
                 Rebuild();
 
-            return root.Query(value);
+            return root.FindOverlap(value);
         }
 
-        public IEnumerable<TValue> Query(TKey from, TKey to)
+        public IEnumerable<TValue> FindOverlaps(TKey value)
         {
             if (!isInSync)
                 Rebuild();
 
-            return root.Query(from, to);
+            return root.FindOverlaps(value);
+        }
+
+        public TValue FindOverlap(TKey from, TKey to)
+        {
+            if (!isInSync)
+                Rebuild();
+
+            return root.FindOverlap(from, to);
+        }
+
+        public IEnumerable<TValue> FindOverlaps(TKey from, TKey to)
+        {
+            if (!isInSync)
+                Rebuild();
+
+            return root.FindOverlaps(from, to);
         }
 
         public void Add(TKey from, TKey to, TValue value)

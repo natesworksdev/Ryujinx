@@ -22,14 +22,24 @@ namespace Ryujinx.Common.Collections
         int Count { get; }
 
         /// <summary>
+        /// Performs a point query with a single value. A single item with an overlapping ranges is returned.
+        /// </summary>
+        TValue FindOverlap(TKey value);
+
+        /// <summary>
         /// Performs a point query with a single value. All items with overlapping ranges are returned.
         /// </summary>
-        IEnumerable<TValue> Query(TKey value);
+        IEnumerable<TValue> FindOverlaps(TKey value);
+
+        /// <summary>
+        /// Performs a range query. A signle item with an overlapping range is returned.
+        /// </summary>
+        TValue FindOverlap(TKey from, TKey to);
 
         /// <summary>
         /// Performs a range query. All items with overlapping ranges are returned.
         /// </summary>
-        IEnumerable<TValue> Query(TKey from, TKey to);
+        IEnumerable<TValue> FindOverlaps(TKey from, TKey to);
 
         /// <summary>
         /// Adds the specified item.
