@@ -8,7 +8,6 @@ using System.Diagnostics;
 
 namespace Ryujinx.Audio.Backends.OpenAL
 {
-    [Obsolete]
     class OpenALHardwareDeviceSession : HardwareDeviceSessionOutputBase
     {
         private OpenALHardwareDeviceDriver _driver;

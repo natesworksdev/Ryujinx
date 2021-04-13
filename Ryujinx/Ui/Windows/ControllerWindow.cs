@@ -377,7 +377,7 @@ namespace Ryujinx.Ui.Windows
 
         private void ClearValues()
         {
-            _lStick.Label                    = "Unbound";
+            _lStick.Label                     = "Unbound";
             _lStickUp.Label                   = "Unbound";
             _lStickDown.Label                 = "Unbound";
             _lStickLeft.Label                 = "Unbound";
@@ -392,7 +392,7 @@ namespace Ryujinx.Ui.Windows
             _zL.Label                         = "Unbound";
             _lSl.Label                        = "Unbound";
             _lSr.Label                        = "Unbound";
-            _rStick.Label                    = "Unbound";
+            _rStick.Label                     = "Unbound";
             _rStickUp.Label                   = "Unbound";
             _rStickDown.Label                 = "Unbound";
             _rStickLeft.Label                 = "Unbound";
@@ -412,7 +412,7 @@ namespace Ryujinx.Ui.Windows
             _controllerTriggerThreshold.Value = 0;
             _mirrorInput.Active               = false;
             _enableMotion.Active              = false;
-            _enableCemuHook.Active           = false;
+            _enableCemuHook.Active            = false;
             _slotNumber.Value                 = 0;
             _altSlotNumber.Value              = 0;
             _sensitivity.Value                = 100;
@@ -503,7 +503,7 @@ namespace Ryujinx.Ui.Windows
                     _sensitivity.Value                = controllerConfig.Motion.Sensitivity;
                     _gyroDeadzone.Value               = controllerConfig.Motion.GyroDeadzone;
                     _enableMotion.Active              = controllerConfig.Motion.EnableMotion;
-                    _enableCemuHook.Active           = controllerConfig.Motion.MotionBackend == MotionInputBackendType.CemuHook;
+                    _enableCemuHook.Active            = controllerConfig.Motion.MotionBackend == MotionInputBackendType.CemuHook;
 
                     if (controllerConfig.Motion is CemuHookMotionConfigController cemuHookMotionConfig)
                     {
@@ -629,7 +629,6 @@ namespace Ryujinx.Ui.Windows
                 Enum.TryParse(_rSr.Label,          out ConfigGamepadInputId rButtonSr);
 
                 int.TryParse(_dsuServerPort.Buffer.Text, out int port);
-
 
                 MotionConfigController motionConfig;
 
@@ -794,9 +793,9 @@ namespace Ryujinx.Ui.Windows
             SetControllerSpecificFields();
         }
 
-        private ButtonAssigner CreateButtonAssigner(bool forStick)
+        private IButtonAssigner CreateButtonAssigner(bool forStick)
         {
-            ButtonAssigner assigner;
+            IButtonAssigner assigner;
 
             if (_inputDevice.ActiveId.StartsWith("keyboard"))
             {
@@ -827,7 +826,7 @@ namespace Ryujinx.Ui.Windows
 
             ButtonPressEvent += MouseClick;
 
-            ButtonAssigner assigner = CreateButtonAssigner(forStick);
+            IButtonAssigner assigner = CreateButtonAssigner(forStick);
 
             _isWaitingForInput = true;
 
@@ -1064,10 +1063,7 @@ namespace Ryujinx.Ui.Windows
                         config = JsonHelper.Deserialize<InputConfig>(stream);
                     }
                 }
-                catch (JsonException)
-                {
-
-                }
+                catch (JsonException) { }
             }
 
             SetValues(config);

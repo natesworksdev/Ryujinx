@@ -5,9 +5,9 @@ using System.IO;
 namespace Ryujinx.Input.Assigner
 {
     /// <summary>
-    /// <see cref="ButtonAssigner"/> implementation for regular <see cref="IGamepad"/>.
+    /// <see cref="IButtonAssigner"/> implementation for regular <see cref="IGamepad"/>.
     /// </summary>
-    public class GamepadButtonAssigner : ButtonAssigner
+    public class GamepadButtonAssigner : IButtonAssigner
     {
         private IGamepad _gamepad;
 
@@ -55,9 +55,7 @@ namespace Ryujinx.Input.Assigner
 
         public bool ShouldCancel()
         {
-            // TODO: keyboard cancel
             return _gamepad == null || !_gamepad.IsConnected;
-            // return Mouse.GetState().IsAnyButtonDown || Keyboard.GetState().IsAnyKeyDown;
         }
 
         public string GetPressedButton()
@@ -108,7 +106,6 @@ namespace Ryujinx.Input.Assigner
 
                     _detector.AddInput((GamepadButtonInputId)inputId, value);
                 }
-
             }
             else
             {

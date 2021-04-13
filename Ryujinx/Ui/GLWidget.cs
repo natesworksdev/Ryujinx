@@ -100,7 +100,8 @@ namespace Ryujinx.Ui
             try
             {
                 OpenGLContext?.MakeCurrent(NativeWindow);
-            } catch (Exception) {}
+            }
+            catch (Exception) { }
 
             ShuttingDown?.Invoke(this, EventArgs.Empty);
 

@@ -15,7 +15,7 @@ namespace Ryujinx.Common.Configuration.Hid.Controller.Motion
 
             while (tempReader.Read())
             {
-                // NOTE: We scan all properties ignoring the depth entirely in purpose.
+                // NOTE: We scan all properties ignoring the depth entirely on purpose.
                 // The reason behind this is that we cannot track in a reliable way the depth of the object because Utf8JsonReader never emit the first TokenType == StartObject if the json start with an object.
                 // As such, this code will try to parse very field named "motion_backend" to the correct enum.
                 if (tempReader.TokenType == JsonTokenType.PropertyName)

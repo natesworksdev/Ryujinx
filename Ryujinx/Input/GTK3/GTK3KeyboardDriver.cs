@@ -11,7 +11,6 @@ namespace Ryujinx.Input.GTK3
         private readonly Widget _widget;
         private HashSet<GtkKey> _pressedKeys;
 
-
         public GTK3KeyboardDriver(Widget widget)
         {
             _widget = widget;

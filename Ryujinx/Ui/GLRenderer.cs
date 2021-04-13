@@ -247,8 +247,6 @@ namespace Ryujinx.Ui
 
         public void Start()
         {
-            // IsRenderHandler = true;
-
             _chrono.Restart();
 
             _isActive = true;
@@ -614,9 +612,8 @@ namespace Ryujinx.Ui
         private enum KeyboardHotkeyState
         {
             None,
-            ToggleVSync,
+            ToggleVSync
         }
-
 
         private KeyboardHotkeyState GetHotkeyState()
         {

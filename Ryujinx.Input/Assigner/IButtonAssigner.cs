@@ -3,7 +3,7 @@ namespace Ryujinx.Input.Assigner
     /// <summary>
     /// An interface that allows to gather the driver input info to assign to a button on the UI.
     /// </summary>
-    public interface ButtonAssigner
+    public interface IButtonAssigner
     {
         /// <summary>
         /// Initialize the button assigner.
