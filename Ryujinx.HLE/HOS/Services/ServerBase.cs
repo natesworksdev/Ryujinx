@@ -267,9 +267,9 @@ namespace Ryujinx.HLE.HOS.Services
                     shouldReply = false;
                 }
                 // If the type is past 0xF, we are using TIPC
-                else if ((int)request.Type > 0xF)
+                else if (request.Type > IpcMessageType.TipcCloseSession)
                 {
-                    // response type is always the same as request on TIPC.
+                    // Response type is always the same as request on TIPC.
                     response.Type = request.Type;
 
                     using (MemoryStream resMs = new MemoryStream())

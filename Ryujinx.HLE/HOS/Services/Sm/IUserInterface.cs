@@ -1,4 +1,5 @@
 using Ryujinx.Common.Logging;
+using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Common;
@@ -37,7 +38,7 @@ namespace Ryujinx.HLE.HOS.Services.Sm
         }
 
         [CommandHipc(0)]
-        [CommandTipc(0x10)] // 12.0.0+
+        [CommandTipc(0)] // 12.0.0+
         // Initialize(pid, u64 reserved)
         public ResultCode Initialize(ServiceCtx context)
         {
@@ -47,7 +48,7 @@ namespace Ryujinx.HLE.HOS.Services.Sm
         }
 
         [CommandHipc(1)]
-        [CommandTipc(0x11)] // 12.0.0+
+        [CommandTipc(1)] // 12.0.0+
         // GetService(ServiceName name) -> handle<move, session>
         public ResultCode GetService(ServiceCtx context)
         {
@@ -114,9 +115,8 @@ namespace Ryujinx.HLE.HOS.Services.Sm
         }
 
         [CommandHipc(2)]
-        [CommandTipc(0x12)] // 12.0.0+
-        // RegisterService(ServiceName name, u8, u32 maxHandles) -> handle<move, port>
-        public ResultCode RegisterService(ServiceCtx context)
+        // RegisterService(ServiceName name, u8 isLight, u32 maxHandles) -> handle<move, port>
+        public ResultCode RegisterServiceHipc(ServiceCtx context)
         {
             if (!_isInitialized)
             {
@@ -133,6 +133,33 @@ namespace Ryujinx.HLE.HOS.Services.Sm
 
             int maxSessions = context.RequestData.ReadInt32();
 
+            return RegisterService(context, name, isLight, maxSessions);
+        }
+
+        [CommandTipc(2)] // 12.0.0+
+        // RegisterService(ServiceName name, u32 maxHandles, u8 isLight) -> handle<move, port>
+        public ResultCode RegisterServiceTipc(ServiceCtx context)
+        {
+            if (!_isInitialized)
+            {
+                return ResultCode.NotInitialized;
+            }
+
+            long namePosition = context.RequestData.BaseStream.Position;
+
+            string name = ReadName(context);
+
+            context.RequestData.BaseStream.Seek(namePosition + 8, SeekOrigin.Begin);
+
+            int maxSessions = context.RequestData.ReadInt32();
+
+            bool isLight = (context.RequestData.ReadInt32() & 1) != 0;
+
+            return RegisterService(context, name, isLight, maxSessions);
+        }
+
+        private ResultCode RegisterService(ServiceCtx context, string name, bool isLight, int maxSessions)
+        {
             if (string.IsNullOrEmpty(name))
             {
                 return ResultCode.InvalidName;
@@ -158,7 +185,7 @@ namespace Ryujinx.HLE.HOS.Services.Sm
         }
 
         [CommandHipc(3)]
-        [CommandTipc(0x13)] // 12.0.0+
+        [CommandTipc(3)] // 12.0.0+
         // UnregisterService(ServiceName name)
         public ResultCode UnregisterService(ServiceCtx context)
         {

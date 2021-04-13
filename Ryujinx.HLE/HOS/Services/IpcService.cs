@@ -153,13 +153,13 @@ namespace Ryujinx.HLE.HOS.Services
             {
                 string dbgMessage = $"{service.GetType().FullName}: {commandId}";
 
-                throw new ServiceNotImplementedException(service, context, dbgMessage);
+                throw new ServiceNotImplementedException(service, context, dbgMessage, false);
             }
         }
 
         public void CallTipcMethod(ServiceCtx context)
         {
-            int commandId = (int)context.Request.Type;
+            int commandId = (int)context.Request.Type - 0x10;
 
             bool serviceExists = TipcCommands.TryGetValue(commandId, out MethodInfo processRequest);
 
@@ -194,7 +194,7 @@ namespace Ryujinx.HLE.HOS.Services
             {
                 string dbgMessage = $"{GetType().FullName}: {commandId}";
 
-                throw new ServiceNotImplementedException(this, context, dbgMessage);
+                throw new ServiceNotImplementedException(this, context, dbgMessage, true);
             }
         }
 
