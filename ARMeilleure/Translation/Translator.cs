@@ -24,10 +24,6 @@ namespace ARMeilleure.Translation
     {
         private const int CountTableCapacity = 4 * 1024 * 1024;
 
-        private long _nextUpdate;
-        private long _requestAdded;
-        private long _requestRemoved;
-
         private readonly IJitMemoryAllocator _allocator;
         private readonly IMemoryManager _memory;
 
@@ -50,8 +46,6 @@ namespace ARMeilleure.Translation
 
         public Translator(IJitMemoryAllocator allocator, IMemoryManager memory)
         {
-            _nextUpdate = Stopwatch.GetTimestamp();
-
             _allocator = allocator;
             _memory = memory;
 
@@ -79,8 +73,6 @@ namespace ARMeilleure.Translation
                 if (_backgroundStack.TryPop(out RejitRequest request) && 
                     _backgroundSet.TryRemove(request.Address, out _))
                 {
-                    Interlocked.Increment(ref _requestRemoved);
-
                     TranslatedFunction func = Translate(
                         _memory,
                         _jumpTable,
@@ -100,28 +92,6 @@ namespace ARMeilleure.Translation
                     if (PtcProfiler.Enabled)
                     {
                         PtcProfiler.UpdateEntry(request.Address, request.Mode, highCq: true);
-                    }
-
-                    var nextUpdate = Interlocked.Exchange(ref _nextUpdate, 0);
-
-                    if (nextUpdate != 0)
-                    {
-                        var now = Stopwatch.GetTimestamp();
-
-                        if (now < nextUpdate)
-                        {
-                            _nextUpdate = nextUpdate;
-                        }
-                        else
-                        {
-                            Ryujinx.Common.Logging.Logger.Info?.Print(
-                                Ryujinx.Common.Logging.LogClass.Cpu,
-                                $"{_backgroundStack.Count} rejit requests remaining (+{_requestAdded}:-{_requestRemoved}).");
-
-                            _requestAdded = 0;
-                            _requestRemoved = 0;
-                            _nextUpdate = now + Stopwatch.Frequency * 30;
-                        }
                     }
 
                     _backgroundTranslatorLock.ReleaseReaderLock();
@@ -480,7 +450,6 @@ namespace ARMeilleure.Translation
         {
             if (_backgroundSet.TryAdd(guestAddress, null))
             {
-                Interlocked.Increment(ref _requestAdded);
                 _backgroundStack.Push(new RejitRequest(guestAddress, mode));
                 _backgroundTranslatorEvent.Set();
             }
@@ -512,8 +481,6 @@ namespace ARMeilleure.Translation
         private void ClearRejitQueue(bool allowRequeue)
         {
             _backgroundTranslatorLock.AcquireWriterLock(Timeout.Infinite);
-
-            Interlocked.Add(ref _requestRemoved, _backgroundStack.Count);
 
             if (allowRequeue)
             {
