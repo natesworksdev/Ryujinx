@@ -593,9 +593,10 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
                     if (!isShaderCacheReadOnly)
                     {
+                        byte[] guestProgramDump = CacheHelper.CreateGuestProgramDump(shaderCacheEntries);
                         _programsToSaveQueue.Enqueue((hostProgram, (byte[] hostProgramBinary) =>
                         {
-                            _cacheManager.SaveProgram(ref programCodeHash, CacheHelper.CreateGuestProgramDump(shaderCacheEntries), hostProgramBinary);
+                            _cacheManager.SaveProgram(ref programCodeHash, guestProgramDump, HostShaderCacheEntry.Create(hostProgramBinary, new ShaderCodeHolder[] { shader }));
                         }));
                     }
                 }
@@ -736,9 +737,10 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
                     if (!isShaderCacheReadOnly)
                     {
+                        byte[] guestProgramDump = CacheHelper.CreateGuestProgramDump(shaderCacheEntries, tfd);
                         _programsToSaveQueue.Enqueue((hostProgram, (byte[] hostProgramBinary) =>
                         {
-                            _cacheManager.SaveProgram(ref programCodeHash, CacheHelper.CreateGuestProgramDump(shaderCacheEntries, tfd), hostProgramBinary);
+                            _cacheManager.SaveProgram(ref programCodeHash, guestProgramDump, HostShaderCacheEntry.Create(hostProgramBinary, shaders));
                         }));
                     }
                 }
