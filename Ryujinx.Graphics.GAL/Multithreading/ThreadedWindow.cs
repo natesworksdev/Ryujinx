@@ -22,7 +22,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
             _renderer.WaitForFrame();
             _renderer.New<WindowPresentCommand>().Set(new TableRef<ThreadedTexture>(_renderer, texture as ThreadedTexture), crop);
-            _renderer.QueueCommand();
+            _renderer.InvokeCommand();
         }
 
         public void SetSize(int width, int height)
