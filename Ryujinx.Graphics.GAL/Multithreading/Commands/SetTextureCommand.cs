@@ -17,7 +17,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands
 
         public void Run(ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.Pipeline.SetTexture(_binding, ((ThreadedTexture)_texture.Get(threaded))?.Base);
+            renderer.Pipeline.SetTexture(_binding, _texture.GetAs<ThreadedTexture>(threaded)?.Base);
         }
     }
 }

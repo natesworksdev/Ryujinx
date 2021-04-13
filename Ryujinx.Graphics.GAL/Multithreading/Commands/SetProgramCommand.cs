@@ -15,7 +15,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands
 
         public void Run(ThreadedRenderer threaded, IRenderer renderer)
         {
-            ThreadedProgram program = (ThreadedProgram)_program.Get(threaded);
+            ThreadedProgram program = _program.GetAs<ThreadedProgram>(threaded);
 
             threaded.Programs.WaitForProgram(program);
 
