@@ -51,6 +51,8 @@ namespace ARMeilleure.Common
 
                     _allocated.Set(index);
 
+                    GetValue(index) = default;
+
                     return true;
                 }
             }
