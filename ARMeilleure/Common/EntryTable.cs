@@ -14,7 +14,7 @@ namespace ARMeilleure.Common
         private readonly BitMap _allocated;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntryTable{TValue}"/> class with the specified capacity.
+        /// Initializes a new instance of the <see cref="EntryTable{TEntry}"/> class with the specified capacity.
         /// </summary>
         /// <param name="capacity">Capacity of the table</param>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="capacity"/> is less than 0</exception>
@@ -31,7 +31,7 @@ namespace ARMeilleure.Common
         }
 
         /// <summary>
-        /// Tries to allocate an entry in the <see cref="EntryTable{TValue}"/>. Returns <see langword="true"/> if
+        /// Tries to allocate an entry in the <see cref="EntryTable{TEntry}"/>. Returns <see langword="true"/> if
         /// success; otherwise returns <see langword="false"/>.
         /// </summary>
         /// <param name="index">Index of entry allocated in the table</param>

@@ -16,7 +16,7 @@ namespace ARMeilleure.Common
         /// Initializes a new instance of the <see cref="Counter{T}"/> class from the specified
         /// <see cref="EntryTable{T}"/> instance and index.
         /// </summary>
-        /// <param name="countTable"><see cref="EntryTable{byte}"/> instance</param>
+        /// <param name="countTable"><see cref="EntryTable{T}"/> instance</param>
         /// <param name="index">Index in the <see cref="EntryTable{T}"/></param>
         private Counter(EntryTable<T> countTable, int index)
         {
@@ -41,9 +41,9 @@ namespace ARMeilleure.Common
         }
 
         /// <summary>
-        /// Tries to create a <see cref="Counter"/> instance from the specified <see cref="EntryTable{byte}"/> instance.
+        /// Tries to create a <see cref="Counter"/> instance from the specified <see cref="EntryTable{T}"/> instance.
         /// </summary>
-        /// <param name="countTable"><see cref="EntryTable{TEntry}"/> from which to create the <see cref="Counter"/></param>
+        /// <param name="countTable"><see cref="EntryTable{T}"/> from which to create the <see cref="Counter"/></param>
         /// <param name="counter"><see cref="Counter"/> instance if success; otherwise <see langword="null"/></param>
         /// <returns><see langword="true"/> if success; otherwise <see langword="false"/></returns>
         /// <exception cref="ArgumentNullException"><paramref name="countTable"/> is <see langword="null"/></exception>

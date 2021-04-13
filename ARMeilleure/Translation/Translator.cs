@@ -22,6 +22,8 @@ namespace ARMeilleure.Translation
 {
     public class Translator
     {
+        private const int CountTableCapacity = 4 * 1024 * 1024;
+
         private long _nextUpdate;
         private long _requestAdded;
         private long _requestRemoved;
@@ -61,7 +63,7 @@ namespace ARMeilleure.Translation
             _backgroundTranslatorEvent = new AutoResetEvent(false);
             _backgroundTranslatorLock = new ReaderWriterLock();
 
-            CountTable = new EntryTable<uint>(capacity: 4 * 1024 * 1024);
+            CountTable = new EntryTable<uint>(CountTableCapacity);
 
             JitCache.Initialize(allocator);
 
