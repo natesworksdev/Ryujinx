@@ -3,7 +3,7 @@
 namespace ARMeilleure.Common
 {
     /// <summary>
-    /// Represents a numeric counter.
+    /// Represents a numeric counter which can be used for instrumentation of compiled code.
     /// </summary>
     /// <typeparam name="T">Type of the counter</typeparam>
     class Counter<T> : IDisposable where T : unmanaged
@@ -27,6 +27,7 @@ namespace ARMeilleure.Common
         /// <summary>
         /// Gets a reference to the value of the counter.
         /// </summary>
+        /// <exception cref="ObjectDisposedException"><see cref="Counter{T}"/> instance was disposed</exception>
         public ref T Value 
         {
             get
@@ -41,10 +42,10 @@ namespace ARMeilleure.Common
         }
 
         /// <summary>
-        /// Tries to create a <see cref="Counter"/> instance from the specified <see cref="EntryTable{T}"/> instance.
+        /// Tries to create a <see cref="Counter{T}"/> instance from the specified <see cref="EntryTable{T}"/> instance.
         /// </summary>
-        /// <param name="countTable"><see cref="EntryTable{T}"/> from which to create the <see cref="Counter"/></param>
-        /// <param name="counter"><see cref="Counter"/> instance if success; otherwise <see langword="null"/></param>
+        /// <param name="countTable"><see cref="EntryTable{T}"/> from which to create the <see cref="Counter{T}"/></param>
+        /// <param name="counter"><see cref="Counter{T}"/> instance if success; otherwise <see langword="null"/></param>
         /// <returns><see langword="true"/> if success; otherwise <see langword="false"/></returns>
         /// <exception cref="ArgumentNullException"><paramref name="countTable"/> is <see langword="null"/></exception>
         /// <exception cref="ArgumentException"><typeparamref name="T"/> is unsupported</exception>
