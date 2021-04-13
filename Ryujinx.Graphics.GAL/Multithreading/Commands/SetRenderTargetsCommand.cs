@@ -18,7 +18,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands
 
         public void Run(ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.Pipeline.SetRenderTargets(_colors.Get(threaded).Select(color => ((ThreadedTexture)color)?.Base).ToArray(), ((ThreadedTexture)_depthStencil.Get(threaded))?.Base);
+            renderer.Pipeline.SetRenderTargets(_colors.Get(threaded).Select(color => ((ThreadedTexture)color)?.Base).ToArray(), _depthStencil.GetAs<ThreadedTexture>(threaded)?.Base);
         }
     }
 }

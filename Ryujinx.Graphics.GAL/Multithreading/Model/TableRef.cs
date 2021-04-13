@@ -13,5 +13,10 @@
         {
             return (T)renderer.RemoveTableRef(_index);
         }
+
+        public T2 GetAs<T2>(ThreadedRenderer renderer) where T2 : T
+        {
+            return (T2)renderer.RemoveTableRef(_index);
+        }
     }
 }
