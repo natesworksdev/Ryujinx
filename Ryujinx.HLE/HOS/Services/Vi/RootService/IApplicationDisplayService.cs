@@ -1,7 +1,7 @@
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
-using Ryujinx.HLE.HOS.Applets.SoftwareKeyboard;
+using Ryujinx.HLE.HOS.Applets;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Services.SurfaceFlinger;
@@ -268,20 +268,38 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
             long layerBuffPosition = context.Request.ReceiveBuff[0].Position;
             long layerBuffSize     = context.Request.ReceiveBuff[0].Size;
 
-            // TODO(Caian): Support other handles other than keyboard.
-
-            ulong size = GetA8B8G8R8LayerSize((int)layerWidth, (int)layerHeight, out int pitch, out int alignment);
+            // Get the pitch of the layer that is necessary to render correctly.
+            ulong size = GetA8B8G8R8LayerSize((int)layerWidth, (int)layerHeight, out int pitch, out _);
 
             Debug.Assert(layerBuffSize == (long)size);
 
-            Span<byte> graphics = SoftwareKeyboardRenderer.GetGraphicsA8B8G8R8((int)layerWidth, (int)layerHeight, pitch, (int)layerBuffSize);
+            // Get the applet associated with the handle.
+            object appletObject = context.Device.System.AppletState.IndirectLayerHandles.GetData((int)layerHandle);
+
+            if (appletObject == null)
+            {
+                Logger.Error?.Print(LogClass.ServiceVi, $"Indirect layer handle {layerHandle} does not match any applet");
+
+                return ResultCode.Success;
+            }
+
+            Debug.Assert(appletObject is IApplet);
+
+            IApplet applet = appletObject as IApplet;
+
+            Span<byte> graphics = applet.GetGraphicsA8B8G8R8((int)layerWidth, (int)layerHeight, pitch, (int)layerBuffSize);
+
+            if (graphics == null)
+            {
+                Logger.Error?.Print(LogClass.ServiceVi, $"Applet returned no graphics for indirect layer handle {layerHandle}");
+
+                return ResultCode.Success;
+            }
 
             context.Memory.Write((ulong)layerBuffPosition, graphics);
 
             context.ResponseData.Write(layerWidth);
             context.ResponseData.Write(layerHeight);
-
-            Logger.Stub?.PrintStub(LogClass.ServiceVi);
 
             return ResultCode.Success;
         }

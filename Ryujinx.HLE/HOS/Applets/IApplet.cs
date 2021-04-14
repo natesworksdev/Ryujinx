@@ -13,6 +13,11 @@ namespace Ryujinx.HLE.HOS.Applets
 
         ResultCode GetResult();
 
+        Span<byte> GetGraphicsA8B8G8R8(int width, int height, int pitch, int size)
+        {
+            return null;
+        }
+
         static T ReadStruct<T>(ReadOnlySpan<byte> data) where T : unmanaged
         {
             return MemoryMarshal.Cast<byte, T>(data)[0];

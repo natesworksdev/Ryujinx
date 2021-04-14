@@ -145,6 +145,11 @@ namespace Ryujinx.HLE.HOS.Applets
             _backgroundState = state;
         }
 
+        public Span<byte> GetGraphicsA8B8G8R8(int width, int height, int pitch, int size)
+        {
+            return SoftwareKeyboardRenderer.GetGraphicsA8B8G8R8(width, height, pitch, size);
+        }
+
         private void ExecuteForegroundKeyboard()
         {
             string initialText = null;

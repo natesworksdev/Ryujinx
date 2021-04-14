@@ -12,6 +12,7 @@ using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
 using Ryujinx.HLE.FileSystem.Content;
+using Ryujinx.HLE.HOS.Applets;
 using Ryujinx.HLE.HOS.Font;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Memory;
