@@ -28,7 +28,7 @@ namespace ARMeilleure.Translation
         private readonly IMemoryManager _memory;
 
         private readonly ConcurrentDictionary<ulong, TranslatedFunction> _funcs;
-        private readonly ConcurrentQueue<KeyValuePair<ulong, IntPtr>> _oldFuncs;
+        private readonly ConcurrentQueue<KeyValuePair<ulong, TranslatedFunction>> _oldFuncs;
 
         private readonly ConcurrentDictionary<ulong, object> _backgroundSet;
         private readonly ConcurrentStack<RejitRequest> _backgroundStack;
@@ -50,7 +50,7 @@ namespace ARMeilleure.Translation
             _memory = memory;
 
             _funcs = new ConcurrentDictionary<ulong, TranslatedFunction>();
-            _oldFuncs = new ConcurrentQueue<KeyValuePair<ulong, IntPtr>>();
+            _oldFuncs = new ConcurrentQueue<KeyValuePair<ulong, TranslatedFunction>>();
 
             _backgroundSet = new ConcurrentDictionary<ulong, object>();
             _backgroundStack = new ConcurrentStack<RejitRequest>();
@@ -457,7 +457,7 @@ namespace ARMeilleure.Translation
 
         private void EnqueueForDeletion(ulong guestAddress, TranslatedFunction func)
         {
-            _oldFuncs.Enqueue(new KeyValuePair<ulong, IntPtr>(guestAddress, func.FuncPtr));
+            _oldFuncs.Enqueue(new(guestAddress, func));
         }
 
         private void ClearJitCache()
@@ -465,16 +465,20 @@ namespace ARMeilleure.Translation
             // Ensure no attempt will be made to compile new functions due to rejit.
             ClearRejitQueue(allowRequeue: false);
 
-            foreach (var kv in _funcs)
+            foreach (var func in _funcs.Values)
             {
-                JitCache.Unmap(kv.Value.FuncPtr);
+                JitCache.Unmap(func.FuncPtr);
+
+                func.CallCounter?.Dispose();
             }
 
             _funcs.Clear();
 
             while (_oldFuncs.TryDequeue(out var kv))
             {
-                JitCache.Unmap(kv.Value);
+                JitCache.Unmap(kv.Value.FuncPtr);
+
+                kv.Value.CallCounter?.Dispose();
             }
         }
 
