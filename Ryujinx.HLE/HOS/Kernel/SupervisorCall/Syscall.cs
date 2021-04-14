@@ -1760,7 +1760,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                     return KernelResult.InvalidCombination;
                 }
 
-                KMemoryRegionManager region = _context.MemoryRegions[subId];
+                KMemoryRegionManager region = _context.MemoryManager.MemoryRegions[subId];
 
                 switch (id)
                 {
