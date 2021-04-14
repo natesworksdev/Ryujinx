@@ -194,14 +194,8 @@ namespace Ryujinx.Ui
 
                     AmiiboJson amiiboJson = JsonSerializer.Deserialize<AmiiboJson>(amiiboJsonString);
 
-                    DateTime lastUpdated = amiiboJson.LastUpdated;
+                    amiiboJson.LastUpdated = response.Content.Headers.LastModified.Value.DateTime;
 
-                    if (lastUpdated.Millisecond >= 500)
-                    {
-                        lastUpdated = lastUpdated.AddSeconds(1);
-                    }
-
-                    amiiboJson.LastUpdated = new DateTime(lastUpdated.Year, lastUpdated.Month, lastUpdated.Day, lastUpdated.Hour, lastUpdated.Minute, lastUpdated.Second);
                     amiiboJsonString = JsonSerializer.Serialize<AmiiboJson>(amiiboJson);
 
                     using (FileStream dlcJsonStream = File.Create(_amiiboJsonPath, 4096, FileOptions.WriteThrough))
