@@ -13,13 +13,13 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
     /// </summary>
     internal class SoftwareKeyboardRenderer
     {
-        private static int _graphicsWidth = 0;
-        private static int _graphicsHeight = 0;
-        private static int _graphicsPitch = 0;
-        private static int _graphicsSize = 0;
-        private static byte[] _graphicsData = null;
+        private int _graphicsWidth = 0;
+        private int _graphicsHeight = 0;
+        private int _graphicsPitch = 0;
+        private int _graphicsSize = 0;
+        private byte[] _graphicsData = null;
 
-        internal static void RedrawGraphicsA8B8G8R8(int width, int height, int pitch, int size)
+        private void RedrawGraphicsA8B8G8R8(int width, int height, int pitch, int size)
         {
             // Use the whole area of the image to draw, even the alignment, otherwise it will shear the final image.
             int availableWidth = pitch / 4;
@@ -88,7 +88,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
             Volatile.Write(ref _graphicsData, newGraphicsData);
         }
 
-        internal static Span<byte> GetGraphicsA8B8G8R8(int width, int height, int pitch, int size)
+        public Span<byte> GetGraphicsA8B8G8R8(int width, int height, int pitch, int size)
         {
             if (_graphicsWidth != width || _graphicsHeight != height ||
                 _graphicsPitch != pitch || _graphicsSize != size)

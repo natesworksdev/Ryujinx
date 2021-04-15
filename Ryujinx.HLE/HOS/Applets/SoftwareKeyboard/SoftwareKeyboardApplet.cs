@@ -50,6 +50,8 @@ namespace Ryujinx.HLE.HOS.Applets
 
         private IDynamicTextInputHandler _dynamicTextInputHandler = null;
 
+        private SoftwareKeyboardRenderer _keyboardRenderer = null;
+
         public event EventHandler AppletStateChanged;
 
         public SoftwareKeyboardApplet(Horizon system)
@@ -80,6 +82,8 @@ namespace Ryujinx.HLE.HOS.Applets
                 _keyboardBackgroundInitialize = ReadStruct<SoftwareKeyboardInitialize>(keyboardConfig);
                 InlineKeyboardState state = InlineKeyboardState.Uninitialized;
                 SetInlineState(state);
+
+                _keyboardRenderer = new SoftwareKeyboardRenderer();
 
                 if (_device.UiHandler != null)
                 {
@@ -147,7 +151,7 @@ namespace Ryujinx.HLE.HOS.Applets
 
         public Span<byte> GetGraphicsA8B8G8R8(int width, int height, int pitch, int size)
         {
-            return SoftwareKeyboardRenderer.GetGraphicsA8B8G8R8(width, height, pitch, size);
+            return _keyboardRenderer.GetGraphicsA8B8G8R8(width, height, pitch, size);
         }
 
         private void ExecuteForegroundKeyboard()
