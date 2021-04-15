@@ -1,8 +1,8 @@
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
+using Ryujinx.Common.Configuration.Hid.Keyboard;
 using Ryujinx.Common.Logging;
-using Ryujinx.Configuration.Hid;
 using Ryujinx.Configuration.System;
 using Ryujinx.Configuration.Ui;
 using System;
@@ -155,16 +155,17 @@ namespace Ryujinx.Configuration
 
             public LoggerSection()
             {
-                EnableDebug        = new ReactiveObject<bool>();
-                EnableStub         = new ReactiveObject<bool>();
-                EnableInfo         = new ReactiveObject<bool>();
-                EnableWarn         = new ReactiveObject<bool>();
-                EnableError        = new ReactiveObject<bool>();
-                EnableGuest        = new ReactiveObject<bool>();
-                EnableFsAccessLog  = new ReactiveObject<bool>();
-                FilteredClasses    = new ReactiveObject<LogClass[]>();
-                EnableFileLog      = new ReactiveObject<bool>();
-                GraphicsDebugLevel = new ReactiveObject<GraphicsDebugLevel>();
+                EnableDebug         = new ReactiveObject<bool>();
+                EnableStub          = new ReactiveObject<bool>();
+                EnableInfo          = new ReactiveObject<bool>();
+                EnableWarn          = new ReactiveObject<bool>();
+                EnableError         = new ReactiveObject<bool>();
+                EnableGuest         = new ReactiveObject<bool>();
+                EnableFsAccessLog   = new ReactiveObject<bool>();
+                FilteredClasses     = new ReactiveObject<LogClass[]>();
+                EnableFileLog       = new ReactiveObject<bool>();
+                EnableFileLog.Event += static (sender, e) => LogValueChange(sender, e, nameof(EnableFileLog));
+                GraphicsDebugLevel  = new ReactiveObject<GraphicsDebugLevel>();
             }
         }
 
@@ -230,17 +231,24 @@ namespace Ryujinx.Configuration
 
             public SystemSection()
             {
-                Language                = new ReactiveObject<Language>();
-                Region                  = new ReactiveObject<Region>();
-                TimeZone                = new ReactiveObject<string>();
-                SystemTimeOffset        = new ReactiveObject<long>();
-                EnableDockedMode        = new ReactiveObject<bool>();
-                EnablePtc               = new ReactiveObject<bool>();
-                EnableFsIntegrityChecks = new ReactiveObject<bool>();
-                FsGlobalAccessLogMode   = new ReactiveObject<int>();
-                AudioBackend            = new ReactiveObject<AudioBackend>();
-                ExpandRam               = new ReactiveObject<bool>();
-                IgnoreMissingServices   = new ReactiveObject<bool>();
+                Language                      = new ReactiveObject<Language>();
+                Region                        = new ReactiveObject<Region>();
+                TimeZone                      = new ReactiveObject<string>();
+                SystemTimeOffset              = new ReactiveObject<long>();
+                EnableDockedMode              = new ReactiveObject<bool>();
+                EnableDockedMode.Event        += static (sender, e) => LogValueChange(sender, e, nameof(EnableDockedMode));
+                EnablePtc                     = new ReactiveObject<bool>();
+                EnablePtc.Event               += static (sender, e) => LogValueChange(sender, e, nameof(EnablePtc));
+                EnableFsIntegrityChecks       = new ReactiveObject<bool>();
+                EnableFsIntegrityChecks.Event += static (sender, e) => LogValueChange(sender, e, nameof(EnableFsIntegrityChecks));
+                FsGlobalAccessLogMode         = new ReactiveObject<int>();
+                FsGlobalAccessLogMode.Event   += static (sender, e) => LogValueChange(sender, e, nameof(FsGlobalAccessLogMode));
+                AudioBackend                  = new ReactiveObject<AudioBackend>();
+                AudioBackend.Event            += static (sender, e) => LogValueChange(sender, e, nameof(AudioBackend));
+                ExpandRam                     = new ReactiveObject<bool>();
+                ExpandRam.Event               += static (sender, e) => LogValueChange(sender, e, nameof(ExpandRam));
+                IgnoreMissingServices         = new ReactiveObject<bool>();
+                IgnoreMissingServices.Event   += static (sender, e) => LogValueChange(sender, e, nameof(IgnoreMissingServices));
             }
         }
 
@@ -316,13 +324,19 @@ namespace Ryujinx.Configuration
 
             public GraphicsSection()
             {
-                ResScale          = new ReactiveObject<int>();
-                ResScaleCustom    = new ReactiveObject<float>();
-                MaxAnisotropy     = new ReactiveObject<float>();
-                AspectRatio       = new ReactiveObject<AspectRatio>();
-                ShadersDumpPath   = new ReactiveObject<string>();
-                EnableVsync       = new ReactiveObject<bool>();
-                EnableShaderCache = new ReactiveObject<bool>();
+                ResScale                = new ReactiveObject<int>();
+                ResScale.Event          += static (sender, e) => LogValueChange(sender, e, nameof(ResScale));
+                ResScaleCustom          = new ReactiveObject<float>();
+                ResScaleCustom.Event    += static (sender, e) => LogValueChange(sender, e, nameof(ResScaleCustom));
+                MaxAnisotropy           = new ReactiveObject<float>();
+                MaxAnisotropy.Event     += static (sender, e) => LogValueChange(sender, e, nameof(MaxAnisotropy));
+                AspectRatio             = new ReactiveObject<AspectRatio>();
+                AspectRatio.Event       += static (sender, e) => LogValueChange(sender, e, nameof(AspectRatio));
+                ShadersDumpPath         = new ReactiveObject<string>();
+                EnableVsync             = new ReactiveObject<bool>();
+                EnableVsync.Event       += static (sender, e) => LogValueChange(sender, e, nameof(EnableVsync));
+                EnableShaderCache       = new ReactiveObject<bool>();
+                EnableShaderCache.Event += static (sender, e) => LogValueChange(sender, e, nameof(EnableShaderCache));
             }
         }
 
@@ -391,21 +405,6 @@ namespace Ryujinx.Configuration
 
         public ConfigurationFileFormat ToFileFormat()
         {
-            List<ControllerConfig> controllerConfigList = new List<ControllerConfig>();
-            List<KeyboardConfig>   keyboardConfigList   = new List<KeyboardConfig>();
-
-            foreach (InputConfig inputConfig in Hid.InputConfig.Value)
-            {
-                if (inputConfig is ControllerConfig controllerConfig)
-                {
-                    controllerConfigList.Add(controllerConfig);
-                }
-                else if (inputConfig is KeyboardConfig keyboardConfig)
-                {
-                    keyboardConfigList.Add(keyboardConfig);
-                }
-            }
-
             ConfigurationFileFormat configurationFile = new ConfigurationFileFormat
             {
                 Version                   = ConfigurationFileFormat.CurrentVersion,
@@ -465,8 +464,9 @@ namespace Ryujinx.Configuration
                 StartFullscreen           = Ui.StartFullscreen,
                 EnableKeyboard            = Hid.EnableKeyboard,
                 Hotkeys                   = Hid.Hotkeys,
-                KeyboardConfig            = keyboardConfigList,
-                ControllerConfig          = controllerConfigList
+                KeyboardConfig            = new List<object>(),
+                ControllerConfig          = new List<object>(),
+                InputConfig               = Hid.InputConfig,
             };
 
             return configurationFile;
@@ -529,54 +529,57 @@ namespace Ryujinx.Configuration
             };
             Hid.InputConfig.Value = new List<InputConfig>
             {
-                new KeyboardConfig
-                {
-                    Index          = 0,
-                    ControllerType = ControllerType.JoyconPair,
-                    PlayerIndex    = PlayerIndex.Player1,
-                    LeftJoycon     = new NpadKeyboardLeft
-                    {
-                        StickUp     = Key.W,
-                        StickDown   = Key.S,
-                        StickLeft   = Key.A,
-                        StickRight  = Key.D,
-                        StickButton = Key.F,
-                        DPadUp      = Key.Up,
-                        DPadDown    = Key.Down,
-                        DPadLeft    = Key.Left,
-                        DPadRight   = Key.Right,
-                        ButtonMinus = Key.Minus,
-                        ButtonL     = Key.E,
-                        ButtonZl    = Key.Q,
-                        ButtonSl    = Key.Home,
-                        ButtonSr    = Key.End
-                    },
-                    RightJoycon    = new NpadKeyboardRight
-                    {
-                        StickUp     = Key.I,
-                        StickDown   = Key.K,
-                        StickLeft   = Key.J,
-                        StickRight  = Key.L,
-                        StickButton = Key.H,
-                        ButtonA     = Key.Z,
-                        ButtonB     = Key.X,
-                        ButtonX     = Key.C,
-                        ButtonY     = Key.V,
-                        ButtonPlus  = Key.Plus,
-                        ButtonR     = Key.U,
-                        ButtonZr    = Key.O,
-                        ButtonSl    = Key.PageUp,
-                        ButtonSr    = Key.PageDown
-                    },
-                    EnableMotion  = false,
-                    MirrorInput   = false,
-                    Slot          = 0,
-                    AltSlot       = 0,
-                    Sensitivity   = 100,
-                    GyroDeadzone  = 1,
-                    DsuServerHost = "127.0.0.1",
-                    DsuServerPort = 26760
-                }
+                 new StandardKeyboardInputConfig
+                 {
+                        Version          = InputConfig.CurrentVersion,
+                        Backend          = InputBackendType.WindowKeyboard,
+                        Id               = "0",
+                        PlayerIndex      = PlayerIndex.Player1,
+                        ControllerType   = ControllerType.JoyconPair,
+                        LeftJoycon       = new LeftJoyconCommonConfig<Key>
+                        {
+                            DpadUp       = Key.Up,
+                            DpadDown     = Key.Down,
+                            DpadLeft     = Key.Left,
+                            DpadRight    = Key.Right,
+                            ButtonMinus  = Key.Minus,
+                            ButtonL      = Key.E,
+                            ButtonZl     = Key.Q,
+                            ButtonSl     = Key.Unbound,
+                            ButtonSr     = Key.Unbound
+                        },
+
+                        LeftJoyconStick  = new JoyconConfigKeyboardStick<Key>
+                        {
+                            StickUp      = Key.W,
+                            StickDown    = Key.S,
+                            StickLeft    = Key.A,
+                            StickRight   = Key.D,
+                            StickButton  = Key.F,
+                        },
+
+                        RightJoycon      = new RightJoyconCommonConfig<Key>
+                        {
+                            ButtonA      = Key.Z,
+                            ButtonB      = Key.X,
+                            ButtonX      = Key.C,
+                            ButtonY      = Key.V,
+                            ButtonPlus   = Key.Plus,
+                            ButtonR      = Key.U,
+                            ButtonZr     = Key.O,
+                            ButtonSl     = Key.Unbound,
+                            ButtonSr     = Key.Unbound
+                        },
+
+                        RightJoyconStick = new JoyconConfigKeyboardStick<Key>
+                        {
+                            StickUp      = Key.I,
+                            StickDown    = Key.K,
+                            StickLeft    = Key.J,
+                            StickRight   = Key.L,
+                            StickButton  = Key.H,
+                        }
+                 }
             };
         }
 
@@ -627,80 +630,6 @@ namespace Ryujinx.Configuration
                 configurationFileFormat.SystemTimeOffset = 0;
 
                 configurationFileUpdated = true;
-            }
-
-            if (configurationFileFormat.Version < 6)
-            {
-                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 6.");
-
-                configurationFileFormat.ControllerConfig = new List<ControllerConfig>();
-                configurationFileFormat.KeyboardConfig   = new List<KeyboardConfig>
-                {
-                    new KeyboardConfig
-                    {
-                        Index          = 0,
-                        ControllerType = ControllerType.JoyconPair,
-                        PlayerIndex    = PlayerIndex.Player1,
-                        LeftJoycon     = new NpadKeyboardLeft
-                        {
-                            StickUp     = Key.W,
-                            StickDown   = Key.S,
-                            StickLeft   = Key.A,
-                            StickRight  = Key.D,
-                            StickButton = Key.F,
-                            DPadUp      = Key.Up,
-                            DPadDown    = Key.Down,
-                            DPadLeft    = Key.Left,
-                            DPadRight   = Key.Right,
-                            ButtonMinus = Key.Minus,
-                            ButtonL     = Key.E,
-                            ButtonZl    = Key.Q,
-                            ButtonSl    = Key.Unbound,
-                            ButtonSr    = Key.Unbound
-                        },
-                        RightJoycon    = new NpadKeyboardRight
-                        {
-                            StickUp     = Key.I,
-                            StickDown   = Key.K,
-                            StickLeft   = Key.J,
-                            StickRight  = Key.L,
-                            StickButton = Key.H,
-                            ButtonA     = Key.Z,
-                            ButtonB     = Key.X,
-                            ButtonX     = Key.C,
-                            ButtonY     = Key.V,
-                            ButtonPlus  = Key.Plus,
-                            ButtonR     = Key.U,
-                            ButtonZr    = Key.O,
-                            ButtonSl    = Key.Unbound,
-                            ButtonSr    = Key.Unbound
-                        },
-                        EnableMotion  = false,
-                        MirrorInput   = false,
-                        Slot          = 0,
-                        AltSlot       = 0,
-                        Sensitivity   = 100,
-                        GyroDeadzone  = 1,
-                        DsuServerHost = "127.0.0.1",
-                        DsuServerPort = 26760
-                    }
-                };
-
-                configurationFileUpdated = true;
-            }
-
-            // Only needed for version 6 configurations.
-            if (configurationFileFormat.Version == 6)
-            {
-                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 7.");
-
-                for (int i = 0; i < configurationFileFormat.KeyboardConfig.Count; i++)
-                {
-                    if (configurationFileFormat.KeyboardConfig[i].Index != KeyboardConfig.AllKeyboardsIndex)
-                    {
-                        configurationFileFormat.KeyboardConfig[i].Index++;
-                    }
-                }
             }
 
             if (configurationFileFormat.Version < 8)
@@ -812,9 +741,67 @@ namespace Ryujinx.Configuration
                 configurationFileUpdated = true;
             }
 
-            List<InputConfig> inputConfig = new List<InputConfig>();
-            inputConfig.AddRange(configurationFileFormat.ControllerConfig);
-            inputConfig.AddRange(configurationFileFormat.KeyboardConfig);
+            if (configurationFileFormat.Version < 24)
+            {
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 24.");
+
+                configurationFileFormat.InputConfig = new List<InputConfig>
+                {
+                     new StandardKeyboardInputConfig
+                     {
+                            Version          = InputConfig.CurrentVersion,
+                            Backend          = InputBackendType.WindowKeyboard,
+                            Id               = "0",
+                            PlayerIndex      = PlayerIndex.Player1,
+                            ControllerType   = ControllerType.JoyconPair,
+                            LeftJoycon       = new LeftJoyconCommonConfig<Key>
+                            {
+                                DpadUp       = Key.Up,
+                                DpadDown     = Key.Down,
+                                DpadLeft     = Key.Left,
+                                DpadRight    = Key.Right,
+                                ButtonMinus  = Key.Minus,
+                                ButtonL      = Key.E,
+                                ButtonZl     = Key.Q,
+                                ButtonSl     = Key.Unbound,
+                                ButtonSr     = Key.Unbound
+                            },
+
+                            LeftJoyconStick  = new JoyconConfigKeyboardStick<Key>
+                            {
+                                StickUp      = Key.W,
+                                StickDown    = Key.S,
+                                StickLeft    = Key.A,
+                                StickRight   = Key.D,
+                                StickButton  = Key.F,
+                            },
+
+                            RightJoycon      = new RightJoyconCommonConfig<Key>
+                            {
+                                ButtonA      = Key.Z,
+                                ButtonB      = Key.X,
+                                ButtonX      = Key.C,
+                                ButtonY      = Key.V,
+                                ButtonPlus   = Key.Plus,
+                                ButtonR      = Key.U,
+                                ButtonZr     = Key.O,
+                                ButtonSl     = Key.Unbound,
+                                ButtonSr     = Key.Unbound
+                            },
+
+                            RightJoyconStick = new JoyconConfigKeyboardStick<Key>
+                            {
+                                StickUp      = Key.I,
+                                StickDown    = Key.K,
+                                StickLeft    = Key.J,
+                                StickRight   = Key.L,
+                                StickButton  = Key.H,
+                            }
+                     }
+                };
+
+                configurationFileUpdated = true;
+            }
 
             Graphics.ResScale.Value                = configurationFileFormat.ResScale;
             Graphics.ResScaleCustom.Value          = configurationFileFormat.ResScaleCustom;
@@ -866,7 +853,12 @@ namespace Ryujinx.Configuration
             Ui.StartFullscreen.Value               = configurationFileFormat.StartFullscreen;
             Hid.EnableKeyboard.Value               = configurationFileFormat.EnableKeyboard;
             Hid.Hotkeys.Value                      = configurationFileFormat.Hotkeys;
-            Hid.InputConfig.Value                  = inputConfig;
+            Hid.InputConfig.Value                  = configurationFileFormat.InputConfig;
+
+            if (Hid.InputConfig.Value == null)
+            {
+                Hid.InputConfig.Value = new List<InputConfig>();
+            }
 
             if (configurationFileUpdated)
             {
@@ -874,6 +866,11 @@ namespace Ryujinx.Configuration
 
                 Common.Logging.Logger.Notice.Print(LogClass.Application, $"Configuration file updated to version {ConfigurationFileFormat.CurrentVersion}");
             }
+        }
+
+        private static void LogValueChange<T>(object sender, ReactiveEventArgs<T> eventArgs, string valueName)
+        {
+            Common.Logging.Logger.Info?.Print(LogClass.Configuration, $"{valueName} set to: {eventArgs.NewValue}");
         }
 
         public static void Initialize()
