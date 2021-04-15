@@ -379,6 +379,7 @@ namespace Ryujinx.HLE.HOS.Applets
                                 _encoding = Encoding.UTF8;
                             }
                         }
+
                         // Make the state transition.
                         if (state < InlineKeyboardState.Ready)
                         {
@@ -395,7 +396,7 @@ namespace Ryujinx.HLE.HOS.Applets
                                 uint cursorPosition = (uint)_keyboardBackgroundCalc.CursorPos;
                                 _dynamicTextInputHandler?.SetText(newText);
 
-                                // TODO(Caian): Update the text in the with the proper response
+                                // TODO(Caian): Send this updated text to the application. A naive response breaks some games.
 
                                 state = InlineKeyboardState.Ready;
                             }
@@ -406,6 +407,7 @@ namespace Ryujinx.HLE.HOS.Applets
                         {
                             state = InlineKeyboardState.Initialized;
                         }
+
                         // Send the response to the Calc
                         _interactiveSession.Push(InlineResponses.Default(state));
                         break;

@@ -43,7 +43,9 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
             uint length = WriteString(text, writer, maxSize, encoding);
 
             if (cursor > length)
+            {
                 cursor = length;
+            }
 
             writer.Write(cursor); // Cursor position
         }
