@@ -27,8 +27,6 @@ namespace Ryujinx
         [DllImport("libX11")]
         private extern static int XInitThreads();
 
-        public static AmiiboManager AmiiboManager { get; set; }
-
         static void Main(string[] args)
         { 
             // Parse Arguments.
