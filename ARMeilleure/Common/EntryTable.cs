@@ -1,43 +1,63 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Numerics;
+using System.Runtime.InteropServices;
 
 namespace ARMeilleure.Common
 {
     /// <summary>
-    /// Represents a fixed size table of the type <typeparamref name="TEntry"/>, whose entries will remain at the same
+    /// Represents an expandable table of the type <typeparamref name="TEntry"/>, whose entries will remain at the same
     /// address through out the table's lifetime.
     /// </summary>
     /// <typeparam name="TEntry">Type of the entry in the table</typeparam>
-    class EntryTable<TEntry> where TEntry : unmanaged
+    class EntryTable<TEntry> : IDisposable where TEntry : unmanaged
     {
+        private bool _disposed;
         private int _freeHint;
-        private readonly TEntry[] _table;
+        private readonly int _pageCapacity; // Number of entries per page.
+        private readonly int _pageLogCapacity;
+        private readonly Dictionary<int, IntPtr> _pages;
         private readonly BitMap _allocated;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntryTable{TEntry}"/> class with the specified capacity.
+        /// Initializes a new instance of the <see cref="EntryTable{TEntry}"/> class with the desired page size.
         /// </summary>
-        /// <param name="capacity">Capacity of the table</param>
-        /// <exception cref="ArgumentOutOfRangeException"><paramref name="capacity"/> is less than 0</exception>
-        public EntryTable(int capacity)
+        /// <param name="pageSize">Desired page size</param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="pageSize"/> is less than 0</exception>
+        /// <exception cref="ArgumentException"><typeparamref name="TEntry"/>'s size is zero</exception>
+        /// <remarks>
+        /// The actual page size may be smaller or larger depending on the size of <typeparamref name="TEntry"/>.
+        /// </remarks>
+        public unsafe EntryTable(int pageSize = 4096)
         {
-            if (capacity < 0)
+            if (pageSize < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(capacity));
+                throw new ArgumentOutOfRangeException(nameof(pageSize), "Page size cannot be negative.");
             }
 
-            _freeHint = 0;
+            if (sizeof(TEntry) == 0)
+            {
+                throw new ArgumentException("Size of TEntry cannot be zero.");
+            }
+
             _allocated = new BitMap();
-            _table = GC.AllocateArray<TEntry>(capacity, pinned: true);
+            _pages = new Dictionary<int, IntPtr>();
+            _pageLogCapacity = BitOperations.Log2((uint)(pageSize / sizeof(TEntry)));
+            _pageCapacity = 1 << _pageLogCapacity;
         }
 
         /// <summary>
-        /// Tries to allocate an entry in the <see cref="EntryTable{TEntry}"/>. Returns <see langword="true"/> if
-        /// success; otherwise returns <see langword="false"/>.
+        /// Allocates an entry in the <see cref="EntryTable{TEntry}"/>.
         /// </summary>
-        /// <param name="index">Index of entry allocated in the table</param>
-        /// <returns><see langword="true"/> if success; otherwise <see langword="false"/></returns>
-        public bool TryAllocate(out int index)
+        /// <returns>Index of entry allocated in the table</returns>
+        /// <exception cref="ObjectDisposedException"><see cref="EntryTable{TEntry}"/> instance was disposed</exception>
+        public int Allocate()
         {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(null);
+            }
+
             lock (_allocated)
             {
                 if (_allocated.IsSet(_freeHint))
@@ -45,32 +65,37 @@ namespace ARMeilleure.Common
                     _freeHint = _allocated.FindFirstUnset();
                 }
 
-                if (_freeHint >= 0 && _freeHint < _table.Length)
-                {
-                    index = _freeHint++;
+                int index = _freeHint++;
+                var page = GetPage(index);
 
-                    _allocated.Set(index);
+                _allocated.Set(index);
 
-                    GetValue(index) = default;
+                GetValue(page, index) = default;
 
-                    return true;
-                }
+                return index;
             }
-
-            index = 0;
-
-            return false;
         }
 
         /// <summary>
         /// Frees the entry at the specified <paramref name="index"/>.
         /// </summary>
         /// <param name="index">Index of entry to free</param>
+        /// <exception cref="ObjectDisposedException"><see cref="EntryTable{TEntry}"/> instance was disposed</exception>
         public void Free(int index)
         {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(null);
+            }
+
             lock (_allocated)
             {
-                _allocated.Clear(index);
+                if (_allocated.IsSet(index))
+                {
+                    _allocated.Clear(index);
+
+                    _freeHint = index;
+                }
             }
         }
 
@@ -78,15 +103,17 @@ namespace ARMeilleure.Common
         /// Gets a reference to the entry at the specified allocated <paramref name="index"/>.
         /// </summary>
         /// <param name="index">Index of the entry</param>
-        /// <returns>Reference to the entry at the specified index</returns>
+        /// <returns>Reference to the entry at the specified <paramref name="index"/></returns>
+        /// <exception cref="ObjectDisposedException"><see cref="EntryTable{TEntry}"/> instance was disposed</exception>
         /// <exception cref="ArgumentException">Entry at <paramref name="index"/> is not allocated</exception>
-        /// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> is outside of the table</exception>
         public ref TEntry GetValue(int index)
         {
-            if (index < 0 || index >= _table.Length)
+            if (_disposed)
             {
-                throw new ArgumentOutOfRangeException(nameof(index));
+                throw new ObjectDisposedException(null);
             }
+
+            Span<TEntry> page;
 
             lock (_allocated)
             {
@@ -94,9 +121,77 @@ namespace ARMeilleure.Common
                 {
                     throw new ArgumentException("Entry at the specified index was not allocated", nameof(index));
                 }
+
+                page = GetPage(index);
             }
 
-            return ref _table[index];
+            return ref GetValue(page, index);
+        }
+
+        /// <summary>
+        /// Gets a reference to the entry at using the specified <paramref name="index"/> from the specified
+        /// <paramref name="page"/>.
+        /// </summary>
+        /// <param name="page">Page to use</param>
+        /// <param name="index">Index to use</param>
+        /// <returns>Reference to the entry</returns>
+        private ref TEntry GetValue(Span<TEntry> page, int index)
+        {
+            return ref page[index & (_pageCapacity - 1)];
+        }
+
+        /// <summary>
+        /// Gets the page for the specified <see cref="index"/>.
+        /// </summary>
+        /// <param name="index">Index to use</param>
+        /// <returns>Page for the specified <see cref="index"/></returns>
+        private unsafe Span<TEntry> GetPage(int index)
+        {
+            var pageIndex = (int)((uint)(index & ~(_pageCapacity - 1)) >> _pageLogCapacity);
+
+            if (!_pages.TryGetValue(pageIndex, out IntPtr page))
+            {
+                page = Marshal.AllocHGlobal(sizeof(TEntry) * _pageCapacity);
+
+                _pages.Add(pageIndex, page);
+            }
+
+            return new Span<TEntry>((void*)page, _pageCapacity);
+        }
+
+        /// <summary>
+        /// Releases all resources used by the <see cref="EntryTable{TEntry}"/> instance.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases all unmanaged and optionally managed resources used by the <see cref="EntryTable{TEntry}{T}"/>
+        /// instance.
+        /// </summary>
+        /// <param name="disposing"><see langword="true"/> to dispose managed resources also; otherwise just unmanaged resouces</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                foreach (var page in _pages.Values)
+                {
+                    Marshal.FreeHGlobal(page);
+                }
+
+                _disposed = true;
+            }
+        }
+
+        /// <summary>
+        /// Frees resources used by the <see cref="EntryTable{TEntry}"/> instance.
+        /// </summary>
+        ~EntryTable()
+        {
+            Dispose(false);
         }
     }
 }

@@ -18,10 +18,22 @@ namespace ARMeilleure.Common
         /// </summary>
         /// <param name="countTable"><see cref="EntryTable{T}"/> instance</param>
         /// <param name="index">Index in the <see cref="EntryTable{T}"/></param>
-        private Counter(EntryTable<T> countTable, int index)
+        /// <exception cref="ArgumentNullException"><paramref name="countTable"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentException"><typeparamref name="T"/> is unsupported</exception>
+        public Counter(EntryTable<T> countTable)
         {
-            _countTable = countTable;
-            _index = index;
+            if (typeof(T) != typeof(byte) && typeof(T) != typeof(sbyte) &&
+                typeof(T) != typeof(short) && typeof(T) != typeof(ushort) &&
+                typeof(T) != typeof(int) && typeof(T) != typeof(uint) &&
+                typeof(T) != typeof(long) && typeof(T) != typeof(ulong) &&
+                typeof(T) != typeof(nint) && typeof(T) != typeof(nuint) &&
+                typeof(T) != typeof(float) && typeof(T) != typeof(double))
+            {
+                throw new ArgumentException("Counter does not support the specified type.");
+            }
+
+            _countTable = countTable ?? throw new ArgumentNullException(nameof(countTable));
+            _index = countTable.Allocate();
         }
 
         /// <summary>
@@ -67,48 +79,11 @@ namespace ARMeilleure.Common
         }
 
         /// <summary>
-        /// Frees resources used by <see cref="Counter{T}"/> instance.
+        /// Frees resources used by the <see cref="Counter{T}"/> instance.
         /// </summary>
         ~Counter()
         {
             Dispose(false);
-        }
-
-        /// <summary>
-        /// Tries to create a <see cref="Counter{T}"/> instance from the specified <see cref="EntryTable{T}"/> instance.
-        /// </summary>
-        /// <param name="countTable"><see cref="EntryTable{T}"/> from which to create the <see cref="Counter{T}"/></param>
-        /// <param name="counter"><see cref="Counter{T}"/> instance if success; otherwise <see langword="null"/></param>
-        /// <returns><see langword="true"/> if success; otherwise <see langword="false"/></returns>
-        /// <exception cref="ArgumentNullException"><paramref name="countTable"/> is <see langword="null"/></exception>
-        /// <exception cref="ArgumentException"><typeparamref name="T"/> is unsupported</exception>
-        public static bool TryCreate(EntryTable<T> countTable, out Counter<T> counter)
-        {
-            if (countTable == null)
-            {
-                throw new ArgumentNullException(nameof(countTable));
-            }
-
-            if (typeof(T) != typeof(byte) && typeof(T) != typeof(sbyte) &&
-                typeof(T) != typeof(short) && typeof(T) != typeof(ushort) &&
-                typeof(T) != typeof(int) && typeof(T) != typeof(uint) &&
-                typeof(T) != typeof(long) && typeof(T) != typeof(ulong) &&
-                typeof(T) != typeof(nint) && typeof(T) != typeof(nuint) &&
-                typeof(T) != typeof(float) && typeof(T) != typeof(double))
-            {
-                throw new ArgumentException("Counter does not support the specified type", nameof(countTable));
-            }
-
-            if (countTable.TryAllocate(out int index))
-            {
-                counter = new Counter<T>(countTable, index);
-
-                return true;
-            }
-
-            counter = null;
-
-            return false;
         }
     }
 }

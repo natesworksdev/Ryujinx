@@ -579,12 +579,7 @@ namespace ARMeilleure.Translation.PTC
                         {
                             RelocEntry[] relocEntries = GetRelocEntries(relocsReader, infoEntry.RelocEntriesCount);
 
-                            if (!PatchCode(code, relocEntries, memory.PageTablePointer, jumpTable, countTable, out callCounter))
-                            {
-                                SkipUnwindInfo(unwindInfosReader);
-
-                                continue;
-                            }
+                            PatchCode(code, relocEntries, memory.PageTablePointer, jumpTable, countTable, out callCounter);
                         }
 
                         UnwindInfo unwindInfo = ReadUnwindInfo(unwindInfosReader);
@@ -683,7 +678,7 @@ namespace ARMeilleure.Translation.PTC
             return relocEntries;
         }
 
-        private static bool PatchCode(
+        private static void PatchCode(
             Span<byte> code,
             RelocEntry[] relocEntries,
             IntPtr pageTablePointer,
@@ -711,13 +706,9 @@ namespace ARMeilleure.Translation.PTC
                 }
                 else if (relocEntry.Index == CountTableIndex)
                 {
-                    // If we could not allocate an entry on the count table we dip.
-                    if (!Counter<uint>.TryCreate(countTable, out Counter<uint> counter))
-                    {
-                        return false;
-                    }
+                    callCounter = new Counter<uint>(countTable);
 
-                    unsafe { imm = (ulong)Unsafe.AsPointer(ref counter.Value); }
+                    unsafe { imm = (ulong)Unsafe.AsPointer(ref callCounter.Value); }
                 }
                 else if (Delegates.TryGetDelegateFuncPtrByIndex(relocEntry.Index, out IntPtr funcPtr))
                 {
@@ -730,8 +721,6 @@ namespace ARMeilleure.Translation.PTC
 
                 BinaryPrimitives.WriteUInt64LittleEndian(code.Slice(relocEntry.Position, 8), imm);
             }
-
-            return true;
         }
 
         private static UnwindInfo ReadUnwindInfo(BinaryReader unwindInfosReader)

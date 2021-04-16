@@ -57,7 +57,7 @@ namespace ARMeilleure.Translation
             _backgroundTranslatorEvent = new AutoResetEvent(false);
             _backgroundTranslatorLock = new ReaderWriterLock();
 
-            CountTable = new EntryTable<uint>(CountTableCapacity);
+            CountTable = new EntryTable<uint>();
 
             JitCache.Initialize(allocator);
 
@@ -173,6 +173,8 @@ namespace ARMeilleure.Translation
 
                 _jumpTable.Dispose();
                 _jumpTable = null;
+
+                CountTable.Dispose();
 
                 GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
             }
@@ -393,14 +395,11 @@ namespace ARMeilleure.Translation
             return context.GetControlFlowGraph();
         }
 
-        internal static void EmitRejitCheck(ArmEmitterContext context, out Counter<uint> counter)
+        internal static Counter<uint> EmitRejitCheck(ArmEmitterContext context, out Counter<uint> counter)
         {
             const int MinsCallForRejit = 100;
 
-            if (!Counter<uint>.TryCreate(context.CountTable, out counter))
-            {
-                return;
-            }
+            counter = new Counter<uint>(context.CountTable);
 
             Operand lblEnd = Label();
 
@@ -413,6 +412,8 @@ namespace ARMeilleure.Translation
             context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.EnqueueForRejit)), Const(context.EntryAddress));
 
             context.MarkLabel(lblEnd);
+
+            return counter;
         }
 
         internal static void EmitSynchronization(EmitterContext context)
