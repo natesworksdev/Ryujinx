@@ -55,7 +55,11 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public void FlagAttributeRead(int attribute)
         {
-            if (Config.Stage == ShaderStage.Fragment)
+            if (Config.Stage == ShaderStage.Vertex && attribute == AttributeConsts.InstanceId)
+            {
+                Config.SetUsedFeature(FeatureFlags.InstanceId);
+            }
+            else if (Config.Stage == ShaderStage.Fragment)
             {
                 switch (attribute)
                 {
