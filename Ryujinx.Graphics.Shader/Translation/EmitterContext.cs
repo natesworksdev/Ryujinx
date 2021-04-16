@@ -67,6 +67,26 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
         }
 
+        public void FlagAttributeWritten(int attribute)
+        {
+            if (Config.Stage == ShaderStage.Vertex)
+            {
+                switch (attribute)
+                {
+                    case AttributeConsts.ClipDistance0:
+                    case AttributeConsts.ClipDistance1:
+                    case AttributeConsts.ClipDistance2:
+                    case AttributeConsts.ClipDistance3:
+                    case AttributeConsts.ClipDistance4:
+                    case AttributeConsts.ClipDistance5:
+                    case AttributeConsts.ClipDistance6:
+                    case AttributeConsts.ClipDistance7:
+                        Config.SetClipDistanceWritten((attribute - AttributeConsts.ClipDistance0) / 4);
+                        break;
+                }
+            }
+        }
+
         public void MarkLabel(Operand label)
         {
             Add(Instruction.MarkLabel, label);
