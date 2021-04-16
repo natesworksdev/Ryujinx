@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
+using Ryujinx.Ui.Widgets;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -22,6 +23,7 @@ namespace Ryujinx.Ui
         private static List<AmiiboApi>                _amiiboApis;
         private static Dictionary<string, Gdk.Pixbuf> _amiiboPreviews;
         private static bool                           _initialized;
+        private static bool                           _offlineMode;
 
         public static List<AmiiboApi>                 AmiiboApis { get => _amiiboApis; }
 
@@ -167,6 +169,8 @@ namespace Ryujinx.Ui
 
                 if (response.IsSuccessStatusCode)
                 {
+                    ShowOnlineModeMessage();
+
                     return response.Content.Headers.LastModified.Value.DateTime != oldLastModified;
                 }
 
@@ -205,11 +209,14 @@ namespace Ryujinx.Ui
 
                     Logger.Info?.Print(LogClass.Application, "Amiibo data updated successfully.");
 
+                    ShowOnlineModeMessage();
+
                     return amiiboJsonString;
                 }
                 else
                 {
                     Logger.Warning?.Print(LogClass.Application, "An error occured while fetching informations from the Amiibo API.");
+                    ShowOfflineModeMessage();
                 }
             }
             catch (Exception ex)
@@ -222,7 +229,29 @@ namespace Ryujinx.Ui
 
         private static void ShowAmiiboServiceWarning(string message)
         {
-            Logger.Warning?.Print(LogClass.Application, $"Unable to connect to Amiibo API server. The service may be down or you may need to verify your internet connection is online: {message}");
+            Logger.Warning?.Print(LogClass.Application, $"Unable to connect to the Amiibo API server. The service may be down or you may need to verify your internet connection is online: {message}");
+
+            ShowOfflineModeMessage();
+        }
+
+        private static void ShowOfflineModeMessage()
+        {
+            if (!_offlineMode)
+            {
+                _offlineMode = true;
+
+                GtkDialog.CreateInfoDialog($"Amiibo API", "Unable to connect to the Amiibo API server. The Amiibo service will run in offline mode until a connection is made.");
+            }
+        }
+
+        private static void ShowOnlineModeMessage()
+        {
+            if (_offlineMode)
+            {
+                _offlineMode = false;
+
+                GtkDialog.CreateInfoDialog($"Amiibo API", "Successfully connected to the Amiibo API server.");
+            }
         }
 
         public struct AmiiboJson
