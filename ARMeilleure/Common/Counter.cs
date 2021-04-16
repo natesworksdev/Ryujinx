@@ -40,7 +40,7 @@ namespace ARMeilleure.Common
         /// Gets a reference to the value of the counter.
         /// </summary>
         /// <exception cref="ObjectDisposedException"><see cref="Counter{T}"/> instance was disposed</exception>
-        public ref T Value 
+        public ref T Value
         {
             get
             {
@@ -49,7 +49,7 @@ namespace ARMeilleure.Common
                     throw new ObjectDisposedException(null);
                 }
 
-                return ref _countTable.GetValue(_index); 
+                return ref _countTable.GetValue(_index);
             }
         }
 

@@ -218,8 +218,7 @@ namespace ARMeilleure.Instructions
                 {
                     context.StoreToContext();
 
-                    Operand fallbackAddr = context.Call(
-                        typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetFunctionAddress)), address);
+                    Operand fallbackAddr = context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetFunctionAddress)), address);
 
                     EmitNativeCall(context, fallbackAddr, isJump: true);
                 }
