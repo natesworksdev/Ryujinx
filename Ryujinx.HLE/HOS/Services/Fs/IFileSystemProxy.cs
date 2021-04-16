@@ -38,7 +38,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         public ResultCode OpenFileSystemWithId(ServiceCtx context)
         {
             FileSystemType fileSystemType = (FileSystemType)context.RequestData.ReadInt32();
-            long titleId = context.RequestData.ReadInt64();
+            ulong titleId = context.RequestData.ReadUInt64();
             string switchPath = ReadUtf8String(context);
             string fullPath = context.Device.FileSystem.SwitchPathToSystemPath(switchPath);
 
@@ -392,7 +392,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         {
             StorageId storageId = (StorageId)context.RequestData.ReadByte();
             byte[] padding = context.RequestData.ReadBytes(7);
-            long titleId = context.RequestData.ReadInt64();
+            ulong titleId = context.RequestData.ReadUInt64();
 
             // We do a mitm here to find if the request is for an AOC.
             // This is because AOC can be distributed over multiple containers in the emulator.

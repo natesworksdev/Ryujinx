@@ -235,8 +235,9 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
         public byte[] GetFirmwareData(Switch device)
         {
-            long   titleId     = 0x0100000000000809;
-            string contentPath = device.System.ContentManager.GetInstalledContentPath(titleId, StorageId.NandSystem, NcaContentType.Data);
+            const ulong SystemVersionTitleId = 0x0100000000000809;
+
+            string contentPath = device.System.ContentManager.GetInstalledContentPath(SystemVersionTitleId, StorageId.NandSystem, NcaContentType.Data);
 
             if (string.IsNullOrWhiteSpace(contentPath))
             {
