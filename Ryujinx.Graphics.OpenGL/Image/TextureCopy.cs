@@ -205,7 +205,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                     int copyWidth = sizeInBlocks ? BitUtils.DivRoundUp(width, blockWidth) : width;
                     int copyHeight = sizeInBlocks ? BitUtils.DivRoundUp(height, blockHeight) : height;
 
-                    if (HwCapabilities.Vendor == HwCapabilities.GpuVendor.Intel)
+                    if (!OperatingSystem.IsLinux() && HwCapabilities.Vendor == HwCapabilities.GpuVendor.Intel)
                     {
                         GL.CopyImageSubData(
                             src.StorageHandle,
