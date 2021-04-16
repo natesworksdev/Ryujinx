@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.Ui
 {
-    public class AmiiboManager
+    public static class AmiiboManager
     {
         private const string DEFAULT_JSON = "{ \"amiibo\": [] }";
 
