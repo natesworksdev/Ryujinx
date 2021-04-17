@@ -117,8 +117,8 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
                 return ResultCode.InvalidState;
             }
 
-            long inputPosition = context.Request.SendBuff[0].Position;
-            long inputSize     = context.Request.SendBuff[0].Size;
+            ulong inputPosition = context.Request.SendBuff[0].Position;
+            ulong inputSize     = context.Request.SendBuff[0].Size;
 
             if (inputSize == 0)
             {

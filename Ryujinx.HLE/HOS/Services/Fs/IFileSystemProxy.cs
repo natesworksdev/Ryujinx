@@ -337,14 +337,14 @@ namespace Ryujinx.HLE.HOS.Services.Fs
             SaveDataSpaceId spaceId = (SaveDataSpaceId)context.RequestData.ReadInt64();
             SaveDataFilter filter = context.RequestData.ReadStruct<SaveDataFilter>();
 
-            long bufferPosition = context.Request.ReceiveBuff[0].Position;
-            long bufferLen = context.Request.ReceiveBuff[0].Size;
+            ulong bufferPosition = context.Request.ReceiveBuff[0].Position;
+            ulong bufferLen = context.Request.ReceiveBuff[0].Size;
 
             byte[] infoBuffer = new byte[bufferLen];
 
             Result result = _baseFileSystemProxy.FindSaveDataWithFilter(out long count, infoBuffer, spaceId, ref filter);
 
-            context.Memory.Write((ulong)bufferPosition, infoBuffer);
+            context.Memory.Write(bufferPosition, infoBuffer);
             context.ResponseData.Write(count);
 
             return (ResultCode)result.Value;

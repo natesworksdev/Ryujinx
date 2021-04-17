@@ -20,8 +20,8 @@ namespace Ryujinx.HLE.HOS.Services.Ns
         // SetDefaultDeliveryTarget(pid, buffer<bytes, 5> unknown)
         public ResultCode SetDefaultDeliveryTarget(ServiceCtx context)
         {
-            long   inBufferPosition = context.Request.SendBuff[0].Position;
-            long   inBufferSize     = context.Request.SendBuff[0].Size;
+            ulong   inBufferPosition = context.Request.SendBuff[0].Position;
+            ulong   inBufferSize     = context.Request.SendBuff[0].Size;
             byte[] buffer           = new byte[inBufferSize];
 
             context.Memory.Read((ulong)inBufferPosition, buffer);

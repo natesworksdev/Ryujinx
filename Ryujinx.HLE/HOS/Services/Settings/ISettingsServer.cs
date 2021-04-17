@@ -200,7 +200,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
             return ResultCode.Success;
         }
 
-        public ResultCode GetAvailableLanguagesCodesImpl(ServiceCtx context, long position, long size, int maxSize)
+        public ResultCode GetAvailableLanguagesCodesImpl(ServiceCtx context, ulong position, ulong size, int maxSize)
         {
             int count = (int)(size / 8);
 
@@ -211,7 +211,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
             for (int index = 0; index < count; index++)
             {
-                context.Memory.Write((ulong)position, SystemStateMgr.GetLanguageCode(index));
+                context.Memory.Write(position, SystemStateMgr.GetLanguageCode(index));
 
                 position += 8;
             }

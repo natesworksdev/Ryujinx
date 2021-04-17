@@ -11,8 +11,8 @@ namespace Ryujinx.HLE.HOS.Services.Ngct
             //       Then it checks if ngc.t!functionality_override_enabled is enabled and if sys:set GetT is == 2.
             //       If both conditions are true, it does this following code. Since we currently stub it, it's fine to don't check settings service values.
 
-            long bufferPosition = context.Request.PtrBuff[0].Position;
-            long bufferSize     = context.Request.PtrBuff[0].Size;
+            ulong bufferPosition = context.Request.PtrBuff[0].Position;
+            ulong bufferSize     = context.Request.PtrBuff[0].Size;
 
             bool   isMatch = false;
             string text    = "";
@@ -52,10 +52,10 @@ namespace Ryujinx.HLE.HOS.Services.Ngct
             //       Then it checks if ngc.t!functionality_override_enabled is enabled and if sys:set GetT is == 2.
             //       If both conditions are true, it does this following code. Since we currently stub it, it's fine to don't check settings service values.
 
-            long bufferPosition = context.Request.PtrBuff[0].Position;
-            long bufferSize     = context.Request.PtrBuff[0].Size;
+            ulong bufferPosition = context.Request.PtrBuff[0].Position;
+            ulong bufferSize     = context.Request.PtrBuff[0].Size;
 
-            long bufferFilteredPosition = context.Request.RecvListBuff[0].Position;
+            ulong bufferFilteredPosition = context.Request.RecvListBuff[0].Position;
 
             string text         = "";
             string textFiltered = "";

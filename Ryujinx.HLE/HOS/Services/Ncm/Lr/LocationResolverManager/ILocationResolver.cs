@@ -228,12 +228,12 @@ namespace Ryujinx.HLE.HOS.Services.Ncm.Lr.LocationResolverManager
 
             if (!string.IsNullOrWhiteSpace(contentPath))
             {
-                long position = context.Request.RecvListBuff[0].Position;
-                long size     = context.Request.RecvListBuff[0].Size;
+                ulong position = context.Request.RecvListBuff[0].Position;
+                ulong size     = context.Request.RecvListBuff[0].Size;
 
                 byte[] contentPathBuffer = Encoding.UTF8.GetBytes(contentPath);
 
-                context.Memory.Write((ulong)position, contentPathBuffer);
+                context.Memory.Write(position, contentPathBuffer);
             }
             else
             {
