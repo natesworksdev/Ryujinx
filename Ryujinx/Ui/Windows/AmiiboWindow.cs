@@ -1,5 +1,7 @@
 ﻿using Gtk;
 using Ryujinx.Common;
+using Ryujinx.Ui.App;
+using Ryujinx.Ui.Widgets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,16 +48,29 @@ namespace Ryujinx.Ui.Windows
 
             _showAllCheckBox.Clicked      += ShowAllCheckBox_Clicked;
 
+            AmiiboManager.OnOnlineModeChange = OnOnlineModeChange;
+
             Task.Run(async () =>
             {
-                LoadContent();
+                if (AmiiboManager.AmiiboApis.Count > 0)
+                {
+                    LoadContent();
+                }
 
                 if (await AmiiboManager.UpdateAmiibos())
                 {
                     _amiiboCharsComboBox.RemoveAll();
                     _amiiboSeriesComboBox.RemoveAll();
 
-                    LoadContent();
+                    if (AmiiboManager.AmiiboApis.Count > 0)
+                    {
+                        LoadContent();
+                    }
+                    else
+                    {
+                        GtkDialog.CreateInfoDialog("Amiibo API", "An error occured while fetching Amiibo data from the API.");
+                        Close();
+                    }
                 }
             });
         }
@@ -270,8 +285,15 @@ namespace Ryujinx.Ui.Windows
             Close();
         }
 
+        private void OnOnlineModeChange(object sender, AmiiboServiceConnectionEventArgs args)
+        {
+            GtkDialog.CreateInfoDialog("Amiibo API", args.Message);
+        }
+
         protected override void Dispose(bool disposing)
         {
+            AmiiboManager.OnOnlineModeChange -= OnOnlineModeChange;
+
             base.Dispose(disposing);
         }
     }

@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
+using Ryujinx.Ui.App;
 using Ryujinx.Ui.Widgets;
 using System;
 using System.Collections.Generic;
@@ -23,9 +24,10 @@ namespace Ryujinx.Ui
         private static List<AmiiboApi>                _amiiboApis;
         private static Dictionary<string, Gdk.Pixbuf> _amiiboPreviews;
         private static bool                           _initialized;
-        private static bool                           _offlineMode;
+        private static bool                           _onlineMode = true;
 
         public static List<AmiiboApi>                 AmiiboApis { get => _amiiboApis; }
+        public static EventHandler<AmiiboServiceConnectionEventArgs> OnOnlineModeChange;
 
         public static void Initialize()
         {
@@ -83,10 +85,10 @@ namespace Ryujinx.Ui
         }
 
         /// <summary>
-        /// Checks to see that there is a new version of amiibo data available for download.
+        /// Checks to see if there is a new version of amiibo data available, if an update is available it will be downloaded.
         /// </summary>
-        /// <returns><b>True</b> New data was downloaded and installed successfully.<br>
-        /// </br><b>False</b> The current version of the data is already up-to-date or an error occurred.</returns>
+        /// <returns><b>True</b>: New data was downloaded and installed successfully.<br>
+        /// </br><b>False</b>: The current version of the data is already up-to-date or an error occurred.</returns>
         public static async Task<bool> UpdateAmiibos()
         {
             Logger.Info?.Print(LogClass.Application, "Checking for Amiibo Updates...");
@@ -97,7 +99,7 @@ namespace Ryujinx.Ui
             {
                 if (await NeedsUpdate(_amiiboJson.LastUpdated))
                 {
-                    amiiboJsonString = await DownloadAmiiboJson();
+                    amiiboJsonString = await DownloadAmiibos();
 
                     // Don't overwrite existing configuration.
                     if (amiiboJsonString != null)
@@ -120,7 +122,7 @@ namespace Ryujinx.Ui
             {
                 try
                 {
-                    amiiboJsonString = await DownloadAmiiboJson() ?? DEFAULT_JSON;
+                    amiiboJsonString = await DownloadAmiibos() ?? DEFAULT_JSON;
                     
                     LoadAmiiboJson(amiiboJsonString);
 
@@ -184,7 +186,7 @@ namespace Ryujinx.Ui
             }
         }
 
-        private static async Task<string> DownloadAmiiboJson()
+        private static async Task<string> DownloadAmiibos()
         {
             Logger.Info?.Print(LogClass.Application, "Downloading newer version of amiibo data...");
 
@@ -236,21 +238,21 @@ namespace Ryujinx.Ui
 
         private static void ShowOfflineModeMessage()
         {
-            if (!_offlineMode)
+            if (_onlineMode)
             {
-                _offlineMode = true;
-
-                GtkDialog.CreateInfoDialog($"Amiibo API", "Unable to connect to the Amiibo API server. The Amiibo service will run in offline mode until a connection is made.");
+                _onlineMode = false;
+                
+                OnOnlineModeChange?.Invoke(null, new AmiiboServiceConnectionEventArgs(_onlineMode));
             }
         }
 
         private static void ShowOnlineModeMessage()
         {
-            if (_offlineMode)
+            if (!_onlineMode)
             {
-                _offlineMode = false;
+                _onlineMode = true;
 
-                GtkDialog.CreateInfoDialog($"Amiibo API", "Successfully connected to the Amiibo API server.");
+                OnOnlineModeChange?.Invoke(null, new AmiiboServiceConnectionEventArgs(_onlineMode));
             }
         }
 
