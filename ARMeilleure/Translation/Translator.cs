@@ -395,7 +395,7 @@ namespace ARMeilleure.Translation
             return context.GetControlFlowGraph();
         }
 
-        internal static Counter<uint> EmitRejitCheck(ArmEmitterContext context, out Counter<uint> counter)
+        internal static void EmitRejitCheck(ArmEmitterContext context, out Counter<uint> counter)
         {
             const int MinsCallForRejit = 100;
 
@@ -412,8 +412,6 @@ namespace ARMeilleure.Translation
             context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.EnqueueForRejit)), Const(context.EntryAddress));
 
             context.MarkLabel(lblEnd);
-
-            return counter;
         }
 
         internal static void EmitSynchronization(EmitterContext context)
