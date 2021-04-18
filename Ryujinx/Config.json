@@ -1,5 +1,5 @@
 {
-  "version": 29,
+  "version": 33,
   "enable_file_log": true,
   "backend_threading": "Auto",
   "res_scale": 1,

@@ -8,6 +8,7 @@ using Ryujinx.Common.SystemInfo;
 using Ryujinx.Configuration;
 using Ryujinx.Modules;
 using Ryujinx.Ui;
+using Ryujinx.Ui.Helper;
 using Ryujinx.Ui.Widgets;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using System;
@@ -134,16 +135,8 @@ namespace Ryujinx
                 }
             }
 
-            if (startFullscreenArg)
-            {
-                ConfigurationState.Instance.Ui.StartFullscreen.Value = true;
-            }
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                ConsoleHelper.ToggleConsole();
-            }
-            
+            ConsoleHelper.ToggleConsole(ConfigurationState.Instance.ShowConsole);
+           
             // Logging system information.
             PrintSystemInfo();
 

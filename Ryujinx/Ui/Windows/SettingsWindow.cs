@@ -4,9 +4,8 @@ using Ryujinx.Audio.Backends.SDL2;
 using Ryujinx.Audio.Backends.SoundIo;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
-using Ryujinx.Common.System;
-using Ryujinx.Common.Platform;
 using Ryujinx.Common.GraphicsDriver;
+using Ryujinx.Common.System;
 using Ryujinx.Configuration;
 using Ryujinx.Configuration.System;
 using Ryujinx.HLE.FileSystem;
@@ -520,10 +519,7 @@ namespace Ryujinx.Ui.Windows
                 ConfigurationState.Instance.System.AudioBackend.Value = (AudioBackend)_audioBackendStore.GetValue(activeIter, 1);
             }
             
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                ConsoleHelper.ToggleConsole();
-            }
+            ConsoleHelper.ToggleConsole(ConfigurationState.Instance.ShowConsole);
             
             ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
             _parent.UpdateGraphicsConfig();

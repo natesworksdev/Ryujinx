@@ -14,7 +14,7 @@ namespace Ryujinx.Configuration
         /// <summary>
         /// The current version of the file format
         /// </summary>
-        public const int CurrentVersion = 32;
+        public const int CurrentVersion = 33;
 
         public int Version { get; set; }
 
@@ -143,6 +143,11 @@ namespace Ryujinx.Configuration
         /// Hide Cursor on Idle
         /// </summary>
         public bool HideCursorOnIdle { get; set; }
+
+        /// <summary>
+        /// Shows or hides the console
+        /// </summary>
+        public bool ShowConsole { get; set; }
 
         /// <summary>
         /// Enables or disables Vertical Sync
