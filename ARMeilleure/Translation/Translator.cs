@@ -174,6 +174,8 @@ namespace ARMeilleure.Translation
                 _jumpTable.Dispose();
                 _jumpTable = null;
 
+                CountTable.Dispose();
+
                 GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
             }
         }

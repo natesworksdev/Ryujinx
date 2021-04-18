@@ -10,13 +10,13 @@ namespace ARMeilleure.Common
     /// address through out the table's lifetime.
     /// </summary>
     /// <typeparam name="TEntry">Type of the entry in the table</typeparam>
-    class EntryTable<TEntry> where TEntry : unmanaged
+    class EntryTable<TEntry> : IDisposable where TEntry : unmanaged
     {
         private bool _disposed;
         private int _freeHint;
         private readonly int _pageCapacity; // Number of entries per page.
         private readonly int _pageLogCapacity;
-        private readonly Dictionary<int, TEntry[]> _pages;
+        private readonly Dictionary<int, IntPtr> _pages;
         private readonly BitMap _allocated;
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace ARMeilleure.Common
             }
 
             _allocated = new BitMap();
-            _pages = new Dictionary<int, TEntry[]>();
+            _pages = new Dictionary<int, IntPtr>();
             _pageLogCapacity = BitOperations.Log2((uint)(pageSize / sizeof(TEntry)));
             _pageCapacity = 1 << _pageLogCapacity;
         }
@@ -149,14 +149,49 @@ namespace ARMeilleure.Common
         {
             var pageIndex = (int)((uint)(index & ~(_pageCapacity - 1)) >> _pageLogCapacity);
 
-            if (!_pages.TryGetValue(pageIndex, out TEntry[] page))
+            if (!_pages.TryGetValue(pageIndex, out IntPtr page))
             {
-                page = GC.AllocateUninitializedArray<TEntry>(_pageCapacity, pinned: true);
+                page = Marshal.AllocHGlobal(sizeof(TEntry) * _pageCapacity);
 
                 _pages.Add(pageIndex, page);
             }
 
-            return page;
+            return new Span<TEntry>((void*)page, _pageCapacity);
+        }
+
+        /// <summary>
+        /// Releases all resources used by the <see cref="EntryTable{TEntry}"/> instance.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases all unmanaged and optionally managed resources used by the <see cref="EntryTable{TEntry}{T}"/>
+        /// instance.
+        /// </summary>
+        /// <param name="disposing"><see langword="true"/> to dispose managed resources also; otherwise just unmanaged resouces</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                foreach (var page in _pages.Values)
+                {
+                    Marshal.FreeHGlobal(page);
+                }
+
+                _disposed = true;
+            }
+        }
+
+        /// <summary>
+        /// Frees resources used by the <see cref="EntryTable{TEntry}"/> instance.
+        /// </summary>
+        ~EntryTable()
+        {
+            Dispose(false);
         }
     }
 }
