@@ -8,10 +8,10 @@ namespace ARMeilleure.Translation.Cache
     {
         private struct MemoryBlock : IComparable<MemoryBlock>
         {
-            public int Offset { get; }
-            public int Size { get; }
+            public uint Offset { get; }
+            public uint Size { get; }
 
-            public MemoryBlock(int offset, int size)
+            public MemoryBlock(uint offset, uint size)
             {
                 Offset = offset;
                 Size = size;
@@ -25,12 +25,12 @@ namespace ARMeilleure.Translation.Cache
 
         private readonly List<MemoryBlock> _blocks = new List<MemoryBlock>();
 
-        public CacheMemoryAllocator(int capacity)
+        public CacheMemoryAllocator(uint capacity)
         {
             _blocks.Add(new MemoryBlock(0, capacity));
         }
 
-        public int Allocate(int size)
+        public bool TryAllocate(uint size, out uint offset)
         {
             for (int i = 0; i < _blocks.Count; i++)
             {
@@ -39,20 +39,24 @@ namespace ARMeilleure.Translation.Cache
                 if (block.Size > size)
                 {
                     _blocks[i] = new MemoryBlock(block.Offset + size, block.Size - size);
-                    return block.Offset;
+
+                    offset = block.Offset;
+                    return true;
                 }
                 else if (block.Size == size)
                 {
                     _blocks.RemoveAt(i);
-                    return block.Offset;
+
+                    offset = block.Offset;
+                    return true;
                 }
             }
 
-            // We don't have enough free memory to perform the allocation.
-            return -1;
+            offset = default;
+            return false;
         }
 
-        public void Free(int offset, int size)
+        public void Free(uint offset, uint size)
         {
             Insert(new MemoryBlock(offset, size));
         }
@@ -70,7 +74,7 @@ namespace ARMeilleure.Translation.Cache
             {
                 MemoryBlock next = _blocks[index];
 
-                int endOffs = block.Offset + block.Size;
+                uint endOffs = block.Offset + block.Size;
 
                 if (next.Offset == endOffs)
                 {

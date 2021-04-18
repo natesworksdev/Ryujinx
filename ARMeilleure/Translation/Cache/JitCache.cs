@@ -10,11 +10,11 @@ namespace ARMeilleure.Translation.Cache
 {
     static class JitCache
     {
-        private const int PageSize = 4 * 1024;
-        private const int PageMask = PageSize - 1;
+        private const uint PageSize = 4 * 1024;
+        private const uint PageMask = PageSize - 1;
 
-        private const int CodeAlignment = 4; // Bytes.
-        private const int CacheSize = 2047 * 1024 * 1024;
+        private const uint CodeAlignment = 4; // Bytes.
+        private const uint CacheSize = 3U * 1024 * 1024 * 1024; // Default cache size = 2047 * 1024 * 1024.
 
         private static ReservedRegion _jitRegion;
 
@@ -39,7 +39,7 @@ namespace ARMeilleure.Translation.Cache
 
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    JitUnwindWindows.InstallFunctionTableHandler(_jitRegion.Pointer, CacheSize, _jitRegion.Pointer + Allocate(PageSize));
+                    JitUnwindWindows.InstallFunctionTableHandler(_jitRegion.Pointer, CacheSize, new IntPtr(_jitRegion.Pointer.ToInt64() + Allocate(PageSize)));
                 }
 
                 _initialized = true;
@@ -54,17 +54,17 @@ namespace ARMeilleure.Translation.Cache
             {
                 Debug.Assert(_initialized);
 
-                int funcOffset = Allocate(code.Length);
+                uint funcOffset = Allocate((uint)code.Length);
 
-                IntPtr funcPtr = _jitRegion.Pointer + funcOffset;
+                IntPtr funcPtr = new IntPtr(_jitRegion.Pointer.ToInt64() + funcOffset);
 
-                ReprotectAsWritable(funcOffset, code.Length);
+                ReprotectAsWritable(funcOffset, (uint)code.Length);
 
                 Marshal.Copy(code, 0, funcPtr, code.Length);
 
-                ReprotectAsExecutable(funcOffset, code.Length);
+                ReprotectAsExecutable(funcOffset, (uint)code.Length);
 
-                Add(funcOffset, code.Length, func.UnwindInfo);
+                Add(funcOffset, (uint)code.Length, func.UnwindInfo);
 
                 return funcPtr;
             }
@@ -76,7 +76,7 @@ namespace ARMeilleure.Translation.Cache
             {
                 Debug.Assert(_initialized);
 
-                int funcOffset = (int)(pointer.ToInt64() - _jitRegion.Pointer.ToInt64());
+                uint funcOffset = (uint)(pointer.ToInt64() - _jitRegion.Pointer.ToInt64());
 
                 bool result = TryFind(funcOffset, out CacheEntry entry);
                 Debug.Assert(result);
@@ -87,48 +87,46 @@ namespace ARMeilleure.Translation.Cache
             }
         }
 
-        private static void ReprotectAsWritable(int offset, int size)
+        private static void ReprotectAsWritable(uint offset, uint size)
         {
-            int endOffs = offset + size;
+            uint endOffs = offset + size;
 
-            int regionStart = offset & ~PageMask;
-            int regionEnd = (endOffs + PageMask) & ~PageMask;
+            uint regionStart = offset & ~PageMask;
+            uint regionEnd = (endOffs + PageMask) & ~PageMask;
 
-            _jitRegion.Block.MapAsRwx((ulong)regionStart, (ulong)(regionEnd - regionStart));
+            _jitRegion.Block.MapAsRwx(regionStart, regionEnd - regionStart);
         }
 
-        private static void ReprotectAsExecutable(int offset, int size)
+        private static void ReprotectAsExecutable(uint offset, uint size)
         {
-            int endOffs = offset + size;
+            uint endOffs = offset + size;
 
-            int regionStart = offset & ~PageMask;
-            int regionEnd = (endOffs + PageMask) & ~PageMask;
+            uint regionStart = offset & ~PageMask;
+            uint regionEnd = (endOffs + PageMask) & ~PageMask;
 
-            _jitRegion.Block.MapAsRx((ulong)regionStart, (ulong)(regionEnd - regionStart));
+            _jitRegion.Block.MapAsRx(regionStart, regionEnd - regionStart);
         }
 
-        private static int Allocate(int codeSize)
+        private static uint Allocate(uint codeSize)
         {
             codeSize = AlignCodeSize(codeSize);
 
-            int allocOffset = _cacheAllocator.Allocate(codeSize);
-
-            if (allocOffset < 0)
+            if (!_cacheAllocator.TryAllocate(codeSize, out uint allocOffset))
             {
                 throw new OutOfMemoryException("JIT Cache exhausted.");
             }
 
-            _jitRegion.ExpandIfNeeded((ulong)allocOffset + (ulong)codeSize);
+            _jitRegion.ExpandIfNeeded(allocOffset + codeSize);
 
             return allocOffset;
         }
 
-        private static int AlignCodeSize(int codeSize)
+        private static uint AlignCodeSize(uint codeSize)
         {
-            return checked(codeSize + (CodeAlignment - 1)) & ~(CodeAlignment - 1);
+            return (codeSize + (CodeAlignment - 1)) & ~(CodeAlignment - 1);
         }
 
-        private static void Add(int offset, int size, UnwindInfo unwindInfo)
+        private static void Add(uint offset, uint size, UnwindInfo unwindInfo)
         {
             CacheEntry entry = new CacheEntry(offset, size, unwindInfo);
 
@@ -142,7 +140,7 @@ namespace ARMeilleure.Translation.Cache
             _cacheEntries.Insert(index, entry);
         }
 
-        private static void Remove(int offset)
+        private static void Remove(uint offset)
         {
             int index = _cacheEntries.BinarySearch(new CacheEntry(offset, 0, default));
 
@@ -157,7 +155,7 @@ namespace ARMeilleure.Translation.Cache
             }
         }
 
-        public static bool TryFind(int offset, out CacheEntry entry)
+        public static bool TryFind(uint offset, out CacheEntry entry)
         {
             lock (_lock)
             {

@@ -61,6 +61,8 @@ namespace ARMeilleure.Translation.Cache
 
         public static void InstallFunctionTableHandler(IntPtr codeCachePointer, uint codeCacheLength, IntPtr workBufferPtr)
         {
+            const uint codeCacheLengthMax = 2047 * 1024 * 1024;
+
             ulong codeCachePtr = (ulong)codeCachePointer.ToInt64();
 
             _sizeOfRuntimeFunction = Marshal.SizeOf<RuntimeFunction>();
@@ -78,7 +80,7 @@ namespace ARMeilleure.Translation.Cache
                 result = RtlInstallFunctionTableCallback(
                     codeCachePtr | 3,
                     codeCachePtr,
-                    codeCacheLength,
+                    Math.Min(codeCacheLength, codeCacheLengthMax),
                     _getRuntimeFunctionCallback,
                     codeCachePointer,
                     null);
@@ -92,7 +94,7 @@ namespace ARMeilleure.Translation.Cache
 
         private static unsafe RuntimeFunction* FunctionTableHandler(ulong controlPc, IntPtr context)
         {
-            int offset = (int)((long)controlPc - context.ToInt64());
+            uint offset = (uint)((long)controlPc - context.ToInt64());
 
             if (!JitCache.TryFind(offset, out CacheEntry funcEntry))
             {
@@ -173,8 +175,8 @@ namespace ARMeilleure.Translation.Cache
             _unwindInfo->CountOfUnwindCodes = (byte)codeIndex;
             _unwindInfo->FrameRegister      = 0;
 
-            _runtimeFunction->BeginAddress = (uint)funcEntry.Offset;
-            _runtimeFunction->EndAddress   = (uint)(funcEntry.Offset + funcEntry.Size);
+            _runtimeFunction->BeginAddress = funcEntry.Offset;
+            _runtimeFunction->EndAddress   = funcEntry.Offset + funcEntry.Size;
             _runtimeFunction->UnwindData   = (uint)_sizeOfRuntimeFunction;
 
             return _runtimeFunction;
