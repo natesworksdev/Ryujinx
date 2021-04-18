@@ -16,17 +16,17 @@ namespace Ryujinx.Ui
 {
     public static class AmiiboManager
     {
-        private const string DEFAULT_JSON    = "{ \"amiibo\": [] }";
+        private const string DEFAULT_JSON = "{ \"amiibo\": [] }";
 
-        private static HttpClient                     _httpClient;
-        private static string                         _amiiboJsonPath;
-        private static AmiiboJson                     _amiiboJson;
-        private static List<AmiiboApi>                _amiiboApis;
+        private static HttpClient _httpClient;
+        private static string _amiiboJsonPath;
+        private static AmiiboJson _amiiboJson;
+        private static List<AmiiboApi> _amiiboApis;
         private static Dictionary<string, Gdk.Pixbuf> _amiiboPreviews;
-        private static bool                           _initialized;
-        private static bool                           _onlineMode = true;
+        private static bool _initialized;
+        private static bool _onlineMode = true;
 
-        public static List<AmiiboApi>                 AmiiboApis { get => _amiiboApis; }
+        public static List<AmiiboApi> AmiiboApis { get => _amiiboApis; }
 
         public static void Initialize()
         {
@@ -64,7 +64,7 @@ namespace Ryujinx.Ui
                         LoadAmiiboJson(DEFAULT_JSON);
                     }
                 });
-                
+
                 _initialized = true;
             }
         }
@@ -122,7 +122,7 @@ namespace Ryujinx.Ui
                 try
                 {
                     amiiboJsonString = await DownloadAmiibos() ?? DEFAULT_JSON;
-                    
+
                     LoadAmiiboJson(amiiboJsonString);
 
                     return true;
@@ -144,19 +144,28 @@ namespace Ryujinx.Ui
             }
             else
             {
-                HttpResponseMessage response = await _httpClient.GetAsync(imageUrl);
-
-                if (response.IsSuccessStatusCode)
+                try
                 {
-                    byte[] amiiboPreviewBytes = await response.Content.ReadAsByteArrayAsync();
-                    Gdk.Pixbuf result = new Gdk.Pixbuf(amiiboPreviewBytes);
+                    HttpResponseMessage response = await _httpClient.GetAsync(imageUrl);
 
-                    _amiiboPreviews[imageUrl] = result;
+                    if (response.IsSuccessStatusCode)
+                    {
+                        byte[] amiiboPreviewBytes = await response.Content.ReadAsByteArrayAsync();
+                        Gdk.Pixbuf result = new Gdk.Pixbuf(amiiboPreviewBytes);
 
-                    return result;
+                        _amiiboPreviews[imageUrl] = result;
+
+                        return result;
+                    }
+                    else
+                    {
+                        return null;
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
+                    Logger.Error?.Print(LogClass.Application, $"Failed to read Amiibo preview data: {ex.Message}");
+
                     return null;
                 }
             }
@@ -240,7 +249,7 @@ namespace Ryujinx.Ui
             if (_onlineMode)
             {
                 _onlineMode = false;
-                
+
                 Logger.Warning?.Print(LogClass.Application, "Unable to connect to the Amiibo API server. The Amiibo service will run in offline mode until a connection is made.");
             }
         }
