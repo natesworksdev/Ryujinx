@@ -127,7 +127,7 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
 
             byte[] inputBuffer = new byte[inputSize];
 
-            context.Memory.Read((ulong)inputPosition, inputBuffer);
+            context.Memory.Read(inputPosition, inputBuffer);
 
             Logger.Info?.Print(LogClass.ServicePrepo, ReadReportBuffer(inputBuffer, gameRoom, userId));
 

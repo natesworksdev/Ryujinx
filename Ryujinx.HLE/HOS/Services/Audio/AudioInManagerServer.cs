@@ -83,7 +83,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
 
                 byte[] outputDeviceNameRaw = Encoding.ASCII.GetBytes(outputDeviceName);
 
-                context.Memory.Write((ulong)deviceNameOutputPosition, outputDeviceNameRaw);
+                context.Memory.Write(deviceNameOutputPosition, outputDeviceNameRaw);
                 MemoryHelper.FillWithZeros(context.Memory, deviceNameOutputPosition + (ulong)outputDeviceNameRaw.Length, AudioInNameSize - outputDeviceNameRaw.Length);
 
                 MakeObject(context, new AudioInServer(obj));
@@ -223,7 +223,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
 
                 byte[] outputDeviceNameRaw = Encoding.ASCII.GetBytes(outputDeviceName);
 
-                context.Memory.Write((ulong)deviceNameOutputPosition, outputDeviceNameRaw);
+                context.Memory.Write(deviceNameOutputPosition, outputDeviceNameRaw);
                 MemoryHelper.FillWithZeros(context.Memory, deviceNameOutputPosition + (ulong)outputDeviceNameRaw.Length, AudioInNameSize - outputDeviceNameRaw.Length);
 
                 MakeObject(context, new AudioInServer(obj));

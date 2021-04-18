@@ -408,7 +408,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
             byte[] temp = new byte[ipcDesc.Size];
 
-            context.Memory.Read((ulong)ipcDesc.Position, temp);
+            context.Memory.Read(ipcDesc.Position, temp);
 
             using (BinaryReader bufferReader = new BinaryReader(new MemoryStream(temp)))
             {

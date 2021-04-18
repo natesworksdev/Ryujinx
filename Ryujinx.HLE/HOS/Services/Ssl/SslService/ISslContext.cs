@@ -63,7 +63,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
 
             byte[] asciiPasswordData = new byte[asciiPasswordDataSize];
 
-            context.Memory.Read((ulong)asciiPasswordDataPosition, asciiPasswordData);
+            context.Memory.Read(asciiPasswordDataPosition, asciiPasswordData);
 
             string asciiPassword = Encoding.ASCII.GetString(asciiPasswordData).Trim('\0');
 

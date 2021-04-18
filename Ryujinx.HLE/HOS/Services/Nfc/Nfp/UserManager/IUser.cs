@@ -42,7 +42,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 
             _mcuData = new byte[inputSize];
 
-            context.Memory.Read((ulong)inputPosition, _mcuData);
+            context.Memory.Read(inputPosition, _mcuData);
 
             // TODO: The mcuData buffer seems to contains entries with a size of 0x40 bytes each. Usage of the data needs to be determined.
 
@@ -107,7 +107,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
             {
                 for (int i = 0; i < context.Device.System.NfpDevices.Count; i++)
                 {
-                    context.Memory.Write((ulong)(outputPosition + ((uint)i * sizeof(long))), (uint)context.Device.System.NfpDevices[i].Handle);
+                    context.Memory.Write(outputPosition + ((uint)i * sizeof(long)), (uint)context.Device.System.NfpDevices[i].Handle);
                 }
 
                 context.ResponseData.Write(context.Device.System.NfpDevices.Count);
@@ -397,7 +397,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
                         {
                             byte[] applicationArea = VirtualAmiibo.GetApplicationArea(context.Device.System.NfpDevices[i].AmiiboId);
 
-                            context.Memory.Write((ulong)outputPosition, applicationArea);
+                            context.Memory.Write(outputPosition, applicationArea);
 
                             size = (uint)applicationArea.Length;
 
@@ -449,7 +449,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 
             byte[] applicationArea = new byte[inputSize];
 
-            context.Memory.Read((ulong)inputPosition, applicationArea);
+            context.Memory.Read(inputPosition, applicationArea);
 
             for (int i = 0; i < context.Device.System.NfpDevices.Count; i++)
             {
@@ -528,7 +528,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 
             byte[] applicationArea = new byte[inputSize];
 
-            context.Memory.Read((ulong)inputPosition, applicationArea);
+            context.Memory.Read(inputPosition, applicationArea);
 
             bool isCreated = false;
 
@@ -685,7 +685,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
                         {
                             RegisterInfo registerInfo = VirtualAmiibo.GetRegisterInfo(context.Device.System.NfpDevices[i].AmiiboId);
 
-                            context.Memory.Write((ulong)outputPosition, registerInfo);
+                            context.Memory.Write(outputPosition, registerInfo);
 
                             resultCode = ResultCode.Success;
                         }

@@ -190,11 +190,11 @@ namespace Ryujinx.HLE.HOS.Services.Settings
                     break;
             }
 
-            context.Memory.Write((ulong)context.Request.ReceiveBuff[0].Position, keyCodeMap);
+            context.Memory.Write(context.Request.ReceiveBuff[0].Position, keyCodeMap);
 
             if (version == 1 && context.Device.System.State.DesiredKeyboardLayout == (long)KeyboardLayout.Default)
             {
-                context.Memory.Write((ulong)context.Request.ReceiveBuff[0].Position, (byte)0x01);
+                context.Memory.Write(context.Request.ReceiveBuff[0].Position, (byte)0x01);
             }
 
             return ResultCode.Success;

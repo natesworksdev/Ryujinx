@@ -27,7 +27,7 @@ namespace Ryujinx.HLE.HOS.Services.Ngct
                 {
                     byte[] buffer = new byte[bufferSize];
 
-                    context.Memory.Read((ulong)bufferPosition, buffer);
+                    context.Memory.Read(bufferPosition, buffer);
 
                     text = Encoding.ASCII.GetString(buffer);
 
@@ -66,13 +66,13 @@ namespace Ryujinx.HLE.HOS.Services.Ngct
                 {
                     textFiltered = new string('*', text.Length);
 
-                    context.Memory.Write((ulong)bufferFilteredPosition, Encoding.ASCII.GetBytes(textFiltered));
+                    context.Memory.Write(bufferFilteredPosition, Encoding.ASCII.GetBytes(textFiltered));
                 }
                 else
                 {
                     byte[] buffer = new byte[bufferSize];
 
-                    context.Memory.Read((ulong)bufferPosition, buffer);
+                    context.Memory.Read(bufferPosition, buffer);
 
                     // NOTE: Ngct use the archive 0100000000001034 which contains a words table. This is pushed on Chinese Switchs using Bcat service.
                     //       This call check if the string contains words which are in the table then returns the same string with each matched words replaced by '*'.
@@ -80,7 +80,7 @@ namespace Ryujinx.HLE.HOS.Services.Ngct
 
                     textFiltered = text = Encoding.ASCII.GetString(buffer);
 
-                    context.Memory.Write((ulong)bufferFilteredPosition, buffer);
+                    context.Memory.Write(bufferFilteredPosition, buffer);
                 }
             }
 

@@ -65,7 +65,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
                 return ResultCode.InvalidBufferSize;
             }
 
-            context.Memory.Write((ulong)bufferPosition, _profile.Image);
+            context.Memory.Write(bufferPosition, _profile.Image);
 
             context.ResponseData.Write(_profile.Image.Length);
 
@@ -79,7 +79,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
 
             byte[] userData = new byte[userDataSize];
 
-            context.Memory.Read((ulong)userDataPosition, userData);
+            context.Memory.Read(userDataPosition, userData);
 
             // TODO: Read the nn::account::profile::ProfileBase and store everything in the savedata.
 

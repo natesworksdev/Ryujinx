@@ -80,7 +80,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
                 writer.Write(Encoding.ASCII.GetBytes(build));
 
-                context.Memory.Write((ulong)replyPos, ms.ToArray());
+                context.Memory.Write(replyPos, ms.ToArray());
             }
 
             return ResultCode.Success;

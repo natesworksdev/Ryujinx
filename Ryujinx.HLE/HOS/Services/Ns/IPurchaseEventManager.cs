@@ -24,7 +24,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns
             ulong   inBufferSize     = context.Request.SendBuff[0].Size;
             byte[] buffer           = new byte[inBufferSize];
 
-            context.Memory.Read((ulong)inBufferPosition, buffer);
+            context.Memory.Read(inBufferPosition, buffer);
 
             // NOTE: Service use the pid to call arp:r GetApplicationLaunchProperty and store it in internal field.
             //       Then it seems to use the buffer content and compare it with a stored linked instrusive list.

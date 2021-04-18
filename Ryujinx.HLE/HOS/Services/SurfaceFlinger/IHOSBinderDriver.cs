@@ -32,7 +32,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
             if (result == ResultCode.Success)
             {
-                context.Memory.Write((ulong)replyPos, outputParcel);
+                context.Memory.Write(replyPos, outputParcel);
             }
 
             return result;
@@ -81,7 +81,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             (ulong dataPos, ulong dataSize)   = context.Request.GetBufferType0x21();
             (ulong replyPos, ulong replySize) = context.Request.GetBufferType0x22();
 
-            ReadOnlySpan<byte> inputParcel = context.Memory.GetSpan((ulong)dataPos, (int)dataSize);
+            ReadOnlySpan<byte> inputParcel = context.Memory.GetSpan(dataPos, (int)dataSize);
 
             Span<byte> outputParcel = new Span<byte>(new byte[replySize]);
 
@@ -89,7 +89,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
             if (result == ResultCode.Success)
             {
-                context.Memory.Write((ulong)replyPos, outputParcel);
+                context.Memory.Write(replyPos, outputParcel);
             }
 
             return result;

@@ -43,7 +43,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
                     break;
                 }
 
-                context.Memory.Write((ulong)position, buffer);
+                context.Memory.Write(position, buffer);
                 MemoryHelper.FillWithZeros(context.Memory, position + (ulong)buffer.Length, AudioDeviceNameSize - buffer.Length);
 
                 position += AudioDeviceNameSize;
@@ -163,7 +163,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
                     break;
                 }
 
-                context.Memory.Write((ulong)position, buffer);
+                context.Memory.Write(position, buffer);
                 MemoryHelper.FillWithZeros(context.Memory, position + (ulong)buffer.Length, AudioDeviceNameSize - buffer.Length);
 
                 position += AudioDeviceNameSize;

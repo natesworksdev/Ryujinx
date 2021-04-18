@@ -275,7 +275,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
                         if ((ioctlCommand.DirectionValue & NvIoctl.Direction.Write) != 0)
                         {
-                            context.Memory.Write((ulong)context.Request.GetBufferType0x22(0).Position, arguments.ToArray());
+                            context.Memory.Write(context.Request.GetBufferType0x22(0).Position, arguments.ToArray());
                         }
                     }
                 }
@@ -476,7 +476,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
                 byte[] temp = new byte[inlineInBufferSize];
 
-                context.Memory.Read((ulong)inlineInBufferPosition, temp);
+                context.Memory.Read(inlineInBufferPosition, temp);
 
                 Span<byte> inlineInBuffer = new Span<byte>(temp);
 
@@ -497,7 +497,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
                         if ((ioctlCommand.DirectionValue & NvIoctl.Direction.Write) != 0)
                         {
-                            context.Memory.Write((ulong)context.Request.GetBufferType0x22(0).Position, arguments.ToArray());
+                            context.Memory.Write(context.Request.GetBufferType0x22(0).Position, arguments.ToArray());
                         }
                     }
                 }

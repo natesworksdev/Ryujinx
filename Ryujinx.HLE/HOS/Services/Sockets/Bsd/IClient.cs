@@ -413,8 +413,8 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             for (int i = 0; i < fdsCount; i++)
             {
                 PollEvent Event = events[i];
-                context.Memory.Write((ulong)(bufferPosition + (ulong)i * 8), Event.SocketFd);
-                context.Memory.Write((ulong)(bufferPosition + (ulong)i * 8 + 4), (short)Event.InputEvents);
+                context.Memory.Write(bufferPosition + (ulong)i * 8, Event.SocketFd);
+                context.Memory.Write(bufferPosition + (ulong)i * 8 + 4, (short)Event.InputEvents);
 
                 PollEvent.EventTypeMask outputEvents = 0;
 
@@ -443,7 +443,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                     outputEvents |= PollEvent.EventTypeMask.Output;
                 }
 
-                context.Memory.Write((ulong)(bufferPosition + (ulong)i * 8 + 6), (short)outputEvents);
+                context.Memory.Write(bufferPosition + (ulong)i * 8 + 6, (short)outputEvents);
             }
 
             return WriteBsdResult(context, readEvents.Count + writeEvents.Count + errorEvents.Count, LinuxError.SUCCESS);
@@ -489,7 +489,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                     result = socket.Handle.Receive(receivedBuffer, socketFlags);
                     errno  = SetResultErrno(socket.Handle, result);
 
-                    context.Memory.Write((ulong)receivePosition, receivedBuffer);
+                    context.Memory.Write(receivePosition, receivedBuffer);
                 }
                 catch (SocketException exception)
                 {
@@ -532,7 +532,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                     result = socket.Handle.ReceiveFrom(receivedBuffer, receivedBuffer.Length, socketFlags, ref endPoint);
                     errno  = SetResultErrno(socket.Handle, result);
 
-                    context.Memory.Write((ulong)receivePosition, receivedBuffer);
+                    context.Memory.Write(receivePosition, receivedBuffer);
                     WriteSockAddr(context, sockAddrOutPosition, (IPEndPoint)endPoint);
                 }
                 catch (SocketException exception)
@@ -569,7 +569,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
                 byte[] sendBuffer = new byte[sendSize];
 
-                context.Memory.Read((ulong)sendPosition, sendBuffer);
+                context.Memory.Read(sendPosition, sendBuffer);
 
                 try
                 {
@@ -869,7 +869,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                         (ulong bufferPosition, ulong bufferSize) = context.Request.GetBufferType0x22();
 
                         // FIXME: OOB not implemented.
-                        context.Memory.Write((ulong)bufferPosition, 0);
+                        context.Memory.Write(bufferPosition, 0);
                         break;
 
                     default:
@@ -938,13 +938,13 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                     case SocketOptionName.Type:
                     case SocketOptionName.Linger:
                         socket.Handle.GetSocketOption(SocketOptionLevel.Socket, optionName, optionValue);
-                        context.Memory.Write((ulong)optionValuePosition, optionValue);
+                        context.Memory.Write(optionValuePosition, optionValue);
 
                         return LinuxError.SUCCESS;
 
                     case (SocketOptionName)0x200:
                         socket.Handle.GetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, optionValue);
-                        context.Memory.Write((ulong)optionValuePosition, optionValue);
+                        context.Memory.Write(optionValuePosition, optionValue);
 
                         return LinuxError.SUCCESS;
 
@@ -1115,7 +1115,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             {
                 byte[] sendBuffer = new byte[sendSize];
 
-                context.Memory.Read((ulong)sendPosition, sendBuffer);
+                context.Memory.Read(sendPosition, sendBuffer);
 
                 try
                 {

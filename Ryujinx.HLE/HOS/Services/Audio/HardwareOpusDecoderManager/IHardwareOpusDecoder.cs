@@ -123,7 +123,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.HardwareOpusDecoderManager
                 {
                     byte[] pcmDataBytes = new byte[outPcmData.Length * sizeof(short)];
                     Buffer.BlockCopy(outPcmData, 0, pcmDataBytes, 0, pcmDataBytes.Length);
-                    context.Memory.Write((ulong)outputPosition, pcmDataBytes);
+                    context.Memory.Write(outputPosition, pcmDataBytes);
 
                     context.ResponseData.Write(outConsumed);
                     context.ResponseData.Write(outSamples);

@@ -254,7 +254,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
                 ulong outBufferPosition = context.Request.RecvListBuff[0].Position;
                 ulong outBufferSize     = context.Request.RecvListBuff[0].Size;
 
-                context.Memory.Write((ulong)outBufferPosition, posixTime);
+                context.Memory.Write(outBufferPosition, posixTime);
                 context.ResponseData.Write(1);
             }
 

@@ -134,7 +134,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
             ReadOnlySpan<byte> parcelData = parcel.Finish();
 
-            context.Memory.Write((ulong)parcelPtr, parcelData);
+            context.Memory.Write(parcelPtr, parcelData);
 
             context.ResponseData.Write((long)parcelData.Length);
 

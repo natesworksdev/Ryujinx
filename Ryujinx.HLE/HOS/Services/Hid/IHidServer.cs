@@ -1005,11 +1005,11 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             byte[] vibrationDeviceHandleBuffer = new byte[context.Request.PtrBuff[0].Size];
 
-            context.Memory.Read((ulong)context.Request.PtrBuff[0].Position, vibrationDeviceHandleBuffer);
+            context.Memory.Read(context.Request.PtrBuff[0].Position, vibrationDeviceHandleBuffer);
 
             byte[] vibrationValueBuffer = new byte[context.Request.PtrBuff[1].Size];
 
-            context.Memory.Read((ulong)context.Request.PtrBuff[1].Position, vibrationValueBuffer);
+            context.Memory.Read(context.Request.PtrBuff[1].Position, vibrationValueBuffer);
 
             // TODO: Read all handles and values from buffer.
 

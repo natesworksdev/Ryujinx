@@ -220,7 +220,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
         {
             byte[] rawName = new byte[inputBufferSize];
 
-            context.Memory.Read((ulong)inputBufferPosition, rawName);
+            context.Memory.Read(inputBufferPosition, rawName);
 
             string name = Encoding.ASCII.GetString(rawName).TrimEnd('\0');
 
