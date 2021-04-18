@@ -71,9 +71,8 @@ namespace Ryujinx.Common.System
                     ShowWindow(GetConsoleWindow(), SW_SHOW);
                 }
             }
-            else
+            else if (GetCurrentProcessId() == GetWindowId())
             {
-                if (GetCurrentProcessId() == GetWindowId())
                 {
                     ShowWindow(GetConsoleWindow(), SW_HIDE);
                 }

@@ -496,7 +496,6 @@ namespace Ryujinx.Configuration
             System.EnableDockedMode.Value          = true;
             EnableDiscordIntegration.Value         = true;
             CheckUpdatesOnStart.Value              = true;
-            ShowConsole.Value                      = false;
             ShowConfirmExit.Value                  = true;
             HideCursorOnIdle.Value                 = false;
             Graphics.EnableVsync.Value             = true;
@@ -742,13 +741,6 @@ namespace Ryujinx.Configuration
                 configurationFileUpdated = true;
             }
 
-            if (configurationFileFormat.Version < 23)
-            {
-                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 23.");
-
-                configurationFileFormat.ShowConsole = false;
-            }
-
             if (configurationFileFormat.Version < 24)
             {
                 Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 24.");
@@ -810,7 +802,16 @@ namespace Ryujinx.Configuration
 
                 configurationFileUpdated = true;
             }
+            
+            if (configurationFileFormat.Version < 25)
+            {
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 25.");
 
+                configurationFileFormat.ShowConsole = true;
+                
+                configurationFileUpdated = true;
+            }
+            
             Logger.EnableFileLog.Value             = configurationFileFormat.EnableFileLog;
             Graphics.ResScale.Value                = configurationFileFormat.ResScale;
             Graphics.ResScaleCustom.Value          = configurationFileFormat.ResScaleCustom;

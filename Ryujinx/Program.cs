@@ -70,8 +70,6 @@ namespace Ryujinx
 
             Version = Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
 
-            Console.Title = $"Ryujinx Console {Version}";
-
             // NOTE: GTK3 doesn't init X11 in a multi threaded way.
             // This ends up causing race condition and abort of XCB when a context is created by SPB (even if SPB do call XInitThreads).
             if (OperatingSystem.IsLinux())
@@ -141,8 +139,11 @@ namespace Ryujinx
                 ConfigurationState.Instance.Ui.StartFullscreen.Value = true;
             }
 
-            ConsoleHelper.ToggleConsole();
-
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                ConsoleHelper.ToggleConsole();
+            }
+            
             // Logging system information.
             PrintSystemInfo();
 
