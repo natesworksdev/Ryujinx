@@ -16,7 +16,7 @@ namespace Ryujinx.Ui
 {
     public static class AmiiboManager
     {
-        private const string DEFAULT_JSON = "{ \"amiibo\": [] }";
+        private const string DEFAULT_JSON    = "{ \"amiibo\": [] }";
 
         private static HttpClient                     _httpClient;
         private static string                         _amiiboJsonPath;
@@ -27,7 +27,6 @@ namespace Ryujinx.Ui
         private static bool                           _onlineMode = true;
 
         public static List<AmiiboApi>                 AmiiboApis { get => _amiiboApis; }
-        public static EventHandler<AmiiboServiceConnectionEventArgs> OnOnlineModeChange;
 
         public static void Initialize()
         {
@@ -242,7 +241,7 @@ namespace Ryujinx.Ui
             {
                 _onlineMode = false;
                 
-                OnOnlineModeChange?.Invoke(null, new AmiiboServiceConnectionEventArgs(_onlineMode));
+                Logger.Warning?.Print(LogClass.Application, "Unable to connect to the Amiibo API server. The Amiibo service will run in offline mode until a connection is made.");
             }
         }
 
@@ -252,7 +251,7 @@ namespace Ryujinx.Ui
             {
                 _onlineMode = true;
 
-                OnOnlineModeChange?.Invoke(null, new AmiiboServiceConnectionEventArgs(_onlineMode));
+                Logger.Info?.Print(LogClass.Application, "Successfully connected to the Amiibo API server.");
             }
         }
 

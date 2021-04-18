@@ -48,8 +48,6 @@ namespace Ryujinx.Ui.Windows
 
             _showAllCheckBox.Clicked      += ShowAllCheckBox_Clicked;
 
-            AmiiboManager.OnOnlineModeChange = OnOnlineModeChange;
-
             Task.Run(async () =>
             {
                 if (AmiiboManager.AmiiboApis.Count > 0)
@@ -285,15 +283,8 @@ namespace Ryujinx.Ui.Windows
             Close();
         }
 
-        private void OnOnlineModeChange(object sender, AmiiboServiceConnectionEventArgs args)
-        {
-            GtkDialog.CreateInfoDialog("Amiibo API", args.Message);
-        }
-
         protected override void Dispose(bool disposing)
         {
-            AmiiboManager.OnOnlineModeChange -= OnOnlineModeChange;
-
             base.Dispose(disposing);
         }
     }
