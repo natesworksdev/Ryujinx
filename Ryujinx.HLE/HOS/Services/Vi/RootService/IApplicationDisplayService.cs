@@ -67,10 +67,10 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
             // Add only the default display to buffer
             context.Memory.Write(recBuffPtr, Encoding.ASCII.GetBytes("Default"));
-            context.Memory.Write(recBuffPtr + 0x40, 0x1L);
-            context.Memory.Write(recBuffPtr + 0x48, 0x1L);
-            context.Memory.Write(recBuffPtr + 0x50, 1280L);
-            context.Memory.Write(recBuffPtr + 0x58, 720L);
+            context.Memory.Write(recBuffPtr + 0x40, 0x1UL);
+            context.Memory.Write(recBuffPtr + 0x48, 0x1UL);
+            context.Memory.Write(recBuffPtr + 0x50, 1280UL);
+            context.Memory.Write(recBuffPtr + 0x58, 720UL);
 
             context.ResponseData.Write(1L);
 

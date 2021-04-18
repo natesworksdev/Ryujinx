@@ -188,7 +188,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
         // ToCalendarTime(nn::time::PosixTime time, buffer<nn::time::TimeZoneRule, 0x15> rules) -> (nn::time::CalendarTime, nn::time::sf::CalendarAdditionalInfo)
         public ResultCode ToCalendarTime(ServiceCtx context)
         {
-            long posixTime       = context.RequestData.ReadInt64();
+            long  posixTime      = context.RequestData.ReadInt64();
             ulong bufferPosition = context.Request.SendBuff[0].Position;
             ulong bufferSize     = context.Request.SendBuff[0].Size;
 

@@ -24,8 +24,8 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
         public ResultCode SetDnsAddressesPrivateRequest(ServiceCtx context)
         {
             uint cancelHandleRequest = context.RequestData.ReadUInt32();
-            ulong bufferPosition      = context.Request.SendBuff[0].Position;
-            ulong bufferSize          = context.Request.SendBuff[0].Size;
+            ulong bufferPosition     = context.Request.SendBuff[0].Position;
+            ulong bufferSize         = context.Request.SendBuff[0].Size;
 
             // TODO: This is stubbed in 2.0.0+, reverse 1.0.0 version for the sake of completeness.
             Logger.Stub?.PrintStub(LogClass.ServiceSfdnsres, new { cancelHandleRequest });
@@ -38,8 +38,8 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
         public ResultCode GetDnsAddressPrivateRequest(ServiceCtx context)
         {
             uint cancelHandleRequest = context.RequestData.ReadUInt32();
-            ulong bufferPosition      = context.Request.ReceiveBuff[0].Position;
-            ulong bufferSize          = context.Request.ReceiveBuff[0].Size;
+            ulong bufferPosition     = context.Request.ReceiveBuff[0].Position;
+            ulong bufferSize         = context.Request.ReceiveBuff[0].Size;
 
             // TODO: This is stubbed in 2.0.0+, reverse 1.0.0 version for the sake of completeness.
             Logger.Stub?.PrintStub(LogClass.ServiceSfdnsres, new { cancelHandleRequest });
