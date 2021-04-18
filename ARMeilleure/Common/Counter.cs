@@ -40,6 +40,9 @@ namespace ARMeilleure.Common
         /// Gets a reference to the value of the counter.
         /// </summary>
         /// <exception cref="ObjectDisposedException"><see cref="Counter{T}"/> instance was disposed</exception>
+        /// <remarks>
+        /// This can refer to freed memory if the owning <see cref="EntryTable{TEntry}"/> is disposed.
+        /// </remarks>
         public ref T Value
         {
             get
@@ -70,9 +73,16 @@ namespace ARMeilleure.Common
         {
             if (!_disposed)
             {
-                // The index into the EntryTable is essentially an unmanaged resource since we allocate and free the
-                // resource ourselves.
-                _countTable.Free(_index);
+                try
+                {
+                    // The index into the EntryTable is essentially an unmanaged resource since we allocate and free the
+                    // resource ourselves.
+                    _countTable.Free(_index);
+                }
+                catch (ObjectDisposedException)
+                {
+                    // Can happen because _countTable may be disposed before the Counter instance.
+                }
 
                 _disposed = true;
             }

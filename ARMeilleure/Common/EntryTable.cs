@@ -20,9 +20,10 @@ namespace ARMeilleure.Common
         private readonly BitMap _allocated;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntryTable{TEntry}"/> class with the desired page size.
+        /// Initializes a new instance of the <see cref="EntryTable{TEntry}"/> class with the desired page size in
+        /// bytes.
         /// </summary>
-        /// <param name="pageSize">Desired page size</param>
+        /// <param name="pageSize">Desired page size in bytes</param>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="pageSize"/> is less than 0</exception>
         /// <exception cref="ArgumentException"><typeparamref name="TEntry"/>'s size is zero</exception>
         /// <remarks>
@@ -113,8 +114,6 @@ namespace ARMeilleure.Common
                 throw new ObjectDisposedException(null);
             }
 
-            Span<TEntry> page;
-
             lock (_allocated)
             {
                 if (!_allocated.IsSet(index))
@@ -122,10 +121,10 @@ namespace ARMeilleure.Common
                     throw new ArgumentException("Entry at the specified index was not allocated", nameof(index));
                 }
 
-                page = GetPage(index);
-            }
+                var page = GetPage(index);
 
-            return ref GetValue(page, index);
+                return ref GetValue(page, index);
+            }
         }
 
         /// <summary>
