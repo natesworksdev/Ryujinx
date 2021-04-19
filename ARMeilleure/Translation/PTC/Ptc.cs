@@ -37,9 +37,7 @@ namespace ARMeilleure.Translation.PTC
         private const string DisplayVersionDefault = "0";
 
         internal const int PageTablePointerIndex = -1; // Must be a negative value.
-        internal const int JumpPointerIndex = -2; // Must be a negative value.
-        internal const int DynamicPointerIndex = -3; // Must be a negative value.
-        internal const int CountTableIndex = -4; // Must be a negative value.
+        internal const int CountTableIndex = -2; // Must be a negative value.
 
         private const byte FillingByte = 0x00;
         private const CompressionLevel SaveCompressionLevel = CompressionLevel.Fastest;
@@ -58,8 +56,6 @@ namespace ARMeilleure.Translation.PTC
         private static readonly object _lock;
 
         private static bool _disposed;
-
-        internal static PtcJumpTable PtcJumpTable { get; private set; }
 
         internal static string TitleIdText { get; private set; }
         internal static string DisplayVersion { get; private set; }
@@ -88,8 +84,6 @@ namespace ARMeilleure.Translation.PTC
             _lock = new object();
 
             _disposed = false;
-
-            PtcJumpTable = new PtcJumpTable();
 
             TitleIdText = TitleIdTextDefault;
             DisplayVersion = DisplayVersionDefault;
@@ -348,19 +342,7 @@ namespace ARMeilleure.Translation.PTC
                             return false;
                         }
 
-                        ReadOnlySpan<byte> ptcJumpTableBytes = new(stream.PositionPointer, innerHeader.PtcJumpTableLength);
-                        stream.Seek(innerHeader.PtcJumpTableLength, SeekOrigin.Current);
-
                         Debug.Assert(stream.Position == stream.Length);
-
-                        Hash128 ptcJumpTableHash = XXHash128.ComputeHash(ptcJumpTableBytes);
-
-                        if (innerHeader.PtcJumpTableHash != ptcJumpTableHash)
-                        {
-                            InvalidateCompressedStream(compressedStream);
-
-                            return false;
-                        }
 
                         stream.Seek((long)Unsafe.SizeOf<InnerHeader>(), SeekOrigin.Begin);
 
@@ -374,8 +356,6 @@ namespace ARMeilleure.Translation.PTC
 
                         _unwindInfosStream.Write(unwindInfosBytes);
                         stream.Seek(innerHeader.UnwindInfosLength, SeekOrigin.Current);
-
-                        PtcJumpTable = PtcJumpTable.Deserialize(stream);
 
                         Debug.Assert(stream.Position == stream.Length);
                     }
@@ -422,7 +402,6 @@ namespace ARMeilleure.Translation.PTC
             finally
             {
                 ResetCarriersIfNeeded();
-                PtcJumpTable.ClearIfNeeded();
 
                 GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
             }
@@ -442,7 +421,6 @@ namespace ARMeilleure.Translation.PTC
             innerHeader.CodesLength = _codesList.Length();
             innerHeader.RelocsLength = (int)_relocsStream.Length;
             innerHeader.UnwindInfosLength = (int)_unwindInfosStream.Length;
-            innerHeader.PtcJumpTableLength = PtcJumpTable.GetSerializeSize(PtcJumpTable);
 
             OuterHeader outerHeader = new OuterHeader();
 
@@ -459,8 +437,7 @@ namespace ARMeilleure.Translation.PTC
                 innerHeader.InfosLength +
                 innerHeader.CodesLength +
                 innerHeader.RelocsLength +
-                innerHeader.UnwindInfosLength +
-                innerHeader.PtcJumpTableLength;
+                innerHeader.UnwindInfosLength;
 
             outerHeader.SetHeaderHash();
 
@@ -486,16 +463,12 @@ namespace ARMeilleure.Translation.PTC
                     ReadOnlySpan<byte> unwindInfosBytes = new(stream.PositionPointer, innerHeader.UnwindInfosLength);
                     _unwindInfosStream.WriteTo(stream);
 
-                    ReadOnlySpan<byte> ptcJumpTableBytes = new(stream.PositionPointer, innerHeader.PtcJumpTableLength);
-                    PtcJumpTable.Serialize(stream, PtcJumpTable);
-
                     Debug.Assert(stream.Position == stream.Length);
 
                     innerHeader.InfosHash = XXHash128.ComputeHash(infosBytes);
                     innerHeader.CodesHash = XXHash128.ComputeHash(codesBytes);
                     innerHeader.RelocsHash = XXHash128.ComputeHash(relocsBytes);
                     innerHeader.UnwindInfosHash = XXHash128.ComputeHash(unwindInfosBytes);
-                    innerHeader.PtcJumpTableHash = XXHash128.ComputeHash(ptcJumpTableBytes);
 
                     innerHeader.SetHeaderHash();
 
@@ -505,7 +478,6 @@ namespace ARMeilleure.Translation.PTC
                     translatedFuncsCount = GetEntriesCount();
 
                     ResetCarriersIfNeeded();
-                    PtcJumpTable.ClearIfNeeded();
 
                     using (FileStream compressedStream = new(fileName, FileMode.OpenOrCreate))
                     using (DeflateStream deflateStream = new(compressedStream, SaveCompressionLevel, true))
@@ -548,7 +520,6 @@ namespace ARMeilleure.Translation.PTC
         internal static void LoadTranslations(
             ConcurrentDictionary<ulong, TranslatedFunction> funcs,
             IMemoryManager memory,
-            JumpTable jumpTable,
             EntryTable<uint> countTable)
         {
             if (AreCarriersEmpty())
@@ -594,8 +565,6 @@ namespace ARMeilleure.Translation.PTC
 
                         if (isEntryChanged)
                         {
-                            PtcJumpTable.Clean(infoEntry.Address);
-
                             Logger.Info?.Print(LogClass.Ptc, $"Invalidated translated function (address: 0x{infoEntry.Address:X16})");
                         }
 
@@ -610,7 +579,7 @@ namespace ARMeilleure.Translation.PTC
                     {
                         RelocEntry[] relocEntries = GetRelocEntries(relocsReader, infoEntry.RelocEntriesCount);
 
-                        PatchCode(code, relocEntries, memory.PageTablePointer, jumpTable, countTable, out callCounter);
+                        PatchCode(code, relocEntries, memory.PageTablePointer, countTable, out callCounter);
                     }
 
                     UnwindInfo unwindInfo = ReadUnwindInfo(unwindInfosReader);
@@ -629,11 +598,6 @@ namespace ARMeilleure.Translation.PTC
             {
                 throw new Exception("The length of a memory stream has changed, or its position has not reached or has exceeded its end.");
             }
-
-            jumpTable.Initialize(PtcJumpTable, funcs);
-
-            PtcJumpTable.WriteJumpTable(jumpTable, funcs);
-            PtcJumpTable.WriteDynamicTable(jumpTable);
 
             Logger.Info?.Print(LogClass.Ptc, $"{funcs.Count} translated functions loaded");
         }
@@ -688,7 +652,6 @@ namespace ARMeilleure.Translation.PTC
             Span<byte> code,
             RelocEntry[] relocEntries,
             IntPtr pageTablePointer,
-            JumpTable jumpTable,
             EntryTable<uint> countTable,
             out Counter<uint> callCounter)
         {
@@ -701,14 +664,6 @@ namespace ARMeilleure.Translation.PTC
                 if (relocEntry.Index == PageTablePointerIndex)
                 {
                     imm = (ulong)pageTablePointer.ToInt64();
-                }
-                else if (relocEntry.Index == JumpPointerIndex)
-                {
-                    imm = (ulong)jumpTable.JumpPointer.ToInt64();
-                }
-                else if (relocEntry.Index == DynamicPointerIndex)
-                {
-                    imm = (ulong)jumpTable.DynamicPointer.ToInt64();
                 }
                 else if (relocEntry.Index == CountTableIndex)
                 {
@@ -801,7 +756,6 @@ namespace ARMeilleure.Translation.PTC
         internal static void MakeAndSaveTranslations(
             ConcurrentDictionary<ulong, TranslatedFunction> funcs,
             IMemoryManager memory,
-            JumpTable jumpTable,
             EntryTable<uint> countTable,
             AddressTable<uint> funcTable)
         {
@@ -815,7 +769,6 @@ namespace ARMeilleure.Translation.PTC
             if (_translateTotalCount == 0 || degreeOfParallelism == 0)
             {
                 ResetCarriersIfNeeded();
-                PtcJumpTable.ClearIfNeeded();
 
                 GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
 
@@ -847,7 +800,6 @@ namespace ARMeilleure.Translation.PTC
 
                     TranslatedFunction func = Translator.Translate(
                         memory,
-                        jumpTable,
                         countTable,
                         funcTable,
                         address,
@@ -858,12 +810,11 @@ namespace ARMeilleure.Translation.PTC
 
                     Debug.Assert(isAddressUnique, $"The address 0x{address:X16} is not unique.");
 
-                    if (func.HighCq)
-                    {
-                        jumpTable.RegisterFunction(address, func);
-                    }
-
                     Interlocked.Increment(ref _translateCount);
+
+                    uint offset = (uint)((ulong)func.FuncPtr - (ulong)JitCache.Base);
+
+                    Volatile.Write(ref funcTable.GetValue(address), offset);
 
                     if (State != PtcState.Enabled)
                     {
@@ -895,11 +846,6 @@ namespace ARMeilleure.Translation.PTC
             PtcStateChanged?.Invoke(PtcLoadingState.Loaded, _translateCount, _translateTotalCount);
 
             Logger.Info?.Print(LogClass.Ptc, $"{_translateCount} of {_translateTotalCount} functions translated | Thread count: {degreeOfParallelism}");
-
-            PtcJumpTable.Initialize(jumpTable);
-
-            PtcJumpTable.ReadJumpTable(jumpTable);
-            PtcJumpTable.ReadDynamicTable(jumpTable);
 
             Thread preSaveThread = new Thread(PreSave);
             preSaveThread.IsBackground = true;
@@ -1030,13 +976,11 @@ namespace ARMeilleure.Translation.PTC
             public long CodesLength;
             public int RelocsLength;
             public int UnwindInfosLength;
-            public int PtcJumpTableLength;
 
             public Hash128 InfosHash;
             public Hash128 CodesHash;
             public Hash128 RelocsHash;
             public Hash128 UnwindInfosHash;
-            public Hash128 PtcJumpTableHash;
 
             public Hash128 HeaderHash;
 

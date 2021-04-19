@@ -37,8 +37,6 @@ namespace ARMeilleure.Translation
         private readonly AutoResetEvent _backgroundTranslatorEvent;
         private readonly ReaderWriterLock _backgroundTranslatorLock;
 
-        private JumpTable _jumpTable;
-        internal JumpTable JumpTable => _jumpTable;
         internal AddressTable<uint> FunctionTable { get; }
         internal EntryTable<uint> CountTable { get; }
 
@@ -65,8 +63,6 @@ namespace ARMeilleure.Translation
 
             JitCache.Initialize(allocator);
 
-            DirectCallStubs.InitializeStubs();
-
             if (memory.Type.IsHostMapped())
             {
                 NativeSignalHandler.InitializeSignalHandler();
@@ -84,7 +80,6 @@ namespace ARMeilleure.Translation
                 {
                     TranslatedFunction func = Translate(
                         _memory,
-                        _jumpTable,
                         CountTable,
                         FunctionTable,
                         request.Address,
@@ -96,8 +91,6 @@ namespace ARMeilleure.Translation
                         EnqueueForDeletion(key, oldFunc);
                         return func;
                     });
-
-                    _jumpTable.RegisterFunction(request.Address, func);
 
                     uint offset = (uint)((ulong)func.FuncPtr - (ulong)JitCache.Base);
 
@@ -127,14 +120,11 @@ namespace ARMeilleure.Translation
             {
                 IsReadyForTranslation.WaitOne();
 
-                Debug.Assert(_jumpTable == null);
-                _jumpTable = new JumpTable(_allocator);
-
                 if (Ptc.State == PtcState.Enabled)
                 {
                     Debug.Assert(_funcs.Count == 0);
-                    Ptc.LoadTranslations(_funcs, _memory, _jumpTable, CountTable);
-                    Ptc.MakeAndSaveTranslations(_funcs, _memory, _jumpTable, CountTable, FunctionTable);
+                    Ptc.LoadTranslations(_funcs, _memory, CountTable);
+                    Ptc.MakeAndSaveTranslations(_funcs, _memory, CountTable, FunctionTable);
                 }
 
                 PtcProfiler.Start();
@@ -185,9 +175,6 @@ namespace ARMeilleure.Translation
 
                 DisposePools();
 
-                _jumpTable.Dispose();
-                _jumpTable = null;
-
                 CountTable.Dispose();
                 FunctionTable.Dispose();
 
@@ -212,7 +199,7 @@ namespace ARMeilleure.Translation
         {
             if (!_funcs.TryGetValue(address, out TranslatedFunction func))
             {
-                func = Translate(_memory, _jumpTable, CountTable, FunctionTable, address, mode, highCq: false);
+                func = Translate(_memory, CountTable, FunctionTable, address, mode, highCq: false);
 
                 TranslatedFunction getFunc = _funcs.GetOrAdd(address, func);
 
@@ -237,7 +224,6 @@ namespace ARMeilleure.Translation
 
         internal static TranslatedFunction Translate(
             IMemoryManager memory,
-            JumpTable jumpTable,
             EntryTable<uint> countTable,
             AddressTable<uint> funcTable,
             ulong address,
@@ -246,7 +232,6 @@ namespace ARMeilleure.Translation
         {
             var context = new ArmEmitterContext(
                 memory,
-                jumpTable,
                 countTable,
                 funcTable,
                 address,

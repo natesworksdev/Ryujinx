@@ -41,7 +41,6 @@ namespace ARMeilleure.Translation
 
         public IMemoryManager Memory { get; }
 
-        public JumpTable JumpTable { get; }
         public EntryTable<uint> CountTable { get; }
         public AddressTable<uint> FunctionTable { get; }
 
@@ -51,7 +50,6 @@ namespace ARMeilleure.Translation
 
         public ArmEmitterContext(
             IMemoryManager memory,
-            JumpTable jumpTable,
             EntryTable<uint> countTable,
             AddressTable<uint> funcTable,
             ulong entryAddress,
@@ -59,7 +57,6 @@ namespace ARMeilleure.Translation
             Aarch32Mode mode)
         {
             Memory = memory;
-            JumpTable = jumpTable;
             CountTable = countTable;
             FunctionTable = funcTable;
             EntryAddress = entryAddress;

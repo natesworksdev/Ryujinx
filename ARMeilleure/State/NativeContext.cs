@@ -14,7 +14,6 @@ namespace ARMeilleure.State
             public fixed uint Flags[RegisterConsts.FlagsCount];
             public fixed uint FpFlags[RegisterConsts.FpFlagsCount];
             public int Counter;
-            public ulong CallAddress;
             public ulong ExclusiveAddress;
             public ulong ExclusiveValueLow;
             public ulong ExclusiveValueHigh;
@@ -160,11 +159,6 @@ namespace ARMeilleure.State
         public static int GetCounterOffset()
         {
             return StorageOffset(ref _dummyStorage, ref _dummyStorage.Counter);
-        }
-
-        public static int GetCallAddressOffset()
-        {
-            return StorageOffset(ref _dummyStorage, ref _dummyStorage.CallAddress);
         }
 
         public static int GetExclusiveAddressOffset()
