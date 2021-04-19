@@ -28,7 +28,7 @@ namespace ARMeilleure.Translation.PTC
         private const string OuterHeaderMagicString = "PTCohd\0\0";
         private const string InnerHeaderMagicString = "PTCihd\0\0";
 
-        private const uint InternalVersion = 2289; //! To be incremented manually for each change to the ARMeilleure project.
+        private const uint InternalVersion = 2228; //! To be incremented manually for each change to the ARMeilleure project.
 
         private const string ActualDir = "0";
         private const string BackupDir = "1";
@@ -38,6 +38,8 @@ namespace ARMeilleure.Translation.PTC
 
         internal const int PageTablePointerIndex = -1; // Must be a negative value.
         internal const int CountTableIndex = -2; // Must be a negative value.
+        internal const int FunctionTableIndex = -3; // Must be a negative value.
+        internal const int JitCacheIndex = -4; // Must be a negative value.
 
         private const byte FillingByte = 0x00;
         private const CompressionLevel SaveCompressionLevel = CompressionLevel.Fastest;
@@ -580,7 +582,7 @@ namespace ARMeilleure.Translation.PTC
                     {
                         RelocEntry[] relocEntries = GetRelocEntries(relocsReader, infoEntry.RelocEntriesCount);
 
-                        PatchCode(code, relocEntries, memory.PageTablePointer, countTable, out callCounter);
+                        PatchCode(code, relocEntries, memory.PageTablePointer, countTable, funcTable, out callCounter);
                     }
 
                     UnwindInfo unwindInfo = ReadUnwindInfo(unwindInfosReader);
@@ -656,6 +658,7 @@ namespace ARMeilleure.Translation.PTC
             RelocEntry[] relocEntries,
             IntPtr pageTablePointer,
             EntryTable<uint> countTable,
+            AddressTable<uint> funcTable,
             out Counter<uint> callCounter)
         {
             callCounter = null;
@@ -673,6 +676,14 @@ namespace ARMeilleure.Translation.PTC
                     callCounter = new Counter<uint>(countTable);
 
                     unsafe { imm = (ulong)Unsafe.AsPointer(ref callCounter.Value); }
+                }
+                else if (relocEntry.Index == FunctionTableIndex)
+                {
+                    imm = (ulong)funcTable.Base;
+                }
+                else if (relocEntry.Index == JitCacheIndex)
+                {
+                    imm = (ulong)JitCache.Base;
                 }
                 else if (Delegates.TryGetDelegateFuncPtrByIndex(relocEntry.Index, out IntPtr funcPtr))
                 {

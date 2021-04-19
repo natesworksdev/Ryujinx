@@ -209,7 +209,7 @@ namespace ARMeilleure.Instructions
             if (c.FunctionTable.IsMapped(guestAddress.Value))
             {
                 // If the guest address specified is a constant, we can skip the table walk.
-                if (guestAddress.Kind == OperandKind.Constant)
+                if (!c.HasPtc && guestAddress.Kind == OperandKind.Constant)
                 {
                     offsetAddr = Const(ref c.FunctionTable.GetValue(guestAddress.Value));
                 }
@@ -222,7 +222,7 @@ namespace ARMeilleure.Instructions
                     Operand index2 = c.BitwiseAnd(c.ShiftRightUI(guestAddress, Const(30)), Const(0x1FFul));
                     Operand index1 = c.BitwiseAnd(c.ShiftRightUI(guestAddress, Const(21)), Const(0x1FFul));
 
-                    Operand level3 = Const((long)c.FunctionTable.Base);
+                    Operand level3 = Const((long)c.FunctionTable.Base, true, Ptc.FunctionTableIndex);
                     Operand level2 = c.Load(OperandType.I64, c.Add(level3, c.ShiftLeft(index3, Const(3))));
                     c.BranchIfFalse(lblFallback, level2);
 
@@ -238,7 +238,7 @@ namespace ARMeilleure.Instructions
                 Operand offset = c.Load(OperandType.I32, offsetAddr);
                 c.BranchIf(lblFallback, offset, Const(uint.MaxValue), Comparison.Equal);
 
-                hostAddress = c.Add(Const((long)JitCache.Base), c.ZeroExtend32(OperandType.I64, offset));
+                hostAddress = c.Add(Const((long)JitCache.Base, true, Ptc.JitCacheIndex), c.ZeroExtend32(OperandType.I64, offset));
                 EmitTranslationSwitch(c, hostAddress, isJump);
                 c.Branch(lblEnd);
 

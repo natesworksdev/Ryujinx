@@ -1,12 +1,14 @@
 using ARMeilleure.Common;
 using ARMeilleure.Decoders;
+using ARMeilleure.Diagnostics;
 using ARMeilleure.Instructions;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Memory;
 using ARMeilleure.State;
-using ARMeilleure.Translation.Cache;
+using ARMeilleure.Translation.PTC;
+using System;
 using System.Collections.Generic;
-
+using System.Reflection;
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
 namespace ARMeilleure.Translation
@@ -41,6 +43,8 @@ namespace ARMeilleure.Translation
 
         public IMemoryManager Memory { get; }
 
+        public bool HasPtc { get; }
+
         public EntryTable<uint> CountTable { get; }
         public AddressTable<uint> FunctionTable { get; }
 
@@ -56,6 +60,7 @@ namespace ARMeilleure.Translation
             bool highCq,
             Aarch32Mode mode)
         {
+            HasPtc = Ptc.State != PtcState.Disabled;
             Memory = memory;
             CountTable = countTable;
             FunctionTable = funcTable;
@@ -64,6 +69,26 @@ namespace ARMeilleure.Translation
             Mode = mode;
 
             _labels = new Dictionary<ulong, Operand>();
+        }
+
+        public override Operand Call(MethodInfo info, params Operand[] callArgs)
+        {
+            if (!HasPtc)
+            {
+                return base.Call(info, callArgs);
+            }
+            else
+            {
+                int index = Delegates.GetDelegateIndex(info);
+
+                IntPtr funcPtr = Delegates.GetDelegateFuncPtrByIndex(index);
+
+                OperandType returnType = GetOperandType(info.ReturnType);
+
+                Symbols.Add((ulong)funcPtr.ToInt64(), info.Name);
+
+                return Call(Const(funcPtr.ToInt64(), true, index), returnType, callArgs);
+            }
         }
 
         public Operand GetLabel(ulong address)

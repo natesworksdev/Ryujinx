@@ -282,7 +282,7 @@ namespace ARMeilleure.Translation
 
             GuestFunction func;
 
-            if (Ptc.State == PtcState.Disabled)
+            if (!context.HasPtc)
             {
                 func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, options);
 
