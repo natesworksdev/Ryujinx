@@ -92,14 +92,12 @@ namespace ARMeilleure.Translation
                         return func;
                     });
 
-                    uint offset = (uint)((ulong)func.FuncPtr - (ulong)JitCache.Base);
-
-                    Volatile.Write(ref FunctionTable.GetValue(request.Address), offset);
-
                     if (PtcProfiler.Enabled)
                     {
                         PtcProfiler.UpdateEntry(request.Address, request.Mode, highCq: true);
                     }
+
+                    RegisterFunction(FunctionTable, request.Address, func);
 
                     _backgroundTranslatorLock.ReleaseReaderLock();
                 }
@@ -123,7 +121,7 @@ namespace ARMeilleure.Translation
                 if (Ptc.State == PtcState.Enabled)
                 {
                     Debug.Assert(_funcs.Count == 0);
-                    Ptc.LoadTranslations(_funcs, _memory, CountTable);
+                    Ptc.LoadTranslations(_funcs, _memory, CountTable, FunctionTable);
                     Ptc.MakeAndSaveTranslations(_funcs, _memory, CountTable, FunctionTable);
                 }
 
@@ -201,12 +199,12 @@ namespace ARMeilleure.Translation
             {
                 func = Translate(_memory, CountTable, FunctionTable, address, mode, highCq: false);
 
-                TranslatedFunction getFunc = _funcs.GetOrAdd(address, func);
+                TranslatedFunction oldFunc = _funcs.GetOrAdd(address, func);
 
-                if (getFunc != func)
+                if (oldFunc != func)
                 {
                     JitCache.Unmap(func.FuncPtr);
-                    func = getFunc;
+                    func = oldFunc;
                 }
 
                 if (PtcProfiler.Enabled)
@@ -214,12 +212,23 @@ namespace ARMeilleure.Translation
                     PtcProfiler.AddEntry(address, mode, highCq: false);
                 }
 
-                uint offset = (uint)((ulong)func.FuncPtr - (ulong)JitCache.Base);
-
-                Volatile.Write(ref FunctionTable.GetValue(address), offset);
+                RegisterFunction(FunctionTable, address, func);
             }
 
             return func;
+        }
+
+        internal static void RegisterFunction(
+            AddressTable<uint> funcTable,
+            ulong guestAddress,
+            TranslatedFunction func)
+        {
+            if (funcTable.IsMapped(guestAddress))
+            {
+                uint offset = (uint)((ulong)func.FuncPtr - (ulong)JitCache.Base);
+
+                Volatile.Write(ref funcTable.GetValue(guestAddress), offset);
+            }
         }
 
         internal static TranslatedFunction Translate(

@@ -520,7 +520,8 @@ namespace ARMeilleure.Translation.PTC
         internal static void LoadTranslations(
             ConcurrentDictionary<ulong, TranslatedFunction> funcs,
             IMemoryManager memory,
-            EntryTable<uint> countTable)
+            EntryTable<uint> countTable,
+            AddressTable<uint> funcTable)
         {
             if (AreCarriersEmpty())
             {
@@ -585,6 +586,8 @@ namespace ARMeilleure.Translation.PTC
                     UnwindInfo unwindInfo = ReadUnwindInfo(unwindInfosReader);
 
                     TranslatedFunction func = FastTranslate(code, callCounter, infoEntry.GuestSize, unwindInfo, infoEntry.HighCq);
+
+                    Translator.RegisterFunction(funcTable, infoEntry.Address, func);
 
                     bool isAddressUnique = funcs.TryAdd(infoEntry.Address, func);
 
@@ -812,9 +815,7 @@ namespace ARMeilleure.Translation.PTC
 
                     Interlocked.Increment(ref _translateCount);
 
-                    uint offset = (uint)((ulong)func.FuncPtr - (ulong)JitCache.Base);
-
-                    Volatile.Write(ref funcTable.GetValue(address), offset);
+                    Translator.RegisterFunction(funcTable, address, func);
 
                     if (State != PtcState.Enabled)
                     {

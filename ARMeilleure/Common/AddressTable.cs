@@ -6,6 +6,8 @@ namespace ARMeilleure.Common
 {
     unsafe class AddressTable<TEntry> : IDisposable where TEntry : unmanaged
     {
+        public const ulong Mask = ((1ul << 47) - 1) << 2;
+
         private bool _disposed;
         private TEntry**** _table;
         private readonly TEntry _fill;
@@ -33,11 +35,21 @@ namespace ARMeilleure.Common
             _pages = new List<IntPtr>(capacity: 16);
         }
 
+        public bool IsMapped(ulong address)
+        {
+            return (address & ~Mask) == 0;
+        }
+
         public ref TEntry GetValue(ulong address)
         {
             if (_disposed)
             {
                 throw new ObjectDisposedException(null);
+            }
+
+            if (!IsMapped(address))
+            {
+                throw new ArgumentException($"Address 0x{address:X2} is not mapped onto the table.", nameof(address));
             }
 
             lock (_pages)
