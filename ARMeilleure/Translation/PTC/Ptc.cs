@@ -802,7 +802,8 @@ namespace ARMeilleure.Translation.PTC
             ConcurrentDictionary<ulong, TranslatedFunction> funcs,
             IMemoryManager memory,
             JumpTable jumpTable,
-            EntryTable<uint> countTable)
+            EntryTable<uint> countTable,
+            AddressTable<uint> funcTable)
         {
             var profiledFuncsToTranslate = PtcProfiler.GetProfiledFuncsToTranslate(funcs);
 
@@ -844,7 +845,14 @@ namespace ARMeilleure.Translation.PTC
 
                     Debug.Assert(PtcProfiler.IsAddressInStaticCodeRange(address));
 
-                    TranslatedFunction func = Translator.Translate(memory, jumpTable, countTable, address, item.funcProfile.Mode, item.funcProfile.HighCq);
+                    TranslatedFunction func = Translator.Translate(
+                        memory,
+                        jumpTable,
+                        countTable,
+                        funcTable,
+                        address,
+                        item.funcProfile.Mode,
+                        item.funcProfile.HighCq);
 
                     bool isAddressUnique = funcs.TryAdd(address, func);
 

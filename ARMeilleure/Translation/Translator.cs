@@ -39,6 +39,7 @@ namespace ARMeilleure.Translation
 
         private JumpTable _jumpTable;
         internal JumpTable JumpTable => _jumpTable;
+        internal AddressTable<uint> FunctionTable { get; }
         internal EntryTable<uint> CountTable { get; }
 
         private volatile int _threadCount;
@@ -60,6 +61,7 @@ namespace ARMeilleure.Translation
             _backgroundTranslatorLock = new ReaderWriterLock();
 
             CountTable = new EntryTable<uint>();
+            FunctionTable = new AddressTable<uint>(fill: uint.MaxValue);
 
             JitCache.Initialize(allocator);
 
@@ -84,6 +86,7 @@ namespace ARMeilleure.Translation
                         _memory,
                         _jumpTable,
                         CountTable,
+                        FunctionTable,
                         request.Address,
                         request.Mode,
                         highCq: true);
@@ -95,6 +98,10 @@ namespace ARMeilleure.Translation
                     });
 
                     _jumpTable.RegisterFunction(request.Address, func);
+
+                    uint offset = (uint)((ulong)func.FuncPtr - (ulong)JitCache.Base);
+
+                    Volatile.Write(ref FunctionTable.GetValue(request.Address), offset);
 
                     if (PtcProfiler.Enabled)
                     {
@@ -127,7 +134,7 @@ namespace ARMeilleure.Translation
                 {
                     Debug.Assert(_funcs.Count == 0);
                     Ptc.LoadTranslations(_funcs, _memory, _jumpTable, CountTable);
-                    Ptc.MakeAndSaveTranslations(_funcs, _memory, _jumpTable, CountTable);
+                    Ptc.MakeAndSaveTranslations(_funcs, _memory, _jumpTable, CountTable, FunctionTable);
                 }
 
                 PtcProfiler.Start();
@@ -182,6 +189,7 @@ namespace ARMeilleure.Translation
                 _jumpTable = null;
 
                 CountTable.Dispose();
+                FunctionTable.Dispose();
 
                 GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
             }
@@ -204,7 +212,7 @@ namespace ARMeilleure.Translation
         {
             if (!_funcs.TryGetValue(address, out TranslatedFunction func))
             {
-                func = Translate(_memory, _jumpTable, CountTable, address, mode, highCq: false);
+                func = Translate(_memory, _jumpTable, CountTable, FunctionTable, address, mode, highCq: false);
 
                 TranslatedFunction getFunc = _funcs.GetOrAdd(address, func);
 
@@ -218,6 +226,10 @@ namespace ARMeilleure.Translation
                 {
                     PtcProfiler.AddEntry(address, mode, highCq: false);
                 }
+
+                uint offset = (uint)((ulong)func.FuncPtr - (ulong)JitCache.Base);
+
+                Volatile.Write(ref FunctionTable.GetValue(address), offset);
             }
 
             return func;
@@ -227,11 +239,19 @@ namespace ARMeilleure.Translation
             IMemoryManager memory,
             JumpTable jumpTable,
             EntryTable<uint> countTable,
+            AddressTable<uint> funcTable,
             ulong address,
             ExecutionMode mode,
             bool highCq)
         {
-            var context = new ArmEmitterContext(memory, jumpTable, countTable, address, highCq, Aarch32Mode.User);
+            var context = new ArmEmitterContext(
+                memory,
+                jumpTable,
+                countTable,
+                funcTable,
+                address,
+                highCq,
+                mode: Aarch32Mode.User);
 
             Logger.StartPass(PassName.Decoding);
 

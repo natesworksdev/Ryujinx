@@ -33,10 +33,8 @@ namespace ARMeilleure.Common
             _pages = new List<IntPtr>(capacity: 16);
         }
 
-        public ref TEntry GetValue(ulong address, out bool mapped)
+        public ref TEntry GetValue(ulong address)
         {
-            mapped = false;
-
             if (_disposed)
             {
                 throw new ObjectDisposedException(null);

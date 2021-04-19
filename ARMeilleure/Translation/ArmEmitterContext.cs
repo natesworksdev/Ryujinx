@@ -43,6 +43,7 @@ namespace ARMeilleure.Translation
 
         public JumpTable JumpTable { get; }
         public EntryTable<uint> CountTable { get; }
+        public AddressTable<uint> FunctionTable { get; }
 
         public ulong EntryAddress { get; }
         public bool HighCq { get; }
@@ -52,6 +53,7 @@ namespace ARMeilleure.Translation
             IMemoryManager memory,
             JumpTable jumpTable,
             EntryTable<uint> countTable,
+            AddressTable<uint> funcTable,
             ulong entryAddress,
             bool highCq,
             Aarch32Mode mode)
@@ -59,6 +61,7 @@ namespace ARMeilleure.Translation
             Memory = memory;
             JumpTable = jumpTable;
             CountTable = countTable;
+            FunctionTable = funcTable;
             EntryAddress = entryAddress;
             HighCq = highCq;
             Mode = mode;
