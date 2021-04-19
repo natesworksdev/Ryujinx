@@ -141,7 +141,7 @@ namespace Ryujinx.Ui
             // Instanciate HLE objects.
             _virtualFileSystem      = VirtualFileSystem.CreateInstance();
             _contentManager         = new ContentManager(_virtualFileSystem);
-            _accountManager         = new AccountManager(_contentManager, _virtualFileSystem);
+            _accountManager         = new AccountManager(_virtualFileSystem);
             _userChannelPersistence = new UserChannelPersistence();
 
             // Instanciate GUI objects.

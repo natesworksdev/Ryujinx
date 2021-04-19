@@ -16,7 +16,6 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
     {
         public static readonly UserId DefaultUserId = new UserId("00000000000000010000000000000000");
 
-        private readonly ContentManager         _contentManager;
         private readonly VirtualFileSystem      _virtualFileSystem;
         private readonly AccountSaveDataManager _accountSaveDataManager;
 
@@ -24,9 +23,8 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
         public UserProfile LastOpenedUser { get; private set; }
 
-        public AccountManager(ContentManager contentManager, VirtualFileSystem virtualFileSystem)
+        public AccountManager(VirtualFileSystem virtualFileSystem)
         {
-            _contentManager    = contentManager;
             _virtualFileSystem = virtualFileSystem;
 
             _profiles = new ConcurrentDictionary<string, UserProfile>();
