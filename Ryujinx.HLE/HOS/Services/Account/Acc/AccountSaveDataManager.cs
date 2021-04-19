@@ -9,11 +9,11 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 {
     class AccountSaveDataManager
     {
-        private readonly string _accountsJsonPath = Path.Join(AppDataManager.BaseDirPath, "system", "Accounts.json");
+        private readonly string _profilesJsonPath = Path.Join(AppDataManager.BaseDirPath, "system", "Profiles.json");
 
-        private struct AccountsJson
+        private struct ProfilesJson
         {
-            [JsonPropertyName("accounts")]
+            [JsonPropertyName("profiles")]
             public List<UserProfileJson> Profiles { get; set; }
             [JsonPropertyName("last_opened")]
             public string LastOpened { get; set; }
@@ -41,18 +41,18 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
         {
             // TODO: Uses 0x8000000000000010 system savedata instead of a JSON file if needed.
 
-            if (File.Exists(_accountsJsonPath))
+            if (File.Exists(_profilesJsonPath))
             {
-                AccountsJson accountJson = JsonHelper.DeserializeFromFile<AccountsJson>(_accountsJsonPath);
+                ProfilesJson profilesJson = JsonHelper.DeserializeFromFile<ProfilesJson>(_profilesJsonPath);
 
-                foreach (var profile in accountJson.Profiles)
+                foreach (var profile in profilesJson.Profiles)
                 {
                     UserProfile addedProfile = new UserProfile(new UserId(profile.UserId), profile.Name, profile.Image, profile.LastModifiedTimestamp);
 
                     profiles.AddOrUpdate(profile.UserId, addedProfile, (key, old) => addedProfile);
                 }
 
-                LastOpened = new UserId(accountJson.LastOpened);
+                LastOpened = new UserId(profilesJson.LastOpened);
             }
             else
             {
@@ -62,7 +62,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
         public void Save(ConcurrentDictionary<string, UserProfile> profiles)
         {
-            AccountsJson accountsJson = new AccountsJson()
+            ProfilesJson profilesJson = new ProfilesJson()
             {
                 Profiles   = new List<UserProfileJson>(),
                 LastOpened = LastOpened.ToString()
@@ -70,7 +70,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
             foreach (var profile in profiles)
             {
-                accountsJson.Profiles.Add(new UserProfileJson()
+                profilesJson.Profiles.Add(new UserProfileJson()
                 {
                     UserId                = profile.Value.UserId.ToString(),
                     Name                  = profile.Value.Name,
@@ -81,7 +81,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
                 });
             }
 
-            File.WriteAllText(_accountsJsonPath, JsonHelper.Serialize(accountsJson, true));
+            File.WriteAllText(_profilesJsonPath, JsonHelper.Serialize(profilesJson, true));
         }
     }
 }

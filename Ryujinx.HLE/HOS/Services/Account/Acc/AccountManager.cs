@@ -65,7 +65,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
         {
             if (_profiles.TryGetValue(userId.ToString(), out UserProfile profile))
             {
-                // TODO: Support open multiple users ?
+                // TODO: Support multiple open users ?
                 foreach (UserProfile userProfile in GetAllUsers())
                 {
                     if (userProfile == LastOpenedUser)
@@ -98,7 +98,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
         {
             if (_profiles.TryGetValue(userId.ToString(), out UserProfile profile))
             {
-                // TODO: Support open multiple online users ?
+                // TODO: Support multiple open online users ?
                 foreach (UserProfile userProfile in GetAllUsers())
                 {
                     if (userProfile == LastOpenedUser)
