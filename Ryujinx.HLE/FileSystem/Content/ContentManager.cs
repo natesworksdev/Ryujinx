@@ -24,8 +24,8 @@ namespace Ryujinx.HLE.FileSystem.Content
 
         private Dictionary<StorageId, LinkedList<LocationEntry>> _locationEntries;
 
-        private Dictionary<string, ulong>   _sharedFontTitleDictionary;
-        private Dictionary<ulong, string>   _systemTitlesNameDictionary;
+        private Dictionary<string, ulong>  _sharedFontTitleDictionary;
+        private Dictionary<ulong, string>  _systemTitlesNameDictionary;
         private Dictionary<string, string> _sharedFontFilenameDictionary;
 
         private SortedDictionary<(ulong titleId, NcaContentType type), string> _contentDictionary;

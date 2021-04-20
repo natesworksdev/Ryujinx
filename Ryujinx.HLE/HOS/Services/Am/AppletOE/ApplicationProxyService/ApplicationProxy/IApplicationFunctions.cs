@@ -359,13 +359,13 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         // SetApplicationCopyrightImage(buffer<bytes, 0x45> frame_buffer, s32 x, s32 y, s32 width, s32 height, s32 window_origin_mode)
         public ResultCode SetApplicationCopyrightImage(ServiceCtx context)
         {
-            ulong frameBufferPos  = context.Request.SendBuff[0].Position;
-            ulong frameBufferSize = context.Request.SendBuff[0].Size;
-            int  x                = context.RequestData.ReadInt32();
-            int  y                = context.RequestData.ReadInt32();
-            int  width            = context.RequestData.ReadInt32();
-            int  height           = context.RequestData.ReadInt32();
-            uint windowOriginMode = context.RequestData.ReadUInt32();
+            ulong frameBufferPos   = context.Request.SendBuff[0].Position;
+            ulong frameBufferSize  = context.Request.SendBuff[0].Size;
+            int   x                = context.RequestData.ReadInt32();
+            int   y                = context.RequestData.ReadInt32();
+            int   width            = context.RequestData.ReadInt32();
+            int   height           = context.RequestData.ReadInt32();
+            uint  windowOriginMode = context.RequestData.ReadUInt32();
 
             ResultCode resultCode = ResultCode.InvalidParameters;
 
