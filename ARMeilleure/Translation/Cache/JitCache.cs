@@ -22,22 +22,19 @@ namespace ARMeilleure.Translation.Cache
 
         private readonly List<CacheEntry> _cacheEntries = new List<CacheEntry>();
 
-        private static readonly object _lock = new object();
+        private JitUnwindWindows _jitUnwindWindows;
 
         public static IntPtr Base => _jitRegion.Pointer;
 
         public JitCache(IJitMemoryAllocator allocator)
         {
-            lock (_lock)
+            _jitRegion = new ReservedRegion(allocator, CacheSize);
+
+            _cacheAllocator = new CacheMemoryAllocator(CacheSize);
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                _jitRegion = new ReservedRegion(allocator, CacheSize);
-
-                _cacheAllocator = new CacheMemoryAllocator(CacheSize);
-
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    JitUnwindWindows.InstallFunctionTableHandler(_jitRegion.Pointer, CacheSize, _jitRegion.Pointer + Allocate(PageSize));
-                }
+                _jitUnwindWindows = new JitUnwindWindows(_jitRegion.Pointer, CacheSize, _jitRegion.Pointer + Allocate(PageSize), this);
             }
         }
 

@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace ARMeilleure.Translation.Cache
 {
-    static class JitUnwindWindows
+    class JitUnwindWindows
     {
         private const int MaxUnwindCodesArraySize = 32; // Must be an even value.
 
@@ -40,6 +40,8 @@ namespace ARMeilleure.Translation.Cache
             PushMachframe = 10
         }
 
+        private JitCache _jitCache;
+
         private unsafe delegate RuntimeFunction* GetRuntimeFunctionCallback(ulong controlPc, IntPtr context);
 
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
@@ -51,16 +53,18 @@ namespace ARMeilleure.Translation.Cache
             IntPtr context,
             string outOfProcessCallbackDll);
 
-        private static GetRuntimeFunctionCallback _getRuntimeFunctionCallback;
+        private GetRuntimeFunctionCallback _getRuntimeFunctionCallback;
 
-        private static int _sizeOfRuntimeFunction;
+        private int _sizeOfRuntimeFunction;
 
-        private unsafe static RuntimeFunction* _runtimeFunction;
+        private unsafe RuntimeFunction* _runtimeFunction;
 
-        private unsafe static UnwindInfo* _unwindInfo;
+        private unsafe UnwindInfo* _unwindInfo;
 
-        public static void InstallFunctionTableHandler(IntPtr codeCachePointer, uint codeCacheLength, IntPtr workBufferPtr)
+        public JitUnwindWindows(IntPtr codeCachePointer, uint codeCacheLength, IntPtr workBufferPtr, JitCache jitCache)
         {
+            _jitCache = jitCache;
+
             ulong codeCachePtr = (ulong)codeCachePointer.ToInt64();
 
             _sizeOfRuntimeFunction = Marshal.SizeOf<RuntimeFunction>();
@@ -90,11 +94,11 @@ namespace ARMeilleure.Translation.Cache
             }
         }
 
-        private static unsafe RuntimeFunction* FunctionTableHandler(ulong controlPc, IntPtr context)
+        private unsafe RuntimeFunction* FunctionTableHandler(ulong controlPc, IntPtr context)
         {
             int offset = (int)((long)controlPc - context.ToInt64());
 
-            if (!JitCache.TryFind(offset, out CacheEntry funcEntry))
+            if (!_jitCache.TryFind(offset, out CacheEntry funcEntry))
             {
                 return null; // Not found.
             }
