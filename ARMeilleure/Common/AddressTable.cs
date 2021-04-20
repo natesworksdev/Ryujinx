@@ -10,12 +10,71 @@ namespace ARMeilleure.Common
     /// <typeparam name="TEntry">Type of the value</typeparam>
     unsafe class AddressTable<TEntry> : IDisposable where TEntry : unmanaged
     {
-        public const ulong Mask = ((1ul << 47) - 1) << 2;
+        /// <summary>
+        /// Default levels used by <see cref="AddressTable{TEntry}"/>.
+        /// </summary>
+        private static readonly Level[] DefaultLevels = new[]
+        {
+            new Level(39,  9),
+            new Level(30,  9),
+            new Level(21,  9),
+            new Level( 2, 19)
+        };
+
+        /// <summary>
+        /// Represents a level in an <see cref="AddressTable{TEntry}"/>.
+        /// </summary>
+        public readonly struct Level
+        {
+            /// <summary>
+            /// Gets the index of the <see cref="Level"/> in the guest address.
+            /// </summary>
+            public int Index { get; }
+
+            /// <summary>
+            /// Gets the length of the <see cref="Level"/> in the guest address.
+            /// </summary>
+            public int Length { get; }
+
+            /// <summary>
+            /// Gets the mask which masks the bits used by the <see cref="Level"/>.
+            /// </summary>
+            public ulong Mask => ((1ul << Length) - 1) << Index;
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="Level"/> structure with the specified
+            /// <paramref name="index"/> and <paramref name="length"/>.
+            /// </summary>
+            /// <param name="index">Index of the <see cref="Level"/></param>
+            /// <param name="length">Length of the <see cref="Level"/></param>
+            public Level(int index, int length) =>
+                (Index, Length) = (index, length);
+
+            /// <summary>
+            /// Gets the value of the <see cref="Level"/> from the specified guest <paramref name="address"/>.
+            /// </summary>
+            /// <param name="address">Guest address</param>
+            /// <returns>Value of the <see cref="Level"/> from the specified guest <paramref name="address"/></returns>
+            public int GetValue(ulong address)
+            {
+                return (int)((address & Mask) >> Index);
+            }
+        }
 
         private bool _disposed;
-        private TEntry**** _table;
+        private TEntry** _table;
         private readonly TEntry _fill;
         private readonly List<IntPtr> _pages;
+
+        /// <summary>
+        /// Gets the bits used by the <see cref="Levels"/> of the <see cref="AddressTable{TEntry}"/> instance.
+        /// </summary>
+        public ulong Mask { get; }
+
+        /// <summary>
+        /// Gets the <see cref="Level"/>s used by the <see cref="AddressTable{TEntry}"/> instance.
+        /// </summary>
+        public Level[] Levels { get; }
 
         /// <summary>
         /// Gets the base address of the <see cref="EntryTable{TEntry}"/>.
@@ -39,13 +98,27 @@ namespace ARMeilleure.Common
 
         /// <summary>
         /// Constructs a new instance of the <see cref="AddressTable{TEntry}"/> class with the specified default fill
-        /// value.
+        /// value and list of <see cref="Level"/>.
         /// </summary>
         /// <param name="fill">Default fill value</param>
-        public AddressTable(TEntry fill)
+        /// <exception cref="ArgumentException">Length of <paramref name="levels"/> is less than 2</exception>
+        public AddressTable(TEntry fill, Level[] levels = null)
         {
             _fill = fill;
             _pages = new List<IntPtr>(capacity: 16);
+
+            Levels = levels ?? DefaultLevels;
+            Mask = 0;
+
+            if (Levels.Length < 2)
+            {
+                throw new ArgumentException("Table must be at least 2 levels deep.", nameof(levels));
+            }
+
+            foreach (var level in Levels)
+            {
+                Mask |= level.Mask;
+            }
         }
 
         /// <summary>
@@ -79,7 +152,7 @@ namespace ARMeilleure.Common
 
             lock (_pages)
             {
-                return ref GetPage(address)[(int)(address >> 0x2 & 0x7FFFF)];
+                return ref GetPage(address)[Levels[^1].GetValue(address)];
             }
         }
 
@@ -90,49 +163,40 @@ namespace ARMeilleure.Common
         /// <returns>Leaf page for the specified guest <paramref name="address"/></returns>
         private TEntry* GetPage(ulong address)
         {
-            var level3 = GetRootPage();
-            var level2 = (TEntry***)GetNextPage<IntPtr>((void**)level3, (int)(address >> 39 & 0x1FF), 1 << 9);
-            var level1 = (TEntry**)GetNextPage<IntPtr>((void**)level2, (int)(address >> 30 & 0x1FF), 1 << 9);
-            var level0 = (TEntry*)GetNextPage<TEntry>((void**)level1, (int)(address >> 21 & 0x1FF), 1 << 19, _fill);
+            TEntry** page = GetRootPage();
 
-            return level0;
+            for (int i = 0; i < Levels.Length - 1; i++)
+            {
+                ref Level level = ref Levels[i];
+                ref TEntry* nextPage = ref page[level.GetValue(address)];
+
+                if (nextPage == null)
+                {
+                    ref Level nextLevel = ref Levels[i + 1];
+
+                    nextPage = i == Levels.Length - 2 ?
+                        (TEntry*)Allocate(1 << nextLevel.Length, _fill) :
+                        (TEntry*)Allocate(1 << nextLevel.Length, IntPtr.Zero);
+                }
+
+                page = (TEntry**)nextPage;
+            }
+
+            return (TEntry*)page;
         }
 
         /// <summary>
         /// Lazily initialize and get the root page of the <see cref="AddressTable{TEntry}"/>.
         /// </summary>
         /// <returns>Root page of the <see cref="AddressTable{TEntry}"/></returns>
-        private TEntry**** GetRootPage()
+        private TEntry** GetRootPage()
         {
             if (_table == null)
             {
-                _table = (TEntry****)Allocate(length: 1 << 9, fill: IntPtr.Zero);
+                _table = (TEntry**)Allocate(1 << Levels[0].Length, fill: IntPtr.Zero);
             }
 
             return _table;
-        }
-
-        /// <summary>
-        /// Gets the next page at the specified index in the specified table. If the next page is
-        /// <see langword="null"/>, it is initialized to a page of type <typeparamref name="T"/> of the specified
-        /// length.
-        /// </summary>
-        /// <typeparam name="T">Type of the next page</typeparam>
-        /// <param name="level">Current page</param>
-        /// <param name="index">Index in the current page</param>
-        /// <param name="length">Length of the next page</param>
-        /// <param name="fill">Value with which to fill the page if it is initialized</param>
-        /// <returns>Next page</returns>
-        private void* GetNextPage<T>(void** level, int index, int length, T fill = default) where T : unmanaged
-        {
-            ref var result = ref level[index];
-
-            if (result == null)
-            {
-                result = (void*)Allocate(length, fill);
-            }
-
-            return result;
         }
 
         /// <summary>

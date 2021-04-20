@@ -198,7 +198,6 @@ namespace ARMeilleure.Instructions
             }
 
             Operand hostAddress;
-            Operand index0 = c.BitwiseAnd(c.ShiftRightUI(guestAddress, Const(2)), Const(0x7FFFFul));
             Operand offsetAddr;
 
             Operand lblFallback = Label();
@@ -215,24 +214,26 @@ namespace ARMeilleure.Instructions
                 }
                 else
                 {
-                    Operand masked = c.BitwiseAnd(guestAddress, Const(~AddressTable<uint>.Mask));
+                    Operand masked = c.BitwiseAnd(guestAddress, Const(~c.FunctionTable.Mask));
                     c.BranchIfTrue(lblFallback, masked);
 
-                    Operand index3 = c.BitwiseAnd(c.ShiftRightUI(guestAddress, Const(39)), Const(0x1FFul));
-                    Operand index2 = c.BitwiseAnd(c.ShiftRightUI(guestAddress, Const(30)), Const(0x1FFul));
-                    Operand index1 = c.BitwiseAnd(c.ShiftRightUI(guestAddress, Const(21)), Const(0x1FFul));
+                    Operand index = null;
+                    Operand page = Const((long)c.FunctionTable.Base, true, Ptc.FunctionTableIndex);
 
-                    Operand level3 = Const((long)c.FunctionTable.Base, true, Ptc.FunctionTableIndex);
-                    Operand level2 = c.Load(OperandType.I64, c.Add(level3, c.ShiftLeft(index3, Const(3))));
-                    c.BranchIfFalse(lblFallback, level2);
+                    for (int i = 0; i < c.FunctionTable.Levels.Length - 1; i++)
+                    {
+                        ref var level = ref c.FunctionTable.Levels[i];
 
-                    Operand level1 = c.Load(OperandType.I64, c.Add(level2, c.ShiftLeft(index2, Const(3))));
-                    c.BranchIfFalse(lblFallback, level1);
+                        // level.Mask is not used directly because it is more often bigger than 32-bits, so it will not
+                        // be encoded as an immediate on the x86's bitwise and operation.
+                        Operand mask = Const(level.Mask >> level.Index);
 
-                    Operand level0 = c.Load(OperandType.I64, c.Add(level1, c.ShiftLeft(index1, Const(3))));
-                    c.BranchIfFalse(lblFallback, level0);
+                        index = c.BitwiseAnd(c.ShiftRightUI(guestAddress, Const(level.Index)), mask);
+                        page = c.Load(OperandType.I64, c.Add(page, c.ShiftLeft(index, Const(3))));
+                        c.BranchIfFalse(lblFallback, page);
+                    }
 
-                    offsetAddr = c.Add(level0, c.ShiftLeft(index0, Const(2)));
+                    offsetAddr = c.Add(page, c.ShiftLeft(index, Const(2)));
                 }
 
                 Operand offset = c.Load(OperandType.I32, offsetAddr);
