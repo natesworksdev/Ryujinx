@@ -7,6 +7,7 @@ using LibHac.FsSystem.NcaUtils;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.FileSystem.Content;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using System;
@@ -23,21 +24,21 @@ namespace Ryujinx.Ui.Windows
         public byte[] SelectedProfileImage;
         public bool   NewUser;
 
-        private Dictionary<string, byte[]> avatarDict = new Dictionary<string, byte[]>();
+        private static Dictionary<string, byte[]> _avatarDict = new Dictionary<string, byte[]>();
 
         private ListStore _listStore;
         private IconView  _iconView;
+        private Button    _setBackgroungColorButton;
+        private Gdk.RGBA  _backgroundColor;
 
-        public AvatarWindow(ContentManager contentManager, VirtualFileSystem virtualFileSystem) : base($"Ryujinx {Program.Version} - Manage Accounts - Avatar")
+        public AvatarWindow() : base($"Ryujinx {Program.Version} - Manage Accounts - Avatar")
         {
-            // TODO: Handle the dynamic avatar background. For now we will just uses a white one.
-
             CanFocus  = false;
             Resizable = false;
             Modal     = true;
             TypeHint  = Gdk.WindowTypeHint.Dialog;
 
-            SetDefaultSize(620, 400);
+            SetDefaultSize(740, 400);
             SetPosition(WindowPosition.Center);
 
             VBox vbox = new VBox(false, 0);
@@ -59,6 +60,18 @@ namespace Ryujinx.Ui.Windows
             };
             chooseButton.Clicked += ChooseButton_Pressed;
 
+            _setBackgroungColorButton = new Button()
+            {
+                Label    = "Set Background Color",
+                CanFocus = true
+            };
+            _setBackgroungColorButton.Clicked += SetBackgroungColorButton_Pressed;
+
+            _backgroundColor.Red   = 1;
+            _backgroundColor.Green = 1;
+            _backgroundColor.Blue  = 1;
+            _backgroundColor.Alpha = 1;
+
             Button closeButton = new Button()
             {
                 Label           = "Close",
@@ -66,13 +79,37 @@ namespace Ryujinx.Ui.Windows
             };
             closeButton.Clicked += CloseButton_Pressed;
 
-            vbox.PackStart(scrolledWindow, true, true, 0);
-            hbox.PackStart(chooseButton, true, true, 0);
-            hbox.PackStart(closeButton, true, true, 0);
-            vbox.PackStart(hbox, false, false, 0);
+            vbox.PackStart(scrolledWindow,            true,  true,  0);
+            hbox.PackStart(chooseButton,              true,  true,  0);
+            hbox.PackStart(_setBackgroungColorButton, true,  true,  0);
+            hbox.PackStart(closeButton,               true,  true,  0);
+            vbox.PackStart(hbox,                      false, false, 0);
 
             _listStore = new ListStore(typeof(string), typeof(Gdk.Pixbuf));
             _listStore.SetSortColumnId(0, SortType.Ascending);
+
+            _iconView              = new IconView(_listStore);
+            _iconView.ItemWidth    = 64;
+            _iconView.ItemPadding  = 10;
+            _iconView.PixbufColumn = 1;
+
+            _iconView.SelectionChanged += IconView_SelectionChanged;
+
+            scrolledWindow.Add(_iconView);
+
+            _iconView.GrabFocus();
+
+            ProcessAvatars();
+
+            ShowAll();
+        }
+
+        public static void PreloadAvatars(ContentManager contentManager, VirtualFileSystem virtualFileSystem)
+        {
+            if (_avatarDict.Count > 0)
+            {
+                return;
+            }
 
             string contentPath = contentManager.GetInstalledContentPath(0x010000000000080A, StorageId.NandSystem, NcaContentType.Data);
             string avatarPath  = virtualFileSystem.SwitchPathToSystemPath(contentPath);
@@ -93,7 +130,7 @@ namespace Ryujinx.Ui.Windows
                             romfs.OpenFile(out IFile file, ("/" + item.FullPath).ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
                             using (MemoryStream stream    = new MemoryStream())
-                            using (MemoryStream streamJpg = new MemoryStream())
+                            using (MemoryStream streamPng = new MemoryStream())
                             {
                                 file.AsStream().CopyTo(stream);
 
@@ -101,32 +138,42 @@ namespace Ryujinx.Ui.Windows
 
                                 Image avatarImage = Image.LoadPixelData<Rgba32>(DecompressYaz0(stream), 256, 256);
 
-                                avatarImage.Mutate(x => x.BackgroundColor(new Rgba32(255, 255, 255, 255)));
-                                avatarImage.SaveAsJpeg(streamJpg);
+                                avatarImage.SaveAsPng(streamPng);
 
-                                avatarDict.Add(item.FullPath, streamJpg.ToArray());
-
-                                _listStore.AppendValues(item.FullPath, new Gdk.Pixbuf(streamJpg.ToArray(), 96, 96));
+                                _avatarDict.Add(item.FullPath, streamPng.ToArray());
                             }
                         }
                     }
                 }
             }
+        }
 
-            _iconView              = new IconView(_listStore);
-            _iconView.ItemWidth    = 64;
-            _iconView.ItemPadding  = 10;
-            _iconView.PixbufColumn = 1;
+        private void ProcessAvatars()
+        {
+            _listStore.Clear();
 
-            _iconView.SelectionChanged += IconView_SelectionChanged;
+            foreach (var avatar in _avatarDict)
+            {
+                _listStore.AppendValues(avatar.Key, new Gdk.Pixbuf(ProcessImage(avatar.Value), 96, 96));
+            }
 
             _iconView.SelectPath(new TreePath(new int[] { 0 }));
+        }
 
-            scrolledWindow.Add(_iconView);
+        private byte[] ProcessImage(byte[] data)
+        {
+            using (MemoryStream streamJpg = new MemoryStream())
+            {
+                Image avatarImage = Image.Load(data, new PngDecoder());
 
-            _iconView.GrabFocus();
+                avatarImage.Mutate(x => x.BackgroundColor(new Rgba32((byte)(_backgroundColor.Red   * 255),
+                                                                     (byte)(_backgroundColor.Green * 255),
+                                                                     (byte)(_backgroundColor.Blue  * 255),
+                                                                     (byte)(_backgroundColor.Alpha * 255))));
+                avatarImage.SaveAsJpeg(streamJpg);
 
-            ShowAll();
+                return streamJpg.ToArray();
+            }
         }
 
         private void CloseButton_Pressed(object sender, EventArgs e)
@@ -142,7 +189,25 @@ namespace Ryujinx.Ui.Windows
             {
                 _listStore.GetIter(out TreeIter iter, _iconView.SelectedItems[0]);
 
-                SelectedProfileImage = avatarDict[(string)_listStore.GetValue(iter, 0)];
+                SelectedProfileImage = ProcessImage(_avatarDict[(string)_listStore.GetValue(iter, 0)]);
+            }
+        }
+
+        private void SetBackgroungColorButton_Pressed(object sender, EventArgs e)
+        {
+            using (ColorChooserDialog colorChooserDialog = new ColorChooserDialog("Set Background Color", this))
+            {
+                colorChooserDialog.UseAlpha = false;
+                colorChooserDialog.Rgba     = _backgroundColor;
+                
+                if (colorChooserDialog.Run() == (int)ResponseType.Ok)
+                {
+                    _backgroundColor = colorChooserDialog.Rgba;
+
+                    ProcessAvatars();
+                }
+
+                colorChooserDialog.Hide();
             }
         }
 
@@ -151,7 +216,7 @@ namespace Ryujinx.Ui.Windows
             Close();
         }
 
-        public byte[] DecompressYaz0(Stream stream)
+        public static byte[] DecompressYaz0(Stream stream)
         {
             using (BinaryReader reader = new BinaryReader(stream))
             {

@@ -9,8 +9,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 
-using Image = SixLabors.ImageSharp.Image;
+using Image  = SixLabors.ImageSharp.Image;
 using UserId = Ryujinx.HLE.HOS.Services.Account.Acc.UserId;
 
 namespace Ryujinx.Ui.Windows
@@ -19,14 +21,15 @@ namespace Ryujinx.Ui.Windows
     {
         private const uint MaxProfileNameLength = 0x20;
 
-        private readonly AccountManager    _accountManager;
-        private readonly ContentManager    _contentManager;
-        private readonly VirtualFileSystem _virtualFileSystem;
+        private readonly AccountManager _accountManager;
+        private readonly ContentManager _contentManager;
 
         private byte[] _bufferImageProfile;
         private string _tempNewProfileName;
 
         private Gdk.RGBA _selectedColor;
+
+        private ManualResetEvent _avatarsPreloadingEvent = new ManualResetEvent(false);
 
         public UserProfilesManagerWindow(AccountManager accountManager, ContentManager contentManager, VirtualFileSystem virtualFileSystem) : base($"Ryujinx {Program.Version} - Manage User Profiles")
         {
@@ -39,20 +42,25 @@ namespace Ryujinx.Ui.Windows
             _selectedColor.Blue  = 0.718;
             _selectedColor.Alpha = 1;
 
-            _accountManager    = accountManager;
-            _contentManager    = contentManager;
-            _virtualFileSystem = virtualFileSystem;
+            _accountManager = accountManager;
+            _contentManager = contentManager;
 
             CellRendererToggle userSelectedToggle = new CellRendererToggle();
             userSelectedToggle.Toggled += UserSelectedToggle_Toggled;
 
-            _usersTreeView.AppendColumn("Selected",  userSelectedToggle,       "active", 0);
+            // NOTE: Uncomment following line when multiple selection of user profiles will be supported.
+            //_usersTreeView.AppendColumn("Selected",  userSelectedToggle,       "active", 0);
             _usersTreeView.AppendColumn("User Icon", new CellRendererPixbuf(), "pixbuf", 1);
             _usersTreeView.AppendColumn("User Info", new CellRendererText(),   "text",   2, "background-rgba", 3);
 
             _tableStore.SetSortColumnId(0, SortType.Descending);
             
             RefreshList();
+
+            Task.Run(() => {
+                AvatarWindow.PreloadAvatars(contentManager, virtualFileSystem);
+                _avatarsPreloadingEvent.Set();
+            });
         }
 
         public void RefreshList()
@@ -228,7 +236,7 @@ namespace Ryujinx.Ui.Windows
                 }
                 else if (responseDialog == (ResponseType)1)
                 {
-                    AvatarWindow avatarWindow = new AvatarWindow(_contentManager, _virtualFileSystem)
+                    AvatarWindow avatarWindow = new AvatarWindow()
                     {
                         NewUser = newUser
                     };
@@ -243,6 +251,8 @@ namespace Ryujinx.Ui.Windows
 
         private void ChangeProfileImageButton_Pressed(object sender, EventArgs e)
         {
+            _avatarsPreloadingEvent.WaitOne();
+
             SelectProfileImage();
 
             if (_bufferImageProfile != null)

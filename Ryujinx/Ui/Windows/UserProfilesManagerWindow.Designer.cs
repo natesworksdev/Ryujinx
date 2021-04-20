@@ -38,7 +38,7 @@ namespace Ryujinx.Ui.Windows
             Modal          = true;
             WindowPosition = WindowPosition.Center;
             DefaultWidth   = 620;
-            DefaultHeight  = 500;
+            DefaultHeight  = 548;
             TypeHint       = Gdk.WindowTypeHint.Dialog;
 
             //
