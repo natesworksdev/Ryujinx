@@ -188,13 +188,13 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        private static void EmitTableBranch(ArmEmitterContext c, Operand guestAddress, bool isJump)
+        private static void EmitTableBranch(ArmEmitterContext context, Operand guestAddress, bool isJump)
         {
-            c.StoreToContext();
+            context.StoreToContext();
 
             if (guestAddress.Type == OperandType.I32)
             {
-                guestAddress = c.ZeroExtend32(OperandType.I64, guestAddress);
+                guestAddress = context.ZeroExtend32(OperandType.I64, guestAddress);
             }
 
             Operand hostAddress;
@@ -205,51 +205,57 @@ namespace ARMeilleure.Instructions
 
             // If address is mapped onto the function table, we can do an inlined table walk. Otherwise we fallback
             // onto the translator.
-            if (c.FunctionTable.IsMapped(guestAddress.Value))
+            if (context.FunctionTable.IsMapped(guestAddress.Value))
             {
                 // If the guest address specified is a constant, we can skip the table walk.
-                if (!c.HasPtc && guestAddress.Kind == OperandKind.Constant)
+                if (!context.HasPtc && guestAddress.Kind == OperandKind.Constant)
                 {
-                    offsetAddr = Const(ref c.FunctionTable.GetValue(guestAddress.Value));
+                    offsetAddr = Const(ref context.FunctionTable.GetValue(guestAddress.Value));
                 }
                 else
                 {
-                    Operand masked = c.BitwiseAnd(guestAddress, Const(~c.FunctionTable.Mask));
-                    c.BranchIfTrue(lblFallback, masked);
+                    Operand masked = context.BitwiseAnd(guestAddress, Const(~context.FunctionTable.Mask));
+                    context.BranchIfTrue(lblFallback, masked);
 
                     Operand index = null;
-                    Operand page = Const((long)c.FunctionTable.Base, true, Ptc.FunctionTableIndex);
+                    Operand page = Const((long)context.FunctionTable.Base, true, Ptc.FunctionTableIndex);
 
-                    for (int i = 0; i < c.FunctionTable.Levels.Length - 1; i++)
+                    for (int i = 0; i < context.FunctionTable.Levels.Length; i++)
                     {
-                        ref var level = ref c.FunctionTable.Levels[i];
+                        ref var level = ref context.FunctionTable.Levels[i];
 
                         // level.Mask is not used directly because it is more often bigger than 32-bits, so it will not
-                        // be encoded as an immediate on the x86's bitwise and operation.
+                        // be encoded as an immediate on x86's bitwise and operation.
                         Operand mask = Const(level.Mask >> level.Index);
 
-                        index = c.BitwiseAnd(c.ShiftRightUI(guestAddress, Const(level.Index)), mask);
-                        page = c.Load(OperandType.I64, c.Add(page, c.ShiftLeft(index, Const(3))));
-                        c.BranchIfFalse(lblFallback, page);
+                        index = context.BitwiseAnd(context.ShiftRightUI(guestAddress, Const(level.Index)), mask);
+
+                        if (i < context.FunctionTable.Levels.Length - 1)
+                        {
+                            page = context.Load(OperandType.I64, context.Add(page, context.ShiftLeft(index, Const(3))));
+
+                            context.BranchIfFalse(lblFallback, page);
+                        }
                     }
 
-                    offsetAddr = c.Add(page, c.ShiftLeft(index, Const(2)));
+                    offsetAddr = context.Add(page, context.ShiftLeft(index, Const(2)));
                 }
 
-                Operand offset = c.Load(OperandType.I32, offsetAddr);
-                c.BranchIf(lblFallback, offset, Const(uint.MaxValue), Comparison.Equal);
+                Operand offset = context.Load(OperandType.I32, offsetAddr);
+                context.BranchIf(lblFallback, offset, Const(uint.MaxValue), Comparison.Equal);
 
-                hostAddress = c.Add(Const((long)JitCache.Base, true, Ptc.JitCacheIndex), c.ZeroExtend32(OperandType.I64, offset));
-                EmitTranslationSwitch(c, hostAddress, isJump);
-                c.Branch(lblEnd);
+                Operand cacheBase = Const((long)JitCache.Base, true, Ptc.JitCacheIndex);
+                hostAddress = context.Add(cacheBase, context.ZeroExtend32(OperandType.I64, offset));
+                EmitTranslationSwitch(context, hostAddress, isJump);
+                context.Branch(lblEnd);
 
-                c.MarkLabel(lblFallback, BasicBlockFrequency.Cold);
+                context.MarkLabel(lblFallback, BasicBlockFrequency.Cold);
             }
 
-            hostAddress = c.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetFunctionAddress)), guestAddress);
-            EmitTranslationSwitch(c, hostAddress, isJump);
+            hostAddress = context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetFunctionAddress)), guestAddress);
+            EmitTranslationSwitch(context, hostAddress, isJump);
 
-            c.MarkLabel(lblEnd);
+            context.MarkLabel(lblEnd);
         }
 
         private static void EmitTranslationSwitch(ArmEmitterContext context, Operand hostAddress, bool isJump)
