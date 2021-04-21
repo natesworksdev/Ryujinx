@@ -57,10 +57,14 @@ namespace Ryujinx.Ui.Windows
             
             RefreshList();
 
-            Task.Run(() => {
-                AvatarWindow.PreloadAvatars(contentManager, virtualFileSystem);
-                _avatarsPreloadingEvent.Set();
-            });
+            if (_contentManager.GetCurrentFirmwareVersion() != null)
+            {
+                Task.Run(() =>
+                {
+                    AvatarWindow.PreloadAvatars(contentManager, virtualFileSystem);
+                    _avatarsPreloadingEvent.Set();
+                });
+            }
         }
 
         public void RefreshList()
@@ -211,9 +215,7 @@ namespace Ryujinx.Ui.Windows
 
         private void SelectProfileImage(bool newUser = false)
         {
-            SystemVersion firmwareVersion = _contentManager.GetCurrentFirmwareVersion();
-
-            if (firmwareVersion == null)
+            if (_contentManager.GetCurrentFirmwareVersion() == null)
             {
                 ProfileImageFileChooser();
             }
@@ -251,7 +253,10 @@ namespace Ryujinx.Ui.Windows
 
         private void ChangeProfileImageButton_Pressed(object sender, EventArgs e)
         {
-            _avatarsPreloadingEvent.WaitOne();
+            if (_contentManager.GetCurrentFirmwareVersion() != null)
+            {
+                _avatarsPreloadingEvent.WaitOne();
+            }
 
             SelectProfileImage();
 
