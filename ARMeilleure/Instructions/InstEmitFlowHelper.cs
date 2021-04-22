@@ -205,53 +205,48 @@ namespace ARMeilleure.Instructions
 
             // If address is mapped onto the function table, we can do an inlined table walk. Otherwise we fallback
             // onto the translator.
-            if (context.FunctionTable.IsMapped(guestAddress.Value))
+            if (!context.HasPtc && guestAddress.Kind == OperandKind.Constant && context.FunctionTable.IsMapped(guestAddress.Value))
             {
-                // If the guest address specified is a constant, we can skip the table walk.
-                if (!context.HasPtc && guestAddress.Kind == OperandKind.Constant)
-                {
-                    offsetAddr = Const(ref context.FunctionTable.GetValue(guestAddress.Value));
-                }
-                else
-                {
-                    Operand masked = context.BitwiseAnd(guestAddress, Const(~context.FunctionTable.Mask));
-                    context.BranchIfTrue(lblFallback, masked);
+                offsetAddr = Const(ref context.FunctionTable.GetValue(guestAddress.Value));
+            }
+            else
+            {
+                Operand masked = context.BitwiseAnd(guestAddress, Const(~context.FunctionTable.Mask));
+                context.BranchIfTrue(lblFallback, masked);
 
-                    Operand index = null;
-                    Operand page = Const((long)context.FunctionTable.Base, true, Ptc.FunctionTableIndex);
+                Operand index = null;
+                Operand page = Const((long)context.FunctionTable.Base, true, Ptc.FunctionTableIndex);
 
-                    for (int i = 0; i < context.FunctionTable.Levels.Length; i++)
+                for (int i = 0; i < context.FunctionTable.Levels.Length; i++)
+                {
+                    ref var level = ref context.FunctionTable.Levels[i];
+
+                    // level.Mask is not used directly because it is more often bigger than 32-bits, so it will not
+                    // be encoded as an immediate on x86's bitwise and operation.
+                    Operand mask = Const(level.Mask >> level.Index);
+
+                    index = context.BitwiseAnd(context.ShiftRightUI(guestAddress, Const(level.Index)), mask);
+
+                    if (i < context.FunctionTable.Levels.Length - 1)
                     {
-                        ref var level = ref context.FunctionTable.Levels[i];
+                        page = context.Load(OperandType.I64, context.Add(page, context.ShiftLeft(index, Const(3))));
 
-                        // level.Mask is not used directly because it is more often bigger than 32-bits, so it will not
-                        // be encoded as an immediate on x86's bitwise and operation.
-                        Operand mask = Const(level.Mask >> level.Index);
-
-                        index = context.BitwiseAnd(context.ShiftRightUI(guestAddress, Const(level.Index)), mask);
-
-                        if (i < context.FunctionTable.Levels.Length - 1)
-                        {
-                            page = context.Load(OperandType.I64, context.Add(page, context.ShiftLeft(index, Const(3))));
-
-                            context.BranchIfFalse(lblFallback, page);
-                        }
+                        context.BranchIfFalse(lblFallback, page);
                     }
-
-                    offsetAddr = context.Add(page, context.ShiftLeft(index, Const(2)));
                 }
 
-                Operand offset = context.Load(OperandType.I32, offsetAddr);
-                context.BranchIf(lblFallback, offset, Const(uint.MaxValue), Comparison.Equal);
-
-                Operand cacheBase = Const((long)JitCache.Base, true, Ptc.JitCacheIndex);
-                hostAddress = context.Add(cacheBase, context.ZeroExtend32(OperandType.I64, offset));
-                EmitTranslationSwitch(context, hostAddress, isJump);
-                context.Branch(lblEnd);
-
-                context.MarkLabel(lblFallback, BasicBlockFrequency.Cold);
+                offsetAddr = context.Add(page, context.ShiftLeft(index, Const(2)));
             }
 
+            Operand offset = context.Load(OperandType.I32, offsetAddr);
+            context.BranchIf(lblFallback, offset, Const(uint.MaxValue), Comparison.Equal);
+
+            Operand cacheBase = Const((long)JitCache.Base, true, Ptc.JitCacheIndex);
+            hostAddress = context.Add(cacheBase, context.ZeroExtend32(OperandType.I64, offset));
+            EmitTranslationSwitch(context, hostAddress, isJump);
+            context.Branch(lblEnd);
+
+            context.MarkLabel(lblFallback, BasicBlockFrequency.Cold);
             hostAddress = context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetFunctionAddress)), guestAddress);
             EmitTranslationSwitch(context, hostAddress, isJump);
 
