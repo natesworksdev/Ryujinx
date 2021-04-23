@@ -14,7 +14,7 @@ namespace Ryujinx.Configuration
         /// <summary>
         /// The current version of the file format
         /// </summary>
-        public const int CurrentVersion = 22;
+        public const int CurrentVersion = 24;
 
         public int Version { get; set; }
 
@@ -174,6 +174,11 @@ namespace Ryujinx.Configuration
         public AudioBackend AudioBackend { get; set; }
 
         /// <summary>
+        /// Expands the RAM amount on the emulated system from 4GB to 6GB
+        /// </summary>
+        public bool ExpandRam { get; set; }
+
+        /// <summary>
         /// Enable or disable ignoring missing services
         /// </summary>
         public bool IgnoreMissingServices { get; set; }
@@ -219,14 +224,23 @@ namespace Ryujinx.Configuration
         public KeyboardHotkeys Hotkeys { get; set; }
 
         /// <summary>
-        /// Keyboard control bindings
+        /// Legacy keyboard control bindings
         /// </summary>
-        public List<KeyboardConfig> KeyboardConfig { get; set; }
+        /// <remarks>Kept for file format compatibility (to avoid possible failure when parsing configuration on old versions)</remarks>
+        /// TODO: Remove this when those older versions aren't in use anymore.
+        public List<object> KeyboardConfig { get; set; }
 
         /// <summary>
-        /// Controller control bindings
+        /// Legacy controller control bindings
         /// </summary>
-        public List<ControllerConfig> ControllerConfig { get; set; }
+        /// <remarks>Kept for file format compatibility (to avoid possible failure when parsing configuration on old versions)</remarks>
+        /// TODO: Remove this when those older versions aren't in use anymore.
+        public List<object> ControllerConfig { get; set; }
+
+        /// <summary>
+        /// Input configurations
+        /// </summary>
+        public List<InputConfig> InputConfig { get; set; }
 
         /// <summary>
         /// Loads a configuration file from disk

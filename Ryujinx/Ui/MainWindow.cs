@@ -3,7 +3,6 @@ using ARMeilleure.Translation.PTC;
 using Gtk;
 using LibHac.Common;
 using LibHac.Ns;
-using Ryujinx.Audio;
 using Ryujinx.Audio.Backends.Dummy;
 using Ryujinx.Audio.Backends.OpenAL;
 using Ryujinx.Audio.Backends.SoundIo;
@@ -17,6 +16,10 @@ using Ryujinx.Graphics.OpenGL;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.FileSystem.Content;
 using Ryujinx.HLE.HOS;
+using Ryujinx.HLE.HOS.Services.Account.Acc;
+using Ryujinx.Input.GTK3;
+using Ryujinx.Input.HLE;
+using Ryujinx.Input.SDL2;
 using Ryujinx.Modules;
 using Ryujinx.Ui.App;
 using Ryujinx.Ui.Applet;
@@ -42,6 +45,7 @@ namespace Ryujinx.Ui
     {
         private readonly VirtualFileSystem _virtualFileSystem;
         private readonly ContentManager    _contentManager;
+        private readonly AccountManager    _accountManager;
 
         private UserChannelPersistence _userChannelPersistence;
 
@@ -64,6 +68,7 @@ namespace Ryujinx.Ui
         private bool   _lastScannedAmiiboShowAll = false;
 
         public GlRenderer GlRendererWidget;
+        public InputManager InputManager;
 
 #pragma warning disable CS0169, CS0649, IDE0044
 
@@ -135,6 +140,7 @@ namespace Ryujinx.Ui
             // Instanciate HLE objects.
             _virtualFileSystem      = VirtualFileSystem.CreateInstance();
             _contentManager         = new ContentManager(_virtualFileSystem);
+            _accountManager         = new AccountManager();
             _userChannelPersistence = new UserChannelPersistence();
 
             // Instanciate GUI objects.
@@ -221,6 +227,8 @@ namespace Ryujinx.Ui
             };
 
             Task.Run(RefreshFirmwareLabel);
+
+            InputManager = new InputManager(new GTK3KeyboardDriver(this), new SDL2GamepadDriver());
         }
 
         private void WindowStateEvent_Changed(object o, WindowStateEventArgs args)
@@ -293,6 +301,11 @@ namespace Ryujinx.Ui
             }
         }
 
+        protected override void OnDestroyed()
+        {
+            InputManager.Dispose();
+        }
+
         private void InitializeSwitchInstance()
         {
             _virtualFileSystem.Reload();
@@ -337,7 +350,18 @@ namespace Ryujinx.Ui
                 }
             }
 
-            _emulationContext = new HLE.Switch(_virtualFileSystem, _contentManager, _userChannelPersistence, renderer, deviceDriver)
+            var memoryConfiguration = ConfigurationState.Instance.System.ExpandRam.Value
+                ? HLE.MemoryConfiguration.MemoryConfiguration6GB
+                : HLE.MemoryConfiguration.MemoryConfiguration4GB;
+
+            _emulationContext = new HLE.Switch(
+                _virtualFileSystem,
+                _contentManager,
+                _accountManager,
+                _userChannelPersistence,
+                renderer,
+                deviceDriver,
+                memoryConfiguration)
             {
                 UiHandler = _uiHandler
             };
@@ -623,7 +647,7 @@ namespace Ryujinx.Ui
 
             DisplaySleep.Prevent();
 
-            GlRendererWidget = new GlRenderer(_emulationContext, ConfigurationState.Instance.Logger.GraphicsDebugLevel);
+            GlRendererWidget = new GlRenderer(_emulationContext, InputManager, ConfigurationState.Instance.Logger.GraphicsDebugLevel);
 
             Application.Invoke(delegate
             {
@@ -664,7 +688,7 @@ namespace Ryujinx.Ui
 
                 GlRendererWidget.Exit();
 
-                if(GlRendererWidget.Window != Window && GlRendererWidget.Window != null)
+                if (GlRendererWidget.Window != Window && GlRendererWidget.Window != null)
                 {
                     GlRendererWidget.Window.Dispose();
                 }
@@ -932,7 +956,7 @@ namespace Ryujinx.Ui
 
             BlitStruct<ApplicationControlProperty> controlData = (BlitStruct<ApplicationControlProperty>)_tableStore.GetValue(treeIter, 10);
 
-            _ = new GameTableContextMenu(this, _virtualFileSystem, titleFilePath, titleName, titleId, controlData);
+            _ = new GameTableContextMenu(this, _virtualFileSystem, _accountManager, titleFilePath, titleName, titleId, controlData);
         }
 
         private void Load_Application_File(object sender, EventArgs args)
@@ -1061,7 +1085,7 @@ namespace Ryujinx.Ui
                     if (responseInstallDialog == ResponseType.Yes)
                     {
                         Logger.Info?.Print(LogClass.Application, $"Installing firmware {firmwareVersion.VersionString}");
-                        
+
                         Thread thread = new Thread(() =>
                         {
                             Application.Invoke(delegate

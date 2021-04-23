@@ -2,7 +2,6 @@ using LibHac.FsSystem;
 using Ryujinx.Audio.Backends.CompatLayer;
 using Ryujinx.Audio.Integration;
 using Ryujinx.Common;
-using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu;
@@ -13,6 +12,7 @@ using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.FileSystem.Content;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services;
+using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.HLE.HOS.Services.Apm;
 using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices;
@@ -24,6 +24,8 @@ namespace Ryujinx.HLE
 {
     public class Switch : IDisposable
     {
+        private MemoryConfiguration _memoryConfiguration;
+
         public IHardwareDeviceDriver AudioDeviceDriver { get; private set; }
 
         internal MemoryBlock Memory { get; private set; }
@@ -52,7 +54,14 @@ namespace Ryujinx.HLE
 
         public bool EnableDeviceVsync { get; set; } = true;
 
-        public Switch(VirtualFileSystem fileSystem, ContentManager contentManager, UserChannelPersistence userChannelPersistence, IRenderer renderer, IHardwareDeviceDriver audioDeviceDriver)
+        public Switch(
+            VirtualFileSystem fileSystem,
+            ContentManager contentManager,
+            AccountManager accountManager,
+            UserChannelPersistence userChannelPersistence,
+            IRenderer renderer,
+            IHardwareDeviceDriver audioDeviceDriver,
+            MemoryConfiguration memoryConfiguration)
         {
             if (renderer == null)
             {
@@ -71,9 +80,11 @@ namespace Ryujinx.HLE
 
             UserChannelPersistence = userChannelPersistence;
 
+            _memoryConfiguration = memoryConfiguration;
+
             AudioDeviceDriver = new CompatLayerHardwareDeviceDriver(audioDeviceDriver);
 
-            Memory = new MemoryBlock(1UL << 32);
+            Memory = new MemoryBlock(memoryConfiguration.ToDramSize());
 
             Gpu = new GpuContext(renderer);
 
@@ -102,7 +113,7 @@ namespace Ryujinx.HLE
 
             FileSystem = fileSystem;
 
-            System = new Horizon(this, contentManager);
+            System = new Horizon(this, contentManager, accountManager, memoryConfiguration);
             System.InitializeServices();
 
             Statistics = new PerformanceStatistics();
@@ -142,10 +153,6 @@ namespace Ryujinx.HLE
             // Configure controllers
             Hid.RefreshInputConfig(ConfigurationState.Instance.Hid.InputConfig.Value);
             ConfigurationState.Instance.Hid.InputConfig.Event += Hid.RefreshInputConfigEvent;
-
-            Logger.Info?.Print(LogClass.Application, $"AudioBackend: {ConfigurationState.Instance.System.AudioBackend.Value}");
-            Logger.Info?.Print(LogClass.Application, $"IsDocked: {ConfigurationState.Instance.System.EnableDockedMode.Value}");
-            Logger.Info?.Print(LogClass.Application, $"Vsync: {ConfigurationState.Instance.Graphics.EnableVsync.Value}");
         }
 
         public static IntegrityCheckLevel GetIntegrityCheckLevel()

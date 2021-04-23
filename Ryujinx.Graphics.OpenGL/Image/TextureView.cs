@@ -4,13 +4,15 @@ using System;
 
 namespace Ryujinx.Graphics.OpenGL.Image
 {
-    class TextureView : TextureBase, ITexture
+    class TextureView : TextureBase, ITexture, ITextureInfo
     {
         private readonly Renderer _renderer;
 
         private readonly TextureStorage _parent;
 
         private TextureView _incompatibleFormatView;
+
+        public ITextureInfo Storage => _parent;
 
         public int FirstLayer { get; private set; }
         public int FirstLevel { get; private set; }

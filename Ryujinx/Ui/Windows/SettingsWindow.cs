@@ -1,10 +1,8 @@
 using Gtk;
-using Ryujinx.Audio;
 using Ryujinx.Audio.Backends.OpenAL;
 using Ryujinx.Audio.Backends.SoundIo;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
-using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
 using Ryujinx.Configuration.System;
 using Ryujinx.HLE.FileSystem;
@@ -51,6 +49,7 @@ namespace Ryujinx.Ui.Windows
         [GUI] CheckButton     _shaderCacheToggle;
         [GUI] CheckButton     _ptcToggle;
         [GUI] CheckButton     _fsicToggle;
+        [GUI] CheckButton     _expandRamToggle;
         [GUI] CheckButton     _ignoreToggle;
         [GUI] CheckButton     _directKeyboardAccess;
         [GUI] ComboBoxText    _systemLanguageSelect;
@@ -212,6 +211,11 @@ namespace Ryujinx.Ui.Windows
             if (ConfigurationState.Instance.System.EnableFsIntegrityChecks)
             {
                 _fsicToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.System.ExpandRam)
+            {
+                _expandRamToggle.Click();
             }
 
             if (ConfigurationState.Instance.System.IgnoreMissingServices)
@@ -417,6 +421,7 @@ namespace Ryujinx.Ui.Windows
             ConfigurationState.Instance.Graphics.EnableShaderCache.Value       = _shaderCacheToggle.Active;
             ConfigurationState.Instance.System.EnablePtc.Value                 = _ptcToggle.Active;
             ConfigurationState.Instance.System.EnableFsIntegrityChecks.Value   = _fsicToggle.Active;
+            ConfigurationState.Instance.System.ExpandRam.Value                 = _expandRamToggle.Active;
             ConfigurationState.Instance.System.IgnoreMissingServices.Value     = _ignoreToggle.Active;
             ConfigurationState.Instance.Hid.EnableKeyboard.Value               = _directKeyboardAccess.Active;
             ConfigurationState.Instance.Ui.EnableCustomTheme.Value             = _custThemeToggle.Active;
@@ -434,13 +439,7 @@ namespace Ryujinx.Ui.Windows
 
             if (_audioBackendSelect.GetActiveIter(out TreeIter activeIter))
             {
-                AudioBackend audioBackend = (AudioBackend)_audioBackendStore.GetValue(activeIter, 1);
-                if (audioBackend != ConfigurationState.Instance.System.AudioBackend.Value)
-                { 
-                    ConfigurationState.Instance.System.AudioBackend.Value = audioBackend;
-
-                    Logger.Info?.Print(LogClass.Application, $"AudioBackend toggled to: {audioBackend}");
-                }
+                ConfigurationState.Instance.System.AudioBackend.Value = (AudioBackend)_audioBackendStore.GetValue(activeIter, 1);
             }
 
             ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
@@ -579,7 +578,7 @@ namespace Ryujinx.Ui.Windows
         {
             ((ToggleButton)sender).SetStateFlags(StateFlags.Normal, true);
 
-            ControllerWindow controllerWindow = new ControllerWindow(playerIndex);
+            ControllerWindow controllerWindow = new ControllerWindow(_parent, playerIndex);
 
             controllerWindow.SetSizeRequest((int)(controllerWindow.DefaultWidth * Program.WindowScaleFactor), (int)(controllerWindow.DefaultHeight * Program.WindowScaleFactor));
             controllerWindow.Show();
