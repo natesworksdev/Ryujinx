@@ -48,7 +48,7 @@ namespace Ryujinx.Ui.Windows
             CellRendererToggle userSelectedToggle = new CellRendererToggle();
             userSelectedToggle.Toggled += UserSelectedToggle_Toggled;
 
-            // NOTE: Uncomment following line when multiple selection of user profiles will be supported.
+            // NOTE: Uncomment following line when multiple selection of user profiles is supported.
             //_usersTreeView.AppendColumn("Selected",  userSelectedToggle,       "active", 0);
             _usersTreeView.AppendColumn("User Icon", new CellRendererPixbuf(), "pixbuf", 1);
             _usersTreeView.AppendColumn("User Info", new CellRendererText(),   "text",   2, "background-rgba", 3);
@@ -193,7 +193,7 @@ namespace Ryujinx.Ui.Windows
 
         private void ProfileImageFileChooser()
         {
-            FileChooserDialog fileChooser = new FileChooserDialog("Select Custom Profile Image", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Add", ResponseType.Accept)
+            FileChooserDialog fileChooser = new FileChooserDialog("Import Custom Profile Image", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Import", ResponseType.Accept)
             {
                 SelectMultiple = false,
                 Filter         = new FileFilter()
@@ -223,13 +223,13 @@ namespace Ryujinx.Ui.Windows
             {
                 Dictionary<int, string> buttons = new Dictionary<int, string>()
                 {
-                    { 0, "Upload Image File"      },
+                    { 0, "Import Image File"      },
                     { 1, "Select Firmware Avatar" }
                 };
 
                 ResponseType responseDialog = GtkDialog.CreateCustomDialog("Profile Image Selection",
                                                                            "Choose a Profile Image",
-                                                                           "You may upload a custom profile image, or select an avatar from the system firmware.", 
+                                                                           "You may import a custom profile image, or select an avatar from the system firmware.", 
                                                                            buttons, MessageType.Question);
 
                 if (responseDialog == 0)

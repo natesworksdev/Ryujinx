@@ -39,7 +39,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
         public AccountSaveDataManager(ConcurrentDictionary<string, UserProfile> profiles)
         {
-            // TODO: Uses 0x8000000000000010 system savedata instead of a JSON file if needed.
+            // TODO: Use 0x8000000000000010 system savedata instead of a JSON file if needed.
 
             if (File.Exists(_profilesJsonPath))
             {

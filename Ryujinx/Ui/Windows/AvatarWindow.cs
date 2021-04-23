@@ -14,6 +14,7 @@ using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 
 using Image = SixLabors.ImageSharp.Image;
 
@@ -33,6 +34,8 @@ namespace Ryujinx.Ui.Windows
 
         public AvatarWindow() : base($"Ryujinx {Program.Version} - Manage Accounts - Avatar")
         {
+            Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.Resources.Logo_Ryujinx.png");
+
             CanFocus  = false;
             Resizable = false;
             Modal     = true;
@@ -216,7 +219,7 @@ namespace Ryujinx.Ui.Windows
             Close();
         }
 
-        public static byte[] DecompressYaz0(Stream stream)
+        private static byte[] DecompressYaz0(Stream stream)
         {
             using (BinaryReader reader = new BinaryReader(stream))
             {
