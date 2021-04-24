@@ -49,6 +49,24 @@ namespace ARMeilleure.Instructions
             return context.Call(info, op1);
         }
 
+        private static Operand FloatToFixed(ArmEmitterContext context, Operand op1, bool unsigned, int fbits)
+        {
+            MethodInfo info;
+
+            info = typeof(SoftFloat32).GetMethod(nameof(SoftFloat32.FPToFixed));
+
+            return context.Call(info, op1, Const(fbits), Const(unsigned), Const(true));
+        }
+
+        private static Operand FixedToFloat(ArmEmitterContext context, Operand op1, bool unsigned, int fbits)
+        {
+            MethodInfo info;
+
+            info = typeof(SoftFloat32).GetMethod(nameof(SoftFloat32.FixedToFP));
+
+            return context.Call(info, op1, Const(fbits), Const(unsigned), Const(true));
+        }
+
         public static void Vcvt_V(ArmEmitterContext context)
         {
             OpCode32Simd op = (OpCode32Simd)context.CurrOp;
@@ -107,6 +125,41 @@ namespace ARMeilleure.Instructions
                     {
                         EmitVectorUnaryOpSx32(context, (op1) => EmitFPConvert(context, op1, floatSize, true));
                     }
+                }
+            }
+        }
+
+        //VCVT: convert vector elements (32-bit) between floating-point and fixed point
+        public static void Vcvt_V2(ArmEmitterContext context)
+        {
+            OpCode32SimdCvtFFixed op = (OpCode32SimdCvtFFixed)context.CurrOp;
+
+            var toFixed = op.Opc == 1;
+            int fracBits = op.Fbits;
+            var unsigned = op.U;
+
+            if (toFixed) //F32 to S32 or U32 (fixed)
+            {
+                EmitVectorUnaryOpF32(context, (op1) =>
+                {
+                    return FloatToFixed(context, op1, unsigned, fracBits);
+                });
+            }
+            else //S32 or U32 (fixed) to F32
+            {
+                if (unsigned)
+                {
+                    EmitVectorUnaryOpZx32(context, (op1) =>
+                    {
+                        return FixedToFloat(context, op1, true, fracBits);
+                    });
+                }
+                else
+                {
+                    EmitVectorUnaryOpSx32(context, (op1) =>
+                    {
+                        return FixedToFloat(context, op1, false, fracBits);
+                    });
                 }
             }
         }

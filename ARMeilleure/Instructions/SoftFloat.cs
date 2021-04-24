@@ -1724,6 +1724,52 @@ namespace ARMeilleure.Instructions
             return result;
         }
 
+        public static uint FPToFixed(float value, int fbits, bool unsigned, bool standardFpscr)
+        {
+            ExecutionContext context = NativeInterface.GetContext();
+            FPCR fpcr = standardFpscr ? context.StandardFpcrValue : context.Fpcr;
+
+            value.FPUnpack(out FPType type, out bool sign, out uint op, context, fpcr);
+
+            if (type == FPType.SNaN || type == FPType.QNaN)
+            {
+                FPProcessException(FPException.InvalidOp, context, fpcr);
+            }
+
+            value = value * (int)System.Math.Pow(2, fbits); 
+            var intResult = (int)value;
+            var error = value - (intResult >> fbits);
+
+            bool roundUp = false;
+
+            switch (fpcr.GetRoundingMode())
+            {
+                default:
+                case FPRoundingMode.ToNearest:            
+                    roundUp = (error > 0.5 || (error == 0.5f && intResult < 0)); 
+                    break;
+                case FPRoundingMode.TowardsPlusInfinity:
+                    roundUp = (error != 0f); 
+                    break;
+                case FPRoundingMode.TowardsMinusInfinity:
+                    break;
+                case FPRoundingMode.TowardsZero:
+                    roundUp = (error != 0f && intResult < 0);
+                    break;
+            }
+
+            if (roundUp) intResult += 1;
+
+            return unsigned ? unchecked((uint)intResult) : checked((uint)intResult);
+        }
+
+        public static float FixedToFP(uint value, int fbits, bool unsigned, bool standardFpscr)
+        {
+            float realOperand = ((float)value / (float)(1 << fbits));
+            //TODO: Rounding and sign
+            return realOperand;
+        }
+
         private static float FPDefaultNaN()
         {
             return BitConverter.Int32BitsToSingle(0x7fc00000);
