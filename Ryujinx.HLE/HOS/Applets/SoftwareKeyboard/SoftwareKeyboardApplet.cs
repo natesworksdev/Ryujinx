@@ -24,8 +24,6 @@ namespace Ryujinx.HLE.HOS.Applets
         private volatile InlineKeyboardState _backgroundState = InlineKeyboardState.Uninitialized;
 
         private bool _isBackground = false;
-        private volatile bool _useChangedStringV2 = false;
-        private volatile bool _useMovedCursorV2 = false;
 
         private AppletSession _normalSession;
         private AppletSession _interactiveSession;
@@ -64,9 +62,6 @@ namespace Ryujinx.HLE.HOS.Applets
             _interactiveSession = interactiveSession;
 
             _interactiveSession.DataAvailable += OnInteractiveData;
-
-            _useChangedStringV2 = false;
-            _useMovedCursorV2 = false;
 
             var launchParams   = _normalSession.Pop();
             var keyboardConfig = _normalSession.Pop();
@@ -300,10 +295,10 @@ namespace Ryujinx.HLE.HOS.Applets
                 switch (request)
                 {
                     case InlineKeyboardRequest.UseChangedStringV2:
-                        _useChangedStringV2 = true;
+                        Logger.Stub?.Print(LogClass.ServiceAm, "Keyboard response ChangedStringV2");
                         break;
                     case InlineKeyboardRequest.UseMovedCursorV2:
-                        _useMovedCursorV2 = true;
+                        Logger.Stub?.Print(LogClass.ServiceAm, "Keyboard response MovedCursorV2");
                         break;
                     case InlineKeyboardRequest.SetUserWordInfo:
                         // Read the user word info data.
@@ -496,45 +491,16 @@ namespace Ryujinx.HLE.HOS.Applets
 
         private void PushChangedString(string text, uint cursor, InlineKeyboardState state)
         {
+            // TODO (Caian): The *V2 methods are not supported because the applications that request
+            // them do not seem to accept them. The regular methods seem to work just fine in all cases.
+
             if (_encoding == Encoding.UTF8)
             {
-                if (_useChangedStringV2)
-                {
-                    _interactiveSession.Push(InlineResponses.ChangedStringUtf8V2(text, cursor, state));
-                }
-                else
-                {
-                    _interactiveSession.Push(InlineResponses.ChangedStringUtf8(text, cursor, state));
-                }
-
-                if (_useMovedCursorV2)
-                {
-                    _interactiveSession.Push(InlineResponses.MovedCursorUtf8V2(text, cursor, state));
-                }
-                else
-                {
-                    _interactiveSession.Push(InlineResponses.MovedCursorUtf8(text, cursor, state));
-                }
+                _interactiveSession.Push(InlineResponses.ChangedStringUtf8(text, cursor, state));
             }
             else
             {
-                if (_useChangedStringV2)
-                {
-                    _interactiveSession.Push(InlineResponses.ChangedStringV2(text, cursor, state));
-                }
-                else
-                {
-                    _interactiveSession.Push(InlineResponses.ChangedString(text, cursor, state));
-                }
-
-                if (_useMovedCursorV2)
-                {
-                    _interactiveSession.Push(InlineResponses.MovedCursorV2(text, cursor, state));
-                }
-                else
-                {
-                    _interactiveSession.Push(InlineResponses.MovedCursor(text, cursor, state));
-                }
+                _interactiveSession.Push(InlineResponses.ChangedString(text, cursor, state));
             }
         }
 
