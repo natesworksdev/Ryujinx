@@ -14,8 +14,6 @@ namespace Ryujinx.HLE.HOS.Applets
     {
         private const string DefaultText = "Ryujinx";
 
-        private const int ResetDelayMillis = 500;
-
         private readonly Switch _device;
 
         private const int StandardBufferSize    = 0x7D8;
@@ -372,28 +370,24 @@ namespace Ryujinx.HLE.HOS.Applets
                         // with either a text being submitted or a cancel request from the user.
 
                         // Read the Calc data.
+                        SoftwareKeyboardCalc newCalc;
                         remaining = stream.Length - stream.Position;
                         if (remaining != Marshal.SizeOf<SoftwareKeyboardCalc>())
                         {
                             Logger.Error?.Print(LogClass.ServiceAm, $"Received invalid Software Keyboard Calc of {remaining} bytes");
+                            newCalc = new SoftwareKeyboardCalc();
                         }
                         else
                         {
                             var keyboardCalcData = reader.ReadBytes((int)remaining);
-                            _keyboardBackgroundCalc = ReadStruct<SoftwareKeyboardCalc>(keyboardCalcData);
-
-                            // Check if the application expects UTF8 encoding instead of UTF16.
-                            if (_keyboardBackgroundCalc.UseUtf8)
-                            {
-                                _encoding = Encoding.UTF8;
-                            }
+                            newCalc = ReadStruct<SoftwareKeyboardCalc>(keyboardCalcData);
                         }
 
                         // Make the state transition.
                         if (state < InlineKeyboardState.Ready)
                         {
                             // This field consistently is -1 when the calc is not meant to be shown.
-                            if (_keyboardBackgroundCalc.Appear.Padding1 == -1)
+                            if (newCalc.Appear.Padding1 == -1)
                             {
                                 state = InlineKeyboardState.Initialized;
 
@@ -401,13 +395,21 @@ namespace Ryujinx.HLE.HOS.Applets
                             }
                             else
                             {
+                                // Set the new calc
+                                _keyboardBackgroundCalc = newCalc;
+
+                                // Check if the application expects UTF8 encoding instead of UTF16.
+                                if (_keyboardBackgroundCalc.UseUtf8)
+                                {
+                                    _encoding = Encoding.UTF8;
+                                }
+
                                 string newText = _keyboardBackgroundCalc.InputText;
                                 uint cursorPosition = (uint)_keyboardBackgroundCalc.CursorPos;
                                 _dynamicTextInputHandler?.SetText(newText);
 
-                                // TODO(Caian): Send this updated text to the application. A naive response breaks some games.
-
                                 state = InlineKeyboardState.Ready;
+                                PushChangedString(newText, cursorPosition, state);
                             }
 
                             SetInlineState(state);
@@ -455,14 +457,14 @@ namespace Ryujinx.HLE.HOS.Applets
                 {
                     Logger.Debug?.Print(LogClass.ServiceAm, $"Updating keyboard text to {text} and cursor position to {cursorBegin}");
 
-                    state = InlineKeyboardState.DataAvailable;
+                    state = InlineKeyboardState.Complete;
                     PushChangedString(text, (uint)cursorBegin, state);
                 }
                 else
                 {
-                    // The 'Complete' state indicates the Calc request has been fulfilled by the applet.
+                    // The 'Complete' state indicates the Calc request has been fulfilled by the applet,
+                    // but do not change the state of the entire applet, only the responses.
                     state = InlineKeyboardState.Complete;
-                    SetInlineState(state);
 
                     if (isAccept)
                     {
@@ -481,19 +483,12 @@ namespace Ryujinx.HLE.HOS.Applets
 
                     Logger.Debug?.Print(LogClass.ServiceAm, $"Resetting state of the keyboard to {state}");
 
-                    // 'Initialized' is the only known state so far that does not soft-lock the keyboard after use.
+                    // Set the state of the applet to 'Initialized' as it is the only known state so far
+                    // that does not soft-lock the keyboard after use.
                     state = InlineKeyboardState.Initialized;
 
                     _interactiveSession.Push(InlineResponses.Default(state));
 
-                    // The constant calls to PopInteractiveData suggest that the keyboard applet continuously reports
-                    // data back to the application and this can also be time-sensitive. Pushing a state reset right
-                    // after the data has been sent does not work properly and the application will soft-lock. This
-                    // delay gives time for the application to catch up with the data and properly process the state
-                    // reset.
-                    Thread.Sleep(ResetDelayMillis);
-
-                    _interactiveSession.Push(InlineResponses.Default(state));
                     SetInlineState(state);
                 }
             });
