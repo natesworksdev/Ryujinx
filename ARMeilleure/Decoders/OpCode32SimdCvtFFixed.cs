@@ -1,4 +1,3 @@
-using System;
 using ARMeilleure.Instructions;
 
 namespace ARMeilleure.Decoders
