@@ -804,6 +804,51 @@ namespace ARMeilleure.Instructions
                 }
             }
         }
+
+        public static uint SatU64ToU32(ulong value)
+        {
+            return (value < UInt32.MinValue) ? UInt32.MinValue : (value > UInt32.MaxValue) ? UInt32.MaxValue : (uint)value;
+        }
+
+        public static ushort SatU32ToU16(uint value)
+        {
+            return (value < UInt16.MinValue) ? UInt16.MinValue : (value > UInt16.MaxValue) ? UInt16.MaxValue : (ushort)value;
+        }
+
+        public static byte SatU16ToU8(ushort value)
+        {
+            return (value < Byte.MinValue) ? Byte.MinValue : (value > Byte.MaxValue) ? Byte.MaxValue : (byte)value;
+        }
+
+        public static uint SatI64ToU32(long value)
+        {
+            return (value < UInt32.MinValue) ? UInt32.MinValue : (value > UInt32.MaxValue) ? UInt32.MaxValue : (uint)value;
+        }
+
+        public static ushort SatI32ToU16(int value)
+        {
+            return (value < UInt16.MinValue) ? UInt16.MinValue : (value > UInt16.MaxValue) ? UInt16.MaxValue : (ushort)value;
+        }
+
+        public static byte SatI16ToU8(short value)
+        {
+            return (value < Byte.MinValue) ? Byte.MinValue : (value > Byte.MaxValue) ? Byte.MaxValue : (byte)value;
+        }
+
+        public static int SatI64ToI32(long value)
+        {
+            return (value < Int32.MinValue) ? Int32.MinValue : (value > Int32.MaxValue) ? Int32.MaxValue : (int)value;
+        }
+
+        public static short SatI32ToI16(int value)
+        {
+            return (value < Int16.MinValue) ? Int16.MinValue : (value > Int16.MaxValue) ? Int16.MaxValue : (short)value;
+        }
+
+        public static sbyte SatI16ToI8(short value)
+        {
+            return (value < SByte.MinValue) ? SByte.MinValue : (value > SByte.MaxValue) ? SByte.MaxValue : (sbyte)value;
+        }
 #endregion
 
 #region "Count"

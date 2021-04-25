@@ -49,6 +49,36 @@ namespace ARMeilleure.Instructions
             return context.Call(info, op1);
         }
 
+        private static Operand EmitSaturateAndNarrowInt(ArmEmitterContext context, Operand op1, bool srcUnsigned, bool destUnsigned)
+        {
+            MethodInfo info = srcUnsigned ? (
+                op1.Type switch
+                    {
+                        OperandType.I64 => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatU64ToU32)),
+                        OperandType.I32 => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatU32ToU16)),
+                        _ => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatU16ToU8))
+                    }
+                ) : (
+                destUnsigned ? (
+                    op1.Type switch
+                    {
+                        OperandType.I64 => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatI64ToU32)),
+                        OperandType.I32 => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatI32ToU16)),
+                        _ => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatI16ToU8))
+                    }
+                ) : (
+                    op1.Type switch
+                    {
+                        OperandType.I64 => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatI64ToI32)),
+                        OperandType.I32 => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatI32ToI16)),
+                        _ => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatI16ToI8))
+                    }
+                )
+            );
+
+            return context.Call(info, op1);
+        }
+
         private static Operand FloatToFixed(ArmEmitterContext context, Operand op1, bool unsigned, int fbits)
         {
             MethodInfo info;

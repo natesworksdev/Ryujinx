@@ -417,6 +417,18 @@ namespace ARMeilleure.Instructions
             EmitVectorUnaryNarrowOp32(context, (op1) => op1);
         }
 
+        //Move, saturate, and narrow
+        //Unsigned -> Unsigned only
+        //Signed -> Signed or Unsigned
+        public static void Vqmovn(ArmEmitterContext context)
+        {
+            OpCode32SimdMovNarrow op = (OpCode32SimdMovNarrow)context.CurrOp;
+            var srcUnsigned = op.Opc == 3;
+            var destUnsigned = (op.Opc & 0x1) == 1;
+
+            EmitVectorUnaryNarrowOp32(context, (op1) => EmitSaturateAndNarrowInt(context, op1, srcUnsigned, destUnsigned));
+        }
+
         public static void Vneg_S(ArmEmitterContext context)
         {
             OpCode32SimdS op = (OpCode32SimdS)context.CurrOp;

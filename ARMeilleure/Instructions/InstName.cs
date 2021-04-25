@@ -610,6 +610,7 @@ namespace ARMeilleure.Instructions
         Vpadd,
         Vpmax,
         Vpmin,
+        Vqmovn,
         Vqrshrn,
         Vqrshrun,
         Vqshrn,
