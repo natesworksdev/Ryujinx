@@ -51,7 +51,7 @@ namespace ARMeilleure.Translation
         private readonly ConcurrentStack<RejitRequest> _backgroundStack;
         private readonly AutoResetEvent _backgroundTranslatorEvent;
         private readonly ReaderWriterLock _backgroundTranslatorLock;
-        private readonly JitCache _jitCache;
+        private JitCache _jitCache;
         internal JitCache JitCache => _jitCache;
 
         internal ConcurrentDictionary<ulong, TranslatedFunction> Functions { get; }
@@ -194,6 +194,8 @@ namespace ARMeilleure.Translation
                 _backgroundTranslatorEvent.Set();
 
                 ClearJitCache();
+                _jitCache.Dispose();
+                _jitCache = null;
 
                 DisposePools();
 

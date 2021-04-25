@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 
 namespace ARMeilleure.Translation.Cache
 {
-    class JitCache
+    class JitCache : IDisposable
     {
         private const int PageSize = 4 * 1024;
         private const int PageMask = PageSize - 1;
@@ -24,7 +24,7 @@ namespace ARMeilleure.Translation.Cache
 
         private JitUnwindWindows _jitUnwindWindows;
 
-        public static IntPtr Base => _jitRegion.Pointer;
+        public IntPtr Base => _jitRegion.Pointer;
 
         public JitCache(IJitMemoryAllocator allocator)
         {
@@ -156,6 +156,12 @@ namespace ARMeilleure.Translation.Cache
 
             entry = default;
             return false;
+        }
+
+        public void Dispose()
+        {
+            _jitRegion.Dispose();
+            _jitUnwindWindows.Dispose();
         }
     }
 }

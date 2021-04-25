@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace ARMeilleure.Translation.Cache
 {
-    class JitUnwindWindows
+    class JitUnwindWindows : IDisposable
     {
         private const int MaxUnwindCodesArraySize = 32; // Must be an even value.
 
@@ -53,6 +53,10 @@ namespace ARMeilleure.Translation.Cache
             IntPtr context,
             string outOfProcessCallbackDll);
 
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+        private static unsafe extern bool RtlDeleteFunctionTable(
+            RuntimeFunction* functionTable);
+
         private GetRuntimeFunctionCallback _getRuntimeFunctionCallback;
 
         private int _sizeOfRuntimeFunction;
@@ -60,6 +64,8 @@ namespace ARMeilleure.Translation.Cache
         private unsafe RuntimeFunction* _runtimeFunction;
 
         private unsafe UnwindInfo* _unwindInfo;
+
+        private bool disposedValue = false;
 
         public JitUnwindWindows(IntPtr codeCachePointer, uint codeCacheLength, IntPtr workBufferPtr, JitCache jitCache)
         {
@@ -187,6 +193,41 @@ namespace ARMeilleure.Translation.Cache
         private static ushort PackUnwindOp(UnwindOp op, int prologOffset, int opInfo)
         {
             return (ushort)(prologOffset | ((int)op << 8) | (opInfo << 12));
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                bool result;
+
+                unsafe
+                {
+                    result = RtlDeleteFunctionTable(
+                        _runtimeFunction);
+
+                    _runtimeFunction = null;
+                    _unwindInfo = null;
+                }
+
+                if (!result)
+                {
+                    throw new InvalidOperationException("Failure uninstalling function table.");
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        ~JitUnwindWindows()
+        {
+            Dispose(disposing: false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

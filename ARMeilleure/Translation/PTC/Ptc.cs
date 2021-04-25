@@ -582,7 +582,7 @@ namespace ARMeilleure.Translation.PTC
 
                     UnwindInfo unwindInfo = ReadUnwindInfo(unwindInfosReader);
 
-                    TranslatedFunction func = FastTranslate(code, callCounter, infoEntry.GuestSize, unwindInfo, infoEntry.HighCq, jitCache);
+                    TranslatedFunction func = FastTranslate(code, callCounter, infoEntry.GuestSize, unwindInfo, infoEntry.HighCq, translator.JitCache);
 
                     translator.RegisterFunction(infoEntry.Address, func);
 
