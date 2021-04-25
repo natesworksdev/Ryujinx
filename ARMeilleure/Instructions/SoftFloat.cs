@@ -1724,16 +1724,31 @@ namespace ARMeilleure.Instructions
             return result;
         }
 
-        public static uint FPToFixed(float value, int fbits, bool unsigned, bool standardFpscr)
+        public static int FPToSFixed(float value, int fbits)
         {
-            //TODO: Rounding and sign
-            return unchecked((uint)(value * (1 << fbits)));
+            //For now, this is only used in VCVT instruction which wants to round towards zero
+            int result = (int)Math.Truncate(value * (1 << fbits));
+            return result;
         }
 
-        public static float FixedToFP(uint value, int fbits, bool unsigned, bool standardFpscr)
+        public static uint FPToUFixed(float value, int fbits)
         {
-            float realOperand = ((float)value / (float)(1 << fbits));
-            //TODO: Rounding and sign
+            //For now, this is only used in VCVT instruction which wants to round towards zero
+            uint result = unchecked((uint)Math.Truncate(value * (1 << fbits)));
+            return result;
+        }
+
+        public static float SFixedToFP(int value, int fbits)
+        {
+            //For now, this is only used in VCVT instruction which wants to round towards nearest
+            float realOperand = (float)Math.Round((double)(value / (1 << fbits)));
+            return realOperand;
+        }
+
+        public static float UFixedToFP(uint value, int fbits)
+        {
+            //For now, this is only used in VCVT instruction which wants to round towards nearest
+            float realOperand = (float)Math.Round((double)(value / (1 << fbits)));
             return realOperand;
         }
 

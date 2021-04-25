@@ -257,8 +257,10 @@ namespace ARMeilleure.Translation
             SetDelegateInfo(typeof(SoftFloat32).GetMethod(nameof(SoftFloat32.FPRSqrtStepFused)));
             SetDelegateInfo(typeof(SoftFloat32).GetMethod(nameof(SoftFloat32.FPSqrt)));
             SetDelegateInfo(typeof(SoftFloat32).GetMethod(nameof(SoftFloat32.FPSub)));
-            SetDelegateInfo(typeof(SoftFloat32).GetMethod(nameof(SoftFloat32.FPToFixed)));
-            SetDelegateInfo(typeof(SoftFloat32).GetMethod(nameof(SoftFloat32.FixedToFP)));
+            SetDelegateInfo(typeof(SoftFloat32).GetMethod(nameof(SoftFloat32.FPToSFixed)));
+            SetDelegateInfo(typeof(SoftFloat32).GetMethod(nameof(SoftFloat32.FPToUFixed)));
+            SetDelegateInfo(typeof(SoftFloat32).GetMethod(nameof(SoftFloat32.SFixedToFP)));
+            SetDelegateInfo(typeof(SoftFloat32).GetMethod(nameof(SoftFloat32.UFixedToFP)));
 
             SetDelegateInfo(typeof(SoftFloat32_16).GetMethod(nameof(SoftFloat32_16.FPConvert)));
 

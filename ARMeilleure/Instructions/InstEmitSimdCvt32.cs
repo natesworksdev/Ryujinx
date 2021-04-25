@@ -83,18 +83,18 @@ namespace ARMeilleure.Instructions
         {
             MethodInfo info;
 
-            info = typeof(SoftFloat32).GetMethod(nameof(SoftFloat32.FPToFixed));
+            info = unsigned ? typeof(SoftFloat32).GetMethod(nameof(SoftFloat32.FPToUFixed)) : typeof(SoftFloat32).GetMethod(nameof(SoftFloat32.FPToSFixed));
 
-            return context.Call(info, op1, Const(fbits), Const(unsigned), Const(true));
+            return context.Call(info, op1, Const(fbits));
         }
 
         private static Operand FixedToFloat(ArmEmitterContext context, Operand op1, bool unsigned, int fbits)
         {
             MethodInfo info;
 
-            info = typeof(SoftFloat32).GetMethod(nameof(SoftFloat32.FixedToFP));
+            info = unsigned ? typeof(SoftFloat32).GetMethod(nameof(SoftFloat32.UFixedToFP)) : typeof(SoftFloat32).GetMethod(nameof(SoftFloat32.SFixedToFP));
 
-            return context.Call(info, op1, Const(fbits), Const(unsigned), Const(true));
+            return context.Call(info, op1, Const(fbits));
         }
 
         public static void Vcvt_V(ArmEmitterContext context)
@@ -166,7 +166,7 @@ namespace ARMeilleure.Instructions
 
             var toFixed = op.Opc == 1;
             int fracBits = op.Fbits;
-            var unsigned = op.U;
+            var unsigned = op.U; //Sign of I32 (destination/source)
 
             if (toFixed) //F32 to S32 or U32 (fixed)
             {
