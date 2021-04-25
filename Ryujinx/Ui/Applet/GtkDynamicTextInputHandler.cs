@@ -58,6 +58,13 @@ namespace Ryujinx.Ui.Applet
 
             if (isAccept || isCancel)
             {
+                // If the the accept or cancel keys are pressed, try to spawn one and just one task
+                // to check if the key is being held for long enough. Holding the key means the
+                // user is trying to force a status, maybe because of a soft-lock.
+
+                // Note: The lock is required to ensure a single task will spawn, that's because
+                // the key pressed event will begin to repeat if the key is held long enough.
+
                 lock (_forceEventLock)
                 {
                     if (_forceEventCancel == null)
@@ -66,12 +73,14 @@ namespace Ryujinx.Ui.Applet
 
                         Task.Run(() =>
                         {
-                            var token = eventCancel.Token;
+                            // Wait to see if the key is released and the force operation is cancelled.
 
-                            if (!token.WaitHandle.WaitOne(ForceOperationWaitMilliseconds))
+                            if (!eventCancel.Token.WaitHandle.WaitOne(ForceOperationWaitMilliseconds))
                             {
                                 TextChanged?.Invoke(text, selectionStart, selectionEnd, isAccept, isCancel, true);
                             }
+
+                            // Clear the event cancel to notify that the task finished.
 
                             lock (_forceEventLock)
                             {
@@ -92,6 +101,8 @@ namespace Ryujinx.Ui.Applet
         {
             if (args.Event.Key == _acceptKey || args.Event.Key == _cancelKey)
             {
+                // Cancel the force event if it exists.
+
                 lock (_forceEventLock)
                 {
                     if (_forceEventCancel != null)
