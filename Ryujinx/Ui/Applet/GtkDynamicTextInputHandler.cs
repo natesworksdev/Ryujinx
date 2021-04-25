@@ -21,6 +21,10 @@ namespace Ryujinx.Ui.Applet
 
         public event DynamicTextChangedEvent TextChanged;
 
+        public string AcceptKeyName { get { return _acceptKey.ToString(); } }
+
+        public string CancelKeyName { get { return _cancelKey.ToString(); } }
+
         public GtkDynamicTextInputHandler(Window parent, Gdk.Key acceptKey, Gdk.Key cancelKey)
         {
             _parent = parent;

@@ -13,11 +13,22 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
     /// </summary>
     internal class SoftwareKeyboardRenderer
     {
-        private int _graphicsWidth = 0;
-        private int _graphicsHeight = 0;
-        private int _graphicsPitch = 0;
-        private int _graphicsSize = 0;
-        private byte[] _graphicsData = null;
+        private int    _graphicsWidth  = 0;
+        private int    _graphicsHeight = 0;
+        private int    _graphicsPitch  = 0;
+        private int    _graphicsSize   = 0;
+        private byte[] _graphicsData   = null;
+
+        private string _line1Text;
+        private string _line2Text;
+        private string _line3Text;
+
+        public SoftwareKeyboardRenderer(string acceptKeyName, string cancelKeyName)
+        {
+            _line1Text = "Please use the keyboard to input text...";
+            _line2Text = $"Press {acceptKeyName} to accept or {cancelKeyName} to cancel.";
+            _line3Text = "Hold any of the keys to exit soft-lock.";
+        }
 
         private void RedrawGraphicsA8B8G8R8(int width, int height, int pitch, int size)
         {
@@ -58,24 +69,26 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
                 SolidBrush backgroundBrush = new SolidBrush(Color.FromArgb(120, 0, 0, 0));
                 gfx.FillRectangle(backgroundBrush, keyboardRectangle);
 
-                string line1Text = "Please use the Keyboard to input text...";
-                string line2Text = "Press Return to accept or Page Up to cancel.";
-
-                // Draw the first line larger then the second.
+                // Draw the first line larger then the second and third.
                 System.Drawing.Font line1Font = new System.Drawing.Font("Tahoma", 40);
                 System.Drawing.Font line2Font = new System.Drawing.Font("Tahoma", 20);
+                System.Drawing.Font line3Font = line2Font;
 
-                // Draw the first line in the center of the rectangle area and the second away just below the first.
+                // Draw the first line in the center of the rectangle area, the second just below the first 
+                // and the third below the second.
                 RectangleF line1Rectangle = keyboardRectangle;
                 RectangleF line2Rectangle = line1Rectangle;
+                RectangleF line3Rectangle = line1Rectangle;
                 line2Rectangle.Y += 45;
+                line3Rectangle.Y += 90;
 
                 StringFormat stringFormat = new StringFormat(StringFormatFlags.NoClip);
                 stringFormat.LineAlignment = StringAlignment.Center;
                 stringFormat.Alignment = StringAlignment.Center;
 
-                gfx.DrawString(line1Text, line1Font, Brushes.White, line1Rectangle, stringFormat);
-                gfx.DrawString(line2Text, line2Font, Brushes.White, line2Rectangle, stringFormat);
+                gfx.DrawString(_line1Text, line1Font, Brushes.White, line1Rectangle, stringFormat);
+                gfx.DrawString(_line2Text, line2Font, Brushes.White, line2Rectangle, stringFormat);
+                gfx.DrawString(_line3Text, line3Font, Brushes.White, line3Rectangle, stringFormat);
             }
 
             Rectangle lockRectangle = new Rectangle(0, 0, bitmap.Width, bitmap.Height);

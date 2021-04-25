@@ -78,19 +78,26 @@ namespace Ryujinx.HLE.HOS.Applets
                 InlineKeyboardState state = InlineKeyboardState.Uninitialized;
                 SetInlineState(state);
 
-                _keyboardRenderer = new SoftwareKeyboardRenderer();
+                string acceptKeyName;
+                string cancelKeyName;
 
                 if (_device.UiHandler != null)
                 {
                     _dynamicTextInputHandler = _device.UiHandler.CreateDynamicTextInputHandler();
                     _dynamicTextInputHandler.TextChanged += DynamicTextChanged;
 
-                    // TODO(Caian): Buffer max size
+                    acceptKeyName = _dynamicTextInputHandler.AcceptKeyName;
+                    cancelKeyName = _dynamicTextInputHandler.CancelKeyName;
                 }
                 else
                 {
                     Logger.Error?.Print(LogClass.ServiceAm, "GUI Handler is not set, software keyboard applet will not work properly");
+
+                    acceptKeyName = "";
+                    cancelKeyName = "";
                 }
+
+                _keyboardRenderer = new SoftwareKeyboardRenderer(acceptKeyName, cancelKeyName);
 
                 _interactiveSession.Push(InlineResponses.FinishedInitialize(state));
 
