@@ -3,5 +3,5 @@ using Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.ApplicationPr
 
 namespace Ryujinx.HLE
 {
-    public delegate void DynamicTextChangedEvent(string text, int cursorBegin, int cursorEnd, bool isAccept, bool isCancel);
+    public delegate void DynamicTextChangedEvent(string text, int cursorBegin, int cursorEnd, bool isAccept, bool isCancel, bool force);
 }

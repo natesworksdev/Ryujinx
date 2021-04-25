@@ -14,6 +14,8 @@ namespace Ryujinx.HLE.HOS.Applets
     {
         private const string DefaultText = "Ryujinx";
 
+        private const int SoftUnlockerDelayMilliseconds = 500;
+
         private readonly Switch _device;
 
         private const int StandardBufferSize    = 0x7D8;
@@ -437,13 +439,28 @@ namespace Ryujinx.HLE.HOS.Applets
             }
         }
 
-        private void DynamicTextChanged(string text, int cursorBegin, int cursorEnd, bool isAccept, bool isCancel)
+        private void DynamicTextChanged(string text, int cursorBegin, int cursorEnd, bool isAccept, bool isCancel, bool force)
         {
             // Launch as a task to avoid blocking the UI
             Task.Run(() =>
             {
+                if (force)
+                {
+                    Logger.Warning?.Print(LogClass.ServiceAm, "Forcing keyboard out of soft-lock...");
+
+                    // Repeat the response sequence from a Calc to try to exit a soft-lock.
+
+                    text = DefaultText;
+
+                    PushChangedString(text, 0, InlineKeyboardState.Ready);
+
+                    _interactiveSession.Push(InlineResponses.Default(InlineKeyboardState.Ready));
+
+                    Thread.Sleep(SoftUnlockerDelayMilliseconds);
+                }
+
                 InlineKeyboardState state = GetInlineState();
-                if (state < InlineKeyboardState.Ready || state == InlineKeyboardState.Complete)
+                if (!force && (state < InlineKeyboardState.Ready || state == InlineKeyboardState.Complete))
                 {
                     return;
                 }
