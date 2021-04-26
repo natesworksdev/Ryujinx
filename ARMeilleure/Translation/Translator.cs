@@ -24,8 +24,6 @@ namespace ARMeilleure.Translation
 {
     public class Translator
     {
-        private const int CountTableCapacity = 4 * 1024 * 1024;
-
         private readonly IJitMemoryAllocator _allocator;
         private readonly IMemoryManager _memory;
 
