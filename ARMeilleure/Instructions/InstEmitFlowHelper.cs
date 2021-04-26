@@ -278,8 +278,6 @@ namespace ARMeilleure.Instructions
                 // If the return address isn't to our next instruction, we need to return so the JIT can figure out
                 // what to do.
                 Operand lblContinue = context.GetLabel(nextAddr.Value);
-
-                // We need to clear out the call flag for the return address before comparing it.
                 context.BranchIf(lblContinue, returnAddress, nextAddr, Comparison.Equal, BasicBlockFrequency.Cold);
 
                 context.Return(returnAddress);
