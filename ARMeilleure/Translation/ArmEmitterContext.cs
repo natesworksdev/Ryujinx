@@ -47,6 +47,7 @@ namespace ARMeilleure.Translation
 
         public EntryTable<uint> CountTable { get; }
         public AddressTable<uint> FunctionTable { get; }
+        public TranslatorStubs Stubs { get; }
 
         public ulong EntryAddress { get; }
         public bool HighCq { get; }
@@ -56,6 +57,7 @@ namespace ARMeilleure.Translation
             IMemoryManager memory,
             EntryTable<uint> countTable,
             AddressTable<uint> funcTable,
+            TranslatorStubs stubs,
             ulong entryAddress,
             bool highCq,
             Aarch32Mode mode)
@@ -64,6 +66,7 @@ namespace ARMeilleure.Translation
             Memory = memory;
             CountTable = countTable;
             FunctionTable = funcTable;
+            Stubs = stubs;
             EntryAddress = entryAddress;
             HighCq = highCq;
             Mode = mode;

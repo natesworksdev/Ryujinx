@@ -195,11 +195,11 @@ namespace ARMeilleure.Instructions
                 guestAddress = context.ZeroExtend32(OperandType.I64, guestAddress);
             }
 
-            Operand hostAddress;
-            Operand offsetAddr;
-
-            Operand lblFallback = Label();
-            Operand lblEnd = Label();
+            // Store the target guest address into the native context. The stubs uses this value to dispatch into the
+            // next translation.
+            Operand nativeContext = context.LoadArgument(OperandType.I64, 0);
+            Operand callAddressAddr = context.Add(nativeContext, Const((ulong)NativeContext.GetDispatchAddressOffset()));
+            context.Store(callAddressAddr, guestAddress);
 
             // If address is mapped onto the function table, we can skip the table walk. Otherwise we fallback
             // onto the translator.
@@ -207,50 +207,17 @@ namespace ARMeilleure.Instructions
             {
                 var symbol = new Symbol(SymbolType.FunctionTable, guestAddress.Value);
 
-                offsetAddr = Const(ref context.FunctionTable.GetValue(guestAddress.Value), symbol);
+                Operand offsetAddr = Const(ref context.FunctionTable.GetValue(guestAddress.Value), symbol);
+                Operand offset = context.Load(OperandType.I32, offsetAddr);
+                Operand cacheBase = Const((long)JitCache.Base, Ptc.JitCacheSymbol);
+                Operand hostAddress = context.Add(cacheBase, context.ZeroExtend32(OperandType.I64, offset));
+                EmitTranslationSwitch(context, hostAddress, isJump);
             }
             else
             {
-                Operand masked = context.BitwiseAnd(guestAddress, Const(~context.FunctionTable.Mask));
-                context.BranchIfTrue(lblFallback, masked);
-
-                Operand index = null;
-                Operand page = Const((long)context.FunctionTable.Base, Ptc.FunctionTableSymbol);
-
-                for (int i = 0; i < context.FunctionTable.Levels.Length; i++)
-                {
-                    ref var level = ref context.FunctionTable.Levels[i];
-
-                    // level.Mask is not used directly because it is more often bigger than 32-bits, so it will not
-                    // be encoded as an immediate on x86's bitwise and operation.
-                    Operand mask = Const(level.Mask >> level.Index);
-
-                    index = context.BitwiseAnd(context.ShiftRightUI(guestAddress, Const(level.Index)), mask);
-
-                    if (i < context.FunctionTable.Levels.Length - 1)
-                    {
-                        page = context.Load(OperandType.I64, context.Add(page, context.ShiftLeft(index, Const(3))));
-
-                        context.BranchIfFalse(lblFallback, page);
-                    }
-                }
-
-                offsetAddr = context.Add(page, context.ShiftLeft(index, Const(2)));
+                Operand hostAddress = Const((long)context.Stubs.DispatchStub, Ptc.DispatchStubSymbol);
+                EmitTranslationSwitch(context, hostAddress, isJump);
             }
-
-            Operand offset = context.Load(OperandType.I32, offsetAddr);
-            context.BranchIf(lblFallback, offset, Const(uint.MaxValue), Comparison.Equal);
-
-            Operand cacheBase = Const((long)JitCache.Base, Ptc.JitCacheSymbol);
-            hostAddress = context.Add(cacheBase, context.ZeroExtend32(OperandType.I64, offset));
-            EmitTranslationSwitch(context, hostAddress, isJump);
-            context.Branch(lblEnd);
-
-            context.MarkLabel(lblFallback, BasicBlockFrequency.Cold);
-            hostAddress = context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetFunctionAddress)), guestAddress);
-            EmitTranslationSwitch(context, hostAddress, isJump);
-
-            context.MarkLabel(lblEnd);
         }
 
         private static void EmitTranslationSwitch(ArmEmitterContext context, Operand hostAddress, bool isJump)

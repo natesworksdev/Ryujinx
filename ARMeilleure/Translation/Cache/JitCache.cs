@@ -48,6 +48,19 @@ namespace ARMeilleure.Translation.Cache
             }
         }
 
+        public static uint Offset(IntPtr target)
+        {
+            ulong ptr = (ulong)target;
+            ulong @base = (ulong)Base;
+
+            if (ptr >= @base && ptr < @base + CacheSize)
+            {
+                return (uint)(ptr - @base);
+            }
+
+            throw new ArgumentException("Target does not lie within the cache.", nameof(target));
+        }
+
         public static IntPtr Map(CompiledFunction func)
         {
             byte[] code = func.Code;

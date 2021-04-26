@@ -63,7 +63,6 @@ namespace ARMeilleure.Common
 
         private bool _disposed;
         private TEntry** _table;
-        private readonly TEntry _fill;
         private readonly List<IntPtr> _pages;
 
         /// <summary>
@@ -75,6 +74,11 @@ namespace ARMeilleure.Common
         /// Gets the <see cref="Level"/>s used by the <see cref="AddressTable{TEntry}"/> instance.
         /// </summary>
         public Level[] Levels { get; }
+
+        /// <summary>
+        /// Gets or sets the default fill value of newly created leaf pages.
+        /// </summary>
+        public TEntry Fill { get; set; }
 
         /// <summary>
         /// Gets the base address of the <see cref="EntryTable{TEntry}"/>.
@@ -97,14 +101,12 @@ namespace ARMeilleure.Common
         }
 
         /// <summary>
-        /// Constructs a new instance of the <see cref="AddressTable{TEntry}"/> class with the specified default fill
-        /// value and list of <see cref="Level"/>.
+        /// Constructs a new instance of the <see cref="AddressTable{TEntry}"/> class with the specified list of
+        /// <see cref="Level"/>.
         /// </summary>
-        /// <param name="fill">Default fill value</param>
         /// <exception cref="ArgumentException">Length of <paramref name="levels"/> is less than 2</exception>
-        public AddressTable(TEntry fill, Level[] levels = null)
+        public AddressTable(Level[] levels = null)
         {
-            _fill = fill;
             _pages = new List<IntPtr>(capacity: 16);
 
             Levels = levels ?? DefaultLevels;
@@ -176,7 +178,7 @@ namespace ARMeilleure.Common
                     ref Level nextLevel = ref Levels[i + 1];
 
                     nextPage = i == Levels.Length - 2 ?
-                        (TEntry*)Allocate(1 << nextLevel.Length, _fill) :
+                        (TEntry*)Allocate(1 << nextLevel.Length, Fill) :
                         (TEntry*)Allocate(1 << nextLevel.Length, IntPtr.Zero);
                 }
 
