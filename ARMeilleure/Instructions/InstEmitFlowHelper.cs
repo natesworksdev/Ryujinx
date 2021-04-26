@@ -1,11 +1,9 @@
-using ARMeilleure.Common;
 using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using ARMeilleure.Translation;
 using ARMeilleure.Translation.Cache;
 using ARMeilleure.Translation.PTC;
-
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
@@ -203,11 +201,13 @@ namespace ARMeilleure.Instructions
             Operand lblFallback = Label();
             Operand lblEnd = Label();
 
-            // If address is mapped onto the function table, we can do an inlined table walk. Otherwise we fallback
+            // If address is mapped onto the function table, we can skip the table walk. Otherwise we fallback
             // onto the translator.
-            if (!context.HasPtc && guestAddress.Kind == OperandKind.Constant && context.FunctionTable.IsMapped(guestAddress.Value))
+            if (guestAddress.Kind == OperandKind.Constant && context.FunctionTable.IsMapped(guestAddress.Value))
             {
-                offsetAddr = Const(ref context.FunctionTable.GetValue(guestAddress.Value));
+                var symbol = new Symbol(SymbolType.FunctionTable, guestAddress.Value);
+
+                offsetAddr = Const(ref context.FunctionTable.GetValue(guestAddress.Value), symbol);
             }
             else
             {
@@ -215,7 +215,7 @@ namespace ARMeilleure.Instructions
                 context.BranchIfTrue(lblFallback, masked);
 
                 Operand index = null;
-                Operand page = Const((long)context.FunctionTable.Base, true, Ptc.FunctionTableIndex);
+                Operand page = Const((long)context.FunctionTable.Base, Ptc.FunctionTableSymbol);
 
                 for (int i = 0; i < context.FunctionTable.Levels.Length; i++)
                 {
@@ -241,7 +241,7 @@ namespace ARMeilleure.Instructions
             Operand offset = context.Load(OperandType.I32, offsetAddr);
             context.BranchIf(lblFallback, offset, Const(uint.MaxValue), Comparison.Equal);
 
-            Operand cacheBase = Const((long)JitCache.Base, true, Ptc.JitCacheIndex);
+            Operand cacheBase = Const((long)JitCache.Base, Ptc.JitCacheSymbol);
             hostAddress = context.Add(cacheBase, context.ZeroExtend32(OperandType.I64, offset));
             EmitTranslationSwitch(context, hostAddress, isJump);
             context.Branch(lblEnd);

@@ -36,10 +36,10 @@ namespace ARMeilleure.Translation.PTC
         private const string TitleIdTextDefault = "0000000000000000";
         private const string DisplayVersionDefault = "0";
 
-        internal const int PageTablePointerIndex = -1; // Must be a negative value.
-        internal const int CountTableIndex = -2; // Must be a negative value.
-        internal const int FunctionTableIndex = -3; // Must be a negative value.
-        internal const int JitCacheIndex = -4; // Must be a negative value.
+        internal static readonly Symbol PageTableSymbol = new(SymbolType.Special, 1);
+        internal static readonly Symbol CountTableSymbol = new(SymbolType.Special, 2);
+        internal static readonly Symbol FunctionTableSymbol = new(SymbolType.Special, 3);
+        internal static readonly Symbol JitCacheSymbol = new(SymbolType.Special, 4);
 
         private const byte FillingByte = 0x00;
         private const CompressionLevel SaveCompressionLevel = CompressionLevel.Fastest;
@@ -645,9 +645,10 @@ namespace ARMeilleure.Translation.PTC
             for (int i = 0; i < relocEntriesCount; i++)
             {
                 int position = relocsReader.ReadInt32();
-                int index = relocsReader.ReadInt32();
+                SymbolType type = (SymbolType)relocsReader.ReadByte();
+                ulong value = relocsReader.ReadUInt64();
 
-                relocEntries[i] = new RelocEntry(position, index);
+                relocEntries[i] = new RelocEntry(position, new Symbol(type, value));
             }
 
             return relocEntries;
@@ -665,36 +666,52 @@ namespace ARMeilleure.Translation.PTC
 
             foreach (RelocEntry relocEntry in relocEntries)
             {
-                ulong imm;
+                IntPtr? imm = null;
+                Symbol symbol = relocEntry.Symbol;
 
-                if (relocEntry.Index == PageTablePointerIndex)
+                if (symbol.Type == SymbolType.FunctionTable)
                 {
-                    imm = (ulong)pageTablePointer.ToInt64();
+                    ulong guestAddress = symbol.Value;
+
+                    if (funcTable.IsMapped(guestAddress))
+                    {
+                        unsafe { imm = (IntPtr)Unsafe.AsPointer(ref funcTable.GetValue(guestAddress)); }
+                    }
                 }
-                else if (relocEntry.Index == CountTableIndex)
+                else if (symbol.Type == SymbolType.DelegateTable)
+                {
+                    int index = (int)symbol.Value;
+
+                    if (Delegates.TryGetDelegateFuncPtrByIndex(index, out IntPtr funcPtr))
+                    {
+                        imm = funcPtr;
+                    }
+                }
+                else if (symbol == PageTableSymbol)
+                {
+                    imm = pageTablePointer;
+                }
+                else if (symbol == CountTableSymbol)
                 {
                     callCounter = new Counter<uint>(countTable);
 
-                    unsafe { imm = (ulong)Unsafe.AsPointer(ref callCounter.Value); }
+                    unsafe { imm = (IntPtr)Unsafe.AsPointer(ref callCounter.Value); }
                 }
-                else if (relocEntry.Index == FunctionTableIndex)
+                else if (symbol == FunctionTableSymbol)
                 {
-                    imm = (ulong)funcTable.Base;
+                    imm = funcTable.Base;
                 }
-                else if (relocEntry.Index == JitCacheIndex)
+                else if (symbol == JitCacheSymbol)
                 {
-                    imm = (ulong)JitCache.Base;
+                    imm = JitCache.Base;
                 }
-                else if (Delegates.TryGetDelegateFuncPtrByIndex(relocEntry.Index, out IntPtr funcPtr))
-                {
-                    imm = (ulong)funcPtr.ToInt64();
-                }
-                else
+
+                if (imm == null)
                 {
                     throw new Exception($"Unexpected reloc entry {relocEntry}.");
                 }
 
-                BinaryPrimitives.WriteUInt64LittleEndian(code.Slice(relocEntry.Position, 8), imm);
+                BinaryPrimitives.WriteUInt64LittleEndian(code.Slice(relocEntry.Position, 8), (ulong)imm.Value);
             }
         }
 

@@ -80,14 +80,15 @@ namespace ARMeilleure.Translation
             else
             {
                 int index = Delegates.GetDelegateIndex(info);
-
                 IntPtr funcPtr = Delegates.GetDelegateFuncPtrByIndex(index);
 
                 OperandType returnType = GetOperandType(info.ReturnType);
 
+                Symbol symbol = new Symbol(SymbolType.DelegateTable, (ulong)index);
+
                 Symbols.Add((ulong)funcPtr.ToInt64(), info.Name);
 
-                return Call(Const(funcPtr.ToInt64(), true, index), returnType, callArgs);
+                return Call(Const(funcPtr.ToInt64(), symbol), returnType, callArgs);
             }
         }
 

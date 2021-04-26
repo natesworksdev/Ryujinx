@@ -329,7 +329,7 @@ namespace ARMeilleure.Instructions
 
             Operand pte = !context.HasPtc
                 ? Const(context.Memory.PageTablePointer.ToInt64())
-                : Const(context.Memory.PageTablePointer.ToInt64(), true, Ptc.PageTablePointerIndex);
+                : Const(context.Memory.PageTablePointer.ToInt64(), Ptc.PageTableSymbol);
 
             Operand pteOffset = context.BitwiseAnd(addrShifted, Const(addrShifted.Type, ptLevelMask));
 

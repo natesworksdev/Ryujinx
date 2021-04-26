@@ -428,7 +428,7 @@ namespace ARMeilleure.Translation
 
             Operand lblEnd = Label();
 
-            Operand address = Const(ref counter.Value, Ptc.CountTableIndex);
+            Operand address = Const(ref counter.Value, Ptc.CountTableSymbol);
             Operand curCount = context.Load(OperandType.I32, address);
             Operand count = context.Add(curCount, Const(1));
             context.Store(address, count);
