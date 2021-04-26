@@ -122,11 +122,12 @@ namespace ARMeilleure.Common
         }
 
         /// <summary>
-        /// Determines if the specified <paramref name="address"/> is mapped on to the table.
+        /// Determines if the specified <paramref name="address"/> is in the range of the
+        /// <see cref="AddressTable{TEntry}"/>.
         /// </summary>
         /// <param name="address">Guest address</param>
-        /// <returns><see langword="true"/> if is mapped; <see langword="false"/> otherwise</returns>
-        public bool IsMapped(ulong address)
+        /// <returns><see langword="true"/> if is valid; otherwise <see langword="false"/></returns>
+        public bool IsValid(ulong address)
         {
             return (address & ~Mask) == 0;
         }
@@ -145,7 +146,7 @@ namespace ARMeilleure.Common
                 throw new ObjectDisposedException(null);
             }
 
-            if (!IsMapped(address))
+            if (!IsValid(address))
             {
                 throw new ArgumentException($"Address 0x{address:X2} is not mapped onto the table.", nameof(address));
             }

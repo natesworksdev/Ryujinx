@@ -221,7 +221,7 @@ namespace ARMeilleure.Translation
             ulong guestAddress,
             TranslatedFunction func)
         {
-            if (funcTable.IsMapped(guestAddress))
+            if (funcTable.IsValid(guestAddress))
             {
                 uint offset = (uint)((ulong)func.FuncPtr - (ulong)JitCache.Base);
 

@@ -203,7 +203,7 @@ namespace ARMeilleure.Instructions
 
             // If address is mapped onto the function table, we can skip the table walk. Otherwise we fallback
             // onto the translator.
-            if (guestAddress.Kind == OperandKind.Constant && context.FunctionTable.IsMapped(guestAddress.Value))
+            if (guestAddress.Kind == OperandKind.Constant && context.FunctionTable.IsValid(guestAddress.Value))
             {
                 var symbol = new Symbol(SymbolType.FunctionTable, guestAddress.Value);
 

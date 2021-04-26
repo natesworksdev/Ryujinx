@@ -673,7 +673,7 @@ namespace ARMeilleure.Translation.PTC
                 {
                     ulong guestAddress = symbol.Value;
 
-                    if (funcTable.IsMapped(guestAddress))
+                    if (funcTable.IsValid(guestAddress))
                     {
                         unsafe { imm = (IntPtr)Unsafe.AsPointer(ref funcTable.GetValue(guestAddress)); }
                     }
