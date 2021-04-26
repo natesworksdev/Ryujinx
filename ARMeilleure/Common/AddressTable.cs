@@ -148,7 +148,7 @@ namespace ARMeilleure.Common
 
             if (!IsValid(address))
             {
-                throw new ArgumentException($"Address 0x{address:X2} is not mapped onto the table.", nameof(address));
+                throw new ArgumentException($"Address 0x{address:X} is not mapped onto the table.", nameof(address));
             }
 
             lock (_pages)
