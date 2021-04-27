@@ -56,7 +56,7 @@ namespace Ryujinx.Tests.Cpu
             _context.IsAarch32 = true;
             Translator.IsReadyForTranslation.Set();
 
-            _cpuContext = new CpuContext(_memory);
+            _cpuContext = new CpuContext(_memory, for64Bit: false);
 
             if (_unicornAvailable)
             {

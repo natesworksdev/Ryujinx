@@ -60,7 +60,7 @@ namespace Ryujinx.Tests.Cpu
             _context = CpuContext.CreateExecutionContext();
             Translator.IsReadyForTranslation.Set();
 
-            _cpuContext = new CpuContext(_memory);
+            _cpuContext = new CpuContext(_memory, for64Bit: true);
 
             if (_unicornAvailable)
             {

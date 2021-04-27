@@ -24,6 +24,24 @@ namespace ARMeilleure.Translation
 {
     public class Translator
     {
+        private static readonly AddressTable<uint>.Level[] Levels64Bit =
+            new AddressTable<uint>.Level[]
+            {
+                new(39,  9),
+                new(30,  9),
+                new(21,  9),
+                new( 2, 19)
+            };
+
+        private static readonly AddressTable<uint>.Level[] Levels32Bit =
+            new AddressTable<uint>.Level[]
+            {
+                new(39,  9),
+                new(30,  9),
+                new(21,  9),
+                new( 1, 20)
+            };
+
         private readonly IJitMemoryAllocator _allocator;
         private readonly IMemoryManager _memory;
 
@@ -44,7 +62,7 @@ namespace ARMeilleure.Translation
         // FIXME: Remove this once the init logic of the emulator will be redone.
         public static readonly ManualResetEvent IsReadyForTranslation = new(false);
 
-        public Translator(IJitMemoryAllocator allocator, IMemoryManager memory)
+        public Translator(IJitMemoryAllocator allocator, IMemoryManager memory, bool for64Bits)
         {
             _allocator = allocator;
             _memory = memory;
@@ -60,7 +78,7 @@ namespace ARMeilleure.Translation
             JitCache.Initialize(allocator);
 
             CountTable = new EntryTable<uint>();
-            FunctionTable = new AddressTable<uint>();
+            FunctionTable = new AddressTable<uint>(for64Bits ? Levels64Bit : Levels32Bit);
             Stubs = new TranslatorStubs(this);
 
             FunctionTable.Fill = JitCache.Offset(Stubs.SlowDispatchStub);

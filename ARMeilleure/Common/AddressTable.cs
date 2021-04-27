@@ -11,17 +11,6 @@ namespace ARMeilleure.Common
     unsafe class AddressTable<TEntry> : IDisposable where TEntry : unmanaged
     {
         /// <summary>
-        /// Default levels used by <see cref="AddressTable{TEntry}"/>.
-        /// </summary>
-        private static readonly Level[] DefaultLevels = new[]
-        {
-            new Level(39,  9),
-            new Level(30,  9),
-            new Level(21,  9),
-            new Level( 2, 19)
-        };
-
-        /// <summary>
         /// Represents a level in an <see cref="AddressTable{TEntry}"/>.
         /// </summary>
         public readonly struct Level
@@ -106,18 +95,24 @@ namespace ARMeilleure.Common
         /// Constructs a new instance of the <see cref="AddressTable{TEntry}"/> class with the specified list of
         /// <see cref="Level"/>.
         /// </summary>
+        /// <exception cref="ArgumentNullException"><paramref name="levels"/> is null</exception>
         /// <exception cref="ArgumentException">Length of <paramref name="levels"/> is less than 2</exception>
-        public AddressTable(Level[] levels = null)
+        public AddressTable(Level[] levels)
         {
-            _pages = new List<IntPtr>(capacity: 16);
+            if (levels == null)
+            {
+                throw new ArgumentNullException(nameof(levels));
+            }
 
-            Levels = levels ?? DefaultLevels;
-            Mask = 0;
-
-            if (Levels.Length < 2)
+            if (levels.Length < 2)
             {
                 throw new ArgumentException("Table must be at least 2 levels deep.", nameof(levels));
             }
+
+            _pages = new List<IntPtr>(capacity: 16);
+
+            Levels = levels;
+            Mask = 0;
 
             foreach (var level in Levels)
             {
