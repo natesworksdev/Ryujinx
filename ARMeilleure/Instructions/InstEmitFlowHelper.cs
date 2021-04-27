@@ -4,6 +4,7 @@ using ARMeilleure.State;
 using ARMeilleure.Translation;
 using ARMeilleure.Translation.Cache;
 using ARMeilleure.Translation.PTC;
+
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
@@ -170,22 +171,6 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void EmitTailContinue(ArmEmitterContext context, Operand address)
-        {
-            // Left option here as it may be useful if we need to return to managed rather than tail call in future.
-            // (eg. for debug)
-            bool useTailContinue = true;
-
-            if (useTailContinue)
-            {
-                EmitTableBranch(context, address, isJump: true);
-            }
-            else
-            {
-                context.Return(address);
-            }
-        }
-
         private static void EmitTableBranch(ArmEmitterContext context, Operand guestAddress, bool isJump)
         {
             context.StoreToContext();
@@ -195,14 +180,16 @@ namespace ARMeilleure.Instructions
                 guestAddress = context.ZeroExtend32(OperandType.I64, guestAddress);
             }
 
-            // Store the target guest address into the native context. The stubs uses this value to dispatch into the
+            // Store the target guest address into the native context. The stubs uses this address to dispatch into the
             // next translation.
             Operand nativeContext = context.LoadArgument(OperandType.I64, 0);
-            Operand callAddressAddr = context.Add(nativeContext, Const((ulong)NativeContext.GetDispatchAddressOffset()));
-            context.Store(callAddressAddr, guestAddress);
+            Operand dispAddressAddr = context.Add(nativeContext, Const((ulong)NativeContext.GetDispatchAddressOffset()));
+            context.Store(dispAddressAddr, guestAddress);
+
+            Operand hostAddress;
 
             // If address is mapped onto the function table, we can skip the table walk. Otherwise we fallback
-            // onto the translator.
+            // onto the dispatch stub.
             if (guestAddress.Kind == OperandKind.Constant && context.FunctionTable.IsValid(guestAddress.Value))
             {
                 var symbol = new Symbol(SymbolType.FunctionTable, guestAddress.Value);
@@ -210,19 +197,12 @@ namespace ARMeilleure.Instructions
                 Operand offsetAddr = Const(ref context.FunctionTable.GetValue(guestAddress.Value), symbol);
                 Operand offset = context.Load(OperandType.I32, offsetAddr);
                 Operand cacheBase = Const((long)JitCache.Base, Ptc.JitCacheSymbol);
-                Operand hostAddress = context.Add(cacheBase, context.ZeroExtend32(OperandType.I64, offset));
-                EmitTranslationSwitch(context, hostAddress, isJump);
+                hostAddress = context.Add(cacheBase, context.ZeroExtend32(OperandType.I64, offset));
             }
             else
             {
-                Operand hostAddress = Const((long)context.Stubs.DispatchStub, Ptc.DispatchStubSymbol);
-                EmitTranslationSwitch(context, hostAddress, isJump);
+                hostAddress = Const((long)context.Stubs.DispatchStub, Ptc.DispatchStubSymbol);
             }
-        }
-
-        private static void EmitTranslationSwitch(ArmEmitterContext context, Operand hostAddress, bool isJump)
-        {
-            Operand nativeContext = context.LoadArgument(OperandType.I64, 0);
 
             if (isJump)
             {

@@ -47,8 +47,10 @@ namespace ARMeilleure.Common
             /// </summary>
             /// <param name="index">Index of the <see cref="Level"/></param>
             /// <param name="length">Length of the <see cref="Level"/></param>
-            public Level(int index, int length) =>
+            public Level(int index, int length)
+            {
                 (Index, Length) = (index, length);
+            }
 
             /// <summary>
             /// Gets the value of the <see cref="Level"/> from the specified guest <paramref name="address"/>.
