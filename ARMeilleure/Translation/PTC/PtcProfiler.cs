@@ -180,6 +180,8 @@ namespace ARMeilleure.Translation.PTC
 
                 using (MemoryStream stream = new MemoryStream())
                 {
+                    Debug.Assert(stream.Seek(0L, SeekOrigin.Begin) == 0L && stream.Length == 0L);
+
                     try
                     {
                         deflateStream.CopyTo(stream);
@@ -197,12 +199,7 @@ namespace ARMeilleure.Translation.PTC
 
                     Hash128 expectedHash = DeserializeStructure<Hash128>(stream);
 
-                    Span<byte> actualHashBytes = new byte[stream.Length - stream.Position];
-                    stream.Read(actualHashBytes);
-
-                    Debug.Assert(stream.Position == stream.Length);
-
-                    Hash128 actualHash = XXHash128.ComputeHash(actualHashBytes);
+                    Hash128 actualHash = XXHash128.ComputeHash(GetReadOnlySpan(stream));
 
                     if (actualHash != expectedHash)
                     {
@@ -210,8 +207,6 @@ namespace ARMeilleure.Translation.PTC
 
                         return false;
                     }
-
-                    stream.Seek((long)Unsafe.SizeOf<Hash128>(), SeekOrigin.Begin);
 
                     ProfiledFuncs = Deserialize(stream);
 
@@ -231,6 +226,11 @@ namespace ARMeilleure.Translation.PTC
         private static Dictionary<ulong, FuncProfile> Deserialize(Stream stream)
         {
             return DeserializeDictionary<ulong, FuncProfile>(stream, (stream) => DeserializeStructure<FuncProfile>(stream));
+        }
+
+        private static ReadOnlySpan<byte> GetReadOnlySpan(MemoryStream memoryStream)
+        {
+            return new(memoryStream.GetBuffer(), (int)memoryStream.Position, (int)memoryStream.Length - (int)memoryStream.Position);
         }
 
         private static void InvalidateCompressedStream(FileStream compressedStream)
@@ -272,6 +272,8 @@ namespace ARMeilleure.Translation.PTC
 
             using (MemoryStream stream = new MemoryStream())
             {
+                Debug.Assert(stream.Seek(0L, SeekOrigin.Begin) == 0L && stream.Length == 0L);
+
                 stream.Seek((long)Unsafe.SizeOf<Hash128>(), SeekOrigin.Begin);
 
                 lock (_lock)
@@ -284,13 +286,7 @@ namespace ARMeilleure.Translation.PTC
                 Debug.Assert(stream.Position == stream.Length);
 
                 stream.Seek((long)Unsafe.SizeOf<Hash128>(), SeekOrigin.Begin);
-
-                Span<byte> hashBytes = new byte[stream.Length - stream.Position];
-                stream.Read(hashBytes);
-
-                Debug.Assert(stream.Position == stream.Length);
-
-                Hash128 hash = XXHash128.ComputeHash(hashBytes);
+                Hash128 hash = XXHash128.ComputeHash(GetReadOnlySpan(stream));
 
                 stream.Seek(0L, SeekOrigin.Begin);
                 SerializeStructure(stream, hash);
