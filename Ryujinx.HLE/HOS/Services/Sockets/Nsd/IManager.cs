@@ -58,7 +58,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd
         }
 
         [CommandHipc(11)]
-        // GetEnvironmentIdentifier() -> buffer<byte<8> environment_identifier, 0x16>
+        // GetEnvironmentIdentifier() -> buffer<bytes<8> environment_identifier, 0x16>
         public ResultCode GetEnvironmentIdentifier(ServiceCtx context)
         {
             (ulong outputPosition, ulong outputSize) = context.Request.GetBufferType0x22();
