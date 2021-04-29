@@ -9,9 +9,12 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Common
     {
         private const ulong MaxEntries = 17;
 
-        // Virtual table
+#pragma warning disable CS0169
         private ulong _unused;
+#pragma warning restore CS0169
+#pragma warning disable CS0414
         private ulong _bufferCount;
+#pragma warning restore CS0414
         private ulong _index;
         private ulong _count;
         private Array17<AtomicStorage<T>> _storage;
