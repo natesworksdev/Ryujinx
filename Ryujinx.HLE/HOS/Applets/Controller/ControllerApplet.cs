@@ -7,6 +7,7 @@ using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE;
 
 using static Ryujinx.HLE.HOS.Services.Hid.HidServer.HidUtils;
+using Ryujinx.HLE.HOS.Services.Hid.Types;
 
 namespace Ryujinx.HLE.HOS.Applets
 {
