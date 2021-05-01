@@ -67,7 +67,7 @@ namespace Ryujinx.Ui
         private string _lastScannedAmiiboId = "";
         private bool   _lastScannedAmiiboShowAll = false;
 
-        public IRendererWidget RendererWidget;
+        public RendererWidgetBase RendererWidget;
         public InputManager InputManager;
 
         private static bool UseVulkan = false;
@@ -163,8 +163,7 @@ namespace Ryujinx.Ui
             _gameTable.ButtonReleaseEvent += Row_Clicked;
             _fullScreen.Activated         += FullScreen_Toggled;
 
-            GlRenderer.StatusUpdatedEvent += Update_StatusBar;
-            VKRenderer.StatusUpdatedEvent += Update_StatusBar;
+            RendererWidgetBase.StatusUpdatedEvent += Update_StatusBar;
 
             if (ConfigurationState.Instance.Ui.StartFullscreen)
             {
@@ -664,7 +663,7 @@ namespace Ryujinx.Ui
             }
         }
 
-        private IRendererWidget CreatRendererWidget()
+        private RendererWidgetBase CreatRendererWidget()
         {
             if (UseVulkan)
             {
@@ -678,13 +677,11 @@ namespace Ryujinx.Ui
 
         private void SwitchToRenderWidget()
         {
-            DrawingArea rendererWidget = (DrawingArea)RendererWidget;
-
             _viewBox.Remove(_gameTableWindow);
-            rendererWidget.Expand = true;
-            _viewBox.Child = rendererWidget;
+            RendererWidget.Expand = true;
+            _viewBox.Child = RendererWidget;
 
-            rendererWidget.ShowAll();
+            RendererWidget.ShowAll();
             EditFooterForGameRenderer();
 
             if (Window.State.HasFlag(Gdk.WindowState.Fullscreen))
@@ -706,20 +703,18 @@ namespace Ryujinx.Ui
 
             RendererWidget.Exit();
 
-            Widget rendererWidget = (Widget)RendererWidget;
-
-            if (rendererWidget.Window != Window && rendererWidget.Window != null)
+            if (RendererWidget.Window != Window && RendererWidget.Window != null)
             {
-                rendererWidget.Window.Dispose();
+                RendererWidget.Window.Dispose();
             }
 
-            rendererWidget.Dispose();
+            RendererWidget.Dispose();
 
             _windowsMultimediaTimerResolution?.Dispose();
             _windowsMultimediaTimerResolution = null;
             DisplaySleep.Restore();
 
-            _viewBox.Remove(rendererWidget);
+            _viewBox.Remove(RendererWidget);
             _viewBox.Add(_gameTableWindow);
 
             _gameTableWindow.Expand = true;
