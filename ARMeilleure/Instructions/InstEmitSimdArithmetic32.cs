@@ -426,7 +426,7 @@ namespace ARMeilleure.Instructions
             var srcUnsigned = op.Opc == 3;
             var destUnsigned = (op.Opc & 0x1) == 1;
 
-            EmitVectorUnaryNarrowOp32(context, (op1) => EmitSaturateAndNarrowInt(context, op1, srcUnsigned, destUnsigned));
+            EmitVectorUnaryNarrowOp32(context, (op1) => EmitSaturateAndNarrowInt(context, op1, op.Size, srcUnsigned, destUnsigned));
         }
 
         public static void Vneg_S(ArmEmitterContext context)

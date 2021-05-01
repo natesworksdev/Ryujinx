@@ -12,7 +12,7 @@ namespace ARMeilleure.Decoders
         {
             Opc = (opCode >> 8) & 0x1;
 
-            Size = 2;
+            Size = Opc == 1 ? 0 : 2;
             Fbits = 64 - ((opCode >> 16) & 0x3f);
 
             if (((opCode >> 21) & 0x1) == 0)

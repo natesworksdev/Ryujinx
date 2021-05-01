@@ -595,6 +595,78 @@ namespace Ryujinx.Tests.Cpu
 
             CompareAgainstUnicorn();
         }
+
+        [Test, Pairwise, Description("VQMOVN.S<size> <Dt>, <Qm>")]
+        public void Vqmovn_S([Range(0u, 1u, 2u)] uint size,
+                           [Values(0u, 1u, 2u, 3u)] uint vd,
+                           [Values(0u, 2u, 4u, 8u)] uint vm)
+        {
+            uint opcode = 0xf3b20280u; // VQMOVN.S16 D0, Q0
+
+            opcode |= (size & 0x3) << 18;
+            opcode |= ((vm & 0x10) << 1);
+            opcode |= ((vm & 0xf) << 0);
+
+            opcode |= ((vd & 0x10) << 18);
+            opcode |= ((vd & 0xf) << 12);
+
+            V128 v0 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v1 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v2 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v3 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+
+            SingleOpcode(opcode, v0: v0, v1: v1, v2: v2, v3: v3);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise, Description("VQMOVN.U<size> <Dt>, <Qm>")]
+        public void Vqmovn_U([Range(0u, 1u, 2u)] uint size,
+                           [Values(0u, 1u, 2u, 3u)] uint vd,
+                           [Values(0u, 2u, 4u, 8u)] uint vm)
+        {
+            uint opcode = 0xf3b202c0u; // VQMOVN.U16 D0, Q0
+
+            opcode |= (size & 0x3) << 18;
+            opcode |= ((vm & 0x10) << 1);
+            opcode |= ((vm & 0xf) << 0);
+
+            opcode |= ((vd & 0x10) << 18);
+            opcode |= ((vd & 0xf) << 12);
+
+            V128 v0 = new V128(TestContext.CurrentContext.Random.NextUInt(), TestContext.CurrentContext.Random.NextUInt(), TestContext.CurrentContext.Random.NextUInt(), TestContext.CurrentContext.Random.NextUInt());
+            V128 v1 = new V128(TestContext.CurrentContext.Random.NextUInt(), TestContext.CurrentContext.Random.NextUInt(), TestContext.CurrentContext.Random.NextUInt(), TestContext.CurrentContext.Random.NextUInt());
+            V128 v2 = new V128(TestContext.CurrentContext.Random.NextUInt(), TestContext.CurrentContext.Random.NextUInt(), TestContext.CurrentContext.Random.NextUInt(), TestContext.CurrentContext.Random.NextUInt());
+            V128 v3 = new V128(TestContext.CurrentContext.Random.NextUInt(), TestContext.CurrentContext.Random.NextUInt(), TestContext.CurrentContext.Random.NextUInt(), TestContext.CurrentContext.Random.NextUInt());
+
+            SingleOpcode(opcode, v0: v0, v1: v1, v2: v2, v3: v3);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise, Description("VQMOVUN.S<size> <Dt>, <Qm>")]
+        public void Vqmovun([Range(0u, 1u, 2u)] uint size,
+                           [Values(0u, 1u, 2u, 3u)] uint vd,
+                           [Values(0u, 2u, 4u, 8u)] uint vm)
+        {
+            uint opcode = 0xf3b20240u; // VQMOVUN.S16 D0, Q0
+
+            opcode |= (size & 0x3) << 18;
+            opcode |= ((vm & 0x10) << 1);
+            opcode |= ((vm & 0xf) << 0);
+
+            opcode |= ((vd & 0x10) << 18);
+            opcode |= ((vd & 0xf) << 12);
+
+            V128 v0 = new V128(TestContext.CurrentContext.Random.NextUInt(), TestContext.CurrentContext.Random.NextUInt(), TestContext.CurrentContext.Random.NextUInt(), TestContext.CurrentContext.Random.NextUInt());
+            V128 v1 = new V128(TestContext.CurrentContext.Random.NextUInt(), TestContext.CurrentContext.Random.NextUInt(), TestContext.CurrentContext.Random.NextUInt(), TestContext.CurrentContext.Random.NextUInt());
+            V128 v2 = new V128(TestContext.CurrentContext.Random.NextUInt(), TestContext.CurrentContext.Random.NextUInt(), TestContext.CurrentContext.Random.NextUInt(), TestContext.CurrentContext.Random.NextUInt());
+            V128 v3 = new V128(TestContext.CurrentContext.Random.NextUInt(), TestContext.CurrentContext.Random.NextUInt(), TestContext.CurrentContext.Random.NextUInt(), TestContext.CurrentContext.Random.NextUInt());
+
+            SingleOpcode(opcode, v0: v0, v1: v1, v2: v2, v3: v3);
+
+            CompareAgainstUnicorn();
+        }
 #endif
     }
 }

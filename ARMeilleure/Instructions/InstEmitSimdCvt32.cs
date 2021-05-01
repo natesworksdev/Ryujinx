@@ -49,28 +49,28 @@ namespace ARMeilleure.Instructions
             return context.Call(info, op1);
         }
 
-        private static Operand EmitSaturateAndNarrowInt(ArmEmitterContext context, Operand op1, bool srcUnsigned, bool destUnsigned)
+        private static Operand EmitSaturateAndNarrowInt(ArmEmitterContext context, Operand op1, int size, bool srcUnsigned, bool destUnsigned)
         {
             MethodInfo info = srcUnsigned ? (
-                op1.Type switch
+                size switch
                     {
-                        OperandType.I64 => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatU64ToU32)),
-                        OperandType.I32 => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatU32ToU16)),
+                        2 => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatU64ToU32)),
+                        1 => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatU32ToU16)),
                         _ => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatU16ToU8))
                     }
                 ) : (
                 destUnsigned ? (
-                    op1.Type switch
+                    size switch
                     {
-                        OperandType.I64 => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatI64ToU32)),
-                        OperandType.I32 => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatI32ToU16)),
+                        2 => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatI64ToU32)),
+                        1 => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatI32ToU16)),
                         _ => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatI16ToU8))
                     }
                 ) : (
-                    op1.Type switch
+                    size switch
                     {
-                        OperandType.I64 => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatI64ToI32)),
-                        OperandType.I32 => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatI32ToI16)),
+                        2 => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatI64ToI32)),
+                        1 => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatI32ToI16)),
                         _ => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatI16ToI8))
                     }
                 )
