@@ -495,7 +495,7 @@ namespace Ryujinx.Ui
 
                 Logger.RestartTime();
 
-                RendererWidget = CreatRenderereWidget();
+                RendererWidget = CreatRendererWidget();
 
                 SwitchToRenderWidget();
 
@@ -664,7 +664,7 @@ namespace Ryujinx.Ui
             }
         }
 
-        private IRendererWidget CreatRenderereWidget()
+        private IRendererWidget CreatRendererWidget()
         {
             if (UseVulkan)
             {
@@ -706,11 +706,11 @@ namespace Ryujinx.Ui
 
             RendererWidget.Exit();
 
-            Widget rendererWidget = ((Widget)RendererWidget);
+            Widget rendererWidget = (Widget)RendererWidget;
 
             if (rendererWidget.Window != Window && rendererWidget.Window != null)
             {
-                rendererWidget.Dispose();
+                rendererWidget.Window.Dispose();
             }
 
             rendererWidget.Dispose();

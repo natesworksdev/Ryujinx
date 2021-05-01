@@ -136,7 +136,6 @@ namespace Ryujinx.Ui
         [DllImport("libgdk-3.so.0")]
         private static extern IntPtr gdk_x11_window_get_xid(IntPtr gdkWindow);
 
-
         private void HideCursorStateChanged(object sender, ReactiveEventArgs<bool> state)
         {
             Gtk.Application.Invoke(delegate
