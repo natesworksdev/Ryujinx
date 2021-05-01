@@ -318,7 +318,7 @@ namespace Ryujinx.Ui
 
             if (ConfigurationState.Instance.System.AudioBackend.Value == AudioBackend.SDL2)
             {
-                if (SoundIoHardwareDeviceDriver.IsSupported)
+                if (SDL2HardwareDeviceDriver.IsSupported)
                 {
                     deviceDriver = new SDL2HardwareDeviceDriver();
                 }

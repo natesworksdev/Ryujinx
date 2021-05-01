@@ -31,7 +31,7 @@ namespace Ryujinx.Audio.Backends.SDL2
 
         private static bool IsSupportedInternal()
         {
-            uint device = OpenStream(SampleFormat.PcmInt16, 48000, 2, null);
+            uint device = OpenStream(SampleFormat.PcmInt16, Constants.TargetSampleRate, Constants.ChannelCountMax, null);
 
             if (device != 0)
             {
@@ -60,7 +60,7 @@ namespace Ryujinx.Audio.Backends.SDL2
 
             if (direction != Direction.Output)
             {
-                throw new NotImplementedException("Input direction is currently not implemented on SoundIO backend!");
+                throw new NotImplementedException("Input direction is currently not implemented on SDL2 backend!");
             }
 
             lock (_lock)
@@ -91,21 +91,19 @@ namespace Ryujinx.Audio.Backends.SDL2
             };
         }
 
-        public static ushort GetSDL2Format(SampleFormat format)
+        private static ushort GetSDL2Format(SampleFormat format)
         {
             return format switch
             {
                 SampleFormat.PcmInt8 => AUDIO_S8,
                 SampleFormat.PcmInt16 => AUDIO_S16,
-                // SDL2 doesn't support 24 bits signed integer.
-                //SampleFormat.PcmInt24 => AUDIO_S24,
                 SampleFormat.PcmInt32 => AUDIO_S32,
                 SampleFormat.PcmFloat => AUDIO_F32,
                 _ => throw new ArgumentException($"Unsupported sample format {format}"),
             };
         }
 
-        // TODO: fix this in SDL2-CS.
+        // TODO: Fix this in SDL2-CS.
         [DllImport("SDL2", EntryPoint = "SDL_OpenAudioDevice", CallingConvention = CallingConvention.Cdecl)]
         private static extern uint SDL_OpenAudioDevice_Workaround(
             IntPtr name,
