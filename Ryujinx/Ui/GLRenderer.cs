@@ -1,6 +1,7 @@
 ﻿using ARMeilleure.Translation;
 using ARMeilleure.Translation.PTC;
 using Gdk;
+using Gtk;
 using OpenTK.Graphics.OpenGL;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
@@ -12,9 +13,14 @@ using Ryujinx.Input.HLE;
 using Ryujinx.Ui.Widgets;
 using SPB.Graphics;
 using SPB.Graphics.OpenGL;
+using SPB.Platform;
+using SPB.Platform.GLX;
+using SPB.Platform.WGL;
+using SPB.Windowing;
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 using Key = Ryujinx.Input.Key;
@@ -23,7 +29,7 @@ namespace Ryujinx.Ui
 {
     using Switch = HLE.Switch;
 
-    public class GlRenderer : GLWidget, IRendererWidget
+    public class GlRenderer : DrawingArea, IRendererWidget
     {
         private const int SwitchPanelWidth  = 1280;
         private const int SwitchPanelHeight = 720;
@@ -60,7 +66,12 @@ namespace Ryujinx.Ui
         private GraphicsDebugLevel _glLogLevel;
 
         private readonly ManualResetEvent _exitEvent;
-        
+
+        private bool _initializedOpenGL;
+
+        private OpenGLContextBase _openGLContext;
+        private SwapableNativeWindowBase _nativeWindow;
+
         // Hide Cursor
         const int CursorHideIdleTime = 8; // seconds
         private static readonly Cursor _invisibleCursor = new Cursor(Display.Default, CursorType.BlankCursor);
@@ -70,11 +81,6 @@ namespace Ryujinx.Ui
         private IKeyboard _keyboardInterface;
 
         public GlRenderer(InputManager inputManager, GraphicsDebugLevel glLogLevel)
-            : base (GetGraphicsMode(),
-            3, 3,
-            glLogLevel == GraphicsDebugLevel.None
-            ? OpenGLContextFlags.Compat
-            : OpenGLContextFlags.Compat | OpenGLContextFlags.Debug)
         {
             _inputManager = inputManager;
             NpadManager = _inputManager.CreateNpadManager();
@@ -84,9 +90,7 @@ namespace Ryujinx.Ui
 
             WaitEvent = new ManualResetEvent(false);
 
-            Initialized  += GLRenderer_Initialized;
             Destroyed    += GLRenderer_Destroyed;
-            ShuttingDown += GLRenderer_ShuttingDown;
 
             _chrono = new Stopwatch();
 
@@ -110,6 +114,64 @@ namespace Ryujinx.Ui
             ConfigurationState.Instance.HideCursorOnIdle.Event += HideCursorStateChanged;
         }
 
+        protected override bool OnDrawn(Cairo.Context cr)
+        {
+            if (!_initializedOpenGL)
+            {
+                IntializeOpenGL();
+            }
+
+            return true;
+        }
+
+        private void IntializeOpenGL()
+        {
+            _nativeWindow = RetrieveNativeWindow();
+
+            Window.EnsureNative();
+
+            _openGLContext = PlatformHelper.CreateOpenGLContext(GetGraphicsMode(), 3, 3, _glLogLevel == GraphicsDebugLevel.None ? OpenGLContextFlags.Compat : OpenGLContextFlags.Compat | OpenGLContextFlags.Debug);
+
+            _openGLContext.Initialize(_nativeWindow);
+            _openGLContext.MakeCurrent(_nativeWindow);
+
+
+            // Release the GL exclusivity that SPB gave us as we aren't going to use it in GTK Thread.
+            _openGLContext.MakeCurrent(null);
+
+            WaitEvent.Set();
+
+            _initializedOpenGL = true;
+        }
+
+        private SwapableNativeWindowBase RetrieveNativeWindow()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                IntPtr windowHandle = gdk_win32_window_get_handle(Window.Handle);
+
+                return new WGLWindow(new NativeHandle(windowHandle));
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                IntPtr displayHandle = gdk_x11_display_get_xdisplay(Display.Handle);
+                IntPtr windowHandle = gdk_x11_window_get_xid(Window.Handle);
+
+                return new GLXWindow(new NativeHandle(displayHandle), new NativeHandle(windowHandle));
+            }
+
+            throw new NotImplementedException();
+        }
+
+        [DllImport("libgdk-3-0.dll")]
+        private static extern IntPtr gdk_win32_window_get_handle(IntPtr d);
+
+        [DllImport("libgdk-3.so.0")]
+        private static extern IntPtr gdk_x11_display_get_xdisplay(IntPtr gdkDisplay);
+
+        [DllImport("libgdk-3.so.0")]
+        private static extern IntPtr gdk_x11_window_get_xid(IntPtr gdkWindow);
+
         private void HideCursorStateChanged(object sender, ReactiveEventArgs<bool> state)
         {
             Gtk.Application.Invoke(delegate
@@ -132,7 +194,7 @@ namespace Ryujinx.Ui
             return Environment.OSVersion.Platform == PlatformID.Unix ? new FramebufferFormat(new ColorFormat(8, 8, 8, 0), 16, 0, ColorFormat.Zero, 0, 2, false) : FramebufferFormat.Default;
         }
 
-        private void GLRenderer_ShuttingDown(object sender, EventArgs args)
+        private void ShuttingDown()
         {
             _device.DisposeGpu();
             NpadManager.Dispose();
@@ -222,10 +284,6 @@ namespace Ryujinx.Ui
 
         private void GLRenderer_Initialized(object sender, EventArgs e)
         {
-            // Release the GL exclusivity that SPB gave us as we aren't going to use it in GTK Thread.
-            OpenGLContext.MakeCurrent(null);
-
-            WaitEvent.Set();
         }
 
         protected override bool OnConfigureEvent(EventConfigure evnt)
@@ -413,12 +471,12 @@ namespace Ryujinx.Ui
         public void Render()
         {
             // First take exclusivity on the OpenGL context.
-            _renderer.InitializeBackgroundContext(SPBOpenGLContext.CreateBackgroundContext(OpenGLContext));
+            _renderer.InitializeBackgroundContext(SPBOpenGLContext.CreateBackgroundContext(_openGLContext));
 
             Gtk.Window parent = Toplevel as Gtk.Window;
             parent.Present();
 
-            OpenGLContext.MakeCurrent(NativeWindow);
+            _openGLContext.MakeCurrent(_nativeWindow);
 
             _device.Gpu.Renderer.Initialize(_glLogLevel);
 
@@ -477,7 +535,7 @@ namespace Ryujinx.Ui
 
         public void SwapBuffers()
         {
-            NativeWindow.SwapBuffers();
+            _nativeWindow.SwapBuffers();
         }
 
         public void MainLoop()
@@ -621,6 +679,27 @@ namespace Ryujinx.Ui
             }
 
             return state;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            // Try to bind the OpenGL context before calling the shutdown event
+            try
+            {
+                _openGLContext?.MakeCurrent(_nativeWindow);
+            }
+            catch (Exception) { }
+
+            ShuttingDown();
+
+            // Unbind context and destroy everything
+            try
+            {
+                _openGLContext?.MakeCurrent(null);
+            }
+            catch (Exception) { }
+
+            _openGLContext.Dispose();
         }
     }
 }
