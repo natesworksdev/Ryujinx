@@ -36,7 +36,7 @@ namespace Ryujinx.Ui
         private bool _initializedOpenGL;
 
         private OpenGLContextBase _openGLContext;
-        private SwapableNativeWindowBase _nativeWindow;
+        private SwappableNativeWindowBase _nativeWindow;
 
         public GlRenderer(InputManager inputManager, GraphicsDebugLevel glLogLevel) : base(inputManager, glLogLevel)
         {
@@ -73,7 +73,7 @@ namespace Ryujinx.Ui
             _initializedOpenGL = true;
         }
 
-        private SwapableNativeWindowBase RetrieveNativeWindow()
+        private SwappableNativeWindowBase RetrieveNativeWindow()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {

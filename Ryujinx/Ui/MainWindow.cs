@@ -494,7 +494,7 @@ namespace Ryujinx.Ui
 
                 Logger.RestartTime();
 
-                RendererWidget = CreatRendererWidget();
+                RendererWidget = CreateRendererWidget();
 
                 SwitchToRenderWidget();
 
@@ -663,7 +663,7 @@ namespace Ryujinx.Ui
             }
         }
 
-        private RendererWidgetBase CreatRendererWidget()
+        private RendererWidgetBase CreateRendererWidget()
         {
             if (UseVulkan)
             {
