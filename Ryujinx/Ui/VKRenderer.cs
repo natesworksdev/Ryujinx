@@ -1,20 +1,23 @@
 ﻿using ARMeilleure.Translation;
 using ARMeilleure.Translation.PTC;
 using Gdk;
-using OpenTK.Graphics.OpenGL;
+using Gtk;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Configuration;
-using Ryujinx.Graphics.OpenGL;
+using Ryujinx.Graphics.GAL;
 using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.Input;
 using Ryujinx.Input.HLE;
 using Ryujinx.Ui.Widgets;
-using SPB.Graphics;
-using SPB.Graphics.OpenGL;
+using SPB.Graphics.Vulkan;
+using SPB.Platform.Win32;
+using SPB.Platform.X11;
+using SPB.Windowing;
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 using Key = Ryujinx.Input.Key;
@@ -23,11 +26,11 @@ namespace Ryujinx.Ui
 {
     using Switch = HLE.Switch;
 
-    public class GlRenderer : GLWidget, IRendererWidget
+    public class VKRenderer : DrawingArea, IRendererWidget
     {
-        private const int SwitchPanelWidth  = 1280;
+        private const int SwitchPanelWidth = 1280;
         private const int SwitchPanelHeight = 720;
-        private const int TargetFps         = 60;
+        private const int TargetFps = 60;
 
         public ManualResetEvent WaitEvent { get; set; }
         public NpadManager NpadManager { get; }
@@ -40,7 +43,7 @@ namespace Ryujinx.Ui
 
         private double _mouseX;
         private double _mouseY;
-        private bool   _mousePressed;
+        private bool _mousePressed;
 
         private bool _toggleFullscreen;
         private bool _toggleDockedMode;
@@ -53,14 +56,12 @@ namespace Ryujinx.Ui
 
         private Switch _device;
 
-        private Renderer _renderer;
+        private IRenderer _renderer;
 
         private KeyboardHotkeyState _prevHotkeyState;
 
-        private GraphicsDebugLevel _glLogLevel;
-
         private readonly ManualResetEvent _exitEvent;
-        
+
         // Hide Cursor
         const int CursorHideIdleTime = 8; // seconds
         private static readonly Cursor _invisibleCursor = new Cursor(Display.Default, CursorType.BlankCursor);
@@ -69,12 +70,11 @@ namespace Ryujinx.Ui
         private InputManager _inputManager;
         private IKeyboard _keyboardInterface;
 
-        public GlRenderer(InputManager inputManager, GraphicsDebugLevel glLogLevel)
-            : base (GetGraphicsMode(),
-            3, 3,
-            glLogLevel == GraphicsDebugLevel.None
-            ? OpenGLContextFlags.Compat
-            : OpenGLContextFlags.Compat | OpenGLContextFlags.Debug)
+        private GraphicsDebugLevel _glLogLevel;
+
+        public NativeWindowBase NativeWindow { get; private set; }
+
+        public VKRenderer(InputManager inputManager, GraphicsDebugLevel glLogLevel)
         {
             _inputManager = inputManager;
             NpadManager = _inputManager.CreateNpadManager();
@@ -84,9 +84,9 @@ namespace Ryujinx.Ui
 
             WaitEvent = new ManualResetEvent(false);
 
-            Initialized  += GLRenderer_Initialized;
-            Destroyed    += GLRenderer_Destroyed;
-            ShuttingDown += GLRenderer_ShuttingDown;
+            _glLogLevel = glLogLevel;
+
+            Destroyed += GLRenderer_Destroyed;
 
             _chrono = new Stopwatch();
 
@@ -100,8 +100,6 @@ namespace Ryujinx.Ui
 
             Shown += Renderer_Shown;
 
-            _glLogLevel = glLogLevel;
-
             _exitEvent = new ManualResetEvent(false);
 
             _hideCursorOnIdle = ConfigurationState.Instance.HideCursorOnIdle;
@@ -109,6 +107,35 @@ namespace Ryujinx.Ui
 
             ConfigurationState.Instance.HideCursorOnIdle.Event += HideCursorStateChanged;
         }
+
+        private NativeWindowBase RetrieveNativeWindow()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                IntPtr windowHandle = gdk_win32_window_get_handle(Window.Handle);
+
+                return new SimpleWin32Window(new NativeHandle(windowHandle));
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                IntPtr displayHandle = gdk_x11_display_get_xdisplay(Display.Handle);
+                IntPtr windowHandle = gdk_x11_window_get_xid(Window.Handle);
+
+                return new SimpleX11Window(new NativeHandle(displayHandle), new NativeHandle(windowHandle));
+            }
+
+            throw new NotImplementedException();
+        }
+
+        [DllImport("libgdk-3-0.dll")]
+        private static extern IntPtr gdk_win32_window_get_handle(IntPtr d);
+
+        [DllImport("libgdk-3.so.0")]
+        private static extern IntPtr gdk_x11_display_get_xdisplay(IntPtr gdkDisplay);
+
+        [DllImport("libgdk-3.so.0")]
+        private static extern IntPtr gdk_x11_window_get_xid(IntPtr gdkWindow);
+
 
         private void HideCursorStateChanged(object sender, ReactiveEventArgs<bool> state)
         {
@@ -125,17 +152,6 @@ namespace Ryujinx.Ui
                     Window.Cursor = null;
                 }
             });
-        }
-
-        private static FramebufferFormat GetGraphicsMode()
-        {
-            return Environment.OSVersion.Platform == PlatformID.Unix ? new FramebufferFormat(new ColorFormat(8, 8, 8, 0), 16, 0, ColorFormat.Zero, 0, 2, false) : FramebufferFormat.Default;
-        }
-
-        private void GLRenderer_ShuttingDown(object sender, EventArgs args)
-        {
-            _device.DisposeGpu();
-            NpadManager.Dispose();
         }
 
         private void Parent_FocusOutEvent(object o, Gtk.FocusOutEventArgs args)
@@ -163,11 +179,11 @@ namespace Ryujinx.Ui
 
         public void HandleScreenState(KeyboardStateSnapshot keyboard)
         {
-            bool toggleFullscreen =  keyboard.IsPressed(Key.F11)
+            bool toggleFullscreen = keyboard.IsPressed(Key.F11)
                                 || ((keyboard.IsPressed(Key.AltLeft)
-                                ||   keyboard.IsPressed(Key.AltRight))
-                                &&   keyboard.IsPressed(Key.Enter))
-                                ||   keyboard.IsPressed(Key.Escape);
+                                || keyboard.IsPressed(Key.AltRight))
+                                && keyboard.IsPressed(Key.Enter))
+                                || keyboard.IsPressed(Key.Escape);
 
             bool fullScreenToggled = ParentWindow.State.HasFlag(Gdk.WindowState.Fullscreen);
 
@@ -220,17 +236,16 @@ namespace Ryujinx.Ui
             }
         }
 
-        private void GLRenderer_Initialized(object sender, EventArgs e)
-        {
-            // Release the GL exclusivity that SPB gave us as we aren't going to use it in GTK Thread.
-            OpenGLContext.MakeCurrent(null);
-
-            WaitEvent.Set();
-        }
-
         protected override bool OnConfigureEvent(EventConfigure evnt)
         {
             bool result = base.OnConfigureEvent(evnt);
+
+            if (NativeWindow == null)
+            {
+                NativeWindow = RetrieveNativeWindow();
+
+                WaitEvent.Set();
+            }
 
             Gdk.Monitor monitor = Display.GetMonitorAtWindow(Window);
 
@@ -247,10 +262,10 @@ namespace Ryujinx.Ui
 
             Gtk.Window parent = this.Toplevel as Gtk.Window;
 
-            parent.FocusInEvent  += Parent_FocusInEvent;
+            parent.FocusInEvent += Parent_FocusInEvent;
             parent.FocusOutEvent += Parent_FocusOutEvent;
 
-            Gtk.Application.Invoke(delegate
+            Application.Invoke(delegate
             {
                 parent.Present();
 
@@ -341,7 +356,7 @@ namespace Ryujinx.Ui
             if (_hideCursorOnIdle)
             {
                 _lastCursorMoveTime = Stopwatch.GetTimestamp();
-            } 
+            }
 
             return false;
         }
@@ -392,40 +407,36 @@ namespace Ryujinx.Ui
             }
 
             _isStopped = true;
-            _isActive  = false;
+            _isActive = false;
 
             _exitEvent.WaitOne();
             _exitEvent.Dispose();
+
+            _device.DisposeGpu();
+        }
+
+        [DllImport("user32.dll")]
+        static extern IntPtr GetWindowLong(IntPtr hWnd, int nIndex);
+
+        public unsafe IntPtr CreateWindowSurface(IntPtr instance)
+        {
+            return VulkanHelper.CreateWindowSurface(instance, NativeWindow);
         }
 
         public void Initialize(Switch device)
         {
             _device = device;
 
-            if (!(_device.Gpu.Renderer is Renderer))
-            {
-                throw new NotSupportedException($"GPU renderer must be an OpenGL renderer when using {typeof(Renderer).Name}!");
-            }
-
-            _renderer = (Renderer)_device.Gpu.Renderer;
+            // TODO: Ensure that the instance is a VulkanGraphicsDevice when Vulkan will land.
+            _renderer = _device.Gpu.Renderer;
         }
 
         public void Render()
         {
-            // First take exclusivity on the OpenGL context.
-            _renderer.InitializeBackgroundContext(SPBOpenGLContext.CreateBackgroundContext(OpenGLContext));
-
             Gtk.Window parent = Toplevel as Gtk.Window;
             parent.Present();
 
-            OpenGLContext.MakeCurrent(NativeWindow);
-
             _device.Gpu.Renderer.Initialize(_glLogLevel);
-
-            // Make sure the first frame is not transparent.
-            GL.ClearColor(0, 0, 0, 1.0f);
-            GL.Clear(ClearBufferMask.ColorBufferBit);
-            SwapBuffers();
 
             _device.Gpu.InitializeShaderCache();
             Translator.IsReadyForTranslation.Set();
@@ -468,17 +479,14 @@ namespace Ryujinx.Ui
                         ConfigurationState.Instance.Graphics.AspectRatio.Value.ToText(),
                         $"Game: {_device.Statistics.GetGameFrameRate():00.00} FPS",
                         $"FIFO: {_device.Statistics.GetFifoPercent():0.00} %",
-                        $"GPU:  {_renderer.GpuVendor}"));
+                        $"GPU:  Vulkan (Unknown)"));
 
                     _ticks = Math.Min(_ticks - _ticksPerFrame, _ticksPerFrame);
                 }
             }
         }
 
-        public void SwapBuffers()
-        {
-            NativeWindow.SwapBuffers();
-        }
+        public void SwapBuffers() {}
 
         public void MainLoop()
         {
@@ -525,7 +533,7 @@ namespace Ryujinx.Ui
 
             NpadManager.Update(_device.Hid, _device.TamperMachine);
 
-            if(_isFocused)
+            if (_isFocused)
             {
                 KeyboardHotkeyState currentHotkeyState = GetHotkeyState();
 
@@ -547,7 +555,7 @@ namespace Ryujinx.Ui
             {
                 float aspectWidth = SwitchPanelHeight * ConfigurationState.Instance.Graphics.AspectRatio.Value.ToFloat();
 
-                int screenWidth  = AllocatedWidth;
+                int screenWidth = AllocatedWidth;
                 int screenHeight = AllocatedHeight;
 
                 if (AllocatedWidth > AllocatedHeight * aspectWidth / SwitchPanelHeight)
@@ -559,7 +567,7 @@ namespace Ryujinx.Ui
                     screenHeight = (AllocatedWidth * SwitchPanelHeight) / (int)aspectWidth;
                 }
 
-                int startX = (AllocatedWidth  - screenWidth)  >> 1;
+                int startX = (AllocatedWidth - screenWidth) >> 1;
                 int startY = (AllocatedHeight - screenHeight) >> 1;
 
                 int endX = startX + screenWidth;
@@ -574,7 +582,7 @@ namespace Ryujinx.Ui
                     int screenMouseX = (int)_mouseX - startX;
                     int screenMouseY = (int)_mouseY - startY;
 
-                    int mX = (screenMouseX * (int)aspectWidth)  / screenWidth;
+                    int mX = (screenMouseX * (int)aspectWidth) / screenWidth;
                     int mY = (screenMouseY * SwitchPanelHeight) / screenHeight;
 
                     TouchPoint currentPoint = new TouchPoint
@@ -585,7 +593,7 @@ namespace Ryujinx.Ui
                         // Placeholder values till more data is acquired
                         DiameterX = 10,
                         DiameterY = 10,
-                        Angle     = 90
+                        Angle = 90
                     };
 
                     hasTouch = true;

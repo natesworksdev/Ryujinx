@@ -20,7 +20,7 @@ namespace Ryujinx.Ui
         public event EventHandler ShuttingDown;
 
         public OpenGLContextBase OpenGLContext { get; private set; }
-        public NativeWindowBase NativeWindow { get; private set; }
+        public SwapableNativeWindowBase NativeWindow { get; private set; }
 
         public FramebufferFormat FramebufferFormat { get; }
         public int GLVersionMajor { get; }
@@ -50,7 +50,7 @@ namespace Ryujinx.Ui
             return true;
         }
 
-        private NativeWindowBase RetrieveNativeWindow()
+        private SwapableNativeWindowBase RetrieveNativeWindow()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
