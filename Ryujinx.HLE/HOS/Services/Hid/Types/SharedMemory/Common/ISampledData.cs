@@ -2,6 +2,6 @@
 {
     interface ISampledData
     {
-        public ulong SamplingNumber { get; }
+        ulong SamplingNumber { get; }
     }
 }

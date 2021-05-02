@@ -17,7 +17,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             if (Active)
             {
-                // TODO: do something
+                // TODO: This is a debug device only present in dev environment, do we want to support it?
             }
 
             newState.SamplingNumber = previousEntry.SamplingNumber + 1;

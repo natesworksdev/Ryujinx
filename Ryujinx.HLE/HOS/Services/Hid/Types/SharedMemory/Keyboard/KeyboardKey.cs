@@ -12,10 +12,17 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Keyboard
             {
                 return (RawData[(int)index / 64] & (1UL << ((int)index & 63))) != 0;
             }
-
             set
             {
-                RawData[(int)index / 64] = value ? 1UL << ((int)index & 63) : 0UL;
+                int arrayIndex = (int)index / 64;
+                ulong mask = 1UL << ((int)index & 63);
+
+                RawData[arrayIndex] &= ~mask;
+
+                if (value)
+                {
+                    RawData[arrayIndex] |= mask;
+                }
             }
         }
     }
