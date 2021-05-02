@@ -219,7 +219,7 @@ namespace ARMeilleure.Common
         }
 
         /// <summary>
-        /// Releases all resources used by the <see cref="AddressTable{TEntry}{TEntry}"/> instance.
+        /// Releases all resources used by the <see cref="AddressTable{TEntry}"/> instance.
         /// </summary>
         public void Dispose()
         {

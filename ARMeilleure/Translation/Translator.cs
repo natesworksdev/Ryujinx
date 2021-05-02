@@ -194,8 +194,9 @@ namespace ARMeilleure.Translation
 
                 DisposePools();
 
-                CountTable.Dispose();
+                Stubs.Dispose();
                 FunctionTable.Dispose();
+                CountTable.Dispose();
 
                 GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
             }
