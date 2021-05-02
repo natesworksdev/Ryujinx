@@ -24,7 +24,7 @@ namespace Ryujinx.Modules
                 },
                 Details    = "Main Menu",
                 State      = "Idling",
-                Timestamps = new Timestamps(DateTime.UtcNow),
+                Timestamps = Timestamps.Now,
                 Buttons    = new Button[]
                 {
                     new Button()
@@ -74,7 +74,7 @@ namespace Ryujinx.Modules
                 },
                 Details    = $"Playing {titleName}",
                 State      = (titleId == "0000000000000000") ? "Homebrew" : titleId.ToUpper(),
-                Timestamps = new Timestamps(DateTime.UtcNow),
+                Timestamps = Timestamps.Now,
                 Buttons    = new Button[]
                 {
                     new Button()
