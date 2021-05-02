@@ -60,10 +60,8 @@ namespace Ryujinx.Ui
             Window.EnsureNative();
 
             _openGLContext = PlatformHelper.CreateOpenGLContext(GetGraphicsMode(), 3, 3, _glLogLevel == GraphicsDebugLevel.None ? OpenGLContextFlags.Compat : OpenGLContextFlags.Compat | OpenGLContextFlags.Debug);
-
             _openGLContext.Initialize(_nativeWindow);
             _openGLContext.MakeCurrent(_nativeWindow);
-
 
             // Release the GL exclusivity that SPB gave us as we aren't going to use it in GTK Thread.
             _openGLContext.MakeCurrent(null);

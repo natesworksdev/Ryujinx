@@ -15,7 +15,7 @@ namespace Ryujinx.Ui
     {
         public NativeWindowBase NativeWindow { get; private set; }
 
-        public VKRenderer(InputManager inputManager, GraphicsDebugLevel glLogLevel) : base(inputManager, glLogLevel) {}
+        public VKRenderer(InputManager inputManager, GraphicsDebugLevel glLogLevel) : base(inputManager, glLogLevel) { }
 
         private NativeWindowBase RetrieveNativeWindow()
         {
@@ -62,9 +62,9 @@ namespace Ryujinx.Ui
             return VulkanHelper.CreateWindowSurface(instance, NativeWindow);
         }
 
-        public override void InitializeRenderer() {}
+        public override void InitializeRenderer() { }
 
-        public override void SwapBuffers() {}
+        public override void SwapBuffers() { }
 
         public override string GetGpuVendorName()
         {
