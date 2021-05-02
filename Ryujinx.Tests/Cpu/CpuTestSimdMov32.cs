@@ -597,7 +597,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("VQMOVN.S<size> <Dt>, <Qm>")]
-        public void Vqmovn_S([Range(0u, 1u, 2u)] uint size,
+        public void Vqmovn_S([Values(0u, 1u, 2u)] uint size,
                            [Values(0u, 1u, 2u, 3u)] uint vd,
                            [Values(0u, 2u, 4u, 8u)] uint vm)
         {
@@ -621,7 +621,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("VQMOVN.U<size> <Dt>, <Qm>")]
-        public void Vqmovn_U([Range(0u, 1u, 2u)] uint size,
+        public void Vqmovn_U([Values(0u, 1u, 2u)] uint size,
                            [Values(0u, 1u, 2u, 3u)] uint vd,
                            [Values(0u, 2u, 4u, 8u)] uint vm)
         {
@@ -645,7 +645,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("VQMOVUN.S<size> <Dt>, <Qm>")]
-        public void Vqmovun([Range(0u, 1u, 2u)] uint size,
+        public void Vqmovun([Values(0u, 1u, 2u)] uint size,
                            [Values(0u, 1u, 2u, 3u)] uint vd,
                            [Values(0u, 2u, 4u, 8u)] uint vm)
         {

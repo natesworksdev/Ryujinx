@@ -259,6 +259,114 @@ namespace Ryujinx.Tests.Cpu
 
             CompareAgainstUnicorn();
         }
+
+        [Test, Pairwise, Description("VCVT.U32.F32 <Vd>, <Vm>, #<fbits>")]
+        public void Vcvt_V2_Q1_F32_U32([Values(0u, 2u, 4u, 8u)] uint vd,
+                           [Values(0u, 2u, 4u, 8u)] uint vm,
+                           [Values] [Random(RndCnt)] float s0,
+                           [Values] [Random(RndCnt)] float s1,
+                           [Values] [Random(RndCnt)] float s2,
+                           [Values] [Random(RndCnt)] float s3,
+                           [Random(32u, 63u, 1)] uint fixImm)
+        {
+            //op = 1, u = 1, q = 1
+            uint opcode = 0xF3800F50u; // VCVT.U32.F32 D0, Q0, #0
+
+            opcode |= ((vm & 0x10) << 1);
+            opcode |= ((vm & 0xf) << 0);
+
+            opcode |= ((vd & 0x10) << 18);
+            opcode |= ((vd & 0xf) << 12);
+
+            opcode |= (fixImm & 0x3f) << 16;
+
+            V128 v0 = new V128(s0, s1, s2, s3);
+
+            SingleOpcode(opcode, v0: v0);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise, Description("VCVT.F32.U32 <Vd>, <Vm>, #<fbits>")]
+        public void Vcvt_V2_Q1_U32_F32([Values(0u, 2u, 4u, 8u)] uint vd,
+                           [Values(0u, 2u, 4u, 8u)] uint vm,
+                           [ValueSource(nameof(_1S_))] [Random(RndCnt)] uint s0,
+                           [ValueSource(nameof(_1S_))] [Random(RndCnt)] uint s1,
+                           [ValueSource(nameof(_1S_))] [Random(RndCnt)] uint s2,
+                           [ValueSource(nameof(_1S_))] [Random(RndCnt)] uint s3,
+                           [Range(32u, 63u, 1)] uint fixImm)
+        {
+            //op = 0, u = 1, q = 1
+            uint opcode = 0xF3800E50u; // VCVT.F32.U32 D0, Q0, #0
+
+            opcode |= ((vm & 0x10) << 1);
+            opcode |= ((vm & 0xf) << 0);
+
+            opcode |= ((vd & 0x10) << 18);
+            opcode |= ((vd & 0xf) << 12);
+
+            opcode |= (fixImm & 0x3f) << 16;
+
+            V128 v0 = new V128(s0, s1, s2, s3);
+
+            SingleOpcode(opcode, v0: v0);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise, Description("VCVT.U32.F32 <Vd>, <Vm>, #<fbits>")]
+        public void Vcvt_V2_Q1_F32_S32([Values(0u, 2u, 4u, 8u)] uint vd,
+                           [Values(0u, 2u, 4u, 8u)] uint vm,
+                           [Values] [Random(RndCnt)] float s0,
+                           [Values] [Random(RndCnt)] float s1,
+                           [Values] [Random(RndCnt)] float s2,
+                           [Values] [Random(RndCnt)] float s3,
+                           [Random(32u, 63u, 1)] uint fixImm)
+        {
+            //op = 1, u = 0, q = 1
+            uint opcode = 0xF2800F50u; // VCVT.S32.F32 D0, Q0, #0
+
+            opcode |= ((vm & 0x10) << 1);
+            opcode |= ((vm & 0xf) << 0);
+
+            opcode |= ((vd & 0x10) << 18);
+            opcode |= ((vd & 0xf) << 12);
+
+            opcode |= (fixImm & 0x3f) << 16;
+
+            V128 v0 = new V128(s0, s1, s2, s3);
+
+            SingleOpcode(opcode, v0: v0);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise, Description("VCVT.F32.U32 <Vd>, <Vm>, #<fbits>")]
+        public void Vcvt_V2_Q1_S32_F32([Values(0u, 2u, 4u, 8u)] uint vd,
+                           [Values(0u, 2u, 4u, 8u)] uint vm,
+                           [Values] [Random(RndCnt)] int s0,
+                           [Values] [Random(RndCnt)] int s1,
+                           [Values] [Random(RndCnt)] int s2,
+                           [Values] [Random(RndCnt)] int s3,
+                           [Range(32u, 63u, 1)] uint fixImm)
+        {
+            //op = 0, u = 0, q = 1
+            uint opcode = 0xF2800E50u; // VCVT.F32.S32 D0, Q0, #0
+
+            opcode |= ((vm & 0x10) << 1);
+            opcode |= ((vm & 0xf) << 0);
+
+            opcode |= ((vd & 0x10) << 18);
+            opcode |= ((vd & 0xf) << 12);
+
+            opcode |= (fixImm & 0x3f) << 16;
+
+            V128 v0 = new V128(s0, s1, s2, s3);
+
+            SingleOpcode(opcode, v0: v0);
+
+            CompareAgainstUnicorn();
+        }
 #endif
     }
 }
