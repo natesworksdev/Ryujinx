@@ -1726,29 +1726,27 @@ namespace ARMeilleure.Instructions
 
         public static int FPToSFixed(float value, int fbits)
         {
-            //For now, this is only used in VCVT instruction which wants to round towards zero
-            int result = (int)Math.Truncate(value * (1 << fbits));
+            //For now, this is only used in VCVT instruction which wants to round towards zero so we need to truncate
+            int result = (int)MathF.Truncate(value * MathF.Pow(2, fbits));
             return result;
         }
 
         public static uint FPToUFixed(float value, int fbits)
         {
-            //For now, this is only used in VCVT instruction which wants to round towards zero
-            uint result = unchecked((uint)Math.Truncate(value * (1 << fbits)));
+            //For now, this is only used in VCVT instruction which wants to round towards zero so we need to truncate
+            uint result = unchecked((uint)MathF.Truncate(value * MathF.Pow(2, fbits)));
             return result;
         }
 
         public static float SFixedToFP(int value, int fbits)
         {
-            //For now, this is only used in VCVT instruction which wants to round towards nearest
-            float realOperand = (float)Math.Round((double)(value / (1 << fbits)));
+            float realOperand = (float)value / MathF.Pow(2, fbits);
             return realOperand;
         }
 
         public static float UFixedToFP(uint value, int fbits)
         {
-            //For now, this is only used in VCVT instruction which wants to round towards nearest
-            float realOperand = (float)Math.Round((double)(value / (1 << fbits)));
+            float realOperand = (float)value / MathF.Pow(2, fbits);
             return realOperand;
         }
 
