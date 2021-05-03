@@ -50,6 +50,8 @@ namespace Ryujinx.Ui.Windows
 
             Task.Run(async () =>
             {
+                await AmiiboManager.Initialize();
+
                 if (AmiiboManager.AmiiboApis.Count > 0)
                 {
                     LoadContent();

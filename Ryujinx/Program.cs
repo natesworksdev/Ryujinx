@@ -136,9 +136,6 @@ namespace Ryujinx
             // Logging system information.
             PrintSystemInfo();
 
-            // Setup Amiibo Data
-            AmiiboManager.Initialize();
-
             // Initialize Gtk.
             Application.Init();
 

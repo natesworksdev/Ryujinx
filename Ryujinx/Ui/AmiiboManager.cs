@@ -28,7 +28,7 @@ namespace Ryujinx.Ui
 
         public static List<AmiiboApi> AmiiboApis { get => _amiiboApis; }
 
-        public static void Initialize()
+        public static async Task Initialize()
         {
             if (!_initialized)
             {
@@ -43,27 +43,24 @@ namespace Ryujinx.Ui
 
                 _amiiboJsonPath = Path.Join(AppDataManager.BaseDirPath, "system", "amiibo", "Amiibo.json");
 
-                Task.Run(async () =>
+                if (File.Exists(_amiiboJsonPath))
                 {
-                    if (File.Exists(_amiiboJsonPath))
+                    try
                     {
-                        try
-                        {
-                            string amiiboJsonString = await File.ReadAllTextAsync(_amiiboJsonPath);
-                            LoadAmiiboJson(amiiboJsonString);
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.Warning?.Print(LogClass.Application, $"Failed to read Amiibo JSON data: {ex.Message}");
-
-                            LoadAmiiboJson(DEFAULT_JSON);
-                        }
+                        string amiiboJsonString = await File.ReadAllTextAsync(_amiiboJsonPath);
+                        LoadAmiiboJson(amiiboJsonString);
                     }
-                    else
+                    catch (Exception ex)
                     {
+                        Logger.Warning?.Print(LogClass.Application, $"Failed to read Amiibo JSON data: {ex.Message}");
+
                         LoadAmiiboJson(DEFAULT_JSON);
                     }
-                });
+                }
+                else
+                {
+                    LoadAmiiboJson(DEFAULT_JSON);
+                }
 
                 _initialized = true;
             }
