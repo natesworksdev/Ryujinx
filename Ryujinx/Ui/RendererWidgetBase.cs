@@ -347,7 +347,7 @@ namespace Ryujinx.Ui
                         ConfigurationState.Instance.Graphics.AspectRatio.Value.ToText(),
                         $"Game: {Device.Statistics.GetGameFrameRate():00.00} FPS",
                         $"FIFO: {Device.Statistics.GetFifoPercent():0.00} %",
-                        $"GPU:  {_gpuVendorName}"));
+                        $"GPU: {_gpuVendorName}"));
 
                     _ticks = Math.Min(_ticks - _ticksPerFrame, _ticksPerFrame);
                 }
@@ -496,7 +496,7 @@ namespace Ryujinx.Ui
                 _prevHotkeyState = currentHotkeyState;
             }
 
-            //Touchscreen
+            // Touchscreen
             bool hasTouch = false;
 
             // Get screen touch position from left mouse click
@@ -522,7 +522,6 @@ namespace Ryujinx.Ui
 
                 int endX = startX + screenWidth;
                 int endY = startY + screenHeight;
-
 
                 if (_mouseX >= startX &&
                     _mouseY >= startY &&
