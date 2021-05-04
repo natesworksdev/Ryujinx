@@ -71,18 +71,6 @@ namespace Ryujinx.Audio.Backends.SDL2
             }
         }
 
-        public override bool RegisterBuffer(AudioBuffer buffer, byte[] samples)
-        {
-            bool isValid = base.RegisterBuffer(buffer, samples);
-
-            if (isValid)
-            {
-                EnsureAudioStreamSetup(buffer);
-            }
-
-            return isValid;
-        }
-
         // TODO: Add this variant with pointer to SDL2-CS.
         [DllImport("SDL2", EntryPoint = "SDL_MixAudioFormat", CallingConvention = CallingConvention.Cdecl)]
         private static extern unsafe uint SDL_MixAudioFormat(IntPtr dst, IntPtr src, ushort format, uint len, int volume);
@@ -159,6 +147,8 @@ namespace Ryujinx.Audio.Backends.SDL2
 
         public override void QueueBuffer(AudioBuffer buffer)
         {
+            EnsureAudioStreamSetup(buffer);
+
             SDL2AudioBuffer driverBuffer = new SDL2AudioBuffer(buffer.DataPointer, GetSampleCount(buffer));
 
             _ringBuffer.Write(buffer.Data, 0, buffer.Data.Length);
