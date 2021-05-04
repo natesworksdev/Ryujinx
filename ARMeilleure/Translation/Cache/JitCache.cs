@@ -24,6 +24,8 @@ namespace ARMeilleure.Translation.Cache
 
         private JitUnwindWindows _jitUnwindWindows;
 
+        private readonly object _lock = new object();
+
         public IntPtr Base => _jitRegion.Pointer;
 
         public JitCache(IJitMemoryAllocator allocator)
@@ -42,31 +44,37 @@ namespace ARMeilleure.Translation.Cache
         {
             byte[] code = func.Code;
 
-            int funcOffset = Allocate(code.Length);
+            lock (_lock)
+            {
+                int funcOffset = Allocate(code.Length);
 
-            IntPtr funcPtr = _jitRegion.Pointer + funcOffset;
+                IntPtr funcPtr = _jitRegion.Pointer + funcOffset;
 
-            ReprotectAsWritable(funcOffset, code.Length);
+                ReprotectAsWritable(funcOffset, code.Length);
 
-            Marshal.Copy(code, 0, funcPtr, code.Length);
+                Marshal.Copy(code, 0, funcPtr, code.Length);
 
-            ReprotectAsExecutable(funcOffset, code.Length);
+                ReprotectAsExecutable(funcOffset, code.Length);
 
-            Add(funcOffset, code.Length, func.UnwindInfo);
+                Add(funcOffset, code.Length, func.UnwindInfo);
 
-            return funcPtr;
+                return funcPtr;
+            }
         }
 
         public void Unmap(IntPtr pointer)
         {
-            int funcOffset = (int)(pointer.ToInt64() - _jitRegion.Pointer.ToInt64());
+            lock (_lock)
+            {
+                int funcOffset = (int)(pointer.ToInt64() - _jitRegion.Pointer.ToInt64());
 
-            bool result = TryFind(funcOffset, out CacheEntry entry);
-            Debug.Assert(result);
+                bool result = TryFind(funcOffset, out CacheEntry entry);
+                Debug.Assert(result);
 
-            _cacheAllocator.Free(funcOffset, AlignCodeSize(entry.Size));
+                _cacheAllocator.Free(funcOffset, AlignCodeSize(entry.Size));
 
-            Remove(funcOffset);
+                Remove(funcOffset);
+            }
         }
 
         private void ReprotectAsWritable(int offset, int size)
@@ -141,17 +149,20 @@ namespace ARMeilleure.Translation.Cache
 
         public bool TryFind(int offset, out CacheEntry entry)
         {
-            int index = _cacheEntries.BinarySearch(new CacheEntry(offset, 0, default));
-
-            if (index < 0)
+            lock (_lock)
             {
-                index = ~index - 1;
-            }
+                int index = _cacheEntries.BinarySearch(new CacheEntry(offset, 0, default));
 
-            if (index >= 0)
-            {
-                entry = _cacheEntries[index];
-                return true;
+                if (index < 0)
+                {
+                    index = ~index - 1;
+                }
+
+                if (index >= 0)
+                {
+                    entry = _cacheEntries[index];
+                    return true;
+                }
             }
 
             entry = default;
@@ -160,8 +171,8 @@ namespace ARMeilleure.Translation.Cache
 
         public void Dispose()
         {
-            _jitRegion.Dispose();
             _jitUnwindWindows.Dispose();
+            _jitRegion.Dispose();
         }
     }
 }

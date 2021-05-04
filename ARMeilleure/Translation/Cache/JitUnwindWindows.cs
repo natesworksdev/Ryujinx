@@ -55,7 +55,7 @@ namespace ARMeilleure.Translation.Cache
 
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
         private static unsafe extern bool RtlDeleteFunctionTable(
-            RuntimeFunction* functionTable);
+            ulong tableIdentifier);
 
         private GetRuntimeFunctionCallback _getRuntimeFunctionCallback;
 
@@ -67,11 +67,13 @@ namespace ARMeilleure.Translation.Cache
 
         private bool disposedValue = false;
 
+        private ulong codeCachePtr;
+
         public JitUnwindWindows(IntPtr codeCachePointer, uint codeCacheLength, IntPtr workBufferPtr, JitCache jitCache)
         {
             _jitCache = jitCache;
 
-            ulong codeCachePtr = (ulong)codeCachePointer.ToInt64();
+            codeCachePtr = (ulong)codeCachePointer.ToInt64();
 
             _sizeOfRuntimeFunction = Marshal.SizeOf<RuntimeFunction>();
 
@@ -204,7 +206,7 @@ namespace ARMeilleure.Translation.Cache
                 unsafe
                 {
                     result = RtlDeleteFunctionTable(
-                        _runtimeFunction);
+                        (codeCachePtr | 3));
 
                     _runtimeFunction = null;
                     _unwindInfo = null;
