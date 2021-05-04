@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Audio.Backends.Common;
 using Ryujinx.Audio.Common;
+using Ryujinx.Common.Logging;
 using Ryujinx.Memory;
 using System;
 using System.Collections.Concurrent;
@@ -19,6 +20,8 @@ namespace Ryujinx.Audio.Backends.SDL2
         private uint _outputStream;
         private SDL_AudioCallback _callbackDelegate;
         private int _bytesPerFrame;
+        private uint _sampleCount;
+        private bool _started;
 
         public SDL2HardwareDeviceSession(SDL2HardwareDeviceDriver driver, IVirtualMemoryManager memoryManager, SampleFormat requestedSampleFormat, uint requestedSampleRate, uint requestedChannelCount) : base(memoryManager, requestedSampleFormat, requestedSampleRate, requestedChannelCount)
         {
@@ -28,18 +31,49 @@ namespace Ryujinx.Audio.Backends.SDL2
             _ringBuffer = new DynamicRingBuffer();
             _callbackDelegate = Update;
             _bytesPerFrame = BackendHelper.GetSampleSize(RequestedSampleFormat) * (int)RequestedChannelCount;
-
-            SetupOutputStream();
+            _sampleCount = uint.MaxValue;
+            _started = false;
         }
 
-        private void SetupOutputStream()
+        private void EnsureAudioStreamSetup(AudioBuffer buffer)
         {
-            _outputStream = SDL2HardwareDeviceDriver.OpenStream(RequestedSampleFormat, RequestedSampleRate, RequestedChannelCount, Constants.TargetSampleCount, _callbackDelegate);
+            bool needAudioSetup = _outputStream == 0 || ((uint)GetSampleCount(buffer) % _sampleCount) != 0;
+
+            if (needAudioSetup)
+            {
+                _sampleCount = Math.Max(Constants.TargetSampleCount, (uint)GetSampleCount(buffer));
+
+                uint newOutputStream = SDL2HardwareDeviceDriver.OpenStream(RequestedSampleFormat, RequestedSampleRate, RequestedChannelCount, _sampleCount, _callbackDelegate);
+
+                if (newOutputStream == 0)
+                {
+                    // No stream in place, this is unexpected.
+                    throw new InvalidOperationException($"OpenStream failed with error: \"{SDL_GetError()}\"");
+                }
+                else
+                {
+                    if (_outputStream != 0)
+                    {
+                        SDL_CloseAudioDevice(_outputStream);
+                    }
+
+                    _outputStream = newOutputStream;
+
+                    SDL_PauseAudioDevice(_outputStream, _started ? 0 : 1);
+
+                    Logger.Info?.Print(LogClass.Audio, $"New audio stream setup with a target sample count of {_sampleCount}");
+                }
+            }
         }
 
         public override bool RegisterBuffer(AudioBuffer buffer, byte[] samples)
         {
             bool isValid = base.RegisterBuffer(buffer, samples);
+
+            if (isValid)
+            {
+                EnsureAudioStreamSetup(buffer);
+            }
 
             return isValid;
         }
@@ -128,12 +162,28 @@ namespace Ryujinx.Audio.Backends.SDL2
 
         public override void Start()
         {
-            SDL_PauseAudioDevice(_outputStream, 0);
+            if (!_started)
+            {
+                if (_outputStream != 0)
+                {
+                    SDL_PauseAudioDevice(_outputStream, 0);
+                }
+
+                _started = true;
+            }
         }
 
         public override void Stop()
         {
-            SDL_PauseAudioDevice(_outputStream, 1);
+            if (_started)
+            {
+                if (_outputStream != 0)
+                {
+                    SDL_PauseAudioDevice(_outputStream, 1);
+                }
+
+                _started = false;
+            }
         }
 
         public override void UnregisterBuffer(AudioBuffer buffer) { }
@@ -155,7 +205,10 @@ namespace Ryujinx.Audio.Backends.SDL2
                 PrepareToClose();
                 Stop();
 
-                SDL_CloseAudioDevice(_outputStream);
+                if (_outputStream != 0)
+                {
+                    SDL_CloseAudioDevice(_outputStream);
+                }
 
                 _driver.Unregister(this);
             }
