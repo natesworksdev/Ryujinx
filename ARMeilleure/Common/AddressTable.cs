@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ARMeilleure.Diagnostics.EventSources;
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
@@ -175,8 +176,8 @@ namespace ARMeilleure.Common
                     ref Level nextLevel = ref Levels[i + 1];
 
                     nextPage = i == Levels.Length - 2 ?
-                        (TEntry*)Allocate(1 << nextLevel.Length, Fill) :
-                        (TEntry*)Allocate(1 << nextLevel.Length, IntPtr.Zero);
+                        (TEntry*)Allocate(1 << nextLevel.Length, Fill, leaf: true) :
+                        (TEntry*)Allocate(1 << nextLevel.Length, IntPtr.Zero, leaf: false);
                 }
 
                 page = (TEntry**)nextPage;
@@ -193,7 +194,7 @@ namespace ARMeilleure.Common
         {
             if (_table == null)
             {
-                _table = (TEntry**)Allocate(1 << Levels[0].Length, fill: IntPtr.Zero);
+                _table = (TEntry**)Allocate(1 << Levels[0].Length, fill: IntPtr.Zero, leaf: false);
             }
 
             return _table;
@@ -205,15 +206,19 @@ namespace ARMeilleure.Common
         /// <typeparam name="T">Type of elements</typeparam>
         /// <param name="length">Number of elements</param>
         /// <param name="fill">Fill value</param>
+        /// <param name="leaf"><see langword="true"/> if leaf; otherwise <see langword=""="false"/></param>
         /// <returns>Allocated block</returns>
-        private IntPtr Allocate<T>(int length, T fill) where T : unmanaged
+        private IntPtr Allocate<T>(int length, T fill, bool leaf) where T : unmanaged
         {
-            var page = Marshal.AllocHGlobal(sizeof(T) * length);
+            var size = sizeof(T) * length;
+            var page = Marshal.AllocHGlobal(size);
             var span = new Span<T>((void*)page, length);
 
             span.Fill(fill);
 
             _pages.Add(page);
+
+            AddressTableEventSource.Log.Allocated(size, leaf);
 
             return page;
         }
