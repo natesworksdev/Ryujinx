@@ -1728,16 +1728,22 @@ namespace ARMeilleure.Instructions
         {
             //For now, this is only used in VCVT instruction which wants to round towards zero so we need to truncate
             float real = MathF.Truncate(value * MathF.Pow(2, fbits));
-            int result = (real < Int32.MinValue) ? Int32.MinValue : (real > Int32.MaxValue) ? Int32.MaxValue : (int)real;
-            return result;
+            if (float.IsNaN(real))
+            {
+                return 0;
+            }
+            return (real < Int32.MinValue) ? Int32.MinValue : (real > Int32.MaxValue) ? Int32.MaxValue : (int)real;
         }
 
         public static uint FPToUFixed(float value, int fbits)
         {
             //For now, this is only used in VCVT instruction which wants to round towards zero so we need to truncate
             float real = MathF.Truncate(value * MathF.Pow(2, fbits));
-            uint result = (real < UInt32.MinValue) ? UInt32.MinValue : (real > UInt32.MaxValue) ? UInt32.MaxValue : (uint)real;
-            return result;
+            if (float.IsNaN(real))
+            {
+                return 0;
+            }
+            return (real < UInt32.MinValue) ? UInt32.MinValue : (real > UInt32.MaxValue) ? UInt32.MaxValue : (uint)real;
         }
 
         public static float SFixedToFP(int value, int fbits)
