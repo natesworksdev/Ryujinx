@@ -113,10 +113,10 @@ namespace Ryujinx.Audio.Backends.SDL2
                 ulong sampleStillNeeded = driverBuffer.SampleCount - Interlocked.Read(ref driverBuffer.SamplePlayed);
                 ulong playedAudioBufferSampleCount = Math.Min(sampleStillNeeded, availaibleSampleCount);
 
-                Interlocked.Add(ref driverBuffer.SamplePlayed, playedAudioBufferSampleCount);
+                ulong currentSamplePlayed = Interlocked.Add(ref driverBuffer.SamplePlayed, playedAudioBufferSampleCount);
                 availaibleSampleCount -= playedAudioBufferSampleCount;
 
-                if (Interlocked.Read(ref driverBuffer.SamplePlayed) == driverBuffer.SampleCount)
+                if (currentSamplePlayed == driverBuffer.SampleCount)
                 {
                     _queuedBuffers.TryDequeue(out _);
 
