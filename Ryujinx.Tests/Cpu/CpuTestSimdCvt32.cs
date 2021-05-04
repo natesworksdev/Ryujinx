@@ -263,10 +263,10 @@ namespace Ryujinx.Tests.Cpu
         [Test, Pairwise, Description("VCVT.U32.F32 <Vd>, <Vm>, #<fbits>")]
         public void Vcvt_V2_Q1_F32_U32([Values(0u, 2u, 4u, 8u)] uint vd,
                            [Values(0u, 2u, 4u, 8u)] uint vm,
-                           [Values] [Random(RndCnt)] float s0,
-                           [Values] [Random(RndCnt)] float s1,
-                           [Values] [Random(RndCnt)] float s2,
-                           [Values] [Random(RndCnt)] float s3,
+                           [ValueSource(nameof(_1S_F_))] [Random(RndCnt)] ulong s0,
+                           [ValueSource(nameof(_1S_F_))] [Random(RndCnt)] ulong s1,
+                           [ValueSource(nameof(_1S_F_))] [Random(RndCnt)] ulong s2,
+                           [ValueSource(nameof(_1S_F_))] [Random(RndCnt)] ulong s3,
                            [Random(32u, 63u, 1)] uint fixImm)
         {
             //op = 1, u = 1, q = 1
@@ -317,10 +317,10 @@ namespace Ryujinx.Tests.Cpu
         [Test, Pairwise, Description("VCVT.U32.F32 <Vd>, <Vm>, #<fbits>")]
         public void Vcvt_V2_Q1_F32_S32([Values(0u, 2u, 4u, 8u)] uint vd,
                            [Values(0u, 2u, 4u, 8u)] uint vm,
-                           [Values] [Random(RndCnt)] float s0,
-                           [Values] [Random(RndCnt)] float s1,
-                           [Values] [Random(RndCnt)] float s2,
-                           [Values] [Random(RndCnt)] float s3,
+                           [ValueSource(nameof(_1S_F_))] [Random(RndCnt)] ulong s0,
+                           [ValueSource(nameof(_1S_F_))] [Random(RndCnt)] ulong s1,
+                           [ValueSource(nameof(_1S_F_))] [Random(RndCnt)] ulong s2,
+                           [ValueSource(nameof(_1S_F_))] [Random(RndCnt)] ulong s3,
                            [Random(32u, 63u, 1)] uint fixImm)
         {
             //op = 1, u = 0, q = 1
@@ -344,10 +344,10 @@ namespace Ryujinx.Tests.Cpu
         [Test, Pairwise, Description("VCVT.F32.U32 <Vd>, <Vm>, #<fbits>")]
         public void Vcvt_V2_Q1_S32_F32([Values(0u, 2u, 4u, 8u)] uint vd,
                            [Values(0u, 2u, 4u, 8u)] uint vm,
-                           [Values] [Random(RndCnt)] int s0,
-                           [Values] [Random(RndCnt)] int s1,
-                           [Values] [Random(RndCnt)] int s2,
-                           [Values] [Random(RndCnt)] int s3,
+                           [ValueSource(nameof(_1S_))] [Random(RndCnt)] uint s0,
+                           [ValueSource(nameof(_1S_))] [Random(RndCnt)] uint s1,
+                           [ValueSource(nameof(_1S_))] [Random(RndCnt)] uint s2,
+                           [ValueSource(nameof(_1S_))] [Random(RndCnt)] uint s3,
                            [Range(32u, 63u, 1)] uint fixImm)
         {
             //op = 0, u = 0, q = 1

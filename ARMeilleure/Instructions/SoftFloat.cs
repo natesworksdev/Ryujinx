@@ -1727,14 +1727,16 @@ namespace ARMeilleure.Instructions
         public static int FPToSFixed(float value, int fbits)
         {
             //For now, this is only used in VCVT instruction which wants to round towards zero so we need to truncate
-            int result = (int)MathF.Truncate(value * MathF.Pow(2, fbits));
+            float real = MathF.Truncate(value * MathF.Pow(2, fbits));
+            int result = (real < Int32.MinValue) ? Int32.MinValue : (real > Int32.MaxValue) ? Int32.MaxValue : (int)real;
             return result;
         }
 
         public static uint FPToUFixed(float value, int fbits)
         {
             //For now, this is only used in VCVT instruction which wants to round towards zero so we need to truncate
-            uint result = unchecked((uint)MathF.Truncate(value * MathF.Pow(2, fbits)));
+            float real = MathF.Truncate(value * MathF.Pow(2, fbits));
+            uint result = (real < UInt32.MinValue) ? UInt32.MinValue : (real > UInt32.MaxValue) ? UInt32.MaxValue : (uint)real;
             return result;
         }
 
