@@ -1,4 +1,5 @@
-﻿using ARMeilleure.State;
+﻿using ARMeilleure;
+using ARMeilleure.State;
 using ARMeilleure.Translation;
 using NUnit.Framework;
 using Ryujinx.Cpu;
@@ -57,6 +58,10 @@ namespace Ryujinx.Tests.Cpu
             Translator.IsReadyForTranslation.Set();
 
             _cpuContext = new CpuContext(_memory, for64Bit: false);
+
+            // Prevent LCQ functions in the FunctionTable to avoid initializing and populating the table, which reduces
+            // test durations.
+            Optimizations.AllowLcqInFunctionTable = false;
 
             if (_unicornAvailable)
             {

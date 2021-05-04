@@ -245,7 +245,7 @@ namespace ARMeilleure.Translation
             ulong guestAddress,
             TranslatedFunction func)
         {
-            if (funcTable.IsValid(guestAddress))
+            if (funcTable.IsValid(guestAddress) && (Optimizations.AllowLcqInFunctionTable || func.HighCq))
             {
                 Volatile.Write(ref funcTable.GetValue(guestAddress), JitCache.Offset(func.FuncPtr));
             }
