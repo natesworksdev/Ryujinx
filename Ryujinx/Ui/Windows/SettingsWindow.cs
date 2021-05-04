@@ -333,13 +333,13 @@ namespace Ryujinx.Ui.Windows
 
             bool openAlIsSupported  = false;
             bool soundIoIsSupported = false;
-            bool sdl2IsSupported = false;
+            bool sdl2IsSupported    = false;
 
             Task.Run(() =>
             {
                 openAlIsSupported  = OpenALHardwareDeviceDriver.IsSupported;
                 soundIoIsSupported = SoundIoHardwareDeviceDriver.IsSupported;
-                sdl2IsSupported = SDL2HardwareDeviceDriver.IsSupported;
+                sdl2IsSupported    = SDL2HardwareDeviceDriver.IsSupported;
             });
 
             // This function runs whenever the dropdown is opened
@@ -349,7 +349,7 @@ namespace Ryujinx.Ui.Windows
                 {
                     AudioBackend.OpenAl  => openAlIsSupported,
                     AudioBackend.SoundIo => soundIoIsSupported,
-                    AudioBackend.SDL2 => sdl2IsSupported,
+                    AudioBackend.SDL2    => sdl2IsSupported,
                     AudioBackend.Dummy   => true,
                     _ => throw new ArgumentOutOfRangeException()
                 };

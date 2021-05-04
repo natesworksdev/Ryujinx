@@ -4,6 +4,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Memory;
 using System;
 using System.Collections.Concurrent;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 using static SDL2.SDL;
@@ -22,6 +23,8 @@ namespace Ryujinx.Audio.Backends.SDL2
         private int _bytesPerFrame;
         private uint _sampleCount;
         private bool _started;
+        private float _volume;
+        private ushort _nativeSampleFormat;
 
         public SDL2HardwareDeviceSession(SDL2HardwareDeviceDriver driver, IVirtualMemoryManager memoryManager, SampleFormat requestedSampleFormat, uint requestedSampleRate, uint requestedChannelCount) : base(memoryManager, requestedSampleFormat, requestedSampleRate, requestedChannelCount)
         {
@@ -31,8 +34,10 @@ namespace Ryujinx.Audio.Backends.SDL2
             _ringBuffer = new DynamicRingBuffer();
             _callbackDelegate = Update;
             _bytesPerFrame = BackendHelper.GetSampleSize(RequestedSampleFormat) * (int)RequestedChannelCount;
+            _nativeSampleFormat = SDL2HardwareDeviceDriver.GetSDL2Format(RequestedSampleFormat);
             _sampleCount = uint.MaxValue;
             _started = false;
+            _volume = 1.0f;
         }
 
         private void EnsureAudioStreamSetup(AudioBuffer buffer)
@@ -78,6 +83,10 @@ namespace Ryujinx.Audio.Backends.SDL2
             return isValid;
         }
 
+        // TODO: Add this variant with pointer to SDL2-CS.
+        [DllImport("SDL2", EntryPoint = "SDL_MixAudioFormat", CallingConvention = CallingConvention.Cdecl)]
+        private static extern unsafe uint SDL_MixAudioFormat(IntPtr dst, IntPtr src, ushort format, uint len, int volume);
+
         private unsafe void Update(IntPtr userdata, IntPtr stream, int streamLength)
         {
             Span<byte> streamSpan = new Span<byte>((void*)stream, streamLength);
@@ -101,6 +110,9 @@ namespace Ryujinx.Audio.Backends.SDL2
 
             samples.AsSpan().CopyTo(streamSpan);
             streamSpan.Slice(samples.Length).Fill(0);
+
+            // Apply volume to written data
+            SDL_MixAudioFormat(stream, stream, _nativeSampleFormat, (uint)samples.Length, (int)(_volume * SDL_MIX_MAXVOLUME));
 
             ulong sampleCount = GetSampleCount(samples.Length);
 
@@ -140,8 +152,7 @@ namespace Ryujinx.Audio.Backends.SDL2
 
         public override float GetVolume()
         {
-            // TODO
-            return 1.0f;
+            return _volume;
         }
 
         public override void PrepareToClose() { }
@@ -157,7 +168,7 @@ namespace Ryujinx.Audio.Backends.SDL2
 
         public override void SetVolume(float volume)
         {
-            // TODO
+            _volume = volume;
         }
 
         public override void Start()
