@@ -1,4 +1,5 @@
-﻿using Ryujinx.Audio.Common;
+﻿using Ryujinx.Audio.Backends.Common;
+using Ryujinx.Audio.Common;
 using Ryujinx.Audio.Integration;
 using Ryujinx.Memory;
 using Ryujinx.SDL2.Common;
@@ -31,7 +32,7 @@ namespace Ryujinx.Audio.Backends.SDL2
 
         private static bool IsSupportedInternal()
         {
-            uint device = OpenStream(SampleFormat.PcmInt16, Constants.TargetSampleRate, Constants.ChannelCountMax, null);
+            uint device = OpenStream(SampleFormat.PcmInt16, Constants.TargetSampleRate, Constants.ChannelCountMax, Constants.TargetSampleCount, null);
 
             if (device != 0)
             {
@@ -81,13 +82,14 @@ namespace Ryujinx.Audio.Backends.SDL2
             }
         }
 
-        private static SDL_AudioSpec GetSDL2Spec(SampleFormat requestedSampleFormat, uint requestedSampleRate, uint requestedChannelCount)
+        private static SDL_AudioSpec GetSDL2Spec(SampleFormat requestedSampleFormat, uint requestedSampleRate, uint requestedChannelCount, uint sampleCount)
         {
             return new SDL_AudioSpec
             {
                 channels = (byte)requestedChannelCount,
                 format = GetSDL2Format(requestedSampleFormat),
                 freq = (int)requestedSampleRate,
+                samples = (ushort)sampleCount
             };
         }
 
@@ -113,9 +115,9 @@ namespace Ryujinx.Audio.Backends.SDL2
             uint allowed_changes
         );
 
-        internal static uint OpenStream(SampleFormat requestedSampleFormat, uint requestedSampleRate, uint requestedChannelCount, SDL_AudioCallback callback)
+        internal static uint OpenStream(SampleFormat requestedSampleFormat, uint requestedSampleRate, uint requestedChannelCount, uint sampleCount, SDL_AudioCallback callback)
         {
-            SDL_AudioSpec desired = GetSDL2Spec(requestedSampleFormat, requestedSampleRate, requestedChannelCount);
+            SDL_AudioSpec desired = GetSDL2Spec(requestedSampleFormat, requestedSampleRate, requestedChannelCount, sampleCount);
 
             desired.callback = callback;
 

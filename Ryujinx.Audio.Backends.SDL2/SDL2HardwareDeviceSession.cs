@@ -18,6 +18,7 @@ namespace Ryujinx.Audio.Backends.SDL2
         private ManualResetEvent _updateRequiredEvent;
         private uint _outputStream;
         private SDL_AudioCallback _callbackDelegate;
+        private int _bytesPerFrame;
 
         public SDL2HardwareDeviceSession(SDL2HardwareDeviceDriver driver, IVirtualMemoryManager memoryManager, SampleFormat requestedSampleFormat, uint requestedSampleRate, uint requestedChannelCount) : base(memoryManager, requestedSampleFormat, requestedSampleRate, requestedChannelCount)
         {
@@ -26,26 +27,48 @@ namespace Ryujinx.Audio.Backends.SDL2
             _queuedBuffers = new ConcurrentQueue<SDL2AudioBuffer>();
             _ringBuffer = new DynamicRingBuffer();
             _callbackDelegate = Update;
+            _bytesPerFrame = BackendHelper.GetSampleSize(RequestedSampleFormat) * (int)RequestedChannelCount;
 
             SetupOutputStream();
         }
 
         private void SetupOutputStream()
         {
-            _outputStream = SDL2HardwareDeviceDriver.OpenStream(RequestedSampleFormat, RequestedSampleRate, RequestedChannelCount, _callbackDelegate);
+            _outputStream = SDL2HardwareDeviceDriver.OpenStream(RequestedSampleFormat, RequestedSampleRate, RequestedChannelCount, Constants.TargetSampleCount, _callbackDelegate);
         }
 
-        private unsafe void Update(IntPtr userdata, IntPtr stream, int len)
+        public override bool RegisterBuffer(AudioBuffer buffer, byte[] samples)
         {
-            Span<byte> streamSpan = new Span<byte>((void*)stream, len);
+            bool isValid = base.RegisterBuffer(buffer, samples);
 
-            byte[] samples = new byte[len];
+            return isValid;
+        }
+
+        private unsafe void Update(IntPtr userdata, IntPtr stream, int streamLength)
+        {
+            Span<byte> streamSpan = new Span<byte>((void*)stream, streamLength);
+
+            int maxFrameCount = (int)GetSampleCount(streamLength);
+            int bufferedFrames = _ringBuffer.Length / _bytesPerFrame;
+
+            int frameCount = Math.Min(bufferedFrames, maxFrameCount);
+
+            if (frameCount == 0)
+            {
+                // SDL2 left the responsability to the user to clear the buffer.
+                streamSpan.Fill(0);
+
+                return;
+            }
+
+            byte[] samples = new byte[frameCount * _bytesPerFrame];
 
             _ringBuffer.Read(samples, 0, samples.Length);
 
             samples.AsSpan().CopyTo(streamSpan);
+            streamSpan.Slice(samples.Length).Fill(0);
 
-            ulong sampleCount = GetSampleCount(len);
+            ulong sampleCount = GetSampleCount(samples.Length);
 
             ulong availaibleSampleCount = sampleCount;
 
