@@ -14,7 +14,7 @@ namespace Ryujinx.Graphics.Nvdec.H264
 
         public FFmpegContext()
         {
-            _logFunc = Logging;
+            _logFunc = Log;
 
             // Redirect log output
             ffmpeg.av_log_set_level(ffmpeg.AV_LOG_MAX_OFFSET);
@@ -28,7 +28,7 @@ namespace Ryujinx.Graphics.Nvdec.H264
             _packet = ffmpeg.av_packet_alloc();
         }
 
-        private void Logging(void* p0, int level, string format, byte* vl)
+        private void Log(void* p0, int level, string format, byte* vl)
         {
             if (level > ffmpeg.av_log_get_level())
             {
