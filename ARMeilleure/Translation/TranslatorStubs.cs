@@ -81,11 +81,6 @@ namespace ARMeilleure.Translation
         /// <exception cref="ArgumentNullException"><paramref name="translator"/> is null</exception>
         public TranslatorStubs(Translator translator)
         {
-            if (translator == null)
-            {
-                throw new ArgumentNullException(nameof(translator));
-            }
-
             _translator = translator ?? throw new ArgumentNullException(nameof(translator));
             _dispatchStub = new(GenerateDispatchStub, isThreadSafe: true);
             _dispatchLoop = new(GenerateDispatchLoop, isThreadSafe: true);
