@@ -93,7 +93,7 @@ namespace Ryujinx.Audio.Backends.SDL2
             };
         }
 
-        public static ushort GetSDL2Format(SampleFormat format)
+        internal static ushort GetSDL2Format(SampleFormat format)
         {
             return format switch
             {
