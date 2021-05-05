@@ -59,9 +59,10 @@ namespace Ryujinx.Tests.Cpu
 
             _cpuContext = new CpuContext(_memory, for64Bit: false);
 
-            // Prevent LCQ functions in the FunctionTable to avoid initializing and populating the table, which reduces
-            // test durations.
+            // Prevent registering LCQ functions in the FunctionTable to avoid initializing and populating the table,
+            // which improves test durations.
             Optimizations.AllowLcqInFunctionTable = false;
+            Optimizations.UseUnmanagedDispatchLoop = false;
 
             if (_unicornAvailable)
             {

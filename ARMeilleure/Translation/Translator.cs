@@ -178,11 +178,18 @@ namespace ARMeilleure.Translation
 
             NativeInterface.RegisterThread(context, _memory, this);
 
-            do
+            if (Optimizations.UseUnmanagedDispatchLoop)
             {
-                address = ExecuteSingle(context, address);
+                Stubs.DispatchLoop(context.NativeContextPtr, address);
             }
-            while (context.Running && address != 0);
+            else
+            {
+                do
+                {
+                    address = ExecuteSingle(context, address);
+                }
+                while (context.Running && address != 0);
+            }
 
             NativeInterface.UnregisterThread();
 

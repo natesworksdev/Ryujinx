@@ -6,7 +6,8 @@ namespace ARMeilleure
     {
         public static bool FastFP { get; set; } = true;
 
-        public static bool AllowLcqInFunctionTable { get; set; } = true;
+        public static bool AllowLcqInFunctionTable  { get; set; } = true;
+        public static bool UseUnmanagedDispatchLoop { get; set; } = true;
 
         public static bool UseSseIfAvailable       { get; set; } = true;
         public static bool UseSse2IfAvailable      { get; set; } = true;
