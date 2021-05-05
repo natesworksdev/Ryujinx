@@ -7,8 +7,6 @@ namespace Ryujinx.Graphics.Nvdec.H264
 {
     unsafe class FFmpegContext : IDisposable
     {
-        private delegate av_log_set_callback_callback_func LoggingDelegate(void* p0, int level, string format, byte* vl);
-
         private readonly av_log_set_callback_callback _logFunc;
         private readonly AVCodec* _codec;
         private AVPacket* _packet;
