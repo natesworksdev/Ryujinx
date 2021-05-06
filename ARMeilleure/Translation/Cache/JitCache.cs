@@ -22,7 +22,7 @@ namespace ARMeilleure.Translation.Cache
 
         private readonly List<CacheEntry> _cacheEntries = new List<CacheEntry>();
 
-        private JitUnwindWindows _jitUnwindWindows;
+        private JitUnwindWindows _jitUnwindWindows = null;
 
         private readonly object _lock = new object();
 
@@ -171,7 +171,7 @@ namespace ARMeilleure.Translation.Cache
 
         public void Dispose()
         {
-            _jitUnwindWindows.Dispose();
+            _jitUnwindWindows?.Dispose();
             _jitRegion.Dispose();
         }
     }
