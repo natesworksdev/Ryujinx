@@ -1,0 +1,142 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:flex="clr-namespace:Avalonia.Flexbox;assembly=Avalonia.Flexbox"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
+             xmlns:controls="clr-namespace:Ryujinx.Ava.Ui.Controls"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Ryujinx.Ava.Ui.Controls.GameGridView">
+    <UserControl.Resources>
+        <controls:BitmapArrayValueConverter x:Key="ByteImage" />
+        <ContextMenu x:Key="GameContextMenu" MenuOpened="MenuBase_OnMenuOpened">
+            <MenuItem
+                Command="{Binding ToggleFavorite}"
+                Header="{locale:Locale GameListContextMenuToggleFavorite}"
+                ToolTip.Tip="{locale:Locale GameListContextMenuToggleFavoriteToolTip}" />
+            <Separator />
+            <MenuItem
+                Command="{Binding OpenUserSaveDirectory}"
+                Header="{locale:Locale GameListContextMenuOpenUserSaveDirectory}"
+                ToolTip.Tip="{locale:Locale GameListContextMenuOpenUserSaveDirectoryToolTip}" />
+            <MenuItem
+                Command="{Binding OpenDeviceSaveDirectory}"
+                Header="{locale:Locale GameListContextMenuOpenUserDeviceDirectory}"
+                ToolTip.Tip="{locale:Locale GameListContextMenuOpenUserDeviceDirectoryToolTip}" />
+            <MenuItem
+                Command="{Binding OpenBcatSaveDirectory}"
+                Header="{locale:Locale GameListContextMenuOpenUserBcatDirectory}"
+                ToolTip.Tip="{locale:Locale GameListContextMenuOpenUserBcatDirectoryToolTip}" />
+            <Separator />
+            <MenuItem
+                Command="{Binding OpenTitleUpdateManager}"
+                Header="{locale:Locale GameListContextMenuManageTitleUpdates}"
+                ToolTip.Tip="{locale:Locale GameListContextMenuManageTitleUpdatesToolTip}" />
+            <MenuItem
+                Command="{Binding OpenDlcManager}"
+                Header="{locale:Locale GameListContextMenuManageDlc}"
+                ToolTip.Tip="{locale:Locale GameListContextMenuManageDlcToolTip}" />
+            <MenuItem
+                Command="{Binding OpenModsDirectory}"
+                Header="{locale:Locale GameListContextMenuOpenModsDirectory}"
+                ToolTip.Tip="{locale:Locale GameListContextMenuOpenModsDirectoryToolTip}" />
+            <Separator />
+            <MenuItem Header="{locale:Locale GameListContextMenuCacheManagement}">
+                <MenuItem
+                    Command="{Binding PurgePtcCache}"
+                    Header="{locale:Locale GameListContextMenuCacheManagementPurgePptc}"
+                    ToolTip.Tip="{locale:Locale GameListContextMenuCacheManagementPurgePptcToolTip}" />
+                <MenuItem
+                    Command="{Binding PurgeShaderCache}"
+                    Header="{locale:Locale GameListContextMenuCacheManagementPurgeShaderCache}"
+                    ToolTip.Tip="{locale:Locale GameListContextMenuCacheManagementPurgeShaderCacheToolTip}" />
+                <MenuItem
+                    Command="{Binding OpenPtcDirectory}"
+                    Header="{locale:Locale GameListContextMenuCacheManagementOpenPptcDirectory}"
+                    ToolTip.Tip="{locale:Locale GameListContextMenuCacheManagementOpenPptcDirectoryToolTip}" />
+                <MenuItem
+                    Command="{Binding OpenShaderCacheDirectory}"
+                    Header="{locale:Locale GameListContextMenuCacheManagementOpenShaderCacheDirectory}"
+                    ToolTip.Tip="{locale:Locale GameListContextMenuCacheManagementOpenShaderCacheDirectoryToolTip}" />
+            </MenuItem>
+            <MenuItem Header="{locale:Locale GameListContextMenuExtractData}">
+                <MenuItem
+                    Command="{Binding ExtractExeFs}"
+                    Header="{locale:Locale GameListContextMenuExtractDataExeFS}"
+                    ToolTip.Tip="{locale:Locale GameListContextMenuExtractDataExeFSToolTip}" />
+                <MenuItem
+                    Command="{Binding ExtractRomFs}"
+                    Header="{locale:Locale GameListContextMenuExtractDataRomFS}"
+                    ToolTip.Tip="{locale:Locale GameListContextMenuExtractDataRomFSToolTip}" />
+                <MenuItem
+                    Command="{Binding ExtractLogo}"
+                    Header="{locale:Locale GameListContextMenuExtractDataLogo}"
+                    ToolTip.Tip="{locale:Locale GameListContextMenuExtractDataLogoToolTip}" />
+            </MenuItem>
+        </ContextMenu>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <ListBox Grid.Row="0"
+                 Padding="8"
+                 HorizontalAlignment="Stretch"
+                 DoubleTapped="GameList_DoubleTapped"
+                 SelectionChanged="GameList_SelectionChanged"
+                 ContextMenu="{StaticResource GameContextMenu}"
+                 VerticalAlignment="Stretch"
+                 Items="{Binding AppsObservableList}">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <flex:FlexPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch" JustifyContent="Center"
+                                    AlignContent="FlexStart" />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.Styles>
+                <Style Selector="ListBoxItem">
+                    <Setter Property="Padding" Value="0" />
+                    <Setter Property="Margin" Value="5" />
+                    <Setter Property="CornerRadius" Value="5" />
+                    <Setter Property="Background" Value="{DynamicResource SystemAccentColorDark3}" />
+                </Style>
+            </ListBox.Styles>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Border
+                            Classes.small="{Binding $parent[UserControl].DataContext.IsGridSmall}"
+                            Classes.normal="{Binding $parent[UserControl].DataContext.IsGridNormal}"
+                            Classes.large="{Binding $parent[UserControl].DataContext.IsGridLarge}"
+                            Classes.huge="{Binding $parent[UserControl].DataContext.IsGridHuge}"
+                            HorizontalAlignment="Stretch"
+                            Padding="{Binding $parent[UserControl].DataContext.GridItemPadding}" CornerRadius="5"
+                            VerticalAlignment="Stretch" Margin="0" ClipToBounds="True">
+                            <Grid Margin="0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Image HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="0" Grid.Row="0"
+                                       Source="{Binding Icon, Converter={StaticResource ByteImage}}" />
+                                <StackPanel IsVisible="{Binding $parent[UserControl].DataContext.ShowNames}"
+                                            Height="50" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                            Margin="5" Grid.Row="1">
+                                    <TextBlock Text="{Binding TitleName}" TextAlignment="Center" TextWrapping="Wrap"
+                                               HorizontalAlignment="Stretch" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                        <Image Classes.small="{Binding $parent[UserControl].DataContext.IsGridSmall}"
+                               Classes.normal="{Binding $parent[UserControl].DataContext.IsGridNormal}"
+                               Classes.large="{Binding $parent[UserControl].DataContext.IsGridLarge}"
+                               Classes.huge="{Binding $parent[UserControl].DataContext.IsGridHuge}"
+                               Source="resm:Ryujinx.Ava.Assets.Images.star.png"
+                               IsVisible="{Binding Favorite}" Margin="5" VerticalAlignment="Bottom"
+                               HorizontalAlignment="Right" />
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</UserControl>

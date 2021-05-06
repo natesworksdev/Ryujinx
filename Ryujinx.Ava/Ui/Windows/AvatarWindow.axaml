@@ -1,0 +1,47 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="350"
+        x:Class="Ryujinx.Ava.Ui.Windows.AvatarWindow"
+        CanResize="False"
+        xmlns:Locale="clr-namespace:Ryujinx.Ava.Common.Locale"
+        xmlns:viewModels="clr-namespace:Ryujinx.Ava.Ui.ViewModels"
+        xmlns:controls="clr-namespace:Ryujinx.Ava.Ui.Controls"
+        WindowStartupLocation="CenterOwner"
+        SizeToContent="WidthAndHeight">
+    <Design.DataContext>
+        <viewModels:AvatarProfileViewModel />
+    </Design.DataContext>
+    <Window.Resources>
+        <controls:BitmapArrayValueConverter x:Key="ByteImage" />
+    </Window.Resources>
+    <Grid Margin="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <ListBox BorderThickness="0" SelectedIndex="{Binding SelectedIndex}" Width="600" Height="500"
+                 Items="{Binding Images}" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal" MaxWidth="600" Margin="0" HorizontalAlignment="Center" />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Image Margin="5" Height="96" Width="96"
+                           Source="{Binding Value, Converter={StaticResource ByteImage}}" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="10" Margin="10" HorizontalAlignment="Center">
+            <Button Content="{Locale:Locale AvatarChoose}" Width="200" Name="ChooseButton" Click="ChooseButton_OnClick" />
+            <Button Content="{Locale:Locale AvatarSetBackgroundColor}" Width="200" Name="ColorButton"
+                    Click="ColorButton_OnClick" />
+            <Button HorizontalAlignment="Right" Content="{Locale:Locale AvatarClose}" Click="CloseButton_OnClick"
+                    Name="CloseButton"
+                    Width="200" />
+        </StackPanel>
+    </Grid>
+</Window>

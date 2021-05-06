@@ -1,0 +1,747 @@
+<window:StyleableWindow
+    x:Class="Ryujinx.Ava.Ui.Windows.MainWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:ui="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
+    xmlns:controls="clr-namespace:Ryujinx.Ava.Ui.Controls"
+    xmlns:models="clr-namespace:Ryujinx.Ava.Ui.Models"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewModels="clr-namespace:Ryujinx.Ava.Ui.ViewModels"
+    xmlns:window="clr-namespace:Ryujinx.Ava.Ui.Windows"
+    Title="Ryujinx"
+    Height="785"
+    Width="1280"
+    d:DesignHeight="720"
+    d:DesignWidth="1280"
+    MinWidth="1024"
+    MinHeight="680"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d">
+    <Window.Styles>
+        <Style Selector="TitleBar:fullscreen">
+            <Setter Property="Background" Value="#000000" />
+        </Style>
+    </Window.Styles>
+    <Design.DataContext>
+        <viewModels:MainWindowViewModel />
+    </Design.DataContext>
+    <Window.Resources>
+        <controls:BitmapArrayValueConverter x:Key="ByteImage" />
+        <models:TimePlayedSortComparer x:Key="TimePlayedComparer" />
+        <models:LastPlayedSortComparer x:Key="LastPlayedComparer" />
+        <models:FileSizeSortComparer x:Key="FileSizeComparer" />
+        <ContextMenu x:Key="GameContextMenu" MenuOpened="MenuBase_OnMenuOpened">
+            <MenuItem
+                Command="{Binding ToggleFavorite}"
+                Header="{locale:Locale GameListContextMenuToggleFavorite}"
+                ToolTip.Tip="{locale:Locale GameListContextMenuToggleFavoriteToolTip}" />
+            <Separator />
+            <MenuItem
+                Command="{Binding OpenUserSaveDirectory}"
+                Header="{locale:Locale GameListContextMenuOpenUserSaveDirectory}"
+                ToolTip.Tip="{locale:Locale GameListContextMenuOpenUserSaveDirectoryToolTip}" />
+            <MenuItem
+                Command="{Binding OpenDeviceSaveDirectory}"
+                Header="{locale:Locale GameListContextMenuOpenUserDeviceDirectory}"
+                ToolTip.Tip="{locale:Locale GameListContextMenuOpenUserDeviceDirectoryToolTip}" />
+            <MenuItem
+                Command="{Binding OpenBcatSaveDirectory}"
+                Header="{locale:Locale GameListContextMenuOpenUserBcatDirectory}"
+                ToolTip.Tip="{locale:Locale GameListContextMenuOpenUserBcatDirectoryToolTip}" />
+            <Separator />
+            <MenuItem
+                Command="{Binding OpenTitleUpdateManager}"
+                Header="{locale:Locale GameListContextMenuManageTitleUpdates}"
+                ToolTip.Tip="{locale:Locale GameListContextMenuManageTitleUpdatesToolTip}" />
+            <MenuItem
+                Command="{Binding OpenDlcManager}"
+                Header="{locale:Locale GameListContextMenuManageDlc}"
+                ToolTip.Tip="{locale:Locale GameListContextMenuManageDlcToolTip}" />
+            <MenuItem
+                Command="{Binding OpenModsDirectory}"
+                Header="{locale:Locale GameListContextMenuOpenModsDirectory}"
+                ToolTip.Tip="{locale:Locale GameListContextMenuOpenModsDirectoryToolTip}" />
+            <Separator />
+            <MenuItem Header="{locale:Locale GameListContextMenuCacheManagement}">
+                <MenuItem
+                    Command="{Binding PurgePtcCache}"
+                    Header="{locale:Locale GameListContextMenuCacheManagementPurgePptc}"
+                    ToolTip.Tip="{locale:Locale GameListContextMenuCacheManagementPurgePptcToolTip}" />
+                <MenuItem
+                    Command="{Binding PurgeShaderCache}"
+                    Header="{locale:Locale GameListContextMenuCacheManagementPurgeShaderCache}"
+                    ToolTip.Tip="{locale:Locale GameListContextMenuCacheManagementPurgeShaderCacheToolTip}" />
+                <MenuItem
+                    Command="{Binding OpenPtcDirectory}"
+                    Header="{locale:Locale GameListContextMenuCacheManagementOpenPptcDirectory}"
+                    ToolTip.Tip="{locale:Locale GameListContextMenuCacheManagementOpenPptcDirectoryToolTip}" />
+                <MenuItem
+                    Command="{Binding OpenShaderCacheDirectory}"
+                    Header="{locale:Locale GameListContextMenuCacheManagementOpenShaderCacheDirectory}"
+                    ToolTip.Tip="{locale:Locale GameListContextMenuCacheManagementOpenShaderCacheDirectoryToolTip}" />
+            </MenuItem>
+            <MenuItem Header="{locale:Locale GameListContextMenuExtractData}">
+                <MenuItem
+                    Command="{Binding ExtractExeFs}"
+                    Header="{locale:Locale GameListContextMenuExtractDataExeFS}"
+                    ToolTip.Tip="{locale:Locale GameListContextMenuExtractDataExeFSToolTip}" />
+                <MenuItem
+                    Command="{Binding ExtractRomFs}"
+                    Header="{locale:Locale GameListContextMenuExtractDataRomFS}"
+                    ToolTip.Tip="{locale:Locale GameListContextMenuExtractDataRomFSToolTip}" />
+                <MenuItem
+                    Command="{Binding ExtractLogo}"
+                    Header="{locale:Locale GameListContextMenuExtractDataLogo}"
+                    ToolTip.Tip="{locale:Locale GameListContextMenuExtractDataLogoToolTip}" />
+            </MenuItem>
+        </ContextMenu>
+    </Window.Resources>
+    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <controls:OffscreenTextBox Name="HiddenTextBox" />
+        <ContentControl
+            Focusable="False"
+            IsVisible="False"
+            KeyboardNavigation.IsTabStop="False">
+            <ui:ContentDialog Name="ContentDialog"
+                              KeyboardNavigation.IsTabStop="False"
+                              IsPrimaryButtonEnabled="True"
+                              IsSecondaryButtonEnabled="True"
+                              IsVisible="True" />
+        </ContentControl>
+        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <StackPanel
+                Grid.Row="0"
+                Margin="0"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                IsVisible="{Binding ShowMenuAndStatusBar}"
+                Orientation="Vertical">
+                <DockPanel HorizontalAlignment="Stretch">
+                    <Menu
+                        Name="Menu"
+                        Margin="0"
+                        Height="35"
+                        HorizontalAlignment="Left">
+                        <Menu.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <DockPanel HorizontalAlignment="Stretch" Margin="0" />
+                            </ItemsPanelTemplate>
+                        </Menu.ItemsPanel>
+                        <MenuItem
+                            VerticalAlignment="Center"
+                            Header="{locale:Locale MenuBarFile}">
+                            <MenuItem IsEnabled="{Binding EnableNonGameRunningControls}" Command="{Binding OpenFile}"
+                                      Header="{locale:Locale MenuBarFileOpenFromFile}"
+                                      ToolTip.Tip="{locale:Locale LoadApplicationFileTooltip}" />
+                            <MenuItem IsEnabled="{Binding EnableNonGameRunningControls}" Command="{Binding OpenFolder}"
+                                      Header="{locale:Locale MenuBarFileOpenUnpacked}"
+                                      ToolTip.Tip="{locale:Locale LoadApplicationFolderTooltip}" />
+                            <MenuItem Header="{locale:Locale MenuBarFileOpenApplet}"
+                                      IsEnabled="{Binding IsAppletMenuActive}">
+                                <MenuItem Command="{Binding OpenMiiApplet}" Header="Mii Edit Applet"
+                                          ToolTip.Tip="{locale:Locale MenuBarFileOpenAppletOpenMiiAppletToolTip}" />
+                            </MenuItem>
+                            <Separator />
+                            <MenuItem Command="{Binding OpenRyujinxFolder}"
+                                      Header="{locale:Locale MenuBarFileOpenEmuFolder}"
+                                      ToolTip.Tip="{locale:Locale OpenRyujinxFolderTooltip}" />
+                            <MenuItem Command="{Binding OpenLogsFolder}"
+                                      Header="{locale:Locale MenuBarFileOpenLogsFolder}"
+                                      ToolTip.Tip="{locale:Locale OpenRyujinxLogsTooltip}" />
+                            <Separator />
+                            <MenuItem Command="{Binding CloseWindow}" Header="{locale:Locale MenuBarFileExit}"
+                                      ToolTip.Tip="{locale:Locale ExitTooltip}" />
+                        </MenuItem>
+                        <MenuItem
+                            VerticalAlignment="Center"
+                            Header="{locale:Locale MenuBarOptions}">
+                            <MenuItem Command="{Binding ToggleFullscreen}"
+                                      Header="{locale:Locale MenuBarOptionsToggleFullscreen}" InputGesture="F11" />
+                            <MenuItem Header="{locale:Locale MenuBarOptionsStartGamesInFullscreen}">
+                                <MenuItem.Icon>
+                                    <CheckBox Margin="0" IsChecked="{Binding StartGamesInFullscreen, Mode=TwoWay}" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <Separator />
+                            <MenuItem Header="{locale:Locale MenuBarOptionsChangeLanguage}">
+                                <MenuItem Command="{Binding ChangeLanguage}" CommandParameter="en_US"
+                                          Header="American English" />
+                                <MenuItem Command="{Binding ChangeLanguage}" CommandParameter="fr_FR" Header="French" />
+                                <MenuItem Command="{Binding ChangeLanguage}" CommandParameter="pt_BR"
+                                          Header="Brazilian Portuguese" />
+                            </MenuItem>
+                            <Separator />
+                            <MenuItem Command="{Binding OpenSettings}" Header="{locale:Locale MenuBarOptionsSettings}"
+                                      ToolTip.Tip="{locale:Locale OpenSettingsTooltip}" />
+                            <MenuItem Command="{Binding ManageProfiles}"
+                                      IsEnabled="{Binding EnableNonGameRunningControls}"
+                                      Header="{locale:Locale MenuBarOptionsManageUserProfiles}"
+                                      ToolTip.Tip="{locale:Locale OpenProfileManagerTooltip}" />
+                        </MenuItem>
+                        <MenuItem
+                            VerticalAlignment="Center"
+                            Header="{locale:Locale MenuBarActions}"
+                            IsEnabled="{Binding IsGameRunning}">
+                            <MenuItem
+                                Click="PauseEmulation_Click"
+                                Header="{locale:Locale MenuBarOptionsPauseEmulation}"
+                                IsEnabled="{Binding !IsPaused}"
+                                IsVisible="{Binding !IsPaused}"
+                                InputGesture="{Binding PauseKey}" />
+                            <MenuItem
+                                Click="ResumeEmulation_Click"
+                                Header="{locale:Locale MenuBarOptionsResumeEmulation}"
+                                IsEnabled="{Binding IsPaused}"
+                                IsVisible="{Binding IsPaused}"
+                                InputGesture="{Binding PauseKey}" />
+                            <MenuItem
+                                Click="StopEmulation_Click"
+                                Header="{locale:Locale MenuBarOptionsStopEmulation}"
+                                ToolTip.Tip="{locale:Locale StopEmulationTooltip}"
+                                IsEnabled="{Binding IsGameRunning}" InputGesture="Escape" />
+                            <MenuItem Command="{Binding SimulateWakeUpMessage}"
+                                      Header="{locale:Locale MenuBarOptionsSimulateWakeUpMessage}" />
+                            <Separator />
+                            <MenuItem
+                                Name="ScanAmiiboMenuItem"
+                                AttachedToVisualTree="ScanAmiiboMenuItem_AttachedToVisualTree"
+                                Command="{Binding OpenAmiiboWindow}"
+                                Header="{locale:Locale MenuBarActionsScanAmiibo}"
+                                IsEnabled="{Binding IsAmiiboRequested}" />
+                            <MenuItem Command="{Binding TakeScreenshot}"
+                                      IsEnabled="{Binding IsGameRunning}"
+                                      Header="{locale:Locale MenuBarFileToolsTakeScreenshot}"
+                                      InputGesture="{Binding ScreenshotKey}" />
+                            <MenuItem Command="{Binding HideUi}"
+                                      IsEnabled="{Binding IsGameRunning}"
+                                      Header="{locale:Locale MenuBarFileToolsHideUi}"
+                                      InputGesture="{Binding ShowUiKey}" />
+                        </MenuItem>
+                        <MenuItem
+                            VerticalAlignment="Center"
+                            Header="{locale:Locale MenuBarTools}">
+                            <MenuItem Header="{locale:Locale MenuBarToolsInstallFirmware}"
+                                      IsEnabled="{Binding EnableNonGameRunningControls}">
+                                <MenuItem Command="{Binding InstallFirmwareFromFile}"
+                                          Header="{locale:Locale MenuBarFileToolsInstallFirmwareFromFile}" />
+                                <MenuItem Command="{Binding InstallFirmwareFromFolder}"
+                                          Header="{locale:Locale MenuBarFileToolsInstallFirmwareFromDirectory}" />
+                            </MenuItem>
+                        </MenuItem>
+                        <MenuItem
+                            VerticalAlignment="Center"
+                            Header="{locale:Locale MenuBarHelp}">
+                            <MenuItem
+                                Name="UpdateMenuItem"
+                                Command="{Binding CheckForUpdates}"
+                                Header="{locale:Locale MenuBarHelpCheckForUpdates}"
+                                ToolTip.Tip="{locale:Locale CheckUpdatesTooltip}" />
+                            <Separator />
+                            <MenuItem Command="{Binding OpenAboutWindow}" Header="{locale:Locale MenuBarHelpAbout}"
+                                      ToolTip.Tip="{locale:Locale OpenAboutTooltip}" />
+                        </MenuItem>
+                    </Menu>
+                </DockPanel>
+            </StackPanel>
+            <ContentControl
+                Name="Content"
+                Grid.Row="1"
+                Padding="0"
+                IsVisible="{Binding ShowContent}"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                BorderBrush="{DynamicResource ThemeControlBorderColor}"
+                BorderThickness="0,0,0,0"
+                DockPanel.Dock="Top">
+                <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <DockPanel Grid.Row="0" HorizontalAlignment="Stretch" Margin="0,0,0,5">
+                        <Button
+                            IsEnabled="{Binding IsGrid}" VerticalAlignment="Stretch" MinWidth="40" Width="40"
+                            Margin="5,2,0,2" Command="{Binding SetListMode}">
+                            <ui:FontIcon FontFamily="avares://FluentAvalonia/Fonts#Symbols"
+                                         VerticalAlignment="Center"
+                                         Margin="0"
+                                         Glyph="{controls:GlyphValueConverter List}"
+                                         HorizontalAlignment="Stretch" />
+                        </Button>
+                        <Button
+                            IsEnabled="{Binding IsList}" VerticalAlignment="Stretch" MinWidth="40" Width="40"
+                            Margin="5,2,5,2" Command="{Binding SetGridMode}">
+                            <ui:FontIcon FontFamily="avares://FluentAvalonia/Fonts#Symbols"
+                                         VerticalAlignment="Center"
+                                         Margin="0"
+                                         Glyph="{controls:GlyphValueConverter Grid}"
+                                         HorizontalAlignment="Stretch" />
+                        </Button>
+                        <TextBlock IsVisible="{Binding IsGrid}" Text="{locale:Locale GridSize}"
+                                   VerticalAlignment="Center" Margin="10,0"
+                                   ToolTip.Tip="{locale:Locale GridSizeTooltip}" />
+                        <Slider IsVisible="{Binding IsGrid}" Width="150" Margin="5,-10,5 ,0" Height="40"
+                                VerticalAlignment="Center" Minimum="1" Maximum="4" IsSnapToTickEnabled="True"
+                                TickFrequency="1" Value="{Binding GridSizeScale}" />
+                        <CheckBox IsChecked="{Binding ShowNames, Mode=TwoWay}" VerticalAlignment="Center"
+                                  IsVisible="{Binding IsGrid}">
+                            <TextBlock Text="{locale:Locale CommonShowNames}" Margin="5,3,0,0" />
+                        </CheckBox>
+                        <ui:DropDownButton IsVisible="{Binding IsList}"
+                                           Content="{locale:Locale MenuBarOptionsEnableGuiColumns}"
+                                           ToolTip.Tip="{locale:Locale EnableGuiColumnTooltip}">
+                            <ui:DropDownButton.Flyout>
+                                <Flyout>
+                                    <StackPanel Orientation="Vertical" HorizontalAlignment="Right">
+                                        <CheckBox Margin="0" IsChecked="{Binding ShowIconColumn, Mode=TwoWay}">
+                                            <TextBlock Margin="0,3,0,0"
+                                                       Text="{locale:Locale MenuBarOptionsEnableGuiColumnIcon}" />
+                                        </CheckBox>
+                                        <CheckBox Margin="0" IsChecked="{Binding ShowTitleColumn, Mode=TwoWay}">
+                                            <TextBlock Margin="0,3,0,0"
+                                                       Text="{locale:Locale MenuBarOptionsEnableGuiColumnTitle}" />
+                                        </CheckBox>
+                                        <CheckBox Margin="0" IsChecked="{Binding ShowDeveloperColumn, Mode=TwoWay}">
+                                            <TextBlock Margin="0,3,0,0"
+                                                       Text="{locale:Locale MenuBarOptionsEnableGuiColumnDeveloper}" />
+                                        </CheckBox>
+                                        <CheckBox Margin="0" IsChecked="{Binding ShowVersionColumn, Mode=TwoWay}">
+                                            <TextBlock Margin="0,3,0,0"
+                                                       Text="{locale:Locale MenuBarOptionsEnableGuiColumnVersion}" />
+                                        </CheckBox>
+                                        <CheckBox Margin="0" IsChecked="{Binding  ShowTimePlayedColumn, Mode=TwoWay}">
+                                            <TextBlock Margin="0,3,0,0"
+                                                       Text="{locale:Locale MenuBarOptionsEnableGuiColumnTimePlayed}" />
+                                        </CheckBox>
+                                        <CheckBox Margin="0" IsChecked="{Binding ShowLastPlayedColumn, Mode=TwoWay}">
+                                            <TextBlock Margin="0,3,0,0"
+                                                       Text="{locale:Locale MenuBarOptionsEnableGuiColumnLastPlayed}" />
+                                        </CheckBox>
+                                        <CheckBox Margin="0" IsChecked="{Binding  ShowFileExtColumn, Mode=TwoWay}">
+                                            <TextBlock Margin="0,3,0,0"
+                                                       Text="{locale:Locale MenuBarOptionsEnableGuiColumnFileExtension}" />
+                                        </CheckBox>
+                                        <CheckBox Margin="0" IsChecked="{Binding  ShowFileSizeColumn, Mode=TwoWay}">
+                                            <TextBlock Margin="0,3,0,0"
+                                                       Text="{locale:Locale MenuBarOptionsEnableGuiColumnFileSize}" />
+                                        </CheckBox>
+                                        <CheckBox Margin="0" IsChecked="{Binding ShowFilePathColumn, Mode=TwoWay}">
+                                            <TextBlock Margin="0,3,0,0"
+                                                       Text="{locale:Locale MenuBarOptionsEnableGuiColumnPath}" />
+                                        </CheckBox>
+                                    </StackPanel>
+                                </Flyout>
+                            </ui:DropDownButton.Flyout>
+                        </ui:DropDownButton>
+                        <TextBox
+                            Name="SearchBox"
+                            DockPanel.Dock="Right"
+                            VerticalAlignment="Center"
+                            MinWidth="200"
+                            Margin="5,0,0,0"
+                            HorizontalAlignment="Right"
+                            KeyUp="SearchBox_OnKeyUp"
+                            Text="{Binding SearchText}"
+                            Watermark="{locale:Locale MenuSearch}" />
+                        <ui:DropDownButton DockPanel.Dock="Right" IsVisible="{Binding IsGrid}"
+                                           HorizontalAlignment="Right" Width="150" VerticalAlignment="Center"
+                                           Content="{Binding SortName}">
+                            <ui:DropDownButton.Flyout>
+                                <Flyout Placement="Bottom">
+                                    <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" Margin="0">
+                                        <StackPanel>
+                                            <RadioButton Tag="Favorite" IsChecked="True" GroupName="Sort"
+                                                         Content="{locale:Locale CommonFavorite}"
+                                                         Checked="Sort_Checked" />
+                                            <RadioButton Tag="Title" GroupName="Sort"
+                                                         Content="{locale:Locale GameListHeaderApplication}"
+                                                         Checked="Sort_Checked" />
+                                            <RadioButton Tag="Developer" GroupName="Sort"
+                                                         Content="{locale:Locale GameListHeaderDeveloper}"
+                                                         Checked="Sort_Checked" />
+                                            <RadioButton Tag="TotalTimePlayed" GroupName="Sort"
+                                                         Content="{locale:Locale GameListHeaderTimePlayed}"
+                                                         Checked="Sort_Checked" />
+                                            <RadioButton Tag="LastPlayed" GroupName="Sort"
+                                                         Content="{locale:Locale GameListHeaderLastPlayed}"
+                                                         Checked="Sort_Checked" />
+                                            <RadioButton Tag="FileType" GroupName="Sort"
+                                                         Content="{locale:Locale GameListHeaderFileExtension}"
+                                                         Checked="Sort_Checked" />
+                                            <RadioButton Tag="FileSize" GroupName="Sort"
+                                                         Content="{locale:Locale GameListHeaderFileSize}"
+                                                         Checked="Sort_Checked" />
+                                            <RadioButton Tag="Path" GroupName="Sort"
+                                                         Content="{locale:Locale GameListHeaderPath}"
+                                                         Checked="Sort_Checked" />
+                                        </StackPanel>
+                                        <Border HorizontalAlignment="Stretch" Margin="5" Height="2" BorderBrush="White"
+                                                Width="60" BorderThickness="0,1,0,0">
+                                            <Separator HorizontalAlignment="Stretch" Height="0" />
+                                        </Border>
+                                        <RadioButton Tag="Ascending" IsChecked="True" GroupName="Order"
+                                                     Content="{locale:Locale OrderAscending}" Checked="Order_Checked" />
+                                        <RadioButton Tag="Descending" GroupName="Order"
+                                                     Content="{locale:Locale OrderDescending}" Checked="Order_Checked" />
+                                    </StackPanel>
+                                </Flyout>
+                            </ui:DropDownButton.Flyout>
+                        </ui:DropDownButton>
+                        <TextBlock DockPanel.Dock="Right" HorizontalAlignment="Right" IsVisible="{Binding IsGrid}"
+                                   Text="{locale:Locale CommonSort}" VerticalAlignment="Center" Margin="10,0" />
+                    </DockPanel>
+                    <DataGrid
+                        Grid.Row="1"
+                        Name="GameList"
+                        AlternatingRowBackground="{DynamicResource ThemeAlternatingRowColor}"
+                        CanUserResizeColumns="True"
+                        CanUserSortColumns="True"
+                        DoubleTapped="GameList_OnDoubleTapped"
+                        IsReadOnly="True"
+                        IsVisible="{Binding IsList}"
+                        Items="{Binding AppsCollection}"
+                        PointerPressed="GameList_OnPointerPressed"
+                        RowBackground="{DynamicResource ThemeBackgroundColor}"
+                        SelectionMode="Single"
+                        Tapped="GameList_OnTapped"
+                        ContextMenu="{StaticResource GameContextMenu}">
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn SortMemberPath="Favorite">
+                                <DataGridTemplateColumn.Header>
+                                    <TextBlock Text="{locale:Locale GameListHeaderIcon}" />
+                                </DataGridTemplateColumn.Header>
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Grid>
+                                            <Image
+                                                Width="80"
+                                                Height="80"
+                                                Margin="15"
+                                                Source="{Binding Icon, Converter={StaticResource ByteImage}}" />
+                                            <ui:SymbolIcon Symbol="Star" UseFilled="True" Foreground="Yellow"
+                                                           IsVisible="{Binding Favorite}" Margin="10"
+                                                           VerticalAlignment="Top" HorizontalAlignment="Left" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Width="350" CellStyleClasses="Left"
+                                                    SortMemberPath="ApplicationName">
+                                <DataGridTemplateColumn.Header>
+                                    <TextBlock Text="{locale:Locale GameListHeaderApplication}" TextWrapping="Wrap" />
+                                </DataGridTemplateColumn.Header>
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Margin="15" Text="{Binding ApplicationName}"
+                                                   VerticalAlignment="Center"
+                                                   TextWrapping="Wrap" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Width="*" Binding="{Binding Developer}">
+                                <DataGridTextColumn.Header>
+                                    <TextBlock Text="{locale:Locale GameListHeaderDeveloper}" />
+                                </DataGridTextColumn.Header>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Width="0.5*" Binding="{Binding Version}">
+                                <DataGridTextColumn.Header>
+                                    <TextBlock Text="{locale:Locale GameListHeaderVersion}" />
+                                </DataGridTextColumn.Header>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Width="0.6*" CustomSortComparer="{StaticResource TimePlayedComparer}"
+                                                Binding="{Binding TimePlayed}">
+                                <DataGridTextColumn.Header>
+                                    <TextBlock Text="{locale:Locale GameListHeaderTimePlayed}" />
+                                </DataGridTextColumn.Header>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Width="*"
+                                                CustomSortComparer="{StaticResource  LastPlayedComparer}"
+                                                Binding="{Binding LastPlayed}">
+                                <DataGridTextColumn.Header>
+                                    <TextBlock Text="{locale:Locale GameListHeaderLastPlayed}" />
+                                </DataGridTextColumn.Header>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Width="80" Binding="{Binding FileExtension}">
+                                <DataGridTextColumn.Header>
+                                    <TextBlock Text="{locale:Locale GameListHeaderFileExtension}" />
+                                </DataGridTextColumn.Header>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Width="0.5*"
+                                                CustomSortComparer="{StaticResource  FileSizeComparer}"
+                                                Binding="{Binding FileSize}">
+                                <DataGridTextColumn.Header>
+                                    <TextBlock Text="{locale:Locale GameListHeaderFileSize}" />
+                                </DataGridTextColumn.Header>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Width="*" Binding="{Binding Path}">
+                                <DataGridTextColumn.Header>
+                                    <TextBlock Text="{locale:Locale GameListHeaderPath}" />
+                                </DataGridTextColumn.Header>
+                            </DataGridTextColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <controls:GameGridView
+                        x:Name="GameGrid"
+                        Grid.Row="1"
+                        HorizontalContentAlignment="Stretch"
+                        HorizontalAlignment="Stretch"
+                        VerticalContentAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        IsVisible="{Binding IsGrid}" />
+                </Grid>
+            </ContentControl>
+            <Grid
+                Grid.Row="1"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                Background="{DynamicResource ThemeContentBackgroundColor}"
+                IsVisible="{Binding ShowLoadProgress}"
+                ZIndex="1000">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="800" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Border
+                    Grid.Column="1"
+                    Width="256"
+                    Height="256"
+                    Margin="0,10,0,10"
+                    Padding="4"
+                    BorderBrush="Black"
+                    BorderThickness="2"
+                    BoxShadow="4 4 32 8 #40000000"
+                    CornerRadius="3">
+                    <Image
+                        Width="256"
+                        Height="256"
+                        Source="{Binding SelectedIcon, Converter={StaticResource ByteImage}}" />
+                </Border>
+                <Grid
+                    Grid.Column="2"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBlock
+                        Grid.Row="1"
+                        Margin="40,10,0,10"
+                        FontSize="30"
+                        FontWeight="Bold"
+                        Text="{Binding LoadHeading}"
+                        TextAlignment="Left" />
+                    <ProgressBar
+                        Grid.Row="2"
+                        Height="10"
+                        Margin="40,0,20,0"
+                        Background="{Binding ProgressBarBackgroundColor}"
+                        BorderBrush="White"
+                        BorderThickness="0.5"
+                        Foreground="{Binding ProgressBarForegroundColor}"
+                        Maximum="{Binding ProgressMaximum}"
+                        Minimum="0"
+                        IsIndeterminate="{Binding IsLoadingIndeterminate}"
+                        Value="{Binding ProgressValue}" />
+                    <TextBlock
+                        Grid.Row="3"
+                        Margin="40,10,0,10"
+                        FontSize="18"
+                        Text="{Binding CacheLoadStatus}"
+                        TextAlignment="Left" />
+                </Grid>
+            </Grid>
+            <Grid
+                Name="StatusBar"
+                Grid.Row="2"
+                Height="30"
+                Margin="0,0"
+                HorizontalAlignment="Stretch"
+                Background="{DynamicResource ThemeContentBackgroundColor}"
+                VerticalAlignment="Bottom"
+                DockPanel.Dock="Bottom"
+                IsVisible="{Binding ShowMenuAndStatusBar}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" IsVisible="{Binding EnableNonGameRunningControls}"
+                            VerticalAlignment="Center" Margin="10,0">
+                    <Grid Margin="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <Button
+                            Width="25"
+                            Height="25"
+                            MinWidth="0"
+                            Margin="0,0,5,0"
+                            VerticalAlignment="Center"
+                            Background="Transparent"
+                            Command="{Binding LoadApplications}">
+                            <ui:SymbolIcon Symbol="Refresh" Height="100" Width="50" />
+                        </Button>
+                        <TextBlock
+                            Name="LoadStatus"
+                            Grid.Column="1"
+                            Margin="0,0,5,0"
+                            VerticalAlignment="Center"
+                            IsVisible="{Binding EnableNonGameRunningControls}"
+                            Text="{locale:Locale StatusBarGamesLoaded}" />
+                        <ProgressBar
+                            Name="LoadProgressBar"
+                            Grid.Column="2"
+                            Height="10"
+                            Maximum="{Binding StatusBarProgressMaximum}"
+                            Value="{Binding StatusBarProgressValue}"
+                            VerticalAlignment="Center"
+                            Foreground="{DynamicResource HighlightColor}"
+                            IsVisible="{Binding EnableNonGameRunningControls}" />
+                    </Grid>
+                </StackPanel>
+                <StackPanel
+                    Grid.Column="1"
+                    Margin="10,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    IsVisible="{Binding IsGameRunning}"
+                    Orientation="Horizontal">
+                    <TextBlock
+                        Name="VsyncStatus"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Foreground="{Binding VsyncColor}"
+                        PointerReleased="VsyncStatus_PointerReleased"
+                        Margin="0,0,5,0"
+                        Text="VSync"
+                        TextAlignment="Left" />
+					<Border
+						Width="2"
+						Margin="2,0"
+						IsVisible="{Binding !ShowLoadProgress}"
+						BorderThickness="1"
+						Height="12"
+						BorderBrush="Gray"
+						/>
+                    <TextBlock
+                        Margin="5,0,5,0"
+                        Name="DockedStatus"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        PointerReleased="DockedStatus_PointerReleased"
+                        Text="{Binding DockedStatusText}"
+                        TextAlignment="Left" />
+					<Border
+						Width="2"
+						Margin="2,0"
+						IsVisible="{Binding !ShowLoadProgress}"
+						BorderThickness="1"
+						Height="12"
+						BorderBrush="Gray"
+						/>
+                    <TextBlock
+                        Margin="5,0,5,0"
+                        Name="AspectRatioStatus"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        PointerReleased="AspectRatioStatus_PointerReleased"
+                        Text="{Binding AspectRatioStatusText}"
+                        TextAlignment="Left" />
+					<Border
+						Width="2"
+						Margin="2,0"
+						IsVisible="{Binding !ShowLoadProgress}"
+						BorderThickness="1"
+						Height="12"
+						BorderBrush="Gray"
+						/>
+                    <TextBlock
+                        Margin="5,0,5,0"
+                        Name="VolumeStatus"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+						IsVisible="{Binding !ShowLoadProgress}"
+                        PointerReleased="VolumeStatus_PointerReleased"
+                        Text="{Binding VolumeStatusText}"
+                        TextAlignment="Left" />
+					<Border
+						Width="2"
+						Margin="2,0"
+						IsVisible="{Binding !ShowLoadProgress}"
+						BorderThickness="1"
+						Height="12"
+						BorderBrush="Gray"
+						/>
+                    <TextBlock
+                        Margin="5,0,5,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Text="{Binding GameStatusText}"
+                        TextAlignment="Left" />
+					<Border
+						Width="2"
+						IsVisible="{Binding !ShowLoadProgress}"
+						Margin="2,0"
+						BorderThickness="1"
+						Height="12"
+						BorderBrush="Gray"
+						/>
+                    <TextBlock
+                        Margin="5,0,5,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Text="{Binding FifoStatusText}"
+                        TextAlignment="Left" />
+					<Border
+						Width="2"
+						Margin="2,0"
+						IsVisible="{Binding !ShowLoadProgress}"
+						BorderThickness="1"
+						Height="12"
+						BorderBrush="Gray"
+						/>
+                    <TextBlock
+                        Margin="5,0,5,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Text="{Binding GpuStatusText}"
+                        TextAlignment="Left" />
+                </StackPanel>
+                <StackPanel VerticalAlignment="Center" IsVisible="{Binding ShowFirmwareStatus}" Grid.Column="3"
+                            Orientation="Horizontal" Margin="10, 0">
+                    <TextBlock
+                        Name="FirmwareStatus"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Margin="0"
+                        Text="{locale:Locale StatusBarSystemVersion}" />
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Grid>
+</window:StyleableWindow>
