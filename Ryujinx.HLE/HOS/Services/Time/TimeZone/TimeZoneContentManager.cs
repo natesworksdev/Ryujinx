@@ -47,18 +47,14 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             InitializeLocationNameCache();
         }
 
-        public string SanityCheckDeviceLocationName()
+        public string SanityCheckDeviceLocationName(string locationName)
         {
-            string locationName = ConfigurationState.Instance.System.TimeZone;
-
             if (IsLocationNameValid(locationName))
             {
                 return locationName;
             }
 
             Logger.Warning?.Print(LogClass.ServiceTime, $"Invalid device TimeZone {locationName}, switching back to UTC");
-
-            ConfigurationState.Instance.System.TimeZone.Value = "UTC";
 
             return "UTC";
         }
@@ -69,7 +65,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
             SteadyClockTimePoint timeZoneUpdatedTimePoint = timeManager.StandardSteadyClock.GetCurrentTimePoint(null);
 
-            string deviceLocationName = SanityCheckDeviceLocationName();
+            string deviceLocationName = SanityCheckDeviceLocationName(device.Configuration.TimeZone);
 
             ResultCode result = GetTimeZoneBinary(deviceLocationName, out Stream timeZoneBinaryStream, out LocalStorage ncaFile);
 
