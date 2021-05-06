@@ -14,16 +14,16 @@ namespace ARMeilleure.Diagnostics.EventSources
 
         public AddressTableEventSource()
         {
-            _sizeCounter = new PollingCounter("addr-tab-alloc", this, () => _size / 1024d)
+            _sizeCounter = new PollingCounter("addr-tab-alloc", this, () => _size / 1024d / 1024d)
             {
                 DisplayName = "AddressTable Total Bytes Allocated",
-                DisplayUnits = "KB"
+                DisplayUnits = "MB"
             };
 
-            _leafSizeCounter = new PollingCounter("addr-tab-leaf-alloc", this, () => _leafSize / 1024d)
+            _leafSizeCounter = new PollingCounter("addr-tab-leaf-alloc", this, () => _leafSize / 1024d / 1024d)
             {
                 DisplayName = "AddressTable Total Leaf Bytes Allocated",
-                DisplayUnits = "KB"
+                DisplayUnits = "MB"
             };
         }
 

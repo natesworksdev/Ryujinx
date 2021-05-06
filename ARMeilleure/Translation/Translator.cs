@@ -27,19 +27,21 @@ namespace ARMeilleure.Translation
         private static readonly AddressTable<uint>.Level[] Levels64Bit =
             new AddressTable<uint>.Level[]
             {
-                new(39,  9),
-                new(30,  9),
-                new(21,  9),
-                new( 2, 19)
+                new(31, 17),
+                new(23,  8),
+                new(15,  8),
+                new( 7,  8),
+                new( 2,  5)
             };
 
         private static readonly AddressTable<uint>.Level[] Levels32Bit =
             new AddressTable<uint>.Level[]
             {
-                new(39,  9),
-                new(30,  9),
-                new(21,  9),
-                new( 1, 20)
+                new(31, 17),
+                new(23,  8),
+                new(15,  8),
+                new( 7,  8),
+                new( 1,  6)
             };
 
         private readonly IJitMemoryAllocator _allocator;
