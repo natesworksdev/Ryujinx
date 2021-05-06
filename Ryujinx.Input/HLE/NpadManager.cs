@@ -1,7 +1,6 @@
 ﻿using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Common.Configuration.Hid.Keyboard;
-using Ryujinx.Configuration;
 using Ryujinx.HLE.HOS.Services.Hid;
 using System;
 using System.Collections.Generic;

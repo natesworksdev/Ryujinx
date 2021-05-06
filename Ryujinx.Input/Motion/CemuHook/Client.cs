@@ -4,7 +4,6 @@ using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Common.Configuration.Hid.Controller.Motion;
 using Ryujinx.Common.Logging;
-using Ryujinx.Configuration;
 using Ryujinx.Input.HLE;
 using Ryujinx.Input.Motion.CemuHook.Protocol;
 using System;
