@@ -166,11 +166,8 @@ namespace ARMeilleure.Translation
             }
 
             Operand hostAddress;
-
-            Operand offsetAddr = context.Add(page, context.ShiftLeft(index, Const(2)));
-            Operand offset = context.Load(OperandType.I32, offsetAddr);
-
-            hostAddress = context.Add(Const((long)JitCache.Base), context.ZeroExtend32(OperandType.I64, offset));
+            Operand hostAddressAddr = context.Add(page, context.ShiftLeft(index, Const(3)));
+            hostAddress = context.Load(OperandType.I64, hostAddressAddr);
             context.Tailcall(hostAddress, nativeContext);
 
             context.MarkLabel(lblFallback);

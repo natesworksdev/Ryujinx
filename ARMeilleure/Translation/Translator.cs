@@ -24,8 +24,8 @@ namespace ARMeilleure.Translation
 {
     public class Translator
     {
-        private static readonly AddressTable<uint>.Level[] Levels64Bit =
-            new AddressTable<uint>.Level[]
+        private static readonly AddressTable<ulong>.Level[] Levels64Bit =
+            new AddressTable<ulong>.Level[]
             {
                 new(31, 17),
                 new(23,  8),
@@ -34,8 +34,8 @@ namespace ARMeilleure.Translation
                 new( 2,  5)
             };
 
-        private static readonly AddressTable<uint>.Level[] Levels32Bit =
-            new AddressTable<uint>.Level[]
+        private static readonly AddressTable<ulong>.Level[] Levels32Bit =
+            new AddressTable<ulong>.Level[]
             {
                 new(31, 17),
                 new(23,  8),
@@ -55,7 +55,7 @@ namespace ARMeilleure.Translation
         private readonly AutoResetEvent _backgroundTranslatorEvent;
         private readonly ReaderWriterLock _backgroundTranslatorLock;
 
-        internal AddressTable<uint> FunctionTable { get; }
+        internal AddressTable<ulong> FunctionTable { get; }
         internal EntryTable<uint> CountTable { get; }
         internal TranslatorStubs Stubs { get; }
 
@@ -80,10 +80,10 @@ namespace ARMeilleure.Translation
             JitCache.Initialize(allocator);
 
             CountTable = new EntryTable<uint>();
-            FunctionTable = new AddressTable<uint>(for64Bits ? Levels64Bit : Levels32Bit);
+            FunctionTable = new AddressTable<ulong>(for64Bits ? Levels64Bit : Levels32Bit);
             Stubs = new TranslatorStubs(this);
 
-            FunctionTable.Fill = JitCache.Offset(Stubs.SlowDispatchStub);
+            FunctionTable.Fill = (ulong)Stubs.SlowDispatchStub;
 
             if (memory.Type.IsHostMapped())
             {
@@ -250,20 +250,20 @@ namespace ARMeilleure.Translation
         }
 
         internal static void RegisterFunction(
-            AddressTable<uint> funcTable,
+            AddressTable<ulong> funcTable,
             ulong guestAddress,
             TranslatedFunction func)
         {
             if (funcTable.IsValid(guestAddress) && (Optimizations.AllowLcqInFunctionTable || func.HighCq))
             {
-                Volatile.Write(ref funcTable.GetValue(guestAddress), JitCache.Offset(func.FuncPtr));
+                Volatile.Write(ref funcTable.GetValue(guestAddress), (ulong)func.FuncPtr);
             }
         }
 
         internal static TranslatedFunction Translate(
             IMemoryManager memory,
             EntryTable<uint> countTable,
-            AddressTable<uint> funcTable,
+            AddressTable<ulong> funcTable,
             TranslatorStubs stubs,
             ulong address,
             ExecutionMode mode,

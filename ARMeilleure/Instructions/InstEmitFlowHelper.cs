@@ -194,10 +194,8 @@ namespace ARMeilleure.Instructions
             {
                 var symbol = new Symbol(SymbolType.FunctionTable, guestAddress.Value);
 
-                Operand offsetAddr = Const(ref context.FunctionTable.GetValue(guestAddress.Value), symbol);
-                Operand offset = context.Load(OperandType.I32, offsetAddr);
-                Operand cacheBase = Const((long)JitCache.Base, Ptc.JitCacheSymbol);
-                hostAddress = context.Add(cacheBase, context.ZeroExtend32(OperandType.I64, offset));
+                Operand hostAddressAddr = Const(ref context.FunctionTable.GetValue(guestAddress.Value), symbol);
+                hostAddress = context.Load(OperandType.I64, hostAddressAddr);
             }
             else
             {
