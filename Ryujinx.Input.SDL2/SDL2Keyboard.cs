@@ -227,7 +227,7 @@ namespace Ryujinx.Input.SDL2
                     return SDL_Keymod.KMOD_LGUI;
                 case Key.WinRight:
                     return SDL_Keymod.KMOD_RGUI;
-                // NOTE: menu key isn't supproted by SDL2.
+                // NOTE: menu key isn't supported by SDL2.
                 case Key.Menu:
                 default:
                     return SDL_Keymod.KMOD_NONE;
