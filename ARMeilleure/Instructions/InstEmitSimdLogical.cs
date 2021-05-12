@@ -75,7 +75,7 @@ namespace ARMeilleure.Instructions
                 Operand imm = eSize switch {
                     16 => X86GetAllElements(context, (short)~op.Immediate),
                     32 => X86GetAllElements(context, (int)~op.Immediate),
-                    _ => throw new Exception()
+                    _ => throw new InvalidOperationException($"Invalid element size {eSize}.")
                 };
 
                 Operand res = context.AddIntrinsic(Intrinsic.X86Pand, d, imm);
@@ -314,7 +314,7 @@ namespace ARMeilleure.Instructions
                 Operand imm = eSize switch {
                     16 => X86GetAllElements(context, (short)op.Immediate),
                     32 => X86GetAllElements(context, (int)op.Immediate),
-                    _ => throw new Exception()
+                    _ => throw new InvalidOperationException($"Invalid element size {eSize}.")
                 };
 
                 Operand res = context.AddIntrinsic(Intrinsic.X86Por, d, imm);
