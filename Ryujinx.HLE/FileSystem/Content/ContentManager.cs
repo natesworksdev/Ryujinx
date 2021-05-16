@@ -261,7 +261,7 @@ namespace Ryujinx.HLE.FileSystem.Content
 
         public void ClearAocData() => _aocData.Clear();
 
-        public int GetAocCount() => _aocData.Where(e => e.Value.Enabled).Count();
+        public int GetAocCount() => _aocData.Count(e => e.Value.Enabled);
 
         public IList<ulong> GetAocTitleIds() => _aocData.Where(e => e.Value.Enabled).Select(e => e.Key).ToList();
 
