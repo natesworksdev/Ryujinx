@@ -264,9 +264,9 @@ namespace ARMeilleure.Translation
 
                 return true;
             }
-            else if (operand is { Kind: OperandKind.LocalVariable } && operand.AsInt32() > 0)
+            else if (operand is { Kind: OperandKind.LocalVariable } && operand.GetLocalNumber() > 0)
             {
-                result = RegisterConsts.TotalCount + operand.AsInt32() - 1;
+                result = RegisterConsts.TotalCount + operand.GetLocalNumber() - 1;
 
                 return true;
             }

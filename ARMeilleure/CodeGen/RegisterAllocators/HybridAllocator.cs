@@ -110,7 +110,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                         if (source.Kind == OperandKind.LocalVariable)
                         {
-                            locInfo[source.AsInt32() - 1].SetBlockIndex(block.Index);
+                            locInfo[source.GetLocalNumber() - 1].SetBlockIndex(block.Index);
                         }
                         else if (source.Kind == OperandKind.Memory)
                         {
@@ -118,12 +118,12 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                             if (memOp.BaseAddress != null)
                             {
-                                locInfo[memOp.BaseAddress.AsInt32() - 1].SetBlockIndex(block.Index);
+                                locInfo[memOp.BaseAddress.GetLocalNumber() - 1].SetBlockIndex(block.Index);
                             }
 
                             if (memOp.Index != null)
                             {
-                                locInfo[memOp.Index.AsInt32() - 1].SetBlockIndex(block.Index);
+                                locInfo[memOp.Index.GetLocalNumber() - 1].SetBlockIndex(block.Index);
                             }
                         }
                     }
@@ -138,7 +138,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                             if (!locVisited.Add(dest))
                             {
-                                info = locInfo[dest.AsInt32() - 1];
+                                info = locInfo[dest.GetLocalNumber() - 1];
                             }
                             else
                             {
@@ -199,7 +199,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                     void AllocateRegister(Operand source, MemoryOperand memOp, int srcIndex)
                     {
-                        LocalInfo info = locInfo[source.AsInt32() - 1];
+                        LocalInfo info = locInfo[source.GetLocalNumber() - 1];
 
                         info.UseCount++;
 
@@ -318,7 +318,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                             continue;
                         }
 
-                        LocalInfo info = locInfo[dest.AsInt32() - 1];
+                        LocalInfo info = locInfo[dest.GetLocalNumber() - 1];
 
                         if (info.UseCount == 0 && !info.PreAllocated)
                         {

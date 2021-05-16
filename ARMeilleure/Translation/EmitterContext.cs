@@ -237,7 +237,7 @@ namespace ARMeilleure.Translation
         public Operand Copy(Operand dest, Operand op1)
         {
             if (dest.Kind != OperandKind.Register &&
-                (dest.Kind != OperandKind.LocalVariable || dest.AsInt32() == 0))
+                (dest.Kind != OperandKind.LocalVariable || dest.GetLocalNumber() == 0))
             {
                 throw new ArgumentException($"Destination operand must be a Register or a numbered LocalVariable.");
             }
