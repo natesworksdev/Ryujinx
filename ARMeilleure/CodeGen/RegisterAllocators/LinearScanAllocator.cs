@@ -997,7 +997,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         {
             Node node = block.Operations.Last;
 
-            while (node != null && !(node is PhiNode))
+            while (node is not PhiNode)
             {
                 yield return node;
 
