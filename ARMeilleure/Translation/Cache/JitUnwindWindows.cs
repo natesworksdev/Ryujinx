@@ -54,8 +54,7 @@ namespace ARMeilleure.Translation.Cache
             string outOfProcessCallbackDll);
 
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
-        private static unsafe extern bool RtlDeleteFunctionTable(
-            ulong tableIdentifier);
+        private static unsafe extern bool RtlDeleteFunctionTable(ulong tableIdentifier);
 
         private GetRuntimeFunctionCallback _getRuntimeFunctionCallback;
 
@@ -205,8 +204,7 @@ namespace ARMeilleure.Translation.Cache
 
                 unsafe
                 {
-                    result = RtlDeleteFunctionTable(
-                        (codeCachePtr | 3));
+                    result = RtlDeleteFunctionTable((codeCachePtr | 3));
 
                     _runtimeFunction = null;
                     _unwindInfo = null;
