@@ -55,9 +55,9 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
 
             if (resultCode == ResultCode.Success)
             {
-                if (outEvent is AudioKernelEvent)
+                if (outEvent is AudioKernelEvent audioKernelEvent)
                 {
-                    systemEvent = ((AudioKernelEvent)outEvent).Event;
+                    systemEvent = audioKernelEvent.Event;
                 }
                 else
                 {
