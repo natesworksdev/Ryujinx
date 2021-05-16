@@ -163,7 +163,7 @@ namespace Ryujinx.Input.Motion.CemuHook
         {
             if (_clients.TryGetValue(clientId, out UdpClient _client))
             {
-                if (_client?.Client != null && _client.Client.Connected)
+                if (_client?.Client?.Connected ?? false)
                 {
                     try
                     {
