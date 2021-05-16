@@ -627,7 +627,7 @@ namespace Ryujinx.HLE.HOS
 
         internal void LoadCheats(ulong titleId, ProcessTamperInfo tamperInfo, TamperMachine tamperMachine)
         {
-            if (tamperInfo == null || tamperInfo.BuildIds == null || tamperInfo.CodeAddresses == null)
+            if (tamperInfo?.BuildIds == null || tamperInfo.CodeAddresses == null)
             {
                 Logger.Error?.Print(LogClass.ModLoader, "Unable to install cheat because the associated process is invalid");
 
