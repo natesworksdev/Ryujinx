@@ -311,10 +311,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
         public void EnsureArchiveUpToDate()
         {
             // First close previous opened instance if found.
-            if (_cacheArchive != null)
-            {
-                _cacheArchive.Dispose();
-            }
+            _cacheArchive?.Dispose();
 
             string archivePath = GetArchivePath();
 

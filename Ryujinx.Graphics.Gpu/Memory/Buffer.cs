@@ -201,10 +201,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="size">The size of the region</param>
         public void ClearModified(ulong address, ulong size)
         {
-            if (_modifiedRanges != null)
-            {
-                _modifiedRanges.Clear(address, size);
-            }
+            _modifiedRanges?.Clear(address, size);
         }
 
         /// <summary>

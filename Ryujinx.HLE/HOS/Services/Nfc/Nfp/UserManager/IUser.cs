@@ -70,10 +70,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
         {
             if (_state == State.Initialized)
             {
-                if (_cancelTokenSource != null)
-                {
-                    _cancelTokenSource.Cancel();
-                }
+                _cancelTokenSource?.Cancel();
 
                 // NOTE: All events are destroyed here.
                 context.Device.System.NfpDevices.Clear();
@@ -182,10 +179,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
                 return resultCode;
             }
 
-            if (_cancelTokenSource != null)
-            {
-                _cancelTokenSource.Cancel();
-            }
+            _cancelTokenSource?.Cancel();
 
             uint deviceHandle = (uint)context.RequestData.ReadUInt64();
 

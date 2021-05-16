@@ -85,15 +85,9 @@ namespace Ryujinx.Audio.Backends.SoundIo
             }
             finally
             {
-                if (stream != null)
-                {
-                    stream.Dispose();
-                }
+                stream?.Dispose();
 
-                if (context != null)
-                {
-                    context.Dispose();
-                }
+                context?.Dispose();
             }
         }
 

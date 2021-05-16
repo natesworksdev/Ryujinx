@@ -357,10 +357,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
                 currentThread.AddCpuTime(ticksDelta);
 
-                if (currentProcess != null)
-                {
-                    currentProcess.AddCpuTime(ticksDelta);
-                }
+                currentProcess?.AddCpuTime(ticksDelta);
 
                 LastContextSwitchTime = currentTicks;
 
@@ -622,10 +619,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             // Ensure that the idle thread is not blocked and can exit.
             lock (_idleInterruptEventLock)
             {
-                if (_idleInterruptEvent != null)
-                {
-                    _idleInterruptEvent.Set();
-                }
+                _idleInterruptEvent?.Set();
             }
         }
     }

@@ -1204,10 +1204,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         private void PrepareForDispatch()
         {
-            if (_unit0Texture != null)
-            {
-                _unit0Texture.Bind(0);
-            }
+            _unit0Texture?.Bind(0);
         }
 
         private void PreDraw()
@@ -1216,10 +1213,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             _vertexArray.Validate();
 
-            if (_unit0Texture != null)
-            {
-                _unit0Texture.Bind(0);
-            }
+            _unit0Texture?.Bind(0);
         }
 
         private void PostDraw()

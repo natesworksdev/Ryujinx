@@ -46,32 +46,17 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
         {
             writer.Write("(");
 
-            if (_params != null)
-            {
-                _params.Print(writer);
-            }
+            _params?.Print(writer);
 
             writer.Write(")");
 
-            if (_ret != null)
-            {
-                _ret.PrintRight(writer);
-            }
+            _ret?.PrintRight(writer);
 
-            if (_cv != null)
-            {
-                _cv.Print(writer);
-            }
+            _cv?.Print(writer);
 
-            if (_ref != null)
-            {
-                _ref.Print(writer);
-            }
+            _ref?.Print(writer);
 
-            if (_attrs != null)
-            {
-                _attrs.Print(writer);
-            }
+            _attrs?.Print(writer);
         }
     }
 }

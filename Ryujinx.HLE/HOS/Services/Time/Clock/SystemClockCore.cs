@@ -99,10 +99,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 
         public void RegisterOperationEvent(KWritableEvent writableEvent)
         {
-            if (_systemClockContextUpdateCallback != null)
-            {
-                _systemClockContextUpdateCallback.RegisterOperationEvent(writableEvent);
-            }
+            _systemClockContextUpdateCallback?.RegisterOperationEvent(writableEvent);
         }
 
         public ResultCode SetSystemClockContext(SystemClockContext context)

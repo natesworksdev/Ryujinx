@@ -1010,10 +1010,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
         private void SignalExit()
         {
-            if (ResourceLimit != null)
-            {
-                ResourceLimit.Release(LimitableResource.Memory, GetMemoryUsage());
-            }
+            ResourceLimit?.Release(LimitableResource.Memory, GetMemoryUsage());
 
             KernelContext.CriticalSection.Enter();
 

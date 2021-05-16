@@ -46,10 +46,7 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
             {
                 writer.Write(_dimensionString);
             }
-            else if (_dimensionExpression != null)
-            {
-                _dimensionExpression.Print(writer);
-            }
+            else _dimensionExpression?.Print(writer);
 
             writer.Write("]");
 
