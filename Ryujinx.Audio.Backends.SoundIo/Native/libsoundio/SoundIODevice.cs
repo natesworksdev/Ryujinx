@@ -25,9 +25,7 @@ namespace SoundIOSharp
 
         public override bool Equals(object other)
         {
-            var d = other as SoundIODevice;
-
-            return d != null && (this.handle == d.handle || Natives.soundio_device_equal (this.handle, d.handle));
+            return other is SoundIODevice d && (this.handle == d.handle || Natives.soundio_device_equal (this.handle, d.handle));
         }
 
         public override int GetHashCode()

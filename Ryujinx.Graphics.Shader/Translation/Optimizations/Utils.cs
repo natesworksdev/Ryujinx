@@ -10,9 +10,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             {
                 if (sourceBlock.Operations.Count > 0)
                 {
-                    Operation lastOp = sourceBlock.Operations.Last.Value as Operation;
-
-                    if (lastOp != null &&
+                    if (sourceBlock.Operations.Last.Value is Operation lastOp &&
                         ((sourceBlock.Next == block && lastOp.Inst == Instruction.BranchIfFalse) ||
                         (sourceBlock.Branch == block && lastOp.Inst == Instruction.BranchIfTrue)))
                     {
