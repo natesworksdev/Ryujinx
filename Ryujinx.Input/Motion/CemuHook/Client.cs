@@ -202,7 +202,7 @@ namespace Ryujinx.Input.Motion.CemuHook
         {
             if (_hosts.TryGetValue(clientId, out IPEndPoint endPoint) && _clients.TryGetValue(clientId, out UdpClient _client))
             {
-                if (_client?.Client != null && _client.Client.Connected)
+                if (_client?.Client?.Connected ?? false)
                 {
                     _client.Client.ReceiveTimeout = timeout;
 
