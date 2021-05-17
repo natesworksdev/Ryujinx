@@ -45,9 +45,6 @@ namespace ARMeilleure.Translation
             };
 
         private readonly IJitMemoryAllocator _allocator;
-        private readonly IMemoryManager _memory;
-
-        private readonly ConcurrentDictionary<ulong, TranslatedFunction> _funcs;
         private readonly ConcurrentQueue<KeyValuePair<ulong, TranslatedFunction>> _oldFuncs;
 
         private readonly ConcurrentDictionary<ulong, object> _backgroundSet;
@@ -55,9 +52,11 @@ namespace ARMeilleure.Translation
         private readonly AutoResetEvent _backgroundTranslatorEvent;
         private readonly ReaderWriterLock _backgroundTranslatorLock;
 
+        internal ConcurrentDictionary<ulong, TranslatedFunction> Functions { get; }
         internal AddressTable<ulong> FunctionTable { get; }
         internal EntryTable<uint> CountTable { get; }
         internal TranslatorStubs Stubs { get; }
+        internal IMemoryManager Memory { get; }
 
         private volatile int _threadCount;
 
@@ -67,9 +66,8 @@ namespace ARMeilleure.Translation
         public Translator(IJitMemoryAllocator allocator, IMemoryManager memory, bool for64Bits)
         {
             _allocator = allocator;
-            _memory = memory;
+            Memory = memory;
 
-            _funcs = new ConcurrentDictionary<ulong, TranslatedFunction>();
             _oldFuncs = new ConcurrentQueue<KeyValuePair<ulong, TranslatedFunction>>();
 
             _backgroundSet = new ConcurrentDictionary<ulong, object>();
@@ -80,6 +78,7 @@ namespace ARMeilleure.Translation
             JitCache.Initialize(allocator);
 
             CountTable = new EntryTable<uint>();
+            Functions = new ConcurrentDictionary<ulong, TranslatedFunction>();
             FunctionTable = new AddressTable<ulong>(for64Bits ? Levels64Bit : Levels32Bit);
             Stubs = new TranslatorStubs(this);
 
@@ -100,16 +99,9 @@ namespace ARMeilleure.Translation
                 if (_backgroundStack.TryPop(out RejitRequest request) && 
                     _backgroundSet.TryRemove(request.Address, out _))
                 {
-                    TranslatedFunction func = Translate(
-                        _memory,
-                        CountTable,
-                        FunctionTable,
-                        Stubs,
-                        request.Address,
-                        request.Mode,
-                        highCq: true);
+                    TranslatedFunction func = Translate(request.Address, request.Mode, highCq: true);
 
-                    _funcs.AddOrUpdate(request.Address, func, (key, oldFunc) =>
+                    Functions.AddOrUpdate(request.Address, func, (key, oldFunc) =>
                     {
                         EnqueueForDeletion(key, oldFunc);
                         return func;
@@ -120,7 +112,7 @@ namespace ARMeilleure.Translation
                         PtcProfiler.UpdateEntry(request.Address, request.Mode, highCq: true);
                     }
 
-                    RegisterFunction(FunctionTable, request.Address, func);
+                    RegisterFunction(request.Address, func);
 
                     _backgroundTranslatorLock.ReleaseReaderLock();
                 }
@@ -143,9 +135,9 @@ namespace ARMeilleure.Translation
 
                 if (Ptc.State == PtcState.Enabled)
                 {
-                    Debug.Assert(_funcs.Count == 0);
-                    Ptc.LoadTranslations(_funcs, _memory, CountTable, FunctionTable, Stubs);
-                    Ptc.MakeAndSaveTranslations(_funcs, _memory, CountTable, FunctionTable, Stubs);
+                    Debug.Assert(Functions.Count == 0);
+                    Ptc.LoadTranslations(this);
+                    Ptc.MakeAndSaveTranslations(this);
                 }
 
                 PtcProfiler.Start();
@@ -178,7 +170,7 @@ namespace ARMeilleure.Translation
 
             Statistics.InitializeTimer();
 
-            NativeInterface.RegisterThread(context, _memory, this);
+            NativeInterface.RegisterThread(context, Memory, this);
 
             if (Optimizations.UseUnmanagedDispatchLoop)
             {
@@ -226,11 +218,11 @@ namespace ARMeilleure.Translation
 
         internal TranslatedFunction GetOrTranslate(ulong address, ExecutionMode mode)
         {
-            if (!_funcs.TryGetValue(address, out TranslatedFunction func))
+            if (!Functions.TryGetValue(address, out TranslatedFunction func))
             {
-                func = Translate(_memory, CountTable, FunctionTable, Stubs, address, mode, highCq: false);
+                func = Translate(address, mode, highCq: false);
 
-                TranslatedFunction oldFunc = _funcs.GetOrAdd(address, func);
+                TranslatedFunction oldFunc = Functions.GetOrAdd(address, func);
 
                 if (oldFunc != func)
                 {
@@ -243,44 +235,34 @@ namespace ARMeilleure.Translation
                     PtcProfiler.AddEntry(address, mode, highCq: false);
                 }
 
-                RegisterFunction(FunctionTable, address, func);
+                RegisterFunction(address, func);
             }
 
             return func;
         }
 
-        internal static void RegisterFunction(
-            AddressTable<ulong> funcTable,
-            ulong guestAddress,
-            TranslatedFunction func)
+        internal void RegisterFunction(ulong guestAddress, TranslatedFunction func)
         {
-            if (funcTable.IsValid(guestAddress) && (Optimizations.AllowLcqInFunctionTable || func.HighCq))
+            if (FunctionTable.IsValid(guestAddress) && (Optimizations.AllowLcqInFunctionTable || func.HighCq))
             {
-                Volatile.Write(ref funcTable.GetValue(guestAddress), (ulong)func.FuncPtr);
+                Volatile.Write(ref FunctionTable.GetValue(guestAddress), (ulong)func.FuncPtr);
             }
         }
 
-        internal static TranslatedFunction Translate(
-            IMemoryManager memory,
-            EntryTable<uint> countTable,
-            AddressTable<ulong> funcTable,
-            TranslatorStubs stubs,
-            ulong address,
-            ExecutionMode mode,
-            bool highCq)
+        internal TranslatedFunction Translate(ulong address, ExecutionMode mode, bool highCq)
         {
             var context = new ArmEmitterContext(
-                memory,
-                countTable,
-                funcTable,
-                stubs,
+                Memory,
+                CountTable,
+                FunctionTable,
+                Stubs,
                 address,
                 highCq,
                 mode: Aarch32Mode.User);
 
             Logger.StartPass(PassName.Decoding);
 
-            Block[] blocks = Decoder.Decode(memory, address, mode, highCq, singleBlock: false);
+            Block[] blocks = Decoder.Decode(Memory, address, mode, highCq, singleBlock: false);
 
             Logger.EndPass(PassName.Decoding);
 
@@ -327,7 +309,7 @@ namespace ARMeilleure.Translation
 
                 ResetPool(highCq ? 1 : 0);
 
-                Hash128 hash = Ptc.ComputeHash(memory, address, funcSize);
+                Hash128 hash = Ptc.ComputeHash(Memory, address, funcSize);
 
                 Ptc.WriteInfoCodeRelocUnwindInfo(address, funcSize, hash, highCq, ptcInfo);
             }
@@ -526,14 +508,14 @@ namespace ARMeilleure.Translation
             // Ensure no attempt will be made to compile new functions due to rejit.
             ClearRejitQueue(allowRequeue: false);
 
-            foreach (var func in _funcs.Values)
+            foreach (var func in Functions.Values)
             {
                 JitCache.Unmap(func.FuncPtr);
 
                 func.CallCounter?.Dispose();
             }
 
-            _funcs.Clear();
+            Functions.Clear();
 
             while (_oldFuncs.TryDequeue(out var kv))
             {
@@ -551,7 +533,7 @@ namespace ARMeilleure.Translation
             {
                 while (_backgroundStack.TryPop(out var request))
                 {
-                    if (_funcs.TryGetValue(request.Address, out var func) && func.CallCounter != null)
+                    if (Functions.TryGetValue(request.Address, out var func) && func.CallCounter != null)
                     {
                         Volatile.Write(ref func.CallCounter.Value, 0);
                     }
