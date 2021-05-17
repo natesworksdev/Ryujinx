@@ -335,7 +335,7 @@ namespace Ryujinx.HLE.HOS
             IStorage    dataStorage = null;
             IFileSystem codeFs      = null;
 
-            if (!CheckUpdateValidity(_fileSystem, mainNca.Header.TitleId.ToString("x16"), _device.UserChannelPersistence.Index)
+            if (!CheckUpdateValidity(_device.Configuration.VirtualFileSystem, mainNca.Header.TitleId.ToString("x16"), _device.Configuration.UserChannelPersistence.Index)
                 && lastError < LoadErrorState.ChangedUpdate)
             {
                 return LoadErrorState.ChangedUpdate;
