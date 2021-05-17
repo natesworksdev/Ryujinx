@@ -45,17 +45,11 @@ namespace Ryujinx.HLE.HOS.Diagnostics.Demangler.Ast
         public override void PrintRight(TextWriter writer)
         {
             writer.Write("(");
-
             _params?.Print(writer);
-
             writer.Write(")");
-
             _ret?.PrintRight(writer);
-
             _cv?.Print(writer);
-
             _ref?.Print(writer);
-
             _attrs?.Print(writer);
         }
     }
