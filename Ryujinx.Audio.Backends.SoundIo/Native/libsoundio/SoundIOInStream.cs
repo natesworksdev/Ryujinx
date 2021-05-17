@@ -22,7 +22,9 @@ namespace SoundIOSharp
 
         public override bool Equals(object other)
         {
-            return other is SoundIOInStream d && (this.handle == d.handle);
+            var d = other as SoundIOInStream;
+
+            return d != null && (this.handle == d.handle);
         }
 
         public override int GetHashCode()

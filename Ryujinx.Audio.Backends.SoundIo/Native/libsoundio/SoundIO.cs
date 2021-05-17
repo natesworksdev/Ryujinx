@@ -32,7 +32,9 @@ namespace SoundIOSharp
 
         public override bool Equals(object other)
         {
-            return other is SoundIO d && this.handle == d.handle;
+            var d = other as SoundIO;
+
+            return d != null && this.handle == d.handle;
         }
 
         public override int GetHashCode()
