@@ -38,8 +38,7 @@ namespace ARMeilleure.Translation.PTC
 
         internal static readonly Symbol PageTableSymbol = new(SymbolType.Special, 1);
         internal static readonly Symbol CountTableSymbol = new(SymbolType.Special, 2);
-        internal static readonly Symbol JitCacheSymbol = new(SymbolType.Special, 3);
-        internal static readonly Symbol DispatchStubSymbol = new(SymbolType.Special, 4);
+        internal static readonly Symbol DispatchStubSymbol = new(SymbolType.Special, 3);
 
         private const byte FillingByte = 0x00;
         private const CompressionLevel SaveCompressionLevel = CompressionLevel.Fastest;
@@ -702,10 +701,6 @@ namespace ARMeilleure.Translation.PTC
                 else if (symbol == DispatchStubSymbol)
                 {
                     imm = stubs.DispatchStub;
-                }
-                else if (symbol == JitCacheSymbol)
-                {
-                    imm = JitCache.Base;
                 }
 
                 if (imm == null)
