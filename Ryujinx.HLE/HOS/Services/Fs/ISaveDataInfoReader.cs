@@ -12,18 +12,18 @@ namespace Ryujinx.HLE.HOS.Services.Fs
             _baseReader = baseReader;
         }
 
-        [Command(0)]
+        [CommandHipc(0)]
         // ReadSaveDataInfo() -> (u64, buffer<unknown, 6>)
         public ResultCode ReadSaveDataInfo(ServiceCtx context)
         {
-            long bufferPosition = context.Request.ReceiveBuff[0].Position;
-            long bufferLen      = context.Request.ReceiveBuff[0].Size;
+            ulong bufferPosition = context.Request.ReceiveBuff[0].Position;
+            ulong bufferLen      = context.Request.ReceiveBuff[0].Size;
 
             byte[] infoBuffer = new byte[bufferLen];
 
             Result result = _baseReader.Target.Read(out long readCount, infoBuffer);
 
-            context.Memory.Write((ulong)bufferPosition, infoBuffer);
+            context.Memory.Write(bufferPosition, infoBuffer);
             context.ResponseData.Write(readCount);
 
             return (ResultCode)result.Value;

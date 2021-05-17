@@ -1,8 +1,6 @@
 ﻿using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
 using Ryujinx.HLE.Utilities;
-using System.IO;
-using System.Reflection;
 using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
@@ -10,26 +8,24 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
     class ProfileServer
     {
         private UserProfile _profile;
-        private Stream      _profilePictureStream;
 
         public ProfileServer(UserProfile profile)
         {
-            _profile              = profile;
-            _profilePictureStream = Assembly.GetCallingAssembly().GetManifestResourceStream("Ryujinx.HLE.RyujinxProfileImage.jpg");
+            _profile = profile;
         }
 
         public ResultCode Get(ServiceCtx context)
         {
-            context.Response.PtrBuff[0] = context.Response.PtrBuff[0].WithSize(0x80L);
+            context.Response.PtrBuff[0] = context.Response.PtrBuff[0].WithSize(0x80UL);
 
-            long bufferPosition = context.Request.RecvListBuff[0].Position;
+            ulong bufferPosition = context.Request.RecvListBuff[0].Position;
 
             MemoryHelper.FillWithZeros(context.Memory, bufferPosition, 0x80);
 
             // TODO: Determine the struct.
-            context.Memory.Write((ulong)bufferPosition,           0); // Unknown
-            context.Memory.Write((ulong)bufferPosition + 4,       1); // Icon ID. 0 = Mii, the rest are character icon IDs.
-            context.Memory.Write((ulong)bufferPosition + 8, (byte)1); // Profile icon background color ID
+            context.Memory.Write(bufferPosition,           0); // Unknown
+            context.Memory.Write(bufferPosition + 4,       1); // Icon ID. 0 = Mii, the rest are character icon IDs.
+            context.Memory.Write(bufferPosition + 8, (byte)1); // Profile icon background color ID
             // 0x07 bytes - Unknown
             // 0x10 bytes - Some ID related to the Mii? All zeros when a character icon is used.
             // 0x60 bytes - Usually zeros?
@@ -54,35 +50,36 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
 
         public ResultCode GetImageSize(ServiceCtx context)
         {
-            context.ResponseData.Write(_profilePictureStream.Length);
+            context.ResponseData.Write(_profile.Image.Length);
 
             return ResultCode.Success;
         }
 
         public ResultCode LoadImage(ServiceCtx context)
         {
-            long bufferPosition = context.Request.ReceiveBuff[0].Position;
-            long bufferLen      = context.Request.ReceiveBuff[0].Size;
+            ulong bufferPosition = context.Request.ReceiveBuff[0].Position;
+            ulong bufferLen      = context.Request.ReceiveBuff[0].Size;
 
-            byte[] profilePictureData = new byte[bufferLen];
+            if ((ulong)_profile.Image.Length > bufferLen)
+            {
+                return ResultCode.InvalidBufferSize;
+            }
 
-            _profilePictureStream.Read(profilePictureData, 0, profilePictureData.Length);
+            context.Memory.Write(bufferPosition, _profile.Image);
 
-            context.Memory.Write((ulong)bufferPosition, profilePictureData);
-
-            context.ResponseData.Write(_profilePictureStream.Length);
+            context.ResponseData.Write(_profile.Image.Length);
 
             return ResultCode.Success;
         }
 
         public ResultCode Store(ServiceCtx context)
         {
-            long userDataPosition = context.Request.PtrBuff[0].Position;
-            long userDataSize     = context.Request.PtrBuff[0].Size;
+            ulong userDataPosition = context.Request.PtrBuff[0].Position;
+            ulong userDataSize     = context.Request.PtrBuff[0].Size;
 
             byte[] userData = new byte[userDataSize];
 
-            context.Memory.Read((ulong)userDataPosition, userData);
+            context.Memory.Read(userDataPosition, userData);
 
             // TODO: Read the nn::account::profile::ProfileBase and store everything in the savedata.
 
@@ -93,23 +90,23 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
 
         public ResultCode StoreWithImage(ServiceCtx context)
         {
-            long userDataPosition = context.Request.PtrBuff[0].Position;
-            long userDataSize     = context.Request.PtrBuff[0].Size;
+            ulong userDataPosition = context.Request.PtrBuff[0].Position;
+            ulong userDataSize     = context.Request.PtrBuff[0].Size;
 
             byte[] userData = new byte[userDataSize];
 
-            context.Memory.Read((ulong)userDataPosition, userData);
+            context.Memory.Read(userDataPosition, userData);
 
-            long profilePicturePosition = context.Request.SendBuff[0].Position;
-            long profilePictureSize     = context.Request.SendBuff[0].Size;
+            ulong profileImagePosition = context.Request.SendBuff[0].Position;
+            ulong profileImageSize     = context.Request.SendBuff[0].Size;
 
-            byte[] profilePictureData = new byte[profilePictureSize];
+            byte[] profileImageData = new byte[profileImageSize];
 
-            context.Memory.Read((ulong)profilePicturePosition, profilePictureData);
+            context.Memory.Read(profileImagePosition, profileImageData);
 
             // TODO: Read the nn::account::profile::ProfileBase and store everything in the savedata.
 
-            Logger.Stub?.PrintStub(LogClass.ServiceAcc, new { userDataSize, profilePictureSize });
+            Logger.Stub?.PrintStub(LogClass.ServiceAcc, new { userDataSize, profileImageSize });
 
             return ResultCode.Success;
         }

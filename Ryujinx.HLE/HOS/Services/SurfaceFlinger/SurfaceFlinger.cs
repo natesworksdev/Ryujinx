@@ -1,12 +1,12 @@
 ﻿using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
-using Ryujinx.Configuration;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
@@ -36,7 +36,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         private readonly object Lock = new object();
 
-        public long LastId { get; private set; }
+        public long RenderLayerId { get; private set; }
 
         private class Layer
         {
@@ -57,7 +57,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             _device = device;
             _layers = new Dictionary<long, Layer>();
-            LastId  = 0;
+            RenderLayerId = 0;
 
             _composerThread = new Thread(HandleComposition)
             {
@@ -150,8 +150,6 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     Core             = core,
                     Owner            = pid
                 });
-
-                LastId = layerId;
             }
         }
 
@@ -166,7 +164,31 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     HOSBinderDriverServer.UnregisterBinderObject(layer.ProducerBinderId);
                 }
 
-                return _layers.Remove(layerId);
+                bool removed = _layers.Remove(layerId);
+
+                // If the layer was removed and the current in use, we need to change the current layer in use.
+                if (removed && RenderLayerId == layerId)
+                {
+                    // If no layer is availaible, reset to default value.
+                    if (_layers.Count == 0)
+                    {
+                        SetRenderLayer(0);
+                    }
+                    else
+                    {
+                        SetRenderLayer(_layers.Last().Key);
+                    }
+                }
+
+                return removed;
+            }
+        }
+
+        public void SetRenderLayer(long layerId)
+        {
+            lock (Lock)
+            {
+                RenderLayerId = layerId;
             }
         }
 
@@ -263,12 +285,12 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             lock (Lock)
             {
                 // TODO: support multilayers (& multidisplay ?)
-                if (_layers.Count == 0)
+                if (RenderLayerId == 0)
                 {
                     return;
                 }
 
-                Layer layer = GetLayerByIdLocked(LastId);
+                Layer layer = GetLayerByIdLocked(RenderLayerId);
 
                 Status acquireStatus = layer.Consumer.AcquireBuffer(out BufferItem item, 0);
 
@@ -328,7 +350,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             bool flipX = item.Transform.HasFlag(NativeWindowTransform.FlipX);
             bool flipY = item.Transform.HasFlag(NativeWindowTransform.FlipY);
 
-            AspectRatio aspectRatio = ConfigurationState.Instance.Graphics.AspectRatio.Value;
+            AspectRatio aspectRatio = _device.Configuration.AspectRatio;
             bool        isStretched = aspectRatio == AspectRatio.Stretched;
 
             ImageCrop crop = new ImageCrop(

@@ -16,15 +16,15 @@ namespace Ryujinx.HLE.HOS.Services.Ns
             _purchasedEvent = new KEvent(system.KernelContext);
         }
 
-        [Command(0)]
+        [CommandHipc(0)]
         // SetDefaultDeliveryTarget(pid, buffer<bytes, 5> unknown)
         public ResultCode SetDefaultDeliveryTarget(ServiceCtx context)
         {
-            long   inBufferPosition = context.Request.SendBuff[0].Position;
-            long   inBufferSize     = context.Request.SendBuff[0].Size;
+            ulong   inBufferPosition = context.Request.SendBuff[0].Position;
+            ulong   inBufferSize     = context.Request.SendBuff[0].Size;
             byte[] buffer           = new byte[inBufferSize];
 
-            context.Memory.Read((ulong)inBufferPosition, buffer);
+            context.Memory.Read(inBufferPosition, buffer);
 
             // NOTE: Service use the pid to call arp:r GetApplicationLaunchProperty and store it in internal field.
             //       Then it seems to use the buffer content and compare it with a stored linked instrusive list.
@@ -35,7 +35,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns
             return ResultCode.Success;
         }
 
-        [Command(2)]
+        [CommandHipc(2)]
         // GetPurchasedEventReadableHandle() -> handle<copy, event>
         public ResultCode GetPurchasedEventReadableHandle(ServiceCtx context)
         {

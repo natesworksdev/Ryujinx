@@ -24,8 +24,8 @@ namespace Ryujinx.HLE.FileSystem.Content
 
         private Dictionary<StorageId, LinkedList<LocationEntry>> _locationEntries;
 
-        private Dictionary<string, long>   _sharedFontTitleDictionary;
-        private Dictionary<long, string>   _systemTitlesNameDictionary;
+        private Dictionary<string, ulong>  _sharedFontTitleDictionary;
+        private Dictionary<ulong, string>  _systemTitlesNameDictionary;
         private Dictionary<string, string> _sharedFontFilenameDictionary;
 
         private SortedDictionary<(ulong titleId, NcaContentType type), string> _contentDictionary;
@@ -55,7 +55,7 @@ namespace Ryujinx.HLE.FileSystem.Content
             _contentDictionary = new SortedDictionary<(ulong, NcaContentType), string>();
             _locationEntries   = new Dictionary<StorageId, LinkedList<LocationEntry>>();
 
-            _sharedFontTitleDictionary = new Dictionary<string, long>
+            _sharedFontTitleDictionary = new Dictionary<string, ulong>
             {
                 { "FontStandard",                  0x0100000000000811 },
                 { "FontChineseSimplified",         0x0100000000000814 },
@@ -65,7 +65,7 @@ namespace Ryujinx.HLE.FileSystem.Content
                 { "FontNintendoExtended",          0x0100000000000810 }
             };
 
-            _systemTitlesNameDictionary = new Dictionary<long, string>()
+            _systemTitlesNameDictionary = new Dictionary<ulong, string>()
             {
                 { 0x010000000000080E, "TimeZoneBinary"         },
                 { 0x0100000000000810, "FontNintendoExtension"  },
@@ -140,7 +140,7 @@ namespace Ryujinx.HLE.FileSystem.Content
 
                                 LocationEntry entry = new LocationEntry(switchPath,
                                                                         0,
-                                                                        (long)nca.Header.TitleId,
+                                                                        nca.Header.TitleId,
                                                                         nca.Header.ContentType);
 
                                 AddEntry(entry);
@@ -167,7 +167,7 @@ namespace Ryujinx.HLE.FileSystem.Content
 
                                 LocationEntry entry = new LocationEntry(switchPath,
                                                                         0,
-                                                                        (long)nca.Header.TitleId,
+                                                                        nca.Header.TitleId,
                                                                         nca.Header.ContentType);
 
                                 AddEntry(entry);
@@ -197,7 +197,7 @@ namespace Ryujinx.HLE.FileSystem.Content
         }
 
         // fs must contain AOC nca files in its root
-        public void AddAocData(IFileSystem fs, string containerPath, ulong aocBaseId)
+        public void AddAocData(IFileSystem fs, string containerPath, ulong aocBaseId, IntegrityCheckLevel integrityCheckLevel)
         {
             _virtualFileSystem.ImportTickets(fs);
 
@@ -214,7 +214,7 @@ namespace Ryujinx.HLE.FileSystem.Content
                         continue;
                     }
 
-                    using var pfs0 = nca.OpenFileSystem(0, Switch.GetIntegrityCheckLevel());
+                    using var pfs0 = nca.OpenFileSystem(0, integrityCheckLevel);
 
                     pfs0.OpenFile(out IFile cnmtFile, pfs0.EnumerateEntries().Single().FullPath.ToU8Span(), OpenMode.Read);
 
@@ -265,7 +265,7 @@ namespace Ryujinx.HLE.FileSystem.Content
 
         public IList<ulong> GetAocTitleIds() => _aocData.Where(e => e.Value.Enabled).Select(e => e.Key).ToList();
 
-        public bool GetAocDataStorage(ulong aocTitleId, out IStorage aocStorage)
+        public bool GetAocDataStorage(ulong aocTitleId, out IStorage aocStorage, IntegrityCheckLevel integrityCheckLevel)
         {
             aocStorage = null;
 
@@ -289,7 +289,7 @@ namespace Ryujinx.HLE.FileSystem.Content
                         return false; // Print error?
                 }
 
-                aocStorage = new Nca(_virtualFileSystem.KeySet, ncaFile.AsStorage()).OpenStorage(NcaSectionType.Data, Switch.GetIntegrityCheckLevel());
+                aocStorage = new Nca(_virtualFileSystem.KeySet, ncaFile.AsStorage()).OpenStorage(NcaSectionType.Data, integrityCheckLevel);
                 
                 return true;
             }
@@ -297,7 +297,7 @@ namespace Ryujinx.HLE.FileSystem.Content
             return false;
         }
 
-        public void ClearEntry(long titleId, NcaContentType contentType, StorageId storageId)
+        public void ClearEntry(ulong titleId, NcaContentType contentType, StorageId storageId)
         {
             lock (_lock)
             {
@@ -333,7 +333,7 @@ namespace Ryujinx.HLE.FileSystem.Content
                 if (_contentDictionary.ContainsValue(ncaId))
                 {
                     var content = _contentDictionary.FirstOrDefault(x => x.Value == ncaId);
-                    long titleId = (long)content.Key.Item1;
+                    ulong titleId = content.Key.Item1;
 
                     NcaContentType contentType = content.Key.type;
                     StorageId storage = GetInstalledStorage(titleId, contentType, storageId);
@@ -345,20 +345,20 @@ namespace Ryujinx.HLE.FileSystem.Content
             return false;
         }
 
-        public UInt128 GetInstalledNcaId(long titleId, NcaContentType contentType)
+        public UInt128 GetInstalledNcaId(ulong titleId, NcaContentType contentType)
         {
             lock (_lock)
             {
-                if (_contentDictionary.ContainsKey(((ulong)titleId, contentType)))
+                if (_contentDictionary.ContainsKey((titleId, contentType)))
                 {
-                    return new UInt128(_contentDictionary[((ulong)titleId, contentType)]);
+                    return new UInt128(_contentDictionary[(titleId, contentType)]);
                 }
             }
 
             return new UInt128();
         }
 
-        public StorageId GetInstalledStorage(long titleId, NcaContentType contentType, StorageId storageId)
+        public StorageId GetInstalledStorage(ulong titleId, NcaContentType contentType, StorageId storageId)
         {
             lock (_lock)
             {
@@ -369,7 +369,7 @@ namespace Ryujinx.HLE.FileSystem.Content
             }
         }
 
-        public string GetInstalledContentPath(long titleId, StorageId storageId, NcaContentType contentType)
+        public string GetInstalledContentPath(ulong titleId, StorageId storageId, NcaContentType contentType)
         {
             lock (_lock)
             {
@@ -445,7 +445,7 @@ namespace Ryujinx.HLE.FileSystem.Content
             }
         }
 
-        private void RemoveLocationEntry(long titleId, NcaContentType contentType, StorageId storageId)
+        private void RemoveLocationEntry(ulong titleId, NcaContentType contentType, StorageId storageId)
         {
             LinkedList<LocationEntry> locationList = null;
 
@@ -466,7 +466,7 @@ namespace Ryujinx.HLE.FileSystem.Content
             }
         }
 
-        public bool TryGetFontTitle(string fontName, out long titleId)
+        public bool TryGetFontTitle(string fontName, out ulong titleId)
         {
             return _sharedFontTitleDictionary.TryGetValue(fontName, out titleId);
         }
@@ -476,12 +476,12 @@ namespace Ryujinx.HLE.FileSystem.Content
             return _sharedFontFilenameDictionary.TryGetValue(fontName, out filename);
         }
 
-        public bool TryGetSystemTitlesName(long titleId, out string name)
+        public bool TryGetSystemTitlesName(ulong titleId, out string name)
         {
             return _systemTitlesNameDictionary.TryGetValue(titleId, out name);
         }
 
-        private LocationEntry GetLocation(long titleId, NcaContentType contentType, StorageId storageId)
+        private LocationEntry GetLocation(ulong titleId, NcaContentType contentType, StorageId storageId)
         {
             LinkedList<LocationEntry> locationList = _locationEntries[storageId];
 
@@ -710,8 +710,6 @@ namespace Ryujinx.HLE.FileSystem.Content
 
             SystemVersion VerifyAndGetVersionZip(ZipArchive archive)
             {
-                IntegrityCheckLevel integrityCheckLevel = Switch.GetIntegrityCheckLevel();
-
                 SystemVersion systemVersion = null;
 
                 foreach (var entry in archive.Entries)
@@ -751,7 +749,7 @@ namespace Ryujinx.HLE.FileSystem.Content
                     {
                         Nca metaNca = new Nca(_virtualFileSystem.KeySet, ncaStream.AsStorage());
 
-                        IFileSystem fs = metaNca.OpenFileSystem(NcaSectionType.Data, integrityCheckLevel);
+                        IFileSystem fs = metaNca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.ErrorOnInvalid);
 
                         string cnmtPath = fs.EnumerateEntries("/", "*.cnmt").Single().FullPath;
 
@@ -781,7 +779,7 @@ namespace Ryujinx.HLE.FileSystem.Content
                         {
                             Nca nca = new Nca(_virtualFileSystem.KeySet, ncaStream.AsStorage());
 
-                            var romfs = nca.OpenFileSystem(NcaSectionType.Data, integrityCheckLevel);
+                            var romfs = nca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.ErrorOnInvalid);
 
                             if (romfs.OpenFile(out IFile systemVersionFile, "/file".ToU8Span(), OpenMode.Read).IsSuccess())
                             {
@@ -816,7 +814,7 @@ namespace Ryujinx.HLE.FileSystem.Content
                                 {
                                     Nca metaNca = new Nca(_virtualFileSystem.KeySet, metaNcaStream.AsStorage());
 
-                                    IFileSystem fs = metaNca.OpenFileSystem(NcaSectionType.Data, integrityCheckLevel);
+                                    IFileSystem fs = metaNca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.ErrorOnInvalid);
 
                                     string cnmtPath = fs.EnumerateEntries("/", "*.cnmt").Single().FullPath;
 
@@ -873,8 +871,6 @@ namespace Ryujinx.HLE.FileSystem.Content
 
             SystemVersion VerifyAndGetVersion(IFileSystem filesystem)
             {
-                IntegrityCheckLevel integrityCheckLevel = Switch.GetIntegrityCheckLevel();
-
                 SystemVersion systemVersion = null;
 
                 CnmtContentMetaEntry[] metaEntries = null;
@@ -887,7 +883,7 @@ namespace Ryujinx.HLE.FileSystem.Content
 
                     if (nca.Header.TitleId == SystemUpdateTitleId && nca.Header.ContentType == NcaContentType.Meta)
                     {
-                        IFileSystem fs = nca.OpenFileSystem(NcaSectionType.Data, integrityCheckLevel);
+                        IFileSystem fs = nca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.ErrorOnInvalid);
 
                         string cnmtPath = fs.EnumerateEntries("/", "*.cnmt").Single().FullPath;
 
@@ -905,7 +901,7 @@ namespace Ryujinx.HLE.FileSystem.Content
                     }
                     else if (nca.Header.TitleId == SystemVersionTitleId && nca.Header.ContentType == NcaContentType.Data)
                     {
-                        var romfs = nca.OpenFileSystem(NcaSectionType.Data, integrityCheckLevel);
+                        var romfs = nca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.ErrorOnInvalid);
 
                         if (romfs.OpenFile(out IFile systemVersionFile, "/file".ToU8Span(), OpenMode.Read).IsSuccess())
                         {
@@ -952,7 +948,7 @@ namespace Ryujinx.HLE.FileSystem.Content
 
                         Nca metaNca = new Nca(_virtualFileSystem.KeySet, metaStorage);
 
-                        IFileSystem fs = metaNca.OpenFileSystem(NcaSectionType.Data, integrityCheckLevel);
+                        IFileSystem fs = metaNca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.ErrorOnInvalid);
 
                         string cnmtPath = fs.EnumerateEntries("/", "*.cnmt").Single().FullPath;
 
@@ -1004,8 +1000,6 @@ namespace Ryujinx.HLE.FileSystem.Content
 
         public SystemVersion GetCurrentFirmwareVersion()
         {
-            IntegrityCheckLevel integrityCheckLevel = Switch.GetIntegrityCheckLevel();
-
             LoadEntries();
 
             lock (_lock)
@@ -1024,7 +1018,7 @@ namespace Ryujinx.HLE.FileSystem.Content
 
                             if (nca.Header.TitleId == SystemVersionTitleId && nca.Header.ContentType == NcaContentType.Data)
                             {
-                                var romfs = nca.OpenFileSystem(NcaSectionType.Data, integrityCheckLevel);
+                                var romfs = nca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.ErrorOnInvalid);
 
                                 if (romfs.OpenFile(out IFile systemVersionFile, "/file".ToU8Span(), OpenMode.Read).IsSuccess())
                                 {

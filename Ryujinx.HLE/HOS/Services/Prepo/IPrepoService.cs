@@ -25,9 +25,9 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
             _permission = permission;
         }
 
-        [Command(10100)] // 1.0.0-5.1.0
-        [Command(10102)] // 6.0.0-9.2.0
-        [Command(10104)] // 10.0.0+
+        [CommandHipc(10100)] // 1.0.0-5.1.0
+        [CommandHipc(10102)] // 6.0.0-9.2.0
+        [CommandHipc(10104)] // 10.0.0+
         // SaveReport(u64, pid, buffer<u8, 9>, buffer<bytes, 5>)
         public ResultCode SaveReport(ServiceCtx context)
         {
@@ -40,9 +40,9 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
             return ProcessReport(context, withUserID: false);
         }
 
-        [Command(10101)] // 1.0.0-5.1.0
-        [Command(10103)] // 6.0.0-9.2.0
-        [Command(10105)] // 10.0.0+
+        [CommandHipc(10101)] // 1.0.0-5.1.0
+        [CommandHipc(10103)] // 6.0.0-9.2.0
+        [CommandHipc(10105)] // 10.0.0+
         // SaveReportWithUser(nn::account::Uid, u64, pid, buffer<u8, 9>, buffer<bytes, 5>)
         public ResultCode SaveReportWithUser(ServiceCtx context)
         {
@@ -55,7 +55,7 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
             return ProcessReport(context, withUserID: true);
         }
 
-        [Command(10200)]
+        [CommandHipc(10200)]
         // RequestImmediateTransmission()
         public ResultCode RequestImmediateTransmission(ServiceCtx context)
         {
@@ -65,7 +65,7 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
             return ResultCode.Success;
         }
 
-        [Command(10300)]
+        [CommandHipc(10300)]
         // GetTransmissionStatus() -> u32
         public ResultCode GetTransmissionStatus(ServiceCtx context)
         {
@@ -76,7 +76,7 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
             return ResultCode.Success;
         }
 
-        [Command(10400)] // 9.0.0+
+        [CommandHipc(10400)] // 9.0.0+
         // GetSystemSessionId() -> u64
         public ResultCode GetSystemSessionId(ServiceCtx context)
         {
@@ -117,8 +117,8 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
                 return ResultCode.InvalidState;
             }
 
-            long inputPosition = context.Request.SendBuff[0].Position;
-            long inputSize     = context.Request.SendBuff[0].Size;
+            ulong inputPosition = context.Request.SendBuff[0].Position;
+            ulong inputSize     = context.Request.SendBuff[0].Size;
 
             if (inputSize == 0)
             {
@@ -127,7 +127,7 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
 
             byte[] inputBuffer = new byte[inputSize];
 
-            context.Memory.Read((ulong)inputPosition, inputBuffer);
+            context.Memory.Read(inputPosition, inputBuffer);
 
             Logger.Info?.Print(LogClass.ServicePrepo, ReadReportBuffer(inputBuffer, gameRoom, userId));
 

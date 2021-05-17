@@ -3,7 +3,10 @@ using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Hid.HidServer;
+using Ryujinx.HLE.HOS.Services.Hid.Types;
 using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Hid
 {
@@ -52,7 +55,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             _xpadIdEvent.ReadableEvent.Signal();
         }
 
-        [Command(0)]
+        [CommandHipc(0)]
         // CreateAppletResource(nn::applet::AppletResourceUserId) -> object<nn::hid::IAppletResource>
         public ResultCode CreateAppletResource(ServiceCtx context)
         {
@@ -63,18 +66,25 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(1)]
+        [CommandHipc(1)]
         // ActivateDebugPad(nn::applet::AppletResourceUserId)
         public ResultCode ActivateDebugPad(ServiceCtx context)
         {
             long appletResourceUserId = context.RequestData.ReadInt64();
+
+            // Initialize entries to avoid issues with some games.
+
+            for (int entry = 0; entry < Hid.SharedMemEntryCount; entry++)
+            {
+                context.Device.Hid.DebugPad.Update();
+            }
 
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId });
 
             return ResultCode.Success;
         }
 
-        [Command(11)]
+        [CommandHipc(11)]
         // ActivateTouchScreen(nn::applet::AppletResourceUserId)
         public ResultCode ActivateTouchScreen(ServiceCtx context)
         {
@@ -82,12 +92,19 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             context.Device.Hid.Touchscreen.Active = true;
 
+            // Initialize entries to avoid issues with some games.
+
+            for (int entry = 0; entry < Hid.SharedMemEntryCount; entry++)
+            {
+                context.Device.Hid.Touchscreen.Update();
+            }
+
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId });
 
             return ResultCode.Success;
         }
 
-        [Command(21)]
+        [CommandHipc(21)]
         // ActivateMouse(nn::applet::AppletResourceUserId)
         public ResultCode ActivateMouse(ServiceCtx context)
         {
@@ -95,12 +112,19 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             context.Device.Hid.Mouse.Active = true;
 
+            // Initialize entries to avoid issues with some games.
+
+            for (int entry = 0; entry < Hid.SharedMemEntryCount; entry++)
+            {
+                context.Device.Hid.Mouse.Update(0, 0);
+            }
+
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId });
 
             return ResultCode.Success;
         }
 
-        [Command(31)]
+        [CommandHipc(31)]
         // ActivateKeyboard(nn::applet::AppletResourceUserId)
         public ResultCode ActivateKeyboard(ServiceCtx context)
         {
@@ -108,12 +132,22 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             context.Device.Hid.Keyboard.Active = true;
 
+            // Initialize entries to avoid issues with some games.
+
+            KeyboardInput emptyInput = new KeyboardInput();
+            emptyInput.Keys = new ulong[4];
+
+            for (int entry = 0; entry < Hid.SharedMemEntryCount; entry++)
+            {
+                context.Device.Hid.Keyboard.Update(emptyInput);
+            }
+
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId });
 
             return ResultCode.Success;
         }
 
-        [Command(32)]
+        [CommandHipc(32)]
         // SendKeyboardLockKeyEvent(uint flags, pid)
         public ResultCode SendKeyboardLockKeyEvent(ServiceCtx context)
         {
@@ -126,7 +160,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(40)]
+        [CommandHipc(40)]
         // AcquireXpadIdEventHandle(ulong XpadId) -> nn::sf::NativeHandle
         public ResultCode AcquireXpadIdEventHandle(ServiceCtx context)
         {
@@ -144,7 +178,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(41)]
+        [CommandHipc(41)]
         // ReleaseXpadIdEventHandle(ulong XpadId)
         public ResultCode ReleaseXpadIdEventHandle(ServiceCtx context)
         {
@@ -157,7 +191,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(51)]
+        [CommandHipc(51)]
         // ActivateXpad(nn::hid::BasicXpadId, nn::applet::AppletResourceUserId)
         public ResultCode ActivateXpad(ServiceCtx context)
         {
@@ -169,7 +203,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(55)]
+        [CommandHipc(55)]
         // GetXpadIds() -> long IdsCount, buffer<array<nn::hid::BasicXpadId>, type: 0xa>
         public ResultCode GetXpadIds(ServiceCtx context)
         {
@@ -181,7 +215,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(56)]
+        [CommandHipc(56)]
         // ActivateJoyXpad(nn::hid::JoyXpadId)
         public ResultCode ActivateJoyXpad(ServiceCtx context)
         {
@@ -192,7 +226,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(58)]
+        [CommandHipc(58)]
         // GetJoyXpadLifoHandle(nn::hid::JoyXpadId) -> nn::sf::NativeHandle
         public ResultCode GetJoyXpadLifoHandle(ServiceCtx context)
         {
@@ -207,7 +241,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(59)]
+        [CommandHipc(59)]
         // GetJoyXpadIds() -> long IdsCount, buffer<array<nn::hid::JoyXpadId>, type: 0xa>
         public ResultCode GetJoyXpadIds(ServiceCtx context)
         {
@@ -219,7 +253,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(60)]
+        [CommandHipc(60)]
         // ActivateSixAxisSensor(nn::hid::BasicXpadId)
         public ResultCode ActivateSixAxisSensor(ServiceCtx context)
         {
@@ -230,7 +264,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(61)]
+        [CommandHipc(61)]
         // DeactivateSixAxisSensor(nn::hid::BasicXpadId)
         public ResultCode DeactivateSixAxisSensor(ServiceCtx context)
         {
@@ -241,7 +275,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(62)]
+        [CommandHipc(62)]
         // GetSixAxisSensorLifoHandle(nn::hid::BasicXpadId) -> nn::sf::NativeHandle
         public ResultCode GetSixAxisSensorLifoHandle(ServiceCtx context)
         {
@@ -256,7 +290,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(63)]
+        [CommandHipc(63)]
         // ActivateJoySixAxisSensor(nn::hid::JoyXpadId)
         public ResultCode ActivateJoySixAxisSensor(ServiceCtx context)
         {
@@ -267,7 +301,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(64)]
+        [CommandHipc(64)]
         // DeactivateJoySixAxisSensor(nn::hid::JoyXpadId)
         public ResultCode DeactivateJoySixAxisSensor(ServiceCtx context)
         {
@@ -278,7 +312,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(65)]
+        [CommandHipc(65)]
         // GetJoySixAxisSensorLifoHandle(nn::hid::JoyXpadId) -> nn::sf::NativeHandle
         public ResultCode GetJoySixAxisSensorLifoHandle(ServiceCtx context)
         {
@@ -293,7 +327,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(66)]
+        [CommandHipc(66)]
         // StartSixAxisSensor(nn::hid::SixAxisSensorHandle, nn::applet::AppletResourceUserId)
         public ResultCode StartSixAxisSensor(ServiceCtx context)
         {
@@ -305,7 +339,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(67)]
+        [CommandHipc(67)]
         // StopSixAxisSensor(nn::hid::SixAxisSensorHandle, nn::applet::AppletResourceUserId)
         public ResultCode StopSixAxisSensor(ServiceCtx context)
         {
@@ -317,7 +351,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(68)]
+        [CommandHipc(68)]
         // IsSixAxisSensorFusionEnabled(nn::hid::SixAxisSensorHandle, nn::applet::AppletResourceUserId) -> bool IsEnabled
         public ResultCode IsSixAxisSensorFusionEnabled(ServiceCtx context)
         {
@@ -331,7 +365,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(69)]
+        [CommandHipc(69)]
         // EnableSixAxisSensorFusion(bool Enabled, nn::hid::SixAxisSensorHandle, nn::applet::AppletResourceUserId)
         public ResultCode EnableSixAxisSensorFusion(ServiceCtx context)
         {
@@ -344,7 +378,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(70)]
+        [CommandHipc(70)]
         // SetSixAxisSensorFusionParameters(nn::hid::SixAxisSensorHandle, float RevisePower, float ReviseRange, nn::applet::AppletResourceUserId)
         public ResultCode SetSixAxisSensorFusionParameters(ServiceCtx context)
         {
@@ -363,7 +397,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(71)]
+        [CommandHipc(71)]
         // GetSixAxisSensorFusionParameters(nn::hid::SixAxisSensorHandle, nn::applet::AppletResourceUserId) -> float RevisePower, float ReviseRange)
         public ResultCode GetSixAxisSensorFusionParameters(ServiceCtx context)
         {
@@ -378,7 +412,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(72)]
+        [CommandHipc(72)]
         // ResetSixAxisSensorFusionParameters(nn::hid::SixAxisSensorHandle, nn::applet::AppletResourceUserId)
         public ResultCode ResetSixAxisSensorFusionParameters(ServiceCtx context)
         {
@@ -393,7 +427,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(73)]
+        [CommandHipc(73)]
         // SetAccelerometerParameters(nn::hid::SixAxisSensorHandle, float X, float Y, nn::applet::AppletResourceUserId)
         public ResultCode SetAccelerometerParameters(ServiceCtx context)
         {
@@ -412,7 +446,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(74)]
+        [CommandHipc(74)]
         // GetAccelerometerParameters(nn::hid::SixAxisSensorHandle, nn::applet::AppletResourceUserId) -> float X, float Y
         public ResultCode GetAccelerometerParameters(ServiceCtx context)
         {
@@ -427,7 +461,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(75)]
+        [CommandHipc(75)]
         // ResetAccelerometerParameters(nn::hid::SixAxisSensorHandle, nn::applet::AppletResourceUserId)
         public ResultCode ResetAccelerometerParameters(ServiceCtx context)
         {
@@ -442,7 +476,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(76)]
+        [CommandHipc(76)]
         // SetAccelerometerPlayMode(nn::hid::SixAxisSensorHandle, uint PlayMode, nn::applet::AppletResourceUserId)
         public ResultCode SetAccelerometerPlayMode(ServiceCtx context)
         {
@@ -455,7 +489,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(77)]
+        [CommandHipc(77)]
         // GetAccelerometerPlayMode(nn::hid::SixAxisSensorHandle, nn::applet::AppletResourceUserId) -> uint PlayMode
         public ResultCode GetAccelerometerPlayMode(ServiceCtx context)
         {
@@ -469,7 +503,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(78)]
+        [CommandHipc(78)]
         // ResetAccelerometerPlayMode(nn::hid::SixAxisSensorHandle, nn::applet::AppletResourceUserId)
         public ResultCode ResetAccelerometerPlayMode(ServiceCtx context)
         {
@@ -483,7 +517,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(79)]
+        [CommandHipc(79)]
         // SetGyroscopeZeroDriftMode(nn::hid::SixAxisSensorHandle, uint GyroscopeZeroDriftMode, nn::applet::AppletResourceUserId)
         public ResultCode SetGyroscopeZeroDriftMode(ServiceCtx context)
         {
@@ -496,7 +530,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(80)]
+        [CommandHipc(80)]
         // GetGyroscopeZeroDriftMode(nn::applet::AppletResourceUserId, nn::hid::SixAxisSensorHandle) -> int GyroscopeZeroDriftMode
         public ResultCode GetGyroscopeZeroDriftMode(ServiceCtx context)
         {
@@ -510,7 +544,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(81)]
+        [CommandHipc(81)]
         // ResetGyroscopeZeroDriftMode(nn::hid::SixAxisSensorHandle, nn::applet::AppletResourceUserId)
         public ResultCode ResetGyroscopeZeroDriftMode(ServiceCtx context)
         {
@@ -524,7 +558,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(82)]
+        [CommandHipc(82)]
         // IsSixAxisSensorAtRest(nn::hid::SixAxisSensorHandle, nn::applet::AppletResourceUserId) -> bool IsAsRest
         public ResultCode IsSixAxisSensorAtRest(ServiceCtx context)
         {
@@ -540,7 +574,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(91)]
+        [CommandHipc(91)]
         // ActivateGesture(nn::applet::AppletResourceUserId, int Unknown0)
         public ResultCode ActivateGesture(ServiceCtx context)
         {
@@ -552,7 +586,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(100)]
+        [CommandHipc(100)]
         // SetSupportedNpadStyleSet(nn::applet::AppletResourceUserId, nn::hid::NpadStyleTag)
         public ResultCode SetSupportedNpadStyleSet(ServiceCtx context)
         {
@@ -569,7 +603,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(101)]
+        [CommandHipc(101)]
         // GetSupportedNpadStyleSet(nn::applet::AppletResourceUserId) -> uint nn::hid::NpadStyleTag
         public ResultCode GetSupportedNpadStyleSet(ServiceCtx context)
         {
@@ -585,47 +619,70 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(102)]
+        [CommandHipc(102)]
         // SetSupportedNpadIdType(nn::applet::AppletResourceUserId, array<NpadIdType, 9>)
         public ResultCode SetSupportedNpadIdType(ServiceCtx context)
         {
             long appletResourceUserId = context.RequestData.ReadInt64();
-            long arraySize = context.Request.PtrBuff[0].Size / 4;
+            ulong arrayPosition = context.Request.PtrBuff[0].Position;
+            ulong arraySize = context.Request.PtrBuff[0].Size;
 
-            NpadIdType[] supportedPlayerIds = new NpadIdType[arraySize];
+            ReadOnlySpan<NpadIdType> supportedPlayerIds = MemoryMarshal.Cast<byte, NpadIdType>(context.Memory.GetSpan(arrayPosition, (int)arraySize));
 
             context.Device.Hid.Npads.ClearSupportedPlayers();
 
-            for (int i = 0; i < arraySize; ++i)
+            for (int i = 0; i < supportedPlayerIds.Length; ++i)
             {
-                NpadIdType id = context.Memory.Read<NpadIdType>((ulong)(context.Request.PtrBuff[0].Position + i * 4));
-
-                if (id >= 0)
+                if (supportedPlayerIds[i] >= 0)
                 {
-                    context.Device.Hid.Npads.SetSupportedPlayer(HidUtils.GetIndexFromNpadIdType(id));
+                    context.Device.Hid.Npads.SetSupportedPlayer(HidUtils.GetIndexFromNpadIdType(supportedPlayerIds[i]));
                 }
-
-                supportedPlayerIds[i] = id;
             }
 
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, $"{arraySize} " + string.Join(",", supportedPlayerIds));
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, $"{supportedPlayerIds.Length} " + string.Join(",", supportedPlayerIds.ToArray()));
 
             return ResultCode.Success;
         }
 
-        [Command(103)]
+        [CommandHipc(103)]
         // ActivateNpad(nn::applet::AppletResourceUserId)
         public ResultCode ActivateNpad(ServiceCtx context)
         {
             long appletResourceUserId = context.RequestData.ReadInt64();
 
             context.Device.Hid.Npads.Active = true;
+
+            // Initialize entries to avoid issues with some games.
+
+            List<GamepadInput> emptyGamepadInputs = new List<GamepadInput>();
+            List<SixAxisInput> emptySixAxisInputs = new List<SixAxisInput>();
+
+            for (int player = 0; player < NpadDevices.MaxControllers; player++)
+            {
+                GamepadInput gamepadInput = new GamepadInput();
+                SixAxisInput sixaxisInput = new SixAxisInput();
+
+                gamepadInput.PlayerId = (PlayerIndex)player;
+                sixaxisInput.PlayerId = (PlayerIndex)player;
+
+                sixaxisInput.Orientation = new float[9];
+
+                emptyGamepadInputs.Add(gamepadInput);
+                emptySixAxisInputs.Add(sixaxisInput);
+            }
+
+            for (int entry = 0; entry < Hid.SharedMemEntryCount; entry++)
+            {
+                context.Device.Hid.Npads.Update(emptyGamepadInputs);
+                context.Device.Hid.Npads.UpdateSixAxis(emptySixAxisInputs);
+            }
+
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId });
 
             return ResultCode.Success;
         }
 
-        [Command(104)]
+        [CommandHipc(104)]
         // DeactivateNpad(nn::applet::AppletResourceUserId)
         public ResultCode DeactivateNpad(ServiceCtx context)
         {
@@ -637,7 +694,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(106)]
+        [CommandHipc(106)]
         // AcquireNpadStyleSetUpdateEventHandle(nn::applet::AppletResourceUserId, uint, ulong) -> nn::sf::NativeHandle
         public ResultCode AcquireNpadStyleSetUpdateEventHandle(ServiceCtx context)
         {
@@ -658,7 +715,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(107)]
+        [CommandHipc(107)]
         // DisconnectNpad(nn::applet::AppletResourceUserId, uint NpadIdType)
         public ResultCode DisconnectNpad(ServiceCtx context)
         {
@@ -670,7 +727,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(108)]
+        [CommandHipc(108)]
         // GetPlayerLedPattern(uint NpadId) -> ulong LedPattern
         public ResultCode GetPlayerLedPattern(ServiceCtx context)
         {
@@ -685,19 +742,44 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(109)] // 5.0.0+
+        [CommandHipc(109)] // 5.0.0+
         // ActivateNpadWithRevision(nn::applet::AppletResourceUserId, int Unknown)
         public ResultCode ActivateNpadWithRevision(ServiceCtx context)
         {
             int  revision             = context.RequestData.ReadInt32();
             long appletResourceUserId = context.RequestData.ReadInt64();
 
+            // Initialize entries to avoid issues with some games.
+
+            List<GamepadInput> emptyGamepadInputs = new List<GamepadInput>();
+            List<SixAxisInput> emptySixAxisInputs = new List<SixAxisInput>();
+
+            for (int player = 0; player < NpadDevices.MaxControllers; player++)
+            {
+                GamepadInput gamepadInput = new GamepadInput();
+                SixAxisInput sixaxisInput = new SixAxisInput();
+
+                gamepadInput.PlayerId = (PlayerIndex)player;
+                sixaxisInput.PlayerId = (PlayerIndex)player;
+
+                sixaxisInput.Orientation = new float[9];
+
+                emptyGamepadInputs.Add(gamepadInput);
+                emptySixAxisInputs.Add(sixaxisInput);
+            }
+
+            for (int entry = 0; entry < Hid.SharedMemEntryCount; entry++)
+            {
+                context.Device.Hid.Npads.Update(emptyGamepadInputs);
+                context.Device.Hid.Npads.UpdateSixAxis(emptySixAxisInputs);
+            }
+
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, revision });
 
             return ResultCode.Success;
         }
 
-        [Command(120)]
+        [CommandHipc(120)]
         // SetNpadJoyHoldType(nn::applet::AppletResourceUserId, long NpadJoyHoldType)
         public ResultCode SetNpadJoyHoldType(ServiceCtx context)
         {
@@ -712,7 +794,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(121)]
+        [CommandHipc(121)]
         // GetNpadJoyHoldType(nn::applet::AppletResourceUserId) -> long NpadJoyHoldType
         public ResultCode GetNpadJoyHoldType(ServiceCtx context)
         {
@@ -728,7 +810,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(122)]
+        [CommandHipc(122)]
         // SetNpadJoyAssignmentModeSingleByDefault(uint HidControllerId, nn::applet::AppletResourceUserId)
         public ResultCode SetNpadJoyAssignmentModeSingleByDefault(ServiceCtx context)
         {
@@ -742,7 +824,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(123)]
+        [CommandHipc(123)]
         // SetNpadJoyAssignmentModeSingle(uint HidControllerId, nn::applet::AppletResourceUserId, long HidNpadJoyDeviceType)
         public ResultCode SetNpadJoyAssignmentModeSingle(ServiceCtx context)
         {
@@ -757,7 +839,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(124)]
+        [CommandHipc(124)]
         // SetNpadJoyAssignmentModeDual(uint HidControllerId, nn::applet::AppletResourceUserId)
         public ResultCode SetNpadJoyAssignmentModeDual(ServiceCtx context)
         {
@@ -771,7 +853,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(125)]
+        [CommandHipc(125)]
         // MergeSingleJoyAsDualJoy(uint SingleJoyId0, uint SingleJoyId1, nn::applet::AppletResourceUserId)
         public ResultCode MergeSingleJoyAsDualJoy(ServiceCtx context)
         {
@@ -784,7 +866,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(126)]
+        [CommandHipc(126)]
         // StartLrAssignmentMode(nn::applet::AppletResourceUserId)
         public ResultCode StartLrAssignmentMode(ServiceCtx context)
         {
@@ -795,7 +877,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(127)]
+        [CommandHipc(127)]
         // StopLrAssignmentMode(nn::applet::AppletResourceUserId)
         public ResultCode StopLrAssignmentMode(ServiceCtx context)
         {
@@ -806,7 +888,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(128)]
+        [CommandHipc(128)]
         // SetNpadHandheldActivationMode(nn::applet::AppletResourceUserId, long HidNpadHandheldActivationMode)
         public ResultCode SetNpadHandheldActivationMode(ServiceCtx context)
         {
@@ -818,7 +900,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(129)]
+        [CommandHipc(129)]
         // GetNpadHandheldActivationMode(nn::applet::AppletResourceUserId) -> long HidNpadHandheldActivationMode
         public ResultCode GetNpadHandheldActivationMode(ServiceCtx context)
         {
@@ -831,7 +913,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(130)]
+        [CommandHipc(130)]
         // SwapNpadAssignment(uint OldNpadAssignment, uint NewNpadAssignment, nn::applet::AppletResourceUserId)
         public ResultCode SwapNpadAssignment(ServiceCtx context)
         {
@@ -844,7 +926,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(131)]
+        [CommandHipc(131)]
         // IsUnintendedHomeButtonInputProtectionEnabled(uint Unknown0, nn::applet::AppletResourceUserId) ->  bool IsEnabled
         public ResultCode IsUnintendedHomeButtonInputProtectionEnabled(ServiceCtx context)
         {
@@ -858,7 +940,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(132)]
+        [CommandHipc(132)]
         // EnableUnintendedHomeButtonInputProtection(bool Enable, uint Unknown0, nn::applet::AppletResourceUserId)
         public ResultCode EnableUnintendedHomeButtonInputProtection(ServiceCtx context)
         {
@@ -871,7 +953,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(133)] // 5.0.0+
+        [CommandHipc(133)] // 5.0.0+
         // SetNpadJoyAssignmentModeSingleWithDestination(uint HidControllerId, long HidNpadJoyDeviceType, nn::applet::AppletResourceUserId) -> bool Unknown0, uint Unknown1
         public ResultCode SetNpadJoyAssignmentModeSingleWithDestination(ServiceCtx context)
         {
@@ -896,7 +978,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(200)]
+        [CommandHipc(200)]
         // GetVibrationDeviceInfo(nn::hid::VibrationDeviceHandle) -> nn::hid::VibrationDeviceInfo
         public ResultCode GetVibrationDeviceInfo(ServiceCtx context)
         {
@@ -916,7 +998,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(201)]
+        [CommandHipc(201)]
         // SendVibrationValue(nn::hid::VibrationDeviceHandle, nn::hid::VibrationValue, nn::applet::AppletResourceUserId)
         public ResultCode SendVibrationValue(ServiceCtx context)
         {
@@ -944,7 +1026,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(202)]
+        [CommandHipc(202)]
         // GetActualVibrationValue(nn::hid::VibrationDeviceHandle, nn::applet::AppletResourceUserId) -> nn::hid::VibrationValue
         public ResultCode GetActualVibrationValue(ServiceCtx context)
         {
@@ -968,7 +1050,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(203)]
+        [CommandHipc(203)]
         // CreateActiveVibrationDeviceList() -> object<nn::hid::IActiveVibrationDeviceList>
         public ResultCode CreateActiveVibrationDeviceList(ServiceCtx context)
         {
@@ -977,7 +1059,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(204)]
+        [CommandHipc(204)]
         // PermitVibration(bool Enable)
         public ResultCode PermitVibration(ServiceCtx context)
         {
@@ -988,7 +1070,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(205)]
+        [CommandHipc(205)]
         // IsVibrationPermitted() -> bool IsEnabled
         public ResultCode IsVibrationPermitted(ServiceCtx context)
         {
@@ -999,7 +1081,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(206)]
+        [CommandHipc(206)]
         // SendVibrationValues(nn::applet::AppletResourceUserId, buffer<array<nn::hid::VibrationDeviceHandle>, type: 9>, buffer<array<nn::hid::VibrationValue>, type: 9>)
         public ResultCode SendVibrationValues(ServiceCtx context)
         {
@@ -1007,11 +1089,11 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             byte[] vibrationDeviceHandleBuffer = new byte[context.Request.PtrBuff[0].Size];
 
-            context.Memory.Read((ulong)context.Request.PtrBuff[0].Position, vibrationDeviceHandleBuffer);
+            context.Memory.Read(context.Request.PtrBuff[0].Position, vibrationDeviceHandleBuffer);
 
             byte[] vibrationValueBuffer = new byte[context.Request.PtrBuff[1].Size];
 
-            context.Memory.Read((ulong)context.Request.PtrBuff[1].Position, vibrationValueBuffer);
+            context.Memory.Read(context.Request.PtrBuff[1].Position, vibrationValueBuffer);
 
             // TODO: Read all handles and values from buffer.
 
@@ -1024,7 +1106,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(207)] // 4.0.0+
+        [CommandHipc(207)] // 4.0.0+
         // SendVibrationGcErmCommand(nn::hid::VibrationDeviceHandle, nn::hid::VibrationGcErmCommand, nn::applet::AppletResourceUserId)
         public ResultCode SendVibrationGcErmCommand(ServiceCtx context)
         {
@@ -1037,7 +1119,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(208)] // 4.0.0+
+        [CommandHipc(208)] // 4.0.0+
         // GetActualVibrationGcErmCommand(nn::hid::VibrationDeviceHandle, nn::applet::AppletResourceUserId) -> nn::hid::VibrationGcErmCommand
         public ResultCode GetActualVibrationGcErmCommand(ServiceCtx context)
         {
@@ -1051,7 +1133,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(209)] // 4.0.0+
+        [CommandHipc(209)] // 4.0.0+
         // BeginPermitVibrationSession(nn::applet::AppletResourceUserId)
         public ResultCode BeginPermitVibrationSession(ServiceCtx context)
         {
@@ -1062,7 +1144,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(210)] // 4.0.0+
+        [CommandHipc(210)] // 4.0.0+
         // EndPermitVibrationSession()
         public ResultCode EndPermitVibrationSession(ServiceCtx context)
         {
@@ -1071,7 +1153,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(300)]
+        [CommandHipc(300)]
         // ActivateConsoleSixAxisSensor(nn::applet::AppletResourceUserId)
         public ResultCode ActivateConsoleSixAxisSensor(ServiceCtx context)
         {
@@ -1082,7 +1164,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(301)]
+        [CommandHipc(301)]
         // StartConsoleSixAxisSensor(nn::hid::ConsoleSixAxisSensorHandle, nn::applet::AppletResourceUserId)
         public ResultCode StartConsoleSixAxisSensor(ServiceCtx context)
         {
@@ -1094,7 +1176,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(302)]
+        [CommandHipc(302)]
         // StopConsoleSixAxisSensor(nn::hid::ConsoleSixAxisSensorHandle, nn::applet::AppletResourceUserId)
         public ResultCode StopConsoleSixAxisSensor(ServiceCtx context)
         {
@@ -1106,7 +1188,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(303)] // 5.0.0+
+        [CommandHipc(303)] // 5.0.0+
         // ActivateSevenSixAxisSensor(nn::applet::AppletResourceUserId)
         public ResultCode ActivateSevenSixAxisSensor(ServiceCtx context)
         {
@@ -1117,7 +1199,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(304)] // 5.0.0+
+        [CommandHipc(304)] // 5.0.0+
         // StartSevenSixAxisSensor(nn::applet::AppletResourceUserId)
         public ResultCode StartSevenSixAxisSensor(ServiceCtx context)
         {
@@ -1128,7 +1210,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(305)] // 5.0.0+
+        [CommandHipc(305)] // 5.0.0+
         // StopSevenSixAxisSensor(nn::applet::AppletResourceUserId)
         public ResultCode StopSevenSixAxisSensor(ServiceCtx context)
         {
@@ -1139,7 +1221,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(306)] // 5.0.0+
+        [CommandHipc(306)] // 5.0.0+
         // InitializeSevenSixAxisSensor(array<nn::sf::NativeHandle>, ulong Counter0, array<nn::sf::NativeHandle>, ulong Counter1, nn::applet::AppletResourceUserId)
         public ResultCode InitializeSevenSixAxisSensor(ServiceCtx context)
         {
@@ -1154,7 +1236,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(307)] // 5.0.0+
+        [CommandHipc(307)] // 5.0.0+
         // FinalizeSevenSixAxisSensor(nn::applet::AppletResourceUserId)
         public ResultCode FinalizeSevenSixAxisSensor(ServiceCtx context)
         {
@@ -1165,7 +1247,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(308)] // 5.0.0+
+        [CommandHipc(308)] // 5.0.0+
         // SetSevenSixAxisSensorFusionStrength(float Strength, nn::applet::AppletResourceUserId)
         public ResultCode SetSevenSixAxisSensorFusionStrength(ServiceCtx context)
         {
@@ -1177,7 +1259,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(309)] // 5.0.0+
+        [CommandHipc(309)] // 5.0.0+
         // GetSevenSixAxisSensorFusionStrength(nn::applet::AppletResourceUserId) -> float Strength
         public ResultCode GetSevenSixAxisSensorFusionStrength(ServiceCtx context)
         {
@@ -1190,7 +1272,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(310)] // 6.0.0+
+        [CommandHipc(310)] // 6.0.0+
         // ResetSevenSixAxisSensorTimestamp(pid, nn::applet::AppletResourceUserId)
         public ResultCode ResetSevenSixAxisSensorTimestamp(ServiceCtx context)
         {
@@ -1201,7 +1283,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(400)]
+        [CommandHipc(400)]
         // IsUsbFullKeyControllerEnabled() -> bool IsEnabled
         public ResultCode IsUsbFullKeyControllerEnabled(ServiceCtx context)
         {
@@ -1212,7 +1294,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(401)]
+        [CommandHipc(401)]
         // EnableUsbFullKeyController(bool Enable)
         public ResultCode EnableUsbFullKeyController(ServiceCtx context)
         {
@@ -1223,7 +1305,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(402)]
+        [CommandHipc(402)]
         // IsUsbFullKeyControllerConnected(uint Unknown0) -> bool Connected
         public ResultCode IsUsbFullKeyControllerConnected(ServiceCtx context)
         {
@@ -1236,7 +1318,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(403)] // 4.0.0+
+        [CommandHipc(403)] // 4.0.0+
         // HasBattery(uint NpadId) -> bool HasBattery
         public ResultCode HasBattery(ServiceCtx context)
         {
@@ -1249,7 +1331,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(404)] // 4.0.0+
+        [CommandHipc(404)] // 4.0.0+
         // HasLeftRightBattery(uint NpadId) -> bool HasLeftBattery, bool HasRightBattery
         public ResultCode HasLeftRightBattery(ServiceCtx context)
         {
@@ -1263,7 +1345,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(405)] // 4.0.0+
+        [CommandHipc(405)] // 4.0.0+
         // GetNpadInterfaceType(uint NpadId) -> uchar InterfaceType
         public ResultCode GetNpadInterfaceType(ServiceCtx context)
         {
@@ -1276,7 +1358,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(406)] // 4.0.0+
+        [CommandHipc(406)] // 4.0.0+
         // GetNpadLeftRightInterfaceType(uint NpadId) -> uchar LeftInterfaceType, uchar RightInterfaceType
         public ResultCode GetNpadLeftRightInterfaceType(ServiceCtx context)
         {
@@ -1290,7 +1372,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(500)] // 5.0.0+
+        [CommandHipc(500)] // 5.0.0+
         // GetPalmaConnectionHandle(uint Unknown0, nn::applet::AppletResourceUserId) -> nn::hid::PalmaConnectionHandle
         public ResultCode GetPalmaConnectionHandle(ServiceCtx context)
         {
@@ -1306,7 +1388,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(501)] // 5.0.0+
+        [CommandHipc(501)] // 5.0.0+
         // InitializePalma(nn::hid::PalmaConnectionHandle)
         public ResultCode InitializePalma(ServiceCtx context)
         {
@@ -1319,7 +1401,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(502)] // 5.0.0+
+        [CommandHipc(502)] // 5.0.0+
         // AcquirePalmaOperationCompleteEvent(nn::hid::PalmaConnectionHandle) -> nn::sf::NativeHandle
         public ResultCode AcquirePalmaOperationCompleteEvent(ServiceCtx context)
         {
@@ -1337,7 +1419,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(503)] // 5.0.0+
+        [CommandHipc(503)] // 5.0.0+
         // GetPalmaOperationInfo(nn::hid::PalmaConnectionHandle) -> long Unknown0, buffer<Unknown>
         public ResultCode GetPalmaOperationInfo(ServiceCtx context)
         {
@@ -1352,7 +1434,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(504)] // 5.0.0+
+        [CommandHipc(504)] // 5.0.0+
         // PlayPalmaActivity(nn::hid::PalmaConnectionHandle, ulong Unknown0)
         public ResultCode PlayPalmaActivity(ServiceCtx context)
         {
@@ -1366,7 +1448,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(505)] // 5.0.0+
+        [CommandHipc(505)] // 5.0.0+
         // SetPalmaFrModeType(nn::hid::PalmaConnectionHandle, ulong FrModeType)
         public ResultCode SetPalmaFrModeType(ServiceCtx context)
         {
@@ -1380,7 +1462,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(506)] // 5.0.0+
+        [CommandHipc(506)] // 5.0.0+
         // ReadPalmaStep(nn::hid::PalmaConnectionHandle)
         public ResultCode ReadPalmaStep(ServiceCtx context)
         {
@@ -1391,7 +1473,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(507)] // 5.0.0+
+        [CommandHipc(507)] // 5.0.0+
         // EnablePalmaStep(nn::hid::PalmaConnectionHandle, bool Enable)
         public ResultCode EnablePalmaStep(ServiceCtx context)
         {
@@ -1405,7 +1487,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(508)] // 5.0.0+
+        [CommandHipc(508)] // 5.0.0+
         // ResetPalmaStep(nn::hid::PalmaConnectionHandle)
         public ResultCode ResetPalmaStep(ServiceCtx context)
         {
@@ -1418,7 +1500,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(509)] // 5.0.0+
+        [CommandHipc(509)] // 5.0.0+
         // ReadPalmaApplicationSection(nn::hid::PalmaConnectionHandle, ulong Unknown0, ulong Unknown1)
         public ResultCode ReadPalmaApplicationSection(ServiceCtx context)
         {
@@ -1431,7 +1513,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(510)] // 5.0.0+
+        [CommandHipc(510)] // 5.0.0+
         // WritePalmaApplicationSection(nn::hid::PalmaConnectionHandle, ulong Unknown0, ulong Unknown1, nn::hid::PalmaApplicationSectionAccessBuffer)
         public ResultCode WritePalmaApplicationSection(ServiceCtx context)
         {
@@ -1447,7 +1529,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(511)] // 5.0.0+
+        [CommandHipc(511)] // 5.0.0+
         // ReadPalmaUniqueCode(nn::hid::PalmaConnectionHandle)
         public ResultCode ReadPalmaUniqueCode(ServiceCtx context)
         {
@@ -1458,7 +1540,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(512)] // 5.0.0+
+        [CommandHipc(512)] // 5.0.0+
         // SetPalmaUniqueCodeInvalid(nn::hid::PalmaConnectionHandle)
         public ResultCode SetPalmaUniqueCodeInvalid(ServiceCtx context)
         {
@@ -1469,7 +1551,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(522)] // 5.1.0+
+        [CommandHipc(522)] // 5.1.0+
         // SetIsPalmaAllConnectable(nn::applet::AppletResourceUserId, bool, pid)
         public ResultCode SetIsPalmaAllConnectable(ServiceCtx context)
         {
@@ -1481,7 +1563,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(525)] // 5.1.0+
+        [CommandHipc(525)] // 5.1.0+
         // SetPalmaBoostMode(bool)
         public ResultCode SetPalmaBoostMode(ServiceCtx context)
         {
@@ -1490,7 +1572,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(1000)]
+        [CommandHipc(1000)]
         // SetNpadCommunicationMode(long CommunicationMode, nn::applet::AppletResourceUserId)
         public ResultCode SetNpadCommunicationMode(ServiceCtx context)
         {
@@ -1502,7 +1584,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(1001)]
+        [CommandHipc(1001)]
         // GetNpadCommunicationMode() -> long CommunicationMode
         public ResultCode GetNpadCommunicationMode(ServiceCtx context)
         {
@@ -1513,7 +1595,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(1002)] // 9.0.0+
+        [CommandHipc(1002)] // 9.0.0+
         // SetTouchScreenConfiguration(nn::hid::TouchScreenConfigurationForNx, nn::applet::AppletResourceUserId)
         public ResultCode SetTouchScreenConfiguration(ServiceCtx context)
         {

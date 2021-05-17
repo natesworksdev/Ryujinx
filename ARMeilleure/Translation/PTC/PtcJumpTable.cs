@@ -17,7 +17,7 @@ namespace ARMeilleure.Translation.PTC
         {
             public int EntryIndex;
             public long GuestAddress;
-            public TAddress HostAddress; // int
+            public TAddress HostAddress;
 
             public TableEntry(int entryIndex, long guestAddress, TAddress hostAddress)
             {
@@ -129,7 +129,6 @@ namespace ARMeilleure.Translation.PTC
             }
         }
 
-        // For future use.
         public void Clean(ulong guestAddress)
         {
             if (Owners.TryGetValue(guestAddress, out List<int> entries))

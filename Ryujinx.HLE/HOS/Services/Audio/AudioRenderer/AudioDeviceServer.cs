@@ -19,16 +19,16 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
             _impl = impl;
         }
 
-        [Command(0)]
+        [CommandHipc(0)]
         // ListAudioDeviceName() -> (u32, buffer<bytes, 6>)
         public ResultCode ListAudioDeviceName(ServiceCtx context)
         {
             string[] deviceNames = _impl.ListAudioDeviceName();
 
-            long position = context.Request.ReceiveBuff[0].Position;
-            long size = context.Request.ReceiveBuff[0].Size;
+            ulong position = context.Request.ReceiveBuff[0].Position;
+            ulong size = context.Request.ReceiveBuff[0].Size;
 
-            long basePosition = position;
+            ulong basePosition = position;
 
             int count = 0;
 
@@ -36,15 +36,15 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
             {
                 byte[] buffer = Encoding.ASCII.GetBytes(name);
 
-                if ((position - basePosition) + buffer.Length > size)
+                if ((position - basePosition) + (ulong)buffer.Length > size)
                 {
                     Logger.Error?.Print(LogClass.ServiceAudio, $"Output buffer size {size} too small!");
 
                     break;
                 }
 
-                context.Memory.Write((ulong)position, buffer);
-                MemoryHelper.FillWithZeros(context.Memory, position + buffer.Length, AudioDeviceNameSize - buffer.Length);
+                context.Memory.Write(position, buffer);
+                MemoryHelper.FillWithZeros(context.Memory, position + (ulong)buffer.Length, AudioDeviceNameSize - buffer.Length);
 
                 position += AudioDeviceNameSize;
                 count++;
@@ -55,28 +55,28 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
             return ResultCode.Success;
         }
 
-        [Command(1)]
+        [CommandHipc(1)]
         // SetAudioDeviceOutputVolume(f32 volume, buffer<bytes, 5> name)
         public ResultCode SetAudioDeviceOutputVolume(ServiceCtx context)
         {
             float volume = context.RequestData.ReadSingle();
 
-            long position = context.Request.SendBuff[0].Position;
-            long size = context.Request.SendBuff[0].Size;
+            ulong position = context.Request.SendBuff[0].Position;
+            ulong size = context.Request.SendBuff[0].Size;
 
-            string deviceName = MemoryHelper.ReadAsciiString(context.Memory, position, size);
+            string deviceName = MemoryHelper.ReadAsciiString(context.Memory, position, (long)size);
 
             return _impl.SetAudioDeviceOutputVolume(deviceName, volume);
         }
 
-        [Command(2)]
+        [CommandHipc(2)]
         // GetAudioDeviceOutputVolume(buffer<bytes, 5> name) -> f32 volume
         public ResultCode GetAudioDeviceOutputVolume(ServiceCtx context)
         {
-            long position = context.Request.SendBuff[0].Position;
-            long size = context.Request.SendBuff[0].Size;
+            ulong position = context.Request.SendBuff[0].Position;
+            ulong size = context.Request.SendBuff[0].Size;
 
-            string deviceName = MemoryHelper.ReadAsciiString(context.Memory, position, size);
+            string deviceName = MemoryHelper.ReadAsciiString(context.Memory, position, (long)size);
 
             ResultCode result = _impl.GetAudioDeviceOutputVolume(deviceName, out float volume);
 
@@ -88,20 +88,20 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
             return result;
         }
 
-        [Command(3)]
+        [CommandHipc(3)]
         // GetActiveAudioDeviceName() -> buffer<bytes, 6>
         public ResultCode GetActiveAudioDeviceName(ServiceCtx context)
         {
             string name = _impl.GetActiveAudioDeviceName();
 
-            long position = context.Request.ReceiveBuff[0].Position;
-            long size = context.Request.ReceiveBuff[0].Size;
+            ulong position = context.Request.ReceiveBuff[0].Position;
+            ulong size = context.Request.ReceiveBuff[0].Size;
 
             byte[] deviceNameBuffer = Encoding.ASCII.GetBytes(name + "\0");
 
-            if ((ulong)deviceNameBuffer.Length <= (ulong)size)
+            if ((ulong)deviceNameBuffer.Length <= size)
             {
-                context.Memory.Write((ulong)position, deviceNameBuffer);
+                context.Memory.Write(position, deviceNameBuffer);
             }
             else
             {
@@ -111,7 +111,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
             return ResultCode.Success;
         }
 
-        [Command(4)]
+        [CommandHipc(4)]
         // QueryAudioDeviceSystemEvent() -> handle<copy, event>
         public ResultCode QueryAudioDeviceSystemEvent(ServiceCtx context)
         {
@@ -129,7 +129,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
             return ResultCode.Success;
         }
 
-        [Command(5)]
+        [CommandHipc(5)]
         // GetActiveChannelCount() -> u32
         public ResultCode GetActiveChannelCount(ServiceCtx context)
         {
@@ -140,15 +140,15 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
             return ResultCode.Success;
         }
 
-        [Command(6)] // 3.0.0+
+        [CommandHipc(6)] // 3.0.0+
         // ListAudioDeviceNameAuto() -> (u32, buffer<bytes, 0x22>)
         public ResultCode ListAudioDeviceNameAuto(ServiceCtx context)
         {
             string[] deviceNames = _impl.ListAudioDeviceName();
 
-            (long position, long size) = context.Request.GetBufferType0x22();
+            (ulong position, ulong size) = context.Request.GetBufferType0x22();
 
-            long basePosition = position;
+            ulong basePosition = position;
 
             int count = 0;
 
@@ -156,15 +156,15 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
             {
                 byte[] buffer = Encoding.ASCII.GetBytes(name);
 
-                if ((position - basePosition) + buffer.Length > size)
+                if ((position - basePosition) + (ulong)buffer.Length > size)
                 {
                     Logger.Error?.Print(LogClass.ServiceAudio, $"Output buffer size {size} too small!");
 
                     break;
                 }
 
-                context.Memory.Write((ulong)position, buffer);
-                MemoryHelper.FillWithZeros(context.Memory, position + buffer.Length, AudioDeviceNameSize - buffer.Length);
+                context.Memory.Write(position, buffer);
+                MemoryHelper.FillWithZeros(context.Memory, position + (ulong)buffer.Length, AudioDeviceNameSize - buffer.Length);
 
                 position += AudioDeviceNameSize;
                 count++;
@@ -175,26 +175,26 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
             return ResultCode.Success;
         }
 
-        [Command(7)] // 3.0.0+
+        [CommandHipc(7)] // 3.0.0+
         // SetAudioDeviceOutputVolumeAuto(f32 volume, buffer<bytes, 0x21> name)
         public ResultCode SetAudioDeviceOutputVolumeAuto(ServiceCtx context)
         {
             float volume = context.RequestData.ReadSingle();
 
-            (long position, long size) = context.Request.GetBufferType0x21();
+            (ulong position, ulong size) = context.Request.GetBufferType0x21();
 
-            string deviceName = MemoryHelper.ReadAsciiString(context.Memory, position, size);
+            string deviceName = MemoryHelper.ReadAsciiString(context.Memory, position, (long)size);
 
             return _impl.SetAudioDeviceOutputVolume(deviceName, volume);
         }
 
-        [Command(8)] // 3.0.0+
+        [CommandHipc(8)] // 3.0.0+
         // GetAudioDeviceOutputVolumeAuto(buffer<bytes, 0x21> name) -> f32
         public ResultCode GetAudioDeviceOutputVolumeAuto(ServiceCtx context)
         {
-            (long position, long size) = context.Request.GetBufferType0x21();
+            (ulong position, ulong size) = context.Request.GetBufferType0x21();
 
-            string deviceName = MemoryHelper.ReadAsciiString(context.Memory, position, size);
+            string deviceName = MemoryHelper.ReadAsciiString(context.Memory, position, (long)size);
 
             ResultCode result = _impl.GetAudioDeviceOutputVolume(deviceName, out float volume);
 
@@ -206,19 +206,19 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
             return ResultCode.Success;
         }
 
-        [Command(10)] // 3.0.0+
+        [CommandHipc(10)] // 3.0.0+
         // GetActiveAudioDeviceNameAuto() -> buffer<bytes, 0x22>
         public ResultCode GetActiveAudioDeviceNameAuto(ServiceCtx context)
         {
             string name = _impl.GetActiveAudioDeviceName();
 
-            (long position, long size) = context.Request.GetBufferType0x22();
+            (ulong position, ulong size) = context.Request.GetBufferType0x22();
 
             byte[] deviceNameBuffer = Encoding.UTF8.GetBytes(name + '\0');
 
-            if ((ulong)deviceNameBuffer.Length <= (ulong)size)
+            if ((ulong)deviceNameBuffer.Length <= size)
             {
-                context.Memory.Write((ulong)position, deviceNameBuffer);
+                context.Memory.Write(position, deviceNameBuffer);
             }
             else
             {
@@ -228,7 +228,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
             return ResultCode.Success;
         }
 
-        [Command(11)] // 3.0.0+
+        [CommandHipc(11)] // 3.0.0+
         // QueryAudioDeviceInputEvent() -> handle<copy, event>
         public ResultCode QueryAudioDeviceInputEvent(ServiceCtx context)
         {
@@ -246,7 +246,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
             return ResultCode.Success;
         }
 
-        [Command(12)] // 3.0.0+
+        [CommandHipc(12)] // 3.0.0+
         // QueryAudioDeviceOutputEvent() -> handle<copy, event>
         public ResultCode QueryAudioDeviceOutputEvent(ServiceCtx context)
         {
@@ -264,14 +264,14 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
             return ResultCode.Success;
         }
 
-        [Command(13)]
+        [CommandHipc(13)]
         // GetAudioSystemMasterVolumeSetting(buffer<bytes, 5> name) -> f32
         public ResultCode GetAudioSystemMasterVolumeSetting(ServiceCtx context)
         {
-            long position = context.Request.SendBuff[0].Position;
-            long size = context.Request.SendBuff[0].Size;
+            ulong position = context.Request.SendBuff[0].Position;
+            ulong size = context.Request.SendBuff[0].Size;
 
-            string deviceName = MemoryHelper.ReadAsciiString(context.Memory, position, size);
+            string deviceName = MemoryHelper.ReadAsciiString(context.Memory, position, (long)size);
 
             ResultCode result = _impl.GetAudioSystemMasterVolumeSetting(deviceName, out float systemMasterVolume);
 

@@ -131,8 +131,8 @@ namespace Ryujinx.Ui.Applet
 
         public void ExecuteProgram(HLE.Switch device, ProgramSpecifyKind kind, ulong value)
         {
-            device.UserChannelPersistence.ExecuteProgram(kind, value);
-            ((MainWindow)_parent).GlRendererWidget?.Exit();
+            device.Configuration.UserChannelPersistence.ExecuteProgram(kind, value);
+            ((MainWindow)_parent).RendererWidget?.Exit();
         }
 
         public bool DisplayErrorAppletDialog(string title, string message, string[] buttons)

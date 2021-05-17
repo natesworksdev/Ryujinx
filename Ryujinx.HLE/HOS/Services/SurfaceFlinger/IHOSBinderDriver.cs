@@ -9,7 +9,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
     {
         public IHOSBinderDriver() { }
 
-        [Command(0)]
+        [CommandHipc(0)]
         // TransactParcel(s32, u32, u32, buffer<unknown, 5, 0>) -> buffer<unknown, 6, 0>
         public ResultCode TransactParcel(ServiceCtx context)
         {
@@ -18,11 +18,11 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             uint code  = context.RequestData.ReadUInt32();
             uint flags = context.RequestData.ReadUInt32();
 
-            ulong dataPos  = (ulong)context.Request.SendBuff[0].Position;
-            ulong dataSize = (ulong)context.Request.SendBuff[0].Size;
+            ulong dataPos  = context.Request.SendBuff[0].Position;
+            ulong dataSize = context.Request.SendBuff[0].Size;
 
-            long replyPos  = context.Request.ReceiveBuff[0].Position;
-            long replySize = context.Request.ReceiveBuff[0].Size;
+            ulong replyPos  = context.Request.ReceiveBuff[0].Position;
+            ulong replySize = context.Request.ReceiveBuff[0].Size;
 
             ReadOnlySpan<byte> inputParcel = context.Memory.GetSpan(dataPos, (int)dataSize);
 
@@ -32,13 +32,13 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
             if (result == ResultCode.Success)
             {
-                context.Memory.Write((ulong)replyPos, outputParcel);
+                context.Memory.Write(replyPos, outputParcel);
             }
 
             return result;
         }
 
-        [Command(1)]
+        [CommandHipc(1)]
         // AdjustRefcount(s32, s32, s32)
         public ResultCode AdjustRefcount(ServiceCtx context)
         {
@@ -49,7 +49,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             return AdjustRefcount(binderId, addVal, type);
         }
 
-        [Command(2)]
+        [CommandHipc(2)]
         // GetNativeHandle(s32, s32) -> handle<copy>
         public ResultCode GetNativeHandle(ServiceCtx context)
         {
@@ -69,7 +69,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             return ResultCode.Success;
         }
 
-        [Command(3)] // 3.0.0+
+        [CommandHipc(3)] // 3.0.0+
         // TransactParcelAuto(s32, u32, u32, buffer<unknown, 21, 0>) -> buffer<unknown, 22, 0>
         public ResultCode TransactParcelAuto(ServiceCtx context)
         {
@@ -78,10 +78,10 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             uint code  = context.RequestData.ReadUInt32();
             uint flags = context.RequestData.ReadUInt32();
 
-            (long dataPos, long dataSize)   = context.Request.GetBufferType0x21();
-            (long replyPos, long replySize) = context.Request.GetBufferType0x22();
+            (ulong dataPos, ulong dataSize)   = context.Request.GetBufferType0x21();
+            (ulong replyPos, ulong replySize) = context.Request.GetBufferType0x22();
 
-            ReadOnlySpan<byte> inputParcel = context.Memory.GetSpan((ulong)dataPos, (int)dataSize);
+            ReadOnlySpan<byte> inputParcel = context.Memory.GetSpan(dataPos, (int)dataSize);
 
             Span<byte> outputParcel = new Span<byte>(new byte[replySize]);
 
@@ -89,7 +89,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
             if (result == ResultCode.Success)
             {
-                context.Memory.Write((ulong)replyPos, outputParcel);
+                context.Memory.Write(replyPos, outputParcel);
             }
 
             return result;

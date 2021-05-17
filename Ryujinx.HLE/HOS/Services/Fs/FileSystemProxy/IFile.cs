@@ -13,11 +13,11 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
             _baseFile = baseFile;
         }
 
-        [Command(0)]
+        [CommandHipc(0)]
         // Read(u32 readOption, u64 offset, u64 size) -> (u64 out_size, buffer<u8, 0x46, 0> out_buf)
         public ResultCode Read(ServiceCtx context)
         {
-            long position = context.Request.ReceiveBuff[0].Position;
+            ulong position = context.Request.ReceiveBuff[0].Position;
 
             ReadOption readOption = new ReadOption(context.RequestData.ReadInt32());
             context.RequestData.BaseStream.Position += 4;
@@ -29,18 +29,18 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
 
             Result result = _baseFile.Read(out long bytesRead, offset, data, readOption);
 
-            context.Memory.Write((ulong)position, data);
+            context.Memory.Write(position, data);
 
             context.ResponseData.Write(bytesRead);
 
             return (ResultCode)result.Value;
         }
 
-        [Command(1)]
+        [CommandHipc(1)]
         // Write(u32 writeOption, u64 offset, u64 size, buffer<u8, 0x45, 0>)
         public ResultCode Write(ServiceCtx context)
         {
-            long position = context.Request.SendBuff[0].Position;
+            ulong position = context.Request.SendBuff[0].Position;
 
             WriteOption writeOption = new WriteOption(context.RequestData.ReadInt32());
             context.RequestData.BaseStream.Position += 4;
@@ -50,19 +50,19 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
 
             byte[] data = new byte[size];
 
-            context.Memory.Read((ulong)position, data);
+            context.Memory.Read(position, data);
 
             return (ResultCode)_baseFile.Write(offset, data, writeOption).Value;
         }
 
-        [Command(2)]
+        [CommandHipc(2)]
         // Flush()
         public ResultCode Flush(ServiceCtx context)
         {
             return (ResultCode)_baseFile.Flush().Value;
         }
 
-        [Command(3)]
+        [CommandHipc(3)]
         // SetSize(u64 size)
         public ResultCode SetSize(ServiceCtx context)
         {
@@ -71,7 +71,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
             return (ResultCode)_baseFile.SetSize(size).Value;
         }
 
-        [Command(4)]
+        [CommandHipc(4)]
         // GetSize() -> u64 fileSize
         public ResultCode GetSize(ServiceCtx context)
         {

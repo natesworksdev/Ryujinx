@@ -17,7 +17,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
         public ResultCode GetUserCountImpl(ServiceCtx context)
         {
-            context.ResponseData.Write(context.Device.System.State.Account.GetUserCount());
+            context.ResponseData.Write(context.Device.System.AccountManager.GetUserCount());
 
             return ResultCode.Success;
         }
@@ -31,30 +31,30 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
                 return resultCode;
             }
 
-            context.ResponseData.Write(context.Device.System.State.Account.TryGetUser(userId, out _));
+            context.ResponseData.Write(context.Device.System.AccountManager.TryGetUser(userId, out _));
 
             return ResultCode.Success;
         }
 
         public ResultCode ListAllUsers(ServiceCtx context)
         {
-            return WriteUserList(context, context.Device.System.State.Account.GetAllUsers());
+            return WriteUserList(context, context.Device.System.AccountManager.GetAllUsers());
         }
 
         public ResultCode ListOpenUsers(ServiceCtx context)
         {
-            return WriteUserList(context, context.Device.System.State.Account.GetOpenedUsers());
+            return WriteUserList(context, context.Device.System.AccountManager.GetOpenedUsers());
         }
 
         private ResultCode WriteUserList(ServiceCtx context, IEnumerable<UserProfile> profiles)
         {
             if (context.Request.RecvListBuff.Count == 0)
             {
-                return ResultCode.InvalidInputBuffer;
+                return ResultCode.InvalidBuffer;
             }
 
-            long outputPosition = context.Request.RecvListBuff[0].Position;
-            long outputSize     = context.Request.RecvListBuff[0].Size;
+            ulong outputPosition = context.Request.RecvListBuff[0].Position;
+            ulong outputSize     = context.Request.RecvListBuff[0].Size;
 
             MemoryHelper.FillWithZeros(context.Memory, outputPosition, (int)outputSize);
 
@@ -67,8 +67,8 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
                     break;
                 }
 
-                context.Memory.Write((ulong)outputPosition + offset,     userProfile.UserId.High);
-                context.Memory.Write((ulong)outputPosition + offset + 8, userProfile.UserId.Low);
+                context.Memory.Write(outputPosition + offset,     userProfile.UserId.High);
+                context.Memory.Write(outputPosition + offset + 8, userProfile.UserId.Low);
 
                 offset += 0x10;
             }
@@ -78,7 +78,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
         public ResultCode GetLastOpenedUser(ServiceCtx context)
         {
-            context.Device.System.State.Account.LastOpenedUser.UserId.Write(context.ResponseData);
+            context.Device.System.AccountManager.LastOpenedUser.UserId.Write(context.ResponseData);
 
             return ResultCode.Success;
         }
@@ -94,7 +94,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
                 return resultCode;
             }
 
-            if (!context.Device.System.State.Account.TryGetUser(userId, out UserProfile userProfile))
+            if (!context.Device.System.AccountManager.TryGetUser(userId, out UserProfile userProfile))
             {
                 Logger.Warning?.Print(LogClass.ServiceAcc, $"User 0x{userId} not found!");
 
@@ -118,7 +118,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
         public ResultCode TrySelectUserWithoutInteraction(ServiceCtx context)
         {
-            if (context.Device.System.State.Account.GetUserCount() != 1)
+            if (context.Device.System.AccountManager.GetUserCount() != 1)
             {
                 // Invalid UserId.
                 UserId.Null.Write(context.ResponseData);
@@ -137,7 +137,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             }
 
             // NOTE: As we returned an invalid UserId if there is more than one user earlier, now we can return only the first one.
-            context.Device.System.State.Account.GetFirst().UserId.Write(context.ResponseData);
+            context.Device.System.AccountManager.GetFirst().UserId.Write(context.ResponseData);
 
             return ResultCode.Success;
         }
@@ -153,20 +153,20 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
             if (context.Request.SendBuff.Count == 0)
             {
-                return ResultCode.InvalidInputBuffer;
+                return ResultCode.InvalidBuffer;
             }
 
-            long inputPosition = context.Request.SendBuff[0].Position;
-            long inputSize     = context.Request.SendBuff[0].Size;
+            ulong inputPosition = context.Request.SendBuff[0].Position;
+            ulong inputSize     = context.Request.SendBuff[0].Size;
 
             if (inputSize != 0x24000)
             {
-                return ResultCode.InvalidInputBufferSize;
+                return ResultCode.InvalidBufferSize;
             }
 
             byte[] thumbnailBuffer = new byte[inputSize];
 
-            context.Memory.Read((ulong)inputPosition, thumbnailBuffer);
+            context.Memory.Read(inputPosition, thumbnailBuffer);
 
             // NOTE: Account service call nn::fs::WriteSaveDataThumbnailFile().
             // TODO: Store thumbnailBuffer somewhere, in save data 0x8000000000000010 ?
@@ -205,7 +205,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
         {
             // TODO: Determine how users are "qualified". We assume all users are "qualified" for now.
 
-            return WriteUserList(context, context.Device.System.State.Account.GetAllUsers());
+            return WriteUserList(context, context.Device.System.AccountManager.GetAllUsers());
         }
 
         public ResultCode CheckUserId(ServiceCtx context, out UserId userId)

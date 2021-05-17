@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 
 namespace ARMeilleure.Translation.PTC
 {
-    public class PtcFormatter
+    static class PtcFormatter
     {
         #region "Deserialize"
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Dictionary<TKey, TValue> DeserializeDictionary<TKey, TValue>(Stream stream, Func<Stream, TValue> valueFunc) where TKey : unmanaged
+        public static Dictionary<TKey, TValue> DeserializeDictionary<TKey, TValue>(Stream stream, Func<Stream, TValue> valueFunc) where TKey : struct
         {
             Dictionary<TKey, TValue> dictionary = new();
 
@@ -28,7 +28,7 @@ namespace ARMeilleure.Translation.PTC
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static List<T> DeserializeList<T>(Stream stream) where T : unmanaged
+        public static List<T> DeserializeList<T>(Stream stream) where T : struct
         {
             List<T> list = new();
 
@@ -45,12 +45,17 @@ namespace ARMeilleure.Translation.PTC
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T DeserializeStructure<T>(Stream stream) where T : unmanaged
+        public static T DeserializeStructure<T>(Stream stream) where T : struct
         {
             T structure = default(T);
 
             Span<T> spanT = MemoryMarshal.CreateSpan(ref structure, 1);
-            stream.Read(MemoryMarshal.AsBytes(spanT));
+            int bytesCount = stream.Read(MemoryMarshal.AsBytes(spanT));
+
+            if (bytesCount != Unsafe.SizeOf<T>())
+            {
+                throw new EndOfStreamException();
+            }
 
             return structure;
         }
@@ -58,7 +63,7 @@ namespace ARMeilleure.Translation.PTC
 
         #region "GetSerializeSize"
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetSerializeSizeDictionary<TKey, TValue>(Dictionary<TKey, TValue> dictionary, Func<TValue, int> valueFunc) where TKey : unmanaged
+        public static int GetSerializeSizeDictionary<TKey, TValue>(Dictionary<TKey, TValue> dictionary, Func<TValue, int> valueFunc) where TKey : struct
         {
             int size = 0;
 
@@ -74,7 +79,7 @@ namespace ARMeilleure.Translation.PTC
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetSerializeSizeList<T>(List<T> list) where T : unmanaged
+        public static int GetSerializeSizeList<T>(List<T> list) where T : struct
         {
             int size = 0;
 
@@ -88,7 +93,7 @@ namespace ARMeilleure.Translation.PTC
 
         #region "Serialize"
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SerializeDictionary<TKey, TValue>(Stream stream, Dictionary<TKey, TValue> dictionary, Action<Stream, TValue> valueAction) where TKey : unmanaged
+        public static void SerializeDictionary<TKey, TValue>(Stream stream, Dictionary<TKey, TValue> dictionary, Action<Stream, TValue> valueAction) where TKey : struct
         {
             SerializeStructure<int>(stream, dictionary.Count);
 
@@ -100,7 +105,7 @@ namespace ARMeilleure.Translation.PTC
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SerializeList<T>(Stream stream, List<T> list) where T : unmanaged
+        public static void SerializeList<T>(Stream stream, List<T> list) where T : struct
         {
             SerializeStructure<int>(stream, list.Count);
 
@@ -111,10 +116,63 @@ namespace ARMeilleure.Translation.PTC
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SerializeStructure<T>(Stream stream, T structure) where T : unmanaged
+        public static void SerializeStructure<T>(Stream stream, T structure) where T : struct
         {
             Span<T> spanT = MemoryMarshal.CreateSpan(ref structure, 1);
             stream.Write(MemoryMarshal.AsBytes(spanT));
+        }
+        #endregion
+
+        #region "Extension methods"
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ReadFrom<T>(this List<T[]> list, Stream stream) where T : struct
+        {
+            int count = DeserializeStructure<int>(stream);
+
+            for (int i = 0; i < count; i++)
+            {
+                int itemLength = DeserializeStructure<int>(stream);
+
+                T[] item = new T[itemLength];
+
+                int bytesCount = stream.Read(MemoryMarshal.AsBytes(item.AsSpan()));
+
+                if (bytesCount != itemLength)
+                {
+                    throw new EndOfStreamException();
+                }
+
+                list.Add(item);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static long Length<T>(this List<T[]> list) where T : struct
+        {
+            long size = 0L;
+
+            size += Unsafe.SizeOf<int>();
+
+            foreach (T[] item in list)
+            {
+                size += Unsafe.SizeOf<int>();
+                size += item.Length;
+            }
+
+            return size;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void WriteTo<T>(this List<T[]> list, Stream stream) where T : struct
+        {
+            SerializeStructure<int>(stream, list.Count);
+
+            foreach (T[] item in list)
+            {
+                SerializeStructure<int>(stream, item.Length);
+
+                stream.Write(MemoryMarshal.AsBytes(item.AsSpan()));
+            }
         }
         #endregion
     }

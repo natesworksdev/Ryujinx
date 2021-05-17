@@ -14,7 +14,7 @@ namespace Ryujinx.HLE.HOS.Services.Bcat.ServiceCreator
             _base = baseService;
         }
 
-        [Command(0)]
+        [CommandHipc(0)]
         // Open(nn::bcat::DirectoryName, nn::bcat::FileName)
         public ResultCode Open(ServiceCtx context)
         {
@@ -26,12 +26,12 @@ namespace Ryujinx.HLE.HOS.Services.Bcat.ServiceCreator
             return (ResultCode)result.Value;
         }
 
-        [Command(1)]
+        [CommandHipc(1)]
         // Read(u64) -> (u64, buffer<bytes, 6>)
         public ResultCode Read(ServiceCtx context)
         {
-            long position = context.Request.ReceiveBuff[0].Position;
-            long size = context.Request.ReceiveBuff[0].Size;
+            ulong position = context.Request.ReceiveBuff[0].Position;
+            ulong size = context.Request.ReceiveBuff[0].Size;
 
             long offset = context.RequestData.ReadInt64();
 
@@ -39,14 +39,14 @@ namespace Ryujinx.HLE.HOS.Services.Bcat.ServiceCreator
 
             Result result = _base.Read(out long bytesRead, offset, data);
 
-            context.Memory.Write((ulong)position, data);
+            context.Memory.Write(position, data);
 
             context.ResponseData.Write(bytesRead);
 
             return (ResultCode)result.Value;
         }
 
-        [Command(2)]
+        [CommandHipc(2)]
         // GetSize() -> u64
         public ResultCode GetSize(ServiceCtx context)
         {
@@ -57,7 +57,7 @@ namespace Ryujinx.HLE.HOS.Services.Bcat.ServiceCreator
             return (ResultCode)result.Value;
         }
 
-        [Command(3)]
+        [CommandHipc(3)]
         // GetDigest() -> nn::bcat::Digest
         public ResultCode GetDigest(ServiceCtx context)
         {

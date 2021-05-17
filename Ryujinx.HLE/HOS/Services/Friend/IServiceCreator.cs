@@ -4,11 +4,11 @@ using Ryujinx.HLE.HOS.Services.Friend.ServiceCreator;
 
 namespace Ryujinx.HLE.HOS.Services.Friend
 {
-    [Service("friend:a", FriendServicePermissionLevel.Admin)]
+    [Service("friend:a", FriendServicePermissionLevel.Administrator)]
     [Service("friend:m", FriendServicePermissionLevel.Manager)]
     [Service("friend:s", FriendServicePermissionLevel.System)]
     [Service("friend:u", FriendServicePermissionLevel.User)]
-    [Service("friend:v", FriendServicePermissionLevel.Overlay)]
+    [Service("friend:v", FriendServicePermissionLevel.Viewer)]
     class IServiceCreator : IpcService
     {
         private FriendServicePermissionLevel _permissionLevel;
@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend
             _permissionLevel = permissionLevel;
         }
 
-        [Command(0)]
+        [CommandHipc(0)]
         // CreateFriendService() -> object<nn::friends::detail::ipc::IFriendService>
         public ResultCode CreateFriendService(ServiceCtx context)
         {
@@ -27,7 +27,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend
             return ResultCode.Success;
         }
 
-        [Command(1)] // 2.0.0+
+        [CommandHipc(1)] // 2.0.0+
         // CreateNotificationService(nn::account::Uid userId) -> object<nn::friends::detail::ipc::INotificationService>
         public ResultCode CreateNotificationService(ServiceCtx context)
         {
@@ -43,7 +43,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend
             return ResultCode.Success;
         }
 
-        [Command(2)] // 4.0.0+
+        [CommandHipc(2)] // 4.0.0+
         // CreateDaemonSuspendSessionService() -> object<nn::friends::detail::ipc::IDaemonSuspendSessionService>
         public ResultCode CreateDaemonSuspendSessionService(ServiceCtx context)
         {

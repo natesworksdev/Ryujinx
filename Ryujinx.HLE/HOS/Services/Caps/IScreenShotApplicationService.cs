@@ -8,14 +8,14 @@ namespace Ryujinx.HLE.HOS.Services.Caps
     {
         public IScreenShotApplicationService(ServiceCtx context) { }
 
-        [Command(32)] // 7.0.0+
+        [CommandHipc(32)] // 7.0.0+
         // SetShimLibraryVersion(pid, u64, nn::applet::AppletResourceUserId)
         public ResultCode SetShimLibraryVersion(ServiceCtx context)
         {
             return context.Device.System.CaptureManager.SetShimLibraryVersion(context);
         }
 
-        [Command(203)]
+        [CommandHipc(203)]
         // SaveScreenShotEx0(bytes<0x40> ScreenShotAttribute, u32 unknown, u64 AppletResourceUserId, pid, buffer<bytes, 0x45> ScreenshotData) -> bytes<0x20> ApplicationAlbumEntry
         public ResultCode SaveScreenShotEx0(ServiceCtx context)
         {
@@ -26,10 +26,10 @@ namespace Ryujinx.HLE.HOS.Services.Caps
             ulong appletResourceUserId = context.RequestData.ReadUInt64();
             ulong pidPlaceholder       = context.RequestData.ReadUInt64();
 
-            long screenshotDataPosition = context.Request.SendBuff[0].Position;
-            long screenshotDataSize     = context.Request.SendBuff[0].Size;
+            ulong screenshotDataPosition = context.Request.SendBuff[0].Position;
+            ulong screenshotDataSize     = context.Request.SendBuff[0].Size;
 
-            byte[] screenshotData = context.Memory.GetSpan((ulong)screenshotDataPosition, (int)screenshotDataSize, true).ToArray();
+            byte[] screenshotData = context.Memory.GetSpan(screenshotDataPosition, (int)screenshotDataSize, true).ToArray();
 
             ResultCode resultCode = context.Device.System.CaptureManager.SaveScreenShot(screenshotData, appletResourceUserId, context.Device.Application.TitleId, out ApplicationAlbumEntry applicationAlbumEntry);
 
@@ -38,7 +38,7 @@ namespace Ryujinx.HLE.HOS.Services.Caps
             return resultCode;
         }
 
-        [Command(205)] // 8.0.0+
+        [CommandHipc(205)] // 8.0.0+
         // SaveScreenShotEx1(bytes<0x40> ScreenShotAttribute, u32 unknown, u64 AppletResourceUserId, pid, buffer<bytes, 0x15> ApplicationData, buffer<bytes, 0x45> ScreenshotData) -> bytes<0x20> ApplicationAlbumEntry
         public ResultCode SaveScreenShotEx1(ServiceCtx context)
         {
@@ -49,16 +49,16 @@ namespace Ryujinx.HLE.HOS.Services.Caps
             ulong appletResourceUserId = context.RequestData.ReadUInt64();
             ulong pidPlaceholder       = context.RequestData.ReadUInt64();
 
-            long applicationDataPosition = context.Request.SendBuff[0].Position;
-            long applicationDataSize     = context.Request.SendBuff[0].Size;
+            ulong applicationDataPosition = context.Request.SendBuff[0].Position;
+            ulong applicationDataSize     = context.Request.SendBuff[0].Size;
 
-            long screenshotDataPosition = context.Request.SendBuff[1].Position;
-            long screenshotDataSize     = context.Request.SendBuff[1].Size;
+            ulong screenshotDataPosition = context.Request.SendBuff[1].Position;
+            ulong screenshotDataSize     = context.Request.SendBuff[1].Size;
 
             // TODO: Parse the application data: At 0x00 it's UserData (Size of 0x400), at 0x404 it's a uint UserDataSize (Always empty for now).
-            byte[] applicationData = context.Memory.GetSpan((ulong)applicationDataPosition, (int)applicationDataSize).ToArray();
+            byte[] applicationData = context.Memory.GetSpan(applicationDataPosition, (int)applicationDataSize).ToArray();
 
-            byte[] screenshotData = context.Memory.GetSpan((ulong)screenshotDataPosition, (int)screenshotDataSize, true).ToArray();
+            byte[] screenshotData = context.Memory.GetSpan(screenshotDataPosition, (int)screenshotDataSize, true).ToArray();
 
             ResultCode resultCode = context.Device.System.CaptureManager.SaveScreenShot(screenshotData, appletResourceUserId, context.Device.Application.TitleId, out ApplicationAlbumEntry applicationAlbumEntry);
 
@@ -67,7 +67,7 @@ namespace Ryujinx.HLE.HOS.Services.Caps
             return resultCode;
         }
 
-        [Command(210)]
+        [CommandHipc(210)]
         // SaveScreenShotEx2(bytes<0x40> ScreenShotAttribute, u32 unknown, u64 AppletResourceUserId, buffer<bytes, 0x15> UserIdList, buffer<bytes, 0x45> ScreenshotData) -> bytes<0x20> ApplicationAlbumEntry
         public ResultCode SaveScreenShotEx2(ServiceCtx context)
         {
@@ -77,16 +77,16 @@ namespace Ryujinx.HLE.HOS.Services.Caps
             uint  unknown              = context.RequestData.ReadUInt32();
             ulong appletResourceUserId = context.RequestData.ReadUInt64();
 
-            long userIdListPosition = context.Request.SendBuff[0].Position;
-            long userIdListSize     = context.Request.SendBuff[0].Size;
+            ulong userIdListPosition = context.Request.SendBuff[0].Position;
+            ulong userIdListSize     = context.Request.SendBuff[0].Size;
 
-            long screenshotDataPosition = context.Request.SendBuff[1].Position;
-            long screenshotDataSize     = context.Request.SendBuff[1].Size;
+            ulong screenshotDataPosition = context.Request.SendBuff[1].Position;
+            ulong screenshotDataSize     = context.Request.SendBuff[1].Size;
 
             // TODO: Parse the UserIdList.
-            byte[] userIdList = context.Memory.GetSpan((ulong)userIdListPosition, (int)userIdListSize).ToArray();
+            byte[] userIdList = context.Memory.GetSpan(userIdListPosition, (int)userIdListSize).ToArray();
 
-            byte[] screenshotData = context.Memory.GetSpan((ulong)screenshotDataPosition, (int)screenshotDataSize, true).ToArray();
+            byte[] screenshotData = context.Memory.GetSpan(screenshotDataPosition, (int)screenshotDataSize, true).ToArray();
 
             ResultCode resultCode = context.Device.System.CaptureManager.SaveScreenShot(screenshotData, appletResourceUserId, context.Device.Application.TitleId, out ApplicationAlbumEntry applicationAlbumEntry);
 

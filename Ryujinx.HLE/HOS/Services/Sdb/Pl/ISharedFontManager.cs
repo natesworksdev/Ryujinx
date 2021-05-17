@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
 
         public ISharedFontManager(ServiceCtx context) { }
 
-        [Command(0)]
+        [CommandHipc(0)]
         // RequestLoad(u32)
         public ResultCode RequestLoad(ServiceCtx context)
         {
@@ -24,7 +24,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
             return ResultCode.Success;
         }
 
-        [Command(1)]
+        [CommandHipc(1)]
         // GetLoadState(u32) -> u32
         public ResultCode GetLoadState(ServiceCtx context)
         {
@@ -37,7 +37,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
             return ResultCode.Success;
         }
 
-        [Command(2)]
+        [CommandHipc(2)]
         // GetFontSize(u32) -> u32
         public ResultCode GetFontSize(ServiceCtx context)
         {
@@ -48,7 +48,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
             return ResultCode.Success;
         }
 
-        [Command(3)]
+        [CommandHipc(3)]
         // GetSharedMemoryAddressOffset(u32) -> u32
         public ResultCode GetSharedMemoryAddressOffset(ServiceCtx context)
         {
@@ -59,7 +59,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
             return ResultCode.Success;
         }
 
-        [Command(4)]
+        [CommandHipc(4)]
         // GetSharedMemoryNativeHandle() -> handle<copy>
         public ResultCode GetSharedMemoryNativeHandle(ServiceCtx context)
         {
@@ -78,7 +78,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
             return ResultCode.Success;
         }
 
-        [Command(5)]
+        [CommandHipc(5)]
         // GetSharedFontInOrderOfPriority(bytes<8, 1>) -> (u8, u32, buffer<unknown, 6>, buffer<unknown, 6>, buffer<unknown, 6>)
         public ResultCode GetSharedFontInOrderOfPriority(ServiceCtx context)
         {
@@ -87,7 +87,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
 
             for (SharedFontType type = 0; type < SharedFontType.Count; type++)
             {
-                int offset = (int)type * 4;
+                uint offset = (uint)type * 4;
 
                 if (!AddFontToOrderOfPriorityList(context, type, offset))
                 {
@@ -103,27 +103,27 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
             return ResultCode.Success;
         }
 
-        private bool AddFontToOrderOfPriorityList(ServiceCtx context, SharedFontType fontType, int offset)
+        private bool AddFontToOrderOfPriorityList(ServiceCtx context, SharedFontType fontType, uint offset)
         {
-            long typesPosition = context.Request.ReceiveBuff[0].Position;
-            long typesSize     = context.Request.ReceiveBuff[0].Size;
+            ulong typesPosition = context.Request.ReceiveBuff[0].Position;
+            ulong typesSize     = context.Request.ReceiveBuff[0].Size;
 
-            long offsetsPosition = context.Request.ReceiveBuff[1].Position;
-            long offsetsSize     = context.Request.ReceiveBuff[1].Size;
+            ulong offsetsPosition = context.Request.ReceiveBuff[1].Position;
+            ulong offsetsSize     = context.Request.ReceiveBuff[1].Size;
 
-            long fontSizeBufferPosition = context.Request.ReceiveBuff[2].Position;
-            long fontSizeBufferSize     = context.Request.ReceiveBuff[2].Size;
+            ulong fontSizeBufferPosition = context.Request.ReceiveBuff[2].Position;
+            ulong fontSizeBufferSize     = context.Request.ReceiveBuff[2].Size;
 
-            if ((uint)offset + 4 > (uint)typesSize   ||
-                (uint)offset + 4 > (uint)offsetsSize ||
-                (uint)offset + 4 > (uint)fontSizeBufferSize)
+            if (offset + 4 > (uint)typesSize   ||
+                offset + 4 > (uint)offsetsSize ||
+                offset + 4 > (uint)fontSizeBufferSize)
             {
                 return false;
             }
 
-            context.Memory.Write((ulong)(typesPosition + offset), (int)fontType);
-            context.Memory.Write((ulong)(offsetsPosition + offset), context.Device.System.Font.GetSharedMemoryAddressOffset(fontType));
-            context.Memory.Write((ulong)(fontSizeBufferPosition + offset), context.Device.System.Font.GetFontSize(fontType));
+            context.Memory.Write(typesPosition + offset, (int)fontType);
+            context.Memory.Write(offsetsPosition + offset, context.Device.System.Font.GetSharedMemoryAddressOffset(fontType));
+            context.Memory.Write(fontSizeBufferPosition + offset, context.Device.System.Font.GetFontSize(fontType));
 
             return true;
         }

@@ -18,18 +18,18 @@ namespace Ryujinx.HLE.HOS.Services.Settings
     {
         public ISystemSettingsServer(ServiceCtx context) { }
 
-        [Command(3)]
+        [CommandHipc(3)]
         // GetFirmwareVersion() -> buffer<nn::settings::system::FirmwareVersion, 0x1a, 0x100>
         public ResultCode GetFirmwareVersion(ServiceCtx context)
         {
             return GetFirmwareVersion2(context);
         }
 
-        [Command(4)]
+        [CommandHipc(4)]
         // GetFirmwareVersion2() -> buffer<nn::settings::system::FirmwareVersion, 0x1a, 0x100>
         public ResultCode GetFirmwareVersion2(ServiceCtx context)
         {
-            long replyPos  = context.Request.RecvListBuff[0].Position;
+            ulong replyPos  = context.Request.RecvListBuff[0].Position;
 
             context.Response.PtrBuff[0] = context.Response.PtrBuff[0].WithSize(0x100L);
 
@@ -37,7 +37,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
             if (firmwareData != null)
             {
-                context.Memory.Write((ulong)replyPos, firmwareData);
+                context.Memory.Write(replyPos, firmwareData);
 
                 return ResultCode.Success;
             }
@@ -80,13 +80,13 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
                 writer.Write(Encoding.ASCII.GetBytes(build));
 
-                context.Memory.Write((ulong)replyPos, ms.ToArray());
+                context.Memory.Write(replyPos, ms.ToArray());
             }
 
             return ResultCode.Success;
         }
 
-        [Command(23)]
+        [CommandHipc(23)]
         // GetColorSetId() -> i32
         public ResultCode GetColorSetId(ServiceCtx context)
         {
@@ -95,7 +95,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
             return ResultCode.Success;
         }
 
-        [Command(24)]
+        [CommandHipc(24)]
         // GetColorSetId() -> i32
         public ResultCode SetColorSetId(ServiceCtx context)
         {
@@ -106,23 +106,23 @@ namespace Ryujinx.HLE.HOS.Services.Settings
             return ResultCode.Success;
         }
 
-        [Command(37)]
+        [CommandHipc(37)]
         // GetSettingsItemValueSize(buffer<nn::settings::SettingsName, 0x19>, buffer<nn::settings::SettingsItemKey, 0x19>) -> u64
         public ResultCode GetSettingsItemValueSize(ServiceCtx context)
         {
-            long classPos  = context.Request.PtrBuff[0].Position;
-            long classSize = context.Request.PtrBuff[0].Size;
+            ulong classPos  = context.Request.PtrBuff[0].Position;
+            ulong classSize = context.Request.PtrBuff[0].Size;
 
-            long namePos  = context.Request.PtrBuff[1].Position;
-            long nameSize = context.Request.PtrBuff[1].Size;
+            ulong namePos  = context.Request.PtrBuff[1].Position;
+            ulong nameSize = context.Request.PtrBuff[1].Size;
 
             byte[] classBuffer = new byte[classSize];
 
-            context.Memory.Read((ulong)classPos, classBuffer);
+            context.Memory.Read(classPos, classBuffer);
 
             byte[] nameBuffer = new byte[nameSize];
 
-            context.Memory.Read((ulong)namePos, nameBuffer);
+            context.Memory.Read(namePos, nameBuffer);
 
             string askedSetting = Encoding.ASCII.GetString(classBuffer).Trim('\0') + "!" + Encoding.ASCII.GetString(nameBuffer).Trim('\0');
 
@@ -155,26 +155,26 @@ namespace Ryujinx.HLE.HOS.Services.Settings
             return ResultCode.Success;
         }
 
-        [Command(38)]
+        [CommandHipc(38)]
         // GetSettingsItemValue(buffer<nn::settings::SettingsName, 0x19, 0x48>, buffer<nn::settings::SettingsItemKey, 0x19, 0x48>) -> (u64, buffer<unknown, 6, 0>)
         public ResultCode GetSettingsItemValue(ServiceCtx context)
         {
-            long classPos  = context.Request.PtrBuff[0].Position;
-            long classSize = context.Request.PtrBuff[0].Size;
+            ulong classPos  = context.Request.PtrBuff[0].Position;
+            ulong classSize = context.Request.PtrBuff[0].Size;
 
-            long namePos  = context.Request.PtrBuff[1].Position;
-            long nameSize = context.Request.PtrBuff[1].Size;
+            ulong namePos  = context.Request.PtrBuff[1].Position;
+            ulong nameSize = context.Request.PtrBuff[1].Size;
 
-            long replyPos  = context.Request.ReceiveBuff[0].Position;
-            long replySize = context.Request.ReceiveBuff[0].Size;
+            ulong replyPos  = context.Request.ReceiveBuff[0].Position;
+            ulong replySize = context.Request.ReceiveBuff[0].Size;
 
             byte[] classBuffer = new byte[classSize];
 
-            context.Memory.Read((ulong)classPos, classBuffer);
+            context.Memory.Read(classPos, classBuffer);
 
             byte[] nameBuffer = new byte[nameSize];
 
-            context.Memory.Read((ulong)namePos, nameBuffer);
+            context.Memory.Read(namePos, nameBuffer);
 
             string askedSetting = Encoding.ASCII.GetString(classBuffer).Trim('\0') + "!" + Encoding.ASCII.GetString(nameBuffer).Trim('\0');
 
@@ -186,7 +186,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
                 if (nxSetting is string stringValue)
                 {
-                    if (stringValue.Length + 1 > replySize)
+                    if ((ulong)(stringValue.Length + 1) > replySize)
                     {
                         Logger.Error?.Print(LogClass.ServiceSet, $"{askedSetting} String value size is too big!");
                     }
@@ -209,7 +209,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
                     throw new NotImplementedException(nxSetting.GetType().Name);
                 }
 
-                context.Memory.Write((ulong)replyPos, settingBuffer);
+                context.Memory.Write(replyPos, settingBuffer);
 
                 Logger.Debug?.Print(LogClass.ServiceSet, $"{askedSetting} set value: {nxSetting} as {nxSetting.GetType()}");
             }
@@ -221,7 +221,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
             return ResultCode.Success;
         }
 
-       [Command(60)]
+       [CommandHipc(60)]
         // IsUserSystemClockAutomaticCorrectionEnabled() -> bool
         public ResultCode IsUserSystemClockAutomaticCorrectionEnabled(ServiceCtx context)
         {
@@ -235,8 +235,9 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
         public byte[] GetFirmwareData(Switch device)
         {
-            long   titleId     = 0x0100000000000809;
-            string contentPath = device.System.ContentManager.GetInstalledContentPath(titleId, StorageId.NandSystem, NcaContentType.Data);
+            const ulong SystemVersionTitleId = 0x0100000000000809;
+
+            string contentPath = device.System.ContentManager.GetInstalledContentPath(SystemVersionTitleId, StorageId.NandSystem, NcaContentType.Data);
 
             if (string.IsNullOrWhiteSpace(contentPath))
             {

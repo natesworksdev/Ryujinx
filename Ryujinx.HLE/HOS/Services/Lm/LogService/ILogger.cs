@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Services.Lm.LogService
     {
         public ILogger() { }
 
-        [Command(0)]
+        [CommandHipc(0)]
         // Log(buffer<unknown, 0x21>)
         public ResultCode Log(ServiceCtx context)
         {
@@ -19,11 +19,11 @@ namespace Ryujinx.HLE.HOS.Services.Lm.LogService
 
         private string LogImpl(ServiceCtx context)
         {
-            (long bufPos, long bufSize) = context.Request.GetBufferType0x21();
+            (ulong bufPos, ulong bufSize) = context.Request.GetBufferType0x21();
 
             byte[] logBuffer = new byte[bufSize];
 
-            context.Memory.Read((ulong)bufPos, logBuffer);
+            context.Memory.Read(bufPos, logBuffer);
 
             using MemoryStream ms = new MemoryStream(logBuffer);
 

@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Services.Hid;
+using Ryujinx.HLE.HOS.Services.Hid.Types;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE;
 
 using static Ryujinx.HLE.HOS.Services.Hid.HidServer.HidUtils;
@@ -104,6 +105,8 @@ namespace Ryujinx.HLE.HOS.Applets
 
             _normalSession.Push(BuildResponse(result));
             AppletStateChanged?.Invoke(this, null);
+
+            _system.ReturnFocus();
 
             return ResultCode.Success;
         }

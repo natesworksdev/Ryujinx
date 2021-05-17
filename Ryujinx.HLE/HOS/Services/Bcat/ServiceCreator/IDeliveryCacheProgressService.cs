@@ -20,7 +20,7 @@ namespace Ryujinx.HLE.HOS.Services.Bcat.ServiceCreator
             _event = new KEvent(context.Device.System.KernelContext);
         }
 
-        [Command(0)]
+        [CommandHipc(0)]
         // GetEvent() -> handle<copy>
         public ResultCode GetEvent(ServiceCtx context)
         {
@@ -39,7 +39,7 @@ namespace Ryujinx.HLE.HOS.Services.Bcat.ServiceCreator
             return ResultCode.Success;
         }
 
-        [Command(1)]
+        [CommandHipc(1)]
         // GetImpl() -> buffer<nn::bcat::detail::DeliveryCacheProgressImpl, 0x1a>
         public ResultCode GetImpl(ServiceCtx context)
         {
@@ -49,7 +49,7 @@ namespace Ryujinx.HLE.HOS.Services.Bcat.ServiceCreator
                 Result = 0
             };
 
-            long dcpSize = WriteDeliveryCacheProgressImpl(context, context.Request.RecvListBuff[0], deliveryCacheProgress);
+            ulong dcpSize = WriteDeliveryCacheProgressImpl(context, context.Request.RecvListBuff[0], deliveryCacheProgress);
             context.Response.PtrBuff[0] = context.Response.PtrBuff[0].WithSize(dcpSize);
 
             Logger.Stub?.PrintStub(LogClass.ServiceBcat);
@@ -57,7 +57,7 @@ namespace Ryujinx.HLE.HOS.Services.Bcat.ServiceCreator
             return ResultCode.Success;
         }
 
-        private long WriteDeliveryCacheProgressImpl(ServiceCtx context, IpcRecvListBuffDesc ipcDesc, DeliveryCacheProgressImpl deliveryCacheProgress)
+        private ulong WriteDeliveryCacheProgressImpl(ServiceCtx context, IpcRecvListBuffDesc ipcDesc, DeliveryCacheProgressImpl deliveryCacheProgress)
         {
             return MemoryHelper.Write(context.Memory, ipcDesc.Position, deliveryCacheProgress);
         }
