@@ -64,7 +64,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     !isIndexed)
                 {
                     // Image scales start after texture ones.
-                    int scaleIndex = context.TextureDescriptors.Count + index;
+                    int scaleIndex = context.Config.GetTextures().Length + index;
 
                     if (pCount == 3 && isArray)
                     {
@@ -83,11 +83,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 else
                 {
                     flags |= TextureUsageFlags.ResScaleUnsupported;
-                }
-
-                if (!isBindless)
-                {
-                    context.ImageDescriptors[index] = context.ImageDescriptors[index].SetFlag(flags);
                 }
 
                 return vector;
@@ -112,7 +107,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             if (texOp.Inst == Instruction.ImageStore)
             {
                 int texIndex = context.FindImageDescriptorIndex(texOp);
-                context.ImageDescriptors[texIndex] = context.ImageDescriptors[texIndex].SetFlag(TextureUsageFlags.ImageStore);
 
                 VariableType type = texOp.Format.GetComponentType();
 
@@ -497,11 +491,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                         // Flag so that we know to blacklist scaling on related textures when binding them.
 
                         flags |= TextureUsageFlags.ResScaleUnsupported;
-                    }
-
-                    if (!isBindless)
-                    {
-                        context.TextureDescriptors[index] = context.TextureDescriptors[index].SetFlag(flags);
                     }
                 }
 

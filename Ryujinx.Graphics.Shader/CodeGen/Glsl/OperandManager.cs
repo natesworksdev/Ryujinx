@@ -242,9 +242,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         public static string GetSamplerName(ShaderStage stage, AstTextureOperation texOp, string indexExpr)
         {
-            string suffix = texOp.CbufSlot < 0 ? $"_tcb_{texOp.Handle:X}" : $"_cb{texOp.CbufSlot}_{texOp.Handle:X}";
+            return GetSamplerName(stage, texOp.CbufSlot, texOp.Handle, texOp.Type.HasFlag(SamplerType.Indexed), indexExpr);
+        }
 
-            if ((texOp.Type & SamplerType.Indexed) != 0)
+        public static string GetSamplerName(ShaderStage stage, int cbufSlot, int handle, bool indexed, string indexExpr)
+        {
+            string suffix = cbufSlot < 0 ? $"_tcb_{handle:X}" : $"_cb{cbufSlot}_{handle:X}";
+
+            if (indexed)
             {
                 suffix += $"a[{indexExpr}]";
             }
@@ -254,9 +259,22 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         public static string GetImageName(ShaderStage stage, AstTextureOperation texOp, string indexExpr)
         {
-            string suffix = texOp.CbufSlot < 0 ? $"_tcb_{texOp.Handle:X}_{texOp.Format.ToGlslFormat()}" : $"_cb{texOp.CbufSlot}_{texOp.Handle:X}_{texOp.Format.ToGlslFormat()}";
+            return GetImageName(stage, texOp.CbufSlot, texOp.Handle, texOp.Format, texOp.Type.HasFlag(SamplerType.Indexed), indexExpr);
+        }
 
-            if ((texOp.Type & SamplerType.Indexed) != 0)
+        public static string GetImageName(
+            ShaderStage stage,
+            int cbufSlot,
+            int handle,
+            TextureFormat format,
+            bool indexed,
+            string indexExpr)
+        {
+            string suffix = cbufSlot < 0
+                ? $"_tcb_{handle:X}_{format.ToGlslFormat()}"
+                : $"_cb{cbufSlot}_{handle:X}_{format.ToGlslFormat()}";
+
+            if (indexed)
             {
                 suffix += $"a[{indexExpr}]";
             }

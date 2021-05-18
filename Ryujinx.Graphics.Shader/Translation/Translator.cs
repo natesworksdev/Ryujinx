@@ -90,10 +90,10 @@ namespace Ryujinx.Graphics.Shader.Translation
             GlslProgram program = GlslGenerator.Generate(sInfo, config);
 
             shaderProgramInfo = new ShaderProgramInfo(
-                program.CBufferDescriptors,
-                program.SBufferDescriptors,
-                program.TextureDescriptors,
-                program.ImageDescriptors,
+                config.GetConstantBuffers(),
+                config.GetStorageBuffers(),
+                config.GetTextures(),
+                config.GetImages(),
                 config.UsedFeatures.HasFlag(FeatureFlags.InstanceId),
                 config.ClipDistancesWritten);
 
@@ -112,7 +112,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             Block[][] cfg;
             ulong maxEndAddress = 0;
 
-            bool hasBindless = false;
+            bool hasBindless;
 
             if ((flags & TranslationFlags.Compute) != 0)
             {

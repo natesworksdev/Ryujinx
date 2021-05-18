@@ -1,9 +1,15 @@
+using Ryujinx.Graphics.Shader.IntermediateRepresentation;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
 
 namespace Ryujinx.Graphics.Shader.Translation
 {
     class ShaderConfig
     {
+        public const int SamplerArraySize = 4;
+
         public ShaderStage Stage { get; }
 
         public bool GpPassthrough { get; }
@@ -34,6 +40,56 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public HashSet<int> TextureHandlesForCache { get; }
 
+        private int _usedConstantBuffers;
+        private int _usedStorageBuffers;
+        private int _usedStorageBuffersWrite;
+
+        private struct TextureInfo : IEquatable<TextureInfo>
+        {
+            public int CbufSlot { get; }
+            public int Handle { get; }
+            public bool Indexed { get; }
+            public TextureFormat Format { get; }
+
+            public TextureInfo(int cbufSlot, int handle, bool indexed, TextureFormat format)
+            {
+                CbufSlot = cbufSlot;
+                Handle = handle;
+                Indexed = indexed;
+                Format = format;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is TextureInfo other && Equals(other);
+            }
+
+            public bool Equals(TextureInfo other)
+            {
+                return CbufSlot == other.CbufSlot && Handle == other.Handle && Indexed == other.Indexed && Format == other.Format;
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(CbufSlot, Handle, Indexed, Format);
+            }
+        }
+
+        private struct TextureMeta
+        {
+            public bool AccurateType;
+            public SamplerType Type;
+            public TextureUsageFlags UsageFlags;
+        }
+
+        private readonly Dictionary<TextureInfo, TextureMeta> _usedTextures;
+        private readonly Dictionary<TextureInfo, TextureMeta> _usedImages;
+
+        private BufferDescriptor[] _cachedConstantBufferDescriptors;
+        private BufferDescriptor[] _cachedStorageBufferDescriptors;
+        private TextureDescriptor[] _cachedTextureDescriptors;
+        private TextureDescriptor[] _cachedImageDescriptors;
+
         public ShaderConfig(IGpuAccessor gpuAccessor, TranslationFlags flags, TranslationCounts counts)
         {
             Stage                  = ShaderStage.Compute;
@@ -51,25 +107,21 @@ namespace Ryujinx.Graphics.Shader.Translation
             UsedFeatures           = FeatureFlags.None;
             Counts                 = counts;
             TextureHandlesForCache = new HashSet<int>();
+            _usedTextures          = new Dictionary<TextureInfo, TextureMeta>();
+            _usedImages            = new Dictionary<TextureInfo, TextureMeta>();
         }
 
-        public ShaderConfig(ShaderHeader header, IGpuAccessor gpuAccessor, TranslationFlags flags, TranslationCounts counts)
+        public ShaderConfig(ShaderHeader header, IGpuAccessor gpuAccessor, TranslationFlags flags, TranslationCounts counts) : this(gpuAccessor, flags, counts)
         {
-            Stage                  = header.Stage;
-            GpPassthrough          = header.Stage == ShaderStage.Geometry && header.GpPassthrough;
-            OutputTopology         = header.OutputTopology;
-            MaxOutputVertices      = header.MaxOutputVertexCount;
-            LocalMemorySize        = header.ShaderLocalMemoryLowSize + header.ShaderLocalMemoryHighSize;
-            ImapTypes              = header.ImapTypes;
-            OmapTargets            = header.OmapTargets;
-            OmapSampleMask         = header.OmapSampleMask;
-            OmapDepth              = header.OmapDepth;
-            GpuAccessor            = gpuAccessor;
-            Flags                  = flags;
-            Size                   = 0;
-            UsedFeatures           = FeatureFlags.None;
-            Counts                 = counts;
-            TextureHandlesForCache = new HashSet<int>();
+            Stage             = header.Stage;
+            GpPassthrough     = header.Stage == ShaderStage.Geometry && header.GpPassthrough;
+            OutputTopology    = header.OutputTopology;
+            MaxOutputVertices = header.MaxOutputVertexCount;
+            LocalMemorySize   = header.ShaderLocalMemoryLowSize + header.ShaderLocalMemoryHighSize;
+            ImapTypes         = header.ImapTypes;
+            OmapTargets       = header.OmapTargets;
+            OmapSampleMask    = header.OmapSampleMask;
+            OmapDepth         = header.OmapDepth;
         }
 
         public int GetDepthRegister()
@@ -125,6 +177,205 @@ namespace Ryujinx.Graphics.Shader.Translation
         public void SetUsedFeature(FeatureFlags flags)
         {
             UsedFeatures |= flags;
+        }
+
+        public Operand CreateCbuf(int slot, int offset)
+        {
+            SetUsedConstantBuffer(slot);
+            return OperandHelper.Cbuf(slot, offset);
+        }
+
+        public void SetUsedConstantBuffer(int slot)
+        {
+            _usedConstantBuffers |= 1 << slot;
+        }
+
+        public void SetUsedStorageBuffer(int slot, bool write)
+        {
+            int mask = 1 << slot;
+            _usedStorageBuffers |= mask;
+
+            if (write)
+            {
+                _usedStorageBuffersWrite |= mask;
+            }
+        }
+
+        public void SetUsedTexture(
+            Instruction inst,
+            SamplerType type,
+            TextureFormat format,
+            TextureFlags flags,
+            int cbufSlot,
+            int handle)
+        {
+            inst &= Instruction.Mask;
+            bool isImage = inst == Instruction.ImageLoad || inst == Instruction.ImageStore;
+            bool isWrite = inst == Instruction.ImageStore;
+            bool accurateType = inst != Instruction.TextureSize && inst != Instruction.Lod;
+
+            if (isImage)
+            {
+                SetUsedImage(cbufSlot, handle, type, format, isWrite);
+            }
+            else
+            {
+                SetUsedTexture(cbufSlot, handle, type, accurateType, flags.HasFlag(TextureFlags.IntCoords));
+            }
+        }
+
+        private void SetUsedTexture(int cbufSlot, int handle, SamplerType type, bool accurateType, bool intCoords)
+        {
+            SetUsedTextureOrImage(_usedTextures, cbufSlot, handle, type, TextureFormat.Unknown, intCoords, false, accurateType);
+        }
+
+        private void SetUsedImage(int cbufSlot, int handle, SamplerType type, TextureFormat format, bool write)
+        {
+            SetUsedTextureOrImage(_usedImages, cbufSlot, handle, type, format, true, write, false);
+        }
+
+        private static void SetUsedTextureOrImage(
+            Dictionary<TextureInfo, TextureMeta> dict,
+            int cbufSlot,
+            int handle,
+            SamplerType type,
+            TextureFormat format,
+            bool intCoords,
+            bool write,
+            bool accurateType)
+        {
+            var dimensions = type.GetDimensions();
+            var isArray = type.HasFlag(SamplerType.Array);
+            var isIndexed = type.HasFlag(SamplerType.Indexed);
+            var canScale = (dimensions == 2 && !isArray) || (dimensions == 3 && isArray);
+            var usageFlags = TextureUsageFlags.None;
+
+            if (intCoords)
+            {
+                usageFlags |= TextureUsageFlags.NeedsScaleValue;
+            }
+
+            if (!canScale)
+            {
+                // Resolution scaling cannot be applied to this texture right now.
+                // Flag so that we know to blacklist scaling on related textures when binding them.
+                usageFlags |= TextureUsageFlags.ResScaleUnsupported;
+            }
+
+            if (write)
+            {
+                usageFlags |= TextureUsageFlags.ImageStore;
+            }
+
+            int arraySize = isIndexed ? SamplerArraySize : 1;
+
+            for (int layer = 0; layer < arraySize; layer++)
+            {
+                var info = new TextureInfo(cbufSlot, handle + layer * 2, isIndexed, format);
+                var meta = new TextureMeta()
+                {
+                    AccurateType = accurateType,
+                    Type = type,
+                    UsageFlags = usageFlags
+                };
+
+                if (dict.TryGetValue(info, out var existingMeta))
+                {
+                    meta.UsageFlags |= existingMeta.UsageFlags;
+
+                    // If the texture we have has inaccurate type information, then
+                    // we prefer the most accurate one.
+                    if (existingMeta.AccurateType)
+                    {
+                        meta.AccurateType = true;
+                        meta.Type = existingMeta.Type;
+                    }
+
+                    dict[info] = meta;
+                }
+                else
+                {
+                    dict.Add(info, meta);
+                }
+            }
+        }
+
+        public BufferDescriptor[] GetConstantBuffers()
+        {
+            if (_cachedConstantBufferDescriptors != null)
+            {
+                return _cachedConstantBufferDescriptors;
+            }
+
+            int usedMask = _usedConstantBuffers;
+
+            if (UsedFeatures.HasFlag(FeatureFlags.CbIndexing))
+            {
+                usedMask = FillMask(usedMask);
+            }
+
+            return _cachedConstantBufferDescriptors = GetBuffers(usedMask, 0, Counts.IncrementUniformBuffersCount);
+        }
+
+        public BufferDescriptor[] GetStorageBuffers()
+        {
+            return _cachedStorageBufferDescriptors ??= GetBuffers(FillMask(_usedStorageBuffers), _usedStorageBuffersWrite, Counts.IncrementStorageBuffersCount);
+        }
+
+        private static int FillMask(int mask)
+        {
+            return mask != 0 ? (int)(uint.MaxValue >> BitOperations.LeadingZeroCount((uint)mask)) : 0;
+        }
+
+        private static BufferDescriptor[] GetBuffers(int usedMask, int writtenMask, Func<int> getBindingCallback)
+        {
+            var descriptors = new BufferDescriptor[BitOperations.PopCount((uint)usedMask)];
+
+            for (int i = 0; i < descriptors.Length; i++)
+            {
+                int slot = BitOperations.TrailingZeroCount(usedMask);
+
+                descriptors[i] = new BufferDescriptor(getBindingCallback(), slot);
+
+                if ((writtenMask & (1 << slot)) != 0)
+                {
+                    descriptors[i].SetFlag(BufferUsageFlags.Write);
+                }
+
+                usedMask &= ~(1 << slot);
+            }
+
+            return descriptors;
+        }
+
+        public TextureDescriptor[] GetTextures()
+        {
+            return _cachedTextureDescriptors ??= GetTextureOrImageDescriptors(_usedTextures, Counts.IncrementTexturesCount);
+        }
+
+        public TextureDescriptor[] GetImages()
+        {
+            return _cachedImageDescriptors ??= GetTextureOrImageDescriptors(_usedImages, Counts.IncrementImagesCount);
+        }
+
+        private static TextureDescriptor[] GetTextureOrImageDescriptors(Dictionary<TextureInfo, TextureMeta> dict, Func<int> getBindingCallback)
+        {
+            var descriptors = new TextureDescriptor[dict.Count];
+
+            int i = 0;
+            foreach (var kv in dict.OrderBy(x => x.Key.Indexed).OrderBy(x => x.Key.Handle))
+            {
+                var info = kv.Key;
+                var meta = kv.Value;
+
+                int binding = getBindingCallback();
+
+                descriptors[i] = new TextureDescriptor(binding, meta.Type, info.Format, info.CbufSlot, info.Handle);
+                descriptors[i].SetFlag(meta.UsageFlags);
+                i++;
+            }
+
+            return descriptors;
         }
     }
 }

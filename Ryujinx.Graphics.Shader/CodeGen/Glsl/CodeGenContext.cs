@@ -1,7 +1,8 @@
-using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.StructuredIr;
 using Ryujinx.Graphics.Shader.Translation;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
@@ -84,23 +85,32 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             AppendLine("}" + suffix);
         }
 
-        private int FindDescriptorIndex(List<TextureDescriptor> list, AstTextureOperation texOp)
+        private int FindDescriptorIndex(TextureDescriptor[] array, AstTextureOperation texOp)
         {
-            return list.FindIndex(descriptor =>
-                descriptor.Type == texOp.Type &&
-                descriptor.CbufSlot == texOp.CbufSlot &&
-                descriptor.HandleIndex == texOp.Handle &&
-                descriptor.Format == texOp.Format);
+            for (int i = 0; i < array.Length; i++)
+            {
+                var descriptor = array[i];
+
+                if (descriptor.Type == texOp.Type &&
+                    descriptor.CbufSlot == texOp.CbufSlot &&
+                    descriptor.HandleIndex == texOp.Handle &&
+                    descriptor.Format == texOp.Format)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         public int FindTextureDescriptorIndex(AstTextureOperation texOp)
         {
-            return FindDescriptorIndex(TextureDescriptors, texOp);
+            return FindDescriptorIndex(Config.GetTextures(), texOp);
         }
 
         public int FindImageDescriptorIndex(AstTextureOperation texOp)
         {
-            return FindDescriptorIndex(ImageDescriptors, texOp);
+            return FindDescriptorIndex(Config.GetImages(), texOp);
         }
 
         public StructuredFunction GetFunction(int id)
