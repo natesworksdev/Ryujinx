@@ -63,7 +63,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     !isIndexed)
                 {
                     // Image scales start after texture ones.
-                    int scaleIndex = context.Config.GetTextures().Length + index;
+                    int scaleIndex = context.Config.GetTextureDescriptors().Length + index;
 
                     if (pCount == 3 && isArray)
                     {

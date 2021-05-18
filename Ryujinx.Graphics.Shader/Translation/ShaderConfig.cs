@@ -207,22 +207,12 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             if (isImage)
             {
-                SetUsedImage(cbufSlot, handle, type, format, isWrite);
+                SetUsedTextureOrImage(_usedImages, cbufSlot, handle, type, format, true, isWrite, false);
             }
             else
             {
-                SetUsedTexture(cbufSlot, handle, type, accurateType, flags.HasFlag(TextureFlags.IntCoords));
+                SetUsedTextureOrImage(_usedTextures, cbufSlot, handle, type, TextureFormat.Unknown, flags.HasFlag(TextureFlags.IntCoords), false, accurateType);
             }
-        }
-
-        private void SetUsedTexture(int cbufSlot, int handle, SamplerType type, bool accurateType, bool intCoords)
-        {
-            SetUsedTextureOrImage(_usedTextures, cbufSlot, handle, type, TextureFormat.Unknown, intCoords, false, accurateType);
-        }
-
-        private void SetUsedImage(int cbufSlot, int handle, SamplerType type, TextureFormat format, bool write)
-        {
-            SetUsedTextureOrImage(_usedImages, cbufSlot, handle, type, format, true, write, false);
         }
 
         private static void SetUsedTextureOrImage(
@@ -238,19 +228,20 @@ namespace Ryujinx.Graphics.Shader.Translation
             var dimensions = type.GetDimensions();
             var isArray = type.HasFlag(SamplerType.Array);
             var isIndexed = type.HasFlag(SamplerType.Indexed);
-            var canScale = (dimensions == 2 && !isArray) || (dimensions == 3 && isArray);
+
             var usageFlags = TextureUsageFlags.None;
 
             if (intCoords)
             {
                 usageFlags |= TextureUsageFlags.NeedsScaleValue;
-            }
 
-            if (!canScale)
-            {
-                // Resolution scaling cannot be applied to this texture right now.
-                // Flag so that we know to blacklist scaling on related textures when binding them.
-                usageFlags |= TextureUsageFlags.ResScaleUnsupported;
+                var canScale = (dimensions == 2 && !isArray) || (dimensions == 3 && isArray);
+                if (!canScale)
+                {
+                    // Resolution scaling cannot be applied to this texture right now.
+                    // Flag so that we know to blacklist scaling on related textures when binding them.
+                    usageFlags |= TextureUsageFlags.ResScaleUnsupported;
+                }
             }
 
             if (write)
@@ -291,7 +282,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
         }
 
-        public BufferDescriptor[] GetConstantBuffers()
+        public BufferDescriptor[] GetConstantBufferDescriptors()
         {
             if (_cachedConstantBufferDescriptors != null)
             {
@@ -305,12 +296,12 @@ namespace Ryujinx.Graphics.Shader.Translation
                 usedMask = FillMask(usedMask);
             }
 
-            return _cachedConstantBufferDescriptors = GetBuffers(usedMask, 0, _counts.IncrementUniformBuffersCount);
+            return _cachedConstantBufferDescriptors = GetBufferDescriptors(usedMask, 0, _counts.IncrementUniformBuffersCount);
         }
 
-        public BufferDescriptor[] GetStorageBuffers()
+        public BufferDescriptor[] GetStorageBufferDescriptors()
         {
-            return _cachedStorageBufferDescriptors ??= GetBuffers(FillMask(_usedStorageBuffers), _usedStorageBuffersWrite, _counts.IncrementStorageBuffersCount);
+            return _cachedStorageBufferDescriptors ??= GetBufferDescriptors(FillMask(_usedStorageBuffers), _usedStorageBuffersWrite, _counts.IncrementStorageBuffersCount);
         }
 
         private static int FillMask(int mask)
@@ -322,7 +313,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             return mask != 0 ? (int)(uint.MaxValue >> BitOperations.LeadingZeroCount((uint)mask)) : 0;
         }
 
-        private static BufferDescriptor[] GetBuffers(int usedMask, int writtenMask, Func<int> getBindingCallback)
+        private static BufferDescriptor[] GetBufferDescriptors(int usedMask, int writtenMask, Func<int> getBindingCallback)
         {
             var descriptors = new BufferDescriptor[BitOperations.PopCount((uint)usedMask)];
 
@@ -343,12 +334,12 @@ namespace Ryujinx.Graphics.Shader.Translation
             return descriptors;
         }
 
-        public TextureDescriptor[] GetTextures()
+        public TextureDescriptor[] GetTextureDescriptors()
         {
             return _cachedTextureDescriptors ??= GetTextureOrImageDescriptors(_usedTextures, _counts.IncrementTexturesCount);
         }
 
-        public TextureDescriptor[] GetImages()
+        public TextureDescriptor[] GetImageDescriptors()
         {
             return _cachedImageDescriptors ??= GetTextureOrImageDescriptors(_usedImages, _counts.IncrementImagesCount);
         }

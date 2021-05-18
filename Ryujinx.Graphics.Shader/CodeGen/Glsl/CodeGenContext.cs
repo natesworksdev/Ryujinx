@@ -90,12 +90,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         public int FindTextureDescriptorIndex(AstTextureOperation texOp)
         {
-            return FindDescriptorIndex(Config.GetTextures(), texOp);
+            return FindDescriptorIndex(Config.GetTextureDescriptors(), texOp);
         }
 
         public int FindImageDescriptorIndex(AstTextureOperation texOp)
         {
-            return FindDescriptorIndex(Config.GetImages(), texOp);
+            return FindDescriptorIndex(Config.GetImageDescriptors(), texOp);
         }
 
         public StructuredFunction GetFunction(int id)

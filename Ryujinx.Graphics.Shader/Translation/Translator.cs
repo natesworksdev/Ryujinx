@@ -90,10 +90,10 @@ namespace Ryujinx.Graphics.Shader.Translation
             string glslCode = GlslGenerator.Generate(sInfo, config);
 
             shaderProgramInfo = new ShaderProgramInfo(
-                config.GetConstantBuffers(),
-                config.GetStorageBuffers(),
-                config.GetTextures(),
-                config.GetImages(),
+                config.GetConstantBufferDescriptors(),
+                config.GetStorageBufferDescriptors(),
+                config.GetTextureDescriptors(),
+                config.GetImageDescriptors(),
                 config.UsedFeatures.HasFlag(FeatureFlags.InstanceId),
                 config.ClipDistancesWritten);
 

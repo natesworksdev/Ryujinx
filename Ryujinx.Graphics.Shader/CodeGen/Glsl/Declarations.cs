@@ -70,7 +70,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 context.AppendLine();
             }
 
-            var cBufferDescriptors = context.Config.GetConstantBuffers();
+            var cBufferDescriptors = context.Config.GetConstantBufferDescriptors();
             if (cBufferDescriptors.Length != 0)
             {
                 DeclareUniforms(context, cBufferDescriptors);
@@ -78,7 +78,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 context.AppendLine();
             }
 
-            var sBufferDescriptors = context.Config.GetStorageBuffers();
+            var sBufferDescriptors = context.Config.GetStorageBufferDescriptors();
             if (sBufferDescriptors.Length != 0)
             {
                 DeclareStorages(context, sBufferDescriptors);
@@ -86,7 +86,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 context.AppendLine();
             }
 
-            var textureDescriptors = context.Config.GetTextures();
+            var textureDescriptors = context.Config.GetTextureDescriptors();
             if (textureDescriptors.Length != 0)
             {
                 DeclareSamplers(context, textureDescriptors);
@@ -94,7 +94,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 context.AppendLine();
             }
 
-            var imageDescriptors = context.Config.GetImages();
+            var imageDescriptors = context.Config.GetImageDescriptors();
             if (imageDescriptors.Length != 0)
             {
                 DeclareImages(context, imageDescriptors);
@@ -465,7 +465,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             {
                 string stage = OperandManager.GetShaderStagePrefix(context.Config.Stage);
 
-                int scaleElements = context.Config.GetTextures().Length + context.Config.GetImages().Length;
+                int scaleElements = context.Config.GetTextureDescriptors().Length + context.Config.GetImageDescriptors().Length;
 
                 if (context.Config.Stage == ShaderStage.Fragment)
                 {
