@@ -18,6 +18,7 @@ namespace ARMeilleure.State
             public ulong ExclusiveAddress;
             public ulong ExclusiveValueLow;
             public ulong ExclusiveValueHigh;
+            public int RejitHint;
             public int Running;
         }
 
@@ -32,6 +33,7 @@ namespace ARMeilleure.State
             _block = allocator.Allocate((ulong)Unsafe.SizeOf<NativeCtxStorage>());
 
             GetStorage().ExclusiveAddress = ulong.MaxValue;
+            GetStorage().RejitHint = 1;
         }
 
         public unsafe ulong GetX(int index)
@@ -184,6 +186,11 @@ namespace ARMeilleure.State
         public static int GetRunningOffset()
         {
             return StorageOffset(ref _dummyStorage, ref _dummyStorage.Running);
+        }
+
+        public static int GetRejitHintOffset()
+        {
+            return StorageOffset(ref _dummyStorage, ref _dummyStorage.RejitHint);
         }
 
         private static int StorageOffset<T>(ref NativeCtxStorage storage, ref T target)

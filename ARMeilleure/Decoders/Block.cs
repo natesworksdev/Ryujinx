@@ -5,23 +5,19 @@ namespace ARMeilleure.Decoders
 {
     class Block
     {
-        public ulong Address    { get; set; }
+        public ulong Address { get; set; }
         public ulong EndAddress { get; set; }
 
-        public Block Next   { get; set; }
+        public Block Next { get; set; }
         public Block Branch { get; set; }
 
         public bool Exit { get; set; }
 
         public List<OpCode> OpCodes { get; }
 
-        public Block()
+        public Block(ulong address)
         {
             OpCodes = new List<OpCode>();
-        }
-
-        public Block(ulong address) : this()
-        {
             Address = address;
         }
 

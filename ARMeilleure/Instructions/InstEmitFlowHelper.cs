@@ -2,7 +2,6 @@ using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using ARMeilleure.Translation;
-using ARMeilleure.Translation.Cache;
 using ARMeilleure.Translation.PTC;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
@@ -140,6 +139,22 @@ namespace ARMeilleure.Instructions
             return value;
         }
 
+        public static void EmitContinuation(ArmEmitterContext context, ulong immediate, bool rejit)
+        {
+            // Left option here as it may be useful if we need to return to managed rather than tail call in future.
+            // (eg. for debug)
+            bool useReturns = false;
+
+            if (useReturns)
+            {
+                context.Return(Const(immediate));
+            }
+            else
+            {
+                EmitTableBranch(context, Const(immediate), isJump: true, rejit);
+            }
+        }
+
         public static void EmitCall(ArmEmitterContext context, ulong immediate)
         {
             bool isRecursive = immediate == context.EntryAddress;
@@ -150,13 +165,13 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitTableBranch(context, Const(immediate), isJump: false);
+                EmitTableBranch(context, Const(immediate), isJump: false, rejit: true);
             }
         }
 
         public static void EmitVirtualCall(ArmEmitterContext context, Operand target)
         {
-            EmitTableBranch(context, target, isJump: false);
+            EmitTableBranch(context, target, isJump: false, rejit: true);
         }
 
         public static void EmitVirtualJump(ArmEmitterContext context, Operand target, bool isReturn)
@@ -167,11 +182,11 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitTableBranch(context, target, isJump: true);
+                EmitTableBranch(context, target, isJump: true, rejit: true);
             }
         }
 
-        private static void EmitTableBranch(ArmEmitterContext context, Operand guestAddress, bool isJump)
+        private static void EmitTableBranch(ArmEmitterContext context, Operand guestAddress, bool isJump, bool rejit)
         {
             context.StoreToContext();
 
@@ -185,6 +200,13 @@ namespace ARMeilleure.Instructions
             Operand nativeContext = context.LoadArgument(OperandType.I64, 0);
             Operand dispAddressAddr = context.Add(nativeContext, Const((ulong)NativeContext.GetDispatchAddressOffset()));
             context.Store(dispAddressAddr, guestAddress);
+
+            // The rejit hint is true by default, so we have to emit code only when not doing the rejit hint.
+            if (!rejit)
+            {
+                Operand rejitHintAddr = context.Add(nativeContext, Const((ulong)NativeContext.GetRejitHintOffset()));
+                context.Store(rejitHintAddr, Const(rejit));
+            }
 
             Operand hostAddress;
 
