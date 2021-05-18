@@ -94,30 +94,22 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             return name;
         }
 
-        public string GetExpression(AstOperand operand, ShaderConfig config, bool cbIndexable)
+        public string GetExpression(AstOperand operand, ShaderConfig config)
         {
-            switch (operand.Type)
+            return operand.Type switch
             {
-                case OperandType.Argument:
-                    return GetArgumentName(operand.Value);
-
-                case OperandType.Attribute:
-                    return GetAttributeName(operand, config);
-
-                case OperandType.Constant:
-                    return NumberFormatter.FormatInt(operand.Value);
-
-                case OperandType.ConstantBuffer:
-                    return GetConstantBufferName(operand.CbufSlot, operand.CbufOffset, config.Stage, cbIndexable);
-
-                case OperandType.LocalVariable:
-                    return _locals[operand];
-
-                case OperandType.Undefined:
-                    return DefaultNames.UndefinedName;
-            }
-
-            throw new ArgumentException($"Invalid operand type \"{operand.Type}\".");
+                OperandType.Argument => GetArgumentName(operand.Value),
+                OperandType.Attribute => GetAttributeName(operand, config),
+                OperandType.Constant => NumberFormatter.FormatInt(operand.Value),
+                OperandType.ConstantBuffer => GetConstantBufferName(
+                    operand.CbufSlot,
+                    operand.CbufOffset,
+                    config.Stage,
+                    config.UsedFeatures.HasFlag(FeatureFlags.CbIndexing)),
+                OperandType.LocalVariable => _locals[operand],
+                OperandType.Undefined => DefaultNames.UndefinedName,
+                _ => throw new ArgumentException($"Invalid operand type \"{operand.Type}\".")
+            };
         }
 
         public static string GetConstantBufferName(int slot, int offset, ShaderStage stage, bool cbIndexable)

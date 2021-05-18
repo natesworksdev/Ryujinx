@@ -87,7 +87,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             StructuredProgramInfo sInfo = StructuredProgram.MakeStructuredProgram(funcs, config);
 
-            GlslProgram program = GlslGenerator.Generate(sInfo, config);
+            string glslCode = GlslGenerator.Generate(sInfo, config);
 
             shaderProgramInfo = new ShaderProgramInfo(
                 config.GetConstantBuffers(),
@@ -96,8 +96,6 @@ namespace Ryujinx.Graphics.Shader.Translation
                 config.GetImages(),
                 config.UsedFeatures.HasFlag(FeatureFlags.InstanceId),
                 config.ClipDistancesWritten);
-
-            string glslCode = program.Code;
 
             return new ShaderProgram(config.Stage, glslCode);
         }

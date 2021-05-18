@@ -8,6 +8,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 {
     class ShaderConfig
     {
+        // TODO: Non-hardcoded array size.
         public const int SamplerArraySize = 4;
 
         public ShaderStage Stage { get; }
@@ -30,8 +31,6 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public TranslationFlags Flags { get; }
 
-        public TranslationCounts Counts { get; }
-
         public int Size { get; private set; }
 
         public byte ClipDistancesWritten { get; private set; }
@@ -39,6 +38,8 @@ namespace Ryujinx.Graphics.Shader.Translation
         public FeatureFlags UsedFeatures { get; private set; }
 
         public HashSet<int> TextureHandlesForCache { get; }
+
+        private readonly TranslationCounts _counts;
 
         private int _usedConstantBuffers;
         private int _usedStorageBuffers;
@@ -93,19 +94,9 @@ namespace Ryujinx.Graphics.Shader.Translation
         public ShaderConfig(IGpuAccessor gpuAccessor, TranslationFlags flags, TranslationCounts counts)
         {
             Stage                  = ShaderStage.Compute;
-            GpPassthrough          = false;
-            OutputTopology         = OutputTopology.PointList;
-            MaxOutputVertices      = 0;
-            LocalMemorySize        = 0;
-            ImapTypes              = null;
-            OmapTargets            = null;
-            OmapSampleMask         = false;
-            OmapDepth              = false;
             GpuAccessor            = gpuAccessor;
             Flags                  = flags;
-            Size                   = 0;
-            UsedFeatures           = FeatureFlags.None;
-            Counts                 = counts;
+            _counts                = counts;
             TextureHandlesForCache = new HashSet<int>();
             _usedTextures          = new Dictionary<TextureInfo, TextureMeta>();
             _usedImages            = new Dictionary<TextureInfo, TextureMeta>();
@@ -314,16 +305,20 @@ namespace Ryujinx.Graphics.Shader.Translation
                 usedMask = FillMask(usedMask);
             }
 
-            return _cachedConstantBufferDescriptors = GetBuffers(usedMask, 0, Counts.IncrementUniformBuffersCount);
+            return _cachedConstantBufferDescriptors = GetBuffers(usedMask, 0, _counts.IncrementUniformBuffersCount);
         }
 
         public BufferDescriptor[] GetStorageBuffers()
         {
-            return _cachedStorageBufferDescriptors ??= GetBuffers(FillMask(_usedStorageBuffers), _usedStorageBuffersWrite, Counts.IncrementStorageBuffersCount);
+            return _cachedStorageBufferDescriptors ??= GetBuffers(FillMask(_usedStorageBuffers), _usedStorageBuffersWrite, _counts.IncrementStorageBuffersCount);
         }
 
         private static int FillMask(int mask)
         {
+            // When the storage or uniform buffers are used as array, we must allocate a binding
+            // even for the "gaps" that are not used on the shader.
+            // For this reason, fill up the gaps so that all slots up to the highest one are
+            // marked as "used".
             return mask != 0 ? (int)(uint.MaxValue >> BitOperations.LeadingZeroCount((uint)mask)) : 0;
         }
 
@@ -350,12 +345,12 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public TextureDescriptor[] GetTextures()
         {
-            return _cachedTextureDescriptors ??= GetTextureOrImageDescriptors(_usedTextures, Counts.IncrementTexturesCount);
+            return _cachedTextureDescriptors ??= GetTextureOrImageDescriptors(_usedTextures, _counts.IncrementTexturesCount);
         }
 
         public TextureDescriptor[] GetImages()
         {
-            return _cachedImageDescriptors ??= GetTextureOrImageDescriptors(_usedImages, Counts.IncrementImagesCount);
+            return _cachedImageDescriptors ??= GetTextureOrImageDescriptors(_usedImages, _counts.IncrementImagesCount);
         }
 
         private static TextureDescriptor[] GetTextureOrImageDescriptors(Dictionary<TextureInfo, TextureMeta> dict, Func<int> getBindingCallback)
