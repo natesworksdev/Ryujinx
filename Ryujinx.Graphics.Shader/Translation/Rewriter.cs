@@ -49,7 +49,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             Operation operation = (Operation)node.Value;
 
             bool isAtomic = operation.Inst.IsAtomic();
-            bool isWrite = isAtomic || operation.Inst == Instruction.StoreStorage;
+            bool isWrite = isAtomic || operation.Inst == Instruction.StoreGlobal;
 
             Operation storageOp;
 
