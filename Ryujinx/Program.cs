@@ -12,6 +12,7 @@ using Ryujinx.Ui;
 using Ryujinx.Ui.Widgets;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -80,7 +81,18 @@ namespace Ryujinx
                 XInitThreads();
 
                 // Configure FFmpeg search path
-                ffmpeg.RootPath = "/lib";
+                Process lddProcess = Process.Start(new ProcessStartInfo
+                {
+                    FileName               = "/bin/sh",
+                    Arguments              = "-c \"ldd $(which ffmpeg) | grep libavfilter\"",
+                    UseShellExecute        = false,
+                    RedirectStandardOutput = true
+                });
+
+                ffmpeg.RootPath = Path.GetDirectoryName(lddProcess.StandardOutput.ReadToEnd().Split(" => ")[1]);
+
+                lddProcess.WaitForExit();
+                lddProcess.Close();
             }
 
             string systemPath = Environment.GetEnvironmentVariable("Path", EnvironmentVariableTarget.Machine);
