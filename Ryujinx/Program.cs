@@ -1,5 +1,4 @@
 using ARMeilleure.Translation.PTC;
-using FFmpeg.AutoGen;
 using Gtk;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.GraphicsDriver;
@@ -12,7 +11,6 @@ using Ryujinx.Ui;
 using Ryujinx.Ui.Widgets;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -79,29 +77,6 @@ namespace Ryujinx
             if (OperatingSystem.IsLinux())
             {
                 XInitThreads();
-
-                // Configure FFmpeg search path
-                Process lddProcess = Process.Start(new ProcessStartInfo
-                {
-                    FileName               = "/bin/sh",
-                    Arguments              = "-c \"ldd $(which ffmpeg) | grep libavfilter\"",
-                    UseShellExecute        = false,
-                    RedirectStandardOutput = true
-                });
-
-                string lddOutput = lddProcess.StandardOutput.ReadToEnd();
-
-                lddProcess.WaitForExit();
-                lddProcess.Close();
-
-                if (lddOutput.Contains(" => "))
-                {
-                    ffmpeg.RootPath = Path.GetDirectoryName(lddOutput.Split(" => ")[1]);
-                }
-                else
-                {
-                    Logger.Error?.PrintMsg(LogClass.FFmpeg, "FFmpeg wasn't found. Make sure that you have it installed and up to date.");
-                }
             }
 
             string systemPath = Environment.GetEnvironmentVariable("Path", EnvironmentVariableTarget.Machine);
