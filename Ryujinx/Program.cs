@@ -89,10 +89,19 @@ namespace Ryujinx
                     RedirectStandardOutput = true
                 });
 
-                ffmpeg.RootPath = Path.GetDirectoryName(lddProcess.StandardOutput.ReadToEnd().Split(" => ")[1]);
+                string lddOutput = lddProcess.StandardOutput.ReadToEnd();
 
                 lddProcess.WaitForExit();
                 lddProcess.Close();
+
+                if (lddOutput.Contains(" => "))
+                {
+                    ffmpeg.RootPath = Path.GetDirectoryName(lddOutput.Split(" => ")[1]);
+                }
+                else
+                {
+                    Logger.Error?.PrintMsg(LogClass.FFmpeg, "FFmpeg wasn't found. Make sure that you have it installed and up to date.");
+                }
             }
 
             string systemPath = Environment.GetEnvironmentVariable("Path", EnvironmentVariableTarget.Machine);
