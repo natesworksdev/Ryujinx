@@ -340,7 +340,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="state">Current GPU state</param>
         /// <param name="handle">Shader "fake" handle of the texture</param>
-        /// <param name="handle">Shader constant buffer slot of the texture</param>
+        /// <param name="cbufSlot">Shader constant buffer slot of the texture</param>
         /// <returns>The texture descriptor</returns>
         public TextureDescriptor GetComputeTextureDescriptor(GpuState state, int handle, int cbufSlot)
         {
@@ -353,7 +353,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="state">Current GPU state</param>
         /// <param name="stageIndex">Index of the shader stage where the texture is bound</param>
         /// <param name="handle">Shader "fake" handle of the texture</param>
-        /// <param name="handle">Shader constant buffer slot of the texture</param>
+        /// <param name="cbufSlot">Shader constant buffer slot of the texture</param>
         /// <returns>The texture descriptor</returns>
         public TextureDescriptor GetGraphicsTextureDescriptor(GpuState state, int stageIndex, int handle, int cbufSlot)
         {
