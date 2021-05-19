@@ -357,110 +357,113 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             return address;
         }
 
-        public void FreePages(ulong address, ulong pagesCount)
+        private void FreePages(ulong address, ulong pagesCount)
         {
-            ulong endAddr = address + pagesCount * KPageTableBase.PageSize;
-
-            int blockIndex = _blockOrdersCount - 1;
-
-            ulong addressRounded   = 0;
-            ulong endAddrTruncated = 0;
-
-            for (; blockIndex >= 0; blockIndex--)
+            lock (_blocks)
             {
-                KMemoryRegionBlock allocInfo = _blocks[blockIndex];
+                ulong endAddr = address + pagesCount * KPageTableBase.PageSize;
 
-                int blockSize = 1 << allocInfo.Order;
+                int blockIndex = _blockOrdersCount - 1;
 
-                addressRounded   = BitUtils.AlignUp  (address, blockSize);
-                endAddrTruncated = BitUtils.AlignDown(endAddr, blockSize);
+                ulong addressRounded   = 0;
+                ulong endAddrTruncated = 0;
 
-                if (addressRounded < endAddrTruncated)
+                for (; blockIndex >= 0; blockIndex--)
                 {
-                    break;
-                }
-            }
+                    KMemoryRegionBlock allocInfo = _blocks[blockIndex];
 
-            void FreeRegion(ulong currAddress)
-            {
-                for (int currBlockIndex = blockIndex;
-                         currBlockIndex < _blockOrdersCount && currAddress != 0;
-                         currBlockIndex++)
-                {
-                    KMemoryRegionBlock block = _blocks[currBlockIndex];
+                    int blockSize = 1 << allocInfo.Order;
 
-                    block.FreeCount++;
+                    addressRounded   = BitUtils.AlignUp  (address, blockSize);
+                    endAddrTruncated = BitUtils.AlignDown(endAddr, blockSize);
 
-                    ulong freedBlocks = (currAddress - block.StartAligned) >> block.Order;
-
-                    int index = (int)freedBlocks;
-
-                    for (int level = block.MaxLevel - 1; level >= 0; level--, index /= 64)
-                    {
-                        long mask = block.Masks[level][index / 64];
-
-                        block.Masks[level][index / 64] = mask | (1L << (index & 63));
-
-                        if (mask != 0)
-                        {
-                            break;
-                        }
-                    }
-
-                    int blockSizeDelta = 1 << (block.NextOrder - block.Order);
-
-                    int freedBlocksTruncated = BitUtils.AlignDown((int)freedBlocks, blockSizeDelta);
-
-                    if (!block.TryCoalesce(freedBlocksTruncated, blockSizeDelta))
+                    if (addressRounded < endAddrTruncated)
                     {
                         break;
                     }
-
-                    currAddress = block.StartAligned + ((ulong)freedBlocksTruncated << block.Order);
                 }
-            }
 
-            // Free inside aligned region.
-            ulong baseAddress = addressRounded;
-
-            while (baseAddress < endAddrTruncated)
-            {
-                ulong blockSize = 1UL << _blocks[blockIndex].Order;
-
-                FreeRegion(baseAddress);
-
-                baseAddress += blockSize;
-            }
-
-            int nextBlockIndex = blockIndex - 1;
-
-            // Free region between Address and aligned region start.
-            baseAddress = addressRounded;
-
-            for (blockIndex = nextBlockIndex; blockIndex >= 0; blockIndex--)
-            {
-                ulong blockSize = 1UL << _blocks[blockIndex].Order;
-
-                while (baseAddress - blockSize >= address)
+                void FreeRegion(ulong currAddress)
                 {
-                    baseAddress -= blockSize;
+                    for (int currBlockIndex = blockIndex;
+                            currBlockIndex < _blockOrdersCount && currAddress != 0;
+                            currBlockIndex++)
+                    {
+                        KMemoryRegionBlock block = _blocks[currBlockIndex];
 
-                    FreeRegion(baseAddress);
+                        block.FreeCount++;
+
+                        ulong freedBlocks = (currAddress - block.StartAligned) >> block.Order;
+
+                        int index = (int)freedBlocks;
+
+                        for (int level = block.MaxLevel - 1; level >= 0; level--, index /= 64)
+                        {
+                            long mask = block.Masks[level][index / 64];
+
+                            block.Masks[level][index / 64] = mask | (1L << (index & 63));
+
+                            if (mask != 0)
+                            {
+                                break;
+                            }
+                        }
+
+                        int blockSizeDelta = 1 << (block.NextOrder - block.Order);
+
+                        int freedBlocksTruncated = BitUtils.AlignDown((int)freedBlocks, blockSizeDelta);
+
+                        if (!block.TryCoalesce(freedBlocksTruncated, blockSizeDelta))
+                        {
+                            break;
+                        }
+
+                        currAddress = block.StartAligned + ((ulong)freedBlocksTruncated << block.Order);
+                    }
                 }
-            }
 
-            // Free region between aligned region end and End Address.
-            baseAddress = endAddrTruncated;
+                // Free inside aligned region.
+                ulong baseAddress = addressRounded;
 
-            for (blockIndex = nextBlockIndex; blockIndex >= 0; blockIndex--)
-            {
-                ulong blockSize = 1UL << _blocks[blockIndex].Order;
-
-                while (baseAddress + blockSize <= endAddr)
+                while (baseAddress < endAddrTruncated)
                 {
+                    ulong blockSize = 1UL << _blocks[blockIndex].Order;
+
                     FreeRegion(baseAddress);
 
                     baseAddress += blockSize;
+                }
+
+                int nextBlockIndex = blockIndex - 1;
+
+                // Free region between Address and aligned region start.
+                baseAddress = addressRounded;
+
+                for (blockIndex = nextBlockIndex; blockIndex >= 0; blockIndex--)
+                {
+                    ulong blockSize = 1UL << _blocks[blockIndex].Order;
+
+                    while (baseAddress - blockSize >= address)
+                    {
+                        baseAddress -= blockSize;
+
+                        FreeRegion(baseAddress);
+                    }
+                }
+
+                // Free region between aligned region end and End Address.
+                baseAddress = endAddrTruncated;
+
+                for (blockIndex = nextBlockIndex; blockIndex >= 0; blockIndex--)
+                {
+                    ulong blockSize = 1UL << _blocks[blockIndex].Order;
+
+                    while (baseAddress + blockSize <= endAddr)
+                    {
+                        FreeRegion(baseAddress);
+
+                        baseAddress += blockSize;
+                    }
                 }
             }
         }
