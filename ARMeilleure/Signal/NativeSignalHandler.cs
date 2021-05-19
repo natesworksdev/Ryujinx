@@ -176,8 +176,8 @@ namespace ARMeilleure.Signal
 
         private static Operand EmitGenericRegionCheck(EmitterContext context, IntPtr signalStructPtr, Operand faultAddress, Operand isWrite)
         {
-            Operand inRegionReg = Register(0, RegisterType.Integer, OperandType.I32);
-            context.Copy(inRegionReg, Const(0));
+            Operand inRegionLocal = context.AllocateLocal(OperandType.I32);
+            context.Copy(inRegionLocal, Const(0));
 
             Operand endLabel = Label();
 
@@ -203,7 +203,7 @@ namespace ARMeilleure.Signal
                 // Only call tracking if in range.
                 context.BranchIfFalse(nextLabel, inRange, BasicBlockFrequency.Cold);
 
-                context.Copy(inRegionReg, Const(1));
+                context.Copy(inRegionLocal, Const(1));
                 Operand offset = context.BitwiseAnd(context.Subtract(faultAddress, rangeAddress), Const(~PageMask));
 
                 // Call the tracking action, with the pointer's relative offset to the base address.
@@ -217,7 +217,7 @@ namespace ARMeilleure.Signal
 
             context.MarkLabel(endLabel);
 
-            return context.Copy(inRegionReg);
+            return context.Copy(inRegionLocal);
         }
 
         private static UnixExceptionHandler GenerateUnixSignalHandler(IntPtr signalStructPtr)
