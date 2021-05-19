@@ -16,8 +16,6 @@ namespace Ryujinx.Graphics.Nvdec.H264
 
         public FFmpegContext()
         {
-            SetRootPath();
-
             _logFunc = Log;
 
             // Redirect log output
@@ -32,7 +30,12 @@ namespace Ryujinx.Graphics.Nvdec.H264
             _packet = ffmpeg.av_packet_alloc();
         }
 
-        private void SetRootPath()
+        static FFmpegContext()
+        {
+            SetRootPath();
+        }
+
+        private static void SetRootPath()
         {
             if (OperatingSystem.IsLinux())
             {
