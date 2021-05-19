@@ -7,10 +7,10 @@ using System;
 
 namespace Ryujinx.HLE.HOS
 {
-    class ArmProcessContext<T> : IProcessContext where T : IVirtualMemoryManager, IMemoryManager
+    class ArmProcessContext<T> : IProcessContext where T : class, IVirtualMemoryManager, IMemoryManager
     {
-        private readonly T _memoryManager;
         private readonly CpuContext _cpuContext;
+        private T _memoryManager;
 
         public IVirtualMemoryManager AddressSpace => _memoryManager;
 

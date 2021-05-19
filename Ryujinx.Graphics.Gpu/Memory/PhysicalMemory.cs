@@ -16,7 +16,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
     {
         public const int PageSize = 0x1000;
 
-        private readonly IVirtualMemoryManagerTracked _cpuMemory;
+        private IVirtualMemoryManagerTracked _cpuMemory;
 
         /// <summary>
         /// Creates a new instance of the physical memory.
