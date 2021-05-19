@@ -4,14 +4,11 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Threading;
 
 namespace Ryujinx.Graphics.Nvdec.H264
 {
     unsafe class FFmpegContext : IDisposable
     {
-        private static int _isInitialized;
-
         private readonly av_log_set_callback_callback _logFunc;
         private readonly AVCodec* _codec;
         private AVPacket* _packet;
@@ -35,10 +32,7 @@ namespace Ryujinx.Graphics.Nvdec.H264
 
         static FFmpegContext()
         {
-            if (Interlocked.Exchange(ref _isInitialized, 1) == 0)
-            {
-                SetRootPath();
-            }
+            SetRootPath();
         }
 
         private static void SetRootPath()
