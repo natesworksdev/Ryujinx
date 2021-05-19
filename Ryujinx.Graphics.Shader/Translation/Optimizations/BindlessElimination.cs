@@ -64,12 +64,10 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
                     if (src0.Type == OperandType.ConstantBuffer)
                     {
-<<<<<<< HEAD
-                        texOp.SetHandle(src0.GetCbufOffset(), src0.GetCbufSlot());
-                        texOp.Format = config.GetTextureFormat(texOp.Handle, texOp.CbufSlot);
-=======
-                        SetHandle(config, texOp, src0.GetCbufOffset(), src0.GetCbufSlot());
->>>>>>> Move shader resource descriptor creation out of the backend
+                        int cbufOffset = src0.GetCbufOffset();
+                        int cbufSlot = src0.GetCbufSlot();
+                        texOp.Format = config.GetTextureFormat(cbufOffset, cbufSlot);
+                        SetHandle(config, texOp, cbufOffset, cbufSlot);
                     }
                 }
             }
