@@ -35,6 +35,8 @@ namespace Ryujinx.HLE.HOS
             if (_memoryManager is IRefCounted rc)
             {
                 rc.DecrementReferenceCount();
+
+                _memoryManager = null;
             }
         }
     }

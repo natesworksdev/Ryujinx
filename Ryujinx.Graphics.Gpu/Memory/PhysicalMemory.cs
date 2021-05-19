@@ -227,6 +227,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
             if (_cpuMemory is IRefCounted rc)
             {
                 rc.DecrementReferenceCount();
+
+                _cpuMemory = null;
             }
         }
     }

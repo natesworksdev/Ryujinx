@@ -841,6 +841,8 @@ namespace Ryujinx.Audio.Renderer.Server
                 if (MemoryManager is IRefCounted rc)
                 {
                     rc.DecrementReferenceCount();
+
+                    MemoryManager = null;
                 }
             }
         }
