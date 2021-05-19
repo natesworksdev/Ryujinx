@@ -169,7 +169,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             SaveDataFilter saveDataFilter = new SaveDataFilter();
             saveDataFilter.SetUserId(new LibHac.Fs.UserId((ulong)userId.High, (ulong)userId.Low));
 
-            Result result = _virtualFileSystem.FsClient.OpenSaveDataIterator(out SaveDataIterator saveDataIterator, SaveDataSpaceId.User, ref saveDataFilter);
+            Result result = _virtualFileSystem.FsClient.OpenSaveDataIterator(out SaveDataIterator saveDataIterator, SaveDataSpaceId.User, in saveDataFilter);
             if (result.IsSuccess())
             {
                 Span<SaveDataInfo> saveDataInfo = stackalloc SaveDataInfo[10];

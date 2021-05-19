@@ -7,7 +7,7 @@ using ApplicationId = LibHac.ApplicationId;
 
 namespace Ryujinx.HLE.HOS.Services.Arp
 {
-    class LibHacIReader : LibHac.Arp.Impl.IReader
+    class LibHacIReader : LibHac.Arp.Impl.IReader 
     {
         private Horizon System { get; }
 
@@ -46,6 +46,27 @@ namespace Ryujinx.HLE.HOS.Services.Arp
         public Result GetApplicationControlPropertyWithApplicationId(out ApplicationControlProperty controlProperty, ApplicationId applicationId)
         {
             throw new NotImplementedException();
+        }
+
+        public Result GetServiceObject(out object serviceObject)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    internal class LibHacArpServiceObject : LibHac.Sm.IServiceObject
+    {
+        private LibHacIReader _serviceObject;
+
+        public LibHacArpServiceObject(LibHacIReader serviceObject)
+        {
+            _serviceObject = serviceObject;
+        }
+
+        public Result GetServiceObject(out object serviceObject)
+        {
+            serviceObject = _serviceObject;
+            return Result.Success;
         }
     }
 }

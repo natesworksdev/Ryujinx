@@ -6,13 +6,13 @@ using LibHac.Fs;
 using LibHac.Fs.Fsa;
 using LibHac.FsSystem;
 using LibHac.FsSystem.NcaUtils;
+using LibHac.Loader;
 using LibHac.Ns;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.Loaders.Executables;
-using Ryujinx.HLE.Loaders.Npdm;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -77,7 +77,7 @@ namespace Ryujinx.HLE.HOS
 
             LocalFileSystem codeFs = new LocalFileSystem(exeFsDir);
 
-            Npdm metaData = ReadNpdm(codeFs);
+            MetaLoader metaData = ReadNpdm(codeFs);
 
             _device.Configuration.VirtualFileSystem.ModLoader.CollectMods(new[] { TitleId }, _device.Configuration.VirtualFileSystem.ModLoader.GetModsBasePath());
 
@@ -366,7 +366,7 @@ namespace Ryujinx.HLE.HOS
                 return;
             }
 
-            Npdm metaData = ReadNpdm(codeFs);
+            MetaLoader metaData = ReadNpdm(codeFs);
 
             _device.Configuration.VirtualFileSystem.ModLoader.CollectMods(_device.Configuration.ContentManager.GetAocTitleIds().Prepend(TitleId), _device.Configuration.VirtualFileSystem.ModLoader.GetModsBasePath());
 
@@ -411,11 +411,11 @@ namespace Ryujinx.HLE.HOS
         }
 
         // Sets TitleId, so be sure to call before using it
-        private Npdm ReadNpdm(IFileSystem fs)
+        private MetaLoader ReadNpdm(IFileSystem fs)
         {
             Result result = fs.OpenFile(out IFile npdmFile, "/main.npdm".ToU8Span(), OpenMode.Read);
 
-            Npdm metaData;
+            MetaLoader metaData;
 
             if (ResultFs.PathNotFound.Includes(result))
             {
@@ -425,11 +425,19 @@ namespace Ryujinx.HLE.HOS
             }
             else
             {
-                metaData = new Npdm(npdmFile.AsStream());
+                npdmFile.GetSize(out long fileSize).ThrowIfFailure();
+
+                var npdmBuffer = new byte[fileSize];
+                npdmFile.Read(out _, 0, npdmBuffer).ThrowIfFailure();
+
+                metaData = new MetaLoader();
+                metaData.Load(npdmBuffer).ThrowIfFailure();
             }
 
-            TitleId      = metaData.Aci0.TitleId;
-            TitleIs64Bit = metaData.Is64Bit;
+            metaData.GetNpdm(out var npdm).ThrowIfFailure();
+
+            TitleId      = npdm.Aci.Value.ProgramId.Value;
+            TitleIs64Bit = (npdm.Meta.Value.Flags & 1) != 0;
 
             return metaData;
         }
@@ -461,7 +469,7 @@ namespace Ryujinx.HLE.HOS
             }
         }
 
-        private void LoadExeFs(IFileSystem codeFs, Npdm metaData = null)
+        private void LoadExeFs(IFileSystem codeFs, MetaLoader metaData = null)
         {
             if (_device.Configuration.VirtualFileSystem.ModLoader.ReplaceExefsPartition(TitleId, ref codeFs))
             {
@@ -519,15 +527,19 @@ namespace Ryujinx.HLE.HOS
 
             Ptc.Initialize(TitleIdText, DisplayVersion, usePtc, _device.Configuration.MemoryManagerMode);
 
-            ProgramLoader.LoadNsos(_device.System.KernelContext, out ProcessTamperInfo tamperInfo, metaData, executables: programs);
+            metaData.GetNpdm(out Npdm npdm).ThrowIfFailure();
+            ProgramLoader.LoadNsos(_device.System.KernelContext, out ProcessTamperInfo tamperInfo, metaData, new ProgramInfo(in npdm), executables: programs);
 
             _device.Configuration.VirtualFileSystem.ModLoader.LoadCheats(TitleId, tamperInfo, _device.TamperMachine);
         }
 
         public void LoadProgram(string filePath)
         {
-            Npdm metaData = GetDefaultNpdm();
-            bool isNro    = Path.GetExtension(filePath).ToLower() == ".nro";
+            MetaLoader metaData = GetDefaultNpdm();
+            metaData.GetNpdm(out Npdm npdm).ThrowIfFailure();
+            ProgramInfo programInfo = new ProgramInfo(in npdm);
+
+            bool isNro = Path.GetExtension(filePath).ToLower() == ".nro";
 
             IExecutable executable;
 
@@ -573,28 +585,28 @@ namespace Ryujinx.HLE.HOS
 
                                 ref ApplicationControlProperty nacp = ref ControlData.Value;
 
-                                metaData.TitleName = nacp.Titles[(int)_device.System.State.DesiredTitleLanguage].Name.ToString();
+                                programInfo.Name = nacp.Titles[(int)_device.System.State.DesiredTitleLanguage].Name.ToString();
 
-                                if (string.IsNullOrWhiteSpace(metaData.TitleName))
+                                if (string.IsNullOrWhiteSpace(programInfo.Name))
                                 {
-                                    metaData.TitleName = nacp.Titles.ToArray().FirstOrDefault(x => x.Name[0] != 0).Name.ToString();
+                                    programInfo.Name = nacp.Titles.ToArray().FirstOrDefault(x => x.Name[0] != 0).Name.ToString();
                                 }
 
                                 if (nacp.PresenceGroupId != 0)
                                 {
-                                    metaData.Aci0.TitleId = nacp.PresenceGroupId;
+                                    programInfo.ProgramId = nacp.PresenceGroupId;
                                 }
                                 else if (nacp.SaveDataOwnerId.Value != 0)
                                 {
-                                    metaData.Aci0.TitleId = nacp.SaveDataOwnerId.Value;
+                                    programInfo.ProgramId = nacp.SaveDataOwnerId.Value;
                                 }
                                 else if (nacp.AddOnContentBaseId != 0)
                                 {
-                                    metaData.Aci0.TitleId = nacp.AddOnContentBaseId - 0x1000;
+                                    programInfo.ProgramId = nacp.AddOnContentBaseId - 0x1000;
                                 }
                                 else
                                 {
-                                    metaData.Aci0.TitleId = 0000000000000000;
+                                    programInfo.ProgramId = 0000000000000000;
                                 }
                             }
                         }
@@ -612,26 +624,32 @@ namespace Ryujinx.HLE.HOS
 
             _device.Configuration.ContentManager.LoadEntries(_device);
 
-            _titleName   = metaData.TitleName;
-            TitleId      = metaData.Aci0.TitleId;
-            TitleIs64Bit = metaData.Is64Bit;
+            _titleName   = programInfo.Name;
+            TitleId      = programInfo.ProgramId;
+            TitleIs64Bit = (npdm.Meta.Value.Flags & 1) != 0;
 
             // Explicitly null titleid to disable the shader cache
             Graphics.Gpu.GraphicsConfig.TitleId = null;
             _device.Gpu.HostInitalized.Set();
 
-            ProgramLoader.LoadNsos(_device.System.KernelContext, out ProcessTamperInfo tamperInfo, metaData, executables: executable);
+            ProgramLoader.LoadNsos(_device.System.KernelContext, out ProcessTamperInfo tamperInfo, metaData, programInfo, executables: executable);
 
             _device.Configuration.VirtualFileSystem.ModLoader.LoadCheats(TitleId, tamperInfo, _device.TamperMachine);
         }
 
-        private Npdm GetDefaultNpdm()
+        private MetaLoader GetDefaultNpdm()
         {
             Assembly asm = Assembly.GetCallingAssembly();
 
             using (Stream npdmStream = asm.GetManifestResourceStream("Ryujinx.HLE.Homebrew.npdm"))
             {
-                return new Npdm(npdmStream);
+                var npdmBuffer = new byte[npdmStream.Length];
+                npdmStream.Read(npdmBuffer);
+
+                var metaLoader = new MetaLoader();
+                metaLoader.Load(npdmBuffer).ThrowIfFailure();
+
+                return metaLoader;
             }
         }
 
@@ -643,7 +661,7 @@ namespace Ryujinx.HLE.HOS
 
             ref ApplicationControlProperty control = ref ControlData.Value;
 
-            if (LibHac.Utilities.IsEmpty(ControlData.ByteSpan))
+            if (LibHac.Utilities.IsZeros(ControlData.ByteSpan))
             {
                 // If the current application doesn't have a loaded control property, create a dummy one
                 // and set the savedata sizes so a user savedata will be created.

@@ -52,9 +52,10 @@ namespace Ryujinx.Ui
 {
     public class MainWindow : Window
     {
-        private readonly VirtualFileSystem _virtualFileSystem;
-        private readonly ContentManager    _contentManager;
-        private readonly AccountManager    _accountManager;
+        private readonly VirtualFileSystem    _virtualFileSystem;
+        private readonly ContentManager       _contentManager;
+        private readonly AccountManager       _accountManager;
+        private readonly LibHacHorizonManager _libHacHorizonManager;
 
         private UserChannelPersistence _userChannelPersistence;
 
@@ -161,6 +162,9 @@ namespace Ryujinx.Ui
             _contentManager         = new ContentManager(_virtualFileSystem);
             _accountManager         = new AccountManager(_virtualFileSystem);
             _userChannelPersistence = new UserChannelPersistence();
+
+            _libHacHorizonManager = new LibHacHorizonManager();
+            _libHacHorizonManager.InitializeFsServer(_virtualFileSystem);
 
             // Instanciate GUI objects.
             _applicationLibrary = new ApplicationLibrary(_virtualFileSystem);
@@ -370,7 +374,7 @@ namespace Ryujinx.Ui
 
         private void InitializeSwitchInstance()
         {
-            _virtualFileSystem.Reload();
+            _virtualFileSystem.ReloadKeySet();
 
             IRenderer renderer;
 
@@ -440,6 +444,7 @@ namespace Ryujinx.Ui
             IntegrityCheckLevel fsIntegrityCheckLevel = ConfigurationState.Instance.System.EnableFsIntegrityChecks ? IntegrityCheckLevel.ErrorOnInvalid : IntegrityCheckLevel.None;
 
             HLE.HLEConfiguration configuration = new HLE.HLEConfiguration(_virtualFileSystem,
+                                                                          _libHacHorizonManager,
                                                                           _contentManager,
                                                                           _accountManager,
                                                                           _userChannelPersistence,

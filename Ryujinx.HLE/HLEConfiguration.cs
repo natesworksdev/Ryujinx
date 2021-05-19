@@ -2,7 +2,6 @@
 using Ryujinx.Audio.Integration;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
-using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.FileSystem.Content;
@@ -24,6 +23,12 @@ namespace Ryujinx.HLE
         /// </summary>
         /// <remarks>This cannot be changed after <see cref="Switch"/> instantiation.</remarks>
         internal readonly VirtualFileSystem VirtualFileSystem;
+
+        /// <summary>
+        /// The manager for handling a LibHac Horizon instance.
+        /// </summary>
+        /// <remarks>This cannot be changed after <see cref="Switch"/> instantiation.</remarks>
+        internal readonly LibHacHorizonManager LibHacHorizonManager;
 
         /// <summary>
         /// The account manager used by the account service.
@@ -141,6 +146,7 @@ namespace Ryujinx.HLE
         public Action RefreshInputConfig { internal get; set; }
 
         public HLEConfiguration(VirtualFileSystem virtualFileSystem,
+                                LibHacHorizonManager libHacHorizonManager,
                                 ContentManager contentManager,
                                 AccountManager accountManager,
                                 UserChannelPersistence userChannelPersistence,
@@ -162,6 +168,7 @@ namespace Ryujinx.HLE
                                 AspectRatio aspectRatio)
         {
             VirtualFileSystem = virtualFileSystem;
+            LibHacHorizonManager = libHacHorizonManager;
             AccountManager = accountManager;
             ContentManager = contentManager;
             UserChannelPersistence = userChannelPersistence;

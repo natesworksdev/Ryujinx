@@ -1,6 +1,7 @@
 ﻿using LibHac;
 using LibHac.Common;
 using LibHac.Fs;
+using LibHac.Fs.Fsa;
 using LibHac.Fs.Shim;
 using Ryujinx.HLE.HOS.Services.Mii.Types;
 using System.Runtime.CompilerServices;

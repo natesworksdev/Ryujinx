@@ -84,13 +84,13 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         public ResultCode EnsureSaveData(ServiceCtx context)
         {
             Uid           userId        = context.RequestData.ReadStruct<AccountUid>().ToLibHacUid();
-            ApplicationId applicationId = new ApplicationId(context.Process.TitleId);
+            ApplicationId applicationId = new ApplicationId(context.Device.Application.TitleId);
 
             BlitStruct<ApplicationControlProperty> controlHolder = context.Device.Application.ControlData;
 
             ref ApplicationControlProperty control = ref controlHolder.Value;
 
-            if (LibHac.Utilities.IsEmpty(controlHolder.ByteSpan))
+            if (LibHac.Utilities.IsZeros(controlHolder.ByteSpan))
             {
                 // If the current application doesn't have a loaded control property, create a dummy one
                 // and set the savedata sizes so a user savedata will be created.

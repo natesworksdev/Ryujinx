@@ -63,9 +63,9 @@ namespace Ryujinx.Ui.Widgets
                 return;
             }
 
-            _openSaveUserDirMenuItem.Sensitive   = !Utilities.IsEmpty(controlData.ByteSpan) && controlData.Value.UserAccountSaveDataSize      > 0;
-            _openSaveDeviceDirMenuItem.Sensitive = !Utilities.IsEmpty(controlData.ByteSpan) && controlData.Value.DeviceSaveDataSize           > 0;
-            _openSaveBcatDirMenuItem.Sensitive   = !Utilities.IsEmpty(controlData.ByteSpan) && controlData.Value.BcatDeliveryCacheStorageSize > 0;
+            _openSaveUserDirMenuItem.Sensitive   = !Utilities.IsZeros(controlData.ByteSpan) && controlData.Value.UserAccountSaveDataSize      > 0;
+            _openSaveDeviceDirMenuItem.Sensitive = !Utilities.IsZeros(controlData.ByteSpan) && controlData.Value.DeviceSaveDataSize           > 0;
+            _openSaveBcatDirMenuItem.Sensitive   = !Utilities.IsZeros(controlData.ByteSpan) && controlData.Value.BcatDeliveryCacheStorageSize > 0;
 
             string fileExt = System.IO.Path.GetExtension(_titleFilePath).ToLower();
             bool   hasNca  = fileExt == ".nca" || fileExt == ".nsp" || fileExt == ".pfs0" || fileExt == ".xci";
@@ -81,7 +81,7 @@ namespace Ryujinx.Ui.Widgets
         {
             saveDataId = default;
 
-            Result result = _virtualFileSystem.FsClient.FindSaveDataWithFilter(out SaveDataInfo saveDataInfo, SaveDataSpaceId.User, ref filter);
+            Result result = _virtualFileSystem.FsClient.FindSaveDataWithFilter(out SaveDataInfo saveDataInfo, SaveDataSpaceId.User, in filter);
 
             if (ResultFs.TargetNotFound.Includes(result))
             {
@@ -102,7 +102,7 @@ namespace Ryujinx.Ui.Widgets
 
                 ref ApplicationControlProperty control = ref controlHolder.Value;
 
-                if (Utilities.IsEmpty(controlHolder.ByteSpan))
+                if (Utilities.IsZeros(controlHolder.ByteSpan))
                 {
                     // If the current application doesn't have a loaded control property, create a dummy one
                     // and set the savedata sizes so a user savedata will be created.
@@ -127,7 +127,7 @@ namespace Ryujinx.Ui.Widgets
                 }
 
                 // Try to find the savedata again after creating it
-                result = _virtualFileSystem.FsClient.FindSaveDataWithFilter(out saveDataInfo, SaveDataSpaceId.User, ref filter);
+                result = _virtualFileSystem.FsClient.FindSaveDataWithFilter(out saveDataInfo, SaveDataSpaceId.User, in filter);
             }
 
             if (result.IsSuccess())
@@ -409,7 +409,7 @@ namespace Ryujinx.Ui.Widgets
                             rc = fs.ReadFile(out long _, sourceHandle, offset, buf);
                             if (rc.IsFailure()) return rc;
 
-                            rc = fs.WriteFile(destHandle, offset, buf);
+                            rc = fs.WriteFile(destHandle, offset, buf, WriteOption.None);
                             if (rc.IsFailure()) return rc;
                         }
                     }

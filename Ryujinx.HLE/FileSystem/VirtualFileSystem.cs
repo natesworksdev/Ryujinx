@@ -1,5 +1,6 @@
 using LibHac;
 using LibHac.Common;
+using LibHac.Common.Keys;
 using LibHac.Fs;
 using LibHac.Fs.Fsa;
 using LibHac.FsSrv;
@@ -24,8 +25,7 @@ namespace Ryujinx.HLE.FileSystem
         
         private static bool _isInitialized = false;
 
-        public Keyset           KeySet   { get; private set; }
-        public FileSystemServer FsServer { get; private set; }
+        public KeySet           KeySet   { get; private set; }
         public FileSystemClient FsClient { get; private set; }
         public EmulatedGameCard GameCard { get; private set; }
         public EmulatedSdCard   SdCard   { get; private set; }
@@ -34,7 +34,7 @@ namespace Ryujinx.HLE.FileSystem
 
         private VirtualFileSystem()
         {
-            Reload();
+            ReloadKeySet();
             ModLoader = new ModLoader(); // Should only be created once
         }
 
@@ -79,39 +79,6 @@ namespace Ryujinx.HLE.FileSystem
         internal string GetBasePath() => AppDataManager.BaseDirPath;
         internal string GetSdCardPath() => MakeFullPath(SdCardPath);
         public string GetNandPath() => MakeFullPath(NandPath);
-
-        internal string GetSavePath(ServiceCtx context, SaveInfo saveInfo, bool isDirectory = true)
-        {
-            string saveUserPath   = "";
-            string baseSavePath   = NandPath;
-            ulong  currentTitleId = saveInfo.TitleId;
-
-            switch (saveInfo.SaveSpaceId)
-            {
-                case SaveSpaceId.NandUser:   baseSavePath = UserNandPath;                         break;
-                case SaveSpaceId.NandSystem: baseSavePath = SystemNandPath;                       break;
-                case SaveSpaceId.SdCard:     baseSavePath = Path.Combine(SdCardPath, "Nintendo"); break;
-            }
-
-            baseSavePath = Path.Combine(baseSavePath, "save");
-
-            if (saveInfo.TitleId == 0 && saveInfo.SaveDataType == SaveDataType.SaveData)
-            {
-                currentTitleId = context.Process.TitleId;
-            }
-
-            if (saveInfo.SaveSpaceId == SaveSpaceId.NandUser)
-            {
-                saveUserPath = saveInfo.UserId.IsNull ? "savecommon" : saveInfo.UserId.ToString();
-            }
-
-            string savePath = Path.Combine(baseSavePath,
-                saveInfo.SaveId.ToString("x16"),
-                saveUserPath,
-                saveInfo.SaveDataType == SaveDataType.SaveData ? currentTitleId.ToString("x16") : string.Empty);
-
-            return MakeFullPath(savePath, isDirectory);
-        }
 
         public string GetFullPartitionPath(string partitionPath)
         {
@@ -196,33 +163,36 @@ namespace Ryujinx.HLE.FileSystem
             return new DriveInfo(Path.GetPathRoot(GetBasePath()));
         }
 
-        public void Reload()
+        public void InitializeFsServer(LibHac.Horizon horizon, out HorizonClient fsServerClient)
         {
-            ReloadKeySet();
-
             LocalFileSystem serverBaseFs = new LocalFileSystem(GetBasePath());
 
-            DefaultFsServerObjects fsServerObjects = DefaultFsServerObjects.GetDefaultEmulatedCreators(serverBaseFs, KeySet);
+            fsServerClient = horizon.CreatePrivilegedHorizonClient();
+            var fsServer = new FileSystemServer(fsServerClient);
+
+            DefaultFsServerObjects fsServerObjects = DefaultFsServerObjects.GetDefaultEmulatedCreators(serverBaseFs, KeySet, fsServer);
 
             GameCard = fsServerObjects.GameCard;
-            SdCard   = fsServerObjects.SdCard;
+            SdCard = fsServerObjects.SdCard;
 
             SdCard.SetSdCardInsertionStatus(true);
 
-            FileSystemServerConfig fsServerConfig = new FileSystemServerConfig
+            var fsServerConfig = new FileSystemServerConfig
             {
-                FsCreators     = fsServerObjects.FsCreators,
                 DeviceOperator = fsServerObjects.DeviceOperator,
-                ExternalKeySet = KeySet.ExternalKeySet
+                ExternalKeySet = KeySet.ExternalKeySet,
+                FsCreators = fsServerObjects.FsCreators
             };
 
-            FsServer = new FileSystemServer(fsServerConfig);
-            FsClient = FsServer.CreateFileSystemClient();
+            FileSystemServerInitializer.InitializeWithConfig(fsServerClient, fsServer, fsServerConfig);
+
+            FsClient = fsServerClient.Fs;
         }
 
-
-        private void ReloadKeySet()
+        public void ReloadKeySet()
         {
+            KeySet ??= KeySet.CreateDefaultKeySet();
+
             string keyFile        = null;
             string titleKeyFile   = null;
             string consoleKeyFile = null;
@@ -256,7 +226,7 @@ namespace Ryujinx.HLE.FileSystem
                 }
             }
 
-            KeySet = ExternalKeyReader.ReadKeyFile(keyFile, titleKeyFile, consoleKeyFile);
+            ExternalKeyReader.ReadKeyFile(KeySet, keyFile, titleKeyFile, consoleKeyFile, null);
         }
 
         public void ImportTickets(IFileSystem fs)
@@ -299,7 +269,7 @@ namespace Ryujinx.HLE.FileSystem
         {
             if (_isInitialized)
             {
-                throw new InvalidOperationException($"VirtualFileSystem can only be instantiated once!");
+                throw new InvalidOperationException("VirtualFileSystem can only be instantiated once!");
             }
 
             _isInitialized = true;
