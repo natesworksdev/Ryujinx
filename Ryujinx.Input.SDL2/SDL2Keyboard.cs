@@ -227,7 +227,7 @@ namespace Ryujinx.Input.SDL2
                     return SDL_Keymod.KMOD_LGUI;
                 case Key.WinRight:
                     return SDL_Keymod.KMOD_RGUI;
-                // NOTE: menu key isn't supported by SDL2.
+                // NOTE: Menu key isn't supported by SDL2.
                 case Key.Menu:
                 default:
                     return SDL_Keymod.KMOD_NONE;
@@ -371,9 +371,10 @@ namespace Ryujinx.Input.SDL2
             {
                 _configuration = (StandardKeyboardInputConfig)configuration;
 
+                // First clear the buttons mapping
                 _buttonsUserMapping.Clear();
 
-                // Then left joycon
+                // Then configure left joycon
                 _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.LeftStick, (Key)_configuration.LeftJoyconStick.StickButton));
                 _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.DpadUp, (Key)_configuration.LeftJoycon.DpadUp));
                 _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.DpadDown, (Key)_configuration.LeftJoycon.DpadDown));
@@ -385,7 +386,7 @@ namespace Ryujinx.Input.SDL2
                 _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.SingleRightTrigger0, (Key)_configuration.LeftJoycon.ButtonSr));
                 _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.SingleLeftTrigger0, (Key)_configuration.LeftJoycon.ButtonSl));
 
-                // Finally right joycon
+                // Finally configure right joycon
                 _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.RightStick, (Key)_configuration.RightJoyconStick.StickButton));
                 _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.A, (Key)_configuration.RightJoycon.ButtonA));
                 _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.B, (Key)_configuration.RightJoycon.ButtonB));
