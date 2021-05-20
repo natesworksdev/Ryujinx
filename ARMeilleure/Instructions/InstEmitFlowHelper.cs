@@ -192,14 +192,17 @@ namespace ARMeilleure.Instructions
             // onto the dispatch stub.
             if (guestAddress.Kind == OperandKind.Constant && context.FunctionTable.IsValid(guestAddress.Value))
             {
-                var symbol = new Symbol(SymbolType.FunctionTable, guestAddress.Value);
+                Operand hostAddressAddr = !context.HasPtc ?
+                    Const(ref context.FunctionTable.GetValue(guestAddress.Value)) :
+                    Const(ref context.FunctionTable.GetValue(guestAddress.Value), new Symbol(SymbolType.FunctionTable, guestAddress.Value));
 
-                Operand hostAddressAddr = Const(ref context.FunctionTable.GetValue(guestAddress.Value), symbol);
                 hostAddress = context.Load(OperandType.I64, hostAddressAddr);
             }
             else
             {
-                hostAddress = Const((long)context.Stubs.DispatchStub, Ptc.DispatchStubSymbol);
+                hostAddress = !context.HasPtc ?
+                    Const((long)context.Stubs.DispatchStub) :
+                    Const((long)context.Stubs.DispatchStub, Ptc.DispatchStubSymbol);
             }
 
             if (isJump)
