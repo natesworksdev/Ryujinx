@@ -9,6 +9,7 @@ namespace Ryujinx.Memory.Tracking
     public class MemoryTracking
     {
         private readonly IVirtualMemoryManager _memoryManager;
+        private readonly InvalidAccessHandler _invalidAccessHandler;
 
         // Only use these from within the lock.
         private readonly NonOverlappingRangeList<VirtualRegion> _virtualRegions;
@@ -31,10 +32,11 @@ namespace Ryujinx.Memory.Tracking
         /// <param name="memoryManager">Virtual memory manager</param>
         /// <param name="block">Physical memory block</param>
         /// <param name="pageSize">Page size of the virtual memory space</param>
-        public MemoryTracking(IVirtualMemoryManager memoryManager, int pageSize)
+        public MemoryTracking(IVirtualMemoryManager memoryManager, int pageSize, InvalidAccessHandler invalidAccessHandler = null)
         {
             _memoryManager = memoryManager;
             _pageSize = pageSize;
+            _invalidAccessHandler = invalidAccessHandler;
 
             _virtualRegions = new NonOverlappingRangeList<VirtualRegion>();
         }

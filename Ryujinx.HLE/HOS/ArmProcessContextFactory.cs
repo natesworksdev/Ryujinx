@@ -2,6 +2,7 @@
 using Ryujinx.Cpu;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Process;
+using Ryujinx.Memory;
 using System;
 
 namespace Ryujinx.HLE.HOS
