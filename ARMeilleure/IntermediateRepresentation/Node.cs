@@ -1,201 +1,319 @@
 using System;
-using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace ARMeilleure.IntermediateRepresentation
 {
     class Node : IIntrusiveListNode<Node>
     {
+        private const int InlinedDestinationsCount = 1;
+        private const int InlinedSourcesCount = 3;
+
+        private int _srcCount;
+        private int _destCount;
+        private Operand _dest0;
+        private Operand _src0;
+        private Operand _src1;
+        private Operand _src2;
+        private Operand[] _operands;
+
         public Node ListPrevious { get; set; }
         public Node ListNext { get; set; }
 
         public Operand Destination
         {
-            get => _destinations.Count != 0 ? GetDestination(0) : null;
+            get => _destCount != 0 ? GetDestination(0) : null;
             set => SetDestination(value);
         }
 
-        private readonly List<Operand> _destinations;
-        private readonly List<Operand> _sources;
-        private bool _clearedDest;
+        public int DestinationsCount => _destCount;
+        public int SourcesCount => _srcCount;
 
-        public int DestinationsCount => _destinations.Count;
-        public int SourcesCount      => _sources.Count;
+        public Node() { }
 
-        private void Resize(List<Operand> list, int size)
+        public Node(Operand dest, int srcCount) : this()
         {
-            if (list.Count > size)
-            {
-                list.RemoveRange(size, list.Count - size);
-            } 
-            else
-            {
-                while (list.Count < size)
-                {
-                    list.Add(null);
-                }
-            }
+            Destination = dest;
+
+            EnsureSourcesCount(srcCount);
         }
 
-        public Node()
+        private void Reset(int destCount, int srcCount)
         {
-            _destinations = new List<Operand>();
-            _sources = new List<Operand>();
-        }
-
-        public Node(Operand destination, int sourcesCount) : this()
-        {
-            Destination = destination;
-
-            Resize(_sources, sourcesCount);
-        }
-
-        private void Reset(int sourcesCount)
-        {
-            _clearedDest = true;
-            _sources.Clear();
             ListPrevious = null;
             ListNext = null;
 
-            Resize(_sources, sourcesCount);
+            _dest0 = null;
+            _src0 = null;
+            _src1 = null;
+            _src2 = null;
+
+            int extraDest = Math.Max(0, destCount - InlinedDestinationsCount);
+            int extraSrc = Math.Max(0, srcCount - InlinedSourcesCount);
+            int extra = extraDest + extraSrc;
+
+            EnsureExtra(extra);
+
+            if (extra == 0)
+            {
+                _srcCount = srcCount;
+                _destCount = destCount;
+
+                return;
+            }
+
+            EnsureDestinationsCount(destCount);
+            EnsureSourcesCount(srcCount);
+
+            // Store _operands in a local variable to avoid bound checks below.
+            var operands = _operands;
+
+            for (int i = 0; i < operands.Length; i++)
+            {
+                operands[i] = null;
+            }
+
+            _ = _src1;
+            _ = _src2;
         }
 
-        public Node With(Operand destination, int sourcesCount)
+        public Node With(Operand dest, int srcCount)
         {
-            Reset(sourcesCount);
-            Destination = destination;
+            Reset(destCount: 1, srcCount);
+            Destination = dest;
 
             return this;
         }
 
-        public Node With(Operand[] destinations, int sourcesCount)
+        public Node With(Operand[] dest, int srcCount)
         {
-            Reset(sourcesCount);
-            SetDestinations(destinations ?? throw new ArgumentNullException(nameof(destinations)));
+            Reset(dest.Length, srcCount);
+            SetDestinations(dest ?? throw new ArgumentNullException(nameof(dest)));
 
             return this;
         }
 
         public Operand GetDestination(int index)
         {
-            return _destinations[index];
+            return GetDestinationRef(index);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private ref Operand GetDestinationRef(int index)
+        {
+            if ((uint)index >= _destCount)
+            {
+                ThrowIndexOutOfRange();
+            }
+
+            if (index < InlinedDestinationsCount)
+            {
+                return ref Unsafe.Add(ref _dest0, index);
+            }
+
+            ref Operand extra = ref MemoryMarshal.GetArrayDataReference(_operands);
+
+            return ref Unsafe.Add(ref extra, Math.Max(0, _srcCount - InlinedSourcesCount) + index - InlinedDestinationsCount);
         }
 
         public Operand GetSource(int index)
         {
-            return _sources[index];
+            return GetSourceRef(index);
         }
 
-        public void SetDestination(int index, Operand destination)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private ref Operand GetSourceRef(int index)
         {
-            if (!_clearedDest) 
+            if ((uint)index >= _srcCount)
             {
-                RemoveAssignment(_destinations[index]);
+                ThrowIndexOutOfRange();
             }
 
-            AddAssignment(destination);
-
-            _clearedDest = false;
-
-            _destinations[index] = destination;
-        }
-
-        public void SetSource(int index, Operand source)
-        {
-            RemoveUse(_sources[index]);
-
-            AddUse(source);
-
-            _sources[index] = source;
-        }
-
-        private void RemoveOldDestinations()
-        {
-            if (!_clearedDest)
+            if (index < InlinedSourcesCount)
             {
-                for (int index = 0; index < _destinations.Count; index++)
-                {
-                    RemoveAssignment(_destinations[index]);
-                }
+                return ref Unsafe.Add(ref _src0, index);
             }
 
-            _clearedDest = false;
+            ref Operand extra = ref MemoryMarshal.GetArrayDataReference(_operands);
+
+            return ref Unsafe.Add(ref extra, index - InlinedSourcesCount);
         }
 
-        public void SetDestination(Operand destination)
+        public void SetDestination(int index, Operand dest)
+        {
+            // No need to worry about curDest going stale because _operands is not resized.
+            ref Operand curDest = ref GetDestinationRef(index);
+
+            RemoveAssignment(curDest);
+            AddAssignment(dest);
+
+            curDest = dest;
+        }
+
+        public void SetSource(int index, Operand src)
+        {
+            // No need to worry about curSrc going stale because _operands is not resized.
+            ref Operand curSrc = ref GetSourceRef(index);
+
+            RemoveUse(curSrc);
+            AddUse(src);
+
+            curSrc = src;
+        }
+
+        public void SetDestination(Operand dest)
         {
             RemoveOldDestinations();
 
-            if (destination == null)
+            if (dest == null)
             {
-                _destinations.Clear();
-                _clearedDest = true;
+                EnsureDestinationsCount(0);
             }
             else
             {
-                Resize(_destinations, 1);
+                EnsureDestinationsCount(1);
 
-                _destinations[0] = destination;
-
-                AddAssignment(destination);
+                GetDestinationRef(0) = dest;
+                AddAssignment(dest);
             }
         }
 
-        public void SetDestinations(Operand[] destinations)
+        public void SetDestinations(Operand[] dest)
         {
             RemoveOldDestinations();
+            EnsureDestinationsCount(dest.Length);
 
-            Resize(_destinations, destinations.Length);
-
-            for (int index = 0; index < destinations.Length; index++)
+            for (int index = 0; index < dest.Length; index++)
             {
-                Operand newOp = destinations[index];
+                Operand newOp = dest[index];
 
-                _destinations[index] = newOp;
-
+                GetDestinationRef(index) = newOp;
                 AddAssignment(newOp);
             }
         }
 
-        private void RemoveOldSources()
-        {
-            for (int index = 0; index < _sources.Count; index++)
-            {
-                RemoveUse(_sources[index]);
-            }
-        }
-
-        public void SetSource(Operand source)
+        public void SetSource(Operand src)
         {
             RemoveOldSources();
 
-            if (source == null)
+            if (src == null)
             {
-                _sources.Clear();
+                EnsureSourcesCount(0);
             }
             else
             {
-                Resize(_sources, 1);
+                EnsureSourcesCount(1);
 
-                _sources[0] = source;
-
-                AddUse(source);
+                GetSourceRef(0) = src;
+                AddUse(src);
             }
         }
 
-        public void SetSources(Operand[] sources)
+        public void SetSources(Operand[] src)
         {
             RemoveOldSources();
+            EnsureSourcesCount(src.Length);
 
-            Resize(_sources, sources.Length);
-
-            for (int index = 0; index < sources.Length; index++)
+            for (int index = 0; index < src.Length; index++)
             {
-                Operand newOp = sources[index];
+                Operand newOp = src[index];
 
-                _sources[index] = newOp;
-
+                GetSourceRef(index) = newOp;
                 AddUse(newOp);
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void RemoveOldSources()
+        {
+            for (int index = 0; index < _srcCount; index++)
+            {
+                RemoveUse(GetSource(index));
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void RemoveOldDestinations()
+        {
+            for (int index = 0; index < _destCount; index++)
+            {
+                RemoveAssignment(GetDestination(index));
+            }
+        }
+
+        private void EnsureDestinationsCount(int count)
+        {
+            int destExtra = Math.Max(0, count - InlinedDestinationsCount);
+            int oldDestExtra = Math.Max(0, _destCount - InlinedDestinationsCount);
+
+            // Extra space for destinations has not changed, we can exit early.
+            if (destExtra == oldDestExtra)
+            {
+                _destCount = count;
+
+                return;
+            }
+
+            int srcExtra = Math.Max(0, _srcCount - InlinedSourcesCount);
+            int extraCount = srcExtra + destExtra;
+
+            var oldOperands = _operands;
+            var operands = EnsureExtra(extraCount);
+
+            if (oldOperands != null && operands != null && _srcCount > InlinedSourcesCount)
+            {
+                // Copy old sources into the operands array. No need to worry about destinations, they are considered
+                // thrashed after this.
+                Array.Copy(oldOperands, 0, operands, 0, _srcCount - InlinedSourcesCount);
+            }
+
+            _destCount = count;
+        }
+
+        private void EnsureSourcesCount(int count)
+        {
+            int srcExtra = Math.Max(0, count - InlinedSourcesCount);
+            int oldSrcExtra = Math.Max(0, _srcCount - InlinedSourcesCount);
+
+            // Extra space for sources has not changed, we can exit early.
+            if (srcExtra == oldSrcExtra)
+            {
+                _srcCount = count;
+
+                return;
+            }
+
+            int destExtra = Math.Max(0, _destCount - InlinedDestinationsCount);
+            int extraCount = destExtra + srcExtra;
+
+            var oldOperands = _operands;
+            var operands = EnsureExtra(extraCount);
+
+            if (oldOperands != null && operands != null && _destCount > InlinedDestinationsCount)
+            {
+                // Copy old destinations into the operands array. No need to worry about sources, they are considered
+                // thrashed after this.
+                Array.Copy(oldOperands, oldSrcExtra, operands, srcExtra, _destCount - InlinedDestinationsCount);
+            }
+
+            _srcCount = count;
+        }
+
+        private Operand[] EnsureExtra(int count)
+        {
+            int n = _operands != null ? _operands.Length : 0;
+
+            // If no extra operands are needed, allow the array to be garbaged collected if its large enough.
+            if (count == 0 && n >= 4)
+            {
+                _operands = null;
+            }
+            else if (count > n)
+            {
+                _operands = new Operand[count];
+            }
+
+            return _operands;
         }
 
         private void AddAssignment(Operand op)
@@ -305,5 +423,7 @@ namespace ARMeilleure.IntermediateRepresentation
                 }
             }
         }
+
+        private static void ThrowIndexOutOfRange() => throw new ArgumentOutOfRangeException("index");
     }
 }
