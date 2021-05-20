@@ -68,6 +68,8 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 return;
             }
 
+            FlushUboDirty();
+
             UpdateState(state, firstIndex, indexCount);
 
             bool instanced = _vsUsesInstanceId || _isAnyVbInstanced;

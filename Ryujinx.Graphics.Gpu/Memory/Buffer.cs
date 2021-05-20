@@ -181,6 +181,39 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
+        /// Performs guest to host memory synchronization of the buffer data, regardless of sequence number.
+        /// </summary>
+        /// <remarks>
+        /// This causes the buffer data to be overwritten if a write was detected from the CPU,
+        /// since the last call to this method.
+        /// </remarks>
+        /// <param name="address">Start address of the range to synchronize</param>
+        /// <param name="size">Size in bytes of the range to synchronize</param>
+        public void ForceSynchronizeMemory(ulong address, ulong size)
+        {
+            if (_useGranular)
+            {
+                _memoryTrackingGranular.QueryModified(address, size, _modifiedDelegate);
+            }
+            else
+            {
+                if (_memoryTracking.DirtyOrVolatile())
+                {
+                    _memoryTracking.Reprotect();
+
+                    if (_modifiedRanges != null)
+                    {
+                        _modifiedRanges.ExcludeModifiedRegions(Address, Size, _loadDelegate);
+                    }
+                    else
+                    {
+                        _context.Renderer.SetBufferData(Handle, 0, _context.PhysicalMemory.GetSpan(Address, (int)Size));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Ensure that the modified range list exists.
         /// </summary>
         private void EnsureRangeList()
