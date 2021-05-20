@@ -293,6 +293,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             if (UsedFeatures.HasFlag(FeatureFlags.CbIndexing))
             {
+                usedMask |= (int)GpuAccessor.QueryConstantBufferUse();
                 usedMask = FillMask(usedMask);
             }
 
