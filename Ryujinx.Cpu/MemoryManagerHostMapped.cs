@@ -78,7 +78,7 @@ namespace Ryujinx.Cpu
             _pageTable = new ulong[1 << (AddressSpaceBits - (PageBits + PageToPteShift))];
             _addressSpace = new MemoryBlock(asSize, MemoryAllocationFlags.Reserve | MemoryAllocationFlags.Mirrorable);
             _addressSpaceMirror = _addressSpace.CreateMirror();
-            Tracking = new MemoryTracking(this, PageSize);
+            Tracking = new MemoryTracking(this, PageSize, invalidAccessHandler);
             _memoryEh = new MemoryEhMeilleure(_addressSpace, Tracking);
         }
 
@@ -157,50 +157,113 @@ namespace Ryujinx.Cpu
         /// <inheritdoc/>
         public T Read<T>(ulong va) where T : unmanaged
         {
-            AssertMapped(va, (ulong)Unsafe.SizeOf<T>());
+            try
+            {
+                AssertMapped(va, (ulong)Unsafe.SizeOf<T>());
 
-            return _addressSpaceMirror.Read<T>(va);
+                return _addressSpaceMirror.Read<T>(va);
+            }
+            catch (InvalidMemoryRegionException)
+            {
+                if (_invalidAccessHandler == null || !_invalidAccessHandler(va))
+                {
+                    throw;
+                }
+
+                return default;
+            }
         }
 
         /// <inheritdoc/>
         public T ReadTracked<T>(ulong va) where T : unmanaged
         {
-            SignalMemoryTracking(va, (ulong)Unsafe.SizeOf<T>(), false);
+            try
+            {
+                SignalMemoryTracking(va, (ulong)Unsafe.SizeOf<T>(), false);
 
-            return Read<T>(va);
+                return Read<T>(va);
+            }
+            catch (InvalidMemoryRegionException)
+            {
+                if (_invalidAccessHandler == null || !_invalidAccessHandler(va))
+                {
+                    throw;
+                }
+
+                return default;
+            }
         }
 
         /// <inheritdoc/>
         public void Read(ulong va, Span<byte> data)
         {
-            AssertMapped(va, (ulong)data.Length);
+            try
+            {
+                AssertMapped(va, (ulong)data.Length);
 
-            _addressSpaceMirror.Read(va, data);
+                _addressSpaceMirror.Read(va, data);
+            }
+            catch (InvalidMemoryRegionException)
+            {
+                if (_invalidAccessHandler == null || !_invalidAccessHandler(va))
+                {
+                    throw;
+                }
+            }
         }
 
         /// <inheritdoc/>
         public void Write<T>(ulong va, T value) where T : unmanaged
         {
-            SignalMemoryTracking(va, (ulong)Unsafe.SizeOf<T>(), write: true);
+            try
+            {
+                SignalMemoryTracking(va, (ulong)Unsafe.SizeOf<T>(), write: true);
 
-            _addressSpaceMirror.Write(va, value);
+                _addressSpaceMirror.Write(va, value);
+            }
+            catch (InvalidMemoryRegionException)
+            {
+                if (_invalidAccessHandler == null || !_invalidAccessHandler(va))
+                {
+                    throw;
+                }
+            }
         }
 
         /// <inheritdoc/>
         public void Write(ulong va, ReadOnlySpan<byte> data)
         {
-            SignalMemoryTracking(va, (ulong)data.Length, write: true);
+            try {
+                SignalMemoryTracking(va, (ulong)data.Length, write: true);
 
-            _addressSpaceMirror.Write(va, data);
+                _addressSpaceMirror.Write(va, data);
+            }
+            catch (InvalidMemoryRegionException)
+            {
+                if (_invalidAccessHandler == null || !_invalidAccessHandler(va))
+                {
+                    throw;
+                }
+            }
         }
 
         /// <inheritdoc/>
         public void WriteUntracked(ulong va, ReadOnlySpan<byte> data)
         {
-            AssertMapped(va, (ulong)data.Length);
+            try
+            {
+                AssertMapped(va, (ulong)data.Length);
 
-            _addressSpaceMirror.Write(va, data);
-        }
+                _addressSpaceMirror.Write(va, data);
+            }
+            catch (InvalidMemoryRegionException)
+            {
+                if (_invalidAccessHandler == null || !_invalidAccessHandler(va))
+                {
+                    throw;
+                }
+            }
+}
 
         /// <inheritdoc/>
         public ReadOnlySpan<byte> GetSpan(ulong va, int size, bool tracked = false)

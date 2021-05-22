@@ -207,6 +207,10 @@ namespace Ryujinx.Memory.Tracking
                 {
                     if (!_memoryManager.IsMapped(address))
                     {
+                        _invalidAccessHandler?.Invoke(address);
+
+                        // We can't continue - it's impossible to remove protection from the page.
+                        // Even if the access handler wants us to continue, we wouldn't be able to.
                         throw new InvalidMemoryRegionException();
                     }
 
