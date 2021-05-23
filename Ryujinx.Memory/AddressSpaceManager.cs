@@ -1,6 +1,7 @@
 ﻿using Ryujinx.Memory.Range;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -308,6 +309,11 @@ namespace Ryujinx.Memory
         /// <returns>Array of physical regions</returns>
         public IEnumerable<HostMemoryRange> GetPhysicalRegions(ulong va, ulong size)
         {
+            if (size == 0)
+            {
+                return Enumerable.Empty<HostMemoryRange>();
+            }
+
             if (!ValidateAddress(va) || !ValidateAddressAndSize(va, size))
             {
                 return null;
