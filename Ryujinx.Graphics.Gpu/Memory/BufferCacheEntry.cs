@@ -1,12 +1,12 @@
 ﻿namespace Ryujinx.Graphics.Gpu.Memory
 {
     /// <summary>
-    /// A cached entry for easily locating a uniform buffer update's target buffer.
+    /// A cached entry for easily locating a buffer that is used often internally.
     /// </summary>
-    class UboCacheEntry
+    class BufferCacheEntry
     {
         /// <summary>
-        /// The CPU VA of the uniform buffer destination.
+        /// The CPU VA of the buffer destination.
         /// </summary>
         public ulong Address;
 
@@ -29,10 +29,10 @@
         /// <summary>
         /// Create a new cache entry.
         /// </summary>
-        /// <param name="address">The CPU VA of the uniform buffer destination</param>
-        /// <param name="gpuVa">The GPU VA of the uniform buffer destination</param>
-        /// <param name="buffer">The buffer object containing the target uniform buffer</param>
-        public UboCacheEntry(ulong address, ulong gpuVa, Buffer buffer)
+        /// <param name="address">The CPU VA of the buffer destination</param>
+        /// <param name="gpuVa">The GPU VA of the buffer destination</param>
+        /// <param name="buffer">The buffer object containing the target buffer</param>
+        public BufferCacheEntry(ulong address, ulong gpuVa, Buffer buffer)
         {
             Address = address;
             EndGpuAddress = gpuVa + (buffer.EndAddress - address);

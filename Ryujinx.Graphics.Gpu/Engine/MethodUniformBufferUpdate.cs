@@ -7,11 +7,8 @@ namespace Ryujinx.Graphics.Gpu.Engine
 {
     partial class Methods
     {
-        private const int MaxUboSize = 4096;
-
         // State associated with direct uniform buffer updates.
         // This state is used to attempt to batch together consecutive updates.
-        private Memory.Buffer _ubLastWritten;
         private ulong _ubBeginCpuAddress = 0;
         private ulong _ubFollowUpAddress = 0;
         private ulong _ubByteCount = 0;
@@ -21,12 +18,11 @@ namespace Ryujinx.Graphics.Gpu.Engine
         /// </summary>
         private void FlushUboDirty()
         {
-            if (_ubLastWritten != null)
+            if (_ubFollowUpAddress != 0)
             {
-                _ubLastWritten.ForceDirty(_ubBeginCpuAddress, _ubByteCount);
+                BufferManager.ForceDirty(_ubFollowUpAddress - _ubByteCount, _ubByteCount);
 
                 _ubFollowUpAddress = 0;
-                _ubLastWritten = null;
             }
         }
 
@@ -41,17 +37,12 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
             ulong address = uniformBuffer.Address.Pack() + (uint)uniformBuffer.Offset;
 
-            ulong currentCpuAddress = _ubBeginCpuAddress + _ubByteCount;
-
-            if (_ubFollowUpAddress != address || !_ubLastWritten.FullyContains(currentCpuAddress, 4) || (_ubByteCount >> 2) + 1 >= MaxUboSize)
+            if (_ubFollowUpAddress != address)
             {
                 FlushUboDirty();
 
                 _ubByteCount = 0;
-
-                UboCacheEntry entry = BufferManager.TranslateCreateAndGetUbo(address, 4);
-                _ubBeginCpuAddress = entry.Address;
-                _ubLastWritten = entry.Buffer;
+                _ubBeginCpuAddress = _context.MemoryManager.Translate(address);
             }
 
             _context.PhysicalMemory.WriteUntracked(_ubBeginCpuAddress + _ubByteCount, MemoryMarshal.Cast<int, byte>(MemoryMarshal.CreateSpan(ref argument, 1)));
@@ -75,17 +66,12 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
             ulong size = (ulong)data.Length * 4;
 
-            ulong currentCpuAddress = _ubBeginCpuAddress + _ubByteCount;
-
-            if (_ubFollowUpAddress != address || !_ubLastWritten.FullyContains(currentCpuAddress, size) || (_ubByteCount >> 2) + (ulong)data.Length >= MaxUboSize)
+            if (_ubFollowUpAddress != address)
             {
                 FlushUboDirty();
 
                 _ubByteCount = 0;
-
-                UboCacheEntry entry = BufferManager.TranslateCreateAndGetUbo(address, size);
-                _ubBeginCpuAddress = entry.Address;
-                _ubLastWritten = entry.Buffer;
+                _ubBeginCpuAddress = _context.MemoryManager.Translate(address);
             }
 
             _context.PhysicalMemory.WriteUntracked(_ubBeginCpuAddress + _ubByteCount, MemoryMarshal.Cast<int, byte>(data));

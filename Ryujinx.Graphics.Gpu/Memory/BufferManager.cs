@@ -114,7 +114,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
         private bool _rebind;
 
-        private Dictionary<ulong, UboCacheEntry> _uboCache;
+        private Dictionary<ulong, BufferCacheEntry> _dirtyCache;
 
         /// <summary>
         /// Creates a new instance of the buffer manager.
@@ -146,7 +146,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             _bufferTextures = new List<BufferTextureBinding>();
 
-            _uboCache = new Dictionary<ulong, UboCacheEntry>();
+            _dirtyCache = new Dictionary<ulong, BufferCacheEntry>();
         }
 
         /// <summary>
@@ -471,26 +471,27 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
-        /// Performs address translation of the GPU virtual address, and attempts
-        /// to obtain a cached uniform buffer for the given address with a fast lookup.
-        /// If needed, a new buffer is created for the range.
+        /// Performs address translation of the GPU virtual address, and attempts to force
+        /// the buffer in the region as dirty.
+        /// The buffer lookup for this function is cached in a dictionary for quick access, which
+        /// accelerates common UBO updates.
         /// </summary>
         /// <param name="gpuVa">Start GPU virtual address of the buffer</param>
         /// <param name="size">Size in bytes of the buffer</param>
         /// <returns>A cached uniform buffer entry, containing the CPU VA and buffer to be modified</returns>
-        public UboCacheEntry TranslateCreateAndGetUbo(ulong gpuVa, ulong size)
+        public void ForceDirty(ulong gpuVa, ulong size)
         {
-            UboCacheEntry result;
+            BufferCacheEntry result;
 
-            if (!_uboCache.TryGetValue(gpuVa, out result) || result.EndGpuAddress < gpuVa + size || result.UnmappedSequence != result.Buffer.UnmappedSequence)
+            if (!_dirtyCache.TryGetValue(gpuVa, out result) || result.EndGpuAddress < gpuVa + size || result.UnmappedSequence != result.Buffer.UnmappedSequence)
             {
                 ulong address = TranslateAndCreateBuffer(gpuVa, size);
-                result = new UboCacheEntry(address, gpuVa, GetBuffer(address, size));
+                result = new BufferCacheEntry(address, gpuVa, GetBuffer(address, size));
 
-                _uboCache[gpuVa] = result;
+                _dirtyCache[gpuVa] = result;
             }
 
-            return result;
+            result.Buffer.ForceDirty(result.Address, size);
         }
 
         /// <summary>
