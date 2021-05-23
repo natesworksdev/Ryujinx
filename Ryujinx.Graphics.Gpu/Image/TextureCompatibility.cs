@@ -343,17 +343,16 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Gets the aligned sizes of the specified texture information, shifted to the largest mip from a given level.
+        /// Gets the aligned sizes for the given dimensions, using the specified texture information.
         /// The alignment depends on the texture layout and format bytes per pixel.
         /// </summary>
         /// <param name="info">Texture information to calculate the aligned size from</param>
-        /// <param name="level">Mipmap level for texture views. Shifts the aligned size to represent the largest mip level</param>
-        /// <returns>The aligned texture size of the largest mip level</returns>
-        public static Size GetLargestAlignedSize(TextureInfo info, int level)
+        /// <param name="width">The width to be aligned</param>
+        /// <param name="height">The height to be aligned</param>
+        /// <param name="depth">The depth to be aligned</param>
+        /// <returns>The aligned texture size</returns>
+        private static Size GetAlignedSize(TextureInfo info, int width, int height, int depth)
         {
-            int width = info.Width << level;
-            int height = info.Height << level;
-
             if (info.IsLinear)
             {
                 return SizeCalculator.GetLinearAlignedSize(
@@ -365,8 +364,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
             else
             {
-                int depth = info.GetDepth() << level;
-
                 return SizeCalculator.GetBlockLinearAlignedSize(
                     width,
                     height,
@@ -381,6 +378,22 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Gets the aligned sizes of the specified texture information, shifted to the largest mip from a given level.
+        /// The alignment depends on the texture layout and format bytes per pixel.
+        /// </summary>
+        /// <param name="info">Texture information to calculate the aligned size from</param>
+        /// <param name="level">Mipmap level for texture views. Shifts the aligned size to represent the largest mip level</param>
+        /// <returns>The aligned texture size of the largest mip level</returns>
+        public static Size GetLargestAlignedSize(TextureInfo info, int level)
+        {
+            int width = info.Width << level;
+            int height = info.Height << level;
+            int depth = info.GetDepth() << level;
+
+            return GetAlignedSize(info, width, height, depth);
+        }
+
+        /// <summary>
         /// Gets the aligned sizes of the specified texture information.
         /// The alignment depends on the texture layout and format bytes per pixel.
         /// </summary>
@@ -391,31 +404,9 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             int width = Math.Max(1, info.Width >> level);
             int height = Math.Max(1, info.Height >> level);
+            int depth = Math.Max(1, info.GetDepth() >> level);
 
-            if (info.IsLinear)
-            {
-                return SizeCalculator.GetLinearAlignedSize(
-                    width,
-                    height,
-                    info.FormatInfo.BlockWidth,
-                    info.FormatInfo.BlockHeight,
-                    info.FormatInfo.BytesPerPixel);
-            }
-            else
-            {
-                int depth = Math.Max(1, info.GetDepth() >> level);
-
-                return SizeCalculator.GetBlockLinearAlignedSize(
-                    width,
-                    height,
-                    depth,
-                    info.FormatInfo.BlockWidth,
-                    info.FormatInfo.BlockHeight,
-                    info.FormatInfo.BytesPerPixel,
-                    info.GobBlocksInY,
-                    info.GobBlocksInZ,
-                    info.GobBlocksInTileX);
-            }
+            return GetAlignedSize(info, width, height, depth);
         }
 
         /// <summary>
