@@ -15,5 +15,10 @@ namespace ARMeilleure.Signal
         {
             return AddVectoredExceptionHandler(1, action);
         }
+
+        public static bool RemoveExceptionHandler(IntPtr handle)
+        {
+            return RemoveVectoredExceptionHandler(handle) != 0;
+        }
     }
 }

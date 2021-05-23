@@ -24,10 +24,10 @@ namespace ARMeilleure.Signal
         private const int SA_SIGINFO = 0x00000004;
 
         [DllImport("libc", SetLastError = true)]
-        private static extern IntPtr sigaction(int signum, ref SigAction sigAction, out SigAction oldAction);
+        private static extern int sigaction(int signum, ref SigAction sigAction, out SigAction oldAction);
 
         [DllImport("libc", SetLastError = true)]
-        private static extern IntPtr sigemptyset(ref SigSet set);
+        private static extern int sigemptyset(ref SigSet set);
 
         public static SigAction RegisterExceptionHandler(IntPtr action)
         {
@@ -39,9 +39,19 @@ namespace ARMeilleure.Signal
 
             sigemptyset(ref sig.sa_mask);
 
-            sigaction((int)Signum.SIGSEGV, ref sig, out SigAction old);
+            int result = sigaction((int)Signum.SIGSEGV, ref sig, out SigAction old);
+
+            if (result != 0)
+            {
+                throw new InvalidOperationException($"Could not register sigaction. Error: {result}");
+            }
 
             return old;
+        }
+
+        public static bool RestoreExceptionHandler(SigAction oldAction)
+        {
+            return sigaction((int)Signum.SIGSEGV, ref oldAction, out SigAction _) == 0;
         }
     }
 }
