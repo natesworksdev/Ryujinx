@@ -5,6 +5,7 @@ using Ryujinx.Memory.Range;
 using Ryujinx.Memory.Tracking;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -323,6 +324,11 @@ namespace Ryujinx.Cpu
         /// <inheritdoc/>
         public IEnumerable<HostMemoryRange> GetPhysicalRegions(ulong va, ulong size)
         {
+            if (size == 0)
+            {
+                return Enumerable.Empty<HostMemoryRange>();
+            }
+
             if (!ValidateAddress(va) || !ValidateAddressAndSize(va, size))
             {
                 return null;

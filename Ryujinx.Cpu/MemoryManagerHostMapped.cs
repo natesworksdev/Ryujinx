@@ -5,6 +5,7 @@ using Ryujinx.Memory.Range;
 using Ryujinx.Memory.Tracking;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
@@ -383,6 +384,11 @@ namespace Ryujinx.Cpu
         /// <inheritdoc/>
         public IEnumerable<HostMemoryRange> GetPhysicalRegions(ulong va, ulong size)
         {
+            if (size == 0)
+            {
+                return Enumerable.Empty<HostMemoryRange>();
+            }
+
             AssertMapped(va, size);
 
             return new HostMemoryRange[] { new HostMemoryRange(_addressSpaceMirror.GetPointer(va, size), size) };
