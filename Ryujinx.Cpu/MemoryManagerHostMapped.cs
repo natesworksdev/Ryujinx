@@ -35,6 +35,7 @@ namespace Ryujinx.Cpu
         }
 
         private readonly InvalidAccessHandler _invalidAccessHandler;
+        private readonly bool _unsafeMode;
 
         private readonly MemoryBlock _addressSpace;
         private readonly MemoryBlock _addressSpaceMirror;
@@ -48,7 +49,7 @@ namespace Ryujinx.Cpu
 
         public IntPtr PageTablePointer => _addressSpace.Pointer;
 
-        public MemoryManagerType Type => MemoryManagerType.HostMapped;
+        public MemoryManagerType Type => _unsafeMode ? MemoryManagerType.HostMappedUnsafe : MemoryManagerType.HostMapped;
 
         public MemoryTracking Tracking { get; }
 
@@ -58,10 +59,12 @@ namespace Ryujinx.Cpu
         /// Creates a new instance of the host mapped memory manager.
         /// </summary>
         /// <param name="addressSpaceSize">Size of the address space</param>
+        /// <param name="unsafeMode">True if unmanaged access should not be masked (unsafe), false otherwise.</param>
         /// <param name="invalidAccessHandler">Optional function to handle invalid memory accesses</param>
-        public MemoryManagerHostMapped(ulong addressSpaceSize, InvalidAccessHandler invalidAccessHandler = null)
+        public MemoryManagerHostMapped(ulong addressSpaceSize, bool unsafeMode, InvalidAccessHandler invalidAccessHandler = null)
         {
             _invalidAccessHandler = invalidAccessHandler;
+            _unsafeMode = unsafeMode;
             _addressSpaceSize = addressSpaceSize;
 
             ulong asSize = PageSize;

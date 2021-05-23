@@ -65,7 +65,7 @@ namespace ARMeilleure.Translation
 
             DirectCallStubs.InitializeStubs();
 
-            if (memory.Type == MemoryManagerType.HostMapped)
+            if (memory.Type.IsHostMapped())
             {
                 NativeSignalHandler.InitializeSignalHandler();
             }

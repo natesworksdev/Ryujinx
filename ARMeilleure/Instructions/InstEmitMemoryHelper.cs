@@ -142,7 +142,7 @@ namespace ARMeilleure.Instructions
 
             SetInt(context, rt, value);
 
-            if (context.Memory.Type != MemoryManagerType.HostMapped)
+            if (!context.Memory.Type.IsHostMapped())
             {
                 context.Branch(lblEnd);
 
@@ -199,7 +199,7 @@ namespace ARMeilleure.Instructions
 
             context.Copy(GetVec(rt), value);
 
-            if (context.Memory.Type != MemoryManagerType.HostMapped)
+            if (!context.Memory.Type.IsHostMapped())
             {
                 context.Branch(lblEnd);
 
@@ -238,7 +238,7 @@ namespace ARMeilleure.Instructions
                 case 3: context.Store  (physAddr, value); break;
             }
 
-            if (context.Memory.Type != MemoryManagerType.HostMapped)
+            if (!context.Memory.Type.IsHostMapped())
             {
                 context.Branch(lblEnd);
 
@@ -301,7 +301,7 @@ namespace ARMeilleure.Instructions
                 case 4: context.Store  (physAddr, value);                                               break;
             }
 
-            if (context.Memory.Type != MemoryManagerType.HostMapped)
+            if (!context.Memory.Type.IsHostMapped())
             {
                 context.Branch(lblEnd);
 
@@ -315,7 +315,7 @@ namespace ARMeilleure.Instructions
 
         public static Operand EmitPtPointerLoad(ArmEmitterContext context, Operand address, Operand lblSlowPath, bool write, int size)
         {
-            if (context.Memory.Type == MemoryManagerType.HostMapped)
+            if (context.Memory.Type.IsHostMapped())
             {
                 return EmitHostMappedPointer(context, address);
             }
@@ -405,7 +405,7 @@ namespace ARMeilleure.Instructions
                 address = context.ZeroExtend32(OperandType.I64, address);
             }
 
-            if (!Optimizations.UnsafeHostMappedMemory)
+            if (context.Memory.Type == MemoryManagerType.HostMapped)
             {
                 Operand mask = Const(ulong.MaxValue >> (64 - context.Memory.AddressSpaceBits));
                 address = context.BitwiseAnd(address, mask);

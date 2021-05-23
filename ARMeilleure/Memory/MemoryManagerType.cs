@@ -22,6 +22,20 @@
         /// High level implementation with mappings managed by the host OS, effectively using hardware
         /// page tables. No address translation is performed in software and the memory is just accessed directly.
         /// </summary>
-        HostMapped
+        HostMapped,
+
+        /// <summary>
+        /// Same as the host mapped memory manager type, but without masking the address within the address space.
+        /// Allows invalid access from JIT code to the rest of the program, but is faster.
+        /// </summary>
+        HostMappedUnsafe
+    }
+
+    static class MemoryManagerTypeExtensions
+    {
+        public static bool IsHostMapped(this MemoryManagerType type)
+        {
+            return type == MemoryManagerType.HostMapped || type == MemoryManagerType.HostMappedUnsafe;
+        }
     }
 }
