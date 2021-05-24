@@ -63,13 +63,13 @@ namespace Ryujinx.Audio.Renderer.Parameter.Effect
         /// The attack time.
         /// <remarks>This is in microseconds.</remarks>
         /// </summary>
-        public int AttackTimeUs;
+        public int AttackTime;
 
         /// <summary>
         /// The release time.
         /// <remarks>This is in microseconds.</remarks>
         /// </summary>
-        public int ReleaseTimeUs;
+        public int ReleaseTime;
 
         /// <summary>
         /// The look ahead time.
