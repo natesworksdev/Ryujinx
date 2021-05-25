@@ -1,4 +1,3 @@
-using LibHac;
 using LibHac.Common.Keys;
 using LibHac.Fs;
 using LibHac.FsSystem;
@@ -224,13 +223,11 @@ namespace Ryujinx.HLE.HOS
 
             TimeServiceManager.Instance.SetupStandardUserSystemClock(null, false, SteadyClockTimePoint.GetRandom());
 
-            // FIXME: TimeZone shoud be init here but it's actually done in ContentManager
+            // FIXME: TimeZone should be init here but it's actually done in ContentManager
 
             TimeServiceManager.Instance.SetupEphemeralNetworkSystemClock();
 
-            InitializeLibHacHorizon();
-
-            DatabaseImpl.Instance.InitializeDatabase(device);
+            DatabaseImpl.Instance.InitializeDatabase(LibHacHorizonManager.SdbClient);
 
             HostSyncpoint = new NvHostSyncpt(device);
 
@@ -309,13 +306,6 @@ namespace Ryujinx.HLE.HOS
             using IStorage kipFile = new LocalStorage(kipPath, FileAccess.Read);
 
             ProgramLoader.LoadKip(KernelContext, new KipExecutable(kipFile));
-        }
-
-        private void InitializeLibHacHorizon()
-        {
-            LibHacHorizonManager.InitializeArpServer(this);
-            LibHacHorizonManager.InitializeBcatServer();
-            LibHacHorizonManager.InitializeSystemClients();
         }
 
         public void ChangeDockedModeState(bool newState)

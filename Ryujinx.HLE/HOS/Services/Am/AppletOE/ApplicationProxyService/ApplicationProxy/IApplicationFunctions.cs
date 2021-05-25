@@ -104,7 +104,8 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
                     "No control file was found for this game. Using a dummy one instead. This may cause inaccuracies in some games.");
             }
 
-            Result result = EnsureApplicationSaveData(context.Device.FileSystem.FsClient, out long requiredSize, applicationId, ref control, ref userId);
+            HorizonClient hos = context.Device.System.LibHacHorizonManager.AmClient;
+            Result result = EnsureApplicationSaveData(hos.Fs, out long requiredSize, applicationId, ref control, ref userId);
 
             context.ResponseData.Write(requiredSize);
 
@@ -497,7 +498,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_gpuErrorDetectedSystemEventHandle);
 
             // NOTE: This is used by "sdk" NSO during applet-application initialization.
-            //       A seperate thread is setup where event-waiting is handled.
+            //       A separate thread is setup where event-waiting is handled.
             //       When the Event is signaled, official sw will assert.
 
             return ResultCode.Success;

@@ -1,6 +1,5 @@
 ﻿using LibHac.FsSystem;
 using Ryujinx.Audio.Integration;
-using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.HLE.FileSystem;
@@ -9,7 +8,6 @@ using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.HLE.HOS.SystemState;
 using System;
-using System.Collections.Generic;
 
 namespace Ryujinx.HLE
 {
@@ -43,7 +41,7 @@ namespace Ryujinx.HLE
         internal readonly ContentManager ContentManager;
 
         /// <summary>
-        /// The persistant information between run for multi-application capabilities.
+        /// The persistent information between run for multi-application capabilities.
         /// </summary>
         /// <remarks>This cannot be changed after <see cref="Switch"/> instantiation.</remarks>
         public readonly UserChannelPersistence UserChannelPersistence;
@@ -129,7 +127,7 @@ namespace Ryujinx.HLE
         public MemoryManagerMode MemoryManagerMode { internal get; set; }
 
         /// <summary>
-        /// Control the inital state of the ignore missing services setting.
+        /// Control the initial state of the ignore missing services setting.
         /// If this is set to true, when a missing service is encountered, it will try to automatically handle it instead of throwing an exception.
         /// </summary>
         /// TODO: Update this again.

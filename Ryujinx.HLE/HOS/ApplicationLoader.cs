@@ -438,6 +438,7 @@ namespace Ryujinx.HLE.HOS
 
             TitleId      = npdm.Aci.Value.ProgramId.Value;
             TitleIs64Bit = (npdm.Meta.Value.Flags & 1) != 0;
+            _device.System.LibHacHorizonManager.ArpIReader.ApplicationId = new LibHac.ApplicationId(TitleId);
 
             return metaData;
         }
@@ -627,6 +628,7 @@ namespace Ryujinx.HLE.HOS
             _titleName   = programInfo.Name;
             TitleId      = programInfo.ProgramId;
             TitleIs64Bit = (npdm.Meta.Value.Flags & 1) != 0;
+            _device.System.LibHacHorizonManager.ArpIReader.ApplicationId = new LibHac.ApplicationId(TitleId);
 
             // Explicitly null titleid to disable the shader cache
             Graphics.Gpu.GraphicsConfig.TitleId = null;
@@ -675,8 +677,8 @@ namespace Ryujinx.HLE.HOS
                     "No control file was found for this game. Using a dummy one instead. This may cause inaccuracies in some games.");
             }
 
-            FileSystemClient fileSystem = _device.Configuration.VirtualFileSystem.FsClient;
-            Result           resultCode = fileSystem.EnsureApplicationCacheStorage(out _, applicationId, ref control);
+            HorizonClient hos = _device.System.LibHacHorizonManager.RyujinxClient;
+            Result resultCode = hos.Fs.EnsureApplicationCacheStorage(out _, applicationId, ref control);
 
             if (resultCode.IsFailure())
             {
@@ -685,7 +687,7 @@ namespace Ryujinx.HLE.HOS
                 return resultCode;
             }
 
-            resultCode = EnsureApplicationSaveData(fileSystem, out _, applicationId, ref control, ref user);
+            resultCode = EnsureApplicationSaveData(hos.Fs, out _, applicationId, ref control, ref user);
 
             if (resultCode.IsFailure())
             {

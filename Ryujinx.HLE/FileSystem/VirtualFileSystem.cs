@@ -26,11 +26,10 @@ namespace Ryujinx.HLE.FileSystem
         private static bool _isInitialized = false;
 
         public KeySet           KeySet   { get; private set; }
-        public FileSystemClient FsClient { get; private set; }
         public EmulatedGameCard GameCard { get; private set; }
         public EmulatedSdCard   SdCard   { get; private set; }
 
-        public ModLoader ModLoader {get; private set;}
+        public ModLoader ModLoader { get; private set; }
 
         private VirtualFileSystem()
         {
@@ -185,8 +184,6 @@ namespace Ryujinx.HLE.FileSystem
             };
 
             FileSystemServerInitializer.InitializeWithConfig(fsServerClient, fsServer, fsServerConfig);
-
-            FsClient = fsServerClient.Fs;
         }
 
         public void ReloadKeySet()

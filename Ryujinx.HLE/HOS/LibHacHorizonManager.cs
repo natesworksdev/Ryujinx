@@ -17,9 +17,13 @@ namespace Ryujinx.HLE.HOS
 
         public HorizonClient ApplicationClient { get; private set; }
 
+        public HorizonClient AccountClient { get; private set; }
+        public HorizonClient AmClient { get; private set; }
         public HorizonClient BcatClient { get; private set; }
         public HorizonClient FsClient { get; private set; }
         public HorizonClient SdbClient { get; private set; }
+
+        internal LibHacIReader ArpIReader { get; private set; }
 
         public LibHacHorizonManager()
         {
@@ -33,9 +37,10 @@ namespace Ryujinx.HLE.HOS
             RyujinxClient = Server.CreatePrivilegedHorizonClient();
         }
 
-        public void InitializeArpServer(Horizon system)
+        public void InitializeArpServer()
         {
-            RyujinxClient.Sm.RegisterService(new LibHacArpServiceObject(new LibHacIReader(system)), "arp:r").ThrowIfFailure();
+            ArpIReader = new LibHacIReader();
+            RyujinxClient.Sm.RegisterService(new LibHacArpServiceObject(ArpIReader), "arp:r").ThrowIfFailure();
         }
 
         public void InitializeBcatServer()
@@ -55,6 +60,12 @@ namespace Ryujinx.HLE.HOS
 
         public void InitializeSystemClients()
         {
+            AccountClient = Server.CreateHorizonClient(new ProgramLocation(SystemProgramId.Account, StorageId.BuiltInSystem),
+                AccountFsPermissions);
+
+            AmClient = Server.CreateHorizonClient(new ProgramLocation(SystemProgramId.Am, StorageId.BuiltInSystem),
+                AmFsPermissions);
+
             SdbClient = Server.CreateHorizonClient(new ProgramLocation(SystemProgramId.Sdb, StorageId.BuiltInSystem),
                 SdbFacData, SdbFacDescriptor);
         }
@@ -65,9 +76,18 @@ namespace Ryujinx.HLE.HOS
                 npdm.FsAccessControlData, npdm.FsAccessControlDescriptor);
         }
 
-        private AccessControlBits.Bits BcatFsPermissions => AccessControlBits.Bits.SystemSaveData;
+        private static AccessControlBits.Bits AccountFsPermissions => AccessControlBits.Bits.SystemSaveData |
+                                                                      AccessControlBits.Bits.GameCard |
+                                                                      AccessControlBits.Bits.SaveDataMeta |
+                                                                      AccessControlBits.Bits.GetRightsId;
 
-        private ReadOnlySpan<byte> SdbFacData => new byte[]
+        private static AccessControlBits.Bits AmFsPermissions => AccessControlBits.Bits.SaveDataManagement |
+                                                                 AccessControlBits.Bits.CreateSaveData |
+                                                                 AccessControlBits.Bits.SystemData;
+        private static AccessControlBits.Bits BcatFsPermissions => AccessControlBits.Bits.SystemSaveData;
+
+        // Sdb has save data access control info so we can't store just its access control bits
+        private static ReadOnlySpan<byte> SdbFacData => new byte[]
         {
             0x01, 0x00, 0x00, 0x00, 0x08, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1C, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x00, 0x1C, 0x00, 0x00, 0x00, 0x18, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00,
@@ -75,7 +95,7 @@ namespace Ryujinx.HLE.HOS
             0x00, 0x00, 0x00, 0x01
         };
 
-        private ReadOnlySpan<byte> SdbFacDescriptor => new byte[]
+        private static ReadOnlySpan<byte> SdbFacDescriptor => new byte[]
         {
             0x01, 0x00, 0x02, 0x00, 0x08, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,

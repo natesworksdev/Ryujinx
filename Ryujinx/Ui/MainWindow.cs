@@ -157,16 +157,20 @@ namespace Ryujinx.Ui
             // Hide emulation context status bar.
             _statusBar.Hide();
 
-            // Instanciate HLE objects.
-            _virtualFileSystem      = VirtualFileSystem.CreateInstance();
+            // Instantiate HLE objects.
+            _virtualFileSystem    = VirtualFileSystem.CreateInstance();
+            _libHacHorizonManager = new LibHacHorizonManager();
+
+            _libHacHorizonManager.InitializeFsServer(_virtualFileSystem);
+            _libHacHorizonManager.InitializeArpServer();
+            _libHacHorizonManager.InitializeBcatServer();
+            _libHacHorizonManager.InitializeSystemClients();
+
             _contentManager         = new ContentManager(_virtualFileSystem);
-            _accountManager         = new AccountManager(_virtualFileSystem);
+            _accountManager         = new AccountManager(_libHacHorizonManager.RyujinxClient);
             _userChannelPersistence = new UserChannelPersistence();
 
-            _libHacHorizonManager = new LibHacHorizonManager();
-            _libHacHorizonManager.InitializeFsServer(_virtualFileSystem);
-
-            // Instanciate GUI objects.
+            // Instantiate GUI objects.
             _applicationLibrary = new ApplicationLibrary(_virtualFileSystem);
             _uiHandler          = new GtkHostUiHandler(this);
             _deviceExitStatus   = new AutoResetEvent(false);
@@ -1097,7 +1101,7 @@ namespace Ryujinx.Ui
 
             BlitStruct<ApplicationControlProperty> controlData = (BlitStruct<ApplicationControlProperty>)_tableStore.GetValue(treeIter, 10);
 
-            _ = new GameTableContextMenu(this, _virtualFileSystem, _accountManager, titleFilePath, titleName, titleId, controlData);
+            _ = new GameTableContextMenu(this, _virtualFileSystem, _accountManager, _libHacHorizonManager.RyujinxClient, titleFilePath, titleName, titleId, controlData);
         }
 
         private void Load_Application_File(object sender, EventArgs args)
@@ -1213,14 +1217,14 @@ namespace Ryujinx.Ui
 
                     SystemVersion firmwareVersion = _contentManager.VerifyFirmwarePackage(filename);
 
-                    string dialogTitle = $"Install Firmware {firmwareVersion.VersionString}";
-
-                    if (firmwareVersion == null)
+                    if (firmwareVersion is null)
                     {
                         GtkDialog.CreateErrorDialog($"A valid system firmware was not found in {filename}.");
 
                         return;
                     }
+
+                    string dialogTitle = $"Install Firmware {firmwareVersion.VersionString}";
 
                     SystemVersion currentVersion = _contentManager.GetCurrentFirmwareVersion();
 

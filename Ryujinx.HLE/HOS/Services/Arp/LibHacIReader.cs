@@ -7,21 +7,16 @@ using ApplicationId = LibHac.ApplicationId;
 
 namespace Ryujinx.HLE.HOS.Services.Arp
 {
-    class LibHacIReader : LibHac.Arp.Impl.IReader 
+    class LibHacIReader : LibHac.Arp.Impl.IReader
     {
-        private Horizon System { get; }
-
-        public LibHacIReader(Horizon system)
-        {
-            System = system;
-        }
+        public ApplicationId ApplicationId { get; set; }
 
         public Result GetApplicationLaunchProperty(out LibHac.Arp.ApplicationLaunchProperty launchProperty, ulong processId)
         {
             launchProperty = new LibHac.Arp.ApplicationLaunchProperty
             {
                 BaseStorageId = StorageId.BuiltInUser,
-                ApplicationId = new ApplicationId(System.Device.Application.TitleId)
+                ApplicationId = ApplicationId
             };
 
             return Result.Success;
