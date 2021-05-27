@@ -432,6 +432,7 @@ namespace Ryujinx.Headless.SDL2
                                                                   options.FsGlobalAccessLogMode,
                                                                   options.SystemTimeOffset,
                                                                   options.SystemTimeZone,
+                                                                  options.MemoryManagerMode,
                                                                   (bool)options.IgnoreMissingServices,
                                                                   options.AspectRatio);
 

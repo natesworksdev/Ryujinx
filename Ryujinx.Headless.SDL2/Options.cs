@@ -104,6 +104,9 @@ namespace Ryujinx.Headless.SDL2
         [Option("system-time-offset", Required = false, Default = 0, HelpText = "Change System Time Offset in seconds.")]
         public long SystemTimeOffset { get; set; }
 
+        [Option("memory-manager-mode", Required = false, Default = MemoryManagerMode.HostMappedUnsafe, HelpText = "The selected memory manager mode.")]
+        public MemoryManagerMode MemoryManagerMode { get; set; }
+
         // Logging
 
         [Option("enable-file-logging", Required = false, Default = false, HelpText = "Enables logging to a file on disk.")]
