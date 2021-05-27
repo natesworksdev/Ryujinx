@@ -1,4 +1,5 @@
 using Ryujinx.Graphics.Shader.CodeGen.Glsl;
+using Ryujinx.Graphics.Shader.CodeGen.Spirv;
 using Ryujinx.Graphics.Shader.Decoders;
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.StructuredIr;
@@ -79,25 +80,20 @@ namespace Ryujinx.Graphics.Shader.Translation
                     Ssa.Rename(cfg.Blocks);
 
                     Optimizer.RunPass(cfg.Blocks, config);
-
                     Rewriter.RunPass(cfg.Blocks, config);
                 }
 
                 funcs[i] = new Function(cfg.Blocks, $"fun{i}", false, inArgumentsCount, outArgumentsCount);
             }
 
-            StructuredProgramInfo sInfo = StructuredProgram.MakeStructuredProgram(funcs, config);
+            var sInfo = StructuredProgram.MakeStructuredProgram(funcs, config);
 
-            ShaderProgram program;
-
-            switch (config.Options.TargetLanguage)
+            ShaderProgram program = config.Options.TargetLanguage switch
             {
-                case TargetLanguage.Glsl:
-                    program = new ShaderProgram(config.Stage, GlslGenerator.Generate(sInfo, config));
-                    break;
-                default:
-                    throw new NotImplementedException(config.Options.TargetLanguage.ToString());
-            }
+                TargetLanguage.Glsl => new ShaderProgram(config.Stage, GlslGenerator.Generate(sInfo, config)),
+                TargetLanguage.Spirv => new ShaderProgram(config.Stage, SpirvGenerator.Generate(sInfo, config)),
+                _ => throw new NotImplementedException(config.Options.TargetLanguage.ToString())
+            };
 
             shaderProgramInfo = new ShaderProgramInfo(
                 config.GetConstantBufferDescriptors(),
@@ -122,7 +118,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             bool hasBindless;
 
-            if ((options.Flags & TranslationFlags.Compute) != 0)
+            if (options.Flags.HasFlag(TranslationFlags.Compute))
             {
                 config = new ShaderConfig(gpuAccessor, options, counts);
 

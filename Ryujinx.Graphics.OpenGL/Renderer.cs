@@ -57,6 +57,11 @@ namespace Ryujinx.Graphics.OpenGL
             return new Shader(stage, code);
         }
 
+        public IShader CompileShader(ShaderStage stage, byte[] code)
+        {
+            return new Shader(stage, code);
+        }
+
         public BufferHandle CreateBuffer(int size)
         {
             BufferCount++;

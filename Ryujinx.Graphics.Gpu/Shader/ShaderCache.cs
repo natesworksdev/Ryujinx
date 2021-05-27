@@ -554,7 +554,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 // The shader isn't currently cached, translate it and compile it.
                 ShaderCodeHolder shader = TranslateShader(channel.MemoryManager, shaderContexts[0]);
 
-                shader.HostShader = _context.Renderer.CompileShader(ShaderStage.Compute, shader.Program.Code);
+                shader.HostShader = _context.Renderer.CompileShader(ShaderStage.Compute, shader.Program.BinaryCode);
 
                 IProgram hostProgram = _context.Renderer.CreateProgram(new IShader[] { shader.HostShader }, null);
 
@@ -693,7 +693,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                         continue;
                     }
 
-                    IShader hostShader = _context.Renderer.CompileShader(program.Stage, program.Code);
+                    IShader hostShader = _context.Renderer.CompileShader(program.Stage, program.BinaryCode);
 
                     shaders[stage].HostShader = hostShader;
 
@@ -864,7 +864,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             GpuAccessor gpuAccessor = new GpuAccessor(_context, channel, gas, localSizeX, localSizeY, localSizeZ, localMemorySize, sharedMemorySize);
 
-            var options = new TranslationOptions(TargetLanguage.Glsl, TargetApi.OpenGL, DefaultFlags | TranslationFlags.Compute);
+            var options = new TranslationOptions(TargetLanguage.Spirv, TargetApi.OpenGL, DefaultFlags | TranslationFlags.Compute);
             return Translator.CreateContext(gpuVa, gpuAccessor, options);
         }
 
@@ -896,7 +896,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             GpuAccessor gpuAccessor = new GpuAccessor(_context, channel, gas, (int)stage - 1);
 
-            var options = new TranslationOptions(TargetLanguage.Glsl, TargetApi.OpenGL, flags);
+            var options = new TranslationOptions(TargetLanguage.Spirv, TargetApi.OpenGL, flags);
             return Translator.CreateContext(gpuVa, gpuAccessor, options, counts);
         }
 

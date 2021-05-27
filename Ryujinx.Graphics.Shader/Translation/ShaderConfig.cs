@@ -37,7 +37,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public FeatureFlags UsedFeatures { get; private set; }
 
-        public HashSet<int> TextureHandlesForCache { get; }
+        public HashSet<int> TextureHandlesForCache { get; } = new HashSet<int>();
 
         private readonly TranslationCounts _counts;
 

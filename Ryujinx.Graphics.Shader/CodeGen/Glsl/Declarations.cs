@@ -1,9 +1,7 @@
 using Ryujinx.Common;
-using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.StructuredIr;
 using Ryujinx.Graphics.Shader.Translation;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
@@ -431,7 +429,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
             string name = $"{DefaultNames.IAttributePrefix}{attr}";
 
-            if ((context.Config.Options.Flags & TranslationFlags.Feedback) != 0)
+            if (context.Config.Options.Flags.HasFlag(TranslationFlags.Feedback))
             {
                 for (int c = 0; c < 4; c++)
                 {
@@ -483,7 +481,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
         {
             string name = $"{DefaultNames.OAttributePrefix}{attr}";
 
-            if ((context.Config.Options.Flags & TranslationFlags.Feedback) != 0)
+            if (context.Config.Options.Flags.HasFlag(TranslationFlags.Feedback))
             {
                 for (int c = 0; c < 4; c++)
                 {
