@@ -1008,46 +1008,26 @@ namespace ARMeilleure.Instructions
 
         public static void Vpadal(ArmEmitterContext context)
         {
-            OpCode32SimdRegAddLong op = (OpCode32SimdRegAddLong)context.CurrOp;
-
-            MethodInfo info;
-
-            switch (op.Size)
+            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
+            MethodInfo info = op.Size switch
             {
-                case 2:
-                    info = op.Opc == 1 ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddU32ToU64)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddS32ToS64));
-                    break;
-                case 1:
-                    info = op.Opc == 1 ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddU16ToU32)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddS16ToS32));
-                    break;
-                default:
-                    info = op.Opc == 1 ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddU8ToU16)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddS8ToS16));
-                    break;
-            }
-
-            EmitVectorPairwiseLongAccumulate(context, (op1, op2) => context.Call(info, op1, op2), (op1, op2) => context.Add(op1, op2), op.Opc != 1);
+                2 => op.Opc == 1 ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddU32ToU64)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddS32ToS64)),
+                1 => op.Opc == 1 ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddU16ToU32)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddS16ToS32)),
+                _ => op.Opc == 1 ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddU8ToU16)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddS8ToS16)),
+            };
+            EmitVectorPairwiseOpILongAccumulate32(context, (op1, op2) => context.Call(info, op1, op2), (op1, op2) => context.Add(op1, op2), op.Opc != 1);
         }
 
         public static void Vpaddl(ArmEmitterContext context)
         {
-            OpCode32SimdRegAddLong op = (OpCode32SimdRegAddLong)context.CurrOp;
-
-            MethodInfo info;
-
-            switch (op.Size)
+            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
+            MethodInfo info = op.Size switch
             {
-                case 2:
-                    info = op.Opc == 1 ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddU32ToU64)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddS32ToS64));
-                    break;
-                case 1:
-                    info = op.Opc == 1 ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddU16ToU32)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddS16ToS32));
-                    break;
-                default:
-                    info = op.Opc == 1 ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddU8ToU16)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddS8ToS16));
-                    break;
-            }
-
-            EmitVectorPairwiseLong(context, (op1, op2) => context.Call(info, op1, op2), op.Opc != 1);
+                2 => op.Opc == 1 ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddU32ToU64)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddS32ToS64)),
+                1 => op.Opc == 1 ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddU16ToU32)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddS16ToS32)),
+                _ => op.Opc == 1 ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddU8ToU16)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddS8ToS16)),
+            };
+            EmitVectorPairwiseOpILong32(context, (op1, op2) => context.Call(info, op1, op2), op.Opc != 1);
         }
 
         public static void Vpmax_V(ArmEmitterContext context)
@@ -1108,6 +1088,32 @@ namespace ARMeilleure.Instructions
                     return context.ConditionalSelect(greater, op1, op2);
                 }, !op.U);
             }
+        }
+
+        public static void Vqadd(ArmEmitterContext context)
+        {
+            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
+            MethodInfo info = op.Size switch
+            {
+                3 => op.U ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddAndSatU64)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddAndSatS64)),
+                2 => op.U ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddAndSatU32)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddAndSatS32)),
+                1 => op.U ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddAndSatU16)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddAndSatS16)),
+                _ => op.U ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddAndSatU8)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddAndSatS8)),
+            };
+            EmitVectorBinaryOpI32(context, (op1, op2) => context.Call(info, op1, op2), !op.U);
+        }
+
+        public static void Vqsub(ArmEmitterContext context)
+        {
+            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
+            MethodInfo info = op.Size switch
+            {
+                3 => op.U ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SubAndSatU64)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SubAndSatS64)),
+                2 => op.U ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SubAndSatU32)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SubAndSatS32)),
+                1 => op.U ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SubAndSatU16)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SubAndSatS16)),
+                _ => op.U ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SubAndSatU8)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SubAndSatS8)),
+            };
+            EmitVectorBinaryOpI32(context, (op1, op2) => context.Call(info, op1, op2), !op.U);
         }
 
         public static void Vrev(ArmEmitterContext context)

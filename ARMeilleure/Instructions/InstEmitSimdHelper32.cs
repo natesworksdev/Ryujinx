@@ -592,9 +592,9 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVecA32(op.Qd), res);
         }
 
-        public static void EmitVectorPairwiseLong(ArmEmitterContext context, Func2I emit, bool signed)
+        public static void EmitVectorPairwiseOpILong32(ArmEmitterContext context, Func2I emit, bool signed)
         {
-            OpCode32SimdRegAddLong op = (OpCode32SimdRegAddLong)context.CurrOp;
+            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
 
             int elems = op.GetBytesCount() >> op.Size;
             int pairs = elems >> 1;
@@ -613,9 +613,9 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVecA32(op.Qd), res);
         }
 
-        public static void EmitVectorPairwiseLongAccumulate(ArmEmitterContext context, Func2I emit1, Func2I emit2, bool signed)
+        public static void EmitVectorPairwiseOpILongAccumulate32(ArmEmitterContext context, Func2I emit1, Func2I emit2, bool signed)
         {
-            OpCode32SimdRegAddLong op = (OpCode32SimdRegAddLong)context.CurrOp;
+            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
 
             int elems = op.GetBytesCount() >> op.Size;
             int pairs = elems >> 1;

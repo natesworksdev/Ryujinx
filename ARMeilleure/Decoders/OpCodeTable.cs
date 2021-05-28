@@ -920,10 +920,12 @@ namespace ARMeilleure.Decoders
             SetA32("111100110x00xxxxxxxx1111x0x0xxxx", InstName.Vpmax,    InstEmit32.Vpmax_V,  OpCode32SimdReg.Create);
             SetA32("1111001x0x<<xxxxxxxx1010x0x1xxxx", InstName.Vpmin,    InstEmit32.Vpmin_I,  OpCode32SimdReg.Create);
             SetA32("111100110x10xxxxxxxx1111x0x0xxxx", InstName.Vpmin,    InstEmit32.Vpmin_V,  OpCode32SimdReg.Create);
+            SetA32("1111001x0xxxxxxxxxxx0000xxx1xxxx", InstName.Vqadd,    InstEmit32.Vqadd,    OpCode32SimdReg.Create);
             SetA32("111100111x11xx10xxxx0010>>x0xxxx", InstName.Vqmovn,   InstEmit32.Vqmovn,   OpCode32SimdMovNarrow.Create);
             SetA32("1111001x1x>>>xxxxxxx100101x1xxx0", InstName.Vqrshrn,  InstEmit32.Vqrshrn,  OpCode32SimdShImmNarrow.Create);
             SetA32("111100111x>>>xxxxxxx100001x1xxx0", InstName.Vqrshrun, InstEmit32.Vqrshrun, OpCode32SimdShImmNarrow.Create);
             SetA32("1111001x1x>>>xxxxxxx100100x1xxx0", InstName.Vqshrn,   InstEmit32.Vqshrn,   OpCode32SimdShImmNarrow.Create);
+            SetA32("1111001x0xxxxxxxxxxx0010xxx1xxxx", InstName.Vqsub,    InstEmit32.Vqsub,    OpCode32SimdReg.Create);
             SetA32("111100111x111011xxxx010x0xx0xxxx", InstName.Vrecpe,   InstEmit32.Vrecpe,   OpCode32SimdSqrte.Create);
             SetA32("111100100x00xxxxxxxx1111xxx1xxxx", InstName.Vrecps,   InstEmit32.Vrecps,   OpCode32SimdReg.Create);
             SetA32("111100111x11xx00xxxx000<<xx0xxxx", InstName.Vrev,     InstEmit32.Vrev,     OpCode32SimdRev.Create);

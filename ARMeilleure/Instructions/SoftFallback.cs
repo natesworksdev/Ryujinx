@@ -1325,7 +1325,7 @@ namespace ARMeilleure.Instructions
             return (int)op1 + (int)op2;
         }
 
-        public static short AddS8ToS16(SByte op1, SByte op2)
+        public static short AddS8ToS16(sbyte op1, sbyte op2)
         {
             return (short)((short)op1 + (short)op2);
         }
@@ -1340,9 +1340,126 @@ namespace ARMeilleure.Instructions
             return (uint)op1 + (uint)op2;
         }
 
-        public static ushort AddU8ToU16(Byte op1, Byte op2)
+        public static ushort AddU8ToU16(byte op1, byte op2)
         {
             return (ushort)((ushort)op1 + (ushort)op2);
+        }
+
+        public static long AddAndSatS64(long op1, long op2)
+        {
+            bool op1Pos = op1 >= 0;
+            bool op2Pos = op2 >= 0;
+
+            if (op1Pos && op2Pos)
+            {
+                return (long.MaxValue - op1 > op2) ? op1 + op2 : long.MaxValue;
+            }
+            else if (!op1Pos && !op2Pos)
+            {
+                return (long.MinValue - op1 > op2) ? op1 + op2 : long.MinValue;
+            }
+            else
+            {
+                return op1 + op2;
+            }
+        }
+
+        public static long SubAndSatS64(long op1, long op2)
+        {
+            bool op1Pos = op1 >= 0;
+            bool op2Pos = op2 >= 0;
+
+            if (op1Pos && !op2Pos)
+            {
+                return (long.MaxValue - op1 > -op2) ? op1 - op2 : long.MaxValue;
+            }
+            else if (!op1Pos && op2Pos)
+            {
+                return (long.MinValue - op1 > op2) ? long.MinValue : op1 - op2;
+            }
+            else
+            {
+                return op1 - op2;
+            }
+        }
+
+        public static ulong AddAndSatU64(ulong op1, ulong op2)
+        {
+            return (ulong.MaxValue - op1 > op2) ? op1 + op2 : ulong.MaxValue;
+        }
+
+        public static ulong SubAndSatU64(ulong op1, ulong op2)
+        {
+            return (op2 > op1) ? 0 : op1 - op2;
+        }
+
+        public static int AddAndSatS32(int op1, int op2)
+        {
+            var add = AddS32ToS64(op1, op2);
+            return SatI64ToI32(add);
+        }
+
+        public static int SubAndSatS32(int op1, int op2)
+        {
+            long sub = (long)op1 - (long)op2;
+            return SatI64ToI32(sub);
+        }
+
+        public static uint AddAndSatU32(uint op1, uint op2)
+        {
+            var add = AddU32ToU64(op1, op2);
+            return SatU64ToU32(add);
+        }
+
+        public static uint SubAndSatU32(uint op1, uint op2)
+        {
+            return op2 > op1 ? uint.MinValue : op1 - op2;
+        }
+
+        public static short AddAndSatS16(short op1, short op2)
+        {
+            var add = AddS16ToS32(op1, op2);
+            return SatI32ToI16(add);
+        }
+
+        public static short SubAndSatS16(short op1, short op2)
+        {
+            int sub = op1 - op2;
+            return SatI32ToI16(sub);
+        }
+
+        public static ushort AddAndSatU16(ushort op1, ushort op2)
+        {
+            var add = AddU16ToU32(op1, op2);
+            return SatU32ToU16(add);
+        }
+
+        public static ushort SubAndSatU16(ushort op1, ushort op2)
+        {
+            return op2 > op1 ? ushort.MinValue : (ushort)(op1 - op2);
+        }
+
+        public static sbyte AddAndSatS8(sbyte op1, sbyte op2)
+        {
+            var add = AddS8ToS16(op1, op2);
+            return SatI16ToI8(add);
+        }
+
+        public static sbyte SubAndSatS8(sbyte op1, sbyte op2)
+        {
+            int sub = op1 - op2;
+            return SatI16ToI8((short)sub);
+        }
+
+        public static byte AddAndSatU8(byte op1, byte op2)
+        {
+            var add = AddU8ToU16(op1, op2);
+            return SatU16ToU8(add);
+        }
+
+        public static byte SubAndSatU8(byte op1, byte op2)
+        {
+            return op2 > op1 ? byte.MinValue : (byte)(op1 - op2);
         }
     }
 }
