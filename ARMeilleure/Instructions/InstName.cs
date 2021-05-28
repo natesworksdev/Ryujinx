@@ -608,6 +608,8 @@ namespace ARMeilleure.Instructions
         Vorn,
         Vorr,
         Vpadd,
+        Vpadal,
+        Vpaddl,
         Vpmax,
         Vpmin,
         Vqmovn,

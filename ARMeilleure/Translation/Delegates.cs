@@ -212,6 +212,12 @@ namespace ARMeilleure.Translation
             SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatI64ToI32)));
             SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatI32ToI16)));
             SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatI16ToI8)));
+            SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddS32ToS64)));
+            SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddS16ToS32)));
+            SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddS8ToS16)));
+            SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddU32ToU64)));
+            SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddU16ToU32)));
+            SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddU8ToU16)));
 
             SetDelegateInfo(typeof(SoftFloat16_32).GetMethod(nameof(SoftFloat16_32.FPConvert)));
 

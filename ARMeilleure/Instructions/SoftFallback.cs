@@ -1314,5 +1314,35 @@ namespace ARMeilleure.Instructions
 
             return result;
         }
+
+        public static long AddS32ToS64(int op1, int op2)
+        {
+            return (long)op1 + (long)op2;
+        }
+
+        public static int AddS16ToS32(short op1, short op2)
+        {
+            return (int)op1 + (int)op2;
+        }
+
+        public static short AddS8ToS16(SByte op1, SByte op2)
+        {
+            return (short)((short)op1 + (short)op2);
+        }
+
+        public static ulong AddU32ToU64(uint op1, uint op2)
+        {
+            return (ulong)op1 + (ulong)op2;
+        }
+
+        public static uint AddU16ToU32(ushort op1, ushort op2)
+        {
+            return (uint)op1 + (uint)op2;
+        }
+
+        public static ushort AddU8ToU16(Byte op1, Byte op2)
+        {
+            return (ushort)((ushort)op1 + (ushort)op2);
+        }
     }
 }

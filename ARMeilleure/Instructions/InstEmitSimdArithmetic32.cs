@@ -3,7 +3,7 @@ using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
 using System;
 using System.Diagnostics;
-
+using System.Reflection;
 using static ARMeilleure.Instructions.InstEmitFlowHelper;
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper;
@@ -1004,6 +1004,50 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorPairwiseOpI32(context, (op1, op2) => context.Add(op1, op2), !op.U);
             }
+        }
+
+        public static void Vpadal(ArmEmitterContext context)
+        {
+            OpCode32SimdRegAddLong op = (OpCode32SimdRegAddLong)context.CurrOp;
+
+            MethodInfo info;
+
+            switch (op.Size)
+            {
+                case 2:
+                    info = op.Opc == 1 ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddU32ToU64)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddS32ToS64));
+                    break;
+                case 1:
+                    info = op.Opc == 1 ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddU16ToU32)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddS16ToS32));
+                    break;
+                default:
+                    info = op.Opc == 1 ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddU8ToU16)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddS8ToS16));
+                    break;
+            }
+
+            EmitVectorPairwiseLongAccumulate(context, (op1, op2) => context.Call(info, op1, op2), (op1, op2) => context.Add(op1, op2), op.Opc != 1);
+        }
+
+        public static void Vpaddl(ArmEmitterContext context)
+        {
+            OpCode32SimdRegAddLong op = (OpCode32SimdRegAddLong)context.CurrOp;
+
+            MethodInfo info;
+
+            switch (op.Size)
+            {
+                case 2:
+                    info = op.Opc == 1 ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddU32ToU64)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddS32ToS64));
+                    break;
+                case 1:
+                    info = op.Opc == 1 ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddU16ToU32)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddS16ToS32));
+                    break;
+                default:
+                    info = op.Opc == 1 ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddU8ToU16)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddS8ToS16));
+                    break;
+            }
+
+            EmitVectorPairwiseLong(context, (op1, op2) => context.Call(info, op1, op2), op.Opc != 1);
         }
 
         public static void Vpmax_V(ArmEmitterContext context)

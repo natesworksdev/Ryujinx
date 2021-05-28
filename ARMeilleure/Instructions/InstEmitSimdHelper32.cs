@@ -592,6 +592,53 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVecA32(op.Qd), res);
         }
 
+        public static void EmitVectorPairwiseLong(ArmEmitterContext context, Func2I emit, bool signed)
+        {
+            OpCode32SimdRegAddLong op = (OpCode32SimdRegAddLong)context.CurrOp;
+
+            int elems = op.GetBytesCount() >> op.Size;
+            int pairs = elems >> 1;
+
+            Operand res = GetVecA32(op.Qd);
+
+            for (int index = 0; index < pairs; index++)
+            {
+                int pairIndex = index * 2;
+                Operand m1 = EmitVectorExtract32(context, op.Qm, op.Im + pairIndex,     op.Size, signed);
+                Operand m2 = EmitVectorExtract32(context, op.Qm, op.Im + pairIndex + 1, op.Size, signed);
+
+                res = EmitVectorInsert(context, res, emit(m1, m2), op.Id + index, op.Size + 1);
+            }
+
+            context.Copy(GetVecA32(op.Qd), res);
+        }
+
+        public static void EmitVectorPairwiseLongAccumulate(ArmEmitterContext context, Func2I emit1, Func2I emit2, bool signed)
+        {
+            OpCode32SimdRegAddLong op = (OpCode32SimdRegAddLong)context.CurrOp;
+
+            int elems = op.GetBytesCount() >> op.Size;
+            int pairs = elems >> 1;
+
+            Operand res = GetVecA32(op.Qd);
+
+            for (int index = 0; index < pairs; index++)
+            {
+                int pairIndex = index * 2;
+                Operand m1 = EmitVectorExtract32(context, op.Qm, op.Im + pairIndex, op.Size, signed);
+                Operand m2 = EmitVectorExtract32(context, op.Qm, op.Im + pairIndex + 1, op.Size, signed);
+
+                Operand d1 = EmitVectorExtract32(context, op.Qd, op.Id + index, op.Size + 1, signed);
+
+                Operand val = emit1(m1, m2);
+                val = emit2(val, d1);
+
+                res = EmitVectorInsert(context, res, val, op.Id + index, op.Size + 1);
+            }
+
+            context.Copy(GetVecA32(op.Qd), res);
+        }
+
         // Narrow
 
         public static void EmitVectorUnaryNarrowOp32(ArmEmitterContext context, Func1I emit, bool signed = false)
