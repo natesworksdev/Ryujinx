@@ -1365,7 +1365,7 @@ namespace ARMeilleure.Instructions
 
         public static int AddAndSatS32(int op1, int op2)
         {
-            var add = S32ToS64(op1) + S32ToS64(op2);
+            long add = (long)op1 + (long)op2;
             return SatI64ToI32(add);
         }
 
@@ -1377,7 +1377,7 @@ namespace ARMeilleure.Instructions
 
         public static uint AddAndSatU32(uint op1, uint op2)
         {
-            var add = U32ToU64(op1) + U32ToU64(op2);
+            ulong add = (ulong)op1 + (ulong)op2;
             return SatU64ToU32(add);
         }
 
@@ -1388,7 +1388,7 @@ namespace ARMeilleure.Instructions
 
         public static short AddAndSatS16(short op1, short op2)
         {
-            var add = S16ToS32(op1) + S16ToS32(op2);
+            int add = (int)op1 + (int)op2;
             return SatI32ToI16(add);
         }
 
@@ -1400,7 +1400,7 @@ namespace ARMeilleure.Instructions
 
         public static ushort AddAndSatU16(ushort op1, ushort op2)
         {
-            var add = U16ToU32(op1) + U16ToU32(op2);
+            uint add = (uint)op1 + (uint)op2;
             return SatU32ToU16(add);
         }
 
@@ -1411,55 +1411,25 @@ namespace ARMeilleure.Instructions
 
         public static sbyte AddAndSatS8(sbyte op1, sbyte op2)
         {
-            var add = (short)(S8ToS16(op1) + S8ToS16(op2));
+            short add = (short)(op1 + op2);
             return SatI16ToI8(add);
         }
 
         public static sbyte SubAndSatS8(sbyte op1, sbyte op2)
         {
-            int sub = op1 - op2;
-            return SatI16ToI8((short)sub);
+            short sub = (short)(op1 - op2);
+            return SatI16ToI8(sub);
         }
 
         public static byte AddAndSatU8(byte op1, byte op2)
         {
-            var add = (ushort)(U8ToU16(op1) + U8ToU16(op2));
+            ushort add = (ushort)(op1 + op2);
             return SatU16ToU8(add);
         }
 
         public static byte SubAndSatU8(byte op1, byte op2)
         {
             return op2 > op1 ? byte.MinValue : (byte)(op1 - op2);
-        }
-
-        public static long S32ToS64(int op1)
-        {
-            return op1;
-        }
-
-        public static int S16ToS32(short op1)
-        {
-            return op1;
-        }
-
-        public static short S8ToS16(sbyte op1)
-        {
-            return op1;
-        }
-
-        public static ulong U32ToU64(uint op1)
-        {
-            return op1;
-        }
-
-        public static uint U16ToU32(ushort op1)
-        {
-            return op1;
-        }
-
-        public static ushort U8ToU16(byte op1)
-        {
-            return op1;
         }
     }
 }

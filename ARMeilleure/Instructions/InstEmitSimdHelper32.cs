@@ -607,6 +607,12 @@ namespace ARMeilleure.Instructions
                 Operand m1 = EmitVectorExtract32(context, op.Qm, op.Im + pairIndex,     op.Size, signed);
                 Operand m2 = EmitVectorExtract32(context, op.Qm, op.Im + pairIndex + 1, op.Size, signed);
 
+                if (op.Size == 2)
+                {
+                    m1 = signed ? context.SignExtend32(OperandType.I64, m1) : context.ZeroExtend32(OperandType.I64, m1);
+                    m2 = signed ? context.SignExtend32(OperandType.I64, m2) : context.ZeroExtend32(OperandType.I64, m2);
+                }
+
                 res = EmitVectorInsert(context, res, emit(m1, m2), op.Id + index, op.Size + 1);
             }
 
@@ -627,6 +633,12 @@ namespace ARMeilleure.Instructions
                 int pairIndex = index * 2;
                 Operand m1 = EmitVectorExtract32(context, op.Qm, op.Im + pairIndex, op.Size, signed);
                 Operand m2 = EmitVectorExtract32(context, op.Qm, op.Im + pairIndex + 1, op.Size, signed);
+
+                if (op.Size == 2)
+                {
+                    m1 = signed ? context.SignExtend32(OperandType.I64, m1) : context.ZeroExtend32(OperandType.I64, m1);
+                    m2 = signed ? context.SignExtend32(OperandType.I64, m2) : context.ZeroExtend32(OperandType.I64, m2);
+                }
 
                 Operand d1 = EmitVectorExtract32(context, op.Qd, op.Id + index, op.Size + 1, signed);
 

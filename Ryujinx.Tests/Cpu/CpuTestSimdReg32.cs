@@ -466,7 +466,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise]
-        public void Vmlal([Values(0u, 1u, 2u)] uint size,
+        public void Vmlal_I([Values(0u, 1u, 2u)] uint size,
                           [Values(0u, 2u, 4u, 8u)] uint rd,
                           [Values(0u, 2u, 4u, 8u)] uint rn,
                           [Values(0u, 2u, 4u, 8u)] uint rm,
