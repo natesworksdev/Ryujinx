@@ -591,6 +591,7 @@ namespace ARMeilleure.Instructions
         Vmin,
         Vminnm,
         Vmla,
+        Vmlal,
         Vmls,
         Vmlsl,
         Vmov,

@@ -592,7 +592,7 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVecA32(op.Qd), res);
         }
 
-        public static void EmitVectorPairwiseOpILong32(ArmEmitterContext context, Func2I emit, bool signed)
+        public static void EmitVectorPairwiseLongOpI32(ArmEmitterContext context, Func2I emit, bool signed)
         {
             OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
 
@@ -613,7 +613,7 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVecA32(op.Qd), res);
         }
 
-        public static void EmitVectorPairwiseOpILongAccumulate32(ArmEmitterContext context, Func2I emit1, Func2I emit2, bool signed)
+        public static void EmitVectorPairwiseTernaryLongOpI32(ArmEmitterContext context, Func3I emit, bool signed)
         {
             OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
 
@@ -630,10 +630,7 @@ namespace ARMeilleure.Instructions
 
                 Operand d1 = EmitVectorExtract32(context, op.Qd, op.Id + index, op.Size + 1, signed);
 
-                Operand val = emit1(m1, m2);
-                val = emit2(val, d1);
-
-                res = EmitVectorInsert(context, res, val, op.Id + index, op.Size + 1);
+                res = EmitVectorInsert(context, res, emit(m1, m2, d1), op.Id + index, op.Size + 1);
             }
 
             context.Copy(GetVecA32(op.Qd), res);
