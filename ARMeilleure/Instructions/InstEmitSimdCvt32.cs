@@ -56,7 +56,8 @@ namespace ARMeilleure.Instructions
                     {
                         2 => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatU64ToU32)),
                         1 => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatU32ToU16)),
-                        _ => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatU16ToU8))
+                        0 => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatU16ToU8)),
+                        _ => throw new InvalidOperationException($"Invalid target narrow size \"{size}\".")
                     }
                 ) : (
                 destUnsigned ? (
@@ -64,14 +65,16 @@ namespace ARMeilleure.Instructions
                     {
                         2 => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatI64ToU32)),
                         1 => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatI32ToU16)),
-                        _ => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatI16ToU8))
+                        0 => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatI16ToU8)),
+                        _ => throw new InvalidOperationException($"Invalid target narrow size \"{size}\".")
                     }
                 ) : (
                     size switch
                     {
                         2 => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatI64ToI32)),
                         1 => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatI32ToI16)),
-                        _ => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatI16ToI8))
+                        0 => typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatI16ToI8)),
+                        _ => throw new InvalidOperationException($"Invalid target narrow size \"{size}\".")
                     }
                 )
             );
