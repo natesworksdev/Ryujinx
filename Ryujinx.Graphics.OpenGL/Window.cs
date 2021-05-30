@@ -1,4 +1,3 @@
-using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL.Image;
@@ -119,18 +118,11 @@ namespace Ryujinx.Graphics.OpenGL
                 ClearBufferMask.ColorBufferBit,
                 BlitFramebufferFilter.Linear);
 
-            bool[] oldGloballorWritemask = new bool[4];
-
-            GL.GetBoolean(GetPName.ColorWritemask, oldGloballorWritemask);
-
             // Remove Alpha channel
-            GL.ColorMask(false, false, false, true);
+            GL.ColorMask(0, false, false, false, true);
             GL.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             GL.Clear(ClearBufferMask.ColorBufferBit);
-            GL.ColorMask(oldGloballorWritemask[0],
-                oldGloballorWritemask[1],
-                oldGloballorWritemask[2],
-                oldGloballorWritemask[3]);
+            ((Pipeline)_renderer.Pipeline).RestoreComponentMask(0);
 
             GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, oldReadFramebufferHandle);
             GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, oldDrawFramebufferHandle);
