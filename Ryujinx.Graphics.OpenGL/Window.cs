@@ -119,10 +119,14 @@ namespace Ryujinx.Graphics.OpenGL
                 BlitFramebufferFilter.Linear);
 
             // Remove Alpha channel
-            GL.ColorMask(0, false, false, false, true);
+            GL.ColorMask(false, false, false, true);
             GL.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             GL.Clear(ClearBufferMask.ColorBufferBit);
-            ((Pipeline)_renderer.Pipeline).RestoreComponentMask(0);
+
+            for (int i = 0; i < Constants.MaxRenderTargets; i++)
+            {
+                ((Pipeline)_renderer.Pipeline).RestoreComponentMask(i);
+            }
 
             GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, oldReadFramebufferHandle);
             GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, oldDrawFramebufferHandle);
