@@ -21,6 +21,7 @@ namespace Ryujinx.HLE.HOS
         public HorizonClient AmClient { get; private set; }
         public HorizonClient BcatClient { get; private set; }
         public HorizonClient FsClient { get; private set; }
+        public HorizonClient NsClient { get; private set; }
         public HorizonClient SdbClient { get; private set; }
 
         internal LibHacIReader ArpIReader { get; private set; }
@@ -66,6 +67,9 @@ namespace Ryujinx.HLE.HOS
             AmClient = Server.CreateHorizonClient(new ProgramLocation(SystemProgramId.Am, StorageId.BuiltInSystem),
                 AmFsPermissions);
 
+            NsClient = Server.CreateHorizonClient(new ProgramLocation(SystemProgramId.Ns, StorageId.BuiltInSystem),
+                NsFsPermissions);
+
             SdbClient = Server.CreateHorizonClient(new ProgramLocation(SystemProgramId.Sdb, StorageId.BuiltInSystem),
                 SdbFacData, SdbFacDescriptor);
         }
@@ -85,6 +89,20 @@ namespace Ryujinx.HLE.HOS
                                                                  AccessControlBits.Bits.CreateSaveData |
                                                                  AccessControlBits.Bits.SystemData;
         private static AccessControlBits.Bits BcatFsPermissions => AccessControlBits.Bits.SystemSaveData;
+
+        private static AccessControlBits.Bits NsFsPermissions => AccessControlBits.Bits.ApplicationInfo |
+                                                                 AccessControlBits.Bits.SystemSaveData |
+                                                                 AccessControlBits.Bits.GameCard |
+                                                                 AccessControlBits.Bits.SaveDataManagement |
+                                                                 AccessControlBits.Bits.ContentManager |
+                                                                 AccessControlBits.Bits.ImageManager |
+                                                                 AccessControlBits.Bits.SystemSaveDataManagement |
+                                                                 AccessControlBits.Bits.SystemUpdate |
+                                                                 AccessControlBits.Bits.SdCard |
+                                                                 AccessControlBits.Bits.FormatSdCard |
+                                                                 AccessControlBits.Bits.GetRightsId |
+                                                                 AccessControlBits.Bits.RegisterProgramIndexMapInfo |
+                                                                 AccessControlBits.Bits.MoveCacheStorage;
 
         // Sdb has save data access control info so we can't store just its access control bits
         private static ReadOnlySpan<byte> SdbFacData => new byte[]

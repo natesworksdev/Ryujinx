@@ -83,8 +83,10 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         // EnsureSaveData(nn::account::Uid) -> u64
         public ResultCode EnsureSaveData(ServiceCtx context)
         {
-            Uid           userId        = context.RequestData.ReadStruct<AccountUid>().ToLibHacUid();
-            ApplicationId applicationId = new ApplicationId(context.Device.Application.TitleId);
+            Uid userId = context.RequestData.ReadStruct<AccountUid>().ToLibHacUid();
+
+            // Mask out the low nibble of the program ID to get the application ID
+            ApplicationId applicationId = new ApplicationId(context.Device.Application.TitleId & ~0xFul);
 
             BlitStruct<ApplicationControlProperty> controlHolder = context.Device.Application.ControlData;
 
