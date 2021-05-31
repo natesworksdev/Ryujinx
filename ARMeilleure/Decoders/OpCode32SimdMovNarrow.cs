@@ -9,7 +9,7 @@
             Size = (opCode >> 18) & 0x3;
             Opc = (opCode >> 6) & 0x3;
 
-            if (Size == 3 && ((Vm & 1) == 1))
+            if (Size == 3 || ((Vm & 1) == 1))
             {
                 Instruction = InstDescriptor.Undefined;
             }

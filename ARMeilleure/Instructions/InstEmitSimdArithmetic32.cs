@@ -417,16 +417,42 @@ namespace ARMeilleure.Instructions
             EmitVectorUnaryNarrowOp32(context, (op1) => op1);
         }
 
-        //Move, saturate, and narrow
-        //Unsigned -> Unsigned only
-        //Signed -> Signed or Unsigned
         public static void Vqmovn(ArmEmitterContext context)
         {
             OpCode32SimdMovNarrow op = (OpCode32SimdMovNarrow)context.CurrOp;
-            var srcUnsigned = op.Opc == 3;
-            var destUnsigned = (op.Opc & 0x1) == 1;
 
-            EmitVectorUnaryNarrowOp32(context, (op1) => EmitSaturateAndNarrowInt(context, op1, op.Size, srcUnsigned, destUnsigned));
+            bool srcUnsigned = op.Q;
+            bool destUnsigned = op.Q;
+
+            EmitVectorUnaryNarrowOp32(context, (op1) => {
+                op1 = op.Size switch
+                {
+                    2 => op1,
+                    1 => srcUnsigned ? context.ZeroExtend32(OperandType.I64, op1) : context.SignExtend32(OperandType.I64, op1),
+                    0 => srcUnsigned ? context.ZeroExtend16(OperandType.I64, op1) : context.SignExtend16(OperandType.I64, op1),
+                    _ => throw new InvalidOperationException($"Invalid VQMOVN size \"{op.Size}\".")
+                };
+                return InstEmitSimdHelper.EmitSatQ(context, op1, op.Size, !srcUnsigned, !destUnsigned);
+            });
+        }
+
+        public static void Vqmovun(ArmEmitterContext context)
+        {
+            OpCode32SimdMovNarrow op = (OpCode32SimdMovNarrow)context.CurrOp;
+
+            bool srcUnsigned = false;
+            bool destUnsigned = true;
+
+            EmitVectorUnaryNarrowOp32(context, (op1) => {
+                op1 = op.Size switch
+                {
+                    2 => op1,
+                    1 => context.SignExtend32(OperandType.I64, op1),
+                    0 => context.SignExtend16(OperandType.I64, op1),
+                    _ => throw new InvalidOperationException($"Invalid VQMOVN size \"{op.Size}\".")
+                };
+                return InstEmitSimdHelper.EmitSatQ(context, op1, op.Size, !srcUnsigned, !destUnsigned);
+            }, true);
         }
 
         public static void Vneg_S(ArmEmitterContext context)

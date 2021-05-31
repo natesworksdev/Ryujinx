@@ -204,16 +204,6 @@ namespace ARMeilleure.Translation
             SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.UnsignedSrcSignedDstSatQ)));
             SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.UnsignedSrcUnsignedDstSatQ)));
 
-            SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatU64ToU32)));
-            SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatU32ToU16)));
-            SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatU16ToU8)));
-            SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatI64ToU32)));
-            SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatI32ToU16)));
-            SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatI16ToU8)));
-            SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatI64ToI32)));
-            SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatI32ToI16)));
-            SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatI16ToI8)));
-
             SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddAndSatS64)));
             SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddAndSatU64)));
             SetDelegateInfo(typeof(SoftFallback).GetMethod(nameof(SoftFallback.SubAndSatS64)));

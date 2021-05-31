@@ -616,6 +616,7 @@ namespace ARMeilleure.Instructions
         Vpmin,
         Vqadd,
         Vqmovn,
+        Vqmovun,
         Vqrshrn,
         Vqrshrun,
         Vqshrn,
