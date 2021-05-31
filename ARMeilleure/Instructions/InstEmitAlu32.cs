@@ -479,27 +479,13 @@ namespace ARMeilleure.Instructions
             Operand m = GetIntA32(context, op.Rm);
             Operand n = GetIntA32(context, op.Rn);
 
-            Operand m1 = context.BitwiseAnd(m, Const(0xff));
-            Operand m2 = context.BitwiseAnd(context.ShiftRightUI(m, Const(8)), Const(0xff));
-            Operand m3 = context.BitwiseAnd(context.ShiftRightUI(m, Const(16)), Const(0xff));
-            Operand m4 = context.BitwiseAnd(context.ShiftRightUI(m, Const(24)), Const(0xff));
+            Operand xor, res;
 
-            Operand n1 = context.BitwiseAnd(n, Const(0xff));
-            Operand n2 = context.BitwiseAnd(context.ShiftRightUI(n, Const(8)), Const(0xff));
-            Operand n3 = context.BitwiseAnd(context.ShiftRightUI(n, Const(16)), Const(0xff));
-            Operand n4 = context.BitwiseAnd(context.ShiftRightUI(n, Const(24)), Const(0xff));
-
-            Operand sum1 = context.ShiftRightUI(context.Add(m1, n1), Const(1));
-            Operand sum2 = context.ShiftRightUI(context.Add(m2, n2), Const(1));
-            Operand sum3 = context.ShiftRightUI(context.Add(m3, n3), Const(1));
-            Operand sum4 = context.ShiftRightUI(context.Add(m4, n4), Const(1));
-
-            Operand res = Const(0);
-
-            res = context.BitwiseOr(res, sum1);
-            res = context.BitwiseOr(res, context.ShiftLeft(sum2, Const(8)));
-            res = context.BitwiseOr(res, context.ShiftLeft(sum3, Const(16)));
-            res = context.BitwiseOr(res, context.ShiftLeft(sum4, Const(24)));
+            res = context.BitwiseAnd(m, n);
+            xor = context.BitwiseExclusiveOr(m, n);
+            xor = context.ShiftRightUI(xor, Const(1));
+            xor = context.BitwiseAnd(xor, Const(0x7F7F7F7Fu));
+            res = context.Add(res, xor);
 
             SetIntA32(context, op.Rd, res);
         }
