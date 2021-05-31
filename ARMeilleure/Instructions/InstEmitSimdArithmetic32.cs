@@ -1116,29 +1116,67 @@ namespace ARMeilleure.Instructions
         public static void Vqadd(ArmEmitterContext context)
         {
             OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
-            MethodInfo info = op.Size switch
-            {
-                3 => op.U ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddAndSatU64)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddAndSatS64)),
-                2 => op.U ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddAndSatU32)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddAndSatS32)),
-                1 => op.U ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddAndSatU16)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddAndSatS16)),
-                0 => op.U ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddAndSatU8)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.AddAndSatS8)),
-                _ => throw new InvalidOperationException($"Invalid VQADD size \"{op.Size}\".")
-            };
-            EmitVectorBinaryOpI32(context, (op1, op2) => context.Call(info, op1, op2), !op.U);
+            EmitVectorBinaryOpI32(context, (op1, op2) => {
+                if (op.Size <= 2)
+                {
+                    switch (op.Size)
+                    {
+                        case 2:
+                            op1 = op.U ? context.ZeroExtend32(OperandType.I64, op1) : context.SignExtend32(OperandType.I64, op1);
+                            op2 = op.U ? context.ZeroExtend32(OperandType.I64, op2) : context.SignExtend32(OperandType.I64, op2);
+                            break;
+                        case 1:
+                            op1 = op.U ? context.ZeroExtend16(OperandType.I64, op1) : context.SignExtend16(OperandType.I64, op1);
+                            op2 = op.U ? context.ZeroExtend16(OperandType.I64, op2) : context.SignExtend16(OperandType.I64, op2);
+                            break;
+                        case 0:
+                            op1 = op.U ? context.ZeroExtend8(OperandType.I64, op1) : context.SignExtend8(OperandType.I64, op1);
+                            op2 = op.U ? context.ZeroExtend8(OperandType.I64, op2) : context.SignExtend8(OperandType.I64, op2);
+                            break;
+                        default:
+                            throw new InvalidOperationException($"Invalid VQADD size \"{op.Size}\".");
+                    }
+                    Operand temp = context.Add(op1, op2);
+                    return InstEmitSimdHelper.EmitSatQ(context, temp, op.Size, true, !op.U);
+                }
+                else /* if op.Size == 3 */
+                {
+                    return EmitBinarySatQAdd32(context, op1, op2, !op.U);
+                }
+            }, !op.U);
         }
 
         public static void Vqsub(ArmEmitterContext context)
         {
             OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
-            MethodInfo info = op.Size switch
-            {
-                3 => op.U ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SubAndSatU64)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SubAndSatS64)),
-                2 => op.U ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SubAndSatU32)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SubAndSatS32)),
-                1 => op.U ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SubAndSatU16)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SubAndSatS16)),
-                0 => op.U ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SubAndSatU8)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SubAndSatS8)),
-                _ => throw new InvalidOperationException($"Invalid VQSUB size \"{op.Size}\".")
-            };
-            EmitVectorBinaryOpI32(context, (op1, op2) => context.Call(info, op1, op2), !op.U);
+            EmitVectorBinaryOpI32(context, (op1, op2) => {
+                if (op.Size <= 2)
+                {
+                    switch (op.Size)
+                    {
+                        case 2:
+                            op1 = op.U ? context.ZeroExtend32(OperandType.I64, op1) : context.SignExtend32(OperandType.I64, op1);
+                            op2 = op.U ? context.ZeroExtend32(OperandType.I64, op2) : context.SignExtend32(OperandType.I64, op2);
+                            break;
+                        case 1:
+                            op1 = op.U ? context.ZeroExtend16(OperandType.I64, op1) : context.SignExtend16(OperandType.I64, op1);
+                            op2 = op.U ? context.ZeroExtend16(OperandType.I64, op2) : context.SignExtend16(OperandType.I64, op2);
+                            break;
+                        case 0:
+                            op1 = op.U ? context.ZeroExtend8(OperandType.I64, op1) : context.SignExtend8(OperandType.I64, op1);
+                            op2 = op.U ? context.ZeroExtend8(OperandType.I64, op2) : context.SignExtend8(OperandType.I64, op2);
+                            break;
+                        default:
+                            throw new InvalidOperationException($"Invalid VQSUB size \"{op.Size}\".");
+                    }
+                    Operand temp = context.Subtract(op1, op2);
+                    return InstEmitSimdHelper.EmitSatQ(context, temp, op.Size, true, !op.U);
+                }
+                else /* if op.Size == 3 */
+                {
+                    return EmitBinarySatQSub32(context, op1, op2, !op.U);
+                }
+            }, !op.U);
         }
 
         public static void Vrev(ArmEmitterContext context)
@@ -1493,6 +1531,30 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorBinaryOpSimd32(context, genericEmit);
             }
+        }
+
+        // TSrcs (64bit) == TDst (64bit); signed, unsigned.
+        public static Operand EmitBinarySatQAdd32(ArmEmitterContext context, Operand op1, Operand op2, bool signed)
+        {
+            Debug.Assert(((OpCode32Simd)context.CurrOp).Size == 3, "Invalid element size.");
+
+            MethodInfo info = signed
+                ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.BinarySignedSatQAdd))
+                : typeof(SoftFallback).GetMethod(nameof(SoftFallback.BinaryUnsignedSatQAdd));
+
+            return context.Call(info, op1, op2);
+        }
+
+        // TSrcs (64bit) == TDst (64bit); signed, unsigned.
+        public static Operand EmitBinarySatQSub32(ArmEmitterContext context, Operand op1, Operand op2, bool signed)
+        {
+            Debug.Assert(((OpCode32Simd)context.CurrOp).Size == 3, "Invalid element size.");
+
+            MethodInfo info = signed
+                ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.BinarySignedSatQSub))
+                : typeof(SoftFallback).GetMethod(nameof(SoftFallback.BinaryUnsignedSatQSub));
+
+            return context.Call(info, op1, op2);
         }
     }
 }

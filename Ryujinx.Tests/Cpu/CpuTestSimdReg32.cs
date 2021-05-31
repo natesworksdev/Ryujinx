@@ -783,7 +783,8 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise]
-        public void Vqadd([Values(0u, 2u, 4u, 8u)] uint rd,
+        public void Vqadd([Values(0u, 1u, 2u, 3u)] uint size, 
+                          [Values(0u, 2u, 4u, 8u)] uint rd,
                           [Values(0u, 2u, 4u, 8u)] uint rn,
                           [Values(0u, 2u, 4u, 8u)] uint rm,
                           [ValueSource("_8B4H2S1D_")] ulong z0,
@@ -810,6 +811,8 @@ namespace Ryujinx.Tests.Cpu
                 opcode |= 1 << 24;
             }
 
+            opcode |= (size & 0x3) << 20;
+
             opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
             opcode |= ((rn & 0xf) << 16) | ((rn & 0x10) << 3);
@@ -824,7 +827,8 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise]
-        public void Vqsub([Values(0u, 2u, 4u, 8u)] uint rd,
+        public void Vqsub([Values(0u, 1u, 2u, 3u)] uint size,
+                          [Values(0u, 2u, 4u, 8u)] uint rd,
                           [Values(0u, 2u, 4u, 8u)] uint rn,
                           [Values(0u, 2u, 4u, 8u)] uint rm,
                           [ValueSource("_8B4H2S1D_")] ulong z0,
@@ -850,6 +854,8 @@ namespace Ryujinx.Tests.Cpu
             {
                 opcode |= 1 << 24;
             }
+
+            opcode |= (size & 0x3) << 20;
 
             opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
