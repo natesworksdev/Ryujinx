@@ -318,6 +318,12 @@ namespace Ryujinx.Graphics.Shader.Decoders
                     opCode is OpCodeExit;
         }
 
+        private enum MergeType
+        {
+            Brk = 0,
+            Sync = 1
+        }
+
         private struct PathBlockState
         {
             public Block Block { get; }
@@ -341,7 +347,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
                 Block             = block;
                 _restoreType      = RestoreType.None;
                 _restoreValue     = 0;
-                _restoreMergeType = 0;
+                _restoreMergeType = default;
             }
 
             public PathBlockState(int oldStackSize)
@@ -349,7 +355,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
                 Block             = null;
                 _restoreType      = RestoreType.PopPushOp;
                 _restoreValue     = (ulong)oldStackSize;
-                _restoreMergeType = 0;
+                _restoreMergeType = default;
             }
 
             public PathBlockState(ulong syncAddress, MergeType mergeType)
