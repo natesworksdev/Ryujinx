@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
 {
     [Service("ldr:ro")]
     [Service("ro:1")] // 7.0.0+
-    class IRoInterface : IpcService
+    class IRoInterface : IpcService, IDisposable
     {
         private const int MaxNrr         = 0x40;
         private const int MaxNro         = 0x40;
@@ -571,19 +571,14 @@ namespace Ryujinx.HLE.HOS.Services.Ro
             return ResultCode.Success;
         }
 
-        protected override void Dispose(bool disposing)
+        public void Dispose()
         {
-            if (disposing)
+            foreach (NroInfo info in _nroInfos)
             {
-                foreach (NroInfo info in _nroInfos)
-                {
-                    UnmapNroFromInfo(info);
-                }
-
-                _nroInfos.Clear();
+                UnmapNroFromInfo(info);
             }
 
-            base.Dispose(disposing);
+            _nroInfos.Clear();
         }
     }
 }
