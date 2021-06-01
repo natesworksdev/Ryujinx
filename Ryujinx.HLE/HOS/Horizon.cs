@@ -415,6 +415,18 @@ namespace Ryujinx.HLE.HOS
                             process.DecrementReferenceCount();
                         }
 
+                        // All processes are terminated, now close all sessions.
+                        SmServer.Dispose();
+                        BsdServer.Dispose();
+                        AudRenServer.Dispose();
+                        AudOutServer.Dispose();
+                        HidServer.Dispose();
+                        NvDrvServer.Dispose();
+                        TimeServer.Dispose();
+                        ViServer.Dispose();
+                        ViServerM.Dispose();
+                        ViServerS.Dispose();
+
                         KernelContext.Processes.Clear();
                     }
 
@@ -436,17 +448,6 @@ namespace Ryujinx.HLE.HOS
                 // Destroy nvservices channels as KThread could be waiting on some user events.
                 // This is safe as KThread that are likely to call ioctls are going to be terminated by the post handler hook on the SVC facade.
                 INvDrvServices.Destroy();
-
-                SmServer.Dispose();
-                BsdServer.Dispose();
-                AudRenServer.Dispose();
-                AudOutServer.Dispose();
-                HidServer.Dispose();
-                NvDrvServer.Dispose();
-                TimeServer.Dispose();
-                ViServer.Dispose();
-                ViServerM.Dispose();
-                ViServerS.Dispose();
 
                 AudioManager.Dispose();
                 AudioOutputManager.Dispose();

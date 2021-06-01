@@ -363,6 +363,8 @@ namespace Ryujinx.HLE.HOS.Services
                     {
                         disposableObj.Dispose();
                     }
+
+                    service.Destroy();
                 }
 
                 foreach (IpcService service in _portSessions)
