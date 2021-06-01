@@ -266,7 +266,7 @@ namespace Ryujinx.HLE.HOS.Services
             _parent = parent._parent;
         }
 
-        public void Destroy()
+        public virtual void DestroyAtExit()
         {
             foreach (object domainObject in _domainObjects.Values)
             {

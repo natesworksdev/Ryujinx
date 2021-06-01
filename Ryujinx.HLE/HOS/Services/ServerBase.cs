@@ -35,13 +35,14 @@ namespace Ryujinx.HLE.HOS.Services
 
         private readonly List<int> _sessionHandles = new List<int>();
         private readonly List<int> _portHandles = new List<int>();
-        private readonly List<IpcService> _portSessions = new List<IpcService>();
         private readonly Dictionary<int, IpcService> _sessions = new Dictionary<int, IpcService>();
         private readonly Dictionary<int, Func<IpcService>> _ports = new Dictionary<int, Func<IpcService>>();
 
         public ManualResetEvent InitDone { get; }
         public Func<IpcService> SmObjectFactory { get; }
         public string Name { get; }
+
+        private bool _isActive;
 
         public ServerBase(KernelContext context, string name, Func<IpcService> smObjectFactory = null)
         {
@@ -145,8 +146,6 @@ namespace Ryujinx.HLE.HOS.Services
                         {
                             IpcService obj = _ports[handles[signaledIndex]].Invoke();
 
-                            _portSessions.Add(obj);
-
                             AddSessionObj(serverSessionHandle, obj);
                         }
                     }
@@ -156,6 +155,8 @@ namespace Ryujinx.HLE.HOS.Services
                     _selfProcess.CpuMemory.Write(messagePtr + 0x8, heapAddr | ((ulong)PointerBufferSize << 48));
                 }
             }
+
+            Dispose();
         }
 
         private bool Process(int serverSessionHandle, ulong recvListAddr)
@@ -364,15 +365,7 @@ namespace Ryujinx.HLE.HOS.Services
                         disposableObj.Dispose();
                     }
 
-                    service.Destroy();
-                }
-
-                foreach (IpcService service in _portSessions)
-                {
-                    if (service is IUserInterface userInterface)
-                    {
-                        userInterface.Destroy();
-                    }
+                    service.DestroyAtExit();
                 }
 
                 _sessions.Clear();

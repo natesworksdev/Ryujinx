@@ -408,24 +408,12 @@ namespace Ryujinx.HLE.HOS
                         SurfaceFlinger.Dispose();
 
                         // Terminate HLE services (must be done after the application is already terminated,
-                        // otherwise the application will receive errors due to service termination.
+                        // otherwise the application will receive errors due to service termination).
                         foreach (KProcess process in KernelContext.Processes.Values.Where(x => !x.Flags.HasFlag(ProcessCreationFlags.IsApplication)))
                         {
                             process.Terminate();
                             process.DecrementReferenceCount();
                         }
-
-                        // All processes are terminated, now close all sessions.
-                        SmServer.Dispose();
-                        BsdServer.Dispose();
-                        AudRenServer.Dispose();
-                        AudOutServer.Dispose();
-                        HidServer.Dispose();
-                        NvDrvServer.Dispose();
-                        TimeServer.Dispose();
-                        ViServer.Dispose();
-                        ViServerM.Dispose();
-                        ViServerS.Dispose();
 
                         KernelContext.Processes.Clear();
                     }
