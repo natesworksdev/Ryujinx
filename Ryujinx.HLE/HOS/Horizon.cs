@@ -69,6 +69,7 @@ namespace Ryujinx.HLE.HOS
 
         internal List<NfpDevice> NfpDevices { get; private set; }
 
+        internal ServerBase SmServer { get; private set; }
         internal ServerBase BsdServer { get; private set; }
         internal ServerBase AudRenServer { get; private set; }
         internal ServerBase AudOutServer { get; private set; }
@@ -274,13 +275,12 @@ namespace Ryujinx.HLE.HOS
 
         public void InitializeServices()
         {
-            IUserInterface sm = new IUserInterface(KernelContext);
-            sm.TrySetServer(new ServerBase(KernelContext, "SmServer", () => new IUserInterface(KernelContext)));
+            SmServer = new ServerBase(KernelContext, "SmServer", () => new IUserInterface(KernelContext));
 
             // Wait until SM server thread is done with initialization,
             // only then doing connections to SM is safe.
-            sm.Server.InitDone.WaitOne();
-            sm.Server.InitDone.Dispose();
+            SmServer.InitDone.WaitOne();
+            SmServer.InitDone.Dispose();
 
             BsdServer = new ServerBase(KernelContext, "BsdServer");
             AudRenServer = new ServerBase(KernelContext, "AudioRendererServer");
@@ -437,6 +437,17 @@ namespace Ryujinx.HLE.HOS
                 // Destroy nvservices channels as KThread could be waiting on some user events.
                 // This is safe as KThread that are likely to call ioctls are going to be terminated by the post handler hook on the SVC facade.
                 INvDrvServices.Destroy();
+
+                SmServer.Dispose();
+                BsdServer.Dispose();
+                AudRenServer.Dispose();
+                AudOutServer.Dispose();
+                HidServer.Dispose();
+                NvDrvServer.Dispose();
+                TimeServer.Dispose();
+                ViServer.Dispose();
+                ViServerM.Dispose();
+                ViServerS.Dispose();
 
                 AudioManager.Dispose();
                 AudioOutputManager.Dispose();

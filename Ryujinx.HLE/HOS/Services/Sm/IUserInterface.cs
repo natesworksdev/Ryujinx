@@ -245,5 +245,10 @@ namespace Ryujinx.HLE.HOS.Services.Sm
 
             return name;
         }
+
+        public void Destroy()
+        {
+            _commonServer.Dispose();
+        }
     }
 }

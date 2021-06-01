@@ -4,6 +4,7 @@ using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Services.Sm;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Services
 {
-    class ServerBase
+    class ServerBase : IDisposable
     {
         // Must be the maximum value used by services (highest one know is the one used by nvservices = 0x8000).
         // Having a size that is too low will cause failures as data copy will fail if the receiving buffer is
@@ -34,6 +35,7 @@ namespace Ryujinx.HLE.HOS.Services
 
         private readonly List<int> _sessionHandles = new List<int>();
         private readonly List<int> _portHandles = new List<int>();
+        private readonly List<IpcService> _portSessions = new List<IpcService>();
         private readonly Dictionary<int, IpcService> _sessions = new Dictionary<int, IpcService>();
         private readonly Dictionary<int, Func<IpcService>> _ports = new Dictionary<int, Func<IpcService>>();
 
@@ -143,6 +145,8 @@ namespace Ryujinx.HLE.HOS.Services
                         if (_context.Syscall.AcceptSession(handles[signaledIndex], out int serverSessionHandle) == KernelResult.Success)
                         {
                             IpcService obj = _ports[handles[signaledIndex]].Invoke();
+
+                            _portSessions.Add(obj);
 
                             AddSessionObj(serverSessionHandle, obj);
                         }
@@ -348,6 +352,35 @@ namespace Ryujinx.HLE.HOS.Services
             }
 
             return response;
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                foreach (IpcService service in _sessions.Values)
+                {
+                    if (service is IDisposable disposableObj)
+                    {
+                        disposableObj.Dispose();
+                    }
+                }
+
+                foreach (IpcService service in _portSessions)
+                {
+                    if (service is IUserInterface userInterface)
+                    {
+                        userInterface.Destroy();
+                    }
+                }
+
+                _sessions.Clear();
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
         }
     }
 }
