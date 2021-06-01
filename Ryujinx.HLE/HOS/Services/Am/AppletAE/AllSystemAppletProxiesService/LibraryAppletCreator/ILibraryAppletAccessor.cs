@@ -8,7 +8,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.LibraryAppletCreator
 {
-    class ILibraryAppletAccessor : IpcService, IDisposable
+    class ILibraryAppletAccessor : IpcService
     {
         private KernelContext _kernelContext;
 
@@ -241,22 +241,27 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
             return ResultCode.Success;
         }
 
-        public void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            if (_stateChangedEventHandle != 0)
+            if (disposing)
             {
-                _kernelContext.Syscall.CloseHandle(_stateChangedEventHandle);
+                if (_stateChangedEventHandle != 0)
+                {
+                    _kernelContext.Syscall.CloseHandle(_stateChangedEventHandle);
+                }
+
+                if (_normalOutDataEventHandle != 0)
+                {
+                    _kernelContext.Syscall.CloseHandle(_normalOutDataEventHandle);
+                }
+
+                if (_interactiveOutDataEventHandle != 0)
+                {
+                    _kernelContext.Syscall.CloseHandle(_interactiveOutDataEventHandle);
+                }
             }
 
-            if (_normalOutDataEventHandle != 0)
-            {
-                _kernelContext.Syscall.CloseHandle(_normalOutDataEventHandle);
-            }
-
-            if (_interactiveOutDataEventHandle != 0)
-            {
-                _kernelContext.Syscall.CloseHandle(_interactiveOutDataEventHandle);
-            }
+            base.Dispose(disposing);
         }
     }
 }

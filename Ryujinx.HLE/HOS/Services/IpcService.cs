@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace Ryujinx.HLE.HOS.Services
 {
-    abstract class IpcService
+    abstract class IpcService : IDisposable
     {
         public IReadOnlyDictionary<int, MethodInfo> HipcCommands { get; }
         public IReadOnlyDictionary<int, MethodInfo> TipcCommands { get; }
@@ -264,6 +264,27 @@ namespace Ryujinx.HLE.HOS.Services
         public void SetParent(IpcService parent)
         {
             _parent = parent._parent;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                foreach (object domainObject in _domainObjects.Values)
+                {
+                    if (domainObject != this && domainObject is IDisposable disposableObj)
+                    {
+                        disposableObj.Dispose();
+                    }
+                }
+
+                _domainObjects.Clear();
+            }
         }
     }
 }

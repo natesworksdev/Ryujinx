@@ -4,7 +4,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
 {
-    class IFile : IpcService, IDisposable
+    class IFile : IpcService
     {
         private LibHac.Fs.Fsa.IFile _baseFile;
 
@@ -82,17 +82,14 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
             return (ResultCode)result.Value;
         }
 
-        public void Dispose()
-        {
-            Dispose(true);
-        }
-
-        protected virtual void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
                 _baseFile?.Dispose();
             }
+
+            base.Dispose(disposing);
         }
     }
 }

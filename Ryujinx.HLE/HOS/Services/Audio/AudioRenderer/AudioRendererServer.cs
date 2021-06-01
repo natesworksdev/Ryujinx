@@ -7,7 +7,7 @@ using System.Buffers;
 
 namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
 {
-    class AudioRendererServer : IpcService, IDisposable
+    class AudioRendererServer : IpcService
     {
         private IAudioRenderer _impl;
 
@@ -172,17 +172,14 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
             return result;
         }
 
-        public void Dispose()
-        {
-            Dispose(true);
-        }
-
-        protected virtual void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
                 _impl.Dispose();
             }
+
+            base.Dispose(disposing);
         }
     }
 }
