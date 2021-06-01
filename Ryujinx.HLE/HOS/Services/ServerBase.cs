@@ -69,6 +69,9 @@ namespace Ryujinx.HLE.HOS.Services
 
         public void AddSessionObj(KServerSession serverSession, IpcService obj)
         {
+            // Ensure that the sever loop is running.
+            InitDone.WaitOne();
+
             _selfProcess.HandleTable.GenerateHandle(serverSession, out int serverSessionHandle);
             AddSessionObj(serverSessionHandle, obj);
         }
@@ -88,13 +91,9 @@ namespace Ryujinx.HLE.HOS.Services
                 _context.Syscall.ManageNamedPort("sm:", 50, out int serverPortHandle);
 
                 AddPort(serverPortHandle, SmObjectFactory);
+            }
 
-                InitDone.Set();
-            }
-            else
-            {
-                InitDone.Dispose();
-            }
+            InitDone.Set();
 
             KThread thread = KernelStatic.GetCurrentThread();
             ulong messagePtr = thread.TlsAddress;
@@ -375,6 +374,8 @@ namespace Ryujinx.HLE.HOS.Services
                 }
 
                 _sessions.Clear();
+
+                InitDone.Dispose();
             }
         }
 

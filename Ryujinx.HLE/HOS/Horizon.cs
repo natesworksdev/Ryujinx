@@ -280,7 +280,6 @@ namespace Ryujinx.HLE.HOS
             // Wait until SM server thread is done with initialization,
             // only then doing connections to SM is safe.
             SmServer.InitDone.WaitOne();
-            SmServer.InitDone.Dispose();
 
             BsdServer = new ServerBase(KernelContext, "BsdServer");
             AudRenServer = new ServerBase(KernelContext, "AudioRendererServer");
