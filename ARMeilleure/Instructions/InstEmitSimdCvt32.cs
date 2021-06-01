@@ -410,6 +410,12 @@ namespace ARMeilleure.Instructions
             });
         }
 
+        // VRINTR (floating-point).
+        public static void Vrintr_S(ArmEmitterContext context)
+        {
+            Vrintx_S(context);
+        }
+
         private static Operand EmitFPConvert(ArmEmitterContext context, Operand value, OperandType type, bool signed)
         {
             Debug.Assert(value.Type == OperandType.I32 || value.Type == OperandType.I64);

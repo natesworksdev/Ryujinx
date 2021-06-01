@@ -623,6 +623,7 @@ namespace ARMeilleure.Instructions
         Vqsub,
         Vrev,
         Vrint,
+        Vrintr,
         Vrintx,
         Vrshr,
         Vsel,

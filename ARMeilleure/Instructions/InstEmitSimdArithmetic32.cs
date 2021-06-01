@@ -449,7 +449,7 @@ namespace ARMeilleure.Instructions
                     2 => op1,
                     1 => context.SignExtend32(OperandType.I64, op1),
                     0 => context.SignExtend16(OperandType.I64, op1),
-                    _ => throw new InvalidOperationException($"Invalid VQMOVN size \"{op.Size}\".")
+                    _ => throw new InvalidOperationException($"Invalid VQMOVUN size \"{op.Size}\".")
                 };
                 return InstEmitSimdHelper.EmitSatQ(context, op1, op.Size, !srcUnsigned, !destUnsigned);
             }, true);
