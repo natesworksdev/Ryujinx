@@ -8,6 +8,7 @@
         {
             Size = (opCode >> 18) & 0x3;
             Opc = (opCode >> 6) & 0x3;
+            RegisterSize = RegisterSize.Simd128;
 
             if (Size == 3 || ((Vm & 1) == 1))
             {

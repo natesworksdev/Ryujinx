@@ -421,8 +421,8 @@ namespace ARMeilleure.Instructions
         {
             OpCode32SimdMovNarrow op = (OpCode32SimdMovNarrow)context.CurrOp;
 
-            bool srcUnsigned = op.Q;
-            bool destUnsigned = op.Q;
+            bool srcUnsigned = op.Opc == 3;
+            bool destUnsigned = (op.Opc & 1) != 0;
 
             EmitVectorUnaryNarrowOp32(context, (op1) => {
                 op1 = op.Size switch
@@ -434,25 +434,6 @@ namespace ARMeilleure.Instructions
                 };
                 return InstEmitSimdHelper.EmitSatQ(context, op1, op.Size, !srcUnsigned, !destUnsigned);
             });
-        }
-
-        public static void Vqmovun(ArmEmitterContext context)
-        {
-            OpCode32SimdMovNarrow op = (OpCode32SimdMovNarrow)context.CurrOp;
-
-            bool srcUnsigned = false;
-            bool destUnsigned = true;
-
-            EmitVectorUnaryNarrowOp32(context, (op1) => {
-                op1 = op.Size switch
-                {
-                    2 => op1,
-                    1 => context.SignExtend32(OperandType.I64, op1),
-                    0 => context.SignExtend16(OperandType.I64, op1),
-                    _ => throw new InvalidOperationException($"Invalid VQMOVUN size \"{op.Size}\".")
-                };
-                return InstEmitSimdHelper.EmitSatQ(context, op1, op.Size, !srcUnsigned, !destUnsigned);
-            }, true);
         }
 
         public static void Vneg_S(ArmEmitterContext context)
