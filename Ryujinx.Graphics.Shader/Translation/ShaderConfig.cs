@@ -11,6 +11,8 @@ namespace Ryujinx.Graphics.Shader.Translation
         // TODO: Non-hardcoded array size.
         public const int SamplerArraySize = 4;
 
+        private const int TotalConstantBuffers = 18;
+
         public ShaderStage Stage { get; }
 
         public bool GpPassthrough { get; }
@@ -203,6 +205,12 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public Operand CreateCbuf(int slot, int offset)
         {
+            if ((uint)slot >= TotalConstantBuffers)
+            {
+                GpuAccessor.Log($"Shader accesses invalid constant buffer {slot} at offset 0x{offset:X}.");
+                slot = 0;
+            }
+
             SetUsedConstantBuffer(slot);
             return OperandHelper.Cbuf(slot, offset);
         }
