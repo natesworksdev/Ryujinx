@@ -147,20 +147,10 @@ namespace ARMeilleure.Instructions
             }
             else //S32 or U32 (fixed) to F32
             {
-                if (unsigned)
+                EmitVectorUnaryOpI32(context, (op1) =>
                 {
-                    EmitVectorUnaryOpZx32(context, (op1) =>
-                    {
-                        return FixedToFloat(context, op1, true, fracBits);
-                    });
-                }
-                else
-                {
-                    EmitVectorUnaryOpSx32(context, (op1) =>
-                    {
-                        return FixedToFloat(context, op1, false, fracBits);
-                    });
-                }
+                    return FixedToFloat(context, op1, unsigned, fracBits);
+                }, !unsigned);
             }
         }
 
