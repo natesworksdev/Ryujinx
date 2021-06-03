@@ -37,6 +37,8 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         private int _notificationStorageChannelEventHandle;
         private int _healthWarningDisappearedSystemEventHandle;
 
+        private HorizonClient _horizon;
+
         public IApplicationFunctions(Horizon system)
         {
             // TODO: Find where they are signaled.
@@ -44,6 +46,8 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
             _friendInvitationStorageChannelEvent = new KEvent(system.KernelContext);
             _notificationStorageChannelEvent     = new KEvent(system.KernelContext);
             _healthWarningDisappearedSystemEvent = new KEvent(system.KernelContext);
+
+            _horizon = system.LibHacHorizonManager.AmClient;
         }
 
         [CommandHipc(1)]
@@ -178,7 +182,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         public ResultCode ExtendSaveData(ServiceCtx context)
         {
             SaveDataType saveDataType = (SaveDataType)context.RequestData.ReadUInt64();
-            Uid          userId       = context.RequestData.ReadStruct<AccountUid>().ToLibHacUid();
+            Uid          userId       = context.RequestData.ReadStruct<Uid>();
             ulong        saveDataSize = context.RequestData.ReadUInt64();
             ulong        journalSize  = context.RequestData.ReadUInt64();
 
@@ -200,7 +204,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         public ResultCode GetSaveDataSize(ServiceCtx context)
         {
             SaveDataType saveDataType = (SaveDataType)context.RequestData.ReadUInt64();
-            Uid          userId       = context.RequestData.ReadStruct<AccountUid>().ToLibHacUid();
+            Uid          userId       = context.RequestData.ReadStruct<Uid>();
 
             // NOTE: Service calls nn::fs::FindSaveDataWithFilter with SaveDataType = 1 hardcoded.
             //       Then it calls nn::fs::GetSaveDataAvailableSize and nn::fs::GetSaveDataJournalSize to get the sizes.
@@ -210,6 +214,31 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
             context.ResponseData.Write(_defaultJournalSaveDataSize);
 
             Logger.Stub?.PrintStub(LogClass.ServiceAm, new { saveDataType, userId });
+
+            return ResultCode.Success;
+        }
+
+        [CommandHipc(27)] // 5.0.0+
+        // CreateCacheStorage(u16 index, s64 save_size, s64 journal_size) -> ()
+        public ResultCode CreateCacheStorage(ServiceCtx context)
+        {
+            ushort index = (ushort)context.RequestData.ReadUInt64();
+            long saveSize = context.RequestData.ReadInt64();
+            long journalSize = context.RequestData.ReadInt64();
+
+            // Mask out the low nibble of the program ID to get the application ID
+            ApplicationId applicationId = new ApplicationId(context.Device.Application.TitleId & ~0xFul);
+
+            BlitStruct<ApplicationControlProperty> controlHolder = context.Device.Application.ControlData;
+
+            Result result = _horizon.Fs.CreateApplicationCacheStorage(out long requiredSize,
+                out CacheStorageTargetMedia storageTarget, applicationId, ref controlHolder.Value, index, saveSize,
+                journalSize);
+
+            if (result.IsFailure()) return (ResultCode)result.Value;
+
+            context.ResponseData.Write((ulong)storageTarget);
+            context.ResponseData.Write(requiredSize);
 
             return ResultCode.Success;
         }
