@@ -13,8 +13,10 @@ namespace ARMeilleure.IntermediateRepresentation
         private int _destCount;
         private Operand _dest0;
         private Operand _src0;
+#pragma warning disable CS0414
         private Operand _src1;
         private Operand _src2;
+#pragma warning restore CS0414
         private Operand[] _operands;
 
         public Node ListPrevious { get; set; }
@@ -72,9 +74,6 @@ namespace ARMeilleure.IntermediateRepresentation
             {
                 operands[i] = null;
             }
-
-            _ = _src1;
-            _ = _src2;
         }
 
         public Node With(Operand dest, int srcCount)
@@ -103,7 +102,7 @@ namespace ARMeilleure.IntermediateRepresentation
         {
             if ((uint)index >= _destCount)
             {
-                ThrowIndexOutOfRange();
+                ThrowIndexOutOfRange(nameof(index));
             }
 
             if (index < InlinedDestinationsCount)
@@ -126,7 +125,7 @@ namespace ARMeilleure.IntermediateRepresentation
         {
             if ((uint)index >= _srcCount)
             {
-                ThrowIndexOutOfRange();
+                ThrowIndexOutOfRange(nameof(index));
             }
 
             if (index < InlinedSourcesCount)
@@ -304,7 +303,7 @@ namespace ARMeilleure.IntermediateRepresentation
             int n = _operands != null ? _operands.Length : 0;
 
             // If no extra operands are needed, allow the array to be garbaged collected if its large enough.
-            if (count == 0 && n >= 4)
+            if (count == 0)
             {
                 _operands = null;
             }
@@ -424,6 +423,6 @@ namespace ARMeilleure.IntermediateRepresentation
             }
         }
 
-        private static void ThrowIndexOutOfRange() => throw new ArgumentOutOfRangeException("index");
+        private static void ThrowIndexOutOfRange(string param) => throw new ArgumentOutOfRangeException(param);
     }
 }
