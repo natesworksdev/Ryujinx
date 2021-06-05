@@ -193,9 +193,11 @@ namespace ARMeilleure.Translation
             {
                 _backgroundTranslatorEvent.Set();
 
-                ClearJitCache();
+                // Ensure no attempt will be made to compile new functions due to rejit.
+                ClearRejitQueue(allowRequeue: false);
                 _jitCache.Dispose();
                 _jitCache = null;
+                Functions.Clear();
 
                 DisposePools();
 
@@ -508,28 +510,6 @@ namespace ARMeilleure.Translation
         private void EnqueueForDeletion(ulong guestAddress, TranslatedFunction func)
         {
             _oldFuncs.Enqueue(new(guestAddress, func));
-        }
-
-        private void ClearJitCache()
-        {
-            // Ensure no attempt will be made to compile new functions due to rejit.
-            ClearRejitQueue(allowRequeue: false);
-
-            foreach (var func in Functions.Values)
-            {
-                _jitCache.Unmap(func.FuncPtr);
-
-                func.CallCounter?.Dispose();
-            }
-
-            Functions.Clear();
-
-            while (_oldFuncs.TryDequeue(out var kv))
-            {
-                _jitCache.Unmap(kv.Value.FuncPtr);
-
-                kv.Value.CallCounter?.Dispose();
-            }
         }
 
         private void ClearRejitQueue(bool allowRequeue)
