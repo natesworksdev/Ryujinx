@@ -20,9 +20,9 @@
             _height = height;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref SetScissorCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.Pipeline.SetScissor(_index, _enable, _x, _y, _width, _height);
+            renderer.Pipeline.SetScissor(command._index, command._enable, command._x, command._y, command._width, command._height);
         }
     }
 }

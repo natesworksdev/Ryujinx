@@ -21,10 +21,10 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands.Texture
             _firstLevel = firstLevel;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref TextureCreateViewCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            ThreadedTexture source = _texture.Get(threaded);
-            _destination.Get(threaded).Base = source.Base.CreateView(_info, _firstLayer, _firstLevel);
+            ThreadedTexture source = command._texture.Get(threaded);
+            command._destination.Get(threaded).Base = source.Base.CreateView(command._info, command._firstLayer, command._firstLevel);
         }
     }
 }

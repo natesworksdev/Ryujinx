@@ -15,9 +15,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands.Renderer
             _size = size;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref CreateBufferCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            threaded.Buffers.AssignBuffer(_threadedHandle, renderer.CreateBuffer(_size));
+            threaded.Buffers.AssignBuffer(command._threadedHandle, renderer.CreateBuffer(command._size));
         }
     }
 }

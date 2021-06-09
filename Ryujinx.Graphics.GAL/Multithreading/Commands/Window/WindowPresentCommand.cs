@@ -18,10 +18,10 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands.Window
             _swapBuffersCallback = swapBuffersCallback;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref WindowPresentCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
             threaded.SignalFrame();
-            renderer.Window.Present(_texture.Get(threaded)?.Base, _crop, _swapBuffersCallback.Get(threaded));
+            renderer.Window.Present(command._texture.Get(threaded)?.Base, command._crop, command._swapBuffersCallback.Get(threaded));
         }
     }
 }

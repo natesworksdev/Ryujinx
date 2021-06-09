@@ -13,9 +13,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands.Renderer
             _request = request;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref CreateProgramCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            IProgramRequest request = _request.Get(threaded);
+            IProgramRequest request = command._request.Get(threaded);
 
             if (request.Threaded.Base == null)
             {

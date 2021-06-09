@@ -4,7 +4,7 @@
     {
         public CommandType CommandType => CommandType.TextureBarrier;
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref TextureBarrierCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
             renderer.Pipeline.TextureBarrier();
         }

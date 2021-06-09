@@ -14,9 +14,9 @@
             _op = op;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref SetAlphaTestCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.Pipeline.SetAlphaTest(_enable, _reference, _op);
+            renderer.Pipeline.SetAlphaTest(command._enable, command._reference, command._op);
         }
     }
 }

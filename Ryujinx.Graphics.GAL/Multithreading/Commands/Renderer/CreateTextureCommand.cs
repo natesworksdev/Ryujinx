@@ -17,9 +17,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands.Renderer
             _scale = scale;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref CreateTextureCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            _texture.Get(threaded).Base = renderer.CreateTexture(_info, _scale);
+            command._texture.Get(threaded).Base = renderer.CreateTexture(command._info, command._scale);
         }
     }
 }

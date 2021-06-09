@@ -6,7 +6,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands.Renderer
     {
         public CommandType CommandType => CommandType.PreFrame;
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref PreFrameCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
             renderer.PreFrame();
         }

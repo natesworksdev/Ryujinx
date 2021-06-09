@@ -17,11 +17,11 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands.Program
             _result = result;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref ProgramCheckLinkCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            ProgramLinkStatus result = _program.Get(threaded).Base.CheckProgramLink(_blocking);
+            ProgramLinkStatus result = command._program.Get(threaded).Base.CheckProgramLink(command._blocking);
 
-            _result.Get(threaded).Result = result;
+            command._result.Get(threaded).Result = result;
         }
     }
 }

@@ -3,6 +3,6 @@
     interface IGALCommand
     {
         CommandType CommandType { get; }
-        void Run(ThreadedRenderer threaded, IRenderer renderer);
+        //void Run(ThreadedRenderer threaded, IRenderer renderer);
     }
 }

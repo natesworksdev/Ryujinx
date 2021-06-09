@@ -12,9 +12,9 @@
             _index = index;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref SetPrimitiveRestartCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.Pipeline.SetPrimitiveRestart(_enable, _index);
+            renderer.Pipeline.SetPrimitiveRestart(command._enable, command._index);
         }
     }
 }

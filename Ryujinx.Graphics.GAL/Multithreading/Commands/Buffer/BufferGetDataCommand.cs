@@ -18,11 +18,11 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands.Buffer
             _result = result;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref BufferGetDataCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            byte[] result = renderer.GetBufferData(threaded.Buffers.MapBuffer(_buffer), _offset, _size);
+            byte[] result = renderer.GetBufferData(threaded.Buffers.MapBuffer(command._buffer), command._offset, command._size);
 
-            _result.Get(threaded).Result = result;
+            command._result.Get(threaded).Result = result;
         }
     }
 }

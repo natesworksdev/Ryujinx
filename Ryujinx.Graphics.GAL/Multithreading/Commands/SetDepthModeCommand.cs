@@ -10,9 +10,9 @@
             _mode = mode;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref SetDepthModeCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.Pipeline.SetDepthMode(_mode);
+            renderer.Pipeline.SetDepthMode(command._mode);
         }
     }
 }

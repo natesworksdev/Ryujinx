@@ -15,11 +15,11 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands.Texture
             _result = result;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref TextureGetDataCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            byte[] result = _texture.Get(threaded).Base.GetData();
+            byte[] result = command._texture.Get(threaded).Base.GetData();
 
-            _result.Get(threaded).Result = result;
+            command._result.Get(threaded).Result = result;
         }
     }
 }

@@ -13,9 +13,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands.Renderer
             _action = action;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref ActionCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            _action.Get(threaded)();
+            command._action.Get(threaded)();
         }
     }
 }

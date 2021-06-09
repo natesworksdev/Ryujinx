@@ -4,7 +4,7 @@
     {
         public CommandType CommandType => CommandType.EndTransformFeedback;
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref EndTransformFeedbackCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
             renderer.Pipeline.EndTransformFeedback();
         }

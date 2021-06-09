@@ -16,9 +16,9 @@
             _origin = origin;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref SetPointParametersCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.Pipeline.SetPointParameters(_size, _isProgramPointSize, _enablePointSprite, _origin);
+            renderer.Pipeline.SetPointParameters(command._size, command._isProgramPointSize, command._enablePointSprite, command._origin);
         }
     }
 }

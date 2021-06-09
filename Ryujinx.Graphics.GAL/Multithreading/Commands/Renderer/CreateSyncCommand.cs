@@ -10,11 +10,11 @@
             _id = id;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref CreateSyncCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.CreateSync(_id);
+            renderer.CreateSync(command._id);
 
-            threaded.Sync.AssignSync(_id);
+            threaded.Sync.AssignSync(command._id);
         }
     }
 }

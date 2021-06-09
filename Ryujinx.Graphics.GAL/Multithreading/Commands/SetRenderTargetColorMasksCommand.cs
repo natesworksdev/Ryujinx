@@ -13,11 +13,11 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands
             _componentMask = componentMask;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref SetRenderTargetColorMasksCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            ReadOnlySpan<uint> componentMask = _componentMask.Get(threaded);
+            ReadOnlySpan<uint> componentMask = command._componentMask.Get(threaded);
             renderer.Pipeline.SetRenderTargetColorMasks(componentMask);
-            _componentMask.Dispose(threaded);
+            command._componentMask.Dispose(threaded);
         }
     }
 }

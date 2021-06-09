@@ -10,9 +10,9 @@
             _clamp = clamp;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref SetDepthClampCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.Pipeline.SetDepthClamp(_clamp);
+            renderer.Pipeline.SetDepthClamp(command._clamp);
         }
     }
 }

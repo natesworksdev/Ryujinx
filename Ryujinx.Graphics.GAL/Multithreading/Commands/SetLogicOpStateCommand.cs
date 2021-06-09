@@ -12,9 +12,9 @@
             _op = op;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref SetLogicOpStateCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.Pipeline.SetLogicOpState(_enable, _op);
+            renderer.Pipeline.SetLogicOpState(command._enable, command._op);
         }
     }
 }
