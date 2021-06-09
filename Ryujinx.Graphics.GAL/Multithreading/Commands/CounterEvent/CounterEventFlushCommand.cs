@@ -13,9 +13,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands.CounterEvent
             _event = evt;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref CounterEventFlushCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            _event.Get(threaded).Base.Flush();
+            command._event.Get(threaded).Base.Flush();
         }
     }
 }

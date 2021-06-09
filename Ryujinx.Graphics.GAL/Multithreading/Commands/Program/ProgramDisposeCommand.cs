@@ -13,9 +13,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands.Program
             _program = program;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref ProgramDisposeCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            _program.Get(threaded).Base.Dispose();
+            command._program.Get(threaded).Base.Dispose();
         }
     }
 }

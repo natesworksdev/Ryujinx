@@ -18,9 +18,9 @@
             _firstInstance = firstInstance;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref DrawIndexedCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.Pipeline.DrawIndexed(_indexCount, _instanceCount, _firstIndex, _firstVertex, _firstInstance);
+            renderer.Pipeline.DrawIndexed(command._indexCount, command._instanceCount, command._firstIndex, command._firstVertex, command._firstInstance);
         }
     }
 }

@@ -14,9 +14,9 @@
             _groupsZ = groupsZ;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref DispatchComputeCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.Pipeline.DispatchCompute(_groupsX, _groupsY, _groupsZ);
+            renderer.Pipeline.DispatchCompute(command._groupsX, command._groupsY, command._groupsZ);
         }
     }
 }

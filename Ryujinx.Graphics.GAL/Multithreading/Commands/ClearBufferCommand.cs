@@ -16,9 +16,9 @@
             _value = value;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref ClearBufferCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.Pipeline.ClearBuffer(threaded.Buffers.MapBuffer(_destination), _offset, _size, _value);
+            renderer.Pipeline.ClearBuffer(threaded.Buffers.MapBuffer(command._destination), command._offset, command._size, command._value);
         }
     }
 }

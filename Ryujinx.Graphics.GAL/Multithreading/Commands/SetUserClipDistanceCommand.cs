@@ -12,9 +12,9 @@
             _enableClip = enableClip;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref SetUserClipDistanceCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.Pipeline.SetUserClipDistance(_index, _enableClip);
+            renderer.Pipeline.SetUserClipDistance(command._index, command._enableClip);
         }
     }
 }

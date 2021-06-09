@@ -1,4 +1,5 @@
 ﻿using Ryujinx.Graphics.GAL.Multithreading.Resources.Programs;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -90,13 +91,15 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Resources
         /// <param name="program">The program to wait for</param>
         public void WaitForProgram(ThreadedProgram program)
         {
+            Span<SpinWait> spinWait = stackalloc SpinWait[1];
+
             while (!program.Compiled)
             {
                 ProcessQueue();
 
                 if (!program.Compiled)
                 {
-                    Thread.SpinWait(5);
+                    spinWait[0].SpinOnce(-1);
                 }
             }
         }

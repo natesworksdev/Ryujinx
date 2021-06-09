@@ -12,10 +12,10 @@
             _type = type;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref SetIndexBufferCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            BufferRange range = threaded.Buffers.MapBufferRange(_buffer);
-            renderer.Pipeline.SetIndexBuffer(range, _type);
+            BufferRange range = threaded.Buffers.MapBufferRange(command._buffer);
+            renderer.Pipeline.SetIndexBuffer(range, command._type);
         }
     }
 }

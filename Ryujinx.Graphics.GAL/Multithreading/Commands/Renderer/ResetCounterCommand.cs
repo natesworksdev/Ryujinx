@@ -10,9 +10,9 @@
             _type = type;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref ResetCounterCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.ResetCounter(_type);
+            renderer.ResetCounter(command._type);
         }
     }
 }

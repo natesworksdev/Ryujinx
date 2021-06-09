@@ -17,9 +17,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands
             _isEqual = isEqual;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref TryHostConditionalRenderingFlushCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.Pipeline.TryHostConditionalRendering(_value.Get(threaded)?.Base, _compare.Get(threaded)?.Base, _isEqual);
+            renderer.Pipeline.TryHostConditionalRendering(command._value.Get(threaded)?.Base, command._compare.Get(threaded)?.Base, command._isEqual);
         }
     }
 }

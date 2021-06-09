@@ -10,9 +10,9 @@
             _depthTest = depthTest;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref SetDepthTestCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.Pipeline.SetDepthTest(_depthTest);
+            renderer.Pipeline.SetDepthTest(command._depthTest);
         }
     }
 }

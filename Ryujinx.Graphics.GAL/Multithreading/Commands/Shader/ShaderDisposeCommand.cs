@@ -13,9 +13,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands.Shader
             _shader = shader;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref ShaderDisposeCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            _shader.Get(threaded).Base.Dispose();
+            command._shader.Get(threaded).Base.Dispose();
         }
     }
 }

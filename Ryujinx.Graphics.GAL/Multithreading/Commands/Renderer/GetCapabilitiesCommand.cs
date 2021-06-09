@@ -12,9 +12,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands.Renderer
             _result = result;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref GetCapabilitiesCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            _result.Get(threaded).Result = renderer.GetCapabilities();
+            command._result.Get(threaded).Result = renderer.GetCapabilities();
         }
     }
 }

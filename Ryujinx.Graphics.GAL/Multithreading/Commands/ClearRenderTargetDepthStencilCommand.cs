@@ -16,9 +16,9 @@
             _stencilMask = stencilMask;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref ClearRenderTargetDepthStencilCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.Pipeline.ClearRenderTargetDepthStencil(_depthValue, _depthMask, _stencilValue, _stencilMask);
+            renderer.Pipeline.ClearRenderTargetDepthStencil(command._depthValue, command._depthMask, command._stencilValue, command._stencilMask);
         }
     }
 }

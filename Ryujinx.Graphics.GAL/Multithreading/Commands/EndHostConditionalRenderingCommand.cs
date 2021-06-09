@@ -4,7 +4,7 @@
     {
         public CommandType CommandType => CommandType.EndHostConditionalRendering;
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(IRenderer renderer)
         {
             renderer.Pipeline.EndHostConditionalRendering();
         }

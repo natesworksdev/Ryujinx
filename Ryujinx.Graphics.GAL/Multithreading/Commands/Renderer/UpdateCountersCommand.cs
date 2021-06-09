@@ -4,7 +4,7 @@
     {
         public CommandType CommandType => CommandType.UpdateCounters;
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref UpdateCountersCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
             renderer.UpdateCounters();
         }

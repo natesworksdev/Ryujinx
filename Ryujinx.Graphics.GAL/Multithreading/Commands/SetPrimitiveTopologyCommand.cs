@@ -10,9 +10,9 @@
             _topology = topology;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref SetPrimitiveTopologyCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.Pipeline.SetPrimitiveTopology(_topology);
+            renderer.Pipeline.SetPrimitiveTopology(command._topology);
         }
     }
 }

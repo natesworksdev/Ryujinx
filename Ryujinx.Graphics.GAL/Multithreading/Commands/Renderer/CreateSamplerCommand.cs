@@ -15,9 +15,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands.Renderer
             _info = info;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref CreateSamplerCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            _sampler.Get(threaded).Base = renderer.CreateSampler(_info);
+            command._sampler.Get(threaded).Base = renderer.CreateSampler(command._info);
         }
     }
 }

@@ -10,9 +10,9 @@
             _frontFace = frontFace;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref SetFrontFaceCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.Pipeline.SetFrontFace(_frontFace);
+            renderer.Pipeline.SetFrontFace(command._frontFace);
         }
     }
 }

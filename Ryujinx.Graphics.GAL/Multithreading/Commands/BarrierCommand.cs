@@ -4,7 +4,7 @@
     {
         public CommandType CommandType => CommandType.Barrier;
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref BarrierCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
             renderer.Pipeline.Barrier();
         }

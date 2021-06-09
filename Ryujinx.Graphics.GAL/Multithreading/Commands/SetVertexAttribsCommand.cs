@@ -13,11 +13,11 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands
             _vertexAttribs = vertexAttribs;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref SetVertexAttribsCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            ReadOnlySpan<VertexAttribDescriptor> vertexAttribs = _vertexAttribs.Get(threaded);
+            ReadOnlySpan<VertexAttribDescriptor> vertexAttribs = command._vertexAttribs.Get(threaded);
             renderer.Pipeline.SetVertexAttribs(vertexAttribs);
-            _vertexAttribs.Dispose(threaded);
+            command._vertexAttribs.Dispose(threaded);
         }
     }
 }

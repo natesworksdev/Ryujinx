@@ -16,9 +16,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands
             _depthStencil = depthStencil;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref SetRenderTargetsCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.Pipeline.SetRenderTargets(_colors.Get(threaded).Select(color => ((ThreadedTexture)color)?.Base).ToArray(), _depthStencil.GetAs<ThreadedTexture>(threaded)?.Base);
+            renderer.Pipeline.SetRenderTargets(command._colors.Get(threaded).Select(color => ((ThreadedTexture)color)?.Base).ToArray(), command._depthStencil.GetAs<ThreadedTexture>(threaded)?.Base);
         }
     }
 }

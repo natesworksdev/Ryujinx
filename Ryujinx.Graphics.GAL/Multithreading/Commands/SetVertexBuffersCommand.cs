@@ -14,11 +14,11 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands
             _vertexBuffers = vertexBuffers;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref SetVertexBuffersCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            Span<VertexBufferDescriptor> vertexBuffers = _vertexBuffers.Get(threaded);
+            Span<VertexBufferDescriptor> vertexBuffers = command._vertexBuffers.Get(threaded);
             renderer.Pipeline.SetVertexBuffers(threaded.Buffers.MapBufferRanges(vertexBuffers));
-            _vertexBuffers.Dispose(threaded);
+            command._vertexBuffers.Dispose(threaded);
         }
     }
 }

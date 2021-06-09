@@ -19,10 +19,10 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands
             _imageCount = imageCount;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref UpdateRenderScaleCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.Pipeline.UpdateRenderScale(_stage, _scales.Get(threaded), _textureCount, _imageCount);
-            _scales.Dispose(threaded);
+            renderer.Pipeline.UpdateRenderScale(command._stage, command._scales.Get(threaded), command._textureCount, command._imageCount);
+            command._scales.Dispose(threaded);
         }
     }
 }
