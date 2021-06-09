@@ -16,11 +16,11 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands
             _viewports = viewports;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref SetViewportsCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            ReadOnlySpan<Viewport> viewports = _viewports.Get(threaded);
-            renderer.Pipeline.SetViewports(_first, viewports);
-            _viewports.Dispose(threaded);
+            ReadOnlySpan<Viewport> viewports = command._viewports.Get(threaded);
+            renderer.Pipeline.SetViewports(command._first, viewports);
+            command._viewports.Dispose(threaded);
         }
     }
 }

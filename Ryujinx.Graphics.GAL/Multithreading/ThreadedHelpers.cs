@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 
 namespace Ryujinx.Graphics.GAL.Multithreading
 {
@@ -6,9 +7,11 @@ namespace Ryujinx.Graphics.GAL.Multithreading
     {
         public static void SpinUntilNonNull<T>(ref T obj) where T : class
         {
+            Span<SpinWait> spinWait = stackalloc SpinWait[1];
+
             while (obj == null)
             {
-                Thread.SpinWait(5);
+                spinWait[0].SpinOnce(-1);
             }
         }
     }

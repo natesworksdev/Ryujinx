@@ -10,9 +10,9 @@
             _discard = discard;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref SetRasterizerDiscardCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.Pipeline.SetRasterizerDiscard(_discard);
+            renderer.Pipeline.SetRasterizerDiscard(command._discard);
         }
     }
 }

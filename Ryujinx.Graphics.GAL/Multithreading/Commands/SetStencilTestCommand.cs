@@ -10,9 +10,9 @@
             _stencilTest = stencilTest;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref SetStencilTestCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.Pipeline.SetStencilTest(_stencilTest);
+            renderer.Pipeline.SetStencilTest(command._stencilTest);
         }
     }
 }

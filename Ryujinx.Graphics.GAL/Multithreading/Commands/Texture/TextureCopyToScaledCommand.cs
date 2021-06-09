@@ -21,10 +21,10 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands.Texture
             _linearFilter = linearFilter;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref TextureCopyToScaledCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            ThreadedTexture source = _texture.Get(threaded);
-            source.Base.CopyTo(_destination.Get(threaded).Base, _srcRegion, _dstRegion, _linearFilter);
+            ThreadedTexture source = command._texture.Get(threaded);
+            source.Base.CopyTo(command._destination.Get(threaded).Base, command._srcRegion, command._dstRegion, command._linearFilter);
         }
     }
 }

@@ -18,11 +18,11 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands.Renderer
             _resultHandler = resultHandler;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref ReportCounterCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            ThreadedCounterEvent evt = _event.Get(threaded);
+            ThreadedCounterEvent evt = command._event.Get(threaded);
 
-            evt.Base = renderer.ReportCounter(_type, _resultHandler.Get(threaded));
+            evt.Base = renderer.ReportCounter(command._type, command._resultHandler.Get(threaded));
         }
     }
 }

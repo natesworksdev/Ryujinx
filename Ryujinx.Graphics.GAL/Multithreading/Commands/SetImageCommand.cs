@@ -17,9 +17,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands
             _imageFormat = imageFormat;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref SetImageCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.Pipeline.SetImage(_binding, _texture.GetAs<ThreadedTexture>(threaded)?.Base, _imageFormat);
+            renderer.Pipeline.SetImage(command._binding, command._texture.GetAs<ThreadedTexture>(threaded)?.Base, command._imageFormat);
         }
     }
 }

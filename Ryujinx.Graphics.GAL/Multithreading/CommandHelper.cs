@@ -18,10 +18,14 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 {
     static class CommandHelper
     {
+        private delegate void CommandDelegate(Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer);
+
+        private static CommandDelegate[] Lookup = new CommandDelegate[256];
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void RunTypedCommand<T>(Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) where T : unmanaged, IGALCommand
+        private static ref T GetCommand<T>(Span<byte> memory)
         {
-            Unsafe.As<byte, T>(ref MemoryMarshal.GetReference(memory)).Run(threaded, renderer);
+            return ref Unsafe.As<byte, T>(ref MemoryMarshal.GetReference(memory));
         }
 
         public static int GetMaxCommandSize()
@@ -39,257 +43,183 @@ namespace Ryujinx.Graphics.GAL.Multithreading
                 return size;
             });
 
+            InitLookup();
+
             return maxSize + 1; // 1 byte reserved for command size.
+        }
+
+        private static void InitLookup()
+        {
+            Lookup[(int)CommandType.Action] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                ActionCommand.Run(ref GetCommand<ActionCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.CompileShader] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                CompileShaderCommand.Run(ref GetCommand<CompileShaderCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.CreateBuffer] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                CreateBufferCommand.Run(ref GetCommand<CreateBufferCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.CreateProgram] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                CreateProgramCommand.Run(ref GetCommand<CreateProgramCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.CreateSampler] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                CreateSamplerCommand.Run(ref GetCommand<CreateSamplerCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.CreateSync] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                CreateSyncCommand.Run(ref GetCommand<CreateSyncCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.CreateTexture] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                CreateTextureCommand.Run(ref GetCommand<CreateTextureCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.GetCapabilities] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                GetCapabilitiesCommand.Run(ref GetCommand<GetCapabilitiesCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.PreFrame] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                PreFrameCommand.Run(ref GetCommand<PreFrameCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.ReportCounter] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                ReportCounterCommand.Run(ref GetCommand<ReportCounterCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.ResetCounter] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                ResetCounterCommand.Run(ref GetCommand<ResetCounterCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.UpdateCounters] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                UpdateCountersCommand.Run(ref GetCommand<UpdateCountersCommand>(memory), threaded, renderer);
+
+            Lookup[(int)CommandType.BufferDispose] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                BufferDisposeCommand.Run(ref GetCommand<BufferDisposeCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.BufferGetData] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                BufferGetDataCommand.Run(ref GetCommand<BufferGetDataCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.BufferSetData] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                BufferSetDataCommand.Run(ref GetCommand<BufferSetDataCommand>(memory), threaded, renderer);
+
+            Lookup[(int)CommandType.CounterEventDispose] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                CounterEventDisposeCommand.Run(ref GetCommand<CounterEventDisposeCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.CounterEventFlush] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                CounterEventFlushCommand.Run(ref GetCommand<CounterEventFlushCommand>(memory), threaded, renderer);
+
+            Lookup[(int)CommandType.ProgramDispose] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                ProgramDisposeCommand.Run(ref GetCommand<ProgramDisposeCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.ProgramGetBinary] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                ProgramGetBinaryCommand.Run(ref GetCommand<ProgramGetBinaryCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.ProgramCheckLink] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                ProgramCheckLinkCommand.Run(ref GetCommand<ProgramCheckLinkCommand>(memory), threaded, renderer);
+
+            Lookup[(int)CommandType.SamplerDispose] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                SamplerDisposeCommand.Run(ref GetCommand<SamplerDisposeCommand>(memory), threaded, renderer);
+
+            Lookup[(int)CommandType.ShaderDispose] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                ShaderDisposeCommand.Run(ref GetCommand<ShaderDisposeCommand>(memory), threaded, renderer);
+
+            Lookup[(int)CommandType.TextureCopyTo] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                TextureCopyToCommand.Run(ref GetCommand<TextureCopyToCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.TextureCopyToScaled] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                TextureCopyToScaledCommand.Run(ref GetCommand<TextureCopyToScaledCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.TextureCopyToSlice] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                TextureCopyToSliceCommand.Run(ref GetCommand<TextureCopyToSliceCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.TextureCreateView] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                TextureCreateViewCommand.Run(ref GetCommand<TextureCreateViewCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.TextureGetData] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                TextureGetDataCommand.Run(ref GetCommand<TextureGetDataCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.TextureRelease] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                TextureReleaseCommand.Run(ref GetCommand<TextureReleaseCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.TextureSetData] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                TextureSetDataCommand.Run(ref GetCommand<TextureSetDataCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.TextureSetDataSlice] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                TextureSetDataSliceCommand.Run(ref GetCommand<TextureSetDataSliceCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.TextureSetStorage] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                TextureSetStorageCommand.Run(ref GetCommand<TextureSetStorageCommand>(memory), threaded, renderer);
+
+            Lookup[(int)CommandType.WindowPresent] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                WindowPresentCommand.Run(ref GetCommand<WindowPresentCommand>(memory), threaded, renderer);
+
+            Lookup[(int)CommandType.Barrier] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                BarrierCommand.Run(ref GetCommand<BarrierCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.BeginTransformFeedback] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                BeginTransformFeedbackCommand.Run(ref GetCommand<BeginTransformFeedbackCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.ClearBuffer] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                ClearBufferCommand.Run(ref GetCommand<ClearBufferCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.ClearRenderTargetColor] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                ClearRenderTargetColorCommand.Run(ref GetCommand<ClearRenderTargetColorCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.ClearRenderTargetDepthStencil] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                ClearRenderTargetDepthStencilCommand.Run(ref GetCommand<ClearRenderTargetDepthStencilCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.CopyBuffer] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                CopyBufferCommand.Run(ref GetCommand<CopyBufferCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.DispatchCompute] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                DispatchComputeCommand.Run(ref GetCommand<DispatchComputeCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.Draw] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                DrawCommand.Run(ref GetCommand<DrawCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.DrawIndexed] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                DrawIndexedCommand.Run(ref GetCommand<DrawIndexedCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.EndHostConditionalRendering] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                EndHostConditionalRenderingCommand.Run(renderer);
+            Lookup[(int)CommandType.EndTransformFeedback] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                EndTransformFeedbackCommand.Run(ref GetCommand<EndTransformFeedbackCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.SetAlphaTest] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                SetAlphaTestCommand.Run(ref GetCommand<SetAlphaTestCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.SetBlendState] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                SetBlendStateCommand.Run(ref GetCommand<SetBlendStateCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.SetDepthBias] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                SetDepthBiasCommand.Run(ref GetCommand<SetDepthBiasCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.SetDepthClamp] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                SetDepthClampCommand.Run(ref GetCommand<SetDepthClampCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.SetDepthMode] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                SetDepthModeCommand.Run(ref GetCommand<SetDepthModeCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.SetDepthTest] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                SetDepthTestCommand.Run(ref GetCommand<SetDepthTestCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.SetFaceCulling] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                SetFaceCullingCommand.Run(ref GetCommand<SetFaceCullingCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.SetFrontFace] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                SetFrontFaceCommand.Run(ref GetCommand<SetFrontFaceCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.SetStorageBuffers] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                SetStorageBuffersCommand.Run(ref GetCommand<SetStorageBuffersCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.SetTransformFeedbackBuffers] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                SetTransformFeedbackBuffersCommand.Run(ref GetCommand<SetTransformFeedbackBuffersCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.SetUniformBuffers] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                SetUniformBuffersCommand.Run(ref GetCommand<SetUniformBuffersCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.SetImage] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                SetImageCommand.Run(ref GetCommand<SetImageCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.SetIndexBuffer] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                SetIndexBufferCommand.Run(ref GetCommand<SetIndexBufferCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.SetLogicOpState] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                SetLogicOpStateCommand.Run(ref GetCommand<SetLogicOpStateCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.SetPointParameters] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                SetPointParametersCommand.Run(ref GetCommand<SetPointParametersCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.SetPrimitiveRestart] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                SetPrimitiveRestartCommand.Run(ref GetCommand<SetPrimitiveRestartCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.SetPrimitiveTopology] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                SetPrimitiveTopologyCommand.Run(ref GetCommand<SetPrimitiveTopologyCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.SetProgram] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                SetProgramCommand.Run(ref GetCommand<SetProgramCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.SetRasterizerDiscard] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                SetRasterizerDiscardCommand.Run(ref GetCommand<SetRasterizerDiscardCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.SetRenderTargetColorMasks] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                SetRenderTargetColorMasksCommand.Run(ref GetCommand<SetRenderTargetColorMasksCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.SetRenderTargetScale] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                SetRenderTargetScaleCommand.Run(ref GetCommand<SetRenderTargetScaleCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.SetRenderTargets] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                SetRenderTargetsCommand.Run(ref GetCommand<SetRenderTargetsCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.SetSampler] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                SetSamplerCommand.Run(ref GetCommand<SetSamplerCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.SetScissor] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                SetScissorCommand.Run(ref GetCommand<SetScissorCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.SetStencilTest] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                SetStencilTestCommand.Run(ref GetCommand<SetStencilTestCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.SetTexture] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                SetTextureCommand.Run(ref GetCommand<SetTextureCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.SetUserClipDistance] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                SetUserClipDistanceCommand.Run(ref GetCommand<SetUserClipDistanceCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.SetVertexAttribs] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                SetVertexAttribsCommand.Run(ref GetCommand<SetVertexAttribsCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.SetVertexBuffers] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                SetVertexBuffersCommand.Run(ref GetCommand<SetVertexBuffersCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.SetViewports] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                SetViewportsCommand.Run(ref GetCommand<SetViewportsCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.TextureBarrier] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                TextureBarrierCommand.Run(ref GetCommand<TextureBarrierCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.TextureBarrierTiled] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                TextureBarrierTiledCommand.Run(ref GetCommand<TextureBarrierTiledCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.TryHostConditionalRendering] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                TryHostConditionalRenderingCommand.Run(ref GetCommand<TryHostConditionalRenderingCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.TryHostConditionalRenderingFlush] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                TryHostConditionalRenderingFlushCommand.Run(ref GetCommand<TryHostConditionalRenderingFlushCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.UpdateRenderScale] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                UpdateRenderScaleCommand.Run(ref GetCommand<UpdateRenderScaleCommand>(memory), threaded, renderer);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public static void RunCommand(Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer)
         {
-            switch ((CommandType)memory[memory.Length - 1])
-            {
-                case CommandType.Action:
-                    RunTypedCommand<ActionCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.CompileShader:
-                    RunTypedCommand<CompileShaderCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.CreateBuffer:
-                    RunTypedCommand<CreateBufferCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.CreateProgram:
-                    RunTypedCommand<CreateProgramCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.CreateSampler:
-                    RunTypedCommand<CreateSamplerCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.CreateSync:
-                    RunTypedCommand<CreateSyncCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.CreateTexture:
-                    RunTypedCommand<CreateTextureCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.GetCapabilities:
-                    RunTypedCommand<GetCapabilitiesCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.PreFrame:
-                    RunTypedCommand<PreFrameCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.ReportCounter:
-                    RunTypedCommand<ReportCounterCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.ResetCounter:
-                    RunTypedCommand<ResetCounterCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.UpdateCounters:
-                    RunTypedCommand<UpdateCountersCommand>(memory, threaded, renderer);
-                    break;
-
-                case CommandType.BufferDispose:
-                    RunTypedCommand<BufferDisposeCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.BufferGetData:
-                    RunTypedCommand<BufferGetDataCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.BufferSetData:
-                    RunTypedCommand<BufferSetDataCommand>(memory, threaded, renderer);
-                    break;
-
-                case CommandType.CounterEventDispose:
-                    RunTypedCommand<CounterEventDisposeCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.CounterEventFlush:
-                    RunTypedCommand<CounterEventFlushCommand>(memory, threaded, renderer);
-                    break;
-
-                case CommandType.ProgramDispose:
-                    RunTypedCommand<ProgramDisposeCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.ProgramGetBinary:
-                    RunTypedCommand<ProgramGetBinaryCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.ProgramCheckLink:
-                    RunTypedCommand<ProgramCheckLinkCommand>(memory, threaded, renderer);
-                    break;
-
-                case CommandType.SamplerDispose:
-                    RunTypedCommand<SamplerDisposeCommand>(memory, threaded, renderer);
-                    break;
-
-                case CommandType.ShaderDispose:
-                    RunTypedCommand<ShaderDisposeCommand>(memory, threaded, renderer);
-                    break;
-
-                case CommandType.TextureCopyTo:
-                    RunTypedCommand<TextureCopyToCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.TextureCopyToScaled:
-                    RunTypedCommand<TextureCopyToScaledCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.TextureCopyToSlice:
-                    RunTypedCommand<TextureCopyToSliceCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.TextureCreateView:
-                    RunTypedCommand<TextureCreateViewCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.TextureGetData:
-                    RunTypedCommand<TextureGetDataCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.TextureRelease:
-                    RunTypedCommand<TextureReleaseCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.TextureSetData:
-                    RunTypedCommand<TextureSetDataCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.TextureSetDataSlice:
-                    RunTypedCommand<TextureSetDataSliceCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.TextureSetStorage:
-                    RunTypedCommand<TextureSetStorageCommand>(memory, threaded, renderer);
-                    break;
-
-                case CommandType.WindowPresent:
-                    RunTypedCommand<WindowPresentCommand>(memory, threaded, renderer);
-                    break;
-
-                case CommandType.Barrier:
-                    RunTypedCommand<BarrierCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.BeginTransformFeedback:
-                    RunTypedCommand<BeginTransformFeedbackCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.ClearBuffer:
-                    RunTypedCommand<ClearBufferCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.ClearRenderTargetColor:
-                    RunTypedCommand<ClearRenderTargetColorCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.ClearRenderTargetDepthStencil:
-                    RunTypedCommand<ClearRenderTargetDepthStencilCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.CopyBuffer:
-                    RunTypedCommand<CopyBufferCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.DispatchCompute:
-                    RunTypedCommand<DispatchComputeCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.Draw:
-                    RunTypedCommand<DrawCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.DrawIndexed:
-                    RunTypedCommand<DrawIndexedCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.EndHostConditionalRendering:
-                    RunTypedCommand<EndHostConditionalRenderingCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.EndTransformFeedback:
-                    RunTypedCommand<EndTransformFeedbackCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.SetAlphaTest:
-                    RunTypedCommand<SetAlphaTestCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.SetBlendState:
-                    RunTypedCommand<SetBlendStateCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.SetDepthBias:
-                    RunTypedCommand<SetDepthBiasCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.SetDepthClamp:
-                    RunTypedCommand<SetDepthClampCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.SetDepthMode:
-                    RunTypedCommand<SetDepthModeCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.SetDepthTest:
-                    RunTypedCommand<SetDepthTestCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.SetFaceCulling:
-                    RunTypedCommand<SetFaceCullingCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.SetFrontFace:
-                    RunTypedCommand<SetFrontFaceCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.SetStorageBuffers:
-                    RunTypedCommand<SetStorageBuffersCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.SetTransformFeedbackBuffers:
-                    RunTypedCommand<SetTransformFeedbackBuffersCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.SetUniformBuffers:
-                    RunTypedCommand<SetUniformBuffersCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.SetImage:
-                    RunTypedCommand<SetImageCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.SetIndexBuffer:
-                    RunTypedCommand<SetIndexBufferCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.SetLogicOpState:
-                    RunTypedCommand<SetLogicOpStateCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.SetPointParameters:
-                    RunTypedCommand<SetPointParametersCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.SetPrimitiveRestart:
-                    RunTypedCommand<SetPrimitiveRestartCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.SetPrimitiveTopology:
-                    RunTypedCommand<SetPrimitiveTopologyCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.SetProgram:
-                    RunTypedCommand<SetProgramCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.SetRasterizerDiscard:
-                    RunTypedCommand<SetRasterizerDiscardCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.SetRenderTargetColorMasks:
-                    RunTypedCommand<SetRenderTargetColorMasksCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.SetRenderTargetScale:
-                    RunTypedCommand<SetRenderTargetScaleCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.SetRenderTargets:
-                    RunTypedCommand<SetRenderTargetsCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.SetSampler:
-                    RunTypedCommand<SetSamplerCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.SetScissor:
-                    RunTypedCommand<SetScissorCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.SetStencilTest:
-                    RunTypedCommand<SetStencilTestCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.SetTexture:
-                    RunTypedCommand<SetTextureCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.SetUserClipDistance:
-                    RunTypedCommand<SetUserClipDistanceCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.SetVertexAttribs:
-                    RunTypedCommand<SetVertexAttribsCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.SetVertexBuffers:
-                    RunTypedCommand<SetVertexBuffersCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.SetViewports:
-                    RunTypedCommand<SetViewportsCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.TextureBarrier:
-                    RunTypedCommand<TextureBarrierCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.TextureBarrierTiled:
-                    RunTypedCommand<TextureBarrierTiledCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.TryHostConditionalRendering:
-                    RunTypedCommand<TryHostConditionalRenderingCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.TryHostConditionalRenderingFlush:
-                    RunTypedCommand<TryHostConditionalRenderingFlushCommand>(memory, threaded, renderer);
-                    break;
-                case CommandType.UpdateRenderScale:
-                    RunTypedCommand<UpdateRenderScaleCommand>(memory, threaded, renderer);
-                    break;
-            }
+            Lookup[memory[memory.Length - 1]](memory, threaded, renderer);
         }
     }
 }

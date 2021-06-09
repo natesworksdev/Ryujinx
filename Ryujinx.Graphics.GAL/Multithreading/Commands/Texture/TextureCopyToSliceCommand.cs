@@ -23,10 +23,10 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands.Texture
             _dstLevel = dstLevel;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref TextureCopyToSliceCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            ThreadedTexture source = _texture.Get(threaded);
-            source.Base.CopyTo(_destination.Get(threaded).Base, _srcLayer, _dstLayer, _srcLevel, _dstLevel);
+            ThreadedTexture source = command._texture.Get(threaded);
+            source.Base.CopyTo(command._destination.Get(threaded).Base, command._srcLayer, command._dstLayer, command._srcLevel, command._dstLevel);
         }
     }
 }

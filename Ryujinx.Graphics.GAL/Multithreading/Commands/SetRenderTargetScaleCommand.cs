@@ -10,9 +10,9 @@
             _scale = scale;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref SetRenderTargetScaleCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.Pipeline.SetRenderTargetScale(_scale);
+            renderer.Pipeline.SetRenderTargetScale(command._scale);
         }
     }
 }

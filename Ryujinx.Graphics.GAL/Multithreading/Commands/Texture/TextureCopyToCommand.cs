@@ -19,10 +19,10 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands.Texture
             _firstLevel = firstLevel;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref TextureCopyToCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            ThreadedTexture source = _texture.Get(threaded);
-            source.Base.CopyTo(_destination.Get(threaded).Base, _firstLayer, _firstLevel);
+            ThreadedTexture source = command._texture.Get(threaded);
+            source.Base.CopyTo(command._destination.Get(threaded).Base, command._firstLayer, command._firstLevel);
         }
     }
 }

@@ -18,9 +18,9 @@
             _size = size;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref CopyBufferCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.Pipeline.CopyBuffer(threaded.Buffers.MapBuffer(_source), threaded.Buffers.MapBuffer(_destination), _srcOffset, _dstOffset, _size);
+            renderer.Pipeline.CopyBuffer(threaded.Buffers.MapBuffer(command._source), threaded.Buffers.MapBuffer(command._destination), command._srcOffset, command._dstOffset, command._size);
         }
     }
 }

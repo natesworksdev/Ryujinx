@@ -15,9 +15,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands.Texture
             _storage = storage;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref TextureSetStorageCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            _texture.Get(threaded).Base.SetStorage(threaded.Buffers.MapBufferRange(_storage));
+            command._texture.Get(threaded).Base.SetStorage(threaded.Buffers.MapBufferRange(command._storage));
         }
     }
 }

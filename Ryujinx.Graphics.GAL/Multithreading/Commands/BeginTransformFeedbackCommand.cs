@@ -10,9 +10,9 @@
             _topology = topology;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref BeginTransformFeedbackCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.Pipeline.BeginTransformFeedback(_topology);
+            renderer.Pipeline.BeginTransformFeedback(command._topology);
         }
     }
 }

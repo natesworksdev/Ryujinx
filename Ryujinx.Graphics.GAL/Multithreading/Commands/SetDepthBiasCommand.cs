@@ -16,9 +16,9 @@
             _clamp = clamp;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref SetDepthBiasCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.Pipeline.SetDepthBias(_enables, _factor, _units, _clamp);
+            renderer.Pipeline.SetDepthBias(command._enables, command._factor, command._units, command._clamp);
         }
     }
 }

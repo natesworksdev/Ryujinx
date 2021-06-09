@@ -20,10 +20,10 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands.Texture
             _level = level;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref TextureSetDataSliceCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            ThreadedTexture texture = _texture.Get(threaded);
-            texture.Base.SetData(new ReadOnlySpan<byte>(_data.Get(threaded)), _layer, _level);
+            ThreadedTexture texture = command._texture.Get(threaded);
+            texture.Base.SetData(new ReadOnlySpan<byte>(command._data.Get(threaded)), command._layer, command._level);
         }
     }
 }

@@ -12,9 +12,9 @@
             _face = face;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref SetFaceCullingCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.Pipeline.SetFaceCulling(_enable, _face);
+            renderer.Pipeline.SetFaceCulling(command._enable, command._face);
         }
     }
 }

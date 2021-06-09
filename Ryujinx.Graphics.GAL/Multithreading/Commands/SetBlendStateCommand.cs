@@ -12,9 +12,9 @@
             _blend = blend;
         }
 
-        public void Run(ThreadedRenderer threaded, IRenderer renderer)
+        public static void Run(ref SetBlendStateCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            renderer.Pipeline.SetBlendState(_index, _blend);
+            renderer.Pipeline.SetBlendState(command._index, command._blend);
         }
     }
 }
