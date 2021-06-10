@@ -861,8 +861,8 @@ namespace Ryujinx.Ui.Windows
                     else if (_middleMousePressed)
                     {
                         button.Label = "Unbound";
-                        _middleMousePressed = false;
                     }
+                    _middleMousePressed = false;
 
                     ButtonPressEvent -= MouseClick;
                     keyboard.Dispose();
