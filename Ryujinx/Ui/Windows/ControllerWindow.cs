@@ -105,6 +105,7 @@ namespace Ryujinx.Ui.Windows
         private IGamepadDriver _gtk3KeyboardDriver;
         private IGamepad _selectedGamepad;
         private bool _mousePressed;
+        private bool _middleMousePressed;
 
         public ControllerWindow(MainWindow mainWindow, PlayerIndex controllerId) : this(mainWindow, new Builder("Ryujinx.Ui.Windows.ControllerWindow.glade"), controllerId) { }
 
@@ -112,6 +113,7 @@ namespace Ryujinx.Ui.Windows
         {
             _mainWindow = mainWindow;
             _mousePressed = false;
+            _middleMousePressed = false;
             _selectedGamepad = null;
 
             // NOTE: To get input in this window, we need to bind a custom keyboard driver instead of using the InputManager one as the main window isn't focused...
@@ -856,6 +858,11 @@ namespace Ryujinx.Ui.Windows
                     {
                         button.Label = pressedButton;
                     }
+                    else if (_middleMousePressed)
+                    {
+                        button.Label = "Unbound";
+                        _middleMousePressed = false;
+                    }
 
                     ButtonPressEvent -= MouseClick;
                     keyboard.Dispose();
@@ -883,6 +890,10 @@ namespace Ryujinx.Ui.Windows
         private void MouseClick(object sender, ButtonPressEventArgs args)
         {
             _mousePressed = true;
+            if (args.Event.Button == 2)
+            {
+                _middleMousePressed = true;
+            }
         }
 
         private void SetProfiles()
