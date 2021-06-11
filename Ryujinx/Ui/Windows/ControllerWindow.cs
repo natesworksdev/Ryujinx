@@ -112,8 +112,6 @@ namespace Ryujinx.Ui.Windows
         private ControllerWindow(MainWindow mainWindow, Builder builder, PlayerIndex controllerId) : base(builder.GetObject("_controllerWin").Handle)
         {
             _mainWindow = mainWindow;
-            _mousePressed = false;
-            _middleMousePressed = false;
             _selectedGamepad = null;
 
             // NOTE: To get input in this window, we need to bind a custom keyboard driver instead of using the InputManager one as the main window isn't focused...
