@@ -852,13 +852,13 @@ namespace Ryujinx.Ui.Windows
 
                 Application.Invoke(delegate
                 {
-                    if (pressedButton != "")
-                    {
-                        button.Label = pressedButton;
-                    }
-                    else if (_middleMousePressed)
+                    if (_middleMousePressed)
                     {
                         button.Label = "Unbound";
+                    }
+                    else if (pressedButton != "")
+                    {
+                        button.Label = pressedButton;
                     }
                     _middleMousePressed = false;
 
