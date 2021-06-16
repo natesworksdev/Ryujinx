@@ -574,6 +574,22 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
+        [CommandHipc(83)] // 6.0.0+
+        // IsFirmwareUpdateAvailableForSixAxisSensor(nn::hid::SixAxisSensorHandle, nn::hid::AppletResourceUserId) -> bool UpdateAvailable
+        public ResultCode IsFirmwareUpdateAvailableForSixAxisSensor(ServiceCtx context)
+        {
+            int  sixAxisSensorHandle  = context.RequestData.ReadInt32();
+            long appletResourceUserId = context.RequestData.ReadInt64();
+
+            bool updateAvailable = false;
+
+            context.ResponseData.Write(updateAvailable);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, sixAxisSensorHandle, updateAvailable });
+
+            return ResultCode.Success;
+        }
+
         [CommandHipc(91)]
         // ActivateGesture(nn::applet::AppletResourceUserId, int Unknown0)
         public ResultCode ActivateGesture(ServiceCtx context)

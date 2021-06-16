@@ -1,4 +1,4 @@
-﻿using Ryujinx.Common.Logging;
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Services.Hid.HidServer;
@@ -71,6 +71,20 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Irs
 
             // NOTE: If the irCameraHandle pointer is null this error is returned, Doesn't occur in our case. 
             //       return ResultCode.HandlePointerIsNull;
+
+            return ResultCode.Success;
+        }
+
+        [CommandHipc(314)] // 3.0.0+
+        // CheckFirmwareVersion(nn::irsensor::IrCameraHandle, nn::irsensor::PackedMcuVersion, nn::applet::AppletResourceUserId)
+        public ResultCode CheckFirmwareVersion(ServiceCtx context)
+        {
+            PlayerIndex irCameraHandle        = (PlayerIndex)context.RequestData.ReadInt32();
+            byte        packedMcuVersionMajor = context.RequestData.ReadByte();
+            byte        packedMcuVersionMinor = context.RequestData.ReadByte();
+            long        appletResourceUserId  = context.RequestData.ReadInt64();
+
+            Logger.Stub?.PrintStub(LogClass.ServiceIrs, new { appletResourceUserId, irCameraHandle, packedMcuVersionMajor, packedMcuVersionMinor });
 
             return ResultCode.Success;
         }
