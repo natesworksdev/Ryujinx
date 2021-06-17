@@ -47,6 +47,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             _npadJoyAssignmentMode      = HidNpadJoyAssignmentMode.Dual;
             _npadHandheldActivationMode = HidNpadHandheldActivationMode.Dual;
             _gyroscopeZeroDriftMode     = HidGyroscopeZeroDriftMode.Standard;
+
             _isFirmwareUpdateAvailableForSixAxisSensor = false;
 
             _sensorFusionParams  = new HidSensorFusionParameters();
@@ -577,10 +578,11 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         }
 
         [CommandHipc(83)] // 6.0.0+
-        // IsFirmwareUpdateAvailableForSixAxisSensor(nn::hid::SixAxisSensorHandle, nn::hid::AppletResourceUserId, pid) -> bool UpdateAvailable
+        // IsFirmwareUpdateAvailableForSixAxisSensor(nn::hid::AppletResourceUserId, nn::hid::SixAxisSensorHandle, pid) -> bool UpdateAvailable
         public ResultCode IsFirmwareUpdateAvailableForSixAxisSensor(ServiceCtx context)
         {
             int  sixAxisSensorHandle  = context.RequestData.ReadInt32();
+            context.RequestData.BaseStream.Position += 4;
             long appletResourceUserId = context.RequestData.ReadInt64();
 
             context.ResponseData.Write(_isFirmwareUpdateAvailableForSixAxisSensor);
