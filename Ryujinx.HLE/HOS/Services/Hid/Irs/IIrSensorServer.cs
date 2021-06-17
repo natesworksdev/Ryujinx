@@ -76,13 +76,13 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Irs
         }
 
         [CommandHipc(314)] // 3.0.0+
-        // CheckFirmwareVersion(nn::irsensor::IrCameraHandle, nn::irsensor::PackedMcuVersion, nn::applet::AppletResourceUserId)
+        // CheckFirmwareVersion(nn::irsensor::IrCameraHandle, nn::irsensor::PackedMcuVersion, nn::applet::AppletResourceUserId, pid)
         public ResultCode CheckFirmwareVersion(ServiceCtx context)
         {
-            PlayerIndex irCameraHandle        = (PlayerIndex)context.RequestData.ReadInt32();
-            byte        packedMcuVersionMajor = context.RequestData.ReadByte();
-            byte        packedMcuVersionMinor = context.RequestData.ReadByte();
-            long        appletResourceUserId  = context.RequestData.ReadInt64();
+            int   irCameraHandle        = context.RequestData.ReadInt32();
+            short packedMcuVersionMajor = context.RequestData.ReadInt16();
+            short packedMcuVersionMinor = context.RequestData.ReadInt16();
+            long  appletResourceUserId  = context.RequestData.ReadInt64();
 
             Logger.Stub?.PrintStub(LogClass.ServiceIrs, new { appletResourceUserId, irCameraHandle, packedMcuVersionMajor, packedMcuVersionMinor });
 
