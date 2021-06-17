@@ -30,6 +30,9 @@ namespace Ryujinx.HLE.HOS.Services.Ro
         private List<NroInfo> _nroInfos;
 
         private KProcess _owner;
+        private bool _isDisposed;
+
+        private object _lock = new object();
 
         private static Random _random = new Random();
 
@@ -573,12 +576,22 @@ namespace Ryujinx.HLE.HOS.Services.Ro
 
         public void Dispose()
         {
-            foreach (NroInfo info in _nroInfos)
+            lock (_lock)
             {
-                UnmapNroFromInfo(info);
+                if (!_isDisposed)
+                {
+                    foreach (NroInfo info in _nroInfos)
+                    {
+                        UnmapNroFromInfo(info);
+                    }
+
+                    _nroInfos.Clear();
+
+                    _isDisposed = true;
+                }
             }
 
-            _nroInfos.Clear();
+
         }
     }
 }

@@ -12,6 +12,9 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioIn
     class AudioInServer : IpcService, IDisposable
     {
         private IAudioIn _impl;
+        private bool _isDisposed;
+
+        private object _lock = new object();
 
         public AudioInServer(IAudioIn impl)
         {
@@ -195,14 +198,14 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioIn
 
         public void Dispose()
         {
-            Dispose(true);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
+            lock (_lock)
             {
-                _impl.Dispose();
+                if (!_isDisposed)
+                {
+                    _impl.Dispose();
+
+                    _isDisposed = true;
+                }
             }
         }
     }

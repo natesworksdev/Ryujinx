@@ -7,6 +7,9 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
     class IStorage : IpcService, IDisposable
     {
         private LibHac.Fs.IStorage _baseStorage;
+        private bool _isDisposed;
+
+        private object _lock = new object();
 
         public IStorage(LibHac.Fs.IStorage baseStorage)
         {
@@ -55,14 +58,14 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
 
         public void Dispose()
         {
-            Dispose(true);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
+            lock (_lock)
             {
-                _baseStorage?.Dispose();
+                if (!_isDisposed)
+                {
+                    _baseStorage?.Dispose();
+
+                    _isDisposed = true;
+                }
             }
         }
     }

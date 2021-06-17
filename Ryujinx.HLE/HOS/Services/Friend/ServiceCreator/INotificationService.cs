@@ -24,6 +24,8 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
         private bool _hasNewFriendRequest;
         private bool _hasFriendListUpdate;
 
+        private bool _isDisposed;
+
         public INotificationService(ServiceCtx context, UserId userId, FriendServicePermissionLevel permissionLevel)
         {
             _userId            = userId;
@@ -169,7 +171,15 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 
         public void Dispose()
         {
-            NotificationEventHandler.Instance.UnregisterNotificationService(this);
+            lock (_lock)
+            {
+                if (!_isDisposed)
+                {
+                    NotificationEventHandler.Instance.UnregisterNotificationService(this);
+
+                    _isDisposed = true;
+                }
+            }
         }
     }
 }

@@ -6,6 +6,9 @@ namespace Ryujinx.HLE.HOS.Services.Fs
     class ISaveDataInfoReader : IpcService, IDisposable
     {
         private ReferenceCountedDisposable<LibHac.FsSrv.ISaveDataInfoReader> _baseReader;
+        private bool _isDisposed;
+
+        private object _lock = new object();
 
         public ISaveDataInfoReader(ReferenceCountedDisposable<LibHac.FsSrv.ISaveDataInfoReader> baseReader)
         {
@@ -31,7 +34,15 @@ namespace Ryujinx.HLE.HOS.Services.Fs
 
         public void Dispose()
         {
-            _baseReader.Dispose();
+            lock (_lock)
+            {
+                if (!_isDisposed)
+                {
+                    _baseReader.Dispose();
+
+                    _isDisposed = true;
+                }
+            }
         }
     }
 }

@@ -7,6 +7,9 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
     class IFile : IpcService, IDisposable
     {
         private LibHac.Fs.Fsa.IFile _baseFile;
+        private bool _isDisposed;
+
+        private object _lock = new object();
 
         public IFile(LibHac.Fs.Fsa.IFile baseFile)
         {
@@ -84,14 +87,14 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
 
         public void Dispose()
         {
-            Dispose(true);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
+            lock (_lock)
             {
-                _baseFile?.Dispose();
+                if (!_isDisposed)
+                {
+                    _baseFile?.Dispose();
+
+                    _isDisposed = true;
+                }
             }
         }
     }

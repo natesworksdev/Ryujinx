@@ -13,6 +13,9 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
     class IGeneralService : IpcService, IDisposable
     {
         private GeneralServiceDetail _generalServiceDetail;
+        private bool _isDisposed;
+
+        private object _lock = new object();
 
         public IGeneralService()
         {
@@ -199,7 +202,14 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 
         public void Dispose()
         {
-            GeneralServiceManager.Remove(_generalServiceDetail.ClientId);
+            lock (_lock)
+            {
+                if (!_isDisposed)
+                {
+                    GeneralServiceManager.Remove(_generalServiceDetail.ClientId);
+                    _isDisposed = true;
+                }
+            }
         }
     }
 }

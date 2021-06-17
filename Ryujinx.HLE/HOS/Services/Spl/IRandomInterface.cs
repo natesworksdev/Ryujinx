@@ -7,6 +7,9 @@ namespace Ryujinx.HLE.HOS.Services.Spl
     class IRandomInterface : IpcService, IDisposable
     {
         private RNGCryptoServiceProvider _rng;
+        private bool _isDisposed;
+
+        private object _lock = new object();
 
         public IRandomInterface(ServiceCtx context)
         {
@@ -28,14 +31,14 @@ namespace Ryujinx.HLE.HOS.Services.Spl
 
         public void Dispose()
         {
-            Dispose(true);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
+            lock (_lock)
             {
-                _rng.Dispose();
+                if (!_isDisposed)
+                {
+                    _rng.Dispose();
+
+                    _isDisposed = true;
+                }
             }
         }
     }

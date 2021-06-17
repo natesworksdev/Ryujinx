@@ -25,6 +25,10 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         private int _normalOutDataEventHandle;
         private int _interactiveOutDataEventHandle;
 
+        private bool _isDisposed;
+
+        private object _lock = new object();
+
         public ILibraryAppletAccessor(AppletId appletId, Horizon system)
         {
             _kernelContext = system.KernelContext;
@@ -243,19 +247,27 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
 
         public void Dispose()
         {
-            if (_stateChangedEventHandle != 0)
+            lock (_lock)
             {
-                _kernelContext.Syscall.CloseHandle(_stateChangedEventHandle);
-            }
+                if (!_isDisposed)
+                {
+                    if (_stateChangedEventHandle != 0)
+                    {
+                        _kernelContext.Syscall.CloseHandle(_stateChangedEventHandle);
+                    }
 
-            if (_normalOutDataEventHandle != 0)
-            {
-                _kernelContext.Syscall.CloseHandle(_normalOutDataEventHandle);
-            }
+                    if (_normalOutDataEventHandle != 0)
+                    {
+                        _kernelContext.Syscall.CloseHandle(_normalOutDataEventHandle);
+                    }
 
-            if (_interactiveOutDataEventHandle != 0)
-            {
-                _kernelContext.Syscall.CloseHandle(_interactiveOutDataEventHandle);
+                    if (_interactiveOutDataEventHandle != 0)
+                    {
+                        _kernelContext.Syscall.CloseHandle(_interactiveOutDataEventHandle);
+                    }
+
+                    _isDisposed = true;
+                }
             }
         }
     }

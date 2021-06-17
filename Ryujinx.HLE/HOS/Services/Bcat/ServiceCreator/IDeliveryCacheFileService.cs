@@ -8,6 +8,9 @@ namespace Ryujinx.HLE.HOS.Services.Bcat.ServiceCreator
     class IDeliveryCacheFileService : IpcService, IDisposable
     {
         private LibHac.Bcat.Detail.Ipc.IDeliveryCacheFileService _base;
+        private bool _isDisposed;
+
+        private object _lock = new object();
 
         public IDeliveryCacheFileService(LibHac.Bcat.Detail.Ipc.IDeliveryCacheFileService baseService)
         {
@@ -70,7 +73,15 @@ namespace Ryujinx.HLE.HOS.Services.Bcat.ServiceCreator
 
         public void Dispose()
         {
-            _base?.Dispose();
+            lock (_lock)
+            {
+                if (!_isDisposed)
+                {
+                    _base?.Dispose();
+
+                    _isDisposed = true;
+                }
+            }
         }
     }
 }
