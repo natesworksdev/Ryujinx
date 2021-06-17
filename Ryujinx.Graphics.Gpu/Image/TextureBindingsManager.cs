@@ -320,7 +320,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     // Ensure that the buffer texture is using the correct buffer as storage.
                     // Buffers are frequently re-created to accomodate larger data, so we need to re-bind
                     // to ensure we're not using a old buffer that was already deleted.
-                    _context.Methods.BufferManager.SetBufferTextureStorage(hostTexture, texture.Range.GetSubRange(0).Address, texture.Size, bindingInfo, bindingInfo.Format, false);
+                    _context.Methods.BufferCache.SetBufferTextureStorage(hostTexture, texture.Range.GetSubRange(0).Address, texture.Size, bindingInfo, bindingInfo.Format, false);
                 }
 
                 Sampler sampler = _samplerPool.Get(samplerId);
@@ -393,7 +393,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                         format = texture.Format;
                     }
 
-                    _context.Methods.BufferManager.SetBufferTextureStorage(hostTexture, texture.Range.GetSubRange(0).Address, texture.Size, bindingInfo, format, true);
+                    _context.Methods.BufferCache.SetBufferTextureStorage(hostTexture, texture.Range.GetSubRange(0).Address, texture.Size, bindingInfo, format, true);
                 }
                 else if (isStore)
                 {
@@ -455,7 +455,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>The packed texture and sampler ID (the real texture handle)</returns>
         private int ReadPackedId(int stageIndex, int wordOffset, int textureBufferIndex, int samplerBufferIndex)
         {
-            var bufferManager = _context.Methods.BufferManager;
+            var bufferManager = _context.Methods.BufferCache;
             ulong textureBufferAddress = _isCompute
                 ? bufferManager.GetComputeUniformBufferAddress(textureBufferIndex)
                 : bufferManager.GetGraphicsUniformBufferAddress(stageIndex, textureBufferIndex);

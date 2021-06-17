@@ -10,7 +10,7 @@ using System;
 namespace Ryujinx.Graphics.Gpu.Image
 {
     /// <summary>
-    /// Texture manager.
+    /// Texture cache.
     /// </summary>
     class TextureCache : IDisposable
     {

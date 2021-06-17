@@ -209,13 +209,13 @@ namespace Ryujinx.Graphics.Gpu.Engine
                     swizzle.UnpackComponentSize() == 4)
                 {
                     // Fast path for clears when remap is enabled.
-                    BufferManager.ClearBuffer(cbp.DstAddress, (uint)size * 4, state.Get<uint>(MethodOffset.CopyBufferConstA));
+                    BufferCache.ClearBuffer(cbp.DstAddress, (uint)size * 4, state.Get<uint>(MethodOffset.CopyBufferConstA));
                 }
                 else
                 {
                     // TODO: Implement remap functionality.
                     // Buffer to buffer copy.
-                    BufferManager.CopyBuffer(cbp.SrcAddress, cbp.DstAddress, (uint)size);
+                    BufferCache.CopyBuffer(cbp.SrcAddress, cbp.DstAddress, (uint)size);
                 }
             }
         }

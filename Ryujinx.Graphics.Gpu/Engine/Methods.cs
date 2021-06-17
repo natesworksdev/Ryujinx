@@ -30,7 +30,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
         /// <summary>
         /// GPU buffer manager.
         /// </summary>
-        public BufferManager BufferManager { get; }
+        public BufferCache BufferCache { get; }
 
         /// <summary>
         /// GPU texture manager.
@@ -57,12 +57,12 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
             _currentProgramInfo = new ShaderProgramInfo[Constants.ShaderStages];
 
-            BufferManager  = new BufferManager(context);
+            BufferCache  = new BufferCache(context);
             TextureCache = new TextureCache(context);
 
             context.MemoryManager.MemoryUnmapped += _counterCache.MemoryUnmappedHandler;
             context.MemoryManager.MemoryUnmapped += TextureCache.MemoryUnmappedHandler;
-            context.MemoryManager.MemoryUnmapped += BufferManager.MemoryUnmappedHandler;
+            context.MemoryManager.MemoryUnmapped += BufferCache.MemoryUnmappedHandler;
         }
 
         /// <summary>
@@ -308,7 +308,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
             UpdateStorageBuffers();
 
             state.Channel.TextureManager.CommitGraphicsBindings();
-            BufferManager.CommitGraphicsBindings();
+            BufferCache.CommitGraphicsBindings();
         }
 
         /// <summary>
@@ -329,7 +329,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 {
                     BufferDescriptor sb = info.SBuffers[index];
 
-                    ulong sbDescAddress = BufferManager.GetGraphicsUniformBufferAddress(stage, 0);
+                    ulong sbDescAddress = BufferCache.GetGraphicsUniformBufferAddress(stage, 0);
 
                     int sbDescOffset = 0x110 + stage * 0x100 + sb.Slot * 0x10;
 
@@ -337,7 +337,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
                     SbDescriptor sbDescriptor = _context.PhysicalMemory.Read<SbDescriptor>(sbDescAddress);
 
-                    BufferManager.SetGraphicsStorageBuffer(stage, sb.Slot, sbDescriptor.PackAddress(), (uint)sbDescriptor.Size, sb.Flags);
+                    BufferCache.SetGraphicsStorageBuffer(stage, sb.Slot, sbDescriptor.PackAddress(), (uint)sbDescriptor.Size, sb.Flags);
                 }
             }
         }
@@ -770,7 +770,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 case IndexType.UInt:   size *= 4; break;
             }
 
-            BufferManager.SetIndexBuffer(gpuVa, size, indexBuffer.Type);
+            BufferCache.SetIndexBuffer(gpuVa, size, indexBuffer.Type);
 
             // The index buffer affects the vertex buffer size calculation, we
             // need to ensure that they are updated.
@@ -791,7 +791,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
                 if (!vertexBuffer.UnpackEnable())
                 {
-                    BufferManager.SetVertexBuffer(index, 0, 0, 0, 0);
+                    BufferCache.SetVertexBuffer(index, 0, 0, 0, 0);
 
                     continue;
                 }
@@ -827,7 +827,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
                     size = (ulong)((firstInstance + drawState.First + drawState.Count) * stride);
                 }
 
-                BufferManager.SetVertexBuffer(index, address, size, stride, divisor);
+                BufferCache.SetVertexBuffer(index, address, size, stride, divisor);
             }
         }
 
@@ -1018,8 +1018,8 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 {
                     state.Channel.TextureManager.SetGraphicsTextures(stage, Array.Empty<TextureBindingInfo>());
                     state.Channel.TextureManager.SetGraphicsImages(stage, Array.Empty<TextureBindingInfo>());
-                    BufferManager.SetGraphicsStorageBufferBindings(stage, null);
-                    BufferManager.SetGraphicsUniformBufferBindings(stage, null);
+                    BufferCache.SetGraphicsStorageBufferBindings(stage, null);
+                    BufferCache.SetGraphicsUniformBufferBindings(stage, null);
                     continue;
                 }
 
@@ -1061,8 +1061,8 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
                 state.Channel.TextureManager.SetGraphicsImages(stage, imageBindings);
 
-                BufferManager.SetGraphicsStorageBufferBindings(stage, info.SBuffers);
-                BufferManager.SetGraphicsUniformBufferBindings(stage, info.CBuffers);
+                BufferCache.SetGraphicsStorageBufferBindings(stage, info.SBuffers);
+                BufferCache.SetGraphicsUniformBufferBindings(stage, info.CBuffers);
 
                 if (info.SBuffers.Count != 0)
                 {
@@ -1075,8 +1075,8 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 }
             }
 
-            BufferManager.SetGraphicsStorageBufferBindingsCount(storageBufferBindingsCount);
-            BufferManager.SetGraphicsUniformBufferBindingsCount(uniformBufferBindingsCount);
+            BufferCache.SetGraphicsStorageBufferBindingsCount(storageBufferBindingsCount);
+            BufferCache.SetGraphicsUniformBufferBindingsCount(uniformBufferBindingsCount);
 
             _context.Renderer.Pipeline.SetProgram(gs.HostProgram);
         }
@@ -1093,12 +1093,12 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
                 if (!tfb.Enable)
                 {
-                    BufferManager.SetTransformFeedbackBuffer(index, 0, 0);
+                    BufferCache.SetTransformFeedbackBuffer(index, 0, 0);
 
                     continue;
                 }
 
-                BufferManager.SetTransformFeedbackBuffer(index, tfb.Address.Pack(), (uint)tfb.Size);
+                BufferCache.SetTransformFeedbackBuffer(index, tfb.Address.Pack(), (uint)tfb.Size);
             }
         }
 

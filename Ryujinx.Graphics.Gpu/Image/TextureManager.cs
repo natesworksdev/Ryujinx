@@ -1,10 +1,11 @@
-﻿using Ryujinx.Common;
-using Ryujinx.Graphics.GAL;
+﻿using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.State;
-using System;
 
 namespace Ryujinx.Graphics.Gpu.Image
 {
+    /// <summary>
+    /// Texture manager.
+    /// </summary>
     class TextureManager
     {
         private readonly GpuContext _context;

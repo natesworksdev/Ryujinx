@@ -12,9 +12,9 @@ using System.Linq;
 namespace Ryujinx.Graphics.Gpu.Memory
 {
     /// <summary>
-    /// Buffer manager.
+    /// Buffer cache.
     /// </summary>
-    class BufferManager
+    class BufferCache
     {
         private const int StackToHeapThreshold = 16;
 
@@ -120,7 +120,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// Creates a new instance of the buffer manager.
         /// </summary>
         /// <param name="context">The GPU context that the buffer manager belongs to</param>
-        public BufferManager(GpuContext context)
+        public BufferCache(GpuContext context)
         {
             _context = context;
 
