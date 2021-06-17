@@ -1,4 +1,3 @@
-using Ryujinx.Common;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.State;
 using Ryujinx.Memory.Range;
@@ -10,7 +9,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// <summary>
     /// Buffer cache.
     /// </summary>
-    class BufferCache
+    class BufferCache : IDisposable
     {
         private const int OverlapsBufferInitialCapacity = 10;
         private const int OverlapsBufferMaxCapacity     = 10000;
