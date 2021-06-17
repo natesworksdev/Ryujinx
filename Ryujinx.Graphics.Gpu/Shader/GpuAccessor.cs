@@ -129,8 +129,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
         public uint QueryConstantBufferUse()
         {
             return _compute
-                ? _context.Methods.BufferCache.GetComputeUniformBufferUseMask()
-                : _context.Methods.BufferCache.GetGraphicsUniformBufferUseMask(_stageIndex);
+                ? _state.Channel.BufferManager.GetComputeUniformBufferUseMask()
+                : _state.Channel.BufferManager.GetGraphicsUniformBufferUseMask(_stageIndex);
         }
 
         /// <summary>

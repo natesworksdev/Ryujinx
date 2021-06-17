@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Graphics.Gpu.Engine.GPFifo;
 using Ryujinx.Graphics.Gpu.Image;
+using Ryujinx.Graphics.Gpu.Memory;
 using System;
 
 namespace Ryujinx.Graphics.Gpu
@@ -12,6 +13,8 @@ namespace Ryujinx.Graphics.Gpu
         private readonly GPFifoDevice _device;
         private readonly GPFifoProcessor _processor;
 
+        internal BufferManager BufferManager { get; }
+
         internal TextureManager TextureManager { get; }
 
         /// <summary>
@@ -22,7 +25,8 @@ namespace Ryujinx.Graphics.Gpu
         {
             _device = context.GPFifo;
             _processor = new GPFifoProcessor(context, this);
-            TextureManager = new TextureManager(context);
+            BufferManager = new BufferManager(context);
+            TextureManager = new TextureManager(context, this);
         }
 
         /// <summary>

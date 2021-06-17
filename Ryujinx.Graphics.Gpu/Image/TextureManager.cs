@@ -23,14 +23,14 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public float RenderTargetScale { get; private set; } = 1f;
 
-        public TextureManager(GpuContext context)
+        public TextureManager(GpuContext context, GpuChannel channel)
         {
             _context = context;
 
             TexturePoolCache texturePoolCache = new TexturePoolCache(context);
 
-            _cpBindingsManager = new TextureBindingsManager(context, this, texturePoolCache, isCompute: true);
-            _gpBindingsManager = new TextureBindingsManager(context, this, texturePoolCache, isCompute: false);
+            _cpBindingsManager = new TextureBindingsManager(context, channel, texturePoolCache, isCompute: true);
+            _gpBindingsManager = new TextureBindingsManager(context, channel, texturePoolCache, isCompute: false);
 
             _rtColors = new Texture[Constants.TotalRenderTargets];
             _rtHostColors = new ITexture[Constants.TotalRenderTargets];

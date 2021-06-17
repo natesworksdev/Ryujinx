@@ -74,11 +74,11 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
                 ulong address = uniformBuffer.Address.Pack();
 
-                BufferCache.SetGraphicsUniformBuffer((int)type, index, address, (uint)uniformBuffer.Size);
+                state.Channel.BufferManager.SetGraphicsUniformBuffer((int)type, index, address, (uint)uniformBuffer.Size);
             }
             else
             {
-                BufferCache.SetGraphicsUniformBuffer((int)type, index, 0, 0);
+                state.Channel.BufferManager.SetGraphicsUniformBuffer((int)type, index, 0, 0);
             }
         }
     }
