@@ -113,6 +113,11 @@ namespace Ryujinx.Graphics.Gpu
             SyncActions = new List<Action>();
         }
 
+        public GpuChannel CreateChannel()
+        {
+            return new GpuChannel(this);
+        }
+
         /// <summary>
         /// Initialize the GPU shader cache.
         /// </summary>
