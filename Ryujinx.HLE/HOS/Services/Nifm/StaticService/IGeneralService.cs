@@ -10,12 +10,9 @@ using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 {
-    class IGeneralService : IpcService, IDisposable
+    class IGeneralService : DisposableIpcService
     {
         private GeneralServiceDetail _generalServiceDetail;
-        private bool _isDisposed;
-
-        private object _lock = new object();
 
         public IGeneralService()
         {
@@ -200,15 +197,11 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
             return (targetProperties, targetAddressInfo);
         }
 
-        public void Dispose()
+        protected override void Dispose(bool isDisposing)
         {
-            lock (_lock)
+            if (isDisposing)
             {
-                if (!_isDisposed)
-                {
-                    GeneralServiceManager.Remove(_generalServiceDetail.ClientId);
-                    _isDisposed = true;
-                }
+                GeneralServiceManager.Remove(_generalServiceDetail.ClientId);
             }
         }
     }

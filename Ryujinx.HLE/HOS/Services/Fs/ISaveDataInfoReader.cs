@@ -3,12 +3,9 @@ using LibHac;
 
 namespace Ryujinx.HLE.HOS.Services.Fs
 {
-    class ISaveDataInfoReader : IpcService, IDisposable
+    class ISaveDataInfoReader : DisposableIpcService
     {
         private ReferenceCountedDisposable<LibHac.FsSrv.ISaveDataInfoReader> _baseReader;
-        private bool _isDisposed;
-
-        private object _lock = new object();
 
         public ISaveDataInfoReader(ReferenceCountedDisposable<LibHac.FsSrv.ISaveDataInfoReader> baseReader)
         {
@@ -32,16 +29,11 @@ namespace Ryujinx.HLE.HOS.Services.Fs
             return (ResultCode)result.Value;
         }
 
-        public void Dispose()
+        protected override void Dispose(bool isDisposing)
         {
-            lock (_lock)
+            if (isDisposing)
             {
-                if (!_isDisposed)
-                {
-                    _baseReader.Dispose();
-
-                    _isDisposed = true;
-                }
+                _baseReader?.Dispose();
             }
         }
     }

@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 {
-    class INotificationService : IpcService, IDisposable
+    class INotificationService : DisposableIpcService
     {
         private readonly UserId                       _userId;
         private readonly FriendServicePermissionLevel _permissionLevel;
@@ -23,8 +23,6 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 
         private bool _hasNewFriendRequest;
         private bool _hasFriendListUpdate;
-
-        private bool _isDisposed;
 
         public INotificationService(ServiceCtx context, UserId userId, FriendServicePermissionLevel permissionLevel)
         {
@@ -169,16 +167,11 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
             }
         }
 
-        public void Dispose()
+        protected override void Dispose(bool isDisposing)
         {
-            lock (_lock)
+            if (isDisposing)
             {
-                if (!_isDisposed)
-                {
-                    NotificationEventHandler.Instance.UnregisterNotificationService(this);
-
-                    _isDisposed = true;
-                }
+                NotificationEventHandler.Instance.UnregisterNotificationService(this);
             }
         }
     }

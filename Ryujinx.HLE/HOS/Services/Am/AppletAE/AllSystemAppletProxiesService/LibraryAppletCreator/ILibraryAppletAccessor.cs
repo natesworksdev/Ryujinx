@@ -8,7 +8,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.LibraryAppletCreator
 {
-    class ILibraryAppletAccessor : IpcService, IDisposable
+    class ILibraryAppletAccessor : DisposableIpcService
     {
         private KernelContext _kernelContext;
 
@@ -24,10 +24,6 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         private int _stateChangedEventHandle;
         private int _normalOutDataEventHandle;
         private int _interactiveOutDataEventHandle;
-
-        private bool _isDisposed;
-
-        private object _lock = new object();
 
         public ILibraryAppletAccessor(AppletId appletId, Horizon system)
         {
@@ -245,28 +241,23 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
             return ResultCode.Success;
         }
 
-        public void Dispose()
+        protected override void Dispose(bool isDisposing)
         {
-            lock (_lock)
+            if (isDisposing)
             {
-                if (!_isDisposed)
+                if (_stateChangedEventHandle != 0)
                 {
-                    if (_stateChangedEventHandle != 0)
-                    {
-                        _kernelContext.Syscall.CloseHandle(_stateChangedEventHandle);
-                    }
+                    _kernelContext.Syscall.CloseHandle(_stateChangedEventHandle);
+                }
 
-                    if (_normalOutDataEventHandle != 0)
-                    {
-                        _kernelContext.Syscall.CloseHandle(_normalOutDataEventHandle);
-                    }
+                if (_normalOutDataEventHandle != 0)
+                {
+                    _kernelContext.Syscall.CloseHandle(_normalOutDataEventHandle);
+                }
 
-                    if (_interactiveOutDataEventHandle != 0)
-                    {
-                        _kernelContext.Syscall.CloseHandle(_interactiveOutDataEventHandle);
-                    }
-
-                    _isDisposed = true;
+                if (_interactiveOutDataEventHandle != 0)
+                {
+                    _kernelContext.Syscall.CloseHandle(_interactiveOutDataEventHandle);
                 }
             }
         }

@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
 {
     [Service("ldr:ro")]
     [Service("ro:1")] // 7.0.0+
-    class IRoInterface : IpcService, IDisposable
+    class IRoInterface : DisposableIpcService
     {
         private const int MaxNrr         = 0x40;
         private const int MaxNro         = 0x40;
@@ -30,9 +30,6 @@ namespace Ryujinx.HLE.HOS.Services.Ro
         private List<NroInfo> _nroInfos;
 
         private KProcess _owner;
-        private bool _isDisposed;
-
-        private object _lock = new object();
 
         private static Random _random = new Random();
 
@@ -574,24 +571,17 @@ namespace Ryujinx.HLE.HOS.Services.Ro
             return ResultCode.Success;
         }
 
-        public void Dispose()
+        protected override void Dispose(bool isDisposing)
         {
-            lock (_lock)
+            if (isDisposing)
             {
-                if (!_isDisposed)
+                foreach (NroInfo info in _nroInfos)
                 {
-                    foreach (NroInfo info in _nroInfos)
-                    {
-                        UnmapNroFromInfo(info);
-                    }
-
-                    _nroInfos.Clear();
-
-                    _isDisposed = true;
+                    UnmapNroFromInfo(info);
                 }
+
+                _nroInfos.Clear();
             }
-
-
         }
     }
 }

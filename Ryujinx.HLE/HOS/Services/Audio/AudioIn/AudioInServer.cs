@@ -9,12 +9,9 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Audio.AudioIn
 {
-    class AudioInServer : IpcService, IDisposable
+    class AudioInServer : DisposableIpcService
     {
         private IAudioIn _impl;
-        private bool _isDisposed;
-
-        private object _lock = new object();
 
         public AudioInServer(IAudioIn impl)
         {
@@ -196,16 +193,11 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioIn
             return ResultCode.Success;
         }
 
-        public void Dispose()
+        protected override void Dispose(bool isDisposing)
         {
-            lock (_lock)
+            if (isDisposing)
             {
-                if (!_isDisposed)
-                {
-                    _impl.Dispose();
-
-                    _isDisposed = true;
-                }
+                _impl.Dispose();
             }
         }
     }

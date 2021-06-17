@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 namespace Ryujinx.HLE.HOS.Services.Spl
 {
     [Service("csrng")]
-    class IRandomInterface : IpcService, IDisposable
+    class IRandomInterface : DisposableIpcService
     {
         private RNGCryptoServiceProvider _rng;
         private bool _isDisposed;
@@ -29,16 +29,11 @@ namespace Ryujinx.HLE.HOS.Services.Spl
             return ResultCode.Success;
         }
 
-        public void Dispose()
+        protected override void Dispose(bool isDisposing)
         {
-            lock (_lock)
+            if (isDisposing)
             {
-                if (!_isDisposed)
-                {
-                    _rng.Dispose();
-
-                    _isDisposed = true;
-                }
+                _rng.Dispose();
             }
         }
     }

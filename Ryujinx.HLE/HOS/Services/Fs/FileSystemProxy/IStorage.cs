@@ -1,15 +1,11 @@
 using LibHac;
 using Ryujinx.HLE.HOS.Ipc;
-using System;
 
 namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
 {
-    class IStorage : IpcService, IDisposable
+    class IStorage : DisposableIpcService
     {
         private LibHac.Fs.IStorage _baseStorage;
-        private bool _isDisposed;
-
-        private object _lock = new object();
 
         public IStorage(LibHac.Fs.IStorage baseStorage)
         {
@@ -56,16 +52,11 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
             return (ResultCode)result.Value;
         }
 
-        public void Dispose()
+        protected override void Dispose(bool isDisposing)
         {
-            lock (_lock)
+            if (isDisposing)
             {
-                if (!_isDisposed)
-                {
-                    _baseStorage?.Dispose();
-
-                    _isDisposed = true;
-                }
+                _baseStorage?.Dispose();
             }
         }
     }
