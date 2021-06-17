@@ -174,7 +174,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                         float scale = texture.ScaleFactor;
 
-                        TextureManager manager = _context.Methods.TextureManager;
+                        TextureCache manager = _context.Methods.TextureManager;
 
                         if (scale != 1)
                         {

@@ -12,7 +12,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// <summary>
     /// Texture manager.
     /// </summary>
-    class TextureManager : IDisposable
+    class TextureCache : IDisposable
     {
         private struct OverlapInfo
         {
@@ -57,7 +57,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Constructs a new instance of the texture manager.
         /// </summary>
         /// <param name="context">The GPU context that the texture manager belongs to</param>
-        public TextureManager(GpuContext context)
+        public TextureCache(GpuContext context)
         {
             _context = context;
 

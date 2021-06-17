@@ -35,7 +35,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
         /// <summary>
         /// GPU texture manager.
         /// </summary>
-        public TextureManager TextureManager { get; }
+        public TextureCache TextureManager { get; }
 
         private bool _isAnyVbInstanced;
         private bool _vsUsesInstanceId;
@@ -58,7 +58,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
             _currentProgramInfo = new ShaderProgramInfo[Constants.ShaderStages];
 
             BufferManager  = new BufferManager(context);
-            TextureManager = new TextureManager(context);
+            TextureManager = new TextureCache(context);
 
             context.MemoryManager.MemoryUnmapped += _counterCache.MemoryUnmappedHandler;
             context.MemoryManager.MemoryUnmapped += TextureManager.MemoryUnmappedHandler;
