@@ -190,11 +190,11 @@ namespace Ryujinx.Graphics.Gpu.Shader
         {
             if (_compute)
             {
-                return _context.Methods.TextureManager.GetComputeTextureDescriptor(_state, handle, cbufSlot);
+                return _state.Channel.TextureManager.GetComputeTextureDescriptor(_state, handle, cbufSlot);
             }
             else
             {
-                return _context.Methods.TextureManager.GetGraphicsTextureDescriptor(_state, _stageIndex, handle, cbufSlot);
+                return _state.Channel.TextureManager.GetGraphicsTextureDescriptor(_state, _stageIndex, handle, cbufSlot);
             }
         }
 

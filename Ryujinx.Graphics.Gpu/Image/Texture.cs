@@ -1280,7 +1280,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     _viewStorage.RemoveView(this);
                 }
 
-                _context.Methods.TextureManager.RemoveTextureFromCache(this);
+                _context.Methods.TextureCache.RemoveTextureFromCache(this);
             }
 
             Debug.Assert(newRefCount >= 0);

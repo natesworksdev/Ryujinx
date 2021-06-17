@@ -16,9 +16,9 @@ namespace Ryujinx.Graphics.Gpu.Image
         private const int SlotHigh = 16;
         private const int SlotMask = (1 << SlotHigh) - 1;
 
-        private GpuContext _context;
+        private readonly GpuContext _context;
 
-        private bool _isCompute;
+        private readonly bool _isCompute;
 
         private SamplerPool _samplerPool;
 
@@ -27,10 +27,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         private ulong _texturePoolAddress;
         private int   _texturePoolMaximumId;
 
-        private TexturePoolCache _texturePoolCache;
+        private readonly TextureManager _textureManager;
+        private readonly TexturePoolCache _texturePoolCache;
 
-        private TextureBindingInfo[][] _textureBindings;
-        private TextureBindingInfo[][] _imageBindings;
+        private readonly TextureBindingInfo[][] _textureBindings;
+        private readonly TextureBindingInfo[][] _imageBindings;
 
         private struct TextureStatePerStage
         {
@@ -38,26 +39,28 @@ namespace Ryujinx.Graphics.Gpu.Image
             public ISampler Sampler;
         }
 
-        private TextureStatePerStage[][] _textureState;
-        private TextureStatePerStage[][] _imageState;
+        private readonly TextureStatePerStage[][] _textureState;
+        private readonly TextureStatePerStage[][] _imageState;
 
         private int _textureBufferIndex;
 
         private bool _rebind;
 
-        private float[] _scales;
+        private readonly float[] _scales;
         private bool _scaleChanged;
 
         /// <summary>
         /// Constructs a new instance of the texture bindings manager.
         /// </summary>
         /// <param name="context">The GPU context that the texture bindings manager belongs to</param>
-        /// <param name="texturePoolCache">Texture pools cache used to get texture pools from</param>
+        /// <param name="manager">Texture manager that the texture bindings manager belongs to</param>
+        /// <param name="poolCache">Texture pools cache used to get texture pools from</param>
         /// <param name="isCompute">True if the bindings manager is used for the compute engine</param>
-        public TextureBindingsManager(GpuContext context, TexturePoolCache texturePoolCache, bool isCompute)
+        public TextureBindingsManager(GpuContext context, TextureManager manager, TexturePoolCache poolCache, bool isCompute)
         {
             _context          = context;
-            _texturePoolCache = texturePoolCache;
+            _textureManager   = manager;
+            _texturePoolCache = poolCache;
             _isCompute        = isCompute;
 
             int stages = isCompute ? 1 : Constants.ShaderStages;
@@ -174,11 +177,9 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                         float scale = texture.ScaleFactor;
 
-                        TextureCache manager = _context.Methods.TextureManager;
-
                         if (scale != 1)
                         {
-                            Texture activeTarget = manager.GetAnyRenderTarget();
+                            Texture activeTarget = _textureManager.GetAnyRenderTarget();
 
                             if (activeTarget != null && activeTarget.Info.Width / (float)texture.Info.Width == activeTarget.Info.Height / (float)texture.Info.Height)
                             {

@@ -35,7 +35,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
         /// Creates a new instance of the GPU General Purpose FIFO command processor.
         /// </summary>
         /// <param name="context">GPU context</param>
-        public GPFifoProcessor(GpuContext context)
+        /// <param name="channel">Channel that the GPFIFO processor belongs to</param>
+        public GPFifoProcessor(GpuContext context, GpuChannel channel)
         {
             _context = context;
 
@@ -44,7 +45,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
 
             for (int index = 0; index < _subChannels.Length; index++)
             {
-                _subChannels[index] = new GpuState();
+                _subChannels[index] = new GpuState(channel);
 
                 _context.Methods.RegisterCallbacks(_subChannels[index]);
             }

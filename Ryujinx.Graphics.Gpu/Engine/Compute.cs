@@ -57,9 +57,9 @@ namespace Ryujinx.Graphics.Gpu.Engine
             var samplerPool = state.Get<PoolState>(MethodOffset.SamplerPoolState);
             var texturePool = state.Get<PoolState>(MethodOffset.TexturePoolState);
 
-            TextureManager.SetComputeSamplerPool(samplerPool.Address.Pack(), samplerPool.MaximumId, qmd.SamplerIndex);
-            TextureManager.SetComputeTexturePool(texturePool.Address.Pack(), texturePool.MaximumId);
-            TextureManager.SetComputeTextureBufferIndex(state.Get<int>(MethodOffset.TextureBufferIndex));
+            state.Channel.TextureManager.SetComputeSamplerPool(samplerPool.Address.Pack(), samplerPool.MaximumId, qmd.SamplerIndex);
+            state.Channel.TextureManager.SetComputeTexturePool(texturePool.Address.Pack(), texturePool.MaximumId);
+            state.Channel.TextureManager.SetComputeTextureBufferIndex(state.Get<int>(MethodOffset.TextureBufferIndex));
 
             ShaderProgramInfo info = cs.Shaders[0].Info;
 
@@ -121,7 +121,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
                     descriptor.Flags);
             }
 
-            TextureManager.SetComputeTextures(textureBindings);
+            state.Channel.TextureManager.SetComputeTextures(textureBindings);
 
             var imageBindings = new TextureBindingInfo[info.Images.Count];
 
@@ -141,9 +141,9 @@ namespace Ryujinx.Graphics.Gpu.Engine
                     descriptor.Flags);
             }
 
-            TextureManager.SetComputeImages(imageBindings);
+            state.Channel.TextureManager.SetComputeImages(imageBindings);
 
-            TextureManager.CommitComputeBindings();
+            state.Channel.TextureManager.CommitComputeBindings();
             BufferManager.CommitComputeBindings();
 
             _context.Renderer.Pipeline.DispatchCompute(

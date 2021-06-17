@@ -112,7 +112,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
                 if (completeSource && completeDest)
                 {
-                    Image.Texture target = TextureManager.FindTexture(dst, cbp, swizzle, dstLinear);
+                    Image.Texture target = TextureCache.FindTexture(dst, cbp, swizzle, dstLinear);
                     if (target != null)
                     {
                         ReadOnlySpan<byte> data;

@@ -1,4 +1,5 @@
 ﻿using Ryujinx.Graphics.Gpu.Engine.GPFifo;
+using Ryujinx.Graphics.Gpu.Image;
 using System;
 
 namespace Ryujinx.Graphics.Gpu
@@ -11,6 +12,8 @@ namespace Ryujinx.Graphics.Gpu
         private readonly GPFifoDevice _device;
         private readonly GPFifoProcessor _processor;
 
+        internal TextureManager TextureManager { get; }
+
         /// <summary>
         /// Creates a new instance of a GPU channel.
         /// </summary>
@@ -18,7 +21,8 @@ namespace Ryujinx.Graphics.Gpu
         internal GpuChannel(GpuContext context)
         {
             _device = context.GPFifo;
-            _processor = new GPFifoProcessor(context);
+            _processor = new GPFifoProcessor(context, this);
+            TextureManager = new TextureManager(context);
         }
 
         /// <summary>

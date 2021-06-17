@@ -188,7 +188,7 @@ namespace Ryujinx.Graphics.Gpu
         {
             Methods.ShaderCache.Dispose();
             Methods.BufferManager.Dispose();
-            Methods.TextureManager.Dispose();
+            Methods.TextureCache.Dispose();
             Renderer.Dispose();
             GPFifo.Dispose();
             HostInitalized.Dispose();
