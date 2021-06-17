@@ -1,5 +1,4 @@
-﻿using Ryujinx.Common.Collections;
-using Ryujinx.Common.Logging;
+﻿using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gpu;
 using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu;
@@ -544,6 +543,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
             return commandBuffer;
         }
 
-        public override void Close() { }
+        public override void Close()
+        {
+            _channel.Dispose();
+        }
     }
 }

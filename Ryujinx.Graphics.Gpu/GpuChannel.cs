@@ -8,13 +8,20 @@ namespace Ryujinx.Graphics.Gpu
     /// <summary>
     /// Represents a GPU channel.
     /// </summary>
-    public class GpuChannel
+    public class GpuChannel : IDisposable
     {
+        private readonly GpuContext _context;
         private readonly GPFifoDevice _device;
         private readonly GPFifoProcessor _processor;
 
+        /// <summary>
+        /// Channel buffer bindings manager.
+        /// </summary>
         internal BufferManager BufferManager { get; }
 
+        /// <summary>
+        /// Channel texture bindings manager.
+        /// </summary>
         internal TextureManager TextureManager { get; }
 
         /// <summary>
@@ -23,6 +30,7 @@ namespace Ryujinx.Graphics.Gpu
         /// <param name="context">GPU context that the channel belongs to</param>
         internal GpuChannel(GpuContext context)
         {
+            _context = context;
             _device = context.GPFifo;
             _processor = new GPFifoProcessor(context, this);
             BufferManager = new BufferManager(context);
@@ -46,6 +54,25 @@ namespace Ryujinx.Graphics.Gpu
         public void PushEntries(ReadOnlySpan<ulong> entries)
         {
             _device.PushEntries(_processor, entries);
+        }
+
+        /// <summary>
+        /// Disposes the GPU channel.
+        /// It's an error to use the GPU channel after disposal.
+        /// </summary>
+        public void Dispose()
+        {
+            _context.DisposedChannels.Enqueue(this);
+        }
+
+        /// <summary>
+        /// Performs disposal of the host GPU resources used by this channel, that are not shared.
+        /// This must only be called from the render thread.
+        /// </summary>
+        internal void Destroy()
+        {
+            BufferManager.Dispose();
+            TextureManager.Dispose();
         }
     }
 }

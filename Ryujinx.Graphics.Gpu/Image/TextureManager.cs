@@ -23,6 +23,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public float RenderTargetScale { get; private set; } = 1f;
 
+        /// <summary>
+        /// Creates a new instance of the texture manager.
+        /// </summary>
+        /// <param name="context">GPU context that the texture manager belongs to</param>
+        /// <param name="channel">GPU channel that the texture manager belongs to</param>
         public TextureManager(GpuContext context, GpuChannel channel)
         {
             _context = context;
@@ -359,6 +364,15 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             _cpBindingsManager.Dispose();
             _gpBindingsManager.Dispose();
+
+            for (int i = 0; i < _rtColors.Length; i++)
+            {
+                _rtColors[i]?.DecrementReferenceCount();
+                _rtColors[i] = null;
+            }
+
+            _rtDepthStencil?.DecrementReferenceCount();
+            _rtDepthStencil = null;
         }
     }
 }

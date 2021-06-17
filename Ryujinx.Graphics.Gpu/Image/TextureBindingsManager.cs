@@ -514,6 +514,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         public void Dispose()
         {
             _samplerPool?.Dispose();
+            _texturePoolCache.Dispose();
         }
     }
 }
