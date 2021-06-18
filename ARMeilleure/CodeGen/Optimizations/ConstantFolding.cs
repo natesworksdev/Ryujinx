@@ -92,6 +92,11 @@ namespace ARMeilleure.CodeGen.Optimizations
                     break;
 
                 case Instruction.Copy:
+                    if (operation.GetSource(0).Relocatable)
+                    {
+                        break;
+                    }
+
                     if (type == OperandType.I32)
                     {
                         EvaluateUnaryI32(operation, (x) => x);

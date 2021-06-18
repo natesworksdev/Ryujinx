@@ -6,6 +6,7 @@ using ARMeilleure.Diagnostics;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
 using ARMeilleure.Translation.PTC;
+using ARMeilleure.Translation.TTC;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -156,7 +157,10 @@ namespace ARMeilleure.CodeGen.X86
 
                 UnwindInfo unwindInfo = WritePrologue(context);
 
-                ptcInfo?.WriteUnwindInfo(unwindInfo);
+                if (ptcInfo != null && ptcInfo is not TtcInfo)
+                {
+                    ptcInfo.WriteUnwindInfo(unwindInfo);
+                }
 
                 for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
                 {
@@ -190,9 +194,13 @@ namespace ARMeilleure.CodeGen.X86
 
                 byte[] code = context.GetCode();
 
-                if (ptcInfo != null)
+                if (ptcInfo != null && ptcInfo is not TtcInfo)
                 {
                     ptcInfo.Code = code;
+                }
+                else if (ptcInfo is TtcInfo ttcInfo)
+                {
+                    ttcInfo.HostSize = code.Length;
                 }
 
                 Logger.EndPass(PassName.CodeGeneration);

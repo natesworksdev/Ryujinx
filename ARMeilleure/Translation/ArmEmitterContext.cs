@@ -9,6 +9,7 @@ using ARMeilleure.Translation.PTC;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
 namespace ARMeilleure.Translation
@@ -43,8 +44,6 @@ namespace ARMeilleure.Translation
 
         public IMemoryManager Memory { get; }
 
-        public bool HasPtc { get; }
-
         public EntryTable<uint> CountTable { get; }
         public AddressTable<ulong> FunctionTable { get; }
         public TranslatorStubs Stubs { get; }
@@ -53,6 +52,9 @@ namespace ARMeilleure.Translation
         public bool HighCq { get; }
         public Aarch32Mode Mode { get; }
 
+        public bool HasPtc { get; }
+        public bool HasTtc { get; }
+
         public ArmEmitterContext(
             IMemoryManager memory,
             EntryTable<uint> countTable,
@@ -60,16 +62,21 @@ namespace ARMeilleure.Translation
             TranslatorStubs stubs,
             ulong entryAddress,
             bool highCq,
-            Aarch32Mode mode)
+            Aarch32Mode mode,
+            bool hasTtc)
         {
-            HasPtc = Ptc.State != PtcState.Disabled;
             Memory = memory;
+
             CountTable = countTable;
             FunctionTable = funcTable;
             Stubs = stubs;
+
             EntryAddress = entryAddress;
             HighCq = highCq;
             Mode = mode;
+
+            HasPtc = Ptc.State != PtcState.Disabled;
+            HasTtc = hasTtc;
 
             _labels = new Dictionary<ulong, Operand>();
         }
@@ -105,6 +112,11 @@ namespace ARMeilleure.Translation
             }
 
             return label;
+        }
+
+        public ulong GetOffset(ulong address)
+        {
+            return address - EntryAddress;
         }
 
         public void MarkComparison(Operand n, Operand m)

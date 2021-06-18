@@ -2,6 +2,7 @@ using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using ARMeilleure.Translation;
+using ARMeilleure.Translation.PTC;
 
 using static ARMeilleure.Instructions.InstEmitFlowHelper;
 using static ARMeilleure.Instructions.InstEmitHelper;
@@ -29,7 +30,13 @@ namespace ARMeilleure.Instructions
         {
             OpCodeBImmAl op = (OpCodeBImmAl)context.CurrOp;
 
-            context.Copy(GetIntOrZR(context, RegisterAlias.Lr), Const(op.Address + 4));
+            ulong address = op.Address + 4;
+
+            Operand addressOp = !context.HasTtc
+                ? Const(address)
+                : Const(address, new Symbol(SymbolType.DynFunc, context.GetOffset(address)));
+
+            context.Copy(GetIntOrZR(context, RegisterAlias.Lr), addressOp);
 
             EmitCall(context, (ulong)op.Immediate);
         }
@@ -38,9 +45,15 @@ namespace ARMeilleure.Instructions
         {
             OpCodeBReg op = (OpCodeBReg)context.CurrOp;
 
-            Operand n = context.Copy(GetIntOrZR(context, op.Rn));
+            ulong address = op.Address + 4;
 
-            context.Copy(GetIntOrZR(context, RegisterAlias.Lr), Const(op.Address + 4));
+            Operand addressOp = !context.HasTtc
+                ? Const(address)
+                : Const(address, new Symbol(SymbolType.DynFunc, context.GetOffset(address)));
+
+            context.Copy(GetIntOrZR(context, RegisterAlias.Lr), addressOp);
+
+            Operand n = context.Copy(GetIntOrZR(context, op.Rn));
 
             EmitVirtualCall(context, n);
         }

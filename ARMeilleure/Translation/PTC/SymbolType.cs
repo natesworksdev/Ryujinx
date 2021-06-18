@@ -1,4 +1,6 @@
-﻿namespace ARMeilleure.Translation.PTC
+﻿using ARMeilleure.Translation.TTC;
+
+namespace ARMeilleure.Translation.PTC
 {
     /// <summary>
     /// Types of <see cref="Symbol"/>.
@@ -8,21 +10,35 @@
         /// <summary>
         /// Refers to nothing, i.e no symbol.
         /// </summary>
-        None,
+        None = 0,
 
-        /// <summary>
-        /// Refers to an entry in <see cref="Delegates"/>.
-        /// </summary>
-        DelegateTable,
+        /* Ptc or Ttc (FunctionTable only). */
 
         /// <summary>
         /// Refers to an entry in <see cref="Translator.FunctionTable"/>.
         /// </summary>
-        FunctionTable,
+        FunctionTable = 1,
+
+        /// <summary>
+        /// Refers to an entry in <see cref="Delegates"/>.
+        /// </summary>
+        DelegateTable = 2,
 
         /// <summary>
         /// Refers to a special symbol which is handled by <see cref="Ptc.PatchCode"/>.
         /// </summary>
-        Special
+        Special = 3,
+
+        /* Ttc only. */
+
+        /// <summary>
+        /// Refers to a symbol which is handled by <see cref="Ttc.PatchCodeDyn"/>.
+        /// </summary>
+        DynFunc = byte.MaxValue - 1,
+
+        /// <summary>
+        /// Refers to a symbol which is handled by <see cref="Ttc.PatchCodeDyn"/>.
+        /// </summary>
+        DynFuncAdrp = byte.MaxValue - 0
     }
 }

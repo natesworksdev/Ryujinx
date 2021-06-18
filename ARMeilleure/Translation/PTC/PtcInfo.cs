@@ -2,13 +2,12 @@ using ARMeilleure.CodeGen.Unwinding;
 using System;
 using System.IO;
 
+using static ARMeilleure.Translation.PTC.PtcFormatter;
+
 namespace ARMeilleure.Translation.PTC
 {
     class PtcInfo : IDisposable
     {
-        private readonly BinaryWriter _relocWriter;
-        private readonly BinaryWriter _unwindInfoWriter;
-
         public byte[] Code { get; set; }
 
         public MemoryStream RelocStream      { get; }
@@ -21,41 +20,30 @@ namespace ARMeilleure.Translation.PTC
             RelocStream      = new MemoryStream();
             UnwindInfoStream = new MemoryStream();
 
-            _relocWriter      = new BinaryWriter(RelocStream,      EncodingCache.UTF8NoBOM, true);
-            _unwindInfoWriter = new BinaryWriter(UnwindInfoStream, EncodingCache.UTF8NoBOM, true);
-
             RelocEntriesCount = 0;
         }
 
         public void WriteRelocEntry(RelocEntry relocEntry)
         {
-            _relocWriter.Write((int)relocEntry.Position);
-            _relocWriter.Write((byte)relocEntry.Symbol.Type);
-            _relocWriter.Write((ulong)relocEntry.Symbol.Value);
+            SerializeStructure(RelocStream, relocEntry);
 
             RelocEntriesCount++;
         }
 
         public void WriteUnwindInfo(UnwindInfo unwindInfo)
         {
-            _unwindInfoWriter.Write((int)unwindInfo.PushEntries.Length);
+            SerializeStructure(UnwindInfoStream, (int)unwindInfo.PushEntries.Length);
 
             foreach (UnwindPushEntry unwindPushEntry in unwindInfo.PushEntries)
             {
-                _unwindInfoWriter.Write((int)unwindPushEntry.PseudoOp);
-                _unwindInfoWriter.Write((int)unwindPushEntry.PrologOffset);
-                _unwindInfoWriter.Write((int)unwindPushEntry.RegIndex);
-                _unwindInfoWriter.Write((int)unwindPushEntry.StackOffsetOrAllocSize);
+                SerializeStructure(UnwindInfoStream, unwindPushEntry);
             }
 
-            _unwindInfoWriter.Write((int)unwindInfo.PrologSize);
+            SerializeStructure(UnwindInfoStream, (int)unwindInfo.PrologSize);
         }
 
         public void Dispose()
         {
-            _relocWriter.Dispose();
-            _unwindInfoWriter.Dispose();
-
             RelocStream.Dispose();
             UnwindInfoStream.Dispose();
         }

@@ -2,7 +2,6 @@ using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using ARMeilleure.Translation;
-using ARMeilleure.Translation.Cache;
 using ARMeilleure.Translation.PTC;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
@@ -150,7 +149,11 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitTableBranch(context, Const(immediate), isJump: false);
+                Operand address = !context.HasTtc
+                    ? Const(immediate)
+                    : Const(immediate, new Symbol(SymbolType.DynFunc, context.GetOffset(immediate)));
+
+                EmitTableBranch(context, address, isJump: false);
             }
         }
 
@@ -192,17 +195,26 @@ namespace ARMeilleure.Instructions
             // onto the dispatch stub.
             if (guestAddress.Kind == OperandKind.Constant && context.FunctionTable.IsValid(guestAddress.Value))
             {
-                Operand hostAddressAddr = !context.HasPtc ?
-                    Const(ref context.FunctionTable.GetValue(guestAddress.Value)) :
-                    Const(ref context.FunctionTable.GetValue(guestAddress.Value), new Symbol(SymbolType.FunctionTable, guestAddress.Value));
+                Symbol symbol = default;
+
+                if (context.HasPtc)
+                {
+                    symbol = new Symbol(SymbolType.FunctionTable, guestAddress.Value);
+                }
+                else if (context.HasTtc)
+                {
+                    symbol = new Symbol(SymbolType.FunctionTable, context.GetOffset(guestAddress.Value));
+                }
+
+                Operand hostAddressAddr = Const(ref context.FunctionTable.GetValue(guestAddress.Value), symbol);
 
                 hostAddress = context.Load(OperandType.I64, hostAddressAddr);
             }
             else
             {
-                hostAddress = !context.HasPtc ?
-                    Const((long)context.Stubs.DispatchStub) :
-                    Const((long)context.Stubs.DispatchStub, Ptc.DispatchStubSymbol);
+                hostAddress = !context.HasPtc
+                    ? Const((long)context.Stubs.DispatchStub)
+                    : Const((long)context.Stubs.DispatchStub, Ptc.DispatchStubSymbol);
             }
 
             if (isJump)

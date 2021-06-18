@@ -8,10 +8,10 @@ using ARMeilleure.Signal;
 using ARMeilleure.State;
 using ARMeilleure.Translation.Cache;
 using ARMeilleure.Translation.PTC;
+using ARMeilleure.Translation.TTC;
 using Ryujinx.Common;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime;
 using System.Threading;
@@ -24,6 +24,8 @@ namespace ARMeilleure.Translation
 {
     public class Translator
     {
+        internal const int MinsCallForRejit = 100;
+
         private static readonly AddressTable<ulong>.Level[] Levels64Bit =
             new AddressTable<ulong>.Level[]
             {
@@ -45,7 +47,8 @@ namespace ARMeilleure.Translation
             };
 
         private readonly IJitMemoryAllocator _allocator;
-        private readonly ConcurrentQueue<KeyValuePair<ulong, TranslatedFunction>> _oldFuncs;
+
+        private readonly ConcurrentDictionary<ulong, TranslatedFunction> _oldFuncs;
 
         private readonly ConcurrentDictionary<ulong, object> _backgroundSet;
         private readonly ConcurrentStack<RejitRequest> _backgroundStack;
@@ -53,12 +56,16 @@ namespace ARMeilleure.Translation
         private readonly ReaderWriterLock _backgroundTranslatorLock;
 
         internal ConcurrentDictionary<ulong, TranslatedFunction> Functions { get; }
-        internal AddressTable<ulong> FunctionTable { get; }
+        internal ConcurrentDictionary<Hash128, TtcInfo> TtcInfos { get; }
         internal EntryTable<uint> CountTable { get; }
+        internal AddressTable<ulong> FunctionTable { get; }
         internal TranslatorStubs Stubs { get; }
         internal IMemoryManager Memory { get; }
 
         private volatile int _threadCount;
+
+        public static ulong StaticCodeStart { internal get; set; }
+        public static ulong StaticCodeSize  { internal get; set; }
 
         // FIXME: Remove this once the init logic of the emulator will be redone.
         public static readonly ManualResetEvent IsReadyForTranslation = new(false);
@@ -68,7 +75,7 @@ namespace ARMeilleure.Translation
             _allocator = allocator;
             Memory = memory;
 
-            _oldFuncs = new ConcurrentQueue<KeyValuePair<ulong, TranslatedFunction>>();
+            _oldFuncs = new ConcurrentDictionary<ulong, TranslatedFunction>();
 
             _backgroundSet = new ConcurrentDictionary<ulong, object>();
             _backgroundStack = new ConcurrentStack<RejitRequest>();
@@ -77,8 +84,9 @@ namespace ARMeilleure.Translation
 
             JitCache.Initialize(allocator);
 
-            CountTable = new EntryTable<uint>();
             Functions = new ConcurrentDictionary<ulong, TranslatedFunction>();
+            TtcInfos = new ConcurrentDictionary<Hash128, TtcInfo>();
+            CountTable = new EntryTable<uint>();
             FunctionTable = new AddressTable<ulong>(for64Bits ? Levels64Bit : Levels32Bit);
             Stubs = new TranslatorStubs(this);
 
@@ -96,14 +104,15 @@ namespace ARMeilleure.Translation
             {
                 _backgroundTranslatorLock.AcquireReaderLock(Timeout.Infinite);
 
-                if (_backgroundStack.TryPop(out RejitRequest request) && 
+                if (_backgroundStack.TryPop(out RejitRequest request) &&
                     _backgroundSet.TryRemove(request.Address, out _))
                 {
                     TranslatedFunction func = Translate(request.Address, request.Mode, highCq: true);
 
                     Functions.AddOrUpdate(request.Address, func, (key, oldFunc) =>
                     {
-                        EnqueueForDeletion(key, oldFunc);
+                        _oldFuncs.TryAdd(key, oldFunc);
+
                         return func;
                     });
 
@@ -203,7 +212,7 @@ namespace ARMeilleure.Translation
             }
         }
 
-        public ulong ExecuteSingle(State.ExecutionContext context, ulong address)
+        private ulong ExecuteSingle(State.ExecutionContext context, ulong address)
         {
             TranslatedFunction func = GetOrTranslate(address, context.ExecutionMode);
 
@@ -251,20 +260,40 @@ namespace ARMeilleure.Translation
 
         internal TranslatedFunction Translate(ulong address, ExecutionMode mode, bool highCq)
         {
-            var context = new ArmEmitterContext(
+            Logger.StartPass(PassName.Decoding);
+
+            Block[] blocks = Decoder.Decode(Memory, address, mode, highCq, singleBlock: false);
+
+            Logger.EndPass(PassName.Decoding);
+
+            Range funcRange = GetFuncRange(blocks);
+
+            ulong funcSize = funcRange.End - funcRange.Start;
+
+            TtcInfo ttcInfo = null;
+
+            if (Optimizations.EnableTtc &&
+                mode == ExecutionMode.Aarch64 && // TODO: Aarch32.
+                Ttc.TryFastTranslateDyn(
+                this,
+                address,
+                funcSize,
+                highCq,
+                ref ttcInfo,
+                out TranslatedFunction translatedFuncDyn))
+            {
+                return translatedFuncDyn;
+            }
+
+            ArmEmitterContext context = new(
                 Memory,
                 CountTable,
                 FunctionTable,
                 Stubs,
                 address,
                 highCq,
-                mode: Aarch32Mode.User);
-
-            Logger.StartPass(PassName.Decoding);
-
-            Block[] blocks = Decoder.Decode(Memory, address, mode, highCq, singleBlock: false);
-
-            Logger.EndPass(PassName.Decoding);
+                mode: Aarch32Mode.User,
+                hasTtc: ttcInfo != null);
 
             PreparePool(highCq ? 1 : 0);
 
@@ -277,9 +306,7 @@ namespace ARMeilleure.Translation
                 context.Branch(context.GetLabel(address));
             }
 
-            ControlFlowGraph cfg = EmitAndGetCFG(context, blocks, out Range funcRange, out Counter<uint> counter);
-
-            ulong funcSize = funcRange.End - funcRange.Start;
+            ControlFlowGraph cfg = EmitAndGetCFG(context, blocks, out Counter<uint> counter);
 
             Logger.EndPass(PassName.Translation);
 
@@ -297,7 +324,7 @@ namespace ARMeilleure.Translation
 
             if (!context.HasPtc)
             {
-                func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, options);
+                func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, options, ttcInfo);
 
                 ResetPool(highCq ? 1 : 0);
             }
@@ -309,12 +336,19 @@ namespace ARMeilleure.Translation
 
                 ResetPool(highCq ? 1 : 0);
 
-                Hash128 hash = Ptc.ComputeHash(Memory, address, funcSize);
+                Hash128 hash = ComputeHash(address, funcSize);
 
                 Ptc.WriteInfoCodeRelocUnwindInfo(address, funcSize, hash, highCq, ptcInfo);
             }
 
-            return new TranslatedFunction(func, counter, funcSize, highCq);
+            TranslatedFunction translatedFunc = new(func, counter, funcSize, highCq);
+
+            if (context.HasTtc)
+            {
+                ttcInfo.TranslatedFunc = translatedFunc;
+            }
+
+            return translatedFunc;
         }
 
         internal static void PreparePool(int groupId = 0)
@@ -348,14 +382,8 @@ namespace ARMeilleure.Translation
             }
         }
 
-        private static ControlFlowGraph EmitAndGetCFG(
-            ArmEmitterContext context,
-            Block[] blocks,
-            out Range range,
-            out Counter<uint> counter)
+        private static Range GetFuncRange(Block[] blocks)
         {
-            counter = null;
-
             ulong rangeStart = ulong.MaxValue;
             ulong rangeEnd = 0;
 
@@ -375,6 +403,18 @@ namespace ARMeilleure.Translation
                         rangeEnd = block.EndAddress;
                     }
                 }
+            }
+
+            return new Range(rangeStart, rangeEnd);
+        }
+
+        private static ControlFlowGraph EmitAndGetCFG(ArmEmitterContext context, Block[] blocks, out Counter<uint> counter)
+        {
+            counter = null;
+
+            for (int blkIndex = 0; blkIndex < blocks.Length; blkIndex++)
+            {
+                Block block = blocks[blkIndex];
 
                 if (block.Address == context.EntryAddress && !context.HighCq)
                 {
@@ -391,7 +431,11 @@ namespace ARMeilleure.Translation
                     // future. (eg. for debug)
                     bool useReturns = false;
 
-                    InstEmitFlowHelper.EmitVirtualJump(context, Const(block.Address), isReturn: useReturns);
+                    Operand address = useReturns || !context.HasTtc
+                        ? Const(block.Address)
+                        : Const(block.Address, new Symbol(SymbolType.DynFunc, context.GetOffset(block.Address)));
+
+                    InstEmitFlowHelper.EmitVirtualJump(context, address, isReturn: useReturns);
                 }
                 else
                 {
@@ -434,29 +478,29 @@ namespace ARMeilleure.Translation
                 }
             }
 
-            range = new Range(rangeStart, rangeEnd);
-
             return context.GetControlFlowGraph();
         }
 
-        internal static void EmitRejitCheck(ArmEmitterContext context, out Counter<uint> counter)
+        private static void EmitRejitCheck(ArmEmitterContext context, out Counter<uint> counter)
         {
-            const int MinsCallForRejit = 100;
-
             counter = new Counter<uint>(context.CountTable);
 
             Operand lblEnd = Label();
 
-            Operand address = !context.HasPtc ?
-                Const(ref counter.Value) :
-                Const(ref counter.Value, Ptc.CountTableSymbol);
+            Operand address = !context.HasPtc
+                ? Const(ref counter.Value)
+                : Const(ref counter.Value, Ptc.CountTableSymbol);
 
             Operand curCount = context.Load(OperandType.I32, address);
             Operand count = context.Add(curCount, Const(1));
             context.Store(address, count);
             context.BranchIf(lblEnd, curCount, Const(MinsCallForRejit), Comparison.NotEqual, BasicBlockFrequency.Cold);
 
-            context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.EnqueueForRejit)), Const(context.EntryAddress));
+            Operand callArg = !context.HasTtc
+                ? Const(context.EntryAddress)
+                : Const(context.EntryAddress, new Symbol(SymbolType.DynFunc, context.GetOffset(context.EntryAddress)));
+
+            context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.EnqueueForRejit)), callArg);
 
             context.MarkLabel(lblEnd);
         }
@@ -486,10 +530,9 @@ namespace ARMeilleure.Translation
 
         public void InvalidateJitCacheRegion(ulong address, ulong size)
         {
-            // If rejit is running, stop it as it may be trying to rejit a function on the invalidated region.
-            ClearRejitQueue(allowRequeue: true);
+            Debug.Assert(!OverlapsWith(address, size, StaticCodeStart, StaticCodeSize));
 
-            // TODO: Completely remove functions overlapping the specified range from the cache.
+            ClearJitCacheDyn(address, size);
         }
 
         internal void EnqueueForRejit(ulong guestAddress, ExecutionMode mode)
@@ -501,15 +544,23 @@ namespace ARMeilleure.Translation
             }
         }
 
-        private void EnqueueForDeletion(ulong guestAddress, TranslatedFunction func)
-        {
-            _oldFuncs.Enqueue(new(guestAddress, func));
-        }
-
         private void ClearJitCache()
         {
-            // Ensure no attempt will be made to compile new functions due to rejit.
             ClearRejitQueue(allowRequeue: false);
+
+            foreach (var ttcInfo in TtcInfos.Values)
+            {
+                JitCache.Unmap(ttcInfo.TranslatedFunc.FuncPtr);
+
+                ttcInfo.TranslatedFunc.CallCounter?.Dispose();
+
+                Functions.TryRemove(ttcInfo.LastGuestAddress, out _);
+                _oldFuncs.TryRemove(ttcInfo.LastGuestAddress, out _);
+
+                ttcInfo.Dispose();
+            }
+
+            TtcInfos.Clear();
 
             foreach (var func in Functions.Values)
             {
@@ -520,14 +571,33 @@ namespace ARMeilleure.Translation
 
             Functions.Clear();
 
-            while (_oldFuncs.TryDequeue(out var kv))
+            foreach (var oldFunc in _oldFuncs.Values)
             {
-                JitCache.Unmap(kv.Value.FuncPtr);
+                JitCache.Unmap(oldFunc.FuncPtr);
 
-                kv.Value.CallCounter?.Dispose();
+                oldFunc.CallCounter?.Dispose();
+            }
+
+            _oldFuncs.Clear();
+        }
+
+        private void ClearJitCacheDyn(ulong address, ulong size)
+        {
+            ClearRejitQueue(allowRequeue: true);
+
+            foreach (var ttcInfo in TtcInfos.Values)
+            {
+                if (OverlapsWith(ttcInfo.LastGuestAddress, ttcInfo.GuestSize, address, size))
+                {
+                    Functions.TryRemove(ttcInfo.LastGuestAddress, out _);
+                    _oldFuncs.TryRemove(ttcInfo.LastGuestAddress, out _);
+
+                    ttcInfo.IsBusy = false;
+                }
             }
         }
 
+        // Ensures that functions queued for rejit are not retranslated, allowing them to be re-queued for rejit or not.
         private void ClearRejitQueue(bool allowRequeue)
         {
             _backgroundTranslatorLock.AcquireWriterLock(Timeout.Infinite);
@@ -538,7 +608,7 @@ namespace ARMeilleure.Translation
                 {
                     if (Functions.TryGetValue(request.Address, out var func) && func.CallCounter != null)
                     {
-                        Volatile.Write(ref func.CallCounter.Value, 0);
+                        Volatile.Write(ref func.CallCounter.Value, MinsCallForRejit);
                     }
 
                     _backgroundSet.TryRemove(request.Address, out _);
@@ -550,6 +620,16 @@ namespace ARMeilleure.Translation
             }
 
             _backgroundTranslatorLock.ReleaseWriterLock();
+        }
+
+        internal static bool OverlapsWith(ulong funcAddress, ulong funcSize, ulong address, ulong size)
+        {
+            return funcAddress < address + size && address < funcAddress + funcSize;
+        }
+
+        internal Hash128 ComputeHash(ulong address, ulong guestSize)
+        {
+            return XXHash128.ComputeHash(Memory.GetSpan(address, checked((int)(guestSize))));
         }
     }
 }

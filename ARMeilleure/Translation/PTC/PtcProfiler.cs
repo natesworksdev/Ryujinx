@@ -42,9 +42,6 @@ namespace ARMeilleure.Translation.PTC
 
         internal static bool Enabled { get; private set; }
 
-        public static ulong StaticCodeStart { internal get; set; }
-        public static ulong StaticCodeSize  { internal get; set; }
-
         static PtcProfiler()
         {
             _timer = new System.Timers.Timer((double)SaveInterval * 1000d);
@@ -93,7 +90,7 @@ namespace ARMeilleure.Translation.PTC
 
         internal static bool IsAddressInStaticCodeRange(ulong address)
         {
-            return address >= StaticCodeStart && address < StaticCodeStart + StaticCodeSize;
+            return address >= Translator.StaticCodeStart && address < Translator.StaticCodeStart + Translator.StaticCodeSize;
         }
 
         internal static ConcurrentQueue<(ulong address, FuncProfile funcProfile)> GetProfiledFuncsToTranslate(ConcurrentDictionary<ulong, TranslatedFunction> funcs)
@@ -274,7 +271,7 @@ namespace ARMeilleure.Translation.PTC
             {
                 Debug.Assert(stream.Seek(0L, SeekOrigin.Begin) == 0L && stream.Length == 0L);
 
-                stream.Seek((long)Unsafe.SizeOf<Hash128>(), SeekOrigin.Begin);
+                stream.Seek(Unsafe.SizeOf<Hash128>(), SeekOrigin.Begin);
 
                 lock (_lock)
                 {
@@ -285,7 +282,7 @@ namespace ARMeilleure.Translation.PTC
 
                 Debug.Assert(stream.Position == stream.Length);
 
-                stream.Seek((long)Unsafe.SizeOf<Hash128>(), SeekOrigin.Begin);
+                stream.Seek(Unsafe.SizeOf<Hash128>(), SeekOrigin.Begin);
                 Hash128 hash = XXHash128.ComputeHash(GetReadOnlySpan(stream));
 
                 stream.Seek(0L, SeekOrigin.Begin);

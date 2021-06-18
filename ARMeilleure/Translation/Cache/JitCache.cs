@@ -25,8 +25,6 @@ namespace ARMeilleure.Translation.Cache
         private static readonly object _lock = new object();
         private static bool _initialized;
 
-        public static IntPtr Base => _jitRegion.Pointer;
-
         public static void Initialize(IJitMemoryAllocator allocator)
         {
             if (_initialized) return;
@@ -72,6 +70,26 @@ namespace ARMeilleure.Translation.Cache
             }
         }
 
+        public delegate void ModifyCode(Span<byte> code);
+
+        public static unsafe void ModifyMapped(IntPtr funcPtr, int hostSize, ModifyCode modifyCode)
+        {
+            lock (_lock)
+            {
+                Debug.Assert(_initialized);
+
+                int funcOffset = (int)(funcPtr.ToInt64() - _jitRegion.Pointer.ToInt64());
+
+                Debug.Assert(TryFind(funcOffset, out _));
+
+                ReprotectAsWritable(funcOffset, hostSize);
+
+                modifyCode(new(funcPtr.ToPointer(), hostSize));
+
+                ReprotectAsExecutable(funcOffset, hostSize);
+            }
+        }
+
         public static void Unmap(IntPtr pointer)
         {
             lock (_lock)
@@ -80,12 +98,12 @@ namespace ARMeilleure.Translation.Cache
 
                 int funcOffset = (int)(pointer.ToInt64() - _jitRegion.Pointer.ToInt64());
 
-                bool result = TryFind(funcOffset, out CacheEntry entry);
-                Debug.Assert(result);
+                if (TryFind(funcOffset, out CacheEntry entry))
+                {
+                    _cacheAllocator.Free(funcOffset, AlignCodeSize(entry.Size));
 
-                _cacheAllocator.Free(funcOffset, AlignCodeSize(entry.Size));
-
-                Remove(funcOffset);
+                    Remove(funcOffset);
+                }
             }
         }
 

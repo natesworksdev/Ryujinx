@@ -21,6 +21,7 @@ namespace Ryujinx.Common.Logging
         ModLoader,
         Nvdec,
         Ptc,
+        Ttc,
         Service,
         ServiceAcc,
         ServiceAm,

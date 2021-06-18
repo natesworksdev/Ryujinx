@@ -75,6 +75,11 @@ namespace ARMeilleure.IntermediateRepresentation
             return With(OperandKind.Constant, OperandType.I64, value);
         }
 
+        public Operand With(ulong value, Symbol symbol)
+        {
+            return With(OperandKind.Constant, OperandType.I64, value, symbol);
+        }
+
         public Operand With(float value)
         {
             return With(OperandKind.Constant, OperandType.FP32, (ulong)BitConverter.SingleToInt32Bits(value));

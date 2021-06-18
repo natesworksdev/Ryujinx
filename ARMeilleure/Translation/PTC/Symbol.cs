@@ -1,18 +1,20 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 
 namespace ARMeilleure.Translation.PTC
 {
     /// <summary>
     /// Represents a symbol.
     /// </summary>
+    [StructLayout(LayoutKind.Sequential, Pack = 1/*, Size = 9*/)]
     struct Symbol
     {
-        private readonly ulong _value;
-
         /// <summary>
         /// Gets the <see cref="SymbolType"/> of the <see cref="Symbol"/>.
         /// </summary>
         public SymbolType Type { get; }
+
+        private readonly ulong _value;
 
         /// <summary>
         /// Gets the value of the <see cref="Symbol"/>.

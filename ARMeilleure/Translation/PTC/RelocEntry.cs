@@ -1,9 +1,10 @@
+using System.Runtime.InteropServices;
+
 namespace ARMeilleure.Translation.PTC
 {
+    [StructLayout(LayoutKind.Sequential, Pack = 1/*, Size = 13*/)]
     struct RelocEntry
     {
-        public const int Stride = 13; // Bytes.
-
         public int Position;
         public Symbol Symbol;
 

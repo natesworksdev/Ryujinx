@@ -1,6 +1,7 @@
 using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
+using ARMeilleure.Translation.PTC;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitMemoryHelper;
@@ -14,16 +15,34 @@ namespace ARMeilleure.Instructions
         {
             OpCodeAdr op = (OpCodeAdr)context.CurrOp;
 
-            SetIntOrZR(context, op.Rd, Const(op.Address + (ulong)op.Immediate));
+            ulong address = op.Address + (ulong)op.Immediate;
+
+            Operand addressOp = !context.HasTtc
+                ? Const(address)
+                : Const(address, new Symbol(SymbolType.DynFunc, context.GetOffset(address)));
+
+            SetIntOrZR(context, op.Rd, addressOp);
         }
 
         public static void Adrp(ArmEmitterContext context)
         {
             OpCodeAdr op = (OpCodeAdr)context.CurrOp;
 
-            ulong address = (op.Address & ~0xfffUL) + ((ulong)op.Immediate << 12);
+            Operand addressOp;
 
-            SetIntOrZR(context, op.Rd, Const(address));
+            if (!context.HasTtc)
+            {
+                ulong address = (op.Address & ~0xfffUL) + ((ulong)op.Immediate << 12);
+
+                addressOp = Const(address);
+            }
+            else
+            {
+                addressOp = Const(op.Address & ~0xfffUL, new Symbol(SymbolType.DynFuncAdrp, context.GetOffset(op.Address)));
+                addressOp = context.Add(addressOp, Const((ulong)op.Immediate << 12));
+            }
+
+            SetIntOrZR(context, op.Rd, addressOp);
         }
 
         public static void Ldr(ArmEmitterContext context)  => EmitLdr(context, signed: false);
@@ -60,13 +79,17 @@ namespace ARMeilleure.Instructions
                 return;
             }
 
+            Operand address = !context.HasTtc
+                ? Const(op.Immediate)
+                : Const(op.Immediate, new Symbol(SymbolType.DynFunc, context.GetOffset((ulong)op.Immediate)));
+
             if (op.Signed)
             {
-                EmitLoadSx64(context, Const(op.Immediate), op.Rt, op.Size);
+                EmitLoadSx64(context, address, op.Rt, op.Size);
             }
             else
             {
-                EmitLoadZx(context, Const(op.Immediate), op.Rt, op.Size);
+                EmitLoadZx(context, address, op.Rt, op.Size);
             }
         }
 

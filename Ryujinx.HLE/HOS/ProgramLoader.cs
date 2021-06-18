@@ -1,4 +1,4 @@
-using ARMeilleure.Translation.PTC;
+using ARMeilleure.Translation;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Kernel;
@@ -177,8 +177,8 @@ namespace Ryujinx.HLE.HOS
                 }
             }
 
-            PtcProfiler.StaticCodeStart = codeStart;
-            PtcProfiler.StaticCodeSize  = (ulong)codeSize;
+            Translator.StaticCodeStart = codeStart;
+            Translator.StaticCodeSize  = (ulong)codeSize;
 
             int codePagesCount = (int)(codeSize / KPageTableBase.PageSize);
 

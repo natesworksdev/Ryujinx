@@ -14,6 +14,14 @@ namespace Ryujinx.Common
             return $"{High:x16}{Low:x16}";
         }
 
+        public static Hash128 operator ~(Hash128 x)
+        {
+            x.Low = ~x.Low;
+            x.High = ~x.High;
+
+            return x;
+        }
+
         public static bool operator ==(Hash128 x, Hash128 y)
         {
             return x.Equals(y);
