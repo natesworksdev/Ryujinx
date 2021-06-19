@@ -860,6 +860,7 @@ namespace Ryujinx.Ui.Windows
                     {
                         button.Label = pressedButton;
                     }
+
                     _middleMousePressed = false;
 
                     ButtonPressEvent -= MouseClick;
@@ -888,10 +889,7 @@ namespace Ryujinx.Ui.Windows
         private void MouseClick(object sender, ButtonPressEventArgs args)
         {
             _mousePressed = true;
-            if (args.Event.Button == 2)
-            {
-                _middleMousePressed = true;
-            }
+            _middleMousePressed = args.Event.Button == 2;
         }
 
         private void SetProfiles()
