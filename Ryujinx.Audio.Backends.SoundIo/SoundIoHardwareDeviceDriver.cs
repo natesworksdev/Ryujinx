@@ -219,18 +219,29 @@ namespace Ryujinx.Audio.Backends.SoundIo
         {
             if (disposing)
             {
-                lock (_lock)
+                int sessionCount = 0;
+
+                // NOTE: This is done in a way to avoid possible situations when the SoundIoHardwareDeviceSession is already being dispose in another thread but doesn't hold the lock and tries to Unregister.
+                do
                 {
-                    while (_sessions.Count > 0)
+                    lock (_lock)
                     {
+                        if (_sessions.Count == 0)
+                        {
+                            break;
+                        }
+
                         SoundIoHardwareDeviceSession session = _sessions[_sessions.Count - 1];
 
                         session.Dispose();
-                    }
 
-                    _audioContext.Disconnect();
-                    _audioContext.Dispose();
+                        sessionCount = _sessions.Count;
+                    }
                 }
+                while (sessionCount > 0);
+
+                _audioContext.Disconnect();
+                _audioContext.Dispose();
             }
         }
 
