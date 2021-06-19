@@ -187,5 +187,17 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
                 _subChannels[i].ShadowRamControl = control;
             }
         }
+
+        /// <summary>
+        /// Forces a full host state update by marking all state as modfied,
+        /// and also requests all GPU resources in use to be rebound.
+        /// </summary>
+        public void ForceAllDirty()
+        {
+            for (int index = 0; index < _subChannels.Length; index++)
+            {
+                _subChannels[index].ForceAllDirty();
+            }
+        }
     }
 }

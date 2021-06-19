@@ -231,6 +231,21 @@ namespace Ryujinx.Graphics.Gpu.State
         }
 
         /// <summary>
+        /// Forces a full host state update by marking all state as modfied,
+        /// and also requests all GPU resources in use to be rebound.
+        /// </summary>
+        public void ForceAllDirty()
+        {
+            for (int index = 0; index < _registers.Length; index++)
+            {
+                _registers[index].Modified = true;
+            }
+
+            Channel.BufferManager.Rebind();
+            Channel.TextureManager.Rebind();
+        }
+
+        /// <summary>
         /// Checks if a given register has been modified since the last call to this method.
         /// </summary>
         /// <param name="offset">Register offset</param>

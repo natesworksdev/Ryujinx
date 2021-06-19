@@ -65,6 +65,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
         private readonly ConcurrentQueue<CommandBuffer> _commandBufferQueue;
 
         private CommandBuffer _currentCommandBuffer;
+        private GPFifoProcessor _prevChannelProcessor;
 
         private readonly bool _ibEnable;
         private readonly GpuContext _context;
@@ -188,6 +189,14 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
             {
                 _currentCommandBuffer = entry;
                 _currentCommandBuffer.Fetch(_context);
+
+                // If we are changing the current channel,
+                // we need to force all the host state to be updated.
+                if (_prevChannelProcessor != entry.Processor)
+                {
+                    _prevChannelProcessor = entry.Processor;
+                    entry.Processor.ForceAllDirty();
+                }
 
                 entry.Processor.Process(_currentCommandBuffer.Words);
             }

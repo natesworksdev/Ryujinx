@@ -358,6 +358,22 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Forces all textures, samplers, images and render targets to be rebound the next time
+        /// CommitGraphicsBindings is called.
+        /// </summary>
+        public void Rebind()
+        {
+            _gpBindingsManager.Rebind();
+
+            for (int index = 0; index < _rtHostColors.Length; index++)
+            {
+                _rtHostColors[index] = null;
+            }
+
+            _rtHostDs = null;
+        }
+
+        /// <summary>
         /// Disposes the texture manager.
         /// It's an error to use the texture manager after disposal.
         /// </summary>

@@ -128,7 +128,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             _bufferTextures = new List<BufferTextureBinding>();
 
-            context.Methods.BufferCache.NotifyBuffersModified += BuffersModified;
+            context.Methods.BufferCache.NotifyBuffersModified += Rebind;
         }
 
 
@@ -452,7 +452,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             CommitBufferTextureBindings();
 
             // Force rebind after doing compute work.
-            _rebind = true;
+            Rebind();
         }
 
         /// <summary>
@@ -692,9 +692,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
-        /// Requests all buffers to be rebound to account for possible re-creation of buffers currently bound.
+        /// Force all bound textures and images to be rebound the next time CommitBindings is called.
         /// </summary>
-        private void BuffersModified()
+        public void Rebind()
         {
             _rebind = true;
         }
@@ -705,7 +705,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         public void Dispose()
         {
-            _context.Methods.BufferCache.NotifyBuffersModified -= BuffersModified;
+            _context.Methods.BufferCache.NotifyBuffersModified -= Rebind;
         }
     }
 }
