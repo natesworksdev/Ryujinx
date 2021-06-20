@@ -21,6 +21,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Memory;
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 
 namespace Ryujinx.Audio.Output
@@ -258,7 +259,18 @@ namespace Ryujinx.Audio.Output
         {
             if (disposing)
             {
-                // Nothing to do here.
+                // Clone the sessions array to dispose them outside the lock.
+                AudioOutputSystem[] sessions;
+
+                lock (_sessionLock)
+                {
+                    sessions = _sessions.ToArray();
+                }
+
+                foreach (AudioOutputSystem output in sessions)
+                {
+                    output?.Dispose();
+                }
             }
         }
     }
