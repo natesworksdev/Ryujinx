@@ -7,7 +7,6 @@ namespace Ryujinx.HLE.HOS.Services.Spl
     class IRandomInterface : DisposableIpcService
     {
         private RNGCryptoServiceProvider _rng;
-        private bool _isDisposed;
 
         private object _lock = new object();
 

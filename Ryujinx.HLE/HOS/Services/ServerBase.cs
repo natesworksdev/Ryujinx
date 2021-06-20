@@ -42,8 +42,6 @@ namespace Ryujinx.HLE.HOS.Services
         public Func<IpcService> SmObjectFactory { get; }
         public string Name { get; }
 
-        private bool _isActive;
-
         public ServerBase(KernelContext context, string name, Func<IpcService> smObjectFactory = null)
         {
             InitDone = new ManualResetEvent(false);
