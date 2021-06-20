@@ -133,6 +133,8 @@ namespace Ryujinx.Audio.Backends.OpenAL
         {
             if (disposing)
             {
+                _stillRunning = false;
+
                 int sessionCount = 0;
 
                 // NOTE: This is done in a way to avoid possible situations when the OpenALHardwareDeviceSession is already being dispose in another thread but doesn't hold the lock and tries to Unregister.
