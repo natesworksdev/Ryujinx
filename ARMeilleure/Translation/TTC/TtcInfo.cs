@@ -13,9 +13,6 @@ namespace ARMeilleure.Translation.TTC
 
         public TranslatedFunction TranslatedFunc { get; set; }
 
-        public TtcInfo() : base()
-        {
-            IsBusy = true;
-        }
+        public TtcInfo() : base() { }
     }
 }

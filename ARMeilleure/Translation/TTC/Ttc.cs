@@ -4,7 +4,6 @@ using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using System;
 using System.Buffers.Binary;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
@@ -12,66 +11,74 @@ namespace ARMeilleure.Translation.TTC
 {
     static class Ttc
     {
+        private const int MinFuncSizeDyn = 128;
+
         public static bool TryFastTranslateDyn(
             Translator translator,
             ulong address,
             ulong funcSize,
             bool highCq,
-            ref TtcInfo ttcInfo,
+            ref TtcInfo ttcInfoRef,
             out TranslatedFunction translatedFuncDyn)
         {
-            Debug.Assert(ttcInfo == null);
+            ttcInfoRef = null;
             translatedFuncDyn = null;
 
-            if (!Translator.OverlapsWith(address, funcSize, Translator.StaticCodeStart, Translator.StaticCodeSize))
+            if (!Translator.OverlapsWith(address, funcSize, Translator.StaticCodeStart, Translator.StaticCodeSize) && (highCq || funcSize > MinFuncSizeDyn))
             {
                 Hash128 preHash = translator.ComputeHash(address, funcSize);
                 Hash128 hash = highCq ? ~preHash : preHash;
 
-                if (!translator.TtcInfos.TryGetValue(hash, out ttcInfo))
+                if (!translator.TtcInfos.TryGetValue(hash, out TtcInfo ttcInfoOut))
                 {
-                    ttcInfo = new TtcInfo();
+                    TtcInfo ttcInfoNew = new TtcInfo();
 
-                    ttcInfo.LastGuestAddress = address;
-                    ttcInfo.GuestSize = funcSize;
+                    ttcInfoNew.IsBusy = true;
 
-                    if (!translator.TtcInfos.TryAdd(hash, ttcInfo))
+                    ttcInfoNew.LastGuestAddress = address;
+                    ttcInfoNew.GuestSize = funcSize;
+
+                    if (translator.TtcInfos.TryAdd(hash, ttcInfoNew))
                     {
-                        ttcInfo.Dispose();
-
-                        ttcInfo = null;
+                        ttcInfoRef = ttcInfoNew;
                     }
-                }
-                else if (ttcInfo.IsBusy)
-                {
-                    ttcInfo = null;
+                    else
+                    {
+                        ttcInfoNew.Dispose();
+                    }
                 }
                 else
                 {
-                    ttcInfo.IsBusy = true;
-
-                    ttcInfo.LastGuestAddress = address;
-
-                    if (ttcInfo.RelocEntriesCount != 0)
+                    lock (ttcInfoOut)
                     {
-                        RelocEntry[] relocEntries = Ptc.GetRelocEntries(ttcInfo.RelocStream, ttcInfo.RelocEntriesCount, reloadStream: true);
+                        if (!ttcInfoOut.IsBusy)
+                        {
+                            ttcInfoOut.IsBusy = true;
 
-                        JitCache.ModifyMapped(ttcInfo.TranslatedFunc.FuncPtr, ttcInfo.HostSize, (code) => PatchCodeDyn(translator, code, relocEntries, address));
+                            ttcInfoOut.LastGuestAddress = address;
+
+                            if (ttcInfoOut.RelocEntriesCount != 0)
+                            {
+                                RelocEntry[] relocEntries = Ptc.GetRelocEntries(ttcInfoOut.RelocStream, ttcInfoOut.RelocEntriesCount, reloadStream: true);
+
+                                JitCache.ModifyMapped(ttcInfoOut.TranslatedFunc.FuncPtr, ttcInfoOut.HostSize, (code) => PatchCodeDyn(translator, code, relocEntries, address));
+                            }
+
+                            if (ttcInfoOut.TranslatedFunc.CallCounter != null && Volatile.Read(ref ttcInfoOut.TranslatedFunc.CallCounter.Value) > Translator.MinsCallForRejit)
+                            {
+                                Volatile.Write(ref ttcInfoOut.TranslatedFunc.CallCounter.Value, Translator.MinsCallForRejit);
+                            }
+
+                            translatedFuncDyn = ttcInfoOut.TranslatedFunc;
+
+                            Logger.Debug?.Print(LogClass.Ttc,
+                                $"Fast translated dynamic function 0x{preHash} " +
+                                $"(HighCq: {highCq}{(!highCq ? $" [CallCounter: {ttcInfoOut.TranslatedFunc.CallCounter.Value}]" : string.Empty)}, HostSize: {ttcInfoOut.HostSize}) " +
+                                $"| DynFuncs: {translator.TtcInfos.Count}.");
+
+                            return true;
+                        }
                     }
-
-                    if (ttcInfo.TranslatedFunc.CallCounter != null && Volatile.Read(ref ttcInfo.TranslatedFunc.CallCounter.Value) > Translator.MinsCallForRejit)
-                    {
-                        Volatile.Write(ref ttcInfo.TranslatedFunc.CallCounter.Value, Translator.MinsCallForRejit);
-                    }
-
-                    translatedFuncDyn = ttcInfo.TranslatedFunc;
-
-                    Logger.Debug?.Print(LogClass.Ttc,
-                        $"Fast translated dynamic function 0x{preHash} " +
-                        $"(HighCq: {highCq}{(!highCq ? $" [CallCounter: {ttcInfo.TranslatedFunc.CallCounter.Value}]" : string.Empty)}, HostSize: {ttcInfo.HostSize}) " +
-                        $"| DynFuncs: {translator.TtcInfos.Count}.");
-
-                    return true;
                 }
             }
 

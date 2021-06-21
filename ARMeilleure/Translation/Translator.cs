@@ -585,16 +585,24 @@ namespace ARMeilleure.Translation
         {
             ClearRejitQueue(allowRequeue: true);
 
-            foreach (var ttcInfo in TtcInfos.Values)
+            ThreadPool.QueueUserWorkItem((state) =>
             {
-                if (OverlapsWith(ttcInfo.LastGuestAddress, ttcInfo.GuestSize, address, size))
-                {
-                    Functions.TryRemove(ttcInfo.LastGuestAddress, out _);
-                    _oldFuncs.TryRemove(ttcInfo.LastGuestAddress, out _);
+                var (address, size) = ((ulong, ulong))state;
 
-                    ttcInfo.IsBusy = false;
+                foreach (var ttcInfo in TtcInfos.Values)
+                {
+                    lock (ttcInfo)
+                    {
+                        if (OverlapsWith(ttcInfo.LastGuestAddress, ttcInfo.GuestSize, address, size))
+                        {
+                            Functions.TryRemove(ttcInfo.LastGuestAddress, out _);
+                            _oldFuncs.TryRemove(ttcInfo.LastGuestAddress, out _);
+
+                            ttcInfo.IsBusy = false;
+                        }
+                    }
                 }
-            }
+            }, (address, size));
         }
 
         // Ensures that functions queued for rejit are not retranslated, allowing them to be re-queued for rejit or not.
