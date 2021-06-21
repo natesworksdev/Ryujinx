@@ -118,7 +118,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
         public ResultCode TrySelectUserWithoutInteraction(ServiceCtx context)
         {
-            if (context.Device.System.AccountManager.GetUserCount() != 1)
+            if (context.Device.System.AccountManager.GetUserCount() < 1)
             {
                 // Invalid UserId.
                 UserId.Null.Write(context.ResponseData);
