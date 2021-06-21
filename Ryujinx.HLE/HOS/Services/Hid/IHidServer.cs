@@ -763,7 +763,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 NpadIdType.Player8  => 0b0110,
                 NpadIdType.Unknown  => 0b0000,
                 NpadIdType.Handheld => 0b0000,
-                _ => throw new ArgumentOutOfRangeException()
+                _ => throw new ArgumentOutOfRangeException(nameof(npadId))
             };
 
             context.ResponseData.Write(ledPattern);
@@ -818,7 +818,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             if (npadJoyHoldType > NpadJoyHoldType.Horizontal)
             {
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(npadJoyHoldType));
             }
 
             foreach (PlayerIndex playerIndex in context.Device.Hid.Npads.GetSupportedPlayers())
