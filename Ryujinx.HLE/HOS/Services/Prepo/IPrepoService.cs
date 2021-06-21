@@ -31,7 +31,7 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
         // SaveReport(u64, pid, buffer<u8, 9>, buffer<bytes, 5>)
         public ResultCode SaveReport(ServiceCtx context)
         {
-            if (((int)_permission & 1) == 0)
+            if ((_permission & PrepoServicePermissionLevel.User) == 0)
             {
                 return ResultCode.PermissionDenied;
             }
@@ -46,7 +46,7 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
         // SaveReportWithUser(nn::account::Uid, u64, pid, buffer<u8, 9>, buffer<bytes, 5>)
         public ResultCode SaveReportWithUser(ServiceCtx context)
         {
-            if (((int)_permission & 1) == 0)
+            if ((_permission & PrepoServicePermissionLevel.User) == 0)
             {
                 return ResultCode.PermissionDenied;
             }
@@ -80,7 +80,7 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
         // GetSystemSessionId() -> u64
         public ResultCode GetSystemSessionId(ServiceCtx context)
         {
-            if (((int)_permission & 1) == 0)
+            if ((_permission & PrepoServicePermissionLevel.User) == 0)
             {
                 return ResultCode.PermissionDenied;
             }
@@ -103,7 +103,7 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
         // SaveSystemReport(u64, pid, buffer<u8, 9>, buffer<bytes, 5>)
         public ResultCode SaveSystemReport(ServiceCtx context)
         {
-            if (((int)_permission & 2) != 0)
+            if ((_permission & PrepoServicePermissionLevel.System) != 0)
             {
                 return ResultCode.PermissionDenied;
             }
@@ -116,7 +116,7 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
         // SaveSystemReportWithUser(nn::account::Uid, u64, pid, buffer<u8, 9>, buffer<bytes, 5>)
         public ResultCode SaveSystemReportWithUser(ServiceCtx context)
         {
-            if (((int)_permission & 2) != 0)
+            if ((_permission & PrepoServicePermissionLevel.System) != 0)
             {
                 return ResultCode.PermissionDenied;
             }
@@ -162,7 +162,7 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
 
         private string ReadReportBuffer(byte[] buffer, string room, UserId userId)
         {
-            StringBuilder     builder = new StringBuilder();
+            StringBuilder     builder            = new StringBuilder();
             MessagePackObject deserializedReport = MessagePackSerializer.UnpackMessagePackObject(buffer);
 
             builder.AppendLine();
