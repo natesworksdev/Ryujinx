@@ -136,7 +136,7 @@ namespace Ryujinx.Cpu
         }
 
         /// <inheritdoc/>
-        public void Map(ulong va, nuint hostAddress, ulong size)
+        public void Map(ulong va, ulong pa, ulong size)
         {
             AssertValidAddressAndSize(va, size);
 
@@ -389,16 +389,9 @@ namespace Ryujinx.Cpu
         }
 
         /// <inheritdoc/>
-        public IEnumerable<HostMemoryRange> GetPhysicalRegions(ulong va, ulong size)
+        public IEnumerable<MemoryRange> GetPhysicalRegions(ulong va, ulong size)
         {
-            if (size == 0)
-            {
-                return Enumerable.Empty<HostMemoryRange>();
-            }
-
-            AssertMapped(va, size);
-
-            return new HostMemoryRange[] { new HostMemoryRange(_addressSpaceMirror.GetPointer(va, size), size) };
+            throw new NotImplementedException();
         }
 
         /// <inheritdoc/>

@@ -60,11 +60,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             return result;
         }
 
-        public KernelResult UnmapFromProcess(
-            KPageTableBase memoryManager,
-            ulong address,
-            ulong size,
-            KProcess process)
+        public KernelResult UnmapFromProcess(KPageTableBase memoryManager, ulong address, ulong size, KProcess process)
         {
             ulong pagesCountRounded = BitUtils.DivRoundUp(size, KPageTableBase.PageSize);
 
@@ -76,9 +72,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 return KernelResult.InvalidSize;
             }
 
-            var ranges = _storage.GetRanges();
-
-            return memoryManager.UnmapPages(address, pagesCount, ranges, MemoryState.SharedMemory);
+            return memoryManager.UnmapPages(address, pagesCount, pageList, MemoryState.SharedMemory);
         }
     }
 }

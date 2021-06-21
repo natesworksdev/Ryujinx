@@ -73,28 +73,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             }
         }
 
-        public IEnumerable<HostMemoryRange> GetRanges()
-        {
-            if (_borrowerMemory == null)
-            {
-                var ranges = new List<HostMemoryRange>();
-
-                foreach (KPageNode pageNode in _pageList)
-                {
-                    ulong address = pageNode.Address - DramMemoryMap.DramBase;
-                    ulong size = pageNode.PagesCount * KPageTableBase.PageSize;
-
-                    ranges.Add(new HostMemoryRange(_context.Memory.GetPointer(address, size), size));
-                }
-
-                return ranges;
-            }
-            else
-            {
-                return _borrowerMemory.GetPhysicalRegions(_borrowerVa, _size);
-            }
-        }
-
         public KPageList GetPageList()
         {
             return _pageList;
