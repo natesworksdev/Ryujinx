@@ -36,7 +36,7 @@ namespace Ryujinx.Input.HLE
 
                 TouchPoint currentPoint = new TouchPoint
                 {
-                    Attribute = TouchAttribute.End,
+                    Attribute = TouchAttribute.Start,
 
                     X = (uint)touchPosition.X,
                     Y = (uint)touchPosition.Y,
@@ -46,6 +46,11 @@ namespace Ryujinx.Input.HLE
                     DiameterY = 10,
                     Angle = 90
                 };
+
+                _device.Hid.Touchscreen.Update(currentPoint);
+
+                // FIXME: We simulate an end of tap here. We do need a better and more way accurate to handle this.
+                currentPoint.Attribute = TouchAttribute.End;
 
                 _device.Hid.Touchscreen.Update(currentPoint);
 
