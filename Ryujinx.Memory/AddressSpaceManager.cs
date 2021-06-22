@@ -202,7 +202,7 @@ namespace Ryujinx.Memory
             return (int)(vaSpan / PageSize);
         }
 
-        private void ThrowMemoryNotContiguous() => throw new MemoryNotContiguousException();
+        private static void ThrowMemoryNotContiguous() => throw new MemoryNotContiguousException();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsContiguousAndMapped(ulong va, int size) => IsContiguous(va, size) && IsMapped(va);

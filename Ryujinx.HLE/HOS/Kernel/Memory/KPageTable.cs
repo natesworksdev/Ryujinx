@@ -9,8 +9,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
     {
         private readonly IVirtualMemoryManager _cpuMemory;
 
-        public override bool SupportsMemoryAliasing => true;
-
         public KPageTable(KernelContext context, IVirtualMemoryManager cpuMemory) : base(context)
         {
             _cpuMemory = cpuMemory;

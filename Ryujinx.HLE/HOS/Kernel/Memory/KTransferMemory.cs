@@ -94,11 +94,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             if (result == KernelResult.Success)
             {
                 _isMapped = true;
-
-                if (!memoryManager.SupportsMemoryAliasing)
-                {
-                    _storage.Borrow(process, address);
-                }
             }
 
             return result;
