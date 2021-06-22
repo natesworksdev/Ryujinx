@@ -35,6 +35,23 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return resultCode;
         }
 
+        [CommandHipc(307)]
+        // GetNpadSystemExtStyle() -> u64
+        public ResultCode GetNpadSystemExtStyle(ServiceCtx context)
+        {
+            foreach (PlayerIndex playerIndex in context.Device.Hid.Npads.GetSupportedPlayers())
+            {
+                if (HidUtils.GetNpadIdTypeFromIndex(playerIndex) > NpadIdType.Handheld)
+                {
+                    return ResultCode.InvalidNpadIdType;
+                }
+            }
+
+            context.ResponseData.Write((ulong)context.Device.Hid.Npads.SupportedStyleSets);
+
+            return ResultCode.Success;
+        }
+
         [CommandHipc(314)] // 9.0.0+
         // GetAppletFooterUiType(u32) -> u8
         public ResultCode GetAppletFooterUiType(ServiceCtx context)

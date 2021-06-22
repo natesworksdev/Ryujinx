@@ -848,7 +848,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 }
             }
 
-            context.ResponseData.Write((long)context.Device.Hid.Npads.JoyHold);
+            context.ResponseData.Write((ulong)context.Device.Hid.Npads.JoyHold);
 
             return ResultCode.Success;
         }
