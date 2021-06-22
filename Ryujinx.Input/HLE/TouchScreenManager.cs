@@ -1,5 +1,6 @@
 using Ryujinx.HLE;
 using Ryujinx.HLE.HOS.Services.Hid;
+using Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.TouchScreen;
 using System;
 
 namespace Ryujinx.Input.HLE
@@ -35,6 +36,8 @@ namespace Ryujinx.Input.HLE
 
                 TouchPoint currentPoint = new TouchPoint
                 {
+                    Attribute = TouchAttribute.End,
+
                     X = (uint)touchPosition.X,
                     Y = (uint)touchPosition.Y,
 
