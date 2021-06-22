@@ -9,7 +9,10 @@ namespace Ryujinx.Memory
     [SupportedOSPlatform("windows")]
     static class MemoryManagementWindows
     {
+        private const int PageSize = 0x1000;
+
         private static readonly IntPtr InvalidHandleValue = new IntPtr(-1);
+        private static readonly IntPtr CurrentProcessHandle = new IntPtr(-1);
         private static bool UseWin10Placeholders;
 
         private static object _emulatedHandleLock = new object();
@@ -22,6 +25,16 @@ namespace Ryujinx.Memory
             IntPtr dwSize,
             AllocationType flAllocationType,
             MemoryProtection flProtect);
+
+        [DllImport("KernelBase.dll", SetLastError = true)]
+        private static extern IntPtr VirtualAlloc2(
+            IntPtr process,
+            IntPtr lpAddress,
+            IntPtr dwSize,
+            AllocationType flAllocationType,
+            MemoryProtection flProtect,
+            IntPtr extendedParameters,
+            ulong parameterCount);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool VirtualProtect(
@@ -53,10 +66,25 @@ namespace Ryujinx.Memory
             uint dwFileOffsetLow,
             IntPtr dwNumberOfBytesToMap);
 
+        [DllImport("KernelBase.dll", SetLastError = true)]
+        private static extern IntPtr MapViewOfFile3(
+            IntPtr hFileMappingObject,
+            IntPtr process,
+            IntPtr baseAddress,
+            ulong offset,
+            IntPtr dwNumberOfBytesToMap,
+            ulong allocationType,
+            MemoryProtection dwDesiredAccess,
+            IntPtr extendedParameters,
+            ulong parameterCount);
+
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool UnmapViewOfFile(IntPtr lpBaseAddress);
 
-        [DllImport("kernel32.dll", SetLastError = true)]
+        [DllImport("KernelBase.dll", SetLastError = true)]
+        private static extern bool UnmapViewOfFile2(IntPtr process, IntPtr lpBaseAddress, ulong unmapFlags);
+
+        [DllImport("kernel32.dll")]
         private static extern uint GetLastError();
 
         static MemoryManagementWindows()
@@ -69,8 +97,13 @@ namespace Ryujinx.Memory
             return AllocateInternal(size, AllocationType.Reserve | AllocationType.Commit);
         }
 
-        public static IntPtr Reserve(IntPtr size)
+        public static IntPtr Reserve(IntPtr size, bool viewCompatible)
         {
+            if (viewCompatible)
+            {
+                return AllocateInternal2(size, AllocationType.Reserve | AllocationType.ReservePlaceholder);
+            }
+
             return AllocateInternal(size, AllocationType.Reserve);
         }
 
@@ -86,42 +119,71 @@ namespace Ryujinx.Memory
             return ptr;
         }
 
-        public static bool Commit(IntPtr location, IntPtr size)
+        private static IntPtr AllocateInternal2(IntPtr size, AllocationType flags = 0)
         {
-            if (UseWin10Placeholders)
+            IntPtr ptr = VirtualAlloc2(CurrentProcessHandle, IntPtr.Zero, size, flags, MemoryProtection.NoAccess, IntPtr.Zero, 0);
+
+            if (ptr == IntPtr.Zero)
             {
-                lock (_emulatedSharedList)
-                {
-                    foreach (var shared in _emulatedSharedList)
-                    {
-                        if (shared.CommitMap(location, size))
-                        {
-                            return true;
-                        }
-                    }
-                }
+                throw new OutOfMemoryException();
             }
 
+            return ptr;
+        }
+
+        public static bool Commit(IntPtr location, IntPtr size)
+        {
             return VirtualAlloc(location, size, AllocationType.Commit, MemoryProtection.ReadWrite) != IntPtr.Zero;
         }
 
         public static bool Decommit(IntPtr location, IntPtr size)
         {
-            if (UseWin10Placeholders)
-            {
-                lock (_emulatedSharedList)
-                {
-                    foreach (var shared in _emulatedSharedList)
-                    {
-                        if (shared.DecommitMap(location, size))
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-
             return VirtualFree(location, size, AllocationType.Decommit);
+        }
+
+        public static void MapView(IntPtr sharedMemory, ulong srcOffset, IntPtr location, IntPtr size)
+        {
+            IntPtr endLocation = (nint)location + (nint)size;
+
+            while (location != endLocation)
+            {
+                VirtualFree(location, (IntPtr)PageSize, AllocationType.Release | AllocationType.PreservePlaceholder);
+
+                var ptr = MapViewOfFile3(
+                    sharedMemory,
+                    CurrentProcessHandle,
+                    location,
+                    srcOffset,
+                    (IntPtr)PageSize,
+                    0x4000,
+                    MemoryProtection.ReadWrite,
+                    IntPtr.Zero,
+                    0);
+
+                if (ptr == IntPtr.Zero)
+                {
+                    throw new Exception($"MapViewOfFile3 failed with error code 0x{GetLastError():X}.");
+                }
+
+                location += PageSize;
+                srcOffset += PageSize;
+            }
+        }
+
+        public static void UnmapView(IntPtr location, IntPtr size)
+        {
+            IntPtr endLocation = (nint)location + (int)size;
+
+            while (location != endLocation)
+            {
+                bool result = UnmapViewOfFile2(CurrentProcessHandle, location, 2);
+                if (!result)
+                {
+                    throw new Exception($"UnmapViewOfFile2 failed with error code 0x{GetLastError():X}.");
+                }
+
+                location += PageSize;
+            }
         }
 
         public static bool Reprotect(IntPtr address, IntPtr size, MemoryPermission permission)
@@ -194,57 +256,26 @@ namespace Ryujinx.Memory
 
         public static IntPtr CreateSharedMemory(IntPtr size, bool reserve)
         {
-            if (UseWin10Placeholders && reserve)
+            var prot = reserve ? FileMapProtection.SectionReserve : FileMapProtection.SectionCommit;
+
+            IntPtr handle = CreateFileMapping(
+                InvalidHandleValue,
+                IntPtr.Zero,
+                FileMapProtection.PageReadWrite | prot,
+                (uint)(size.ToInt64() >> 32),
+                (uint)size.ToInt64(),
+                null);
+
+            if (handle == IntPtr.Zero)
             {
-                lock (_emulatedHandleLock)
-                {
-                    int handle = GetEmulatedHandle();
-                    _emulatedShared[handle - 1] = new EmulatedSharedMemoryWindows((ulong)size);
-                    _emulatedSharedList.Add(_emulatedShared[handle - 1]);
-
-                    return (IntPtr)handle;
-                }
+                throw new OutOfMemoryException();
             }
-            else
-            {
-                var prot = reserve ? FileMapProtection.SectionReserve : FileMapProtection.SectionCommit;
 
-                IntPtr handle = CreateFileMapping(
-                    InvalidHandleValue,
-                    IntPtr.Zero,
-                    FileMapProtection.PageReadWrite | prot,
-                    (uint)(size.ToInt64() >> 32),
-                    (uint)size.ToInt64(),
-                    null);
-
-                if (handle == IntPtr.Zero)
-                {
-                    throw new OutOfMemoryException();
-                }
-
-                return handle;
-            }
+            return handle;
         }
 
         public static void DestroySharedMemory(IntPtr handle)
         {
-            if (UseWin10Placeholders)
-            {
-                lock (_emulatedHandleLock)
-                {
-                    int iHandle = (int)(ulong)handle;
-
-                    if (EmulatedHandleValid(ref iHandle))
-                    {
-                        _emulatedSharedList.Remove(_emulatedShared[iHandle]);
-                        _emulatedShared[iHandle].Dispose();
-                        _emulatedShared[iHandle] = null;
-
-                        return;
-                    }
-                }
-            }
-
             if (!CloseHandle(handle))
             {
                 throw new ArgumentException("Invalid handle.", nameof(handle));
@@ -253,19 +284,6 @@ namespace Ryujinx.Memory
 
         public static IntPtr MapSharedMemory(IntPtr handle)
         {
-            if (UseWin10Placeholders)
-            {
-                lock (_emulatedHandleLock)
-                {
-                    int iHandle = (int)(ulong)handle;
-
-                    if (EmulatedHandleValid(ref iHandle))
-                    {
-                        return _emulatedShared[iHandle].Map();
-                    }
-                }
-            }
-
             IntPtr ptr = MapViewOfFile(handle, 4 | 2, 0, 0, IntPtr.Zero);
 
             if (ptr == IntPtr.Zero)
@@ -278,20 +296,6 @@ namespace Ryujinx.Memory
 
         public static void UnmapSharedMemory(IntPtr address)
         {
-            if (UseWin10Placeholders)
-            {
-                lock (_emulatedHandleLock)
-                {
-                    foreach (EmulatedSharedMemoryWindows shared in _emulatedSharedList)
-                    {
-                        if (shared.Unmap((ulong)address))
-                        {
-                            return;
-                        }
-                    }
-                }
-            }
-
             if (!UnmapViewOfFile(address))
             {
                 throw new ArgumentException("Invalid address.", nameof(address));

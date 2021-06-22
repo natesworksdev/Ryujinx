@@ -1,11 +1,9 @@
 using Ryujinx.Common;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Process;
-using Ryujinx.Memory.Range;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 
 namespace Ryujinx.HLE.HOS.Kernel.Memory
 {
@@ -72,8 +70,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         private int _contextId;
 
         private MersenneTwister _randomNumberGenerator;
-
-        public abstract bool SupportsMemoryAliasing { get; }
 
         private MemoryFillValue _heapFillValue;
         private MemoryFillValue _ipcFillValue;
@@ -305,7 +301,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             TlsIoRegionStart = tlsIoRegion.Start;
             TlsIoRegionEnd = tlsIoRegion.End;
 
-            // TODO: Check kernel configuration via secure monitor call when implemented to set memory fill values. 
+            // TODO: Check kernel configuration via secure monitor call when implemented to set memory fill values.
 
             _currentHeapAddr = HeapRegionStart;
             _heapCapacity = 0;
@@ -1692,11 +1688,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             bool send,
             out ulong dst)
         {
-            if (!SupportsMemoryAliasing)
-            {
-                throw new NotSupportedException("Memory aliasing not supported, can't map IPC buffers.");
-            }
-
             dst = 0;
 
             if (!_slabManager.CanAllocate(MaxBlocksNeededForInsertion))

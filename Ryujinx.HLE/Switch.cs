@@ -60,7 +60,7 @@ namespace Ryujinx.HLE
 
             AudioDeviceDriver = new CompatLayerHardwareDeviceDriver(configuration.AudioDeviceDriver);
 
-            Memory = new MemoryBlock(configuration.MemoryConfiguration.ToDramSize(), MemoryAllocationFlags.Reserve);
+            Memory = new MemoryBlock(configuration.MemoryConfiguration.ToDramSize(), MemoryAllocationFlags.Reserve | MemoryAllocationFlags.Mirrorable);
 
             Gpu = new GpuContext(configuration.GpuRenderer);
 
