@@ -247,15 +247,13 @@ namespace Ryujinx.HLE.HOS.Ipc
         public (ulong Position, ulong Size) GetBufferType0x21(int index = 0)
         {
             if (PtrBuff.Count > index &&
-                PtrBuff[index].Position != 0 &&
-                PtrBuff[index].Size     != 0)
+                PtrBuff[index].Position != 0)
             {
                 return (PtrBuff[index].Position, PtrBuff[index].Size);
             }
 
             if (SendBuff.Count > index &&
-                SendBuff[index].Position != 0 &&
-                SendBuff[index].Size     != 0)
+                SendBuff[index].Position != 0)
             {
                 return (SendBuff[index].Position, SendBuff[index].Size);
             }
@@ -267,15 +265,13 @@ namespace Ryujinx.HLE.HOS.Ipc
         public (ulong Position, ulong Size) GetBufferType0x22(int index = 0)
         {
             if (RecvListBuff.Count > index &&
-                RecvListBuff[index].Position != 0 &&
-                RecvListBuff[index].Size     != 0)
+                RecvListBuff[index].Position != 0)
             {
                 return (RecvListBuff[index].Position, RecvListBuff[index].Size);
             }
 
             if (ReceiveBuff.Count > index &&
-                ReceiveBuff[index].Position != 0 &&
-                ReceiveBuff[index].Size     != 0)
+                ReceiveBuff[index].Position != 0)
             {
                 return (ReceiveBuff[index].Position, ReceiveBuff[index].Size);
             }
