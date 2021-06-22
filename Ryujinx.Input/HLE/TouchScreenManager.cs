@@ -9,6 +9,7 @@ namespace Ryujinx.Input.HLE
     {
         private readonly IMouse _mouse;
         private Switch _device;
+        private bool _wasClicking;
 
         public TouchScreenManager(IMouse mouse)
         {
@@ -20,10 +21,35 @@ namespace Ryujinx.Input.HLE
             _device = device;
         }
 
-        public bool Update(bool isFocused, float aspectRatio = 0)
+        public bool Update(bool isFocused, bool isClicking = false, float aspectRatio = 0)
         {
-            if (!isFocused)
+            if (!isFocused || (!_wasClicking && !isClicking))
             {
+                // In case we lost focus, send the end touch.
+                if (_wasClicking && !isClicking)
+                {
+                    MouseStateSnapshot snapshot = IMouse.GetMouseStateSnapshot(_mouse);
+                    var touchPosition = IMouse.GetTouchPosition(snapshot.Position, _mouse.ClientSize, aspectRatio);
+
+                    TouchPoint currentPoint = new TouchPoint
+                    {
+                        Attribute = TouchAttribute.End,
+
+                        X = (uint)touchPosition.X,
+                        Y = (uint)touchPosition.Y,
+
+                        // Placeholder values till more data is acquired
+                        DiameterX = 10,
+                        DiameterY = 10,
+                        Angle = 90
+                    };
+
+                    _device.Hid.Touchscreen.Update(currentPoint);
+
+                }
+
+                _wasClicking = false;
+
                 _device.Hid.Touchscreen.Update();
 
                 return false;
@@ -31,12 +57,23 @@ namespace Ryujinx.Input.HLE
 
             if (aspectRatio > 0)
             {
-                var snapshot = IMouse.GetMouseStateSnapshot(_mouse);
+                MouseStateSnapshot snapshot = IMouse.GetMouseStateSnapshot(_mouse);
                 var touchPosition = IMouse.GetTouchPosition(snapshot.Position, _mouse.ClientSize, aspectRatio);
+
+                TouchAttribute attribute = TouchAttribute.None;
+
+                if (!_wasClicking && isClicking)
+                {
+                    attribute = TouchAttribute.Start;
+                }
+                else if (_wasClicking && !isClicking)
+                {
+                    attribute = TouchAttribute.End;
+                }
 
                 TouchPoint currentPoint = new TouchPoint
                 {
-                    Attribute = TouchAttribute.Start,
+                    Attribute = attribute,
 
                     X = (uint)touchPosition.X,
                     Y = (uint)touchPosition.Y,
@@ -49,10 +86,7 @@ namespace Ryujinx.Input.HLE
 
                 _device.Hid.Touchscreen.Update(currentPoint);
 
-                // FIXME: We simulate an end of tap here. We do need a better and more way accurate to handle this.
-                currentPoint.Attribute = TouchAttribute.End;
-
-                _device.Hid.Touchscreen.Update(currentPoint);
+                _wasClicking = isClicking;
 
                 return true;
             }

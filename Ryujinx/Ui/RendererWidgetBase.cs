@@ -481,10 +481,10 @@ namespace Ryujinx.Ui
             // Touchscreen
             bool hasTouch = false;
 
-            // Get screen touch position from left mouse click
-            if (_isFocused && (_inputManager.MouseDriver as GTK3MouseDriver).IsButtonPressed(MouseButton.Button1))
+            // Get screen touch position
+            if (_isFocused)
             {
-                hasTouch = TouchScreenManager.Update(true, ConfigurationState.Instance.Graphics.AspectRatio.Value.ToFloat());
+                hasTouch = TouchScreenManager.Update(true, (_inputManager.MouseDriver as GTK3MouseDriver).IsButtonPressed(MouseButton.Button1), ConfigurationState.Instance.Graphics.AspectRatio.Value.ToFloat());
             }
 
             if (!hasTouch)
