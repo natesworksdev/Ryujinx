@@ -69,7 +69,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 return;
             }
 
-            FlushUboDirty();
+            FlushUboDirty(state.Channel.MemoryManager);
 
             if (copy2D)
             {
@@ -98,8 +98,8 @@ namespace Ryujinx.Graphics.Gpu.Engine
                     dst.MemoryLayout.UnpackGobBlocksInZ(),
                     dstBpp);
 
-                ulong srcBaseAddress = _context.MemoryManager.Translate(cbp.SrcAddress.Pack());
-                ulong dstBaseAddress = _context.MemoryManager.Translate(cbp.DstAddress.Pack());
+                ulong srcBaseAddress = state.Channel.MemoryManager.Translate(cbp.SrcAddress.Pack());
+                ulong dstBaseAddress = state.Channel.MemoryManager.Translate(cbp.DstAddress.Pack());
 
                 (int srcBaseOffset, int srcSize) = srcCalculator.GetRectangleRange(src.RegionX, src.RegionY, cbp.XCount, cbp.YCount);
                 (int dstBaseOffset, int dstSize) = dstCalculator.GetRectangleRange(dst.RegionX, dst.RegionY, cbp.XCount, cbp.YCount);
@@ -112,7 +112,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
                 if (completeSource && completeDest)
                 {
-                    Image.Texture target = TextureCache.FindTexture(dst, cbp, swizzle, dstLinear);
+                    Image.Texture target = TextureCache.FindTexture(state.Channel.MemoryManager, dst, cbp, swizzle, dstLinear);
                     if (target != null)
                     {
                         ReadOnlySpan<byte> data;
@@ -209,13 +209,13 @@ namespace Ryujinx.Graphics.Gpu.Engine
                     swizzle.UnpackComponentSize() == 4)
                 {
                     // Fast path for clears when remap is enabled.
-                    BufferCache.ClearBuffer(cbp.DstAddress, (uint)size * 4, state.Get<uint>(MethodOffset.CopyBufferConstA));
+                    BufferCache.ClearBuffer(state.Channel.MemoryManager, cbp.DstAddress, (uint)size * 4, state.Get<uint>(MethodOffset.CopyBufferConstA));
                 }
                 else
                 {
                     // TODO: Implement remap functionality.
                     // Buffer to buffer copy.
-                    BufferCache.CopyBuffer(cbp.SrcAddress, cbp.DstAddress, (uint)size);
+                    BufferCache.CopyBuffer(state.Channel.MemoryManager, cbp.SrcAddress, cbp.DstAddress, (uint)size);
                 }
             }
         }

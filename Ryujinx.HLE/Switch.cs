@@ -1,6 +1,7 @@
 using Ryujinx.Audio.Backends.CompatLayer;
 using Ryujinx.Audio.Integration;
 using Ryujinx.Graphics.Gpu;
+using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.Graphics.Host1x;
 using Ryujinx.Graphics.Nvdec;
 using Ryujinx.Graphics.Vic;
@@ -23,6 +24,8 @@ namespace Ryujinx.HLE
         internal MemoryBlock Memory { get; }
 
         public GpuContext Gpu { get; }
+
+        internal MemoryManager Smmu { get; }
 
         internal NvMemoryAllocator MemoryAllocator { get; }
 
@@ -71,11 +74,12 @@ namespace Ryujinx.HLE
 
             Gpu = new GpuContext(configuration.GpuRenderer);
 
+            Smmu = new MemoryManager(Gpu);
             MemoryAllocator = new NvMemoryAllocator();
 
             Host1x = new Host1xDevice(Gpu.Synchronization);
-            var nvdec = new NvdecDevice(Gpu.MemoryManager);
-            var vic = new VicDevice(Gpu.MemoryManager);
+            var nvdec = new NvdecDevice(Smmu);
+            var vic = new VicDevice(Smmu);
             Host1x.RegisterDevice(ClassId.Nvdec, nvdec);
             Host1x.RegisterDevice(ClassId.Vic, vic);
 

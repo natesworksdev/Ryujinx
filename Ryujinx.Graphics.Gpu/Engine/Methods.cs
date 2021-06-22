@@ -59,10 +59,6 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
             BufferCache  = new BufferCache(context);
             TextureCache = new TextureCache(context);
-
-            context.MemoryManager.MemoryUnmapped += _counterCache.MemoryUnmappedHandler;
-            context.MemoryManager.MemoryUnmapped += TextureCache.MemoryUnmappedHandler;
-            context.MemoryManager.MemoryUnmapped += BufferCache.MemoryUnmappedHandler;
         }
 
         /// <summary>
@@ -115,6 +111,17 @@ namespace Ryujinx.Graphics.Gpu.Engine
         }
 
         /// <summary>
+        /// Register cache memory unmapped handlers.
+        /// </summary>
+        /// <param name="memoryManager">Memory manager to register the event on</param>
+        public void RegisterMemoryUnmappedHandlers(MemoryManager memoryManager)
+        {
+            memoryManager.MemoryUnmapped += _counterCache.MemoryUnmappedHandler;
+            memoryManager.MemoryUnmapped += TextureCache.MemoryUnmappedHandler;
+            memoryManager.MemoryUnmapped += BufferCache.MemoryUnmappedHandler;
+        }
+
+        /// <summary>
         /// Updates host state based on the current guest GPU state.
         /// </summary>
         /// <param name="state">Guest GPU state</param>
@@ -130,7 +137,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 _prevTfEnable = false;
             }
 
-            FlushUboDirty();
+            FlushUboDirty(state.Channel.MemoryManager);
 
             // Shaders must be the first one to be updated if modified, because
             // some of the other state depends on information from the currently
@@ -379,7 +386,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
                     continue;
                 }
 
-                Texture color = TextureCache.FindOrCreateTexture(colorState, samplesInX, samplesInY, sizeHint);
+                Texture color = TextureCache.FindOrCreateTexture(state.Channel.MemoryManager, colorState, samplesInX, samplesInY, sizeHint);
 
                 changedScale |= state.Channel.TextureManager.SetRenderTargetColor(index, color);
             }
@@ -393,7 +400,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 var dsState = state.Get<RtDepthStencilState>(MethodOffset.RtDepthStencilState);
                 var dsSize  = state.Get<Size3D>(MethodOffset.RtDepthStencilSize);
 
-                depthStencil = TextureCache.FindOrCreateTexture(dsState, dsSize, samplesInX, samplesInY, sizeHint);
+                depthStencil = TextureCache.FindOrCreateTexture(state.Channel.MemoryManager, dsState, dsSize, samplesInX, samplesInY, sizeHint);
             }
 
             changedScale |= state.Channel.TextureManager.SetRenderTargetDepthStencil(depthStencil);

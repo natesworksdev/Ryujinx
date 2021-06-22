@@ -34,7 +34,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
         public event EventHandler<UnmapEventArgs> MemoryUnmapped;
 
-        private GpuContext _context;
+        private readonly GpuContext _context;
 
         /// <summary>
         /// Creates a new instance of the GPU memory manager.

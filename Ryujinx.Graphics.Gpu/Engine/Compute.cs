@@ -16,11 +16,11 @@ namespace Ryujinx.Graphics.Gpu.Engine
         /// <param name="argument">Method call argument</param>
         public void Dispatch(GpuState state, int argument)
         {
-            FlushUboDirty();
+            FlushUboDirty(state.Channel.MemoryManager);
 
             uint qmdAddress = (uint)state.Get<int>(MethodOffset.DispatchParamsAddress);
 
-            var qmd = _context.MemoryManager.Read<ComputeQmd>((ulong)qmdAddress << 8);
+            var qmd = state.Channel.MemoryManager.Read<ComputeQmd>((ulong)qmdAddress << 8);
 
             GpuVa shaderBaseAddress = state.Get<GpuVa>(MethodOffset.ShaderBaseAddress);
 

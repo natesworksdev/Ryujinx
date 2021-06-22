@@ -147,7 +147,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="range">Ranges of physical memory where the data is located</param>
         /// <param name="data">Data to be written</param>
         /// <param name="writeCallback">Callback method that will perform the write</param>
-        private void WriteImpl(MultiRange range, ReadOnlySpan<byte> data, WriteCallback writeCallback)
+        private static void WriteImpl(MultiRange range, ReadOnlySpan<byte> data, WriteCallback writeCallback)
         {
             if (range.Count == 1)
             {

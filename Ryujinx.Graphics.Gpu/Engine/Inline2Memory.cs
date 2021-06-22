@@ -40,7 +40,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 _buffer = new int[count];
             }
 
-            ulong dstBaseAddress = _context.MemoryManager.Translate(_params.DstAddress.Pack());
+            ulong dstBaseAddress = state.Channel.MemoryManager.Translate(_params.DstAddress.Pack());
 
             // Trigger read tracking, to flush any managed resources in the destination region.
             _context.PhysicalMemory.GetSpan(dstBaseAddress, _size, true);
@@ -61,7 +61,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
                 if (_offset * 4 >= _size)
                 {
-                    FinishTransfer();
+                    FinishTransfer(state);
                 }
             }
         }
@@ -69,13 +69,14 @@ namespace Ryujinx.Graphics.Gpu.Engine
         /// <summary>
         /// Performs actual copy of the inline data after the transfer is finished.
         /// </summary>
-        private void FinishTransfer()
+        /// <param name="state">Current GPU state</param>
+        private void FinishTransfer(GpuState state)
         {
             Span<byte> data = MemoryMarshal.Cast<int, byte>(_buffer).Slice(0, _size);
 
             if (_isLinear && _params.LineCount == 1)
             {
-                ulong address = _context.MemoryManager.Translate(_params.DstAddress.Pack());
+                ulong address = state.Channel.MemoryManager.Translate(_params.DstAddress.Pack());
 
                 _context.PhysicalMemory.Write(address, data);
             }
@@ -91,7 +92,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
                 int srcOffset = 0;
 
-                ulong dstBaseAddress = _context.MemoryManager.Translate(_params.DstAddress.Pack());
+                ulong dstBaseAddress = state.Channel.MemoryManager.Translate(_params.DstAddress.Pack());
 
                 for (int y = _params.DstY; y < _params.DstY + _params.LineCount; y++)
                 {

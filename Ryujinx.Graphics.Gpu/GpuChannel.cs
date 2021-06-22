@@ -25,6 +25,11 @@ namespace Ryujinx.Graphics.Gpu
         internal TextureManager TextureManager { get; }
 
         /// <summary>
+        /// Current channel memory manager.
+        /// </summary>
+        internal MemoryManager MemoryManager { get; private set; }
+
+        /// <summary>
         /// Creates a new instance of a GPU channel.
         /// </summary>
         /// <param name="context">GPU context that the channel belongs to</param>
@@ -33,8 +38,18 @@ namespace Ryujinx.Graphics.Gpu
             _context = context;
             _device = context.GPFifo;
             _processor = new GPFifoProcessor(context, this);
-            BufferManager = new BufferManager(context);
+            BufferManager = new BufferManager(context, this);
             TextureManager = new TextureManager(context, this);
+        }
+
+        /// <summary>
+        /// Binds a memory manager to the channel.
+        /// All submited and in-flight commands will use the specified memory manager for any memory operations.
+        /// </summary>
+        /// <param name="memoryManager">The new memory manager to be bound</param>
+        public void BindMemory(MemoryManager memoryManager)
+        {
+            MemoryManager = memoryManager ?? throw new ArgumentNullException(nameof(memoryManager));
         }
 
         /// <summary>

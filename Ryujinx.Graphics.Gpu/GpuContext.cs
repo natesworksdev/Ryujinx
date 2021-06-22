@@ -32,7 +32,7 @@ namespace Ryujinx.Graphics.Gpu
         /// <summary>
         /// GPU memory manager.
         /// </summary>
-        public MemoryManager MemoryManager { get; }
+        // public MemoryManager MemoryManager { get; }
 
         /// <summary>
         /// GPU engine methods processing.
@@ -101,7 +101,7 @@ namespace Ryujinx.Graphics.Gpu
         {
             Renderer = renderer;
 
-            MemoryManager = new MemoryManager(this);
+            // MemoryManager = new MemoryManager(this);
 
             Methods = new Methods(this);
 
@@ -123,6 +123,17 @@ namespace Ryujinx.Graphics.Gpu
         public GpuChannel CreateChannel()
         {
             return new GpuChannel(this);
+        }
+
+        /// <summary>
+        /// Creates a new GPU memory manager.
+        /// </summary>
+        /// <returns>The memory manager</returns>
+        public MemoryManager CreateMemoryManager()
+        {
+            var memoryManager = new MemoryManager(this);
+            Methods.RegisterMemoryUnmappedHandlers(memoryManager);
+            return memoryManager;
         }
 
         /// <summary>

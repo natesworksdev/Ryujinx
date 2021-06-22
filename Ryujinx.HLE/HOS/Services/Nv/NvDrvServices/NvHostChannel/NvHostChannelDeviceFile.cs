@@ -1,7 +1,6 @@
 ﻿using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gpu;
 using Ryujinx.Graphics.Gpu.Memory;
-using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel.Types;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap;
@@ -25,7 +24,8 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
         private readonly IVirtualMemoryManager _memory;
         private readonly NvMemoryAllocator _memoryAllocator;
-        private readonly GpuChannel _channel;
+
+        public GpuChannel Channel { get; }
 
         public enum ResourcePolicy
         {
@@ -49,7 +49,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
             _submitTimeout   = 0;
             _timeslice       = 0;
             _memoryAllocator = _device.MemoryAllocator;
-            _channel         = _device.Gpu.CreateChannel();
+            Channel          = _device.Gpu.CreateChannel();
 
             ChannelSyncpoints = new uint[MaxModuleSyncpoint];
 
@@ -233,7 +233,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
             int                       headerSize           = Unsafe.SizeOf<MapCommandBufferArguments>();
             MapCommandBufferArguments commandBufferHeader  = MemoryMarshal.Cast<byte, MapCommandBufferArguments>(arguments)[0];
             Span<CommandBufferHandle> commandBufferEntries = MemoryMarshal.Cast<byte, CommandBufferHandle>(arguments.Slice(headerSize)).Slice(0, commandBufferHeader.NumEntries);
-            MemoryManager             gmm                  = NvHostAsGpuDeviceFile.GetAddressSpaceContext(Context).Gmm;
+            MemoryManager             smmu                 = Context.Device.Smmu;
 
             foreach (ref CommandBufferHandle commandBufferEntry in commandBufferEntries)
             {
@@ -250,12 +250,12 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
                 {
                     if (map.DmaMapAddress == 0)
                     {
-                        ulong va = _memoryAllocator.GetFreeAddress((ulong) map.Size, out ulong freeAddressStartPosition, 1, MemoryManager.PageSize);
+                        ulong va = _memoryAllocator.GetFreeAddress((ulong)map.Size, out ulong freeAddressStartPosition, 1, MemoryManager.PageSize);
 
                         if (va != NvMemoryAllocator.PteUnmapped && va <= uint.MaxValue && (va + (uint)map.Size) <= uint.MaxValue)
                         {
                             _memoryAllocator.AllocateRange(va, (uint)map.Size, freeAddressStartPosition);
-                            gmm.Map(map.Address, va, (uint)map.Size);
+                            smmu.Map(map.Address, va, (uint)map.Size);
                             map.DmaMapAddress = va;
                         }
                         else
@@ -276,7 +276,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
             int                       headerSize           = Unsafe.SizeOf<MapCommandBufferArguments>();
             MapCommandBufferArguments commandBufferHeader  = MemoryMarshal.Cast<byte, MapCommandBufferArguments>(arguments)[0];
             Span<CommandBufferHandle> commandBufferEntries = MemoryMarshal.Cast<byte, CommandBufferHandle>(arguments.Slice(headerSize)).Slice(0, commandBufferHeader.NumEntries);
-            MemoryManager             gmm                  = NvHostAsGpuDeviceFile.GetAddressSpaceContext(Context).Gmm;
+            MemoryManager             smmu                 = Context.Device.Smmu;
 
             foreach (ref CommandBufferHandle commandBufferEntry in commandBufferEntries)
             {
@@ -431,10 +431,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
             if (header.Flags.HasFlag(SubmitGpfifoFlags.FenceWait) && !_device.System.HostSyncpoint.IsSyncpointExpired(header.Fence.Id, header.Fence.Value))
             {
-                _channel.PushHostCommandBuffer(CreateWaitCommandBuffer(header.Fence));
+                Channel.PushHostCommandBuffer(CreateWaitCommandBuffer(header.Fence));
             }
 
-            _channel.PushEntries(entries);
+            Channel.PushEntries(entries);
 
             header.Fence.Id = _channelSyncpoint.Id;
 
@@ -456,7 +456,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
             if (header.Flags.HasFlag(SubmitGpfifoFlags.FenceIncrement))
             {
-                _channel.PushHostCommandBuffer(CreateIncrementCommandBuffer(ref header.Fence, header.Flags));
+                Channel.PushHostCommandBuffer(CreateIncrementCommandBuffer(ref header.Fence, header.Flags));
             }
 
             header.Flags = SubmitGpfifoFlags.None;
@@ -545,7 +545,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
         public override void Close()
         {
-            _channel.Dispose();
+            Channel.Dispose();
         }
     }
 }
