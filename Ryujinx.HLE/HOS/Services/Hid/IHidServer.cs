@@ -1196,6 +1196,21 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
+        [CommandHipc(211)] // 7.0.0+
+        // IsVibrationDeviceMounted(nn::hid::VibrationDeviceHandle, nn::applet::AppletResourceUserId)
+        public ResultCode IsVibrationDeviceMounted(ServiceCtx context)
+        {
+            int  vibrationDeviceHandle = context.RequestData.ReadInt32();
+            long appletResourceUserId  = context.RequestData.ReadInt64();
+
+            // NOTE: Service use vibrationDeviceHandle to get the PlayerIndex.
+            //       And return false if (npadIdType >= (NpadIdType)8 && npadIdType != NpadIdType.Handheld && npadIdType != NpadIdType.Unknown)
+
+            context.ResponseData.Write(true);
+
+            return ResultCode.Success;
+        }
+
         [CommandHipc(300)]
         // ActivateConsoleSixAxisSensor(nn::applet::AppletResourceUserId)
         public ResultCode ActivateConsoleSixAxisSensor(ServiceCtx context)
