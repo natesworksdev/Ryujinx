@@ -28,7 +28,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="channel">GPU channel that the texture pool belongs to</param>
         /// <param name="address">Address of the texture pool in guest memory</param>
         /// <param name="maximumId">Maximum texture ID of the texture pool (equal to maximum textures minus one)</param>
-        public TexturePool(GpuContext context, GpuChannel channel, ulong address, int maximumId) : base(context, address, maximumId)
+        public TexturePool(GpuContext context, GpuChannel channel, ulong address, int maximumId) : base(context, channel.MemoryManager.Physical, address, maximumId)
         {
             _channel = channel;
         }
@@ -62,7 +62,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 ProcessDereferenceQueue();
 
-                texture = Context.Methods.TextureCache.FindOrCreateTexture(_channel.MemoryManager, TextureSearchFlags.ForSampler, info, layerSize);
+                texture = PhysicalMemory.TextureCache.FindOrCreateTexture(_channel.MemoryManager, TextureSearchFlags.ForSampler, info, layerSize);
 
                 // If this happens, then the texture address is invalid, we can't add it to the cache.
                 if (texture == null)
@@ -153,7 +153,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 if (texture != null)
                 {
-                    TextureDescriptor descriptor = Context.PhysicalMemory.Read<TextureDescriptor>(address);
+                    TextureDescriptor descriptor = PhysicalMemory.Read<TextureDescriptor>(address);
 
                     // If the descriptors are the same, the texture is the same,
                     // we don't need to remove as it was not modified. Just continue.

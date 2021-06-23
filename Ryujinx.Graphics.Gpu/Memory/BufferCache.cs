@@ -18,7 +18,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private const ulong BufferAlignmentSize = 0x1000;
         private const ulong BufferAlignmentMask = BufferAlignmentSize - 1;
 
-        private GpuContext _context;
+        private readonly GpuContext _context;
+        private readonly PhysicalMemory _physicalMemory;
 
         private readonly RangeList<Buffer> _buffers;
 
@@ -32,9 +33,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// Creates a new instance of the buffer manager.
         /// </summary>
         /// <param name="context">The GPU context that the buffer manager belongs to</param>
-        public BufferCache(GpuContext context)
+        /// <param name="physicalMemory">Physical memory where the cached buffers are mapped</param>
+        public BufferCache(GpuContext context, PhysicalMemory physicalMemory)
         {
             _context = context;
+            _physicalMemory = physicalMemory;
 
             _buffers = new RangeList<Buffer>();
 
@@ -181,7 +184,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                         }
                     }
 
-                    Buffer newBuffer = new Buffer(_context, address, endAddress - address, _bufferOverlaps.Take(overlapsCount));
+                    Buffer newBuffer = new Buffer(_context, _physicalMemory, address, endAddress - address, _bufferOverlaps.Take(overlapsCount));
 
                     lock (_buffers)
                     {
@@ -209,7 +212,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             else
             {
                 // No overlap, just create a new buffer.
-                Buffer buffer = new Buffer(_context, address, size);
+                Buffer buffer = new Buffer(_context, _physicalMemory, address, size);
 
                 lock (_buffers)
                 {
@@ -268,7 +271,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 // Optimization: If the data being copied is already in memory, then copy it directly instead of flushing from GPU.
 
                 dstBuffer.ClearModified(dstAddress, size);
-                _context.PhysicalMemory.WriteUntracked(dstAddress, _context.PhysicalMemory.GetSpan(srcAddress, (int)size));
+                memoryManager.Physical.WriteUntracked(dstAddress, memoryManager.Physical.GetSpan(srcAddress, (int)size));
             }
         }
 

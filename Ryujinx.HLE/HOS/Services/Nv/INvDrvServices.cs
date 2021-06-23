@@ -3,7 +3,6 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel;
@@ -568,6 +567,8 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
         public static void Destroy()
         {
+            NvHostChannelDeviceFile.Destroy();
+
             foreach (object entry in DeviceFileIdRegistry.Values)
             {
                 NvDeviceFile deviceFile = (NvDeviceFile)entry;

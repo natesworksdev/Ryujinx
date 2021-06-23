@@ -22,21 +22,6 @@ namespace Ryujinx.Graphics.Gpu.Engine
         private readonly GpuContext _context;
         private readonly ShaderProgramInfo[] _currentProgramInfo;
 
-        /// <summary>
-        /// In-memory shader cache.
-        /// </summary>
-        public ShaderCache ShaderCache { get; }
-
-        /// <summary>
-        /// GPU buffer manager.
-        /// </summary>
-        public BufferCache BufferCache { get; }
-
-        /// <summary>
-        /// GPU texture manager.
-        /// </summary>
-        public TextureCache TextureCache { get; }
-
         private bool _isAnyVbInstanced;
         private bool _vsUsesInstanceId;
         private byte _vsClipDistancesWritten;
@@ -53,12 +38,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
         {
             _context = context;
 
-            ShaderCache = new ShaderCache(_context);
-
             _currentProgramInfo = new ShaderProgramInfo[Constants.ShaderStages];
-
-            BufferCache  = new BufferCache(context);
-            TextureCache = new TextureCache(context);
         }
 
         /// <summary>
@@ -108,17 +88,6 @@ namespace Ryujinx.Graphics.Gpu.Engine
             state.RegisterCallback(MethodOffset.UniformBufferBindTessEvaluation, UniformBufferBindTessEvaluation);
             state.RegisterCallback(MethodOffset.UniformBufferBindGeometry,       UniformBufferBindGeometry);
             state.RegisterCallback(MethodOffset.UniformBufferBindFragment,       UniformBufferBindFragment);
-        }
-
-        /// <summary>
-        /// Register cache memory unmapped handlers.
-        /// </summary>
-        /// <param name="memoryManager">Memory manager to register the event on</param>
-        public void RegisterMemoryUnmappedHandlers(MemoryManager memoryManager)
-        {
-            memoryManager.MemoryUnmapped += _counterCache.MemoryUnmappedHandler;
-            memoryManager.MemoryUnmapped += TextureCache.MemoryUnmappedHandler;
-            memoryManager.MemoryUnmapped += BufferCache.MemoryUnmappedHandler;
         }
 
         /// <summary>
@@ -344,7 +313,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
                     sbDescAddress += (ulong)sbDescOffset;
 
-                    SbDescriptor sbDescriptor = _context.PhysicalMemory.Read<SbDescriptor>(sbDescAddress);
+                    SbDescriptor sbDescriptor = state.Channel.MemoryManager.Physical.Read<SbDescriptor>(sbDescAddress);
 
                     state.Channel.BufferManager.SetGraphicsStorageBuffer(stage, sb.Slot, sbDescriptor.PackAddress(), (uint)sbDescriptor.Size, sb.Flags);
                 }
@@ -359,6 +328,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
         /// <param name="singleUse">If this is not -1, it indicates that only the given indexed target will be used.</param>
         private void UpdateRenderTargetState(GpuState state, bool useControl, int singleUse = -1)
         {
+            var memoryManager = state.Channel.MemoryManager;
             var rtControl = state.Get<RtControl>(MethodOffset.RtControl);
 
             int count = useControl ? rtControl.UnpackCount() : Constants.TotalRenderTargets;
@@ -386,7 +356,12 @@ namespace Ryujinx.Graphics.Gpu.Engine
                     continue;
                 }
 
-                Texture color = TextureCache.FindOrCreateTexture(state.Channel.MemoryManager, colorState, samplesInX, samplesInY, sizeHint);
+                Texture color = memoryManager.Physical.TextureCache.FindOrCreateTexture(
+                    memoryManager,
+                    colorState,
+                    samplesInX,
+                    samplesInY,
+                    sizeHint);
 
                 changedScale |= state.Channel.TextureManager.SetRenderTargetColor(index, color);
             }
@@ -400,7 +375,13 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 var dsState = state.Get<RtDepthStencilState>(MethodOffset.RtDepthStencilState);
                 var dsSize  = state.Get<Size3D>(MethodOffset.RtDepthStencilSize);
 
-                depthStencil = TextureCache.FindOrCreateTexture(state.Channel.MemoryManager, dsState, dsSize, samplesInX, samplesInY, sizeHint);
+                depthStencil = memoryManager.Physical.TextureCache.FindOrCreateTexture(
+                    memoryManager,
+                    dsState,
+                    dsSize,
+                    samplesInX,
+                    samplesInY,
+                    sizeHint);
             }
 
             changedScale |= state.Channel.TextureManager.SetRenderTargetDepthStencil(depthStencil);
@@ -1002,7 +983,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 addressesArray[index] = baseAddress + shader.Offset;
             }
 
-            ShaderBundle gs = ShaderCache.GetGraphicsShader(state, addresses);
+            ShaderBundle gs = state.Channel.MemoryManager.Physical.ShaderCache.GetGraphicsShader(state, addresses);
 
             byte oldVsClipDistancesWritten = _vsClipDistancesWritten;
 

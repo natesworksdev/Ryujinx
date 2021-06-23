@@ -12,8 +12,6 @@ namespace Ryujinx.Graphics.Gpu.Engine
         private const int NsToTicksFractionNumerator   = 384;
         private const int NsToTicksFractionDenominator = 625;
 
-        private readonly CounterCache _counterCache = new CounterCache();
-
         /// <summary>
         /// Writes a GPU counter to guest memory.
         /// </summary>
@@ -105,7 +103,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
                     break;
             }
 
-            _counterCache.AddOrUpdate(gpuVa, counter);
+            state.Channel.MemoryManager.CounterCache.AddOrUpdate(gpuVa, counter);
         }
 
         /// <summary>

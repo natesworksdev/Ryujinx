@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
+using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.Graphics.Gpu.State;
 
 namespace Ryujinx.Graphics.Gpu.Engine
@@ -43,7 +44,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
         /// <returns>True if the value is not zero, false otherwise. Returns host if handling with host conditional rendering</returns>
         private ConditionalRenderEnabled CounterNonZero(GpuState state, ulong gpuVa)
         {
-            ICounterEvent evt = _counterCache.FindEvent(gpuVa);
+            ICounterEvent evt = state.Channel.MemoryManager.CounterCache.FindEvent(gpuVa);
 
             if (evt == null)
             {
@@ -70,8 +71,8 @@ namespace Ryujinx.Graphics.Gpu.Engine
         /// <returns>True if the condition is met, false otherwise. Returns host if handling with host conditional rendering</returns>
         private ConditionalRenderEnabled CounterCompare(GpuState state, ulong gpuVa, bool isEqual)
         {
-            ICounterEvent evt = FindEvent(gpuVa);
-            ICounterEvent evt2 = FindEvent(gpuVa + 16);
+            ICounterEvent evt = FindEvent(state.Channel.MemoryManager.CounterCache, gpuVa);
+            ICounterEvent evt2 = FindEvent(state.Channel.MemoryManager.CounterCache, gpuVa + 16);
 
             bool useHost;
 
@@ -112,11 +113,12 @@ namespace Ryujinx.Graphics.Gpu.Engine
         /// Tries to find a counter that is supposed to be written at the specified address,
         /// returning the related event.
         /// </summary>
+        /// <param name="counterCache">GPU counter cache to search on</param>
         /// <param name="gpuVa">GPU virtual address where the counter is supposed to be written</param>
         /// <returns>The counter event, or null if not present</returns>
-        private ICounterEvent FindEvent(ulong gpuVa)
+        private static ICounterEvent FindEvent(CounterCache counterCache, ulong gpuVa)
         {
-            return _counterCache.FindEvent(gpuVa);
+            return counterCache.FindEvent(gpuVa);
         }
     }
 }

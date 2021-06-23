@@ -8,7 +8,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// This can keep multiple texture pools, and return the current one as needed.
     /// It is useful for applications that uses multiple texture pools.
     /// </summary>
-    class TexturePoolCache : IDisposable
+    class TexturePoolCache
     {
         private const int MaxCapacity = 4;
 
@@ -71,20 +71,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
 
             return pool;
-        }
-
-        /// <summary>
-        /// Disposes the texture pool cache.
-        /// It's an error to use the texture pool cache after disposal.
-        /// </summary>
-        public void Dispose()
-        {
-            foreach (TexturePool pool in _pools)
-            {
-                pool.Dispose();
-            }
-
-            _pools.Clear();
         }
     }
 }

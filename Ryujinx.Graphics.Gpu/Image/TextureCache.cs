@@ -32,6 +32,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         private const int OverlapsBufferMaxCapacity     = 10000;
 
         private readonly GpuContext _context;
+        private readonly PhysicalMemory _physicalMemory;
 
         private readonly MultiRangeList<Texture> _textures;
 
@@ -44,9 +45,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Constructs a new instance of the texture manager.
         /// </summary>
         /// <param name="context">The GPU context that the texture manager belongs to</param>
-        public TextureCache(GpuContext context)
+        /// <param name="physicalMemory">Physical memory where the textures managed by this cache are mapped</param>
+        public TextureCache(GpuContext context, PhysicalMemory physicalMemory)
         {
             _context = context;
+            _physicalMemory = physicalMemory;
 
             _textures = new MultiRangeList<Texture>();
 
@@ -521,7 +524,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 {
                     // Only copy compatible. If there's another choice for a FULLY compatible texture, choose that instead.
 
-                    texture = new Texture(_context, info, sizeInfo, range.Value, scaleMode);
+                    texture = new Texture(_context, _physicalMemory, info, sizeInfo, range.Value, scaleMode);
                     texture.InitializeGroup(true, true);
                     texture.InitializeData(false, false);
 
@@ -557,7 +560,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             // No match, create a new texture.
             if (texture == null)
             {
-                texture = new Texture(_context, info, sizeInfo, range.Value, scaleMode);
+                texture = new Texture(_context, _physicalMemory, info, sizeInfo, range.Value, scaleMode);
 
                 // Step 1: Find textures that are view compatible with the new texture.
                 // Any textures that are incompatible will contain garbage data, so they should be removed where possible.

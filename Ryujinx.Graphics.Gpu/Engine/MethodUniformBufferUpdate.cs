@@ -21,7 +21,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
         {
             if (_ubFollowUpAddress != 0)
             {
-                BufferCache.ForceDirty(memoryManager, _ubFollowUpAddress - _ubByteCount, _ubByteCount);
+                memoryManager.Physical.BufferCache.ForceDirty(memoryManager, _ubFollowUpAddress - _ubByteCount, _ubByteCount);
 
                 _ubFollowUpAddress = 0;
             }
@@ -46,7 +46,8 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 _ubBeginCpuAddress = state.Channel.MemoryManager.Translate(address);
             }
 
-            _context.PhysicalMemory.WriteUntracked(_ubBeginCpuAddress + _ubByteCount, MemoryMarshal.Cast<int, byte>(MemoryMarshal.CreateSpan(ref argument, 1)));
+            var byteData = MemoryMarshal.Cast<int, byte>(MemoryMarshal.CreateSpan(ref argument, 1));
+            state.Channel.MemoryManager.Physical.WriteUntracked(_ubBeginCpuAddress + _ubByteCount, byteData);
 
             _ubFollowUpAddress = address + 4;
             _ubByteCount += 4;
@@ -75,7 +76,8 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 _ubBeginCpuAddress = state.Channel.MemoryManager.Translate(address);
             }
 
-            _context.PhysicalMemory.WriteUntracked(_ubBeginCpuAddress + _ubByteCount, MemoryMarshal.Cast<int, byte>(data));
+            var byteData = MemoryMarshal.Cast<int, byte>(data);
+            state.Channel.MemoryManager.Physical.WriteUntracked(_ubBeginCpuAddress + _ubByteCount, byteData);
 
             _ubFollowUpAddress = address + size;
             _ubByteCount += size;

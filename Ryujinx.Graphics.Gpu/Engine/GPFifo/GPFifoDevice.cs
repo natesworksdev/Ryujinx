@@ -183,7 +183,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
         public void DispatchCalls()
         {
             // Use this opportunity to also dispose any pending channels that were closed.
-            _context.DisposePendingChannels();
+            _context.RunDeferredActions();
 
             // Process command buffers.
             while (_ibEnable && !_interrupt && _commandBufferQueue.TryDequeue(out CommandBuffer entry))

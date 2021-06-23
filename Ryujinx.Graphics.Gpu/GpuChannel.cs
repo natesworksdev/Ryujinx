@@ -2,6 +2,7 @@
 using Ryujinx.Graphics.Gpu.Image;
 using Ryujinx.Graphics.Gpu.Memory;
 using System;
+using System.Threading;
 
 namespace Ryujinx.Graphics.Gpu
 {
@@ -13,6 +14,7 @@ namespace Ryujinx.Graphics.Gpu
         private readonly GpuContext _context;
         private readonly GPFifoDevice _device;
         private readonly GPFifoProcessor _processor;
+        private MemoryManager _memoryManager;
 
         /// <summary>
         /// Channel buffer bindings manager.
@@ -27,7 +29,7 @@ namespace Ryujinx.Graphics.Gpu
         /// <summary>
         /// Current channel memory manager.
         /// </summary>
-        internal MemoryManager MemoryManager { get; private set; }
+        internal MemoryManager MemoryManager => _memoryManager;
 
         /// <summary>
         /// Creates a new instance of a GPU channel.
@@ -49,7 +51,17 @@ namespace Ryujinx.Graphics.Gpu
         /// <param name="memoryManager">The new memory manager to be bound</param>
         public void BindMemory(MemoryManager memoryManager)
         {
-            MemoryManager = memoryManager ?? throw new ArgumentNullException(nameof(memoryManager));
+            var oldMemoryManager = Interlocked.Exchange(ref _memoryManager, memoryManager ?? throw new ArgumentNullException(nameof(memoryManager)));
+
+            memoryManager.Physical.IncrementReferenceCount();
+
+            if (oldMemoryManager != null)
+            {
+                oldMemoryManager.Physical.BufferCache.NotifyBuffersModified -= BufferManager.Rebind;
+                oldMemoryManager.Physical.DecrementReferenceCount();
+            }
+
+            memoryManager.Physical.BufferCache.NotifyBuffersModified += BufferManager.Rebind;
         }
 
         /// <summary>
@@ -77,17 +89,23 @@ namespace Ryujinx.Graphics.Gpu
         /// </summary>
         public void Dispose()
         {
-            _context.DisposedChannels.Enqueue(this);
+            _context.DeferredActions.Enqueue(Destroy);
         }
 
         /// <summary>
         /// Performs disposal of the host GPU resources used by this channel, that are not shared.
         /// This must only be called from the render thread.
         /// </summary>
-        internal void Destroy()
+        private void Destroy()
         {
-            BufferManager.Dispose();
             TextureManager.Dispose();
+
+            var oldMemoryManager = Interlocked.Exchange(ref _memoryManager, null);
+            if (oldMemoryManager != null)
+            {
+                oldMemoryManager.Physical.BufferCache.NotifyBuffersModified -= BufferManager.Rebind;
+                oldMemoryManager.Physical.DecrementReferenceCount();
+            }
         }
     }
 }

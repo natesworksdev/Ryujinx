@@ -131,7 +131,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 _samplerPool.Dispose();
             }
 
-            _samplerPool = new SamplerPool(_context, address, maximumId);
+            _samplerPool = new SamplerPool(_context, _channel.MemoryManager.Physical, address, maximumId);
             _samplerIndex = samplerIndex;
         }
 
@@ -456,12 +456,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>The packed texture and sampler ID (the real texture handle)</returns>
         private int ReadPackedId(int stageIndex, int wordOffset, int textureBufferIndex, int samplerBufferIndex)
         {
-            var bufferManager = _context.Methods.BufferCache;
             ulong textureBufferAddress = _isCompute
                 ? _channel.BufferManager.GetComputeUniformBufferAddress(textureBufferIndex)
                 : _channel.BufferManager.GetGraphicsUniformBufferAddress(stageIndex, textureBufferIndex);
 
-            int handle = _context.PhysicalMemory.Read<int>(textureBufferAddress + (ulong)(wordOffset & HandleMask) * 4);
+            int handle = _channel.MemoryManager.Physical.Read<int>(textureBufferAddress + (ulong)(wordOffset & HandleMask) * 4);
 
             // The "wordOffset" (which is really the immediate value used on texture instructions on the shader)
             // is a 13-bit value. However, in order to also support separate samplers and textures (which uses
@@ -475,7 +474,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     ? _channel.BufferManager.GetComputeUniformBufferAddress(samplerBufferIndex)
                     : _channel.BufferManager.GetGraphicsUniformBufferAddress(stageIndex, samplerBufferIndex);
 
-                handle |= _context.PhysicalMemory.Read<int>(samplerBufferAddress + (ulong)((wordOffset >> HandleHigh) - 1) * 4);
+                handle |= _channel.MemoryManager.Physical.Read<int>(samplerBufferAddress + (ulong)((wordOffset >> HandleHigh) - 1) * 4);
             }
 
             return handle;
@@ -515,7 +514,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         public void Dispose()
         {
             _samplerPool?.Dispose();
-            _texturePoolCache.Dispose();
         }
     }
 }

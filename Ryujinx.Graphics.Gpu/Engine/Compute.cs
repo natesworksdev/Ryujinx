@@ -16,7 +16,9 @@ namespace Ryujinx.Graphics.Gpu.Engine
         /// <param name="argument">Method call argument</param>
         public void Dispatch(GpuState state, int argument)
         {
-            FlushUboDirty(state.Channel.MemoryManager);
+            var memoryManager = state.Channel.MemoryManager;
+
+            FlushUboDirty(memoryManager);
 
             uint qmdAddress = (uint)state.Get<int>(MethodOffset.DispatchParamsAddress);
 
@@ -43,7 +45,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 state.Channel.BufferManager.SetComputeUniformBuffer(index, gpuVa, size);
             }
 
-            ShaderBundle cs = ShaderCache.GetComputeShader(
+            ShaderBundle cs = memoryManager.Physical.ShaderCache.GetComputeShader(
                 state,
                 shaderGpuVa,
                 qmd.CtaThreadDimension0,
@@ -82,7 +84,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
                 cbDescAddress += (ulong)cbDescOffset;
 
-                SbDescriptor cbDescriptor = _context.PhysicalMemory.Read<SbDescriptor>(cbDescAddress);
+                SbDescriptor cbDescriptor = state.Channel.MemoryManager.Physical.Read<SbDescriptor>(cbDescAddress);
 
                 state.Channel.BufferManager.SetComputeUniformBuffer(cb.Slot, cbDescriptor.PackAddress(), (uint)cbDescriptor.Size);
             }
@@ -97,7 +99,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
                 sbDescAddress += (ulong)sbDescOffset;
 
-                SbDescriptor sbDescriptor = _context.PhysicalMemory.Read<SbDescriptor>(sbDescAddress);
+                SbDescriptor sbDescriptor = state.Channel.MemoryManager.Physical.Read<SbDescriptor>(sbDescAddress);
 
                 state.Channel.BufferManager.SetComputeStorageBuffer(sb.Slot, sbDescriptor.PackAddress(), (uint)sbDescriptor.Size, sb.Flags);
             }
