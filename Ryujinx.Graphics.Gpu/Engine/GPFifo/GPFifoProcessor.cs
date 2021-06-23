@@ -189,7 +189,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
         }
 
         /// <summary>
-        /// Forces a full host state update by marking all state as modfied,
+        /// Forces a full host state update by marking all state as modified,
         /// and also requests all GPU resources in use to be rebound.
         /// </summary>
         public void ForceAllDirty()
