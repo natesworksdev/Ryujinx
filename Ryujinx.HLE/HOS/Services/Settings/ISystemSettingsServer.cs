@@ -237,11 +237,13 @@ namespace Ryujinx.HLE.HOS.Services.Settings
         // GetDeviceNickName() -> buffer<nn::settings::system::DeviceNickName, 0x16>
         public ResultCode GetDeviceNickName(ServiceCtx context)
         {
-            // NOTE: If deviceNickNameBuffer is null ResultCode.NullDeviceNicknameBuffer is returned.
-            //       Doesn't occur in our case.
-
             ulong deviceNickNameBufferPosition = context.Request.ReceiveBuff[0].Position;
             ulong deviceNickNameBufferSize     = context.Request.ReceiveBuff[0].Size;
+
+            if (deviceNickNameBufferPosition == 0)
+            {
+                return ResultCode.NullDeviceNicknameBuffer;
+            }
 
             if (deviceNickNameBufferSize != 0x80)
             {

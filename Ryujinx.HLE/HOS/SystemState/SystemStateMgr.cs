@@ -55,9 +55,11 @@ namespace Ryujinx.HLE.HOS.SystemState
 
             DesiredTitleLanguage = language switch
             {
-                SystemLanguage.Taiwanese or SystemLanguage.TraditionalChinese => TitleLanguage.Taiwanese,
-                SystemLanguage.Chinese   or SystemLanguage.SimplifiedChinese  => TitleLanguage.Chinese,
-                _                                                             => Enum.Parse<TitleLanguage>(Enum.GetName(typeof(SystemLanguage), language)),
+                SystemLanguage.Taiwanese or
+                SystemLanguage.TraditionalChinese => TitleLanguage.Taiwanese,
+                SystemLanguage.Chinese or
+                SystemLanguage.SimplifiedChinese  => TitleLanguage.Chinese,
+                _                                 => Enum.Parse<TitleLanguage>(Enum.GetName(typeof(SystemLanguage), language)),
             };
         }
 
