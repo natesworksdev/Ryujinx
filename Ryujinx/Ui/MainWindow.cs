@@ -227,13 +227,8 @@ namespace Ryujinx.Ui
             _gameTable.EnableSearch = true;
             _gameTable.SearchColumn = 2;
             _gameTable.SearchEqualFunc = (model, col, key, iter) => {
-                string[] NameAndTitleId = ((string) model.GetValue(iter, col)).Split("\n");
-                string Name = NameAndTitleId[0];
-                string TitleId = NameAndTitleId[1];
-                return !(
-                    Name.Contains(key, StringComparison.InvariantCultureIgnoreCase)
-                    || TitleId.StartsWith(key, StringComparison.InvariantCultureIgnoreCase)
-                );
+                string NameAndTitleId = ((string) model.GetValue(iter, col));
+                return !NameAndTitleId.Contains(key, StringComparison.InvariantCultureIgnoreCase);
             };
 
             UpdateColumns();
