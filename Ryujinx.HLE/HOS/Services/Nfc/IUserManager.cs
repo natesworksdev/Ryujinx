@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc
         // CreateUserInterface() -> object<nn::nfc::detail::IUser>
         public ResultCode CreateUserInterface(ServiceCtx context)
         {
-            MakeObject(context, new INfc(NfcPermissionLevel.IUser));
+            MakeObject(context, new INfc(NfcPermissionLevel.User));
 
             return ResultCode.Success;
         }

@@ -980,7 +980,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
         {
             // TODO: Find the differencies between IUser and ISystem/IDebug.
 
-            if (_permissionLevel == NfpPermissionLevel.IDebug || _permissionLevel == NfpPermissionLevel.ISystem)
+            if (_permissionLevel == NfpPermissionLevel.Debug || _permissionLevel == NfpPermissionLevel.System)
             {
                 return GetRegisterInfo(context);
             }

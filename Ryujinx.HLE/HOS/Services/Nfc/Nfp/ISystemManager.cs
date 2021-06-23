@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
         // CreateSystemInterface() -> object<nn::nfp::detail::ISystem>
         public ResultCode CreateSystemInterface(ServiceCtx context)
         {
-            MakeObject(context, new INfp(NfpPermissionLevel.ISystem));
+            MakeObject(context, new INfp(NfpPermissionLevel.System));
 
             return ResultCode.Success;
         }

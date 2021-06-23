@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
         // CreateDebugInterface() -> object<nn::nfp::detail::IDebug>
         public ResultCode CreateDebugInterface(ServiceCtx context)
         {
-            MakeObject(context, new INfp(NfpPermissionLevel.IDebug));
+            MakeObject(context, new INfp(NfpPermissionLevel.Debug));
 
             return ResultCode.Success;
         }

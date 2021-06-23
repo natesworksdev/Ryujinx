@@ -2,7 +2,7 @@
 {
     enum NfcPermissionLevel
     {
-        IUser,
-        ISystem
+        User,
+        System
     }
 }

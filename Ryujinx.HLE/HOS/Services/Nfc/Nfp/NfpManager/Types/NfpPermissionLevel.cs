@@ -2,8 +2,8 @@
 {
     enum NfpPermissionLevel
     {
-        IDebug,
-        IUser,
-        ISystem
+        Debug,
+        User,
+        System
     }
 }
