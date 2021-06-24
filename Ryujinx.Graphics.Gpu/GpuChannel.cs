@@ -46,7 +46,7 @@ namespace Ryujinx.Graphics.Gpu
 
         /// <summary>
         /// Binds a memory manager to the channel.
-        /// All submited and in-flight commands will use the specified memory manager for any memory operations.
+        /// All submitted and in-flight commands will use the specified memory manager for any memory operations.
         /// </summary>
         /// <param name="memoryManager">The new memory manager to be bound</param>
         public void BindMemory(MemoryManager memoryManager)
