@@ -191,7 +191,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
                                     {
                                         IGpuAccessor gpuAccessor = new CachedGpuAccessor(_context, entry.Code, entry.Header.GpuAccessorHeader, entry.TextureDescriptors);
 
-                                        program = Translator.CreateContext(0, gpuAccessor, DefaultFlags | TranslationFlags.Compute).Translate(out shaderProgramInfo);
+                                        var options = new TranslationOptions(TargetLanguage.Glsl, TargetApi.OpenGL, DefaultFlags | TranslationFlags.Compute);
+                                        program = Translator.CreateContext(0, gpuAccessor, options).Translate(out shaderProgramInfo);
                                     });
 
                                     task.OnTask(compileTask, (bool _, ShaderCompileTask task) =>
@@ -297,8 +298,11 @@ namespace Ryujinx.Graphics.Gpu.Shader
                                             {
                                                 IGpuAccessor gpuAccessor = new CachedGpuAccessor(_context, entry.Code, entry.Header.GpuAccessorHeader, entry.TextureDescriptors);
 
-                                                TranslatorContext translatorContext = Translator.CreateContext(0, gpuAccessor, flags, counts);
-                                                TranslatorContext translatorContext2 = Translator.CreateContext((ulong)entry.Header.Size, gpuAccessor, flags | TranslationFlags.VertexA, counts);
+                                                var options = new TranslationOptions(TargetLanguage.Glsl, TargetApi.OpenGL, flags);
+                                                var options2 = new TranslationOptions(TargetLanguage.Glsl, TargetApi.OpenGL, flags | TranslationFlags.VertexA);
+
+                                                TranslatorContext translatorContext = Translator.CreateContext(0, gpuAccessor, options, counts);
+                                                TranslatorContext translatorContext2 = Translator.CreateContext((ulong)entry.Header.Size, gpuAccessor, options2, counts);
 
                                                 program = translatorContext.Translate(out shaderProgramInfo, translatorContext2);
                                             }
@@ -322,7 +326,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
                                             {
                                                 IGpuAccessor gpuAccessor = new CachedGpuAccessor(_context, entry.Code, entry.Header.GpuAccessorHeader, entry.TextureDescriptors);
 
-                                                program = Translator.CreateContext(0, gpuAccessor, flags, counts).Translate(out shaderProgramInfo);
+                                                var options = new TranslationOptions(TargetLanguage.Glsl, TargetApi.OpenGL, flags);
+                                                program = Translator.CreateContext(0, gpuAccessor, options, counts).Translate(out shaderProgramInfo);
                                             }
 
                                             shaders[i] = new ShaderCodeHolder(program, shaderProgramInfo, entry.Code);
@@ -847,7 +852,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             GpuAccessor gpuAccessor = new GpuAccessor(_context, state, localSizeX, localSizeY, localSizeZ, localMemorySize, sharedMemorySize);
 
-            return Translator.CreateContext(gpuVa, gpuAccessor, DefaultFlags | TranslationFlags.Compute);
+            var options = new TranslationOptions(TargetLanguage.Glsl, TargetApi.OpenGL, DefaultFlags | TranslationFlags.Compute);
+            return Translator.CreateContext(gpuVa, gpuAccessor, options);
         }
 
         /// <summary>
@@ -876,7 +882,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             GpuAccessor gpuAccessor = new GpuAccessor(_context, state, (int)stage - 1);
 
-            return Translator.CreateContext(gpuVa, gpuAccessor, flags, counts);
+            var options = new TranslationOptions(TargetLanguage.Glsl, TargetApi.OpenGL, flags);
+            return Translator.CreateContext(gpuVa, gpuAccessor, options, counts);
         }
 
         /// <summary>
