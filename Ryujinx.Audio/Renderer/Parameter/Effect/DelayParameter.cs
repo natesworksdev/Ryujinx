@@ -22,7 +22,7 @@ using System.Runtime.InteropServices;
 namespace Ryujinx.Audio.Renderer.Parameter.Effect
 {
     /// <summary>
-    /// <see cref="EffectInParameter.SpecificData"/> for <see cref="Common.EffectType.Delay"/>.
+    /// <see cref="IEffectInParameter.SpecificData"/> for <see cref="Common.EffectType.Delay"/>.
     /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct DelayParameter
@@ -103,7 +103,7 @@ namespace Ryujinx.Audio.Renderer.Parameter.Effect
         /// <returns>Returns true if the <see cref="ChannelCount"/> is valid.</returns>
         public bool IsChannelCountValid()
         {
-            return EffectInParameter.IsChannelCountValid(ChannelCount);
+            return EffectInParameterVersion1.IsChannelCountValid(ChannelCount);
         }
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace Ryujinx.Audio.Renderer.Parameter.Effect
         /// <returns>Returns true if the <see cref="ChannelCountMax"/> is valid.</returns>
         public bool IsChannelCountMaxValid()
         {
-            return EffectInParameter.IsChannelCountValid(ChannelCountMax);
+            return EffectInParameterVersion1.IsChannelCountValid(ChannelCountMax);
         }
     }
 }

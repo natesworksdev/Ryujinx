@@ -1,4 +1,6 @@
 using ARMeilleure.Common;
+using ARMeilleure.Translation.PTC;
+using System.Runtime.CompilerServices;
 
 namespace ARMeilleure.IntermediateRepresentation
 {
@@ -24,14 +26,24 @@ namespace ARMeilleure.IntermediateRepresentation
             return Operand().With(value);
         }
 
-        public static Operand Const(long value, bool relocatable = false, int? index = null)
+        public static Operand Const(long value)
         {
-            return Operand().With(value, relocatable, index);
+            return Operand().With(value);
+        }
+
+        public static Operand Const(long value, Symbol symbol)
+        {
+            return Operand().With(value, symbol);
         }
 
         public static Operand Const(ulong value)
         {
             return Operand().With(value);
+        }
+
+        public static unsafe Operand Const<T>(ref T reference, Symbol symbol = default)
+        {
+            return Operand().With((long)Unsafe.AsPointer(ref reference), symbol);
         }
 
         public static Operand ConstF(float value)

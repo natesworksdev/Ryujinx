@@ -340,10 +340,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="state">Current GPU state</param>
         /// <param name="handle">Shader "fake" handle of the texture</param>
+        /// <param name="cbufSlot">Shader constant buffer slot of the texture</param>
         /// <returns>The texture descriptor</returns>
-        public TextureDescriptor GetComputeTextureDescriptor(GpuState state, int handle)
+        public TextureDescriptor GetComputeTextureDescriptor(GpuState state, int handle, int cbufSlot)
         {
-            return _cpBindingsManager.GetTextureDescriptor(state, 0, handle);
+            return _cpBindingsManager.GetTextureDescriptor(state, 0, handle, cbufSlot);
         }
 
         /// <summary>
@@ -352,10 +353,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="state">Current GPU state</param>
         /// <param name="stageIndex">Index of the shader stage where the texture is bound</param>
         /// <param name="handle">Shader "fake" handle of the texture</param>
+        /// <param name="cbufSlot">Shader constant buffer slot of the texture</param>
         /// <returns>The texture descriptor</returns>
-        public TextureDescriptor GetGraphicsTextureDescriptor(GpuState state, int stageIndex, int handle)
+        public TextureDescriptor GetGraphicsTextureDescriptor(GpuState state, int stageIndex, int handle, int cbufSlot)
         {
-            return _gpBindingsManager.GetTextureDescriptor(state, stageIndex, handle);
+            return _gpBindingsManager.GetTextureDescriptor(state, stageIndex, handle, cbufSlot);
         }
 
         /// <summary>
@@ -474,11 +476,12 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Tries to find an existing texture, or create a new one if not found.
         /// </summary>
         /// <param name="copyTexture">Copy texture to find or create</param>
+        /// <param name="offset">Offset to be added to the physical texture address</param>
         /// <param name="formatInfo">Format information of the copy texture</param>
         /// <param name="preferScaling">Indicates if the texture should be scaled from the start</param>
         /// <param name="sizeHint">A hint indicating the minimum used size for the texture</param>
         /// <returns>The texture</returns>
-        public Texture FindOrCreateTexture(CopyTexture copyTexture, FormatInfo formatInfo, bool preferScaling = true, Size? sizeHint = null)
+        public Texture FindOrCreateTexture(CopyTexture copyTexture, ulong offset, FormatInfo formatInfo, bool preferScaling = true, Size? sizeHint = null)
         {
             int gobBlocksInY = copyTexture.MemoryLayout.UnpackGobBlocksInY();
             int gobBlocksInZ = copyTexture.MemoryLayout.UnpackGobBlocksInZ();
@@ -495,7 +498,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
 
             TextureInfo info = new TextureInfo(
-                copyTexture.Address.Pack(),
+                copyTexture.Address.Pack() + offset,
                 width,
                 copyTexture.Height,
                 copyTexture.Depth,
@@ -1283,7 +1286,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Disposes all textures in the cache.
+        /// Disposes all textures and samplers in the cache.
         /// It's an error to use the texture manager after disposal.
         /// </summary>
         public void Dispose()
@@ -1294,6 +1297,9 @@ namespace Ryujinx.Graphics.Gpu.Image
                 {
                     texture.Dispose();
                 }
+
+                _cpBindingsManager.Dispose();
+                _gpBindingsManager.Dispose();
             }
         }
     }

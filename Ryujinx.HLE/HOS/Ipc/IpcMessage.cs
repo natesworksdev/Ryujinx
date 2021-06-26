@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 
 namespace Ryujinx.HLE.HOS.Ipc
@@ -185,6 +186,53 @@ namespace Ryujinx.HLE.HOS.Ipc
             }
         }
 
+        public byte[] GetBytesTipc()
+        {
+            Debug.Assert(PtrBuff.Count == 0);
+
+            using (MemoryStream ms = new MemoryStream())
+            {
+                BinaryWriter writer = new BinaryWriter(ms);
+
+                int word0;
+                int word1;
+
+                word0 = (int)Type;
+                word0 |= (SendBuff.Count & 0xf) << 20;
+                word0 |= (ReceiveBuff.Count & 0xf) << 24;
+                word0 |= (ExchangeBuff.Count & 0xf) << 28;
+
+                byte[] handleData = new byte[0];
+
+                if (HandleDesc != null)
+                {
+                    handleData = HandleDesc.GetBytes();
+                }
+
+                int dataLength = RawData?.Length ?? 0;
+
+                dataLength = ((dataLength + 3) & ~3) / 4;
+
+                word1 = (dataLength & 0x3ff);
+
+                if (HandleDesc != null)
+                {
+                    word1 |= 1 << 31;
+                }
+
+                writer.Write(word0);
+                writer.Write(word1);
+                writer.Write(handleData);
+
+                if (RawData != null)
+                {
+                    writer.Write(RawData);
+                }
+
+                return ms.ToArray();
+            }
+        }
+
         private long GetPadSize16(long position)
         {
             if ((position & 0xf) != 0)
@@ -196,7 +244,7 @@ namespace Ryujinx.HLE.HOS.Ipc
         }
 
         // ReSharper disable once InconsistentNaming
-        public (long Position, long Size) GetBufferType0x21(int index = 0)
+        public (ulong Position, ulong Size) GetBufferType0x21(int index = 0)
         {
             if (PtrBuff.Count > index &&
                 PtrBuff[index].Position != 0 &&
@@ -216,7 +264,7 @@ namespace Ryujinx.HLE.HOS.Ipc
         }
 
         // ReSharper disable once InconsistentNaming
-        public (long Position, long Size) GetBufferType0x22(int index = 0)
+        public (ulong Position, ulong Size) GetBufferType0x22(int index = 0)
         {
             if (RecvListBuff.Count > index &&
                 RecvListBuff[index].Position != 0 &&

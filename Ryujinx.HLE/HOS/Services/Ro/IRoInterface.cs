@@ -40,7 +40,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
             _owner    = null;
         }
 
-        private ResultCode ParseNrr(out NrrInfo nrrInfo, ServiceCtx context, long nrrAddress, long nrrSize)
+        private ResultCode ParseNrr(out NrrInfo nrrInfo, ServiceCtx context, ulong nrrAddress, ulong nrrSize)
         {
             nrrInfo = null;
 
@@ -71,12 +71,12 @@ namespace Ryujinx.HLE.HOS.Services.Ro
             {
                 byte[] temp = new byte[0x20];
 
-                _owner.CpuMemory.Read((ulong)(nrrAddress + header.HashOffset + (i * 0x20)), temp);
+                _owner.CpuMemory.Read(nrrAddress + header.HashOffset + (uint)(i * 0x20), temp);
 
                 hashes.Add(temp);
             }
 
-            nrrInfo = new NrrInfo(nrrAddress, header, hashes);
+            nrrInfo = new NrrInfo((ulong)nrrAddress, header, hashes);
 
             return ResultCode.Success;
         }
@@ -206,7 +206,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
 
         private ResultCode MapNro(KProcess process, NroInfo info, out ulong nroMappedAddress)
         {
-            KMemoryManager memMgr = process.MemoryManager;
+            KPageTableBase memMgr = process.MemoryManager;
 
             int retryCount = 0;
 
@@ -252,7 +252,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
 
         private bool CanAddGuardRegionsInProcess(KProcess process, ulong baseAddress, ulong size)
         {
-            KMemoryManager memMgr = process.MemoryManager;
+            KPageTableBase memMgr = process.MemoryManager;
 
             KMemoryInfo memInfo = memMgr.QueryMemory(baseAddress - 1);
 
@@ -270,7 +270,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
 
         private ResultCode MapCodeMemoryInProcess(KProcess process, ulong baseAddress, ulong size, out ulong targetAddress)
         {
-            KMemoryManager memMgr = process.MemoryManager;
+            KPageTableBase memMgr = process.MemoryManager;
 
             targetAddress = 0;
 
@@ -327,13 +327,13 @@ namespace Ryujinx.HLE.HOS.Services.Ro
 
             ulong bssStart = dataStart + (ulong)relocatableObject.Data.Length;
 
-            ulong bssEnd = BitUtils.AlignUp(bssStart + (ulong)relocatableObject.BssSize, KMemoryManager.PageSize);
+            ulong bssEnd = BitUtils.AlignUp(bssStart + (ulong)relocatableObject.BssSize, KPageTableBase.PageSize);
 
             process.CpuMemory.Write(textStart, relocatableObject.Text);
             process.CpuMemory.Write(roStart,   relocatableObject.Ro);
             process.CpuMemory.Write(dataStart, relocatableObject.Data);
 
-            MemoryHelper.FillWithZeros(process.CpuMemory, (long)bssStart, (int)(bssEnd - bssStart));
+            MemoryHelper.FillWithZeros(process.CpuMemory, bssStart, (int)(bssEnd - bssStart));
 
             KernelResult result;
 
@@ -354,7 +354,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
             return process.MemoryManager.SetProcessMemoryPermission(dataStart, bssEnd - dataStart, KMemoryPermission.ReadAndWrite);
         }
 
-        private ResultCode RemoveNrrInfo(long nrrAddress)
+        private ResultCode RemoveNrrInfo(ulong nrrAddress)
         {
             foreach (NrrInfo info in _nrrInfos)
             {
@@ -508,8 +508,8 @@ namespace Ryujinx.HLE.HOS.Services.Ro
             // pid placeholder, zero
             context.RequestData.ReadUInt64();
 
-            long nrrAddress = context.RequestData.ReadInt64();
-            long nrrSize    = context.RequestData.ReadInt64();
+            ulong nrrAddress = context.RequestData.ReadUInt64();
+            ulong nrrSize    = context.RequestData.ReadUInt64();
 
             if (result == ResultCode.Success)
             {
@@ -541,7 +541,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
             // pid placeholder, zero
             context.RequestData.ReadUInt64();
 
-            long nrrHeapAddress = context.RequestData.ReadInt64();
+            ulong nrrHeapAddress = context.RequestData.ReadUInt64();
 
             if (result == ResultCode.Success)
             {

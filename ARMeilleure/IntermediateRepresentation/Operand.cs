@@ -1,5 +1,7 @@
+using ARMeilleure.Translation.PTC;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace ARMeilleure.IntermediateRepresentation
@@ -11,11 +13,11 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public ulong Value { get; private set; }
 
-        public bool Relocatable { get; private set; }
-        public int? PtcIndex    { get; private set; }
-
         public List<Node> Assignments { get; }
         public List<Node> Uses        { get; }
+
+        public Symbol Symbol { get; private set; }
+        public bool Relocatable => Symbol.Type != SymbolType.None;
 
         public Operand()
         {
@@ -33,16 +35,14 @@ namespace ARMeilleure.IntermediateRepresentation
             OperandKind kind,
             OperandType type = OperandType.None,
             ulong value = 0,
-            bool relocatable = false,
-            int? index = null)
+            Symbol symbol = default)
         {
             Kind = kind;
             Type = type;
 
             Value = value;
 
-            Relocatable = relocatable;
-            PtcIndex    = index;
+            Symbol = symbol;
 
             Assignments.Clear();
             Uses.Clear();
@@ -60,9 +60,14 @@ namespace ARMeilleure.IntermediateRepresentation
             return With(OperandKind.Constant, OperandType.I32, value);
         }
 
-        public Operand With(long value, bool relocatable = false, int? index = null)
+        public Operand With(long value)
         {
-            return With(OperandKind.Constant, OperandType.I64, (ulong)value, relocatable, index);
+            return With(OperandKind.Constant, OperandType.I64, (ulong)value);
+        }
+
+        public Operand With(long value, Symbol symbol)
+        {
+            return With(OperandKind.Constant, OperandType.I64, (ulong)value, symbol);
         }
 
         public Operand With(ulong value)
@@ -89,6 +94,13 @@ namespace ARMeilleure.IntermediateRepresentation
         public Register GetRegister()
         {
             return new Register((int)Value & 0xffffff, (RegisterType)(Value >> 24));
+        }
+
+        public int GetLocalNumber()
+        {
+            Debug.Assert(Kind == OperandKind.LocalVariable);
+
+            return (int)Value;
         }
 
         public byte AsByte()

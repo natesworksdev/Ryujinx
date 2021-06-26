@@ -49,7 +49,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
         private ulong _tlsAddress;
 
         public ulong TlsAddress => _tlsAddress;
-        public ulong TlsDramAddress { get; private set; }
 
         public KSynchronizationObject[] WaitSyncObjects { get; }
         public int[] WaitSyncHandles { get; }
@@ -159,9 +158,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                     return KernelResult.OutOfMemory;
                 }
 
-                TlsDramAddress = owner.MemoryManager.GetDramAddressFromVa(_tlsAddress);
-
-                MemoryHelper.FillWithZeros(owner.CpuMemory, (long)_tlsAddress, KTlsPageInfo.TlsEntrySize);
+                MemoryHelper.FillWithZeros(owner.CpuMemory, _tlsAddress, KTlsPageInfo.TlsEntrySize);
             }
 
             bool is64Bits;
@@ -991,12 +988,22 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
         public string GetGuestStackTrace()
         {
-            return Owner.Debugger.GetGuestStackTrace(Context);
+            return Owner.Debugger.GetGuestStackTrace(this);
+        }
+
+        public string GetGuestRegisterPrintout()
+        {
+            return Owner.Debugger.GetCpuRegisterPrintout(this);
         }
 
         public void PrintGuestStackTrace()
         {
             Logger.Info?.Print(LogClass.Cpu, $"Guest stack trace:\n{GetGuestStackTrace()}\n");
+        }
+
+        public void PrintGuestRegisterPrintout()
+        {
+            Logger.Info?.Print(LogClass.Cpu, $"Guest CPU registers:\n{GetGuestRegisterPrintout()}\n");
         }
 
         public void AddCpuTime(long ticks)

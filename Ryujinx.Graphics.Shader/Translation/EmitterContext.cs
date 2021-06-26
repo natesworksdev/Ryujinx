@@ -53,15 +53,69 @@ namespace Ryujinx.Graphics.Shader.Translation
             _operations.Add(operation);
         }
 
+        public TextureOperation CreateTextureOperation(
+            Instruction inst,
+            SamplerType type,
+            TextureFlags flags,
+            int handle,
+            int compIndex,
+            Operand dest,
+            params Operand[] sources)
+        {
+            return CreateTextureOperation(inst, type, TextureFormat.Unknown, flags, handle, compIndex, dest, sources);
+        }
+
+        public TextureOperation CreateTextureOperation(
+            Instruction inst,
+            SamplerType type,
+            TextureFormat format,
+            TextureFlags flags,
+            int handle,
+            int compIndex,
+            Operand dest,
+            params Operand[] sources)
+        {
+            if (!flags.HasFlag(TextureFlags.Bindless))
+            {
+                Config.SetUsedTexture(inst, type, format, flags, TextureOperation.DefaultCbufSlot, handle);
+            }
+
+            return new TextureOperation(inst, type, format, flags, handle, compIndex, dest, sources);
+        }
+
         public void FlagAttributeRead(int attribute)
         {
-            if (Config.Stage == ShaderStage.Fragment)
+            if (Config.Stage == ShaderStage.Vertex && attribute == AttributeConsts.InstanceId)
+            {
+                Config.SetUsedFeature(FeatureFlags.InstanceId);
+            }
+            else if (Config.Stage == ShaderStage.Fragment)
             {
                 switch (attribute)
                 {
                     case AttributeConsts.PositionX:
                     case AttributeConsts.PositionY:
                         Config.SetUsedFeature(FeatureFlags.FragCoordXY);
+                        break;
+                }
+            }
+        }
+
+        public void FlagAttributeWritten(int attribute)
+        {
+            if (Config.Stage == ShaderStage.Vertex)
+            {
+                switch (attribute)
+                {
+                    case AttributeConsts.ClipDistance0:
+                    case AttributeConsts.ClipDistance1:
+                    case AttributeConsts.ClipDistance2:
+                    case AttributeConsts.ClipDistance3:
+                    case AttributeConsts.ClipDistance4:
+                    case AttributeConsts.ClipDistance5:
+                    case AttributeConsts.ClipDistance6:
+                    case AttributeConsts.ClipDistance7:
+                        Config.SetClipDistanceWritten((attribute - AttributeConsts.ClipDistance0) / 4);
                         break;
                 }
             }

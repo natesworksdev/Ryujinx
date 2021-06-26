@@ -12,6 +12,8 @@ namespace ARMeilleure.Translation
 {
     class EmitterContext
     {
+        private int _localsCount;
+
         private readonly Dictionary<Operand, BasicBlock> _irLabels;
         private readonly IntrusiveList<BasicBlock> _irBlocks;
 
@@ -23,11 +25,22 @@ namespace ARMeilleure.Translation
 
         public EmitterContext()
         {
+            _localsCount = 0;
+
             _irLabels = new Dictionary<Operand, BasicBlock>();
             _irBlocks = new IntrusiveList<BasicBlock>();
 
             _needsNewBlock = true;
             _nextBlockFreq = BasicBlockFrequency.Default;
+        }
+
+        public Operand AllocateLocal(OperandType type)
+        {
+            Operand local = Local(type);
+
+            local.NumberLocal(++_localsCount);
+
+            return local;
         }
 
         public Operand Add(Operand op1, Operand op2)
@@ -84,33 +97,18 @@ namespace ARMeilleure.Translation
             return Add(Instruction.ByteSwap, Local(op1.Type), op1);
         }
 
-        public Operand Call(MethodInfo info, params Operand[] callArgs)
+        public virtual Operand Call(MethodInfo info, params Operand[] callArgs)
         {
-            if (Ptc.State == PtcState.Disabled)
-            {
-                IntPtr funcPtr = Delegates.GetDelegateFuncPtr(info);
+            IntPtr funcPtr = Delegates.GetDelegateFuncPtr(info);
 
-                OperandType returnType = GetOperandType(info.ReturnType);
+            OperandType returnType = GetOperandType(info.ReturnType);
 
-                Symbols.Add((ulong)funcPtr.ToInt64(), info.Name);
+            Symbols.Add((ulong)funcPtr.ToInt64(), info.Name);
 
-                return Call(Const(funcPtr.ToInt64()), returnType, callArgs);
-            }
-            else
-            {
-                int index = Delegates.GetDelegateIndex(info);
-
-                IntPtr funcPtr = Delegates.GetDelegateFuncPtrByIndex(index);
-
-                OperandType returnType = GetOperandType(info.ReturnType);
-
-                Symbols.Add((ulong)funcPtr.ToInt64(), info.Name);
-
-                return Call(Const(funcPtr.ToInt64(), true, index), returnType, callArgs);
-            }
+            return Call(Const(funcPtr.ToInt64()), returnType, callArgs);
         }
 
-        private static OperandType GetOperandType(Type type)
+        protected static OperandType GetOperandType(Type type)
         {
             if (type == typeof(bool)   || type == typeof(byte)  ||
                 type == typeof(char)   || type == typeof(short) ||
@@ -223,9 +221,10 @@ namespace ARMeilleure.Translation
 
         public Operand Copy(Operand dest, Operand op1)
         {
-            if (dest.Kind != OperandKind.Register)
+            if (dest.Kind != OperandKind.Register &&
+                (dest.Kind != OperandKind.LocalVariable || dest.GetLocalNumber() == 0))
             {
-                throw new ArgumentException($"Invalid dest operand kind \"{dest.Kind}\".");
+                throw new ArgumentException($"Destination operand must be a Register or a numbered LocalVariable.");
             }
 
             return Add(Instruction.Copy, dest, op1);
@@ -670,7 +669,7 @@ namespace ARMeilleure.Translation
 
         public ControlFlowGraph GetControlFlowGraph()
         {
-            return new ControlFlowGraph(_irBlocks.First, _irBlocks);
+            return new ControlFlowGraph(_irBlocks.First, _irBlocks, _localsCount);
         }
     }
 }

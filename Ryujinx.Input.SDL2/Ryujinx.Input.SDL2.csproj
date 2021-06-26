@@ -6,11 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ppy.SDL2-CS" Version="1.0.225-alpha" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Ryujinx.Input\Ryujinx.Input.csproj" />
+    <ProjectReference Include="..\Ryujinx.SDL2.Common\Ryujinx.SDL2.Common.csproj" />
   </ItemGroup>
 
 </Project>

@@ -110,8 +110,6 @@ namespace Ryujinx.Graphics.OpenGL
             GL.ClearBuffer(OpenTK.Graphics.OpenGL.ClearBuffer.Color, index, colors);
 
             RestoreComponentMask(index);
-
-            _framebuffer.SignalModified();
         }
 
         public void ClearRenderTargetDepthStencil(float depthValue, bool depthMask, int stencilValue, int stencilMask)
@@ -154,8 +152,6 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 GL.DepthMask(_depthMask);
             }
-
-            _framebuffer.SignalModified();
         }
 
         public void CopyBuffer(BufferHandle source, BufferHandle destination, int srcOffset, int dstOffset, int size)
@@ -186,11 +182,11 @@ namespace Ryujinx.Graphics.OpenGL
 
             PreDraw();
 
-            if (_primitiveType == PrimitiveType.Quads)
+            if (_primitiveType == PrimitiveType.Quads && !HwCapabilities.SupportsQuads)
             {
                 DrawQuadsImpl(vertexCount, instanceCount, firstVertex, firstInstance);
             }
-            else if (_primitiveType == PrimitiveType.QuadStrip)
+            else if (_primitiveType == PrimitiveType.QuadStrip && !HwCapabilities.SupportsQuads)
             {
                 DrawQuadStripImpl(vertexCount, instanceCount, firstVertex, firstInstance);
             }
@@ -314,7 +310,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             IntPtr indexBaseOffset = _indexBaseOffset + firstIndex * indexElemSize;
 
-            if (_primitiveType == PrimitiveType.Quads)
+            if (_primitiveType == PrimitiveType.Quads && !HwCapabilities.SupportsQuads)
             {
                 DrawQuadsIndexedImpl(
                     indexCount,
@@ -324,7 +320,7 @@ namespace Ryujinx.Graphics.OpenGL
                     firstVertex,
                     firstInstance);
             }
-            else if (_primitiveType == PrimitiveType.QuadStrip)
+            else if (_primitiveType == PrimitiveType.QuadStrip && !HwCapabilities.SupportsQuads)
             {
                 DrawQuadStripIndexedImpl(
                     indexCount,
@@ -1224,8 +1220,6 @@ namespace Ryujinx.Graphics.OpenGL
 
         private void PostDraw()
         {
-            _framebuffer?.SignalModified();
-
             if (_tfEnabled)
             {
                 for (int i = 0; i < Constants.MaxTransformFeedbackBuffers; i++)
@@ -1238,7 +1232,7 @@ namespace Ryujinx.Graphics.OpenGL
             }
         }
 
-        private void RestoreComponentMask(int index)
+        public void RestoreComponentMask(int index)
         {
             // If the bound render target is bgra, swap the red and blue masks.
             uint redMask = _fpIsBgra[index] == 0 ? 1u : 4u;

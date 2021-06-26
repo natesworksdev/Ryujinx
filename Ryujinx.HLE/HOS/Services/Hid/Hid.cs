@@ -3,6 +3,15 @@ using Ryujinx.HLE.Exceptions;
 using Ryujinx.Common.Configuration.Hid;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Ryujinx.Common.Memory;
+using Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory;
+using Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Common;
+using Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Mouse;
+using Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Keyboard;
+using Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.DebugPad;
+using Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.TouchScreen;
+using Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Npad;
+using Ryujinx.HLE.HOS.Kernel.Memory;
 
 namespace Ryujinx.HLE.HOS.Services.Hid
 {
@@ -10,9 +19,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
     {
         private readonly Switch _device;
 
-        private readonly ulong _hidMemoryAddress;
+        private readonly SharedMemoryStorage _storage;
 
-        internal ref HidSharedMemory SharedMemory => ref _device.Memory.GetRef<HidSharedMemory>(_hidMemoryAddress);
+        internal ref SharedMemory SharedMemory => ref _storage.GetRef<SharedMemory>(0);
 
         internal const int SharedMemEntryCount = 17;
 
@@ -22,40 +31,30 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         public KeyboardDevice Keyboard;
         public NpadDevices    Npads;
 
-        static Hid()
+        private static void CheckTypeSizeOrThrow<T>(int expectedSize)
         {
-            if (Unsafe.SizeOf<ShMemDebugPad>() != 0x400)
+            if (Unsafe.SizeOf<T>() != expectedSize)
             {
-                throw new InvalidStructLayoutException<ShMemDebugPad>(0x400);
-            }
-            if (Unsafe.SizeOf<ShMemTouchScreen>() != 0x3000)
-            {
-                throw new InvalidStructLayoutException<ShMemTouchScreen>(0x3000);
-            }
-            if (Unsafe.SizeOf<ShMemKeyboard>() != 0x400)
-            {
-                throw new InvalidStructLayoutException<ShMemKeyboard>(0x400);
-            }
-            if (Unsafe.SizeOf<ShMemMouse>() != 0x400)
-            {
-                throw new InvalidStructLayoutException<ShMemMouse>(0x400);
-            }
-            if (Unsafe.SizeOf<ShMemNpad>() != 0x5000)
-            {
-                throw new InvalidStructLayoutException<ShMemNpad>(0x5000);
-            }
-            if (Unsafe.SizeOf<HidSharedMemory>() != Horizon.HidSize)
-            {
-                throw new InvalidStructLayoutException<HidSharedMemory>(Horizon.HidSize);
+                throw new InvalidStructLayoutException<T>(expectedSize);
             }
         }
 
-        public Hid(in Switch device, ulong sharedHidMemoryAddress)
+        static Hid()
         {
-            _device           = device;
-            _hidMemoryAddress = sharedHidMemoryAddress;
+            CheckTypeSizeOrThrow<RingLifo<DebugPadState>>(0x2c8);
+            CheckTypeSizeOrThrow<RingLifo<TouchScreenState>>(0x2C38);
+            CheckTypeSizeOrThrow<RingLifo<MouseState>>(0x350);
+            CheckTypeSizeOrThrow<RingLifo<KeyboardState>>(0x3D8);
+            CheckTypeSizeOrThrow<Array10<NpadState>>(0x32000);
+            CheckTypeSizeOrThrow<SharedMemory>(Horizon.HidSize);
+        }
 
-            device.Memory.ZeroFill(sharedHidMemoryAddress, Horizon.HidSize);
+        internal Hid(in Switch device, SharedMemoryStorage storage)
+        {
+            _device  = device;
+            _storage = storage;
+
+            SharedMemory = SharedMemory.Create();
         }
 
         public void InitDevices()
@@ -67,7 +66,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             Npads       = new NpadDevices(_device, true);
         }
 
-        internal void RefreshInputConfig(List<InputConfig> inputConfig)
+        public void RefreshInputConfig(List<InputConfig> inputConfig)
         {
             ControllerConfig[] npadConfig = new ControllerConfig[inputConfig.Count];
 
@@ -78,11 +77,6 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             }
 
             _device.Hid.Npads.Configure(npadConfig);
-        }
-
-        internal void RefreshInputConfigEvent(object _, ReactiveEventArgs<List<InputConfig>> args)
-        {
-            RefreshInputConfig(args.NewValue);
         }
 
         public ControllerKeys UpdateStickButtons(JoystickPosition leftStick, JoystickPosition rightStick)
