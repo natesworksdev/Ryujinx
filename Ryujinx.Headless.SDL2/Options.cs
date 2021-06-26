@@ -65,8 +65,10 @@ namespace Ryujinx.Headless.SDL2
         [Option("enable-keyboard", Required = false, Default = false, HelpText = "Enable or disable keyboard support (Independent from controllers binding).")]
         public bool? EnableKeyboard { get; set; }
 
+        [Option("enable-mouse", Required = false, Default = false, HelpText = "Enable or disable mouse support.")]
+        public bool? EnableMouse { get; set; }
+
         [Option("list-input-profiles", Required = false, HelpText = "List inputs profiles.")]
-        // TODO
         public bool? ListInputProfiles { get; set; }
 
         [Option("list-inputs-ids", Required = false, HelpText = "List inputs ids.")]

@@ -50,6 +50,7 @@ namespace Ryujinx.Headless.SDL2
         private static WindowsMultimediaTimerResolution _windowsMultimediaTimerResolution;
         private static List<InputConfig> _inputConfiguration;
         private static bool _enableKeyboard;
+        private static bool _enableMouse;
 
         static void Main(string[] args)
         {
@@ -324,6 +325,7 @@ namespace Ryujinx.Headless.SDL2
 
             _inputConfiguration = new List<InputConfig>();
             _enableKeyboard = (bool)option.EnableKeyboard;
+            _enableMouse = (bool)option.EnableMouse;
 
             void LoadPlayerConfiguration(string inputProfileName, string inputId, PlayerIndex index)
             {
@@ -450,7 +452,7 @@ namespace Ryujinx.Headless.SDL2
 
             DisplaySleep.Prevent();
 
-            _window.Initialize(_emulationContext, _inputConfiguration, _enableKeyboard);
+            _window.Initialize(_emulationContext, _inputConfiguration, _enableKeyboard, _enableMouse);
 
             _window.Execute();
 

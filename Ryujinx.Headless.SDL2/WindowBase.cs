@@ -27,6 +27,7 @@ namespace Ryujinx.Headless.SDL2
         private const int TargetFps = 60;
 
         public NpadManager NpadManager { get; }
+        public TouchScreenManager TouchScreenManager { get; }
         public Switch Device { get; private set; }
         public IRenderer Renderer { get; private set; }
 
@@ -54,6 +55,7 @@ namespace Ryujinx.Headless.SDL2
         {
             _inputManager = inputManager;
             NpadManager = _inputManager.CreateNpadManager();
+            TouchScreenManager = _inputManager.CreateTouchScreenManager();
             _keyboardInterface = (IKeyboard)_inputManager.KeyboardDriver.GetGamepad("0");
             _glLogLevel = glLogLevel;
             _chrono = new Stopwatch();
@@ -63,12 +65,12 @@ namespace Ryujinx.Headless.SDL2
             SDL2Driver.Instance.Initialize();
         }
 
-        public void Initialize(Switch device, List<InputConfig> inputConfigs, bool enableKeyboard)
+        public void Initialize(Switch device, List<InputConfig> inputConfigs, bool enableKeyboard, bool enableMouse)
         {
             Device = device;
             Renderer = Device.Gpu.Renderer;
 
-            NpadManager.Initialize(device, inputConfigs, enableKeyboard);
+            NpadManager.Initialize(device, inputConfigs, enableKeyboard, enableMouse);
         }
 
         private void InitializeWindow()
@@ -203,6 +205,7 @@ namespace Ryujinx.Headless.SDL2
 
         public void Exit()
         {
+            TouchScreenManager?.Dispose();
             NpadManager?.Dispose();
 
             if (_isStopped)
@@ -269,6 +272,7 @@ namespace Ryujinx.Headless.SDL2
             bool hasTouch = false;
 
             // Get screen touch position from left mouse click
+            // TODO: this need to be rewrittne to the unified mouse and touch system.
             if (_mousePressed)
             {
                 float aspectWidth = DefaultHeight * Device.Configuration.AspectRatio.ToFloat();
@@ -428,7 +432,7 @@ namespace Ryujinx.Headless.SDL2
             if (disposing)
             {
                 _isActive = false;
-
+                TouchScreenManager?.Dispose();
                 NpadManager.Dispose();
 
                 SDL2Driver.Instance.UnregisterWindow(_windowId);
