@@ -70,17 +70,6 @@ namespace Ryujinx.Headless.SDL2.OpenGL
                 return new SDL2OpenGLContext(context, windowHandle);
             }
 
-
-            public void Dispose()
-            {
-                SDL_GL_DeleteContext(_context);
-
-                if (_shouldDisposeWindow)
-                {
-                    SDL_DestroyWindow(_window);
-                }
-            }
-
             public void MakeCurrent()
             {
                 if (SDL_GL_GetCurrentContext() == _context || SDL_GL_GetCurrentWindow() == _window)
@@ -97,6 +86,16 @@ namespace Ryujinx.Headless.SDL2.OpenGL
                     Logger.Error?.Print(LogClass.Application, errorMessage);
 
                     throw new Exception(errorMessage);
+                }
+            }
+
+            public void Dispose()
+            {
+                SDL_GL_DeleteContext(_context);
+
+                if (_shouldDisposeWindow)
+                {
+                    SDL_DestroyWindow(_window);
                 }
             }
         }

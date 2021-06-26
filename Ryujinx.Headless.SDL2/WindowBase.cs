@@ -358,27 +358,6 @@ namespace Ryujinx.Headless.SDL2
             Exit();
         }
 
-        public void Dispose()
-        {
-            Dispose(true);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _isActive = false;
-
-                NpadManager.Dispose();
-
-                SDL2Driver.Instance.UnregisterWindow(_windowId);
-
-                SDL_DestroyWindow(WindowHandle);
-
-                SDL2Driver.Instance.Dispose();
-            }
-        }
-
         public bool DisplayInputDialog(SoftwareKeyboardUiArgs args, out string userText)
         {
             // SDL2 doesn't support input dialogs
@@ -437,6 +416,27 @@ namespace Ryujinx.Headless.SDL2
             SDL_ShowMessageBox(ref data, out int _);
 
             return true;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _isActive = false;
+
+                NpadManager.Dispose();
+
+                SDL2Driver.Instance.UnregisterWindow(_windowId);
+
+                SDL_DestroyWindow(WindowHandle);
+
+                SDL2Driver.Instance.Dispose();
+            }
         }
     }
 }

@@ -89,6 +89,7 @@ namespace Ryujinx.Headless.SDL2
                 else
                 {
                     Logger.Info?.Print(LogClass.Application, $"{index} not configured");
+
                     return null;
                 }
             }
@@ -317,6 +318,7 @@ namespace Ryujinx.Headless.SDL2
             if (option.InputPath == null)
             {
                 Logger.Error?.Print(LogClass.Application, "Please provide a file to load");
+
                 return;
             }
 
