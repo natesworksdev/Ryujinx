@@ -39,7 +39,7 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
 
             ResultCode resultCode = ResultCode.InvalidPid;
 
-            if (context.Process.Pid != 0)
+            if (context.Request.HandleDesc.PId != 0)
             {
                 if ((_permissionFlag & 0x40) == 0)
                 {

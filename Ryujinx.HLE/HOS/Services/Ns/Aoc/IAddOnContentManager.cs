@@ -25,7 +25,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
         public ResultCode CountAddOnContent(ServiceCtx context)
         {
             // NOTE: Call 0 uses the TitleId instead of the Pid.
-            long pid = context.Process.Pid;
+            long pid = context.Request.HandleDesc.PId;
 
             // NOTE: Service call sys:set GetQuestFlag and store it internally.
             //       If QuestFlag is true, counts some extra titles.
@@ -51,7 +51,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
         public ResultCode ListAddOnContent(ServiceCtx context)
         {
             // NOTE: Call 1 uses the TitleId instead of the Pid.
-            long pid = context.Process.Pid;
+            long pid = context.Request.HandleDesc.PId;
 
             // NOTE: Service call sys:set GetQuestFlag and store it internally.
             //       If QuestFlag is true, counts some extra titles.
@@ -95,7 +95,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
         public ResultCode GetAddonContentBaseId(ServiceCtx context)
         {
             // NOTE: Call 4 uses the TitleId instead of the Pid.
-            long pid = context.Process.Pid;
+            long pid = context.Request.HandleDesc.PId;
 
             ResultCode resultCode = GetAddOnContentBaseIdImpl(context, pid);
 
@@ -110,7 +110,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
         public ResultCode PrepareAddOnContent(ServiceCtx context)
         {
             // NOTE: Call 6 use the TitleId instead of the Pid.
-            long pid   = context.Process.Pid;
+            long pid   = context.Request.HandleDesc.PId;
             uint index = context.RequestData.ReadUInt32();
 
             ResultCode resultCode = GetAddOnContentBaseIdImpl(context, pid);
@@ -140,7 +140,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
         public ResultCode GetAddOnContentLostErrorCode(ServiceCtx context)
         {
             // NOTE: 0x7D0A4 -> 2164-1000
-            ulong lostErrorCode = (0x7D0A4 & 0x1FF | (((0x7D0A4 >> 9) & 0x1FFF) << 32)) + 2000;
+            ulong lostErrorCode = (0x7D0A4UL & 0x1FF | (((0x7D0A4UL >> 9) & 0x1FFF) << 32)) + 2000;
 
             context.ResponseData.Write(lostErrorCode);
 
@@ -151,7 +151,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
         // GetAddOnContentListChangedEventWithProcessId(pid) -> handle<copy>
         public ResultCode GetAddOnContentListChangedEventWithProcessId(ServiceCtx context)
         {
-            long pid = context.Process.Pid;
+            long pid = context.Request.HandleDesc.PId;
 
             // TODO: Found where stored value is used.
             ResultCode resultCode = GetAddOnContentBaseIdImpl(context, pid);
