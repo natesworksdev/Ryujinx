@@ -37,14 +37,10 @@ namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
                 return resultCode;
             }
 
-            bool runtimeAddOnContentInstall = context.Device.Application.ControlData.Value.RuntimeAddOnContentInstall != 0;
-            if (runtimeAddOnContentInstall)
-            {
-                // TODO: This should use _addOnContentBaseId;
-                uint aocCount = (uint)context.Device.System.ContentManager.GetAocCount();
+            // TODO: This should use _addOnContentBaseId;
+            uint aocCount = (uint)context.Device.System.ContentManager.GetAocCount();
 
-                context.ResponseData.Write(aocCount);
-            }
+            context.ResponseData.Write(aocCount);
 
             return ResultCode.Success;
         }
@@ -83,9 +79,9 @@ namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
 
             GetAddOnContentBaseIdImpl(context, pid);
 
-            for (int i = 0; i < aocCount; ++i)
+            for (int i = 0; i < aocCount; i++)
             {
-                context.Memory.Write(bufferPosition + (ulong)i * 4, (int)(aocTitleIds[i + (int)startIndex] - _addOnContentBaseId));
+                context.Memory.Write(bufferPosition + (ulong)i * 4, (uint)(aocTitleIds[i + (int)startIndex] - _addOnContentBaseId));
             }
 
             context.ResponseData.Write(aocCount);
