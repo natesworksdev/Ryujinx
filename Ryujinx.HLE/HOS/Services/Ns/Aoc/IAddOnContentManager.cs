@@ -140,9 +140,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
         public ResultCode GetAddOnContentLostErrorCode(ServiceCtx context)
         {
             // NOTE: 0x7D0A4 -> 2164-1000
-            ulong lostErrorCode = (0x7D0A4UL & 0x1FF | (((0x7D0A4UL >> 9) & 0x1FFF) << 32)) + 2000;
-
-            context.ResponseData.Write(lostErrorCode);
+            context.ResponseData.Write(GetAddOnContentLostErrorCodeImpl(0x7D0A4));
 
             return ResultCode.Success;
         }
@@ -219,6 +217,11 @@ namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(addOnContentListChangedEventHandle);
 
             return ResultCode.Success;
+        }
+
+        private static ulong GetAddOnContentLostErrorCodeImpl(int errorCode)
+        {
+            return ((ulong)errorCode & 0x1FF | ((((ulong)errorCode >> 9) & 0x1FFF) << 32)) + 2000;
         }
     }
 }
