@@ -241,6 +241,16 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
             return (ResultCode)_apmSystemManagerServer.GetCurrentPerformanceConfiguration(context);
         }
 
+        [CommandHipc(300)] // 9.0.0+
+        // GetSettingsPlatformRegion() -> u8
+        public ResultCode GetSettingsPlatformRegion(ServiceCtx context)
+        {
+            // FIXME: Call set:sys GetPlatformRegion
+            context.ResponseData.Write((byte)context.Device.System.State.DesiredRegionCode);
+
+            return ResultCode.Success;
+        }
+
         [CommandHipc(900)] // 11.0.0+
         // SetRequestExitToLibraryAppletAtExecuteNextProgramEnabled()
         public ResultCode SetRequestExitToLibraryAppletAtExecuteNextProgramEnabled(ServiceCtx context)
