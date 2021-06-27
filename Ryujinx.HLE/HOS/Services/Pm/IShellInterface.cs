@@ -11,9 +11,9 @@
         {
             // FIXME: This is wrong but needed to make hb loader works
             // TODO: Change this when we will have a way to process via a PM like interface.
-            long pid = context.Request.HandleDesc.PId;
+            long pid = context.Process.Pid;
 
-            context.ResponseData.Write((ulong)pid);
+            context.ResponseData.Write(pid);
 
             return ResultCode.Success;
         }

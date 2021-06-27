@@ -20,112 +20,83 @@ namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
         }
 
         [CommandHipc(0)] // 1.0.0-6.2.0
+        // CountAddOnContentByApplicationId(u64 title_id) -> u32
+        public ResultCode CountAddOnContentByApplicationId(ServiceCtx context)
+        {
+            ulong titleId = context.RequestData.ReadUInt64();
+
+            return CountAddOnContentImpl(context, titleId);
+        }
+
+        [CommandHipc(1)] // 1.0.0-6.2.0
+        // ListAddOnContentByApplicationId(u64 title_id, u32 start_index, u32 buffer_size) -> (u32 count, buffer<u32>)
+        public ResultCode ListAddOnContentByApplicationId(ServiceCtx context)
+        {
+            ulong titleId = context.RequestData.ReadUInt64();
+
+            return ListAddContentImpl(context, titleId);
+        }
+
         [CommandHipc(2)]
         // CountAddOnContent(pid) -> u32
         public ResultCode CountAddOnContent(ServiceCtx context)
         {
-            // NOTE: Call 0 uses the TitleId instead of the Pid.
             long pid = context.Request.HandleDesc.PId;
 
-            // NOTE: Service call sys:set GetQuestFlag and store it internally.
-            //       If QuestFlag is true, counts some extra titles.
+            // NOTE: Service call arp:r GetApplicationLaunchProperty to get TitleId using the PId.
 
-            ResultCode resultCode = GetAddOnContentBaseIdImpl(context, pid);
-
-            if (resultCode != ResultCode.Success)
-            {
-                return resultCode;
-            }
-
-            // TODO: This should use _addOnContentBaseId;
-            uint aocCount = (uint)context.Device.System.ContentManager.GetAocCount();
-
-            context.ResponseData.Write(aocCount);
-
-            return ResultCode.Success;
+            return CountAddOnContentImpl(context, context.Device.Application.TitleId);
         }
 
-        [CommandHipc(1)] // 1.0.0-6.2.0
         [CommandHipc(3)]
         // ListAddOnContent(u32 start_index, u32 buffer_size, pid) -> (u32 count, buffer<u32>)
         public ResultCode ListAddOnContent(ServiceCtx context)
         {
-            // NOTE: Call 1 uses the TitleId instead of the Pid.
             long pid = context.Request.HandleDesc.PId;
 
-            // NOTE: Service call sys:set GetQuestFlag and store it internally.
-            //       If QuestFlag is true, counts some extra titles.
+            // NOTE: Service call arp:r GetApplicationLaunchProperty to get TitleId using the PId.
 
-            uint  startIndex     = context.RequestData.ReadUInt32();
-            uint  bufferSize     = context.RequestData.ReadUInt32();
-            ulong bufferPosition = context.Request.ReceiveBuff[0].Position;
-
-            // TODO: This should use _addOnContentBaseId;
-            uint aocCount = (uint)context.Device.System.ContentManager.GetAocCount();
-
-            if (aocCount - startIndex > bufferSize)
-            {
-                return ResultCode.InvalidBufferSize;
-            }
-
-            if (aocCount <= startIndex)
-            {
-                context.ResponseData.Write(0);
-
-                return ResultCode.Success;
-            }
-
-            IList<ulong> aocTitleIds = context.Device.System.ContentManager.GetAocTitleIds();
-
-            GetAddOnContentBaseIdImpl(context, pid);
-
-            for (int i = 0; i < aocCount; i++)
-            {
-                context.Memory.Write(bufferPosition + (ulong)i * 4, (uint)(aocTitleIds[i + (int)startIndex] - _addOnContentBaseId));
-            }
-
-            context.ResponseData.Write(aocCount);
-
-            return ResultCode.Success;
+            return ListAddContentImpl(context, context.Device.Application.TitleId);
         }
 
         [CommandHipc(4)] // 1.0.0-6.2.0
+        // GetAddOnContentBaseIdByApplicationId(u64 title_id) -> u64
+        public ResultCode GetAddOnContentBaseIdByApplicationId(ServiceCtx context)
+        {
+            ulong titleId = context.RequestData.ReadUInt64();
+
+            return GetAddOnContentBaseIdImpl(context, titleId);
+        }
+
         [CommandHipc(5)]
         // GetAddOnContentBaseId(pid) -> u64
-        public ResultCode GetAddonContentBaseId(ServiceCtx context)
+        public ResultCode GetAddOnContentBaseId(ServiceCtx context)
         {
-            // NOTE: Call 4 uses the TitleId instead of the Pid.
             long pid = context.Request.HandleDesc.PId;
 
-            ResultCode resultCode = GetAddOnContentBaseIdImpl(context, pid);
+            // NOTE: Service call arp:r GetApplicationLaunchProperty to get TitleId using the PId.
 
-            context.ResponseData.Write(_addOnContentBaseId);
-
-            return resultCode;
+            return GetAddOnContentBaseIdImpl(context, context.Device.Application.TitleId);
         }
 
         [CommandHipc(6)] // 1.0.0-6.2.0
+        // PrepareAddOnContentByApplicationId(u64 title_id, u32 index)
+        public ResultCode PrepareAddOnContentByApplicationId(ServiceCtx context)
+        {
+            ulong titleId = context.RequestData.ReadUInt64();
+
+            return PrepareAddOnContentImpl(context, titleId);
+        }
+
         [CommandHipc(7)]
         // PrepareAddOnContent(u32 index, pid)
         public ResultCode PrepareAddOnContent(ServiceCtx context)
         {
-            // NOTE: Call 6 use the TitleId instead of the Pid.
-            long pid   = context.Request.HandleDesc.PId;
-            uint index = context.RequestData.ReadUInt32();
+            long pid = context.Request.HandleDesc.PId;
 
-            ResultCode resultCode = GetAddOnContentBaseIdImpl(context, pid);
+            // NOTE: Service call arp:r GetApplicationLaunchProperty to get TitleId using the PId.
 
-            if (resultCode != ResultCode.Success)
-            {
-                return resultCode;
-            }
-
-            // TODO: Service calls ns:am RegisterContentsExternalKey?, GetOwnedApplicationContentMetaStatus? etc...
-            //       Ideally, this should probably initialize the AocData values for the specified index
-
-            Logger.Stub?.PrintStub(LogClass.ServiceNs, new { index });
-
-            return ResultCode.Success;
+            return PrepareAddOnContentImpl(context, context.Device.Application.TitleId);
         }
 
         [CommandHipc(8)] // 4.0.0+
@@ -152,7 +123,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
             long pid = context.Request.HandleDesc.PId;
 
             // TODO: Found where stored value is used.
-            ResultCode resultCode = GetAddOnContentBaseIdImpl(context, pid);
+            ResultCode resultCode = GetAddOnContentBaseIdFromTitleId(context, context.Device.Application.TitleId);
             
             if (resultCode != ResultCode.Success)
             {
@@ -191,18 +162,103 @@ namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
             return ResultCode.Success;
         }
 
-        private ResultCode GetAddOnContentBaseIdImpl(ServiceCtx context, long pid)
+        private ResultCode CountAddOnContentImpl(ServiceCtx context, ulong titleId)
         {
-            // NOTE: Service calls arp:r GetApplicationControlProperty to get AddOnContentBaseId using pid,
-            //       If the call fails, calls arp:r GetApplicationLaunchProperty to get App TitleId using pid,
+            // NOTE: Service call sys:set GetQuestFlag and store it internally.
+            //       If QuestFlag is true, counts some extra titles.
+
+            ResultCode resultCode = GetAddOnContentBaseIdFromTitleId(context, titleId);
+
+            if (resultCode != ResultCode.Success)
+            {
+                return resultCode;
+            }
+
+            // TODO: This should use _addOnContentBaseId;
+            uint aocCount = (uint)context.Device.System.ContentManager.GetAocCount();
+
+            context.ResponseData.Write(aocCount);
+
+            return ResultCode.Success;
+        }
+
+        private ResultCode ListAddContentImpl(ServiceCtx context, ulong titleId)
+        {
+            // NOTE: Service call sys:set GetQuestFlag and store it internally.
+            //       If QuestFlag is true, counts some extra titles.
+
+            uint  startIndex     = context.RequestData.ReadUInt32();
+            uint  bufferSize     = context.RequestData.ReadUInt32();
+            ulong bufferPosition = context.Request.ReceiveBuff[0].Position;
+
+            // TODO: This should use _addOnContentBaseId;
+            uint aocCount = (uint)context.Device.System.ContentManager.GetAocCount();
+
+            if (aocCount - startIndex > bufferSize)
+            {
+                return ResultCode.InvalidBufferSize;
+            }
+
+            if (aocCount <= startIndex)
+            {
+                context.ResponseData.Write(0);
+
+                return ResultCode.Success;
+            }
+
+            IList<ulong> aocTitleIds = context.Device.System.ContentManager.GetAocTitleIds();
+
+            GetAddOnContentBaseIdFromTitleId(context, titleId);
+
+            for (int i = 0; i < aocCount; i++)
+            {
+                context.Memory.Write(bufferPosition + (ulong)i * 4, (uint)(aocTitleIds[i + (int)startIndex] - _addOnContentBaseId));
+            }
+
+            context.ResponseData.Write(aocCount);
+
+            return ResultCode.Success;
+        }
+
+        private ResultCode GetAddOnContentBaseIdImpl(ServiceCtx context, ulong titleId)
+        {
+            ResultCode resultCode = GetAddOnContentBaseIdFromTitleId(context, titleId);
+
+            context.ResponseData.Write(_addOnContentBaseId);
+
+            return resultCode;
+        }
+
+        private ResultCode GetAddOnContentBaseIdFromTitleId(ServiceCtx context, ulong titleId)
+        {
+            // NOTE: Service calls arp:r GetApplicationControlProperty to get AddOnContentBaseId using TitleId,
             //       If the call fails, it returns ResultCode.InvalidPid.
 
             _addOnContentBaseId = context.Device.Application.ControlData.Value.AddOnContentBaseId;
 
             if (_addOnContentBaseId == 0)
             {
-                _addOnContentBaseId = context.Device.Application.TitleId + 0x1000;
+                _addOnContentBaseId = titleId + 0x1000;
             }
+
+            return ResultCode.Success;
+        }
+
+        private ResultCode PrepareAddOnContentImpl(ServiceCtx context, ulong titleId)
+        {
+            uint index = context.RequestData.ReadUInt32();
+
+            ResultCode resultCode = GetAddOnContentBaseIdFromTitleId(context, context.Device.Application.TitleId);
+
+            if (resultCode != ResultCode.Success)
+            {
+                return resultCode;
+            }
+
+            // TODO: Service calls ns:am RegisterContentsExternalKey?, GetOwnedApplicationContentMetaStatus? etc...
+            //       Ideally, this should probably initialize the AocData values for the specified index
+
+            Logger.Stub?.PrintStub(LogClass.ServiceNs, new { index });
 
             return ResultCode.Success;
         }
