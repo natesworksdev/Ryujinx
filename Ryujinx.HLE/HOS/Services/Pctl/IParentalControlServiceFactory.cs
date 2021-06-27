@@ -21,7 +21,6 @@ namespace Ryujinx.HLE.HOS.Services.Pctl
         {
             long pid = context.Request.HandleDesc.PId;
 
-            // TODO: Should pass the pid.
             MakeObject(context, new IParentalControlService(context, pid, true, _permissionFlag));
 
             return ResultCode.Success;
