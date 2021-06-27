@@ -122,6 +122,8 @@ namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
         {
             long pid = context.Request.HandleDesc.PId;
 
+            // NOTE: Service call arp:r GetApplicationLaunchProperty to get TitleId using the PId.
+
             // TODO: Found where stored value is used.
             ResultCode resultCode = GetAddOnContentBaseIdFromTitleId(context, context.Device.Application.TitleId);
             
