@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         {
             if (context.Device.Application.TitleId == 0x0100000000001009)
             {
-                // Add MiiEdit to standalone data list.
+                // Create MiiEdit data.
                 _appletStandalone = new AppletStandalone()
                 {
                     AppletId          = AppletId.MiiEdit,
