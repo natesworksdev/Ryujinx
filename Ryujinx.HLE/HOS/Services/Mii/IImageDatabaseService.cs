@@ -14,7 +14,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
         // Initialize(b8) -> b8
         public ResultCode Initialize(ServiceCtx context)
         {
-            // TODO: Service uses MiiImage:/database.dat if true, seems use hardcoded data if false.
+            // TODO: Service uses MiiImage:/database.dat if true, seems to use hardcoded data if false.
             bool useHardcodedData = context.RequestData.ReadBoolean();
 
             _imageCount = 0;

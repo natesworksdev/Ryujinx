@@ -1,27 +1,31 @@
 ﻿using Ryujinx.Common;
-using System.Collections.Generic;
+using System;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.LibraryAppletProxy
 {
     class ILibraryAppletSelfAccessor : IpcService
     {
-        private Dictionary<ulong, AppletStandalone> _appletStandalone = new Dictionary<ulong, AppletStandalone>();
+        private AppletStandalone _appletStandalone = new AppletStandalone();
 
         public ILibraryAppletSelfAccessor(ServiceCtx context)
         {
             if (context.Device.Application.TitleId == 0x0100000000001009)
             {
                 // Add MiiEdit to standalone data list.
-                _appletStandalone.Add(context.Device.Application.TitleId, new AppletStandalone()
+                _appletStandalone = new AppletStandalone()
                 {
-                    AppletId = AppletId.MiiEdit,
+                    AppletId          = AppletId.MiiEdit,
                     LibraryAppletMode = LibraryAppletMode.AllForeground
-                });
+                };
 
                 byte[] miiEditInputData = new byte[0x100];
                 miiEditInputData[0] = 0x03; // Hardcoded unknown value.
 
-                _appletStandalone[context.Device.Application.TitleId].InputData.Enqueue(miiEditInputData);
+                _appletStandalone.InputData.Enqueue(miiEditInputData);
+            }
+            else
+            {
+                throw new NotImplementedException($"{context.Device.Application.TitleId} applet is not implemented.");
             }
         }
 
@@ -29,7 +33,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         // PopInData() -> object<nn::am::service::IStorage>
         public ResultCode PopInData(ServiceCtx context)
         {
-            byte[] appletData = _appletStandalone[context.Device.Application.TitleId].InputData.Dequeue();
+            byte[] appletData = _appletStandalone.InputData.Dequeue();
 
             if (appletData.Length == 0)
             {
@@ -47,8 +51,8 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         {
             LibraryAppletInfo libraryAppletInfo = new LibraryAppletInfo()
             {
-                AppletId          = _appletStandalone[context.Device.Application.TitleId].AppletId,
-                LibraryAppletMode = _appletStandalone[context.Device.Application.TitleId].LibraryAppletMode
+                AppletId          = _appletStandalone.AppletId,
+                LibraryAppletMode = _appletStandalone.LibraryAppletMode
             };
 
             context.ResponseData.WriteStruct(libraryAppletInfo);

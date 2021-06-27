@@ -279,7 +279,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
             // NOTE: If miiAuthorId is null ResultCode.NullMiiAuthorIdBuffer is returned.
             //       Doesn't occur in our case.
 
-            UInt128 miiAuthorId = new UInt128("5279754d69694e780000000000000000"); // RyuMiiNx
+            UInt128 miiAuthorId = Mii.Helper.GetDeviceId();
 
             miiAuthorId.Write(context.ResponseData);
 
