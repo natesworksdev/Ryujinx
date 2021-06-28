@@ -2,7 +2,6 @@
 {
     class OpCode32SimdRegMultLong : OpCode32SimdReg
     {
-
         public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdRegMultLong(inst, address, opCode);
 
         public OpCode32SimdRegMultLong(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)

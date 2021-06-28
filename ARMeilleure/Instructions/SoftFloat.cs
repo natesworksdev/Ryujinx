@@ -1724,32 +1724,6 @@ namespace ARMeilleure.Instructions
             return result;
         }
 
-        public static int FPToSFixed(float value, int fbits)
-        {
-            //For now, this is only used in VCVT instruction which wants to round towards zero so we need to truncate
-            float real = MathF.Truncate(value * MathF.Pow(2, fbits));
-            return SoftFallback.SatF32ToS32(real);
-        }
-
-        public static uint FPToUFixed(float value, int fbits)
-        {
-            //For now, this is only used in VCVT instruction which wants to round towards zero so we need to truncate
-            float real = MathF.Truncate(value * MathF.Pow(2, fbits));
-            return SoftFallback.SatF32ToU32(real);
-        }
-
-        public static float SFixedToFP(int value, int fbits)
-        {
-            float realOperand = (float)value / MathF.Pow(2, fbits);
-            return realOperand;
-        }
-
-        public static float UFixedToFP(uint value, int fbits)
-        {
-            float realOperand = (float)value / MathF.Pow(2, fbits);
-            return realOperand;
-        }
-
         private static float FPDefaultNaN()
         {
             return BitConverter.Int32BitsToSingle(0x7fc00000);

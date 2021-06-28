@@ -1097,7 +1097,8 @@ namespace ARMeilleure.Instructions
         public static void Vqadd(ArmEmitterContext context)
         {
             OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
-            EmitVectorBinaryOpI32(context, (op1, op2) => {
+            EmitVectorBinaryOpI32(context, (op1, op2) => 
+            {
                 if (op.Size <= 2)
                 {
                     switch (op.Size)
@@ -1130,7 +1131,8 @@ namespace ARMeilleure.Instructions
         public static void Vqsub(ArmEmitterContext context)
         {
             OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
-            EmitVectorBinaryOpI32(context, (op1, op2) => {
+            EmitVectorBinaryOpI32(context, (op1, op2) => 
+            {
                 if (op.Size <= 2)
                 {
                     switch (op.Size)

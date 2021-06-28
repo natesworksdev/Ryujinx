@@ -297,17 +297,17 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("VCVT.I32.F32 <Vd>, <Vm>, #<fbits>")]
-        public void Vcvt_V2_F32_I32([Values(0u, 2u, 4u, 8u)] uint vd,
-                           [Values(0u, 2u, 4u, 8u)] uint vm,
-                           [ValueSource(nameof(_1S_F_))] [Random(RndCnt)] ulong s0,
-                           [ValueSource(nameof(_1S_F_))] [Random(RndCnt)] ulong s1,
-                           [ValueSource(nameof(_1S_F_))] [Random(RndCnt)] ulong s2,
-                           [ValueSource(nameof(_1S_F_))] [Random(RndCnt)] ulong s3,
-                           [Random(32u, 63u, 1)] uint fixImm,
-                           [Values] bool unsigned,
-                           [Values] bool q)
+        public void Vcvt_V2_F32_I32([Values(0u, 1u, 2u, 3u)] uint vd,
+                                    [Values(0u, 1u, 2u, 3u)] uint vm,
+                                    [ValueSource(nameof(_1S_F_))] [Random(RndCnt)] ulong s0,
+                                    [ValueSource(nameof(_1S_F_))] [Random(RndCnt)] ulong s1,
+                                    [ValueSource(nameof(_1S_F_))] [Random(RndCnt)] ulong s2,
+                                    [ValueSource(nameof(_1S_F_))] [Random(RndCnt)] ulong s3,
+                                    [Random(32u, 63u, 1)] uint fixImm,
+                                    [Values] bool unsigned,
+                                    [Values] bool q)
         {
-            uint opcode = 0xF3800F50u; // VCVT.U32.F32 D0, D0, #0
+            uint opcode = 0xF2800F10u; // VCVT.U32.F32 D0, D0, #0
 
             if (q)
             {
@@ -337,8 +337,8 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("VCVT.F32.I32 <Vd>, <Vm>, #<fbits>")]
-        public void Vcvt_V2_I32_F32([Values(0u, 2u, 4u, 8u)] uint vd,
-                                    [Values(0u, 2u, 4u, 8u)] uint vm,
+        public void Vcvt_V2_I32_F32([Values(0u, 1u, 2u, 3u)] uint vd,
+                                    [Values(0u, 1u, 2u, 3u)] uint vm,
                                     [ValueSource(nameof(_1S_))] [Random(RndCnt)] uint s0,
                                     [ValueSource(nameof(_1S_))] [Random(RndCnt)] uint s1,
                                     [ValueSource(nameof(_1S_))] [Random(RndCnt)] uint s2,
@@ -347,7 +347,7 @@ namespace Ryujinx.Tests.Cpu
                                     [Values] bool unsigned,
                                     [Values] bool q)
         {
-            uint opcode = 0xF3800E50u; // VCVT.F32.U32 D0, D0, #0
+            uint opcode = 0xF2800E10u; // VCVT.F32.U32 D0, D0, #0
 
             if (q)
             {
