@@ -1122,7 +1122,7 @@ namespace Ryujinx.Ui
 
         private void FileMenu_StateChanged(object o, StateChangedArgs args)
         {
-            _appletMenu.Sensitive            = _emulationContext == null && _contentManager.GetCurrentFirmwareVersion() != null;
+            _appletMenu.Sensitive            = _emulationContext == null && _contentManager.GetCurrentFirmwareVersion() != null && _contentManager.GetCurrentFirmwareVersion().Major > 3;
             _loadApplicationFile.Sensitive   = _emulationContext == null;
             _loadApplicationFolder.Sensitive = _emulationContext == null;
         }
