@@ -2,6 +2,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Services.Settings.Types;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy
@@ -245,8 +246,10 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // GetSettingsPlatformRegion() -> u8
         public ResultCode GetSettingsPlatformRegion(ServiceCtx context)
         {
+            PlatformRegion platformRegion = context.Device.System.State.DesiredRegionCode == 4 ? PlatformRegion.China : PlatformRegion.Global;
+
             // FIXME: Call set:sys GetPlatformRegion
-            context.ResponseData.Write((byte)context.Device.System.State.DesiredRegionCode);
+            context.ResponseData.Write((byte)platformRegion);
 
             return ResultCode.Success;
         }
