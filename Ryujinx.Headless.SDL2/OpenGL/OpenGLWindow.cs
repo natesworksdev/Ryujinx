@@ -103,7 +103,7 @@ namespace Ryujinx.Headless.SDL2.OpenGL
         private GraphicsDebugLevel _glLogLevel;
         private SDL2OpenGLContext _openGLContext;
 
-        public OpenGLWindow(InputManager inputManager, GraphicsDebugLevel glLogLevel) : base(inputManager, glLogLevel)
+        public OpenGLWindow(InputManager inputManager, GraphicsDebugLevel glLogLevel, AspectRatio aspectRatio, bool enableMouse) : base(inputManager, glLogLevel, aspectRatio, enableMouse)
         {
             _glLogLevel = glLogLevel;
         }
@@ -144,6 +144,7 @@ namespace Ryujinx.Headless.SDL2.OpenGL
             SwapBuffers();
 
             Renderer?.Window.SetSize(DefaultWidth, DefaultHeight);
+            MouseDriver.SetClientSize(DefaultWidth, DefaultHeight);
         }
 
         protected override void FinalizeRenderer()

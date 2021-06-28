@@ -34,6 +34,7 @@ namespace Ryujinx.Headless.SDL2
         public event EventHandler<StatusUpdatedEventArgs> StatusUpdatedEvent;
 
         protected IntPtr WindowHandle { get; set; }
+        protected SDL2MouseDriver MouseDriver;
         private InputManager _inputManager;
         private IKeyboard _keyboardInterface;
         private GraphicsDebugLevel _glLogLevel;
@@ -46,14 +47,16 @@ namespace Ryujinx.Headless.SDL2
         private bool _isStopped;
         private uint _windowId;
 
-        private double _mouseX;
-        private double _mouseY;
-        private bool _mousePressed;
         private string _gpuVendorName;
 
-        public WindowBase(InputManager inputManager, GraphicsDebugLevel glLogLevel)
+        private AspectRatio _aspectRatio;
+        private bool _enableMouse;
+
+        public WindowBase(InputManager inputManager, GraphicsDebugLevel glLogLevel, AspectRatio aspectRatio, bool enableMouse)
         {
+            MouseDriver = new SDL2MouseDriver();
             _inputManager = inputManager;
+            _inputManager.SetMouseDriver(MouseDriver);
             NpadManager = _inputManager.CreateNpadManager();
             TouchScreenManager = _inputManager.CreateTouchScreenManager();
             _keyboardInterface = (IKeyboard)_inputManager.KeyboardDriver.GetGamepad("0");
@@ -61,6 +64,8 @@ namespace Ryujinx.Headless.SDL2
             _chrono = new Stopwatch();
             _ticksPerFrame = Stopwatch.Frequency / TargetFps;
             _exitEvent = new ManualResetEvent(false);
+            _aspectRatio = aspectRatio;
+            _enableMouse = enableMouse;
 
             SDL2Driver.Instance.Initialize();
         }
@@ -71,6 +76,7 @@ namespace Ryujinx.Headless.SDL2
             Renderer = Device.Gpu.Renderer;
 
             NpadManager.Initialize(device, inputConfigs, enableKeyboard, enableMouse);
+            TouchScreenManager.Initialize(device);
         }
 
         private void InitializeWindow()
@@ -109,6 +115,7 @@ namespace Ryujinx.Headless.SDL2
                 {
                     case SDL_WindowEventID.SDL_WINDOWEVENT_SIZE_CHANGED:
                         Renderer?.Window.SetSize(evnt.window.data1, evnt.window.data2);
+                        MouseDriver.SetClientSize(evnt.window.data1, evnt.window.data2);
                         break;
                     case SDL_WindowEventID.SDL_WINDOWEVENT_CLOSE:
                         Exit();
@@ -117,21 +124,9 @@ namespace Ryujinx.Headless.SDL2
                         break;
                 }
             }
-            else if (evnt.type == SDL_EventType.SDL_MOUSEBUTTONDOWN)
+            else
             {
-                if (evnt.button.button == SDL_BUTTON_LEFT)
-                {
-                    _mousePressed = true;
-                    _mouseX = evnt.button.x;
-                    _mouseY = evnt.button.y;
-                }
-            }
-            else if (evnt.type == SDL_EventType.SDL_MOUSEBUTTONUP)
-            {
-                if (evnt.button.button == SDL_BUTTON_LEFT)
-                {
-                    _mousePressed = false;
-                }
+                MouseDriver.Update(evnt);
             }
         }
 
@@ -271,63 +266,15 @@ namespace Ryujinx.Headless.SDL2
             // Touchscreen
             bool hasTouch = false;
 
-            // Get screen touch position from left mouse click
-            // TODO: this need to be rewrittne to the unified mouse and touch system.
-            if (_mousePressed)
+            // Get screen touch position
+            if (!_enableMouse)
             {
-                float aspectWidth = DefaultHeight * Device.Configuration.AspectRatio.ToFloat();
-
-                SDL_GetWindowSize(WindowHandle, out int allocatedWidth, out int allocatedHeight);
-
-                int screenWidth = allocatedWidth;
-                int screenHeight = allocatedHeight;
-
-                if (allocatedWidth > allocatedHeight * aspectWidth / DefaultHeight)
-                {
-                    screenWidth = (int)(allocatedHeight * aspectWidth) / DefaultHeight;
-                }
-                else
-                {
-                    screenHeight = (allocatedWidth * DefaultHeight) / (int)aspectWidth;
-                }
-
-                int startX = (allocatedWidth - screenWidth) >> 1;
-                int startY = (allocatedHeight - screenHeight) >> 1;
-
-                int endX = startX + screenWidth;
-                int endY = startY + screenHeight;
-
-                if (_mouseX >= startX &&
-                    _mouseY >= startY &&
-                    _mouseX < endX &&
-                    _mouseY < endY)
-                {
-                    int screenMouseX = (int)_mouseX - startX;
-                    int screenMouseY = (int)_mouseY - startY;
-
-                    int mX = (screenMouseX * (int)aspectWidth) / screenWidth;
-                    int mY = (screenMouseY * DefaultHeight) / screenHeight;
-
-                    TouchPoint currentPoint = new TouchPoint
-                    {
-                        X = (uint)mX,
-                        Y = (uint)mY,
-
-                        // Placeholder values till more data is acquired
-                        DiameterX = 10,
-                        DiameterY = 10,
-                        Angle = 90
-                    };
-
-                    hasTouch = true;
-
-                    Device.Hid.Touchscreen.Update(currentPoint);
-                }
+                hasTouch = TouchScreenManager.Update(true, (_inputManager.MouseDriver as SDL2MouseDriver).IsButtonPressed(MouseButton.Button1), _aspectRatio.ToFloat());
             }
 
             if (!hasTouch)
             {
-                Device.Hid.Touchscreen.Update();
+                TouchScreenManager.Update(false);
             }
 
             Device.Hid.DebugPad.Update();
