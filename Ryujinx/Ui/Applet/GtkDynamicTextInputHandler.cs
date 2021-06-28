@@ -11,6 +11,7 @@ namespace Ryujinx.Ui.Applet
         private const int ForceOperationWaitMilliseconds = 3000;
 
         private readonly Window _parent;
+        private readonly OffscreenWindow _inputToTextWindow = new OffscreenWindow();
         private readonly RawInputToTextEntry _inputToTextEntry = new RawInputToTextEntry();
 
         private readonly Gdk.Key _acceptKey;
@@ -32,6 +33,7 @@ namespace Ryujinx.Ui.Applet
             _parent.KeyReleaseEvent += HandleKeyReleaseEvent;
             _acceptKey = acceptKey;
             _cancelKey = cancelKey;
+            _inputToTextWindow.Add(_inputToTextEntry);
         }
 
         [GLib.ConnectBefore()]
