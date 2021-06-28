@@ -124,7 +124,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorUnaryOpF32(context, (op1) =>
                 {
-                    var a = context.Multiply(op1, context.ConvertToFP(OperandType.FP32, context.ShiftLeft(Const(1), Const(fracBits))));
+                    var a = context.Multiply(op1, ConstF(MathF.Pow(2f, fracBits)));
                     MethodInfo info = unsigned ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.FloatToUInt32)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.FloatToInt32));
                     return context.Call(info, a);
                 });
@@ -134,7 +134,7 @@ namespace ARMeilleure.Instructions
                 EmitVectorUnaryOpI32(context, (op1) =>
                 {
                     var f = unsigned ? context.ConvertToFPUI(OperandType.FP32, op1) : context.ConvertToFP(OperandType.FP32, op1);
-                    return context.Divide(f, context.ConvertToFP(OperandType.FP32, context.ShiftLeft(Const(1), Const(fracBits))));
+                    return context.Multiply(f, ConstF(1f / MathF.Pow(2f, fracBits)));
                 }, !unsigned);
             }
         }
