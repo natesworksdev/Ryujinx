@@ -47,15 +47,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
         /// <param name="state">GPU state where the triggers will be registered</param>
         public void RegisterCallbacks(GpuState state)
         {
-            state.RegisterCallback(MethodOffset.LaunchDma,      LaunchDma);
-            state.RegisterCallback(MethodOffset.LoadInlineData, LoadInlineData);
-
-            state.RegisterCallback(MethodOffset.Dispatch, Dispatch);
-
             state.RegisterCallback(MethodOffset.SyncpointAction, IncrementSyncpoint);
-
-            state.RegisterCallback(MethodOffset.CopyBuffer,  CopyBuffer);
-            state.RegisterCallback(MethodOffset.CopyTexture, CopyTexture);
 
             state.RegisterCallback(MethodOffset.TextureBarrier,      TextureBarrier);
             state.RegisterCallback(MethodOffset.TextureBarrierTiled, TextureBarrierTiled);

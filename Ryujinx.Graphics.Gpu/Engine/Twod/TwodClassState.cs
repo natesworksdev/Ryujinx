@@ -384,8 +384,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
 
     struct RenderSolidPrimPoint
     {
+#pragma warning disable CS0649
         public uint SetX;
         public uint Y;
+#pragma warning restore CS0649
     }
 
     unsafe struct TwodClassState
