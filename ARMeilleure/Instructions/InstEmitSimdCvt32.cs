@@ -125,8 +125,9 @@ namespace ARMeilleure.Instructions
                 EmitVectorUnaryOpF32(context, (op1) =>
                 {
                     var a = context.Multiply(op1, ConstF(MathF.Pow(2f, fracBits)));
-                    MethodInfo info = unsigned ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.FloatToUInt32)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.FloatToInt32));
-                    return context.Call(info, a);
+                    var rounded = EmitUnaryMathCall(context, nameof(MathF.Truncate), a);
+                    MethodInfo info = unsigned ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF32ToU32)) : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF32ToS32));
+                    return context.Call(info, rounded);
                 });
             }
             else // S32 or U32 (fixed) to F32
