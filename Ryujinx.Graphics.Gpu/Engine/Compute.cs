@@ -1,4 +1,5 @@
 using Ryujinx.Graphics.GAL;
+using Ryujinx.Graphics.Gpu.Engine.Compute;
 using Ryujinx.Graphics.Gpu.Image;
 using Ryujinx.Graphics.Gpu.Shader;
 using Ryujinx.Graphics.Gpu.State;
@@ -46,7 +47,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
             }
 
             ShaderBundle cs = memoryManager.Physical.ShaderCache.GetComputeShader(
-                state,
+                state.Channel,
                 shaderGpuVa,
                 qmd.CtaThreadDimension0,
                 qmd.CtaThreadDimension1,

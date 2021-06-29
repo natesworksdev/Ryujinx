@@ -1,4 +1,7 @@
-﻿using Ryujinx.Graphics.Gpu.Memory;
+﻿using Ryujinx.Graphics.Device;
+using Ryujinx.Graphics.Gpu.Engine.Compute;
+using Ryujinx.Graphics.Gpu.Engine.InlineToMemory;
+using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.Graphics.Gpu.State;
 using System;
 using System.Runtime.CompilerServices;
@@ -33,6 +36,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
         private DmaState _state;
 
         private readonly GpuState[] _subChannels;
+        private readonly IDeviceState[] _subChannels2;
         private readonly GPFifoClass _fifoClass;
 
         /// <summary>
@@ -47,10 +51,21 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
 
             _fifoClass = new GPFifoClass(context, this);
             _subChannels = new GpuState[8];
+            _subChannels2 = new IDeviceState[8]
+            {
+                null,
+                new ComputeClass(context, channel),
+                new InlineToMemoryClass(context, channel),
+                null,
+                null,
+                null,
+                null,
+                null
+            };
 
             for (int index = 0; index < _subChannels.Length; index++)
             {
-                _subChannels[index] = new GpuState(channel);
+                _subChannels[index] = new GpuState(channel, _subChannels2[index]);
 
                 _context.Methods.RegisterCallbacks(_subChannels[index]);
             }
