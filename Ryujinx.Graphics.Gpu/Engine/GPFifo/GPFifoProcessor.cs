@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Graphics.Device;
 using Ryujinx.Graphics.Gpu.Engine.Compute;
+using Ryujinx.Graphics.Gpu.Engine.Dma;
 using Ryujinx.Graphics.Gpu.Engine.InlineToMemory;
 using Ryujinx.Graphics.Gpu.Engine.Twod;
 using Ryujinx.Graphics.Gpu.Memory;
@@ -58,7 +59,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
                 new ComputeClass(context, channel),
                 new InlineToMemoryClass(context, channel),
                 new TwodClass(channel),
-                null,
+                new DmaClass(context, channel),
                 null,
                 null,
                 null
