@@ -7,6 +7,9 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
 {
+    /// <summary>
+    /// Represents a Inline-to-Memory engine class.
+    /// </summary>
     class InlineToMemoryClass : IDeviceState
     {
         private readonly GpuContext _context;
@@ -32,6 +35,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
 
         private int[] _buffer;
 
+        /// <summary>
+        /// Creates a new instance of the Inline-to-Memory engine class.
+        /// </summary>
+        /// <param name="context">GPU context</param>
+        /// <param name="channel">GPU channel</param>
+        /// <param name="initializeState">Indicates if the internal state should be initialized. Set to false if part of another engine</param>
         protected InlineToMemoryClass(GpuContext context, GpuChannel channel, bool initializeState)
         {
             _context = context;
@@ -47,6 +56,11 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
             }
         }
 
+        /// <summary>
+        /// Creates a new instance of the inline-to-memory engine class.
+        /// </summary>
+        /// <param name="context">GPU context</param>
+        /// <param name="channel">GPU channel</param>
         public InlineToMemoryClass(GpuContext context, GpuChannel channel) : this(context, channel, true)
         {
         }
@@ -56,20 +70,20 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
         /// </summary>
         /// <param name="offset">Register byte offset</param>
         /// <returns>Data at the specified offset</returns>
-        public int Read(int offset) => _state.Read(offset);
+        public virtual int Read(int offset) => _state.Read(offset);
 
         /// <summary>
         /// Writes data to the class registers.
         /// </summary>
         /// <param name="offset">Register byte offset</param>
         /// <param name="data">Data to be written</param>
-        public void Write(int offset, int data) => _state.Write(offset, data);
+        public virtual void Write(int offset, int data) => _state.Write(offset, data);
 
         /// <summary>
         /// Launches Inline-to-Memory engine DMA copy.
         /// </summary>
         /// <param name="argument">Method call argument</param>
-        protected void LaunchDma(int argument)
+        protected virtual void LaunchDma(int argument)
         {
             LaunchDma(ref _state.State, argument);
         }

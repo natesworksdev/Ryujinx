@@ -11,12 +11,20 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Graphics.Gpu.Engine.Compute
 {
+    /// <summary>
+    /// Represents a compute engine class.
+    /// </summary>
     class ComputeClass : InlineToMemoryClass, IDeviceState
     {
         private readonly GpuContext _context;
         private readonly GpuChannel _channel;
         private readonly DeviceState<ComputeClassState> _state;
 
+        /// <summary>
+        /// Creates a new instance of the compute engine class.
+        /// </summary>
+        /// <param name="context">GPU context</param>
+        /// <param name="channel">GPU channel</param>
         public ComputeClass(GpuContext context, GpuChannel channel) : base(context, channel, false)
         {
             _context = context;
@@ -34,20 +42,28 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
         /// </summary>
         /// <param name="offset">Register byte offset</param>
         /// <returns>Data at the specified offset</returns>
-        public int Read(int offset) => _state.Read(offset);
+        public override int Read(int offset) => _state.Read(offset);
 
         /// <summary>
         /// Writes data to the class registers.
         /// </summary>
         /// <param name="offset">Register byte offset</param>
         /// <param name="data">Data to be written</param>
-        public void Write(int offset, int data) => _state.Write(offset, data);
+        public override void Write(int offset, int data) => _state.Write(offset, data);
 
-        private void LaunchDma(int argument)
+        /// <summary>
+        /// Launches the Inline-to-Memory DMA copy operation.
+        /// </summary>
+        /// <param name="argument">Method call argument</param>
+        protected override void LaunchDma(int argument)
         {
             LaunchDma(ref Unsafe.As<ComputeClassState, InlineToMemoryClassState>(ref _state.State), argument);
         }
 
+        /// <summary>
+        /// Performs the compute dispatch operation.
+        /// </summary>
+        /// <param name="argument">Method call argument</param>
         private void SendSignalingPcasB(int argument)
         {
             var memoryManager = _channel.MemoryManager;
