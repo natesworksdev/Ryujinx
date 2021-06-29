@@ -95,8 +95,18 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
                 _channel.BufferManager.SetComputeUniformBuffer(index, gpuVa, size);
             }
 
+            ulong samplerPoolGpuVa = ((ulong)_state.State.SetTexSamplerPoolAOffsetUpper << 32) | _state.State.SetTexSamplerPoolB;
+            ulong texturePoolGpuVa = ((ulong)_state.State.SetTexHeaderPoolAOffsetUpper << 32) | _state.State.SetTexHeaderPoolB;
+
+            GpuAccessorState gas = new GpuAccessorState(
+                texturePoolGpuVa,
+                _state.State.SetTexHeaderPoolCMaximumIndex,
+                _state.State.SetBindlessTextureConstantBufferSlotSelect,
+                false);
+
             ShaderBundle cs = memoryManager.Physical.ShaderCache.GetComputeShader(
                 _channel,
+                gas,
                 shaderGpuVa,
                 qmd.CtaThreadDimension0,
                 qmd.CtaThreadDimension1,
@@ -105,9 +115,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
                 sharedMemorySize);
 
             _context.Renderer.Pipeline.SetProgram(cs.HostProgram);
-
-            ulong samplerPoolGpuVa = ((ulong)_state.State.SetTexSamplerPoolAOffsetUpper << 32) | _state.State.SetTexSamplerPoolB;
-            ulong texturePoolGpuVa = ((ulong)_state.State.SetTexHeaderPoolAOffsetUpper << 32) | _state.State.SetTexHeaderPoolB;
 
             _channel.TextureManager.SetComputeSamplerPool(samplerPoolGpuVa, _state.State.SetTexSamplerPoolCMaximumIndex, qmd.SamplerIndex);
             _channel.TextureManager.SetComputeTexturePool(texturePoolGpuVa, _state.State.SetTexHeaderPoolCMaximumIndex);
