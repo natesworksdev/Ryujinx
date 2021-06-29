@@ -46,6 +46,7 @@ namespace Ryujinx.Ui
 
         private bool _isActive;
         private bool _isStopped;
+        private bool _isPaused;
 
         private bool _toggleFullscreen;
         private bool _toggleDockedMode;
@@ -389,6 +390,8 @@ namespace Ryujinx.Ui
                 Device.Gpu.InitializeShaderCache();
                 Translator.IsReadyForTranslation.Set();
 
+                (Toplevel as MainWindow)?.ActivatePauseMenu();
+
                 while (_isActive)
                 {
                     if (_isStopped)
@@ -485,6 +488,16 @@ namespace Ryujinx.Ui
             Exit();
         }
 
+        public void Pause()
+        {
+            _isPaused = true;
+        }
+
+        public void Resume()
+        {
+            _isPaused = false;
+        }
+
         public void Exit()
         {
             TouchScreenManager?.Dispose();
@@ -497,6 +510,7 @@ namespace Ryujinx.Ui
 
             _isStopped = true;
             _isActive = false;
+            _isPaused = false;
 
             _exitEvent.WaitOne();
             _exitEvent.Dispose();
@@ -590,6 +604,13 @@ namespace Ryujinx.Ui
                     (Toplevel as MainWindow).ToggleExtraWidgets(true);
                 }
 
+                if (currentHotkeyState.HasFlag(KeyboardHotkeyState.Pause) &&
+                    !_prevHotkeyState.HasFlag(KeyboardHotkeyState.Pause))
+                {
+                    _isPaused ^= true;
+                    (Toplevel as MainWindow)?.TogglePauseMenu();
+                }
+
                 _prevHotkeyState = currentHotkeyState;
             }
 
@@ -618,7 +639,8 @@ namespace Ryujinx.Ui
             None = 0,
             ToggleVSync = 1 << 0,
             Screenshot = 1 << 1,
-            ShowUi = 1 << 2
+            ShowUi = 1 << 2,
+            Pause = 1 << 3
         }
 
         private KeyboardHotkeyState GetHotkeyState()
@@ -638,6 +660,11 @@ namespace Ryujinx.Ui
             if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUi))
             {
                 state |= KeyboardHotkeyState.ShowUi;
+            }
+
+            if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Pause))
+            {
+                state |= KeyboardHotkeyState.Pause;
             }
 
             return state;
