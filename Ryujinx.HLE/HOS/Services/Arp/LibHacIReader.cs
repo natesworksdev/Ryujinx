@@ -61,6 +61,7 @@ namespace Ryujinx.HLE.HOS.Services.Arp
         public Result GetServiceObject(out object serviceObject)
         {
             serviceObject = _serviceObject;
+
             return Result.Success;
         }
     }

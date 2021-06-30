@@ -219,7 +219,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         }
 
         [CommandHipc(27)] // 5.0.0+
-        // CreateCacheStorage(u16 index, s64 save_size, s64 journal_size) -> ()
+        // CreateCacheStorage(u16 index, s64 save_size, s64 journal_size) -> (u32 storageTarget, u64 requiredSize)
         public ResultCode CreateCacheStorage(ServiceCtx context)
         {
             ushort index = (ushort)context.RequestData.ReadUInt64();
