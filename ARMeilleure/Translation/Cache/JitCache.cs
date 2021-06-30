@@ -1,6 +1,7 @@
 using ARMeilleure.CodeGen;
 using ARMeilleure.CodeGen.Unwinding;
 using ARMeilleure.Memory;
+using ARMeilleure.Signal;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -22,13 +23,15 @@ namespace ARMeilleure.Translation.Cache
 
         private readonly List<CacheEntry> _cacheEntries = new List<CacheEntry>();
 
-        private JitUnwindWindows _jitUnwindWindows = null;
+        private readonly JitUnwindWindows _jitUnwindWindows = null;
+
+        private readonly NativeSignalHandler _nativeSignalHandler = null;
 
         private readonly object _lock = new object();
 
         public IntPtr Base => _jitRegion.Pointer;
 
-        public JitCache(IJitMemoryAllocator allocator)
+        public JitCache(IJitMemoryAllocator allocator, bool needSignalHandler)
         {
             _jitRegion = new ReservedRegion(allocator, CacheSize);
 
@@ -37,6 +40,12 @@ namespace ARMeilleure.Translation.Cache
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 _jitUnwindWindows = new JitUnwindWindows(_jitRegion.Pointer, CacheSize, _jitRegion.Pointer + Allocate(PageSize), this);
+            }
+
+            if (needSignalHandler)
+            {
+                _nativeSignalHandler = new NativeSignalHandler(this);
+                _nativeSignalHandler.InitializeSignalHandler();
             }
         }
 
@@ -172,6 +181,7 @@ namespace ARMeilleure.Translation.Cache
         public void Dispose()
         {
             _jitUnwindWindows?.Dispose();
+            _nativeSignalHandler?.Dispose();
             _jitRegion.Dispose();
         }
     }

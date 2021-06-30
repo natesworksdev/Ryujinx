@@ -77,7 +77,7 @@ namespace ARMeilleure.Translation
             _backgroundTranslatorEvent = new AutoResetEvent(false);
             _backgroundTranslatorLock = new ReaderWriterLock();
 
-            _jitCache = new JitCache(allocator);
+            _jitCache = new JitCache(allocator, memory.Type.IsHostMapped());
 
             CountTable = new EntryTable<uint>();
             Functions = new ConcurrentDictionary<ulong, TranslatedFunction>();
@@ -85,11 +85,6 @@ namespace ARMeilleure.Translation
             Stubs = new TranslatorStubs(this);
 
             FunctionTable.Fill = (ulong)Stubs.SlowDispatchStub;
-
-            if (memory.Type.IsHostMapped())
-            {
-                NativeSignalHandler.InitializeSignalHandler();
-            }
         }
 
         private void TranslateStackedSubs()
@@ -201,7 +196,6 @@ namespace ARMeilleure.Translation
 
                 DisposePools();
 
-                Stubs.Dispose();
                 FunctionTable.Dispose();
                 CountTable.Dispose();
 

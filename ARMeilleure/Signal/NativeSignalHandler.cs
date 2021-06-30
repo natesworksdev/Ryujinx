@@ -1,5 +1,6 @@
 ﻿using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
+using ARMeilleure.Translation.Cache;
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -50,7 +51,7 @@ namespace ARMeilleure.Signal
         public SignalHandlerRange Range7;
     }
 
-    public static class NativeSignalHandler
+    public class NativeSignalHandler : IDisposable
     {
         private delegate void UnixExceptionHandler(int sig, IntPtr info, IntPtr ucontext);
         [UnmanagedFunctionPointer(CallingConvention.Winapi)]
@@ -73,11 +74,10 @@ namespace ARMeilleure.Signal
         private const ulong PageMask = PageSize - 1;
 
         private static IntPtr _handlerConfig;
-        private static IntPtr _signalHandlerPtr;
-        private static IntPtr _signalHandlerHandle;
-
-        private static readonly object _lock = new object();
-        private static bool _initialized;
+        private IntPtr _signalHandlerPtr;
+        private IntPtr _signalHandlerHandle;
+        private bool _disposedValue = false;
+        private readonly JitCache _jitCache;
 
         static NativeSignalHandler()
         {
@@ -87,49 +87,45 @@ namespace ARMeilleure.Signal
             config = new SignalHandlerConfig();
         }
 
-        public static void InitializeSignalHandler()
+        internal NativeSignalHandler(JitCache jitCache)
         {
-            if (_initialized) return;
+            _jitCache = jitCache;
+        }
 
-            lock (_lock)
+        internal void InitializeSignalHandler()
+        {
+            Translator.PreparePool();
+
+            bool unix = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+            ref SignalHandlerConfig config = ref GetConfigRef();
+
+            if (unix)
             {
-                if (_initialized) return;
+                // Unix siginfo struct locations.
+                // NOTE: These are incredibly likely to be different between kernel version and architectures.
 
-                Translator.PreparePool();
+                config.StructAddressOffset = 16; // si_addr
+                config.StructWriteOffset = 8; // si_code
 
-                bool unix = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
-                ref SignalHandlerConfig config = ref GetConfigRef();
+                _signalHandlerPtr = Marshal.GetFunctionPointerForDelegate(GenerateUnixSignalHandler(_handlerConfig));
 
-                if (unix)
-                {
-                    // Unix siginfo struct locations.
-                    // NOTE: These are incredibly likely to be different between kernel version and architectures.
-
-                    config.StructAddressOffset = 16; // si_addr
-                    config.StructWriteOffset = 8; // si_code
-
-                    _signalHandlerPtr = Marshal.GetFunctionPointerForDelegate(GenerateUnixSignalHandler(_handlerConfig));
-
-                    SigAction old = UnixSignalHandlerRegistration.RegisterExceptionHandler(_signalHandlerPtr);
-                    config.UnixOldSigaction = (nuint)(ulong)old.sa_handler;
-                    config.UnixOldSigaction3Arg = old.sa_flags & 4;
-                }
-                else
-                {
-                    config.StructAddressOffset = 40; // ExceptionInformation1
-                    config.StructWriteOffset = 32; // ExceptionInformation0
-
-                    _signalHandlerPtr = Marshal.GetFunctionPointerForDelegate(GenerateWindowsSignalHandler(_handlerConfig));
-
-                    _signalHandlerHandle = WindowsSignalHandlerRegistration.RegisterExceptionHandler(_signalHandlerPtr);
-                }
-
-                Translator.ResetPool();
-
-                Translator.DisposePools();
-
-                _initialized = true;
+                SigAction old = UnixSignalHandlerRegistration.RegisterExceptionHandler(_signalHandlerPtr);
+                config.UnixOldSigaction = (nuint)(ulong)old.sa_handler;
+                config.UnixOldSigaction3Arg = old.sa_flags & 4;
             }
+            else
+            {
+                config.StructAddressOffset = 40; // ExceptionInformation1
+                config.StructWriteOffset = 32; // ExceptionInformation0
+
+                _signalHandlerPtr = Marshal.GetFunctionPointerForDelegate(GenerateWindowsSignalHandler(_handlerConfig));
+
+                _signalHandlerHandle = WindowsSignalHandlerRegistration.RegisterExceptionHandler(_signalHandlerPtr);
+            }
+
+            Translator.ResetPool();
+
+            Translator.DisposePools();
         }
 
         private static unsafe ref SignalHandlerConfig GetConfigRef()
@@ -220,7 +216,7 @@ namespace ARMeilleure.Signal
             return context.Copy(inRegionLocal);
         }
 
-        private static UnixExceptionHandler GenerateUnixSignalHandler(IntPtr signalStructPtr)
+        private UnixExceptionHandler GenerateUnixSignalHandler(IntPtr signalStructPtr)
         {
             EmitterContext context = new EmitterContext();
 
@@ -267,10 +263,10 @@ namespace ARMeilleure.Signal
 
             OperandType[] argTypes = new OperandType[] { OperandType.I32, OperandType.I64, OperandType.I64 };
 
-            return Compiler.Compile<UnixExceptionHandler>(cfg, argTypes, OperandType.None, CompilerOptions.HighCq);
+            return Compiler.Compile<UnixExceptionHandler>(cfg, argTypes, OperandType.None, CompilerOptions.HighCq, _jitCache);
         }
 
-        private static VectoredExceptionHandler GenerateWindowsSignalHandler(IntPtr signalStructPtr)
+        private VectoredExceptionHandler GenerateWindowsSignalHandler(IntPtr signalStructPtr)
         {
             EmitterContext context = new EmitterContext();
 
@@ -321,7 +317,44 @@ namespace ARMeilleure.Signal
 
             OperandType[] argTypes = new OperandType[] { OperandType.I64 };
 
-            return Compiler.Compile<VectoredExceptionHandler>(cfg, argTypes, OperandType.I32, CompilerOptions.HighCq);
+            return Compiler.Compile<VectoredExceptionHandler>(cfg, argTypes, OperandType.I32, CompilerOptions.HighCq, _jitCache);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                bool result;
+                bool unix = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+                ref SignalHandlerConfig config = ref GetConfigRef();
+
+                if (unix)
+                {
+                    result = UnixSignalHandlerRegistration.RestoreExceptionHandler((IntPtr)(ulong)config.UnixOldSigaction, config.UnixOldSigaction3Arg);
+                }
+                else
+                {
+                    result = WindowsSignalHandlerRegistration.RemoveExceptionHandler(_signalHandlerHandle);
+                }
+
+                if (!result)
+                {
+                    throw new InvalidOperationException("Failure uninstalling native signal handler.");
+                }
+
+                _disposedValue = true;
+            }
+        }
+
+        ~NativeSignalHandler()
+        {
+            Dispose(disposing: false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }
