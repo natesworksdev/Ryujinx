@@ -1,13 +1,21 @@
-﻿using Ryujinx.Common.Memory;
+﻿// This file was auto-generated from NVIDIA official Maxwell definitions.
+
+using Ryujinx.Common.Memory;
 
 namespace Ryujinx.Graphics.Gpu.Engine.Twod
 {
+    /// <summary>
+    /// Notify type.
+    /// </summary>
     enum NotifyType
     {
         WriteOnly = 0,
         WriteThenAwaken = 1,
     }
 
+    /// <summary>
+    /// MME shadow RAM control mode.
+    /// </summary>
     enum SetMmeShadowRamControlMode
     {
         MethodTrack = 0,
@@ -16,6 +24,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         MethodReplay = 3,
     }
 
+    /// <summary>
+    /// Format of the destination texture.
+    /// </summary>
     enum SetDstFormatV
     {
         A8r8g8b8 = 207,
@@ -60,12 +71,18 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         A8 = 247,
     }
 
+    /// <summary>
+    /// Memory layout of the destination texture.
+    /// </summary>
     enum SetDstMemoryLayoutV
     {
         Blocklinear = 0,
         Pitch = 1,
     }
 
+    /// <summary>
+    /// Height in GOBs of the destination texture.
+    /// </summary>
     enum SetDstBlockSizeHeight
     {
         OneGob = 0,
@@ -76,6 +93,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         ThirtytwoGobs = 5,
     }
 
+    /// <summary>
+    /// Depth in GOBs of the destination texture.
+    /// </summary>
     enum SetDstBlockSizeDepth
     {
         OneGob = 0,
@@ -86,6 +106,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         ThirtytwoGobs = 5,
     }
 
+    /// <summary>
+    /// Format of the source texture.
+    /// </summary>
     enum SetSrcFormatV
     {
         A8r8g8b8 = 207,
@@ -131,12 +154,18 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         A8 = 247,
     }
 
+    /// <summary>
+    /// Memory layout of the source texture.
+    /// </summary>
     enum SetSrcMemoryLayoutV
     {
         Blocklinear = 0,
         Pitch = 1,
     }
 
+    /// <summary>
+    /// Height in GOBs of the source texture.
+    /// </summary>
     enum SetSrcBlockSizeHeight
     {
         OneGob = 0,
@@ -147,6 +176,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         ThirtytwoGobs = 5,
     }
 
+    /// <summary>
+    /// Depth in GOBs of the source texture.
+    /// </summary>
     enum SetSrcBlockSizeDepth
     {
         OneGob = 0,
@@ -157,6 +189,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         ThirtytwoGobs = 5,
     }
 
+    /// <summary>
+    /// Texture data caches to invalidate.
+    /// </summary>
     enum TwodInvalidateTextureDataCacheV
     {
         L1Only = 0,
@@ -164,6 +199,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         L1AndL2 = 2,
     }
 
+    /// <summary>
+    /// Sector promotion parameters.
+    /// </summary>
     enum SetPixelsFromMemorySectorPromotionV
     {
         NoPromotion = 0,
@@ -172,12 +210,18 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         PromoteTo4 = 3,
     }
 
+    /// <summary>
+    /// Number of processing clusters.
+    /// </summary>
     enum SetNumProcessingClustersV
     {
         All = 0,
         One = 1,
     }
 
+    /// <summary>
+    /// Color key format.
+    /// </summary>
     enum SetColorKeyFormatV
     {
         A16r5g6b5 = 0,
@@ -189,6 +233,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         Y32 = 6,
     }
 
+    /// <summary>
+    /// Color blit operation.
+    /// </summary>
     enum SetOperationV
     {
         SrccopyAnd = 0,
@@ -200,6 +247,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         BlendPremult = 6,
     }
 
+    /// <summary>
+    /// Texture pattern selection.
+    /// </summary>
     enum SetPatternSelectV
     {
         Monochrome8x8 = 0,
@@ -208,6 +258,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         Color = 3,
     }
 
+    /// <summary>
+    /// Render enable override mode.
+    /// </summary>
     enum SetRenderEnableOverrideMode
     {
         UseRenderEnable = 0,
@@ -215,6 +268,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         NeverRender = 2,
     }
 
+    /// <summary>
+    /// Pixels from memory horizontal direction.
+    /// </summary>
     enum SetPixelsFromMemoryDirectionHorizontal
     {
         HwDecides = 0,
@@ -222,6 +278,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         RightToLeft = 2,
     }
 
+    /// <summary>
+    /// Pixels from memory vertical direction.
+    /// </summary>
     enum SetPixelsFromMemoryDirectionVertical
     {
         HwDecides = 0,
@@ -229,6 +288,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         BottomToTop = 2,
     }
 
+    /// <summary>
+    /// Color format of the monochrome pattern.
+    /// </summary>
     enum SetMonochromePatternColorFormatV
     {
         A8x8r5g6b5 = 0,
@@ -240,12 +302,18 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         ByteExpand = 6,
     }
 
+    /// <summary>
+    /// Format of the monochrome pattern.
+    /// </summary>
     enum SetMonochromePatternFormatV
     {
         Cga6M1 = 0,
         LeM1 = 1,
     }
 
+    /// <summary>
+    /// DMA semaphore reduction operation.
+    /// </summary>
     enum MmeDmaReductionReductionOp
     {
         RedAdd = 0,
@@ -258,18 +326,27 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         RedXor = 7,
     }
 
+    /// <summary>
+    /// DMA semaphore reduction format.
+    /// </summary>
     enum MmeDmaReductionReductionFormat
     {
         Unsigned = 0,
         Signed = 1,
     }
 
+    /// <summary>
+    /// DMA semaphore reduction size.
+    /// </summary>
     enum MmeDmaReductionReductionSize
     {
         FourBytes = 0,
         EightBytes = 1,
     }
 
+    /// <summary>
+    /// Data FIFO size.
+    /// </summary>
     enum SetMmeDataFifoConfigFifoSize
     {
         Size0kb = 0,
@@ -279,6 +356,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         Size16kb = 4,
     }
 
+    /// <summary>
+    /// Render solid primitive mode.
+    /// </summary>
     enum RenderSolidPrimModeV
     {
         Points = 0,
@@ -288,6 +368,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         Rects = 4,
     }
 
+    /// <summary>
+    /// Render solid primitive color format.
+    /// </summary>
     enum SetRenderSolidPrimColorFormatV
     {
         Rf32Gf32Bf32Af32 = 192,
@@ -311,12 +394,18 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         O8r8g8b8 = 254,
     }
 
+    /// <summary>
+    /// Pixels from CPU data type.
+    /// </summary>
     enum SetPixelsFromCpuDataTypeV
     {
         Color = 0,
         Index = 1,
     }
 
+    /// <summary>
+    /// Pixels from CPU color format.
+    /// </summary>
     enum SetPixelsFromCpuColorFormatV
     {
         A8r8g8b8 = 207,
@@ -337,6 +426,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         O8r8g8b8 = 254,
     }
 
+    /// <summary>
+    /// Pixels from CPU palette index format.
+    /// </summary>
     enum SetPixelsFromCpuIndexFormatV
     {
         I1 = 0,
@@ -344,12 +436,18 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         I8 = 2,
     }
 
+    /// <summary>
+    /// Pixels from CPU monochrome format.
+    /// </summary>
     enum SetPixelsFromCpuMonoFormatV
     {
         Cga6M1 = 0,
         LeM1 = 1,
     }
 
+    /// <summary>
+    /// Pixels from CPU wrap mode.
+    /// </summary>
     enum SetPixelsFromCpuWrapV
     {
         WrapPixel = 0,
@@ -357,12 +455,18 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         WrapDword = 2,
     }
 
+    /// <summary>
+    /// Pixels from CPU monochrome opacity.
+    /// </summary>
     enum SetPixelsFromCpuMonoOpacityV
     {
         Transparent = 0,
         Opaque = 1,
     }
 
+    /// <summary>
+    /// Pixels from memory block shape.
+    /// </summary>
     enum SetPixelsFromMemoryBlockShapeV
     {
         Auto = 0,
@@ -370,18 +474,27 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         Shape16x4 = 2,
     }
 
+    /// <summary>
+    /// Pixels from memory origin.
+    /// </summary>
     enum SetPixelsFromMemorySampleModeOrigin
     {
         Center = 0,
         Corner = 1,
     }
 
+    /// <summary>
+    /// Pixels from memory filter mode.
+    /// </summary>
     enum SetPixelsFromMemorySampleModeFilter
     {
         Point = 0,
         Bilinear = 1,
     }
 
+    /// <summary>
+    /// Render solid primitive point coordinates.
+    /// </summary>
     struct RenderSolidPrimPoint
     {
 #pragma warning disable CS0649
@@ -390,6 +503,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
 #pragma warning restore CS0649
     }
 
+    /// <summary>
+    /// 2D class state.
+    /// </summary>
     unsafe struct TwodClassState
     {
 #pragma warning disable CS0649

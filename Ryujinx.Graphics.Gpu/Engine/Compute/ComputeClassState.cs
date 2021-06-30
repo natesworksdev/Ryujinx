@@ -1,32 +1,49 @@
-﻿using Ryujinx.Common.Memory;
+﻿// This file was auto-generated from NVIDIA official Maxwell definitions.
+
+using Ryujinx.Common.Memory;
 using Ryujinx.Graphics.Gpu.Engine.InlineToMemory;
 
 namespace Ryujinx.Graphics.Gpu.Engine.Compute
 {
+    /// <summary>
+    /// Notify type.
+    /// </summary>
     enum NotifyType
     {
         WriteOnly = 0,
         WriteThenAwaken = 1,
     }
 
+    /// <summary>
+    /// CWD control SM selection.
+    /// </summary>
     enum SetCwdControlSmSelection
     {
         LoadBalanced = 0,
         RoundRobin = 1,
     }
 
+    /// <summary>
+    /// Cache lines to invalidate.
+    /// </summary>
     enum InvalidateCacheLines
     {
         All = 0,
         One = 1,
     }
 
+    /// <summary>
+    /// GWC SCG type.
+    /// </summary>
     enum SetGwcScgTypeScgType
     {
         GraphicsCompute0 = 0,
         Compute1 = 1,
     }
 
+    /// <summary>
+    /// Render enable override mode.
+    /// </summary>
     enum SetRenderEnableOverrideMode
     {
         UseRenderEnable = 0,
@@ -34,18 +51,27 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
         NeverRender = 2,
     }
 
+    /// <summary>
+    /// Semaphore report operation.
+    /// </summary>
     enum SetReportSemaphoreDOperation
     {
         Release = 0,
         Trap = 3,
     }
 
+    /// <summary>
+    /// Semaphore report structure size.
+    /// </summary>
     enum SetReportSemaphoreDStructureSize
     {
         FourWords = 0,
         OneWord = 1,
     }
 
+    /// <summary>
+    /// Semaphore report reduction operation.
+    /// </summary>
     enum SetReportSemaphoreDReductionOp
     {
         RedAdd = 0,
@@ -58,12 +84,18 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
         RedXor = 7,
     }
 
+    /// <summary>
+    /// Semaphore report reduction format.
+    /// </summary>
     enum SetReportSemaphoreDReductionFormat
     {
         Unsigned32 = 0,
         Signed32 = 1,
     }
 
+    /// <summary>
+    /// Compute class state.
+    /// </summary>
     unsafe struct ComputeClassState
     {
 #pragma warning disable CS0649

@@ -1,16 +1,27 @@
-﻿namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
+﻿// This file was auto-generated from NVIDIA official Maxwell definitions.
+
+namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
 {
+    /// <summary>
+    /// Notify type.
+    /// </summary>
     enum NotifyType
     {
         WriteOnly = 0,
         WriteThenAwaken = 1,
     }
 
+    /// <summary>
+    /// Width in GOBs of the destination texture.
+    /// </summary>
     enum SetDstBlockSizeWidth
     {
         OneGob = 0,
     }
 
+    /// <summary>
+    /// Height in GOBs of the destination texture.
+    /// </summary>
     enum SetDstBlockSizeHeight
     {
         OneGob = 0,
@@ -21,6 +32,9 @@
         ThirtytwoGobs = 5,
     }
 
+    /// <summary>
+    /// Depth in GOBs of the destination texture.
+    /// </summary>
     enum SetDstBlockSizeDepth
     {
         OneGob = 0,
@@ -31,12 +45,18 @@
         ThirtytwoGobs = 5,
     }
 
+    /// <summary>
+    /// Memory layout of the destination texture.
+    /// </summary>
     enum LaunchDmaDstMemoryLayout
     {
         Blocklinear = 0,
         Pitch = 1,
     }
 
+    /// <summary>
+    /// DMA completion type.
+    /// </summary>
     enum LaunchDmaCompletionType
     {
         FlushDisable = 0,
@@ -44,18 +64,27 @@
         ReleaseSemaphore = 2,
     }
 
+    /// <summary>
+    /// DMA interrupt type.
+    /// </summary>
     enum LaunchDmaInterruptType
     {
         None = 0,
         Interrupt = 1,
     }
 
+    /// <summary>
+    /// DMA semaphore structure size.
+    /// </summary>
     enum LaunchDmaSemaphoreStructSize
     {
         FourWords = 0,
         OneWord = 1,
     }
 
+    /// <summary>
+    /// DMA semaphore reduction operation.
+    /// </summary>
     enum LaunchDmaReductionOp
     {
         RedAdd = 0,
@@ -68,12 +97,18 @@
         RedXor = 7,
     }
 
+    /// <summary>
+    /// DMA semaphore reduction format.
+    /// </summary>
     enum LaunchDmaReductionFormat
     {
         Unsigned32 = 0,
         Signed32 = 1,
     }
 
+    /// <summary>
+    /// Inline-to-Memory class state.
+    /// </summary>
     unsafe struct InlineToMemoryClassState
     {
 #pragma warning disable CS0649

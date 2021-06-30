@@ -1,5 +1,10 @@
-﻿namespace Ryujinx.Graphics.Gpu.Engine.Dma
+﻿// This file was auto-generated from NVIDIA official Maxwell definitions.
+
+namespace Ryujinx.Graphics.Gpu.Engine.Dma
 {
+    /// <summary>
+    /// Physical mode target.
+    /// </summary>
     enum SetPhysModeTarget
     {
         LocalFb = 0,
@@ -7,6 +12,9 @@
         NoncoherentSysmem = 2,
     }
 
+    /// <summary>
+    /// DMA data transfer type.
+    /// </summary>
     enum LaunchDmaDataTransferType
     {
         None = 0,
@@ -14,6 +22,9 @@
         NonPipelined = 2,
     }
 
+    /// <summary>
+    /// DMA semaphore type.
+    /// </summary>
     enum LaunchDmaSemaphoreType
     {
         None = 0,
@@ -21,6 +32,9 @@
         ReleaseFourWordSemaphore = 2,
     }
 
+    /// <summary>
+    /// DMA interrupt type.
+    /// </summary>
     enum LaunchDmaInterruptType
     {
         None = 0,
@@ -28,18 +42,27 @@
         NonBlocking = 2,
     }
 
+    /// <summary>
+    /// DMA destination memory layout.
+    /// </summary>
     enum LaunchDmaMemoryLayout
     {
         Blocklinear = 0,
         Pitch = 1,
     }
 
+    /// <summary>
+    /// DMA type.
+    /// </summary>
     enum LaunchDmaType
     {
         Virtual = 0,
         Physical = 1,
     }
 
+    /// <summary>
+    /// DMA semaphore reduction operation.
+    /// </summary>
     enum LaunchDmaSemaphoreReduction
     {
         Imin = 0,
@@ -53,18 +76,27 @@
         Fadd = 10,
     }
 
+    /// <summary>
+    /// DMA semaphore reduction signedness.
+    /// </summary>
     enum LaunchDmaSemaphoreReductionSign
     {
         Signed = 0,
         Unsigned = 1,
     }
 
+    /// <summary>
+    /// DMA L2 cache bypass.
+    /// </summary>
     enum LaunchDmaBypassL2
     {
         UsePteSetting = 0,
         ForceVolatile = 1,
     }
 
+    /// <summary>
+    /// DMA component remapping source component.
+    /// </summary>
     enum SetRemapComponentsDst
     {
         SrcX = 0,
@@ -76,6 +108,9 @@
         NoWrite = 6,
     }
 
+    /// <summary>
+    /// DMA component remapping component size.
+    /// </summary>
     enum SetRemapComponentsComponentSize
     {
         One = 0,
@@ -84,6 +119,9 @@
         Four = 3,
     }
 
+    /// <summary>
+    /// DMA component remapping number of components.
+    /// </summary>
     enum SetRemapComponentsNumComponents
     {
         One = 0,
@@ -92,12 +130,18 @@
         Four = 3,
     }
 
+    /// <summary>
+    /// Width in GOBs of the destination texture.
+    /// </summary>
     enum SetBlockSizeWidth
     {
         QuarterGob = 14,
         OneGob = 0,
     }
 
+    /// <summary>
+    /// Height in GOBs of the destination texture.
+    /// </summary>
     enum SetBlockSizeHeight
     {
         OneGob = 0,
@@ -108,6 +152,9 @@
         ThirtytwoGobs = 5,
     }
 
+    /// <summary>
+    /// Depth in GOBs of the destination texture.
+    /// </summary>
     enum SetBlockSizeDepth
     {
         OneGob = 0,
@@ -118,12 +165,18 @@
         ThirtytwoGobs = 5,
     }
 
+    /// <summary>
+    /// Height of a single GOB in lines.
+    /// </summary>
     enum SetBlockSizeGobHeight
     {
         GobHeightTesla4 = 0,
         GobHeightFermi8 = 1,
     }
 
+    /// <summary>
+    /// DMA copy class state.
+    /// </summary>
     unsafe struct DmaClassState
     {
 #pragma warning disable CS0649
