@@ -334,6 +334,22 @@ namespace Ryujinx.HLE.FileSystem
             {
                 extraData.OwnerId = info.ProgramId.Value;
             }
+            else
+            {
+                // Try to match the system save with one of the known saves
+                foreach (ExtraDataFixInfo fixInfo in SystemExtraDataFixInfo)
+                {
+                    if (extraData.Attribute.StaticSaveDataId == fixInfo.StaticSaveDataId)
+                    {
+                        extraData.OwnerId = fixInfo.OwnerId;
+                        extraData.Flags = fixInfo.Flags;
+                        extraData.DataSize = fixInfo.DataSize;
+                        extraData.JournalSize = fixInfo.JournalSize;
+
+                        break;
+                    }
+                }
+            }
 
             // Make a mask for writing the entire extra data
             Unsafe.SkipInit(out SaveDataExtraData extraDataMask);
@@ -341,6 +357,35 @@ namespace Ryujinx.HLE.FileSystem
 
             return hos.Fs.Impl.WriteSaveDataFileSystemExtraData(info.SpaceId, info.SaveDataId, in extraData, in extraDataMask);
         }
+
+        struct ExtraDataFixInfo
+        {
+            public ulong StaticSaveDataId;
+            public ulong OwnerId;
+            public SaveDataFlags Flags;
+            public long DataSize;
+            public long JournalSize;
+        }
+
+        private static readonly ExtraDataFixInfo[] SystemExtraDataFixInfo =
+        {
+            new ExtraDataFixInfo()
+            {
+                StaticSaveDataId = 0x8000000000000030,
+                OwnerId = 0x010000000000001F,
+                Flags = SaveDataFlags.KeepAfterResettingSystemSaveDataWithoutUserSaveData,
+                DataSize = 0x10000,
+                JournalSize = 0x10000
+            },
+            new ExtraDataFixInfo()
+            {
+                StaticSaveDataId = 0x8000000000001040,
+                OwnerId = 0x0100000000001009,
+                Flags = SaveDataFlags.None,
+                DataSize = 0xC000,
+                JournalSize = 0xC000
+            }
+        };
 
         public void Unload()
         {
