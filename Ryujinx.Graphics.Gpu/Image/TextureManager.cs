@@ -154,6 +154,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             if (_rtColors[index] != color)
             {
                 _rtColors[index]?.SignalModifying(false);
+                color?.SynchronizeMemory();
                 color?.SignalModifying(true);
 
                 _rtColors[index] = color;
@@ -175,6 +176,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             if (_rtDepthStencil != depthStencil)
             {
                 _rtDepthStencil?.SignalModifying(false);
+                depthStencil?.SynchronizeMemory();
                 depthStencil?.SignalModifying(true);
 
                 _rtDepthStencil = depthStencil;
