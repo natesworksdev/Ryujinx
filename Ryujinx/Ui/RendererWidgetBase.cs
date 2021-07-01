@@ -46,7 +46,6 @@ namespace Ryujinx.Ui
 
         private bool _isActive;
         private bool _isStopped;
-        private bool _isPaused;
 
         private bool _toggleFullscreen;
         private bool _toggleDockedMode;
@@ -488,16 +487,6 @@ namespace Ryujinx.Ui
             Exit();
         }
 
-        public void Pause()
-        {
-            _isPaused = true;
-        }
-
-        public void Resume()
-        {
-            _isPaused = false;
-        }
-
         public void Exit()
         {
             TouchScreenManager?.Dispose();
@@ -510,7 +499,6 @@ namespace Ryujinx.Ui
 
             _isStopped = true;
             _isActive = false;
-            _isPaused = false;
 
             _exitEvent.WaitOne();
             _exitEvent.Dispose();
@@ -607,8 +595,7 @@ namespace Ryujinx.Ui
                 if (currentHotkeyState.HasFlag(KeyboardHotkeyState.Pause) &&
                     !_prevHotkeyState.HasFlag(KeyboardHotkeyState.Pause))
                 {
-                    _isPaused ^= true;
-                    (Toplevel as MainWindow)?.TogglePauseMenu();
+                    (Toplevel as MainWindow)?.TogglePause();
                 }
 
                 _prevHotkeyState = currentHotkeyState;

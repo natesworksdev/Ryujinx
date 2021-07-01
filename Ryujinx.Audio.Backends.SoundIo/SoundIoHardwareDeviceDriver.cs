@@ -15,6 +15,7 @@ namespace Ryujinx.Audio.Backends.SoundIo
         private readonly SoundIO _audioContext;
         private readonly SoundIODevice _audioDevice;
         private readonly ManualResetEvent _updateRequiredEvent;
+        private readonly ManualResetEvent _pauseEvent;
         private readonly ConcurrentDictionary<SoundIoHardwareDeviceSession, byte> _sessions;
         private int _disposeState;
 
@@ -22,6 +23,7 @@ namespace Ryujinx.Audio.Backends.SoundIo
         {
             _audioContext = new SoundIO();
             _updateRequiredEvent = new ManualResetEvent(false);
+            _pauseEvent = new ManualResetEvent(true);
             _sessions = new ConcurrentDictionary<SoundIoHardwareDeviceSession, byte>();
 
             _audioContext.Connect();
@@ -121,6 +123,11 @@ namespace Ryujinx.Audio.Backends.SoundIo
         public ManualResetEvent GetUpdateRequiredEvent()
         {
             return _updateRequiredEvent;
+        }
+
+        public ManualResetEvent GetPauseEvent()
+        {
+            return _pauseEvent;
         }
 
         public IHardwareDeviceSession OpenDeviceSession(Direction direction, IVirtualMemoryManager memoryManager, SampleFormat sampleFormat, uint sampleRate, uint channelCount)

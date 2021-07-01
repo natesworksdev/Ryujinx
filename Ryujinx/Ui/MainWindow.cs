@@ -1287,6 +1287,7 @@ namespace Ryujinx.Ui
             _pauseEmulation.Visible = true;
             _pauseEmulation.Sensitive = false;
             _resumeEmulation.Visible = false;
+            _emulationContext.System.TogglePauseEmulation(false);
             RendererWidget?.Exit();
         }
 
@@ -1294,14 +1295,14 @@ namespace Ryujinx.Ui
         {
             _pauseEmulation.Visible = false;
             _resumeEmulation.Visible = true;
-            RendererWidget?.Pause();
+            _emulationContext.System.TogglePauseEmulation(true);
         }
 
         private void ResumeEmulation_Pressed(object sender, EventArgs args)
         {
             _pauseEmulation.Visible = true;
             _resumeEmulation.Visible = false;
-            RendererWidget?.Resume();
+            _emulationContext.System.TogglePauseEmulation(false);
         }
 
         public void ActivatePauseMenu()
@@ -1309,10 +1310,11 @@ namespace Ryujinx.Ui
             _pauseEmulation.Sensitive = true;
         }
 
-        public void TogglePauseMenu()
+        public void TogglePause()
         {
             _pauseEmulation.Visible ^= true;
             _resumeEmulation.Visible ^= true;
+            _emulationContext.System.TogglePauseEmulation(_resumeEmulation.Visible);
         }
 
         private void Installer_File_Pressed(object o, EventArgs args)

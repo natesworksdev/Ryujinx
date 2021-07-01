@@ -27,10 +27,12 @@ namespace Ryujinx.Audio.Backends.Dummy
     public class DummyHardwareDeviceDriver : IHardwareDeviceDriver
     {
         private ManualResetEvent _updateRequiredEvent;
+        private ManualResetEvent _pauseEvent;
 
         public DummyHardwareDeviceDriver()
         {
             _updateRequiredEvent = new ManualResetEvent(false);
+            _pauseEvent = new ManualResetEvent(true);
         }
 
         public IHardwareDeviceSession OpenDeviceSession(Direction direction, IVirtualMemoryManager memoryManager, SampleFormat sampleFormat, uint sampleRate, uint channelCount)
@@ -58,6 +60,11 @@ namespace Ryujinx.Audio.Backends.Dummy
         public ManualResetEvent GetUpdateRequiredEvent()
         {
             return _updateRequiredEvent;
+        }
+
+        public ManualResetEvent GetPauseEvent()
+        {
+            return _pauseEvent;
         }
 
         public void Dispose()

@@ -276,7 +276,7 @@ namespace Ryujinx.HLE.HOS
                 systemEvents[i] = new AudioKernelEvent(systemEvent);
             }
 
-            AudioManager.Initialize(Device.AudioDeviceDriver.GetUpdateRequiredEvent(), AudioOutputManager.Update, AudioInputManager.Update);
+            AudioManager.Initialize(Device.AudioDeviceDriver, AudioOutputManager.Update, AudioInputManager.Update);
 
             AudioRendererManager.Initialize(systemEvents, Device.AudioDeviceDriver);
 
@@ -444,5 +444,25 @@ namespace Ryujinx.HLE.HOS
                 KernelContext.Dispose();
             }
         }
+
+        public void TogglePauseEmulation(bool pause)
+        {
+            lock (KernelContext.Processes)
+            {
+                foreach (KProcess process in KernelContext.Processes.Values)
+                {
+                    process.SetThreadActivity(pause);
+                }
+                if (pause)
+                {
+                    Device.AudioDeviceDriver.GetPauseEvent().Reset();
+                }
+                else
+                {
+                    Device.AudioDeviceDriver.GetPauseEvent().Set();
+                }
+            }
+        }
+
     }
 }

@@ -1082,5 +1082,13 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         }
 
         protected override void Destroy() => Context.Dispose();
+
+        public void SetThreadActivity(bool pause)
+        {
+            foreach (KThread thread in _threads)
+            {
+                thread.SetActivity(pause);
+            }
+        }
     }
 }
