@@ -78,7 +78,15 @@ namespace Ryujinx.HLE.HOS.Services
         public void AddSessionObj(int serverSessionHandle, IpcService obj)
         {
             _sessionHandles.Add(serverSessionHandle);
-            _sessions.Add(serverSessionHandle, obj);
+            try
+            {
+                _sessions.Add(serverSessionHandle, obj);
+            }
+            catch
+            {
+                _sessions.Remove(serverSessionHandle);
+                _sessions.Add(serverSessionHandle, obj);
+            }
         }
 
         private void ServerLoop()
@@ -269,7 +277,7 @@ namespace Ryujinx.HLE.HOS.Services
                     {
                         disposableObj.Dispose();
                     }
-                    _sessions.Remove(serverSessionHandle);
+                    //_sessions.Remove(serverSessionHandle);
                     shouldReply = false;
                 }
                 // If the type is past 0xF, we are using TIPC
