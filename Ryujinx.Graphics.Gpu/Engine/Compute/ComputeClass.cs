@@ -1,6 +1,7 @@
 ﻿using Ryujinx.Graphics.Device;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Engine.InlineToMemory;
+using Ryujinx.Graphics.Gpu.Engine.Threed;
 using Ryujinx.Graphics.Gpu.Image;
 using Ryujinx.Graphics.Gpu.Shader;
 using Ryujinx.Graphics.Gpu.State;
@@ -18,6 +19,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
     {
         private readonly GpuContext _context;
         private readonly GpuChannel _channel;
+        private readonly ThreedClass _3dEngine;
         private readonly DeviceState<ComputeClassState> _state;
 
         /// <summary>
@@ -25,10 +27,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
         /// </summary>
         /// <param name="context">GPU context</param>
         /// <param name="channel">GPU channel</param>
-        public ComputeClass(GpuContext context, GpuChannel channel) : base(context, channel, false)
+        /// <param name="threedEngine">3D engine</param>
+        public ComputeClass(GpuContext context, GpuChannel channel, ThreedClass threedEngine) : base(context, channel, false)
         {
             _context = context;
             _channel = channel;
+            _3dEngine = threedEngine;
             _state = new DeviceState<ComputeClassState>(new Dictionary<string, RwCallback>
             {
                 { nameof(ComputeClassState.LaunchDma), new RwCallback(LaunchDma, null) },
@@ -69,6 +73,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
             var memoryManager = _channel.MemoryManager;
 
             _context.Methods.FlushUboDirty(memoryManager);
+            _3dEngine.FlushUboDirty();
 
             uint qmdAddress = _state.State.SendPcasA;
 
@@ -102,7 +107,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
                 texturePoolGpuVa,
                 _state.State.SetTexHeaderPoolCMaximumIndex,
                 _state.State.SetBindlessTextureConstantBufferSlotSelect,
-                false);
+                false,
+                PrimitiveTopology.Points);
 
             ShaderBundle cs = memoryManager.Physical.ShaderCache.GetComputeShader(
                 _channel,
@@ -208,6 +214,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
             _context.Renderer.Pipeline.DispatchCompute(qmd.CtaRasterWidth, qmd.CtaRasterHeight, qmd.CtaRasterDepth);
 
             _context.Methods.ForceShaderUpdate();
+            _3dEngine.ForceShaderUpdate();
         }
     }
 }

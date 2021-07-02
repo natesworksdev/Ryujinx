@@ -13,7 +13,6 @@ namespace Ryujinx.Graphics.Gpu.State
         public GpuVa     EndAddress;
         public IndexType Type;
         public int       First;
-        public int       Count;
 #pragma warning restore CS0649
     }
 }

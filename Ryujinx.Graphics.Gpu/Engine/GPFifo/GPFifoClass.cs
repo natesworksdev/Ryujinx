@@ -151,6 +151,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
         public void WaitForIdle(int argument)
         {
             _context.Methods.PerformDeferredDraws();
+            _parent.PerformDeferredDraws();
             _context.Renderer.Pipeline.Barrier();
 
             _context.CreateHostSyncIfNeeded();

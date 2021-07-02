@@ -53,18 +53,18 @@ namespace Ryujinx.Graphics.Device
                 {
                     _readableRegisters[(offset + i) / RegisterSize] = regAttr?.AccessControl.HasFlag(AccessControl.ReadOnly)  ?? true;
                     _writableRegisters[(offset + i) / RegisterSize] = regAttr?.AccessControl.HasFlag(AccessControl.WriteOnly) ?? true;
-                }
 
-                if (callbacks != null && callbacks.TryGetValue(field.Name, out var cb))
-                {
-                    if (cb.Read != null)
+                    if (callbacks != null && callbacks.TryGetValue(field.Name, out var cb))
                     {
-                        _readCallbacks.Add(offset, cb.Read);
-                    }
+                        if (cb.Read != null)
+                        {
+                            _readCallbacks.Add(offset + i, cb.Read);
+                        }
 
-                    if (cb.Write != null)
-                    {
-                        _writeCallbacks.Add(offset, cb.Write);
+                        if (cb.Write != null)
+                        {
+                            _writeCallbacks.Add(offset + i, cb.Write);
+                        }
                     }
                 }
 

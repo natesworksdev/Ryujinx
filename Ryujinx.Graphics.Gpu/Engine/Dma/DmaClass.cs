@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Common;
 using Ryujinx.Graphics.Device;
+using Ryujinx.Graphics.Gpu.Engine.Threed;
 using Ryujinx.Graphics.Gpu.State;
 using Ryujinx.Graphics.Texture;
 using System;
@@ -16,6 +17,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
     {
         private readonly GpuContext _context;
         private readonly GpuChannel _channel;
+        private readonly ThreedClass _3dEngine;
         private readonly DeviceState<DmaClassState> _state;
 
         /// <summary>
@@ -35,10 +37,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
         /// </summary>
         /// <param name="context">GPU context</param>
         /// <param name="channel">GPU channel</param>
-        public DmaClass(GpuContext context, GpuChannel channel)
+        /// <param name="threedEngine">3D engine</param>
+        public DmaClass(GpuContext context, GpuChannel channel, ThreedClass threedEngine)
         {
             _context = context;
             _channel = channel;
+            _3dEngine = threedEngine;
             _state = new DeviceState<DmaClassState>(new Dictionary<string, RwCallback>
             {
                 { nameof(DmaClassState.LaunchDma), new RwCallback(LaunchDma, null) }
@@ -117,6 +121,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
             int yCount = (int)_state.State.LineCount;
 
             _context.Methods.FlushUboDirty(memoryManager);
+            _3dEngine.FlushUboDirty();
 
             if (copy2D)
             {

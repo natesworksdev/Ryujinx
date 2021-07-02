@@ -114,7 +114,7 @@ namespace Ryujinx.Graphics.Gpu.State
 
             if (_deviceState != null)
             {
-                _deviceState.Write(meth.Method * 4, meth.Argument);
+                _deviceState.Write(meth.Method * 4, value);
             }
             else
             {

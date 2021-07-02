@@ -37,7 +37,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
         {
             var indexBuffer = state.Get<IndexBufferState>(MethodOffset.IndexBufferState);
 
-            DrawEnd(state, indexBuffer.First, indexBuffer.Count);
+            DrawEnd(state, indexBuffer.First, state.Get<int>(MethodOffset.IndexBufferCount));
         }
 
         /// <summary>

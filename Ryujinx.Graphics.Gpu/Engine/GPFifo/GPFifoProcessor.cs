@@ -2,6 +2,7 @@
 using Ryujinx.Graphics.Gpu.Engine.Compute;
 using Ryujinx.Graphics.Gpu.Engine.Dma;
 using Ryujinx.Graphics.Gpu.Engine.InlineToMemory;
+using Ryujinx.Graphics.Gpu.Engine.Threed;
 using Ryujinx.Graphics.Gpu.Engine.Twod;
 using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.Graphics.Gpu.State;
@@ -37,6 +38,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
 
         private DmaState _state;
 
+        private readonly ThreedClass _3dClass;
+        private readonly ComputeClass _computeClass;
+        private readonly InlineToMemoryClass _i2mClass;
+        private readonly TwodClass _2dClass;
+        private readonly DmaClass _dmaClass;
+
         private readonly GpuState[] _subChannels;
         private readonly IDeviceState[] _subChannels2;
         private readonly GPFifoClass _fifoClass;
@@ -52,14 +59,20 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
             _channel = channel;
 
             _fifoClass = new GPFifoClass(context, this);
+            _3dClass = new ThreedClass(context, channel);
+            _computeClass = new ComputeClass(context, channel, _3dClass);
+            _i2mClass = new InlineToMemoryClass(context, channel);
+            _2dClass = new TwodClass(channel);
+            _dmaClass = new DmaClass(context, channel, _3dClass);
+
             _subChannels = new GpuState[8];
             _subChannels2 = new IDeviceState[8]
             {
-                null,
-                new ComputeClass(context, channel),
-                new InlineToMemoryClass(context, channel),
-                new TwodClass(channel),
-                new DmaClass(context, channel),
+                _3dClass,
+                _computeClass,
+                _i2mClass,
+                _2dClass,
+                _dmaClass,
                 null,
                 null,
                 null
@@ -149,7 +162,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
             {
                 GpuState state = _subChannels[meth.MethodSubchannel];
 
-                _context.Methods.UniformBufferUpdate(state, commandBuffer.Slice(offset + 1, meth.MethodCount));
+                // _context.Methods.UniformBufferUpdate(state, commandBuffer.Slice(offset + 1, meth.MethodCount));
+                _3dClass.ConstantBufferUpdate(commandBuffer.Slice(offset + 1, meth.MethodCount));
 
                 return true;
             }
@@ -196,6 +210,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
                     _fifoClass.CallMme(macroIndex, _subChannels[meth.SubChannel]);
 
                     _context.Methods.PerformDeferredDraws();
+                    _3dClass.PerformDeferredDraws();
                 }
             }
         }
@@ -222,6 +237,16 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
             {
                 _subChannels[index].ForceAllDirty();
             }
+
+            _3dClass.ForceStateDirty();
+        }
+
+        /// <summary>
+        /// Perform any deferred draws.
+        /// </summary>
+        public void PerformDeferredDraws()
+        {
+            _3dClass.PerformDeferredDraws();
         }
     }
 }

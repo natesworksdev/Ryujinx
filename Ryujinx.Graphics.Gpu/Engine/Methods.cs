@@ -218,7 +218,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 UpdatePrimitiveRestartState(state);
             }
 
-            if (state.QueryModified(MethodOffset.IndexBufferState))
+            if (state.QueryModified(MethodOffset.IndexBufferState, MethodOffset.IndexBufferCount))
             {
                 UpdateIndexBufferState(state, firstIndex, indexCount);
             }
@@ -977,7 +977,14 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 addressesArray[index] = baseAddress + shader.Offset;
             }
 
-            ShaderBundle gs = state.Channel.MemoryManager.Physical.ShaderCache.GetGraphicsShader(state, addresses);
+            GpuAccessorState gas = new GpuAccessorState(
+               state.Get<PoolState>(MethodOffset.TexturePoolState).Address.Pack(),
+               state.Get<PoolState>(MethodOffset.TexturePoolState).MaximumId,
+               state.Get<int>(MethodOffset.TextureBufferIndex),
+               state.Get<Boolean32>(MethodOffset.EarlyZForce),
+               Topology);
+
+            ShaderBundle gs = state.Channel.MemoryManager.Physical.ShaderCache.GetGraphicsShader(state, state.Channel, gas, addresses);
 
             byte oldVsClipDistancesWritten = _vsClipDistancesWritten;
 
