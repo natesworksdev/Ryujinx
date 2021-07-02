@@ -78,11 +78,11 @@ namespace Ryujinx.HLE.HOS.Services
         public void AddSessionObj(int serverSessionHandle, IpcService obj)
         {
             _sessionHandles.Add(serverSessionHandle);
-            try
+            if(!_sessions.ContainsKey(serverSessionHandle))
             {
                 _sessions.Add(serverSessionHandle, obj);
             }
-            catch
+            else
             {
                 _sessions.Remove(serverSessionHandle);
                 _sessions.Add(serverSessionHandle, obj);
@@ -277,7 +277,6 @@ namespace Ryujinx.HLE.HOS.Services
                     {
                         disposableObj.Dispose();
                     }
-                    //_sessions.Remove(serverSessionHandle);
                     shouldReply = false;
                 }
                 // If the type is past 0xF, we are using TIPC
