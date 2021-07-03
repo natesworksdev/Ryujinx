@@ -72,7 +72,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
         {
             var memoryManager = _channel.MemoryManager;
 
-            _context.Methods.FlushUboDirty(memoryManager);
             _3dEngine.FlushUboDirty();
 
             uint qmdAddress = _state.State.SendPcasA;
@@ -213,7 +212,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
 
             _context.Renderer.Pipeline.DispatchCompute(qmd.CtaRasterWidth, qmd.CtaRasterHeight, qmd.CtaRasterDepth);
 
-            _context.Methods.ForceShaderUpdate();
             _3dEngine.ForceShaderUpdate();
         }
     }

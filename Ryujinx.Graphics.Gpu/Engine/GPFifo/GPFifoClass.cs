@@ -150,7 +150,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
         /// <param name="argument">Method call argument</param>
         public void WaitForIdle(int argument)
         {
-            _context.Methods.PerformDeferredDraws();
             _parent.PerformDeferredDraws();
             _context.Renderer.Pipeline.Barrier();
 

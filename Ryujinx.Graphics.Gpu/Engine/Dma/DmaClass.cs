@@ -120,7 +120,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
             int xCount = (int)_state.State.LineLengthIn;
             int yCount = (int)_state.State.LineCount;
 
-            _context.Methods.FlushUboDirty(memoryManager);
             _3dEngine.FlushUboDirty();
 
             if (copy2D)

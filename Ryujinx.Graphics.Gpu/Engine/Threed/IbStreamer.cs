@@ -3,7 +3,7 @@ using Ryujinx.Graphics.GAL;
 using System;
 using System.Runtime.InteropServices;
 
-namespace Ryujinx.Graphics.Gpu.Engine
+namespace Ryujinx.Graphics.Gpu.Engine.Threed
 {
     /// <summary>
     /// Holds inline index buffer state.
