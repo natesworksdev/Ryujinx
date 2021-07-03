@@ -66,56 +66,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 throw new Exception("bad size " + Unsafe.SizeOf<ThreedClassState>().ToString("X"));
             }
 
-            InitializeDefaultState();
-        }
-
-        /// <summary>
-        /// Initializes registers with the default state.
-        /// </summary>
-        private void InitializeDefaultState()
-        {
-            // TODO: Get rid of this method and do full initialization externally.
-
-            // Enable Rasterizer
-            Write((int)MethodOffset.RasterizeEnable * 4, 1);
-
-            // Depth ranges.
-            for (int index = 0; index < Constants.TotalViewports; index++)
-            {
-                Write(((int)MethodOffset.ViewportExtents + index * 4 + 2) * 4, 0);
-                Write(((int)MethodOffset.ViewportExtents + index * 4 + 3) * 4, 0x3F800000);
-
-                // Set swizzle to +XYZW
-                Write(((int)MethodOffset.ViewportTransform + index * 8 + 6) * 4, 0x6420);
-            }
-
-            // Viewport transform enable.
-            Write((int)MethodOffset.ViewportTransformEnable * 4, 1);
-
-            // Default front stencil mask.
-            Write(0x4e7 * 4, 0xff);
-
-            // Conditional rendering condition.
-            Write(0x556 * 4, (int)Condition.Always);
-
-            // Default color mask.
-            for (int index = 0; index < Constants.TotalRenderTargets; index++)
-            {
-                Write(((int)MethodOffset.RtColorMask + index) * 4, 0x1111);
-            }
-
-            // Default blend states
-            _state.State.BlendStateCommon = BlendStateCommon.Default;
-
-            for (int index = 0; index < Constants.TotalRenderTargets; index++)
-            {
-                _state.State.BlendState[index] = BlendState.Default;
-            }
-
-            // Default Point Parameters
-            Write((int)MethodOffset.PointSpriteEnable * 4, 1);
-            Write((int)MethodOffset.PointSize * 4, 0x3F800000); // 1.0f
-            Write((int)MethodOffset.PointCoordReplace * 4, 0x8); // Enable
+            // FIXME: We shouldn't need to set this here, why is it not set
+            // as part of channel or API initialization?
+            _state.State.ConditionState.Condition = Condition.Always;
         }
 
         /// <summary>

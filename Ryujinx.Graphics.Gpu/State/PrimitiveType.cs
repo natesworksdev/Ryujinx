@@ -29,7 +29,6 @@ namespace Ryujinx.Graphics.Gpu.State
     /// </summary>
     enum PrimitiveTypeOverride
     {
-        Invalid = 0,
         Points = 1,
         Lines = 2,
         LineStrip = 3,

@@ -179,16 +179,14 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             bool incrementInstance = (argument & (1 << 26)) != 0;
             bool resetInstance = (argument & (1 << 27)) == 0;
 
-            PrimitiveType type = (PrimitiveType)(argument & 0xffff);
-
-            PrimitiveTypeOverride typeOverride = _state.State.PrimitiveTypeOverride;
-
-            if (typeOverride != PrimitiveTypeOverride.Invalid)
+            if (_state.State.PrimitiveTypeOverrideEnable)
             {
+                PrimitiveTypeOverride typeOverride = _state.State.PrimitiveTypeOverride;
                 DrawBegin(incrementInstance, resetInstance, typeOverride.Convert());
             }
             else
             {
+                PrimitiveType type = (PrimitiveType)(argument & 0xffff);
                 DrawBegin(incrementInstance, resetInstance, type.Convert());
             }
         }

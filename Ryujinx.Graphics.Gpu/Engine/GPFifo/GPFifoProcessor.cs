@@ -212,6 +212,37 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
         }
 
         /// <summary>
+        /// Writes data directly to the state of the specified class.
+        /// </summary>
+        /// <param name="classId">ID of the class to write the data into</param>
+        /// <param name="offset">State offset in bytes</param>
+        /// <param name="value">Value to be written</param>
+        public void Write(ClassId classId, int offset, int value)
+        {
+            switch (classId)
+            {
+                case ClassId.Threed:
+                    _3dClass.Write(offset, value);
+                    break;
+                case ClassId.Compute:
+                    _computeClass.Write(offset, value);
+                    break;
+                case ClassId.InlineToMemory:
+                    _i2mClass.Write(offset, value);
+                    break;
+                case ClassId.Twod:
+                    _2dClass.Write(offset, value);
+                    break;
+                case ClassId.Dma:
+                    _dmaClass.Write(offset, value);
+                    break;
+                case ClassId.GPFifo:
+                    _fifoClass.Write(offset, value);
+                    break;
+            }
+        }
+
+        /// <summary>
         /// Sets the shadow ram control value of all sub-channels.
         /// </summary>
         /// <param name="control">New shadow ram control value</param>

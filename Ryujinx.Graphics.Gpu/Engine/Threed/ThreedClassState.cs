@@ -193,7 +193,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         public uint ViewportTransformEnable;
         public fixed uint Reserved1930[3];
         public ViewVolumeClipControl ViewVolumeClipControl;
-        public fixed uint Reserved1940[12];
+        public fixed uint Reserved1940[2];
+        public Boolean32 PrimitiveTypeOverrideEnable;
+        public fixed uint Reserved194C[9];
         public PrimitiveTypeOverride PrimitiveTypeOverride;
         public fixed uint Reserved1974[20];
         public LogicalOpState LogicOpState;
