@@ -1,5 +1,4 @@
 ﻿using Ryujinx.Common;
-using Ryujinx.Graphics.Device;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.State;
 
@@ -12,9 +11,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
         private readonly GpuContext _context;
         private readonly GpuChannel _channel;
-        private readonly DeviceState<ThreedClassState> _state;
+        private readonly DeviceStateWithShadow<ThreedClassState> _state;
 
-        public SemaphoreUpdater(GpuContext context, GpuChannel channel, DeviceState<ThreedClassState> state)
+        public SemaphoreUpdater(GpuContext context, GpuChannel channel, DeviceStateWithShadow<ThreedClassState> state)
         {
             _context = context;
             _channel = channel;

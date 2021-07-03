@@ -6,8 +6,9 @@ using Ryujinx.Graphics.Gpu.State;
 
 namespace Ryujinx.Graphics.Gpu.Engine.Threed
 {
-    unsafe struct ThreedClassState
+    unsafe struct ThreedClassState : IShadowState
     {
+#pragma warning disable CS0649
         public uint SetObject;
         public int SetObjectClassId => (int)((SetObject >> 0) & 0xFFFF);
         public int SetObjectEngineId => (int)((SetObject >> 16) & 0x1F);
@@ -19,7 +20,13 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         public uint Notify;
         public NotifyType NotifyType => (NotifyType)(Notify);
         public uint WaitForIdle;
-        public fixed uint Reserved114[7];
+        public uint LoadMmeInstructionRamPointer;
+        public uint LoadMmeInstructionRam;
+        public uint LoadMmeStartAddressRamPointer;
+        public uint LoadMmeStartAddressRam;
+        public uint SetMmeShadowRamControl;
+        public SetMmeShadowRamControlMode SetMmeShadowRamControlMode => (SetMmeShadowRamControlMode)((SetMmeShadowRamControl >> 0) & 0x3);
+        public fixed uint Reserved128[2];
         public uint SetGlobalRenderEnableA;
         public int SetGlobalRenderEnableAOffsetUpper => (int)((SetGlobalRenderEnableA >> 0) & 0xFF);
         public uint SetGlobalRenderEnableB;
@@ -253,8 +260,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         public fixed uint Reserved2494[93];
         public uint TextureBufferIndex;
         public fixed uint Reserved260C[125];
-        public uint TfVaryingLocations;
-        public fixed uint Reserved2804[767];
+        public Array4<Array32<uint>> TfVaryingLocations;
+        public fixed uint Reserved2A00[640];
         public MmeShadowScratch SetMmeShadowScratch;
+#pragma warning restore CS0649
     }
 }

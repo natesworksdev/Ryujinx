@@ -1,5 +1,4 @@
-﻿using Ryujinx.Graphics.Device;
-using Ryujinx.Graphics.GAL;
+﻿using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.State;
 using System.Text;
 
@@ -9,7 +8,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
     {
         private readonly GpuContext _context;
         private readonly GpuChannel _channel;
-        private readonly DeviceState<ThreedClassState> _state;
+        private readonly DeviceStateWithShadow<ThreedClassState> _state;
         private readonly DrawState _drawState;
 
         private bool _instancedDrawPending;
@@ -24,7 +23,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
         private int _instanceIndex;
 
-        public DrawManager(GpuContext context, GpuChannel channel, DeviceState<ThreedClassState> state, DrawState drawState)
+        public DrawManager(GpuContext context, GpuChannel channel, DeviceStateWithShadow<ThreedClassState> state, DrawState drawState)
         {
             _context = context;
             _channel = channel;

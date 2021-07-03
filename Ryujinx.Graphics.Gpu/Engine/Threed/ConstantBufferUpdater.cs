@@ -1,5 +1,4 @@
-﻿using Ryujinx.Graphics.Device;
-using Ryujinx.Graphics.Gpu.State;
+﻿using Ryujinx.Graphics.Gpu.State;
 using System;
 using System.Runtime.InteropServices;
 
@@ -8,7 +7,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
     class ConstantBufferUpdater
     {
         private readonly GpuChannel _channel;
-        private readonly DeviceState<ThreedClassState> _state;
+        private readonly DeviceStateWithShadow<ThreedClassState> _state;
 
         // State associated with direct uniform buffer updates.
         // This state is used to attempt to batch together consecutive updates.
@@ -16,7 +15,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         private ulong _ubFollowUpAddress = 0;
         private ulong _ubByteCount = 0;
 
-        public ConstantBufferUpdater(GpuChannel channel, DeviceState<ThreedClassState> state)
+        public ConstantBufferUpdater(GpuChannel channel, DeviceStateWithShadow<ThreedClassState> state)
         {
             _channel = channel;
             _state = state;

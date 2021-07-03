@@ -10,7 +10,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
     class ThreedClass : InlineToMemoryClass, IDeviceState
     {
         private readonly GpuContext _context;
-        private readonly DeviceState<ThreedClassState> _state;
+        private readonly DeviceStateWithShadow<ThreedClassState> _state;
 
         private readonly DrawManager _drawManager;
         private readonly SemaphoreUpdater _semaphoreUpdater;
@@ -25,7 +25,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         public ThreedClass(GpuContext context, GpuChannel channel) : base(context, channel, false)
         {
             _context = context;
-            _state = new DeviceState<ThreedClassState>(new Dictionary<string, RwCallback>
+            _state = new DeviceStateWithShadow<ThreedClassState>(new Dictionary<string, RwCallback>
             {
                 { nameof(ThreedClassState.LaunchDma), new RwCallback(LaunchDma, null) },
                 { nameof(ThreedClassState.LoadInlineData), new RwCallback(LoadInlineData, null) },
@@ -134,6 +134,15 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         {
             _stateUpdater.SetDirty(offset);
             _state.Write(offset, data);
+        }
+
+        /// <summary>
+        /// Sets the shadow ram control value of all sub-channels.
+        /// </summary>
+        /// <param name="control">New shadow ram control value</param>
+        public void SetShadowRamControl(int control)
+        {
+            _state.State.SetMmeShadowRamControl = (uint)control;
         }
 
         /// <summary>

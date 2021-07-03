@@ -1,6 +1,7 @@
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
+using Ryujinx.Graphics.Gpu.Engine.Threed;
 using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.Graphics.Gpu.Shader.Cache;
 using Ryujinx.Graphics.Gpu.Shader.Cache.Definition;
@@ -10,6 +11,7 @@ using Ryujinx.Graphics.Shader.Translation;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -598,7 +600,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <param name="gas">GPU accessor state</param>
         /// <param name="addresses">Addresses of the shaders for each stage</param>
         /// <returns>Compiled graphics shader code</returns>
-        public ShaderBundle GetGraphicsShader(GpuState state, GpuChannel channel, GpuAccessorState gas, ShaderAddresses addresses)
+        public ShaderBundle GetGraphicsShader(ref ThreedClassState state, GpuChannel channel, GpuAccessorState gas, ShaderAddresses addresses)
         {
             bool isCached = _gpPrograms.TryGetValue(addresses, out List<ShaderBundle> list);
 
@@ -615,7 +617,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             TranslatorContext[] shaderContexts = new TranslatorContext[Constants.ShaderStages + 1];
 
-            TransformFeedbackDescriptor[] tfd = GetTransformFeedbackDescriptors(state);
+            TransformFeedbackDescriptor[] tfd = GetTransformFeedbackDescriptors(ref state);
 
             TranslationFlags flags = DefaultFlags;
 
@@ -735,15 +737,9 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// </summary>
         /// <param name="state">Current GPU state</param>
         /// <returns>Four transform feedback descriptors for the enabled TFBs, or null if TFB is disabled</returns>
-        private static TransformFeedbackDescriptor[] GetTransformFeedbackDescriptors(GpuState state)
+        private static TransformFeedbackDescriptor[] GetTransformFeedbackDescriptors(ref ThreedClassState state)
         {
-            // FIXME: To be updated to PgraphClassState.
-            if (state == null)
-            {
-                return null;
-            }
-
-            bool tfEnable = state.Get<Boolean32>(MethodOffset.TfEnable);
+            bool tfEnable = state.TfEnable;
 
             if (!tfEnable)
             {
@@ -754,13 +750,13 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             for (int i = 0; i < Constants.TotalTransformFeedbackBuffers; i++)
             {
-                var tf = state.Get<TfState>(MethodOffset.TfState, i);
+                var tf = state.TfState[i];
 
                 int length = (int)Math.Min((uint)tf.VaryingsCount, 0x80);
 
-                var varyingLocations = state.GetSpan(MethodOffset.TfVaryingLocations + i * 0x80, length).ToArray();
+                var varyingLocations = MemoryMarshal.Cast<uint, byte>(state.TfVaryingLocations[i].ToSpan()).Slice(0, length);
 
-                descs[i] = new TransformFeedbackDescriptor(tf.BufferIndex, tf.Stride, varyingLocations);
+                descs[i] = new TransformFeedbackDescriptor(tf.BufferIndex, tf.Stride, varyingLocations.ToArray());
             }
 
             return descs;

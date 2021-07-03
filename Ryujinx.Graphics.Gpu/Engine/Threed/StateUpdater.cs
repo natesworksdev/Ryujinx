@@ -1,5 +1,4 @@
 ﻿using Ryujinx.Common.Logging;
-using Ryujinx.Graphics.Device;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Image;
 using Ryujinx.Graphics.Gpu.Shader;
@@ -20,7 +19,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
         private readonly GpuContext _context;
         private readonly GpuChannel _channel;
-        private readonly DeviceState<ThreedClassState> _state;
+        private readonly DeviceStateWithShadow<ThreedClassState> _state;
         private readonly DrawState _drawState;
 
         private readonly StateUpdateTracker<ThreedClassState> _updateTracker;
@@ -31,7 +30,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
         private bool _prevTfEnable;
 
-        public StateUpdater(GpuContext context, GpuChannel channel, DeviceState<ThreedClassState> state, DrawState drawState)
+        public StateUpdater(GpuContext context, GpuChannel channel, DeviceStateWithShadow<ThreedClassState> state, DrawState drawState)
         {
             _context = context;
             _channel = channel;
@@ -905,7 +904,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 _state.State.EarlyZForce,
                 _drawState.Topology);
 
-            ShaderBundle gs = _channel.MemoryManager.Physical.ShaderCache.GetGraphicsShader(null, _channel, gas, addresses);
+            ShaderBundle gs = _channel.MemoryManager.Physical.ShaderCache.GetGraphicsShader(ref _state.State, _channel, gas, addresses);
 
             byte oldVsClipDistancesWritten = _vsClipDistancesWritten;
 
