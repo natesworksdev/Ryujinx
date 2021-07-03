@@ -173,9 +173,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
 
             if (_isLinear && _lineCount == 1)
             {
-                ulong address = _channel.MemoryManager.Translate(_dstGpuVa);
-
-                _channel.MemoryManager.Physical.Write(address, data);
+                _channel.MemoryManager.Write(_dstGpuVa, data);
             }
             else
             {
@@ -189,8 +187,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
 
                 int srcOffset = 0;
 
-                ulong dstBaseAddress = _channel.MemoryManager.Translate(_dstGpuVa);
-
                 for (int y = _dstY; y < _dstY + _lineCount; y++)
                 {
                     int x1 = _dstX;
@@ -203,22 +199,22 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
                     {
                         int dstOffset = dstCalculator.GetOffset(x, y);
 
-                        ulong dstAddress = dstBaseAddress + (ulong)dstOffset;
+                        ulong dstAddress = _dstGpuVa + (ulong)dstOffset;
 
                         Span<byte> pixel = data.Slice(srcOffset, 16);
 
-                        _channel.MemoryManager.Physical.Write(dstAddress, pixel);
+                        _channel.MemoryManager.Write(dstAddress, pixel);
                     }
 
                     for (; x < x2; x++, srcOffset++)
                     {
                         int dstOffset = dstCalculator.GetOffset(x, y);
 
-                        ulong dstAddress = dstBaseAddress + (ulong)dstOffset;
+                        ulong dstAddress = _dstGpuVa + (ulong)dstOffset;
 
                         Span<byte> pixel = data.Slice(srcOffset, 1);
 
-                        _channel.MemoryManager.Physical.Write(dstAddress, pixel);
+                        _channel.MemoryManager.Write(dstAddress, pixel);
                     }
                 }
             }
