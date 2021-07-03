@@ -608,7 +608,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             {
                 string texCall = $"textureSize({samplerName}, {lodExpr}){GetMask(texOp.Index)}";
 
-                if (context.Config.Stage == ShaderStage.Fragment || context.Config.Stage == ShaderStage.Compute)
+                if ((context.Config.Stage == ShaderStage.Fragment || context.Config.Stage == ShaderStage.Compute) &&
+                    !isBindless &&
+                    !isIndexed)
                 {
                     int index = context.FindTextureDescriptorIndex(texOp);
 
