@@ -69,6 +69,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             Debug.Assert(offset == Unsafe.SizeOf<TState>());
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetDirty(int offset)
         {
             int groupIndex = _registerToGroupMapping[offset / RegisterSize];
@@ -95,6 +96,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             _dirtyMask = ulong.MaxValue >> ((sizeof(ulong) * 8) - _callbacks.Length);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Update(ulong checkMask)
         {
             ulong mask = _dirtyMask & checkMask;

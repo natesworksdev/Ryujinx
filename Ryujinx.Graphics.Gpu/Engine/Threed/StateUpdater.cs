@@ -7,6 +7,7 @@ using Ryujinx.Graphics.Shader;
 using Ryujinx.Graphics.Texture;
 using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Gpu.Engine.Threed
@@ -135,6 +136,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             });
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetDirty(int offset)
         {
             _updateTracker.SetDirty(offset);
@@ -145,6 +147,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             _updateTracker.SetAllDirty();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Update()
         {
             bool tfEnable = _state.State.TfEnable;

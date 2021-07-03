@@ -2,6 +2,7 @@ using Ryujinx.Graphics.Device;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Graphics.Gpu.Engine
 {
@@ -23,11 +24,13 @@ namespace Ryujinx.Graphics.Gpu.Engine
             _shadowState = new DeviceState<TState>();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int Read(int offset)
         {
             return _state.Read(offset);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Write(int offset, int value)
         {
             var shadowRamControl = _state.State.SetMmeShadowRamControlMode;

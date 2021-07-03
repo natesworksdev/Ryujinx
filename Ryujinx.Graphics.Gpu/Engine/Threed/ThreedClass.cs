@@ -123,6 +123,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// </summary>
         /// <param name="offset">Register byte offset</param>
         /// <returns>Data at the specified offset</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int Read(int offset) => _state.Read(offset);
 
         /// <summary>
@@ -130,6 +131,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// </summary>
         /// <param name="offset">Register byte offset</param>
         /// <param name="data">Data to be written</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void Write(int offset, int data)
         {
             _stateUpdater.SetDirty(offset);
