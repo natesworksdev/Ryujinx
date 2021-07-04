@@ -79,7 +79,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <returns>Data at the memory location</returns>
         public override T MemoryRead<T>(ulong address)
         {
-            return _context.MemoryManager.Read<T>(address);
+            return _state.Channel.MemoryManager.Read<T>(address);
         }
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <returns>True if the address is mapped, false otherwise</returns>
         public bool MemoryMapped(ulong address)
         {
-            return _context.MemoryManager.IsMapped(address);
+            return _state.Channel.MemoryManager.IsMapped(address);
         }
 
         /// <summary>
@@ -129,8 +129,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
         public uint QueryConstantBufferUse()
         {
             return _compute
-                ? _context.Methods.BufferManager.GetComputeUniformBufferUseMask()
-                : _context.Methods.BufferManager.GetGraphicsUniformBufferUseMask(_stageIndex);
+                ? _state.Channel.BufferManager.GetComputeUniformBufferUseMask()
+                : _state.Channel.BufferManager.GetGraphicsUniformBufferUseMask(_stageIndex);
         }
 
         /// <summary>
@@ -181,6 +181,12 @@ namespace Ryujinx.Graphics.Gpu.Shader
         public bool QuerySupportsNonConstantTextureOffset() => _context.Capabilities.SupportsNonConstantTextureOffset;
 
         /// <summary>
+        /// Queries host GPU texture shadow LOD support.
+        /// </summary>
+        /// <returns>True if the GPU and driver supports texture shadow LOD, false otherwise</returns>
+        public bool QuerySupportsTextureShadowLod() => _context.Capabilities.SupportsTextureShadowLod;
+
+        /// <summary>
         /// Gets the texture descriptor for a given texture on the pool.
         /// </summary>
         /// <param name="handle">Index of the texture (this is the word offset of the handle in the constant buffer)</param>
@@ -190,11 +196,11 @@ namespace Ryujinx.Graphics.Gpu.Shader
         {
             if (_compute)
             {
-                return _context.Methods.TextureManager.GetComputeTextureDescriptor(_state, handle, cbufSlot);
+                return _state.Channel.TextureManager.GetComputeTextureDescriptor(_state, handle, cbufSlot);
             }
             else
             {
-                return _context.Methods.TextureManager.GetGraphicsTextureDescriptor(_state, _stageIndex, handle, cbufSlot);
+                return _state.Channel.TextureManager.GetGraphicsTextureDescriptor(_state, _stageIndex, handle, cbufSlot);
             }
         }
 

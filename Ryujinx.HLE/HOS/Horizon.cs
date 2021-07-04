@@ -22,7 +22,7 @@ using Ryujinx.HLE.HOS.Services.Arp;
 using Ryujinx.HLE.HOS.Services.Audio.AudioRenderer;
 using Ryujinx.HLE.HOS.Services.Caps;
 using Ryujinx.HLE.HOS.Services.Mii;
-using Ryujinx.HLE.HOS.Services.Nfc.Nfp.UserManager;
+using Ryujinx.HLE.HOS.Services.Nfc.Nfp.NfpManager;
 using Ryujinx.HLE.HOS.Services.Nv;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl;
 using Ryujinx.HLE.HOS.Services.Pcv.Bpc;
@@ -45,10 +45,11 @@ namespace Ryujinx.HLE.HOS
 
     public class Horizon : IDisposable
     {
-        internal const int HidSize  = 0x40000;
-        internal const int FontSize = 0x1100000;
-        internal const int IirsSize = 0x8000;
-        internal const int TimeSize = 0x1000;
+        internal const int HidSize                 = 0x40000;
+        internal const int FontSize                = 0x1100000;
+        internal const int IirsSize                = 0x8000;
+        internal const int TimeSize                = 0x1000;
+        internal const int AppletCaptureBufferSize = 0x384000;
 
         internal KernelContext KernelContext { get; }
 
@@ -69,6 +70,7 @@ namespace Ryujinx.HLE.HOS
 
         internal List<NfpDevice> NfpDevices { get; private set; }
 
+        internal ServerBase SmServer { get; private set; }
         internal ServerBase BsdServer { get; private set; }
         internal ServerBase AudRenServer { get; private set; }
         internal ServerBase AudOutServer { get; private set; }
@@ -82,6 +84,9 @@ namespace Ryujinx.HLE.HOS
         internal KSharedMemory HidSharedMem  { get; private set; }
         internal KSharedMemory FontSharedMem { get; private set; }
         internal KSharedMemory IirsSharedMem { get; private set; }
+
+        internal KTransferMemory AppletCaptureBufferTransfer { get; private set; }
+
         internal SharedFontManager Font { get; private set; }
 
         internal AccountManager AccountManager { get; private set; }
@@ -129,25 +134,29 @@ namespace Ryujinx.HLE.HOS
             // region used that is used is Application, so we can use the other ones for anything.
             KMemoryRegionManager region = KernelContext.MemoryManager.MemoryRegions[(int)MemoryRegion.NvServices];
 
-            ulong hidPa  = region.Address;
-            ulong fontPa = region.Address + HidSize;
-            ulong iirsPa = region.Address + HidSize + FontSize;
-            ulong timePa = region.Address + HidSize + FontSize + IirsSize;
+            ulong hidPa                 = region.Address;
+            ulong fontPa                = region.Address + HidSize;
+            ulong iirsPa                = region.Address + HidSize + FontSize;
+            ulong timePa                = region.Address + HidSize + FontSize + IirsSize;
+            ulong appletCaptureBufferPa = region.Address + HidSize + FontSize + IirsSize + TimeSize;
 
-            KPageList hidPageList  = new KPageList();
-            KPageList fontPageList = new KPageList();
-            KPageList iirsPageList = new KPageList();
-            KPageList timePageList = new KPageList();
+            KPageList hidPageList                 = new KPageList();
+            KPageList fontPageList                = new KPageList();
+            KPageList iirsPageList                = new KPageList();
+            KPageList timePageList                = new KPageList();
+            KPageList appletCaptureBufferPageList = new KPageList();
 
-            hidPageList.AddRange(hidPa,  HidSize  / KPageTableBase.PageSize);
+            hidPageList.AddRange(hidPa, HidSize / KPageTableBase.PageSize);
             fontPageList.AddRange(fontPa, FontSize / KPageTableBase.PageSize);
             iirsPageList.AddRange(iirsPa, IirsSize / KPageTableBase.PageSize);
             timePageList.AddRange(timePa, TimeSize / KPageTableBase.PageSize);
+            appletCaptureBufferPageList.AddRange(appletCaptureBufferPa, AppletCaptureBufferSize / KPageTableBase.PageSize);
 
             var hidStorage = new SharedMemoryStorage(KernelContext, hidPageList);
             var fontStorage = new SharedMemoryStorage(KernelContext, fontPageList);
             var iirsStorage = new SharedMemoryStorage(KernelContext, iirsPageList);
             var timeStorage = new SharedMemoryStorage(KernelContext, timePageList);
+            var appletCaptureBufferStorage = new SharedMemoryStorage(KernelContext, appletCaptureBufferPageList);
 
             HidStorage = hidStorage;
 
@@ -158,6 +167,8 @@ namespace Ryujinx.HLE.HOS
             KSharedMemory timeSharedMemory = new KSharedMemory(KernelContext, timeStorage, 0, 0, KMemoryPermission.Read);
 
             TimeServiceManager.Instance.Initialize(device, this, timeSharedMemory, timeStorage, TimeSize);
+
+            AppletCaptureBufferTransfer = new KTransferMemory(KernelContext, appletCaptureBufferStorage);
 
             AppletState = new AppletStateMgr(this);
 
@@ -274,13 +285,11 @@ namespace Ryujinx.HLE.HOS
 
         public void InitializeServices()
         {
-            IUserInterface sm = new IUserInterface(KernelContext);
-            sm.TrySetServer(new ServerBase(KernelContext, "SmServer", () => new IUserInterface(KernelContext)));
+            SmServer = new ServerBase(KernelContext, "SmServer", () => new IUserInterface(KernelContext));
 
             // Wait until SM server thread is done with initialization,
             // only then doing connections to SM is safe.
-            sm.Server.InitDone.WaitOne();
-            sm.Server.InitDone.Dispose();
+            SmServer.InitDone.WaitOne();
 
             BsdServer = new ServerBase(KernelContext, "BsdServer");
             AudRenServer = new ServerBase(KernelContext, "AudioRendererServer");
@@ -321,8 +330,8 @@ namespace Ryujinx.HLE.HOS
                 State.DockedMode = newState;
                 PerformanceState.PerformanceMode = State.DockedMode ? PerformanceMode.Boost : PerformanceMode.Default;
 
-                AppletState.Messages.Enqueue(MessageInfo.OperationModeChanged);
-                AppletState.Messages.Enqueue(MessageInfo.PerformanceModeChanged);
+                AppletState.Messages.Enqueue(AppletMessage.OperationModeChanged);
+                AppletState.Messages.Enqueue(AppletMessage.PerformanceModeChanged);
                 AppletState.MessageEvent.ReadableEvent.Signal();
 
                 SignalDisplayResolutionChange();
@@ -338,7 +347,7 @@ namespace Ryujinx.HLE.HOS
 
         public void SimulateWakeUpMessage()
         {
-            AppletState.Messages.Enqueue(MessageInfo.Resume);
+            AppletState.Messages.Enqueue(AppletMessage.Resume);
             AppletState.MessageEvent.ReadableEvent.Signal();
         }
 
@@ -409,7 +418,7 @@ namespace Ryujinx.HLE.HOS
                         SurfaceFlinger.Dispose();
 
                         // Terminate HLE services (must be done after the application is already terminated,
-                        // otherwise the application will receive errors due to service termination.
+                        // otherwise the application will receive errors due to service termination).
                         foreach (KProcess process in KernelContext.Processes.Values.Where(x => !x.Flags.HasFlag(ProcessCreationFlags.IsApplication)))
                         {
                             process.Terminate();

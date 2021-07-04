@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Gpu.Image
@@ -11,9 +12,8 @@ namespace Ryujinx.Graphics.Gpu.Image
     {
         private const int MaxCapacity = 4;
 
-        private GpuContext _context;
-
-        private LinkedList<TexturePool> _pools;
+        private readonly GpuContext _context;
+        private readonly LinkedList<TexturePool> _pools;
 
         /// <summary>
         /// Constructs a new instance of the texture pool.
@@ -22,17 +22,17 @@ namespace Ryujinx.Graphics.Gpu.Image
         public TexturePoolCache(GpuContext context)
         {
             _context = context;
-
             _pools = new LinkedList<TexturePool>();
         }
 
         /// <summary>
         /// Finds a cache texture pool, or creates a new one if not found.
         /// </summary>
+        /// <param name="channel">GPU channel that the texture pool cache belongs to</param>
         /// <param name="address">Start address of the texture pool</param>
         /// <param name="maximumId">Maximum ID of the texture pool</param>
         /// <returns>The found or newly created texture pool</returns>
-        public TexturePool FindOrCreate(ulong address, int maximumId)
+        public TexturePool FindOrCreate(GpuChannel channel, ulong address, int maximumId)
         {
             TexturePool pool;
 
@@ -55,7 +55,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
 
             // If not found, create a new one.
-            pool = new TexturePool(_context, address, maximumId);
+            pool = new TexturePool(_context, channel, address, maximumId);
 
             pool.CacheNode = _pools.AddLast(pool);
 

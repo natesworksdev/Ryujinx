@@ -22,21 +22,6 @@ namespace Ryujinx.Graphics.Gpu.Engine
         private readonly GpuContext _context;
         private readonly ShaderProgramInfo[] _currentProgramInfo;
 
-        /// <summary>
-        /// In-memory shader cache.
-        /// </summary>
-        public ShaderCache ShaderCache { get; }
-
-        /// <summary>
-        /// GPU buffer manager.
-        /// </summary>
-        public BufferManager BufferManager { get; }
-
-        /// <summary>
-        /// GPU texture manager.
-        /// </summary>
-        public TextureManager TextureManager { get; }
-
         private bool _isAnyVbInstanced;
         private bool _vsUsesInstanceId;
         private byte _vsClipDistancesWritten;
@@ -53,16 +38,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
         {
             _context = context;
 
-            ShaderCache = new ShaderCache(_context);
-
             _currentProgramInfo = new ShaderProgramInfo[Constants.ShaderStages];
-
-            BufferManager  = new BufferManager(context);
-            TextureManager = new TextureManager(context);
-
-            context.MemoryManager.MemoryUnmapped += _counterCache.MemoryUnmappedHandler;
-            context.MemoryManager.MemoryUnmapped += TextureManager.MemoryUnmappedHandler;
-            context.MemoryManager.MemoryUnmapped += BufferManager.MemoryUnmappedHandler;
         }
 
         /// <summary>
@@ -130,7 +106,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 _prevTfEnable = false;
             }
 
-            FlushUboDirty();
+            FlushUboDirty(state.Channel.MemoryManager);
 
             // Shaders must be the first one to be updated if modified, because
             // some of the other state depends on information from the currently
@@ -223,10 +199,15 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 UpdateTexturePoolState(state);
             }
 
-            // Input assembler state.
+            // Rasterizer state.
             if (state.QueryModified(MethodOffset.VertexAttribState))
             {
                 UpdateVertexAttribState(state);
+            }
+
+            if (state.QueryModified(MethodOffset.LineWidthSmooth, MethodOffset.LineSmoothEnable))
+            {
+                UpdateLineState(state);
             }
 
             if (state.QueryModified(MethodOffset.PointSize,
@@ -280,7 +261,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 UpdateLogicOpState(state);
             }
 
-            CommitBindings();
+            CommitBindings(state);
 
             if (tfEnable && !_prevTfEnable)
             {
@@ -303,18 +284,20 @@ namespace Ryujinx.Graphics.Gpu.Engine
         /// Ensures that the bindings are visible to the host GPU.
         /// Note: this actually performs the binding using the host graphics API.
         /// </summary>
-        private void CommitBindings()
+        /// <param name="state">Current GPU state</param>
+        private void CommitBindings(GpuState state)
         {
-            UpdateStorageBuffers();
+            UpdateStorageBuffers(state);
 
-            TextureManager.CommitGraphicsBindings();
-            BufferManager.CommitGraphicsBindings();
+            state.Channel.TextureManager.CommitGraphicsBindings();
+            state.Channel.BufferManager.CommitGraphicsBindings();
         }
 
         /// <summary>
         /// Updates storage buffer bindings.
         /// </summary>
-        private void UpdateStorageBuffers()
+        /// <param name="state">Current GPU state</param>
+        private void UpdateStorageBuffers(GpuState state)
         {
             for (int stage = 0; stage < _currentProgramInfo.Length; stage++)
             {
@@ -329,15 +312,15 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 {
                     BufferDescriptor sb = info.SBuffers[index];
 
-                    ulong sbDescAddress = BufferManager.GetGraphicsUniformBufferAddress(stage, 0);
+                    ulong sbDescAddress = state.Channel.BufferManager.GetGraphicsUniformBufferAddress(stage, 0);
 
                     int sbDescOffset = 0x110 + stage * 0x100 + sb.Slot * 0x10;
 
                     sbDescAddress += (ulong)sbDescOffset;
 
-                    SbDescriptor sbDescriptor = _context.PhysicalMemory.Read<SbDescriptor>(sbDescAddress);
+                    SbDescriptor sbDescriptor = state.Channel.MemoryManager.Physical.Read<SbDescriptor>(sbDescAddress);
 
-                    BufferManager.SetGraphicsStorageBuffer(stage, sb.Slot, sbDescriptor.PackAddress(), (uint)sbDescriptor.Size, sb.Flags);
+                    state.Channel.BufferManager.SetGraphicsStorageBuffer(stage, sb.Slot, sbDescriptor.PackAddress(), (uint)sbDescriptor.Size, sb.Flags);
                 }
             }
         }
@@ -350,6 +333,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
         /// <param name="singleUse">If this is not -1, it indicates that only the given indexed target will be used.</param>
         private void UpdateRenderTargetState(GpuState state, bool useControl, int singleUse = -1)
         {
+            var memoryManager = state.Channel.MemoryManager;
             var rtControl = state.Get<RtControl>(MethodOffset.RtControl);
 
             int count = useControl ? rtControl.UnpackCount() : Constants.TotalRenderTargets;
@@ -372,14 +356,19 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
                 if (index >= count || !IsRtEnabled(colorState))
                 {
-                    changedScale |= TextureManager.SetRenderTargetColor(index, null);
+                    changedScale |= state.Channel.TextureManager.SetRenderTargetColor(index, null);
 
                     continue;
                 }
 
-                Texture color = TextureManager.FindOrCreateTexture(colorState, samplesInX, samplesInY, sizeHint);
+                Texture color = memoryManager.Physical.TextureCache.FindOrCreateTexture(
+                    memoryManager,
+                    colorState,
+                    samplesInX,
+                    samplesInY,
+                    sizeHint);
 
-                changedScale |= TextureManager.SetRenderTargetColor(index, color);
+                changedScale |= state.Channel.TextureManager.SetRenderTargetColor(index, color);
             }
 
             bool dsEnable = state.Get<Boolean32>(MethodOffset.RtDepthStencilEnable);
@@ -391,15 +380,21 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 var dsState = state.Get<RtDepthStencilState>(MethodOffset.RtDepthStencilState);
                 var dsSize  = state.Get<Size3D>(MethodOffset.RtDepthStencilSize);
 
-                depthStencil = TextureManager.FindOrCreateTexture(dsState, dsSize, samplesInX, samplesInY, sizeHint);
+                depthStencil = memoryManager.Physical.TextureCache.FindOrCreateTexture(
+                    memoryManager,
+                    dsState,
+                    dsSize,
+                    samplesInX,
+                    samplesInY,
+                    sizeHint);
             }
 
-            changedScale |= TextureManager.SetRenderTargetDepthStencil(depthStencil);
+            changedScale |= state.Channel.TextureManager.SetRenderTargetDepthStencil(depthStencil);
 
             if (changedScale)
             {
-                TextureManager.UpdateRenderTargetScale(singleUse);
-                _context.Renderer.Pipeline.SetRenderTargetScale(TextureManager.RenderTargetScale);
+                state.Channel.TextureManager.UpdateRenderTargetScale(singleUse);
+                _context.Renderer.Pipeline.SetRenderTargetScale(state.Channel.TextureManager.RenderTargetScale);
 
                 UpdateViewportTransform(state);
                 UpdateScissorState(state);
@@ -436,7 +431,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
                     int width = scissor.X2 - x;
                     int height = scissor.Y2 - y;
 
-                    float scale = TextureManager.RenderTargetScale;
+                    float scale = state.Channel.TextureManager.RenderTargetScale;
                     if (scale != 1f)
                     {
                         x = (int)(x * scale);
@@ -545,7 +540,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 float width  = scaleX * 2;
                 float height = scaleY * 2;
 
-                float scale = TextureManager.RenderTargetScale;
+                float scale = state.Channel.TextureManager.RenderTargetScale;
                 if (scale != 1f)
                 {
                     x *= scale;
@@ -670,7 +665,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 ? texturePool.MaximumId
                 : samplerPool.MaximumId;
 
-            TextureManager.SetGraphicsSamplerPool(samplerPool.Address.Pack(), maximumId, samplerIndex);
+            state.Channel.TextureManager.SetGraphicsSamplerPool(samplerPool.Address.Pack(), maximumId, samplerIndex);
         }
 
         /// <summary>
@@ -681,9 +676,8 @@ namespace Ryujinx.Graphics.Gpu.Engine
         {
             var texturePool = state.Get<PoolState>(MethodOffset.TexturePoolState);
 
-            TextureManager.SetGraphicsTexturePool(texturePool.Address.Pack(), texturePool.MaximumId);
-
-            TextureManager.SetGraphicsTextureBufferIndex(state.Get<int>(MethodOffset.TextureBufferIndex));
+            state.Channel.TextureManager.SetGraphicsTexturePool(texturePool.Address.Pack(), texturePool.MaximumId);
+            state.Channel.TextureManager.SetGraphicsTextureBufferIndex(state.Get<int>(MethodOffset.TextureBufferIndex));
         }
 
         /// <summary>
@@ -713,6 +707,18 @@ namespace Ryujinx.Graphics.Gpu.Engine
             }
 
             _context.Renderer.Pipeline.SetVertexAttribs(vertexAttribs);
+        }
+
+        /// <summary>
+        /// Updates host line width based on guest GPU state.
+        /// </summary>
+        /// <param name="state">Current GPU state</param>
+        private void UpdateLineState(GpuState state)
+        {
+            float width = state.Get<float>(MethodOffset.LineWidthSmooth);
+            bool smooth = state.Get<Boolean32>(MethodOffset.LineSmoothEnable);
+
+            _context.Renderer.Pipeline.SetLineParameters(width, smooth);
         }
 
         /// <summary>
@@ -771,7 +777,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 case IndexType.UInt:   size *= 4; break;
             }
 
-            BufferManager.SetIndexBuffer(gpuVa, size, indexBuffer.Type);
+            state.Channel.BufferManager.SetIndexBuffer(gpuVa, size, indexBuffer.Type);
 
             // The index buffer affects the vertex buffer size calculation, we
             // need to ensure that they are updated.
@@ -792,7 +798,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
                 if (!vertexBuffer.UnpackEnable())
                 {
-                    BufferManager.SetVertexBuffer(index, 0, 0, 0, 0);
+                    state.Channel.BufferManager.SetVertexBuffer(index, 0, 0, 0, 0);
 
                     continue;
                 }
@@ -828,7 +834,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
                     size = (ulong)((firstInstance + drawState.First + drawState.Count) * stride);
                 }
 
-                BufferManager.SetVertexBuffer(index, address, size, stride, divisor);
+                state.Channel.BufferManager.SetVertexBuffer(index, address, size, stride, divisor);
             }
         }
 
@@ -994,7 +1000,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 addressesArray[index] = baseAddress + shader.Offset;
             }
 
-            ShaderBundle gs = ShaderCache.GetGraphicsShader(state, addresses);
+            ShaderBundle gs = state.Channel.MemoryManager.Physical.ShaderCache.GetGraphicsShader(state, addresses);
 
             byte oldVsClipDistancesWritten = _vsClipDistancesWritten;
 
@@ -1017,10 +1023,10 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
                 if (info == null)
                 {
-                    TextureManager.SetGraphicsTextures(stage, Array.Empty<TextureBindingInfo>());
-                    TextureManager.SetGraphicsImages(stage, Array.Empty<TextureBindingInfo>());
-                    BufferManager.SetGraphicsStorageBufferBindings(stage, null);
-                    BufferManager.SetGraphicsUniformBufferBindings(stage, null);
+                    state.Channel.TextureManager.SetGraphicsTextures(stage, Array.Empty<TextureBindingInfo>());
+                    state.Channel.TextureManager.SetGraphicsImages(stage, Array.Empty<TextureBindingInfo>());
+                    state.Channel.BufferManager.SetGraphicsStorageBufferBindings(stage, null);
+                    state.Channel.BufferManager.SetGraphicsUniformBufferBindings(stage, null);
                     continue;
                 }
 
@@ -1040,7 +1046,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
                         descriptor.Flags);
                 }
 
-                TextureManager.SetGraphicsTextures(stage, textureBindings);
+                state.Channel.TextureManager.SetGraphicsTextures(stage, textureBindings);
 
                 var imageBindings = new TextureBindingInfo[info.Images.Count];
 
@@ -1060,10 +1066,10 @@ namespace Ryujinx.Graphics.Gpu.Engine
                         descriptor.Flags);
                 }
 
-                TextureManager.SetGraphicsImages(stage, imageBindings);
+                state.Channel.TextureManager.SetGraphicsImages(stage, imageBindings);
 
-                BufferManager.SetGraphicsStorageBufferBindings(stage, info.SBuffers);
-                BufferManager.SetGraphicsUniformBufferBindings(stage, info.CBuffers);
+                state.Channel.BufferManager.SetGraphicsStorageBufferBindings(stage, info.SBuffers);
+                state.Channel.BufferManager.SetGraphicsUniformBufferBindings(stage, info.CBuffers);
 
                 if (info.SBuffers.Count != 0)
                 {
@@ -1076,8 +1082,8 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 }
             }
 
-            BufferManager.SetGraphicsStorageBufferBindingsCount(storageBufferBindingsCount);
-            BufferManager.SetGraphicsUniformBufferBindingsCount(uniformBufferBindingsCount);
+            state.Channel.BufferManager.SetGraphicsStorageBufferBindingsCount(storageBufferBindingsCount);
+            state.Channel.BufferManager.SetGraphicsUniformBufferBindingsCount(uniformBufferBindingsCount);
 
             _context.Renderer.Pipeline.SetProgram(gs.HostProgram);
         }
@@ -1094,12 +1100,12 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
                 if (!tfb.Enable)
                 {
-                    BufferManager.SetTransformFeedbackBuffer(index, 0, 0);
+                    state.Channel.BufferManager.SetTransformFeedbackBuffer(index, 0, 0);
 
                     continue;
                 }
 
-                BufferManager.SetTransformFeedbackBuffer(index, tfb.Address.Pack(), (uint)tfb.Size);
+                state.Channel.BufferManager.SetTransformFeedbackBuffer(index, tfb.Address.Pack(), (uint)tfb.Size);
             }
         }
 

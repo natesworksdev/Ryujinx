@@ -105,13 +105,13 @@ namespace Ryujinx.Ui.Windows
         private IGamepadDriver _gtk3KeyboardDriver;
         private IGamepad _selectedGamepad;
         private bool _mousePressed;
+        private bool _middleMousePressed;
 
         public ControllerWindow(MainWindow mainWindow, PlayerIndex controllerId) : this(mainWindow, new Builder("Ryujinx.Ui.Windows.ControllerWindow.glade"), controllerId) { }
 
         private ControllerWindow(MainWindow mainWindow, Builder builder, PlayerIndex controllerId) : base(builder.GetObject("_controllerWin").Handle)
         {
             _mainWindow = mainWindow;
-            _mousePressed = false;
             _selectedGamepad = null;
 
             // NOTE: To get input in this window, we need to bind a custom keyboard driver instead of using the InputManager one as the main window isn't focused...
@@ -852,10 +852,16 @@ namespace Ryujinx.Ui.Windows
 
                 Application.Invoke(delegate
                 {
-                    if (pressedButton != "")
+                    if (_middleMousePressed)
+                    {
+                        button.Label = "Unbound";
+                    }
+                    else if (pressedButton != "")
                     {
                         button.Label = pressedButton;
                     }
+
+                    _middleMousePressed = false;
 
                     ButtonPressEvent -= MouseClick;
                     keyboard.Dispose();
@@ -883,6 +889,7 @@ namespace Ryujinx.Ui.Windows
         private void MouseClick(object sender, ButtonPressEventArgs args)
         {
             _mousePressed = true;
+            _middleMousePressed = args.Event.Button == 2;
         }
 
         private void SetProfiles()
@@ -1143,7 +1150,7 @@ namespace Ryujinx.Ui.Windows
 
             if (_mainWindow.RendererWidget != null)
             {
-                _mainWindow.RendererWidget.NpadManager.ReloadConfiguration(newConfig, ConfigurationState.Instance.Hid.EnableKeyboard);
+                _mainWindow.RendererWidget.NpadManager.ReloadConfiguration(newConfig, ConfigurationState.Instance.Hid.EnableKeyboard, ConfigurationState.Instance.Hid.EnableMouse);
             }
 
             // Atomically replace and signal input change.

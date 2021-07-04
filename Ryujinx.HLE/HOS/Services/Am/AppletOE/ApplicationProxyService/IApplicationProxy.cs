@@ -25,7 +25,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService
         // GetSelfController() -> object<nn::am::service::ISelfController>
         public ResultCode GetSelfController(ServiceCtx context)
         {
-            MakeObject(context, new ISelfController(context.Device.System, _pid));
+            MakeObject(context, new ISelfController(context, _pid));
 
             return ResultCode.Success;
         }
@@ -52,7 +52,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService
         // GetDisplayController() -> object<nn::am::service::IDisplayController>
         public ResultCode GetDisplayController(ServiceCtx context)
         {
-            MakeObject(context, new IDisplayController());
+            MakeObject(context, new IDisplayController(context));
 
             return ResultCode.Success;
         }
