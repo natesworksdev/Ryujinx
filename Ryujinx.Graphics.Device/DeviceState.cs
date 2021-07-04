@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Device
 {
@@ -11,7 +12,7 @@ namespace Ryujinx.Graphics.Device
 
         public TState State;
 
-        private readonly int _size;
+        private readonly uint _size;
 
         private readonly Func<int>[] _readCallbacks;
         private readonly Action<int>[] _writeCallbacks;
@@ -23,7 +24,7 @@ namespace Ryujinx.Graphics.Device
         {
             int size = (Unsafe.SizeOf<TState>() + RegisterSize - 1) / RegisterSize;
 
-            _size = size;
+            _size = (uint)size;
 
             _readCallbacks = new Func<int>[size];
             _writeCallbacks = new Action<int>[size];
@@ -74,13 +75,13 @@ namespace Ryujinx.Graphics.Device
 
         public int Read(int offset)
         {
-            int index = offset / RegisterSize;
+            uint index = (uint)offset / RegisterSize;
 
-            if ((uint)index < _size)
+            if (index < _size)
             {
-                int alignedOffset = index * RegisterSize;
+                uint alignedOffset = index * RegisterSize;
 
-                var readCallback = _readCallbacks[index];
+                var readCallback = Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(_readCallbacks), (IntPtr)index);
                 if (readCallback != null)
                 {
                     return readCallback();
@@ -96,11 +97,11 @@ namespace Ryujinx.Graphics.Device
 
         public void Write(int offset, int data)
         {
-            int index = offset / RegisterSize;
+            uint index = (uint)offset / RegisterSize;
 
-            if ((uint)index < _size)
+            if (index < _size)
             {
-                int alignedOffset = index * RegisterSize;
+                uint alignedOffset = index * RegisterSize;
 
 #if DEBUG
                 if (_fieldNamesForDebug != null && _fieldNamesForDebug.TryGetValue(alignedOffset, out string fieldName))
@@ -111,7 +112,7 @@ namespace Ryujinx.Graphics.Device
 
                 GetRefUnchecked<int>(alignedOffset) = data;
 
-                _writeCallbacks[index]?.Invoke(data);
+                Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(_writeCallbacks), (IntPtr)index)?.Invoke(data);
             }
         }
 
@@ -122,11 +123,11 @@ namespace Ryujinx.Graphics.Device
                 throw new ArgumentOutOfRangeException(nameof(offset));
             }
 
-            return ref GetRefUnchecked<T>(offset);
+            return ref GetRefUnchecked<T>((uint)offset);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private ref T GetRefUnchecked<T>(int offset) where T : unmanaged
+        private ref T GetRefUnchecked<T>(uint offset) where T : unmanaged
         {
             return ref Unsafe.As<TState, T>(ref Unsafe.AddByteOffset(ref State, (IntPtr)offset));
         }

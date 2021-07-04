@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Gpu.Engine.Threed
 {
@@ -21,6 +22,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
     class StateUpdateTracker<TState>
     {
+        private const int BlockSize = 0xe00;
         private const int RegisterSize = sizeof(uint);
 
         private readonly byte[] _registerToGroupMapping;
@@ -29,7 +31,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
         public StateUpdateTracker(StateUpdateCallbackEntry[] entries)
         {
-            _registerToGroupMapping = new byte[0xe00];
+            _registerToGroupMapping = new byte[BlockSize];
             _callbacks = new Action[entries.Length];
 
             var fieldToDelegate = new Dictionary<string, int>();
@@ -72,11 +74,16 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetDirty(int offset)
         {
-            int groupIndex = _registerToGroupMapping[offset / RegisterSize];
-            if (groupIndex != 0)
+            uint index = (uint)offset / RegisterSize;
+
+            if (index < BlockSize)
             {
-                groupIndex--;
-                _dirtyMask |= 1UL << groupIndex;
+                int groupIndex = Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(_registerToGroupMapping), (IntPtr)index);
+                if (groupIndex != 0)
+                {
+                    groupIndex--;
+                    _dirtyMask |= 1UL << groupIndex;
+                }
             }
         }
 

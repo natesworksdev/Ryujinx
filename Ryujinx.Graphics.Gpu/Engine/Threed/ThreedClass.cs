@@ -7,11 +7,12 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Graphics.Gpu.Engine.Threed
 {
-    class ThreedClass : InlineToMemoryClass, IDeviceState
+    class ThreedClass : IDeviceState
     {
         private readonly GpuContext _context;
         private readonly DeviceStateWithShadow<ThreedClassState> _state;
 
+        private readonly InlineToMemoryClass _i2mClass;
         private readonly DrawManager _drawManager;
         private readonly SemaphoreUpdater _semaphoreUpdater;
         private readonly ConstantBufferUpdater _cbUpdater;
@@ -22,7 +23,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// </summary>
         /// <param name="context">GPU context</param>
         /// <param name="channel">GPU channel</param>
-        public ThreedClass(GpuContext context, GpuChannel channel) : base(context, channel, false)
+        public ThreedClass(GpuContext context, GpuChannel channel)
         {
             _context = context;
             _state = new DeviceStateWithShadow<ThreedClassState>(new Dictionary<string, RwCallback>
@@ -54,6 +55,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 { nameof(ThreedClassState.UniformBufferBindFragment), new RwCallback(ConstantBufferBindFragment, null) }
             });
 
+            _i2mClass = new InlineToMemoryClass(context, channel, initializeState: false);
+
             var drawState = new DrawState();
 
             _drawManager = new DrawManager(context, channel, _state, drawState);
@@ -77,7 +80,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// <param name="offset">Register byte offset</param>
         /// <returns>Data at the specified offset</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override int Read(int offset) => _state.Read(offset);
+        public int Read(int offset) => _state.Read(offset);
 
         /// <summary>
         /// Writes data to the class registers.
@@ -85,7 +88,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// <param name="offset">Register byte offset</param>
         /// <param name="data">Data to be written</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override void Write(int offset, int data)
+        public void Write(int offset, int data)
         {
             _stateUpdater.SetDirty(offset);
             _state.Write(offset, data);
@@ -173,9 +176,18 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// Launches the Inline-to-Memory DMA copy operation.
         /// </summary>
         /// <param name="argument">Method call argument</param>
-        protected override void LaunchDma(int argument)
+        private void LaunchDma(int argument)
         {
-            LaunchDma(ref Unsafe.As<ThreedClassState, InlineToMemoryClassState>(ref _state.State), argument);
+            _i2mClass.LaunchDma(ref Unsafe.As<ThreedClassState, InlineToMemoryClassState>(ref _state.State), argument);
+        }
+
+        /// <summary>
+        /// Pushes a word of data to the Inline-to-Memory engine.
+        /// </summary>
+        /// <param name="argument">Method call argument</param>
+        private void LoadInlineData(int argument)
+        {
+            _i2mClass.LoadInlineData(argument);
         }
 
         /// <summary>
