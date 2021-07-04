@@ -76,7 +76,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 new StateUpdateCallbackEntry(UpdateViewportTransform,
                     nameof(ThreedClassState.DepthMode),
                     nameof(ThreedClassState.ViewportTransform),
-                    nameof(ThreedClassState.ViewportExtents)),
+                    nameof(ThreedClassState.ViewportExtents),
+                    nameof(ThreedClassState.YControl)),
 
                 new StateUpdateCallbackEntry(UpdateDepthBiasState,
                     nameof(ThreedClassState.DepthBiasState),
