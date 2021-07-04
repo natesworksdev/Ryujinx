@@ -17,7 +17,7 @@ namespace Ryujinx.Graphics.Device
         private readonly Func<int>[] _readCallbacks;
         private readonly Action<int>[] _writeCallbacks;
 
-        private readonly Dictionary<int, string> _fieldNamesForDebug;
+        private readonly Dictionary<uint, string> _fieldNamesForDebug;
         private readonly Action<string> _debugLogCallback;
 
         public DeviceState(IReadOnlyDictionary<string, RwCallback> callbacks = null, Action<string> debugLogCallback = null)
@@ -31,7 +31,7 @@ namespace Ryujinx.Graphics.Device
 
             if (debugLogCallback != null)
             {
-                _fieldNamesForDebug = new Dictionary<int, string>();
+                _fieldNamesForDebug = new Dictionary<uint, string>();
                 _debugLogCallback = debugLogCallback;
             }
 
@@ -64,7 +64,7 @@ namespace Ryujinx.Graphics.Device
 
                 if (debugLogCallback != null)
                 {
-                    _fieldNamesForDebug.Add(offset, field.Name);
+                    _fieldNamesForDebug.Add((uint)offset, field.Name);
                 }
 
                 offset += sizeOfField;
