@@ -102,17 +102,40 @@ namespace Ryujinx.Graphics.Device
             if (index < _size)
             {
                 uint alignedOffset = index * RegisterSize;
-
-#if DEBUG
-                if (_fieldNamesForDebug != null && _fieldNamesForDebug.TryGetValue(alignedOffset, out string fieldName))
-                {
-                    _debugLogCallback($"{typeof(TState).Name}.{fieldName} = 0x{data:X}");
-                }
-#endif
+                DebugWrite(alignedOffset, data);
 
                 GetRefUnchecked<int>(alignedOffset) = data;
 
                 Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(_writeCallbacks), (IntPtr)index)?.Invoke(data);
+            }
+        }
+
+        public bool WriteWithRedundancyCheck(int offset, int data)
+        {
+            bool changed = false;
+            uint index = (uint)offset / RegisterSize;
+
+            if (index < _size)
+            {
+                uint alignedOffset = index * RegisterSize;
+                DebugWrite(alignedOffset, data);
+
+                ref var storage = ref GetRefUnchecked<int>(alignedOffset);
+                changed = storage != data;
+                storage = data;
+
+                Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(_writeCallbacks), (IntPtr)index)?.Invoke(data);
+            }
+
+            return changed;
+        }
+
+        [Conditional("DEBUG")]
+        private void DebugWrite(uint alignedOffset, int data)
+        {
+            if (_fieldNamesForDebug != null && _fieldNamesForDebug.TryGetValue(alignedOffset, out string fieldName))
+            {
+                _debugLogCallback($"{typeof(TState).Name}.{fieldName} = 0x{data:X}");
             }
         }
 

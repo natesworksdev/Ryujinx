@@ -33,21 +33,27 @@ namespace Ryujinx.Graphics.Gpu.Engine
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Write(int offset, int value)
         {
+            WriteWithRedundancyCheck(offset, value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool WriteWithRedundancyCheck(int offset, int value)
+        {
             var shadowRamControl = _state.State.SetMmeShadowRamControlMode;
             if (shadowRamControl == SetMmeShadowRamControlMode.MethodPassthrough || offset < 0x200)
             {
-                _state.Write(offset, value);
+                return _state.WriteWithRedundancyCheck(offset, value);
             }
             else if (shadowRamControl == SetMmeShadowRamControlMode.MethodTrack ||
                      shadowRamControl == SetMmeShadowRamControlMode.MethodTrackWithFilter)
             {
                 _shadowState.Write(offset, value);
-                _state.Write(offset, value);
+                return _state.WriteWithRedundancyCheck(offset, value);
             }
             else /* if (shadowRamControl == SetMmeShadowRamControlMode.MethodReplay) */
             {
                 Debug.Assert(shadowRamControl == SetMmeShadowRamControlMode.MethodReplay);
-                _state.Write(offset, _shadowState.Read(offset));
+                return _state.WriteWithRedundancyCheck(offset, _shadowState.Read(offset));
             }
         }
     }
