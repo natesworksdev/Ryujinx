@@ -28,6 +28,21 @@ namespace Ryujinx.Graphics.Gpu.Shader
         public bool EarlyZForce { get; }
 
         /// <summary>
+        /// Depth mode zero to one or minus one to one.
+        /// </summary>
+        public bool DepthMode { get; }
+
+        /// <summary>
+        /// Indicates if the point size is set on the shader or is fixed.
+        /// </summary>
+        public bool ProgramPointSizeEnable { get; }
+
+        /// <summary>
+        /// Point size if not set from shader.
+        /// </summary>
+        public float PointSize { get; }
+
+        /// <summary>
         /// Primitive topology of current draw.
         /// </summary>
         public PrimitiveTopology Topology { get; }
@@ -39,18 +54,27 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <param name="texturePoolMaximumId">Maximum ID of the texture pool</param>
         /// <param name="textureBufferIndex">Constant buffer slot where the texture handles are located</param>
         /// <param name="earlyZForce">Early Z force enable</param>
+        /// <param name="depthMode">Depth mode zero to one or minus one to one</param>
+        /// <param name="programPointSizeEnable">Indicates if the point size is set on the shader or is fixed</param>
+        /// <param name="pointSize">Point size if not set from shader</param>
         /// <param name="topology">Primitive topology</param>
         public GpuAccessorState(
             ulong texturePoolGpuVa,
             int texturePoolMaximumId,
             int textureBufferIndex,
             bool earlyZForce,
+            bool depthMode,
+            bool programPointSizeEnable,
+            float pointSize,
             PrimitiveTopology topology)
         {
             TexturePoolGpuVa = texturePoolGpuVa;
             TexturePoolMaximumId = texturePoolMaximumId;
             TextureBufferIndex = textureBufferIndex;
             EarlyZForce = earlyZForce;
+            DepthMode = depthMode;
+            ProgramPointSizeEnable = programPointSizeEnable;
+            PointSize = pointSize;
             Topology = topology;
         }
     }

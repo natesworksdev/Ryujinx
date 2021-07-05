@@ -145,7 +145,30 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public void PrepareForReturn()
         {
-            if (!IsNonMain && Config.Stage == ShaderStage.Fragment)
+            if (IsNonMain)
+            {
+                return;
+            }
+
+            if (Config.Options.TargetApi == TargetApi.Vulkan &&
+                Config.Stage == ShaderStage.Vertex &&
+                (Config.Options.Flags & TranslationFlags.VertexA) == 0)
+            {
+                if (Config.GpuAccessor.QueryTransformDepthMinusOneToOne())
+                {
+                    Operand z = Attribute(AttributeConsts.PositionZ);
+                    Operand w = Attribute(AttributeConsts.PositionW);
+                    Operand halfW = this.FPMultiply(w, ConstF(0.5f));
+
+                    this.Copy(Attribute(AttributeConsts.PositionZ), this.FPFusedMultiplyAdd(z, ConstF(0.5f), halfW));
+                }
+
+                if (!Config.GpuAccessor.QueryProgramPointSize())
+                {
+                    this.Copy(Attribute(AttributeConsts.PointSize), ConstF(Config.GpuAccessor.QueryPointSize()));
+                }
+            }
+            else if (Config.Stage == ShaderStage.Fragment)
             {
                 if (Config.OmapDepth)
                 {
@@ -174,7 +197,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                         Operand src = Register(regIndexBase + component, RegisterType.Gpr);
 
                         // Perform B <-> R swap if needed, for BGRA formats (not supported on OpenGL).
-                        if (component == 0 || component == 2)
+                        /* if (component == 0 || component == 2)
                         {
                             Operand isBgra = Attribute(AttributeConsts.FragmentOutputIsBgraBase + rtIndex * 4);
 
@@ -192,7 +215,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                             MarkLabel(lblEnd);
                         }
-                        else
+                        else */
                         {
                             this.Copy(Attribute(fragmentOutputColorAttr + component * 4), src);
                         }

@@ -6,6 +6,8 @@ namespace Ryujinx.Graphics.Shader.Translation
         public int StorageBuffersCount { get; private set; }
         public int TexturesCount { get; private set; }
         public int ImagesCount { get; private set; }
+        public int BufferTexturesCount { get; private set; }
+        public int BufferImagesCount { get; private set; }
 
         internal int IncrementUniformBuffersCount()
         {
@@ -25,6 +27,16 @@ namespace Ryujinx.Graphics.Shader.Translation
         internal int IncrementImagesCount()
         {
             return ImagesCount++;
+        }
+
+        internal int IncrementBufferTexturesCount()
+        {
+            return BufferTexturesCount++;
+        }
+
+        internal int IncrementBufferImagesCount()
+        {
+            return BufferImagesCount++;
         }
     }
 }

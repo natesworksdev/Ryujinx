@@ -52,7 +52,7 @@ namespace Ryujinx.Graphics.OpenGL
             ResourcePool = new ResourcePool();
         }
 
-        public IShader CompileShader(ShaderStage stage, string code)
+        public IShader CompileShader(ShaderStage stage, ShaderBindings bindings, string code)
         {
             return new Shader(stage, code);
         }
@@ -89,6 +89,11 @@ namespace Ryujinx.Graphics.OpenGL
         public void DeleteBuffer(BufferHandle buffer)
         {
             Buffer.Delete(buffer);
+        }
+
+        public HardwareInfo GetHardwareInfo()
+        {
+            return new HardwareInfo(GpuVendor, GpuRenderer);
         }
 
         public ReadOnlySpan<byte> GetBufferData(BufferHandle buffer, int offset, int size)
@@ -159,7 +164,7 @@ namespace Ryujinx.Graphics.OpenGL
             _counters.QueueReset(type);
         }
 
-        public void BackgroundContextAction(Action action)
+        public unsafe void BackgroundContextAction(Action action)
         {
             if (IOpenGLContext.HasContext())
             {

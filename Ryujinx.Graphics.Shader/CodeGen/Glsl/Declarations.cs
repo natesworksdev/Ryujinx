@@ -169,8 +169,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                         context.AppendLine();
                     }
 
-                    context.AppendLine($"uniform bool {DefaultNames.IsBgraName}[8];");
-                    context.AppendLine();
+                    // context.AppendLine($"uniform bool {DefaultNames.IsBgraName}[8];");
+                    // context.AppendLine();
                 }
 
                 if (DeclareRenderScale(context))
@@ -240,11 +240,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             switch (type)
             {
                 case VariableType.Bool: return "bool";
-                case VariableType.F32:  return "precise float";
-                case VariableType.F64:  return "double";
+                case VariableType.F32: return "precise float";
+                case VariableType.F64: return "double";
                 case VariableType.None: return "void";
-                case VariableType.S32:  return "int";
-                case VariableType.U32:  return "uint";
+                case VariableType.S32: return "int";
+                case VariableType.U32: return "uint";
             }
 
             throw new ArgumentException($"Invalid variable type \"{type}\".");
@@ -489,7 +489,15 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 {
                     char swzMask = "xyzw"[c];
 
-                    context.AppendLine($"layout (location = {attr}, component = {c}) out float {name}_{swzMask};");
+                    string xfb = string.Empty;
+
+                    var tfOutput = context.GetTransformFeedbackOutput(attr, c);
+                    if (tfOutput.Valid)
+                    {
+                        xfb = $", xfb_buffer = {tfOutput.Buffer}, xfb_offset = {tfOutput.Offset}, xfb_stride = {tfOutput.Stride}";
+                    }
+
+                    context.AppendLine($"layout (location = {attr}, component = {c}{xfb}) out float {name}_{swzMask};");
                 }
             }
             else
@@ -511,7 +519,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                     scaleElements++; // Also includes render target scale, for gl_FragCoord.
                 }
 
-                context.AppendLine($"uniform float {stage}_renderScale[{scaleElements}];");
+                // context.AppendLine($"uniform float {stage}_renderScale[{scaleElements}];");
 
                 if (context.Config.UsedFeatures.HasFlag(FeatureFlags.IntegerSampling))
                 {

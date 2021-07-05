@@ -32,7 +32,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.Types
         {
             if (IsValid())
             {
-                return gpuContext.Synchronization.WaitOnSyncpoint(Id, Value, timeout);
+                // return gpuContext.Synchronization.WaitOnSyncpoint(Id, Value, timeout);
             }
 
             return false;

@@ -1,6 +1,6 @@
 ﻿ivec2 Helper_TexelFetchScale(ivec2 inputVec, int samplerIndex)
 {
-    float scale = fp_renderScale[1 + samplerIndex];
+    float scale = 1.0; // fp_renderScale[1 + samplerIndex];
     if (scale == 1.0)
     {
         return inputVec;

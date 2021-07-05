@@ -1,6 +1,7 @@
 ﻿using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Shader;
+using System;
 
 namespace Ryujinx.Graphics.Gpu.Shader
 {
@@ -161,6 +162,16 @@ namespace Ryujinx.Graphics.Gpu.Shader
             };
         }
 
+        public bool QueryProgramPointSize()
+        {
+            return _state.ProgramPointSizeEnable;
+        }
+
+        public float QueryPointSize()
+        {
+            return _state.PointSize;
+        }
+
         /// <summary>
         /// Queries host storage buffer alignment required.
         /// </summary>
@@ -212,6 +223,21 @@ namespace Ryujinx.Graphics.Gpu.Shader
                     handle,
                     cbufSlot);
             }
+        }
+
+        public bool QueryTransformDepthMinusOneToOne()
+        {
+            return _state.DepthMode;
+        }
+
+        public ReadOnlySpan<byte> QueryTransformFeedbackVaryingLocations(int bufferIndex)
+        {
+            return ReadOnlySpan<byte>.Empty;
+        }
+
+        public int QueryTransformFeedbackStride(int bufferIndex)
+        {
+            return 0;
         }
 
         /// <summary>

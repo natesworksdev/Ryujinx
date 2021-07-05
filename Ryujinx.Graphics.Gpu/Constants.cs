@@ -41,6 +41,22 @@ namespace Ryujinx.Graphics.Gpu
         public const int TotalTransformFeedbackBuffers = 4;
 
         /// <summary>
+        /// Maximum number of textures on a single shader stage.
+        /// </summary>
+        /// <remarks>
+        /// The maximum number of textures is API limited, the hardware supports a unlimited amount.
+        /// </remarks>
+        public const int TotalTextures = 32;
+
+        /// <summary>
+        /// Maximum number of images on a single shader stage.
+        /// </summary>
+        /// <remarks>
+        /// The maximum number of images is API limited, the hardware supports a unlimited amount.
+        /// </remarks>
+        public const int TotalImages = 8;
+
+        /// <summary>
         /// Maximum number of render target color buffers.
         /// </summary>
         public const int TotalRenderTargets = 8;

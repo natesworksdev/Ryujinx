@@ -166,6 +166,54 @@ namespace Ryujinx.Graphics.GAL
 
     public static class FormatExtensions
     {
+        public static bool IsImageCompatible(this Format format)
+        {
+            switch (format)
+            {
+                case Format.R8Unorm:
+                case Format.R8Snorm:
+                case Format.R8Uint:
+                case Format.R8Sint:
+                case Format.R16Float:
+                case Format.R16Unorm:
+                case Format.R16Snorm:
+                case Format.R16Uint:
+                case Format.R16Sint:
+                case Format.R32Float:
+                case Format.R32Uint:
+                case Format.R32Sint:
+                case Format.R8G8Unorm:
+                case Format.R8G8Snorm:
+                case Format.R8G8Uint:
+                case Format.R8G8Sint:
+                case Format.R16G16Float:
+                case Format.R16G16Unorm:
+                case Format.R16G16Snorm:
+                case Format.R16G16Uint:
+                case Format.R16G16Sint:
+                case Format.R32G32Float:
+                case Format.R32G32Uint:
+                case Format.R32G32Sint:
+                case Format.R8G8B8A8Unorm:
+                case Format.R8G8B8A8Snorm:
+                case Format.R8G8B8A8Uint:
+                case Format.R8G8B8A8Sint:
+                case Format.R16G16B16A16Float:
+                case Format.R16G16B16A16Unorm:
+                case Format.R16G16B16A16Snorm:
+                case Format.R16G16B16A16Uint:
+                case Format.R16G16B16A16Sint:
+                case Format.R32G32B32A32Float:
+                case Format.R32G32B32A32Uint:
+                case Format.R32G32B32A32Sint:
+                case Format.R10G10B10A2Unorm:
+                case Format.R10G10B10A2Uint:
+                case Format.R11G11B10Float:
+                    return true;
+            }
+
+            return false;
+        }
         /// <summary>
         /// Checks if the texture format is an ASTC format.
         /// </summary>

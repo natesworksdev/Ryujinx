@@ -352,10 +352,15 @@ namespace Ryujinx.Graphics.Shader.Translation
             FirstStorageBufferBinding = _counts.StorageBuffersCount;
 
             return _cachedStorageBufferDescriptors = GetBufferDescriptors(
-                _usedStorageBuffers,
+                FillMask(_usedStorageBuffers),
                 _usedStorageBuffersWrite,
                 true,
                 _counts.IncrementStorageBuffersCount);
+        }
+
+        private static int FillMask(int value)
+        {
+            return value != 0 ? (int)(uint.MaxValue >> BitOperations.LeadingZeroCount((uint)value)) : 0;
         }
 
         private static BufferDescriptor[] GetBufferDescriptors(
@@ -398,15 +403,24 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public TextureDescriptor[] GetTextureDescriptors()
         {
-            return _cachedTextureDescriptors ??= GetTextureOrImageDescriptors(_usedTextures, _counts.IncrementTexturesCount);
+            return _cachedTextureDescriptors ??= GetTextureOrImageDescriptors(
+                _usedTextures,
+                _counts.IncrementTexturesCount,
+                _counts.IncrementBufferTexturesCount);
         }
 
         public TextureDescriptor[] GetImageDescriptors()
         {
-            return _cachedImageDescriptors ??= GetTextureOrImageDescriptors(_usedImages, _counts.IncrementImagesCount);
+            return _cachedImageDescriptors ??= GetTextureOrImageDescriptors(
+                _usedImages,
+                _counts.IncrementImagesCount,
+                _counts.IncrementBufferImagesCount);
         }
 
-        private static TextureDescriptor[] GetTextureOrImageDescriptors(Dictionary<TextureInfo, TextureMeta> dict, Func<int> getBindingCallback)
+        private static TextureDescriptor[] GetTextureOrImageDescriptors(
+            Dictionary<TextureInfo, TextureMeta> dict,
+            Func<int> getBindingCallback,
+            Func<int> getBufferBindingCallback)
         {
             var descriptors = new TextureDescriptor[dict.Count];
 
@@ -416,7 +430,9 @@ namespace Ryujinx.Graphics.Shader.Translation
                 var info = kv.Key;
                 var meta = kv.Value;
 
-                int binding = getBindingCallback();
+                bool isBuffer = (meta.Type & SamplerType.Mask) == SamplerType.TextureBuffer;
+
+                int binding = isBuffer ? getBufferBindingCallback() : getBindingCallback();
 
                 descriptors[i] = new TextureDescriptor(binding, meta.Type, info.Format, info.CbufSlot, info.Handle);
                 descriptors[i].SetFlag(meta.UsageFlags);
