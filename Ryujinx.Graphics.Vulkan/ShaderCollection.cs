@@ -20,6 +20,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         public DescriptorSetCache DescriptorSetCache { get; }
 
+        public ProgramLinkStatus LinkStatus { get; }
+
         private readonly List<Auto<DescriptorSetCollection>>[][] _dsCache;
         private readonly int[] _dsCacheCursor;
         private int _dsLastCbIndex;
@@ -44,9 +46,17 @@ namespace Ryujinx.Graphics.Vulkan
 
             _infos = new PipelineShaderStageCreateInfo[shaders.Length];
 
+            LinkStatus = ProgramLinkStatus.Success;
+
             for (int i = 0; i < shaders.Length; i++)
             {
-                internalShaders[i] = (Shader)shaders[i];
+                var shader = (Shader)shaders[i];
+                if (!shader.Valid)
+                {
+                    LinkStatus = ProgramLinkStatus.Failure;
+                }
+
+                internalShaders[i] = shader;
 
                 _infos[i] = internalShaders[i].GetInfo();
             }
@@ -126,7 +136,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public ProgramLinkStatus CheckProgramLink(bool blocking)
         {
-            return ProgramLinkStatus.Success;
+            return LinkStatus;
         }
 
         protected virtual unsafe void Dispose(bool disposing)

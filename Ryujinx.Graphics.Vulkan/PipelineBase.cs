@@ -186,6 +186,11 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void DispatchCompute(int groupsX, int groupsY, int groupsZ)
         {
+            if (_program.LinkStatus != ProgramLinkStatus.Success)
+            {
+                return;
+            }
+
             EndRenderPass();
             RecreatePipelineIfNeeded(PipelineBindPoint.Compute);
 
@@ -195,6 +200,11 @@ namespace Ryujinx.Graphics.Vulkan
         public void Draw(int vertexCount, int instanceCount, int firstVertex, int firstInstance)
         {
             // System.Console.WriteLine("draw");
+
+            if (_program.LinkStatus != ProgramLinkStatus.Success)
+            {
+                return;
+            }
 
             BeginRenderPass();
             RecreatePipelineIfNeeded(PipelineBindPoint.Graphics);
@@ -218,6 +228,11 @@ namespace Ryujinx.Graphics.Vulkan
         public void DrawIndexed(int indexCount, int instanceCount, int firstIndex, int firstVertex, int firstInstance)
         {
             // System.Console.WriteLine("draw indexed");
+
+            if (_program.LinkStatus != ProgramLinkStatus.Success)
+            {
+                return;
+            }
 
             BeginRenderPass();
             RecreatePipelineIfNeeded(PipelineBindPoint.Graphics);
@@ -754,7 +769,7 @@ namespace Ryujinx.Graphics.Vulkan
                     // Fill with VK_ATTACHMENT_UNUSED to cover any gaps.
                     for (int i = 0; i <= maxAttachmentIndex; i++)
                     {
-                        subpass.PColorAttachments[i] = new AttachmentReference(~0U, ImageLayout.Undefined);
+                        subpass.PColorAttachments[i] = new AttachmentReference(Vk.AttachmentUnused, ImageLayout.Undefined);
                     }
 
                     for (int i = 0; i < colorAttachmentsCount; i++)
@@ -963,7 +978,6 @@ namespace Ryujinx.Graphics.Vulkan
                     {
                         _newState.DestroyGraphicsPipeline(_program);
                     }
-
                 }
 
                 _newState.Dispose();

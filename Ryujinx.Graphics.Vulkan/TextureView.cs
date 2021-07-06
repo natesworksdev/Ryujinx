@@ -2,6 +2,7 @@
 using Silk.NET.Vulkan;
 using System;
 using VkBuffer = Silk.NET.Vulkan.Buffer;
+using VkFormat = Silk.NET.Vulkan.Format;
 
 namespace Ryujinx.Graphics.Vulkan
 {
@@ -25,7 +26,7 @@ namespace Ryujinx.Graphics.Vulkan
         public int FirstLayer { get; }
         public int FirstLevel { get; }
         public float ScaleFactor => Storage.ScaleFactor;
-        public Silk.NET.Vulkan.Format VkFormat { get; }
+        public VkFormat VkFormat { get; }
         public bool Valid { get; private set; }
 
         public TextureView(
@@ -79,8 +80,10 @@ namespace Ryujinx.Graphics.Vulkan
             var componentMapping = new ComponentMapping(swizzleR, swizzleG, swizzleB, swizzleA);
 
             var aspectFlags = info.Format.ConvertAspectFlags(info.DepthStencilMode);
+            var aspectFlagsDepth = info.Format.ConvertAspectFlags(DepthStencilMode.Depth);
 
             var subresourceRange = new ImageSubresourceRange(aspectFlags, (uint)firstLevel, levels, (uint)firstLayer, layers);
+            var subresourceRangeDepth = new ImageSubresourceRange(aspectFlagsDepth, (uint)firstLevel, levels, (uint)firstLayer, layers);
 
             unsafe Auto<DisposableImageView> CreateImageView(ComponentMapping cm, ImageSubresourceRange sr, ImageViewType viewType)
             {
@@ -107,7 +110,7 @@ namespace Ryujinx.Graphics.Vulkan
                 ComponentSwizzle.B,
                 ComponentSwizzle.A);
 
-            _imageViewIdentity = CreateImageView(identityComponentMapping, subresourceRange, type);
+            _imageViewIdentity = CreateImageView(identityComponentMapping, subresourceRangeDepth, type);
 
             // Framebuffer attachments also requires 3D textures to be bound as 2D array.
             if (info.Target == Target.Texture3D)
@@ -212,30 +215,98 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void CopyTo(ITexture destination, Extents2D srcRegion, Extents2D dstRegion, bool linearFilter)
         {
-            _gd.FlushAllCommands();
-
             var src = this;
             var dst = (TextureView)destination;
 
-            using var cbs = _gd.CommandBufferPool.Rent();
+            bool srcUsesStorageFormat = src.VkFormat == src.Storage.VkFormat;
+            bool dstUsesStorageFormat = dst.VkFormat == dst.Storage.VkFormat;
 
-            _gd.Blit.Blit(
-                _gd,
-                cbs,
-                src,
-                dst.GetIdentityImageView(),
-                dst.Width,
-                dst.Height,
-                dst.VkFormat,
-                srcRegion.X1,
-                srcRegion.Y1,
-                srcRegion.X2,
-                srcRegion.Y2,
-                dstRegion.X1,
-                dstRegion.Y1,
-                dstRegion.X2,
-                dstRegion.Y2,
-                linearFilter);
+            _gd.PipelineInternal.EndRenderPass();
+
+            var cbs = _gd.PipelineInternal.CurrentCommandBuffer;
+
+            if (srcUsesStorageFormat && dstUsesStorageFormat)
+            {
+                if ((srcRegion.X1 | dstRegion.X1) == 0 &&
+                    (srcRegion.Y1 | dstRegion.Y1) == 0 &&
+                    srcRegion.X2 == src.Width &&
+                    srcRegion.Y2 == src.Height &&
+                    dstRegion.X2 == dst.Width &&
+                    dstRegion.Y2 == dst.Height &&
+                    src.Width == dst.Width &&
+                    src.Height == dst.Height)
+                {
+                    TextureCopy.Copy(
+                        _gd.Api,
+                        cbs.CommandBuffer,
+                        src.GetImage().Get(cbs).Value,
+                        dst.GetImage().Get(cbs).Value,
+                        src.Info,
+                        dst.Info,
+                        src.FirstLayer,
+                        dst.FirstLayer,
+                        src.FirstLevel,
+                        dst.FirstLevel,
+                        0,
+                        0,
+                        0,
+                        0,
+                        1,
+                        1);
+
+                    return;
+                }
+                else if (_gd.FormatCapabilities.FormatSupports(src.Info.Format, FormatFeatureFlags.FormatFeatureBlitSrcBit) &&
+                         _gd.FormatCapabilities.FormatSupports(dst.Info.Format, FormatFeatureFlags.FormatFeatureBlitDstBit))
+                {
+                    TextureCopy.Blit(
+                        _gd.Api,
+                        cbs.CommandBuffer,
+                        src.GetImage().Get(cbs).Value,
+                        dst.GetImage().Get(cbs).Value,
+                        src.Info,
+                        dst.Info,
+                        srcRegion,
+                        dstRegion,
+                        src.FirstLevel,
+                        dst.FirstLevel,
+                        src.FirstLayer,
+                        dst.FirstLayer,
+                        linearFilter);
+
+                    return;
+                }
+            }
+
+            Auto<DisposableImage> srcImage;
+            Auto<DisposableImage> dstImage;
+
+            if (dst.Info.Format.IsDepthOrStencil())
+            {
+                srcImage = src.Storage.CreateAliasedColorForDepthStorageUnsafe(src.Info.Format).GetImage();
+                dstImage = dst.Storage.CreateAliasedColorForDepthStorageUnsafe(dst.Info.Format).GetImage();
+            }
+            else
+            {
+                srcImage = src.Storage.CreateAliasedStorageUnsafe(src.Info.Format).GetImage();
+                dstImage = dst.Storage.CreateAliasedStorageUnsafe(dst.Info.Format).GetImage();
+            }
+
+            TextureCopy.Blit(
+                _gd.Api,
+                cbs.CommandBuffer,
+                srcImage.Get(cbs).Value,
+                dstImage.Get(cbs).Value,
+                src.Info,
+                dst.Info,
+                srcRegion,
+                dstRegion,
+                src.FirstLevel,
+                dst.FirstLevel,
+                src.FirstLayer,
+                dst.FirstLayer,
+                linearFilter,
+                forceColorAspect: true);
         }
 
         public ITexture CreateView(TextureCreateInfo info, int firstLayer, int firstLevel)

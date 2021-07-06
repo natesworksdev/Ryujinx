@@ -20,6 +20,7 @@ namespace Ryujinx.Graphics.Vulkan
         private Device _device;
         private Window _window;
 
+        internal FormatCapabilities FormatCapabilities { get; private set; }
         internal HardwareCapabilities Capabilities { get; private set; }
 
         internal Vk Api { get; private set; }
@@ -49,6 +50,7 @@ namespace Ryujinx.Graphics.Vulkan
         private DebugReportCallbackEXT _debugReportCallback;
 
         internal TextureBlit Blit { get; private set; }
+        internal PipelineFull PipelineInternal => _pipeline;
 
         public IPipeline Pipeline => _pipeline;
 
@@ -85,6 +87,8 @@ namespace Ryujinx.Graphics.Vulkan
 
             _surface = GetSurface(_instance, api);
             _physicalDevice = VulkanInitialization.FindSuitablePhysicalDevice(api, _instance, _surface);
+
+            FormatCapabilities = new FormatCapabilities(api, _physicalDevice);
 
             var queueFamilyIndex = VulkanInitialization.FindSuitableQueueFamily(api, _physicalDevice, _surface, out uint maxQueueCount);
             var supportedExtensions = VulkanInitialization.GetSupportedExtensions(api, _physicalDevice);

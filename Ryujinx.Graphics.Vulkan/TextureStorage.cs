@@ -1,7 +1,9 @@
 ﻿using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
 using System;
+using System.Collections.Generic;
 using System.Numerics;
+using VkFormat = Silk.NET.Vulkan.Format;
 
 namespace Ryujinx.Graphics.Vulkan
 {
@@ -32,6 +34,9 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly Auto<DisposableImage> _imageAuto;
         private readonly Auto<MemoryAllocation> _allocationAuto;
 
+        private Dictionary<GAL.Format, TextureStorage> _aliasedStorages;
+
+        public VkFormat VkFormat { get; }
         public float ScaleFactor { get; }
 
         public unsafe TextureStorage(
@@ -39,7 +44,8 @@ namespace Ryujinx.Graphics.Vulkan
             PhysicalDevice physicalDevice,
             Device device,
             TextureCreateInfo info,
-            float scaleFactor)
+            float scaleFactor,
+            Auto<MemoryAllocation> foreignAllocation = null)
         {
             _gd = gd;
             _device = device;
@@ -50,6 +56,8 @@ namespace Ryujinx.Graphics.Vulkan
             var levels = (uint)info.Levels;
             var layers = (uint)info.GetLayers();
             var depth = (uint)(info.Target == Target.Texture3D ? info.Depth : 1);
+
+            VkFormat = format;
 
             var type = info.Target.Convert();
 
@@ -112,21 +120,81 @@ namespace Ryujinx.Graphics.Vulkan
 
             gd.Api.CreateImage(device, imageCreateInfo, null, out _image).ThrowOnError();
 
-            gd.Api.GetImageMemoryRequirements(device, _image, out var requirements);
-            var allocation = gd.MemoryAllocator.AllocateDeviceMemory(physicalDevice, requirements);
-
-            if (allocation.Memory.Handle == 0UL)
+            if (foreignAllocation == null)
             {
-                gd.Api.DestroyImage(device, _image, null);
-                throw new Exception("Image initialization failed.");
+                gd.Api.GetImageMemoryRequirements(device, _image, out var requirements);
+                var allocation = gd.MemoryAllocator.AllocateDeviceMemory(physicalDevice, requirements);
+
+                if (allocation.Memory.Handle == 0UL)
+                {
+                    gd.Api.DestroyImage(device, _image, null);
+                    throw new Exception("Image initialization failed.");
+                }
+
+                gd.Api.BindImageMemory(device, _image, allocation.Memory, allocation.Offset).ThrowOnError();
+
+                _allocationAuto = new Auto<MemoryAllocation>(allocation);
+                _imageAuto = new Auto<DisposableImage>(new DisposableImage(_gd.Api, device, _image), null, _allocationAuto);
+
+                InitialTransition(ImageLayout.Undefined, ImageLayout.General);
+            }
+            else
+            {
+                var allocation = foreignAllocation.GetUnsafe();
+
+                gd.Api.BindImageMemory(device, _image, allocation.Memory, allocation.Offset).ThrowOnError();
+
+                _imageAuto = new Auto<DisposableImage>(new DisposableImage(_gd.Api, device, _image));
+
+                InitialTransition(ImageLayout.Preinitialized, ImageLayout.General);
+            }
+        }
+
+        public TextureStorage CreateAliasedColorForDepthStorageUnsafe(GAL.Format format)
+        {
+            var colorFormat = format switch
+            {
+                GAL.Format.S8Uint => GAL.Format.R8Unorm,
+                GAL.Format.D16Unorm => GAL.Format.R16Unorm,
+                GAL.Format.D24X8Unorm => GAL.Format.R8G8B8A8Unorm,
+                GAL.Format.D32Float => GAL.Format.R32Float,
+                GAL.Format.D24UnormS8Uint => GAL.Format.R8G8B8A8Unorm,
+                GAL.Format.D32FloatS8Uint => GAL.Format.R32G32Float,
+                _ => throw new ArgumentException($"\"{format}\" is not a supported depth or stencil format.")
+            };
+
+            return CreateAliasedStorageUnsafe(colorFormat);
+        }
+
+        public TextureStorage CreateAliasedStorageUnsafe(GAL.Format format)
+        {
+            if (_aliasedStorages == null || !_aliasedStorages.TryGetValue(format, out var storage))
+            {
+                _aliasedStorages ??= new Dictionary<GAL.Format, TextureStorage>();
+
+                var info = new TextureCreateInfo(
+                    _info.Width,
+                    _info.Height,
+                    _info.Depth,
+                    _info.Levels,
+                    _info.Samples,
+                    _info.BlockWidth,
+                    _info.BlockHeight,
+                    _info.BytesPerPixel,
+                    format,
+                    _info.DepthStencilMode,
+                    _info.Target,
+                    _info.SwizzleR,
+                    _info.SwizzleG,
+                    _info.SwizzleB,
+                    _info.SwizzleA);
+
+                storage = new TextureStorage(_gd, default, _device, info, ScaleFactor, _allocationAuto);
+
+                _aliasedStorages.Add(format, storage);
             }
 
-            gd.Api.BindImageMemory(device, _image, allocation.Memory, allocation.Offset).ThrowOnError();
-
-            _allocationAuto = new Auto<MemoryAllocation>(allocation);
-            _imageAuto = new Auto<DisposableImage>(new DisposableImage(_gd.Api, device, _image), null, _allocationAuto);
-
-            InitialTransition(ImageLayout.General);
+            return storage;
         }
 
         public Auto<DisposableImage> GetImage()
@@ -139,39 +207,7 @@ namespace Ryujinx.Graphics.Vulkan
             return _image;
         }
 
-        public unsafe void InitialTransition(CommandBufferScoped cbs, ImageLayout dstLayout)
-        {
-            var aspectFlags = _info.Format.ConvertAspectFlags();
-
-            var subresourceRange = new ImageSubresourceRange(aspectFlags, 0, (uint)_info.Levels, 0, (uint)_info.GetLayers());
-
-            var barrier = new ImageMemoryBarrier()
-            {
-                SType = StructureType.ImageMemoryBarrier,
-                SrcAccessMask = 0,
-                DstAccessMask = DefaultAccessMask,
-                OldLayout = ImageLayout.Undefined,
-                NewLayout = dstLayout,
-                SrcQueueFamilyIndex = Vk.QueueFamilyIgnored,
-                DstQueueFamilyIndex = Vk.QueueFamilyIgnored,
-                Image = _imageAuto.Get(cbs).Value,
-                SubresourceRange = subresourceRange
-            };
-
-            _gd.Api.CmdPipelineBarrier(
-                cbs.CommandBuffer,
-                PipelineStageFlags.PipelineStageTopOfPipeBit,
-                PipelineStageFlags.PipelineStageAllCommandsBit,
-                0,
-                0,
-                null,
-                0,
-                null,
-                1,
-                barrier);
-        }
-
-        private unsafe void InitialTransition(ImageLayout dstLayout)
+        private unsafe void InitialTransition(ImageLayout srcLayout, ImageLayout dstLayout)
         {
             using var cbs = _gd.CommandBufferPool.Rent();
 
@@ -184,7 +220,7 @@ namespace Ryujinx.Graphics.Vulkan
                 SType = StructureType.ImageMemoryBarrier,
                 SrcAccessMask = 0,
                 DstAccessMask = DefaultAccessMask,
-                OldLayout = ImageLayout.Undefined,
+                OldLayout = srcLayout,
                 NewLayout = dstLayout,
                 SrcQueueFamilyIndex = Vk.QueueFamilyIgnored,
                 DstQueueFamilyIndex = Vk.QueueFamilyIgnored,
@@ -224,6 +260,16 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void Dispose()
         {
+            if (_aliasedStorages != null)
+            {
+                foreach (var storage in _aliasedStorages.Values)
+                {
+                    storage.Dispose();
+                }
+
+                _aliasedStorages.Clear();
+            }
+
             _imageAuto.Dispose();
             _allocationAuto?.Dispose();
         }

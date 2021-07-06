@@ -236,12 +236,14 @@ namespace Ryujinx.Graphics.Vulkan
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void UpdateBuffer(CommandBufferScoped cbs, ref DescriptorBufferInfo info, Auto<DisposableBuffer> buffer)
         {
-            if (buffer == null)
-            {
-                return;
-            }
+            info.Buffer = buffer?.Get(cbs, (int)info.Offset, (int)info.Range).Value ?? default;
 
-            info.Buffer = buffer.Get(cbs, (int)info.Offset, (int)info.Range).Value;
+            // The spec requires that buffers with null handle have offset as 0 and range as VK_WHOLE_SIZE.
+            if (info.Buffer.Handle == 0)
+            {
+                info.Offset = 0;
+                info.Range = Vk.WholeSize;
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

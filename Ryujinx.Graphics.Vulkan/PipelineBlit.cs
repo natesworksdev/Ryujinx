@@ -68,16 +68,16 @@ namespace Ryujinx.Graphics.Vulkan
             return layouts;
         }
 
-        public void SetRenderTarget(Auto<DisposableImageView> view, uint width, uint height, VkFormat format)
+        public void SetRenderTarget(Auto<DisposableImageView> view, uint width, uint height, bool isDepthStencil, VkFormat format)
         {
-            CreateFramebuffer(view, width, height, format);
+            CreateFramebuffer(view, width, height, isDepthStencil, format);
             CreateRenderPass();
             SignalStateChange();
         }
 
-        private void CreateFramebuffer(Auto<DisposableImageView> view, uint width, uint height, VkFormat format)
+        private void CreateFramebuffer(Auto<DisposableImageView> view, uint width, uint height, bool isDepthStencil, VkFormat format)
         {
-            FramebufferParams = new FramebufferParams(Device, view, width, height, format);
+            FramebufferParams = new FramebufferParams(Device, view, width, height, isDepthStencil, format);
             UpdatePipelineAttachmentFormats();
         }
 

@@ -22,6 +22,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         public ShaderBindings Bindings { get; }
 
+        public bool Valid { get; }
+
         public unsafe Shader(Vk api, Device device, ShaderStage stage, ShaderBindings bindings, string glsl)
         {
             _api = api;
@@ -40,49 +42,42 @@ namespace Ryujinx.Graphics.Vulkan
             glsl = glsl.Replace("readInvocationARB", "subgroupBroadcast");
             glsl = glsl.Replace("#extension GL_ARB_shader_ballot : enable", "#extension GL_KHR_shader_subgroup_basic : enable\n#extension GL_KHR_shader_subgroup_ballot : enable");
 
-            try
+            Options options = new Options(false)
             {
-                Options options = new Options(false)
+                SourceLanguage = SourceLanguage.Glsl,
+                TargetSpirVVersion = new SpirVVersion(1, 5)
+            };
+            options.SetTargetEnvironment(TargetEnvironment.Vulkan, EnvironmentVersion.Vulkan_1_2);
+            Compiler compiler = new Compiler(options);
+            var scr = compiler.Compile(glsl, "Ryu", GetShaderCShaderStage(stage));
+
+            if (scr.Status != Status.Success)
+            {
+                Logger.Error?.Print(LogClass.Gpu, $"Shader compilation error: {scr.Status} {scr.ErrorMessage}");
+                return;
+            }
+
+            Valid = true;
+
+            var spirvBytes = new Span<byte>((void*)scr.CodePointer, (int)scr.CodeLength);
+
+            uint[] code = new uint[(scr.CodeLength + 3) / 4];
+
+            spirvBytes.CopyTo(MemoryMarshal.Cast<uint, byte>(new Span<uint>(code)).Slice(0, (int)scr.CodeLength));
+
+            fixed (uint* pCode = code)
+            {
+                var shaderModuleCreateInfo = new ShaderModuleCreateInfo()
                 {
-                    SourceLanguage = SourceLanguage.Glsl,
-                    TargetSpirVVersion = new SpirVVersion(1, 5)
+                    SType = StructureType.ShaderModuleCreateInfo,
+                    CodeSize = scr.CodeLength,
+                    PCode = pCode
                 };
-                options.SetTargetEnvironment(TargetEnvironment.Vulkan, EnvironmentVersion.Vulkan_1_2);
-                Compiler compiler = new Compiler(options);
-                var scr = compiler.Compile(glsl, "Ryu", GetShaderCShaderStage(stage));
 
-                if (scr.Status != Status.Success)
-                {
-                    throw new VulkanException($"Shader compilation error: {scr.Status} {scr.ErrorMessage}");
-                }
-
-                var spirvBytes = new Span<byte>((void*)scr.CodePointer, (int)scr.CodeLength);
-
-                uint[] code = new uint[(scr.CodeLength + 3) / 4];
-
-                spirvBytes.CopyTo(MemoryMarshal.Cast<uint, byte>(new Span<uint>(code)).Slice(0, (int)scr.CodeLength));
-
-                fixed (uint* pCode = code)
-                {
-                    var shaderModuleCreateInfo = new ShaderModuleCreateInfo()
-                    {
-                        SType = StructureType.ShaderModuleCreateInfo,
-                        CodeSize = scr.CodeLength,
-                        PCode = pCode
-                    };
-
-                    api.CreateShaderModule(device, shaderModuleCreateInfo, null, out _module).ThrowOnError();
-                }
-
-                _stage = stage.Convert();
-            }
-            catch (Exception)
-            {
-                Console.WriteLine(glsl);
-
-                throw;
+                api.CreateShaderModule(device, shaderModuleCreateInfo, null, out _module).ThrowOnError();
             }
 
+            _stage = stage.Convert();
             _entryPointName = Marshal.StringToHGlobalAnsi("main");
         }
 

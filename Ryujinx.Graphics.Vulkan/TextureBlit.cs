@@ -29,7 +29,7 @@ void main()
     gl_Position.w = 1.0f;
 }";
 
-        private const string FragmentShaderSource = @"#version 450 core
+        private const string ColorBlitFragmentShaderSource = @"#version 450 core
 
 layout (binding = 0, set = 2) uniform sampler2D tex;
 
@@ -41,7 +41,7 @@ void main()
     colour = texture(tex, tex_coord);
 }";
 
-        private const string FragmentShaderSourceClearAlpha = @"#version 450 core
+        private const string ClearAlphaFragmentShaderSource = @"#version 450 core
 
 layout (binding = 0, set = 2) uniform sampler2D tex;
 
@@ -53,10 +53,22 @@ void main()
     colour = vec4(texture(tex, tex_coord).rgb, 1.0f);
 }";
 
+        private const string DepthBlitFragmentShaderSource = @"#version 450 core
+
+layout (binding = 0, set = 2) uniform sampler2D tex;
+
+layout (location = 0) in vec2 tex_coord;
+
+void main()
+{
+    gl_FragDepth = texture(tex, tex_coord).r;
+}";
+
         private readonly PipelineBlit _pipeline;
         private readonly ISampler _samplerLinear;
         private readonly ISampler _samplerNearest;
-        private readonly IProgram _program;
+        private readonly IProgram _programColorBlit;
+        private readonly IProgram _programDepthBlit;
         private readonly IProgram _programClearAlpha;
 
         public TextureBlit(VulkanGraphicsDevice gd, Device device)
@@ -101,76 +113,13 @@ void main()
                 Array.Empty<int>());
 
             var vertexShader = gd.CompileShader(ShaderStage.Vertex, vertexBindings, VertexShaderSource);
-            var fragmentShader = gd.CompileShader(ShaderStage.Fragment, fragmentBindings, FragmentShaderSource);
-            var fragmentShaderClearAlpha = gd.CompileShader(ShaderStage.Fragment, fragmentBindings, FragmentShaderSourceClearAlpha);
+            var fragmentShaderColorBlit = gd.CompileShader(ShaderStage.Fragment, fragmentBindings, ColorBlitFragmentShaderSource);
+            var fragmentShaderClearAlpha = gd.CompileShader(ShaderStage.Fragment, fragmentBindings, ClearAlphaFragmentShaderSource);
+            var fragmentShaderDepthBlit = gd.CompileShader(ShaderStage.Fragment, fragmentBindings, DepthBlitFragmentShaderSource);
 
-            _program = gd.CreateProgram(new[] { vertexShader, fragmentShader }, null);
+            _programColorBlit = gd.CreateProgram(new[] { vertexShader, fragmentShaderColorBlit }, null);
             _programClearAlpha = gd.CreateProgram(new[] { vertexShader, fragmentShaderClearAlpha }, null);
-        }
-
-        public void BlitFast(
-            VulkanGraphicsDevice gd,
-            CommandBufferScoped cbs,
-            Image srcImage,
-            Image dstImage,
-            TextureCreateInfo srcInfo,
-            TextureCreateInfo dstInfo,
-            int srcLevel,
-            int dstLevel,
-            int srcLayer,
-            int dstLayer,
-            int srcX0,
-            int srcY0,
-            int srcX1,
-            int srcY1,
-            int dstX0,
-            int dstY0,
-            int dstX1,
-            int dstY1,
-            bool linearFilter)
-        {
-            static (Offset3D, Offset3D) ExtentsToOffset3D(int width, int height, int x0, int y0, int x1, int y1)
-            {
-                static int Clamp(int value, int max)
-                {
-                    return Math.Clamp(value, 0, max);
-                }
-
-                var xy1 = new Offset3D(Clamp(x0, width), Clamp(y0, height), 0);
-                var xy2 = new Offset3D(Clamp(x1, width), Clamp(y1, height), 1);
-
-                return (xy1, xy2);
-            }
-
-            var srcSl = new ImageSubresourceLayers(srcInfo.Format.ConvertAspectFlags(), (uint)srcLevel, (uint)srcLayer, 1);
-            var dstSl = new ImageSubresourceLayers(dstInfo.Format.ConvertAspectFlags(), (uint)dstLevel, (uint)dstLayer, 1);
-
-            var srcOffs = ExtentsToOffset3D(srcInfo.Width, srcInfo.Height, srcX0, srcY0, srcX1, srcY1);
-            var dstOffs = ExtentsToOffset3D(dstInfo.Width, dstInfo.Height, dstX0, dstY0, dstX1, dstY1);
-
-            var srcOffsets = new ImageBlit.SrcOffsetsBuffer()
-            {
-                Element0 = srcOffs.Item1,
-                Element1 = srcOffs.Item2
-            };
-
-            var dstOffsets = new ImageBlit.DstOffsetsBuffer()
-            {
-                Element0 = srcOffs.Item1,
-                Element1 = srcOffs.Item2
-            };
-
-            var region = new ImageBlit()
-            {
-                SrcSubresource = srcSl,
-                SrcOffsets = srcOffsets,
-                DstSubresource = dstSl,
-                DstOffsets = dstOffsets
-            };
-
-            var filter = linearFilter ? Filter.Linear : Filter.Nearest;
-
-            gd.Api.CmdBlitImage(cbs.CommandBuffer, srcImage, ImageLayout.General, dstImage, ImageLayout.General, 1, region, filter);
+            _programDepthBlit = gd.CreateProgram(new[] { vertexShader, fragmentShaderDepthBlit }, null);
         }
 
         public void Blit(
@@ -180,6 +129,7 @@ void main()
             Auto<DisposableImageView> dst,
             int dstWidth,
             int dstHeight,
+            bool dstDepthStencil,
             VkFormat dstFormat,
             int srcX0,
             int srcY0,
@@ -196,7 +146,7 @@ void main()
 
             const int RegionBufferSize = 16;
 
-            var sampler = linearFilter ? _samplerLinear : _samplerNearest;
+            var sampler = linearFilter && !dstDepthStencil ? _samplerLinear : _samplerNearest;
 
             _pipeline.SetTextureAndSampler(0, src, sampler);
 
@@ -232,11 +182,20 @@ void main()
 
             scissors[0] = new Rectangle<int>(0, 0, dstWidth, dstHeight);
 
-            _pipeline.SetRenderTarget(dst, (uint)dstWidth, (uint)dstHeight, dstFormat);
+            if (dstDepthStencil)
+            {
+                _pipeline.SetProgram(_programDepthBlit);
+            }
+            else
+            {
+                _pipeline.SetProgram(clearAlpha ? _programClearAlpha : _programColorBlit);
+            }
+
+            _pipeline.SetRenderTarget(dst, (uint)dstWidth, (uint)dstHeight, dstDepthStencil, dstFormat);
             _pipeline.SetRenderTargetColorMasks(new uint[] { 0xf });
             _pipeline.SetViewports(0, viewports);
             _pipeline.SetScissors(scissors);
-            _pipeline.SetProgram(clearAlpha ? _programClearAlpha : _program);
+            _pipeline.SetDepthTest(new DepthTestDescriptor(false, true, GAL.CompareOp.Always));
             _pipeline.SetPrimitiveTopology(GAL.PrimitiveTopology.TriangleStrip);
             _pipeline.Draw(4, 1, 0, 0);
             _pipeline.Finish();
@@ -248,8 +207,9 @@ void main()
         {
             if (disposing)
             {
+                _programDepthBlit.Dispose();
                 _programClearAlpha.Dispose();
-                _program.Dispose();
+                _programColorBlit.Dispose();
                 _samplerNearest.Dispose();
                 _samplerLinear.Dispose();
                 _pipeline.Dispose();

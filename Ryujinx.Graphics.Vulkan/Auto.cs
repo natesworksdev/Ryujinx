@@ -25,6 +25,7 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly IAutoPrivate[] _referencedObjs;
 
         private bool _disposed;
+        private bool _destroyed;
 
         public Auto(T value)
         {
@@ -57,7 +58,11 @@ namespace Ryujinx.Graphics.Vulkan
 
         public T Get(CommandBufferScoped cbs)
         {
-            AddCommandBufferDependencies(cbs);
+            if (!_destroyed)
+            {
+                AddCommandBufferDependencies(cbs);
+            }
+
             return _value;
         }
 
@@ -89,6 +94,10 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void IncrementReferenceCount()
         {
+            if (_referenceCount == 0)
+            {
+                throw new Exception("Attempted to inc ref of dead object.");
+            }
             _referenceCount++;
         }
 
@@ -104,6 +113,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 _value.Dispose();
                 _value = default;
+                _destroyed = true;
 
                 // Value is no longer in use by the GPU, dispose all other
                 // resources that it references.

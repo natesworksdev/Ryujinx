@@ -21,7 +21,8 @@ namespace Ryujinx.Graphics.Vulkan
             int dstLayer,
             int srcLevel,
             int dstLevel,
-            bool linearFilter)
+            bool linearFilter,
+            bool forceColorAspect = false)
         {
             static (Offset3D, Offset3D) ExtentsToOffset3D(Extents2D extents, int width, int height)
             {
@@ -36,8 +37,11 @@ namespace Ryujinx.Graphics.Vulkan
                 return (xy1, xy2);
             }
 
-            var srcSl = new ImageSubresourceLayers(srcInfo.Format.ConvertAspectFlags(), (uint)srcLevel, (uint)srcLayer, 1);
-            var dstSl = new ImageSubresourceLayers(dstInfo.Format.ConvertAspectFlags(), (uint)dstLevel, (uint)dstLayer, 1);
+            var srcAspectFlags = forceColorAspect ? ImageAspectFlags.ImageAspectColorBit : srcInfo.Format.ConvertAspectFlags();
+            var dstAspectFlags = forceColorAspect ? ImageAspectFlags.ImageAspectColorBit : dstInfo.Format.ConvertAspectFlags();
+
+            var srcSl = new ImageSubresourceLayers(srcAspectFlags, (uint)srcLevel, (uint)srcLayer, 1);
+            var dstSl = new ImageSubresourceLayers(dstAspectFlags, (uint)dstLevel, (uint)dstLayer, 1);
 
             var srcOffsets = new ImageBlit.SrcOffsetsBuffer();
             var dstOffsets = new ImageBlit.DstOffsetsBuffer();
@@ -53,7 +57,7 @@ namespace Ryujinx.Graphics.Vulkan
                 DstOffsets = dstOffsets
             };
 
-            var filter = linearFilter ? Filter.Linear : Filter.Nearest;
+            var filter = linearFilter && !dstInfo.Format.IsDepthOrStencil() ? Filter.Linear : Filter.Nearest;
 
             api.CmdBlitImage(commandBuffer, srcImage, ImageLayout.General, dstImage, ImageLayout.General, 1, region, filter);
         }

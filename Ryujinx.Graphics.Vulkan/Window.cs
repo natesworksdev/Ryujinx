@@ -292,6 +292,7 @@ namespace Ryujinx.Graphics.Vulkan
                 _swapchainImageViews[nextImage],
                 _width,
                 _height,
+                false,
                 _format,
                 srcX0,
                 srcY0,

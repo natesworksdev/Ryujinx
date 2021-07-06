@@ -27,6 +27,7 @@ namespace Ryujinx.Graphics.Vulkan
             Auto<DisposableImageView> view,
             uint width,
             uint height,
+            bool isDepthStencil,
             VkFormat format)
         {
             _device = device;
@@ -40,13 +41,15 @@ namespace Ryujinx.Graphics.Vulkan
             AttachmentIndices = new[] { 0 };
 
             AttachmentsCount = 1;
+
+            HasDepthStencil = isDepthStencil;
         }
 
         public FramebufferParams(Device device, ITexture[] colors, ITexture depthStencil)
         {
             _device = device;
 
-            int colorsCount = colors.Where(IsValidTextureView).Count();
+            int colorsCount = colors.Count(IsValidTextureView);
 
             int count = colorsCount + (IsValidTextureView(depthStencil) ? 1 : 0);
 

@@ -366,6 +366,12 @@ namespace Ryujinx.Graphics.Vulkan
                     Topology = Topology
                 };
 
+                var depthClipState = new PipelineRasterizationDepthClipStateCreateInfoEXT()
+                {
+                    SType = StructureType.PipelineRasterizationDepthClipStateCreateInfoExt,
+                    DepthClipEnable = false
+                };
+
                 var rasterizationState = new PipelineRasterizationStateCreateInfo()
                 {
                     SType = StructureType.PipelineRasterizationStateCreateInfo,
@@ -378,7 +384,8 @@ namespace Ryujinx.Graphics.Vulkan
                     DepthBiasEnable = DepthBiasEnable,
                     DepthBiasClamp = DepthBiasClamp,
                     DepthBiasConstantFactor = DepthBiasConstantFactor,
-                    DepthBiasSlopeFactor = DepthBiasSlopeFactor
+                    DepthBiasSlopeFactor = DepthBiasSlopeFactor,
+                    PNext = &depthClipState
                 };
 
                 var viewportState = new PipelineViewportStateCreateInfo()
