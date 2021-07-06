@@ -63,10 +63,10 @@ jobs:
       - name: Test
         run: dotnet test -c "${{ matrix.configuration }}"
       - name: Publish Ryujinx
-        run: dotnet publish Ryujinx\Ryujinx.csproj -c "${{ matrix.configuration }}" -r "${{ matrix.DOTNET_RUNTIME_IDENTIFIER }}" -o ./publish /p:Version="1.0.0" /p:DebugType=embedded /p:SourceRevisionId="${{ steps.git_short_hash.outputs.result }}" /p:ExtraDefineConstants=DISABLE_UPDATER Ryujinx
+        run: dotnet publish -c "${{ matrix.configuration }}" -r "${{ matrix.DOTNET_RUNTIME_IDENTIFIER }}" -o ./publish /p:Version="1.0.0" /p:DebugType=embedded /p:SourceRevisionId="${{ steps.git_short_hash.outputs.result }}" /p:ExtraDefineConstants=DISABLE_UPDATER Ryujinx
         if: github.event_name == 'pull_request'
       - name: Publish Ryujinx.Headless.SDL2
-        run: dotnet publish Ryujinx.Headless.SDL2\Ryujinx.Headless.SDL2.csproj -c "${{ matrix.configuration }}" -r "${{ matrix.DOTNET_RUNTIME_IDENTIFIER }}" -o ./publish_sdl2_headless /p:Version="1.0.0" /p:DebugType=embedded /p:SourceRevisionId="${{ steps.git_short_hash.outputs.result }}" /p:ExtraDefineConstants=DISABLE_UPDATER Ryujinx
+        run: dotnet publish -c "${{ matrix.configuration }}" -r "${{ matrix.DOTNET_RUNTIME_IDENTIFIER }}" -o ./publish_sdl2_headless /p:Version="1.0.0" /p:DebugType=embedded /p:SourceRevisionId="${{ steps.git_short_hash.outputs.result }}" /p:ExtraDefineConstants=DISABLE_UPDATER Ryujinx.Headless.SDL2
         if: github.event_name == 'pull_request'
       - name: Upload Ryujinx artifact
         uses: actions/upload-artifact@v2
