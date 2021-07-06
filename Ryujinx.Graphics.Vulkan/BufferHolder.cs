@@ -149,7 +149,7 @@ namespace Ryujinx.Graphics.Vulkan
             if (cbs == null ||
                 !needsWait ||
                 !VulkanConfiguration.UseFastBufferUpdates ||
-                !_gd.BufferManager.StagingBuffer.TryPushData(cbs.Value, endRenderPass, this, offset, data))
+                !TryPushData(cbs.Value, endRenderPass, offset, data))
             {
                 // Some pending command might access the buffer,
                 // so we need to ensure they are all submited to the GPU before waiting.
@@ -180,6 +180,52 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 data.Slice(0, dataSize).CopyTo(new Span<byte>((void*)(_map + offset), dataSize));
             }
+        }
+
+        private unsafe bool TryPushData(CommandBufferScoped cbs, Action endRenderPass, int dstOffset, ReadOnlySpan<byte> data)
+        {
+            if ((dstOffset & 3) != 0 || (data.Length & 3) != 0)
+            {
+                return false;
+            }
+
+            endRenderPass();
+
+            var dstBuffer = GetBuffer(cbs.CommandBuffer, true).Get(cbs, dstOffset, data.Length).Value;
+
+            InsertBufferBarrier(
+                _gd,
+                cbs.CommandBuffer,
+                dstBuffer,
+                BufferHolder.DefaultAccessFlags,
+                AccessFlags.AccessTransferWriteBit,
+                PipelineStageFlags.PipelineStageAllCommandsBit,
+                PipelineStageFlags.PipelineStageTransferBit,
+                dstOffset,
+                data.Length);
+
+            fixed (byte* pData = data)
+            {
+                for (ulong offset = 0; offset < (ulong)data.Length;)
+                {
+                    ulong size = Math.Min(MaxUpdateBufferSize, (ulong)data.Length - offset);
+                    _gd.Api.CmdUpdateBuffer(cbs.CommandBuffer, dstBuffer, (ulong)dstOffset + offset, size, pData + offset);
+                    offset += size;
+                }
+            }
+
+            InsertBufferBarrier(
+                _gd,
+                cbs.CommandBuffer,
+                dstBuffer,
+                AccessFlags.AccessTransferWriteBit,
+                BufferHolder.DefaultAccessFlags,
+                PipelineStageFlags.PipelineStageTransferBit,
+                PipelineStageFlags.PipelineStageAllCommandsBit,
+                dstOffset,
+                data.Length);
+
+            return true;
         }
 
         public static unsafe void Copy(
