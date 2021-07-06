@@ -406,7 +406,8 @@ namespace Ryujinx.HLE.HOS
                 _device.Configuration.VirtualFileSystem.SetRomFs(newStorage.AsStream(FileAccess.Read));
             }
 
-            if (TitleId != 0)
+            // Don't create save data for system programs.
+            if (TitleId != 0 && (TitleId < SystemProgramId.Start.Value || TitleId > SystemAppletId.End.Value))
             {
                 // Multi-program applications can technically use any program ID for the main program, but in practice they always use 0 in the low nibble.
                 // We'll know if this changes in the future because stuff will get errors when trying to mount the correct save.

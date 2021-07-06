@@ -13,6 +13,8 @@ using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem.Content;
 using Ryujinx.HLE.HOS;
 using System;
+using System.Buffers.Text;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using RightsId = LibHac.Fs.RightsId;
@@ -107,8 +109,8 @@ namespace Ryujinx.HLE.FileSystem
 
             if (systemPath.StartsWith(baseSystemPath))
             {
-                string rawPath              = systemPath.Replace(baseSystemPath, "");
-                int    firstSeparatorOffset = rawPath.IndexOf(Path.DirectorySeparatorChar);
+                string rawPath = systemPath.Replace(baseSystemPath, "");
+                int firstSeparatorOffset = rawPath.IndexOf(Path.DirectorySeparatorChar);
 
                 if (firstSeparatorOffset == -1)
                 {
@@ -256,7 +258,13 @@ namespace Ryujinx.HLE.FileSystem
         // Consider removing this at some point in the future when we don't need to worry about old saves.
         public static Result FixExtraData(HorizonClient hos)
         {
-            Result rc = FixExtraDataInSpaceId(hos, SaveDataSpaceId.System);
+            Result rc = GetSystemSaveList(hos, out List<ulong> systemSaveIds);
+            if (rc.IsFailure()) return rc;
+
+            rc = FixUnindexedSystemSaves(hos, systemSaveIds);
+            if (rc.IsFailure()) return rc;
+
+            rc = FixExtraDataInSpaceId(hos, SaveDataSpaceId.System);
             if (rc.IsFailure()) return rc;
 
             rc = FixExtraDataInSpaceId(hos, SaveDataSpaceId.User);
@@ -289,7 +297,7 @@ namespace Ryujinx.HLE.FileSystem
 
                     if (rc.IsFailure())
                     {
-                        Logger.Warning?.Print(LogClass.Application, $"Error {rc.ToStringWithName()} when fixing extra data for save 0x{info[i].SaveDataId:x} in the {spaceId} save data space");
+                        Logger.Warning?.Print(LogClass.Application, $"Error {rc.ToStringWithName()} when fixing extra data for save data 0x{info[i].SaveDataId:x} in the {spaceId} save data space");
                     }
                     else if (wasFixNeeded)
                     {
@@ -297,6 +305,125 @@ namespace Ryujinx.HLE.FileSystem
                     }
                 }
             }
+        }
+
+        // Gets a list of all the save data files or directories in the system partition.
+        private static Result GetSystemSaveList(HorizonClient hos, out List<ulong> list)
+        {
+            list = null;
+
+            var mountName = "system".ToU8Span();
+            DirectoryHandle handle = default;
+            List<ulong> localList = new List<ulong>();
+
+            try
+            {
+                Result rc = hos.Fs.MountBis(mountName, BisPartitionId.System);
+                if (rc.IsFailure()) return rc;
+
+                rc = hos.Fs.OpenDirectory(out handle, "system:/save".ToU8Span(), OpenDirectoryMode.All);
+                if (rc.IsFailure()) return rc;
+
+                DirectoryEntry entry = new DirectoryEntry();
+
+                while (true)
+                {
+                    rc = hos.Fs.ReadDirectory(out long readCount, SpanHelpers.AsSpan(ref entry), handle);
+                    if (rc.IsFailure()) return rc;
+
+                    if (readCount == 0)
+                        break;
+
+                    if (Utf8Parser.TryParse(entry.Name, out ulong saveDataId, out int bytesRead, 'x') &&
+                        bytesRead == 16 && (long)saveDataId < 0)
+                    {
+                        localList.Add(saveDataId);
+                    }
+                }
+
+                list = localList;
+
+                return Result.Success;
+            }
+            finally
+            {
+                if (handle.IsValid)
+                {
+                    hos.Fs.CloseDirectory(handle);
+                }
+
+                if (hos.Fs.IsMounted(mountName))
+                {
+                    hos.Fs.Unmount(mountName);
+                }
+            }
+        }
+
+        // Adds system save data that isn't in the save data indexer to the indexer and creates extra data for it.
+        // Only save data IDs added to SystemExtraDataFixInfo will be fixed.
+        private static Result FixUnindexedSystemSaves(HorizonClient hos, List<ulong> existingSaveIds)
+        {
+            foreach (var fixInfo in SystemExtraDataFixInfo)
+            {
+                if (!existingSaveIds.Contains(fixInfo.StaticSaveDataId))
+                {
+                    continue;
+                }
+
+                Result rc = FixSystemExtraData(out bool wasFixNeeded, hos, in fixInfo);
+
+                if (rc.IsFailure())
+                {
+                    Logger.Warning?.Print(LogClass.Application,
+                        $"Error {rc.ToStringWithName()} when fixing extra data for system save data 0x{fixInfo.StaticSaveDataId:x}");
+                }
+                else if (wasFixNeeded)
+                {
+                    Logger.Info?.Print(LogClass.Application,
+                        $"Tried to rebuild extra data for system save data 0x{fixInfo.StaticSaveDataId:x}");
+                }
+            }
+
+            return Result.Success;
+        }
+
+        private static Result FixSystemExtraData(out bool wasFixNeeded, HorizonClient hos, in ExtraDataFixInfo info)
+        {
+            wasFixNeeded = true;
+
+            Result rc = hos.Fs.Impl.ReadSaveDataFileSystemExtraData(out SaveDataExtraData extraData, info.StaticSaveDataId);
+            if (!rc.IsSuccess())
+            {
+                if (!ResultFs.TargetNotFound.Includes(rc))
+                    return rc;
+
+                // We'll reach this point only if the save data directory exists but it's not in the save data indexer.
+                // Creating the save will add it to the indexer while leaving its existing contents intact.
+                return hos.Fs.CreateSystemSaveData(info.StaticSaveDataId, UserId.InvalidId, info.OwnerId, info.DataSize,
+                    info.JournalSize, info.Flags);
+            }
+
+            if (extraData.Attribute.StaticSaveDataId != 0 && extraData.OwnerId != 0)
+            {
+                wasFixNeeded = false;
+                return Result.Success;
+            }
+
+            extraData = new SaveDataExtraData
+            {
+                Attribute = { StaticSaveDataId = info.StaticSaveDataId },
+                OwnerId = info.OwnerId,
+                Flags = info.Flags,
+                DataSize = info.DataSize,
+                JournalSize = info.JournalSize
+            };
+
+            // Make a mask for writing the entire extra data
+            Unsafe.SkipInit(out SaveDataExtraData extraDataMask);
+            SpanHelpers.AsByteSpan(ref extraDataMask).Fill(0xFF);
+
+            return hos.Fs.Impl.WriteSaveDataFileSystemExtraData(SaveDataSpaceId.System, info.StaticSaveDataId,
+                in extraData, in extraDataMask);
         }
 
         private static Result FixExtraData(out bool wasFixNeeded, HorizonClient hos, in SaveDataInfo info)
