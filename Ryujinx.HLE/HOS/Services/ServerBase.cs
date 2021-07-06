@@ -78,7 +78,7 @@ namespace Ryujinx.HLE.HOS.Services
         public void AddSessionObj(int serverSessionHandle, IpcService obj)
         {
             _sessionHandles.Add(serverSessionHandle);
-            if(!_sessions.ContainsKey(serverSessionHandle))
+            if (!_sessions.ContainsKey(serverSessionHandle))
             {
                 _sessions.Add(serverSessionHandle, obj);
             }
