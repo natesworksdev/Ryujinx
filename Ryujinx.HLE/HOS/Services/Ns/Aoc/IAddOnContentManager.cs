@@ -214,12 +214,19 @@ namespace Ryujinx.HLE.HOS.Services.Ns.Aoc
 
             GetAddOnContentBaseIdFromTitleId(context, titleId);
 
+            uint indexCounter = 0;
+
             for (int i = 0; i < indexNumber; i++)
             {
-                context.Memory.Write(bufferPosition + (ulong)i * sizeof(uint), (uint)(aocTitleIds[i + (int)startIndex] - _addOnContentBaseId));
+                if (i + (int)startIndex < aocTitleIds.Count)
+                {
+                    context.Memory.Write(bufferPosition + (ulong)i * sizeof(uint), (uint)(aocTitleIds[i + (int)startIndex] - _addOnContentBaseId));
+
+                    indexCounter++;
+                }
             }
 
-            context.ResponseData.Write(indexNumber);
+            context.ResponseData.Write(indexCounter);
 
             return ResultCode.Success;
         }
