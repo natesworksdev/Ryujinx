@@ -1,9 +1,12 @@
 ﻿using Ryujinx.Graphics.GAL;
-using Ryujinx.Graphics.Gpu.State;
+using Ryujinx.Graphics.Gpu.Engine.Types;
 using System.Text;
 
 namespace Ryujinx.Graphics.Gpu.Engine.Threed
 {
+    /// <summary>
+    /// Draw manager.
+    /// </summary>
     class DrawManager
     {
         private readonly GpuContext _context;
@@ -23,6 +26,13 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
         private int _instanceIndex;
 
+        /// <summary>
+        /// Creates a new instance of the draw manager.
+        /// </summary>
+        /// <param name="context">GPU context</param>
+        /// <param name="channel">GPU channel</param>
+        /// <param name="state">Channel state</param>
+        /// <param name="drawState">Draw state</param>
         public DrawManager(GpuContext context, GpuChannel channel, DeviceStateWithShadow<ThreedClassState> state, DrawState drawState)
         {
             _context = context;
@@ -81,7 +91,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             ConditionalRenderEnabled renderEnable = ConditionalRendering.GetRenderEnable(
                 _context,
                 _channel.MemoryManager,
-                _state.State.ConditionState);
+                _state.State.RenderEnableAddress,
+                _state.State.RenderEnableCondition);
 
             if (renderEnable == ConditionalRenderEnabled.False || _instancedDrawPending)
             {
@@ -338,7 +349,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             ConditionalRenderEnabled renderEnable = ConditionalRendering.GetRenderEnable(
                 _context,
                 _channel.MemoryManager,
-                _state.State.ConditionState);
+                _state.State.RenderEnableAddress,
+                _state.State.RenderEnableCondition);
 
             if (renderEnable == ConditionalRenderEnabled.False)
             {
@@ -363,11 +375,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             {
                 var clearColor = _state.State.ClearColors;
 
-                ColorF color = new ColorF(
-                    clearColor.Red,
-                    clearColor.Green,
-                    clearColor.Blue,
-                    clearColor.Alpha);
+                ColorF color = new ColorF(clearColor.Red, clearColor.Green, clearColor.Blue, clearColor.Alpha);
 
                 _context.Renderer.Pipeline.ClearRenderTargetColor(index, componentMask, color);
             }

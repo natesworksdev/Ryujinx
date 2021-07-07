@@ -8,11 +8,26 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Gpu.Engine.Threed
 {
+    /// <summary>
+    /// State update callback entry, with the callback function and associated field names.
+    /// </summary>
     struct StateUpdateCallbackEntry
     {
+        /// <summary>
+        /// Callback function, to be called if the register was written as the state needs to be updated.
+        /// </summary>
         public Action Callback { get; }
+
+        /// <summary>
+        /// Name of the state fields (registers) associated with the callback function.
+        /// </summary>
         public string[] FieldNames { get; }
 
+        /// <summary>
+        /// Creates a new state update callback entry.
+        /// </summary>
+        /// <param name="callback">Callback function, to be called if the register was written as the state needs to be updated</param>
+        /// <param name="fieldNames">Name of the state fields (registers) associated with the callback function</param>
         public StateUpdateCallbackEntry(Action callback, params string[] fieldNames)
         {
             Callback = callback;
@@ -20,6 +35,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         }
     }
 
+    /// <summary>
+    /// GPU state update tracker.
+    /// </summary>
+    /// <typeparam name="TState">State type</typeparam>
     class StateUpdateTracker<TState>
     {
         private const int BlockSize = 0xe00;
@@ -29,6 +48,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         private readonly Action[] _callbacks;
         private ulong _dirtyMask;
 
+        /// <summary>
+        /// Creates a new instance of the state update tracker.
+        /// </summary>
+        /// <param name="entries">Update tracker callback entries</param>
         public StateUpdateTracker(StateUpdateCallbackEntry[] entries)
         {
             _registerToGroupMapping = new byte[BlockSize];
@@ -71,6 +94,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             Debug.Assert(offset == Unsafe.SizeOf<TState>());
         }
 
+        /// <summary>
+        /// Sets a register as modified.
+        /// </summary>
+        /// <param name="offset">Register offset in bytes</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetDirty(int offset)
         {
@@ -87,6 +114,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             }
         }
 
+        /// <summary>
+        /// Forces a register group as dirty, by index.
+        /// </summary>
+        /// <param name="groupIndex">Index of the group to be dirtied</param>
         public void ForceDirty(int groupIndex)
         {
             if ((uint)groupIndex >= _callbacks.Length)
@@ -97,12 +128,19 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             _dirtyMask |= 1UL << groupIndex;
         }
 
+        /// <summary>
+        /// Forces all register groups as dirty, triggering a full update on the next call to <see cref="Update"/>.
+        /// </summary>
         public void SetAllDirty()
         {
             Debug.Assert(_callbacks.Length <= sizeof(ulong) * 8);
             _dirtyMask = ulong.MaxValue >> ((sizeof(ulong) * 8) - _callbacks.Length);
         }
 
+        /// <summary>
+        /// Check all the groups specified by <paramref name="checkMask"/> for modification, and update if modified.
+        /// </summary>
+        /// <param name="checkMask">Mask, where each bit set corresponds to a group index that should be checked</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Update(ulong checkMask)
         {

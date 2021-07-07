@@ -22,6 +22,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
 
         private readonly GpuChannel _channel;
 
+        /// <summary>
+        /// Channel memory manager.
+        /// </summary>
         public MemoryManager MemoryManager => _channel.MemoryManager;
 
         /// <summary>

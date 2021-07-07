@@ -5,7 +5,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
     /// <summary>
     /// Texture to texture (with optional resizing) copy parameters.
     /// </summary>
-    struct CopyTexture
+    struct TwodTexture
     {
 #pragma warning disable CS0649
         public ColorFormat Format;

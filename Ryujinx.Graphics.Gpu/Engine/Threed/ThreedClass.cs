@@ -1,12 +1,14 @@
 ﻿using Ryujinx.Graphics.Device;
 using Ryujinx.Graphics.Gpu.Engine.InlineToMemory;
-using Ryujinx.Graphics.Gpu.State;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Graphics.Gpu.Engine.Threed
 {
+    /// <summary>
+    /// Represents a 3D engine class.
+    /// </summary>
     class ThreedClass : IDeviceState
     {
         private readonly GpuContext _context;
@@ -37,6 +39,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 { nameof(ThreedClassState.VbElementU16), new RwCallback(VbElementU16, null) },
                 { nameof(ThreedClassState.VbElementU32), new RwCallback(VbElementU32, null) },
                 { nameof(ThreedClassState.ResetCounter), new RwCallback(ResetCounter, null) },
+                { nameof(ThreedClassState.RenderEnableCondition), new RwCallback(null, Zero) },
                 { nameof(ThreedClassState.DrawEnd), new RwCallback(DrawEnd, null) },
                 { nameof(ThreedClassState.DrawBegin), new RwCallback(DrawBegin, null) },
                 { nameof(ThreedClassState.DrawIndexedSmall), new RwCallback(DrawIndexedSmall, null) },
@@ -64,14 +67,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             _cbUpdater = new ConstantBufferUpdater(channel, _state);
             _stateUpdater = new StateUpdater(context, channel, _state, drawState);
 
-            if (Unsafe.SizeOf<ThreedClassState>() != 0x3800)
-            {
-                throw new Exception("bad size " + Unsafe.SizeOf<ThreedClassState>().ToString("X"));
-            }
-
-            // FIXME: We shouldn't need to set this here, why is it not set
-            // as part of channel or API initialization?
-            _state.State.ConditionState.Condition = Condition.Always;
+            // This defaults to "always", even without any register write.
+            // Reads just return 0, regardless of what was set there.
+            _state.State.RenderEnableCondition = Condition.Always;
         }
 
         /// <summary>
@@ -414,6 +412,15 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         private void ConstantBufferBindFragment(int argument)
         {
             _cbUpdater.BindFragment(argument);
+        }
+
+        /// <summary>
+        /// Generic register read function that just returns 0.
+        /// </summary>
+        /// <returns>Zero</returns>
+        private static int Zero()
+        {
+            return 0;
         }
     }
 }

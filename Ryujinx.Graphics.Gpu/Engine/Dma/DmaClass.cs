@@ -1,7 +1,6 @@
 ﻿using Ryujinx.Common;
 using Ryujinx.Graphics.Device;
 using Ryujinx.Graphics.Gpu.Engine.Threed;
-using Ryujinx.Graphics.Gpu.State;
 using Ryujinx.Graphics.Texture;
 using System;
 using System.Collections.Generic;
@@ -73,7 +72,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
         /// <param name="xCount">Number of pixels to be copied</param>
         /// <param name="yCount">Number of lines to be copied</param>
         /// <returns></returns>
-        private static bool IsTextureCopyComplete(CopyBufferTexture tex, bool linear, int bpp, int stride, int xCount, int yCount)
+        private static bool IsTextureCopyComplete(DmaTexture tex, bool linear, int bpp, int stride, int xCount, int yCount)
         {
             if (linear)
             {
@@ -129,8 +128,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                 int srcBpp = remap ? ((int)_state.State.SetRemapComponentsNumSrcComponents + 1) * componentSize : 1;
                 int dstBpp = remap ? ((int)_state.State.SetRemapComponentsNumDstComponents + 1) * componentSize : 1;
 
-                var dst = Unsafe.As<uint, CopyBufferTexture>(ref _state.State.SetDstBlockSize);
-                var src = Unsafe.As<uint, CopyBufferTexture>(ref _state.State.SetSrcBlockSize);
+                var dst = Unsafe.As<uint, DmaTexture>(ref _state.State.SetDstBlockSize);
+                var src = Unsafe.As<uint, DmaTexture>(ref _state.State.SetSrcBlockSize);
 
                 int srcStride = (int)_state.State.PitchIn;
                 int dstStride = (int)_state.State.PitchOut;

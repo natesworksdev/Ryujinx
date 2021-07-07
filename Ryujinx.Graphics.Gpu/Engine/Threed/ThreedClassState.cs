@@ -3,7 +3,6 @@ using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Engine.InlineToMemory;
 using Ryujinx.Graphics.Gpu.Engine.Types;
 using Ryujinx.Graphics.Gpu.Image;
-using Ryujinx.Graphics.Gpu.State;
 using System;
 
 namespace Ryujinx.Graphics.Gpu.Engine.Threed
@@ -177,6 +176,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 #pragma warning restore CS0649
     }
 
+    /// <summary>
+    /// Scissor state.
+    /// </summary>
     struct ScissorState
     {
 #pragma warning disable CS0649
@@ -214,6 +216,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 #pragma warning restore CS0649
     }
 
+    /// <summary>
+    /// Screen scissor state.
+    /// </summary>
     struct ScreenScissorState
     {
 #pragma warning disable CS0649
@@ -328,6 +333,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 #pragma warning restore CS0649
     }
 
+    /// <summary>
+    /// Screen Y control register.
+    /// </summary>
     [Flags]
     enum YControl
     {
@@ -345,17 +353,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         ResultNonZero,
         Equal,
         NotEqual
-    }
-
-    /// <summary>
-    /// Condition parameters for conditional rendering.
-    /// </summary>
-    struct ConditionState
-    {
-#pragma warning disable CS0649
-        public GpuVa Address;
-        public Condition Condition;
-#pragma warning restore CS0649
     }
 
     /// <summary>
@@ -420,6 +417,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 #pragma warning restore CS0649
     }
 
+    /// <summary>
+    /// View volume clip control.
+    /// </summary>
     [Flags]
     enum ViewVolumeClipControl
     {
@@ -427,6 +427,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         DepthClampDisabled = 1 << 11
     }
 
+    /// <summary>
+    /// Logical operation state.
+    /// </summary>
     struct LogicalOpState
     {
 #pragma warning disable CS0649
@@ -527,16 +530,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         public uint Unknown0x1354;
         public BlendFactor AlphaDstFactor;
 #pragma warning restore CS0649
-
-        public static BlendStateCommon Default = new BlendStateCommon
-        {
-            ColorOp = BlendOp.Add,
-            ColorSrcFactor = BlendFactor.One,
-            ColorDstFactor = BlendFactor.Zero,
-            AlphaOp = BlendOp.Add,
-            AlphaSrcFactor = BlendFactor.One,
-            AlphaDstFactor = BlendFactor.Zero
-        };
     }
 
     /// <summary>
@@ -554,16 +547,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         public BlendFactor AlphaDstFactor;
         public uint Padding;
 #pragma warning restore CS0649
-
-        public static BlendState Default = new BlendState
-        {
-            ColorOp = BlendOp.Add,
-            ColorSrcFactor = BlendFactor.One,
-            ColorDstFactor = BlendFactor.Zero,
-            AlphaOp = BlendOp.Add,
-            AlphaSrcFactor = BlendFactor.One,
-            AlphaDstFactor = BlendFactor.Zero
-        };
     }
 
     /// <summary>
@@ -757,7 +740,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         public uint Reserved1534;
         public Boolean32 RtDepthStencilEnable;
         public fixed uint Reserved153C[5];
-        public ConditionState ConditionState;
+        public GpuVa RenderEnableAddress;
+        public Condition RenderEnableCondition;
         public PoolState SamplerPoolState;
         public uint Reserved1568;
         public float DepthBiasFactor;

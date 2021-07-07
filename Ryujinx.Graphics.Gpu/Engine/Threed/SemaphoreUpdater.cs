@@ -1,9 +1,11 @@
 ﻿using Ryujinx.Common;
 using Ryujinx.Graphics.GAL;
-using Ryujinx.Graphics.Gpu.State;
 
 namespace Ryujinx.Graphics.Gpu.Engine.Threed
 {
+    /// <summary>
+    /// Semaphore updater.
+    /// </summary>
     class SemaphoreUpdater
     {
         private const int NsToTicksFractionNumerator = 384;
@@ -72,6 +74,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         private readonly GpuChannel _channel;
         private readonly DeviceStateWithShadow<ThreedClassState> _state;
 
+        /// <summary>
+        /// Creates a new instance of the semaphore updater.
+        /// </summary>
+        /// <param name="context">GPU context</param>
+        /// <param name="channel">GPU channel</param>
+        /// <param name="state">Channel state</param>
         public SemaphoreUpdater(GpuContext context, GpuChannel channel, DeviceStateWithShadow<ThreedClassState> state)
         {
             _context = context;

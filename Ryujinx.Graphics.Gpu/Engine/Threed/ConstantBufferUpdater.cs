@@ -1,9 +1,11 @@
-﻿using Ryujinx.Graphics.Gpu.State;
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Gpu.Engine.Threed
 {
+    /// <summary>
+    /// Constant buffer updater.
+    /// </summary>
     class ConstantBufferUpdater
     {
         private readonly GpuChannel _channel;
@@ -15,6 +17,11 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         private ulong _ubFollowUpAddress = 0;
         private ulong _ubByteCount = 0;
 
+        /// <summary>
+        /// Creates a new instance of the constant buffer updater.
+        /// </summary>
+        /// <param name="channel">GPU channel</param>
+        /// <param name="state">Channel state</param>
         public ConstantBufferUpdater(GpuChannel channel, DeviceStateWithShadow<ThreedClassState> state)
         {
             _channel = channel;

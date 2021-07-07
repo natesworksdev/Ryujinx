@@ -5,7 +5,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
     /// <summary>
     /// Buffer to texture copy parameters.
     /// </summary>
-    struct CopyBufferTexture
+    struct DmaTexture
     {
 #pragma warning disable CS0649
         public MemoryLayout MemoryLayout;

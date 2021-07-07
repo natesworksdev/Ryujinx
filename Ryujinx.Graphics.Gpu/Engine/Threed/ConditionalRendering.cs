@@ -1,10 +1,13 @@
 ﻿using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
+using Ryujinx.Graphics.Gpu.Engine.Types;
 using Ryujinx.Graphics.Gpu.Memory;
-using Ryujinx.Graphics.Gpu.State;
 
 namespace Ryujinx.Graphics.Gpu.Engine.Threed
 {
+    /// <summary>
+    /// Helper methods used for conditional rendering.
+    /// </summary>
     static class ConditionalRendering
     {
         /// <summary>
@@ -13,25 +16,26 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// </summary>
         /// <param name="context">GPU context</param>
         /// <param name="memoryManager">Memory manager bound to the channel currently executing</param>
-        /// <param name="conditionState">Conditional rendering state</param>
+        /// <param name="address">Conditional rendering buffer address</param>
+        /// <param name="condition">Conditional rendering condition</param>
         /// <returns>True if rendering is enabled, false otherwise</returns>
-        public static ConditionalRenderEnabled GetRenderEnable(GpuContext context, MemoryManager memoryManager, ConditionState conditionState)
+        public static ConditionalRenderEnabled GetRenderEnable(GpuContext context, MemoryManager memoryManager, GpuVa address, Condition condition)
         {
-            switch (conditionState.Condition)
+            switch (condition)
             {
                 case Condition.Always:
                     return ConditionalRenderEnabled.True;
                 case Condition.Never:
                     return ConditionalRenderEnabled.False;
                 case Condition.ResultNonZero:
-                    return CounterNonZero(context, memoryManager, conditionState.Address.Pack());
+                    return CounterNonZero(context, memoryManager, address.Pack());
                 case Condition.Equal:
-                    return CounterCompare(context, memoryManager, conditionState.Address.Pack(), true);
+                    return CounterCompare(context, memoryManager, address.Pack(), true);
                 case Condition.NotEqual:
-                    return CounterCompare(context, memoryManager, conditionState.Address.Pack(), false);
+                    return CounterCompare(context, memoryManager, address.Pack(), false);
             }
 
-            Logger.Warning?.Print(LogClass.Gpu, $"Invalid conditional render condition \"{conditionState.Condition}\".");
+            Logger.Warning?.Print(LogClass.Gpu, $"Invalid conditional render condition \"{condition}\".");
 
             return ConditionalRenderEnabled.True;
         }

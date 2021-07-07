@@ -15,6 +15,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         private int _inlineIndexBufferSize;
         private int _inlineIndexCount;
 
+        /// <summary>
+        /// Indicates if any index buffer data has been pushed.
+        /// </summary>
         public bool HasInlineIndexData => _inlineIndexCount != 0;
 
         /// <summary>

@@ -1,5 +1,4 @@
 ﻿using Ryujinx.Graphics.Device;
-using Ryujinx.Graphics.Gpu.State;
 using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;

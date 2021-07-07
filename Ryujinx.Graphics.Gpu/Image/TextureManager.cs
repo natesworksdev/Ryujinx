@@ -1,6 +1,5 @@
 ﻿using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Engine.Types;
-using Ryujinx.Graphics.Gpu.State;
 using System;
 
 namespace Ryujinx.Graphics.Gpu.Image

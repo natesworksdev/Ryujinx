@@ -3,7 +3,6 @@ using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Engine.Types;
 using Ryujinx.Graphics.Gpu.Image;
 using Ryujinx.Graphics.Gpu.Shader;
-using Ryujinx.Graphics.Gpu.State;
 using Ryujinx.Graphics.Shader;
 using Ryujinx.Graphics.Texture;
 using System;
@@ -13,6 +12,9 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Gpu.Engine.Threed
 {
+    /// <summary>
+    /// GPU state updater.
+    /// </summary>
     class StateUpdater
     {
         public const int ShaderStateIndex = 0;
@@ -34,6 +36,13 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         private bool _prevDrawIndexed;
         private bool _prevTfEnable;
 
+        /// <summary>
+        /// Creates a new instance of the state updater.
+        /// </summary>
+        /// <param name="context">GPU context</param>
+        /// <param name="channel">GPU channel</param>
+        /// <param name="state">3D engine state</param>
+        /// <param name="drawState">Draw state</param>
         public StateUpdater(GpuContext context, GpuChannel channel, DeviceStateWithShadow<ThreedClassState> state, DrawState drawState)
         {
             _context = context;
@@ -143,17 +152,29 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             });
         }
 
+        /// <summary>
+        /// Sets a register at a specific offset as dirty.
+        /// This must be called if the register value was modified.
+        /// </summary>
+        /// <param name="offset">Register offset</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetDirty(int offset)
         {
             _updateTracker.SetDirty(offset);
         }
 
+        /// <summary>
+        /// Force all the guest state to be marked as dirty.
+        /// The next call to <see cref="Update"/> will update all the host state.
+        /// </summary>
         public void SetAllDirty()
         {
             _updateTracker.SetAllDirty();
         }
 
+        /// <summary>
+        /// Updates host state for any modified guest state, since the last time this function was called.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Update()
         {
@@ -186,6 +207,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             }
         }
 
+        /// <summary>
+        /// Updates the host state for any modified guest state group with the respective bit set on <paramref name="mask"/>.
+        /// </summary>
+        /// <param name="mask">Mask, where each bit set corresponds to a group index that should be checked and updated</param>
         public void Update(ulong mask)
         {
             _updateTracker.Update(mask);

@@ -5,7 +5,6 @@ using Ryujinx.Graphics.Gpu.Engine.Threed;
 using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.Graphics.Gpu.Shader.Cache;
 using Ryujinx.Graphics.Gpu.Shader.Cache.Definition;
-using Ryujinx.Graphics.Gpu.State;
 using Ryujinx.Graphics.Shader;
 using Ryujinx.Graphics.Shader.Translation;
 using System;

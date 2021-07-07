@@ -1,6 +1,6 @@
 using Ryujinx.Graphics.GAL;
 
-namespace Ryujinx.Graphics.Gpu.State
+namespace Ryujinx.Graphics.Gpu.Engine.Types
 {
     /// <summary>
     /// Draw primitive type.
