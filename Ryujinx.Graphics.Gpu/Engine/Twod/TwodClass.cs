@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Graphics.Device;
 using Ryujinx.Graphics.GAL;
+using Ryujinx.Graphics.Gpu.Engine.Types;
 using Ryujinx.Graphics.Gpu.Image;
 using Ryujinx.Graphics.Gpu.State;
 using Ryujinx.Graphics.Texture;

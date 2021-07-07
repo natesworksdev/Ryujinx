@@ -1,11 +1,618 @@
 ﻿using Ryujinx.Common.Memory;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Engine.InlineToMemory;
+using Ryujinx.Graphics.Gpu.Engine.Types;
 using Ryujinx.Graphics.Gpu.Image;
 using Ryujinx.Graphics.Gpu.State;
+using System;
 
 namespace Ryujinx.Graphics.Gpu.Engine.Threed
 {
+    /// <summary>
+    /// Shader stage name.
+    /// </summary>
+    enum ShaderType
+    {
+        Vertex,
+        TessellationControl,
+        TessellationEvaluation,
+        Geometry,
+        Fragment
+    }
+
+    /// <summary>
+    /// Transform feedback buffer state.
+    /// </summary>
+    struct TfBufferState
+    {
+#pragma warning disable CS0649
+        public Boolean32 Enable;
+        public GpuVa Address;
+        public int Size;
+        public int Offset;
+        public uint Padding0;
+        public uint Padding1;
+        public uint Padding2;
+#pragma warning restore CS0649
+    }
+
+    /// <summary>
+    /// Transform feedback state.
+    /// </summary>
+    struct TfState
+    {
+#pragma warning disable CS0649
+        public int BufferIndex;
+        public int VaryingsCount;
+        public int Stride;
+        public uint Padding;
+#pragma warning restore CS0649
+    }
+
+    /// <summary>
+    /// Render target color buffer state.
+    /// </summary>
+    struct RtColorState
+    {
+#pragma warning disable CS0649
+        public GpuVa Address;
+        public int WidthOrStride;
+        public int Height;
+        public ColorFormat Format;
+        public MemoryLayout MemoryLayout;
+        public int Depth;
+        public int LayerSize;
+        public int BaseLayer;
+        public int Unknown0x24;
+        public int Padding0;
+        public int Padding1;
+        public int Padding2;
+        public int Padding3;
+        public int Padding4;
+        public int Padding5;
+#pragma warning restore CS0649
+    }
+
+    /// <summary>
+    /// Viewport transform parameters, for viewport transformation.
+    /// </summary>
+    struct ViewportTransform
+    {
+#pragma warning disable CS0649
+        public float ScaleX;
+        public float ScaleY;
+        public float ScaleZ;
+        public float TranslateX;
+        public float TranslateY;
+        public float TranslateZ;
+        public uint Swizzle;
+        public uint SubpixelPrecisionBias;
+#pragma warning restore CS0649
+
+        /// <summary>
+        /// Unpacks viewport swizzle of the position X component.
+        /// </summary>
+        /// <returns>Swizzle enum value</returns>
+        public ViewportSwizzle UnpackSwizzleX()
+        {
+            return (ViewportSwizzle)(Swizzle & 7);
+        }
+
+        /// <summary>
+        /// Unpacks viewport swizzle of the position Y component.
+        /// </summary>
+        /// <returns>Swizzle enum value</returns>
+        public ViewportSwizzle UnpackSwizzleY()
+        {
+            return (ViewportSwizzle)((Swizzle >> 4) & 7);
+        }
+
+        /// <summary>
+        /// Unpacks viewport swizzle of the position Z component.
+        /// </summary>
+        /// <returns>Swizzle enum value</returns>
+        public ViewportSwizzle UnpackSwizzleZ()
+        {
+            return (ViewportSwizzle)((Swizzle >> 8) & 7);
+        }
+
+        /// <summary>
+        /// Unpacks viewport swizzle of the position W component.
+        /// </summary>
+        /// <returns>Swizzle enum value</returns>
+        public ViewportSwizzle UnpackSwizzleW()
+        {
+            return (ViewportSwizzle)((Swizzle >> 12) & 7);
+        }
+    }
+
+    /// <summary>
+    /// Viewport extents for viewport clipping, also includes depth range.
+    /// </summary>
+    struct ViewportExtents
+    {
+#pragma warning disable CS0649
+        public ushort X;
+        public ushort Width;
+        public ushort Y;
+        public ushort Height;
+        public float DepthNear;
+        public float DepthFar;
+#pragma warning restore CS0649
+    }
+
+    /// <summary>
+    /// Draw state for non-indexed draws.
+    /// </summary>
+    struct VertexBufferDrawState
+    {
+#pragma warning disable CS0649
+        public int First;
+        public int Count;
+#pragma warning restore CS0649
+    }
+
+    /// <summary>
+    /// Color buffer clear color.
+    /// </summary>
+    struct ClearColors
+    {
+#pragma warning disable CS0649
+        public float Red;
+        public float Green;
+        public float Blue;
+        public float Alpha;
+#pragma warning restore CS0649
+    }
+
+    /// <summary>
+    /// Depth bias (also called polygon offset) parameters.
+    /// </summary>
+    struct DepthBiasState
+    {
+#pragma warning disable CS0649
+        public Boolean32 PointEnable;
+        public Boolean32 LineEnable;
+        public Boolean32 FillEnable;
+#pragma warning restore CS0649
+    }
+
+    struct ScissorState
+    {
+#pragma warning disable CS0649
+        public Boolean32 Enable;
+        public ushort X1;
+        public ushort X2;
+        public ushort Y1;
+        public ushort Y2;
+        public uint Padding;
+#pragma warning restore CS0649
+    }
+
+    /// <summary>
+    /// Stencil test masks for back tests.
+    /// </summary>
+    struct StencilBackMasks
+    {
+#pragma warning disable CS0649
+        public int FuncRef;
+        public int Mask;
+        public int FuncMask;
+#pragma warning restore CS0649
+    }
+
+    /// <summary>
+    /// Render target depth-stencil buffer state.
+    /// </summary>
+    struct RtDepthStencilState
+    {
+#pragma warning disable CS0649
+        public GpuVa Address;
+        public ZetaFormat Format;
+        public MemoryLayout MemoryLayout;
+        public int LayerSize;
+#pragma warning restore CS0649
+    }
+
+    struct ScreenScissorState
+    {
+#pragma warning disable CS0649
+        public ushort X;
+        public ushort Width;
+        public ushort Y;
+        public ushort Height;
+#pragma warning restore CS0649
+    }
+
+    /// <summary>
+    /// Vertex buffer attribute state.
+    /// </summary>
+    struct VertexAttribState
+    {
+#pragma warning disable CS0649
+        public uint Attribute;
+#pragma warning restore CS0649
+
+        /// <summary>
+        /// Unpacks the index of the vertex buffer this attribute belongs to.
+        /// </summary>
+        /// <returns>Vertex buffer index</returns>
+        public int UnpackBufferIndex()
+        {
+            return (int)(Attribute & 0x1f);
+        }
+
+        /// <summary>
+        /// Unpacks the attribute constant flag.
+        /// </summary>
+        /// <returns>True if the attribute is constant, false otherwise</returns>
+        public bool UnpackIsConstant()
+        {
+            return (Attribute & 0x40) != 0;
+        }
+
+        /// <summary>
+        /// Unpacks the offset, in bytes, of the attribute on the vertex buffer.
+        /// </summary>
+        /// <returns>Attribute offset in bytes</returns>
+        public int UnpackOffset()
+        {
+            return (int)((Attribute >> 7) & 0x3fff);
+        }
+
+        /// <summary>
+        /// Unpacks the Maxwell attribute format integer.
+        /// </summary>
+        /// <returns>Attribute format integer</returns>
+        public uint UnpackFormat()
+        {
+            return Attribute & 0x3fe00000;
+        }
+    }
+
+    /// <summary>
+    /// Render target draw buffers control.
+    /// </summary>
+    struct RtControl
+    {
+#pragma warning disable CS0649
+        public uint Packed;
+#pragma warning restore CS0649
+
+        /// <summary>
+        /// Unpacks the number of active draw buffers.
+        /// </summary>
+        /// <returns>Number of active draw buffers</returns>
+        public int UnpackCount()
+        {
+            return (int)(Packed & 0xf);
+        }
+
+        /// <summary>
+        /// Unpacks the color attachment index for a given draw buffer.
+        /// </summary>
+        /// <param name="index">Index of the draw buffer</param>
+        /// <returns>Attachment index</returns>
+        public int UnpackPermutationIndex(int index)
+        {
+            return (int)((Packed >> (4 + index * 3)) & 7);
+        }
+    }
+
+    /// <summary>
+    /// 3D, 2D or 1D texture size.
+    /// </summary>
+    struct Size3D
+    {
+#pragma warning disable CS0649
+        public int Width;
+        public int Height;
+        public int Depth;
+#pragma warning restore CS0649
+    }
+
+    /// <summary>
+    /// Stencil front test state and masks.
+    /// </summary>
+    struct StencilTestState
+    {
+#pragma warning disable CS0649
+        public Boolean32 Enable;
+        public StencilOp FrontSFail;
+        public StencilOp FrontDpFail;
+        public StencilOp FrontDpPass;
+        public CompareOp FrontFunc;
+        public int FrontFuncRef;
+        public int FrontFuncMask;
+        public int FrontMask;
+#pragma warning restore CS0649
+    }
+
+    [Flags]
+    enum YControl
+    {
+        NegateY = 1 << 0,
+        TriangleRastFlip = 1 << 4
+    }
+
+    /// <summary>
+    /// Condition for conditional rendering.
+    /// </summary>
+    enum Condition
+    {
+        Never,
+        Always,
+        ResultNonZero,
+        Equal,
+        NotEqual
+    }
+
+    /// <summary>
+    /// Condition parameters for conditional rendering.
+    /// </summary>
+    struct ConditionState
+    {
+#pragma warning disable CS0649
+        public GpuVa Address;
+        public Condition Condition;
+#pragma warning restore CS0649
+    }
+
+    /// <summary>
+    /// Texture or sampler pool state.
+    /// </summary>
+    struct PoolState
+    {
+#pragma warning disable CS0649
+        public GpuVa Address;
+        public int MaximumId;
+#pragma warning restore CS0649
+    }
+
+    /// <summary>
+    /// Stencil back test state.
+    /// </summary>
+    struct StencilBackTestState
+    {
+#pragma warning disable CS0649
+        public Boolean32 TwoSided;
+        public StencilOp BackSFail;
+        public StencilOp BackDpFail;
+        public StencilOp BackDpPass;
+        public CompareOp BackFunc;
+#pragma warning restore CS0649
+    }
+
+    /// <summary>
+    /// Primitive restart state.
+    /// </summary>
+    struct PrimitiveRestartState
+    {
+#pragma warning disable CS0649
+        public Boolean32 Enable;
+        public int Index;
+#pragma warning restore CS0649
+    }
+
+    /// <summary>
+    /// GPU index buffer state.
+    /// This is used on indexed draws.
+    /// </summary>
+    struct IndexBufferState
+    {
+#pragma warning disable CS0649
+        public GpuVa Address;
+        public GpuVa EndAddress;
+        public IndexType Type;
+        public int First;
+#pragma warning restore CS0649
+    }
+
+    /// <summary>
+    /// Face culling and orientation parameters.
+    /// </summary>
+    struct FaceState
+    {
+#pragma warning disable CS0649
+        public Boolean32 CullEnable;
+        public FrontFace FrontFace;
+        public Face CullFace;
+#pragma warning restore CS0649
+    }
+
+    [Flags]
+    enum ViewVolumeClipControl
+    {
+        ForceDepthRangeZeroToOne = 1 << 0,
+        DepthClampDisabled = 1 << 11
+    }
+
+    struct LogicalOpState
+    {
+#pragma warning disable CS0649
+        public Boolean32 Enable;
+        public LogicalOp LogicalOp;
+#pragma warning restore CS0649
+    }
+
+    /// <summary>
+    /// Render target color buffer mask.
+    /// This defines which color channels are written to the color buffer.
+    /// </summary>
+    struct RtColorMask
+    {
+#pragma warning disable CS0649
+        public uint Packed;
+#pragma warning restore CS0649
+
+        /// <summary>
+        /// Unpacks red channel enable.
+        /// </summary>
+        /// <returns>True to write the new red channel color, false to keep the old value</returns>
+        public bool UnpackRed()
+        {
+            return (Packed & 0x1) != 0;
+        }
+
+        /// <summary>
+        /// Unpacks green channel enable.
+        /// </summary>
+        /// <returns>True to write the new green channel color, false to keep the old value</returns>
+        public bool UnpackGreen()
+        {
+            return (Packed & 0x10) != 0;
+        }
+
+        /// <summary>
+        /// Unpacks blue channel enable.
+        /// </summary>
+        /// <returns>True to write the new blue channel color, false to keep the old value</returns>
+        public bool UnpackBlue()
+        {
+            return (Packed & 0x100) != 0;
+        }
+
+        /// <summary>
+        /// Unpacks alpha channel enable.
+        /// </summary>
+        /// <returns>True to write the new alpha channel color, false to keep the old value</returns>
+        public bool UnpackAlpha()
+        {
+            return (Packed & 0x1000) != 0;
+        }
+    }
+
+    /// <summary>
+    /// Vertex buffer state.
+    /// </summary>
+    struct VertexBufferState
+    {
+#pragma warning disable CS0649
+        public uint Control;
+        public GpuVa Address;
+        public int Divisor;
+#pragma warning restore CS0649
+
+        /// <summary>
+        /// Vertex buffer stride, defined as the number of bytes occupied by each vertex in memory.
+        /// </summary>
+        /// <returns>Vertex buffer stride</returns>
+        public int UnpackStride()
+        {
+            return (int)(Control & 0xfff);
+        }
+
+        /// <summary>
+        /// Vertex buffer enable.
+        /// </summary>
+        /// <returns>True if the vertex buffer is enabled, false otherwise</returns>
+        public bool UnpackEnable()
+        {
+            return (Control & (1 << 12)) != 0;
+        }
+    }
+
+    /// <summary>
+    /// Color buffer blending parameters, shared by all color buffers.
+    /// </summary>
+    struct BlendStateCommon
+    {
+#pragma warning disable CS0649
+        public Boolean32 SeparateAlpha;
+        public BlendOp ColorOp;
+        public BlendFactor ColorSrcFactor;
+        public BlendFactor ColorDstFactor;
+        public BlendOp AlphaOp;
+        public BlendFactor AlphaSrcFactor;
+        public uint Unknown0x1354;
+        public BlendFactor AlphaDstFactor;
+#pragma warning restore CS0649
+
+        public static BlendStateCommon Default = new BlendStateCommon
+        {
+            ColorOp = BlendOp.Add,
+            ColorSrcFactor = BlendFactor.One,
+            ColorDstFactor = BlendFactor.Zero,
+            AlphaOp = BlendOp.Add,
+            AlphaSrcFactor = BlendFactor.One,
+            AlphaDstFactor = BlendFactor.Zero
+        };
+    }
+
+    /// <summary>
+    /// Color buffer blending parameters.
+    /// </summary>
+    struct BlendState
+    {
+#pragma warning disable CS0649
+        public Boolean32 SeparateAlpha;
+        public BlendOp ColorOp;
+        public BlendFactor ColorSrcFactor;
+        public BlendFactor ColorDstFactor;
+        public BlendOp AlphaOp;
+        public BlendFactor AlphaSrcFactor;
+        public BlendFactor AlphaDstFactor;
+        public uint Padding;
+#pragma warning restore CS0649
+
+        public static BlendState Default = new BlendState
+        {
+            ColorOp = BlendOp.Add,
+            ColorSrcFactor = BlendFactor.One,
+            ColorDstFactor = BlendFactor.Zero,
+            AlphaOp = BlendOp.Add,
+            AlphaSrcFactor = BlendFactor.One,
+            AlphaDstFactor = BlendFactor.Zero
+        };
+    }
+
+    /// <summary>
+    /// Graphics shader stage state.
+    /// </summary>
+    struct ShaderState
+    {
+#pragma warning disable CS0649
+        public uint Control;
+        public uint Offset;
+        public uint Unknown0x8;
+        public int MaxRegisters;
+        public ShaderType Type;
+        public uint Unknown0x14;
+        public uint Unknown0x18;
+        public uint Unknown0x1c;
+        public uint Unknown0x20;
+        public uint Unknown0x24;
+        public uint Unknown0x28;
+        public uint Unknown0x2c;
+        public uint Unknown0x30;
+        public uint Unknown0x34;
+        public uint Unknown0x38;
+        public uint Unknown0x3c;
+#pragma warning restore CS0649
+
+        /// <summary>
+        /// Unpacks shader enable information.
+        /// Must be ignored for vertex shaders, those are always enabled.
+        /// </summary>
+        /// <returns>True if the stage is enabled, false otherwise</returns>
+        public bool UnpackEnable()
+        {
+            return (Control & 1) != 0;
+        }
+    }
+
+    /// <summary>
+    /// Uniform buffer state for the uniform buffer currently being modified.
+    /// </summary>
+    struct UniformBufferState
+    {
+#pragma warning disable CS0649
+        public int Size;
+        public GpuVa Address;
+        public int Offset;
+#pragma warning restore CS0649
+    }
+
     unsafe struct ThreedClassState : IShadowState
     {
 #pragma warning disable CS0649

@@ -1,4 +1,4 @@
-namespace Ryujinx.Graphics.Gpu.State
+﻿namespace Ryujinx.Graphics.Gpu.Engine.Types
 {
     /// <summary>
     /// Memory layout parameters, for block linear textures.

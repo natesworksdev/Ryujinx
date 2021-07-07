@@ -5,7 +5,6 @@ using Ryujinx.Graphics.Gpu.Engine.InlineToMemory;
 using Ryujinx.Graphics.Gpu.Engine.Threed;
 using Ryujinx.Graphics.Gpu.Engine.Twod;
 using Ryujinx.Graphics.Gpu.Memory;
-using Ryujinx.Graphics.Gpu.State;
 using System;
 using System.Runtime.CompilerServices;
 
@@ -19,7 +18,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
         private const int MacrosCount = 0x80;
         private const int MacroIndexMask = MacrosCount - 1;
 
-        private readonly GpuContext _context;
+        private const int UniformBufferUpdateDataMethodOffset = 0x8e4;
+
         private readonly GpuChannel _channel;
 
         public MemoryManager MemoryManager => _channel.MemoryManager;
@@ -53,7 +53,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
         /// <param name="channel">Channel that the GPFIFO processor belongs to</param>
         public GPFifoProcessor(GpuContext context, GpuChannel channel)
         {
-            _context = context;
             _channel = channel;
 
             _fifoClass = new GPFifoClass(context, this);
@@ -136,7 +135,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
 
             if (meth.MethodCount < availableCount &&
                 meth.SecOp == SecOp.NonIncMethod &&
-                meth.MethodAddress == (int)MethodOffset.UniformBufferUpdateData)
+                meth.MethodAddress == UniformBufferUpdateDataMethodOffset)
             {
                 _3dClass.ConstantBufferUpdate(commandBuffer.Slice(offset + 1, meth.MethodCount));
 

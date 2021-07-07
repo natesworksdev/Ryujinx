@@ -1,4 +1,4 @@
-namespace Ryujinx.Graphics.Gpu.State
+namespace Ryujinx.Graphics.Gpu.Engine.Types
 {
     /// <summary>
     /// Sampler pool indexing mode.

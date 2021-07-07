@@ -1,4 +1,5 @@
 using Ryujinx.Graphics.GAL;
+using Ryujinx.Graphics.Gpu.Engine.Types;
 using Ryujinx.Graphics.Gpu.State;
 using Ryujinx.Graphics.Shader;
 using System;

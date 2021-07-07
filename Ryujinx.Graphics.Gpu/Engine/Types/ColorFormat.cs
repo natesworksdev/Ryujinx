@@ -1,7 +1,7 @@
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Image;
 
-namespace Ryujinx.Graphics.Gpu.State
+namespace Ryujinx.Graphics.Gpu.Engine.Types
 {
     /// <summary>
     /// Color texture format.

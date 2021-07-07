@@ -1,4 +1,4 @@
-﻿namespace Ryujinx.Graphics.Gpu.State
+﻿namespace Ryujinx.Graphics.Gpu.Engine.Types
 {
     /// <summary>
     /// Storage buffer address and size information.
