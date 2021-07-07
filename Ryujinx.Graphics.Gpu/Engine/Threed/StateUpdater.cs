@@ -17,6 +17,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         public const int ShaderStateIndex = 0;
         public const int RasterizerStateIndex = 1;
         public const int ScissorStateIndex = 2;
+        public const int VertexBufferStateIndex = 3;
 
         private readonly GpuContext _context;
         private readonly GpuChannel _channel;
@@ -29,6 +30,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
         private byte _vsClipDistancesWritten;
 
+        private bool _prevDrawIndexed;
         private bool _prevTfEnable;
 
         public StateUpdater(GpuContext context, GpuChannel channel, DeviceStateWithShadow<ThreedClassState> state, DrawState drawState)
@@ -42,6 +44,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             // ShaderState must be the first, as other state updates depends on information from the currently bound shader.
             // Rasterizer and scissor states are checked by render target clear, their indexes
             // must be updated on the constants "RasterizerStateIndex" and "ScissorStateIndex" if modified.
+            // The vertex buffer state may be forced dirty when a indexed draw starts, the "VertexBufferStateIndex"
+            // constant must be updated if modified.
             // The order of the other state updates doesn't matter.
             _updateTracker = new StateUpdateTracker<ThreedClassState>(new[]
             {
@@ -51,6 +55,13 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
                 new StateUpdateCallbackEntry(UpdateRasterizerState, nameof(ThreedClassState.RasterizeEnable)),
                 new StateUpdateCallbackEntry(UpdateScissorState, nameof(ThreedClassState.ScissorState)),
+
+                new StateUpdateCallbackEntry(UpdateVertexBufferState,
+                    nameof(ThreedClassState.VertexBufferDrawState),
+                    nameof(ThreedClassState.VertexBufferInstanced),
+                    nameof(ThreedClassState.VertexBufferState),
+                    nameof(ThreedClassState.VertexBufferEndAddress)),
+
                 new StateUpdateCallbackEntry(UpdateTfBufferState, nameof(ThreedClassState.TfBufferState)),
                 new StateUpdateCallbackEntry(UpdateUserClipState, nameof(ThreedClassState.ClipDistanceEnable)),
 
@@ -113,12 +124,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     nameof(ThreedClassState.IndexBufferState),
                     nameof(ThreedClassState.IndexBufferCount)),
 
-                new StateUpdateCallbackEntry(UpdateVertexBufferState,
-                    nameof(ThreedClassState.VertexBufferDrawState),
-                    nameof(ThreedClassState.VertexBufferInstanced),
-                    nameof(ThreedClassState.VertexBufferState),
-                    nameof(ThreedClassState.VertexBufferEndAddress)),
-
                 new StateUpdateCallbackEntry(UpdateFaceState, nameof(ThreedClassState.FaceState)),
 
                 new StateUpdateCallbackEntry(UpdateRtColorMask,
@@ -151,6 +156,16 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Update()
         {
+            // The vertex buffer size is calculated using a different
+            // method when doing indexed draws, so we need to make sure
+            // to update the vertex buffers if we are doing a regular
+            // draw after a indexed one and vice-versa.
+            if (_drawState.DrawIndexed != _prevDrawIndexed)
+            {
+                _updateTracker.ForceDirty(VertexBufferStateIndex);
+                _prevDrawIndexed = _drawState.DrawIndexed;
+            }
+
             bool tfEnable = _state.State.TfEnable;
 
             if (!tfEnable && _prevTfEnable)
@@ -703,10 +718,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             }
 
             _channel.BufferManager.SetIndexBuffer(gpuVa, size, indexBuffer.Type);
-
-            // The index buffer affects the vertex buffer size calculation, we
-            // need to ensure that they are updated.
-            UpdateVertexBufferState();
         }
 
         /// <summary>
