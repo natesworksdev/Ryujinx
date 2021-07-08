@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         }
 
         /// <inheritdoc/>
-        protected override IEnumerable<HostMemoryRange> GetPhysicalRegions(ulong va, ulong size)
+        public override IEnumerable<HostMemoryRange> GetPhysicalRegions(ulong va, ulong size)
         {
             return _cpuMemory.GetPhysicalRegions(va, size);
         }
@@ -84,7 +84,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         }
 
         /// <inheritdoc/>
-        protected override KernelResult MapPages(ulong address, IEnumerable<HostMemoryRange> ranges, KMemoryPermission permission)
+        public override KernelResult MapPages(ulong address, IEnumerable<HostMemoryRange> ranges, KMemoryPermission permission)
         {
             throw new NotSupportedException();
         }

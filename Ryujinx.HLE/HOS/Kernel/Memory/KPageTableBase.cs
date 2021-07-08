@@ -1977,8 +1977,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             return SetAttributesAndChangePermission(
                 address,
                 size,
-                MemoryState.IpcBufferAllowed,
-                MemoryState.IpcBufferAllowed,
+                MemoryState.IpcBufferAllowed | MemoryState.IsPoolAllocated,
+                MemoryState.IpcBufferAllowed | MemoryState.IsPoolAllocated,
                 KMemoryPermission.Mask,
                 KMemoryPermission.ReadAndWrite,
                 MemoryAttribute.Mask,
@@ -1992,8 +1992,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             return SetAttributesAndChangePermission(
                 address,
                 size,
-                MemoryState.TransferMemoryAllowed,
-                MemoryState.TransferMemoryAllowed,
+                MemoryState.TransferMemoryAllowed | MemoryState.IsPoolAllocated,
+                MemoryState.TransferMemoryAllowed | MemoryState.IsPoolAllocated,
                 KMemoryPermission.Mask,
                 KMemoryPermission.ReadAndWrite,
                 MemoryAttribute.Mask,
@@ -2001,6 +2001,48 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 permission,
                 MemoryAttribute.Borrowed,
                 ranges);
+        }
+
+        public KernelResult BorrowProcessMemory(ulong dst, ulong src, KPageTableBase srcPageTableBase, ulong size)
+        {
+            lock (_blockManager)
+            {
+                bool success = srcPageTableBase.CheckRange(
+                    src,
+                    size,
+                    MemoryState.MapProcessAllowed,
+                    MemoryState.MapProcessAllowed,
+                    KMemoryPermission.None,
+                    KMemoryPermission.None,
+                    MemoryAttribute.Mask,
+                    MemoryAttribute.None,
+                    MemoryAttribute.IpcAndDeviceMapped,
+                    out MemoryState state,
+                    out KMemoryPermission permission,
+                    out _);
+
+                success &= IsUnmapped(dst, size);
+
+                if (success)
+                {
+                    if (!_slabManager.CanAllocate(MaxBlocksNeededForInsertion * 2))
+                    {
+                        return KernelResult.OutOfResource;
+                    }
+
+                    ulong pagesCount = size / PageSize;
+
+                    KernelResult result = MapPages(dst, srcPageTableBase.GetPhysicalRegions(src, size), KMemoryPermission.ReadAndWrite);
+
+                    _blockManager.InsertBlock(dst, pagesCount, MemoryState.ProcessMemory);
+
+                    return KernelResult.Success;
+                }
+                else
+                {
+                    return KernelResult.InvalidMemState;
+                }
+            }
         }
 
         private KernelResult SetAttributesAndChangePermission(
@@ -2026,8 +2068,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 if (CheckRange(
                     address,
                     size,
-                    stateMask | MemoryState.IsPoolAllocated,
-                    stateExpected | MemoryState.IsPoolAllocated,
+                    stateMask,
+                    stateExpected,
                     permissionMask,
                     permissionExpected,
                     attributeMask,
@@ -2103,6 +2145,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 KMemoryPermission.ReadAndWrite,
                 MemoryAttribute.Borrowed,
                 ranges);
+        }
+
+        public KernelResult UnborrowProcessMemory(ulong address, ulong size)
+        {
+            return UnmapForKernel(address, BitUtils.DivRoundUp(size, PageSize), MemoryState.ProcessMemory);
         }
 
         private KernelResult ClearAttributesAndChangePermission(
@@ -2685,7 +2732,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         /// <param name="va">Virtual address of the range</param>
         /// <param name="size">Size of the range</param>
         /// <returns>Array of physical regions</returns>
-        protected abstract IEnumerable<HostMemoryRange> GetPhysicalRegions(ulong va, ulong size);
+        public abstract IEnumerable<HostMemoryRange> GetPhysicalRegions(ulong va, ulong size);
 
         /// <summary>
         /// Gets a read-only span of data from CPU mapped memory.
@@ -2750,7 +2797,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         /// <param name="permission">Permission of the region to be mapped</param>
         /// <returns>Result of the mapping operation</returns>
         /// <exception cref="NotSupportedException">The implementation does not support memory aliasing</exception>
-        protected abstract KernelResult MapPages(ulong address, IEnumerable<HostMemoryRange> ranges, KMemoryPermission permission);
+        public abstract KernelResult MapPages(ulong address, IEnumerable<HostMemoryRange> ranges, KMemoryPermission permission);
 
         /// <summary>
         /// Unmaps a region of memory that was previously mapped with one of the page mapping methods.

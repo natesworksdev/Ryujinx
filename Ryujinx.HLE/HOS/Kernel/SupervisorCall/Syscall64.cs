@@ -1,5 +1,6 @@
 ﻿using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Memory;
+using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
@@ -171,6 +172,15 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         {
             return _syscall.UnmapPhysicalMemory(address, size);
         }
+        public KernelResult MapProcessMemory64([R(0)] ulong dst, [R(1)] int handle, [R(2)] ulong src, [R(3)] ulong size)
+        {
+            return _syscall.MapProcessMemory(dst, handle, src, size);
+        }
+
+        public KernelResult UnmapProcessMemory64([R(0)] ulong dst, [R(1)] int handle, [R(2)] ulong src, [R(3)] ulong size)
+        {
+            return _syscall.UnmapProcessMemory(dst, handle, src, size);
+        }
 
         public KernelResult MapProcessCodeMemory64([R(0)] int handle, [R(1)] ulong dst, [R(2)] ulong src, [R(3)] ulong size)
         {
@@ -247,6 +257,16 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         public KernelResult CreateEvent64([R(1)] out int wEventHandle, [R(2)] out int rEventHandle)
         {
             return _syscall.CreateEvent(out wEventHandle, out rEventHandle);
+        }
+
+        public KernelResult CreateCodeMemory64([R(1)] ulong addr, [R(2)] ulong size, [R(1)] out int handle)
+        {
+            return _syscall.CreateCodeMemory(addr, size, out handle);
+        }
+
+        public KernelResult ControlCodeMemory64([R(0)] int handle, [R(1)] CodeMemoryOperation op, [R(2)] ulong address, [R(3)] ulong size, [R(4)] KMemoryPermission permission)
+        {
+            return _syscall.ControlCodeMemory(handle, op, address, size, permission);
         }
 
         public KernelResult GetProcessList64([R(1)] ulong address, [R(2)] int maxCount, [R(1)] out int count)

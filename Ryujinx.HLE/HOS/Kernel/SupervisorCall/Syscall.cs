@@ -9,6 +9,7 @@ using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.Memory;
 using System;
+using System.Linq;
 using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
@@ -1251,6 +1252,94 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return process.MemoryManager.UnmapPhysicalMemory(address, size);
         }
 
+
+        public KernelResult MapProcessMemory(ulong dst, int handle, ulong src, ulong size)
+        {
+            if (!PageAligned(src))
+            {
+                return KernelResult.InvalidAddress;
+            }
+
+            if (!PageAligned(dst))
+            {
+                return KernelResult.InvalidAddress;
+            }
+
+            if (!PageAligned(size) || size == 0)
+            {
+                return KernelResult.InvalidSize;
+            }
+
+            if (dst + size <= dst || src + size <= src)
+            {
+                return KernelResult.InvalidMemRange;
+            }
+
+            KProcess dstProcess = KernelStatic.GetCurrentProcess();
+
+            /* TODO: Hack, speaks for itself. */
+            KProcess srcProcess = dstProcess;
+            /*
+            KProcess srcProcess = dstProcess.HandleTable.GetObject<KProcess>(handle);
+            */
+
+            if (srcProcess == null)
+                return KernelResult.InvalidHandle;
+
+            if (!srcProcess.MemoryManager.InsideAddrSpace(src, size) ||
+                !dstProcess.MemoryManager.CanContain(dst, size, MemoryState.ProcessMemory))
+            {
+                return KernelResult.InvalidMemRange;
+            }
+            
+            return srcProcess.MemoryManager.BorrowProcessMemory(dst, src, srcProcess.MemoryManager, size);
+        }
+
+        public KernelResult UnmapProcessMemory(ulong dst, int handle, ulong src, ulong size)
+        {
+            if (!PageAligned(src))
+            {
+                return KernelResult.InvalidAddress;
+            }
+
+            if (!PageAligned(dst))
+            {
+                return KernelResult.InvalidAddress;
+            }
+
+            if (!PageAligned(size) || size == 0)
+            {
+                return KernelResult.InvalidSize;
+            }
+
+            if (dst + size <= dst || src + size <= src)
+            {
+                return KernelResult.InvalidMemRange;
+            }
+
+            KProcess dstProcess = KernelStatic.GetCurrentProcess();
+
+            /* TODO: Hack, speaks for itself. */
+            KProcess srcProcess = dstProcess;
+            /*
+            KProcess srcProcess = dstProcess.HandleTable.GetObject<KProcess>(handle);
+            */
+
+            if (srcProcess == null)
+                return KernelResult.InvalidHandle;
+
+            if (!srcProcess.MemoryManager.InsideAddrSpace(src, size) ||
+                !dstProcess.MemoryManager.CanContain(dst, size, MemoryState.ProcessMemory))
+            {
+                return KernelResult.InvalidMemRange;
+            }
+
+            var srcList = srcProcess.MemoryManager.GetPhysicalRegions(src, size).ToList();
+
+            return dstProcess.MemoryManager.UnborrowProcessMemory(dst, size);
+        }
+
+
         public KernelResult MapProcessCodeMemory(int handle, ulong dst, ulong src, ulong size)
         {
             if (!PageAligned(dst) || !PageAligned(src))
@@ -1775,6 +1864,60 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             return result;
         }
+
+        public KernelResult CreateCodeMemory(ulong address, ulong size, out int handle)
+        {
+            KCodeMemory cmem = new KCodeMemory(_context);
+            cmem.Initialize(address, size);
+
+            KProcess process = KernelStatic.GetCurrentProcess();
+
+            return process.HandleTable.GenerateHandle(cmem, out handle);
+        }
+
+        public KernelResult ControlCodeMemory(int handle, CodeMemoryOperation op, ulong address, ulong size, KMemoryPermission permission)
+        { 
+            const bool HasJitPatch = true;
+
+            KProcess process = KernelStatic.GetCurrentProcess();
+
+            KCodeMemory cmem = process.HandleTable.GetObject<KCodeMemory>(handle);
+
+            if (cmem != null)
+            {
+                switch (op)
+                {
+                    case CodeMemoryOperation.MapOwner:
+                        if (HasJitPatch || permission != KMemoryPermission.ReadAndWrite)
+                            return cmem.Map(address, size, permission);
+
+                        return KernelResult.InvalidPermission;
+
+                    case CodeMemoryOperation.MapSlave:
+                        if (HasJitPatch || (permission | KMemoryPermission.Execute) == KMemoryPermission.ReadAndExecute)
+                            return cmem.MapToOwner(address, size, permission);
+
+                        return KernelResult.InvalidPermission;
+
+                    case CodeMemoryOperation.UnmapOwner:
+                        if (HasJitPatch || permission == KMemoryPermission.None)
+                            return cmem.Unmap(address, size);
+
+                        return KernelResult.InvalidPermission;
+
+                    case CodeMemoryOperation.UnmapSlave:
+                        if (HasJitPatch || permission == KMemoryPermission.None)
+                            return cmem.UnmapToOwner(address, size);
+
+                        return KernelResult.InvalidPermission;
+
+                    default:
+                        return KernelResult.InvalidEnumValue;
+                }
+            }
+            return KernelResult.InvalidHandle;
+        }
+
 
         public KernelResult GetProcessList(ulong address, int maxCount, out int count)
         {
