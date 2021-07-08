@@ -31,7 +31,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float RoundDown(float a)
         {
-            return MathF.Round(a, 0);
+            return MathF.Floor(a);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

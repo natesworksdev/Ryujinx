@@ -59,27 +59,29 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
 
         private float ProcessDepopMix(Span<float> buffer, float depopValue, uint sampleCount)
         {
+            float value = Math.Abs(depopValue);
+
             if (depopValue <= 0)
             {
                 for (int i = 0; i < sampleCount; i++)
                 {
-                    depopValue = FloatingPointHelper.MultiplyRoundDown(Decay, depopValue);
+                    value = FloatingPointHelper.MultiplyRoundDown(Decay, value);
 
-                    buffer[i] -= depopValue;
+                    buffer[i] -= value;
                 }
 
-                return -depopValue;
+                return -value;
             }
             else
             {
                 for (int i = 0; i < sampleCount; i++)
                 {
-                    depopValue = FloatingPointHelper.MultiplyRoundDown(Decay, depopValue);
+                    value = FloatingPointHelper.MultiplyRoundDown(Decay, value);
 
-                    buffer[i] += depopValue;
+                    buffer[i] += value;
                 }
 
-                return depopValue;
+                return value;
             }
 
         }
