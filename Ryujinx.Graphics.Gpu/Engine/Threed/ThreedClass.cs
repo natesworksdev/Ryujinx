@@ -88,7 +88,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Write(int offset, int data)
         {
-            if (_state.WriteWithRedundancyCheck(offset, data))
+            _state.WriteWithRedundancyCheck(offset, data, out bool valueChanged);
+
+            if (valueChanged)
             {
                 _stateUpdater.SetDirty(offset);
             }

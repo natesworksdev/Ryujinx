@@ -61,7 +61,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Write(int offset, int value)
         {
-            WriteWithRedundancyCheck(offset, value);
+            WriteWithRedundancyCheck(offset, value, out _);
         }
 
         /// <summary>
@@ -70,25 +70,25 @@ namespace Ryujinx.Graphics.Gpu.Engine
         /// </summary>
         /// <param name="offset">Register offset in bytes</param>
         /// <param name="value">Value to be written</param>
-        /// <returns>True if the value was changed, false otherwise</returns>
+        /// <param name="changed">True if the value was changed, false otherwise</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool WriteWithRedundancyCheck(int offset, int value)
+        public void WriteWithRedundancyCheck(int offset, int value, out bool changed)
         {
             var shadowRamControl = _state.State.SetMmeShadowRamControlMode;
             if (shadowRamControl == SetMmeShadowRamControlMode.MethodPassthrough || offset < 0x200)
             {
-                return _state.WriteWithRedundancyCheck(offset, value);
+                _state.WriteWithRedundancyCheck(offset, value, out changed);
             }
             else if (shadowRamControl == SetMmeShadowRamControlMode.MethodTrack ||
                      shadowRamControl == SetMmeShadowRamControlMode.MethodTrackWithFilter)
             {
                 _shadowState.Write(offset, value);
-                return _state.WriteWithRedundancyCheck(offset, value);
+                _state.WriteWithRedundancyCheck(offset, value, out changed);
             }
             else /* if (shadowRamControl == SetMmeShadowRamControlMode.MethodReplay) */
             {
                 Debug.Assert(shadowRamControl == SetMmeShadowRamControlMode.MethodReplay);
-                return _state.WriteWithRedundancyCheck(offset, _shadowState.Read(offset));
+                _state.WriteWithRedundancyCheck(offset, _shadowState.Read(offset), out changed);
             }
         }
     }

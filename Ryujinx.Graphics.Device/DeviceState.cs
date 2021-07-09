@@ -12,7 +12,7 @@ namespace Ryujinx.Graphics.Device
 
         public TState State;
 
-        private readonly uint _size;
+        private uint Size => (uint)(Unsafe.SizeOf<TState>() + RegisterSize - 1) / RegisterSize;
 
         private readonly Func<int>[] _readCallbacks;
         private readonly Action<int>[] _writeCallbacks;
@@ -22,12 +22,8 @@ namespace Ryujinx.Graphics.Device
 
         public DeviceState(IReadOnlyDictionary<string, RwCallback> callbacks = null, Action<string> debugLogCallback = null)
         {
-            int size = (Unsafe.SizeOf<TState>() + RegisterSize - 1) / RegisterSize;
-
-            _size = (uint)size;
-
-            _readCallbacks = new Func<int>[size];
-            _writeCallbacks = new Action<int>[size];
+            _readCallbacks = new Func<int>[Size];
+            _writeCallbacks = new Action<int>[Size];
 
             if (debugLogCallback != null)
             {
@@ -77,7 +73,7 @@ namespace Ryujinx.Graphics.Device
         {
             uint index = (uint)offset / RegisterSize;
 
-            if (index < _size)
+            if (index < Size)
             {
                 uint alignedOffset = index * RegisterSize;
 
@@ -99,7 +95,7 @@ namespace Ryujinx.Graphics.Device
         {
             uint index = (uint)offset / RegisterSize;
 
-            if (index < _size)
+            if (index < Size)
             {
                 uint alignedOffset = index * RegisterSize;
                 DebugWrite(alignedOffset, data);
@@ -110,12 +106,12 @@ namespace Ryujinx.Graphics.Device
             }
         }
 
-        public bool WriteWithRedundancyCheck(int offset, int data)
+        public void WriteWithRedundancyCheck(int offset, int data, out bool changed)
         {
-            bool changed = false;
+            changed = false;
             uint index = (uint)offset / RegisterSize;
 
-            if (index < _size)
+            if (index < Size)
             {
                 uint alignedOffset = index * RegisterSize;
                 DebugWrite(alignedOffset, data);
@@ -126,8 +122,6 @@ namespace Ryujinx.Graphics.Device
 
                 Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(_writeCallbacks), (IntPtr)index)?.Invoke(data);
             }
-
-            return changed;
         }
 
         [Conditional("DEBUG")]
