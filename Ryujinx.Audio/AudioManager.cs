@@ -84,7 +84,7 @@ namespace Ryujinx.Audio
         /// <summary>
         /// Initialize update handlers.
         /// </summary>
-        /// <param name="updatedRequiredEvent ">The driver event that will get signaled by the device driver when an audio buffer finished playing/being captured</param>
+        /// <param name="deviceDriver ">The device driver to get the driver event when an audio buffer finished playing/being captured and the pause event</param>
         /// <param name="outputCallback">The callback to call when an audio buffer finished playing</param>
         /// <param name="inputCallback">The callback to call when an audio buffer was captured</param>
         public void Initialize(IHardwareDeviceDriver deviceDriver, Action outputCallback, Action inputCallback)
@@ -105,8 +105,6 @@ namespace Ryujinx.Audio
         {
             while (true)
             {
-                //_deviceDriver.GetPauseEvent().WaitOne();
-
                 int index = WaitHandle.WaitAny(_updateRequiredEvents);
 
                 // Last index is here to indicate thread termination.

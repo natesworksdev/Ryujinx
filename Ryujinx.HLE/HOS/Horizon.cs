@@ -453,12 +453,14 @@ namespace Ryujinx.HLE.HOS
                 {
                     process.SetThreadActivity(pause);
                 }
+
                 if (pause)
                 {
                     Device.AudioDeviceDriver.GetPauseEvent().Reset();
                 }
                 else
                 {
+                    SimulateWakeUpMessage();
                     Device.AudioDeviceDriver.GetPauseEvent().Set();
                 }
             }

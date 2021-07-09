@@ -47,6 +47,5 @@ namespace Ryujinx.Audio.Integration
         {
             return this;
         }
-
     }
 }
