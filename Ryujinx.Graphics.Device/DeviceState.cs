@@ -108,7 +108,6 @@ namespace Ryujinx.Graphics.Device
 
         public void WriteWithRedundancyCheck(int offset, int data, out bool changed)
         {
-            changed = false;
             uint index = (uint)offset / RegisterSize;
 
             if (index < Size)
@@ -121,6 +120,10 @@ namespace Ryujinx.Graphics.Device
                 storage = data;
 
                 Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(_writeCallbacks), (IntPtr)index)?.Invoke(data);
+            }
+            else
+            {
+                changed = false;
             }
         }
 
