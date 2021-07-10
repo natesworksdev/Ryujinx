@@ -1373,7 +1373,7 @@ namespace Ryujinx.Ui
             settingsWindow.Show();
         }
 
-        private void ZenMode_Pressed(object sender, EventArgs args)
+        private void HideUi_Pressed(object sender, EventArgs args)
         {
             ToggleExtraWidgets(false);
         }

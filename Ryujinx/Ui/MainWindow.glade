@@ -135,12 +135,12 @@
                       </object>
                     </child>
                     <child>
-                      <object class="GtkMenuItem" id="_zenMode">
+                      <object class="GtkMenuItem" id="_hideUi">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Hide UI (Alt to show)</property>
                         <property name="use_underline">True</property>
-                        <signal name="activate" handler="ZenMode_Pressed" swapped="no" />
+                        <signal name="activate" handler="HideUi_Pressed" swapped="no" />
                       </object>
                     </child>
                     <child>
