@@ -58,6 +58,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private Func<Instance, Vk, SurfaceKHR> GetSurface;
 
+        internal bool IsIntelGpu { get; private set; }
         public string GpuVendor { get; private set; }
         public string GpuRenderer { get; private set; }
         public string GpuVersion { get; private set; }
@@ -265,6 +266,7 @@ namespace Ryujinx.Graphics.Vulkan
                 _ => $"0x{properties.VendorID:X}"
             };
 
+            IsIntelGpu = properties.VendorID == 0x8086;
             GpuVendor = vendorName;
             GpuRenderer = Marshal.PtrToStringAnsi((IntPtr)properties.DeviceName);
             GpuVersion = $"Vulkan v{ParseStandardVulkanVersion(properties.ApiVersion)}, Driver v{ParseDriverVersion(ref properties)}";
