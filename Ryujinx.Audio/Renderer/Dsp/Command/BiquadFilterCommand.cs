@@ -18,6 +18,7 @@
 using Ryujinx.Audio.Renderer.Dsp.State;
 using Ryujinx.Audio.Renderer.Parameter;
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Audio.Renderer.Dsp.Command
 {
@@ -49,6 +50,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
             NodeId = nodeId;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ProcessBiquadFilter(Span<float> outputBuffer, ReadOnlySpan<float> inputBuffer, uint sampleCount)
         {
             const int fixedPointPrecisionForParameter = 14;

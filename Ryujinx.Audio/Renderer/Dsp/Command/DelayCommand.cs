@@ -20,6 +20,7 @@ using Ryujinx.Audio.Renderer.Parameter.Effect;
 using Ryujinx.Audio.Renderer.Server.Effect;
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Audio.Renderer.Dsp.Command
 {
@@ -64,7 +65,8 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
             }
         }
 
-        private void ProcessDelayMono(Span<float> outputBuffer, ReadOnlySpan<float> inputBuffer, uint sampleCount)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private unsafe void ProcessDelayMono(float* outputBuffer, float* inputBuffer, uint sampleCount)
         {
             ref DelayState state = ref State.Span[0];
 
@@ -88,13 +90,14 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
             }
         }
 
-        private void ProcessDelayStereo(Memory<float>[] outputBuffers, ReadOnlyMemory<float>[] inputBuffers, uint sampleCount)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private unsafe void ProcessDelayStereo(Span<IntPtr> outputBuffers, ReadOnlySpan<IntPtr> inputBuffers, uint sampleCount)
         {
             ref DelayState state = ref State.Span[0];
 
-            float[] channelInput = new float[Parameter.ChannelCount];
-            float[] delayLineValues = new float[Parameter.ChannelCount];
-            float[] temp = new float[Parameter.ChannelCount];
+            Span<float> channelInput = stackalloc float[Parameter.ChannelCount];
+            Span<float> delayLineValues = stackalloc float[Parameter.ChannelCount];
+            Span<float> temp = stackalloc float[Parameter.ChannelCount];
 
             float delayFeedbackBaseGain = state.DelayFeedbackBaseGain;
             float delayFeedbackCrossGain = state.DelayFeedbackCrossGain;
@@ -106,7 +109,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
             {
                 for (int j = 0; j < Parameter.ChannelCount; j++)
                 {
-                    channelInput[j] = inputBuffers[j].Span[i] * 64;
+                    channelInput[j] = *((float*)inputBuffers[j] + i) * 64;
                     delayLineValues[j] = state.DelayLines[j].Read();
                 }
 
@@ -120,18 +123,19 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                     state.LowPassZ[j] = lowPassResult;
                     state.DelayLines[j].Update(lowPassResult);
 
-                    outputBuffers[j].Span[i] = (channelInput[j] * dryGain + delayLineValues[j] * outGain) / 64;
+                    *((float*)outputBuffers[j] + i) = (channelInput[j] * dryGain + delayLineValues[j] * outGain) / 64;
                 }
             }
         }
 
-        private void ProcessDelayQuadraphonic(Memory<float>[] outputBuffers, ReadOnlyMemory<float>[] inputBuffers, uint sampleCount)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private unsafe void ProcessDelayQuadraphonic(Span<IntPtr> outputBuffers, ReadOnlySpan<IntPtr> inputBuffers, uint sampleCount)
         {
             ref DelayState state = ref State.Span[0];
 
-            float[] channelInput = new float[Parameter.ChannelCount];
-            float[] delayLineValues = new float[Parameter.ChannelCount];
-            float[] temp = new float[Parameter.ChannelCount];
+            Span<float> channelInput = stackalloc float[Parameter.ChannelCount];
+            Span<float> delayLineValues = stackalloc float[Parameter.ChannelCount];
+            Span<float> temp = stackalloc float[Parameter.ChannelCount];
 
             float delayFeedbackBaseGain = state.DelayFeedbackBaseGain;
             float delayFeedbackCrossGain = state.DelayFeedbackCrossGain;
@@ -143,7 +147,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
             {
                 for (int j = 0; j < Parameter.ChannelCount; j++)
                 {
-                    channelInput[j] = inputBuffers[j].Span[i] * 64;
+                    channelInput[j] = *((float*)inputBuffers[j] + i) * 64;
                     delayLineValues[j] = state.DelayLines[j].Read();
                 }
 
@@ -159,18 +163,19 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                     state.LowPassZ[j] = lowPassResult;
                     state.DelayLines[j].Update(lowPassResult);
 
-                    outputBuffers[j].Span[i] = (channelInput[j] * dryGain + delayLineValues[j] * outGain) / 64;
+                    *((float*)outputBuffers[j] + i) = (channelInput[j] * dryGain + delayLineValues[j] * outGain) / 64;
                 }
             }
         }
 
-        private void ProcessDelaySurround(Memory<float>[] outputBuffers, ReadOnlyMemory<float>[] inputBuffers, uint sampleCount)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private unsafe void ProcessDelaySurround(Span<IntPtr> outputBuffers, ReadOnlySpan<IntPtr> inputBuffers, uint sampleCount)
         {
             ref DelayState state = ref State.Span[0];
 
-            float[] channelInput = new float[Parameter.ChannelCount];
-            float[] delayLineValues = new float[Parameter.ChannelCount];
-            float[] temp = new float[Parameter.ChannelCount];
+            Span<float> channelInput = stackalloc float[Parameter.ChannelCount];
+            Span<float> delayLineValues = stackalloc float[Parameter.ChannelCount];
+            Span<float> temp = stackalloc float[Parameter.ChannelCount];
 
             float delayFeedbackBaseGain = state.DelayFeedbackBaseGain;
             float delayFeedbackCrossGain = state.DelayFeedbackCrossGain;
@@ -182,7 +187,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
             {
                 for (int j = 0; j < Parameter.ChannelCount; j++)
                 {
-                    channelInput[j] = inputBuffers[j].Span[i] * 64;
+                    channelInput[j] = *((float*)inputBuffers[j] + i) * 64;
                     delayLineValues[j] = state.DelayLines[j].Read();
                 }
 
@@ -200,30 +205,31 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                     state.LowPassZ[j] = lowPassResult;
                     state.DelayLines[j].Update(lowPassResult);
 
-                    outputBuffers[j].Span[i] = (channelInput[j] * dryGain + delayLineValues[j] * outGain) / 64;
+                    *((float*)outputBuffers[j] + i) = (channelInput[j] * dryGain + delayLineValues[j] * outGain) / 64;
                 }
             }
         }
 
-        private void ProcessDelay(CommandList context)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private unsafe void ProcessDelay(CommandList context)
         {
             Debug.Assert(Parameter.IsChannelCountValid());
 
             if (IsEffectEnabled && Parameter.IsChannelCountValid())
             {
-                ReadOnlyMemory<float>[] inputBuffers = new ReadOnlyMemory<float>[Parameter.ChannelCount];
-                Memory<float>[] outputBuffers = new Memory<float>[Parameter.ChannelCount];
+                Span<IntPtr> inputBuffers = stackalloc IntPtr[Parameter.ChannelCount];
+                Span<IntPtr> outputBuffers = stackalloc IntPtr[Parameter.ChannelCount];
 
                 for (int i = 0; i < Parameter.ChannelCount; i++)
                 {
-                    inputBuffers[i] = context.GetBufferMemory(InputBufferIndices[i]);
-                    outputBuffers[i] = context.GetBufferMemory(OutputBufferIndices[i]);
+                    inputBuffers[i] = context.GetBufferPointer(InputBufferIndices[i]);
+                    outputBuffers[i] = context.GetBufferPointer(OutputBufferIndices[i]);
                 }
 
                 switch (Parameter.ChannelCount)
                 {
                     case 1:
-                        ProcessDelayMono(outputBuffers[0].Span, inputBuffers[0].Span, context.SampleCount);
+                        ProcessDelayMono((float*)outputBuffers[0], (float*)inputBuffers[0], context.SampleCount);
                         break;
                     case 2:
                         ProcessDelayStereo(outputBuffers, inputBuffers, context.SampleCount);
@@ -244,7 +250,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                 {
                     if (InputBufferIndices[i] != OutputBufferIndices[i])
                     {
-                        context.GetBufferMemory(InputBufferIndices[i]).CopyTo(context.GetBufferMemory(OutputBufferIndices[i]));
+                        context.CopyBuffer(OutputBufferIndices[i], InputBufferIndices[i]);
                     }
                 }
             }
