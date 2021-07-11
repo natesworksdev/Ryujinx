@@ -1277,7 +1277,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             KProcess dstProcess = KernelStatic.GetCurrentProcess();
 
-            /* TODO: Hack, speaks for itself. */
+            // TODO: Hack, speaks for itself.
             KProcess srcProcess = dstProcess;
             /*
             KProcess srcProcess = dstProcess.HandleTable.GetObject<KProcess>(handle);
@@ -1319,7 +1319,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             KProcess dstProcess = KernelStatic.GetCurrentProcess();
 
-            /* TODO: Hack, speaks for itself. */
+            // TODO: Hack, speaks for itself.
             KProcess srcProcess = dstProcess;
             /*
             KProcess srcProcess = dstProcess.HandleTable.GetObject<KProcess>(handle);
@@ -1867,7 +1867,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         public KernelResult CreateCodeMemory(ulong address, ulong size, out int handle)
         {
-            KCodeMemory cmem = new KCodeMemory(_context);
+            KCodeMemory codeMemory = new KCodeMemory(_context);
             cmem.Initialize(address, size);
 
             KProcess process = KernelStatic.GetCurrentProcess();
@@ -1881,7 +1881,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             KProcess process = KernelStatic.GetCurrentProcess();
 
-            KCodeMemory cmem = process.HandleTable.GetObject<KCodeMemory>(handle);
+            KCodeMemory codeMemory = process.HandleTable.GetObject<KCodeMemory>(handle);
 
             if (cmem != null)
             {

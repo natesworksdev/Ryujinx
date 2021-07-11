@@ -20,14 +20,14 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
     class KCodeMemory : KAutoObject
     {
 
-        private IEnumerable<HostMemoryRange> _host_pagelist;
-        private ulong _pagecount;
+        private IEnumerable<HostMemoryRange> _hostPagelist;
+        private ulong _pageCount;
         private KProcess _owner;
-        private ulong _src_addr;
+        private ulong _srcAddress;
         private object _lock;
         private bool _initialized;
-        private bool _is_owner_mapped;
-        private bool _is_mapped;
+        private bool _isOwnerMapped;
+        private bool _isMapped;
 
         public KCodeMemory(KernelContext context) : base(context)
         {
@@ -73,7 +73,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             return KernelResult.Success;
         }
 
-        public KernelResult MapToOwner(ulong address, ulong size, KMemoryPermission perm)
+        public KernelResult MapToOwner(ulong address, ulong size, KMemoryPermission permission)
         {
             if (_pagecount != BitUtils.DivRoundUp(size, KPageTableBase.PageSize))
                 return KernelResult.InvalidSize;
