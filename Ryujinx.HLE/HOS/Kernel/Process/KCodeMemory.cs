@@ -19,7 +19,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
     class KCodeMemory : KAutoObject
     {
-
         private IEnumerable<HostMemoryRange> _hostPagelist;
         private ulong _pageCount;
         private KProcess _owner;
@@ -67,8 +66,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                 {
                     return KernelResult.InvalidState;
                 }
-                _isMapped = true;
 
+                _isMapped = true;
             }
 
             return KernelResult.Success;
@@ -128,6 +127,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                 _owner.MemoryManager.UnmapPages(address, _pageCount, _hostPagelist, MemoryState.CodeReadOnly);
 
                 Debug.Assert(_isOwnerMapped);
+
                 _isOwnerMapped = false;
             }
 

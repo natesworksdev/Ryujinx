@@ -1877,6 +1877,9 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         public KernelResult ControlCodeMemory(int handle, CodeMemoryOperation op, ulong address, ulong size, KMemoryPermission permission)
         { 
+            // Homebrew JITs abuse a patch made to the kernel to operate.
+            // This emulates this behavior.
+            // TODO: Tie this to some configuration?
             const bool HasJitPatch = true;
 
             KProcess process = KernelStatic.GetCurrentProcess();
@@ -1892,6 +1895,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                         {
                             return codeMemory.Map(address, size, permission);
                         }
+
                         return KernelResult.InvalidPermission;
 
                     case CodeMemoryOperation.MapSlave:
@@ -1899,6 +1903,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                         {
                             return codeMemory.MapToOwner(address, size, permission);
                         }
+
                         return KernelResult.InvalidPermission;
 
                     case CodeMemoryOperation.UnmapOwner:
@@ -1906,6 +1911,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                         {
                             return codeMemory.Unmap(address, size);
                         }
+
                         return KernelResult.InvalidPermission;
 
                     case CodeMemoryOperation.UnmapSlave:
@@ -1913,10 +1919,10 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                         {
                             return codeMemory.UnmapToOwner(address, size);
                         }
+
                         return KernelResult.InvalidPermission;
 
-                    default:
-                        return KernelResult.InvalidEnumValue;
+                    default: return KernelResult.InvalidEnumValue;
                 }
             }
 
