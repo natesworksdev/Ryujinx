@@ -35,7 +35,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
 
         public float[] Coefficients { get; }
 
-        public DownMixSurroundToStereoCommand(uint bufferOffset, Span<byte> inputBufferOffset, Span<byte> outputBufferOffset, ReadOnlySpan<float> downMixParameter, int nodeId)
+        public DownMixSurroundToStereoCommand(uint bufferOffset, Span<byte> inputBufferOffset, Span<byte> outputBufferOffset, float[] downMixParameter, int nodeId)
         {
             Enabled = true;
             NodeId = nodeId;
@@ -49,7 +49,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                 OutputBufferIndices[i] = (ushort)(bufferOffset + outputBufferOffset[i]);
             }
 
-            Coefficients = downMixParameter.ToArray();
+            Coefficients = downMixParameter;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

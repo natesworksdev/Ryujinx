@@ -66,10 +66,8 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private unsafe void ProcessDelayMono(float* outputBuffer, float* inputBuffer, uint sampleCount)
+        private unsafe void ProcessDelayMono(ref DelayState state, float* outputBuffer, float* inputBuffer, uint sampleCount)
         {
-            ref DelayState state = ref State.Span[0];
-
             float feedbackGain = FixedPointHelper.ToFloat(Parameter.FeedbackGain, FixedPointPrecision);
             float inGain = FixedPointHelper.ToFloat(Parameter.InGain, FixedPointPrecision);
             float dryGain = FixedPointHelper.ToFloat(Parameter.DryGain, FixedPointPrecision);
@@ -91,11 +89,9 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private unsafe void ProcessDelayStereo(Span<IntPtr> outputBuffers, ReadOnlySpan<IntPtr> inputBuffers, uint sampleCount)
+        private unsafe void ProcessDelayStereo(ref DelayState state, Span<IntPtr> outputBuffers, ReadOnlySpan<IntPtr> inputBuffers, uint sampleCount)
         {
             const ushort channelCount = 2;
-
-            ref DelayState state = ref State.Span[0];
 
             Span<float> channelInput = stackalloc float[channelCount];
             Span<float> delayLineValues = stackalloc float[channelCount];
@@ -131,11 +127,9 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private unsafe void ProcessDelayQuadraphonic(Span<IntPtr> outputBuffers, ReadOnlySpan<IntPtr> inputBuffers, uint sampleCount)
+        private unsafe void ProcessDelayQuadraphonic(ref DelayState state, Span<IntPtr> outputBuffers, ReadOnlySpan<IntPtr> inputBuffers, uint sampleCount)
         {
             const ushort channelCount = 4;
-
-            ref DelayState state = ref State.Span[0];
 
             Span<float> channelInput = stackalloc float[channelCount];
             Span<float> delayLineValues = stackalloc float[channelCount];
@@ -173,11 +167,9 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private unsafe void ProcessDelaySurround(Span<IntPtr> outputBuffers, ReadOnlySpan<IntPtr> inputBuffers, uint sampleCount)
+        private unsafe void ProcessDelaySurround(ref DelayState state, Span<IntPtr> outputBuffers, ReadOnlySpan<IntPtr> inputBuffers, uint sampleCount)
         {
             const ushort channelCount = 6;
-
-            ref DelayState state = ref State.Span[0];
 
             Span<float> channelInput = stackalloc float[channelCount];
             Span<float> delayLineValues = stackalloc float[channelCount];
@@ -216,8 +208,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private unsafe void ProcessDelay(CommandList context)
+        private unsafe void ProcessDelay(CommandList context, ref DelayState state)
         {
             Debug.Assert(Parameter.IsChannelCountValid());
 
@@ -235,19 +226,19 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                 switch (Parameter.ChannelCount)
                 {
                     case 1:
-                        ProcessDelayMono((float*)outputBuffers[0], (float*)inputBuffers[0], context.SampleCount);
+                        ProcessDelayMono(ref state, (float*)outputBuffers[0], (float*)inputBuffers[0], context.SampleCount);
                         break;
                     case 2:
-                        ProcessDelayStereo(outputBuffers, inputBuffers, context.SampleCount);
+                        ProcessDelayStereo(ref state, outputBuffers, inputBuffers, context.SampleCount);
                         break;
                     case 4:
-                        ProcessDelayQuadraphonic(outputBuffers, inputBuffers, context.SampleCount);
+                        ProcessDelayQuadraphonic(ref state, outputBuffers, inputBuffers, context.SampleCount);
                         break;
                     case 6:
-                        ProcessDelaySurround(outputBuffers, inputBuffers, context.SampleCount);
+                        ProcessDelaySurround(ref state, outputBuffers, inputBuffers, context.SampleCount);
                         break;
                     default:
-                        throw new NotImplementedException($"{Parameter.ChannelCount}");
+                        throw new NotImplementedException(Parameter.ChannelCount.ToString());
                 }
             }
             else
@@ -278,7 +269,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                 }
             }
 
-            ProcessDelay(context);
+            ProcessDelay(context, ref state);
         }
     }
 }

@@ -78,17 +78,15 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                 }
             }
 
-            ProcessLimiter(context);
+            ProcessLimiter(context, ref state);
         }
 
-        private unsafe void ProcessLimiter(CommandList context)
+        private unsafe void ProcessLimiter(CommandList context, ref LimiterState state)
         {
             Debug.Assert(Parameter.IsChannelCountValid());
 
             if (IsEffectEnabled && Parameter.IsChannelCountValid())
             {
-                ref LimiterState state = ref State.Span[0];
-
                 Span<IntPtr> inputBuffers = stackalloc IntPtr[Parameter.ChannelCount];
                 Span<IntPtr> outputBuffers = stackalloc IntPtr[Parameter.ChannelCount];
 
