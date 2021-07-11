@@ -1252,7 +1252,6 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return process.MemoryManager.UnmapPhysicalMemory(address, size);
         }
 
-
         public KernelResult MapProcessMemory(ulong dst, int handle, ulong src, ulong size)
         {
             if (!PageAligned(src))
