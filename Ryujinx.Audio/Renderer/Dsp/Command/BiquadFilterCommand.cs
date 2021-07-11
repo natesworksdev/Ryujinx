@@ -78,14 +78,15 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
         {
             ref BiquadFilterState state = ref BiquadFilterState.Span[0];
 
-            Span<float> outputBuffer = context.GetBuffer(InputBufferIndex);
+            ReadOnlySpan<float> inputBuffer = context.GetBuffer(InputBufferIndex);
+            Span<float> outputBuffer = context.GetBuffer(OutputBufferIndex);
 
             if (NeedInitialization)
             {
                 state = new BiquadFilterState();
             }
 
-            ProcessBiquadFilter(ref state, outputBuffer, outputBuffer, context.SampleCount);
+            ProcessBiquadFilter(ref state, outputBuffer, inputBuffer, context.SampleCount);
         }
     }
 }
