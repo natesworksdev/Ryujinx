@@ -133,6 +133,5 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
             return KernelResult.Success;
         }
-
     }
 }
