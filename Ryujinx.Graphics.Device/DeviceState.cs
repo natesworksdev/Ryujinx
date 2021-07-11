@@ -147,7 +147,7 @@ namespace Ryujinx.Graphics.Device
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private ref T GetRefUnchecked<T>(uint offset) where T : unmanaged
+        private ref T GetRefUnchecked<T>(ulong offset) where T : unmanaged
         {
             return ref Unsafe.As<TState, T>(ref Unsafe.AddByteOffset(ref State, (IntPtr)offset));
         }

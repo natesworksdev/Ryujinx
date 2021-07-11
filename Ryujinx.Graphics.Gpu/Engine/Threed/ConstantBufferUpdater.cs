@@ -74,7 +74,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         }
 
         /// <summary>
-        ///Binds a uniform buffer for the specified shader stage.
+        /// Binds a uniform buffer for the specified shader stage.
         /// </summary>
         /// <param name="argument">Method call argument</param>
         /// <param name="type">Shader stage that will access the uniform buffer</param>

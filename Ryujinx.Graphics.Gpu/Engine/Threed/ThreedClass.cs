@@ -21,7 +21,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         private readonly StateUpdater _stateUpdater;
 
         /// <summary>
-        /// Creates a new instance of the compute engine class.
+        /// Creates a new instance of the 3D engine class.
         /// </summary>
         /// <param name="context">GPU context</param>
         /// <param name="channel">GPU channel</param>
