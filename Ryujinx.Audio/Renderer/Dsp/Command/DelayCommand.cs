@@ -93,11 +93,13 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private unsafe void ProcessDelayStereo(Span<IntPtr> outputBuffers, ReadOnlySpan<IntPtr> inputBuffers, uint sampleCount)
         {
+            const ushort channelCount = 2;
+
             ref DelayState state = ref State.Span[0];
 
-            Span<float> channelInput = stackalloc float[Parameter.ChannelCount];
-            Span<float> delayLineValues = stackalloc float[Parameter.ChannelCount];
-            Span<float> temp = stackalloc float[Parameter.ChannelCount];
+            Span<float> channelInput = stackalloc float[channelCount];
+            Span<float> delayLineValues = stackalloc float[channelCount];
+            Span<float> temp = stackalloc float[channelCount];
 
             float delayFeedbackBaseGain = state.DelayFeedbackBaseGain;
             float delayFeedbackCrossGain = state.DelayFeedbackCrossGain;
@@ -107,7 +109,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
 
             for (int i = 0; i < sampleCount; i++)
             {
-                for (int j = 0; j < Parameter.ChannelCount; j++)
+                for (int j = 0; j < channelCount; j++)
                 {
                     channelInput[j] = *((float*)inputBuffers[j] + i) * 64;
                     delayLineValues[j] = state.DelayLines[j].Read();
@@ -116,7 +118,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                 temp[0] = channelInput[0] * inGain + delayLineValues[1] * delayFeedbackCrossGain + delayLineValues[0] * delayFeedbackBaseGain;
                 temp[1] = channelInput[1] * inGain + delayLineValues[0] * delayFeedbackCrossGain + delayLineValues[1] * delayFeedbackBaseGain;
 
-                for (int j = 0; j < Parameter.ChannelCount; j++)
+                for (int j = 0; j < channelCount; j++)
                 {
                     float lowPassResult = state.LowPassFeedbackGain * state.LowPassZ[j] + temp[j] * state.LowPassBaseGain;
 
@@ -131,11 +133,13 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private unsafe void ProcessDelayQuadraphonic(Span<IntPtr> outputBuffers, ReadOnlySpan<IntPtr> inputBuffers, uint sampleCount)
         {
+            const ushort channelCount = 4;
+
             ref DelayState state = ref State.Span[0];
 
-            Span<float> channelInput = stackalloc float[Parameter.ChannelCount];
-            Span<float> delayLineValues = stackalloc float[Parameter.ChannelCount];
-            Span<float> temp = stackalloc float[Parameter.ChannelCount];
+            Span<float> channelInput = stackalloc float[channelCount];
+            Span<float> delayLineValues = stackalloc float[channelCount];
+            Span<float> temp = stackalloc float[channelCount];
 
             float delayFeedbackBaseGain = state.DelayFeedbackBaseGain;
             float delayFeedbackCrossGain = state.DelayFeedbackCrossGain;
@@ -145,7 +149,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
 
             for (int i = 0; i < sampleCount; i++)
             {
-                for (int j = 0; j < Parameter.ChannelCount; j++)
+                for (int j = 0; j < channelCount; j++)
                 {
                     channelInput[j] = *((float*)inputBuffers[j] + i) * 64;
                     delayLineValues[j] = state.DelayLines[j].Read();
@@ -156,7 +160,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                 temp[2] = channelInput[2] * inGain + (delayLineValues[3] + delayLineValues[0]) * delayFeedbackCrossGain + delayLineValues[2] * delayFeedbackBaseGain;
                 temp[3] = channelInput[3] * inGain + (delayLineValues[1] + delayLineValues[2]) * delayFeedbackCrossGain + delayLineValues[3] * delayFeedbackBaseGain;
 
-                for (int j = 0; j < Parameter.ChannelCount; j++)
+                for (int j = 0; j < channelCount; j++)
                 {
                     float lowPassResult = state.LowPassFeedbackGain * state.LowPassZ[j] + temp[j] * state.LowPassBaseGain;
 
@@ -171,11 +175,13 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private unsafe void ProcessDelaySurround(Span<IntPtr> outputBuffers, ReadOnlySpan<IntPtr> inputBuffers, uint sampleCount)
         {
+            const ushort channelCount = 6;
+
             ref DelayState state = ref State.Span[0];
 
-            Span<float> channelInput = stackalloc float[Parameter.ChannelCount];
-            Span<float> delayLineValues = stackalloc float[Parameter.ChannelCount];
-            Span<float> temp = stackalloc float[Parameter.ChannelCount];
+            Span<float> channelInput = stackalloc float[channelCount];
+            Span<float> delayLineValues = stackalloc float[channelCount];
+            Span<float> temp = stackalloc float[channelCount];
 
             float delayFeedbackBaseGain = state.DelayFeedbackBaseGain;
             float delayFeedbackCrossGain = state.DelayFeedbackCrossGain;
@@ -185,7 +191,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
 
             for (int i = 0; i < sampleCount; i++)
             {
-                for (int j = 0; j < Parameter.ChannelCount; j++)
+                for (int j = 0; j < channelCount; j++)
                 {
                     channelInput[j] = *((float*)inputBuffers[j] + i) * 64;
                     delayLineValues[j] = state.DelayLines[j].Read();
@@ -198,7 +204,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                 temp[4] = channelInput[4] * inGain + (delayLineValues[0] + delayLineValues[1]) * delayFeedbackCrossGain + delayLineValues[4] * delayFeedbackBaseGain;
                 temp[5] = channelInput[5] * inGain + delayLineValues[5] * delayFeedbackBaseGain;
 
-                for (int j = 0; j < Parameter.ChannelCount; j++)
+                for (int j = 0; j < channelCount; j++)
                 {
                     float lowPassResult = state.LowPassFeedbackGain * state.LowPassZ[j] + temp[j] * state.LowPassBaseGain;
 

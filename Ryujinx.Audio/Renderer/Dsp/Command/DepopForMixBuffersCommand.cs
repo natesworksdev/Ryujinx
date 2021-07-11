@@ -60,8 +60,6 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private unsafe float ProcessDepopMix(float* buffer, float depopValue, uint sampleCount)
         {
-            Debug.Assert(depopValue == 0);
-
             if (depopValue < 0)
             {
                 depopValue = -depopValue;

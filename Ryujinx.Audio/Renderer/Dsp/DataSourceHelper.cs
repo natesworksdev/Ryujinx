@@ -35,7 +35,6 @@ namespace Ryujinx.Audio.Renderer.Dsp
     {
         private const int FixedPointPrecision = 15;
 
-        [StructLayout(LayoutKind.Sequential)]
         public struct WaveBufferInformation
         {
             public uint SourceSampleRate;

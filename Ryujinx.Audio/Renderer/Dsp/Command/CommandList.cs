@@ -84,7 +84,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe IntPtr GetBufferPointer(int index)
         {
-            if (index > 0 && index < _buffersEntryCount)
+            if (index >= 0 && index < _buffersEntryCount)
             {
                 return (IntPtr)((float*)_buffersMemoryHandle.Pointer + index * _sampleCount);
             }
