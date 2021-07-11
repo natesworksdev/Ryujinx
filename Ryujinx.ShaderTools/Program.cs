@@ -32,13 +32,13 @@ namespace Ryujinx.ShaderTools
             [Option("target-language", Required = false, Default = TargetLanguage.Glsl, HelpText = "Indicate the target shader language to use.")]
             public TargetLanguage TargetLanguage { get; set; }
 
-            [Option("target-api", Required = false, Default = TargetApi.OpenGL, HelpText = "Indicate the target graphic api to use.")]
+            [Option("target-api", Required = false, Default = TargetApi.OpenGL, HelpText = "Indicate the target graphics api to use.")]
             public TargetApi TargetApi { get; set; }
 
-            [Value(0, MetaName = "input", HelpText = "Input to load.", Required = true)]
+            [Value(0, MetaName = "input", HelpText = "Binary Maxwell shader input path.", Required = true)]
             public string InputPath { get; set; }
 
-            [Value(1, MetaName = "output", HelpText = "Output to store.", Required = false)]
+            [Value(1, MetaName = "output", HelpText = "Decompiled shader output path.", Required = false)]
             public string OutputPath { get; set; }
         }
 
