@@ -1340,7 +1340,6 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return dstProcess.MemoryManager.UnborrowProcessMemory(dst, size);
         }
 
-
         public KernelResult MapProcessCodeMemory(int handle, ulong dst, ulong src, ulong size)
         {
             if (!PageAligned(dst) || !PageAligned(src))
