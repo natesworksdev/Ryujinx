@@ -100,7 +100,7 @@ namespace Ryujinx.Graphics.Device
                 uint alignedOffset = index * RegisterSize;
                 DebugWrite(alignedOffset, data);
 
-                GetRefUnchecked<int>(alignedOffset) = data;
+                GetRefIntAlignedUncheck(index) = data;
 
                 Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(_writeCallbacks), (IntPtr)index)?.Invoke(data);
             }
@@ -115,7 +115,7 @@ namespace Ryujinx.Graphics.Device
                 uint alignedOffset = index * RegisterSize;
                 DebugWrite(alignedOffset, data);
 
-                ref var storage = ref GetRefUnchecked<int>(alignedOffset);
+                ref var storage = ref GetRefIntAlignedUncheck(index);
                 changed = storage != data;
                 storage = data;
 
@@ -147,9 +147,15 @@ namespace Ryujinx.Graphics.Device
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private ref T GetRefUnchecked<T>(ulong offset) where T : unmanaged
+        private ref T GetRefUnchecked<T>(uint offset) where T : unmanaged
         {
             return ref Unsafe.As<TState, T>(ref Unsafe.AddByteOffset(ref State, (IntPtr)offset));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private ref int GetRefIntAlignedUncheck(ulong index)
+        {
+            return ref Unsafe.Add(ref Unsafe.As<TState, int>(ref State), (IntPtr)index);
         }
     }
 }
