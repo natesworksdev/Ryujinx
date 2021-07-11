@@ -23,9 +23,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         private IEnumerable<HostMemoryRange> _hostPagelist;
         private ulong _pageCount;
         private KProcess _owner;
-        private ulong _srcAddress;
         private object _lock;
-        private bool _initialized;
         private bool _isOwnerMapped;
         private bool _isMapped;
 
@@ -38,62 +36,64 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         {
             _owner = KernelStatic.GetCurrentProcess();
 
-            _host_pagelist = _owner.MemoryManager.GetPhysicalRegions(address, size);
-            _pagecount = BitUtils.DivRoundUp(size, KPageTableBase.PageSize);
-
-            _src_addr = address;
-            _initialized = true;
-            _is_owner_mapped = false;
-            _is_mapped = false;
+            _hostPagelist = _owner.MemoryManager.GetPhysicalRegions(address, size);
+            _pageCount = BitUtils.DivRoundUp(size, KPageTableBase.PageSize);
+            
+            _isOwnerMapped = false;
+            _isMapped = false;
 
             return KernelResult.Success;
         }
 
         public KernelResult Map(ulong address, ulong size, KMemoryPermission perm)
         {
-            if (_pagecount != BitUtils.DivRoundUp(size, KPageTableBase.PageSize))
+            if (_pageCount != BitUtils.DivRoundUp(size, KPageTableBase.PageSize))
+            {
                 return KernelResult.InvalidSize;
+            }
 
             lock (_lock)
             {
-                if (_is_mapped)
-                    return KernelResult.InvalidState;
-
-                KProcess proc = KernelStatic.GetCurrentProcess();
-                KernelResult r = proc.MemoryManager.MapPages(address, _host_pagelist, KMemoryPermission.ReadAndWrite);
-                // MemoryState.CodeWritable
-                if (r != KernelResult.Success)
+                if (_isMapped)
                 {
                     return KernelResult.InvalidState;
                 }
 
-                _is_mapped = true;
+                KProcess proc = KernelStatic.GetCurrentProcess();
+
+                // TODO: Mark pages as MemoryState.CodeWritable
+                KernelResult resultCode = proc.MemoryManager.MapPages(address, _hostPagelist, KMemoryPermission.ReadAndWrite);
+                if (resultCode != KernelResult.Success)
+                {
+                    return KernelResult.InvalidState;
+                }
+                _isMapped = true;
 
             }
+
             return KernelResult.Success;
         }
 
         public KernelResult MapToOwner(ulong address, ulong size, KMemoryPermission permission)
         {
-            if (_pagecount != BitUtils.DivRoundUp(size, KPageTableBase.PageSize))
+            if (_pageCount != BitUtils.DivRoundUp(size, KPageTableBase.PageSize))
+            {
                 return KernelResult.InvalidSize;
+            }
 
             lock (_lock)
             {
-                if (_is_owner_mapped)
+                if (_isOwnerMapped)
+                {
                     return KernelResult.InvalidState;
+                }
 
-                Debug.Assert(perm == KMemoryPermission.Read || perm == KMemoryPermission.ReadAndExecute);
+                Debug.Assert(permission == KMemoryPermission.Read || permission == KMemoryPermission.ReadAndExecute);
 
-                _owner.MemoryManager.MapPages(address, _host_pagelist,
-                    perm == KMemoryPermission.Read ?
-                        KMemoryPermission.Read :
-                        KMemoryPermission.ReadAndExecute
-                );
-                // MemoryState.CodeReadOnly
+                // TODO: Mark pages as MemoryState.CodeReadOnly
+                _owner.MemoryManager.MapPages(address, _hostPagelist, permission == KMemoryPermission.Read ? KMemoryPermission.Read :  KMemoryPermission.ReadAndExecute);
 
-                _is_owner_mapped = true;
-
+                _isOwnerMapped = true;
             }
 
             return KernelResult.Success;
@@ -101,29 +101,34 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
         public KernelResult Unmap(ulong address, ulong size)
         {
-            if (_pagecount != BitUtils.DivRoundUp(size, KPageTableBase.PageSize))
+            if (_pageCount != BitUtils.DivRoundUp(size, KPageTableBase.PageSize))
+            {
                 return KernelResult.InvalidSize;
+            }
 
             lock (_lock)
             {
                 KProcess proc = KernelStatic.GetCurrentProcess();
 
-                proc.MemoryManager.UnmapPages(address, _pagecount, _host_pagelist, MemoryState.CodeWritable);
+                proc.MemoryManager.UnmapPages(address, _pageCount, _hostPagelist, MemoryState.CodeWritable);
             }
 
             return KernelResult.Success;
         }
+
         public KernelResult UnmapToOwner(ulong address, ulong size)
         {
-            if (_pagecount != BitUtils.DivRoundUp(size, KPageTableBase.PageSize))
+            if (_pageCount != BitUtils.DivRoundUp(size, KPageTableBase.PageSize))
+            {
                 return KernelResult.InvalidSize;
+            }
 
             lock (_lock)
             {
-                _owner.MemoryManager.UnmapPages(address, _pagecount, _host_pagelist, MemoryState.CodeReadOnly);
+                _owner.MemoryManager.UnmapPages(address, _pageCount, _hostPagelist, MemoryState.CodeReadOnly);
 
-                Debug.Assert(_is_owner_mapped);
-                _is_owner_mapped = false;
+                Debug.Assert(_isOwnerMapped);
+                _isOwnerMapped = false;
             }
 
             return KernelResult.Success;

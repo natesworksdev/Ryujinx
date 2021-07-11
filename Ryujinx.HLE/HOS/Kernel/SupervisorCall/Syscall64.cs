@@ -172,6 +172,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         {
             return _syscall.UnmapPhysicalMemory(address, size);
         }
+
         public KernelResult MapProcessMemory64([R(0)] ulong dst, [R(1)] int handle, [R(2)] ulong src, [R(3)] ulong size)
         {
             return _syscall.MapProcessMemory(dst, handle, src, size);

@@ -1284,7 +1284,9 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             */
 
             if (srcProcess == null)
+            {
                 return KernelResult.InvalidHandle;
+            }
 
             if (!srcProcess.MemoryManager.InsideAddrSpace(src, size) ||
                 !dstProcess.MemoryManager.CanContain(dst, size, MemoryState.ProcessMemory))
@@ -1326,15 +1328,15 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             */
 
             if (srcProcess == null)
+            {
                 return KernelResult.InvalidHandle;
+            }
 
             if (!srcProcess.MemoryManager.InsideAddrSpace(src, size) ||
                 !dstProcess.MemoryManager.CanContain(dst, size, MemoryState.ProcessMemory))
             {
                 return KernelResult.InvalidMemRange;
             }
-
-            var srcList = srcProcess.MemoryManager.GetPhysicalRegions(src, size).ToList();
 
             return dstProcess.MemoryManager.UnborrowProcessMemory(dst, size);
         }
@@ -1868,11 +1870,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         public KernelResult CreateCodeMemory(ulong address, ulong size, out int handle)
         {
             KCodeMemory codeMemory = new KCodeMemory(_context);
-            cmem.Initialize(address, size);
+            codeMemory.Initialize(address, size);
 
             KProcess process = KernelStatic.GetCurrentProcess();
 
-            return process.HandleTable.GenerateHandle(cmem, out handle);
+            return process.HandleTable.GenerateHandle(codeMemory, out handle);
         }
 
         public KernelResult ControlCodeMemory(int handle, CodeMemoryOperation op, ulong address, ulong size, KMemoryPermission permission)
@@ -1883,41 +1885,45 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             KCodeMemory codeMemory = process.HandleTable.GetObject<KCodeMemory>(handle);
 
-            if (cmem != null)
+            if (codeMemory != null)
             {
                 switch (op)
                 {
                     case CodeMemoryOperation.MapOwner:
                         if (HasJitPatch || permission != KMemoryPermission.ReadAndWrite)
-                            return cmem.Map(address, size, permission);
-
+                        {
+                            return codeMemory.Map(address, size, permission);
+                        }
                         return KernelResult.InvalidPermission;
 
                     case CodeMemoryOperation.MapSlave:
                         if (HasJitPatch || (permission | KMemoryPermission.Execute) == KMemoryPermission.ReadAndExecute)
-                            return cmem.MapToOwner(address, size, permission);
-
+                        {
+                            return codeMemory.MapToOwner(address, size, permission);
+                        }
                         return KernelResult.InvalidPermission;
 
                     case CodeMemoryOperation.UnmapOwner:
                         if (HasJitPatch || permission == KMemoryPermission.None)
-                            return cmem.Unmap(address, size);
-
+                        {
+                            return codeMemory.Unmap(address, size);
+                        }
                         return KernelResult.InvalidPermission;
 
                     case CodeMemoryOperation.UnmapSlave:
                         if (HasJitPatch || permission == KMemoryPermission.None)
-                            return cmem.UnmapToOwner(address, size);
-
+                        {
+                            return codeMemory.UnmapToOwner(address, size);
+                        }
                         return KernelResult.InvalidPermission;
 
                     default:
                         return KernelResult.InvalidEnumValue;
                 }
             }
+
             return KernelResult.InvalidHandle;
         }
-
 
         public KernelResult GetProcessList(ulong address, int maxCount, out int count)
         {
