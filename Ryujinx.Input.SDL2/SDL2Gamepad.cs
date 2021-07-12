@@ -144,11 +144,6 @@ namespace Ryujinx.Input.SDL2
             _triggerThreshold = triggerThreshold;
         }
 
-        public void RumbleInfinity(float lowFrequency, float highFrequency)
-        {
-            Rumble(lowFrequency, highFrequency, SDL_HAPTIC_INFINITY);
-        }
-
         public void Rumble(float lowFrequency, float highFrequency, uint durationMs)
         {
             if (Features.HasFlag(GamepadFeaturesFlag.Rumble))
@@ -156,7 +151,18 @@ namespace Ryujinx.Input.SDL2
                 ushort lowFrequencyRaw = (ushort)(lowFrequency * ushort.MaxValue);
                 ushort highFrequencyRaw = (ushort)(highFrequency * ushort.MaxValue);
 
-                SDL_GameControllerRumble(_gamepadHandle, lowFrequencyRaw, highFrequencyRaw, durationMs);
+                if (durationMs == uint.MaxValue)
+                {
+                    SDL_GameControllerRumble(_gamepadHandle, lowFrequencyRaw, highFrequencyRaw, SDL_HAPTIC_INFINITY);
+                }
+                else if (durationMs > SDL_HAPTIC_INFINITY)
+                {
+                    throw new NotSupportedException($"Unsupported rumble duration {durationMs}");
+                }
+                else
+                {
+                    SDL_GameControllerRumble(_gamepadHandle, lowFrequencyRaw, highFrequencyRaw, durationMs);
+                }
             }
         }
 

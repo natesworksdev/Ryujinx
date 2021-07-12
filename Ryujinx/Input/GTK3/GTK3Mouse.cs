@@ -66,11 +66,6 @@ namespace Ryujinx.Input.GTK3
             throw new NotImplementedException();
         }
 
-        public void RumbleInfinity(float lowFrequency, float highFrequency)
-        {
-            throw new NotImplementedException();
-        }
-
         public void Rumble(float lowFrequency, float highFrequency, uint durationMs)
         {
             throw new NotImplementedException();
