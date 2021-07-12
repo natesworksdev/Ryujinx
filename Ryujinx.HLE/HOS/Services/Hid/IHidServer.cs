@@ -1152,13 +1152,12 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             Span<int> deviceHandles = MemoryMarshal.Cast<byte, int>(vibrationDeviceHandleBuffer);
             Span<HidVibrationValue> vibrationValues = MemoryMarshal.Cast<byte, HidVibrationValue>(vibrationValueBuffer);
 
-            int devicesCount = deviceHandles.Length / 2;
-            if (devicesCount > 0 && vibrationValues.Length == 2 * devicesCount)
+            if (!deviceHandles.IsEmpty && vibrationValues.Length == deviceHandles.Length)
             {
-                for (int deviceCounter = 0; deviceCounter < devicesCount; deviceCounter++)
+                for (int deviceCounter = 0; deviceCounter < deviceHandles.Length; deviceCounter++)
                 {
-                    PlayerIndex index = (PlayerIndex)((deviceHandles[2 * deviceCounter] >> 8) & 0xff);
-                    context.Device.Hid.Npads.UpdateRumbleQueue(index, vibrationValues[2 * deviceCounter]);
+                    PlayerIndex index = (PlayerIndex)((deviceHandles[deviceCounter] >> 8) & 0xff);
+                    context.Device.Hid.Npads.UpdateRumbleQueue(index, vibrationValues[deviceCounter]);
                 }
             }
 
