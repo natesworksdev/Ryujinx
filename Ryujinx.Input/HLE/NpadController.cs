@@ -2,8 +2,10 @@
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Common.Configuration.Hid.Controller.Motion;
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Services.Hid;
 using System;
+using System.Collections.Concurrent;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
@@ -533,6 +535,19 @@ namespace Ryujinx.Input.HLE
         public void Dispose()
         {
             Dispose(true);
+        }
+
+        public void UpdateRumble(ConcurrentQueue<HidVibrationValue> queue, HidVibrationValue stopValues)
+        {
+            if (queue.TryDequeue(out HidVibrationValue vibrationValue))
+            {
+                // FrequencyLow oscillate around stopValues.FrequencyLow
+                float lowFreq = Math.Abs(vibrationValue.FrequencyLow - stopValues.FrequencyLow) / stopValues.FrequencyLow;
+                // FrequencyHigh oscillate around stopValues.FrequencyHigh
+                float highFreq = Math.Abs(vibrationValue.FrequencyHigh - stopValues.FrequencyHigh) / stopValues.FrequencyHigh;
+                _gamepad.RumbleInfinity(lowFreq, highFreq);
+                Logger.Info?.Print(LogClass.Hid, "New rumble effect aLow=" + vibrationValue.AmplitudeLow + ", fLow=" + vibrationValue.FrequencyLow + ", aHigh=" + vibrationValue.AmplitudeHigh + ", fHigh=" + vibrationValue.FrequencyHigh);
+            }
         }
     }
 }

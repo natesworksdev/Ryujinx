@@ -144,6 +144,11 @@ namespace Ryujinx.Input.SDL2
             _triggerThreshold = triggerThreshold;
         }
 
+        public void RumbleInfinity(float lowFrequency, float highFrequency)
+        {
+            Rumble(lowFrequency, highFrequency, SDL_HAPTIC_INFINITY);
+        }
+
         public void Rumble(float lowFrequency, float highFrequency, uint durationMs)
         {
             if (Features.HasFlag(GamepadFeaturesFlag.Rumble))

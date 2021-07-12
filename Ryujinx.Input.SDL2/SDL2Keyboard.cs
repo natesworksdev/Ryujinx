@@ -405,6 +405,11 @@ namespace Ryujinx.Input.SDL2
             // No operations
         }
 
+        public void RumbleInfinity(float lowFrequency, float highFrequency)
+        {
+            // No operations
+        }
+
         public void Rumble(float lowFrequency, float highFrequency, uint durationMs)
         {
             // No operations

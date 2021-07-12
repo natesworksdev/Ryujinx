@@ -66,7 +66,14 @@ namespace Ryujinx.Input
         void SetConfiguration(InputConfig configuration);
 
         /// <summary>
-        /// Starts a rumble effect on the gampead.
+        /// Starts a rumble effect on the gamepad with infinite duration.
+        /// </summary>
+        /// <param name="lowFrequency">The intensity of the low frequency from 0.0f to 1.0f</param>
+        /// <param name="highFrequency">The intensity of the high frequency from 0.0f to 1.0f</param>
+        void RumbleInfinity(float lowFrequency, float highFrequency);
+
+        /// <summary>
+        /// Starts a rumble effect on the gamepad.
         /// </summary>
         /// <param name="lowFrequency">The intensity of the low frequency from 0.0f to 1.0f</param>
         /// <param name="highFrequency">The intensity of the high frequency from 0.0f to 1.0f</param>
