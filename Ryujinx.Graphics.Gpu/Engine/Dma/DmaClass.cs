@@ -255,7 +255,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                     _ => throw new NotSupportedException($"Unable to copy ${srcBpp} bpp pixel format.")
                 };
 
-                memoryManager.Write(dstGpuVa + (ulong)dstBaseOffset, dstSpan);
+                memoryManager.Write(dstGpuVa + (uint)dstBaseOffset, dstSpan);
             }
             else
             {
