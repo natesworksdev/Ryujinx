@@ -1044,7 +1044,13 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         // SendVibrationValue(nn::hid::VibrationDeviceHandle, nn::hid::VibrationValue, nn::applet::AppletResourceUserId)
         public ResultCode SendVibrationValue(ServiceCtx context)
         {
-            int vibrationDeviceHandle = context.RequestData.ReadInt32();
+            HidVibrationDeviceHandle deviceHandle = new HidVibrationDeviceHandle
+            {
+                DeviceType = context.RequestData.ReadByte(),
+                PlayerId = context.RequestData.ReadByte(),
+                Position = (HidVibrationDevicePosition)context.RequestData.ReadByte(),
+                Reserved = context.RequestData.ReadByte()
+            };
 
             HidVibrationValue vibrationValue = new HidVibrationValue
             {
@@ -1056,13 +1062,13 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             long appletResourceUserId = context.RequestData.ReadInt64();
 
-            vibrationDeviceHandle = (vibrationDeviceHandle >> 8) & 0xff;
-            PlayerIndex index = (PlayerIndex)vibrationDeviceHandle;
-            context.Device.Hid.Npads.UpdateRumbleQueue(index, vibrationValue);
+            Dictionary<HidVibrationDevicePosition, HidVibrationValue> dualVibrationValues = new Dictionary<HidVibrationDevicePosition, HidVibrationValue>();
+            dualVibrationValues[deviceHandle.Position] = vibrationValue;
+            context.Device.Hid.Npads.UpdateRumbleQueue((PlayerIndex)deviceHandle.PlayerId, dualVibrationValues);
 
             Logger.Debug?.PrintStub(LogClass.ServiceHid, new {
                 appletResourceUserId,
-                vibrationDeviceHandle,
+                deviceHandle,
                 vibrationValue.AmplitudeLow,
                 vibrationValue.FrequencyLow,
                 vibrationValue.AmplitudeHigh,
@@ -1076,16 +1082,17 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         // GetActualVibrationValue(nn::hid::VibrationDeviceHandle, nn::applet::AppletResourceUserId) -> nn::hid::VibrationValue
         public ResultCode GetActualVibrationValue(ServiceCtx context)
         {
-            int vibrationDeviceHandle = context.RequestData.ReadInt32();
+            HidVibrationDeviceHandle deviceHandle = new HidVibrationDeviceHandle
+            {
+                DeviceType = context.RequestData.ReadByte(),
+                PlayerId = context.RequestData.ReadByte(),
+                Position = (HidVibrationDevicePosition)context.RequestData.ReadByte(),
+                Reserved = context.RequestData.ReadByte()
+            };
+
             long appletResourceUserId = context.RequestData.ReadInt64();
 
-            vibrationDeviceHandle = (vibrationDeviceHandle >> 8) & 0xff;
-            PlayerIndex index = (PlayerIndex)vibrationDeviceHandle;
-
-            if (context.Device.Hid.Npads.LastVibrationValues.TryGetValue(index, out HidVibrationValue vibrationValue))
-            {
-                vibrationValue = new HidVibrationValue();
-            }
+            HidVibrationValue vibrationValue = context.Device.Hid.Npads.GetLastVibrationValue((PlayerIndex)deviceHandle.PlayerId, deviceHandle.Position);
 
             context.ResponseData.Write(vibrationValue.AmplitudeLow);
             context.ResponseData.Write(vibrationValue.FrequencyLow);
@@ -1094,7 +1101,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             Logger.Debug?.PrintStub(LogClass.ServiceHid, new {
                 appletResourceUserId,
-                vibrationDeviceHandle,
+                deviceHandle,
                 vibrationValue.AmplitudeLow,
                 vibrationValue.FrequencyLow,
                 vibrationValue.AmplitudeHigh,
@@ -1149,16 +1156,26 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             context.Memory.Read(context.Request.PtrBuff[1].Position, vibrationValueBuffer);
 
-            Span<int> deviceHandles = MemoryMarshal.Cast<byte, int>(vibrationDeviceHandleBuffer);
+            Span<HidVibrationDeviceHandle> deviceHandles = MemoryMarshal.Cast<byte, HidVibrationDeviceHandle>(vibrationDeviceHandleBuffer);
             Span<HidVibrationValue> vibrationValues = MemoryMarshal.Cast<byte, HidVibrationValue>(vibrationValueBuffer);
 
             if (!deviceHandles.IsEmpty && vibrationValues.Length == deviceHandles.Length)
             {
+                Dictionary<HidVibrationDevicePosition, HidVibrationValue> dualVibrationValues = new Dictionary<HidVibrationDevicePosition, HidVibrationValue>();
+                PlayerIndex currentIndex = (PlayerIndex)deviceHandles[0].PlayerId;
                 for (int deviceCounter = 0; deviceCounter < deviceHandles.Length; deviceCounter++)
                 {
-                    PlayerIndex index = (PlayerIndex)((deviceHandles[deviceCounter] >> 8) & 0xff);
-                    context.Device.Hid.Npads.UpdateRumbleQueue(index, vibrationValues[deviceCounter]);
+                    PlayerIndex index = (PlayerIndex)deviceHandles[deviceCounter].PlayerId;
+                    HidVibrationDevicePosition position = deviceHandles[deviceCounter].Position;
+                    if (index != currentIndex || dualVibrationValues.Count == 2)
+                    {
+                        context.Device.Hid.Npads.UpdateRumbleQueue(currentIndex, dualVibrationValues);
+                        dualVibrationValues = new Dictionary<HidVibrationDevicePosition, HidVibrationValue>();
+                    }
+                    dualVibrationValues[position] = vibrationValues[deviceCounter];
+                    currentIndex = index;
                 }
+                context.Device.Hid.Npads.UpdateRumbleQueue(currentIndex, dualVibrationValues);
             }
 
             Logger.Debug?.PrintStub(LogClass.ServiceHid, new {

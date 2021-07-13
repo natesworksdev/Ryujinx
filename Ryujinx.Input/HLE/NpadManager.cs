@@ -179,15 +179,12 @@ namespace Ryujinx.Input.HLE
 
                         controller.UpdateUserConfiguration(inputConfig);
                         controller.Update();
-                        if (!_device.Hid.Npads.RumbleQueues.TryGetValue(playerIndex, out ConcurrentQueue<HidVibrationValue> rumbleQueue))
+                        if (!_device.Hid.Npads.RumbleQueues.TryGetValue(playerIndex, out ConcurrentQueue<(HidVibrationValue, HidVibrationValue)> rumbleQueue))
                         {
-                            rumbleQueue = new ConcurrentQueue<HidVibrationValue>();
+                            rumbleQueue = new ConcurrentQueue<(HidVibrationValue, HidVibrationValue)>();
                             _device.Hid.Npads.RumbleQueues[playerIndex] = rumbleQueue;
                         }
-                        if (_device.Hid.Npads.FirstVibrationValues.TryGetValue(playerIndex, out HidVibrationValue stopValues))
-                        {
-                            controller.UpdateRumble(rumbleQueue, stopValues);
-                        }
+                        controller.UpdateRumble(rumbleQueue);
 
                         inputState = controller.GetHLEInputState();
 
