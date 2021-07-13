@@ -155,8 +155,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                 (int srcBaseOffset, int srcSize) = srcCalculator.GetRectangleRange(src.RegionX, src.RegionY, xCount, yCount);
                 (int dstBaseOffset, int dstSize) = dstCalculator.GetRectangleRange(dst.RegionX, dst.RegionY, xCount, yCount);
 
-                ReadOnlySpan<byte> srcSpan = memoryManager.GetSpan(srcGpuVa + (ulong)srcBaseOffset, srcSize, true);
-                Span<byte> dstSpan = memoryManager.GetSpan(dstGpuVa + (ulong)dstBaseOffset, dstSize).ToArray();
+                ReadOnlySpan<byte> srcSpan = memoryManager.GetSpan(srcGpuVa + (uint)srcBaseOffset, srcSize, true);
+                Span<byte> dstSpan = memoryManager.GetSpan(dstGpuVa + (uint)dstBaseOffset, dstSize).ToArray();
 
                 bool completeSource = IsTextureCopyComplete(src, srcLinear, srcBpp, srcStride, xCount, yCount);
                 bool completeDest = IsTextureCopyComplete(dst, dstLinear, dstBpp, dstStride, xCount, yCount);
@@ -214,7 +214,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                     {
                         srcSpan.CopyTo(dstSpan); // No layout conversion has to be performed, just copy the data entirely.
 
-                        memoryManager.Write(dstGpuVa + (ulong)dstBaseOffset, dstSpan);
+                        memoryManager.Write(dstGpuVa + (uint)dstBaseOffset, dstSpan);
 
                         return;
                     }
