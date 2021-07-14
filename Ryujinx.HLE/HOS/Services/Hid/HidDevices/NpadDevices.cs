@@ -614,15 +614,15 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return val1.AmplitudeLow == val2.AmplitudeLow && val1.AmplitudeHigh == val2.AmplitudeHigh;
         }
  
-        public void UpdateRumbleQueue(PlayerIndex index, Dictionary<HidVibrationDevicePosition, HidVibrationValue> dualVibrationValues)
+        public void UpdateRumbleQueue(PlayerIndex index, Dictionary<byte, HidVibrationValue> dualVibrationValues)
         {
             if (RumbleQueues.TryGetValue(index, out ConcurrentQueue<(HidVibrationValue, HidVibrationValue)> currentQueue))
             {
-                if (!dualVibrationValues.TryGetValue(HidVibrationDevicePosition.Left, out HidVibrationValue leftVibrationValue))
+                if (!dualVibrationValues.TryGetValue(0, out HidVibrationValue leftVibrationValue))
                 {
                     leftVibrationValue = _neutralVibrationValue;
                 }
-                if (!dualVibrationValues.TryGetValue(HidVibrationDevicePosition.Right, out HidVibrationValue rightVibrationValue))
+                if (!dualVibrationValues.TryGetValue(1, out HidVibrationValue rightVibrationValue))
                 {
                     rightVibrationValue = _neutralVibrationValue;
                 }
@@ -634,7 +634,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             }
         }
 
-        public HidVibrationValue GetLastVibrationValue(PlayerIndex index, HidVibrationDevicePosition position)
+        public HidVibrationValue GetLastVibrationValue(PlayerIndex index, byte position)
         {
             if (!_lastVibrationValues.TryGetValue(index, out (HidVibrationValue, HidVibrationValue) dualVibrationValue))
             {
@@ -646,7 +646,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                     FrequencyHigh = 320f
                 };
             }
-            if (position == HidVibrationDevicePosition.Left)
+            if (position == 0)
             {
                 return dualVibrationValue.Item1;
             }

@@ -4,7 +4,7 @@
     {
         public byte DeviceType;
         public byte PlayerId;
-        public HidVibrationDevicePosition Position;
+        public byte Position;
         public byte Reserved;
     }
 }

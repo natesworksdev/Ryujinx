@@ -1048,7 +1048,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             {
                 DeviceType = context.RequestData.ReadByte(),
                 PlayerId = context.RequestData.ReadByte(),
-                Position = (HidVibrationDevicePosition)context.RequestData.ReadByte(),
+                Position = context.RequestData.ReadByte(),
                 Reserved = context.RequestData.ReadByte()
             };
 
@@ -1062,7 +1062,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             long appletResourceUserId = context.RequestData.ReadInt64();
 
-            Dictionary<HidVibrationDevicePosition, HidVibrationValue> dualVibrationValues = new Dictionary<HidVibrationDevicePosition, HidVibrationValue>();
+            Dictionary<byte, HidVibrationValue> dualVibrationValues = new Dictionary<byte, HidVibrationValue>();
             dualVibrationValues[deviceHandle.Position] = vibrationValue;
             context.Device.Hid.Npads.UpdateRumbleQueue((PlayerIndex)deviceHandle.PlayerId, dualVibrationValues);
 
@@ -1086,7 +1086,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             {
                 DeviceType = context.RequestData.ReadByte(),
                 PlayerId = context.RequestData.ReadByte(),
-                Position = (HidVibrationDevicePosition)context.RequestData.ReadByte(),
+                Position = context.RequestData.ReadByte(),
                 Reserved = context.RequestData.ReadByte()
             };
 
@@ -1161,16 +1161,16 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             if (!deviceHandles.IsEmpty && vibrationValues.Length == deviceHandles.Length)
             {
-                Dictionary<HidVibrationDevicePosition, HidVibrationValue> dualVibrationValues = new Dictionary<HidVibrationDevicePosition, HidVibrationValue>();
+                Dictionary<byte, HidVibrationValue> dualVibrationValues = new Dictionary<byte, HidVibrationValue>();
                 PlayerIndex currentIndex = (PlayerIndex)deviceHandles[0].PlayerId;
                 for (int deviceCounter = 0; deviceCounter < deviceHandles.Length; deviceCounter++)
                 {
                     PlayerIndex index = (PlayerIndex)deviceHandles[deviceCounter].PlayerId;
-                    HidVibrationDevicePosition position = deviceHandles[deviceCounter].Position;
+                    byte position = deviceHandles[deviceCounter].Position;
                     if (index != currentIndex || dualVibrationValues.Count == 2)
                     {
                         context.Device.Hid.Npads.UpdateRumbleQueue(currentIndex, dualVibrationValues);
-                        dualVibrationValues = new Dictionary<HidVibrationDevicePosition, HidVibrationValue>();
+                        dualVibrationValues = new Dictionary<byte, HidVibrationValue>();
                     }
                     dualVibrationValues[position] = vibrationValues[deviceCounter];
                     currentIndex = index;
