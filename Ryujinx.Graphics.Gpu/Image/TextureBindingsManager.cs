@@ -1,5 +1,6 @@
+using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
-using Ryujinx.Graphics.Gpu.State;
+using Ryujinx.Graphics.Gpu.Engine.Types;
 using Ryujinx.Graphics.Shader;
 using System;
 
@@ -119,19 +120,24 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="samplerIndex">Type of the sampler pool indexing used for bound samplers</param>
         public void SetSamplerPool(ulong gpuVa, int maximumId, SamplerIndex samplerIndex)
         {
-            ulong address = _channel.MemoryManager.Translate(gpuVa);
-
-            if (_samplerPool != null)
+            if (gpuVa != 0)
             {
-                if (_samplerPool.Address == address && _samplerPool.MaximumId >= maximumId)
+                ulong address = _channel.MemoryManager.Translate(gpuVa);
+
+                if (_samplerPool != null && _samplerPool.Address == address && _samplerPool.MaximumId >= maximumId)
                 {
                     return;
                 }
 
-                _samplerPool.Dispose();
+                _samplerPool?.Dispose();
+                _samplerPool = new SamplerPool(_context, _channel.MemoryManager.Physical, address, maximumId);
+            }
+            else
+            {
+                _samplerPool?.Dispose();
+                _samplerPool = null;
             }
 
-            _samplerPool = new SamplerPool(_context, _channel.MemoryManager.Physical, address, maximumId);
             _samplerIndex = samplerIndex;
         }
 
@@ -142,10 +148,18 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="maximumId">Maximum ID of the pool (total count minus one)</param>
         public void SetTexturePool(ulong gpuVa, int maximumId)
         {
-            ulong address = _channel.MemoryManager.Translate(gpuVa);
+            if (gpuVa != 0)
+            {
+                ulong address = _channel.MemoryManager.Translate(gpuVa);
 
-            _texturePoolAddress   = address;
-            _texturePoolMaximumId = maximumId;
+                _texturePoolAddress = address;
+                _texturePoolMaximumId = maximumId;
+            }
+            else
+            {
+                _texturePoolAddress = 0;
+                _texturePoolMaximumId = 0;
+            }
         }
 
         /// <summary>
@@ -227,10 +241,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public void CommitBindings()
         {
-            TexturePool texturePool = _texturePoolCache.FindOrCreate(
-                _channel,
-                _texturePoolAddress,
-                _texturePoolMaximumId);
+            ulong texturePoolAddress = _texturePoolAddress;
+
+            TexturePool texturePool = texturePoolAddress != 0
+                ? _texturePoolCache.FindOrCreate(_channel, texturePoolAddress, _texturePoolMaximumId)
+                : null;
 
             if (_isCompute)
             {
@@ -264,8 +279,22 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="stageIndex">The stage number of the specified shader stage</param>
         private void CommitTextureBindings(TexturePool pool, ShaderStage stage, int stageIndex)
         {
-            if (_textureBindings[stageIndex] == null)
+            if (_textureBindings[stageIndex] == null || _textureBindings[stageIndex].Length == 0)
             {
+                return;
+            }
+
+            var samplerPool = _samplerPool;
+
+            if (pool == null)
+            {
+                Logger.Error?.Print(LogClass.Gpu, $"Shader stage \"{stage}\" uses textures, but texture pool was not set.");
+                return;
+            }
+
+            if (samplerPool == null)
+            {
+                Logger.Error?.Print(LogClass.Gpu, $"Shader stage \"{stage}\" uses textures, but sampler pool was not set.");
                 return;
             }
 
@@ -324,7 +353,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     _channel.BufferManager.SetBufferTextureStorage(hostTexture, texture.Range.GetSubRange(0).Address, texture.Size, bindingInfo, bindingInfo.Format, false);
                 }
 
-                Sampler sampler = _samplerPool.Get(samplerId);
+                Sampler sampler = samplerPool.Get(samplerId);
 
                 ISampler hostSampler = sampler?.HostSampler;
 
@@ -348,6 +377,12 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             if (_imageBindings[stageIndex] == null)
             {
+                return;
+            }
+
+            if (pool == null && _imageBindings[stageIndex].Length != 0)
+            {
+                Logger.Error?.Print(LogClass.Gpu, $"Shader stage \"{stage}\" uses images, but texture pool was not set.");
                 return;
             }
 
@@ -425,22 +460,28 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <summary>
         /// Gets the texture descriptor for a given texture handle.
         /// </summary>
-        /// <param name="state">The current GPU state</param>
+        /// <param name="poolGpuVa">GPU virtual address of the texture pool</param>
+        /// <param name="bufferIndex">Index of the constant buffer with texture handles</param>
+        /// <param name="maximumId">Maximum ID of the texture pool</param>
         /// <param name="stageIndex">The stage number where the texture is bound</param>
         /// <param name="handle">The texture handle</param>
         /// <param name="cbufSlot">The texture handle's constant buffer slot</param>
         /// <returns>The texture descriptor for the specified texture</returns>
-        public TextureDescriptor GetTextureDescriptor(GpuState state, int stageIndex, int handle, int cbufSlot)
+        public TextureDescriptor GetTextureDescriptor(
+            ulong poolGpuVa,
+            int bufferIndex,
+            int maximumId,
+            int stageIndex,
+            int handle,
+            int cbufSlot)
         {
-            int textureBufferIndex = cbufSlot < 0 ? state.Get<int>(MethodOffset.TextureBufferIndex) : cbufSlot & SlotMask;
+            int textureBufferIndex = cbufSlot < 0 ? bufferIndex : cbufSlot & SlotMask;
             int packedId = ReadPackedId(stageIndex, handle, textureBufferIndex, textureBufferIndex);
             int textureId = UnpackTextureId(packedId);
 
-            var poolState = state.Get<PoolState>(MethodOffset.TexturePoolState);
+            ulong poolAddress = _channel.MemoryManager.Translate(poolGpuVa);
 
-            ulong poolAddress = _channel.MemoryManager.Translate(poolState.Address.Pack());
-
-            TexturePool texturePool = _texturePoolCache.FindOrCreate(_channel, poolAddress, poolState.MaximumId);
+            TexturePool texturePool = _texturePoolCache.FindOrCreate(_channel, poolAddress, maximumId);
 
             return texturePool.GetDescriptor(textureId);
         }
