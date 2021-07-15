@@ -542,20 +542,23 @@ namespace Ryujinx.Input.HLE
         {
             if (queue.TryDequeue(out (HidVibrationValue, HidVibrationValue) dualVvibrationValue))
             {
-                HidVibrationValue leftVibrationValue = dualVvibrationValue.Item1;
-                HidVibrationValue rightVibrationValue = dualVvibrationValue.Item2;
+                if (_config is StandardControllerInputConfig controllerConfig && controllerConfig.Rumble.EnableRumble)
+                {
+                    HidVibrationValue leftVibrationValue = dualVvibrationValue.Item1;
+                    HidVibrationValue rightVibrationValue = dualVvibrationValue.Item2;
 
-                float low = (float)(rightVibrationValue.AmplitudeLow * 0.85 + rightVibrationValue.AmplitudeHigh * 0.15);
-                float high = (float)(leftVibrationValue.AmplitudeLow * 0.15 + leftVibrationValue.AmplitudeHigh * 0.85);
+                    float low = Math.Min(1f, (float)((rightVibrationValue.AmplitudeLow * 0.85 + rightVibrationValue.AmplitudeHigh * 0.15) * controllerConfig.Rumble.StrongRumble));
+                    float high = Math.Min(1f, (float)((leftVibrationValue.AmplitudeLow * 0.15 + leftVibrationValue.AmplitudeHigh * 0.85) * controllerConfig.Rumble.WeakRumble));
 
-                _gamepad.Rumble(low, high, uint.MaxValue);
+                    _gamepad.Rumble(low, high, uint.MaxValue);
 
-                Logger.Debug?.Print(LogClass.Hid, $"New rumble effect " +
-                    $"L.low.amp={leftVibrationValue.AmplitudeLow}, " +
-                    $"L.high.amp={leftVibrationValue.AmplitudeHigh}, " +
-                    $"R.low.amp={rightVibrationValue.AmplitudeLow}, " +
-                    $"R.high.amp={rightVibrationValue.AmplitudeHigh} " +
-                    $"--> ({low}, {high})");
+                    Logger.Debug?.Print(LogClass.Hid, $"New rumble effect " +
+                        $"L.low.amp={leftVibrationValue.AmplitudeLow}, " +
+                        $"L.high.amp={leftVibrationValue.AmplitudeHigh}, " +
+                        $"R.low.amp={rightVibrationValue.AmplitudeLow}, " +
+                        $"R.high.amp={rightVibrationValue.AmplitudeHigh} " +
+                        $"--> ({low}, {high})");
+                }
             }
         }
     }

@@ -236,6 +236,13 @@ namespace Ryujinx.Headless.SDL2
                             EnableMotion = true,
                             Sensitivity  = 100,
                             GyroDeadzone = 1,
+                        },
+
+                        Rumble = new RumbleConfigController
+                        {
+                            StrongRumble = 1f,
+                            WeakRumble = 1f,
+                            EnableRumble = false
                         }
                     };
                 }
