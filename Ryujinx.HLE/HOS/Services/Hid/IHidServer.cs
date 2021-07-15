@@ -1066,15 +1066,6 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             dualVibrationValues[deviceHandle.Position] = vibrationValue;
             context.Device.Hid.Npads.UpdateRumbleQueue((PlayerIndex)deviceHandle.PlayerId, dualVibrationValues);
 
-            Logger.Debug?.PrintStub(LogClass.ServiceHid, new {
-                appletResourceUserId,
-                deviceHandle,
-                vibrationValue.AmplitudeLow,
-                vibrationValue.FrequencyLow,
-                vibrationValue.AmplitudeHigh,
-                vibrationValue.FrequencyHigh
-            });
-
             return ResultCode.Success;
         }
 
@@ -1177,12 +1168,6 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 }
                 context.Device.Hid.Npads.UpdateRumbleQueue(currentIndex, dualVibrationValues);
             }
-
-            Logger.Debug?.PrintStub(LogClass.ServiceHid, new {
-                appletResourceUserId,
-                VibrationDeviceHandleBufferLength = vibrationDeviceHandleBuffer.Length,
-                VibrationValueBufferLength = vibrationValueBuffer.Length
-            });
 
             return ResultCode.Success;
         }
