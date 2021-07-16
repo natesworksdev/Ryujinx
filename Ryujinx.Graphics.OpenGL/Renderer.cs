@@ -30,6 +30,8 @@ namespace Ryujinx.Graphics.OpenGL
 
         public event EventHandler<ScreenCaptureImageInfo> ScreenCaptured;
 
+        internal PersistentBuffers PersistentBuffers { get; }
+
         internal ResourcePool ResourcePool { get; }
 
         internal int BufferCount { get; private set; }
@@ -46,6 +48,7 @@ namespace Ryujinx.Graphics.OpenGL
             _textureCopy = new TextureCopy(this);
             _backgroundTextureCopy = new TextureCopy(this);
             _sync = new Sync();
+            PersistentBuffers = new PersistentBuffers();
             ResourcePool = new ResourcePool();
         }
 
@@ -90,6 +93,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public byte[] GetBufferData(BufferHandle buffer, int offset, int size)
         {
+            //return PersistentBuffers.Get().GetBufferData(buffer, offset, size);
             return Buffer.GetData(buffer, offset, size);
         }
 
@@ -177,6 +181,7 @@ namespace Ryujinx.Graphics.OpenGL
         {
             _textureCopy.Dispose();
             _backgroundTextureCopy.Dispose();
+            PersistentBuffers.Dispose();
             ResourcePool.Dispose();
             _pipeline.Dispose();
             _window.Dispose();
