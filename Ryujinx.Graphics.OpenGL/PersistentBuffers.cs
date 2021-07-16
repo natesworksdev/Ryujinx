@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using OpenTK.Graphics.OpenGL;
+using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL.Image;
 
@@ -47,6 +48,21 @@ namespace Ryujinx.Graphics.OpenGL
             }
         }
 
+        private void Sync()
+        {
+            GL.MemoryBarrier(MemoryBarrierFlags.ClientMappedBufferBarrierBit);
+
+            IntPtr sync = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags.None);
+            WaitSyncStatus syncResult = GL.ClientWaitSync(sync, ClientWaitSyncFlags.SyncFlushCommandsBit, 1000000000);
+
+            if (syncResult == WaitSyncStatus.TimeoutExpired)
+            {
+                Logger.Error?.PrintMsg(LogClass.Gpu, $"Failed to sync persistent buffer state within 1000ms. Continuing...");
+            }
+
+            GL.DeleteSync(sync);
+        }
+
         public byte[] GetTextureData(TextureView view)
         {
             int size = 0;
@@ -60,17 +76,13 @@ namespace Ryujinx.Graphics.OpenGL
 
             GL.BindBuffer(BufferTarget.PixelPackBuffer, _copyBufferHandle);
 
-            byte[] data = new byte[size];
-
             view.WriteToPbo(0, false);
 
             GL.BindBuffer(BufferTarget.PixelPackBuffer, 0);
 
-            GL.MemoryBarrier(MemoryBarrierFlags.ClientMappedBufferBarrierBit);
+            byte[] data = new byte[size];
 
-            IntPtr sync = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags.None);
-            GL.ClientWaitSync(sync, ClientWaitSyncFlags.SyncFlushCommandsBit, 1000000000);
-            GL.DeleteSync(sync);
+            Sync();
 
             Marshal.Copy(_bufferMap, data, 0, size);
 
@@ -88,14 +100,9 @@ namespace Ryujinx.Graphics.OpenGL
 
             GL.BindBuffer(BufferTarget.CopyWriteBuffer, 0);
 
-            GL.MemoryBarrier(MemoryBarrierFlags.ClientMappedBufferBarrierBit);
-
-            IntPtr sync = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags.None);
-
             byte[] data = new byte[size];
 
-            GL.ClientWaitSync(sync, ClientWaitSyncFlags.SyncFlushCommandsBit, 1000000000);
-            GL.DeleteSync(sync);
+            Sync();
 
             Marshal.Copy(_bufferMap, data, 0, size);
 
