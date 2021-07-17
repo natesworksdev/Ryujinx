@@ -1,5 +1,6 @@
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
+using Ryujinx.Common.Configuration.Hid.Controller.Motion;
 using Ryujinx.Common.Configuration.Hid.Keyboard;
 using Ryujinx.HLE.HOS.Services.Hid;
 using System;
@@ -163,9 +164,11 @@ namespace Ryujinx.Input.HLE
                 foreach (InputConfig inputConfig in _inputConfig)
                 {
                     GamepadInput inputState = default;
-                    SixAxisInput motionState = default;
+                    (SixAxisInput, SixAxisInput) motionState = default;
 
                     NpadController controller = _controllers[(int)inputConfig.PlayerIndex];
+
+                    bool isCemuMotion = false;
 
                     // Do we allow input updates and is a controller connected?
                     if (!_blockInputUpdates && controller != null)
@@ -179,7 +182,12 @@ namespace Ryujinx.Input.HLE
 
                         inputState.Buttons |= _device.Hid.UpdateStickButtons(inputState.LStick, inputState.RStick);
 
-                        motionState = controller.GetHLEMotionState();
+                        isCemuMotion =
+                            (inputConfig is StandardControllerInputConfig controllerInputConfig) &&
+                            (controllerInputConfig.Motion is CemuHookMotionConfigController cemuHookMotion) &&
+                            inputConfig.ControllerType == Common.Configuration.Hid.ControllerType.JoyconPair;
+
+                        motionState = (controller.GetHLEMotionState(), isCemuMotion ? controller.GetHLEMotionState(true) : default);
 
                         if (_enableKeyboard)
                         {
@@ -189,14 +197,21 @@ namespace Ryujinx.Input.HLE
                     else
                     {
                         // Ensure that orientation isn't null
-                        motionState.Orientation = new float[9];
+                        motionState.Item1.Orientation = new float[9];
                     }
 
                     inputState.PlayerId = (Ryujinx.HLE.HOS.Services.Hid.PlayerIndex)inputConfig.PlayerIndex;
-                    motionState.PlayerId = (Ryujinx.HLE.HOS.Services.Hid.PlayerIndex)inputConfig.PlayerIndex;
+                    motionState.Item1.PlayerId = (Ryujinx.HLE.HOS.Services.Hid.PlayerIndex)inputConfig.PlayerIndex;
 
                     hleInputStates.Add(inputState);
-                    hleMotionStates.Add(motionState);
+                    hleMotionStates.Add(motionState.Item1);
+
+                    if(isCemuMotion && !motionState.Item2.Equals(default))
+                    {
+                        motionState.Item2.PlayerId = (Ryujinx.HLE.HOS.Services.Hid.PlayerIndex)inputConfig.PlayerIndex;
+
+                        hleMotionStates.Add(motionState.Item2);
+                    }
                 }
 
                 _device.Hid.Npads.Update(hleInputStates);
