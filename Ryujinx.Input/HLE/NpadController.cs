@@ -3,6 +3,7 @@ using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Common.Configuration.Hid.Controller.Motion;
 using Ryujinx.HLE.HOS.Services.Hid;
+using SixLabors.ImageSharp;
 using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -331,28 +332,6 @@ namespace Ryujinx.Input.HLE
             }
         }
 
-        private static short ClampAxis(float value)
-        {
-            if (value <= -short.MaxValue)
-            {
-                return -short.MaxValue;
-            }
-            else
-            {
-                return (short)(value * short.MaxValue);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static JoystickPosition ApplyDeadzone(float x, float y, float deadzone)
-        {
-            return new JoystickPosition
-            {
-                Dx = ClampAxis(MathF.Abs(x) > deadzone ? x : 0.0f),
-                Dy = ClampAxis(MathF.Abs(y) > deadzone ? y : 0.0f)
-            };
-        }
-
         public GamepadInput GetHLEInputState()
         {
             GamepadInput state = new GamepadInput();
@@ -368,7 +347,7 @@ namespace Ryujinx.Input.HLE
 
             if (_gamepad is IKeyboard)
             {
-                (float leftAxisX, float leftAxisY) = State.GetStick(StickInputId.Left);
+                (float leftAxisX,  float leftAxisY)  = State.GetStick(StickInputId.Left);
                 (float rightAxisX, float rightAxisY) = State.GetStick(StickInputId.Right);
 
                 state.LStick = new JoystickPosition
@@ -385,14 +364,46 @@ namespace Ryujinx.Input.HLE
             }
             else if (_config is StandardControllerInputConfig controllerConfig)
             {
-                (float leftAxisX, float leftAxisY) = State.GetStick(StickInputId.Left);
+                (float leftAxisX,  float leftAxisY)  = State.GetStick(StickInputId.Left);
                 (float rightAxisX, float rightAxisY) = State.GetStick(StickInputId.Right);
 
-                state.LStick = ApplyDeadzone(leftAxisX, leftAxisY, controllerConfig.DeadzoneLeft);
-                state.RStick = ApplyDeadzone(rightAxisX, rightAxisY, controllerConfig.DeadzoneRight);
+                state.LStick = ClampToCircle(ClampAxis(leftAxisX),  ClampAxis(leftAxisY),  controllerConfig.DeadzoneLeft);
+                state.RStick = ClampToCircle(ClampAxis(rightAxisX), ClampAxis(rightAxisY), controllerConfig.DeadzoneRight);
             }
 
             return state;
+        }
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static short ClampAxis(float value)
+        {
+            if (value <= -short.MaxValue)
+            {
+                return -short.MaxValue;
+            }
+            else
+            {
+                return (short)(value * short.MaxValue);
+            }
+        }
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static JoystickPosition ClampToCircle(float x, float y, float deadzone)
+        {
+            Vector2 point = new Vector2(x, y);
+
+            if (point.Length() > short.MaxValue)
+            {
+                point = point / point.Length() * short.MaxValue;
+            }
+
+            return new JoystickPosition
+            {
+                Dx = Math.Abs(point.X) > deadzone ? (int)point.X : 0,
+                Dy = Math.Abs(point.Y) > deadzone ? (int)point.Y : 0,
+            };
         }
 
         public SixAxisInput GetHLEMotionState()
