@@ -878,11 +878,10 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 MemoryRange subrange = Range.GetSubRange(0);
 
-                WritableRegion region = _physicalMemory.GetWritableRegion(subrange.Address, (int)subrange.Size, tracked);
-
-                GetTextureDataFromGpu(region.Memory.Span, tracked, texture);
-
-                region.Dispose();
+                using (WritableRegion region = _physicalMemory.GetWritableRegion(subrange.Address, (int)subrange.Size, tracked))
+                {
+                    GetTextureDataFromGpu(region.Memory.Span, tracked, texture);
+                }
             }
             else
             {
