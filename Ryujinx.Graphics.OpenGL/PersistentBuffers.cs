@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 using OpenTK.Graphics.OpenGL;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
@@ -57,7 +56,10 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 _data = GC.AllocateUninitializedArray<byte>(requiredSize, true);
 
-                _dataMap = (IntPtr)Unsafe.AsPointer(ref _data);
+                fixed (byte* ptr = _data)
+                {
+                    _dataMap = (IntPtr)ptr;
+                }
             }
 
             return _dataMap;
