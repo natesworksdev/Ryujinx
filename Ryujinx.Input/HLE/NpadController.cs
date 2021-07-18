@@ -3,7 +3,6 @@ using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Common.Configuration.Hid.Controller.Motion;
 using Ryujinx.HLE.HOS.Services.Hid;
-using SixLabors.ImageSharp;
 using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -347,7 +346,7 @@ namespace Ryujinx.Input.HLE
 
             if (_gamepad is IKeyboard)
             {
-                (float leftAxisX,  float leftAxisY)  = State.GetStick(StickInputId.Left);
+                (float leftAxisX, float leftAxisY) = State.GetStick(StickInputId.Left);
                 (float rightAxisX, float rightAxisY) = State.GetStick(StickInputId.Right);
 
                 state.LStick = new JoystickPosition
@@ -364,10 +363,10 @@ namespace Ryujinx.Input.HLE
             }
             else if (_config is StandardControllerInputConfig controllerConfig)
             {
-                (float leftAxisX,  float leftAxisY)  = State.GetStick(StickInputId.Left);
+                (float leftAxisX, float leftAxisY) = State.GetStick(StickInputId.Left);
                 (float rightAxisX, float rightAxisY) = State.GetStick(StickInputId.Right);
 
-                state.LStick = ClampToCircle(ApplyDeadzone(leftAxisX, leftAxisY,  controllerConfig.DeadzoneLeft));
+                state.LStick = ClampToCircle(ApplyDeadzone(leftAxisX, leftAxisY, controllerConfig.DeadzoneLeft));
                 state.RStick = ClampToCircle(ApplyDeadzone(rightAxisX, rightAxisY, controllerConfig.DeadzoneRight));
             }
 
@@ -396,7 +395,6 @@ namespace Ryujinx.Input.HLE
                 return (short)(value * short.MaxValue);
             }
         }
-
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static JoystickPosition ClampToCircle(JoystickPosition position)
