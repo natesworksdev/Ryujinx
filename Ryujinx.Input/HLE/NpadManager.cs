@@ -168,7 +168,7 @@ namespace Ryujinx.Input.HLE
 
                     NpadController controller = _controllers[(int)inputConfig.PlayerIndex];
 
-                    bool isCemuMotion = false;
+                    bool isJoyconPair = false;
 
                     // Do we allow input updates and is a controller connected?
                     if (!_blockInputUpdates && controller != null)
@@ -182,12 +182,9 @@ namespace Ryujinx.Input.HLE
 
                         inputState.Buttons |= _device.Hid.UpdateStickButtons(inputState.LStick, inputState.RStick);
 
-                        isCemuMotion =
-                            (inputConfig is StandardControllerInputConfig controllerInputConfig) &&
-                            (controllerInputConfig.Motion is CemuHookMotionConfigController cemuHookMotion) &&
-                            inputConfig.ControllerType == Common.Configuration.Hid.ControllerType.JoyconPair;
+                        isJoyconPair = inputConfig.ControllerType == Common.Configuration.Hid.ControllerType.JoyconPair;
 
-                        motionState = (controller.GetHLEMotionState(), isCemuMotion ? controller.GetHLEMotionState(true) : default);
+                        motionState = (controller.GetHLEMotionState(), isJoyconPair ? controller.GetHLEMotionState(true) : default);
 
                         if (_enableKeyboard)
                         {
@@ -206,7 +203,7 @@ namespace Ryujinx.Input.HLE
                     hleInputStates.Add(inputState);
                     hleMotionStates.Add(motionState.Item1);
 
-                    if(isCemuMotion && !motionState.Item2.Equals(default))
+                    if(isJoyconPair && !motionState.Item2.Equals(default))
                     {
                         motionState.Item2.PlayerId = (Ryujinx.HLE.HOS.Services.Hid.PlayerIndex)inputConfig.PlayerIndex;
 

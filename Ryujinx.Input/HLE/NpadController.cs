@@ -302,6 +302,11 @@ namespace Ryujinx.Input.HLE
                             gyroscope = new Vector3(gyroscope.X, gyroscope.Z, gyroscope.Y);
 
                             _mainMotionInput.Update(accelerometer, gyroscope, (ulong)PerformanceCounter.ElapsedNanoseconds / 1000, controllerConfig.Motion.Sensitivity, (float)controllerConfig.Motion.GyroDeadzone);
+
+                            if (controllerConfig.ControllerType == ConfigControllerType.JoyconPair)
+                            {
+                                _secondaryMotionInput = _mainMotionInput;
+                            }
                         }
                     }
                     else if (controllerConfig.Motion.MotionBackend == MotionInputBackendType.CemuHook && controllerConfig.Motion is CemuHookMotionConfigController cemuControllerConfig)
@@ -311,9 +316,8 @@ namespace Ryujinx.Input.HLE
                         // First of all ensure we are registered
                         _cemuHookClient.RegisterClient(clientId, cemuControllerConfig.DsuServerHost, cemuControllerConfig.DsuServerPort);
 
-                        // Then request and retrive the data
+                        // Then request and retrieve the data
                         _cemuHookClient.RequestData(clientId, cemuControllerConfig.Slot);
-
                         _cemuHookClient.TryGetData(clientId, cemuControllerConfig.Slot, out _mainMotionInput);
 
                         if (controllerConfig.ControllerType == ConfigControllerType.JoyconPair)
