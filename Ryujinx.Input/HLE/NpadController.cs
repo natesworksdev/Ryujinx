@@ -208,8 +208,8 @@ namespace Ryujinx.Input.HLE
         private bool _isValid;
         private string _id;
 
-        private MotionInput _mainMotionInput;
-        private MotionInput _secondaryMotionInput;
+        private MotionInput _leftMotionInput;
+        private MotionInput _rightMotionInput;
 
         private IGamepad _gamepad;
         private InputConfig _config;
@@ -260,7 +260,7 @@ namespace Ryujinx.Input.HLE
             else
             {
                 // Non-controller doesn't have motions.
-                _mainMotionInput = null;
+                _leftMotionInput = null;
             }
 
             _config = config;
@@ -275,11 +275,11 @@ namespace Ryujinx.Input.HLE
         {
             if (motionConfig.MotionBackend != MotionInputBackendType.CemuHook)
             {
-                _mainMotionInput = new MotionInput();
+                _leftMotionInput = new MotionInput();
              }
             else
             {
-                _mainMotionInput = null;
+                _leftMotionInput = null;
             }
         }
 
@@ -301,11 +301,11 @@ namespace Ryujinx.Input.HLE
                             accelerometer = new Vector3(accelerometer.X, -accelerometer.Z, accelerometer.Y);
                             gyroscope = new Vector3(gyroscope.X, gyroscope.Z, gyroscope.Y);
 
-                            _mainMotionInput.Update(accelerometer, gyroscope, (ulong)PerformanceCounter.ElapsedNanoseconds / 1000, controllerConfig.Motion.Sensitivity, (float)controllerConfig.Motion.GyroDeadzone);
+                            _leftMotionInput.Update(accelerometer, gyroscope, (ulong)PerformanceCounter.ElapsedNanoseconds / 1000, controllerConfig.Motion.Sensitivity, (float)controllerConfig.Motion.GyroDeadzone);
 
                             if (controllerConfig.ControllerType == ConfigControllerType.JoyconPair)
                             {
-                                _secondaryMotionInput = _mainMotionInput;
+                                _rightMotionInput = _leftMotionInput;
                             }
                         }
                     }
@@ -318,18 +318,18 @@ namespace Ryujinx.Input.HLE
 
                         // Then request and retrieve the data
                         _cemuHookClient.RequestData(clientId, cemuControllerConfig.Slot);
-                        _cemuHookClient.TryGetData(clientId, cemuControllerConfig.Slot, out _mainMotionInput);
+                        _cemuHookClient.TryGetData(clientId, cemuControllerConfig.Slot, out _leftMotionInput);
 
                         if (controllerConfig.ControllerType == ConfigControllerType.JoyconPair)
                         {
                             if (!cemuControllerConfig.MirrorInput)
                             {
                                 _cemuHookClient.RequestData(clientId, cemuControllerConfig.AltSlot);
-                                _cemuHookClient.TryGetData(clientId, cemuControllerConfig.AltSlot, out _secondaryMotionInput);
+                                _cemuHookClient.TryGetData(clientId, cemuControllerConfig.AltSlot, out _rightMotionInput);
                             }
                             else
                             {
-                                _secondaryMotionInput = _mainMotionInput;
+                                _rightMotionInput = _leftMotionInput;
                             }
                         }
                     }
@@ -339,7 +339,7 @@ namespace Ryujinx.Input.HLE
             {
                 // Reset states
                 State = default;
-                _mainMotionInput = null;
+                _leftMotionInput = null;
             }
         }
 
@@ -407,23 +407,23 @@ namespace Ryujinx.Input.HLE
             return state;
         }
 
-        public SixAxisInput GetHLEMotionState(bool isSecondaryController = false)
+        public SixAxisInput GetHLEMotionState(bool isJoyconRightPair = false)
         {
             float[] orientationForHLE = new float[9];
             Vector3 gyroscope;
             Vector3 accelerometer;
             Vector3 rotation;
 
-            var motionInput = _mainMotionInput;
+            MotionInput motionInput = _leftMotionInput;
 
-            if(isSecondaryController)
+            if (isJoyconRightPair)
             {
-                if(_secondaryMotionInput == null)
+                if (_rightMotionInput == null)
                 {
                     return default;
                 }
 
-                motionInput = _secondaryMotionInput;
+                motionInput = _rightMotionInput;
             }
 
             if (motionInput != null)

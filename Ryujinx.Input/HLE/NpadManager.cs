@@ -205,7 +205,7 @@ namespace Ryujinx.Input.HLE
                     hleInputStates.Add(inputState);
                     hleMotionStates.Add(motionState.Item1);
 
-                    if(isJoyconPair && !motionState.Item2.Equals(default))
+                    if (isJoyconPair && !motionState.Item2.Equals(default))
                     {
                         motionState.Item2.PlayerId = (Ryujinx.HLE.HOS.Services.Hid.PlayerIndex)inputConfig.PlayerIndex;
 
