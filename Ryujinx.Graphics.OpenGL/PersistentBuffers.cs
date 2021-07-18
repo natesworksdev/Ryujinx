@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 using OpenTK.Graphics.OpenGL;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
@@ -27,6 +27,9 @@ namespace Ryujinx.Graphics.OpenGL
         private int _copyBufferHandle;
         private int _copyBufferSize;
 
+        private byte[] _data;
+        private IntPtr _dataMap;
+
         private void EnsureBuffer(int requiredSize)
         {
             if (_copyBufferSize < requiredSize && _copyBufferHandle != 0)
@@ -48,6 +51,18 @@ namespace Ryujinx.Graphics.OpenGL
             }
         }
 
+        public unsafe IntPtr GetHostArray(int requiredSize)
+        {
+            if (_data == null || _data.Length < requiredSize)
+            {
+                _data = GC.AllocateUninitializedArray<byte>(requiredSize, true);
+
+                _dataMap = (IntPtr)Unsafe.AsPointer(ref _data);
+            }
+
+            return _dataMap;
+        }
+
         private void Sync()
         {
             GL.MemoryBarrier(MemoryBarrierFlags.ClientMappedBufferBarrierBit);
@@ -63,7 +78,7 @@ namespace Ryujinx.Graphics.OpenGL
             GL.DeleteSync(sync);
         }
 
-        public byte[] GetTextureData(TextureView view, int size)
+        public unsafe ReadOnlySpan<byte> GetTextureData(TextureView view, int size)
         {
             EnsureBuffer(size);
 
@@ -73,16 +88,12 @@ namespace Ryujinx.Graphics.OpenGL
 
             GL.BindBuffer(BufferTarget.PixelPackBuffer, 0);
 
-            byte[] data = new byte[size];
-
             Sync();
 
-            Marshal.Copy(_bufferMap, data, 0, size);
-
-            return data;
+            return new ReadOnlySpan<byte>(_bufferMap.ToPointer(), size);
         }
 
-        public byte[] GetBufferData(BufferHandle buffer, int offset, int size)
+        public unsafe ReadOnlySpan<byte> GetBufferData(BufferHandle buffer, int offset, int size)
         {
             EnsureBuffer(size);
 
@@ -93,13 +104,9 @@ namespace Ryujinx.Graphics.OpenGL
 
             GL.BindBuffer(BufferTarget.CopyWriteBuffer, 0);
 
-            byte[] data = new byte[size];
-
             Sync();
 
-            Marshal.Copy(_bufferMap, data, 0, size);
-
-            return data;
+            return new ReadOnlySpan<byte>(_bufferMap.ToPointer(), size);
         }
 
         public void Dispose()
