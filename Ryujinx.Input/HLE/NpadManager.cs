@@ -184,7 +184,9 @@ namespace Ryujinx.Input.HLE
 
                         isJoyconPair = inputConfig.ControllerType == Common.Configuration.Hid.ControllerType.JoyconPair;
 
-                        motionState = (controller.GetHLEMotionState(), isJoyconPair ? controller.GetHLEMotionState(true) : default);
+                        var altMotionState = isJoyconPair ? controller.GetHLEMotionState(true) : default;
+
+                        motionState = (controller.GetHLEMotionState(), altMotionState);
 
                         if (_enableKeyboard)
                         {
