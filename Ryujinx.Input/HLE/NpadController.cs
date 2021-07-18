@@ -367,13 +367,22 @@ namespace Ryujinx.Input.HLE
                 (float leftAxisX,  float leftAxisY)  = State.GetStick(StickInputId.Left);
                 (float rightAxisX, float rightAxisY) = State.GetStick(StickInputId.Right);
 
-                state.LStick = ClampToCircle(ClampAxis(leftAxisX),  ClampAxis(leftAxisY),  controllerConfig.DeadzoneLeft);
-                state.RStick = ClampToCircle(ClampAxis(rightAxisX), ClampAxis(rightAxisY), controllerConfig.DeadzoneRight);
+                state.LStick = ClampToCircle(ApplyDeadzone(leftAxisX, leftAxisY,  controllerConfig.DeadzoneLeft));
+                state.RStick = ClampToCircle(ApplyDeadzone(rightAxisX, rightAxisY, controllerConfig.DeadzoneRight));
             }
 
             return state;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static JoystickPosition ApplyDeadzone(float x, float y, float deadzone)
+        {
+            return new JoystickPosition
+            {
+                Dx = ClampAxis(MathF.Abs(x) > deadzone ? x : 0.0f),
+                Dy = ClampAxis(MathF.Abs(y) > deadzone ? y : 0.0f)
+            };
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static short ClampAxis(float value)
@@ -390,9 +399,9 @@ namespace Ryujinx.Input.HLE
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static JoystickPosition ClampToCircle(float x, float y, float deadzone)
+        private static JoystickPosition ClampToCircle(JoystickPosition position)
         {
-            Vector2 point = new Vector2(x, y);
+            Vector2 point = new Vector2(position.Dx, position.Dy);
 
             if (point.Length() > short.MaxValue)
             {
@@ -401,8 +410,8 @@ namespace Ryujinx.Input.HLE
 
             return new JoystickPosition
             {
-                Dx = Math.Abs(point.X) > deadzone ? (int)point.X : 0,
-                Dy = Math.Abs(point.Y) > deadzone ? (int)point.Y : 0,
+                Dx = (int)point.X,
+                Dy = (int)point.Y
             };
         }
 
