@@ -834,9 +834,6 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 _program.Bind();
             }
-
-            UpdateFpIsBgra();
-            SetRenderTargetScale(_fpRenderScale[0].X);
         }
 
         public void SetRasterizerDiscard(bool discard)
