@@ -77,21 +77,9 @@ namespace Ryujinx.Graphics.OpenGL
                 _componentMasks[index] = 0xf;
             }
 
-            for (int index = 0; index < _fpRenderScale.Length; index++)
-            {
-                _fpRenderScale[index].X = 1f;
-                _fpRenderScale[index].Y = 0f;
-                _fpRenderScale[index].Z = 0f;
-                _fpRenderScale[index].W = 0f;
-            }
-
-            for (int index = 0; index < _cpRenderScale.Length; index++)
-            {
-                _cpRenderScale[index].X = 1f;
-                _cpRenderScale[index].Y = 0f;
-                _cpRenderScale[index].Z = 0f;
-                _cpRenderScale[index].W = 0f;
-            }
+            var v4Zero = new Vector4<float> { X = 0f, Y = 0f, Z = 0f, W = 0f };
+            new Span<Vector4<float>>(_fpRenderScale).Fill(v4Zero);
+            new Span<Vector4<float>>(_cpRenderScale).Fill(v4Zero);
 
             _tfbs = new BufferHandle[Constants.MaxTransformFeedbackBuffers];
             _tfbTargets = new BufferRange[Constants.MaxTransformFeedbackBuffers];
@@ -876,6 +864,8 @@ namespace Ryujinx.Graphics.OpenGL
         {
             EnsureFramebuffer();
 
+            bool isBgraChanged = false;
+
             for (int index = 0; index < colors.Length; index++)
             {
                 TextureView color = (TextureView)colors[index];
@@ -887,12 +877,16 @@ namespace Ryujinx.Graphics.OpenGL
                 if (_fpIsBgra[index].X != isBgra)
                 {
                     _fpIsBgra[index].X = isBgra;
+                    isBgraChanged = true;
 
                     RestoreComponentMask(index);
                 }
             }
 
-            UpdateFpIsBgra();
+            if (isBgraChanged)
+            {
+                SetSupportBufferData<Vector4<int>>(SupportBuffer.FragmentIsBgraOffset, _fpIsBgra, SupportBuffer.FragmentIsBgraCount);
+            }
 
             TextureView depthStencilView = (TextureView)depthStencil;
 
@@ -1189,30 +1183,37 @@ namespace Ryujinx.Graphics.OpenGL
             return (_boundDrawFramebuffer, _boundReadFramebuffer);
         }
 
-        private void UpdateFpIsBgra()
-        {
-            SetSupportBufferData<Vector4<int>>(SupportBuffer.FragmentIsBgraOffset, _fpIsBgra, SupportBuffer.FragmentIsBgraCount);
-        }
-
         public void UpdateRenderScale(ShaderStage stage, float[] scales, int textureCount, int imageCount)
         {
-            static void Copy(float[] from, int fromIndex, Vector4<float>[] to, int toIndex, int count)
+            static bool Copy(float[] from, int fromIndex, Vector4<float>[] to, int toIndex, int count)
             {
+                bool changed = false;
+
                 for (int index = 0; index < count; index++)
                 {
-                    to[toIndex + index].X = from[fromIndex + index];
+                    if (to[toIndex + index].X != from[fromIndex + index])
+                    {
+                        to[toIndex + index].X = from[fromIndex + index];
+                        changed = true;
+                    }
                 }
+
+                return changed;
             }
 
             switch (stage)
             {
                 case ShaderStage.Fragment:
-                    Copy(scales, 0, _fpRenderScale, 1, textureCount + imageCount);
-                    SetSupportBufferData<Vector4<float>>(SupportBuffer.FragmentRenderScaleOffset, _fpRenderScale, 1 + textureCount + imageCount);
+                    if (Copy(scales, 0, _fpRenderScale, 1, textureCount + imageCount))
+                    {
+                        SetSupportBufferData<Vector4<float>>(SupportBuffer.FragmentRenderScaleOffset, _fpRenderScale, 1 + textureCount + imageCount);
+                    }
                     break;
                 case ShaderStage.Compute:
-                    Copy(scales, 0, _cpRenderScale, 0, textureCount + imageCount);
-                    SetSupportBufferData<Vector4<float>>(SupportBuffer.ComputeRenderScaleOffset, _cpRenderScale, textureCount + imageCount);
+                    if (Copy(scales, 0, _cpRenderScale, 0, textureCount + imageCount))
+                    {
+                        SetSupportBufferData<Vector4<float>>(SupportBuffer.ComputeRenderScaleOffset, _cpRenderScale, textureCount + imageCount);
+                    }
                     break;
             }
         }
