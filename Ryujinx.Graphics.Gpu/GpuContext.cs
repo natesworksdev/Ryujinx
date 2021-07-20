@@ -189,7 +189,10 @@ namespace Ryujinx.Graphics.Gpu
         /// </summary>
         public void ProcessShaderCacheQueue()
         {
-            Methods.ShaderCache.ProcessShaderCacheQueue();
+            foreach (var physicalMemory in PhysicalMemoryRegistry.Values)
+            {
+                physicalMemory.ShaderCache.ProcessShaderCacheQueue();
+            }
         }
 
         /// <summary>

@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Graphics.GAL.Multithreading.Model;
 using Ryujinx.Graphics.GAL.Multithreading.Resources;
+using System;
 
 namespace Ryujinx.Graphics.GAL.Multithreading.Commands.Texture
 {
@@ -7,9 +8,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands.Texture
     {
         public CommandType CommandType => CommandType.TextureGetData;
         private TableRef<ThreadedTexture> _texture;
-        private TableRef<ResultBox<byte[]>> _result;
+        private TableRef<ResultBox<PinnedSpan<byte>>> _result;
 
-        public void Set(TableRef<ThreadedTexture> texture, TableRef<ResultBox<byte[]>> result)
+        public void Set(TableRef<ThreadedTexture> texture, TableRef<ResultBox<PinnedSpan<byte>>> result)
         {
             _texture = texture;
             _result = result;
@@ -17,9 +18,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands.Texture
 
         public static void Run(ref TextureGetDataCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
-            byte[] result = command._texture.Get(threaded).Base.GetData();
+            ReadOnlySpan<byte> result = command._texture.Get(threaded).Base.GetData();
 
-            command._result.Get(threaded).Result = result;
+            command._result.Get(threaded).Result = new PinnedSpan<byte>(result);
         }
     }
 }

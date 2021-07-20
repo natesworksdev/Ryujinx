@@ -71,15 +71,15 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Resources
             return newTex;
         }
 
-        public byte[] GetData()
+        public ReadOnlySpan<byte> GetData()
         {
             if (_renderer.IsGpuThread())
             {
-                ResultBox<byte[]> box = new ResultBox<byte[]>();
+                ResultBox<PinnedSpan<byte>> box = new ResultBox<PinnedSpan<byte>>();
                 _renderer.New<TextureGetDataCommand>().Set(Ref(this), Ref(box));
                 _renderer.InvokeCommand();
 
-                return box.Result;
+                return box.Result.Get();
             }
             else
             {
