@@ -88,11 +88,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private readonly BuffersPerStage[] _gpStorageBuffers;
         private readonly BuffersPerStage[] _gpUniformBuffers;
 
-        private int _cpStorageBufferBindings;
-        private int _cpUniformBufferBindings;
-        private int _gpStorageBufferBindings;
-        private int _gpUniformBufferBindings;
-
         private bool _gpStorageBuffersDirty;
         private bool _gpUniformBuffersDirty;
 
@@ -288,7 +283,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
         public void SetComputeStorageBufferBindings(ReadOnlyCollection<BufferDescriptor> descriptors)
         {
             _cpStorageBuffers.SetBindings(descriptors);
-            _cpStorageBufferBindings = descriptors.Count != 0 ? descriptors.Max(x => x.Binding) + 1 : 0;
         }
 
         /// <summary>
@@ -303,22 +297,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
-        /// Sets the total number of storage buffer bindings used.
-        /// </summary>
-        /// <param name="count">Number of storage buffer bindings used</param>
-        public void SetGraphicsStorageBufferBindingsCount(int count)
-        {
-            _gpStorageBufferBindings = count;
-        }
-
-        /// <summary>
         /// Sets the binding points for the uniform buffers bound on the compute pipeline.
         /// </summary>
         /// <param name="descriptors">Buffer descriptors with the binding point values</param>
         public void SetComputeUniformBufferBindings(ReadOnlyCollection<BufferDescriptor> descriptors)
         {
             _cpUniformBuffers.SetBindings(descriptors);
-            _cpUniformBufferBindings = descriptors.Count != 0 ? descriptors.Max(x => x.Binding) + 1 : 0;
         }
 
         /// <summary>
@@ -331,15 +315,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             _gpUniformBuffers[stage].SetBindings(descriptors);
             _gpUniformBuffersDirty = true;
-        }
-
-        /// <summary>
-        /// Sets the total number of uniform buffer bindings used.
-        /// </summary>
-        /// <param name="count">Number of uniform buffer bindings used</param>
-        public void SetGraphicsUniformBufferBindingsCount(int count)
-        {
-            _gpUniformBufferBindings = count;
         }
 
         /// <summary>
@@ -381,7 +356,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
             return mask;
         }
 
-
         /// <summary>
         /// Gets the address of the compute uniform buffer currently bound at the given index.
         /// </summary>
@@ -409,7 +383,10 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         public void CommitComputeBindings()
         {
-            int sCount = _cpStorageBufferBindings;
+            int sCount = _cpStorageBuffers.Count;
+
+            int rangesFirst = 0;
+            int rangesCount = 0;
 
             Span<BufferRange> sRanges = sCount < StackToHeapThreshold ? stackalloc BufferRange[sCount] : new BufferRange[sCount];
 
@@ -423,16 +400,35 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 {
                     // The storage buffer size is not reliable (it might be lower than the actual size),
                     // so we bind the entire buffer to allow otherwise out of range accesses to work.
-                    sRanges[bindingInfo.Binding] = _channel.MemoryManager.Physical.BufferCache.GetBufferRangeTillEnd(
+                    var range = _channel.MemoryManager.Physical.BufferCache.GetBufferRangeTillEnd(
                         bounds.Address,
                         bounds.Size,
                         bounds.Flags.HasFlag(BufferUsageFlags.Write));
+
+                    if (rangesCount == 0)
+                    {
+                        rangesFirst = bindingInfo.Binding;
+                    }
+                    else if (bindingInfo.Binding != rangesFirst + rangesCount)
+                    {
+                        SetHostBuffers(sRanges, rangesFirst, rangesCount, isStorage: true);
+                        rangesFirst = bindingInfo.Binding;
+                        rangesCount = 0;
+                    }
+
+                    sRanges[rangesCount++] = range;
                 }
             }
 
-            _context.Renderer.Pipeline.SetStorageBuffers(sRanges);
+            if (rangesCount != 0)
+            {
+                SetHostBuffers(sRanges, rangesFirst, rangesCount, isStorage: true);
+            }
 
-            int uCount = _cpUniformBufferBindings;
+            int uCount = _cpUniformBuffers.Count;
+
+            rangesFirst = 0;
+            rangesCount = 0;
 
             Span<BufferRange> uRanges = uCount < StackToHeapThreshold ? stackalloc BufferRange[uCount] : new BufferRange[uCount];
 
@@ -444,11 +440,27 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 if (bounds.Address != 0)
                 {
-                    uRanges[bindingInfo.Binding] = _channel.MemoryManager.Physical.BufferCache.GetBufferRange(bounds.Address, bounds.Size);
+                    var range = _channel.MemoryManager.Physical.BufferCache.GetBufferRange(bounds.Address, bounds.Size);
+
+                    if (rangesCount == 0)
+                    {
+                        rangesFirst = bindingInfo.Binding;
+                    }
+                    else if (bindingInfo.Binding != rangesFirst + rangesCount)
+                    {
+                        SetHostBuffers(uRanges, rangesFirst, rangesCount, isStorage: false);
+                        rangesFirst = bindingInfo.Binding;
+                        rangesCount = 0;
+                    }
+
+                    uRanges[rangesCount++] = range;
                 }
             }
 
-            _context.Renderer.Pipeline.SetUniformBuffers(uRanges);
+            if (rangesCount != 0)
+            {
+                SetHostBuffers(uRanges, rangesFirst, rangesCount, isStorage: false);
+            }
 
             CommitBufferTextureBindings();
 
@@ -616,7 +628,17 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="isStorage">True to bind as storage buffer, false to bind as uniform buffers</param>
         private void BindBuffers(BuffersPerStage[] bindings, bool isStorage)
         {
-            int count = isStorage ? _gpStorageBufferBindings : _gpUniformBufferBindings;
+            int count = 0;
+
+            for (ShaderStage stage = ShaderStage.Vertex; stage <= ShaderStage.Fragment; stage++)
+            {
+                ref var buffers = ref bindings[(int)stage - 1];
+
+                count += buffers.Count;
+            }
+
+            int rangesFirst = 0;
+            int rangesCount = 0;
 
             Span<BufferRange> ranges = count < StackToHeapThreshold ? stackalloc BufferRange[count] : new BufferRange[count];
 
@@ -633,20 +655,41 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     if (bounds.Address != 0)
                     {
                         var isWrite = bounds.Flags.HasFlag(BufferUsageFlags.Write);
-                        ranges[bindingInfo.Binding] = isStorage
+                        var range = isStorage
                             ? _channel.MemoryManager.Physical.BufferCache.GetBufferRangeTillEnd(bounds.Address, bounds.Size, isWrite)
                             : _channel.MemoryManager.Physical.BufferCache.GetBufferRange(bounds.Address, bounds.Size, isWrite);
+
+                        if (rangesCount == 0)
+                        {
+                            rangesFirst = bindingInfo.Binding;
+                        }
+                        else if (bindingInfo.Binding != rangesFirst + rangesCount)
+                        {
+                            SetHostBuffers(ranges, rangesFirst, rangesCount, isStorage);
+                            rangesFirst = bindingInfo.Binding;
+                            rangesCount = 0;
+                        }
+
+                        ranges[rangesCount++] = range;
                     }
                 }
             }
 
+            if (rangesCount != 0)
+            {
+                SetHostBuffers(ranges, rangesFirst, rangesCount, isStorage);
+            }
+        }
+
+        private void SetHostBuffers(ReadOnlySpan<BufferRange> ranges, int first, int count, bool isStorage)
+        {
             if (isStorage)
             {
-                _context.Renderer.Pipeline.SetStorageBuffers(ranges);
+                _context.Renderer.Pipeline.SetStorageBuffers(first, ranges.Slice(0, count));
             }
             else
             {
-                _context.Renderer.Pipeline.SetUniformBuffers(ranges);
+                _context.Renderer.Pipeline.SetUniformBuffers(first, ranges.Slice(0, count));
             }
         }
 
