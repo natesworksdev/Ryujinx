@@ -80,11 +80,17 @@ namespace Ryujinx.Graphics.OpenGL
             for (int index = 0; index < _fpRenderScale.Length; index++)
             {
                 _fpRenderScale[index].X = 1f;
+                _fpRenderScale[index].Y = 0f;
+                _fpRenderScale[index].Z = 0f;
+                _fpRenderScale[index].W = 0f;
             }
 
             for (int index = 0; index < _cpRenderScale.Length; index++)
             {
                 _cpRenderScale[index].X = 1f;
+                _cpRenderScale[index].Y = 0f;
+                _cpRenderScale[index].Z = 0f;
+                _cpRenderScale[index].W = 0f;
             }
 
             _tfbs = new BufferHandle[Constants.MaxTransformFeedbackBuffers];
@@ -1192,9 +1198,9 @@ namespace Ryujinx.Graphics.OpenGL
         {
             static void Copy(float[] from, int fromIndex, Vector4<float>[] to, int toIndex, int count)
             {
-                for (int i = 0; i < count; i++)
+                for (int index = 0; index < count; index++)
                 {
-                    to[toIndex + i].X = from[fromIndex + i];
+                    to[toIndex + index].X = from[fromIndex + index];
                 }
             }
 
