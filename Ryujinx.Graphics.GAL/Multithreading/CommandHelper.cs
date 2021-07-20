@@ -170,6 +170,8 @@ namespace Ryujinx.Graphics.GAL.Multithreading
                 SetImageCommand.Run(ref GetCommand<SetImageCommand>(memory), threaded, renderer);
             Lookup[(int)CommandType.SetIndexBuffer] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
                 SetIndexBufferCommand.Run(ref GetCommand<SetIndexBufferCommand>(memory), threaded, renderer);
+            Lookup[(int)CommandType.SetLineParameters] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                SetLineParametersCommand.Run(ref GetCommand<SetLineParametersCommand>(memory), threaded, renderer);
             Lookup[(int)CommandType.SetLogicOpState] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
                 SetLogicOpStateCommand.Run(ref GetCommand<SetLogicOpStateCommand>(memory), threaded, renderer);
             Lookup[(int)CommandType.SetPointParameters] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>

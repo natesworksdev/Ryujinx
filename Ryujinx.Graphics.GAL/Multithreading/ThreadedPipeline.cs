@@ -149,6 +149,12 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             _renderer.QueueCommand();
         }
 
+        public void SetLineParameters(float width, bool smooth)
+        {
+            _renderer.New<SetLineParametersCommand>().Set(width, smooth);
+            _renderer.QueueCommand();
+        }
+
         public void SetLogicOpState(bool enable, LogicalOp op)
         {
             _renderer.New<SetLogicOpStateCommand>().Set(enable, op);
