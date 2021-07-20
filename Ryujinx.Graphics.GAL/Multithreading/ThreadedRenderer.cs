@@ -55,6 +55,8 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         private int _refProducerPtr;
         private int _refConsumerPtr;
 
+        public event EventHandler<ScreenCaptureImageInfo> ScreenCaptured;
+
         internal BufferMap Buffers { get; }
         internal SyncMap Sync { get; }
         internal CircularSpanPool SpanPool { get; }
@@ -68,6 +70,8 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         public ThreadedRenderer(IRenderer renderer)
         {
             _baseRenderer = renderer;
+
+            renderer.ScreenCaptured += (object sender, ScreenCaptureImageInfo info) => ScreenCaptured?.Invoke(this, info);
 
             Pipeline = new ThreadedPipeline(this, renderer.Pipeline);
             Window = new ThreadedWindow(this, renderer.Window);
@@ -314,15 +318,15 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             QueueCommand();
         }
 
-        public byte[] GetBufferData(BufferHandle buffer, int offset, int size)
+        public ReadOnlySpan<byte> GetBufferData(BufferHandle buffer, int offset, int size)
         {
             if (IsGpuThread())
             {
-                ResultBox<byte[]> box = new ResultBox<byte[]>();
+                ResultBox<PinnedSpan<byte>> box = new ResultBox<PinnedSpan<byte>>();
                 New<BufferGetDataCommand>().Set(buffer, offset, size, Ref(box));
                 InvokeCommand();
 
-                return box.Result;
+                return box.Result.Get();
             }
             else
             {
@@ -386,6 +390,11 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             New<ResetCounterCommand>().Set(type);
             QueueCommand();
             _lastSampleCounterClear = true;
+        }
+
+        public void Screenshot()
+        {
+            _baseRenderer.Screenshot();
         }
 
         public void SetBufferData(BufferHandle buffer, int offset, ReadOnlySpan<byte> data)
