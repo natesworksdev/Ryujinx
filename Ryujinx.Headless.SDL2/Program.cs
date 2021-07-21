@@ -237,7 +237,6 @@ namespace Ryujinx.Headless.SDL2
                             Sensitivity  = 100,
                             GyroDeadzone = 1,
                         },
-
                         Rumble = new RumbleConfigController
                         {
                             StrongRumble = 1f,

@@ -21,14 +21,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         private ControllerType[] _configuredTypes;
         private KEvent[] _styleSetUpdateEvents;
         private bool[] _supportedPlayers;
-
-        internal NpadJoyHoldType JoyHold { get; set; }
-        internal bool SixAxisActive = false; // TODO: link to hidserver when implemented
-        internal ControllerType SupportedStyleSets { get; set; }
-
-        public Dictionary<PlayerIndex, ConcurrentQueue<(HidVibrationValue, HidVibrationValue)>> RumbleQueues = new Dictionary<PlayerIndex, ConcurrentQueue<(HidVibrationValue, HidVibrationValue)>>();
-        public Dictionary<PlayerIndex, (HidVibrationValue, HidVibrationValue)> _lastVibrationValues = new Dictionary<PlayerIndex, (HidVibrationValue, HidVibrationValue)>();
-        private HidVibrationValue _neutralVibrationValue = new HidVibrationValue
+        private static HidVibrationValue _neutralVibrationValue = new HidVibrationValue
         {
             AmplitudeLow = 0f,
             FrequencyLow = 160f,
@@ -36,6 +29,12 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             FrequencyHigh = 320f
         };
 
+        internal NpadJoyHoldType JoyHold { get; set; }
+        internal bool SixAxisActive = false; // TODO: link to hidserver when implemented
+        internal ControllerType SupportedStyleSets { get; set; }
+
+        public Dictionary<PlayerIndex, ConcurrentQueue<(HidVibrationValue, HidVibrationValue)>> RumbleQueues = new Dictionary<PlayerIndex, ConcurrentQueue<(HidVibrationValue, HidVibrationValue)>>();
+        public Dictionary<PlayerIndex, (HidVibrationValue, HidVibrationValue)> _lastVibrationValues = new Dictionary<PlayerIndex, (HidVibrationValue, HidVibrationValue)>();
 
         public NpadDevices(Switch device, bool active = true) : base(device, active)
         {
@@ -609,11 +608,6 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             WriteNewSixInputEntry(ref currentNpad.JoyRightSixAxisSensor, ref newState);
         }
 
-        private Boolean IsSameVibrationValues(HidVibrationValue val1, HidVibrationValue val2)
-        {
-            return val1.AmplitudeLow == val2.AmplitudeLow && val1.AmplitudeHigh == val2.AmplitudeHigh;
-        }
- 
         public void UpdateRumbleQueue(PlayerIndex index, Dictionary<byte, HidVibrationValue> dualVibrationValues)
         {
             if (RumbleQueues.TryGetValue(index, out ConcurrentQueue<(HidVibrationValue, HidVibrationValue)> currentQueue))
@@ -622,11 +616,13 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 {
                     leftVibrationValue = _neutralVibrationValue;
                 }
+
                 if (!dualVibrationValues.TryGetValue(1, out HidVibrationValue rightVibrationValue))
                 {
                     rightVibrationValue = _neutralVibrationValue;
                 }
-                if (!_lastVibrationValues.TryGetValue(index, out (HidVibrationValue, HidVibrationValue) dualVibrationValue) || !IsSameVibrationValues(leftVibrationValue, dualVibrationValue.Item1) || !IsSameVibrationValues(rightVibrationValue, dualVibrationValue.Item2))
+
+                if (!_lastVibrationValues.TryGetValue(index, out (HidVibrationValue, HidVibrationValue) dualVibrationValue) || !leftVibrationValue.Equals(dualVibrationValue.Item1) || !rightVibrationValue.Equals(dualVibrationValue.Item2))
                 {
                     currentQueue.Enqueue((leftVibrationValue, rightVibrationValue));
                     _lastVibrationValues[index] = (leftVibrationValue, rightVibrationValue);
@@ -638,19 +634,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         {
             if (!_lastVibrationValues.TryGetValue(index, out (HidVibrationValue, HidVibrationValue) dualVibrationValue))
             {
-                return new HidVibrationValue
-                {
-                    AmplitudeLow = 0f,
-                    FrequencyLow = 160f,
-                    AmplitudeHigh = 0f,
-                    FrequencyHigh = 320f
-                };
+                return _neutralVibrationValue;
             }
-            if (position == 0)
-            {
-                return dualVibrationValue.Item1;
-            }
-            return dualVibrationValue.Item2;
+            return (position == 0) ? dualVibrationValue.Item1 : dualVibrationValue.Item2;
         }
     }
 }
