@@ -96,7 +96,13 @@ namespace Ryujinx.Memory.Tracking
         internal void Signal(ulong address, ulong size, bool write)
         {
             RegionSignal action = Interlocked.Exchange(ref _preAction, null);
-            action?.Invoke(address, size);
+            if (action != null)
+            {
+                // Temporarily release the tracking lock while we're running the action.
+                Monitor.Exit(_tracking.TrackingLock);
+                action?.Invoke(address, size);
+                Monitor.Enter(_tracking.TrackingLock);
+            }
 
             if (write)
             {
