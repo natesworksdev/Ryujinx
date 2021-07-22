@@ -9,7 +9,6 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Resources
 
         public IProgram Base;
 
-        internal bool Queued;
         internal bool Compiled;
 
         public ThreadedProgram(ThreadedRenderer renderer)
