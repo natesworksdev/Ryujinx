@@ -124,7 +124,13 @@ namespace Ryujinx.Memory.Tracking
                 return;
             }
 
-            action?.Invoke(address, size);
+            if (action != null)
+            {
+                // Temporarily release the tracking lock while we're running the action.
+                Monitor.Exit(_tracking.TrackingLock);
+                action.Invoke(address, size);
+                Monitor.Enter(_tracking.TrackingLock);
+            }
 
             if (write)
             {
