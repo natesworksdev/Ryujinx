@@ -619,6 +619,11 @@ namespace Ryujinx.Graphics.Vulkan
         {
             int count = Math.Min(Constants.MaxViewports, viewports.Length);
 
+            static float Clamp(float value)
+            {
+                return Math.Clamp(value, 0f, 1f);
+            }
+
             if (VulkanConfiguration.UseDynamicState)
             {
                 for (int i = 0; i < count; i++)
@@ -630,8 +635,8 @@ namespace Ryujinx.Graphics.Vulkan
                         viewport.Region.Y,
                         viewport.Region.Width == 0f ? 1f : viewport.Region.Width,
                         viewport.Region.Height == 0f ? 1f : viewport.Region.Height,
-                        viewport.DepthNear,
-                        viewport.DepthFar));
+                        Clamp(viewport.DepthNear),
+                        Clamp(viewport.DepthFar)));
                 }
 
                 _dynamicState.ViewportsCount = count;
@@ -644,12 +649,14 @@ namespace Ryujinx.Graphics.Vulkan
 
                     ref var vkViewport = ref _newState.Internal.Viewports[i];
 
+
+
                     vkViewport.X = viewport.Region.X;
                     vkViewport.Y = viewport.Region.Y;
                     vkViewport.Width = viewport.Region.Width == 0f ? 1f : viewport.Region.Width;
                     vkViewport.Height = viewport.Region.Height == 0f ? 1f : viewport.Region.Height;
-                    vkViewport.MinDepth = viewport.DepthNear;
-                    vkViewport.MaxDepth = viewport.DepthFar;
+                    vkViewport.MinDepth = Clamp(viewport.DepthNear);
+                    vkViewport.MaxDepth = Clamp(viewport.DepthFar);
                 }
             }
 
