@@ -391,8 +391,6 @@ namespace Ryujinx.Ui
         {
             _virtualFileSystem.ReloadKeySet();
 
-            bool threadedGAL = true;
-
             IRenderer renderer;
 
             if (UseVulkan)
@@ -404,10 +402,16 @@ namespace Ryujinx.Ui
                 renderer = new Renderer();
             }
 
+            BackendThreading threadingMode = ConfigurationState.Instance.Graphics.BackendThreading;
+
+            bool threadedGAL = threadingMode == BackendThreading.On || (threadingMode == BackendThreading.Auto && renderer.PreferThreading);
+
             if (threadedGAL)
             {
                 renderer = new ThreadedRenderer(renderer);
             }
+
+            Logger.Info?.PrintMsg(LogClass.Gpu, $"Backend Threading ({threadingMode}): {threadedGAL}");
 
             IHardwareDeviceDriver deviceDriver = new DummyHardwareDeviceDriver();
 

@@ -8,6 +8,8 @@ namespace Ryujinx.Graphics.GAL
     {
         event EventHandler<ScreenCaptureImageInfo> ScreenCaptured;
 
+        bool PreferThreading { get; }
+
         IPipeline Pipeline { get; }
 
         IWindow Window { get; }

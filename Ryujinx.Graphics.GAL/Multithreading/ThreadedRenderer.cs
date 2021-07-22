@@ -67,6 +67,8 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
         public IRenderer BaseRenderer => _baseRenderer;
 
+        public bool PreferThreading => _baseRenderer.PreferThreading;
+
         public ThreadedRenderer(IRenderer renderer)
         {
             _baseRenderer = renderer;
