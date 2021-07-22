@@ -1,9 +1,11 @@
+using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Hid.HidServer;
 using Ryujinx.HLE.HOS.Services.Hid.Types;
+using Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Npad;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -1024,20 +1026,63 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         // GetVibrationDeviceInfo(nn::hid::VibrationDeviceHandle) -> nn::hid::VibrationDeviceInfo
         public ResultCode GetVibrationDeviceInfo(ServiceCtx context)
         {
-            int vibrationDeviceHandle = context.RequestData.ReadInt32();
+            HidVibrationDeviceHandle deviceHandle = context.RequestData.ReadStruct<HidVibrationDeviceHandle>();
+            NpadStyleIndex deviceType = (NpadStyleIndex)deviceHandle.DeviceType;
+            NpadIdType npadIdType = (NpadIdType)deviceHandle.PlayerId;
 
-            HidVibrationDeviceValue deviceInfo = new HidVibrationDeviceValue
+            if (deviceType < NpadStyleIndex.System || deviceType >= NpadStyleIndex.FullKey)
             {
-                DeviceType = HidVibrationDeviceType.LinearResonantActuator,
-                Position   = HidVibrationDevicePosition.None
-            };
+                if (npadIdType >= (NpadIdType.Player8 + 1) && npadIdType != NpadIdType.Handheld && npadIdType != NpadIdType.Unknown)
+                {
+                    return ResultCode.InvalidNpadIdType;
+                }
 
-            context.ResponseData.Write((int)deviceInfo.DeviceType);
-            context.ResponseData.Write((int)deviceInfo.Position);
+                if (deviceHandle.Position > 1)
+                {
+                    return ResultCode.InvalidDeviceIndex;
+                }
 
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { vibrationDeviceHandle, deviceInfo.DeviceType, deviceInfo.Position });
+                HidVibrationDeviceType vibrationDeviceType = HidVibrationDeviceType.None;
 
-            return ResultCode.Success;
+                if (Enum.IsDefined(typeof(NpadStyleIndex), deviceType))
+                {
+                    vibrationDeviceType = HidVibrationDeviceType.LinearResonantActuator;
+                }
+                else if ((uint)deviceType == 8)
+                {
+                    vibrationDeviceType = HidVibrationDeviceType.GcErm;
+                }
+
+                HidVibrationDevicePosition vibrationDevicePosition = HidVibrationDevicePosition.None;
+
+                if (vibrationDeviceType == HidVibrationDeviceType.LinearResonantActuator)
+                {
+                    if (deviceHandle.Position == 0)
+                    {
+                        vibrationDevicePosition = HidVibrationDevicePosition.Left;
+                    }
+                    else if (deviceHandle.Position == 1)
+                    {
+                        vibrationDevicePosition = HidVibrationDevicePosition.Right;
+                    }
+                    else
+                    {
+                        throw new ArgumentOutOfRangeException(nameof(deviceHandle.Position));
+                    }
+                }
+
+                HidVibrationDeviceValue deviceInfo = new HidVibrationDeviceValue
+                {
+                    DeviceType = vibrationDeviceType,
+                    Position = vibrationDevicePosition
+                };
+
+                context.ResponseData.WriteStruct(deviceInfo);
+
+                return ResultCode.Success;
+            }
+
+            return ResultCode.InvalidNpadDeviceType;
         }
 
         [CommandHipc(201)]
