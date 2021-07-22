@@ -17,7 +17,7 @@
 
 int Helper_TextureSizeUnscale(int size, int samplerIndex)
 {
-    float scale = abs(fp_renderScale[1 + samplerIndex]);
+    float scale = 1.0; // abs(fp_renderScale[1 + samplerIndex]);
     if (scale == 1.0)
     {
         return size;
