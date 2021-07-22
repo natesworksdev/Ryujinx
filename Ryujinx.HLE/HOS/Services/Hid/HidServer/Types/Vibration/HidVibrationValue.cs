@@ -12,13 +12,14 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         public override bool Equals(object obj)
         {
-            return obj is HidVibrationValue vibrationValue && Equals(vibrationValue);
+            return obj is HidVibrationValue value &&
+                   AmplitudeLow == value.AmplitudeLow &&
+                   AmplitudeHigh == value.AmplitudeHigh;
         }
 
-        public bool Equals(HidVibrationValue other)
+        public override int GetHashCode()
         {
-            // freq are ignored for now for non-hd rumble
-            return AmplitudeLow == other.AmplitudeLow && AmplitudeHigh == other.AmplitudeHigh;
+            return HashCode.Combine(AmplitudeLow, AmplitudeHigh);
         }
     }
 }
