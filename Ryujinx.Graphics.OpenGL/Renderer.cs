@@ -40,6 +40,8 @@ namespace Ryujinx.Graphics.OpenGL
         public string GpuRenderer { get; private set; }
         public string GpuVersion { get; private set; }
 
+        public bool PreferThreading => true;
+
         public Renderer()
         {
             _pipeline = new Pipeline();

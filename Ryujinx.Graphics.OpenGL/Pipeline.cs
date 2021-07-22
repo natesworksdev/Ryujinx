@@ -1189,6 +1189,8 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void UpdateRenderScale(ShaderStage stage, ReadOnlySpan<float> scales, int textureCount, int imageCount)
         {
+            scales = scales.Slice(0, textureCount + imageCount);
+
             if (_program != null)
             {
                 switch (stage)
