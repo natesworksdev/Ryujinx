@@ -34,8 +34,14 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Resources
 
         public void Flush()
         {
-            _renderer.New<CounterEventFlushCommand>().Set(Ref(this));
-            _renderer.InvokeCommand();
+            ThreadedHelpers.SpinUntilNonNull(ref Base);
+
+            Base.Flush();
+        }
+
+        public bool IsValueAvailable()
+        {
+            return Base?.IsValueAvailable() ?? false;
         }
     }
 }
