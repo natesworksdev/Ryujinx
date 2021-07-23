@@ -120,19 +120,18 @@ namespace Ryujinx.Graphics.Vulkan
             return _map;
         }
 
-        public unsafe void GetData(int offset, Span<byte> data)
+        public unsafe ReadOnlySpan<byte> GetData(int offset, int size)
         {
             // FlushCommandsAndWaitForFences();
 
-            int mappingSize = Math.Min(data.Length, Size - offset);
+            int mappingSize = Math.Min(size, Size - offset);
 
-            lock (_allocationAuto)
+            if (_map != IntPtr.Zero)
             {
-                if (_map != IntPtr.Zero)
-                {
-                    new Span<byte>((void*)(_map + offset), mappingSize).CopyTo(data.Slice(0, mappingSize));
-                }
+                return new ReadOnlySpan<byte>((void*)(_map + offset), mappingSize);
             }
+
+            return ReadOnlySpan<byte>.Empty;
         }
 
         public unsafe void SetData(int offset, ReadOnlySpan<byte> data, CommandBufferScoped? cbs = null, Action endRenderPass = null)

@@ -12,7 +12,8 @@ namespace Ryujinx.Graphics.Vulkan
     {
         private const MemoryPropertyFlags DefaultBufferMemoryFlags =
             MemoryPropertyFlags.MemoryPropertyHostVisibleBit |
-            MemoryPropertyFlags.MemoryPropertyHostCoherentBit;
+            MemoryPropertyFlags.MemoryPropertyHostCoherentBit |
+            MemoryPropertyFlags.MemoryPropertyHostCachedBit;
 
         private const BufferUsageFlags DefaultBufferUsageFlags =
             BufferUsageFlags.BufferUsageTransferSrcBit |
@@ -121,12 +122,14 @@ namespace Ryujinx.Graphics.Vulkan
             return null;
         }
 
-        public void GetData(BufferHandle handle, int offset, Span<byte> data)
+        public ReadOnlySpan<byte> GetData(BufferHandle handle, int offset, int size)
         {
             if (TryGetBuffer(handle, out var holder))
             {
-                holder.GetData(offset, data);
+                return holder.GetData(offset, size);
             }
+
+            return ReadOnlySpan<byte>.Empty;
         }
 
         public void SetData<T>(BufferHandle handle, int offset, ReadOnlySpan<T> data) where T : unmanaged
@@ -168,12 +171,9 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (disposing)
             {
-                unsafe
+                for (int i = 0; i < _buffers.Count; i++)
                 {
-                    for (int i = 0; i < _buffers.Count; i++)
-                    {
-                        _buffers[i].Dispose();
-                    }
+                    _buffers[i].Dispose();
                 }
             }
         }

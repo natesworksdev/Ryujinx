@@ -195,9 +195,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public ReadOnlySpan<byte> GetBufferData(BufferHandle buffer, int offset, int size)
         {
-            var data = new byte[size];
-            BufferManager.GetData(buffer, offset, data);
-            return data;
+            return BufferManager.GetData(buffer, offset, size);
         }
 
         public Capabilities GetCapabilities()

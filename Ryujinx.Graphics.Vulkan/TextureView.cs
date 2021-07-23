@@ -1,6 +1,7 @@
 ﻿using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
 using System;
+using System.Threading;
 using VkBuffer = Silk.NET.Vulkan.Buffer;
 using VkFormat = Silk.NET.Vulkan.Format;
 
@@ -15,6 +16,7 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly Auto<DisposableImageView> _imageView;
         private readonly Auto<DisposableImageView> _imageViewIdentity;
         private readonly Auto<DisposableImageView> _imageView2dArray;
+        private BufferHolder _flushStorage;
 
         public TextureCreateInfo Info { get; }
 
@@ -316,18 +318,9 @@ namespace Ryujinx.Graphics.Vulkan
 
         public ReadOnlySpan<byte> GetData()
         {
-            int size = 0;
-
-            for (int level = 0; level < Info.Levels; level++)
-            {
-                size += Info.GetMipSize(level);
-            }
-
-            byte[] data = new byte[size];
-
             if (_gd.CommandBufferPool.OwnedByCurrentThread)
             {
-                GetData(_gd.CommandBufferPool, data);
+                return GetData(_gd.CommandBufferPool);
             }
             else if (_gd.BackgroundQueue.Handle != 0)
             {
@@ -340,31 +333,61 @@ namespace Ryujinx.Graphics.Vulkan
                         _gd.QueueFamilyIndex,
                         isLight: true);
 
-                    GetData(cbp, data);
+                    return GetData(cbp);
                 }
             }
             else
             {
                 // TODO: Flush when the device only supports one queue.
-            }
+                int size = 0;
 
-            return data;
+                for (int level = 0; level < Info.Levels; level++)
+                {
+                    size += Info.GetMipSize(level);
+                }
+
+                return new byte[size];
+            }
         }
 
-        private void GetData(CommandBufferPool cbp, byte[] data)
+        private ReadOnlySpan<byte> GetData(CommandBufferPool cbp)
         {
-            using var bufferHolder = _gd.BufferManager.Create(_gd, data.Length);
+            int size;
+            var bufferHolder = _flushStorage;
+
+            if (bufferHolder == null)
+            {
+                size = 0;
+
+                for (int level = 0; level < Info.Levels; level++)
+                {
+                    size += Info.GetMipSize(level);
+                }
+
+                bufferHolder = _gd.BufferManager.Create(_gd, size);
+
+                var existingStorage = Interlocked.CompareExchange(ref _flushStorage, bufferHolder, null);
+                if (existingStorage != null)
+                {
+                    bufferHolder.Dispose();
+                    bufferHolder = existingStorage;
+                }
+            }
+            else
+            {
+                size = bufferHolder.Size;
+            }
 
             using (var cbs = cbp.Rent())
             {
                 var buffer = bufferHolder.GetBuffer(cbs.CommandBuffer).Get(cbs).Value;
                 var image = GetImage().Get(cbs).Value;
 
-                CopyFromOrToBuffer(cbs.CommandBuffer, buffer, image, data.Length, true, 0, 0,  Info.GetLayers(), Info.Levels, singleSlice: false);
+                CopyFromOrToBuffer(cbs.CommandBuffer, buffer, image, size, true, 0, 0, Info.GetLayers(), Info.Levels, singleSlice: false);
             }
 
             bufferHolder.WaitForFences();
-            bufferHolder.GetData(0, data);
+            return bufferHolder.GetData(0, size);
         }
 
         public void SetData(ReadOnlySpan<byte> data)
@@ -478,6 +501,7 @@ namespace Ryujinx.Graphics.Vulkan
             _imageView.Dispose();
             _imageViewIdentity.Dispose();
             _imageView2dArray?.Dispose();
+            _flushStorage?.Dispose();
         }
 
         public void Release()

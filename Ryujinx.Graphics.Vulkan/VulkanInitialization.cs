@@ -325,6 +325,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 DepthBiasClamp = true,
                 DepthClamp = true,
+                DualSrcBlend = true,
                 FragmentStoresAndAtomics = true,
                 GeometryShader = true,
                 ImageCubeArray = true,

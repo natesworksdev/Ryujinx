@@ -649,8 +649,6 @@ namespace Ryujinx.Graphics.Vulkan
 
                     ref var vkViewport = ref _newState.Internal.Viewports[i];
 
-
-
                     vkViewport.X = viewport.Region.X;
                     vkViewport.Y = viewport.Region.Y;
                     vkViewport.Width = viewport.Region.Width == 0f ? 1f : viewport.Region.Width;
