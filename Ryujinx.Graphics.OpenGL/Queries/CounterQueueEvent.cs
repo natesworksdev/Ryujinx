@@ -22,6 +22,7 @@ namespace Ryujinx.Graphics.OpenGL.Queries
         private BufferedQuery _counter;
 
         private object _lock = new object();
+        private ulong _result = ulong.MaxValue;
 
         public CounterQueueEvent(CounterQueue queue, QueryTarget type, ulong drawIndex)
         {
@@ -76,6 +77,8 @@ namespace Ryujinx.Graphics.OpenGL.Queries
 
                 result += (ulong)queryResult;
 
+                _result = result;
+
                 OnResult?.Invoke(this, result);
 
                 Dispose(); // Return the our resources to the pool.
@@ -99,6 +102,11 @@ namespace Ryujinx.Graphics.OpenGL.Queries
         {
             Disposed = true;
             _queue.ReturnQueryObject(_counter);
+        }
+
+        public bool IsValueAvailable()
+        {
+            return _result != ulong.MaxValue || _counter.TryGetResult(out _);
         }
     }
 }

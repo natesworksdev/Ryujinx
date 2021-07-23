@@ -294,6 +294,11 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             {
                 if (compare == 0 && evt.Type == CounterType.SamplesPassed && evt.ClearCounter)
                 {
+                    if (evt.IsValueAvailable())
+                    {
+                        return false;
+                    }
+
                     _renderer.New<TryHostConditionalRenderingCommand>().Set(Ref(evt), compare, isEqual);
                     _renderer.QueueCommand();
                     return true;
