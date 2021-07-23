@@ -27,6 +27,8 @@ namespace Ryujinx.Graphics.Vulkan
         private int _height;
         private VkFormat _format;
 
+        internal bool ScreenCaptureRequested { get; set; }
+
         public unsafe Window(VulkanGraphicsDevice gd, SurfaceKHR surface, PhysicalDevice physicalDevice, Device device)
         {
             _gd = gd;
@@ -238,7 +240,7 @@ namespace Ryujinx.Graphics.Vulkan
             var view = (TextureView)texture;
 
             int srcX0, srcX1, srcY0, srcY1;
-            float scale = 1f;
+            float scale = view.ScaleFactor;
 
             if (crop.Left == 0 && crop.Right == 0)
             {
@@ -268,6 +270,13 @@ namespace Ryujinx.Graphics.Vulkan
                 srcY0 = (int)(srcY0 * scale);
                 srcX1 = (int)Math.Ceiling(srcX1 * scale);
                 srcY1 = (int)Math.Ceiling(srcY1 * scale);
+            }
+
+            if (ScreenCaptureRequested)
+            {
+                CaptureFrame(view, srcX0, srcY0, srcX1, srcY1, view.Info.Format.IsBgra8(), crop.FlipX, crop.FlipY);
+
+                ScreenCaptureRequested = false;
             }
 
             float ratioX = MathF.Min(1f, (_height * (float)SurfaceWidth)  / ((float)SurfaceHeight * _width));
@@ -373,6 +382,16 @@ namespace Ryujinx.Graphics.Vulkan
                 null,
                 1,
                 barrier);
+        }
+
+        private void CaptureFrame(TextureView texture, int x, int y, int width, int height, bool isBgra, bool flipX, bool flipY)
+        {
+            var textureData = texture.GetData(x, y);
+            byte[] bitmap = new byte[textureData.Length];
+
+            textureData.CopyTo(bitmap);
+
+            _gd.OnScreenCaptured(new ScreenCaptureImageInfo(width, height, isBgra, bitmap, flipX, flipY));
         }
 
         public void SetSize(int width, int height)

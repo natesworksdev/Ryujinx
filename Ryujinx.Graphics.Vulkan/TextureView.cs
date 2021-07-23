@@ -318,9 +318,14 @@ namespace Ryujinx.Graphics.Vulkan
 
         public ReadOnlySpan<byte> GetData()
         {
+            return GetData(0, 0);
+        }
+
+        public ReadOnlySpan<byte> GetData(int x, int y)
+        {
             if (_gd.CommandBufferPool.OwnedByCurrentThread)
             {
-                return GetData(_gd.CommandBufferPool);
+                return GetData(_gd.CommandBufferPool, x, y);
             }
             else if (_gd.BackgroundQueue.Handle != 0)
             {
@@ -333,7 +338,7 @@ namespace Ryujinx.Graphics.Vulkan
                         _gd.QueueFamilyIndex,
                         isLight: true);
 
-                    return GetData(cbp);
+                    return GetData(cbp, x, y);
                 }
             }
             else
@@ -350,7 +355,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        private ReadOnlySpan<byte> GetData(CommandBufferPool cbp)
+        private ReadOnlySpan<byte> GetData(CommandBufferPool cbp, int x = 0, int y = 0)
         {
             int size;
             var bufferHolder = _flushStorage;
@@ -383,7 +388,7 @@ namespace Ryujinx.Graphics.Vulkan
                 var buffer = bufferHolder.GetBuffer(cbs.CommandBuffer).Get(cbs).Value;
                 var image = GetImage().Get(cbs).Value;
 
-                CopyFromOrToBuffer(cbs.CommandBuffer, buffer, image, size, true, 0, 0, Info.GetLayers(), Info.Levels, singleSlice: false);
+                CopyFromOrToBuffer(cbs.CommandBuffer, buffer, image, size, true, x, y, 0, 0, Info.GetLayers(), Info.Levels, singleSlice: false);
             }
 
             bufferHolder.WaitForFences();
@@ -411,7 +416,7 @@ namespace Ryujinx.Graphics.Vulkan
             var buffer = bufferHolder.GetBuffer(cbs.CommandBuffer).Get(cbs).Value;
             var image = GetImage().Get(cbs).Value;
 
-            CopyFromOrToBuffer(cbs.CommandBuffer, buffer, image, data.Length, false, layer, level, layers, levels, singleSlice);
+            CopyFromOrToBuffer(cbs.CommandBuffer, buffer, image, data.Length, false, 0, 0, layer, level, layers, levels, singleSlice);
         }
 
         private void CopyFromOrToBuffer(
@@ -420,6 +425,8 @@ namespace Ryujinx.Graphics.Vulkan
             Image image,
             int size,
             bool to,
+            int x,
+            int y,
             int dstLayer,
             int dstLevel,
             int dstLayers,
@@ -466,7 +473,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 int z = is3D ? dstLayer : 0;
 
-                var region = new BufferImageCopy((ulong)offset, (uint)rowLength, (uint)height, sl, new Offset3D(0, 0, z), extent);
+                var region = new BufferImageCopy((ulong)offset, (uint)rowLength, (uint)height, sl, new Offset3D(x, y, z), extent);
 
                 if (to)
                 {

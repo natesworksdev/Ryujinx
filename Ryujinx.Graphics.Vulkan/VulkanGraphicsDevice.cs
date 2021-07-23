@@ -347,7 +347,12 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void Screenshot()
         {
+            _window.ScreenCaptureRequested = true;
+        }
 
+        public void OnScreenCaptured(ScreenCaptureImageInfo bitmap)
+        {
+            ScreenCaptured?.Invoke(this, bitmap);
         }
     }
 }
