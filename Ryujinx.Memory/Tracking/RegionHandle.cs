@@ -1,6 +1,7 @@
 ﻿using Ryujinx.Memory.Range;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 namespace Ryujinx.Memory.Tracking
@@ -112,7 +113,7 @@ namespace Ryujinx.Memory.Tracking
         /// Signal that a memory action occurred within this handle's virtual regions.
         /// </summary>
         /// <param name="write">Whether the region was written to or read</param>
-        internal void Signal(ulong address, ulong size, bool write)
+        internal void Signal(ulong address, ulong size, bool write, ref IList<RegionHandle> handleIterable)
         {
             RegionSignal action = Interlocked.Exchange(ref _preAction, null);
 
@@ -126,9 +127,17 @@ namespace Ryujinx.Memory.Tracking
 
             if (action != null)
             {
+                // Copy the handles list in case it changes when we're out of the lock.
+                if (handleIterable is List<RegionHandle>)
+                {
+                    handleIterable = handleIterable.ToArray();
+                }
+
                 // Temporarily release the tracking lock while we're running the action.
                 Monitor.Exit(_tracking.TrackingLock);
+
                 action.Invoke(address, size);
+
                 Monitor.Enter(_tracking.TrackingLock);
             }
 
