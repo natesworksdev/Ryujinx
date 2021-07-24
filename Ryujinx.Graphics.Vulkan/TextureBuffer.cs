@@ -28,6 +28,8 @@ namespace Ryujinx.Graphics.Vulkan
             Height = info.Height;
             VkFormat = FormatTable.GetFormat(info.Format);
             ScaleFactor = scale;
+
+            gd.Textures.Add(this);
         }
 
         public void CopyTo(ITexture destination, int firstLayer, int firstLevel)
@@ -57,6 +59,14 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void Release()
         {
+            if (_gd.Textures.Remove(this))
+            {
+                ReleaseImpl();
+            }
+        }
+
+        private void ReleaseImpl()
+        {
             _bufferView?.Dispose();
             _bufferView = null;
         }
@@ -84,7 +94,7 @@ namespace Ryujinx.Graphics.Vulkan
             _offset = buffer.Offset;
             _size = buffer.Size;
 
-            Release();
+            ReleaseImpl();;
         }
 
         public BufferView GetBufferView(CommandBufferScoped cbs)
