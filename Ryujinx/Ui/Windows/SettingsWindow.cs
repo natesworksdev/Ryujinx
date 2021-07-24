@@ -4,6 +4,7 @@ using Ryujinx.Audio.Backends.SDL2;
 using Ryujinx.Audio.Backends.SoundIo;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
+using Ryujinx.Common.GraphicsDriver;
 using Ryujinx.Configuration;
 using Ryujinx.Configuration.System;
 using Ryujinx.HLE.FileSystem;
@@ -455,6 +456,12 @@ namespace Ryujinx.Ui.Windows
                 memoryMode = MemoryManagerMode.HostMappedUnsafe;
             }
 
+            BackendThreading backendThreading = Enum.Parse<BackendThreading>(_galThreading.ActiveId);
+            if (ConfigurationState.Instance.Graphics.BackendThreading != backendThreading)
+            {
+                DriverUtilities.ToggleOGLThreading(backendThreading == BackendThreading.Off);
+            }
+
             ConfigurationState.Instance.Logger.EnableError.Value               = _errorLogToggle.Active;
             ConfigurationState.Instance.Logger.EnableWarn.Value                = _warningLogToggle.Active;
             ConfigurationState.Instance.Logger.EnableInfo.Value                = _infoLogToggle.Active;
@@ -488,7 +495,7 @@ namespace Ryujinx.Ui.Windows
             ConfigurationState.Instance.System.FsGlobalAccessLogMode.Value     = (int)_fsLogSpinAdjustment.Value;
             ConfigurationState.Instance.Graphics.MaxAnisotropy.Value           = float.Parse(_anisotropy.ActiveId, CultureInfo.InvariantCulture);
             ConfigurationState.Instance.Graphics.AspectRatio.Value             = Enum.Parse<AspectRatio>(_aspectRatio.ActiveId);
-            ConfigurationState.Instance.Graphics.BackendThreading.Value        = Enum.Parse<BackendThreading>(_galThreading.ActiveId);
+            ConfigurationState.Instance.Graphics.BackendThreading.Value        = backendThreading;
             ConfigurationState.Instance.Graphics.ResScale.Value                = int.Parse(_resScaleCombo.ActiveId);
             ConfigurationState.Instance.Graphics.ResScaleCustom.Value          = resScaleCustom;
 
