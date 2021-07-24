@@ -32,6 +32,8 @@ namespace Ryujinx.Graphics.Vulkan
         internal ExtTransformFeedback TransformFeedbackApi { get; private set; }
         internal ExtDebugReport DebugReportApi { get; private set; }
 
+        internal bool SupportsCustomBorderColor { get; private set; }
+
         internal uint QueueFamilyIndex { get; private set; }
 
         internal Queue Queue { get; private set; }
@@ -107,6 +109,8 @@ namespace Ryujinx.Graphics.Vulkan
             Capabilities = new HardwareCapabilities(
                 supportedExtensions.Contains(ExtConditionalRendering.ExtensionName),
                 supportedExtensions.Contains(ExtExtendedDynamicState.ExtensionName));
+
+            SupportsCustomBorderColor = supportedExtensions.Contains("VK_EXT_custom_border_color");
 
             if (api.TryGetDeviceExtension(_instance, _device, out KhrSwapchain swapchainApi))
             {

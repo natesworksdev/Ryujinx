@@ -27,6 +27,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             ExtConditionalRendering.ExtensionName,
             ExtExtendedDynamicState.ExtensionName,
+            "VK_EXT_custom_border_color",
             "VK_EXT_robustness2"
         };
 

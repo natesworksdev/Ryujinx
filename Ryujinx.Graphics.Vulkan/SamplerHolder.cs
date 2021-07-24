@@ -16,7 +16,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             (Filter minFilter, SamplerMipmapMode mipFilter) = EnumConversion.Convert(info.MinFilter);
 
-            var borderColor = GetConstrainedBorderColor(info.BorderColor);
+            var borderColor = GetConstrainedBorderColor(info.BorderColor, out var cantConstrain);
 
             var samplerCreateInfo = new Silk.NET.Vulkan.SamplerCreateInfo()
             {
@@ -38,12 +38,31 @@ namespace Ryujinx.Graphics.Vulkan
                 UnnormalizedCoordinates = false // TODO: Use unnormalized coordinates.
             };
 
+            SamplerCustomBorderColorCreateInfoEXT customBorderColor;
+
+            if (cantConstrain && gd.SupportsCustomBorderColor)
+            {
+                var color = new ClearColorValue(
+                    info.BorderColor.Red,
+                    info.BorderColor.Green,
+                    info.BorderColor.Blue,
+                    info.BorderColor.Alpha);
+
+                customBorderColor = new SamplerCustomBorderColorCreateInfoEXT()
+                {
+                    SType = StructureType.SamplerCustomBorderColorCreateInfoExt,
+                    CustomBorderColor = color
+                };
+
+                samplerCreateInfo.PNext = &customBorderColor;
+            }
+
             gd.Api.CreateSampler(device, samplerCreateInfo, null, out var sampler).ThrowOnError();
 
             _sampler = new Auto<DisposableSampler>(new DisposableSampler(gd.Api, device, sampler));
         }
 
-        private static BorderColor GetConstrainedBorderColor(ColorF arbitraryBorderColor)
+        private static BorderColor GetConstrainedBorderColor(ColorF arbitraryBorderColor, out bool cantConstrain)
         {
             float r = arbitraryBorderColor.Red;
             float g = arbitraryBorderColor.Green;
@@ -54,19 +73,22 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 if (a == 1f)
                 {
+                    cantConstrain = false;
                     return BorderColor.FloatOpaqueBlack;
                 }
                 else if (a == 0f)
                 {
+                    cantConstrain = false;
                     return BorderColor.FloatTransparentBlack;
                 }
             }
             else if (r == 1f && g == 1f && b == 1f && a == 1f)
             {
+                cantConstrain = false;
                 return BorderColor.FloatOpaqueWhite;
             }
 
-            // TODO: Find a way to pass the correct color...
+            cantConstrain = true;
             return BorderColor.FloatOpaqueBlack;
         }
 
