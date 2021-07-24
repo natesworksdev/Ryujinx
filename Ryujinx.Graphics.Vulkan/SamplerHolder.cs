@@ -5,10 +5,15 @@ namespace Ryujinx.Graphics.Vulkan
 {
     class SamplerHolder : ISampler
     {
+        private readonly VulkanGraphicsDevice _gd;
         private readonly Auto<DisposableSampler> _sampler;
 
-        public unsafe SamplerHolder(Vk api, Device device, GAL.SamplerCreateInfo info)
+        public unsafe SamplerHolder(VulkanGraphicsDevice gd, Device device, GAL.SamplerCreateInfo info)
         {
+            _gd = gd;
+
+            gd.Samplers.Add(this);
+
             (Filter minFilter, SamplerMipmapMode mipFilter) = EnumConversion.Convert(info.MinFilter);
 
             var borderColor = GetConstrainedBorderColor(info.BorderColor);
@@ -33,9 +38,9 @@ namespace Ryujinx.Graphics.Vulkan
                 UnnormalizedCoordinates = false // TODO: Use unnormalized coordinates.
             };
 
-            api.CreateSampler(device, samplerCreateInfo, null, out var sampler).ThrowOnError();
+            gd.Api.CreateSampler(device, samplerCreateInfo, null, out var sampler).ThrowOnError();
 
-            _sampler = new Auto<DisposableSampler>(new DisposableSampler(api, device, sampler));
+            _sampler = new Auto<DisposableSampler>(new DisposableSampler(gd.Api, device, sampler));
         }
 
         private static BorderColor GetConstrainedBorderColor(ColorF arbitraryBorderColor)
@@ -72,7 +77,10 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void Dispose()
         {
-            _sampler.Dispose();
+            if (_gd.Samplers.Remove(this))
+            {
+                _sampler.Dispose();
+            }
         }
     }
 }

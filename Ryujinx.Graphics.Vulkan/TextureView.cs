@@ -46,6 +46,8 @@ namespace Ryujinx.Graphics.Vulkan
             FirstLayer = firstLayer;
             FirstLevel = firstLevel;
 
+            gd.Textures.Add(this);
+
             var format = FormatTable.GetFormat(info.Format);
             var levels = (uint)info.Levels;
             var layers = (uint)info.GetLayers();
@@ -501,14 +503,25 @@ namespace Ryujinx.Graphics.Vulkan
             throw new NotImplementedException();
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Valid = false;
+
+                if (_gd.Textures.Remove(this))
+                {
+                    _imageView.Dispose();
+                    _imageViewIdentity.Dispose();
+                    _imageView2dArray?.Dispose();
+                    _flushStorage?.Dispose();
+                }
+            }
+        }
+
         public void Dispose()
         {
-            Valid = false;
-
-            _imageView.Dispose();
-            _imageViewIdentity.Dispose();
-            _imageView2dArray?.Dispose();
-            _flushStorage?.Dispose();
+            Dispose(true);
         }
 
         public void Release()

@@ -7,6 +7,7 @@ using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
 using Silk.NET.Vulkan.Extensions.KHR;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 
@@ -43,6 +44,10 @@ namespace Ryujinx.Graphics.Vulkan
 
         internal BufferManager BufferManager { get; private set; }
 
+        internal HashSet<ShaderCollection> Shaders { get; }
+        internal HashSet<ITexture> Textures { get; }
+        internal HashSet<SamplerHolder> Samplers { get; }
+
         private Counters _counters;
         private SyncManager _syncManager;
 
@@ -68,6 +73,9 @@ namespace Ryujinx.Graphics.Vulkan
         public VulkanGraphicsDevice(GraphicsDebugLevel logLevel, Func<Instance, Vk, SurfaceKHR> surfaceFunc, string[] requiredExtensions)
         {
             GetSurface = surfaceFunc;
+            Shaders = new HashSet<ShaderCollection>();
+            Textures = new HashSet<ITexture>();
+            Samplers = new HashSet<SamplerHolder>();
             SetupContext(logLevel, requiredExtensions);
         }
 
@@ -167,7 +175,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public ISampler CreateSampler(GAL.SamplerCreateInfo info)
         {
-            return new SamplerHolder(Api, _device, info);
+            return new SamplerHolder(this, _device, info);
         }
 
         public ITexture CreateTexture(TextureCreateInfo info, float scale)
@@ -320,6 +328,23 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 DebugReportApi.DestroyDebugReportCallback(_instance, _debugReportCallback, null);
             }
+
+            foreach (var shader in Shaders)
+            {
+                shader.Dispose();
+            }
+
+            foreach (var texture in Textures)
+            {
+                texture.Release();
+            }
+
+            foreach (var sampler in Samplers)
+            {
+                sampler.Dispose();
+            }
+
+            Api.DestroyDevice(_device, null);
 
             // Last step destroy the instance
             Api.DestroyInstance(_instance, null);

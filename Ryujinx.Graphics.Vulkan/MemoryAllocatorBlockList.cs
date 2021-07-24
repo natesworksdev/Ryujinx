@@ -12,8 +12,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         public class Block : IComparable<Block>
         {
-            public DeviceMemory Memory { get; }
-            public IntPtr HostPointer { get; }
+            public DeviceMemory Memory { get; private set; }
+            public IntPtr HostPointer { get; private set; }
             public ulong Size { get; }
             public bool Maped => HostPointer != IntPtr.Zero;
 
@@ -139,6 +139,21 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 return Size.CompareTo(other.Size);
             }
+
+            public unsafe void Destroy(Vk api, Device device)
+            {
+                if (Maped)
+                {
+                    api.UnmapMemory(device, Memory);
+                    HostPointer = IntPtr.Zero;
+                }
+
+                if (Memory.Handle != 0)
+                {
+                    api.FreeMemory(device, Memory, null);
+                    Memory = default;
+                }
+            }
         }
 
         private readonly List<Block> _blocks;
@@ -239,12 +254,7 @@ namespace Ryujinx.Graphics.Vulkan
                     }
                 }
 
-                if (block.Maped)
-                {
-                    _api.UnmapMemory(_device, block.Memory);
-                }
-
-                _api.FreeMemory(_device, block.Memory, null);
+                block.Destroy(_api, _device);
             }
         }
 
@@ -263,14 +273,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             for (int i = 0; i < _blocks.Count; i++)
             {
-                Block block = _blocks[i];
-
-                if (block.Maped)
-                {
-                    _api.UnmapMemory(_device, block.Memory);
-                }
-
-                _api.FreeMemory(_device, block.Memory, null);
+                _blocks[i].Destroy(_api, _device);
             }
         }
     }

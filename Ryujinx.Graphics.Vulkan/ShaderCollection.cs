@@ -42,6 +42,8 @@ namespace Ryujinx.Graphics.Vulkan
             _device = device;
             _shaders = shaders;
 
+            gd.Shaders.Add(this);
+
             var internalShaders = new Shader[shaders.Length];
 
             _infos = new PipelineShaderStageCreateInfo[shaders.Length];
@@ -143,6 +145,11 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (disposing)
             {
+                if (!_gd.Shaders.Remove(this))
+                {
+                    return;
+                }
+
                 unsafe
                 {
                     for (int i = 0; i < _shaders.Length; i++)
@@ -177,6 +184,8 @@ namespace Ryujinx.Graphics.Vulkan
                             pipeline.Dispose();
                         }
                     }
+
+                    _computePipeline?.Dispose();
                 }
             }
         }
@@ -221,17 +230,6 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             return _graphicsPipelineCache.TryGetValue(ref key, out pipeline);
-        }
-
-        public bool TryRemoveGraphicsPipeline(ref PipelineUid key, out Auto<DisposablePipeline> pipeline)
-        {
-            if (_graphicsPipelineCache == null)
-            {
-                pipeline = default;
-                return false;
-            }
-
-            return _graphicsPipelineCache.TryRemove(ref key, out pipeline);
         }
 
         public Auto<DescriptorSetCollection> GetNewDescriptorSetCollection(VulkanGraphicsDevice gd, int commandBufferIndex, int setIndex)

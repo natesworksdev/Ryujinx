@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    class StagingBuffer
+    class StagingBuffer : IDisposable
     {
         private const int BufferSize = 16 * 1024 * 1024;
 
@@ -94,6 +94,19 @@ namespace Ryujinx.Graphics.Vulkan
                 _freeSize += pc.Size;
                 pc.Fence.Put();
             }
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _buffer.Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
         }
     }
 }

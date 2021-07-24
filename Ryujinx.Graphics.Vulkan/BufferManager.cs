@@ -175,6 +175,8 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     _buffers[i].Dispose();
                 }
+
+                StagingBuffer.Dispose();
             }
         }
 

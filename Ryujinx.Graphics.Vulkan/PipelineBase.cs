@@ -77,7 +77,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             const int EmptyVbSize = 16;
 
-            var emptyVb = gd.BufferManager.Create(gd, EmptyVbSize);
+            using var emptyVb = gd.BufferManager.Create(gd, EmptyVbSize);
             emptyVb.SetData(0, new byte[EmptyVbSize]);
             _vertexBuffers[0] = new BufferState(emptyVb.GetBuffer(), 0, EmptyVbSize, 0UL);
             _needsVertexBuffersRebind = true;
@@ -972,19 +972,6 @@ namespace Ryujinx.Graphics.Vulkan
                 _renderPass?.Dispose();
                 _framebuffer?.Dispose();
                 _indexBuffer.Dispose();
-
-                if (_program != null)
-                {
-                    if (Pbp == PipelineBindPoint.Compute)
-                    {
-                        _newState.DestroyComputePipeline(_program);
-                    }
-                    else
-                    {
-                        _newState.DestroyGraphicsPipeline(_program);
-                    }
-                }
-
                 _newState.Dispose();
 
                 for (int i = 0; i < _vertexBuffers.Length; i++)

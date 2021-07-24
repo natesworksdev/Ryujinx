@@ -505,11 +505,6 @@ namespace Ryujinx.Graphics.Vulkan
             return pipeline;
         }
 
-        public unsafe void DestroyGraphicsPipeline(ShaderCollection program)
-        {
-            program.TryRemoveGraphicsPipeline(ref Internal, out _);
-        }
-
         public void Dispose()
         {
             Stages.Dispose();

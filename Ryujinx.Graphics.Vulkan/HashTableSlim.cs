@@ -81,43 +81,6 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public bool TryRemove(ref K key, out V value)
-        {
-            int hashCode = key.GetHashCode();
-
-            /* for (int i = 0; i < _hashTable.Length; i++)
-            {
-                var b = _hashTable[i];
-                if (b != null)
-                {
-                    System.Console.WriteLine(typeof(K).Name + " " + i + " " + b.Length);
-                }
-            } */
-
-            var bucket = _hashTable[hashCode & TotalBucketsMask];
-            if (bucket != null)
-            {
-
-                for (int i = 0; i < bucket.Length; i++)
-                {
-                    ref var entry = ref bucket[i];
-
-                    if (entry.Key.Equals(ref key))
-                    {
-                        value = entry.Value;
-
-                        entry.Key = default;
-                        entry.Value = default;
-
-                        return true;
-                    }
-                }
-            }
-
-            value = default;
-            return false;
-        }
-
         public bool TryGetValue(ref K key, out V value)
         {
             int hashCode = key.GetHashCode();
@@ -134,7 +97,7 @@ namespace Ryujinx.Graphics.Vulkan
             var bucket = _hashTable[hashCode & TotalBucketsMask];
             if (bucket != null)
             {
-                
+
                 for (int i = 0; i < bucket.Length; i++)
                 {
                     ref var entry = ref bucket[i];

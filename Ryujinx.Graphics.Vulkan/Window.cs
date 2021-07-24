@@ -49,6 +49,11 @@ namespace Ryujinx.Graphics.Vulkan
 
         private void RecreateSwapchain()
         {
+            for (int i = 0; i < _swapchainImageViews.Length; i++)
+            {
+                _swapchainImageViews[i].Dispose();
+            }
+
             CreateSwapchain();
         }
 
