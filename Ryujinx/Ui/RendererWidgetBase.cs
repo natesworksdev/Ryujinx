@@ -571,6 +571,12 @@ namespace Ryujinx.Ui
                     Renderer.Screenshot();
                 }
 
+                if (currentHotkeyState.HasFlag(KeyboardHotkeyState.ShowUi) &&
+                    !_prevHotkeyState.HasFlag(KeyboardHotkeyState.ShowUi))
+                {
+                    (Toplevel as MainWindow).ToggleExtraWidgets(true);
+                }
+
                 _prevHotkeyState = currentHotkeyState;
             }
 
@@ -596,9 +602,10 @@ namespace Ryujinx.Ui
         [Flags]
         private enum KeyboardHotkeyState
         {
-            None,
-            ToggleVSync,
-            Screenshot
+            None = 0,
+            ToggleVSync = 1,
+            Screenshot = 2,
+            ShowUi = 4
         }
 
         private KeyboardHotkeyState GetHotkeyState()
@@ -613,6 +620,11 @@ namespace Ryujinx.Ui
             if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Screenshot))
             {
                 state |= KeyboardHotkeyState.Screenshot;
+            }
+
+            if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUi))
+            {
+                state |= KeyboardHotkeyState.ShowUi;
             }
 
             return state;
