@@ -973,7 +973,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
             var bufferTextureBindings = info.Textures.Where(IsBuffer).Select(x => x.Binding).ToArray();
             var bufferImageBindings = info.Images.Where(IsBuffer).Select(x => x.Binding).ToArray();
 
-
             return new ShaderBindings(
                 uniformBufferBindings,
                 storageBufferBindings,
@@ -985,7 +984,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
         private TranslationOptions CreateTranslationOptions(TranslationFlags flags)
         {
-            TargetApi api = TargetApi.Vulkan;
+            TargetApi api = _context.Capabilities.Api;
 
             return new TranslationOptions(TargetLanguage.Glsl, api, flags);
         }

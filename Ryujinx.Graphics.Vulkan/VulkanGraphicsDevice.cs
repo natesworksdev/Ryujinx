@@ -2,6 +2,7 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Shader;
+using Ryujinx.Graphics.Shader.Translation;
 using Ryujinx.Graphics.Vulkan.Queries;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
@@ -218,6 +219,7 @@ namespace Ryujinx.Graphics.Vulkan
             var limits = properties.Limits;
 
             return new Capabilities(
+                TargetApi.Vulkan,
                 features.TextureCompressionAstcLdr,
                 features.ShaderStorageImageReadWithoutFormat,
                 true,
