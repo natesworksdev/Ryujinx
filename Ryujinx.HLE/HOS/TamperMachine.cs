@@ -121,15 +121,15 @@ namespace Ryujinx.HLE.HOS
             try
             {
                 ControllerKeys pressedKeys = (ControllerKeys)Thread.VolatileRead(ref _pressedKeys);
+                program.Process.TamperedCodeMemory = false;
                 program.Execute(pressedKeys);
-            }
-            catch (CodeRegionTamperedException ex)
-            {
-                Logger.Debug?.Print(LogClass.TamperMachine, $"Prevented tampering program from modifing code memory");
 
-                if (!String.IsNullOrEmpty(ex.Message))
+                // Detect the first attempt to tamper memory and log it.
+                if (!program.TampersCodeMemory && program.Process.TamperedCodeMemory)
                 {
-                    Logger.Debug?.Print(LogClass.TamperMachine, ex.Message);
+                    program.TampersCodeMemory = true;
+
+                    Logger.Warning?.Print(LogClass.TamperMachine, $"Prevented tampering {program.Name} from modifing code memory");
                 }
             }
             catch (Exception ex)
