@@ -276,10 +276,10 @@ namespace Ryujinx.Graphics.Vulkan
                         dst.Info,
                         srcRegion,
                         dstRegion,
-                        src.FirstLevel,
-                        dst.FirstLevel,
                         src.FirstLayer,
                         dst.FirstLayer,
+                        src.FirstLevel,
+                        dst.FirstLevel,
                         linearFilter);
 
                     return;
