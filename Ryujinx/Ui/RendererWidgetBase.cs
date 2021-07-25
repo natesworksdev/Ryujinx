@@ -603,9 +603,9 @@ namespace Ryujinx.Ui
         private enum KeyboardHotkeyState
         {
             None = 0,
-            ToggleVSync = 1,
-            Screenshot = 2,
-            ShowUi = 4
+            ToggleVSync = 1 << 0,
+            Screenshot = 1 << 1,
+            ShowUi = 1 << 2
         }
 
         private KeyboardHotkeyState GetHotkeyState()
