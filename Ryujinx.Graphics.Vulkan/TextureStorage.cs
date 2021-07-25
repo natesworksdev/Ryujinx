@@ -52,7 +52,7 @@ namespace Ryujinx.Graphics.Vulkan
             _info = info;
             ScaleFactor = scaleFactor;
 
-            var format = FormatTable.GetFormat(info.Format);
+            var format = _gd.FormatCapabilities.ConvertToVkFormat(info.Format);
             var levels = (uint)info.Levels;
             var layers = (uint)info.GetLayers();
             var depth = (uint)(info.Target == Target.Texture3D ? info.Depth : 1);
@@ -71,7 +71,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 usage |= ImageUsageFlags.ImageUsageDepthStencilAttachmentBit;
             }
-            else if (info.BlockWidth == 1 && info.BlockHeight == 1 && info.Format != GAL.Format.R5G5B5A1Unorm)
+            else if (info.Format.IsRtColorCompatible())
             {
                 usage |= ImageUsageFlags.ImageUsageColorAttachmentBit;
             }

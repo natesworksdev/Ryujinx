@@ -122,16 +122,19 @@ namespace Ryujinx.Graphics.Vulkan
 
         public unsafe ReadOnlySpan<byte> GetData(int offset, int size)
         {
-            // FlushCommandsAndWaitForFences();
+            return GetDataStorage(offset, size);
+        }
 
+        public unsafe Span<byte> GetDataStorage(int offset, int size)
+        {
             int mappingSize = Math.Min(size, Size - offset);
 
             if (_map != IntPtr.Zero)
             {
-                return new ReadOnlySpan<byte>((void*)(_map + offset), mappingSize);
+                return new Span<byte>((void*)(_map + offset), mappingSize);
             }
 
-            return ReadOnlySpan<byte>.Empty;
+            throw new InvalidOperationException("The buffer is not host mapped.");
         }
 
         public unsafe void SetData(int offset, ReadOnlySpan<byte> data, CommandBufferScoped? cbs = null, Action endRenderPass = null)

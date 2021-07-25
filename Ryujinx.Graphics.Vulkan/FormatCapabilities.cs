@@ -1,5 +1,8 @@
+using Ryujinx.Common.Logging;
+using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
 using System;
+using VkFormat = Silk.NET.Vulkan.Format;
 
 namespace Ryujinx.Graphics.Vulkan
 {
@@ -29,6 +32,44 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             return (formatFeatureFlags & flags) == flags;
+        }
+
+        public VkFormat ConvertToVkFormat(GAL.Format srcFormat)
+        {
+            var format = FormatTable.GetFormat(srcFormat);
+
+            var requiredFeatures = FormatFeatureFlags.FormatFeatureSampledImageBit |
+                                   FormatFeatureFlags.FormatFeatureTransferSrcBit |
+                                   FormatFeatureFlags.FormatFeatureTransferDstBit;
+
+            if (srcFormat.IsDepthOrStencil())
+            {
+                requiredFeatures |= FormatFeatureFlags.FormatFeatureDepthStencilAttachmentBit;
+            }
+            else if (srcFormat.IsRtColorCompatible())
+            {
+                requiredFeatures |= FormatFeatureFlags.FormatFeatureColorAttachmentBit;
+            }
+
+            if (srcFormat.IsImageCompatible())
+            {
+                requiredFeatures |= FormatFeatureFlags.FormatFeatureStorageImageBit;
+            }
+
+            if (!FormatSupports(srcFormat, requiredFeatures))
+            {
+                // The format is not supported. Can we convert it to a higher precision format?
+                if (srcFormat == GAL.Format.D24UnormS8Uint)
+                {
+                    format = VkFormat.D32SfloatS8Uint;
+                }
+                else
+                {
+                    Logger.Error?.Print(LogClass.Gpu, $"Format {srcFormat} is not supported by the host.");
+                }
+            }
+
+            return format;
         }
     }
 }
