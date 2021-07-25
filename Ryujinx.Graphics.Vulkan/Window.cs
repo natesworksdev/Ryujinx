@@ -182,9 +182,18 @@ namespace Ryujinx.Graphics.Vulkan
 
         private static PresentModeKHR ChooseSwapPresentMode(PresentModeKHR[] availablePresentModes)
         {
-            return availablePresentModes.Contains(PresentModeKHR.PresentModeMailboxKhr)
-                ? PresentModeKHR.PresentModeMailboxKhr
-                : PresentModeKHR.PresentModeFifoKhr;
+            if (availablePresentModes.Contains(PresentModeKHR.PresentModeImmediateKhr))
+            {
+                return PresentModeKHR.PresentModeImmediateKhr;
+            }
+            else if (availablePresentModes.Contains(PresentModeKHR.PresentModeMailboxKhr))
+            {
+                return PresentModeKHR.PresentModeMailboxKhr;
+            }
+            else
+            {
+                return PresentModeKHR.PresentModeFifoKhr;
+            }
         }
 
         public static Extent2D ChooseSwapExtent(SurfaceCapabilitiesKHR capabilities)

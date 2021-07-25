@@ -135,6 +135,11 @@ namespace Ryujinx.Graphics.Vulkan
         {
             // TODO: Use componentMask
 
+            if (_framebuffer == null)
+            {
+                return;
+            }
+
             if (_renderPass == null)
             {
                 CreateRenderPass();
@@ -152,6 +157,11 @@ namespace Ryujinx.Graphics.Vulkan
         public unsafe void ClearRenderTargetDepthStencil(float depthValue, bool depthMask, int stencilValue, int stencilMask)
         {
             // TODO: Use stencilMask (fully)
+
+            if (_framebuffer == null)
+            {
+                return;
+            }
 
             if (_renderPass == null)
             {
