@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Ryujinx.Common;
+using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Hid.Types;
@@ -34,7 +35,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         internal ControllerType SupportedStyleSets { get; set; }
 
         public Dictionary<PlayerIndex, ConcurrentQueue<(HidVibrationValue, HidVibrationValue)>> RumbleQueues = new Dictionary<PlayerIndex, ConcurrentQueue<(HidVibrationValue, HidVibrationValue)>>();
-        public Dictionary<PlayerIndex, (HidVibrationValue, HidVibrationValue)> _lastVibrationValues = new Dictionary<PlayerIndex, (HidVibrationValue, HidVibrationValue)>();
+        public Dictionary<PlayerIndex, (HidVibrationValue, HidVibrationValue)> LastVibrationValues = new Dictionary<PlayerIndex, (HidVibrationValue, HidVibrationValue)>();
 
         public NpadDevices(Switch device, bool active = true) : base(device, active)
         {
@@ -622,21 +623,33 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                     rightVibrationValue = _neutralVibrationValue;
                 }
 
-                if (!_lastVibrationValues.TryGetValue(index, out (HidVibrationValue, HidVibrationValue) dualVibrationValue) || !leftVibrationValue.Equals(dualVibrationValue.Item1) || !rightVibrationValue.Equals(dualVibrationValue.Item2))
+                if (!LastVibrationValues.TryGetValue(index, out (HidVibrationValue, HidVibrationValue) dualVibrationValue) || !leftVibrationValue.Equals(dualVibrationValue.Item1) || !rightVibrationValue.Equals(dualVibrationValue.Item2))
                 {
                     currentQueue.Enqueue((leftVibrationValue, rightVibrationValue));
-                    _lastVibrationValues[index] = (leftVibrationValue, rightVibrationValue);
+
+                    LastVibrationValues[index] = (leftVibrationValue, rightVibrationValue);
                 }
             }
         }
 
         public HidVibrationValue GetLastVibrationValue(PlayerIndex index, byte position)
         {
-            if (!_lastVibrationValues.TryGetValue(index, out (HidVibrationValue, HidVibrationValue) dualVibrationValue))
+            if (!LastVibrationValues.TryGetValue(index, out (HidVibrationValue, HidVibrationValue) dualVibrationValue))
             {
                 return _neutralVibrationValue;
             }
+
             return (position == 0) ? dualVibrationValue.Item1 : dualVibrationValue.Item2;
+        }
+
+        public ConcurrentQueue<(HidVibrationValue, HidVibrationValue)> GetRumbleQueue(PlayerIndex index)
+{
+            if (!RumbleQueues.TryGetValue(index, out ConcurrentQueue<(HidVibrationValue, HidVibrationValue)> rumbleQueue))
+            {
+                rumbleQueue = new ConcurrentQueue<(HidVibrationValue, HidVibrationValue)>();
+                _device.Hid.Npads.RumbleQueues[index] = rumbleQueue;
+            }
+            return rumbleQueue;
         }
     }
 }

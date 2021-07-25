@@ -540,19 +540,19 @@ namespace Ryujinx.Input.HLE
 
         public void UpdateRumble(ConcurrentQueue<(HidVibrationValue, HidVibrationValue)> queue)
         {
-            if (queue.TryDequeue(out (HidVibrationValue, HidVibrationValue) dualVvibrationValue))
+            if (queue.TryDequeue(out (HidVibrationValue, HidVibrationValue) dualVibrationValue))
             {
                 if (_config is StandardControllerInputConfig controllerConfig && controllerConfig.Rumble.EnableRumble)
                 {
-                    HidVibrationValue leftVibrationValue = dualVvibrationValue.Item1;
-                    HidVibrationValue rightVibrationValue = dualVvibrationValue.Item2;
+                    HidVibrationValue leftVibrationValue = dualVibrationValue.Item1;
+                    HidVibrationValue rightVibrationValue = dualVibrationValue.Item2;
 
                     float low = Math.Min(1f, (float)((rightVibrationValue.AmplitudeLow * 0.85 + rightVibrationValue.AmplitudeHigh * 0.15) * controllerConfig.Rumble.StrongRumble));
                     float high = Math.Min(1f, (float)((leftVibrationValue.AmplitudeLow * 0.15 + leftVibrationValue.AmplitudeHigh * 0.85) * controllerConfig.Rumble.WeakRumble));
 
                     _gamepad.Rumble(low, high, uint.MaxValue);
 
-                    Logger.Debug?.Print(LogClass.Hid, $"New rumble effect for {controllerConfig.PlayerIndex} " +
+                    Logger.Debug?.Print(LogClass.Hid, $"Effect for {controllerConfig.PlayerIndex} " +
                         $"L.low.amp={leftVibrationValue.AmplitudeLow}, " +
                         $"L.high.amp={leftVibrationValue.AmplitudeHigh}, " +
                         $"R.low.amp={rightVibrationValue.AmplitudeLow}, " +

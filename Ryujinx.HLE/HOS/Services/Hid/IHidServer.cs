@@ -1108,7 +1108,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             long appletResourceUserId = context.RequestData.ReadInt64();
 
             Dictionary<byte, HidVibrationValue> dualVibrationValues = new Dictionary<byte, HidVibrationValue>();
+
             dualVibrationValues[deviceHandle.Position] = vibrationValue;
+
             context.Device.Hid.Npads.UpdateRumbleQueue((PlayerIndex)deviceHandle.PlayerId, dualVibrationValues);
 
             return ResultCode.Success;
@@ -1134,15 +1136,6 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             context.ResponseData.Write(vibrationValue.FrequencyLow);
             context.ResponseData.Write(vibrationValue.AmplitudeHigh);
             context.ResponseData.Write(vibrationValue.FrequencyHigh);
-
-            Logger.Debug?.PrintStub(LogClass.ServiceHid, new {
-                appletResourceUserId,
-                deviceHandle,
-                vibrationValue.AmplitudeLow,
-                vibrationValue.FrequencyLow,
-                vibrationValue.AmplitudeHigh,
-                vibrationValue.FrequencyHigh
-            });
 
             return ResultCode.Success;
         }
@@ -1199,15 +1192,18 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             {
                 Dictionary<byte, HidVibrationValue> dualVibrationValues = new Dictionary<byte, HidVibrationValue>();
                 PlayerIndex currentIndex = (PlayerIndex)deviceHandles[0].PlayerId;
+
                 for (int deviceCounter = 0; deviceCounter < deviceHandles.Length; deviceCounter++)
                 {
                     PlayerIndex index = (PlayerIndex)deviceHandles[deviceCounter].PlayerId;
                     byte position = deviceHandles[deviceCounter].Position;
+
                     if (index != currentIndex || dualVibrationValues.Count == 2)
                     {
                         context.Device.Hid.Npads.UpdateRumbleQueue(currentIndex, dualVibrationValues);
                         dualVibrationValues = new Dictionary<byte, HidVibrationValue>();
                     }
+
                     dualVibrationValues[position] = vibrationValues[deviceCounter];
                     currentIndex = index;
                 }

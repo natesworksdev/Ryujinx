@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
+using Ryujinx.Common.Logging;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -157,7 +158,7 @@ namespace Ryujinx.Input.SDL2
                 }
                 else if (durationMs > SDL_HAPTIC_INFINITY)
                 {
-                    throw new NotSupportedException($"Unsupported rumble duration {durationMs}");
+                    Logger.Error?.Print(LogClass.Hid, $"Unsupported rumble duration {durationMs}");
                 }
                 else
                 {

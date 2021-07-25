@@ -8,8 +8,8 @@
         Success = 0,
 
         InvalidNpadDeviceType = (122 << ErrorCodeShift) | ModuleId,
-        InvalidNpadIdType = (123 << ErrorCodeShift) | ModuleId,
-        InvalidDeviceIndex = (124 << ErrorCodeShift) | ModuleId,
-        InvalidBufferSize = (124 << ErrorCodeShift) | ModuleId
+        InvalidNpadIdType     = (123 << ErrorCodeShift) | ModuleId,
+        InvalidDeviceIndex    = (124 << ErrorCodeShift) | ModuleId,
+        InvalidBufferSize     = (124 << ErrorCodeShift) | ModuleId
     }
 } 
