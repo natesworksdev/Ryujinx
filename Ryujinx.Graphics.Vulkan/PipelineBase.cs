@@ -2,6 +2,7 @@
 using Ryujinx.Graphics.Shader;
 using Silk.NET.Vulkan;
 using System;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Vulkan
 {
@@ -38,6 +39,17 @@ namespace Ryujinx.Graphics.Vulkan
         public CommandBufferScoped CurrentCommandBuffer => Cbs;
 
         private ShaderCollection _program;
+
+        private struct Vector4<T>
+        {
+            public T X;
+            public T Y;
+            public T Z;
+            public T W;
+        }
+
+        private Vector4<float>[] _fpRenderScale = new Vector4<float>[65];
+        private Vector4<float>[] _cpRenderScale = new Vector4<float>[64];
 
         protected FramebufferParams FramebufferParams;
         private Auto<DisposableFramebuffer> _framebuffer;
@@ -450,7 +462,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetRenderTargetScale(float scale)
         {
-            // TODO.
+            _fpRenderScale[0].X = scale;
+            SetSupportBufferData<Vector4<float>>(SupportBuffer.FragmentRenderScaleOffset, _fpRenderScale, 1); // Just the first element.
         }
 
         public void SetScissors(ReadOnlySpan<Rectangle<int>> regions)
@@ -705,7 +718,42 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void UpdateRenderScale(ShaderStage stage, float[] scales, int textureCount, int imageCount)
         {
+            static bool Copy(float[] from, int fromIndex, Vector4<float>[] to, int toIndex, int count)
+            {
+                bool changed = false;
 
+                for (int index = 0; index < count; index++)
+                {
+                    if (to[toIndex + index].X != from[fromIndex + index])
+                    {
+                        to[toIndex + index].X = from[fromIndex + index];
+                        changed = true;
+                    }
+                }
+
+                return changed;
+            }
+
+            switch (stage)
+            {
+                case ShaderStage.Fragment:
+                    if (Copy(scales, 0, _fpRenderScale, 1, textureCount + imageCount))
+                    {
+                        SetSupportBufferData<Vector4<float>>(SupportBuffer.FragmentRenderScaleOffset, _fpRenderScale, 1 + textureCount + imageCount);
+                    }
+                    break;
+                case ShaderStage.Compute:
+                    if (Copy(scales, 0, _cpRenderScale, 0, textureCount + imageCount))
+                    {
+                        SetSupportBufferData<Vector4<float>>(SupportBuffer.ComputeRenderScaleOffset, _cpRenderScale, textureCount + imageCount);
+                    }
+                    break;
+            }
+        }
+
+        private void SetSupportBufferData<T>(int offset, ReadOnlySpan<T> data, int count) where T : unmanaged
+        {
+            RenderScaleBuffer.SetData(offset, MemoryMarshal.Cast<T, byte>(data.Slice(0, count)));
         }
 
         protected void SignalCommandBufferChange()
@@ -1004,6 +1052,8 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     Gd.Api.DestroyPipelineCache(Device, _pipelineCache, null);
                 }
+
+                RenderScaleBuffer.Dispose();
             }
         }
 
