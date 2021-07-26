@@ -42,6 +42,8 @@ namespace Ryujinx.Graphics.Vulkan
             glsl = glsl.Replace("readInvocationARB", "subgroupBroadcast");
             glsl = glsl.Replace("#extension GL_ARB_shader_ballot : enable", "#extension GL_KHR_shader_subgroup_basic : enable\n#extension GL_KHR_shader_subgroup_ballot : enable");
 
+            // System.Console.WriteLine(glsl);
+
             Options options = new Options(false)
             {
                 SourceLanguage = SourceLanguage.Glsl,

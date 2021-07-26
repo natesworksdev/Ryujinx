@@ -10,7 +10,7 @@ namespace Ryujinx.Graphics.Vulkan
     {
         private const string VertexShaderSource = @"#version 450 core
 
-layout (std140, binding = 0) uniform tex_coord_in
+layout (std140, binding = 1) uniform tex_coord_in
 {
     vec4 tex_coord_in_data;
 };
@@ -97,7 +97,7 @@ void main()
             _samplerNearest = gd.CreateSampler(GetSamplerCreateInfo(MinFilter.Nearest, MagFilter.Nearest));
 
             var vertexBindings = new ShaderBindings(
-                new[] { 0 },
+                new[] { 1 },
                 Array.Empty<int>(),
                 Array.Empty<int>(),
                 Array.Empty<int>(),
@@ -165,7 +165,7 @@ void main()
 
             bufferRanges[0] = new BufferRange(bufferHandle, 0, RegionBufferSize);
 
-            _pipeline.SetUniformBuffers(bufferRanges);
+            _pipeline.SetUniformBuffers(1, bufferRanges);
 
             Span<GAL.Viewport> viewports = stackalloc GAL.Viewport[1];
 

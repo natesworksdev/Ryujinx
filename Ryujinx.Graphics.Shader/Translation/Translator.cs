@@ -24,15 +24,9 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
         }
 
-        public static TranslatorContext CreateContext(
-            ulong address,
-            IGpuAccessor gpuAccessor,
-            TranslationOptions options,
-            TranslationCounts counts = null)
+        public static TranslatorContext CreateContext(ulong address, IGpuAccessor gpuAccessor, TranslationOptions options)
         {
-            counts ??= new TranslationCounts();
-
-            Block[][] cfg = DecodeShader(address, gpuAccessor, options, counts, out ShaderConfig config);
+            Block[][] cfg = DecodeShader(address, gpuAccessor, options, out ShaderConfig config);
 
             return new TranslatorContext(address, cfg, config);
         }
@@ -114,7 +108,6 @@ namespace Ryujinx.Graphics.Shader.Translation
             ulong address,
             IGpuAccessor gpuAccessor,
             TranslationOptions options,
-            TranslationCounts counts,
             out ShaderConfig config)
         {
             Block[][] cfg;
@@ -124,13 +117,13 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             if ((options.Flags & TranslationFlags.Compute) != 0)
             {
-                config = new ShaderConfig(gpuAccessor, options, counts);
+                config = new ShaderConfig(gpuAccessor, options);
 
                 cfg = Decoder.Decode(gpuAccessor, address, out hasBindless);
             }
             else
             {
-                config = new ShaderConfig(new ShaderHeader(gpuAccessor, address), gpuAccessor, options, counts);
+                config = new ShaderConfig(new ShaderHeader(gpuAccessor, address), gpuAccessor, options);
 
                 cfg = Decoder.Decode(gpuAccessor, address + HeaderSize, out hasBindless);
             }

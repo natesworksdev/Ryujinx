@@ -5,6 +5,8 @@ using Ryujinx.Graphics.OpenGL.Image;
 using Ryujinx.Graphics.OpenGL.Queries;
 using Ryujinx.Graphics.Shader;
 using System;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.OpenGL
 {
@@ -31,9 +33,17 @@ namespace Ryujinx.Graphics.OpenGL
         private int _boundDrawFramebuffer;
         private int _boundReadFramebuffer;
 
-        private int[] _fpIsBgra = new int[8];
-        private float[] _fpRenderScale = new float[65];
-        private float[] _cpRenderScale = new float[64];
+        private struct Vector4<T>
+        {
+            public T X;
+            public T Y;
+            public T Z;
+            public T W;
+        }
+
+        private Vector4<int>[] _fpIsBgra = new Vector4<int>[SupportBuffer.FragmentIsBgraCount];
+        private Vector4<float>[] _fpRenderScale = new Vector4<float>[65];
+        private Vector4<float>[] _cpRenderScale = new Vector4<float>[64];
 
         private TextureBase _unit0Texture;
 
@@ -48,6 +58,7 @@ namespace Ryujinx.Graphics.OpenGL
         private bool _tfEnabled;
         private TransformFeedbackPrimitiveType _tfTopology;
 
+        private BufferHandle _supportBuffer;
         private readonly BufferHandle[] _tfbs;
         private readonly BufferRange[] _tfbTargets;
 
@@ -66,15 +77,9 @@ namespace Ryujinx.Graphics.OpenGL
                 _componentMasks[index] = 0xf;
             }
 
-            for (int index = 0; index < _fpRenderScale.Length; index++)
-            {
-                _fpRenderScale[index] = 1f;
-            }
-
-            for (int index = 0; index < _cpRenderScale.Length; index++)
-            {
-                _cpRenderScale[index] = 1f;
-            }
+            var v4Zero = new Vector4<float> { X = 0f, Y = 0f, Z = 0f, W = 0f };
+            new Span<Vector4<float>>(_fpRenderScale).Fill(v4Zero);
+            new Span<Vector4<float>>(_cpRenderScale).Fill(v4Zero);
 
             _tfbs = new BufferHandle[Constants.MaxTransformFeedbackBuffers];
             _tfbTargets = new BufferRange[Constants.MaxTransformFeedbackBuffers];
@@ -827,9 +832,6 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 _program.Bind();
             }
-
-            UpdateFpIsBgra();
-            SetRenderTargetScale(_fpRenderScale[0]);
         }
 
         public void SetRasterizerDiscard(bool discard)
@@ -848,12 +850,8 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void SetRenderTargetScale(float scale)
         {
-            _fpRenderScale[0] = scale;
-
-            if (_program != null && _program.FragmentRenderScaleUniform != -1)
-            {
-                GL.Uniform1(_program.FragmentRenderScaleUniform, 1, _fpRenderScale); // Just the first element.
-            }
+            _fpRenderScale[0].X = scale;
+            SetSupportBufferData<Vector4<float>>(SupportBuffer.FragmentRenderScaleOffset, _fpRenderScale, 1); // Just the first element.
         }
 
         public void SetRenderTargetColorMasks(ReadOnlySpan<uint> componentMasks)
@@ -870,6 +868,8 @@ namespace Ryujinx.Graphics.OpenGL
         {
             EnsureFramebuffer();
 
+            bool isBgraChanged = false;
+
             for (int index = 0; index < colors.Length; index++)
             {
                 TextureView color = (TextureView)colors[index];
@@ -878,15 +878,19 @@ namespace Ryujinx.Graphics.OpenGL
 
                 int isBgra = color != null && color.Format.IsBgra8() ? 1 : 0;
 
-                if (_fpIsBgra[index] != isBgra)
+                if (_fpIsBgra[index].X != isBgra)
                 {
-                    _fpIsBgra[index] = isBgra;
+                    _fpIsBgra[index].X = isBgra;
+                    isBgraChanged = true;
 
                     RestoreComponentMask(index);
                 }
             }
 
-            UpdateFpIsBgra();
+            if (isBgraChanged)
+            {
+                SetSupportBufferData<Vector4<int>>(SupportBuffer.FragmentIsBgraOffset, _fpIsBgra, SupportBuffer.FragmentIsBgraCount);
+            }
 
             TextureView depthStencilView = (TextureView)depthStencil;
 
@@ -956,9 +960,9 @@ namespace Ryujinx.Graphics.OpenGL
             _stencilFrontMask = stencilTest.FrontMask;
         }
 
-        public void SetStorageBuffers(ReadOnlySpan<BufferRange> buffers)
+        public void SetStorageBuffers(int first, ReadOnlySpan<BufferRange> buffers)
         {
-            SetBuffers(buffers, isStorage: true);
+            SetBuffers(first, buffers, isStorage: true);
         }
 
         public void SetTextureAndSampler(int binding, ITexture texture, ISampler sampler)
@@ -1015,9 +1019,9 @@ namespace Ryujinx.Graphics.OpenGL
             }
         }
 
-        public void SetUniformBuffers(ReadOnlySpan<BufferRange> buffers)
+        public void SetUniformBuffers(int first, ReadOnlySpan<BufferRange> buffers)
         {
-            SetBuffers(buffers, isStorage: false);
+            SetBuffers(first, buffers, isStorage: false);
         }
 
         public void SetUserClipDistance(int index, bool enableClip)
@@ -1095,7 +1099,7 @@ namespace Ryujinx.Graphics.OpenGL
             GL.MemoryBarrier(MemoryBarrierFlags.TextureFetchBarrierBit);
         }
 
-        private void SetBuffers(ReadOnlySpan<BufferRange> buffers, bool isStorage)
+        private void SetBuffers(int first, ReadOnlySpan<BufferRange> buffers, bool isStorage)
         {
             BufferRangeTarget target = isStorage ? BufferRangeTarget.ShaderStorageBuffer : BufferRangeTarget.UniformBuffer;
 
@@ -1105,11 +1109,11 @@ namespace Ryujinx.Graphics.OpenGL
 
                 if (buffer.Handle == BufferHandle.Null)
                 {
-                    GL.BindBufferRange(target, index, 0, IntPtr.Zero, 0);
+                    GL.BindBufferRange(target, first + index, 0, IntPtr.Zero, 0);
                     continue;
                 }
 
-                GL.BindBufferRange(target, index, buffer.Handle.ToInt32(), (IntPtr)buffer.Offset, buffer.Size);
+                GL.BindBufferRange(target, first + index, buffer.Handle.ToInt32(), (IntPtr)buffer.Offset, buffer.Size);
             }
         }
 
@@ -1171,37 +1175,50 @@ namespace Ryujinx.Graphics.OpenGL
             return (_boundDrawFramebuffer, _boundReadFramebuffer);
         }
 
-        private void UpdateFpIsBgra()
+        public void UpdateRenderScale(ShaderStage stage, float[] scales, int textureCount, int imageCount)
         {
-            if (_program != null)
+            static bool Copy(float[] from, int fromIndex, Vector4<float>[] to, int toIndex, int count)
             {
-                GL.Uniform1(_program.FragmentIsBgraUniform, 8, _fpIsBgra);
+                bool changed = false;
+
+                for (int index = 0; index < count; index++)
+                {
+                    if (to[toIndex + index].X != from[fromIndex + index])
+                    {
+                        to[toIndex + index].X = from[fromIndex + index];
+                        changed = true;
+                    }
+                }
+
+                return changed;
+            }
+
+            switch (stage)
+            {
+                case ShaderStage.Fragment:
+                    if (Copy(scales, 0, _fpRenderScale, 1, textureCount + imageCount))
+                    {
+                        SetSupportBufferData<Vector4<float>>(SupportBuffer.FragmentRenderScaleOffset, _fpRenderScale, 1 + textureCount + imageCount);
+                    }
+                    break;
+                case ShaderStage.Compute:
+                    if (Copy(scales, 0, _cpRenderScale, 0, textureCount + imageCount))
+                    {
+                        SetSupportBufferData<Vector4<float>>(SupportBuffer.ComputeRenderScaleOffset, _cpRenderScale, textureCount + imageCount);
+                    }
+                    break;
             }
         }
 
-        public void UpdateRenderScale(ShaderStage stage, float[] scales, int textureCount, int imageCount)
+        private void SetSupportBufferData<T>(int offset, ReadOnlySpan<T> data, int count) where T : unmanaged
         {
-            if (_program != null)
+            if (_supportBuffer == BufferHandle.Null)
             {
-                switch (stage)
-                {
-                    case ShaderStage.Fragment:
-                        if (_program.FragmentRenderScaleUniform != -1)
-                        {
-                            Array.Copy(scales, 0, _fpRenderScale, 1, textureCount + imageCount);
-                            GL.Uniform1(_program.FragmentRenderScaleUniform, 1 + textureCount + imageCount, _fpRenderScale);
-                        }
-                        break;
-
-                    case ShaderStage.Compute:
-                        if (_program.ComputeRenderScaleUniform != -1)
-                        {
-                            Array.Copy(scales, 0, _cpRenderScale, 0, textureCount + imageCount);
-                            GL.Uniform1(_program.ComputeRenderScaleUniform, textureCount + imageCount, _cpRenderScale);
-                        }
-                        break;
-                }
+                _supportBuffer = Buffer.Create(SupportBuffer.RequiredSize);
+                GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 0, Unsafe.As<BufferHandle, int>(ref _supportBuffer));
             }
+
+            Buffer.SetData(_supportBuffer, offset, MemoryMarshal.Cast<T, byte>(data.Slice(0, count)));
         }
 
         private void PrepareForDispatch()
@@ -1241,8 +1258,8 @@ namespace Ryujinx.Graphics.OpenGL
         public void RestoreComponentMask(int index)
         {
             // If the bound render target is bgra, swap the red and blue masks.
-            uint redMask = _fpIsBgra[index] == 0 ? 1u : 4u;
-            uint blueMask = _fpIsBgra[index] == 0 ? 4u : 1u;
+            uint redMask = _fpIsBgra[index].X == 0 ? 1u : 4u;
+            uint blueMask = _fpIsBgra[index].X == 0 ? 4u : 1u;
 
             GL.ColorMask(
                 index,
@@ -1314,6 +1331,12 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void Dispose()
         {
+            if (_supportBuffer != BufferHandle.Null)
+            {
+                Buffer.Delete(_supportBuffer);
+                _supportBuffer = BufferHandle.Null;
+            }
+
             for (int i = 0; i < Constants.MaxTransformFeedbackBuffers; i++)
             {
                 if (_tfbs[i] != BufferHandle.Null)

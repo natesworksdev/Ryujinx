@@ -50,6 +50,8 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly BufferState[] _transformFeedbackBuffers;
         private readonly BufferState[] _vertexBuffers;
 
+        public BufferHolder RenderScaleBuffer { get; }
+
         private bool _needsIndexBufferRebind;
         private bool _needsTransformFeedbackBuffersRebind;
         private bool _needsVertexBuffersRebind;
@@ -70,7 +72,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             gd.Api.CreatePipelineCache(device, pipelineCacheCreateInfo, null, out _pipelineCache).ThrowOnError();
 
-            _descriptorSetUpdater = new DescriptorSetUpdater(gd);
+            _descriptorSetUpdater = new DescriptorSetUpdater(gd, this);
 
             _transformFeedbackBuffers = new BufferState[Constants.MaxTransformFeedbackBuffers];
             _vertexBuffers = new BufferState[Constants.MaxVertexBuffers + 1];
@@ -81,6 +83,8 @@ namespace Ryujinx.Graphics.Vulkan
             emptyVb.SetData(0, new byte[EmptyVbSize]);
             _vertexBuffers[0] = new BufferState(emptyVb.GetBuffer(), 0, EmptyVbSize, 0UL);
             _needsVertexBuffersRebind = true;
+
+            RenderScaleBuffer = gd.BufferManager.Create(gd, SupportBuffer.RequiredSize);
 
             _newState.Initialize();
             _newState.LineWidth = 1f;
@@ -512,9 +516,9 @@ namespace Ryujinx.Graphics.Vulkan
             SignalStateChange();
         }
 
-        public void SetStorageBuffers(ReadOnlySpan<BufferRange> buffers)
+        public void SetStorageBuffers(int first, ReadOnlySpan<BufferRange> buffers)
         {
-            _descriptorSetUpdater.SetStorageBuffers(CommandBuffer, buffers);
+            _descriptorSetUpdater.SetStorageBuffers(CommandBuffer, first, buffers);
         }
 
         public void SetTextureAndSampler(int binding, ITexture texture, ISampler sampler)
@@ -548,9 +552,9 @@ namespace Ryujinx.Graphics.Vulkan
             ResumeTransformFeedbackInternal();
         }
 
-        public void SetUniformBuffers(ReadOnlySpan<BufferRange> buffers)
+        public void SetUniformBuffers(int first, ReadOnlySpan<BufferRange> buffers)
         {
-            _descriptorSetUpdater.SetUniformBuffers(CommandBuffer, buffers);
+            _descriptorSetUpdater.SetUniformBuffers(CommandBuffer, first, buffers);
         }
 
         public void SetUserClipDistance(int index, bool enableClip)

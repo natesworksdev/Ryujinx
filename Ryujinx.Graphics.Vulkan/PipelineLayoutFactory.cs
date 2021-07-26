@@ -14,7 +14,18 @@ namespace Ryujinx.Graphics.Vulkan
             Shader[] shaders,
             out PipelineLayout layout)
         {
-            int uCount = shaders.Sum(x => x.Bindings.UniformBufferBindings.Count);
+            bool isCompute = false;
+
+            foreach (var shader in shaders)
+            {
+                if (shader.StageFlags == ShaderStageFlags.ShaderStageComputeBit)
+                {
+                    isCompute = true;
+                    break;
+                }
+            }
+
+            int uCount = shaders.Sum(x => x.Bindings.UniformBufferBindings.Count) + 1;
             int tCount = shaders.Sum(x => x.Bindings.TextureBindings.Count);
             int iCount = shaders.Sum(x => x.Bindings.ImageBindings.Count);
             int bTCount = shaders.Sum(x => x.Bindings.BufferTextureBindings.Count);
@@ -29,12 +40,21 @@ namespace Ryujinx.Graphics.Vulkan
             DescriptorSetLayoutBinding* bTLayoutBindings = stackalloc DescriptorSetLayoutBinding[bTCount];
             DescriptorSetLayoutBinding* bILayoutBindings = stackalloc DescriptorSetLayoutBinding[bICount];
 
+            uLayoutBindings[0] = new DescriptorSetLayoutBinding
+            {
+                Binding = 0,
+                DescriptorType = DescriptorType.UniformBuffer,
+                DescriptorCount = 1,
+                StageFlags = isCompute ? ShaderStageFlags.ShaderStageComputeBit : ShaderStageFlags.ShaderStageFragmentBit
+            };
+
             void InitializeBinding(
                 DescriptorSetLayoutBinding* bindings,
                 Func<ShaderBindings, IReadOnlyCollection<int>> selector,
-                DescriptorType type)
+                DescriptorType type,
+                int start = 0)
             {
-                int index = 0;
+                int index = start;
 
                 for (int stage = 0; stage < shaders.Length; stage++)
                 {
@@ -74,7 +94,7 @@ namespace Ryujinx.Graphics.Vulkan
                 }
             }
 
-            InitializeBinding(uLayoutBindings, x => x.UniformBufferBindings, DescriptorType.UniformBuffer);
+            InitializeBinding(uLayoutBindings, x => x.UniformBufferBindings, DescriptorType.UniformBuffer, 1);
             InitializeStorageBufferBinding(sLayoutBindings);
             InitializeBinding(tLayoutBindings, x => x.TextureBindings, DescriptorType.CombinedImageSampler);
             InitializeBinding(iLayoutBindings, x => x.ImageBindings, DescriptorType.StorageImage);
