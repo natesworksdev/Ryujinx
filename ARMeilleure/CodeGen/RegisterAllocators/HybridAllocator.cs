@@ -116,12 +116,12 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         {
                             MemoryOperand memOp = source.GetMemory();
 
-                            if (memOp.BaseAddress != null)
+                            if (memOp.BaseAddress != default)
                             {
                                 locInfo[memOp.BaseAddress.GetLocalNumber() - 1].SetBlockIndex(block.Index);
                             }
 
-                            if (memOp.Index != null)
+                            if (memOp.Index != default)
                             {
                                 locInfo[memOp.Index.GetLocalNumber() - 1].SetBlockIndex(block.Index);
                             }
@@ -250,7 +250,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         {
                             Operand temp = info.Temp;
 
-                            if (temp == null || info.Sequence != sequence)
+                            if (temp == default || info.Sequence != sequence)
                             {
                                 temp = source.Type.IsInteger()
                                     ? GetSpillTemp(source, intSpillTempRegisters, ref intLocalUse)
@@ -295,12 +295,12 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         {
                             ref MemoryOperand memOp = ref source.GetMemory();
 
-                            if (memOp.BaseAddress != null)
+                            if (memOp.BaseAddress != default)
                             {
                                 AllocateRegister(memOp.BaseAddress, true, ref memOp, 0);
                             }
 
-                            if (memOp.Index != null)
+                            if (memOp.Index != default)
                             {
                                 AllocateRegister(memOp.Index, true, ref memOp, 1);
                             }
@@ -363,7 +363,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         {
                             Operand temp = info.Temp;
 
-                            if (temp == null || info.Sequence != sequence)
+                            if (temp == default|| info.Sequence != sequence)
                             {
                                 temp = dest.Type.IsInteger()
                                     ? GetSpillTemp(dest, intSpillTempRegisters, ref intLocalAsg)
@@ -375,7 +375,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                             node.SetDestination(dstIndex, temp);
 
-                            Operation spillOp = Operation(Instruction.Spill, null, Const(info.SpillOffset), temp);
+                            Operation spillOp = Operation(Instruction.Spill, default, Const(info.SpillOffset), temp);
 
                             block.Operations.AddAfter(node, spillOp);
 

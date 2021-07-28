@@ -1,4 +1,3 @@
-using ARMeilleure.Common;
 using ARMeilleure.Translation.PTC;
 using System.Runtime.CompilerServices;
 
@@ -79,7 +78,7 @@ namespace ARMeilleure.IntermediateRepresentation
         public static Operand MemoryOp(
             OperandType type,
             Operand baseAddress,
-            Operand index = null,
+            Operand index = default,
             Multiplier scale = Multiplier.x1,
             int displacement = 0)
         {
@@ -92,26 +91,24 @@ namespace ARMeilleure.IntermediateRepresentation
             return result;
         }
 
-        #region "ThreadStaticPool"
         public static void PrepareOperandPool(int groupId = 0)
         {
-            ThreadStaticPool<Operand>.PreparePool(groupId, ChunkSizeLimit.Large);
+
         }
 
         private static Operand Operand()
         {
-            return ThreadStaticPool<Operand>.Instance.Allocate();
+            return IntermediateRepresentation.Operand.New();
         }
 
         public static void ResetOperandPool(int groupId = 0)
         {
-            ThreadStaticPool<Operand>.ResetPool(groupId);
+
         }
 
         public static void DisposeOperandPools()
         {
-            ThreadStaticPool<Operand>.DisposePools();
+
         }
-        #endregion
     }
 }

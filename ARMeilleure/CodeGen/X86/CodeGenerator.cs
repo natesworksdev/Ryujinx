@@ -264,7 +264,7 @@ namespace ARMeilleure.CodeGen.X86
                         int offs = offset.AsInt32() + context.CallArgsRegionSize;
 
                         Operand rsp = Register(X86Register.Rsp);
-                        Operand memOp = MemoryOp(OperandType.I32, rsp, null, Multiplier.x1, offs);
+                        Operand memOp = MemoryOp(OperandType.I32, rsp, default, Multiplier.x1, offs);
 
                         Debug.Assert(HardwareCapabilities.SupportsSse || HardwareCapabilities.SupportsVexEncoding);
 
@@ -535,7 +535,7 @@ namespace ARMeilleure.CodeGen.X86
                     if (src2.Kind == OperandKind.Constant)
                     {
                         offset = src2.AsInt32();
-                        index = null;
+                        index = default;
                     }
                     else
                     {
@@ -951,7 +951,7 @@ namespace ARMeilleure.CodeGen.X86
 
             Operand rsp = Register(X86Register.Rsp);
 
-            Operand memOp = MemoryOp(dest.Type, rsp, null, Multiplier.x1, offs);
+            Operand memOp = MemoryOp(dest.Type, rsp, default, Multiplier.x1, offs);
 
             GenerateLoad(context, memOp, dest);
         }
@@ -1150,7 +1150,7 @@ namespace ARMeilleure.CodeGen.X86
 
             Operand rsp = Register(X86Register.Rsp);
 
-            Operand memOp = MemoryOp(source.Type, rsp, null, Multiplier.x1, offs);
+            Operand memOp = MemoryOp(source.Type, rsp, default, Multiplier.x1, offs);
 
             GenerateStore(context, memOp, source);
         }
@@ -1166,7 +1166,7 @@ namespace ARMeilleure.CodeGen.X86
 
             Operand rsp = Register(X86Register.Rsp);
 
-            Operand memOp = MemoryOp(OperandType.I64, rsp, null, Multiplier.x1, offs);
+            Operand memOp = MemoryOp(OperandType.I64, rsp, default, Multiplier.x1, offs);
 
             context.Assembler.Lea(dest, memOp, OperandType.I64);
         }
@@ -1758,7 +1758,7 @@ namespace ARMeilleure.CodeGen.X86
 
                 offset -= 16;
 
-                Operand memOp = MemoryOp(OperandType.V128, rsp, null, Multiplier.x1, offset);
+                Operand memOp = MemoryOp(OperandType.V128, rsp, default, Multiplier.x1, offset);
 
                 context.Assembler.Movdqu(memOp, Xmm((X86Register)bit));
 
@@ -1788,7 +1788,7 @@ namespace ARMeilleure.CodeGen.X86
 
                 offset -= 16;
 
-                Operand memOp = MemoryOp(OperandType.V128, rsp, null, Multiplier.x1, offset);
+                Operand memOp = MemoryOp(OperandType.V128, rsp, default, Multiplier.x1, offset);
 
                 context.Assembler.Movdqu(Xmm((X86Register)bit), memOp);
 
@@ -1829,7 +1829,7 @@ namespace ARMeilleure.CodeGen.X86
 
             for (int offset = PageSize; offset < size; offset += PageSize)
             {
-                Operand memOp = MemoryOp(OperandType.I32, rsp, null, Multiplier.x1, -offset);
+                Operand memOp = MemoryOp(OperandType.I32, rsp, default, Multiplier.x1, -offset);
 
                 context.Assembler.Mov(temp, memOp, OperandType.I32);
             }

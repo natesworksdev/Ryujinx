@@ -39,7 +39,7 @@ namespace ARMeilleure.Instructions
 
                 Operand dLow = context.VectorZeroUpper64(d);
 
-                Operand mask = null;
+                Operand mask = default;
 
                 switch (op.Size + 1)
                 {

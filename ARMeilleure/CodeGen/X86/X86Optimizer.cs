@@ -74,7 +74,7 @@ namespace ARMeilleure.CodeGen.X86
                     {
                         OperandType type;
 
-                        if (operation.Destination != null)
+                        if (operation.Destination != default)
                         {
                             type = operation.Destination.Type;
                         }
@@ -85,7 +85,7 @@ namespace ARMeilleure.CodeGen.X86
 
                         Operand memOp = GetMemoryOperandOrNull(operation.GetSource(0), type);
 
-                        if (memOp != null)
+                        if (memOp != default)
                         {
                             operation.SetSource(0, memOp);
                         }
@@ -117,10 +117,10 @@ namespace ARMeilleure.CodeGen.X86
             // If baseOp is still equal to address, then there's nothing that can be optimized.
             if (baseOp == addr)
             {
-                return null;
+                return default;
             }
 
-            if (imm == 0 && scale == Multiplier.x1 && indexOp != null)
+            if (imm == 0 && scale == Multiplier.x1 && indexOp != default)
             {
                 imm = GetConstOp(ref indexOp);
             }
@@ -172,7 +172,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static (Operand, Multiplier) GetIndexOp(ref Operand baseOp)
         {
-            Operand indexOp = null;
+            Operand indexOp = default;
 
             Multiplier scale = Multiplier.x1;
 
@@ -240,17 +240,12 @@ namespace ARMeilleure.CodeGen.X86
 
             Operation asgOp = op.Assignments[0];
 
-            if (!(asgOp is Operation operation))
+            if (asgOp.Instruction != inst)
             {
                 return null;
             }
 
-            if (operation.Instruction != inst)
-            {
-                return null;
-            }
-
-            return operation;
+            return asgOp;
         }
 
         private static bool IsMemoryLoadOrStore(Instruction inst)

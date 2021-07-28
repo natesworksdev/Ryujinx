@@ -215,12 +215,12 @@ namespace ARMeilleure.CodeGen.Optimizations
 
             for (int index = 0; index < node.SourcesCount; index++)
             {
-                node.SetSource(index, null);
+                node.SetSource(index, default);
             }
 
-            Debug.Assert(node.Destination == null || node.Destination.Uses.Count == 0);
+            Debug.Assert(node.Destination == default || node.Destination.Uses.Count == 0);
 
-            node.Destination = null;
+            node.Destination = default;
         }
 
         private static bool IsUnused(Operation node)
@@ -230,7 +230,7 @@ namespace ARMeilleure.CodeGen.Optimizations
 
         private static bool DestIsLocalVar(Operation node)
         {
-            return node.Destination != null && node.Destination.Kind == OperandKind.LocalVariable;
+            return node.Destination != default && node.Destination.Kind == OperandKind.LocalVariable;
         }
 
         private static bool HasSideEffects(Operation node)

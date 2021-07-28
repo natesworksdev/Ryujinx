@@ -145,7 +145,7 @@ namespace ARMeilleure.Translation
             Operand masked = context.BitwiseAnd(guestAddress, Const(~_translator.FunctionTable.Mask));
             context.BranchIfTrue(lblFallback, masked);
 
-            Operand index = null;
+            Operand index = default;
             Operand page = Const((long)_translator.FunctionTable.Base);
 
             for (int i = 0; i < _translator.FunctionTable.Levels.Length; i++)

@@ -121,7 +121,7 @@ namespace ARMeilleure.Instructions
 
         private static Operand GetAddress(ArmEmitterContext context, long addend = 0)
         {
-            Operand address = null;
+            Operand address = default;
 
             switch (context.CurrOp)
             {

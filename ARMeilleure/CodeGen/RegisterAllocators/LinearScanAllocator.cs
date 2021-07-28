@@ -1019,12 +1019,12 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 {
                     MemoryOperand memOp = source.GetMemory();
 
-                    if (memOp.BaseAddress != null)
+                    if (memOp.BaseAddress != default)
                     {
                         action(memOp.BaseAddress);
                     }
 
-                    if (memOp.Index != null)
+                    if (memOp.Index != default)
                     {
                         action(memOp.Index);
                     }

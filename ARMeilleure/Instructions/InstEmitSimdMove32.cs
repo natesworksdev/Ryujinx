@@ -267,7 +267,7 @@ namespace ARMeilleure.Instructions
                     Operand selectedIndex = context.ZeroExtend8(OperandType.I32, context.VectorExtract8(m, index + op.Im));
 
                     Operand inRange = context.ICompareLess(selectedIndex, Const(byteLength));
-                    Operand elemRes = null; // Note: This is I64 for ease of calculation.
+                    Operand elemRes = default; // Note: This is I64 for ease of calculation.
 
                     // TODO: Branching rather than conditional select.
 
@@ -325,7 +325,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorShuffleOpSimd32(context, (m, d) =>
                 {
-                    Operand mask = null;
+                    Operand mask = default;
 
                     if (op.Size < 3)
                     {
@@ -467,7 +467,7 @@ namespace ARMeilleure.Instructions
                 {
                     if (op.RegisterSize == RegisterSize.Simd128)
                     {
-                        Operand mask = null;
+                        Operand mask = default;
 
                         if (op.Size < 3)
                         {

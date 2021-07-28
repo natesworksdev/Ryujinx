@@ -84,7 +84,7 @@ namespace ARMeilleure.Diagnostics
 
         private void DumpOperand(Operand operand)
         {
-            if (operand == null)
+            if (operand == default)
             {
                 _builder.Append("<NULL>");
                 return;
@@ -137,7 +137,7 @@ namespace ARMeilleure.Diagnostics
 
                     DumpOperand(memOp.BaseAddress);
 
-                    if (memOp.Index != null)
+                    if (memOp.Index != default)
                     {
                         _builder.Append(" + ");
 

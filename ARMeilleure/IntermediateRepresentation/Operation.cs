@@ -13,7 +13,7 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public Operand Destination
         {
-            get => _destinations.Count != 0 ? GetDestination(0) : null;
+            get => _destinations.Count != 0 ? GetDestination(0) : default;
             set => SetDestination(value);
         }
 
@@ -207,7 +207,7 @@ namespace ARMeilleure.IntermediateRepresentation
         {
             RemoveOldDestinations();
 
-            if (destination == null)
+            if (destination == default)
             {
                 _destinations.Clear();
                 _clearedDest = true;
@@ -250,7 +250,7 @@ namespace ARMeilleure.IntermediateRepresentation
         {
             RemoveOldSources();
 
-            if (source == null)
+            if (source == default)
             {
                 _sources.Clear();
             }
@@ -282,7 +282,7 @@ namespace ARMeilleure.IntermediateRepresentation
 
         private void AddAssignment(Operand op)
         {
-            if (op == null)
+            if (op == default)
             {
                 return;
             }
@@ -295,12 +295,12 @@ namespace ARMeilleure.IntermediateRepresentation
             {
                 MemoryOperand memOp = op.GetMemory();
 
-                if (memOp.BaseAddress != null)
+                if (memOp.BaseAddress != default)
                 {
                     memOp.BaseAddress.Assignments.Add(this);
                 }
                 
-                if (memOp.Index != null)
+                if (memOp.Index != default)
                 {
                     memOp.Index.Assignments.Add(this);
                 }
@@ -309,7 +309,7 @@ namespace ARMeilleure.IntermediateRepresentation
 
         private void RemoveAssignment(Operand op)
         {
-            if (op == null)
+            if (op == default)
             {
                 return;
             }
@@ -322,12 +322,12 @@ namespace ARMeilleure.IntermediateRepresentation
             {
                 MemoryOperand memOp = op.GetMemory();
 
-                if (memOp.BaseAddress != null)
+                if (memOp.BaseAddress != default)
                 {
                     memOp.BaseAddress.Assignments.Remove(this);
                 }
 
-                if (memOp.Index != null)
+                if (memOp.Index != default)
                 {
                     memOp.Index.Assignments.Remove(this);
                 }
@@ -336,7 +336,7 @@ namespace ARMeilleure.IntermediateRepresentation
 
         private void AddUse(Operand op)
         {
-            if (op == null)
+            if (op == default)
             {
                 return;
             }
@@ -349,12 +349,12 @@ namespace ARMeilleure.IntermediateRepresentation
             {
                 MemoryOperand memOp = op.GetMemory();
 
-                if (memOp.BaseAddress != null)
+                if (memOp.BaseAddress != default)
                 {
                     memOp.BaseAddress.Uses.Add(this);
                 }
 
-                if (memOp.Index != null)
+                if (memOp.Index != default)
                 {
                     memOp.Index.Uses.Add(this);
                 }
@@ -363,7 +363,7 @@ namespace ARMeilleure.IntermediateRepresentation
 
         private void RemoveUse(Operand op)
         {
-            if (op == null)
+            if (op == default)
             {
                 return;
             }
@@ -376,12 +376,12 @@ namespace ARMeilleure.IntermediateRepresentation
             {
                 MemoryOperand memOp = op.GetMemory();
 
-                if (memOp.BaseAddress != null)
+                if (memOp.BaseAddress != default)
                 {
                     memOp.BaseAddress.Uses.Remove(this);
                 }
 
-                if (memOp.Index != null)
+                if (memOp.Index != default)
                 {
                     memOp.Index.Uses.Remove(this);
                 }
@@ -398,7 +398,7 @@ namespace ARMeilleure.IntermediateRepresentation
             {
                 while (list.Count < size)
                 {
-                    list.Add(null);
+                    list.Add(default);
                 }
             }
         }

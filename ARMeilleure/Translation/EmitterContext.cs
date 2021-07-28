@@ -77,7 +77,7 @@ namespace ARMeilleure.Translation
 
         public void BranchIf(Operand label, Operand op1, Operand op2, Comparison comp, BasicBlockFrequency falseFreq = default)
         {
-            Add(Instruction.BranchIf, null, op1, op2, Const((int)comp));
+            Add(Instruction.BranchIf, default, op1, op2, Const((int)comp));
 
             BranchToLabel(label, uncond: false, falseFreq);
         }
@@ -157,7 +157,7 @@ namespace ARMeilleure.Translation
             }
             else
             {
-                return Add(Instruction.Call, null, args);
+                return Add(Instruction.Call, default, args);
             }
         }
 
@@ -169,7 +169,7 @@ namespace ARMeilleure.Translation
 
             Array.Copy(callArgs, 0, args, 1, callArgs.Length);
 
-            Add(Instruction.Tailcall, null, args);
+            Add(Instruction.Tailcall, default, args);
 
             _needsNewBlock = true;
         }
@@ -356,7 +356,7 @@ namespace ARMeilleure.Translation
 
         public void Return(Operand op1)
         {
-            Add(Instruction.Return, null, op1);
+            Add(Instruction.Return, default, op1);
 
             _needsNewBlock = true;
         }
@@ -398,17 +398,17 @@ namespace ARMeilleure.Translation
 
         public void Store(Operand address, Operand value)
         {
-            Add(Instruction.Store, null, address, value);
+            Add(Instruction.Store, default, address, value);
         }
 
         public void Store16(Operand address, Operand value)
         {
-            Add(Instruction.Store16, null, address, value);
+            Add(Instruction.Store16, default, address, value);
         }
 
         public void Store8(Operand address, Operand value)
         {
-            Add(Instruction.Store8, null, address, value);
+            Add(Instruction.Store8, default, address, value);
         }
 
         public void StoreToContext()
@@ -501,7 +501,7 @@ namespace ARMeilleure.Translation
             }
         }
 
-        private Operand Add(Instruction inst, Operand dest = null)
+        private Operand Add(Instruction inst, Operand dest = default)
         {
             NewNextBlockIfNeeded();
 
@@ -573,7 +573,7 @@ namespace ARMeilleure.Translation
 
         public void AddIntrinsicNoRet(Intrinsic intrin, params Operand[] args)
         {
-            Add(intrin, null, args);
+            Add(intrin, default, args);
         }
 
         private Operand Add(Intrinsic intrin, Operand dest, params Operand[] sources)

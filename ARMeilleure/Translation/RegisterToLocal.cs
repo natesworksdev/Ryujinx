@@ -31,7 +31,7 @@ namespace ARMeilleure.Translation
                 {
                     Operand dest = node.Destination;
 
-                    if (dest != null && dest.Kind == OperandKind.Register)
+                    if (dest != default && dest.Kind == OperandKind.Register)
                     {
                         node.Destination = GetLocal(dest);
                     }

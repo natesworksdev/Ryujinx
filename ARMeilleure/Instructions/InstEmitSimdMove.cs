@@ -639,7 +639,7 @@ namespace ARMeilleure.Instructions
 
             if (Optimizations.UseSsse3)
             {
-                Operand mask = null;
+                Operand mask = default;
 
                 if (op.Size < 3)
                 {
@@ -707,7 +707,7 @@ namespace ARMeilleure.Instructions
             {
                 if (op.RegisterSize == RegisterSize.Simd128)
                 {
-                    Operand mask = null;
+                    Operand mask = default;
 
                     if (op.Size < 3)
                     {

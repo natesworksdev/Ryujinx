@@ -46,7 +46,7 @@ namespace ARMeilleure.CodeGen.X86
                             // should be written on the first argument.
                             int argsCount = node.SourcesCount - 1;
 
-                            if (node.Destination != null && node.Destination.Type == OperandType.V128)
+                            if (node.Destination != default && node.Destination.Type == OperandType.V128)
                             {
                                 argsCount++;
                             }
@@ -371,7 +371,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void HandleDestructiveRegCopy(IntrusiveList<Operation> nodes, Operation node, Operation operation)
         {
-            if (operation.Destination == null || operation.SourcesCount == 0)
+            if (operation.Destination == default || operation.SourcesCount == 0)
             {
                 return;
             }
@@ -606,9 +606,9 @@ namespace ARMeilleure.CodeGen.X86
                 return offset;
             }
 
-            Operand arg0Reg = null;
+            Operand arg0Reg = default;
 
-            if (dest != null && dest.Type == OperandType.V128)
+            if (dest != default && dest.Type == OperandType.V128)
             {
                 int stackOffset = AllocateOnStack(dest.Type.GetSizeInBytes());
 
@@ -634,7 +634,7 @@ namespace ARMeilleure.CodeGen.X86
 
             sources[0] = operation.GetSource(0);
 
-            if (arg0Reg != null)
+            if (arg0Reg != default)
             {
                 sources[1] = arg0Reg;
             }
@@ -651,7 +651,7 @@ namespace ARMeilleure.CodeGen.X86
 
                     nodes.AddBefore(node, Operation(Instruction.StackAlloc, stackAddr, Const(stackOffset)));
 
-                    Operation storeOp = Operation(Instruction.Store, null, stackAddr, source);
+                    Operation storeOp = Operation(Instruction.Store, default, stackAddr, source);
 
                     HandleConstantRegCopy(nodes, nodes.AddBefore(node, storeOp), storeOp);
 
@@ -692,12 +692,12 @@ namespace ARMeilleure.CodeGen.X86
 
                 Operand offset = Const((index + retArgs) * 8);
 
-                Operation spillOp = Operation(Instruction.SpillArg, null, offset, source);
+                Operation spillOp = Operation(Instruction.SpillArg, default, offset, source);
 
                 HandleConstantRegCopy(nodes, nodes.AddBefore(node, spillOp), spillOp);
             }
 
-            if (dest != null)
+            if (dest != default)
             {
                 if (dest.Type == OperandType.V128)
                 {
@@ -709,7 +709,7 @@ namespace ARMeilleure.CodeGen.X86
 
                     nodes.AddAfter(node, loadOp);
 
-                    operation.Destination = null;
+                    operation.Destination = default;
                 }
                 else
                 {
@@ -794,7 +794,7 @@ namespace ARMeilleure.CodeGen.X86
                 {
                     Operand offset = Const(stackOffset);
 
-                    Operation spillOp = Operation(Instruction.SpillArg, null, offset, source);
+                    Operation spillOp = Operation(Instruction.SpillArg, default, offset, source);
 
                     HandleConstantRegCopy(nodes, nodes.AddBefore(node, spillOp), spillOp);
 
@@ -802,7 +802,7 @@ namespace ARMeilleure.CodeGen.X86
                 }
             }
 
-            if (dest != null)
+            if (dest != default)
             {
                 if (dest.Type == OperandType.V128)
                 {
@@ -812,7 +812,7 @@ namespace ARMeilleure.CodeGen.X86
                     node = nodes.AddAfter(node, Operation(Instruction.VectorCreateScalar, dest, retLReg));
                     nodes.AddAfter(node, Operation(Instruction.VectorInsert, dest, dest, retHReg, Const(1)));
 
-                    operation.Destination = null;
+                    operation.Destination = default;
                 }
                 else
                 {
@@ -968,7 +968,7 @@ namespace ARMeilleure.CodeGen.X86
             {
                 Operand dest = operation.Destination;
 
-                if (preservedArgs[index] == null)
+                if (preservedArgs[index] == default)
                 {
                     Operand argReg, pArg;
 
@@ -1068,7 +1068,7 @@ namespace ARMeilleure.CodeGen.X86
             {
                 Operand dest = operation.Destination;
 
-                if (preservedArgs[index] == null)
+                if (preservedArgs[index] == default)
                 {
                     if (dest.Type == OperandType.V128)
                     {
@@ -1139,7 +1139,7 @@ namespace ARMeilleure.CodeGen.X86
             }
             else if (source.Type == OperandType.V128)
             {
-                if (preservedArgs[0] == null)
+                if (preservedArgs[0] == default)
                 {
                     Operand preservedArg = Local(OperandType.I64);
 
@@ -1161,7 +1161,7 @@ namespace ARMeilleure.CodeGen.X86
 
             if (source.Type == OperandType.V128)
             {
-                Operation retStoreOp = Operation(Instruction.Store, null, retReg, source);
+                Operation retStoreOp = Operation(Instruction.Store, default, retReg, source);
 
                 nodes.AddBefore(node, retStoreOp);
             }
@@ -1244,11 +1244,11 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void Delete(IntrusiveList<Operation> nodes, Operation node, Operation operation)
         {
-            operation.Destination = null;
+            operation.Destination = default;
 
             for (int index = 0; index < operation.SourcesCount; index++)
             {
-                operation.SetSource(index, null);
+                operation.SetSource(index, default);
             }
 
             nodes.Remove(node);
@@ -1314,7 +1314,7 @@ namespace ARMeilleure.CodeGen.X86
             {
                 bool isUnary = operation.SourcesCount < 2;
 
-                bool hasVecDest = operation.Destination != null && operation.Destination.Type == OperandType.V128;
+                bool hasVecDest = operation.Destination != default && operation.Destination.Type == OperandType.V128;
 
                 return !HardwareCapabilities.SupportsVexEncoding && !isUnary && hasVecDest;
             }

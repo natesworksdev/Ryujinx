@@ -1127,7 +1127,7 @@ namespace ARMeilleure.Instructions
         {
             ThrowIfInvalid(index, size);
 
-            Operand res = null;
+            Operand res = default;
 
             switch (size)
             {

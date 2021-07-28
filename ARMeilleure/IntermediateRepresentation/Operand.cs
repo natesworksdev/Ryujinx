@@ -3,29 +3,54 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
+using static ARMeilleure.IntermediateRepresentation.OperationHelper;
 
 namespace ARMeilleure.IntermediateRepresentation
 {
-    class Operand
+    unsafe struct Operand
     {
-        private MemoryOperand _memory;
+        private struct Data
+        {
+            public OperandKind Kind;
+            public OperandType Type;
+            public ulong Value;
+            public Symbol Symbol;
+            public MemoryOperand Memory;
+        }
 
-        public OperandKind Kind { get; private set; }
-        public OperandType Type { get; private set; }
+        private Data *_data;
 
-        public ulong Value { get; private set; }
-
-        public List<Operation> Assignments { get; }
-        public List<Operation> Uses        { get; }
-
-        public Symbol Symbol { get; private set; }
         public bool Relocatable => Symbol.Type != SymbolType.None;
 
-        public Operand()
+        public OperandKind Kind
         {
-            Assignments = new List<Operation>();
-            Uses        = new List<Operation>();
+            get => _data->Kind;
+            private set => _data->Kind = value; 
         }
+
+        public OperandType Type
+        {
+            get => _data->Type;
+            private set => _data->Type = value;
+        }
+
+        public ulong Value
+        {
+            get => _data->Value;
+            private set => _data->Value = value;
+        }
+
+        public Symbol Symbol
+        {
+            get => _data->Symbol;
+            private set => _data->Symbol = value;
+        }
+
+        // TODO(FIXME);
+        public List<Operation> Assignments => new() { Operation(Instruction.Extended, default) };
+        public List<Operation> Uses => new() { Operation(Instruction.Extended, default) };
 
         public Operand(OperandKind kind, OperandType type = OperandType.None) : this()
         {
@@ -39,13 +64,9 @@ namespace ARMeilleure.IntermediateRepresentation
             ulong value = 0,
             Symbol symbol = default)
         {
-            _memory = default;
-
             Kind = kind;
             Type = type;
-
             Value = value;
-
             Symbol = symbol;
 
             Assignments.Clear();
@@ -107,7 +128,7 @@ namespace ARMeilleure.IntermediateRepresentation
         {
             Debug.Assert(Kind == OperandKind.Memory);
 
-            return ref _memory;
+            return ref _data->Memory;
         }
 
         public int GetLocalNumber()
@@ -157,6 +178,20 @@ namespace ARMeilleure.IntermediateRepresentation
             Value = (ulong)number;
         }
 
+        public static Operand New()
+        {
+            var result = new Operand();
+
+            result._data = (Data*)Marshal.AllocHGlobal(sizeof(Data));
+
+            if (result._data == null)
+            {
+                throw new OutOfMemoryException();
+            }
+
+            return result;
+        }
+
         public override int GetHashCode()
         {
             if (Kind == OperandKind.LocalVariable)
@@ -167,6 +202,26 @@ namespace ARMeilleure.IntermediateRepresentation
             {
                 return (int)Value ^ ((int)Kind << 16) ^ ((int)Type << 20);
             }
+        }
+
+        public bool Equals(Operand operand)
+        {
+            return operand._data == _data;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is Operand operand && Equals(operand);
+        }
+
+        public static bool operator ==(Operand a, Operand b)
+        {
+            return a.Equals(b);
+        }
+
+        public static bool operator !=(Operand a, Operand b)
+        {
+            return !a.Equals(b);
         }
     }
 }

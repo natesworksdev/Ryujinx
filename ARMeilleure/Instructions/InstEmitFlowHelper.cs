@@ -28,7 +28,7 @@ namespace ARMeilleure.Instructions
         {
             Operand cmpResult = context.TryGetComparisonResult(condition);
 
-            if (cmpResult != null)
+            if (cmpResult != default)
             {
                 return cmpResult;
             }

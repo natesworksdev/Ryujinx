@@ -27,14 +27,14 @@ namespace ARMeilleure.Translation
 
                         predecessor.Append(Operation(Instruction.Copy, local, source));
 
-                        phi.SetSource(index * 2 + 1, null);
+                        phi.SetSource(index * 2 + 1, default);
                     }
 
                     Operation copyOp = Operation(Instruction.Copy, phi.Destination, local);
 
                     block.Operations.AddBefore(node, copyOp);
 
-                    phi.Destination = null;
+                    phi.Destination = default;
 
                     block.Operations.Remove(node);
 

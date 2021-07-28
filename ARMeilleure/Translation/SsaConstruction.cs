@@ -70,7 +70,12 @@ namespace ARMeilleure.Translation
 
                         if (TryGetId(src, out int srcKey))
                         {
-                            Operand local = localDefs[srcKey] ?? src;
+                            Operand local = localDefs[srcKey];
+
+                            if (local == default)
+                            {
+                                local = src;
+                            }
 
                             operation.SetSource(index, local);
                         }
@@ -92,7 +97,7 @@ namespace ARMeilleure.Translation
                 {
                     Operand local = localDefs[key];
 
-                    if (local is null)
+                    if (local == default)
                     {
                         continue;
                     }
@@ -134,7 +139,7 @@ namespace ARMeilleure.Translation
                         {
                             Operand local = localDefs[key];
 
-                            if (local is null)
+                            if (local == default)
                             {
                                 local = FindDef(globalDefs, block, src);
                                 localDefs[key] = local;
@@ -241,34 +246,37 @@ namespace ARMeilleure.Translation
 
         private static bool TryGetId(Operand operand, out int result)
         {
-            if (operand is { Kind: OperandKind.Register })
+            if (operand != default)
             {
-                Register reg = operand.GetRegister();
+                if (operand.Kind == OperandKind.Register)
+                {
+                    Register reg = operand.GetRegister();
 
-                if (reg.Type == RegisterType.Integer)
-                {
-                    result = reg.Index;
-                }
-                else if (reg.Type == RegisterType.Vector)
-                {
-                    result = RegisterConsts.IntRegsCount + reg.Index;
-                }
-                else if (reg.Type == RegisterType.Flag)
-                {
-                    result = RegisterConsts.IntAndVecRegsCount + reg.Index;
-                }
-                else /* if (reg.Type == RegisterType.FpFlag) */
-                {
-                    result = RegisterConsts.FpFlagsOffset + reg.Index;
-                }
+                    if (reg.Type == RegisterType.Integer)
+                    {
+                        result = reg.Index;
+                    }
+                    else if (reg.Type == RegisterType.Vector)
+                    {
+                        result = RegisterConsts.IntRegsCount + reg.Index;
+                    }
+                    else if (reg.Type == RegisterType.Flag)
+                    {
+                        result = RegisterConsts.IntAndVecRegsCount + reg.Index;
+                    }
+                    else /* if (reg.Type == RegisterType.FpFlag) */
+                    {
+                        result = RegisterConsts.FpFlagsOffset + reg.Index;
+                    }
 
-                return true;
-            }
-            else if (operand is { Kind: OperandKind.LocalVariable } && operand.GetLocalNumber() > 0)
-            {
-                result = RegisterConsts.TotalCount + operand.GetLocalNumber() - 1;
+                    return true;
+                }
+                else if (operand.Kind == OperandKind.LocalVariable && operand.GetLocalNumber() > 0)
+                {
+                    result = RegisterConsts.TotalCount + operand.GetLocalNumber() - 1;
 
-                return true;
+                    return true;
+                }
             }
 
             result = -1;

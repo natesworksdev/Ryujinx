@@ -1275,7 +1275,8 @@ namespace ARMeilleure.Instructions
         {
             OpCode32SimdSel op = (OpCode32SimdSel)context.CurrOp;
 
-            Operand condition = null;
+            Operand condition = default;
+
             switch (op.Cc)
             {
                 case OpCode32SimdSelMode.Eq:

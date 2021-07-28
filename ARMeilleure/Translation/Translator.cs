@@ -408,7 +408,7 @@ namespace ARMeilleure.Translation
                             EmitSynchronization(context);
                         }
 
-                        Operand lblPredicateSkip = null;
+                        Operand lblPredicateSkip = default;
 
                         if (opCode is OpCode32 op && op.Cond < Condition.Al)
                         {
@@ -426,7 +426,7 @@ namespace ARMeilleure.Translation
                             throw new InvalidOperationException($"Invalid instruction \"{opCode.Instruction.Name}\".");
                         }
 
-                        if (lblPredicateSkip != null)
+                        if (lblPredicateSkip != default)
                         {
                             context.MarkLabel(lblPredicateSkip);
                         }

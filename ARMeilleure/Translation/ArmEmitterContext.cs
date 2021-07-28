@@ -138,7 +138,7 @@ namespace ARMeilleure.Translation
         {
             if (_optOpLastCompare == null || _optOpLastCompare != _optOpLastFlagSet)
             {
-                return null;
+                return default;
             }
 
             Operand n = _optCmpTempN;
@@ -193,7 +193,7 @@ namespace ARMeilleure.Translation
                 }
             }
 
-            return null;
+            return default;
         }
     }
 }

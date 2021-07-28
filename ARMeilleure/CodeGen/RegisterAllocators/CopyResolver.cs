@@ -210,7 +210,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             Operand register = GetRegister(left.Register, type);
 
-            _spillQueue.Enqueue(Operation(Instruction.Spill, null, offset, register));
+            _spillQueue.Enqueue(Operation(Instruction.Spill, default, offset, register));
 
             HasCopy = true;
         }
