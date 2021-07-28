@@ -1,40 +1,22 @@
-﻿using Ryujinx.Graphics.GAL;
-using Silk.NET.Vulkan;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Silk.NET.Vulkan;
+using System.Numerics;
 
 namespace Ryujinx.Graphics.Vulkan
 {
     static class PipelineLayoutFactory
     {
-        public static unsafe DescriptorSetLayout[] Create(
-            VulkanGraphicsDevice gd,
-            Device device,
-            Shader[] shaders,
-            out PipelineLayout layout)
+        public static unsafe DescriptorSetLayout[] Create(VulkanGraphicsDevice gd, Device device, uint stages, out PipelineLayout layout)
         {
-            bool isCompute = false;
+            int stagesCount = BitOperations.PopCount(stages);
 
-            foreach (var shader in shaders)
-            {
-                if (shader.StageFlags == ShaderStageFlags.ShaderStageComputeBit)
-                {
-                    isCompute = true;
-                    break;
-                }
-            }
-
-            int uCount = shaders.Sum(x => x.Bindings.UniformBufferBindings.Count) + 1;
-            int tCount = shaders.Sum(x => x.Bindings.TextureBindings.Count);
-            int iCount = shaders.Sum(x => x.Bindings.ImageBindings.Count);
-            int bTCount = shaders.Sum(x => x.Bindings.BufferTextureBindings.Count);
-            int bICount = shaders.Sum(x => x.Bindings.BufferImageBindings.Count);
-
-            int sArraysCount = shaders.Sum(x => x.Bindings.StorageBufferBindings.Count != 0 ? 1 : 0);
+            int uCount = Constants.MaxUniformBuffersPerStage * stagesCount + 1;
+            int tCount = Constants.MaxTexturesPerStage * stagesCount;
+            int iCount = Constants.MaxImagesPerStage * stagesCount;
+            int bTCount = tCount;
+            int bICount = iCount;
 
             DescriptorSetLayoutBinding* uLayoutBindings = stackalloc DescriptorSetLayoutBinding[uCount];
-            DescriptorSetLayoutBinding* sLayoutBindings = stackalloc DescriptorSetLayoutBinding[sArraysCount];
+            DescriptorSetLayoutBinding* sLayoutBindings = stackalloc DescriptorSetLayoutBinding[stagesCount];
             DescriptorSetLayoutBinding* tLayoutBindings = stackalloc DescriptorSetLayoutBinding[tCount];
             DescriptorSetLayoutBinding* iLayoutBindings = stackalloc DescriptorSetLayoutBinding[iCount];
             DescriptorSetLayoutBinding* bTLayoutBindings = stackalloc DescriptorSetLayoutBinding[bTCount];
@@ -45,101 +27,124 @@ namespace Ryujinx.Graphics.Vulkan
                 Binding = 0,
                 DescriptorType = DescriptorType.UniformBuffer,
                 DescriptorCount = 1,
-                StageFlags = isCompute ? ShaderStageFlags.ShaderStageComputeBit : ShaderStageFlags.ShaderStageFragmentBit
+                StageFlags = ShaderStageFlags.ShaderStageFragmentBit | ShaderStageFlags.ShaderStageComputeBit
             };
 
-            void InitializeBinding(
-                DescriptorSetLayoutBinding* bindings,
-                Func<ShaderBindings, IReadOnlyCollection<int>> selector,
-                DescriptorType type,
-                int start = 0)
+            int iter = 0;
+
+            while (stages != 0)
             {
-                int index = start;
+                int stage = BitOperations.TrailingZeroCount(stages);
+                stages &= ~(1u << stage);
 
-                for (int stage = 0; stage < shaders.Length; stage++)
+                var stageFlags = stage switch
                 {
-                    var collection = selector(shaders[stage].Bindings);
-
-                    foreach (var binding in collection)
-                    {
-                        bindings[index++] = new DescriptorSetLayoutBinding
-                        {
-                            Binding = (uint)binding,
-                            DescriptorType = type,
-                            DescriptorCount = 1,
-                            StageFlags = shaders[stage].StageFlags
-                        };
-                    }
-                }
-            }
-
-            void InitializeStorageBufferBinding(DescriptorSetLayoutBinding* bindings)
-            {
-                int index = 0;
-
-                for (int stage = 0; stage < shaders.Length; stage++)
-                {
-                    var collection = shaders[stage].Bindings.StorageBufferBindings;
-
-                    if (collection.Count != 0)
-                    {
-                        bindings[index++] = new DescriptorSetLayoutBinding
-                        {
-                            Binding = (uint)collection.First(),
-                            DescriptorType = DescriptorType.StorageBuffer,
-                            DescriptorCount = (uint)collection.Count,
-                            StageFlags = shaders[stage].StageFlags
-                        };
-                    }
-                }
-            }
-
-            InitializeBinding(uLayoutBindings, x => x.UniformBufferBindings, DescriptorType.UniformBuffer, 1);
-            InitializeStorageBufferBinding(sLayoutBindings);
-            InitializeBinding(tLayoutBindings, x => x.TextureBindings, DescriptorType.CombinedImageSampler);
-            InitializeBinding(iLayoutBindings, x => x.ImageBindings, DescriptorType.StorageImage);
-            InitializeBinding(bTLayoutBindings, x => x.BufferTextureBindings, DescriptorType.UniformTexelBuffer);
-            InitializeBinding(bILayoutBindings, x => x.BufferImageBindings, DescriptorType.StorageTexelBuffer);
-
-            DescriptorSetLayout[] allLayouts = new DescriptorSetLayout[PipelineBase.DescriptorSetLayouts];
-
-            void InitializeDescriptorSetLayout(DescriptorSetLayoutBinding* pBindings, int count, out DescriptorSetLayout layout)
-            {
-                var createInfo = new DescriptorSetLayoutCreateInfo()
-                {
-                    SType = StructureType.DescriptorSetLayoutCreateInfo,
-                    PBindings = pBindings,
-                    BindingCount = (uint)count
+                    1 => ShaderStageFlags.ShaderStageFragmentBit,
+                    2 => ShaderStageFlags.ShaderStageGeometryBit,
+                    3 => ShaderStageFlags.ShaderStageTessellationControlBit,
+                    4 => ShaderStageFlags.ShaderStageTessellationEvaluationBit,
+                    _ => ShaderStageFlags.ShaderStageVertexBit | ShaderStageFlags.ShaderStageComputeBit
                 };
 
-                gd.Api.CreateDescriptorSetLayout(device, createInfo, null, out layout).ThrowOnError();
+                void Set(DescriptorSetLayoutBinding* bindings, int maxPerStage, DescriptorType type, int start = 0)
+                {
+                    for (int i = 0; i < maxPerStage; i++)
+                    {
+                        bindings[start + iter * maxPerStage + i] = new DescriptorSetLayoutBinding
+                        {
+                            Binding = (uint)(start + stage * maxPerStage + i),
+                            DescriptorType = type,
+                            DescriptorCount = 1,
+                            StageFlags = stageFlags
+                        };
+                    }
+                }
+
+                void SetStorage(DescriptorSetLayoutBinding* bindings, int maxPerStage, int start = 0)
+                {
+                    bindings[start + iter] = new DescriptorSetLayoutBinding
+                    {
+                        Binding = (uint)(start + stage * maxPerStage),
+                        DescriptorType = DescriptorType.StorageBuffer,
+                        DescriptorCount = (uint)maxPerStage,
+                        StageFlags = stageFlags
+                    };
+                }
+
+                Set(uLayoutBindings, Constants.MaxUniformBuffersPerStage, DescriptorType.UniformBuffer, 1);
+                SetStorage(sLayoutBindings, Constants.MaxStorageBuffersPerStage);
+                Set(tLayoutBindings, Constants.MaxTexturesPerStage, DescriptorType.CombinedImageSampler);
+                Set(iLayoutBindings, Constants.MaxImagesPerStage, DescriptorType.StorageImage);
+                Set(bTLayoutBindings, Constants.MaxTexturesPerStage, DescriptorType.UniformTexelBuffer);
+                Set(bILayoutBindings, Constants.MaxImagesPerStage, DescriptorType.StorageTexelBuffer);
+
+                iter++;
             }
 
-            InitializeDescriptorSetLayout(uLayoutBindings, uCount, out allLayouts[PipelineBase.UniformSetIndex]);
-            InitializeDescriptorSetLayout(sLayoutBindings, sArraysCount, out allLayouts[PipelineBase.StorageSetIndex]);
-            InitializeDescriptorSetLayout(tLayoutBindings, tCount, out allLayouts[PipelineBase.TextureSetIndex]);
-            InitializeDescriptorSetLayout(iLayoutBindings, iCount, out allLayouts[PipelineBase.ImageSetIndex]);
-            InitializeDescriptorSetLayout(bTLayoutBindings, bTCount, out allLayouts[PipelineBase.BufferTextureSetIndex]);
-            InitializeDescriptorSetLayout(bILayoutBindings, bICount, out allLayouts[PipelineBase.BufferImageSetIndex]);
+            DescriptorSetLayout[] layouts = new DescriptorSetLayout[PipelineFull.DescriptorSetLayouts];
 
-            fixed (DescriptorSetLayout* pLayouts = allLayouts)
+            var uDescriptorSetLayoutCreateInfo = new DescriptorSetLayoutCreateInfo()
+            {
+                SType = StructureType.DescriptorSetLayoutCreateInfo,
+                PBindings = uLayoutBindings,
+                BindingCount = (uint)uCount
+            };
+
+            var sDescriptorSetLayoutCreateInfo = new DescriptorSetLayoutCreateInfo()
+            {
+                SType = StructureType.DescriptorSetLayoutCreateInfo,
+                PBindings = sLayoutBindings,
+                BindingCount = (uint)stagesCount
+            };
+
+            var tDescriptorSetLayoutCreateInfo = new DescriptorSetLayoutCreateInfo()
+            {
+                SType = StructureType.DescriptorSetLayoutCreateInfo,
+                PBindings = tLayoutBindings,
+                BindingCount = (uint)tCount
+            };
+
+            var iDescriptorSetLayoutCreateInfo = new DescriptorSetLayoutCreateInfo()
+            {
+                SType = StructureType.DescriptorSetLayoutCreateInfo,
+                PBindings = iLayoutBindings,
+                BindingCount = (uint)iCount
+            };
+
+            var bTDescriptorSetLayoutCreateInfo = new DescriptorSetLayoutCreateInfo()
+            {
+                SType = StructureType.DescriptorSetLayoutCreateInfo,
+                PBindings = bTLayoutBindings,
+                BindingCount = (uint)bTCount
+            };
+
+            var bIDescriptorSetLayoutCreateInfo = new DescriptorSetLayoutCreateInfo()
+            {
+                SType = StructureType.DescriptorSetLayoutCreateInfo,
+                PBindings = bILayoutBindings,
+                BindingCount = (uint)bICount
+            };
+
+            gd.Api.CreateDescriptorSetLayout(device, uDescriptorSetLayoutCreateInfo, null, out layouts[PipelineFull.UniformSetIndex]).ThrowOnError();
+            gd.Api.CreateDescriptorSetLayout(device, sDescriptorSetLayoutCreateInfo, null, out layouts[PipelineFull.StorageSetIndex]).ThrowOnError();
+            gd.Api.CreateDescriptorSetLayout(device, tDescriptorSetLayoutCreateInfo, null, out layouts[PipelineFull.TextureSetIndex]).ThrowOnError();
+            gd.Api.CreateDescriptorSetLayout(device, iDescriptorSetLayoutCreateInfo, null, out layouts[PipelineFull.ImageSetIndex]).ThrowOnError();
+            gd.Api.CreateDescriptorSetLayout(device, bTDescriptorSetLayoutCreateInfo, null, out layouts[PipelineFull.BufferTextureSetIndex]).ThrowOnError();
+            gd.Api.CreateDescriptorSetLayout(device, bIDescriptorSetLayoutCreateInfo, null, out layouts[PipelineFull.BufferImageSetIndex]).ThrowOnError();
+
+            fixed (DescriptorSetLayout* pLayouts = layouts)
             {
                 var pipelineLayoutCreateInfo = new PipelineLayoutCreateInfo()
                 {
                     SType = StructureType.PipelineLayoutCreateInfo,
                     PSetLayouts = pLayouts,
-                    SetLayoutCount = PipelineBase.DescriptorSetLayouts
+                    SetLayoutCount = PipelineFull.DescriptorSetLayouts
                 };
 
                 gd.Api.CreatePipelineLayout(device, &pipelineLayoutCreateInfo, null, out layout).ThrowOnError();
             }
 
-            return allLayouts;
-        }
-
-        private static int NonZero(int value)
-        {
-            return value != 0 ? 1 : 0;
+            return layouts;
         }
     }
 }

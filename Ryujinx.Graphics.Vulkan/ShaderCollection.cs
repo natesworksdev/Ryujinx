@@ -11,20 +11,15 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly PipelineShaderStageCreateInfo[] _infos;
         private readonly IShader[] _shaders;
 
-        public DescriptorSetLayout[] DescriptorSetLayouts { get; }
-        public PipelineLayout PipelineLayout { get; }
+        private readonly PipelineLayoutCacheEntry _plce;
 
-        public int[][] Bindings { get; }
+        public PipelineLayout PipelineLayout => _plce.PipelineLayout;
 
-        public int[][][] BindingsOld { get; }
+        public uint Stages { get; }
 
-        public DescriptorSetCache DescriptorSetCache { get; }
+        public int[][][] Bindings { get; }
 
         public ProgramLinkStatus LinkStatus { get; }
-
-        private readonly List<Auto<DescriptorSetCollection>>[][] _dsCache;
-        private readonly int[] _dsCacheCursor;
-        private int _dsLastCbIndex;
 
         private HashTableSlim<PipelineUid, Auto<DisposablePipeline>> _graphicsPipelineCache;
         private Auto<DisposablePipeline> _computePipeline;
@@ -50,6 +45,8 @@ namespace Ryujinx.Graphics.Vulkan
 
             LinkStatus = ProgramLinkStatus.Success;
 
+            uint stages = 0;
+
             for (int i = 0; i < shaders.Length; i++)
             {
                 var shader = (Shader)shaders[i];
@@ -58,26 +55,37 @@ namespace Ryujinx.Graphics.Vulkan
                     LinkStatus = ProgramLinkStatus.Failure;
                 }
 
+                stages |= 1u << shader.StageFlags switch
+                {
+                    ShaderStageFlags.ShaderStageFragmentBit => 1,
+                    ShaderStageFlags.ShaderStageGeometryBit => 2,
+                    ShaderStageFlags.ShaderStageTessellationControlBit => 3,
+                    ShaderStageFlags.ShaderStageTessellationEvaluationBit => 4,
+                    _ => 0
+                };
+
                 internalShaders[i] = shader;
 
                 _infos[i] = internalShaders[i].GetInfo();
             }
 
-            DescriptorSetLayouts = PipelineLayoutFactory.Create(_gd, _device, internalShaders, out var pipelineLayout);
-            PipelineLayout = pipelineLayout;
+            _plce = gd.PipelineLayoutCache.GetOrCreate(gd, device, stages);
 
-            int[] GrabAll(Func<ShaderBindings, IReadOnlyCollection<int>> selector)
+            Stages = stages;
+
+            int[][] GrabAll(Func<ShaderBindings, IReadOnlyCollection<int>> selector)
             {
-                List<int> bindings = new List<int>();
+                bool hasAny = false;
+                int[][] bindings = new int[internalShaders.Length][];
 
                 for (int i = 0; i < internalShaders.Length; i++)
                 {
                     var collection = selector(internalShaders[i].Bindings);
-
-                    bindings.AddRange(collection);
+                    hasAny |= collection.Count != 0;
+                    bindings[i] = collection.ToArray();
                 }
 
-                return bindings.ToArray();
+                return hasAny ? bindings : Array.Empty<int[]>();
             }
 
             Bindings = new[]
@@ -89,46 +97,6 @@ namespace Ryujinx.Graphics.Vulkan
                 GrabAll(x => x.BufferTextureBindings),
                 GrabAll(x => x.BufferImageBindings)
             };
-
-            int[][] GrabAllOld(Func<ShaderBindings, IReadOnlyCollection<int>> selector)
-            {
-                int[][] bindings = new int[internalShaders.Length][];
-
-                for (int i = 0; i < internalShaders.Length; i++)
-                {
-                    var collection = selector(internalShaders[i].Bindings);
-
-                    bindings[i] = collection.ToArray();
-                }
-
-                return bindings;
-            }
-
-            BindingsOld = new[]
-            {
-                GrabAllOld(x => x.UniformBufferBindings),
-                GrabAllOld(x => x.StorageBufferBindings),
-                GrabAllOld(x => x.TextureBindings),
-                GrabAllOld(x => x.ImageBindings),
-                GrabAllOld(x => x.BufferTextureBindings),
-                GrabAllOld(x => x.BufferImageBindings)
-            };
-
-            DescriptorSetCache = new DescriptorSetCache(_gd, DescriptorSetLayouts);
-
-            _dsCache = new List<Auto<DescriptorSetCollection>>[CommandBufferPool.MaxCommandBuffers][];
-
-            for (int i = 0; i < CommandBufferPool.MaxCommandBuffers; i++)
-            {
-                _dsCache[i] = new List<Auto<DescriptorSetCollection>>[PipelineBase.DescriptorSetLayouts];
-
-                for (int j = 0; j < PipelineBase.DescriptorSetLayouts; j++)
-                {
-                    _dsCache[i][j] = new List<Auto<DescriptorSetCollection>>();
-                }
-            }
-
-            _dsCacheCursor = new int[PipelineBase.DescriptorSetLayouts];
         }
 
         public PipelineShaderStageCreateInfo[] GetInfos()
@@ -139,60 +107,6 @@ namespace Ryujinx.Graphics.Vulkan
         public ProgramLinkStatus CheckProgramLink(bool blocking)
         {
             return LinkStatus;
-        }
-
-        protected virtual unsafe void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                if (!_gd.Shaders.Remove(this))
-                {
-                    return;
-                }
-
-                unsafe
-                {
-                    for (int i = 0; i < _shaders.Length; i++)
-                    {
-                        _shaders[i].Dispose();
-                    }
-
-                    for (int i = 0; i < _dsCache.Length; i++)
-                    {
-                        for (int y = 0; y < _dsCache[i].Length; y++)
-                        {
-                            for (int z = 0; z < _dsCache[i][y].Count; z++)
-                            {
-                                _dsCache[i][y][z].Dispose();
-                            }
-
-                            _dsCache[i][y].Clear();
-                        }
-                    }
-
-                    _gd.Api.DestroyPipelineLayout(_device, PipelineLayout, null);
-
-                    for (int i = 0; i < DescriptorSetLayouts.Length; i++)
-                    {
-                        _gd.Api.DestroyDescriptorSetLayout(_device, DescriptorSetLayouts[i], null);
-                    }
-
-                    if (_graphicsPipelineCache != null)
-                    {
-                        foreach (Auto<DisposablePipeline> pipeline in _graphicsPipelineCache.Values)
-                        {
-                            pipeline.Dispose();
-                        }
-                    }
-
-                    _computePipeline?.Dispose();
-                }
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
         }
 
         public byte[] GetBinary()
@@ -232,28 +146,44 @@ namespace Ryujinx.Graphics.Vulkan
             return _graphicsPipelineCache.TryGetValue(ref key, out pipeline);
         }
 
-        public Auto<DescriptorSetCollection> GetNewDescriptorSetCollection(VulkanGraphicsDevice gd, int commandBufferIndex, int setIndex)
+        public Auto<DescriptorSetCollection> GetNewDescriptorSetCollection(
+            VulkanGraphicsDevice gd,
+            int commandBufferIndex,
+            int setIndex,
+            out bool isNew)
         {
-            if (_dsLastCbIndex != commandBufferIndex)
-            {
-                _dsLastCbIndex = commandBufferIndex;
+            return _plce.GetNewDescriptorSetCollection(gd, commandBufferIndex, setIndex, out isNew);
+        }
 
-                for (int i = 0; i < PipelineBase.DescriptorSetLayouts; i++)
+        protected virtual unsafe void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (!_gd.Shaders.Remove(this))
                 {
-                    _dsCacheCursor[i] = 0;
+                    return;
                 }
-            }
 
-            var list = _dsCache[commandBufferIndex][setIndex];
-            int index = _dsCacheCursor[setIndex]++;
-            if (index == list.Count)
-            {
-                var dsc = gd.DescriptorSetManager.AllocateDescriptorSet(gd.Api, DescriptorSetLayouts[setIndex]);
-                list.Add(dsc);
-                return dsc;
-            }
+                for (int i = 0; i < _shaders.Length; i++)
+                {
+                    _shaders[i].Dispose();
+                }
 
-            return list[index];
+                if (_graphicsPipelineCache != null)
+                {
+                    foreach (Auto<DisposablePipeline> pipeline in _graphicsPipelineCache.Values)
+                    {
+                        pipeline.Dispose();
+                    }
+                }
+
+                _computePipeline?.Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
         }
     }
 }

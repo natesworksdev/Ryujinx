@@ -8,7 +8,7 @@
         public const int MaxRenderTargets = 8;
         public const int MaxViewports = 16;
         public const int MaxShaderStages = 5;
-        public const int MaxUniformBuffersPerStage = 16;
+        public const int MaxUniformBuffersPerStage = 18;
         public const int MaxStorageBuffersPerStage = 16;
         public const int MaxTexturesPerStage = 32;
         public const int MaxImagesPerStage = 8;

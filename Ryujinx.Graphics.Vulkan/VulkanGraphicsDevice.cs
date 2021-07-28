@@ -44,6 +44,7 @@ namespace Ryujinx.Graphics.Vulkan
         internal MemoryAllocator MemoryAllocator { get; private set; }
         internal CommandBufferPool CommandBufferPool { get; private set; }
         internal DescriptorSetManager DescriptorSetManager { get; private set; }
+        internal PipelineLayoutCache PipelineLayoutCache { get; private set; }
 
         internal BufferManager BufferManager { get; private set; }
 
@@ -150,6 +151,8 @@ namespace Ryujinx.Graphics.Vulkan
             CommandBufferPool = VulkanInitialization.CreateCommandBufferPool(api, _device, queue, queueFamilyIndex);
 
             DescriptorSetManager = new DescriptorSetManager(_device);
+
+            PipelineLayoutCache = new PipelineLayoutCache();
 
             BufferManager = new BufferManager(this, _physicalDevice, _device);
 
@@ -325,6 +328,7 @@ namespace Ryujinx.Graphics.Vulkan
             _pipeline.Dispose();
             BufferManager.Dispose();
             DescriptorSetManager.Dispose();
+            PipelineLayoutCache.Dispose();
 
             SurfaceApi.DestroySurface(_instance, _surface, null);
 

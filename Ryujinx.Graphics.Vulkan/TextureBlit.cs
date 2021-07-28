@@ -31,7 +31,7 @@ void main()
 
         private const string ColorBlitFragmentShaderSource = @"#version 450 core
 
-layout (binding = 0, set = 2) uniform sampler2D tex;
+layout (binding = 32, set = 2) uniform sampler2D tex;
 
 layout (location = 0) in vec2 tex_coord;
 layout (location = 0) out vec4 colour;
@@ -43,7 +43,7 @@ void main()
 
         private const string ClearAlphaFragmentShaderSource = @"#version 450 core
 
-layout (binding = 0, set = 2) uniform sampler2D tex;
+layout (binding = 32, set = 2) uniform sampler2D tex;
 
 layout (location = 0) in vec2 tex_coord;
 layout (location = 0) out vec4 colour;
@@ -55,7 +55,7 @@ void main()
 
         private const string DepthBlitFragmentShaderSource = @"#version 450 core
 
-layout (binding = 0, set = 2) uniform sampler2D tex;
+layout (binding = 32, set = 2) uniform sampler2D tex;
 
 layout (location = 0) in vec2 tex_coord;
 
@@ -107,7 +107,7 @@ void main()
             var fragmentBindings = new ShaderBindings(
                 Array.Empty<int>(),
                 Array.Empty<int>(),
-                new[] { 0 },
+                new[] { 32 },
                 Array.Empty<int>(),
                 Array.Empty<int>(),
                 Array.Empty<int>());
@@ -148,7 +148,7 @@ void main()
 
             var sampler = linearFilter && !dstDepthStencil ? _samplerLinear : _samplerNearest;
 
-            _pipeline.SetTextureAndSampler(0, src, sampler);
+            _pipeline.SetTextureAndSampler(32, src, sampler);
 
             Span<float> region = stackalloc float[RegionBufferSize / sizeof(float)];
 

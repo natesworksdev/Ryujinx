@@ -1035,6 +1035,7 @@ namespace Ryujinx.Graphics.Vulkan
                 _framebuffer?.Dispose();
                 _indexBuffer.Dispose();
                 _newState.Dispose();
+                _descriptorSetUpdater.Dispose();
 
                 for (int i = 0; i < _vertexBuffers.Length; i++)
                 {

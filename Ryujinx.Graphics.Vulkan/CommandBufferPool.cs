@@ -8,7 +8,7 @@ namespace Ryujinx.Graphics.Vulkan
 {
     class CommandBufferPool : IDisposable
     {
-        public const int MaxCommandBuffers = 16;
+        public const int MaxCommandBuffers = 8;
 
         private int _totalCommandBuffers;
         private int _totalCommandBuffersMask;
