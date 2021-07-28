@@ -1,11 +1,8 @@
 using ARMeilleure.Translation.PTC;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-
-using static ARMeilleure.IntermediateRepresentation.OperationHelper;
 
 namespace ARMeilleure.IntermediateRepresentation
 {
@@ -18,6 +15,8 @@ namespace ARMeilleure.IntermediateRepresentation
             public ulong Value;
             public Symbol Symbol;
             public MemoryOperand Memory;
+            public NativeList<Operation> Assignments;
+            public NativeList<Operation> Uses;
         }
 
         private Data *_data;
@@ -48,9 +47,8 @@ namespace ARMeilleure.IntermediateRepresentation
             private set => _data->Symbol = value;
         }
 
-        // TODO(FIXME);
-        public List<Operation> Assignments => new() { Operation(Instruction.Extended, default) };
-        public List<Operation> Uses => new() { Operation(Instruction.Extended, default) };
+        public ref NativeList<Operation> Assignments => ref _data->Assignments;
+        public ref NativeList<Operation> Uses => ref _data->Uses;
 
         public Operand(OperandKind kind, OperandType type = OperandType.None) : this()
         {
@@ -188,6 +186,10 @@ namespace ARMeilleure.IntermediateRepresentation
             {
                 throw new OutOfMemoryException();
             }
+
+            *result._data = default;
+            result._data->Assignments = NativeList<Operation>.New();
+            result._data->Uses = NativeList<Operation>.New();
 
             return result;
         }

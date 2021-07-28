@@ -20,7 +20,7 @@ namespace ARMeilleure.CodeGen.Optimizations
                 {
                     Operation node = block.Operations.First;
 
-                    while (node != null)
+                    while (node != default)
                     {
                         Operation nextNode = node.ListNext;
 
@@ -84,7 +84,7 @@ namespace ARMeilleure.CodeGen.Optimizations
                 {
                     Operation node = block.Operations.First;
 
-                    while (node != null)
+                    while (node != default)
                     {
                         Operation nextNode = node.ListNext;
 
@@ -153,13 +153,8 @@ namespace ARMeilleure.CodeGen.Optimizations
 
             foreach (Operation use in uses)
             {
-                if (!(use is Operation operation))
-                {
-                    continue;
-                }
-
                 // If operation is a BranchIf and has a constant value 0 in its RHS or LHS source operands.
-                if (IsZeroBranch(operation, out Comparison otherCompType))
+                if (IsZeroBranch(use, out Comparison otherCompType))
                 {
                     Comparison propCompType;
 
@@ -176,9 +171,9 @@ namespace ARMeilleure.CodeGen.Optimizations
                         continue;
                     }
 
-                    operation.SetSource(0, src1);
-                    operation.SetSource(1, src2);
-                    operation.SetSource(2, Const((int)propCompType));
+                    use.SetSource(0, src1);
+                    use.SetSource(1, src2);
+                    use.SetSource(2, Const((int)propCompType));
 
                     modified = true;
                 }
@@ -235,11 +230,11 @@ namespace ARMeilleure.CodeGen.Optimizations
 
         private static bool HasSideEffects(Operation node)
         {
-            return (node is Operation operation) && (operation.Instruction == Instruction.Call
-                || operation.Instruction == Instruction.Tailcall
-                || operation.Instruction == Instruction.CompareAndSwap
-                || operation.Instruction == Instruction.CompareAndSwap16
-                || operation.Instruction == Instruction.CompareAndSwap8);
+            return node.Instruction == Instruction.Call
+                || node.Instruction == Instruction.Tailcall
+                || node.Instruction == Instruction.CompareAndSwap
+                || node.Instruction == Instruction.CompareAndSwap16
+                || node.Instruction == Instruction.CompareAndSwap8;
         }
 
         private static bool IsPropagableCompare(Operation operation)

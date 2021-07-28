@@ -79,20 +79,27 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public void Append(Operation node)
         {
-            var lastOp = Operations.Last as Operation;
+            var lastOp = Operations.Last;
 
             // Append node before terminal or to end if no terminal.
-            switch (lastOp?.Instruction)
+            if (lastOp == default)
             {
-                case Instruction.Return:
-                case Instruction.Tailcall:
-                case Instruction.BranchIf:
-                    Operations.AddBefore(lastOp, node);
-                    break;
+                Operations.AddLast(node);
+            }
+            else
+            {
+                switch (lastOp.Instruction)
+                {
+                    case Instruction.Return:
+                    case Instruction.Tailcall:
+                    case Instruction.BranchIf:
+                        Operations.AddBefore(lastOp, node);
+                        break;
 
-                default:
-                    Operations.AddLast(node);
-                    break;
+                    default:
+                        Operations.AddLast(node);
+                        break;
+                }
             }
         }
 

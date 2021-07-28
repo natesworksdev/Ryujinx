@@ -72,13 +72,11 @@ namespace ARMeilleure.Translation
 
             for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
             {
-                for (Operation node = block.Operations.First; node != null; node = node.ListNext)
+                for (Operation node = block.Operations.First; node != default; node = node.ListNext)
                 {
-                    Operation operation = node as Operation;
-
-                    for (int srcIndex = 0; srcIndex < operation.SourcesCount; srcIndex++)
+                    for (int srcIndex = 0; srcIndex < node.SourcesCount; srcIndex++)
                     {
-                        Operand source = operation.GetSource(srcIndex);
+                        Operand source = node.GetSource(srcIndex);
 
                         if (source.Kind != OperandKind.Register)
                         {
@@ -90,9 +88,9 @@ namespace ARMeilleure.Translation
                         localInputs[block.Index] |= GetMask(register) & ~localOutputs[block.Index];
                     }
 
-                    if (operation.Destination != default && operation.Destination.Kind == OperandKind.Register)
+                    if (node.Destination != default && node.Destination.Kind == OperandKind.Register)
                     {
-                        localOutputs[block.Index] |= GetMask(operation.Destination.GetRegister());
+                        localOutputs[block.Index] |= GetMask(node.Destination.GetRegister());
                     }
                 }
             }
@@ -232,7 +230,9 @@ namespace ARMeilleure.Translation
                 return false;
             }
 
-            return block.Operations.First is Operation operation && operation.Instruction == inst;
+            Operation first = block.Operations.First;
+
+            return first != default && first.Instruction == inst;
         }
 
         private static bool EndsWith(BasicBlock block, Instruction inst)
@@ -242,7 +242,9 @@ namespace ARMeilleure.Translation
                 return false;
             }
 
-            return block.Operations.Last is Operation operation && operation.Instruction == inst;
+            Operation last = block.Operations.Last;
+
+            return last != default && last.Instruction == inst;
         }
 
         private static RegisterMask GetMask(Register register)
@@ -371,12 +373,9 @@ namespace ARMeilleure.Translation
 
         private static bool EndsWithReturn(BasicBlock block)
         {
-            if (!(block.GetLastOp() is Operation operation))
-            {
-                return false;
-            }
+            Operation last = block.Operations.Last;
 
-            return operation.Instruction == Instruction.Return;
+            return last != default && last.Instruction == Instruction.Return;
         }
     }
 }

@@ -57,16 +57,11 @@ namespace ARMeilleure.Translation
             // First pass, get all defs and locals uses.
             for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
             {
-                for (Operation node = block.Operations.First; node != null; node = node.ListNext)
+                for (Operation node = block.Operations.First; node != default; node = node.ListNext)
                 {
-                    if (node is not Operation operation)
+                    for (int index = 0; index < node.SourcesCount; index++)
                     {
-                        continue;
-                    }
-
-                    for (int index = 0; index < operation.SourcesCount; index++)
-                    {
-                        Operand src = operation.GetSource(index);
+                        Operand src = node.GetSource(index);
 
                         if (TryGetId(src, out int srcKey))
                         {
@@ -77,11 +72,11 @@ namespace ARMeilleure.Translation
                                 local = src;
                             }
 
-                            operation.SetSource(index, local);
+                            node.SetSource(index, local);
                         }
                     }
 
-                    Operand dest = operation.Destination;
+                    Operand dest = node.Destination;
 
                     if (TryGetId(dest, out int destKey))
                     {
@@ -89,7 +84,7 @@ namespace ARMeilleure.Translation
 
                         localDefs[destKey] = local;
 
-                        operation.Destination = local;
+                        node.Destination = local;
                     }
                 }
 
@@ -124,16 +119,11 @@ namespace ARMeilleure.Translation
             // Second pass, rename variables with definitions on different blocks.
             for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
             {
-                for (Operation node = block.Operations.First; node != null; node = node.ListNext)
+                for (Operation node = block.Operations.First; node != default; node = node.ListNext)
                 {
-                    if (node is not Operation operation)
+                    for (int index = 0; index < node.SourcesCount; index++)
                     {
-                        continue;
-                    }
-
-                    for (int index = 0; index < operation.SourcesCount; index++)
-                    {
-                        Operand src = operation.GetSource(index);
+                        Operand src = node.GetSource(index);
 
                         if (TryGetId(src, out int key))
                         {
@@ -145,7 +135,7 @@ namespace ARMeilleure.Translation
                                 localDefs[key] = local;
                             }
 
-                            operation.SetSource(index, local);
+                            node.SetSource(index, local);
                         }
                     }
                 }
@@ -205,7 +195,7 @@ namespace ARMeilleure.Translation
             // then use the definition from that Phi.
             Operand local = Local(operand.Type);
 
-            Operation phi = new Operation(Instruction.Phi, local, block.Predecessors.Count * 2);
+            Operation phi = Operation.New(Instruction.Phi, local, block.Predecessors.Count * 2);
 
             AddPhi(block, phi);
 
@@ -226,15 +216,15 @@ namespace ARMeilleure.Translation
         {
             Operation node = block.Operations.First;
 
-            if (node != null)
+            if (node != default)
             {
-                while (node.ListNext is Operation op0 && op0.Instruction == Instruction.Phi)
+                while (node.ListNext != default && node.Instruction == Instruction.Phi)
                 {
                     node = node.ListNext;
                 }
             }
 
-            if (node is Operation op1 && op1.Instruction == Instruction.Phi)
+            if (node != default && node.Instruction == Instruction.Phi)
             {
                 block.Operations.AddAfter(node, phi);
             }

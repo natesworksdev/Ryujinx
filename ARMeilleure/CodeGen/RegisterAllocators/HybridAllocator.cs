@@ -97,9 +97,9 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                 bool hasCall = false;
 
-                for (Operation node = block.Operations.First; node != null; node = node.ListNext)
+                for (Operation node = block.Operations.First; node != default; node = node.ListNext)
                 {
-                    if (node is Operation operation && operation.Instruction == Instruction.Call)
+                    if (node.Instruction == Instruction.Call)
                     {
                         hasCall = true;
                     }
@@ -192,7 +192,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 intLocalFreeRegisters &= ~(intSpillTempRegisters | intCallerSavedRegisters);
                 vecLocalFreeRegisters &= ~(vecSpillTempRegisters | vecCallerSavedRegisters);
 
-                for (Operation node = block.Operations.First; node != null; node = node.ListNext)
+                for (Operation node = block.Operations.First; node != default; node = node.ListNext)
                 {
                     int intLocalUse = 0;
                     int vecLocalUse = 0;
@@ -237,7 +237,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                                 }
                             }
                         }
-                        else if (node is Operation operation && operation.Instruction == Instruction.Copy)
+                        else if (node.Instruction == Instruction.Copy)
                         {
                             Operation fillOp = Operation(Instruction.Fill, node.Destination, Const(info.SpillOffset));
 

@@ -1,70 +1,62 @@
 using System;
-using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace ARMeilleure.IntermediateRepresentation
 {
-    class Operation : IIntrusiveListNode<Operation>
+    unsafe struct Operation : IIntrusiveListNode<Operation>
     {
-        public Intrinsic Intrinsic { get; private set; }
-        public Instruction Instruction { get; private set; }
+        private struct Data
+        {
+            public Intrinsic Intrinsic;
+            public Instruction Instruction;
+            public NativeList<Operand> Destinations;
+            public NativeList<Operand> Sources;
+            public Operation ListPrevious;
+            public Operation ListNext;
+        }
 
-        public Operation ListPrevious { get; set; }
-        public Operation ListNext { get; set; }
+        private Data* _data;
+
+        public Intrinsic Intrinsic
+        {
+            get => _data->Intrinsic;
+            private set => _data->Intrinsic = value;
+        }
+
+        public Instruction Instruction
+        {
+            get => _data->Instruction;
+            private set => _data->Instruction = value;
+        }
+
+        public Operation ListPrevious
+        {
+            get => _data->ListPrevious;
+            set => _data->ListPrevious = value;
+        }
+
+        public Operation ListNext
+        {
+            get => _data->ListNext;
+            set => _data->ListNext = value;
+        }
 
         public Operand Destination
         {
-            get => _destinations.Count != 0 ? GetDestination(0) : default;
+            get => _data->Destinations.Count != 0 ? GetDestination(0) : default;
             set => SetDestination(value);
         }
 
-        private readonly List<Operand> _destinations;
-        private readonly List<Operand> _sources;
-        private bool _clearedDest;
-
-        public int DestinationsCount => _destinations.Count;
-        public int SourcesCount      => _sources.Count;
-
-        public Operation()
-        {
-            _destinations = new List<Operand>();
-            _sources = new List<Operand>();
-        }
-
-        public Operation(Operand dest, int srcCount) : this()
-        {
-            Destination = dest;
-
-            Resize(_sources, srcCount);
-        }
-
-        public Operation(Instruction instruction, Operand dest, Operand[] src) : this(dest, src.Length)
-        {
-            Instruction = instruction;
-
-            for (int index = 0; index < src.Length; index++)
-            {
-                SetSource(index, src[index]);
-            }
-        }
-
-        public Operation(Instruction instruction, Operand dest, int srcCount) : this(dest, srcCount)
-        {
-            Instruction = instruction;
-        }
-
-        public Operation(Intrinsic intrin, Operand dest, params Operand[] sources) : this(Instruction.Extended, dest, sources)
-        {
-            Intrinsic = intrin;
-        }
+        public int DestinationsCount => _data->Destinations.Count;
+        public int SourcesCount => _data->Sources.Count;
 
         private void Reset(int sourcesCount)
         {
-            _clearedDest = true;
-            _sources.Clear();
-            ListPrevious = null;
-            ListNext = null;
+            _data->Sources.Clear();
+            ListPrevious = default;
+            ListNext = default;
 
-            Resize(_sources, sourcesCount);
+            Resize(ref _data->Sources, sourcesCount);
         }
 
         public Operation With(Instruction instruction, Operand destination)
@@ -159,48 +151,38 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public Operand GetDestination(int index)
         {
-            return _destinations[index];
+            return _data->Destinations[index];
         }
 
         public Operand GetSource(int index)
         {
-            return _sources[index];
+            return _data->Sources[index];
         }
 
         public void SetDestination(int index, Operand destination)
         {
-            if (!_clearedDest) 
-            {
-                RemoveAssignment(_destinations[index]);
-            }
+            RemoveAssignment(_data->Destinations[index]);
 
             AddAssignment(destination);
 
-            _clearedDest = false;
-
-            _destinations[index] = destination;
+            _data->Destinations[index] = destination;
         }
 
         public void SetSource(int index, Operand source)
         {
-            RemoveUse(_sources[index]);
+            RemoveUse(_data->Sources[index]);
 
             AddUse(source);
 
-            _sources[index] = source;
+            _data->Sources[index] = source;
         }
 
         private void RemoveOldDestinations()
         {
-            if (!_clearedDest)
+            for (int index = 0; index < _data->Destinations.Count; index++)
             {
-                for (int index = 0; index < _destinations.Count; index++)
-                {
-                    RemoveAssignment(_destinations[index]);
-                }
+                RemoveAssignment(_data->Destinations[index]);
             }
-
-            _clearedDest = false;
         }
 
         public void SetDestination(Operand destination)
@@ -209,14 +191,13 @@ namespace ARMeilleure.IntermediateRepresentation
 
             if (destination == default)
             {
-                _destinations.Clear();
-                _clearedDest = true;
+                _data->Destinations.Clear();
             }
             else
             {
-                Resize(_destinations, 1);
+                Resize(ref _data->Destinations, 1);
 
-                _destinations[0] = destination;
+                _data->Destinations[0] = destination;
 
                 AddAssignment(destination);
             }
@@ -226,13 +207,13 @@ namespace ARMeilleure.IntermediateRepresentation
         {
             RemoveOldDestinations();
 
-            Resize(_destinations, destinations.Length);
+            Resize(ref _data->Destinations, destinations.Length);
 
             for (int index = 0; index < destinations.Length; index++)
             {
                 Operand newOp = destinations[index];
 
-                _destinations[index] = newOp;
+                _data->Destinations[index] = newOp;
 
                 AddAssignment(newOp);
             }
@@ -240,9 +221,9 @@ namespace ARMeilleure.IntermediateRepresentation
 
         private void RemoveOldSources()
         {
-            for (int index = 0; index < _sources.Count; index++)
+            for (int index = 0; index < _data->Sources.Count; index++)
             {
-                RemoveUse(_sources[index]);
+                RemoveUse(_data->Sources[index]);
             }
         }
 
@@ -252,13 +233,13 @@ namespace ARMeilleure.IntermediateRepresentation
 
             if (source == default)
             {
-                _sources.Clear();
+                _data->Sources.Clear();
             }
             else
             {
-                Resize(_sources, 1);
+                Resize(ref _data->Sources, 1);
 
-                _sources[0] = source;
+                _data->Sources[0] = source;
 
                 AddUse(source);
             }
@@ -268,13 +249,13 @@ namespace ARMeilleure.IntermediateRepresentation
         {
             RemoveOldSources();
 
-            Resize(_sources, sources.Length);
+            Resize(ref _data->Sources, sources.Length);
 
             for (int index = 0; index < sources.Length; index++)
             {
                 Operand newOp = sources[index];
 
-                _sources[index] = newOp;
+                _data->Sources[index] = newOp;
 
                 AddUse(newOp);
             }
@@ -388,11 +369,14 @@ namespace ARMeilleure.IntermediateRepresentation
             }
         }
 
-        private void Resize(List<Operand> list, int size)
+        private static void Resize(ref NativeList<Operand> list, int size)
         {
             if (list.Count > size)
             {
-                list.RemoveRange(size, list.Count - size);
+                while (list.Count > size)
+                {
+                    list.RemoveAt(list.Count - 1);
+                }
             } 
             else
             {
@@ -401,6 +385,90 @@ namespace ARMeilleure.IntermediateRepresentation
                     list.Add(default);
                 }
             }
+        }
+
+        public static Operation New()
+        {
+            var result = new Operation();
+
+            result._data = (Data*)Marshal.AllocHGlobal(sizeof(Data));
+
+            if (result._data == null)
+            {
+                throw new OutOfMemoryException();
+            }
+
+            *result._data = default;
+            result._data->Sources = NativeList<Operand>.New();
+            result._data->Destinations = NativeList<Operand>.New();
+
+            return result;
+        }
+
+        public static Operation New(Operand dest, int srcCount)
+        {
+            Operation result = New();
+
+            result.Destination = dest;
+
+            Resize(ref result._data->Sources, srcCount);
+
+            return result;
+        }
+
+        public static Operation New(Instruction instruction, Operand dest, int srcCount)
+        {
+            Operation result = New(dest, srcCount);
+
+            result._data->Instruction = instruction;
+
+            return result;
+        }
+
+        public static Operation New(Instruction instruction, Operand dest, Operand[] src)
+        {
+            Operation result = New(instruction, dest, src.Length);
+
+            for (int index = 0; index < src.Length; index++)
+            {
+                result.SetSource(index, src[index]);
+            }
+
+            return result;
+        }
+
+        public static Operation New(Intrinsic intrin, Operand dest, params Operand[] src)
+        {
+            Operation result = New(Instruction.Extended, dest, src);
+
+            result._data->Intrinsic = intrin;
+
+            return result;
+        }
+
+        public bool Equals(Operation operation)
+        {
+            return operation._data == _data;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is Operation operation && Equals(operation);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine((IntPtr)_data);
+        }
+
+        public static bool operator ==(Operation a, Operation b)
+        {
+            return a.Equals(b);
+        }
+
+        public static bool operator !=(Operation a, Operation b)
+        {
+            return !a.Equals(b);
         }
     }
 }

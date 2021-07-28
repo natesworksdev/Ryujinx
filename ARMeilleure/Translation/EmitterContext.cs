@@ -580,7 +580,7 @@ namespace ARMeilleure.Translation
         {
             NewNextBlockIfNeeded();
 
-            Operation operation = new Operation(intrin, dest, sources);
+            Operation operation = Operation.New(intrin, dest, sources);
 
             _irBlock.Operations.AddLast(operation);
 
@@ -662,9 +662,11 @@ namespace ARMeilleure.Translation
 
         private static bool EndsWithUnconditional(BasicBlock block)
         {
-            return block.Operations.Last is Operation lastOp &&
-                   (lastOp.Instruction == Instruction.Return ||
-                    lastOp.Instruction == Instruction.Tailcall);
+            Operation last = block.Operations.Last;
+
+            return last != default &&
+               (last.Instruction == Instruction.Return ||
+                last.Instruction == Instruction.Tailcall);
         }
 
         public ControlFlowGraph GetControlFlowGraph()

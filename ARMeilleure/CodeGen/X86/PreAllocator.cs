@@ -24,7 +24,7 @@ namespace ARMeilleure.CodeGen.X86
             {
                 Operation nextNode;
 
-                for (Operation node = block.Operations.First; node != null; node = nextNode)
+                for (Operation node = block.Operations.First; node != default; node = nextNode)
                 {
                     nextNode = node.ListNext;
 
@@ -520,14 +520,14 @@ namespace ARMeilleure.CodeGen.X86
 
             if (dest.Type == OperandType.FP32)
             {
-                node = nodes.AddAfter(node, new Operation(Intrinsic.X86Pslld, res, res, Const(31)));
+                node = nodes.AddAfter(node, IntermediateRepresentation.Operation.New(Intrinsic.X86Pslld, res, res, Const(31)));
             }
             else /* if (dest.Type == OperandType.FP64) */
             {
-                node = nodes.AddAfter(node, new Operation(Intrinsic.X86Psllq, res, res, Const(63)));
+                node = nodes.AddAfter(node, IntermediateRepresentation.Operation.New(Intrinsic.X86Psllq, res, res, Const(63)));
             }
 
-            node = nodes.AddAfter(node, new Operation(Intrinsic.X86Xorps, res, res, source));
+            node = nodes.AddAfter(node, IntermediateRepresentation.Operation.New(Intrinsic.X86Xorps, res, res, source));
 
             nodes.AddAfter(node, Operation(Instruction.Copy, dest, res));
 

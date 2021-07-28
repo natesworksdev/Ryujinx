@@ -36,30 +36,25 @@ namespace ARMeilleure.CodeGen.X86
 
                 Operation nextNode;
 
-                for (Operation node = block.Operations.First; node != null; node = nextNode)
+                for (Operation node = block.Operations.First; node != default; node = nextNode)
                 {
                     nextNode = node.ListNext;
 
-                    if (!(node is Operation operation))
-                    {
-                        continue;
-                    }
-
                     // Insert copies for constants that can't fit on a 32-bits immediate.
                     // Doing this early unblocks a few optimizations.
-                    if (operation.Instruction == Instruction.Add)
+                    if (node.Instruction == Instruction.Add)
                     {
-                        Operand src1 = operation.GetSource(0);
-                        Operand src2 = operation.GetSource(1);
+                        Operand src1 = node.GetSource(0);
+                        Operand src2 = node.GetSource(1);
 
                         if (src1.Kind == OperandKind.Constant && (src1.Relocatable || CodeGenCommon.IsLongConst(src1)))
                         {
-                            operation.SetSource(0, GetConstantCopy(block, operation, src1));
+                            node.SetSource(0, GetConstantCopy(block, node, src1));
                         }
 
                         if (src2.Kind == OperandKind.Constant && (src2.Relocatable || CodeGenCommon.IsLongConst(src2)))
                         {
-                            operation.SetSource(1, GetConstantCopy(block, operation, src2));
+                            node.SetSource(1, GetConstantCopy(block, node, src2));
                         }
                     }
 
@@ -70,24 +65,24 @@ namespace ARMeilleure.CodeGen.X86
                     //  mov rax, [rax]
                     // Into:
                     //  mov rax, [rax+rbx*4+0xcafe]
-                    if (IsMemoryLoadOrStore(operation.Instruction))
+                    if (IsMemoryLoadOrStore(node.Instruction))
                     {
                         OperandType type;
 
-                        if (operation.Destination != default)
+                        if (node.Destination != default)
                         {
-                            type = operation.Destination.Type;
+                            type = node.Destination.Type;
                         }
                         else
                         {
-                            type = operation.GetSource(1).Type;
+                            type = node.GetSource(1).Type;
                         }
 
-                        Operand memOp = GetMemoryOperandOrNull(operation.GetSource(0), type);
+                        Operand memOp = GetMemoryOperandOrNull(node.GetSource(0), type);
 
                         if (memOp != default)
                         {
-                            operation.SetSource(0, memOp);
+                            node.SetSource(0, memOp);
                         }
                     }
                 }
@@ -132,7 +127,7 @@ namespace ARMeilleure.CodeGen.X86
         {
             Operation operation = GetAsgOpWithInst(baseOp, Instruction.Add);
 
-            if (operation == null)
+            if (operation == default)
             {
                 return 0;
             }
@@ -178,7 +173,7 @@ namespace ARMeilleure.CodeGen.X86
 
             Operation addOp = GetAsgOpWithInst(baseOp, Instruction.Add);
 
-            if (addOp == null)
+            if (addOp == default)
             {
                 return (indexOp, scale);
             }
@@ -198,14 +193,14 @@ namespace ARMeilleure.CodeGen.X86
 
             bool indexOnSrc2 = false;
 
-            if (shlOp == null)
+            if (shlOp == default)
             {
                 shlOp = GetAsgOpWithInst(src2, Instruction.ShiftLeft);
 
                 indexOnSrc2 = true;
             }
 
-            if (shlOp != null)
+            if (shlOp != default)
             {
                 Operand shSrc = shlOp.GetSource(0);
                 Operand shift = shlOp.GetSource(1);
@@ -235,14 +230,14 @@ namespace ARMeilleure.CodeGen.X86
             // control flow path.
             if (op.Assignments.Count != 1)
             {
-                return null;
+                return default;
             }
 
             Operation asgOp = op.Assignments[0];
 
             if (asgOp.Instruction != inst)
             {
-                return null;
+                return default;
             }
 
             return asgOp;

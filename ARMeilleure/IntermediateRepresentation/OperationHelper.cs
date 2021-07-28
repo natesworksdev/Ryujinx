@@ -44,22 +44,19 @@ namespace ARMeilleure.IntermediateRepresentation
         #region "ThreadStaticPool"
         public static void PrepareOperationPool(int groupId = 0)
         {
-            ThreadStaticPool<Operation>.PreparePool(groupId, ChunkSizeLimit.Medium);
         }
 
         private static Operation Operation()
         {
-            return ThreadStaticPool<Operation>.Instance.Allocate();
+            return IntermediateRepresentation.Operation.New();
         }
 
         public static void ResetOperationPool(int groupId = 0)
         {
-            ThreadStaticPool<Operation>.ResetPool(groupId);
         }
 
         public static void DisposeOperationPools()
         {
-            ThreadStaticPool<Operation>.DisposePools();
         }
         #endregion
     }

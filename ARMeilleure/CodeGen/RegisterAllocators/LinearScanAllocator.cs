@@ -783,7 +783,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             {
                 BasicBlock block = cfg.PostOrderBlocks[index];
 
-                for (Operation node = block.Operations.First; node != null; node = node.ListNext)
+                for (Operation node = block.Operations.First; node != default; node = node.ListNext)
                 {
                     _operationNodes.Add((block.Operations, node));
 
@@ -804,7 +804,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 if (block.Operations.Count == 0)
                 {
                     // Pretend we have a dummy instruction on the empty block.
-                    _operationNodes.Add((null, null));
+                    _operationNodes.Add((default, default));
 
                     _operationsCount += InstructionGap;
                 }
@@ -828,7 +828,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 BitMap liveGen  = BitMapPool.Allocate(mapSize);
                 BitMap liveKill = BitMapPool.Allocate(mapSize);
 
-                for (Operation node = block.Operations.First; node != null; node = node.ListNext)
+                for (Operation node = block.Operations.First; node != default; node = node.ListNext)
                 {
                     Sources(node, (source) =>
                     {
@@ -997,7 +997,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         {
             Operation node = block.Operations.Last;
 
-            while (node != null)
+            while (node != default)
             {
                 yield return node;
 

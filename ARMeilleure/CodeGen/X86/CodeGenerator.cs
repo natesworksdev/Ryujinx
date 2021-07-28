@@ -162,20 +162,18 @@ namespace ARMeilleure.CodeGen.X86
                 {
                     context.EnterBlock(block);
 
-                    for (Operation node = block.Operations.First; node != null; node = node.ListNext)
+                    for (Operation node = block.Operations.First; node != default; node = node.ListNext)
                     {
-                        if (node is Operation operation)
-                        {
-                            GenerateOperation(context, operation);
-                        }
+                        GenerateOperation(context, node);
                     }
 
                     if (block.SuccessorCount == 0)
                     {
                         // The only blocks which can have 0 successors are exit blocks.
-                        Debug.Assert(block.Operations.Last is Operation operation &&
-                                     (operation.Instruction == Instruction.Tailcall ||
-                                      operation.Instruction == Instruction.Return));
+                        Operation last = block.Operations.Last;
+
+                        Debug.Assert(last.Instruction == Instruction.Tailcall ||
+                                     last.Instruction == Instruction.Return);
                     }
                     else
                     {
@@ -1643,17 +1641,17 @@ namespace ARMeilleure.CodeGen.X86
 
         private static bool MatchOperation(Operation node, Instruction inst, OperandType destType, Register destReg)
         {
-            if (!(node is Operation operation) || node.DestinationsCount == 0)
+            if (node == default || node.DestinationsCount == 0)
             {
                 return false;
             }
 
-            if (operation.Instruction != inst)
+            if (node.Instruction != inst)
             {
                 return false;
             }
 
-            Operand dest = operation.Destination;
+            Operand dest = node.Destination;
 
             return dest.Kind == OperandKind.Register &&
                    dest.Type == destType &&

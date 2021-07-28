@@ -278,7 +278,7 @@ namespace ARMeilleure.Diagnostics
 
                 dumper.IncreaseIndentation();
 
-                for (Operation node = block.Operations.First; node != null; node = node.ListNext)
+                for (Operation node = block.Operations.First; node != default; node = node.ListNext)
                 {
                     dumper.Indent();
                     dumper.DumpNode(cfg, node);

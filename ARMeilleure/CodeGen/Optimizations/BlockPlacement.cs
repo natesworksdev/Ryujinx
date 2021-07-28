@@ -33,8 +33,10 @@ namespace ARMeilleure.CodeGen.Optimizations
             {
                 nextBlock = block.ListNext;
 
-                if (block.SuccessorCount == 2 && block.Operations.Last is Operation branchOp)
+                if (block.SuccessorCount == 2)
                 {
+                    Operation branchOp = block.Operations.Last;
+
                     Debug.Assert(branchOp.Instruction == Instruction.BranchIf);
 
                     BasicBlock falseSucc = block.GetSuccessor(0);

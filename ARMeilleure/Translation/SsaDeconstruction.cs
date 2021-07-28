@@ -11,11 +11,11 @@ namespace ARMeilleure.Translation
         {
             for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
             {
-                Operation node = block.Operations.First;
+                Operation phi = block.Operations.First;
 
-                while (node is Operation phi && phi.Instruction == Instruction.Phi)
+                while (phi != default && phi.Instruction == Instruction.Phi)
                 {
-                    Operation nextNode = node.ListNext;
+                    Operation nextNode = phi.ListNext;
 
                     Operand local = Local(phi.Destination.Type);
 
@@ -32,13 +32,13 @@ namespace ARMeilleure.Translation
 
                     Operation copyOp = Operation(Instruction.Copy, phi.Destination, local);
 
-                    block.Operations.AddBefore(node, copyOp);
+                    block.Operations.AddBefore(phi, copyOp);
 
                     phi.Destination = default;
 
-                    block.Operations.Remove(node);
+                    block.Operations.Remove(phi);
 
-                    node = nextNode;
+                    phi = nextNode;
                 }
             }
         }
