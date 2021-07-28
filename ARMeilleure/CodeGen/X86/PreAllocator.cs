@@ -120,9 +120,7 @@ namespace ARMeilleure.CodeGen.X86
                             break;
 
                         case Instruction.Extended:
-                            IntrinsicOperation intrinOp = (IntrinsicOperation)operation;
-
-                            if (intrinOp.Intrinsic == Intrinsic.X86Mxcsrmb || intrinOp.Intrinsic == Intrinsic.X86Mxcsrub)
+                            if (operation.Intrinsic == Intrinsic.X86Mxcsrmb || operation.Intrinsic == Intrinsic.X86Mxcsrub)
                             {
                                 int stackOffset = stackAlloc.Allocate(OperandType.I32);
                                 operation.SetSources(new Operand[] { Const(stackOffset), operation.GetSource(0) });
@@ -312,12 +310,10 @@ namespace ARMeilleure.CodeGen.X86
 
                 case Instruction.Extended:
                 {
-                    IntrinsicOperation intrinOp = (IntrinsicOperation)operation;
-
                     // BLENDVPD, BLENDVPS, PBLENDVB last operand is always implied to be XMM0 when VEX is not supported.
-                    if ((intrinOp.Intrinsic == Intrinsic.X86Blendvpd ||
-                         intrinOp.Intrinsic == Intrinsic.X86Blendvps ||
-                         intrinOp.Intrinsic == Intrinsic.X86Pblendvb) &&
+                    if ((operation.Intrinsic == Intrinsic.X86Blendvpd ||
+                         operation.Intrinsic == Intrinsic.X86Blendvps ||
+                         operation.Intrinsic == Intrinsic.X86Pblendvb) &&
                          !HardwareCapabilities.SupportsVexEncoding)
                     {
                         Operand xmm0 = Xmm(X86Register.Xmm0, OperandType.V128);
@@ -524,14 +520,14 @@ namespace ARMeilleure.CodeGen.X86
 
             if (dest.Type == OperandType.FP32)
             {
-                node = nodes.AddAfter(node, new IntrinsicOperation(Intrinsic.X86Pslld, res, res, Const(31)));
+                node = nodes.AddAfter(node, new Operation(Intrinsic.X86Pslld, res, res, Const(31)));
             }
             else /* if (dest.Type == OperandType.FP64) */
             {
-                node = nodes.AddAfter(node, new IntrinsicOperation(Intrinsic.X86Psllq, res, res, Const(63)));
+                node = nodes.AddAfter(node, new Operation(Intrinsic.X86Psllq, res, res, Const(63)));
             }
 
-            node = nodes.AddAfter(node, new IntrinsicOperation(Intrinsic.X86Xorps, res, res, source));
+            node = nodes.AddAfter(node, new Operation(Intrinsic.X86Xorps, res, res, source));
 
             nodes.AddAfter(node, Operation(Instruction.Copy, dest, res));
 
@@ -1307,8 +1303,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static bool IsIntrinsicSameOperandDestSrc1(Operation operation)
         {
-            IntrinsicOperation intrinOp = (IntrinsicOperation)operation;
-            IntrinsicInfo info = IntrinsicTable.GetInfo(intrinOp.Intrinsic);
+            IntrinsicInfo info = IntrinsicTable.GetInfo(operation.Intrinsic);
 
             return info.Type == IntrinsicType.Crc32 || info.Type == IntrinsicType.Fma || IsVexSameOperandDestSrc1(operation);
         }
@@ -1408,8 +1403,7 @@ namespace ARMeilleure.CodeGen.X86
                 return false;
             }
 
-            IntrinsicOperation intrinOp = (IntrinsicOperation)operation;
-            IntrinsicInfo info = IntrinsicTable.GetInfo(intrinOp.Intrinsic);
+            IntrinsicInfo info = IntrinsicTable.GetInfo(operation.Intrinsic);
 
             return info.Type != IntrinsicType.Crc32;
         }

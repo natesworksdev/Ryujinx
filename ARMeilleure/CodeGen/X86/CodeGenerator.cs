@@ -205,9 +205,7 @@ namespace ARMeilleure.CodeGen.X86
         {
             if (operation.Instruction == Instruction.Extended)
             {
-                IntrinsicOperation intrinOp = (IntrinsicOperation)operation;
-
-                IntrinsicInfo info = IntrinsicTable.GetInfo(intrinOp.Intrinsic);
+                IntrinsicInfo info = IntrinsicTable.GetInfo(operation.Intrinsic);
 
                 switch (info.Type)
                 {
@@ -217,7 +215,7 @@ namespace ARMeilleure.CodeGen.X86
                         Operand src1 = operation.GetSource(0);
                         Operand src2 = operation.GetSource(1);
 
-                        switch (intrinOp.Intrinsic)
+                        switch (operation.Intrinsic)
                         {
                             case Intrinsic.X86Comisdeq:
                                 context.Assembler.Comisd(src1, src2);
@@ -272,7 +270,7 @@ namespace ARMeilleure.CodeGen.X86
 
                         context.Assembler.Stmxcsr(memOp);
 
-                        if (intrinOp.Intrinsic == Intrinsic.X86Mxcsrmb)
+                        if (operation.Intrinsic == Intrinsic.X86Mxcsrmb)
                         {
                             context.Assembler.Or(memOp, bits, OperandType.I32);
                         }
@@ -323,7 +321,7 @@ namespace ARMeilleure.CodeGen.X86
 
                         Debug.Assert(dest.Type.IsInteger() && !source.Type.IsInteger());
 
-                        if (intrinOp.Intrinsic == Intrinsic.X86Cvtsi2si)
+                        if (operation.Intrinsic == Intrinsic.X86Cvtsi2si)
                         {
                             if (dest.Type == OperandType.I32)
                             {

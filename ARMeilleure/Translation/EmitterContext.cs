@@ -580,7 +580,7 @@ namespace ARMeilleure.Translation
         {
             NewNextBlockIfNeeded();
 
-            IntrinsicOperation operation = new IntrinsicOperation(intrin, dest, sources);
+            Operation operation = new Operation(intrin, dest, sources);
 
             _irBlock.Operations.AddLast(operation);
 

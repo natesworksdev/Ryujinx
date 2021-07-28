@@ -212,9 +212,7 @@ namespace ARMeilleure.Diagnostics
 
                     if (operation.Instruction == Instruction.Extended)
                     {
-                        var intrinOp = (IntrinsicOperation)operation;
-
-                        _builder.Append('.').Append(intrinOp.Intrinsic);
+                        _builder.Append('.').Append(operation.Intrinsic);
                     }
                     else if (operation.Instruction == Instruction.BranchIf ||
                              operation.Instruction == Instruction.Compare)
