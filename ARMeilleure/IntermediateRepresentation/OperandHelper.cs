@@ -91,24 +91,9 @@ namespace ARMeilleure.IntermediateRepresentation
             return result;
         }
 
-        public static void PrepareOperandPool(int groupId = 0)
-        {
-
-        }
-
         private static Operand Operand()
         {
             return IntermediateRepresentation.Operand.New();
-        }
-
-        public static void ResetOperandPool(int groupId = 0)
-        {
-
-        }
-
-        public static void DisposeOperandPools()
-        {
-
         }
     }
 }

@@ -18,7 +18,6 @@ using System.Threading;
 
 using static ARMeilleure.Common.BitMapPool;
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
-using static ARMeilleure.IntermediateRepresentation.OperationHelper;
 
 namespace ARMeilleure.Translation
 {
@@ -266,8 +265,6 @@ namespace ARMeilleure.Translation
 
             Logger.EndPass(PassName.Decoding);
 
-            PreparePool(highCq ? 1 : 0);
-
             Logger.StartPass(PassName.Translation);
 
             EmitSynchronization(context);
@@ -298,16 +295,12 @@ namespace ARMeilleure.Translation
             if (!context.HasPtc)
             {
                 func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, options);
-
-                ResetPool(highCq ? 1 : 0);
             }
             else
             {
                 using PtcInfo ptcInfo = new PtcInfo();
 
                 func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, options, ptcInfo);
-
-                ResetPool(highCq ? 1 : 0);
 
                 Hash128 hash = Ptc.ComputeHash(Memory, address, funcSize);
 
@@ -317,22 +310,8 @@ namespace ARMeilleure.Translation
             return new TranslatedFunction(func, counter, funcSize, highCq);
         }
 
-        internal static void PreparePool(int groupId = 0)
-        {
-            PrepareOperandPool(groupId);
-            PrepareOperationPool(groupId);
-        }
-
-        internal static void ResetPool(int groupId = 0)
-        {
-            ResetOperationPool(groupId);
-            ResetOperandPool(groupId);
-        }
-
         internal static void DisposePools()
         {
-            DisposeOperandPools();
-            DisposeOperationPools();
             DisposeBitMapPools();
         }
 

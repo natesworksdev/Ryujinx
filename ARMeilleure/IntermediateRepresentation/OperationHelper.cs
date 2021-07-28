@@ -1,6 +1,4 @@
-﻿using ARMeilleure.Common;
-
-namespace ARMeilleure.IntermediateRepresentation
+﻿namespace ARMeilleure.IntermediateRepresentation
 {
     static class OperationHelper
     {
@@ -41,23 +39,9 @@ namespace ARMeilleure.IntermediateRepresentation
             return Operation().With(instruction, destinations, sources);
         }
 
-        #region "ThreadStaticPool"
-        public static void PrepareOperationPool(int groupId = 0)
-        {
-        }
-
         private static Operation Operation()
         {
             return IntermediateRepresentation.Operation.New();
         }
-
-        public static void ResetOperationPool(int groupId = 0)
-        {
-        }
-
-        public static void DisposeOperationPools()
-        {
-        }
-        #endregion
     }
 }
