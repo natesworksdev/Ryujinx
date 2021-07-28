@@ -1209,6 +1209,45 @@ namespace Ryujinx.Graphics.OpenGL
                     break;
             }
         }
+        public void UpdateRenderScale(ShaderStage stage, ReadOnlySpan<float> scales, int textureCount, int imageCount)
+        {
+            scales = scales.Slice(0, textureCount + imageCount);
+
+            static bool Copy(ReadOnlySpan<float> from, int fromIndex, Vector4<float>[] to, int toIndex, int count)
+            {
+                bool changed = false;
+
+                for (int index = 0; index < count; index++)
+                {
+                    if (to[toIndex + index].X != from[fromIndex + index])
+                    {
+                        to[toIndex + index].X = from[fromIndex + index];
+                        changed = true;
+                    }
+                }
+
+                return changed;
+            }
+
+            if (_program != null)
+            {
+                switch (stage)
+                {
+                    case ShaderStage.Fragment:
+                        if (Copy(scales, 0, _fpRenderScale, 1, textureCount + imageCount))
+                        {
+                            SetSupportBufferData<Vector4<float>>(SupportBuffer.FragmentRenderScaleOffset, _fpRenderScale, 1 + textureCount + imageCount);
+                        }
+                        break;
+                    case ShaderStage.Compute:
+                        if (Copy(scales, 0, _cpRenderScale, 0, textureCount + imageCount))
+                        {
+                            SetSupportBufferData<Vector4<float>>(SupportBuffer.ComputeRenderScaleOffset, _cpRenderScale, textureCount + imageCount);
+                        }
+                        break;
+                }
+            }
+        }
 
         private void SetSupportBufferData<T>(int offset, ReadOnlySpan<T> data, int count) where T : unmanaged
         {
@@ -1216,9 +1255,8 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 _supportBuffer = Buffer.Create(SupportBuffer.RequiredSize);
                 GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 0, Unsafe.As<BufferHandle, int>(ref _supportBuffer));
+                Buffer.SetData(_supportBuffer, offset, MemoryMarshal.Cast<T, byte>(data.Slice(0, count)));
             }
-
-            Buffer.SetData(_supportBuffer, offset, MemoryMarshal.Cast<T, byte>(data.Slice(0, count)));
         }
 
         private void PrepareForDispatch()

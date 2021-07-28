@@ -222,7 +222,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 _instanceIndex = 0;
             }
 
-            _context.Renderer.Pipeline.SetPrimitiveTopology(topology);
+            if (_drawState.Topology != topology)
+            {
+                _context.Renderer.Pipeline.SetPrimitiveTopology(topology);
+            }
 
             _drawState.Topology = topology;
         }

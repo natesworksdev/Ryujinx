@@ -74,6 +74,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         public event EventHandler<ScreenCaptureImageInfo> ScreenCaptured;
 
+        public bool PreferThreading => true;
+
         public VulkanGraphicsDevice(GraphicsDebugLevel logLevel, Func<Instance, Vk, SurfaceKHR> surfaceFunc, string[] requiredExtensions)
         {
             GetSurface = surfaceFunc;
@@ -360,7 +362,7 @@ namespace Ryujinx.Graphics.Vulkan
             Api.DestroyInstance(_instance, null);
         }
 
-        public void BackgroundContextAction(Action action)
+        public void BackgroundContextAction(Action action, bool alwaysBackground = false)
         {
             action();
         }

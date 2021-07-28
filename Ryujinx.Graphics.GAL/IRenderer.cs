@@ -8,11 +8,13 @@ namespace Ryujinx.Graphics.GAL
     {
         event EventHandler<ScreenCaptureImageInfo> ScreenCaptured;
 
+        bool PreferThreading { get; }
+
         IPipeline Pipeline { get; }
 
         IWindow Window { get; }
 
-        void BackgroundContextAction(Action action);
+        void BackgroundContextAction(Action action, bool alwaysBackground = false);
 
         IShader CompileShader(ShaderStage stage, ShaderBindings bindings, string code);
 
@@ -43,6 +45,11 @@ namespace Ryujinx.Graphics.GAL
         ICounterEvent ReportCounter(CounterType type, EventHandler<ulong> resultHandler);
 
         void ResetCounter(CounterType type);
+
+        void RunLoop(Action gpuLoop)
+        {
+            gpuLoop();
+        }
 
         void WaitSync(ulong id);
 
