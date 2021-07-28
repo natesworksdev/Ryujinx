@@ -230,7 +230,7 @@ namespace Ryujinx.Ui
             _windowWidth = evnt.Width * monitor.ScaleFactor;
             _windowHeight = evnt.Height * monitor.ScaleFactor;
 
-            Renderer?.Window.SetSize(_windowWidth, _windowHeight);
+            Renderer?.Window?.SetSize(_windowWidth, _windowHeight);
 
             return result;
         }
@@ -303,7 +303,7 @@ namespace Ryujinx.Ui
         {
             Device = device;
             Renderer = Device.Gpu.Renderer;
-            Renderer?.Window.SetSize(_windowWidth, _windowHeight);
+            Renderer.Window?.SetSize(_windowWidth, _windowHeight);
 
             if (Renderer != null)
             {
@@ -618,7 +618,7 @@ namespace Ryujinx.Ui
             {
                 state |= KeyboardHotkeyState.ToggleVSync;
             }
-            
+
             if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Screenshot))
             {
                 state |= KeyboardHotkeyState.Screenshot;

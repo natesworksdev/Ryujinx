@@ -21,6 +21,7 @@ namespace Ryujinx.Graphics.Vulkan
         private PhysicalDevice _physicalDevice;
         private Device _device;
         private Window _window;
+        private string[] _requiredExtensions;
 
         internal FormatCapabilities FormatCapabilities { get; private set; }
         internal HardwareCapabilities Capabilities { get; private set; }
@@ -74,13 +75,14 @@ namespace Ryujinx.Graphics.Vulkan
 
         public event EventHandler<ScreenCaptureImageInfo> ScreenCaptured;
 
-        public VulkanGraphicsDevice(GraphicsDebugLevel logLevel, Func<Instance, Vk, SurfaceKHR> surfaceFunc, string[] requiredExtensions)
+        public VulkanGraphicsDevice(Func<Instance, Vk, SurfaceKHR> surfaceFunc, string[] requiredExtensions)
         {
             GetSurface = surfaceFunc;
             Shaders = new HashSet<ShaderCollection>();
             Textures = new HashSet<ITexture>();
             Samplers = new HashSet<SamplerHolder>();
-            SetupContext(logLevel, requiredExtensions);
+
+            _requiredExtensions = requiredExtensions;
         }
 
         private void SetupContext(GraphicsDebugLevel logLevel, string[] requiredExtensions)
@@ -291,6 +293,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void Initialize(GraphicsDebugLevel logLevel)
         {
+            SetupContext(logLevel, _requiredExtensions);
+
             PrintGpuInformation();
         }
 
