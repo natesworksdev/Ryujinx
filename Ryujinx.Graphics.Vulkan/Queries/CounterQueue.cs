@@ -179,7 +179,14 @@ namespace Ryujinx.Graphics.Vulkan.Queries
                 // Tell the queue to process all events up to this one.
                 while (_events.Count > 0)
                 {
-                    CounterQueueEvent flush = _events.Dequeue();
+                    CounterQueueEvent flush = _events.Peek();
+
+                    if (flush.DrawIndex > evt.DrawIndex)
+                    {
+                        return;
+                    }
+
+                    _events.Dequeue();
                     flush.TryConsume(ref _accumulatedCounter, true);
 
                     if (flush == evt)
