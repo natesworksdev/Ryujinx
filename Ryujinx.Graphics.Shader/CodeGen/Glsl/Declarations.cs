@@ -142,6 +142,20 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                     context.AppendLine();
                 }
+
+                if (context.Config.Stage != ShaderStage.Compute &&
+                    context.Config.Stage != ShaderStage.Fragment &&
+                    (context.Config.Options.Flags & TranslationFlags.Feedback) != 0)
+                {
+                    var tfOutput = context.GetTransformFeedbackOutput(AttributeConsts.PositionX);
+                    if (tfOutput.Valid)
+                    {
+                        context.AppendLine($"layout (xfb_buffer = {tfOutput.Buffer}, xfb_offset = {tfOutput.Offset}, xfb_stride = {tfOutput.Stride}) out gl_PerVertex");
+                        context.EnterScope();
+                        context.AppendLine("vec4 gl_Position;");
+                        context.LeaveScope(";");
+                    }
+                }
             }
             else
             {
