@@ -83,7 +83,7 @@ namespace ARMeilleure.CodeGen.X86
                             type = operation.GetSource(1).Type;
                         }
 
-                        MemoryOperand memOp = GetMemoryOperandOrNull(operation.GetSource(0), type);
+                        Operand memOp = GetMemoryOperandOrNull(operation.GetSource(0), type);
 
                         if (memOp != null)
                         {
@@ -96,7 +96,7 @@ namespace ARMeilleure.CodeGen.X86
             Optimizer.RemoveUnusedNodes(cfg);
         }
 
-        private static MemoryOperand GetMemoryOperandOrNull(Operand addr, OperandType type)
+        private static Operand GetMemoryOperandOrNull(Operand addr, OperandType type)
         {
             Operand baseOp = addr;
 

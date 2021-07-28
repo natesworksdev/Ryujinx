@@ -76,21 +76,26 @@ namespace ARMeilleure.IntermediateRepresentation
             return Operand().With(OperandKind.Undefined);
         }
 
-        public static MemoryOperand MemoryOp(
+        public static Operand MemoryOp(
             OperandType type,
             Operand baseAddress,
             Operand index = null,
             Multiplier scale = Multiplier.x1,
             int displacement = 0)
         {
-            return MemoryOperand().With(type, baseAddress, index, scale, displacement);
+            Operand result = Operand().With(OperandKind.Memory, type);
+            ref MemoryOperand memory = ref result.GetMemory();
+            memory.BaseAddress = baseAddress;
+            memory.Index = index;
+            memory.Scale = scale;
+            memory.Displacement = displacement;
+            return result;
         }
 
         #region "ThreadStaticPool"
         public static void PrepareOperandPool(int groupId = 0)
         {
             ThreadStaticPool<Operand>.PreparePool(groupId, ChunkSizeLimit.Large);
-            ThreadStaticPool<MemoryOperand>.PreparePool(groupId, ChunkSizeLimit.Small);
         }
 
         private static Operand Operand()
@@ -98,21 +103,14 @@ namespace ARMeilleure.IntermediateRepresentation
             return ThreadStaticPool<Operand>.Instance.Allocate();
         }
 
-        private static MemoryOperand MemoryOperand()
-        {
-            return ThreadStaticPool<MemoryOperand>.Instance.Allocate();
-        }
-
         public static void ResetOperandPool(int groupId = 0)
         {
-            ThreadStaticPool<MemoryOperand>.ResetPool(groupId);
             ThreadStaticPool<Operand>.ResetPool(groupId);
         }
 
         public static void DisposeOperandPools()
         {
             ThreadStaticPool<Operand>.DisposePools();
-            ThreadStaticPool<MemoryOperand>.DisposePools();
         }
         #endregion
     }

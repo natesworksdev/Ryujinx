@@ -8,6 +8,8 @@ namespace ARMeilleure.IntermediateRepresentation
 {
     class Operand
     {
+        private MemoryOperand _memory;
+
         public OperandKind Kind { get; private set; }
         public OperandType Type { get; private set; }
 
@@ -37,6 +39,8 @@ namespace ARMeilleure.IntermediateRepresentation
             ulong value = 0,
             Symbol symbol = default)
         {
+            _memory = default;
+
             Kind = kind;
             Type = type;
 
@@ -93,7 +97,17 @@ namespace ARMeilleure.IntermediateRepresentation
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Register GetRegister()
         {
+            Debug.Assert(Kind == OperandKind.Register);
+
             return new Register((int)Value & 0xffffff, (RegisterType)(Value >> 24));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ref MemoryOperand GetMemory()
+        {
+            Debug.Assert(Kind == OperandKind.Memory);
+
+            return ref _memory;
         }
 
         public int GetLocalNumber()

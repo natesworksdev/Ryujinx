@@ -131,7 +131,7 @@ namespace ARMeilleure.Diagnostics
                     break;
 
                 case OperandKind.Memory:
-                    var memOp = (MemoryOperand)operand;
+                    var memOp = operand.GetMemory();
 
                     _builder.Append('[');
 

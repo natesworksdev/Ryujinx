@@ -722,7 +722,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                     }
                     else if (source.Kind == OperandKind.Memory)
                     {
-                        MemoryOperand memOp = (MemoryOperand)source;
+                        ref MemoryOperand memOp = ref source.GetMemory();
 
                         if (memOp.BaseAddress == current.Local)
                         {
@@ -1017,7 +1017,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 }
                 else if (source.Kind == OperandKind.Memory)
                 {
-                    MemoryOperand memOp = (MemoryOperand)source;
+                    MemoryOperand memOp = source.GetMemory();
 
                     if (memOp.BaseAddress != null)
                     {

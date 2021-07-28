@@ -211,7 +211,7 @@ namespace ARMeilleure.IntermediateRepresentation
             }
             else if (op.Kind == OperandKind.Memory)
             {
-                MemoryOperand memOp = (MemoryOperand)op;
+                MemoryOperand memOp = op.GetMemory();
 
                 if (memOp.BaseAddress != null)
                 {
@@ -238,7 +238,7 @@ namespace ARMeilleure.IntermediateRepresentation
             }
             else if (op.Kind == OperandKind.Memory)
             {
-                MemoryOperand memOp = (MemoryOperand)op;
+                MemoryOperand memOp = op.GetMemory();
 
                 if (memOp.BaseAddress != null)
                 {
@@ -265,7 +265,7 @@ namespace ARMeilleure.IntermediateRepresentation
             }
             else if (op.Kind == OperandKind.Memory)
             {
-                MemoryOperand memOp = (MemoryOperand)op;
+                MemoryOperand memOp = op.GetMemory();
 
                 if (memOp.BaseAddress != null)
                 {
@@ -292,7 +292,7 @@ namespace ARMeilleure.IntermediateRepresentation
             }
             else if (op.Kind == OperandKind.Memory)
             {
-                MemoryOperand memOp = (MemoryOperand)op;
+                MemoryOperand memOp = op.GetMemory();
 
                 if (memOp.BaseAddress != null)
                 {
