@@ -22,15 +22,12 @@ namespace ARMeilleure.Translation
             Blocks = blocks;
             LocalsCount = localsCount;
 
-            Update(removeUnreachableBlocks: true);
+            Update();
         }
 
-        public void Update(bool removeUnreachableBlocks)
+        public void Update()
         {
-            if (removeUnreachableBlocks)
-            {
-                RemoveUnreachableBlocks(Blocks);
-            }
+            RemoveUnreachableBlocks(Blocks);
 
             var visited = new HashSet<BasicBlock>();
             var blockStack = new Stack<BasicBlock>();

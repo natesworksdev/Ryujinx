@@ -59,7 +59,7 @@ namespace ARMeilleure.CodeGen.Optimizations
 
             if (update)
             {
-                cfg.Update(removeUnreachableBlocks: false);
+                cfg.Update();
             }
         }
     }

@@ -165,7 +165,7 @@ namespace ARMeilleure.Diagnostics
             }
         }
 
-        private void DumpNode(Node node)
+        private void DumpNode(ControlFlowGraph cfg, Node node)
         {
             for (int index = 0; index < node.DestinationsCount; index++)
             {
@@ -183,29 +183,32 @@ namespace ARMeilleure.Diagnostics
 
             switch (node)
             {
-                case PhiNode phi:
-                    _builder.Append("Phi ");
-
-                    for (int index = 0; index < phi.SourcesCount; index++)
-                    {
-                        _builder.Append('(');
-
-                        DumpBlockName(phi.GetBlock(index));
-
-                        _builder.Append(": ");
-
-                        DumpOperand(phi.GetSource(index));
-
-                        _builder.Append(')');
-
-                        if (index < phi.SourcesCount - 1)
-                        {
-                            _builder.Append(", ");
-                        }
-                    }
-                    break;
-
                 case Operation operation:
+                    if (operation.Instruction == Instruction.Phi)
+                    {
+                        _builder.Append("Phi ");
+
+                        for (int index = 0; index < operation.SourcesCount / 2; index++)
+                        {
+                            _builder.Append('(');
+
+                            DumpBlockName(cfg.PostOrderBlocks[cfg.PostOrderMap[operation.GetSource(index * 2).AsInt32()]]);
+
+                            _builder.Append(": ");
+
+                            DumpOperand(operation.GetSource(index * 2 + 1));
+
+                            _builder.Append(')');
+
+                            if (index < operation.SourcesCount - 1)
+                            {
+                                _builder.Append(", ");
+                            }
+                        }
+
+                        break;
+                    }
+
                     bool comparison = false;
 
                     _builder.Append(operation.Instruction);
@@ -278,7 +281,7 @@ namespace ARMeilleure.Diagnostics
                 for (Node node = block.Operations.First; node != null; node = node.ListNext)
                 {
                     dumper.Indent();
-                    dumper.DumpNode(node);
+                    dumper.DumpNode(cfg, node);
 
                     dumper._builder.AppendLine();
                 }

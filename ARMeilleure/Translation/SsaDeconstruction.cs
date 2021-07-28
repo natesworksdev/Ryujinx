@@ -13,21 +13,21 @@ namespace ARMeilleure.Translation
             {
                 Node node = block.Operations.First;
 
-                while (node is PhiNode phi)
+                while (node is Operation phi && phi.Instruction == Instruction.Phi)
                 {
                     Node nextNode = node.ListNext;
 
                     Operand local = Local(phi.Destination.Type);
 
-                    for (int index = 0; index < phi.SourcesCount; index++)
+                    for (int index = 0; index < phi.SourcesCount / 2; index++)
                     {
-                        BasicBlock predecessor = phi.GetBlock(index);
+                        BasicBlock predecessor = cfg.PostOrderBlocks[cfg.PostOrderMap[phi.GetSource(index * 2).AsInt32()]];
 
-                        Operand source = phi.GetSource(index);
+                        Operand source = phi.GetSource(index * 2 + 1);
 
                         predecessor.Append(Operation(Instruction.Copy, local, source));
 
-                        phi.SetSource(index, null);
+                        phi.SetSource(index * 2 + 1, null);
                     }
 
                     Operation copyOp = Operation(Instruction.Copy, phi.Destination, local);

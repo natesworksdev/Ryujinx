@@ -20,6 +20,11 @@ namespace ARMeilleure.IntermediateRepresentation
             }
         }
 
+        public Operation(Instruction instruction, Operand dest, int srcCount) : base(dest, srcCount)
+        {
+            Instruction = instruction;
+        }
+
         public Operation(Intrinsic intrin, Operand dest, params Operand[] sources) : this(Instruction.Extended, dest, sources)
         {
             Intrinsic = intrin;

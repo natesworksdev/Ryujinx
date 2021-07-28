@@ -63,6 +63,7 @@ namespace ARMeilleure.IntermediateRepresentation
         Extended,
         Fill,
         LoadFromContext,
+        Phi,
         Spill,
         SpillArg,
         StoreToContext
