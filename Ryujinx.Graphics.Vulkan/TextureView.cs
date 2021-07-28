@@ -219,18 +219,47 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void CopyTo(ITexture destination, Extents2D srcRegion, Extents2D dstRegion, bool linearFilter)
         {
-            var src = this;
             var dst = (TextureView)destination;
+
+            if (_gd.CommandBufferPool.OwnedByCurrentThread)
+            {
+                _gd.PipelineInternal.EndRenderPass();
+
+                var cbs = _gd.PipelineInternal.CurrentCommandBuffer;
+
+                CopyToImpl(cbs, dst, srcRegion, dstRegion, linearFilter);
+            }
+            else if (_gd.BackgroundQueue.Handle != 0)
+            {
+                lock (_gd.BackgroundQueueLock)
+                {
+                    using var cbp = new CommandBufferPool(
+                        _gd.Api,
+                        _device,
+                        _gd.BackgroundQueue,
+                        _gd.QueueFamilyIndex,
+                        isLight: true);
+
+                    using var cbs = cbp.Rent();
+
+                    CopyToImpl(cbs, dst, srcRegion, dstRegion, linearFilter);
+                }
+            }
+            else
+            {
+                // TODO...
+            }
+        }
+
+        private void CopyToImpl(CommandBufferScoped cbs, TextureView dst, Extents2D srcRegion, Extents2D dstRegion, bool linearFilter)
+        {
+            var src = this;
 
             var srcFormat = GetCompatibleGalFormat(src.Info.Format);
             var dstFormat = GetCompatibleGalFormat(dst.Info.Format);
 
             bool srcUsesStorageFormat = src.VkFormat == src.Storage.VkFormat;
             bool dstUsesStorageFormat = dst.VkFormat == dst.Storage.VkFormat;
-
-            _gd.PipelineInternal.EndRenderPass();
-
-            var cbs = _gd.PipelineInternal.CurrentCommandBuffer;
 
             if (srcUsesStorageFormat && dstUsesStorageFormat)
             {
