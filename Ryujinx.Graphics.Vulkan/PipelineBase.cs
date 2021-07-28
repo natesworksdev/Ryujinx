@@ -753,7 +753,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private void SetSupportBufferData<T>(int offset, ReadOnlySpan<T> data, int count) where T : unmanaged
         {
-            RenderScaleBuffer.SetData(offset, MemoryMarshal.Cast<T, byte>(data.Slice(0, count)));
+            RenderScaleBuffer.SetDataInline(Cbs, EndRenderPass, offset, MemoryMarshal.Cast<T, byte>(data.Slice(0, count)));
         }
 
         protected void SignalCommandBufferChange()

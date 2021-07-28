@@ -184,6 +184,14 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
+        public void SetDataInline(CommandBufferScoped cbs, Action endRenderPass, int dstOffset, ReadOnlySpan<byte> data)
+        {
+            if (!TryPushData(cbs, endRenderPass, dstOffset, data))
+            {
+                throw new ArgumentException($"Invalid offset 0x{dstOffset:X} or data size 0x{data.Length:X}.");
+            }
+        }
+
         private unsafe bool TryPushData(CommandBufferScoped cbs, Action endRenderPass, int dstOffset, ReadOnlySpan<byte> data)
         {
             if ((dstOffset & 3) != 0 || (data.Length & 3) != 0)
