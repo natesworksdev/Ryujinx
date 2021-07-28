@@ -101,6 +101,11 @@ namespace Ryujinx.Graphics.Shader
             return false;
         }
 
+        bool QueryTransformFeedbackEnabled()
+        {
+            return false;
+        }
+
         ReadOnlySpan<byte> QueryTransformFeedbackVaryingLocations(int bufferIndex)
         {
             return ReadOnlySpan<byte>.Empty;

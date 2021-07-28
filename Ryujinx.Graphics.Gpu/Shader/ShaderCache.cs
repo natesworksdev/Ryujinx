@@ -625,14 +625,14 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             if (addresses.VertexA != 0)
             {
-                shaderContexts[0] = DecodeGraphicsShader(channel, gas, flags | TranslationFlags.VertexA, ShaderStage.Vertex, addresses.VertexA);
+                shaderContexts[0] = DecodeGraphicsShader(channel, gas, tfd, flags | TranslationFlags.VertexA, ShaderStage.Vertex, addresses.VertexA);
             }
 
-            shaderContexts[1] = DecodeGraphicsShader(channel, gas, flags, ShaderStage.Vertex, addresses.Vertex);
-            shaderContexts[2] = DecodeGraphicsShader(channel, gas, flags, ShaderStage.TessellationControl, addresses.TessControl);
-            shaderContexts[3] = DecodeGraphicsShader(channel, gas, flags, ShaderStage.TessellationEvaluation, addresses.TessEvaluation);
-            shaderContexts[4] = DecodeGraphicsShader(channel, gas, flags, ShaderStage.Geometry, addresses.Geometry);
-            shaderContexts[5] = DecodeGraphicsShader(channel, gas, flags, ShaderStage.Fragment, addresses.Fragment);
+            shaderContexts[1] = DecodeGraphicsShader(channel, gas, tfd, flags, ShaderStage.Vertex, addresses.Vertex);
+            shaderContexts[2] = DecodeGraphicsShader(channel, gas, tfd, flags, ShaderStage.TessellationControl, addresses.TessControl);
+            shaderContexts[3] = DecodeGraphicsShader(channel, gas, tfd, flags, ShaderStage.TessellationEvaluation, addresses.TessEvaluation);
+            shaderContexts[4] = DecodeGraphicsShader(channel, gas, tfd, flags, ShaderStage.Geometry, addresses.Geometry);
+            shaderContexts[5] = DecodeGraphicsShader(channel, gas, tfd, flags, ShaderStage.Fragment, addresses.Fragment);
 
             bool isShaderCacheEnabled = _cacheManager != null;
             bool isShaderCacheReadOnly = false;
@@ -871,6 +871,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// </remarks>
         /// <param name="channel">GPU channel</param>
         /// <param name="gas">GPU accessor state</param>
+        /// <param name="tfd">Transform feedback descriptors</param>
         /// <param name="flags">Flags that controls shader translation</param>
         /// <param name="stage">Shader stage</param>
         /// <param name="gpuVa">GPU virtual address of the shader code</param>
@@ -878,6 +879,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         private TranslatorContext DecodeGraphicsShader(
             GpuChannel channel,
             GpuAccessorState gas,
+            TransformFeedbackDescriptor[] tfd,
             TranslationFlags flags,
             ShaderStage stage,
             ulong gpuVa)
@@ -887,7 +889,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 return null;
             }
 
-            GpuAccessor gpuAccessor = new GpuAccessor(_context, channel, gas, (int)stage - 1);
+            GpuAccessor gpuAccessor = new GpuAccessor(_context, channel, gas, tfd, (int)stage - 1);
 
             var options = CreateTranslationOptions(flags);
             return Translator.CreateContext(gpuVa, gpuAccessor, options);

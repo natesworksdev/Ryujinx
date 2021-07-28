@@ -13,6 +13,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         private readonly GpuContext _context;
         private readonly GpuChannel _channel;
         private readonly GpuAccessorState _state;
+        private readonly TransformFeedbackDescriptor[] _tfd;
         private readonly int _stageIndex;
         private readonly bool _compute;
         private readonly int _localSizeX;
@@ -27,12 +28,14 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <param name="context">GPU context</param>
         /// <param name="channel">GPU channel</param>
         /// <param name="state">Current GPU state</param>
+        /// <param name="tfd">Transform feedback descriptors</param>
         /// <param name="stageIndex">Graphics shader stage index (0 = Vertex, 4 = Fragment)</param>
-        public GpuAccessor(GpuContext context, GpuChannel channel, GpuAccessorState state, int stageIndex)
+        public GpuAccessor(GpuContext context, GpuChannel channel, GpuAccessorState state, TransformFeedbackDescriptor[] tfd, int stageIndex)
         {
             _context = context;
             _channel = channel;
             _state = state;
+            _tfd = tfd;
             _stageIndex = stageIndex;
         }
 
@@ -230,14 +233,19 @@ namespace Ryujinx.Graphics.Gpu.Shader
             return _state.DepthMode;
         }
 
+        public bool QueryTransformFeedbackEnabled()
+        {
+            return _tfd != null;
+        }
+
         public ReadOnlySpan<byte> QueryTransformFeedbackVaryingLocations(int bufferIndex)
         {
-            return ReadOnlySpan<byte>.Empty;
+            return _tfd[bufferIndex].VaryingLocations;
         }
 
         public int QueryTransformFeedbackStride(int bufferIndex)
         {
-            return 0;
+            return _tfd[bufferIndex].Stride;
         }
 
         /// <summary>
