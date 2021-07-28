@@ -431,6 +431,11 @@ namespace Ryujinx.Graphics.Vulkan
             stages.CopyTo(_newState.Stages.ToSpan().Slice(0, stages.Length));
 
             SignalStateChange();
+            SignalProgramChange();
+        }
+
+        protected virtual void SignalProgramChange()
+        {
         }
 
         public void SetRasterizerDiscard(bool discard)

@@ -84,8 +84,8 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     SType = StructureType.WriteDescriptorSet,
                     DstSet = _descriptorSets[setIndex],
-                    DstBinding = (uint)baseBinding,
-                    DstArrayElement = 0,
+                    DstBinding = (uint)(baseBinding & ~(Constants.MaxStorageBuffersPerStage - 1)),
+                    DstArrayElement = (uint)(baseBinding & (Constants.MaxStorageBuffersPerStage - 1)),
                     DescriptorType = DescriptorType.StorageBuffer,
                     DescriptorCount = (uint)bufferInfo.Length,
                     PBufferInfo = pBufferInfo

@@ -8,6 +8,8 @@ namespace Ryujinx.Graphics.Vulkan
 {
     class PipelineFull : PipelineBase, IPipeline
     {
+        private bool _hasPendingQuery;
+
         private readonly List<QueryPool> _activeQueries;
 
         public PipelineFull(VulkanGraphicsDevice gd, Device device) : base(gd, device)
@@ -277,6 +279,17 @@ namespace Ryujinx.Graphics.Vulkan
                 0,
                 sizeof(long),
                 QueryResultFlags.QueryResult64Bit);
+
+            _hasPendingQuery = true;
+        }
+
+        protected override void SignalProgramChange()
+        {
+            if (_hasPendingQuery)
+            {
+                _hasPendingQuery = false;
+                FlushCommandsImpl();
+            }
         }
     }
 }
