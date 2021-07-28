@@ -15,16 +15,16 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public ulong Value { get; private set; }
 
-        public List<Node> Assignments { get; }
-        public List<Node> Uses        { get; }
+        public List<Operation> Assignments { get; }
+        public List<Operation> Uses        { get; }
 
         public Symbol Symbol { get; private set; }
         public bool Relocatable => Symbol.Type != SymbolType.None;
 
         public Operand()
         {
-            Assignments = new List<Node>();
-            Uses        = new List<Node>();
+            Assignments = new List<Operation>();
+            Uses        = new List<Operation>();
         }
 
         public Operand(OperandKind kind, OperandType type = OperandType.None) : this()

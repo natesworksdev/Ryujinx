@@ -11,11 +11,11 @@ namespace ARMeilleure.Translation
         {
             for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
             {
-                Node node = block.Operations.First;
+                Operation node = block.Operations.First;
 
                 while (node is Operation phi && phi.Instruction == Instruction.Phi)
                 {
-                    Node nextNode = node.ListNext;
+                    Operation nextNode = node.ListNext;
 
                     Operand local = Local(phi.Destination.Type);
 

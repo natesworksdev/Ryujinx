@@ -34,9 +34,9 @@ namespace ARMeilleure.CodeGen.X86
             {
                 constants.Clear();
 
-                Node nextNode;
+                Operation nextNode;
 
-                for (Node node = block.Operations.First; node != null; node = nextNode)
+                for (Operation node = block.Operations.First; node != null; node = nextNode)
                 {
                     nextNode = node.ListNext;
 
@@ -238,7 +238,7 @@ namespace ARMeilleure.CodeGen.X86
                 return null;
             }
 
-            Node asgOp = op.Assignments[0];
+            Operation asgOp = op.Assignments[0];
 
             if (!(asgOp is Operation operation))
             {

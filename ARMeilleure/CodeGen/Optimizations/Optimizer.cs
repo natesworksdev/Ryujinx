@@ -18,15 +18,15 @@ namespace ARMeilleure.CodeGen.Optimizations
 
                 for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
                 {
-                    Node node = block.Operations.First;
+                    Operation node = block.Operations.First;
 
                     while (node != null)
                     {
-                        Node nextNode = node.ListNext;
+                        Operation nextNode = node.ListNext;
 
                         bool isUnused = IsUnused(node);
 
-                        if (!(node is Operation operation) || isUnused)
+                        if (node.Instruction == Instruction.Phi || isUnused)
                         {
                             if (isUnused)
                             {
@@ -40,24 +40,24 @@ namespace ARMeilleure.CodeGen.Optimizations
                             continue;
                         }
 
-                        ConstantFolding.RunPass(operation);
+                        ConstantFolding.RunPass(node);
 
-                        Simplification.RunPass(operation);
+                        Simplification.RunPass(node);
 
-                        if (DestIsLocalVar(operation))
+                        if (DestIsLocalVar(node))
                         {   
-                            if (IsPropagableCompare(operation))
+                            if (IsPropagableCompare(node))
                             {
-                                modified |= PropagateCompare(operation);
+                                modified |= PropagateCompare(node);
 
-                                if (modified && IsUnused(operation))
+                                if (modified && IsUnused(node))
                                 {
                                     RemoveNode(block, node);
                                 }
                             }
-                            else if (IsPropagableCopy(operation))
+                            else if (IsPropagableCopy(node))
                             {
-                                PropagateCopy(operation);
+                                PropagateCopy(node);
 
                                 RemoveNode(block, node);
 
@@ -82,11 +82,11 @@ namespace ARMeilleure.CodeGen.Optimizations
 
                 for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
                 {
-                    Node node = block.Operations.First;
+                    Operation node = block.Operations.First;
 
                     while (node != null)
                     {
-                        Node nextNode = node.ListNext;
+                        Operation nextNode = node.ListNext;
 
                         if (IsUnused(node))
                         {
@@ -149,9 +149,9 @@ namespace ARMeilleure.CodeGen.Optimizations
 
             Comparison compType = (Comparison)comp.AsInt32();
 
-            Node[] uses = dest.Uses.ToArray();
+            Operation[] uses = dest.Uses.ToArray();
 
-            foreach (Node use in uses)
+            foreach (Operation use in uses)
             {
                 if (!(use is Operation operation))
                 {
@@ -193,9 +193,9 @@ namespace ARMeilleure.CodeGen.Optimizations
             Operand dest   = copyOp.Destination;
             Operand source = copyOp.GetSource(0);
 
-            Node[] uses = dest.Uses.ToArray();
+            Operation[] uses = dest.Uses.ToArray();
 
-            foreach (Node use in uses)
+            foreach (Operation use in uses)
             {
                 for (int index = 0; index < use.SourcesCount; index++)
                 {
@@ -207,7 +207,7 @@ namespace ARMeilleure.CodeGen.Optimizations
             }
         }
 
-        private static void RemoveNode(BasicBlock block, Node node)
+        private static void RemoveNode(BasicBlock block, Operation node)
         {
             // Remove a node from the nodes list, and also remove itself
             // from all the use lists on the operands that this node uses.
@@ -223,17 +223,17 @@ namespace ARMeilleure.CodeGen.Optimizations
             node.Destination = null;
         }
 
-        private static bool IsUnused(Node node)
+        private static bool IsUnused(Operation node)
         {
             return DestIsLocalVar(node) && node.Destination.Uses.Count == 0 && !HasSideEffects(node);
         }
 
-        private static bool DestIsLocalVar(Node node)
+        private static bool DestIsLocalVar(Operation node)
         {
             return node.Destination != null && node.Destination.Kind == OperandKind.LocalVariable;
         }
 
-        private static bool HasSideEffects(Node node)
+        private static bool HasSideEffects(Operation node)
         {
             return (node is Operation operation) && (operation.Instruction == Instruction.Call
                 || operation.Instruction == Instruction.Tailcall

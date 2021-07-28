@@ -29,7 +29,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         private LiveInterval[] _parentIntervals;
 
-        private List<(IntrusiveList<Node>, Node)> _operationNodes;
+        private List<(IntrusiveList<Operation>, Operation)> _operationNodes;
 
         private int _operationsCount;
 
@@ -588,7 +588,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                 int splitPosition = kv.Key;
 
-                (IntrusiveList<Node> nodes, Node node) = GetOperationNode(splitPosition);
+                (IntrusiveList<Operation> nodes, Operation node) = GetOperationNode(splitPosition);
 
                 Operation[] sequence = copyResolver.Sequence();
 
@@ -677,7 +677,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                     {
                         successor.Operations.AddFirst(sequence[0]);
 
-                        Node prependNode = sequence[0];
+                        Operation prependNode = sequence[0];
 
                         for (int index = 1; index < sequence.Length; index++)
                         {
@@ -710,7 +710,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             for (int i = usePositions.Count - 1; i >= 0; i--)
             {
                 int usePosition = -usePositions[i];
-                (_, Node operation) = GetOperationNode(usePosition);
+                (_, Operation operation) = GetOperationNode(usePosition);
 
                 for (int index = 0; index < operation.SourcesCount; index++)
                 {
@@ -758,14 +758,14 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 interval.Local.Type);
         }
 
-        private (IntrusiveList<Node>, Node) GetOperationNode(int position)
+        private (IntrusiveList<Operation>, Operation) GetOperationNode(int position)
         {
             return _operationNodes[position / InstructionGap];
         }
 
         private void NumberLocals(ControlFlowGraph cfg)
         {
-            _operationNodes = new List<(IntrusiveList<Node>, Node)>();
+            _operationNodes = new List<(IntrusiveList<Operation>, Operation)>();
 
             _intervals = new List<LiveInterval>();
 
@@ -783,7 +783,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             {
                 BasicBlock block = cfg.PostOrderBlocks[index];
 
-                for (Node node = block.Operations.First; node != null; node = node.ListNext)
+                for (Operation node = block.Operations.First; node != null; node = node.ListNext)
                 {
                     _operationNodes.Add((block.Operations, node));
 
@@ -828,7 +828,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 BitMap liveGen  = BitMapPool.Allocate(mapSize);
                 BitMap liveKill = BitMapPool.Allocate(mapSize);
 
-                for (Node node = block.Operations.First; node != null; node = node.ListNext)
+                for (Operation node = block.Operations.First; node != null; node = node.ListNext)
                 {
                     Sources(node, (source) =>
                     {
@@ -926,7 +926,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                     continue;
                 }
 
-                foreach (Node node in BottomOperations(block))
+                foreach (Operation node in BottomOperations(block))
                 {
                     operationPos -= InstructionGap;
 
@@ -947,7 +947,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         interval.AddUsePosition(operationPos);
                     });
 
-                    if (node is Operation operation && operation.Instruction == Instruction.Call)
+                    if (node.Instruction == Instruction.Call)
                     {
                         AddIntervalCallerSavedReg(context.Masks.IntCallerSavedRegisters, operationPos, RegisterType.Integer);
                         AddIntervalCallerSavedReg(context.Masks.VecCallerSavedRegisters, operationPos, RegisterType.Vector);
@@ -993,9 +993,9 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             return (register.Index << 1) | (register.Type == RegisterType.Vector ? 1 : 0);
         }
 
-        private static IEnumerable<Node> BottomOperations(BasicBlock block)
+        private static IEnumerable<Operation> BottomOperations(BasicBlock block)
         {
-            Node node = block.Operations.Last;
+            Operation node = block.Operations.Last;
 
             while (node != null)
             {
@@ -1005,7 +1005,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             }
         }
 
-        private static void Sources(Node node, Action<Operand> action)
+        private static void Sources(Operation node, Action<Operand> action)
         {
             for (int index = 0; index < node.SourcesCount; index++)
             {

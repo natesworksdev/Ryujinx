@@ -162,7 +162,7 @@ namespace ARMeilleure.CodeGen.X86
                 {
                     context.EnterBlock(block);
 
-                    for (Node node = block.Operations.First; node != null; node = node.ListNext)
+                    for (Operation node = block.Operations.First; node != null; node = node.ListNext)
                     {
                         if (node is Operation operation)
                         {
@@ -1641,7 +1641,7 @@ namespace ARMeilleure.CodeGen.X86
             context.Assembler.Pshufd(dest, dest, 0xfc);
         }
 
-        private static bool MatchOperation(Node node, Instruction inst, OperandType destType, Register destReg)
+        private static bool MatchOperation(Operation node, Instruction inst, OperandType destType, Register destReg)
         {
             if (!(node is Operation operation) || node.DestinationsCount == 0)
             {

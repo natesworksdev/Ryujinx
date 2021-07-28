@@ -72,7 +72,7 @@ namespace ARMeilleure.Translation
 
             for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
             {
-                for (Node node = block.Operations.First; node != null; node = node.ListNext)
+                for (Operation node = block.Operations.First; node != null; node = node.ListNext)
                 {
                     Operation operation = node as Operation;
 

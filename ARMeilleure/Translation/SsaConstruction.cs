@@ -57,7 +57,7 @@ namespace ARMeilleure.Translation
             // First pass, get all defs and locals uses.
             for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
             {
-                for (Node node = block.Operations.First; node != null; node = node.ListNext)
+                for (Operation node = block.Operations.First; node != null; node = node.ListNext)
                 {
                     if (node is not Operation operation)
                     {
@@ -119,7 +119,7 @@ namespace ARMeilleure.Translation
             // Second pass, rename variables with definitions on different blocks.
             for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
             {
-                for (Node node = block.Operations.First; node != null; node = node.ListNext)
+                for (Operation node = block.Operations.First; node != null; node = node.ListNext)
                 {
                     if (node is not Operation operation)
                     {
@@ -219,7 +219,7 @@ namespace ARMeilleure.Translation
 
         private static void AddPhi(BasicBlock block, Operation phi)
         {
-            Node node = block.Operations.First;
+            Operation node = block.Operations.First;
 
             if (node != null)
             {
