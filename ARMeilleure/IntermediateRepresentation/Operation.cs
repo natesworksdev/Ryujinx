@@ -8,8 +8,8 @@ namespace ARMeilleure.IntermediateRepresentation
         {
             public Intrinsic Intrinsic;
             public Instruction Instruction;
-            public NativeList<Operand> Destinations;
-            public NativeList<Operand> Sources;
+            public ArenaList<Operand> Destinations;
+            public ArenaList<Operand> Sources;
             public Operation ListPrevious;
             public Operation ListNext;
         }
@@ -278,7 +278,7 @@ namespace ARMeilleure.IntermediateRepresentation
             }
         }
 
-        private static void Resize(ref NativeList<Operand> list, int size)
+        private static void Resize(ref ArenaList<Operand> list, int size)
         {
             if (list.Count > size)
             {
@@ -331,8 +331,8 @@ namespace ARMeilleure.IntermediateRepresentation
                 Operation result = new();
                 result._data = data;
                 result._data->Instruction = inst;
-                result._data->Destinations = NativeList<Operand>.New(destCount);
-                result._data->Sources = NativeList<Operand>.New(srcCount);
+                result._data->Destinations = ArenaList<Operand>.New(destCount);
+                result._data->Sources = ArenaList<Operand>.New(srcCount);
 
                 Resize(ref result._data->Destinations, destCount);
                 Resize(ref result._data->Sources, srcCount);

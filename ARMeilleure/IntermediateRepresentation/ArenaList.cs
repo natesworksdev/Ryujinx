@@ -2,7 +2,7 @@
 
 namespace ARMeilleure.IntermediateRepresentation
 {
-    unsafe struct NativeList<T> where T : unmanaged
+    unsafe struct ArenaList<T> where T : unmanaged
     {
         private ushort _count;
         private ushort _capacity;
@@ -82,9 +82,9 @@ namespace ARMeilleure.IntermediateRepresentation
             return Span.ToArray();
         }
 
-        public static NativeList<T> New(int capacity)
+        public static ArenaList<T> New(int capacity)
         {
-            var result = new NativeList<T>();
+            var result = new ArenaList<T>();
             result._count = 0;
             result._capacity = (ushort)capacity;
             result._data = Arena<T>.Alloc(result._capacity);

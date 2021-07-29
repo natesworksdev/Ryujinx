@@ -14,8 +14,8 @@ namespace ARMeilleure.IntermediateRepresentation
             public ulong Value;
             public Symbol Symbol;
             public MemoryOperand Memory;
-            public NativeList<Operation> Assignments;
-            public NativeList<Operation> Uses;
+            public ArenaList<Operation> Assignments;
+            public ArenaList<Operation> Uses;
         }
 
         private Data *_data;
@@ -44,8 +44,8 @@ namespace ARMeilleure.IntermediateRepresentation
             private set => _data->Symbol = value;
         }
 
-        public ref NativeList<Operation> Assignments => ref _data->Assignments;
-        public ref NativeList<Operation> Uses => ref _data->Uses;
+        public ref ArenaList<Operation> Assignments => ref _data->Assignments;
+        public ref ArenaList<Operation> Uses => ref _data->Uses;
 
         public bool Relocatable => Symbol.Type != SymbolType.None;
 
@@ -156,8 +156,8 @@ namespace ARMeilleure.IntermediateRepresentation
                 result._data->Kind = kind;
                 result._data->Type = type;
                 result._data->Value = value;
-                result._data->Assignments = NativeList<Operation>.New(1);
-                result._data->Uses = NativeList<Operation>.New(4);
+                result._data->Assignments = ArenaList<Operation>.New(1);
+                result._data->Uses = ArenaList<Operation>.New(4);
 
                 return result;
             }
