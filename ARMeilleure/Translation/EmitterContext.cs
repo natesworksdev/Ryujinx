@@ -1,7 +1,6 @@
 using ARMeilleure.Diagnostics;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
-using ARMeilleure.Translation.PTC;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -505,7 +504,7 @@ namespace ARMeilleure.Translation
         {
             NewNextBlockIfNeeded();
 
-            Operation operation = OperationHelper.Operation(inst, dest);
+            Operation operation = Operation.Factory.Operation(inst, dest);
 
             _irBlock.Operations.AddLast(operation);
 
@@ -516,7 +515,7 @@ namespace ARMeilleure.Translation
         {
             NewNextBlockIfNeeded();
 
-            Operation operation = OperationHelper.Operation(inst, dest, sources);
+            Operation operation = Operation.Factory.Operation(inst, dest, sources);
 
             _irBlock.Operations.AddLast(operation);
 
@@ -527,7 +526,7 @@ namespace ARMeilleure.Translation
         {
             NewNextBlockIfNeeded();
 
-            Operation operation = OperationHelper.Operation(inst, dest, source0);
+            Operation operation = Operation.Factory.Operation(inst, dest, source0);
 
             _irBlock.Operations.AddLast(operation);
 
@@ -538,7 +537,7 @@ namespace ARMeilleure.Translation
         {
             NewNextBlockIfNeeded();
 
-            Operation operation = OperationHelper.Operation(inst, dest, source0, source1);
+            Operation operation = Operation.Factory.Operation(inst, dest, source0, source1);
 
             _irBlock.Operations.AddLast(operation);
 
@@ -549,7 +548,7 @@ namespace ARMeilleure.Translation
         {
             NewNextBlockIfNeeded();
 
-            Operation operation = OperationHelper.Operation(inst, dest, source0, source1, source2);
+            Operation operation = Operation.Factory.Operation(inst, dest, source0, source1, source2);
 
             _irBlock.Operations.AddLast(operation);
 
@@ -580,7 +579,7 @@ namespace ARMeilleure.Translation
         {
             NewNextBlockIfNeeded();
 
-            Operation operation = Operation.New(intrin, dest, sources);
+            Operation operation = Operation.Factory.Operation(intrin, dest, sources);
 
             _irBlock.Operations.AddLast(operation);
 

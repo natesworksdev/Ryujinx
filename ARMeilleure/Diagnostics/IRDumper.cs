@@ -18,7 +18,7 @@ namespace ARMeilleure.Diagnostics
         private readonly Dictionary<Operand, string> _localNames;
         private readonly Dictionary<ulong, string> _symbolNames;
 
-        private IRDumper(int indent)
+        public IRDumper(int indent)
         {
             _indentLevel = indent;
 

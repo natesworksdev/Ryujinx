@@ -790,6 +790,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                     for (int i = 0; i < node.DestinationsCount; i++)
                     {
                         Operand dest = node.GetDestination(i);
+
                         if (dest.Kind == OperandKind.LocalVariable && visited.Add(dest))
                         {
                             dest.NumberLocal(_intervals.Count);

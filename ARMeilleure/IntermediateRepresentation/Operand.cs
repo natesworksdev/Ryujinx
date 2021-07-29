@@ -61,8 +61,8 @@ namespace ARMeilleure.IntermediateRepresentation
 
             result._data = Arena<Data>.Alloc();
             *result._data = default;
-            result._data->Assignments = NativeList<Operation>.New();
-            result._data->Uses = NativeList<Operation>.New();
+            result._data->Assignments = NativeList<Operation>.New(1);
+            result._data->Uses = NativeList<Operation>.New(4);
 
             return result;
         }

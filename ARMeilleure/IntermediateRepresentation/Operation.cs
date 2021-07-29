@@ -49,151 +49,6 @@ namespace ARMeilleure.IntermediateRepresentation
         public int DestinationsCount => _data->Destinations.Count;
         public int SourcesCount => _data->Sources.Count;
 
-        public static Operation New()
-        {
-            var result = new Operation();
-
-            result._data = Arena<Data>.Alloc();
-            *result._data = default;
-            result._data->Sources = NativeList<Operand>.New();
-            result._data->Destinations = NativeList<Operand>.New();
-
-            return result;
-        }
-
-        public static Operation New(Operand dest, int srcCount)
-        {
-            Operation result = New();
-
-            result.Destination = dest;
-
-            Resize(ref result._data->Sources, srcCount);
-
-            return result;
-        }
-
-        public static Operation New(Instruction instruction, Operand dest, int srcCount)
-        {
-            Operation result = New(dest, srcCount);
-
-            result._data->Instruction = instruction;
-
-            return result;
-        }
-
-        public static Operation New(Instruction instruction, Operand dest, Operand[] src)
-        {
-            Operation result = New(instruction, dest, src.Length);
-
-            for (int index = 0; index < src.Length; index++)
-            {
-                result.SetSource(index, src[index]);
-            }
-
-            return result;
-        }
-
-        public static Operation New(Intrinsic intrin, Operand dest, params Operand[] src)
-        {
-            Operation result = New(Instruction.Extended, dest, src);
-
-            result._data->Intrinsic = intrin;
-
-            return result;
-        }
-
-        private void Reset(int sourcesCount)
-        {
-            _data->Sources.Clear();
-            ListPrevious = default;
-            ListNext = default;
-
-            Resize(ref _data->Sources, sourcesCount);
-        }
-
-        public Operation With(Instruction instruction, Operand destination)
-        {
-            With(destination, 0);
-            Instruction = instruction;
-            return this;
-        }
-
-        public Operation With(Instruction instruction, Operand destination, Operand[] sources)
-        {
-            With(destination, sources.Length);
-            Instruction = instruction;
-
-            for (int index = 0; index < sources.Length; index++)
-            {
-                SetSource(index, sources[index]);
-            }
-            return this;
-        }
-
-        public Operation With(Instruction instruction, Operand destination, 
-            Operand source0)
-        {
-            With(destination, 1);
-            Instruction = instruction;
-
-            SetSource(0, source0);
-            return this;
-        }
-
-        public Operation With(Instruction instruction, Operand destination,
-            Operand source0, Operand source1)
-        {
-            With(destination, 2);
-            Instruction = instruction;
-
-            SetSource(0, source0);
-            SetSource(1, source1);
-            return this;
-        }
-
-        public Operation With(Instruction instruction, Operand destination, 
-            Operand source0, Operand source1, Operand source2)
-        {
-            With(destination, 3);
-            Instruction = instruction;
-
-            SetSource(0, source0);
-            SetSource(1, source1);
-            SetSource(2, source2);
-            return this;
-        }
-
-        public Operation With(
-            Instruction instruction,
-            Operand[] destinations,
-            Operand[] sources)
-        {
-            With(destinations, sources.Length);
-            Instruction = instruction;
-
-            for (int index = 0; index < sources.Length; index++)
-            {
-                SetSource(index, sources[index]);
-            }
-            return this;
-        }
-
-        public Operation With(Operand destination, int sourcesCount)
-        {
-            Reset(sourcesCount);
-            Destination = destination;
-
-            return this;
-        }
-
-        public Operation With(Operand[] destinations, int sourcesCount)
-        {
-            Reset(sourcesCount);
-            SetDestinations(destinations ?? throw new ArgumentNullException(nameof(destinations)));
-
-            return this;
-        }
-
         public void TurnIntoCopy(Operand source)
         {
             Instruction = Instruction.Copy;
@@ -462,6 +317,113 @@ namespace ARMeilleure.IntermediateRepresentation
         public static bool operator !=(Operation a, Operation b)
         {
             return !a.Equals(b);
+        }
+
+        public static class Factory
+        {
+            private static Operation Make(Instruction inst, int destCount, int srcCount)
+            {
+                Data* data = Arena<Data>.Alloc();
+                *data = default;
+
+                Operation result = new();
+                result._data = data;
+                result._data->Instruction = inst;
+                result._data->Destinations = NativeList<Operand>.New(destCount);
+                result._data->Sources = NativeList<Operand>.New(srcCount);
+
+                Resize(ref result._data->Destinations, destCount);
+                Resize(ref result._data->Sources, srcCount);
+
+                return result;
+            }
+
+            public static Operation Operation(Instruction inst, Operand dest)
+            {
+                Operation result = Make(inst, 0, 0);
+                result.SetDestination(dest);
+                return result;
+            }
+
+            public static Operation Operation(Instruction inst, Operand dest, Operand src0)
+            {
+                Operation result = Make(inst, 0, 1);
+                result.SetDestination(dest);
+                result.SetSource(0, src0);
+                return result;
+            }
+
+            public static Operation Operation(Instruction inst, Operand dest, Operand src0, Operand src1)
+            {
+                Operation result = Make(inst, 0, 2);
+                result.SetDestination(dest);
+                result.SetSource(0, src0);
+                result.SetSource(1, src1);
+                return result;
+            }
+
+            public static Operation Operation(Instruction inst, Operand dest, Operand src0, Operand src1, Operand src2)
+            {
+                Operation result = Make(inst, 0, 3);
+                result.SetDestination(dest);
+                result.SetSource(0, src0);
+                result.SetSource(1, src1);
+                result.SetSource(2, src2);
+                return result;
+            }
+
+            public static Operation Operation(Instruction inst, Operand dest, int srcCount)
+            {
+                Operation result = Make(inst, 0, srcCount);
+                result.SetDestination(dest);
+                return result;
+            }
+
+            public static Operation Operation(Instruction inst, Operand dest, Operand[] srcs)
+            {
+                Operation result = Make(inst, 0, srcs.Length);
+
+                result.SetDestination(dest);
+
+                for (int index = 0; index < srcs.Length; index++)
+                {
+                    result.SetSource(index, srcs[index]);
+                }
+
+                return result;
+            }
+
+            public static Operation Operation(Intrinsic intrin, Operand dest, params Operand[] srcs)
+            {
+                Operation result = Make(Instruction.Extended, 0, srcs.Length);
+
+                result.Intrinsic = intrin;
+                result.SetDestination(dest);
+
+                for (int index = 0; index < srcs.Length; index++)
+                {
+                    result.SetSource(index, srcs[index]);
+                }
+
+                return result;
+            }
+
+            public static Operation Operation(Instruction inst, Operand[] dests, Operand[] srcs)
+            {
+                Operation result = Make(inst, dests.Length, srcs.Length);
+
+                for (int index = 0; index < dests.Length; index++)
+                {
+                    result.SetDestination(index, dests[index]);
+                }
+
+                for (int index = 0; index < srcs.Length; index++)
+                {
+                    result.SetSource(index, srcs[index]);
+                }
+
+                return result;
+            }
         }
     }
 }

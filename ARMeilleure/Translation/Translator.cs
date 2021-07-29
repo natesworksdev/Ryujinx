@@ -281,7 +281,7 @@ namespace ARMeilleure.Translation
 
             ulong funcSize = funcRange.End - funcRange.Start;
 
-            Logger.EndPass(PassName.Translation);
+            Logger.EndPass(PassName.Translation, cfg);
 
             Logger.StartPass(PassName.RegisterUsage);
 

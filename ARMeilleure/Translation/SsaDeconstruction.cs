@@ -1,7 +1,7 @@
 using ARMeilleure.IntermediateRepresentation;
 
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
-using static ARMeilleure.IntermediateRepresentation.OperationHelper;
+using static ARMeilleure.IntermediateRepresentation.Operation.Factory;
 
 namespace ARMeilleure.Translation
 {

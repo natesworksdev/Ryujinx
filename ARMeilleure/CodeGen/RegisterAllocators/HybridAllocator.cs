@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Numerics;
 
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
-using static ARMeilleure.IntermediateRepresentation.OperationHelper;
+using static ARMeilleure.IntermediateRepresentation.Operation.Factory;
 
 namespace ARMeilleure.CodeGen.RegisterAllocators
 {

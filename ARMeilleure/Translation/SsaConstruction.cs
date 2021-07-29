@@ -195,7 +195,7 @@ namespace ARMeilleure.Translation
             // then use the definition from that Phi.
             Operand local = Local(operand.Type);
 
-            Operation phi = Operation.New(Instruction.Phi, local, block.Predecessors.Count * 2);
+            Operation phi = Operation.Factory.Operation(Instruction.Phi, local, block.Predecessors.Count * 2);
 
             AddPhi(block, phi);
 

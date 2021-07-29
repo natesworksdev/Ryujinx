@@ -34,9 +34,11 @@ namespace ARMeilleure.IntermediateRepresentation
                 throw new OutOfMemoryException();
             }
 
+            byte* result = &_block[_index];
+
             _index += bytes;
 
-            return &_block[_index];
+            return result;
         }
 
         public void Reset()

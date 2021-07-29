@@ -11,30 +11,19 @@ namespace ARMeilleure.IntermediateRepresentation
         public int Count => _count;
         public int Capacity => _capacity;
 
-        public ref T this[int index]
-        {
-            get
-            {
-                if ((uint)index >= _count)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(index));
-                }
-
-                return ref _data[index];
-            }
-        }
-
         public Span<T> Span => new(_data, _count);
+        public ref T this[int index] => ref Span[index];
 
         public void Add(in T item)
         {
             int newCount = _count + 1;
+
             if (newCount > ushort.MaxValue)
             {
                 throw new OverflowException();
             }
 
-            if (newCount >= _capacity)
+            if (newCount > _capacity)
             {
                 var oldSpan = Span;
 
@@ -93,14 +82,12 @@ namespace ARMeilleure.IntermediateRepresentation
             return Span.ToArray();
         }
 
-        public static NativeList<T> New()
+        public static NativeList<T> New(int capacity)
         {
             var result = new NativeList<T>();
-
             result._count = 0;
-            result._capacity = 4;
+            result._capacity = (ushort)capacity;
             result._data = Arena<T>.Alloc(result._capacity);
-
             return result;
         }
     }
