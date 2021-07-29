@@ -1,6 +1,6 @@
 using ARMeilleure.IntermediateRepresentation;
 
-using static ARMeilleure.IntermediateRepresentation.OperandHelper;
+using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
 using static ARMeilleure.IntermediateRepresentation.Operation.Factory;
 
 namespace ARMeilleure.Translation

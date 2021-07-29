@@ -929,7 +929,7 @@ namespace ARMeilleure.CodeGen.X86
             }
             else if (source.Kind == OperandKind.Constant)
             {
-                source = source.With((int)source.Value & (dest.Type == OperandType.I32 ? 0x1f : 0x3f));
+                source = Operand.Factory.Const((int)source.Value & (dest.Type == OperandType.I32 ? 0x1f : 0x3f));
             }
 
             WriteInstruction(dest, source, type, inst);

@@ -4,8 +4,7 @@ using ARMeilleure.Translation;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-
-using static ARMeilleure.IntermediateRepresentation.OperandHelper;
+using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
 using static ARMeilleure.IntermediateRepresentation.Operation.Factory;
 
 namespace ARMeilleure.CodeGen.X86

@@ -2,7 +2,7 @@ using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using System;
 
-using static ARMeilleure.IntermediateRepresentation.OperandHelper;
+using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
 using static ARMeilleure.IntermediateRepresentation.Operation.Factory;
 
 namespace ARMeilleure.Translation
@@ -342,15 +342,15 @@ namespace ARMeilleure.Translation
         {
             if (bit < RegsCount)
             {
-                return OperandHelper.Register(bit, baseType, GetOperandType(baseType, mode));
+                return Operand.Factory.Register(bit, baseType, GetOperandType(baseType, mode));
             }
             else if (baseType == RegisterType.Integer)
             {
-                return OperandHelper.Register(bit & RegsMask, RegisterType.Flag, OperandType.I32);
+                return Operand.Factory.Register(bit & RegsMask, RegisterType.Flag, OperandType.I32);
             }
             else if (baseType == RegisterType.Vector)
             {
-                return OperandHelper.Register(bit & RegsMask, RegisterType.FpFlag, OperandType.I32);
+                return Operand.Factory.Register(bit & RegsMask, RegisterType.FpFlag, OperandType.I32);
             }
             else
             {

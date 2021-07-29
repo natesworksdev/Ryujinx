@@ -1,8 +1,7 @@
 ﻿using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
 using System.Diagnostics;
-
-using static ARMeilleure.IntermediateRepresentation.OperandHelper;
+using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
 
 namespace ARMeilleure.CodeGen.Optimizations
 {

@@ -5,7 +5,7 @@ using ARMeilleure.Translation.Cache;
 using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using static ARMeilleure.IntermediateRepresentation.OperandHelper;
+using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
 
 namespace ARMeilleure.Translation
 {

@@ -15,9 +15,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime;
 using System.Threading;
-
 using static ARMeilleure.Common.BitMapPool;
-using static ARMeilleure.IntermediateRepresentation.OperandHelper;
+using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
 
 namespace ARMeilleure.Translation
 {

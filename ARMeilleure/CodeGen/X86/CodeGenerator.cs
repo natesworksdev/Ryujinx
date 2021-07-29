@@ -11,8 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Numerics;
-
-using static ARMeilleure.IntermediateRepresentation.OperandHelper;
+using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
 
 namespace ARMeilleure.CodeGen.X86
 {
@@ -1845,12 +1844,12 @@ namespace ARMeilleure.CodeGen.X86
 
         private static Operand Register(X86Register register, OperandType type = OperandType.I64)
         {
-            return OperandHelper.Register((int)register, RegisterType.Integer, type);
+            return Operand.Factory.Register((int)register, RegisterType.Integer, type);
         }
 
         private static Operand Xmm(X86Register register)
         {
-            return OperandHelper.Register((int)register, RegisterType.Vector, OperandType.V128);
+            return Operand.Factory.Register((int)register, RegisterType.Vector, OperandType.V128);
         }
     }
 }

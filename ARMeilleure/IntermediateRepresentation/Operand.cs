@@ -49,81 +49,6 @@ namespace ARMeilleure.IntermediateRepresentation
         public ref NativeList<Operation> Assignments => ref _data->Assignments;
         public ref NativeList<Operation> Uses => ref _data->Uses;
 
-        public Operand(OperandKind kind, OperandType type = OperandType.None) : this()
-        {
-            Kind = kind;
-            Type = type;
-        }
-
-        public static Operand New()
-        {
-            var result = new Operand();
-
-            result._data = Arena<Data>.Alloc();
-            *result._data = default;
-            result._data->Assignments = NativeList<Operation>.New(1);
-            result._data->Uses = NativeList<Operation>.New(4);
-
-            return result;
-        }
-
-        public Operand With(
-            OperandKind kind,
-            OperandType type = OperandType.None,
-            ulong value = 0,
-            Symbol symbol = default)
-        {
-            Kind = kind;
-            Type = type;
-            Value = value;
-            Symbol = symbol;
-
-            Assignments.Clear();
-            Uses.Clear();
-
-            return this;
-        }
-
-        public Operand With(int value)
-        {
-            return With(OperandKind.Constant, OperandType.I32, (uint)value);
-        }
-
-        public Operand With(uint value)
-        {
-            return With(OperandKind.Constant, OperandType.I32, value);
-        }
-
-        public Operand With(long value)
-        {
-            return With(OperandKind.Constant, OperandType.I64, (ulong)value);
-        }
-
-        public Operand With(long value, Symbol symbol)
-        {
-            return With(OperandKind.Constant, OperandType.I64, (ulong)value, symbol);
-        }
-
-        public Operand With(ulong value)
-        {
-            return With(OperandKind.Constant, OperandType.I64, value);
-        }
-
-        public Operand With(float value)
-        {
-            return With(OperandKind.Constant, OperandType.FP32, (ulong)BitConverter.SingleToInt32Bits(value));
-        }
-
-        public Operand With(double value)
-        {
-            return With(OperandKind.Constant, OperandType.FP64, (ulong)BitConverter.DoubleToInt64Bits(value));
-        }
-
-        public Operand With(int index, RegisterType regType, OperandType type)
-        {
-            return With(OperandKind.Register, type, (ulong)((int)regType << 24 | index));
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Register GetRegister()
         {
@@ -217,6 +142,117 @@ namespace ARMeilleure.IntermediateRepresentation
         public static bool operator !=(Operand a, Operand b)
         {
             return !a.Equals(b);
+        }
+
+        public static class Factory
+        {
+            private static Operand Make(OperandKind kind, OperandType type, ulong value)
+            {
+                Data* data = Arena<Data>.Alloc();
+                *data = default;
+
+                Operand result = new();
+                result._data = data;
+                result._data->Kind = kind;
+                result._data->Type = type;
+                result._data->Value = value;
+                result._data->Assignments = NativeList<Operation>.New(1);
+                result._data->Uses = NativeList<Operation>.New(4);
+
+                return result;
+            }
+
+            public static Operand Const(OperandType type, long value)
+            {
+                Debug.Assert(type is OperandType.I32 or OperandType.I64);
+
+                return type == OperandType.I32 ? Const((int)value) : Const(value);
+            }
+
+            public static Operand Const(bool value)
+            {
+                return Const(value ? 1 : 0);
+            }
+
+            public static Operand Const(int value)
+            {
+                return Const((uint)value);
+            }
+
+            public static Operand Const(uint value)
+            {
+                return Make(OperandKind.Constant, OperandType.I32, value);
+            }
+
+            public static Operand Const(long value)
+            {
+                return Const((ulong)value);
+            }
+
+            public static Operand Const(long value, Symbol symbol)
+            {
+                Operand result = Const(value);
+                result.Symbol = symbol;
+                return result;
+            }
+
+            public static Operand Const<T>(ref T reference, Symbol symbol = default)
+            {
+                return Const((long)Unsafe.AsPointer(ref reference), symbol);
+            }
+
+            public static Operand Const(ulong value)
+            {
+                return Make(OperandKind.Constant, OperandType.I64, value);
+            }
+
+            public static Operand ConstF(float value)
+            {
+                return Make(OperandKind.Constant, OperandType.FP32, (ulong)BitConverter.SingleToInt32Bits(value));
+            }
+
+            public static Operand ConstF(double value)
+            {
+                return Make(OperandKind.Constant, OperandType.FP64, (ulong)BitConverter.DoubleToInt64Bits(value));
+            }
+
+            public static Operand Label()
+            {
+                return Make(OperandKind.Label, OperandType.None, 0);
+            }
+
+            public static Operand Local(OperandType type)
+            {
+                return Make(OperandKind.LocalVariable, type, 0);
+            }
+
+            public static Operand Register(int index, RegisterType regType, OperandType type)
+            {
+                return Make(OperandKind.Register, type, (ulong)((int)regType << 24 | index));
+            }
+
+            public static Operand Undef()
+            {
+                return Make(OperandKind.Undefined, OperandType.None, 0);
+            }
+
+            public static Operand MemoryOp(
+                OperandType type,
+                Operand baseAddress,
+                Operand index = default,
+                Multiplier scale = Multiplier.x1,
+                int displacement = 0)
+            {
+                Operand result = Make(OperandKind.Memory, type, 0);
+
+                ref MemoryOperand memory = ref result.GetMemory();
+                memory.BaseAddress = baseAddress;
+                memory.Index = index;
+                memory.Scale = scale;
+                memory.Displacement = displacement;
+
+                return result;
+            }
         }
     }
 }

@@ -4,8 +4,7 @@ using ARMeilleure.State;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-
-using static ARMeilleure.IntermediateRepresentation.OperandHelper;
+using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
 
 namespace ARMeilleure.Translation
 {
