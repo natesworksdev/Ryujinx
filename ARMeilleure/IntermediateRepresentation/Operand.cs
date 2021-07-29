@@ -20,8 +20,6 @@ namespace ARMeilleure.IntermediateRepresentation
 
         private Data *_data;
 
-        public bool Relocatable => Symbol.Type != SymbolType.None;
-
         public OperandKind Kind
         {
             get => _data->Kind;
@@ -48,6 +46,8 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public ref NativeList<Operation> Assignments => ref _data->Assignments;
         public ref NativeList<Operation> Uses => ref _data->Uses;
+
+        public bool Relocatable => Symbol.Type != SymbolType.None;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Register GetRegister()

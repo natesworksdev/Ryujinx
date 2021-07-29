@@ -68,27 +68,29 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public void SetDestination(int index, Operand destination)
         {
-            RemoveAssignment(_data->Destinations[index]);
+            ref Operand curDest = ref _data->Destinations[index];
 
+            RemoveAssignment(curDest);
             AddAssignment(destination);
 
-            _data->Destinations[index] = destination;
+            curDest = destination;
         }
 
         public void SetSource(int index, Operand source)
         {
-            RemoveUse(_data->Sources[index]);
+            ref Operand curSrc = ref _data->Sources[index];
 
+            RemoveUse(curSrc);
             AddUse(source);
 
-            _data->Sources[index] = source;
+            curSrc = source;
         }
 
         private void RemoveOldDestinations()
         {
-            for (int index = 0; index < _data->Destinations.Count; index++)
+            foreach (ref Operand dest in _data->Destinations.Span)
             {
-                RemoveAssignment(_data->Destinations[index]);
+                RemoveAssignment(dest);
             }
         }
 
@@ -128,9 +130,9 @@ namespace ARMeilleure.IntermediateRepresentation
 
         private void RemoveOldSources()
         {
-            for (int index = 0; index < _data->Sources.Count; index++)
+            foreach (ref Operand src in _data->Sources.Span)
             {
-                RemoveUse(_data->Sources[index]);
+                RemoveUse(src);
             }
         }
 
