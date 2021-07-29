@@ -1,5 +1,4 @@
 using System;
-using System.Runtime.InteropServices;
 
 namespace ARMeilleure.IntermediateRepresentation
 {
@@ -49,6 +48,59 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public int DestinationsCount => _data->Destinations.Count;
         public int SourcesCount => _data->Sources.Count;
+
+        public static Operation New()
+        {
+            var result = new Operation();
+
+            result._data = Arena<Data>.Alloc();
+            *result._data = default;
+            result._data->Sources = NativeList<Operand>.New();
+            result._data->Destinations = NativeList<Operand>.New();
+
+            return result;
+        }
+
+        public static Operation New(Operand dest, int srcCount)
+        {
+            Operation result = New();
+
+            result.Destination = dest;
+
+            Resize(ref result._data->Sources, srcCount);
+
+            return result;
+        }
+
+        public static Operation New(Instruction instruction, Operand dest, int srcCount)
+        {
+            Operation result = New(dest, srcCount);
+
+            result._data->Instruction = instruction;
+
+            return result;
+        }
+
+        public static Operation New(Instruction instruction, Operand dest, Operand[] src)
+        {
+            Operation result = New(instruction, dest, src.Length);
+
+            for (int index = 0; index < src.Length; index++)
+            {
+                result.SetSource(index, src[index]);
+            }
+
+            return result;
+        }
+
+        public static Operation New(Intrinsic intrin, Operand dest, params Operand[] src)
+        {
+            Operation result = New(Instruction.Extended, dest, src);
+
+            result._data->Intrinsic = intrin;
+
+            return result;
+        }
 
         private void Reset(int sourcesCount)
         {
@@ -385,65 +437,6 @@ namespace ARMeilleure.IntermediateRepresentation
                     list.Add(default);
                 }
             }
-        }
-
-        public static Operation New()
-        {
-            var result = new Operation();
-
-            result._data = (Data*)Marshal.AllocHGlobal(sizeof(Data));
-
-            if (result._data == null)
-            {
-                throw new OutOfMemoryException();
-            }
-
-            *result._data = default;
-            result._data->Sources = NativeList<Operand>.New();
-            result._data->Destinations = NativeList<Operand>.New();
-
-            return result;
-        }
-
-        public static Operation New(Operand dest, int srcCount)
-        {
-            Operation result = New();
-
-            result.Destination = dest;
-
-            Resize(ref result._data->Sources, srcCount);
-
-            return result;
-        }
-
-        public static Operation New(Instruction instruction, Operand dest, int srcCount)
-        {
-            Operation result = New(dest, srcCount);
-
-            result._data->Instruction = instruction;
-
-            return result;
-        }
-
-        public static Operation New(Instruction instruction, Operand dest, Operand[] src)
-        {
-            Operation result = New(instruction, dest, src.Length);
-
-            for (int index = 0; index < src.Length; index++)
-            {
-                result.SetSource(index, src[index]);
-            }
-
-            return result;
-        }
-
-        public static Operation New(Intrinsic intrin, Operand dest, params Operand[] src)
-        {
-            Operation result = New(Instruction.Extended, dest, src);
-
-            result._data->Intrinsic = intrin;
-
-            return result;
         }
 
         public bool Equals(Operation operation)

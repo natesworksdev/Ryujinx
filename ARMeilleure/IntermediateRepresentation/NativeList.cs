@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 
 namespace ARMeilleure.IntermediateRepresentation
 {
@@ -37,14 +36,12 @@ namespace ARMeilleure.IntermediateRepresentation
 
             if (newCount >= _capacity)
             {
-                var oldData = _data;
                 var oldSpan = Span;
 
                 _capacity += 8;
-                _data = (T*)Marshal.AllocHGlobal(sizeof(T) * _capacity);
+                _data = Arena<T>.Alloc(_capacity);
 
                 oldSpan.CopyTo(Span);
-                Marshal.FreeHGlobal((IntPtr)oldData);
             }
 
             _data[_count++] = item;
@@ -102,7 +99,7 @@ namespace ARMeilleure.IntermediateRepresentation
 
             result._count = 0;
             result._capacity = 4;
-            result._data = (T*)Marshal.AllocHGlobal(sizeof(T) * result._capacity);
+            result._data = Arena<T>.Alloc(result._capacity);
 
             return result;
         }

@@ -267,6 +267,9 @@ namespace ARMeilleure.Translation
 
             Logger.StartPass(PassName.Translation);
 
+            // Reset all the allocators for a new round of compilation.
+            Arena.ResetAll();
+
             EmitSynchronization(context);
 
             if (blocks[0].Address != address)

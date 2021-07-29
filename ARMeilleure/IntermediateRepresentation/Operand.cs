@@ -2,7 +2,6 @@ using ARMeilleure.Translation.PTC;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace ARMeilleure.IntermediateRepresentation
 {
@@ -54,6 +53,18 @@ namespace ARMeilleure.IntermediateRepresentation
         {
             Kind = kind;
             Type = type;
+        }
+
+        public static Operand New()
+        {
+            var result = new Operand();
+
+            result._data = Arena<Data>.Alloc();
+            *result._data = default;
+            result._data->Assignments = NativeList<Operation>.New();
+            result._data->Uses = NativeList<Operation>.New();
+
+            return result;
         }
 
         public Operand With(
@@ -174,24 +185,6 @@ namespace ARMeilleure.IntermediateRepresentation
             }
 
             Value = (ulong)number;
-        }
-
-        public static Operand New()
-        {
-            var result = new Operand();
-
-            result._data = (Data*)Marshal.AllocHGlobal(sizeof(Data));
-
-            if (result._data == null)
-            {
-                throw new OutOfMemoryException();
-            }
-
-            *result._data = default;
-            result._data->Assignments = NativeList<Operation>.New();
-            result._data->Uses = NativeList<Operation>.New();
-
-            return result;
         }
 
         public override int GetHashCode()
