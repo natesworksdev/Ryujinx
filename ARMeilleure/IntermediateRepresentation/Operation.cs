@@ -4,14 +4,14 @@ namespace ARMeilleure.IntermediateRepresentation
 {
     unsafe struct Operation : IIntrusiveListNode<Operation>
     {
-        private struct Data
+        public struct Data
         {
             public Intrinsic Intrinsic;
             public Instruction Instruction;
-            public ArenaList<Operand> Destinations;
-            public ArenaList<Operand> Sources;
             public Operation ListPrevious;
             public Operation ListNext;
+            public ArenaList<Operand> Destinations;
+            public ArenaList<Operand> Sources;
         }
 
         private Data* _data;

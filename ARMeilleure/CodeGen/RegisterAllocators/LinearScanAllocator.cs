@@ -722,7 +722,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                     }
                     else if (source.Kind == OperandKind.Memory)
                     {
-                        ref MemoryOperand memOp = ref source.GetMemory();
+                        MemoryOperand memOp = source.GetMemory();
 
                         if (memOp.BaseAddress == current.Local)
                         {

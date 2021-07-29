@@ -196,7 +196,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                     int intLocalUse = 0;
                     int vecLocalUse = 0;
 
-                    void AllocateRegister(Operand source, bool hasMemOp, ref MemoryOperand memOp, int srcIndex)
+                    void AllocateRegister(Operand source, bool hasMemOp, MemoryOperand memOp, int srcIndex)
                     {
                         LocalInfo info = locInfo[source.GetLocalNumber() - 1];
 
@@ -287,21 +287,20 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                         if (source.Kind == OperandKind.LocalVariable)
                         {
-                            MemoryOperand dummy = default;
-                            AllocateRegister(source, false, ref dummy, srcIndex);
+                            AllocateRegister(source, false, default, srcIndex);
                         }
                         else if (source.Kind == OperandKind.Memory)
                         {
-                            ref MemoryOperand memOp = ref source.GetMemory();
+                            MemoryOperand memOp = source.GetMemory();
 
                             if (memOp.BaseAddress != default)
                             {
-                                AllocateRegister(memOp.BaseAddress, true, ref memOp, 0);
+                                AllocateRegister(memOp.BaseAddress, true, memOp, 0);
                             }
 
                             if (memOp.Index != default)
                             {
-                                AllocateRegister(memOp.Index, true, ref memOp, 1);
+                                AllocateRegister(memOp.Index, true, memOp, 1);
                             }
                         }
                     }

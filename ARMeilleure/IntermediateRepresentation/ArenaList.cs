@@ -4,9 +4,9 @@ namespace ARMeilleure.IntermediateRepresentation
 {
     unsafe struct ArenaList<T> where T : unmanaged
     {
+        private T* _data;
         private ushort _count;
         private ushort _capacity;
-        private T* _data;
 
         public int Count => _count;
         public int Capacity => _capacity;

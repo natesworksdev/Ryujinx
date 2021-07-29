@@ -9,27 +9,27 @@ namespace ARMeilleure.IntermediateRepresentation
     {
         private struct Data
         {
-            public OperandKind Kind;
-            public OperandType Type;
-            public ulong Value;
-            public Symbol Symbol;
-            public MemoryOperand Memory;
+            public byte Kind;
+            public byte Type;
+            public byte SymbolType;
             public ArenaList<Operation> Assignments;
             public ArenaList<Operation> Uses;
+            public ulong Value;
+            public ulong SymbolValue;
         }
 
-        private Data *_data;
+        private Data* _data;
 
         public OperandKind Kind
         {
-            get => _data->Kind;
-            private set => _data->Kind = value; 
+            get => (OperandKind)_data->Kind;
+            private set => _data->Kind = (byte)value;
         }
 
         public OperandType Type
         {
-            get => _data->Type;
-            private set => _data->Type = value;
+            get => (OperandType)_data->Type;
+            private set => _data->Type = (byte)value;
         }
 
         public ulong Value
@@ -40,12 +40,47 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public Symbol Symbol
         {
-            get => _data->Symbol;
-            private set => _data->Symbol = value;
+            get
+            {
+                Debug.Assert(Kind != OperandKind.Memory);
+
+                return new Symbol((SymbolType)_data->SymbolType, _data->SymbolValue);
+            }
+            private set
+            {
+                Debug.Assert(Kind != OperandKind.Memory);
+
+                if (value.Type == SymbolType.None)
+                {
+                    _data->SymbolType = (byte)SymbolType.None;
+                }
+                else
+                {
+                    _data->SymbolType = (byte)value.Type;
+                    _data->SymbolValue = value.Value;
+                }
+            }
         }
 
-        public ref ArenaList<Operation> Assignments => ref _data->Assignments;
-        public ref ArenaList<Operation> Uses => ref _data->Uses;
+        public ref ArenaList<Operation> Assignments
+        {
+            get
+            {
+                Debug.Assert(Kind != OperandKind.Memory);
+
+                return ref _data->Assignments;
+            }
+        }
+
+        public ref ArenaList<Operation> Uses
+        {
+            get
+            {
+                Debug.Assert(Kind != OperandKind.Memory);
+
+                return ref _data->Uses;
+            }
+        }
 
         public bool Relocatable => Symbol.Type != SymbolType.None;
 
@@ -58,11 +93,11 @@ namespace ARMeilleure.IntermediateRepresentation
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ref MemoryOperand GetMemory()
+        public MemoryOperand GetMemory()
         {
             Debug.Assert(Kind == OperandKind.Memory);
 
-            return ref _data->Memory;
+            return MemoryOperand.Cast(this);
         }
 
         public int GetLocalNumber()
@@ -153,11 +188,11 @@ namespace ARMeilleure.IntermediateRepresentation
 
                 Operand result = new();
                 result._data = data;
-                result._data->Kind = kind;
-                result._data->Type = type;
                 result._data->Value = value;
                 result._data->Assignments = ArenaList<Operation>.New(1);
                 result._data->Uses = ArenaList<Operation>.New(4);
+                result.Kind = kind;
+                result.Type = type;
 
                 return result;
             }
@@ -245,7 +280,7 @@ namespace ARMeilleure.IntermediateRepresentation
             {
                 Operand result = Make(OperandKind.Memory, type, 0);
 
-                ref MemoryOperand memory = ref result.GetMemory();
+                MemoryOperand memory = result.GetMemory();
                 memory.BaseAddress = baseAddress;
                 memory.Index = index;
                 memory.Scale = scale;
