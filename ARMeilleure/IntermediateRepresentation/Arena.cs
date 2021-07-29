@@ -7,7 +7,20 @@ namespace ARMeilleure.IntermediateRepresentation
     unsafe class Arena
     {
         [ThreadStatic]
-        private static readonly List<Arena> _instances = new(capacity: 4);
+        private static List<Arena> _instances;
+
+        private static List<Arena> Instances
+        {
+            get
+            {
+                if (_instances == null)
+                {
+                    _instances = new(capacity: 4);
+                }
+
+                return _instances;
+            }
+        }
 
         private int _index;
         private readonly int _capacity;
@@ -24,7 +37,7 @@ namespace ARMeilleure.IntermediateRepresentation
                 throw new OutOfMemoryException();
             }
 
-            _instances.Add(this);
+            Instances.Add(this);
         }
 
         public byte* Allocate(int bytes)
@@ -48,7 +61,7 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public static void ResetAll()
         {
-            foreach (var instance in _instances)
+            foreach (var instance in Instances)
             {
                 instance.Reset();
             }
@@ -58,13 +71,26 @@ namespace ARMeilleure.IntermediateRepresentation
     unsafe class Arena<T> : Arena where T : unmanaged
     {
         [ThreadStatic]
-        private static readonly Arena<T> _instance = new(4 * 1024 * 1024);
+        private static Arena<T> _instance;
+
+        private static Arena<T> Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = new(16 * 1024 * 1024);
+                }
+                
+                return _instance;
+            }
+        }
 
         public Arena(int capacity) : base(capacity / sizeof(T) * sizeof(T)) { }
 
         public static T* Alloc(int count = 1)
         {
-            return (T*)_instance.Allocate(count * sizeof(T));
+            return (T*)Instance.Allocate(count * sizeof(T));
         }
     }
 }
