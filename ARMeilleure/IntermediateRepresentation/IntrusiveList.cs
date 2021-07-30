@@ -30,11 +30,11 @@ namespace ARMeilleure.IntermediateRepresentation
         /// </summary>
         /// <param name="newNode">Item to be added</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AddFirst(T newNode)
+        public T AddFirst(T newNode)
         {
             if (!EqualsNull(First))
             {
-                AddBefore(First, newNode);
+                return AddBefore(First, newNode);
             }
             else
             {
@@ -48,6 +48,8 @@ namespace ARMeilleure.IntermediateRepresentation
                 Debug.Assert(Count == 0);
 
                 Count = 1;
+
+                return newNode;
             }
         }
 
@@ -56,11 +58,11 @@ namespace ARMeilleure.IntermediateRepresentation
         /// </summary>
         /// <param name="newNode">Item to be added</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AddLast(T newNode)
+        public T AddLast(T newNode)
         {
             if (!EqualsNull(Last))
             {
-                AddAfter(Last, newNode);
+                return AddAfter(Last, newNode);
             }
             else
             {
@@ -74,6 +76,8 @@ namespace ARMeilleure.IntermediateRepresentation
                 Debug.Assert(Count == 0);
 
                 Count = 1;
+
+                return newNode;
             }
         }
 
@@ -178,11 +182,15 @@ namespace ARMeilleure.IntermediateRepresentation
 
         private static bool EqualsNull(T a)
         {
+            Debug.Assert(Unsafe.SizeOf<T>() == IntPtr.Size);
+
             return Unsafe.As<T, IntPtr>(ref a) == IntPtr.Zero;
         }
 
         private static bool Equals(T a, T b)
         {
+            Debug.Assert(Unsafe.SizeOf<T>() == IntPtr.Size);
+
             return Unsafe.As<T, IntPtr>(ref a) == Unsafe.As<T, IntPtr>(ref b);
         }
     }

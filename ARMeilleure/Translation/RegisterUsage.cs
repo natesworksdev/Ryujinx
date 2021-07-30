@@ -1,7 +1,9 @@
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using System;
-
+using System.Numerics;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
 using static ARMeilleure.IntermediateRepresentation.Operation.Factory;
 
@@ -14,27 +16,48 @@ namespace ARMeilleure.Translation
 
         private struct RegisterMask : IEquatable<RegisterMask>
         {
-            public long IntMask { get; set; }
-            public long VecMask { get; set; }
+            public long IntMask => Mask.GetElement(0);
+            public long VecMask => Mask.GetElement(1);
+
+            public Vector128<long> Mask { get; }
+
+            public RegisterMask(Vector128<long> mask)
+            {
+                Mask = mask;
+            }
 
             public RegisterMask(long intMask, long vecMask)
             {
-                IntMask = intMask;
-                VecMask = vecMask;
+                Mask = Vector128.Create(intMask, vecMask);
             }
 
             public static RegisterMask operator &(RegisterMask x, RegisterMask y)
             {
+                if (Sse2.IsSupported)
+                {
+                    return new RegisterMask(Sse2.And(x.Mask, y.Mask));
+                }
+
                 return new RegisterMask(x.IntMask & y.IntMask, x.VecMask & y.VecMask);
             }
 
             public static RegisterMask operator |(RegisterMask x, RegisterMask y)
             {
+                if (Sse2.IsSupported)
+                {
+                    return new RegisterMask(Sse2.Or(x.Mask, y.Mask));
+                }
+
                 return new RegisterMask(x.IntMask | y.IntMask, x.VecMask | y.VecMask);
             }
 
             public static RegisterMask operator ~(RegisterMask x)
             {
+                if (Sse2.IsSupported)
+                {
+                    return new RegisterMask(Sse2.AndNot(x.Mask, Vector128<long>.AllBitsSet));
+                }
+
                 return new RegisterMask(~x.IntMask, ~x.VecMask);
             }
 
@@ -55,12 +78,12 @@ namespace ARMeilleure.Translation
 
             public bool Equals(RegisterMask other)
             {
-                return IntMask == other.IntMask && VecMask == other.VecMask;
+                return Mask.Equals(other.Mask);
             }
 
             public override int GetHashCode()
             {
-                return HashCode.Combine(IntMask, VecMask);
+                return Mask.GetHashCode();
             }
         }
 
@@ -74,18 +97,16 @@ namespace ARMeilleure.Translation
             {
                 for (Operation node = block.Operations.First; node != default; node = node.ListNext)
                 {
-                    for (int srcIndex = 0; srcIndex < node.SourcesCount; srcIndex++)
+                    for (int index = 0; index < node.SourcesCount; index++)
                     {
-                        Operand source = node.GetSource(srcIndex);
+                        Operand source = node.GetSource(index);
 
-                        if (source.Kind != OperandKind.Register)
+                        if (source.Kind == OperandKind.Register)
                         {
-                            continue;
+                            Register register = source.GetRegister();
+
+                            localInputs[block.Index] |= GetMask(register) & ~localOutputs[block.Index];
                         }
-
-                        Register register = source.GetRegister();
-
-                        localInputs[block.Index] |= GetMask(register) & ~localOutputs[block.Index];
                     }
 
                     if (node.Destination != default && node.Destination.Kind == OperandKind.Register)
@@ -102,7 +123,6 @@ namespace ARMeilleure.Translation
             RegisterMask[] globalOutputs = new RegisterMask[cfg.Blocks.Count];
 
             bool modified;
-
             bool firstPass = true;
 
             do
@@ -119,7 +139,6 @@ namespace ARMeilleure.Translation
                         BasicBlock predecessor = block.Predecessors[0];
 
                         RegisterMask cmnOutputs = localOutputs[predecessor.Index] | globalCmnOutputs[predecessor.Index];
-
                         RegisterMask outputs = globalOutputs[predecessor.Index];
 
                         for (int pIndex = 1; pIndex < block.Predecessors.Count; pIndex++)
@@ -127,7 +146,6 @@ namespace ARMeilleure.Translation
                             predecessor = block.Predecessors[pIndex];
 
                             cmnOutputs &= localOutputs[predecessor.Index] | globalCmnOutputs[predecessor.Index];
-
                             outputs |= globalOutputs[predecessor.Index];
                         }
 
@@ -138,21 +156,13 @@ namespace ARMeilleure.Translation
                             cmnOutputs &= globalCmnOutputs[block.Index];
                         }
 
-                        if (Exchange(globalCmnOutputs, block.Index, cmnOutputs))
-                        {
-                            modified = true;
-                        }
-
+                        modified |= Exchange(globalCmnOutputs, block.Index, cmnOutputs);
                         outputs |= localOutputs[block.Index];
-
-                        if (Exchange(globalOutputs, block.Index, globalOutputs[block.Index] | outputs))
-                        {
-                            modified = true;
-                        }
+                        modified |= Exchange(globalOutputs, block.Index, globalOutputs[block.Index] | outputs);
                     }
-                    else if (Exchange(globalOutputs, block.Index, localOutputs[block.Index]))
+                    else
                     {
-                        modified = true;
+                        modified |= Exchange(globalOutputs, block.Index, localOutputs[block.Index]);
                     }
                 }
 
@@ -170,10 +180,7 @@ namespace ARMeilleure.Translation
 
                     inputs &= ~globalCmnOutputs[block.Index];
 
-                    if (Exchange(globalInputs, block.Index, globalInputs[block.Index] | inputs))
-                    {
-                        modified = true;
-                    }
+                    modified |= Exchange(globalInputs, block.Index, globalInputs[block.Index] | inputs);
                 }
 
                 firstPass = false;
@@ -190,12 +197,18 @@ namespace ARMeilleure.Translation
                     block.Operations.Remove(block.Operations.First);
                 }
 
+                Operand arg = default;
+
                 // The only block without any predecessor should be the entry block.
                 // It always needs a context load as it is the first block to run.
                 if (block.Predecessors.Count == 0 || hasContextLoad)
                 {
-                    LoadLocals(block, globalInputs[block.Index].VecMask, RegisterType.Vector,  mode);
-                    LoadLocals(block, globalInputs[block.Index].IntMask, RegisterType.Integer, mode);
+                    arg = Local(OperandType.I64);
+
+                    Operation loadArg = block.Operations.AddFirst(Operation(Instruction.LoadArgument, arg, Const(0)));
+
+                    LoadLocals(block, globalInputs[block.Index].VecMask, RegisterType.Vector, mode, loadArg, arg);
+                    LoadLocals(block, globalInputs[block.Index].IntMask, RegisterType.Integer, mode, loadArg, arg);
                 }
 
                 bool hasContextStore = HasContextStore(block);
@@ -207,8 +220,15 @@ namespace ARMeilleure.Translation
 
                 if (EndsWithReturn(block) || hasContextStore)
                 {
-                    StoreLocals(block, globalOutputs[block.Index].IntMask, RegisterType.Integer, mode);
-                    StoreLocals(block, globalOutputs[block.Index].VecMask, RegisterType.Vector,  mode);
+                    if (arg == default)
+                    {
+                        arg = Local(OperandType.I64);
+
+                        block.Append(Operation(Instruction.LoadArgument, arg, Const(0)));
+                    }
+
+                    StoreLocals(block, globalOutputs[block.Index].IntMask, RegisterType.Integer, mode, arg);
+                    StoreLocals(block, globalOutputs[block.Index].VecMask, RegisterType.Vector, mode, arg);
                 }
             }
         }
@@ -225,26 +245,26 @@ namespace ARMeilleure.Translation
 
         private static bool StartsWith(BasicBlock block, Instruction inst)
         {
-            if (block.Operations.Count == 0)
+            if (block.Operations.Count > 0)
             {
-                return false;
+                Operation first = block.Operations.First;
+
+                return first != default && first.Instruction == inst;
             }
 
-            Operation first = block.Operations.First;
-
-            return first != default && first.Instruction == inst;
+            return false;
         }
 
         private static bool EndsWith(BasicBlock block, Instruction inst)
         {
-            if (block.Operations.Count == 0)
+            if (block.Operations.Count > 0)
             {
-                return false;
+                Operation last = block.Operations.Last;
+
+                return last != default && last.Instruction == inst;
             }
 
-            Operation last = block.Operations.Last;
-
-            return last != default && last.Instruction == inst;
+            return false;
         }
 
         private static RegisterMask GetMask(Register register)
@@ -265,76 +285,57 @@ namespace ARMeilleure.Translation
 
         private static bool Exchange(RegisterMask[] masks, int blkIndex, RegisterMask value)
         {
-            RegisterMask oldValue = masks[blkIndex];
+            ref RegisterMask curValue = ref masks[blkIndex];
 
-            masks[blkIndex] = value;
+            bool changed = curValue != value;
 
-            return oldValue != value;
+            curValue = value;
+
+            return changed;
         }
 
-        private static void LoadLocals(BasicBlock block, long inputs, RegisterType baseType, ExecutionMode mode)
+        private static void LoadLocals(
+            BasicBlock block,
+            long inputs,
+            RegisterType baseType,
+            ExecutionMode mode,
+            Operation loadArg,
+            Operand arg)
         {
-            Operand arg0 = Local(OperandType.I64);
-
-            for (int bit = 63; bit >= 0; bit--)
+            while (inputs != 0)
             {
-                long mask = 1L << bit;
-
-                if ((inputs & mask) == 0)
-                {
-                    continue;
-                }
+                int bit = 63 - BitOperations.LeadingZeroCount((ulong)inputs);
 
                 Operand dest = GetRegFromBit(bit, baseType, mode);
-
-                long offset = NativeContext.GetRegisterOffset(dest.GetRegister());
-
+                Operand offset = Const((long)NativeContext.GetRegisterOffset(dest.GetRegister()));
                 Operand addr = Local(OperandType.I64);
 
-                Operation loadOp = Operation(Instruction.Load, dest, addr);
+                block.Operations.AddAfter(loadArg, Operation(Instruction.Load, dest, addr));
+                block.Operations.AddAfter(loadArg, Operation(Instruction.Add, addr, arg, offset));
 
-                block.Operations.AddFirst(loadOp);
-
-                Operation calcOffsOp = Operation(Instruction.Add, addr, arg0, Const(offset));
-
-                block.Operations.AddFirst(calcOffsOp);
+                inputs &= ~(1L << bit);
             }
-
-            Operation loadArg0 = Operation(Instruction.LoadArgument, arg0, Const(0));
-
-            block.Operations.AddFirst(loadArg0);
         }
 
-        private static void StoreLocals(BasicBlock block, long outputs, RegisterType baseType, ExecutionMode mode)
+        private static void StoreLocals(
+            BasicBlock block,
+            long outputs,
+            RegisterType baseType,
+            ExecutionMode mode,
+            Operand arg)
         {
-            Operand arg0 = Local(OperandType.I64);
-
-            Operation loadArg0 = Operation(Instruction.LoadArgument, arg0, Const(0));
-
-            block.Append(loadArg0);
-
-            for (int bit = 0; bit < 64; bit++)
+            while (outputs != 0)
             {
-                long mask = 1L << bit;
-
-                if ((outputs & mask) == 0)
-                {
-                    continue;
-                }
+                int bit = BitOperations.TrailingZeroCount(outputs);
 
                 Operand source = GetRegFromBit(bit, baseType, mode);
-
-                long offset = NativeContext.GetRegisterOffset(source.GetRegister());
-
+                Operand offset = Const((long)NativeContext.GetRegisterOffset(source.GetRegister()));
                 Operand addr = Local(OperandType.I64);
 
-                Operation calcOffsOp = Operation(Instruction.Add, addr, arg0, Const(offset));
+                block.Append(Operation(Instruction.Add, addr, arg, offset));
+                block.Append(Operation(Instruction.Store, default, addr, source));
 
-                block.Append(calcOffsOp);
-
-                Operation storeOp = Operation(Instruction.Store, default, addr, source);
-
-                block.Append(storeOp);
+                outputs &= ~(1L << bit);
             }
         }
 
@@ -342,15 +343,15 @@ namespace ARMeilleure.Translation
         {
             if (bit < RegsCount)
             {
-                return Operand.Factory.Register(bit, baseType, GetOperandType(baseType, mode));
+                return Register(bit, baseType, GetOperandType(baseType, mode));
             }
             else if (baseType == RegisterType.Integer)
             {
-                return Operand.Factory.Register(bit & RegsMask, RegisterType.Flag, OperandType.I32);
+                return Register(bit & RegsMask, RegisterType.Flag, OperandType.I32);
             }
             else if (baseType == RegisterType.Vector)
             {
-                return Operand.Factory.Register(bit & RegsMask, RegisterType.FpFlag, OperandType.I32);
+                return Register(bit & RegsMask, RegisterType.FpFlag, OperandType.I32);
             }
             else
             {
