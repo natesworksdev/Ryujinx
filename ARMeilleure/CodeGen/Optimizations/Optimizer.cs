@@ -79,13 +79,14 @@ namespace ARMeilleure.CodeGen.Optimizations
             {
                 modified = false;
 
-                for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
+                for (BasicBlock block = cfg.Blocks.Last; block != null; block = block.ListPrevious)
                 {
-                    Operation node = block.Operations.First;
+                    Operation node;
+                    Operation nextNode;
 
-                    while (node != default)
+                    for (node = block.Operations.Last; node != default; node = nextNode)
                     {
-                        Operation nextNode = node.ListNext;
+                        nextNode = node.ListPrevious;
 
                         if (IsUnused(node))
                         {
@@ -93,8 +94,6 @@ namespace ARMeilleure.CodeGen.Optimizations
 
                             modified = true;
                         }
-
-                        node = nextNode;
                     }
                 }
             }
