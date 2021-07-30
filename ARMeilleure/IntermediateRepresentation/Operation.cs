@@ -1,31 +1,34 @@
 using System;
+using System.Runtime.CompilerServices;
 
 namespace ARMeilleure.IntermediateRepresentation
 {
     unsafe struct Operation : IIntrusiveListNode<Operation>
     {
-        public struct Data
+        private struct Data
         {
-            public Intrinsic Intrinsic;
-            public Instruction Instruction;
+            public ushort Instruction;
+            public ushort Intrinsic;
+            public ushort SourcesCount;
+            public ushort DestinationsCount;
             public Operation ListPrevious;
             public Operation ListNext;
-            public ArenaList<Operand> Destinations;
-            public ArenaList<Operand> Sources;
+            public Operand* Destinations;
+            public Operand* Sources;
         }
 
         private Data* _data;
 
-        public Intrinsic Intrinsic
-        {
-            get => _data->Intrinsic;
-            private set => _data->Intrinsic = value;
-        }
-
         public Instruction Instruction
         {
-            get => _data->Instruction;
-            private set => _data->Instruction = value;
+            get => (Instruction)_data->Instruction;
+            private set => _data->Instruction = (ushort)value;
+        }
+
+        public Intrinsic Intrinsic
+        {
+            get => (Intrinsic)_data->Intrinsic;
+            private set => _data->Intrinsic = (ushort)value;
         }
 
         public Operation ListPrevious
@@ -42,85 +45,81 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public Operand Destination
         {
-            get => _data->Destinations.Count != 0 ? GetDestination(0) : default;
+            get => _data->DestinationsCount != 0 ? GetDestination(0) : default;
             set => SetDestination(value);
         }
 
-        public int DestinationsCount => _data->Destinations.Count;
-        public int SourcesCount => _data->Sources.Count;
+        public int DestinationsCount => _data->DestinationsCount;
+        public int SourcesCount => _data->SourcesCount;
 
-        public void TurnIntoCopy(Operand source)
-        {
-            Instruction = Instruction.Copy;
-
-            SetSource(source);
-        }
+        private Span<Operand> Destinations => new(_data->Destinations, _data->DestinationsCount);
+        private Span<Operand> Sources => new(_data->Sources, _data->SourcesCount);
 
         public Operand GetDestination(int index)
         {
-            return _data->Destinations[index];
+            return Destinations[index];
         }
 
         public Operand GetSource(int index)
         {
-            return _data->Sources[index];
+            return Sources[index];
         }
 
-        public void SetDestination(int index, Operand destination)
+        public void SetDestination(int index, Operand dest)
         {
-            ref Operand curDest = ref _data->Destinations[index];
+            ref Operand curDest = ref Destinations[index];
 
             RemoveAssignment(curDest);
-            AddAssignment(destination);
+            AddAssignment(dest);
 
-            curDest = destination;
+            curDest = dest;
         }
 
-        public void SetSource(int index, Operand source)
+        public void SetSource(int index, Operand src)
         {
-            ref Operand curSrc = ref _data->Sources[index];
+            ref Operand curSrc = ref Sources[index];
 
             RemoveUse(curSrc);
-            AddUse(source);
+            AddUse(src);
 
-            curSrc = source;
+            curSrc = src;
         }
 
         private void RemoveOldDestinations()
         {
-            foreach (ref Operand dest in _data->Destinations.Span)
+            for (int i = 0; i < _data->DestinationsCount; i++)
             {
-                RemoveAssignment(dest);
+                RemoveAssignment(_data->Destinations[i]);
             }
         }
 
-        public void SetDestination(Operand destination)
+        public void SetDestination(Operand dest)
         {
             RemoveOldDestinations();
 
-            if (destination == default)
+            if (dest == default)
             {
-                _data->Destinations.Clear();
+                _data->DestinationsCount = 0;
             }
             else
             {
-                Resize(ref _data->Destinations, 1);
+                Resize(ref _data->Destinations, ref _data->DestinationsCount, 1);
 
-                _data->Destinations[0] = destination;
+                _data->Destinations[0] = dest;
 
-                AddAssignment(destination);
+                AddAssignment(dest);
             }
         }
 
-        public void SetDestinations(Operand[] destinations)
+        public void SetDestinations(Operand[] dests)
         {
             RemoveOldDestinations();
 
-            Resize(ref _data->Destinations, destinations.Length);
+            Resize(ref _data->Destinations, ref _data->DestinationsCount, dests.Length);
 
-            for (int index = 0; index < destinations.Length; index++)
+            for (int index = 0; index < dests.Length; index++)
             {
-                Operand newOp = destinations[index];
+                Operand newOp = dests[index];
 
                 _data->Destinations[index] = newOp;
 
@@ -130,44 +129,51 @@ namespace ARMeilleure.IntermediateRepresentation
 
         private void RemoveOldSources()
         {
-            foreach (ref Operand src in _data->Sources.Span)
+            for (int index = 0; index < _data->SourcesCount; index++)
             {
-                RemoveUse(src);
+                RemoveUse(_data->Sources[index]);
             }
         }
 
-        public void SetSource(Operand source)
+        public void SetSource(Operand src)
         {
             RemoveOldSources();
 
-            if (source == default)
+            if (src == default)
             {
-                _data->Sources.Clear();
+                _data->SourcesCount = 0;
             }
             else
             {
-                Resize(ref _data->Sources, 1);
+                Resize(ref _data->Sources, ref _data->SourcesCount, 1);
 
-                _data->Sources[0] = source;
+                _data->Sources[0] = src;
 
-                AddUse(source);
+                AddUse(src);
             }
         }
 
-        public void SetSources(Operand[] sources)
+        public void SetSources(Operand[] srcs)
         {
             RemoveOldSources();
 
-            Resize(ref _data->Sources, sources.Length);
+            Resize(ref _data->Sources, ref _data->SourcesCount, srcs.Length);
 
-            for (int index = 0; index < sources.Length; index++)
+            for (int index = 0; index < srcs.Length; index++)
             {
-                Operand newOp = sources[index];
+                Operand newOp = srcs[index];
 
                 _data->Sources[index] = newOp;
 
                 AddUse(newOp);
             }
+        }
+
+        public void TurnIntoCopy(Operand source)
+        {
+            Instruction = Instruction.Copy;
+
+            SetSource(source);
         }
 
         private void AddAssignment(Operand op)
@@ -278,22 +284,16 @@ namespace ARMeilleure.IntermediateRepresentation
             }
         }
 
-        private static void Resize(ref ArenaList<Operand> list, int size)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void Resize(ref Operand* list, ref ushort count, int newSize)
         {
-            if (list.Count > size)
+            // We only need to allocate a new buffer if we're increasing the size.
+            if (newSize > count)
             {
-                while (list.Count > size)
-                {
-                    list.RemoveAt(list.Count - 1);
-                }
-            } 
-            else
-            {
-                while (list.Count < size)
-                {
-                    list.Add(default);
-                }
+                list = Arena<Operand>.Alloc(newSize);
             }
+
+            count = (byte)newSize;
         }
 
         public bool Equals(Operation operation)
@@ -330,12 +330,13 @@ namespace ARMeilleure.IntermediateRepresentation
 
                 Operation result = new();
                 result._data = data;
-                result._data->Instruction = inst;
-                result._data->Destinations = ArenaList<Operand>.New(destCount);
-                result._data->Sources = ArenaList<Operand>.New(srcCount);
+                result.Instruction = inst;
 
-                Resize(ref result._data->Destinations, destCount);
-                Resize(ref result._data->Sources, srcCount);
+                Resize(ref result._data->Destinations, ref result._data->DestinationsCount, destCount);
+                Resize(ref result._data->Sources, ref result._data->SourcesCount, srcCount);
+
+                result.Destinations.Clear();
+                result.Sources.Clear();
 
                 return result;
             }
