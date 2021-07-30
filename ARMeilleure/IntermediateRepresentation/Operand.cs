@@ -2,6 +2,7 @@ using ARMeilleure.Translation.PTC;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace ARMeilleure.IntermediateRepresentation
 {
@@ -181,18 +182,75 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public static class Factory
         {
-            private static Operand Make(OperandKind kind, OperandType type, ulong value)
+            private const int InternTableSize = 128;
+
+            [ThreadStatic]
+            private static Data* _internTable;
+
+            private static Data* InternTable
             {
-                Data* data = Arena<Data>.Alloc();
+                get
+                {
+                    if (_internTable == null)
+                    {
+                        _internTable = (Data*)Marshal.AllocHGlobal(sizeof(Data) * InternTableSize);
+
+                        if (_internTable == null)
+                        {
+                            throw new OutOfMemoryException();
+                        }
+
+                        new Span<Data>(_internTable, InternTableSize).Clear();
+                    }
+
+                    return _internTable;
+                }
+            }
+
+            private static Operand Make(OperandKind kind, OperandType type, ulong value, Symbol symbol = default)
+            {
+                Debug.Assert(kind != OperandKind.None);
+
+                Data* data;
+
+                // If constant or register, then try to look up in the intern table before allocating.
+                if (kind == OperandKind.Constant || kind == OperandKind.Register)
+                {
+                    data = &InternTable[(uint)HashCode.Combine(kind, type, value) % InternTableSize];
+
+                    Operand interned = new();
+                    interned._data = data;
+
+                    // If slot matches the allocation request then return that slot.
+                    if (interned.Kind == kind && interned.Type == type && interned.Value == value && interned.Symbol == symbol)
+                    {
+                        return interned;
+                    }
+                    // Otherwise if the slot is already occupied we have to store elsewhere.
+                    else if (interned.Kind != OperandKind.None)
+                    {
+                        data = Arena<Data>.Alloc();
+                    }
+                }
+                else
+                {
+                    data = Arena<Data>.Alloc();
+                }
+
                 *data = default;
 
                 Operand result = new();
                 result._data = data;
-                result._data->Value = value;
-                result._data->Assignments = ArenaList<Operation>.New(1);
-                result._data->Uses = ArenaList<Operation>.New(4);
+                result.Value = value;
                 result.Kind = kind;
                 result.Type = type;
+
+                // If local variable, then the use and def list is initialized with default sizes.
+                if (kind == OperandKind.LocalVariable)
+                {
+                    result._data->Assignments = ArenaList<Operation>.New(1);
+                    result._data->Uses = ArenaList<Operation>.New(4);
+                }
 
                 return result;
             }
@@ -221,19 +279,17 @@ namespace ARMeilleure.IntermediateRepresentation
 
             public static Operand Const(long value)
             {
-                return Const((ulong)value);
-            }
-
-            public static Operand Const(long value, Symbol symbol)
-            {
-                Operand result = Const(value);
-                result.Symbol = symbol;
-                return result;
+                return Const(value, symbol: default);
             }
 
             public static Operand Const<T>(ref T reference, Symbol symbol = default)
             {
                 return Const((long)Unsafe.AsPointer(ref reference), symbol);
+            }
+
+            public static Operand Const(long value, Symbol symbol)
+            {
+                return Make(OperandKind.Constant, OperandType.I64, (ulong)value, symbol);
             }
 
             public static Operand Const(ulong value)
