@@ -351,16 +351,30 @@ namespace Ryujinx.Graphics.Vulkan
             return new TextureView(_gd, _device, info, Storage, FirstLayer + firstLayer, FirstLevel + firstLevel);
         }
 
-        public ReadOnlySpan<byte> GetData()
+        public byte[] GetData(int x, int y, int width, int height)
         {
-            return GetData(0, 0);
+            int size = width * height * Info.BytesPerPixel;
+            using var bufferHolder = _gd.BufferManager.Create(_gd, size);
+
+            using (var cbs = _gd.CommandBufferPool.Rent())
+            {
+                var buffer = bufferHolder.GetBuffer(cbs.CommandBuffer).Get(cbs).Value;
+                var image = GetImage().Get(cbs).Value;
+
+                CopyFromOrToBuffer(cbs.CommandBuffer, buffer, image, size, true, x, y, width, height);
+            }
+
+            bufferHolder.WaitForFences();
+            byte[] bitmap = new byte[size];
+            GetDataFromBuffer(bufferHolder.GetDataStorage(0, size)).CopyTo(bitmap);
+            return bitmap;
         }
 
-        public ReadOnlySpan<byte> GetData(int x, int y)
+        public ReadOnlySpan<byte> GetData()
         {
             if (_gd.CommandBufferPool.OwnedByCurrentThread)
             {
-                return GetData(_gd.CommandBufferPool, x, y);
+                return GetData(_gd.CommandBufferPool);
             }
             else if (_gd.BackgroundQueue.Handle != 0)
             {
@@ -373,7 +387,7 @@ namespace Ryujinx.Graphics.Vulkan
                         _gd.QueueFamilyIndex,
                         isLight: true);
 
-                    return GetData(cbp, x, y);
+                    return GetData(cbp);
                 }
             }
             else
@@ -390,7 +404,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        private ReadOnlySpan<byte> GetData(CommandBufferPool cbp, int x = 0, int y = 0)
+        private ReadOnlySpan<byte> GetData(CommandBufferPool cbp)
         {
             int size;
             var bufferHolder = _flushStorage;
@@ -425,7 +439,7 @@ namespace Ryujinx.Graphics.Vulkan
                 var buffer = bufferHolder.GetBuffer(cbs.CommandBuffer).Get(cbs).Value;
                 var image = GetImage().Get(cbs).Value;
 
-                CopyFromOrToBuffer(cbs.CommandBuffer, buffer, image, size, true, x, y, 0, 0, Info.GetLayers(), Info.Levels, singleSlice: false);
+                CopyFromOrToBuffer(cbs.CommandBuffer, buffer, image, size, true, 0, 0, Info.GetLayers(), Info.Levels, singleSlice: false);
             }
 
             bufferHolder.WaitForFences();
@@ -455,7 +469,7 @@ namespace Ryujinx.Graphics.Vulkan
             var buffer = bufferHolder.GetBuffer(cbs.CommandBuffer).Get(cbs).Value;
             var image = GetImage().Get(cbs).Value;
 
-            CopyFromOrToBuffer(cbs.CommandBuffer, buffer, image, bufferDataLength, false, 0, 0, layer, level, layers, levels, singleSlice);
+            CopyFromOrToBuffer(cbs.CommandBuffer, buffer, image, bufferDataLength, false, layer, level, layers, levels, singleSlice);
         }
 
         private int GetBufferDataLength(int length)
@@ -512,8 +526,6 @@ namespace Ryujinx.Graphics.Vulkan
             Image image,
             int size,
             bool to,
-            int x,
-            int y,
             int dstLayer,
             int dstLevel,
             int dstLayers,
@@ -560,7 +572,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 int z = is3D ? dstLayer : 0;
 
-                var region = new BufferImageCopy((ulong)offset, (uint)rowLength, (uint)height, sl, new Offset3D(x, y, z), extent);
+                var region = new BufferImageCopy((ulong)offset, (uint)rowLength, (uint)height, sl, new Offset3D(0, 0, z), extent);
 
                 if (to)
                 {
@@ -580,6 +592,40 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     depth = Math.Max(1, depth >> 1);
                 }
+            }
+        }
+
+        private void CopyFromOrToBuffer(
+            CommandBuffer commandBuffer,
+            VkBuffer buffer,
+            Image image,
+            int size,
+            bool to,
+            int x,
+            int y,
+            int width,
+            int height)
+        {
+            var aspectFlags = Info.Format.ConvertAspectFlags();
+
+            if (aspectFlags == (ImageAspectFlags.ImageAspectDepthBit | ImageAspectFlags.ImageAspectStencilBit))
+            {
+                aspectFlags = ImageAspectFlags.ImageAspectDepthBit;
+            }
+
+            var sl = new ImageSubresourceLayers(aspectFlags, (uint)FirstLevel, (uint)FirstLayer, 1);
+
+            var extent = new Extent3D((uint)width, (uint)height, 1);
+
+            var region = new BufferImageCopy(0, (uint)width, (uint)height, sl, new Offset3D(x, y, 0), extent);
+
+            if (to)
+            {
+                _gd.Api.CmdCopyImageToBuffer(commandBuffer, image, ImageLayout.General, buffer, 1, region);
+            }
+            else
+            {
+                _gd.Api.CmdCopyBufferToImage(commandBuffer, buffer, image, ImageLayout.General, 1, region);
             }
         }
 

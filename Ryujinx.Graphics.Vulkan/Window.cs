@@ -288,7 +288,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (ScreenCaptureRequested)
             {
-                CaptureFrame(view, srcX0, srcY0, srcX1, srcY1, view.Info.Format.IsBgra8(), crop.FlipX, crop.FlipY);
+                CaptureFrame(view, srcX0, srcY0, srcX1 - srcX0, srcY1 - srcY0, view.Info.Format.IsBgra8(), crop.FlipX, crop.FlipY);
 
                 ScreenCaptureRequested = false;
             }
@@ -400,10 +400,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private void CaptureFrame(TextureView texture, int x, int y, int width, int height, bool isBgra, bool flipX, bool flipY)
         {
-            var textureData = texture.GetData(x, y);
-            byte[] bitmap = new byte[textureData.Length];
-
-            textureData.CopyTo(bitmap);
+            byte[] bitmap = texture.GetData(x, y, width, height);
 
             _gd.OnScreenCaptured(new ScreenCaptureImageInfo(width, height, isBgra, bitmap, flipX, flipY));
         }
