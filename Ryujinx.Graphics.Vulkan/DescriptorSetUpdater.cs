@@ -303,6 +303,20 @@ namespace Ryujinx.Graphics.Vulkan
                 Initialize(cbs, setIndex, dsc);
             }
 
+            if (setIndex == PipelineBase.UniformSetIndex)
+            {
+                Span<DescriptorBufferInfo> uniformBuffer = stackalloc DescriptorBufferInfo[1];
+
+                uniformBuffer[0] = new DescriptorBufferInfo()
+                {
+                    Offset = 0,
+                    Range = SupportBuffer.RequiredSize,
+                    Buffer = _pipeline.RenderScaleBuffer.GetBuffer().Get(cbs, 0, SupportBuffer.RequiredSize).Value
+                };
+
+                dsc.UpdateBuffers(0, 0, uniformBuffer, DescriptorType.UniformBuffer);
+            }
+
             for (int stageIndex = 0; stageIndex < stagesCount; stageIndex++)
             {
                 var stageBindings = _program.Bindings[setIndex][stageIndex];
@@ -427,20 +441,6 @@ namespace Ryujinx.Graphics.Vulkan
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void Initialize(CommandBufferScoped cbs, int setIndex, DescriptorSetCollection dsc)
         {
-            if (setIndex == PipelineBase.UniformSetIndex)
-            {
-                Span<DescriptorBufferInfo> uniformBuffer = stackalloc DescriptorBufferInfo[1];
-
-                uniformBuffer[0] = new DescriptorBufferInfo()
-                {
-                    Offset = 0,
-                    Range = SupportBuffer.RequiredSize,
-                    Buffer = _pipeline.RenderScaleBuffer.GetBuffer().Get(cbs, 0, SupportBuffer.RequiredSize).Value
-                };
-
-                dsc.UpdateBuffers(0, 0, uniformBuffer, DescriptorType.UniformBuffer);
-            }
-
             uint stages = _program.Stages;
 
             while (stages != 0)
