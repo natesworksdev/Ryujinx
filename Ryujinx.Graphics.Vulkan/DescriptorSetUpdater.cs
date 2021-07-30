@@ -291,7 +291,7 @@ namespace Ryujinx.Graphics.Vulkan
         private void UpdateAndBind(CommandBufferScoped cbs, int setIndex, DirtyFlags flag, PipelineBindPoint pbp)
         {
             int stagesCount = _program.Bindings[setIndex].Length;
-            if (stagesCount == 0)
+            if (stagesCount == 0 && setIndex != PipelineBase.UniformSetIndex)
             {
                 return;
             }

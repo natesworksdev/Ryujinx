@@ -233,33 +233,26 @@ namespace Ryujinx.Graphics.Vulkan
                     break;
                 }
 
-                if (width % blockWidth != 0 || height % blockHeight != 0)
-                {
-                    // TODO
-                }
-                else
-                {
-                    var srcSl = new ImageSubresourceLayers(
-                        srcInfo.Format.ConvertAspectFlags(),
-                        (uint)(srcViewLevel + srcLevel + level),
-                        (uint)(srcViewLayer + srcLayer),
-                        (uint)srcLayers);
+                var srcSl = new ImageSubresourceLayers(
+                    srcInfo.Format.ConvertAspectFlags(),
+                    (uint)(srcViewLevel + srcLevel + level),
+                    (uint)(srcViewLayer + srcLayer),
+                    (uint)srcLayers);
 
-                    var dstSl = new ImageSubresourceLayers(
-                        dstInfo.Format.ConvertAspectFlags(),
-                        (uint)(dstViewLevel + dstLevel + level),
-                        (uint)(dstViewLayer + dstLayer),
-                        (uint)dstLayers);
+                var dstSl = new ImageSubresourceLayers(
+                    dstInfo.Format.ConvertAspectFlags(),
+                    (uint)(dstViewLevel + dstLevel + level),
+                    (uint)(dstViewLayer + dstLayer),
+                    (uint)dstLayers);
 
-                    int copyWidth = sizeInBlocks ? BitUtils.DivRoundUp(width, blockWidth) : width;
-                    int copyHeight = sizeInBlocks ? BitUtils.DivRoundUp(height, blockHeight) : height;
+                int copyWidth = sizeInBlocks ? BitUtils.DivRoundUp(width, blockWidth) : width;
+                int copyHeight = sizeInBlocks ? BitUtils.DivRoundUp(height, blockHeight) : height;
 
-                    var extent = new Extent3D((uint)copyWidth, (uint)copyHeight, (uint)srcDepth);
+                var extent = new Extent3D((uint)copyWidth, (uint)copyHeight, (uint)srcDepth);
 
-                    var region = new ImageCopy(srcSl, new Offset3D(0, 0, srcZ), dstSl, new Offset3D(0, 0, dstZ), extent);
+                var region = new ImageCopy(srcSl, new Offset3D(0, 0, srcZ), dstSl, new Offset3D(0, 0, dstZ), extent);
 
-                    api.CmdCopyImage(commandBuffer, srcImage, ImageLayout.General, dstImage, ImageLayout.General, 1, region);
-                }
+                api.CmdCopyImage(commandBuffer, srcImage, ImageLayout.General, dstImage, ImageLayout.General, 1, region);
 
                 width = Math.Max(1, width >> 1);
                 height = Math.Max(1, height >> 1);

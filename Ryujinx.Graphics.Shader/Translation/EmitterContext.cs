@@ -26,6 +26,19 @@ namespace Ryujinx.Graphics.Shader.Translation
             _funcs = funcs;
             _operations = new List<Operation>();
             _labels = new Dictionary<ulong, Operand>();
+
+            EmitStart();
+        }
+
+        private void EmitStart()
+        {
+            if (Config.Stage == ShaderStage.Vertex &&
+                Config.Options.TargetApi == TargetApi.Vulkan &&
+                (Config.Options.Flags & TranslationFlags.VertexA) == 0)
+            {
+                // Vulkan requires the point size to be always written on the shader if the primitive topology is points.
+                this.Copy(Attribute(AttributeConsts.PointSize), ConstF(Config.GpuAccessor.QueryPointSize()));
+            }
         }
 
         public Operand Add(Instruction inst, Operand dest = null, params Operand[] sources)
@@ -161,11 +174,6 @@ namespace Ryujinx.Graphics.Shader.Translation
                     Operand halfW = this.FPMultiply(w, ConstF(0.5f));
 
                     this.Copy(Attribute(AttributeConsts.PositionZ), this.FPFusedMultiplyAdd(z, ConstF(0.5f), halfW));
-                }
-
-                if (!Config.GpuAccessor.QueryProgramPointSize())
-                {
-                    this.Copy(Attribute(AttributeConsts.PointSize), ConstF(Config.GpuAccessor.QueryPointSize()));
                 }
             }
             else if (Config.Stage == ShaderStage.Fragment)
