@@ -27,6 +27,8 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly Auto<MemoryAllocation> _allocationAuto;
         private readonly ulong _bufferHandle;
 
+        private CacheByRange<BufferHolder> _cachedConvertedIndexBuffers;
+
         public int Size { get; }
 
         private IntPtr _map;
@@ -105,6 +107,11 @@ namespace Ryujinx.Graphics.Vulkan
 
         public Auto<DisposableBuffer> GetBuffer(CommandBuffer commandBuffer, bool isWrite = false)
         {
+            if (isWrite)
+            {
+                _cachedConvertedIndexBuffers.Clear();
+            }
+
             // InsertBarrier(commandBuffer, isWrite);
             return _buffer;
         }
@@ -283,7 +290,7 @@ namespace Ryujinx.Graphics.Vulkan
                 size);
         }
 
-        private static unsafe void InsertBufferBarrier(
+        public static unsafe void InsertBufferBarrier(
             VulkanGraphicsDevice gd,
             CommandBuffer commandBuffer,
             VkBuffer buffer,
@@ -334,10 +341,25 @@ namespace Ryujinx.Graphics.Vulkan
             return _waitable.MayWait(_gd.Api, _device, offset, size);
         }
 
+        public Auto<DisposableBuffer> GetBufferI8ToI16(CommandBufferScoped cbs, int offset, int size)
+        {
+            if (!_cachedConvertedIndexBuffers.TryGetValue(offset, size, out var holder))
+            {
+                holder = _gd.BufferManager.Create(_gd, (size * 2 + 3) & ~3);
+
+                _gd.Blit.ConvertI8ToI16(_gd, cbs, this, holder, offset, size);
+
+                _cachedConvertedIndexBuffers.Add(offset, size, holder);
+            }
+
+            return holder.GetBuffer();
+        }
+
         public void Dispose()
         {
             _buffer.Dispose();
             _allocationAuto.Dispose();
+            _cachedConvertedIndexBuffers.Dispose();
         }
     }
 }

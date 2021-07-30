@@ -368,10 +368,33 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetIndexBuffer(BufferRange buffer, GAL.IndexType type)
         {
-            var ib = Gd.BufferManager.GetBuffer(CommandBuffer, buffer.Handle, false);
-
             _indexBuffer.Dispose();
-            _indexBuffer = buffer.Handle != BufferHandle.Null ? new BufferState(ib, buffer.Offset, buffer.Size, type.Convert()) : BufferState.Null;
+
+            if (buffer.Handle != BufferHandle.Null)
+            {
+                Auto<DisposableBuffer> ib = null;
+                int offset = buffer.Offset;
+                int size = buffer.Size;
+
+                if (type == GAL.IndexType.UByte && !Gd.SupportsIndexTypeUint8)
+                {
+                    ib = Gd.BufferManager.GetBufferI8ToI16(Cbs, buffer.Handle, offset, size);
+                    offset = 0;
+                    size *= 2;
+                    type = GAL.IndexType.UShort;
+                }
+                else
+                {
+                    ib = Gd.BufferManager.GetBuffer(CommandBuffer, buffer.Handle, false);
+                }
+
+                _indexBuffer = new BufferState(ib, offset, size, type.Convert());
+            }
+            else
+            {
+                _indexBuffer = BufferState.Null;
+            }
+
             _indexBuffer.BindIndexBuffer(Gd.Api, Cbs);
         }
 

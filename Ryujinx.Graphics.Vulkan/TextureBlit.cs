@@ -203,6 +203,49 @@ void main()
             gd.BufferManager.Delete(bufferHandle);
         }
 
+        public unsafe void ConvertI8ToI16(VulkanGraphicsDevice gd, CommandBufferScoped cbs, BufferHolder src, BufferHolder dst, int srcOffset, int size)
+        {
+            // TODO: Do this with a compute shader?
+            var srcBuffer = src.GetBuffer().Get(cbs, srcOffset, size).Value;
+            var dstBuffer = dst.GetBuffer().Get(cbs, 0, size * 2).Value;
+
+            gd.Api.CmdFillBuffer(cbs.CommandBuffer, dstBuffer, 0, Vk.WholeSize, 0);
+
+            var bufferCopy = new BufferCopy[size];
+
+            for (ulong i = 0; i < (ulong)size; i++)
+            {
+                bufferCopy[i] = new BufferCopy((ulong)srcOffset + i, i * 2, 1);
+            }
+
+            BufferHolder.InsertBufferBarrier(
+                gd,
+                cbs.CommandBuffer,
+                dstBuffer,
+                BufferHolder.DefaultAccessFlags,
+                AccessFlags.AccessTransferWriteBit,
+                PipelineStageFlags.PipelineStageAllCommandsBit,
+                PipelineStageFlags.PipelineStageTransferBit,
+                0,
+                size * 2);
+
+            fixed (BufferCopy* pBufferCopy = bufferCopy)
+            {
+                gd.Api.CmdCopyBuffer(cbs.CommandBuffer, srcBuffer, dstBuffer, (uint)size, pBufferCopy);
+            }
+
+            BufferHolder.InsertBufferBarrier(
+                gd,
+                cbs.CommandBuffer,
+                dstBuffer,
+                AccessFlags.AccessTransferWriteBit,
+                BufferHolder.DefaultAccessFlags,
+                PipelineStageFlags.PipelineStageTransferBit,
+                PipelineStageFlags.PipelineStageAllCommandsBit,
+                0,
+                size * 2);
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
