@@ -193,6 +193,12 @@ void main()
 
             _pipeline.SetRenderTarget(dst, (uint)dstWidth, (uint)dstHeight, dstDepthStencil, dstFormat);
             _pipeline.SetRenderTargetColorMasks(new uint[] { 0xf });
+
+            if (clearAlpha)
+            {
+                _pipeline.ClearRenderTargetColor(0, 0xf, new ColorF(0f, 0f, 0f, 1f));
+            }
+
             _pipeline.SetViewports(0, viewports);
             _pipeline.SetScissors(scissors);
             _pipeline.SetDepthTest(new DepthTestDescriptor(false, true, GAL.CompareOp.Always));
