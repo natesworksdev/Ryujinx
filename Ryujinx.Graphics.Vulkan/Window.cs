@@ -211,7 +211,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public unsafe void Present(ITexture texture, ImageCrop crop)
+        public unsafe void Present(ITexture texture, ImageCrop crop, Action swapBuffersCallback)
         {
             uint nextImage = 0;
 
@@ -360,6 +360,8 @@ namespace Ryujinx.Graphics.Vulkan
             };
 
             _gd.SwapchainApi.QueuePresent(_gd.Queue, presentInfo);
+
+            swapBuffersCallback();
         }
 
         private unsafe void Transition(

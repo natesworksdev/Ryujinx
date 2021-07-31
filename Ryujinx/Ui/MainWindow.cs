@@ -27,6 +27,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Common.System;
 using Ryujinx.Configuration;
 using Ryujinx.Graphics.GAL;
+using Ryujinx.Graphics.GAL.Multithreading;
 using Ryujinx.Graphics.OpenGL;
 using Ryujinx.Graphics.Vulkan;
 using Ryujinx.HLE.FileSystem;
@@ -385,6 +386,17 @@ namespace Ryujinx.Ui
             {
                 renderer = new Renderer();
             }
+
+            BackendThreading threadingMode = ConfigurationState.Instance.Graphics.BackendThreading;
+
+            bool threadedGAL = threadingMode == BackendThreading.On || (threadingMode == BackendThreading.Auto && renderer.PreferThreading);
+
+            if (threadedGAL)
+            {
+                renderer = new ThreadedRenderer(renderer);
+            }
+
+            Logger.Info?.PrintMsg(LogClass.Gpu, $"Backend Threading ({threadingMode}): {threadedGAL}");
 
             IHardwareDeviceDriver deviceDriver = new DummyHardwareDeviceDriver();
 

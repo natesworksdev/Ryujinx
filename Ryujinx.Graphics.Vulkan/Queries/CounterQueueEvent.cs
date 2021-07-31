@@ -103,5 +103,10 @@ namespace Ryujinx.Graphics.Vulkan.Queries
             Disposed = true;
             _queue.ReturnQueryObject(_counter);
         }
+
+        public bool IsValueAvailable()
+        {
+            return _counter.TryGetResult(out _);
+        }
     }
 }
