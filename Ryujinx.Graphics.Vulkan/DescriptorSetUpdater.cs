@@ -371,9 +371,17 @@ namespace Ryujinx.Graphics.Vulkan
                     {
                         for (int i = 0; i < count; i++)
                         {
-                            _textures[binding + i].ImageView = _textureRefs[binding + i]?.Get(cbs).Value ?? _dummyTexture.GetImageView().Get(cbs).Value;
-                            _textures[binding + i].Sampler = _samplerRefs[binding + i]?.Get(cbs).Value ?? _dummySampler.GetSampler().Get(cbs).Value;
-                            _textures[binding + i].ImageLayout = ImageLayout.General;
+                            ref var texture = ref _textures[binding + i];
+
+                            texture.ImageView = _textureRefs[binding + i]?.Get(cbs).Value ?? default;
+                            texture.Sampler = _samplerRefs[binding + i]?.Get(cbs).Value ?? default;
+                            texture.ImageLayout = ImageLayout.General;
+
+                            if (texture.ImageView.Handle == 0 || texture.Sampler.Handle == 0)
+                            {
+                                texture.ImageView = _dummyTexture.GetImageView().Get(cbs).Value;
+                                texture.Sampler = _dummySampler.GetSampler().Get(cbs).Value;
+                            }
                         }
 
                         ReadOnlySpan<DescriptorImageInfo> textures = _textures;
