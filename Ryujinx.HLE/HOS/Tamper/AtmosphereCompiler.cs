@@ -9,11 +9,11 @@ namespace Ryujinx.HLE.HOS.Tamper
 {
     class AtmosphereCompiler
     {
-        private ulong    _exeAddress;
-        private ulong    _heapAddress;
-        private ulong    _aliasAddress;
-        private ulong    _aslrAddress;
-        ITamperedProcess _process;
+        private ulong            _exeAddress;
+        private ulong            _heapAddress;
+        private ulong            _aliasAddress;
+        private ulong            _aslrAddress;
+        private ITamperedProcess _process;
 
         public AtmosphereCompiler(ulong exeAddress, ulong heapAddress, ulong aliasAddress, ulong aslrAddress, ITamperedProcess process)
         {
