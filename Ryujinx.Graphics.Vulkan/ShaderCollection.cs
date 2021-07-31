@@ -19,13 +19,27 @@ namespace Ryujinx.Graphics.Vulkan
 
         public int[][][] Bindings { get; }
 
-        public ProgramLinkStatus LinkStatus { get; }
+        public ProgramLinkStatus LinkStatus { private set; get; }
+
+        public bool IsLinked
+        {
+            get
+            {
+                if (LinkStatus == ProgramLinkStatus.Incomplete)
+                {
+                    CheckProgramLink(true);
+                }
+
+                return LinkStatus == ProgramLinkStatus.Success;
+            }
+        }
 
         private HashTableSlim<PipelineUid, Auto<DisposablePipeline>> _graphicsPipelineCache;
         private Auto<DisposablePipeline> _computePipeline;
 
         private VulkanGraphicsDevice _gd;
         private Device _device;
+        private bool _initialized;
 
         public ShaderCollection(
             VulkanGraphicsDevice gd,
@@ -43,17 +57,13 @@ namespace Ryujinx.Graphics.Vulkan
 
             _infos = new PipelineShaderStageCreateInfo[shaders.Length];
 
-            LinkStatus = ProgramLinkStatus.Success;
+            LinkStatus = ProgramLinkStatus.Incomplete;
 
             uint stages = 0;
 
             for (int i = 0; i < shaders.Length; i++)
             {
                 var shader = (Shader)shaders[i];
-                if (!shader.Valid)
-                {
-                    LinkStatus = ProgramLinkStatus.Failure;
-                }
 
                 stages |= 1u << shader.StageFlags switch
                 {
@@ -65,8 +75,6 @@ namespace Ryujinx.Graphics.Vulkan
                 };
 
                 internalShaders[i] = shader;
-
-                _infos[i] = internalShaders[i].GetInfo();
             }
 
             _plce = gd.PipelineLayoutCache.GetOrCreate(gd, device, stages);
@@ -99,13 +107,69 @@ namespace Ryujinx.Graphics.Vulkan
             };
         }
 
+        private void EnsureShadersReady()
+        {
+            if (!_initialized)
+            {
+                CheckProgramLink(true);
+
+                ProgramLinkStatus resultStatus = ProgramLinkStatus.Success;
+
+                for (int i = 0; i < _shaders.Length; i++)
+                {
+                    var shader = (Shader)_shaders[i];
+
+                    if (shader.CompileStatus != ProgramLinkStatus.Success)
+                    {
+                        resultStatus = ProgramLinkStatus.Failure;
+                    }
+
+                    _infos[i] = shader.GetInfo();
+                }
+
+                LinkStatus = resultStatus;
+
+                _initialized = true;
+            }
+        }
+
         public PipelineShaderStageCreateInfo[] GetInfos()
         {
+            EnsureShadersReady();
+
             return _infos;
         }
 
         public ProgramLinkStatus CheckProgramLink(bool blocking)
         {
+            if (LinkStatus == ProgramLinkStatus.Incomplete)
+            {
+                ProgramLinkStatus resultStatus = ProgramLinkStatus.Success;
+
+                foreach (Shader shader in _shaders)
+                {
+                    if (shader.CompileStatus == ProgramLinkStatus.Incomplete)
+                    {
+                        if (blocking)
+                        {
+                            // Wait for this shader to finish compiling.
+                            shader.WaitForCompile();
+
+                            if (shader.CompileStatus != ProgramLinkStatus.Success)
+                            {
+                                resultStatus = ProgramLinkStatus.Failure;
+                            }
+                        }
+                        else
+                        {
+                            return ProgramLinkStatus.Incomplete;
+                        }
+                    }
+                }
+
+                return resultStatus;
+            }
+
             return LinkStatus;
         }
 
