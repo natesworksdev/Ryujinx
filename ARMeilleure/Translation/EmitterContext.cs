@@ -639,7 +639,7 @@ namespace ARMeilleure.Translation
 
         private void NextBlock(BasicBlock nextBlock)
         {
-            if (_irBlock?.SuccessorCount == 0 && !EndsWithUnconditional(_irBlock))
+            if (_irBlock?.SuccessorsCount == 0 && !EndsWithUnconditional(_irBlock))
             {
                 _irBlock.AddSuccessor(nextBlock);
 

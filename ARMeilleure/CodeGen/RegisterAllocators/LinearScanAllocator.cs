@@ -621,9 +621,9 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                     continue;
                 }
 
-                bool hasSingleOrNoSuccessor = block.SuccessorCount <= 1;
+                bool hasSingleOrNoSuccessor = block.SuccessorsCount <= 1;
 
-                for (int i = 0; i < block.SuccessorCount; i++)
+                for (int i = 0; i < block.SuccessorsCount; i++)
                 {
                     BasicBlock successor = block.GetSuccessor(i);
 
@@ -874,7 +874,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                     BitMap liveOut = blkLiveOut[block.Index];
 
-                    for (int i = 0; i < block.SuccessorCount; i++)
+                    for (int i = 0; i < block.SuccessorsCount; i++)
                     {
                         BasicBlock succ = block.GetSuccessor(i);
 

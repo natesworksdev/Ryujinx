@@ -166,7 +166,7 @@ namespace ARMeilleure.CodeGen.X86
                         GenerateOperation(context, node);
                     }
 
-                    if (block.SuccessorCount == 0)
+                    if (block.SuccessorsCount == 0)
                     {
                         // The only blocks which can have 0 successors are exit blocks.
                         Operation last = block.Operations.Last;

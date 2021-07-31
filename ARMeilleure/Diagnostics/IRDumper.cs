@@ -62,15 +62,15 @@ namespace ARMeilleure.Diagnostics
                 _builder.Append(" cold");
             }
 
-            if (block.SuccessorCount > 0)
+            if (block.SuccessorsCount > 0)
             {
                 _builder.Append(" (");
 
-                for (int i = 0; i < block.SuccessorCount; i++)
+                for (int i = 0; i < block.SuccessorsCount; i++)
                 {
                     DumpBlockName(block.GetSuccessor(i));
 
-                    if (i < block.SuccessorCount - 1)
+                    if (i < block.SuccessorsCount - 1)
                     {
                         _builder.Append(", ");
                     }

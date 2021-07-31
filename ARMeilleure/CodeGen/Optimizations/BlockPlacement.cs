@@ -32,7 +32,7 @@ namespace ARMeilleure.CodeGen.Optimizations
             {
                 nextBlock = block.ListNext;
 
-                if (block.SuccessorCount == 2)
+                if (block.SuccessorsCount == 2)
                 {
                     Operation branchOp = block.Operations.Last;
 

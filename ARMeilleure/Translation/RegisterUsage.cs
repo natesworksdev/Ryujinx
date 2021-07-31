@@ -173,7 +173,7 @@ namespace ARMeilleure.Translation
 
                     RegisterMask inputs = localInputs[block.Index];
 
-                    for (int i = 0; i < block.SuccessorCount; i++)
+                    for (int i = 0; i < block.SuccessorsCount; i++)
                     {
                         inputs |= globalInputs[block.GetSuccessor(i).Index];
                     }
@@ -240,7 +240,7 @@ namespace ARMeilleure.Translation
 
         private static bool HasContextStore(BasicBlock block)
         {
-            return EndsWith(block, Instruction.StoreToContext) && block.GetLastOp().SourcesCount == 0;
+            return EndsWith(block, Instruction.StoreToContext) && block.Operations.Last.SourcesCount == 0;
         }
 
         private static bool StartsWith(BasicBlock block, Instruction inst)
