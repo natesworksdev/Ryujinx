@@ -6,6 +6,7 @@ using Silk.NET.Vulkan;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace Ryujinx.Graphics.Vulkan
 {
@@ -13,74 +14,81 @@ namespace Ryujinx.Graphics.Vulkan
     {
         private readonly Vk _api;
         private readonly Device _device;
-        private readonly ShaderModule _module;
         private readonly ShaderStageFlags _stage;
+        private readonly Task _compileTask;
 
         private IntPtr _entryPointName;
+        private ShaderModule _module;
 
         public ShaderStageFlags StageFlags => _stage;
 
         public ShaderBindings Bindings { get; }
 
-        public bool Valid { get; }
+        public ProgramLinkStatus CompileStatus { private set; get; }
 
         public unsafe Shader(Vk api, Device device, ShaderStage stage, ShaderBindings bindings, string glsl)
         {
             _api = api;
             _device = device;
-            Bindings = bindings;
-
-            glsl = glsl.Replace("gl_VertexID", "(gl_VertexIndex - gl_BaseVertex)");
-            glsl = glsl.Replace("gl_InstanceID", "(gl_InstanceIndex - gl_BaseInstance)");
-            glsl = glsl.Replace("gl_SubGroupInvocationARB", "gl_SubgroupInvocationID");
-            glsl = glsl.Replace("unpackUint2x32(gl_SubGroupEqMaskARB).x", "gl_SubgroupEqMask.x");
-            glsl = glsl.Replace("unpackUint2x32(gl_SubGroupGeMaskARB).x", "gl_SubgroupGeMask.x");
-            glsl = glsl.Replace("unpackUint2x32(gl_SubGroupGtMaskARB).x", "gl_SubgroupGtMask.x");
-            glsl = glsl.Replace("unpackUint2x32(gl_SubGroupLeMaskARB).x", "gl_SubgroupLeMask.x");
-            glsl = glsl.Replace("unpackUint2x32(gl_SubGroupLtMaskARB).x", "gl_SubgroupLtMask.x");
-            glsl = glsl.Replace("unpackUint2x32(ballotARB", "(subgroupBallot");
-            glsl = glsl.Replace("readInvocationARB", "subgroupBroadcast");
-            glsl = glsl.Replace("#extension GL_ARB_shader_ballot : enable", "#extension GL_KHR_shader_subgroup_basic : enable\n#extension GL_KHR_shader_subgroup_ballot : enable");
-
-            // System.Console.WriteLine(glsl);
-
-            Options options = new Options(false)
-            {
-                SourceLanguage = SourceLanguage.Glsl,
-                TargetSpirVVersion = new SpirVVersion(1, 5)
-            };
-            options.SetTargetEnvironment(TargetEnvironment.Vulkan, EnvironmentVersion.Vulkan_1_2);
-            Compiler compiler = new Compiler(options);
-            var scr = compiler.Compile(glsl, "Ryu", GetShaderCShaderStage(stage));
-
-            if (scr.Status != Status.Success)
-            {
-                Logger.Error?.Print(LogClass.Gpu, $"Shader compilation error: {scr.Status} {scr.ErrorMessage}");
-                return;
-            }
-
-            Valid = true;
-
-            var spirvBytes = new Span<byte>((void*)scr.CodePointer, (int)scr.CodeLength);
-
-            uint[] code = new uint[(scr.CodeLength + 3) / 4];
-
-            spirvBytes.CopyTo(MemoryMarshal.Cast<uint, byte>(new Span<uint>(code)).Slice(0, (int)scr.CodeLength));
-
-            fixed (uint* pCode = code)
-            {
-                var shaderModuleCreateInfo = new ShaderModuleCreateInfo()
-                {
-                    SType = StructureType.ShaderModuleCreateInfo,
-                    CodeSize = scr.CodeLength,
-                    PCode = pCode
-                };
-
-                api.CreateShaderModule(device, shaderModuleCreateInfo, null, out _module).ThrowOnError();
-            }
-
             _stage = stage.Convert();
             _entryPointName = Marshal.StringToHGlobalAnsi("main");
+
+            Bindings = bindings;
+
+            _compileTask = Task.Run(() =>
+            {
+                glsl = glsl.Replace("gl_VertexID", "(gl_VertexIndex - gl_BaseVertex)");
+                glsl = glsl.Replace("gl_InstanceID", "(gl_InstanceIndex - gl_BaseInstance)");
+                glsl = glsl.Replace("gl_SubGroupInvocationARB", "gl_SubgroupInvocationID");
+                glsl = glsl.Replace("unpackUint2x32(gl_SubGroupEqMaskARB).x", "gl_SubgroupEqMask.x");
+                glsl = glsl.Replace("unpackUint2x32(gl_SubGroupGeMaskARB).x", "gl_SubgroupGeMask.x");
+                glsl = glsl.Replace("unpackUint2x32(gl_SubGroupGtMaskARB).x", "gl_SubgroupGtMask.x");
+                glsl = glsl.Replace("unpackUint2x32(gl_SubGroupLeMaskARB).x", "gl_SubgroupLeMask.x");
+                glsl = glsl.Replace("unpackUint2x32(gl_SubGroupLtMaskARB).x", "gl_SubgroupLtMask.x");
+                glsl = glsl.Replace("unpackUint2x32(ballotARB", "(subgroupBallot");
+                glsl = glsl.Replace("readInvocationARB", "subgroupBroadcast");
+                glsl = glsl.Replace("#extension GL_ARB_shader_ballot : enable", "#extension GL_KHR_shader_subgroup_basic : enable\n#extension GL_KHR_shader_subgroup_ballot : enable");
+
+                // System.Console.WriteLine(glsl);
+
+                Options options = new Options(false)
+                {
+                    SourceLanguage = SourceLanguage.Glsl,
+                    TargetSpirVVersion = new SpirVVersion(1, 5)
+                };
+                options.SetTargetEnvironment(TargetEnvironment.Vulkan, EnvironmentVersion.Vulkan_1_2);
+                Compiler compiler = new Compiler(options);
+                var scr = compiler.Compile(glsl, "Ryu", GetShaderCShaderStage(stage));
+
+                if (scr.Status != Status.Success)
+                {
+                    Logger.Error?.Print(LogClass.Gpu, $"Shader compilation error: {scr.Status} {scr.ErrorMessage}");
+
+                    CompileStatus = ProgramLinkStatus.Failure;
+
+                    return;
+                }
+
+                var spirvBytes = new Span<byte>((void*)scr.CodePointer, (int)scr.CodeLength);
+
+                uint[] code = new uint[(scr.CodeLength + 3) / 4];
+
+                spirvBytes.CopyTo(MemoryMarshal.Cast<uint, byte>(new Span<uint>(code)).Slice(0, (int)scr.CodeLength));
+
+                fixed (uint* pCode = code)
+                {
+                    var shaderModuleCreateInfo = new ShaderModuleCreateInfo()
+                    {
+                        SType = StructureType.ShaderModuleCreateInfo,
+                        CodeSize = scr.CodeLength,
+                        PCode = pCode
+                    };
+
+                    api.CreateShaderModule(device, shaderModuleCreateInfo, null, out _module).ThrowOnError();
+                }
+
+                CompileStatus = ProgramLinkStatus.Success;
+            });
         }
 
         public unsafe Shader(Vk api, Device device, ShaderStage stage, ShaderBindings bindings, byte[] spirv)
@@ -151,6 +159,11 @@ namespace Ryujinx.Graphics.Vulkan
                 Module = _module,
                 PName = (byte*)_entryPointName
             };
+        }
+
+        public void WaitForCompile()
+        {
+            _compileTask.Wait();
         }
 
         public unsafe void Dispose()
