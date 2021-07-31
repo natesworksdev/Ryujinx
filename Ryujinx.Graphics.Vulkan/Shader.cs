@@ -12,6 +12,10 @@ namespace Ryujinx.Graphics.Vulkan
 {
     class Shader : IShader
     {
+        // The shaderc.net dependency's Options constructor and dispose are not thread safe.
+        // Take this lock when using them.
+        private static object _shaderOptionsLock = new object();
+
         private readonly Vk _api;
         private readonly Device _device;
         private readonly ShaderStageFlags _stage;
@@ -51,14 +55,25 @@ namespace Ryujinx.Graphics.Vulkan
 
                 // System.Console.WriteLine(glsl);
 
-                Options options = new Options(false)
+                Options options;
+
+                lock (_shaderOptionsLock)
                 {
-                    SourceLanguage = SourceLanguage.Glsl,
-                    TargetSpirVVersion = new SpirVVersion(1, 5)
-                };
+                    options = new Options(false)
+                    {
+                        SourceLanguage = SourceLanguage.Glsl,
+                        TargetSpirVVersion = new SpirVVersion(1, 5)
+                    };
+                }
+
                 options.SetTargetEnvironment(TargetEnvironment.Vulkan, EnvironmentVersion.Vulkan_1_2);
                 Compiler compiler = new Compiler(options);
                 var scr = compiler.Compile(glsl, "Ryu", GetShaderCShaderStage(stage));
+
+                lock (_shaderOptionsLock)
+                {
+                    options.Dispose();
+                }
 
                 if (scr.Status != Status.Success)
                 {
