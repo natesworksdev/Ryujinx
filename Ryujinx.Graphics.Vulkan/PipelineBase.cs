@@ -223,7 +223,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void DispatchCompute(int groupsX, int groupsY, int groupsZ)
         {
-            if (_program.LinkStatus != ProgramLinkStatus.Success)
+            if (!_program.IsLinked)
             {
                 return;
             }
@@ -238,7 +238,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             // System.Console.WriteLine("draw");
 
-            if (_program.LinkStatus != ProgramLinkStatus.Success)
+            if (!_program.IsLinked)
             {
                 return;
             }
@@ -266,7 +266,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             // System.Console.WriteLine("draw indexed");
 
-            if (_program.LinkStatus != ProgramLinkStatus.Success)
+            if (!_program.IsLinked)
             {
                 return;
             }
