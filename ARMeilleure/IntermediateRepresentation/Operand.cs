@@ -1,3 +1,4 @@
+using ARMeilleure.Common;
 using ARMeilleure.Translation.PTC;
 using System;
 using System.Diagnostics;

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace ARMeilleure.IntermediateRepresentation
+namespace ARMeilleure.Common
 {
     unsafe class Arena
     {

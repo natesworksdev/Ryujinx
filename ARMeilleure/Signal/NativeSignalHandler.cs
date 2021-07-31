@@ -95,8 +95,6 @@ namespace ARMeilleure.Signal
             {
                 if (_initialized) return;
 
-                Arena.ResetAll();
-
                 bool unix = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
                 ref SignalHandlerConfig config = ref GetConfigRef();
 

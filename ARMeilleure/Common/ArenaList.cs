@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ARMeilleure.IntermediateRepresentation
+namespace ARMeilleure.Common
 {
     unsafe struct ArenaList<T> where T : unmanaged
     {
