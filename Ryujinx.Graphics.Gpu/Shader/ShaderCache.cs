@@ -205,7 +205,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                                         Logger.Info?.Print(LogClass.Gpu, $"Host shader {key} got invalidated, rebuilding from guest...");
 
                                         // Compile shader and create program as the shader program binary got invalidated.
-                                        shader.HostShader = _context.Renderer.CompileShader(ShaderStage.Compute, GetBindings(shader.Info), shader.Program.Code);
+                                        shader.HostShader = CompileShader(shader.Program, shader.Info);
                                         hostProgram = _context.Renderer.CreateProgram(new IShader[] { shader.HostShader }, null);
 
                                         task.OnCompiled(hostProgram, (bool isNewProgramValid, ShaderCompileTask task) =>
@@ -357,7 +357,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                                                 continue;
                                             }
 
-                                            IShader hostShader = _context.Renderer.CompileShader(program.Stage, GetBindings(shaders[stage].Info), program.Code);
+                                            IShader hostShader = CompileShader(program, shaders[stage].Info);;
 
                                             shaders[stage].HostShader = hostShader;
 
@@ -553,7 +553,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 // The shader isn't currently cached, translate it and compile it.
                 ShaderCodeHolder shader = TranslateShader(channel.MemoryManager, shaderContexts[0]);
 
-                shader.HostShader = _context.Renderer.CompileShader(ShaderStage.Compute, GetBindings(shader.Info), shader.Program.Code);
+                shader.HostShader = CompileShader(shader.Program, shader.Info);;
 
                 IProgram hostProgram = _context.Renderer.CreateProgram(new IShader[] { shader.HostShader }, null);
 
@@ -689,7 +689,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                         continue;
                     }
 
-                    IShader hostShader = _context.Renderer.CompileShader(program.Stage, GetBindings(shaders[stage].Info), program.Code);
+                    IShader hostShader = CompileShader(program, shaders[stage].Info);;
 
                     shaders[stage].HostShader = hostShader;
 
@@ -981,8 +981,21 @@ namespace Ryujinx.Graphics.Gpu.Shader
         private TranslationOptions CreateTranslationOptions(TranslationFlags flags)
         {
             TargetApi api = _context.Capabilities.Api;
+            TargetLanguage lang = GraphicsConfig.EnableSpirvCompilation ? TargetLanguage.Spirv : TargetLanguage.Glsl;
 
-            return new TranslationOptions(TargetLanguage.Glsl, api, flags);
+            return new TranslationOptions(lang, api, flags);
+        }
+
+        private IShader CompileShader(ShaderProgram program, ShaderProgramInfo info)
+        {
+            if (program.BinaryCode != null)
+            {
+                return _context.Renderer.CompileShader(program.Stage, GetBindings(info), program.BinaryCode);
+            }
+            else
+            {
+                return _context.Renderer.CompileShader(program.Stage, GetBindings(info), program.Code);
+            }
         }
 
         /// <summary>

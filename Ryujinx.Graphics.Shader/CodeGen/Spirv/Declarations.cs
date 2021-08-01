@@ -152,6 +152,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 return;
             }
 
+            int setIndex = context.Config.Options.TargetApi == TargetApi.Vulkan ? 1 : 0;
             int count = descriptors.Max(x => x.Binding) + 1;
 
             var sbArrayType = context.TypeRuntimeArray(context.TypeU32());
@@ -164,7 +165,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             var sbVariable = context.Variable(sbPointerType, StorageClass.Uniform);
 
             context.Name(sbVariable, $"{GetStagePrefix(context.Config.Stage)}_s");
-            context.Decorate(sbVariable, Decoration.DescriptorSet, (LiteralInteger)0);
+            context.Decorate(sbVariable, Decoration.DescriptorSet, (LiteralInteger)setIndex);
             context.Decorate(sbVariable, Decoration.Binding, (LiteralInteger)descriptors[0].Binding);
             context.AddGlobalVariable(sbVariable);
 
@@ -181,6 +182,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 {
                     continue;
                 }
+
+                bool isBuffer = (descriptor.Type & SamplerType.Mask) == SamplerType.TextureBuffer;
+                int setIndex = context.Config.Options.TargetApi == TargetApi.Vulkan ? (isBuffer ? 4 : 2) : 0;
 
                 var dim = (meta.Type & SamplerType.Mask) switch
                 {
@@ -210,7 +214,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 context.Samplers.Add(meta, (imageType, sampledImageType, sampledImageVariable));
 
                 context.Name(sampledImageVariable, $"{GetStagePrefix(context.Config.Stage)}_tex{nameSuffix}");
-                context.Decorate(sampledImageVariable, Decoration.DescriptorSet, (LiteralInteger)0);
+                context.Decorate(sampledImageVariable, Decoration.DescriptorSet, (LiteralInteger)setIndex);
                 context.Decorate(sampledImageVariable, Decoration.Binding, (LiteralInteger)descriptor.Binding);
                 context.AddGlobalVariable(sampledImageVariable);
             }
@@ -226,6 +230,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 {
                     continue;
                 }
+
+                bool isBuffer = (descriptor.Type & SamplerType.Mask) == SamplerType.TextureBuffer;
+                int setIndex = context.Config.Options.TargetApi == TargetApi.Vulkan ? (isBuffer ? 5 : 3) : 0;
 
                 var dim = GetDim(meta.Type);
 
@@ -248,7 +255,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 context.Images.Add(meta, (imageType, imageVariable));
 
                 context.Name(imageVariable, $"{GetStagePrefix(context.Config.Stage)}_img{nameSuffix}");
-                context.Decorate(imageVariable, Decoration.DescriptorSet, (LiteralInteger)0);
+                context.Decorate(imageVariable, Decoration.DescriptorSet, (LiteralInteger)setIndex);
                 context.Decorate(imageVariable, Decoration.Binding, (LiteralInteger)descriptor.Binding);
                 context.AddGlobalVariable(imageVariable);
             }
@@ -383,6 +390,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         {
             var dict = isOutAttr ? context.Outputs : context.Inputs;
             var attrInfo = AttributeInfo.From(attr);
+
+            if (attrInfo.BaseValue == AttributeConsts.PositionX && context.Config.Stage != ShaderStage.Fragment)
+            {
+                isOutAttr = true;
+                dict = context.Outputs;
+            }
 
             if (dict.ContainsKey(attrInfo.BaseValue))
             {

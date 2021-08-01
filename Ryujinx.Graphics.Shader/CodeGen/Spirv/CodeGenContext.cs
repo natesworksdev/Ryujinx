@@ -195,6 +195,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         public Instruction GetAttributeElemPointer(AstOperand operand, bool isOutAttr, out AggregateType elemType)
         {
             var attrInfo = AttributeInfo.From(operand.Value);
+            if (attrInfo.BaseValue == AttributeConsts.PositionX && Config.Stage != ShaderStage.Fragment)
+            {
+                isOutAttr = true;
+            }
 
             elemType = attrInfo.Type & AggregateType.ElementTypeMask;
 
