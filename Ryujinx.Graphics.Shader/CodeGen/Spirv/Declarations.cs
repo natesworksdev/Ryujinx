@@ -442,6 +442,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         {
             return attr switch
             {
+                AttributeConsts.Layer => BuiltIn.Layer,
                 AttributeConsts.PointSize => BuiltIn.PointSize,
                 AttributeConsts.PositionX => context.Config.Stage == ShaderStage.Fragment ? BuiltIn.FragCoord : BuiltIn.Position,
                 AttributeConsts.ClipDistance0 => BuiltIn.ClipDistance,
