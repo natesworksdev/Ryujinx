@@ -15,6 +15,7 @@ namespace Ryujinx.Graphics.GAL
         void BackgroundContextAction(Action action);
 
         IShader CompileShader(ShaderStage stage, ShaderBindings bindings, string code);
+        IShader CompileShader(ShaderStage stage, ShaderBindings bindings, byte[] code);
 
         BufferHandle CreateBuffer(int size);
 

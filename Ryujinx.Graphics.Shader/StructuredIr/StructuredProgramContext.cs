@@ -277,6 +277,11 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
         public AstOperand GetOperandDef(Operand operand)
         {
+            if (operand.Type == OperandType.Attribute)
+            {
+                Info.Outputs.Add(operand.Value);
+            }
+
             if (TryGetUserAttributeIndex(operand, out int attrIndex))
             {
                 Info.OAttributes.Add(attrIndex);
@@ -287,6 +292,11 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
         public AstOperand GetOperandUse(Operand operand)
         {
+            if (operand.Type == OperandType.Attribute)
+            {
+                Info.Inputs.Add(operand.Value);
+            }
+
             if (TryGetUserAttributeIndex(operand, out int attrIndex))
             {
                 Info.IAttributes.Add(attrIndex);

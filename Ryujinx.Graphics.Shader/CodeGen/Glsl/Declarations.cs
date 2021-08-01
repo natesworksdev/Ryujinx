@@ -458,7 +458,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
             string name = $"{DefaultNames.IAttributePrefix}{attr}";
 
-            if ((context.Config.Options.Flags & TranslationFlags.Feedback) != 0)
+            if (context.Config.Options.Flags.HasFlag(TranslationFlags.Feedback))
             {
                 for (int c = 0; c < 4; c++)
                 {
@@ -510,7 +510,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
         {
             string name = $"{DefaultNames.OAttributePrefix}{attr}";
 
-            if ((context.Config.Options.Flags & TranslationFlags.Feedback) != 0)
+            if (context.Config.Options.Flags.HasFlag(TranslationFlags.Feedback))
             {
                 for (int c = 0; c < 4; c++)
                 {

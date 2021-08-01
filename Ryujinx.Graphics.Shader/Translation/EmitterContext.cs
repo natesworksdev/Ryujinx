@@ -45,7 +45,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             Operation operation = new Operation(inst, dest, sources);
 
-            Add(operation);
+            _operations.Add(operation);
 
             return dest;
         }
@@ -207,19 +207,19 @@ namespace Ryujinx.Graphics.Shader.Translation
                         // Perform B <-> R swap if needed, for BGRA formats (not supported on OpenGL).
                         /* if (component == 0 || component == 2)
                         {
-                            Operand isBgra = Attribute(AttributeConsts.FragmentOutputIsBgraBase + rtIndex * 4);
+                            Operand isBgra = Config.AddInput(AttributeConsts.FragmentOutputIsBgraBase + rtIndex * 4);
 
                             Operand lblIsBgra = Label();
                             Operand lblEnd    = Label();
 
                             this.BranchIfTrue(lblIsBgra, isBgra);
 
-                            this.Copy(Attribute(fragmentOutputColorAttr + component * 4), src);
+                            this.Copy(Config.AddOutput(fragmentOutputColorAttr + component * 4), src);
                             this.Branch(lblEnd);
 
                             MarkLabel(lblIsBgra);
 
-                            this.Copy(Attribute(fragmentOutputColorAttr + (2 - component) * 4), src);
+                            this.Copy(Config.AddOutput(fragmentOutputColorAttr + (2 - component) * 4), src);
 
                             MarkLabel(lblEnd);
                         }

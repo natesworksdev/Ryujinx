@@ -83,6 +83,30 @@ namespace Ryujinx.Graphics.Vulkan
             _entryPointName = Marshal.StringToHGlobalAnsi("main");
         }
 
+        public unsafe Shader(Vk api, Device device, ShaderStage stage, ShaderBindings bindings, byte[] spirv)
+        {
+            _api = api;
+            _device = device;
+            Bindings = bindings;
+
+            Valid = true;
+
+            fixed (byte* pCode = spirv)
+            {
+                var shaderModuleCreateInfo = new ShaderModuleCreateInfo()
+                {
+                    SType = StructureType.ShaderModuleCreateInfo,
+                    CodeSize = (uint)spirv.Length,
+                    PCode = (uint*)pCode
+                };
+
+                api.CreateShaderModule(device, shaderModuleCreateInfo, null, out _module).ThrowOnError();
+            }
+
+            _stage = stage.Convert();
+            _entryPointName = Marshal.StringToHGlobalAnsi("main");
+        }
+
         private static uint[] LoadShaderData(string filePath, out int codeSize)
         {
             var fileBytes = File.ReadAllBytes(filePath);

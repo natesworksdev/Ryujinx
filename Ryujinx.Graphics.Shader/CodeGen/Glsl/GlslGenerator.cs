@@ -74,7 +74,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                             continue;
                         }
 
-                        if ((context.Config.Options.Flags & TranslationFlags.Feedback) != 0)
+                        if (context.Config.Options.Flags.HasFlag(TranslationFlags.Feedback))
                         {
                             context.AppendLine($"{DefaultNames.OAttributePrefix}{attr}_x = 0.0;");
                             context.AppendLine($"{DefaultNames.OAttributePrefix}{attr}_y = 0.0;");

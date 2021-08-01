@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 {
     class OperandManager
     {
-        private static string[] _stagePrefixes = new string[] { "cp", "vp", "tcp", "tep", "gp", "fp" };
+        private static readonly string[] StagePrefixes = new string[] { "cp", "vp", "tcp", "tep", "gp", "fp" };
 
         private struct BuiltInAttribute
         {
@@ -26,8 +26,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
         }
 
-        private static Dictionary<int, BuiltInAttribute> _builtInAttributes =
-                   new Dictionary<int, BuiltInAttribute>()
+        private static Dictionary<int, BuiltInAttribute> BuiltInAttributes = new Dictionary<int, BuiltInAttribute>()
         {
             { AttributeConsts.Layer,               new BuiltInAttribute("gl_Layer",           VariableType.S32)  },
             { AttributeConsts.PointSize,           new BuiltInAttribute("gl_PointSize",       VariableType.F32)  },
@@ -156,7 +155,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                     ? DefaultNames.OAttributePrefix
                     : DefaultNames.IAttributePrefix;
 
-                if ((config.Options.Flags & TranslationFlags.Feedback) != 0)
+                if (config.Options.Flags.HasFlag(TranslationFlags.Feedback))
                 {
                     string name = $"{prefix}{(value >> 4)}_{swzMask}";
 
@@ -187,7 +186,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                     return $"{DefaultNames.OAttributePrefix}{(value >> 4)}.{swzMask}";
                 }
-                else if (_builtInAttributes.TryGetValue(value & ~3, out BuiltInAttribute builtInAttr))
+                else if (BuiltInAttributes.TryGetValue(value & ~3, out BuiltInAttribute builtInAttr))
                 {
                     // TODO: There must be a better way to handle this...
                     if (config.Stage == ShaderStage.Fragment)
@@ -278,12 +277,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
         {
             int index = (int)stage;
 
-            if ((uint)index >= _stagePrefixes.Length)
+            if ((uint)index >= StagePrefixes.Length)
             {
                 return "invalid";
             }
 
-            return _stagePrefixes[index];
+            return StagePrefixes[index];
         }
 
         private static char GetSwizzleMask(int value)
@@ -345,7 +344,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
         {
             if (operand.Type == OperandType.Attribute)
             {
-                if (_builtInAttributes.TryGetValue(operand.Value & ~3, out BuiltInAttribute builtInAttr))
+                if (BuiltInAttributes.TryGetValue(operand.Value & ~3, out BuiltInAttribute builtInAttr))
                 {
                     return builtInAttr.Type;
                 }

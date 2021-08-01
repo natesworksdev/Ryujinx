@@ -175,6 +175,11 @@ namespace Ryujinx.Graphics.Vulkan
             return new Shader(Api, _device, stage, bindings, code);
         }
 
+        public IShader CompileShader(ShaderStage stage, ShaderBindings bindings, byte[] code)
+        {
+            return new Shader(Api, _device, stage, bindings, code);
+        }
+
         public BufferHandle CreateBuffer(int size)
         {
             return BufferManager.CreateWithHandle(this, size);
