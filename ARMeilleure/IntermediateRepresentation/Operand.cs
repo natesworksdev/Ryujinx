@@ -245,8 +245,12 @@ namespace ARMeilleure.IntermediateRepresentation
                 result.Kind = kind;
                 result.Type = type;
 
+                if (kind != OperandKind.Memory)
+                {
+                    result.Symbol = symbol;
+                }
                 // If local variable, then the use and def list is initialized with default sizes.
-                if (kind == OperandKind.LocalVariable)
+                else if (kind == OperandKind.LocalVariable)
                 {
                     result._data->Assignments = ArenaList<Operation>.New(1);
                     result._data->Uses = ArenaList<Operation>.New(4);
