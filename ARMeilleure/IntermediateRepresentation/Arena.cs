@@ -22,34 +22,56 @@ namespace ARMeilleure.IntermediateRepresentation
             }
         }
 
-        private int _index;
-        private readonly int _capacity;
-        private readonly byte* _block;
+        private const int PageCount = 32;
+        private const int PageSize = 256 * 1024;
 
-        public Arena(int capacity)
+        private int _index;
+        private int _pageIndex;
+        private readonly List<nint> _pages;
+
+        public Arena()
         {
             _index = 0;
-            _capacity = capacity;
-            _block = (byte*)Marshal.AllocHGlobal(_capacity);
-
-            if (_block == null)
-            {
-                throw new OutOfMemoryException();
-            }
+            _pageIndex = 0;
+            _pages = new List<nint>();
 
             Instances.Add(this);
         }
 
-        public byte* Allocate(int bytes)
+        public void* Allocate(int size)
         {
-            if (_index + bytes > _capacity)
+            if (size > PageSize)
             {
-                throw new OutOfMemoryException();
+                ThrowOutOfMemory();
             }
 
-            byte* result = &_block[_index];
+            if (_index + size > PageSize)
+            {
+                _index = 0;
+                _pageIndex++;
+            }
 
-            _index += bytes;
+            byte* page;
+
+            if (_pageIndex < _pages.Count)
+            {
+                page = (byte*)_pages[_pageIndex];
+            }
+            else
+            {
+                page = (byte*)Marshal.AllocHGlobal(PageSize);
+
+                if (page == null)
+                {
+                    ThrowOutOfMemory();
+                }
+
+                _pages.Add((nint)page);
+            }
+
+            byte* result = &page[_index];
+
+            _index += size;
 
             return result;
         }
@@ -57,6 +79,15 @@ namespace ARMeilleure.IntermediateRepresentation
         public void Reset()
         {
             _index = 0;
+            _pageIndex = 0;
+
+            // Free excess pages that was allocated.
+            while (_pages.Count > PageCount)
+            {
+                Marshal.FreeHGlobal(_pages[_pages.Count - 1]);
+
+                _pages.RemoveAt(_pages.Count - 1);
+            }
         }
 
         public static void ResetAll()
@@ -66,6 +97,8 @@ namespace ARMeilleure.IntermediateRepresentation
                 instance.Reset();
             }
         }
+
+        private static void ThrowOutOfMemory() => throw new OutOfMemoryException();
     }
 
     unsafe class Arena<T> : Arena where T : unmanaged
@@ -79,14 +112,12 @@ namespace ARMeilleure.IntermediateRepresentation
             {
                 if (_instance == null)
                 {
-                    _instance = new(16 * 1024 * 1024);
+                    _instance = new Arena<T>();
                 }
                 
                 return _instance;
             }
         }
-
-        public Arena(int capacity) : base(capacity / sizeof(T) * sizeof(T)) { }
 
         public static T* Alloc(int count = 1)
         {
