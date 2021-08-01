@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 
 namespace ARMeilleure.Common
 {
-    unsafe class Arena
+    unsafe class ArenaAllocator : IAllocator
     {
         [ThreadStatic]
-        private static List<Arena> _instances;
+        private static List<ArenaAllocator> _instances;
 
-        private static List<Arena> Instances
+        private static List<ArenaAllocator> Instances
         {
             get
             {
@@ -27,13 +26,13 @@ namespace ARMeilleure.Common
 
         private int _index;
         private int _pageIndex;
-        private readonly List<nint> _pages;
+        private List<IntPtr> _pages;
 
-        public Arena()
+        public ArenaAllocator()
         {
             _index = 0;
             _pageIndex = 0;
-            _pages = new List<nint>();
+            _pages = new List<IntPtr>();
 
             Instances.Add(this);
         }
@@ -59,7 +58,7 @@ namespace ARMeilleure.Common
             }
             else
             {
-                page = (byte*)Marshal.AllocHGlobal(PageSize);
+                page = (byte*)NativeAllocator.Instance.Allocate(PageSize);
 
                 if (page == null)
                 {
@@ -76,6 +75,8 @@ namespace ARMeilleure.Common
             return result;
         }
 
+        public void Free(void* block) { }
+
         public void Reset()
         {
             _index = 0;
@@ -84,9 +85,22 @@ namespace ARMeilleure.Common
             // Free excess pages that was allocated.
             while (_pages.Count > PageCount)
             {
-                Marshal.FreeHGlobal(_pages[_pages.Count - 1]);
+                NativeAllocator.Instance.Free((void*)_pages[_pages.Count - 1]);
 
                 _pages.RemoveAt(_pages.Count - 1);
+            }
+        }
+
+        public void Dispose()
+        {
+            if (_pages != null)
+            {
+                foreach (nint page in _pages)
+                {
+                    NativeAllocator.Instance.Free((void*)page);
+                }
+
+                _pages = null;
             }
         }
 
@@ -101,18 +115,18 @@ namespace ARMeilleure.Common
         private static void ThrowOutOfMemory() => throw new OutOfMemoryException();
     }
 
-    unsafe class Arena<T> : Arena where T : unmanaged
+    unsafe class ArenaAllocator<T> : ArenaAllocator where T : unmanaged
     {
         [ThreadStatic]
-        private static Arena<T> _instance;
+        private static ArenaAllocator<T> _instance;
 
-        private static Arena<T> Instance
+        public static ArenaAllocator<T> Instance
         {
             get
             {
                 if (_instance == null)
                 {
-                    _instance = new Arena<T>();
+                    _instance = new ArenaAllocator<T>();
                 }
                 
                 return _instance;

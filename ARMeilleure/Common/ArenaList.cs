@@ -28,7 +28,7 @@ namespace ARMeilleure.Common
                 var oldSpan = Span;
 
                 _capacity += 8;
-                _data = Arena<T>.Alloc(_capacity);
+                _data = ArenaAllocator<T>.Alloc(_capacity);
 
                 oldSpan.CopyTo(Span);
             }
@@ -87,7 +87,7 @@ namespace ARMeilleure.Common
             var result = new ArenaList<T>();
             result._count = 0;
             result._capacity = (ushort)capacity;
-            result._data = Arena<T>.Alloc(result._capacity);
+            result._data = ArenaAllocator<T>.Alloc(result._capacity);
             return result;
         }
     }

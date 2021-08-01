@@ -13,9 +13,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime;
 using System.Threading;
-using static ARMeilleure.Common.BitMapPool;
 using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
 
 namespace ARMeilleure.Translation
@@ -191,13 +189,9 @@ namespace ARMeilleure.Translation
 
                 ClearJitCache();
 
-                DisposePools();
-
                 Stubs.Dispose();
                 FunctionTable.Dispose();
                 CountTable.Dispose();
-
-                GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
             }
         }
 
@@ -267,7 +261,7 @@ namespace ARMeilleure.Translation
             Logger.StartPass(PassName.Translation);
 
             // Reset all the allocators for a new round of compilation.
-            Arena.ResetAll();
+            ArenaAllocator.ResetAll();
 
             EmitSynchronization(context);
 
@@ -310,11 +304,6 @@ namespace ARMeilleure.Translation
             }
 
             return new TranslatedFunction(func, counter, funcSize, highCq);
-        }
-
-        internal static void DisposePools()
-        {
-            DisposeBitMapPools();
         }
 
         private struct Range

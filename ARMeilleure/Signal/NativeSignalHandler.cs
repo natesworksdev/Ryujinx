@@ -122,8 +122,6 @@ namespace ARMeilleure.Signal
                     _signalHandlerHandle = WindowsSignalHandlerRegistration.RegisterExceptionHandler(_signalHandlerPtr);
                 }
 
-                Translator.DisposePools();
-
                 _initialized = true;
             }
         }

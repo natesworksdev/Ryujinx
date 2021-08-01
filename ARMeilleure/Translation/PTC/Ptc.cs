@@ -825,8 +825,6 @@ namespace ARMeilleure.Translation.PTC
                         break;
                     }
                 }
-
-                Translator.DisposePools();
             }
 
             List<Thread> threads = new List<Thread>();

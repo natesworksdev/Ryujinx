@@ -104,7 +104,7 @@ namespace ARMeilleure.IntermediateRepresentation
             }
             else
             {
-                Resize(ref _data->Destinations, ref _data->DestinationsCount, 1);
+                EnsureCapacity(ref _data->Destinations, ref _data->DestinationsCount, 1);
 
                 _data->Destinations[0] = dest;
 
@@ -116,7 +116,7 @@ namespace ARMeilleure.IntermediateRepresentation
         {
             RemoveOldDestinations();
 
-            Resize(ref _data->Destinations, ref _data->DestinationsCount, dests.Length);
+            EnsureCapacity(ref _data->Destinations, ref _data->DestinationsCount, dests.Length);
 
             for (int index = 0; index < dests.Length; index++)
             {
@@ -146,7 +146,7 @@ namespace ARMeilleure.IntermediateRepresentation
             }
             else
             {
-                Resize(ref _data->Sources, ref _data->SourcesCount, 1);
+                EnsureCapacity(ref _data->Sources, ref _data->SourcesCount, 1);
 
                 _data->Sources[0] = src;
 
@@ -158,7 +158,7 @@ namespace ARMeilleure.IntermediateRepresentation
         {
             RemoveOldSources();
 
-            Resize(ref _data->Sources, ref _data->SourcesCount, srcs.Length);
+            EnsureCapacity(ref _data->Sources, ref _data->SourcesCount, srcs.Length);
 
             for (int index = 0; index < srcs.Length; index++)
             {
@@ -311,19 +311,19 @@ namespace ARMeilleure.IntermediateRepresentation
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void Resize(ref Operand* list, ref ushort count, int newSize)
+        private static void EnsureCapacity(ref Operand* list, ref ushort capacity, int newCapacity)
         {
-            if (newSize > ushort.MaxValue)
+            if (newCapacity > ushort.MaxValue)
             {
-                ThrowOverflow(newSize);
+                ThrowOverflow(newCapacity);
             }
             // We only need to allocate a new buffer if we're increasing the size.
-            else if (newSize > count)
+            else if (newCapacity > capacity)
             {
-                list = Arena<Operand>.Alloc(newSize);
+                list = ArenaAllocator<Operand>.Alloc(newCapacity);
             }
 
-            count = (ushort)newSize;
+            capacity = (ushort)newCapacity;
         }
 
         private static void ThrowOverflow(int count) =>
@@ -333,15 +333,15 @@ namespace ARMeilleure.IntermediateRepresentation
         {
             private static Operation Make(Instruction inst, int destCount, int srcCount)
             {
-                Data* data = Arena<Data>.Alloc();
+                Data* data = ArenaAllocator<Data>.Alloc();
                 *data = default;
 
                 Operation result = new();
                 result._data = data;
                 result.Instruction = inst;
 
-                Resize(ref result._data->Destinations, ref result._data->DestinationsCount, destCount);
-                Resize(ref result._data->Sources, ref result._data->SourcesCount, srcCount);
+                EnsureCapacity(ref result._data->Destinations, ref result._data->DestinationsCount, destCount);
+                EnsureCapacity(ref result._data->Sources, ref result._data->SourcesCount, srcCount);
 
                 result.Destinations.Clear();
                 result.Sources.Clear();

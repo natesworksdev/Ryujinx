@@ -33,7 +33,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         private int _operationsCount;
 
-        private class AllocationContext : IDisposable
+        private class AllocationContext
         {
             public RegisterMasks Masks { get; }
 
@@ -50,10 +50,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 StackAlloc = stackAlloc;
                 Masks      = masks;
 
-                BitMapPool.PrepareBitMapPool();
-
-                Active   = BitMapPool.Allocate(intervalsCount);
-                Inactive = BitMapPool.Allocate(intervalsCount);
+                Active   = new BitMap(ArenaAllocator<long>.Instance, intervalsCount);
+                Inactive = new BitMap(ArenaAllocator<long>.Instance, intervalsCount);
             }
 
             public void MoveActiveToInactive(int bit)
@@ -72,11 +70,6 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                 dest.Set(bit);
             }
-
-            public void Dispose()
-            {
-                BitMapPool.ResetBitMapPool();
-            }
         }
 
         public AllocationResult RunPass(
@@ -86,7 +79,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         {
             NumberLocals(cfg);
 
-            using AllocationContext context = new AllocationContext(stackAlloc, regMasks, _intervals.Count);
+            var context = new AllocationContext(stackAlloc, regMasks, _intervals.Count);
 
             BuildIntervals(cfg, context);
 
@@ -826,8 +819,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             // Compute local live sets.
             for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
             {
-                BitMap liveGen  = BitMapPool.Allocate(mapSize);
-                BitMap liveKill = BitMapPool.Allocate(mapSize);
+                BitMap liveGen  = new BitMap(ArenaAllocator<long>.Instance, mapSize);
+                BitMap liveKill = new BitMap(ArenaAllocator<long>.Instance, mapSize);
 
                 for (Operation node = block.Operations.First; node != default; node = node.ListNext)
                 {
@@ -858,8 +851,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             for (int index = 0; index < cfg.Blocks.Count; index++)
             {
-                blkLiveIn [index] = BitMapPool.Allocate(mapSize);
-                blkLiveOut[index] = BitMapPool.Allocate(mapSize);
+                blkLiveIn [index] = new BitMap(ArenaAllocator<long>.Instance, mapSize);
+                blkLiveOut[index] = new BitMap(ArenaAllocator<long>.Instance, mapSize);
             }
 
             bool modified;

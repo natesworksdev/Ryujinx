@@ -194,7 +194,7 @@ namespace ARMeilleure.IntermediateRepresentation
                 {
                     if (_internTable == null)
                     {
-                        _internTable = (Data*)Marshal.AllocHGlobal(sizeof(Data) * InternTableSize);
+                        _internTable = (Data*)NativeAllocator.Instance.Allocate(sizeof(Data) * InternTableSize);
 
                         if (_internTable == null)
                         {
@@ -230,12 +230,12 @@ namespace ARMeilleure.IntermediateRepresentation
                     // Otherwise if the slot is already occupied we have to store elsewhere.
                     else if (interned.Kind != OperandKind.None)
                     {
-                        data = Arena<Data>.Alloc();
+                        data = ArenaAllocator<Data>.Alloc();
                     }
                 }
                 else
                 {
-                    data = Arena<Data>.Alloc();
+                    data = ArenaAllocator<Data>.Alloc();
                 }
 
                 *data = default;
