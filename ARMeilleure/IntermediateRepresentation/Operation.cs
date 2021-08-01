@@ -284,18 +284,6 @@ namespace ARMeilleure.IntermediateRepresentation
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void Resize(ref Operand* list, ref ushort count, int newSize)
-        {
-            // We only need to allocate a new buffer if we're increasing the size.
-            if (newSize > count)
-            {
-                list = Arena<Operand>.Alloc(newSize);
-            }
-
-            count = (byte)newSize;
-        }
-
         public bool Equals(Operation operation)
         {
             return operation._data == _data;
@@ -320,6 +308,25 @@ namespace ARMeilleure.IntermediateRepresentation
         {
             return !a.Equals(b);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void Resize(ref Operand* list, ref ushort count, int newSize)
+        {
+            if (newSize > ushort.MaxValue)
+            {
+                ThrowOverflow(newSize);
+            }
+            // We only need to allocate a new buffer if we're increasing the size.
+            else if (newSize > count)
+            {
+                list = Arena<Operand>.Alloc(newSize);
+            }
+
+            count = (ushort)newSize;
+        }
+
+        private static void ThrowOverflow(int count) =>
+            throw new OverflowException($"Exceeded maximum size for Source or Destinations. Required {count}.");
 
         public static class Factory
         {
