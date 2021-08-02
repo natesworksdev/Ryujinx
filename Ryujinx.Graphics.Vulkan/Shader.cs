@@ -97,7 +97,7 @@ namespace Ryujinx.Graphics.Vulkan
             _device = device;
             Bindings = bindings;
 
-            Valid = true;
+            CompileStatus = ProgramLinkStatus.Success;
 
             fixed (byte* pCode = spirv)
             {
