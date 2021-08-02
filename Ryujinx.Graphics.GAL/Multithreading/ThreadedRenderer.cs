@@ -258,6 +258,15 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             return shader;
         }
 
+        public IShader CompileShader(ShaderStage stage, ShaderBindings bindings, byte[] code)
+        {
+            var shader = new ThreadedShader(this, stage, bindings, code);
+            New<CompileShaderCommand>().Set(Ref(shader));
+            QueueCommand();
+
+            return shader;
+        }
+
         public BufferHandle CreateBuffer(int size)
         {
             BufferHandle handle = Buffers.CreateBufferHandle();

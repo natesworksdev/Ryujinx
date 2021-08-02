@@ -9,7 +9,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Resources
         private ThreadedRenderer _renderer;
         private ShaderStage _stage;
         private ShaderBindings _bindings;
+        private bool _created;
         private string _code;
+        private byte[] _byteCode;
 
         public IShader Base;
 
@@ -22,12 +24,31 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Resources
             _code = code;
         }
 
+        public ThreadedShader(ThreadedRenderer renderer, ShaderStage stage, ShaderBindings bindings, byte[] code)
+        {
+            _renderer = renderer;
+
+            _stage = stage;
+            _bindings = bindings;
+            _byteCode = code;
+        }
+
         internal void EnsureCreated()
         {
-            if (_code != null && Base == null)
+            if (!_created && Base == null)
             {
-                Base = _renderer.BaseRenderer.CompileShader(_stage, _bindings, _code);
-                _code = null;
+                if (_code != null)
+                {
+                    Base = _renderer.BaseRenderer.CompileShader(_stage, _bindings, _code);
+                    _code = null;
+                }
+                else
+                {
+                    Base = _renderer.BaseRenderer.CompileShader(_stage, _bindings, _byteCode);
+                    _byteCode = null;
+                }
+
+                _created = true;
             }
         }
 
