@@ -203,8 +203,13 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             // This should be disposed when all views are destroyed.
-            using var storage = new TextureStorage(this, _physicalDevice, _device, info, scale);
+            using var storage = CreateTextureStorage(info, scale);
             return storage.CreateView(info, 0, 0);
+        }
+
+        internal TextureStorage CreateTextureStorage(TextureCreateInfo info, float scale)
+        {
+            return new TextureStorage(this, _physicalDevice, _device, info, scale);
         }
 
         public void DeleteBuffer(BufferHandle buffer)

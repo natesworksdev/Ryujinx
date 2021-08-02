@@ -172,22 +172,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 _aliasedStorages ??= new Dictionary<GAL.Format, TextureStorage>();
 
-                var info = new TextureCreateInfo(
-                    _info.Width,
-                    _info.Height,
-                    _info.Depth,
-                    _info.Levels,
-                    _info.Samples,
-                    _info.BlockWidth,
-                    _info.BlockHeight,
-                    _info.BytesPerPixel,
-                    format,
-                    _info.DepthStencilMode,
-                    _info.Target,
-                    _info.SwizzleR,
-                    _info.SwizzleG,
-                    _info.SwizzleB,
-                    _info.SwizzleA);
+                var info = NewCreateInfoWith(_info, format, _info.BytesPerPixel);
 
                 storage = new TextureStorage(_gd, default, _device, info, ScaleFactor, _allocationAuto);
 
@@ -195,6 +180,26 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             return storage;
+        }
+
+        public static TextureCreateInfo NewCreateInfoWith(TextureCreateInfo info, GAL.Format format, int bytesPerPixel)
+        {
+            return new TextureCreateInfo(
+                info.Width,
+                info.Height,
+                info.Depth,
+                info.Levels,
+                info.Samples,
+                info.BlockWidth,
+                info.BlockHeight,
+                bytesPerPixel,
+                format,
+                info.DepthStencilMode,
+                info.Target,
+                info.SwizzleR,
+                info.SwizzleG,
+                info.SwizzleB,
+                info.SwizzleA);
         }
 
         public Auto<DisposableImage> GetImage()

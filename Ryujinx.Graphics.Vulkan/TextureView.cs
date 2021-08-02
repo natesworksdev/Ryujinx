@@ -313,6 +313,57 @@ namespace Ryujinx.Graphics.Vulkan
 
                     return;
                 }
+                else if (srcFormat == GAL.Format.D32FloatS8Uint && srcFormat == dstFormat && SupportsBlitFromD32FS8ToD32FAndS8())
+                {
+                    var d32StorageInfo = TextureStorage.NewCreateInfoWith(src.Info, GAL.Format.D32Float, 4);
+                    var s8StorageInfo = TextureStorage.NewCreateInfoWith(dst.Info, GAL.Format.S8Uint, 1);
+
+                    using var d32Storage = _gd.CreateTextureStorage(d32StorageInfo, dst.Storage.ScaleFactor);
+                    using var s8Storage = _gd.CreateTextureStorage(s8StorageInfo, dst.Storage.ScaleFactor);
+
+                    void BlitAndCopy(ref TextureCreateInfo info, TextureStorage storage, ImageAspectFlags aspectFlags)
+                    {
+                        TextureCopy.Blit(
+                            _gd.Api,
+                            cbs.CommandBuffer,
+                            src.GetImage().Get(cbs).Value,
+                            storage.GetImage().Get(cbs).Value,
+                            src.Info,
+                            info,
+                            srcRegion,
+                            dstRegion,
+                            src.FirstLayer,
+                            0,
+                            src.FirstLevel,
+                            0,
+                            false,
+                            aspectFlags,
+                            aspectFlags);
+
+                        TextureCopy.Copy(
+                            _gd.Api,
+                            cbs.CommandBuffer,
+                            storage.GetImage().Get(cbs).Value,
+                            dst.GetImage().Get(cbs).Value,
+                            info,
+                            dst.Info,
+                            0,
+                            dst.FirstLayer,
+                            0,
+                            dst.FirstLevel,
+                            0,
+                            0,
+                            0,
+                            0,
+                            1,
+                            1);
+                    }
+
+                    BlitAndCopy(ref d32StorageInfo, d32Storage, ImageAspectFlags.ImageAspectDepthBit);
+                    BlitAndCopy(ref s8StorageInfo, s8Storage, ImageAspectFlags.ImageAspectStencilBit);
+
+                    return;
+                }
             }
 
             Auto<DisposableImage> srcImage;
@@ -343,7 +394,15 @@ namespace Ryujinx.Graphics.Vulkan
                 src.FirstLayer,
                 dst.FirstLayer,
                 linearFilter,
-                forceColorAspect: true);
+                ImageAspectFlags.ImageAspectColorBit,
+                ImageAspectFlags.ImageAspectColorBit);
+        }
+
+        private bool SupportsBlitFromD32FS8ToD32FAndS8()
+        {
+            var formatFeatureFlags = FormatFeatureFlags.FormatFeatureBlitSrcBit | FormatFeatureFlags.FormatFeatureBlitDstBit;
+            return _gd.FormatCapabilities.FormatSupports(GAL.Format.D32Float, formatFeatureFlags)  &&
+                   _gd.FormatCapabilities.FormatSupports(GAL.Format.S8Uint, formatFeatureFlags);
         }
 
         public ITexture CreateView(TextureCreateInfo info, int firstLayer, int firstLevel)
