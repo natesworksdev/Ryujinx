@@ -643,12 +643,13 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         }
 
         public ConcurrentQueue<(HidVibrationValue, HidVibrationValue)> GetRumbleQueue(PlayerIndex index)
-{
+        {
             if (!RumbleQueues.TryGetValue(index, out ConcurrentQueue<(HidVibrationValue, HidVibrationValue)> rumbleQueue))
             {
                 rumbleQueue = new ConcurrentQueue<(HidVibrationValue, HidVibrationValue)>();
                 _device.Hid.Npads.RumbleQueues[index] = rumbleQueue;
             }
+
             return rumbleQueue;
         }
     }

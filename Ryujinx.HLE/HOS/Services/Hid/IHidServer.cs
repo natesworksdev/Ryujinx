@@ -1207,6 +1207,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                     dualVibrationValues[position] = vibrationValues[deviceCounter];
                     currentIndex = index;
                 }
+
                 context.Device.Hid.Npads.UpdateRumbleQueue(currentIndex, dualVibrationValues);
             }
 
