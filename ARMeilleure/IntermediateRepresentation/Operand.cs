@@ -3,7 +3,6 @@ using ARMeilleure.Translation.PTC;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace ARMeilleure.IntermediateRepresentation
 {
@@ -14,8 +13,12 @@ namespace ARMeilleure.IntermediateRepresentation
             public byte Kind;
             public byte Type;
             public byte SymbolType;
-            public ArenaList<Operation> Assignments;
-            public ArenaList<Operation> Uses;
+            public ushort AssignmentsCount;
+            public ushort AssignmentsCapacity;
+            public ushort UsesCount;
+            public ushort UsesCapacity;
+            public Operation* Assignments;
+            public Operation* Uses;
             public ulong Value;
             public ulong SymbolValue;
         }
@@ -64,25 +67,28 @@ namespace ARMeilleure.IntermediateRepresentation
             }
         }
 
-        public ref ArenaList<Operation> Assignments
+        public ReadOnlySpan<Operation> Assignments
         {
             get
             {
                 Debug.Assert(Kind != OperandKind.Memory);
 
-                return ref _data->Assignments;
+                return new ReadOnlySpan<Operation>(_data->Assignments, _data->AssignmentsCount);
             }
         }
 
-        public ref ArenaList<Operation> Uses
+        public ReadOnlySpan<Operation> Uses
         {
             get
             {
                 Debug.Assert(Kind != OperandKind.Memory);
 
-                return ref _data->Uses;
+                return new ReadOnlySpan<Operation>(_data->Uses, _data->UsesCount);
             }
         }
+
+        public int UsesCount => _data->UsesCount;
+        public int AssignmentsCount => _data->AssignmentsCount;
 
         public bool Relocatable => Symbol.Type != SymbolType.None;
 
@@ -147,6 +153,156 @@ namespace ARMeilleure.IntermediateRepresentation
             }
 
             Value = (ulong)number;
+        }
+
+        public void AddAssignment(Operation operation)
+        {
+            if (Kind == OperandKind.LocalVariable)
+            {
+                Add(operation, ref _data->Assignments, ref _data->AssignmentsCount, ref _data->AssignmentsCapacity);
+            }
+            else if (Kind == OperandKind.Memory)
+            {
+                MemoryOperand memOp = GetMemory();
+                Operand addr = memOp.BaseAddress;
+                Operand index = memOp.Index;
+
+                if (addr != default)
+                {
+                    Add(operation, ref addr._data->Assignments, ref addr._data->AssignmentsCount, ref addr._data->AssignmentsCapacity);
+                }
+                
+                if (index != default)
+                {
+                    Add(operation, ref index._data->Assignments, ref index._data->AssignmentsCount, ref index._data->AssignmentsCapacity);
+                }
+            }
+        }
+
+        public void RemoveAssignment(Operation operation)
+        {
+            if (Kind == OperandKind.LocalVariable)
+            {
+                Remove(operation, ref _data->Assignments, ref _data->AssignmentsCount);
+            }
+            else if (Kind == OperandKind.Memory)
+            {
+                MemoryOperand memOp = GetMemory();
+                Operand addr = memOp.BaseAddress;
+                Operand index = memOp.Index;
+
+                if (addr != default)
+                {
+                    Remove(operation, ref addr._data->Assignments, ref addr._data->AssignmentsCount);
+                }
+
+                if (index != default)
+                {
+                    Remove(operation, ref index._data->Assignments, ref index._data->AssignmentsCount);
+                }
+            }
+        }
+
+        public void AddUse(Operation operation)
+        {
+            if (Kind == OperandKind.LocalVariable)
+            {
+                Add(operation, ref _data->Uses, ref _data->UsesCount, ref _data->UsesCapacity);
+            }
+            else if (Kind == OperandKind.Memory)
+            {
+                MemoryOperand memOp = GetMemory();
+                Operand addr = memOp.BaseAddress;
+                Operand index = memOp.Index;
+
+                if (addr != default)
+                {
+                    Add(operation, ref addr._data->Uses, ref addr._data->UsesCount, ref addr._data->UsesCapacity);
+                }
+
+                if (index != default)
+                {
+                    Add(operation, ref index._data->Uses, ref index._data->UsesCount, ref index._data->UsesCapacity);
+                }
+            }
+        }
+
+        public void RemoveUse(Operation operation)
+        {
+            if (Kind == OperandKind.LocalVariable)
+            {
+                Remove(operation, ref _data->Uses, ref _data->UsesCount);
+            }
+            else if (Kind == OperandKind.Memory)
+            {
+                MemoryOperand memOp = GetMemory();
+                Operand addr = memOp.BaseAddress;
+                Operand index = memOp.Index;
+
+                if (addr != default)
+                {
+                    Remove(operation, ref addr._data->Uses, ref addr._data->UsesCount);
+                }
+
+                if (index != default)
+                {
+                    Remove(operation, ref index._data->Uses, ref index._data->UsesCount);
+                }
+            }
+        }
+
+        private static void Add<T>(in T item, ref T* data, ref ushort count, ref ushort capacity) where T : unmanaged
+        {
+            int newCount = count + 1;
+
+            if (newCount > ushort.MaxValue)
+            {
+                throw new OverflowException();
+            }
+
+            if (newCount > capacity)
+            {
+                var oldSpan = new Span<T>(data, count);
+
+                capacity += 8;
+                data = ArenaAllocator<T>.Alloc(capacity);
+
+                oldSpan.CopyTo(new Span<T>(data, count));
+            }
+
+            data[count++] = item;
+        }
+
+        private static void Remove<T>(in T item, ref T* data, ref ushort count) where T : unmanaged
+        {
+            int index = -1;
+            var span = new Span<T>(data, count);
+
+            for (int i = 0; i < span.Length; i++)
+            {
+                if (span[i].Equals(item))
+                {
+                    index = i;
+                    break;
+                }
+            }
+
+            if (index != -1)
+            {
+                if (index + 1 < count)
+                {
+                    span.Slice(index + 1).CopyTo(span.Slice(index));
+                }
+
+                count--;
+            }
+        }
+
+        private static void New<T>(ref T* data, ref ushort count, ref ushort capacity, ushort initialCapacity) where T : unmanaged
+        {
+            count = 0;
+            capacity = initialCapacity;
+            data = ArenaAllocator<T>.Alloc(initialCapacity);
         }
 
         public override int GetHashCode()
@@ -254,8 +410,8 @@ namespace ARMeilleure.IntermediateRepresentation
                 // If local variable, then the use and def list is initialized with default sizes.
                 if (kind == OperandKind.LocalVariable)
                 {
-                    result._data->Assignments = ArenaList<Operation>.New(1);
-                    result._data->Uses = ArenaList<Operation>.New(4);
+                    New(ref result._data->Assignments, ref result._data->AssignmentsCount, ref result._data->AssignmentsCapacity, 1);
+                    New(ref result._data->Uses, ref result._data->UsesCount, ref result._data->UsesCapacity, 4);
                 }
 
                 return result;

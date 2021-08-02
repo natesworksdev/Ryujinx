@@ -434,7 +434,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         private static int UsesCount(Operand local)
         {
-            return local.Assignments.Count + local.Uses.Count;
+            return local.AssignmentsCount + local.UsesCount;
         }
     }
 }

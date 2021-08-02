@@ -187,109 +187,33 @@ namespace ARMeilleure.IntermediateRepresentation
 
         private void AddAssignment(Operand op)
         {
-            if (op == default)
+            if (op != default)
             {
-                return;
-            }
-
-            if (op.Kind == OperandKind.LocalVariable)
-            {
-                op.Assignments.Add(this);
-            }
-            else if (op.Kind == OperandKind.Memory)
-            {
-                MemoryOperand memOp = op.GetMemory();
-
-                if (memOp.BaseAddress != default)
-                {
-                    memOp.BaseAddress.Assignments.Add(this);
-                }
-                
-                if (memOp.Index != default)
-                {
-                    memOp.Index.Assignments.Add(this);
-                }
+                op.AddAssignment(this);
             }
         }
 
         private void RemoveAssignment(Operand op)
         {
-            if (op == default)
+            if (op != default)
             {
-                return;
-            }
-
-            if (op.Kind == OperandKind.LocalVariable)
-            {
-                op.Assignments.Remove(this);
-            }
-            else if (op.Kind == OperandKind.Memory)
-            {
-                MemoryOperand memOp = op.GetMemory();
-
-                if (memOp.BaseAddress != default)
-                {
-                    memOp.BaseAddress.Assignments.Remove(this);
-                }
-
-                if (memOp.Index != default)
-                {
-                    memOp.Index.Assignments.Remove(this);
-                }
+                op.RemoveAssignment(this);
             }
         }
 
         private void AddUse(Operand op)
         {
-            if (op == default)
+            if (op != default)
             {
-                return;
-            }
-
-            if (op.Kind == OperandKind.LocalVariable)
-            {
-                op.Uses.Add(this);
-            }
-            else if (op.Kind == OperandKind.Memory)
-            {
-                MemoryOperand memOp = op.GetMemory();
-
-                if (memOp.BaseAddress != default)
-                {
-                    memOp.BaseAddress.Uses.Add(this);
-                }
-
-                if (memOp.Index != default)
-                {
-                    memOp.Index.Uses.Add(this);
-                }
+                op.AddUse(this);
             }
         }
 
         private void RemoveUse(Operand op)
         {
-            if (op == default)
+            if (op != default)
             {
-                return;
-            }
-
-            if (op.Kind == OperandKind.LocalVariable)
-            {
-                op.Uses.Remove(this);
-            }
-            else if (op.Kind == OperandKind.Memory)
-            {
-                MemoryOperand memOp = op.GetMemory();
-
-                if (memOp.BaseAddress != default)
-                {
-                    memOp.BaseAddress.Uses.Remove(this);
-                }
-
-                if (memOp.Index != default)
-                {
-                    memOp.Index.Uses.Remove(this);
-                }
+                op.RemoveUse(this);
             }
         }
 

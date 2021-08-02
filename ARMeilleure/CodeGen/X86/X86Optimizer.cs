@@ -227,7 +227,7 @@ namespace ARMeilleure.CodeGen.X86
             // If we have multiple assignments, folding is not safe
             // as the value may be different depending on the
             // control flow path.
-            if (op.Assignments.Count != 1)
+            if (op.AssignmentsCount != 1)
             {
                 return default;
             }

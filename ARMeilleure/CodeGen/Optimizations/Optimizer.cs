@@ -211,14 +211,14 @@ namespace ARMeilleure.CodeGen.Optimizations
                 node.SetSource(index, default);
             }
 
-            Debug.Assert(node.Destination == default || node.Destination.Uses.Count == 0);
+            Debug.Assert(node.Destination == default || node.Destination.UsesCount == 0);
 
             node.Destination = default;
         }
 
         private static bool IsUnused(Operation node)
         {
-            return DestIsLocalVar(node) && node.Destination.Uses.Count == 0 && !HasSideEffects(node);
+            return DestIsLocalVar(node) && node.Destination.UsesCount == 0 && !HasSideEffects(node);
         }
 
         private static bool DestIsLocalVar(Operation node)
