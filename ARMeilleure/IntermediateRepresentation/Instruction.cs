@@ -1,6 +1,6 @@
 namespace ARMeilleure.IntermediateRepresentation
 {
-    enum Instruction
+    enum Instruction : ushort
     {
         Add,
         BitwiseAnd,

@@ -186,21 +186,23 @@ namespace ARMeilleure.Diagnostics
                 case Operation operation:
                     if (operation.Instruction == Instruction.Phi)
                     {
+                        PhiOperation phi = operation.AsPhi();
+
                         _builder.Append("Phi ");
 
-                        for (int index = 0; index < operation.SourcesCount / 2; index++)
+                        for (int index = 0; index < phi.SourcesCount; index++)
                         {
                             _builder.Append('(');
 
-                            DumpBlockName(cfg.PostOrderBlocks[cfg.PostOrderMap[operation.GetSource(index * 2).AsInt32()]]);
+                            DumpBlockName(phi.GetBlock(cfg, index));
 
                             _builder.Append(": ");
 
-                            DumpOperand(operation.GetSource(index * 2 + 1));
+                            DumpOperand(phi.GetSource(index));
 
                             _builder.Append(')');
 
-                            if (index < operation.SourcesCount - 1)
+                            if (index < phi.SourcesCount - 1)
                             {
                                 _builder.Append(", ");
                             }

@@ -1,5 +1,6 @@
 using ARMeilleure.Common;
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace ARMeilleure.IntermediateRepresentation
@@ -55,6 +56,13 @@ namespace ARMeilleure.IntermediateRepresentation
 
         private Span<Operand> Destinations => new(_data->Destinations, _data->DestinationsCount);
         private Span<Operand> Sources => new(_data->Sources, _data->SourcesCount);
+
+        public PhiOperation AsPhi()
+        {
+            Debug.Assert(Instruction == Instruction.Phi);
+
+            return new PhiOperation(this);
+        }
 
         public Operand GetDestination(int index)
         {
@@ -434,6 +442,11 @@ namespace ARMeilleure.IntermediateRepresentation
                 }
 
                 return result;
+            }
+
+            public static Operation PhiOperation(Operand dest, int srcCount)
+            {
+                return Operation(Instruction.Phi, dest, srcCount * 2);
             }
         }
     }

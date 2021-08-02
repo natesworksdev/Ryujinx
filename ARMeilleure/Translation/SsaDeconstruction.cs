@@ -11,34 +11,36 @@ namespace ARMeilleure.Translation
         {
             for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
             {
-                Operation phi = block.Operations.First;
+                Operation operation = block.Operations.First;
 
-                while (phi != default && phi.Instruction == Instruction.Phi)
+                while (operation != default && operation.Instruction == Instruction.Phi)
                 {
-                    Operation nextNode = phi.ListNext;
+                    Operation nextNode = operation.ListNext;
 
-                    Operand local = Local(phi.Destination.Type);
+                    Operand local = Local(operation.Destination.Type);
 
-                    for (int index = 0; index < phi.SourcesCount / 2; index++)
+                    PhiOperation phi = operation.AsPhi();
+
+                    for (int index = 0; index < phi.SourcesCount; index++)
                     {
-                        BasicBlock predecessor = cfg.PostOrderBlocks[cfg.PostOrderMap[phi.GetSource(index * 2).AsInt32()]];
+                        BasicBlock predecessor = phi.GetBlock(cfg, index);
 
-                        Operand source = phi.GetSource(index * 2 + 1);
+                        Operand source = phi.GetSource(index);
 
                         predecessor.Append(Operation(Instruction.Copy, local, source));
 
-                        phi.SetSource(index * 2 + 1, default);
+                        operation.SetSource(index * 2 + 1, default);
                     }
 
-                    Operation copyOp = Operation(Instruction.Copy, phi.Destination, local);
+                    Operation copyOp = Operation(Instruction.Copy, operation.Destination, local);
 
-                    block.Operations.AddBefore(phi, copyOp);
+                    block.Operations.AddBefore(operation, copyOp);
 
-                    phi.Destination = default;
+                    operation.Destination = default;
 
-                    block.Operations.Remove(phi);
+                    block.Operations.Remove(operation);
 
-                    phi = nextNode;
+                    operation = nextNode;
                 }
             }
         }

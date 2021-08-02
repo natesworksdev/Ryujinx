@@ -195,18 +195,20 @@ namespace ARMeilleure.Translation
             // then use the definition from that Phi.
             Operand local = Local(operand.Type);
 
-            Operation phi = Operation.Factory.Operation(Instruction.Phi, local, block.Predecessors.Count * 2);
+            Operation operation = Operation.Factory.PhiOperation(local, block.Predecessors.Count);
 
-            AddPhi(block, phi);
+            AddPhi(block, operation);
 
             globalDefs[block.Index].TryAddOperand(GetId(operand), local);
+
+            PhiOperation phi = operation.AsPhi();
 
             for (int index = 0; index < block.Predecessors.Count; index++)
             {
                 BasicBlock predecessor = block.Predecessors[index];
 
-                phi.SetSource(index * 2, Const(predecessor.Index));
-                phi.SetSource(index * 2 + 1, FindDefOnPred(globalDefs, predecessor, operand));
+                phi.SetBlock(index, predecessor);
+                phi.SetSource(index, FindDefOnPred(globalDefs, predecessor, operand));
             }
 
             return local;
