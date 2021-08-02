@@ -7,5 +7,7 @@ namespace Ryujinx.Graphics.GAL
         bool Invalid { get; set; }
 
         void Flush();
+
+        bool IsValueAvailable();
     }
 }

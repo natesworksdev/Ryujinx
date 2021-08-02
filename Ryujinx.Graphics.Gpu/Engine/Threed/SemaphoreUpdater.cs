@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Common;
 using Ryujinx.Graphics.GAL;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Gpu.Engine.Threed
 {
@@ -174,7 +175,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
                 if (counter?.Invalid != true)
                 {
-                    _channel.MemoryManager.Write(gpuVa, counterData);
+                    _channel.MemoryManager.WriteUntracked(gpuVa, MemoryMarshal.Cast<CounterData, byte>(MemoryMarshal.CreateSpan(ref counterData, 1)));
                 }
             }
 
