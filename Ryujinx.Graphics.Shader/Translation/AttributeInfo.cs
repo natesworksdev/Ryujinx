@@ -67,13 +67,21 @@ namespace Ryujinx.Graphics.Shader.Translation
             return (Value - BaseValue) / 4;
         }
 
-        public static AttributeInfo From(int value)
+        public static AttributeInfo From(ShaderConfig config, int value)
         {
             value &= ~3;
 
             if (value >= AttributeConsts.UserAttributeBase && value < AttributeConsts.UserAttributeEnd)
             {
-                return new AttributeInfo(value, 4, AggregateType.Vector | AggregateType.FP32, false);
+                int location = (value - AttributeConsts.UserAttributeBase) / 16;
+                var elemType = config.GpuAccessor.QueryAttributeType(location) switch
+                {
+                    AttributeType.Sint => AggregateType.S32,
+                    AttributeType.Uint => AggregateType.U32,
+                    _ => AggregateType.FP32
+                };
+
+                return new AttributeInfo(value, 4, AggregateType.Vector | elemType, false);
             }
             else if (value >= AttributeConsts.FragmentOutputColorBase && value < AttributeConsts.FragmentOutputColorEnd)
             {

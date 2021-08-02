@@ -16,6 +16,11 @@ namespace Ryujinx.Graphics.Shader
             return true;
         }
 
+        AttributeType QueryAttributeType(int location)
+        {
+            return AttributeType.Float;
+        }
+
         int QueryComputeLocalSizeX()
         {
             return 1;

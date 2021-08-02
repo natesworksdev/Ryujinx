@@ -460,16 +460,38 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
             if (context.Config.Options.Flags.HasFlag(TranslationFlags.Feedback))
             {
+                string type;
+
+                if (context.Config.Stage == ShaderStage.Vertex)
+                {
+                    type = context.Config.GpuAccessor.QueryAttributeType(attr).GetScalarType();
+                }
+                else
+                {
+                    type = AttributeType.Float.GetScalarType();
+                }
+
                 for (int c = 0; c < 4; c++)
                 {
                     char swzMask = "xyzw"[c];
 
-                    context.AppendLine($"layout ({pass}location = {attr}, component = {c}) {iq}in float {name}_{swzMask}{suffix};");
+                    context.AppendLine($"layout ({pass}location = {attr}, component = {c}) {iq}in {type} {name}_{swzMask}{suffix};");
                 }
             }
             else
             {
-                context.AppendLine($"layout ({pass}location = {attr}) {iq}in vec4 {name}{suffix};");
+                string type;
+
+                if (context.Config.Stage == ShaderStage.Vertex)
+                {
+                    type = context.Config.GpuAccessor.QueryAttributeType(attr).GetVec4Type();
+                }
+                else
+                {
+                    type = AttributeType.Float.GetVec4Type();
+                }
+
+                context.AppendLine($"layout ({pass}location = {attr}) {iq}in {type} {name}{suffix};");
             }
         }
 

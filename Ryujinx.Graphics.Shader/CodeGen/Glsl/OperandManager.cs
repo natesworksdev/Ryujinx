@@ -295,7 +295,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             return $"{DefaultNames.ArgumentNamePrefix}{argIndex}";
         }
 
-        public static VariableType GetNodeDestType(CodeGenContext context, IAstNode node)
+        public static VariableType GetNodeDestType(CodeGenContext context, IAstNode node, bool isAsgDest = false)
         {
             if (node is AstOperation operation)
             {
@@ -304,7 +304,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 // to return the type based on the attribute that is being read.
                 if (operation.Inst == Instruction.LoadAttribute)
                 {
-                    return GetOperandVarType((AstOperand)operation.GetSource(0));
+                    return GetOperandVarType(context, (AstOperand)operation.GetSource(0));
                 }
                 else if (operation.Inst == Instruction.Call)
                 {
@@ -332,7 +332,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                     return context.CurrentFunction.GetArgumentType(argIndex);
                 }
 
-                return GetOperandVarType(operand);
+                return GetOperandVarType(context, operand, isAsgDest);
             }
             else
             {
@@ -340,13 +340,28 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
         }
 
-        private static VariableType GetOperandVarType(AstOperand operand)
+        private static VariableType GetOperandVarType(CodeGenContext context, AstOperand operand, bool isAsgDest = false)
         {
             if (operand.Type == OperandType.Attribute)
             {
                 if (BuiltInAttributes.TryGetValue(operand.Value & ~3, out BuiltInAttribute builtInAttr))
                 {
                     return builtInAttr.Type;
+                }
+                else if (context.Config.Stage == ShaderStage.Vertex && !isAsgDest &&
+                    operand.Value >= AttributeConsts.UserAttributeBase &&
+                    operand.Value < AttributeConsts.UserAttributeEnd)
+                {
+                    int location = (operand.Value - AttributeConsts.UserAttributeBase) / 16;
+
+                    AttributeType type = context.Config.GpuAccessor.QueryAttributeType(location);
+
+                    return type switch
+                    {
+                        AttributeType.Sint => VariableType.S32,
+                        AttributeType.Uint => VariableType.U32,
+                        _ => VariableType.F32
+                    };
                 }
             }
 

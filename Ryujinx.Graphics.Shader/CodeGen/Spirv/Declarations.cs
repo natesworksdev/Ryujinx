@@ -389,7 +389,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         private static void DeclareInputOrOutput(CodeGenContext context, int attr, bool isOutAttr, PixelImap iq = PixelImap.Unused)
         {
             var dict = isOutAttr ? context.Outputs : context.Inputs;
-            var attrInfo = AttributeInfo.From(attr);
+            var attrInfo = AttributeInfo.From(context.Config, attr);
 
             if (attrInfo.BaseValue == AttributeConsts.PositionX && context.Config.Stage != ShaderStage.Fragment)
             {
