@@ -339,7 +339,8 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public static class Factory
         {
-            private const int InternTableSize = 128;
+            private const int InternTableSize = 256;
+            private const int InternTableProbeLength = 8;
 
             [ThreadStatic]
             private static Data* _internTable;
@@ -352,11 +353,7 @@ namespace ARMeilleure.IntermediateRepresentation
                     {
                         _internTable = (Data*)NativeAllocator.Instance.Allocate(sizeof(Data) * InternTableSize);
 
-                        if (_internTable == null)
-                        {
-                            throw new OutOfMemoryException();
-                        }
-
+                        // Make sure the table is zeroed.
                         new Span<Data>(_internTable, InternTableSize).Clear();
                     }
 
@@ -368,28 +365,36 @@ namespace ARMeilleure.IntermediateRepresentation
             {
                 Debug.Assert(kind != OperandKind.None);
 
-                Data* data;
+                Data* data = null;
 
                 // If constant or register, then try to look up in the intern table before allocating.
                 if (kind == OperandKind.Constant || kind == OperandKind.Register)
                 {
-                    data = &InternTable[(uint)HashCode.Combine(kind, type, value) % InternTableSize];
+                    uint hash = (uint)HashCode.Combine(kind, type, value);
 
-                    Operand interned = new();
-                    interned._data = data;
+                    // Look in the next InternTableProbeLength slots for a match.
+                    for (uint i = 0; i < InternTableProbeLength; i++)
+                    {
+                        Operand interned = new();
+                        interned._data = &InternTable[(hash + i) % InternTableSize];
 
-                    // If slot matches the allocation request then return that slot.
-                    if (interned.Kind == kind && interned.Type == type && interned.Value == value && interned.Symbol == symbol)
-                    {
-                        return interned;
-                    }
-                    // Otherwise if the slot is already occupied we have to store elsewhere.
-                    else if (interned.Kind != OperandKind.None)
-                    {
-                        data = ArenaAllocator<Data>.Alloc();
+                        // If slot matches the allocation request then return that slot.
+                        if (interned.Kind == kind && interned.Type == type && interned.Value == value && interned.Symbol == symbol)
+                        {
+                            return interned;
+                        }
+                        // Otherwise if the slot is not occupied, we store in that slot.
+                        else if (interned.Kind == OperandKind.None)
+                        {
+                            data = interned._data;
+
+                            break;
+                        }
                     }
                 }
-                else
+
+                // If we could not get a slot from the intern table, we allocate somewhere else and store there.
+                if (data == null)
                 {
                     data = ArenaAllocator<Data>.Alloc();
                 }
