@@ -145,6 +145,11 @@ namespace ARMeilleure.IntermediateRepresentation
             return BitConverter.Int64BitsToDouble((long)Value);
         }
 
+        public ref ulong GetValue()
+        {
+            return ref _data->Value;
+        }
+
         internal void NumberLocal(int number)
         {
             if (Kind != OperandKind.LocalVariable)
