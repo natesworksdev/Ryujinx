@@ -19,10 +19,12 @@ namespace Ryujinx.Graphics.Vulkan
 
         public static void WaitAllIndefinitely(Vk api, Device device, ReadOnlySpan<Fence> fences)
         {
-            while (api.WaitForFences(device, (uint)fences.Length, fences, true, DefaultTimeout) == Result.Timeout)
+            Result result;
+            while ((result = api.WaitForFences(device, (uint)fences.Length, fences, true, DefaultTimeout)) == Result.Timeout)
             {
                 // Keep waiting while the fence is not signaled.
             }
+            result.ThrowOnError();
         }
     }
 }
