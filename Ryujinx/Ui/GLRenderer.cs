@@ -135,10 +135,8 @@ namespace Ryujinx.Ui
             }
             catch (Exception) { }
 
-            if (Device != null)
-            {
-                Device.DisposeGpu();
-            }
+            Device.DisposeGpu();
+
             NpadManager.Dispose();
 
             // Unbind context and destroy everything

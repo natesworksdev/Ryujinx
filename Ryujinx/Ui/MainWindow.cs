@@ -696,7 +696,7 @@ namespace Ryujinx.Ui
                                 Logger.Warning?.Print(LogClass.Application, "REMOVE WHEN PR IS COMPLETE: DISPOSING CONTEXT");
                                 _emulationContext.Dispose();
                                 Logger.Warning?.Print(LogClass.Application, "REMOVE WHEN PR IS COMPLETE: SWITCHING TO GAME TABLE");
-                                SwitchToGameTable(false);
+                                SwitchToGameTable();
                                 Logger.Warning?.Print(LogClass.Application,"REMOVE WHEN PR IS COMPLETE: SWITCHED GUI");
                                 return;
                             }
@@ -784,17 +784,15 @@ namespace Ryujinx.Ui
             }
         }
 
-        private void SwitchToGameTable(bool exitWidget = true)
+
+        private void SwitchToGameTable()
         {
             if (Window.State.HasFlag(Gdk.WindowState.Fullscreen))
             {
                 ToggleExtraWidgets(true);
             }
 
-            if (exitWidget)
-            {
-                RendererWidget.Exit();
-            }
+            RendererWidget.Exit();
 
             if (RendererWidget.Window != Window && RendererWidget.Window != null)
             {
