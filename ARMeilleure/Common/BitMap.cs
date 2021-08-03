@@ -12,14 +12,14 @@ namespace ARMeilleure.Common
 
         private int _count;
         private long* _masks;
-        private readonly IAllocator _allocator;
+        private readonly Allocator _allocator;
 
-        public BitMap(IAllocator allocator)
+        public BitMap(Allocator allocator)
         {
             _allocator = allocator;
         }
 
-        public BitMap(IAllocator allocator, int capacity) : this(allocator)
+        public BitMap(Allocator allocator, int capacity) : this(allocator)
         {
             EnsureCapacity(capacity);
         }

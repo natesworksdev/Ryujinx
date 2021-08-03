@@ -3,24 +3,8 @@ using System.Collections.Generic;
 
 namespace ARMeilleure.Common
 {
-    unsafe class ArenaAllocator : IAllocator
+    unsafe class ArenaAllocator : Allocator
     {
-        [ThreadStatic]
-        private static List<ArenaAllocator> _instances;
-
-        private static List<ArenaAllocator> Instances
-        {
-            get
-            {
-                if (_instances == null)
-                {
-                    _instances = new(capacity: 4);
-                }
-
-                return _instances;
-            }
-        }
-
         private const int PageCount = 32;
         private const int PageSize = 256 * 1024;
 
@@ -33,11 +17,9 @@ namespace ARMeilleure.Common
             _index = 0;
             _pageIndex = 0;
             _pages = new List<IntPtr>();
-
-            Instances.Add(this);
         }
 
-        public void* Allocate(int size)
+        public override void* Allocate(int size)
         {
             if (size > PageSize)
             {
@@ -75,7 +57,7 @@ namespace ARMeilleure.Common
             return result;
         }
 
-        public void Free(void* block) { }
+        public override void Free(void* block) { }
 
         public void Reset()
         {
@@ -91,7 +73,7 @@ namespace ARMeilleure.Common
             }
         }
 
-        public void Dispose()
+        protected override void Dispose(bool disposing)
         {
             if (_pages != null)
             {
@@ -104,38 +86,11 @@ namespace ARMeilleure.Common
             }
         }
 
-        public static void ResetAll()
+        ~ArenaAllocator()
         {
-            foreach (var instance in Instances)
-            {
-                instance.Reset();
-            }
+            Dispose(false);
         }
 
         private static void ThrowOutOfMemory() => throw new OutOfMemoryException();
-    }
-
-    unsafe class ArenaAllocator<T> : ArenaAllocator where T : unmanaged
-    {
-        [ThreadStatic]
-        private static ArenaAllocator<T> _instance;
-
-        public static ArenaAllocator<T> Instance
-        {
-            get
-            {
-                if (_instance == null)
-                {
-                    _instance = new ArenaAllocator<T>();
-                }
-                
-                return _instance;
-            }
-        }
-
-        public static T* Alloc(int count = 1)
-        {
-            return (T*)Instance.Allocate(count * sizeof(T));
-        }
     }
 }

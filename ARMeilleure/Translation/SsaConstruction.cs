@@ -18,7 +18,7 @@ namespace ARMeilleure.Translation
             public DefMap()
             {
                 _map = new Dictionary<int, Operand>();
-                _phiMasks = new BitMap(ArenaAllocator<long>.Instance, RegisterConsts.TotalCount);
+                _phiMasks = new BitMap(Allocators.Default, RegisterConsts.TotalCount);
             }
 
             public bool TryAddOperand(int key, Operand operand)

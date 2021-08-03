@@ -7,7 +7,7 @@ namespace ARMeilleure.IntermediateRepresentation
 {
     unsafe struct Operation : IIntrusiveListNode<Operation>
     {
-        private struct Data
+        internal struct Data
         {
             public ushort Instruction;
             public ushort Intrinsic;
@@ -252,7 +252,7 @@ namespace ARMeilleure.IntermediateRepresentation
             // We only need to allocate a new buffer if we're increasing the size.
             else if (newCapacity > capacity)
             {
-                list = ArenaAllocator<Operand>.Alloc(newCapacity);
+                list = Allocators.Default.Allocate<Operand>(newCapacity);
             }
 
             capacity = (ushort)newCapacity;
@@ -265,7 +265,7 @@ namespace ARMeilleure.IntermediateRepresentation
         {
             private static Operation Make(Instruction inst, int destCount, int srcCount)
             {
-                Data* data = ArenaAllocator<Data>.Alloc();
+                Data* data = Allocators.Operations.Allocate<Data>();
                 *data = default;
 
                 Operation result = new();

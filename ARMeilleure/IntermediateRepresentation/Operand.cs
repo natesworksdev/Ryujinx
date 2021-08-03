@@ -8,7 +8,7 @@ namespace ARMeilleure.IntermediateRepresentation
 {
     unsafe struct Operand
     {
-        private struct Data
+        internal struct Data
         {
             public byte Kind;
             public byte Type;
@@ -270,7 +270,7 @@ namespace ARMeilleure.IntermediateRepresentation
                 var oldSpan = new Span<T>(data, count);
 
                 capacity += 8;
-                data = ArenaAllocator<T>.Alloc(capacity);
+                data = Allocators.Default.Allocate<T>(capacity);
 
                 oldSpan.CopyTo(new Span<T>(data, count));
             }
@@ -307,7 +307,7 @@ namespace ARMeilleure.IntermediateRepresentation
         {
             count = 0;
             capacity = initialCapacity;
-            data = ArenaAllocator<T>.Alloc(initialCapacity);
+            data = Allocators.Default.Allocate<T>(initialCapacity);
         }
 
         public override int GetHashCode()
@@ -401,7 +401,7 @@ namespace ARMeilleure.IntermediateRepresentation
                 // If we could not get a slot from the intern table, we allocate somewhere else and store there.
                 if (data == null)
                 {
-                    data = ArenaAllocator<Data>.Alloc();
+                    data = Allocators.Operands.Allocate<Data>();
                 }
 
                 *data = default;
