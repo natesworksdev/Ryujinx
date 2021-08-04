@@ -190,17 +190,14 @@ namespace Ryujinx.Audio.Backends.OpenAL
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing)
+            if (disposing && _driver.Unregister(this))
             {
-                if (_driver.Unregister(this))
+                lock (_lock)
                 {
-                    lock (_lock)
-                    {
-                        PrepareToClose();
-                        Stop();
+                    PrepareToClose();
+                    Stop();
 
-                        AL.DeleteSource(_sourceId);
-                    }
+                    AL.DeleteSource(_sourceId);
                 }
             }
         }
