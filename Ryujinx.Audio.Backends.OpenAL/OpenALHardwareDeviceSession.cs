@@ -192,14 +192,15 @@ namespace Ryujinx.Audio.Backends.OpenAL
         {
             if (disposing)
             {
-                lock (_lock)
+                if (_driver.Unregister(this))
                 {
-                    PrepareToClose();
-                    Stop();
+                    lock (_lock)
+                    {
+                        PrepareToClose();
+                        Stop();
 
-                    AL.DeleteSource(_sourceId);
-
-                    _driver.Unregister(this);
+                        AL.DeleteSource(_sourceId);
+                    }
                 }
             }
         }
