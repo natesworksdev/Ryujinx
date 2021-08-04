@@ -270,7 +270,7 @@ namespace ARMeilleure.IntermediateRepresentation
                 var oldSpan = new Span<T>(data, count);
 
                 capacity += 8;
-                data = Allocators.Default.Allocate<T>(capacity);
+                data = Allocators.References.Allocate<T>(capacity);
 
                 oldSpan.CopyTo(new Span<T>(data, count));
             }
@@ -307,7 +307,7 @@ namespace ARMeilleure.IntermediateRepresentation
         {
             count = 0;
             capacity = initialCapacity;
-            data = Allocators.Default.Allocate<T>(initialCapacity);
+            data = Allocators.References.Allocate<T>(initialCapacity);
         }
 
         public override int GetHashCode()

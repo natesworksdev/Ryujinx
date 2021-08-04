@@ -1,5 +1,6 @@
 ﻿using ARMeilleure.Common;
 using System;
+using System.Runtime.CompilerServices;
 
 namespace ARMeilleure
 {
@@ -8,16 +9,19 @@ namespace ARMeilleure
         [ThreadStatic] private static ArenaAllocator _default;
         [ThreadStatic] private static ArenaAllocator _operands;
         [ThreadStatic] private static ArenaAllocator _operations;
+        [ThreadStatic] private static ArenaAllocator _references;
 
-        public static ArenaAllocator Default => GetAllocator(ref _default);
-        public static ArenaAllocator Operands => GetAllocator(ref _operands);
-        public static ArenaAllocator Operations => GetAllocator(ref _operations);
+        public static ArenaAllocator Default => GetAllocator(ref _default, 256 * 1024, 4);
+        public static ArenaAllocator Operands => GetAllocator(ref _operands, 64 * 1024, 8);
+        public static ArenaAllocator Operations => GetAllocator(ref _operations, 64 * 1024, 8);
+        public static ArenaAllocator References => GetAllocator(ref _references, 64 * 1024, 8);
 
-        private static ArenaAllocator GetAllocator(ref ArenaAllocator alloc)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static ArenaAllocator GetAllocator(ref ArenaAllocator alloc, int pageSize, int pageCount)
         {
             if (alloc == null)
             {
-                alloc = new ArenaAllocator();
+                alloc = new ArenaAllocator(pageSize, pageCount);
             }
 
             return alloc;
@@ -28,6 +32,7 @@ namespace ARMeilleure
             Default.Reset();
             Operands.Reset();
             Operations.Reset();
+            References.Reset();
         }
     }
 }

@@ -5,28 +5,29 @@ namespace ARMeilleure.Common
 {
     unsafe class ArenaAllocator : Allocator
     {
-        private const int PageCount = 32;
-        private const int PageSize = 256 * 1024;
-
         private int _index;
         private int _pageIndex;
         private List<IntPtr> _pages;
+        private readonly int _pageSize;
+        private readonly int _pageCount;
 
-        public ArenaAllocator()
+        public ArenaAllocator(int pageSize, int pageCount)
         {
             _index = 0;
             _pageIndex = 0;
             _pages = new List<IntPtr>();
+            _pageSize = pageSize;
+            _pageCount = pageCount;
         }
 
         public override void* Allocate(int size)
         {
-            if (size > PageSize)
+            if (size > _pageSize)
             {
                 ThrowOutOfMemory();
             }
 
-            if (_index + size > PageSize)
+            if (_index + size > _pageSize)
             {
                 _index = 0;
                 _pageIndex++;
@@ -40,7 +41,7 @@ namespace ARMeilleure.Common
             }
             else
             {
-                page = (byte*)NativeAllocator.Instance.Allocate(PageSize);
+                page = (byte*)NativeAllocator.Instance.Allocate(_pageSize);
 
                 if (page == null)
                 {
@@ -65,7 +66,7 @@ namespace ARMeilleure.Common
             _pageIndex = 0;
 
             // Free excess pages that was allocated.
-            while (_pages.Count > PageCount)
+            while (_pages.Count > _pageCount)
             {
                 NativeAllocator.Instance.Free((void*)_pages[_pages.Count - 1]);
 

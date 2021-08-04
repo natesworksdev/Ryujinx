@@ -252,7 +252,7 @@ namespace ARMeilleure.IntermediateRepresentation
             // We only need to allocate a new buffer if we're increasing the size.
             else if (newCapacity > capacity)
             {
-                list = Allocators.Default.Allocate<Operand>(newCapacity);
+                list = Allocators.References.Allocate<Operand>(newCapacity);
             }
 
             capacity = (ushort)newCapacity;
