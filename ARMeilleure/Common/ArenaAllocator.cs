@@ -5,9 +5,15 @@ namespace ARMeilleure.Common
 {
     unsafe class ArenaAllocator : Allocator
     {
+        private class PageInfo
+        {
+            public IntPtr Pointer;
+            public int LastUse;
+        }
+
         private int _index;
         private int _pageIndex;
-        private List<IntPtr> _pages;
+        private List<PageInfo> _pages;
         private readonly int _pageSize;
         private readonly int _pageCount;
 
@@ -15,7 +21,7 @@ namespace ARMeilleure.Common
         {
             _index = 0;
             _pageIndex = 0;
-            _pages = new List<IntPtr>();
+            _pages = new List<PageInfo>();
             _pageSize = pageSize;
             _pageCount = pageCount;
         }
@@ -33,24 +39,23 @@ namespace ARMeilleure.Common
                 _pageIndex++;
             }
 
-            byte* page;
+            PageInfo info;
 
             if (_pageIndex < _pages.Count)
             {
-                page = (byte*)_pages[_pageIndex];
+                info = _pages[_pageIndex];
             }
             else
             {
-                page = (byte*)NativeAllocator.Instance.Allocate(_pageSize);
+                info = new PageInfo();
+                info.Pointer = (IntPtr)NativeAllocator.Instance.Allocate(_pageSize);
 
-                if (page == null)
-                {
-                    ThrowOutOfMemory();
-                }
-
-                _pages.Add((nint)page);
+                _pages.Add(info);
             }
 
+            info.LastUse = Environment.TickCount;
+
+            byte* page = (byte*)info.Pointer;
             byte* result = &page[_index];
 
             _index += size;
@@ -68,9 +73,27 @@ namespace ARMeilleure.Common
             // Free excess pages that was allocated.
             while (_pages.Count > _pageCount)
             {
-                NativeAllocator.Instance.Free((void*)_pages[_pages.Count - 1]);
+                NativeAllocator.Instance.Free((void*)_pages[_pages.Count - 1].Pointer);
 
                 _pages.RemoveAt(_pages.Count - 1);
+            }
+
+            int currentTime = Environment.TickCount;
+
+            // Free pooled pages that has not been used in a while. Remove pages at the back first, because we try to
+            // keep the pages at the front alive, since they're more likely to be hot and in the d-cache.
+            for (int i = _pages.Count - 1; i >= 0; i--)
+            {
+                PageInfo info = _pages[i];
+
+                if (currentTime - info.LastUse >= 5000)
+                {
+                    _pages.RemoveAt(i);
+                }
+                else
+                {
+                    break;
+                }
             }
         }
 
@@ -78,9 +101,9 @@ namespace ARMeilleure.Common
         {
             if (_pages != null)
             {
-                foreach (nint page in _pages)
+                foreach (PageInfo info in _pages)
                 {
-                    NativeAllocator.Instance.Free((void*)page);
+                    NativeAllocator.Instance.Free((void*)info.Pointer);
                 }
 
                 _pages = null;
