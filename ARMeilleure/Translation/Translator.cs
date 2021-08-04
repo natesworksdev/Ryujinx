@@ -300,7 +300,11 @@ namespace ARMeilleure.Translation
                 Ptc.WriteInfoCodeRelocUnwindInfo(address, funcSize, hash, highCq, ptcInfo);
             }
 
-            return new TranslatedFunction(func, counter, funcSize, highCq);
+            var result = new TranslatedFunction(func, counter, funcSize, highCq);
+
+            Allocators.ResetAll();
+
+            return result;
         }
 
         private struct Range

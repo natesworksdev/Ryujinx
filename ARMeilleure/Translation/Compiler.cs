@@ -56,12 +56,8 @@ namespace ARMeilleure.Translation
             Logger.EndPass(PassName.SsaConstruction, cfg);
 
             CompilerContext cctx = new(cfg, argTypes, retType, options);
-            CompiledFunction result = CodeGenerator.Generate(cctx, ptcInfo);
 
-            // Reset all the allocators after compilation.
-            Allocators.ResetAll();
-
-            return result;
+            return CodeGenerator.Generate(cctx, ptcInfo);
         }
     }
 }

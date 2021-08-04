@@ -269,7 +269,7 @@ namespace ARMeilleure.IntermediateRepresentation
             {
                 var oldSpan = new Span<T>(data, count);
 
-                capacity += 8;
+                capacity *= 2;
                 data = Allocators.References.Allocate<T>(capacity);
 
                 oldSpan.CopyTo(new Span<T>(data, count));

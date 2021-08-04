@@ -16,6 +16,7 @@ namespace ARMeilleure.Common
         private List<PageInfo> _pages;
         private readonly int _pageSize;
         private readonly int _pageCount;
+        private readonly List<IntPtr> _extras;
 
         public ArenaAllocator(int pageSize, int pageCount)
         {
@@ -24,13 +25,18 @@ namespace ARMeilleure.Common
             _pages = new List<PageInfo>();
             _pageSize = pageSize;
             _pageCount = pageCount;
+            _extras = new List<IntPtr>();
         }
 
         public override void* Allocate(int size)
         {
             if (size > _pageSize)
             {
-                ThrowOutOfMemory();
+                void* extra = NativeAllocator.Instance.Allocate(size);
+
+                _extras.Add((IntPtr)extra);
+
+                return extra;
             }
 
             if (_index + size > _pageSize)
@@ -78,6 +84,14 @@ namespace ARMeilleure.Common
                 _pages.RemoveAt(_pages.Count - 1);
             }
 
+            // Free extra blocks that are not page-sized
+            foreach (IntPtr ptr in _extras)
+            {
+                NativeAllocator.Instance.Free((void*)ptr);
+            }
+
+            _extras.Clear();
+
             int currentTime = Environment.TickCount;
 
             // Free pooled pages that has not been used in a while. Remove pages at the back first, because we try to
@@ -88,6 +102,8 @@ namespace ARMeilleure.Common
 
                 if (currentTime - info.LastUse >= 5000)
                 {
+                    NativeAllocator.Instance.Free((void*)info.Pointer);
+
                     _pages.RemoveAt(i);
                 }
                 else
@@ -106,6 +122,11 @@ namespace ARMeilleure.Common
                     NativeAllocator.Instance.Free((void*)info.Pointer);
                 }
 
+                foreach (IntPtr ptr in _extras)
+                {
+                    NativeAllocator.Instance.Free((void*)ptr);
+                }
+
                 _pages = null;
             }
         }
@@ -114,7 +135,5 @@ namespace ARMeilleure.Common
         {
             Dispose(false);
         }
-
-        private static void ThrowOutOfMemory() => throw new OutOfMemoryException();
     }
 }
