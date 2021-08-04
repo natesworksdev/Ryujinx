@@ -1,4 +1,3 @@
-using Ryujinx.Common;
 using Ryujinx.Cpu.Tracking;
 using Ryujinx.Graphics.Gpu.Memory;
 using System;
@@ -15,6 +14,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         protected const int DescriptorSize = 0x20;
 
         protected GpuContext Context;
+        protected PhysicalMemory PhysicalMemory;
 
         protected T1[] Items;
         protected T2[] DescriptorCache;
@@ -40,9 +40,17 @@ namespace Ryujinx.Graphics.Gpu.Image
         private readonly CpuMultiRegionHandle _memoryTracking;
         private readonly Action<ulong, ulong> _modifiedDelegate;
 
-        public Pool(GpuContext context, ulong address, int maximumId)
+        /// <summary>
+        /// Creates a new instance of the GPU resource pool.
+        /// </summary>
+        /// <param name="context">GPU context that the pool belongs to</param>
+        /// <param name="physicalMemory">Physical memory where the resource descriptors are mapped</param>
+        /// <param name="address">Address of the pool in physical memory</param>
+        /// <param name="maximumId">Maximum index of an item on the pool (inclusive)</param>
+        public Pool(GpuContext context, PhysicalMemory physicalMemory, ulong address, int maximumId)
         {
-            Context   = context;
+            Context = context;
+            PhysicalMemory = physicalMemory;
             MaximumId = maximumId;
 
             int count = maximumId + 1;
@@ -55,10 +63,9 @@ namespace Ryujinx.Graphics.Gpu.Image
             Address = address;
             Size    = size;
 
-            _memoryTracking = context.PhysicalMemory.BeginGranularTracking(address, size);
+            _memoryTracking = physicalMemory.BeginGranularTracking(address, size);
             _modifiedDelegate = RegionModified;
         }
-
 
         /// <summary>
         /// Gets the descriptor for a given ID.
@@ -67,7 +74,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>The descriptor</returns>
         public T2 GetDescriptor(int id)
         {
-            return Context.PhysicalMemory.Read<T2>(Address + (ulong)id * DescriptorSize);
+            return PhysicalMemory.Read<T2>(Address + (ulong)id * DescriptorSize);
         }
 
         /// <summary>

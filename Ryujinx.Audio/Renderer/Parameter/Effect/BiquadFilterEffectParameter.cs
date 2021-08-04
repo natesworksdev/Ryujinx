@@ -22,7 +22,7 @@ using System.Runtime.InteropServices;
 namespace Ryujinx.Audio.Renderer.Parameter.Effect
 {
     /// <summary>
-    /// <see cref="EffectInParameter.SpecificData"/> for <see cref="Common.EffectType.BiquadFilter"/>.
+    /// <see cref="IEffectInParameter.SpecificData"/> for <see cref="Common.EffectType.BiquadFilter"/>.
     /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct BiquadFilterEffectParameter

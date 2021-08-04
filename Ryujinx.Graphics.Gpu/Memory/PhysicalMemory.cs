@@ -1,10 +1,15 @@
 using Ryujinx.Cpu;
 using Ryujinx.Cpu.Tracking;
+using Ryujinx.Graphics.Gpu.Image;
+using Ryujinx.Graphics.Gpu.Shader;
 using Ryujinx.Memory;
 using Ryujinx.Memory.Range;
+using Ryujinx.Memory.Tracking;
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace Ryujinx.Graphics.Gpu.Memory
 {
@@ -12,19 +17,67 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// Represents physical memory, accessible from the GPU.
     /// This is actually working CPU virtual addresses, of memory mapped on the application process.
     /// </summary>
-    class PhysicalMemory
+    class PhysicalMemory : IDisposable
     {
         public const int PageSize = 0x1000;
 
-        private readonly Cpu.MemoryManager _cpuMemory;
+        private readonly GpuContext _context;
+        private IVirtualMemoryManagerTracked _cpuMemory;
+        private int _referenceCount;
+
+        /// <summary>
+        /// In-memory shader cache.
+        /// </summary>
+        public ShaderCache ShaderCache { get; }
+
+        /// <summary>
+        /// GPU buffer manager.
+        /// </summary>
+        public BufferCache BufferCache { get; }
+
+        /// <summary>
+        /// GPU texture manager.
+        /// </summary>
+        public TextureCache TextureCache { get; }
 
         /// <summary>
         /// Creates a new instance of the physical memory.
         /// </summary>
+        /// <param name="context">GPU context that the physical memory belongs to</param>
         /// <param name="cpuMemory">CPU memory manager of the application process</param>
-        public PhysicalMemory(Cpu.MemoryManager cpuMemory)
+        public PhysicalMemory(GpuContext context, IVirtualMemoryManagerTracked cpuMemory)
         {
+            _context = context;
             _cpuMemory = cpuMemory;
+            ShaderCache = new ShaderCache(context);
+            BufferCache = new BufferCache(context, this);
+            TextureCache = new TextureCache(context, this);
+
+            if (cpuMemory is IRefCounted rc)
+            {
+                rc.IncrementReferenceCount();
+            }
+
+            _referenceCount = 1;
+        }
+
+        /// <summary>
+        /// Increments the memory reference count.
+        /// </summary>
+        public void IncrementReferenceCount()
+        {
+            Interlocked.Increment(ref _referenceCount);
+        }
+
+        /// <summary>
+        /// Decrements the memory reference count.
+        /// </summary>
+        public void DecrementReferenceCount()
+        {
+            if (Interlocked.Decrement(ref _referenceCount) == 0 && _cpuMemory is IRefCounted rc)
+            {
+                rc.DecrementReferenceCount();
+            }
         }
 
         /// <summary>
@@ -75,10 +128,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         /// <param name="address">Start address of the range</param>
         /// <param name="size">Size in bytes to be range</param>
+        /// <param name="tracked">True if write tracking is triggered on the span</param>
         /// <returns>A writable region with the data at the specified memory location</returns>
-        public WritableRegion GetWritableRegion(ulong address, int size)
+        public WritableRegion GetWritableRegion(ulong address, int size, bool tracked = false)
         {
-            return _cpuMemory.GetWritableRegion(address, size);
+            return _cpuMemory.GetWritableRegion(address, size, tracked);
         }
 
         /// <summary>
@@ -140,7 +194,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="range">Ranges of physical memory where the data is located</param>
         /// <param name="data">Data to be written</param>
         /// <param name="writeCallback">Callback method that will perform the write</param>
-        private void WriteImpl(MultiRange range, ReadOnlySpan<byte> data, WriteCallback writeCallback)
+        private static void WriteImpl(MultiRange range, ReadOnlySpan<byte> data, WriteCallback writeCallback)
         {
             if (range.Count == 1)
             {
@@ -195,11 +249,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         /// <param name="address">CPU virtual address of the region</param>
         /// <param name="size">Size of the region</param>
+        /// <param name="handles">Handles to inherit state from or reuse</param>
         /// <param name="granularity">Desired granularity of write tracking</param>
         /// <returns>The memory tracking handle</returns>
-        public CpuMultiRegionHandle BeginGranularTracking(ulong address, ulong size, ulong granularity = 4096)
+        public CpuMultiRegionHandle BeginGranularTracking(ulong address, ulong size, IEnumerable<IRegionHandle> handles = null, ulong granularity = 4096)
         {
-            return _cpuMemory.BeginGranularTracking(address, size, granularity);
+            return _cpuMemory.BeginGranularTracking(address, size, handles, granularity);
         }
 
         /// <summary>
@@ -212,6 +267,27 @@ namespace Ryujinx.Graphics.Gpu.Memory
         public CpuSmartMultiRegionHandle BeginSmartGranularTracking(ulong address, ulong size, ulong granularity = 4096)
         {
             return _cpuMemory.BeginSmartGranularTracking(address, size, granularity);
+        }
+
+        /// <summary>
+        /// Release our reference to the CPU memory manager.
+        /// </summary>
+        public void Dispose()
+        {
+            _context.DeferredActions.Enqueue(Destroy);
+        }
+
+        /// <summary>
+        /// Performs disposal of the host GPU caches with resources mapped on this physical memory.
+        /// This must only be called from the render thread.
+        /// </summary>
+        private void Destroy()
+        {
+            ShaderCache.Dispose();
+            BufferCache.Dispose();
+            TextureCache.Dispose();
+
+            DecrementReferenceCount();
         }
     }
 }

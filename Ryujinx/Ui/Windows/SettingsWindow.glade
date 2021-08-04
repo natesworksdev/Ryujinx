@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.1 -->
+<!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
   <object class="GtkAdjustment" id="_fsLogSpinAdjustment">
@@ -46,7 +46,7 @@
     <property name="modal">True</property>
     <property name="window-position">center</property>
     <property name="default-width">650</property>
-    <property name="default-height">550</property>
+    <property name="default-height">650</property>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
@@ -518,6 +518,22 @@
                                 <property name="fill">False</property>
                                 <property name="padding">10</property>
                                 <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkCheckButton" id="_directMouseAccess">
+                                <property name="label" translatable="yes">Direct Mouse Access</property>
+                                <property name="visible">True</property>
+                                <property name="can-focus">True</property>
+                                <property name="receives-default">False</property>
+                                <property name="tooltip-text" translatable="yes">Enable or disable "direct keyboard access (HID) support" (Provides games access to your keyboard as a text entry device)</property>
+                                <property name="draw-indicator">True</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="padding">10</property>
+                                <property name="position">2</property>
                               </packing>
                             </child>
                           </object>
@@ -1544,6 +1560,93 @@
                                 <property name="fill">True</property>
                                 <property name="padding">5</property>
                                 <property name="position">2</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkBox" id="_memoryManagerBox">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="tooltip-text" translatable="yes">Change how guest memory is mapped and accessed. Greatly affects emulated CPU performance.</property>
+                                    <property name="halign">end</property>
+                                    <property name="margin-right">5</property>
+                                    <property name="label" translatable="yes">Memory Manager Mode: </property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="padding">5</property>
+                                    <property name="position">2</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkRadioButton" id="_mmSoftware">
+                                    <property name="label" translatable="yes">Software</property>
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="receives-default">False</property>
+                                    <property name="tooltip-text" translatable="yes">Use a software page table for address translation. Highest accuracy but slowest performance.</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-top">5</property>
+                                    <property name="margin-bottom">5</property>
+                                    <property name="draw-indicator">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">3</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkRadioButton" id="_mmHost">
+                                    <property name="label" translatable="yes">Host (fast)</property>
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="receives-default">False</property>
+                                    <property name="tooltip-text" translatable="yes">Directly map memory in the host address space. Much faster JIT compilation and execution.</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-top">5</property>
+                                    <property name="margin-bottom">5</property>
+                                    <property name="draw-indicator">True</property>
+                                    <property name="group">_mmSoftware</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">4</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkRadioButton" id="_mmHostUnsafe">
+                                    <property name="label" translatable="yes">Host unchecked (fastest, unsafe)</property>
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">True</property>
+                                    <property name="receives-default">False</property>
+                                    <property name="tooltip-text" translatable="yes">Directly map memory, but do not mask the address within the guest address space before access. Faster, but at the cost of safety. The guest application can access memory from anywhere in Ryujinx, so only run programs you trust with this mode.</property>
+                                    <property name="halign">start</property>
+                                    <property name="margin-top">5</property>
+                                    <property name="margin-bottom">5</property>
+                                    <property name="draw-indicator">True</property>
+                                    <property name="group">_mmSoftware</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">5</property>
+                                  </packing>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="padding">5</property>
+                                <property name="position">3</property>
                               </packing>
                             </child>
                           </object>

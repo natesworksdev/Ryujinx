@@ -33,7 +33,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
                     if (bindlessHandle.Type == OperandType.ConstantBuffer)
                     {
-                        texOp.SetHandle(bindlessHandle.GetCbufOffset(), bindlessHandle.GetCbufSlot());
+                        SetHandle(config, texOp, bindlessHandle.GetCbufOffset(), bindlessHandle.GetCbufSlot());
                         continue;
                     }
 
@@ -50,13 +50,16 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                     Operand src0 = Utils.FindLastOperation(handleCombineOp.GetSource(0), block);
                     Operand src1 = Utils.FindLastOperation(handleCombineOp.GetSource(1), block);
 
-                    if (src0.Type != OperandType.ConstantBuffer ||
-                        src1.Type != OperandType.ConstantBuffer || src0.GetCbufSlot() != src1.GetCbufSlot())
+                    if (src0.Type != OperandType.ConstantBuffer || src1.Type != OperandType.ConstantBuffer)
                     {
                         continue;
                     }
 
-                    texOp.SetHandle(src0.GetCbufOffset() | (src1.GetCbufOffset() << 16), src0.GetCbufSlot());
+                    SetHandle(
+                        config,
+                        texOp,
+                        src0.GetCbufOffset() | ((src1.GetCbufOffset() + 1) << 16),
+                        src0.GetCbufSlot() | ((src1.GetCbufSlot() + 1) << 16));
                 }
                 else if (texOp.Inst == Instruction.ImageLoad || texOp.Inst == Instruction.ImageStore)
                 {
@@ -64,11 +67,19 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
                     if (src0.Type == OperandType.ConstantBuffer)
                     {
-                        texOp.SetHandle(src0.GetCbufOffset(), src0.GetCbufSlot());
-                        texOp.Format = config.GetTextureFormat(texOp.Handle);
+                        int cbufOffset = src0.GetCbufOffset();
+                        int cbufSlot = src0.GetCbufSlot();
+                        texOp.Format = config.GetTextureFormat(cbufOffset, cbufSlot);
+                        SetHandle(config, texOp, cbufOffset, cbufSlot);
                     }
                 }
             }
+        }
+
+        private static void SetHandle(ShaderConfig config, TextureOperation texOp, int cbufOffset, int cbufSlot)
+        {
+            texOp.SetHandle(cbufOffset, cbufSlot);
+            config.SetUsedTexture(texOp.Inst, texOp.Type, texOp.Format, texOp.Flags, cbufSlot, cbufOffset);
         }
     }
 }

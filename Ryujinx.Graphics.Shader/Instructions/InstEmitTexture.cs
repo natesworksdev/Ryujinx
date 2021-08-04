@@ -95,7 +95,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
                     Operand rd = Register(rdIndex++, RegisterType.Gpr);
 
-                    TextureOperation operation = new TextureOperation(
+                    TextureOperation operation = context.CreateTextureOperation(
                         Instruction.ImageLoad,
                         type,
                         flags,
@@ -132,17 +132,15 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
                     Operand rd = Register(rdIndex++, RegisterType.Gpr);
 
-                    TextureOperation operation = new TextureOperation(
+                    TextureOperation operation = context.CreateTextureOperation(
                         Instruction.ImageLoad,
                         type,
+                        GetTextureFormat(op.Size),
                         flags,
                         handle,
                         compIndex,
                         rd,
-                        sources)
-                    {
-                        Format = GetTextureFormat(op.Size)
-                    };
+                        sources);
 
                     context.Add(operation);
 
@@ -266,17 +264,15 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             TextureFlags flags = op.IsBindless ? TextureFlags.Bindless : TextureFlags.None;
 
-            TextureOperation operation = new TextureOperation(
+            TextureOperation operation = context.CreateTextureOperation(
                 Instruction.ImageStore,
                 type,
+                format,
                 flags,
                 handle,
                 0,
                 null,
-                sources)
-            {
-                Format = format
-            };
+                sources);
 
             context.Add(operation);
         }
@@ -615,7 +611,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 {
                     Operand dest = GetDest();
 
-                    TextureOperation operation = new TextureOperation(
+                    TextureOperation operation = context.CreateTextureOperation(
                         Instruction.TextureSample,
                         type,
                         flags,
@@ -764,7 +760,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 {
                     Operand dest = GetDest();
 
-                    TextureOperation operation = new TextureOperation(
+                    TextureOperation operation = context.CreateTextureOperation(
                         Instruction.TextureSample,
                         type,
                         flags,
@@ -888,12 +884,12 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     {
                         Operand tempDest = Local();
 
-                        TextureOperation operation = new TextureOperation(
+                        TextureOperation operation = context.CreateTextureOperation(
                             Instruction.Lod,
                             type,
                             flags,
                             handle,
-                            compIndex,
+                            compIndex ^ 1, // The instruction component order is the inverse of GLSL's.
                             tempDest,
                             sources);
 
@@ -901,9 +897,9 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
                         tempDest = context.FPMultiply(tempDest, ConstF(256.0f));
 
-                        Operand finalValue = context.FPConvertToS32(tempDest);
+                        Operand fixedPointValue = context.FPConvertToS32(tempDest);
 
-                        context.Copy(dest, finalValue);
+                        context.Copy(dest, fixedPointValue);
                     }
                 }
             }
@@ -1027,7 +1023,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 {
                     Operand dest = GetDest();
 
-                    TextureOperation operation = new TextureOperation(
+                    TextureOperation operation = context.CreateTextureOperation(
                         Instruction.TextureSample,
                         type,
                         flags,
@@ -1059,6 +1055,8 @@ namespace Ryujinx.Graphics.Shader.Instructions
             {
                 return;
             }
+
+            context.Config.SetUsedFeature(FeatureFlags.IntegerSampling);
 
             TextureProperty property = (TextureProperty)op.RawOpCode.Extract(22, 6);
 
@@ -1112,7 +1110,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 {
                     Operand dest = GetDest();
 
-                    TextureOperation operation = new TextureOperation(
+                    TextureOperation operation = context.CreateTextureOperation(
                         inst,
                         type,
                         flags,
@@ -1277,7 +1275,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 {
                     Operand dest = GetDest();
 
-                    TextureOperation operation = new TextureOperation(
+                    TextureOperation operation = context.CreateTextureOperation(
                         Instruction.TextureSample,
                         type,
                         flags,

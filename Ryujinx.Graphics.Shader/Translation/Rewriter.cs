@@ -18,7 +18,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                 for (LinkedListNode<INode> node = block.Operations.First; node != null; node = node.Next)
                 {
-                    if (!(node.Value is Operation operation))
+                    if (node.Value is not Operation operation)
                     {
                         continue;
                     }
@@ -33,11 +33,11 @@ namespace Ryujinx.Graphics.Shader.Translation
                         if (texOp.Inst == Instruction.TextureSample)
                         {
                             node = RewriteTextureSample(node, config);
-                        }
 
-                        if (texOp.Type == SamplerType.TextureBuffer)
-                        {
-                            node = InsertSnormNormalization(node, config);
+                            if (texOp.Type == SamplerType.TextureBuffer)
+                            {
+                                node = InsertSnormNormalization(node, config);
+                            }
                         }
                     }
                 }
@@ -47,6 +47,9 @@ namespace Ryujinx.Graphics.Shader.Translation
         private static LinkedListNode<INode> RewriteGlobalAccess(LinkedListNode<INode> node, ShaderConfig config)
         {
             Operation operation = (Operation)node.Value;
+
+            bool isAtomic = operation.Inst.IsAtomic();
+            bool isWrite = isAtomic || operation.Inst == Instruction.StoreGlobal;
 
             Operation storageOp;
 
@@ -67,11 +70,13 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             for (int slot = 0; slot < StorageMaxCount; slot++)
             {
+                config.SetUsedStorageBuffer(slot, isWrite);
+
                 int cbOffset = GetStorageCbOffset(config.Stage, slot);
 
-                Operand baseAddrLow  = Cbuf(0, cbOffset);
-                Operand baseAddrHigh = Cbuf(0, cbOffset + 1);
-                Operand size         = Cbuf(0, cbOffset + 2);
+                Operand baseAddrLow  = config.CreateCbuf(0, cbOffset);
+                Operand baseAddrHigh = config.CreateCbuf(0, cbOffset + 1);
+                Operand size         = config.CreateCbuf(0, cbOffset + 2);
 
                 Operand offset = PrependOperation(Instruction.Subtract,       addrLow, baseAddrLow);
                 Operand borrow = PrependOperation(Instruction.CompareLessU32, addrLow, baseAddrLow);
@@ -104,7 +109,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 sources[index] = operation.GetSource(index);
             }
 
-            if (operation.Inst.IsAtomic())
+            if (isAtomic)
             {
                 Instruction inst = (operation.Inst & ~Instruction.MrMask) | Instruction.MrStorage;
 
@@ -142,14 +147,15 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             bool hasInvalidOffset = (hasOffset || hasOffsets) && !config.GpuAccessor.QuerySupportsNonConstantTextureOffset();
 
-            bool isRect = config.GpuAccessor.QueryIsTextureRectangle(texOp.Handle);
+            bool isBindless = (texOp.Flags & TextureFlags.Bindless) != 0;
+
+            bool isRect = !isBindless && config.GpuAccessor.QueryIsTextureRectangle(texOp.Handle, texOp.CbufSlot);
 
             if (!(hasInvalidOffset || isRect))
             {
                 return node;
             }
 
-            bool isBindless     = (texOp.Flags & TextureFlags.Bindless)    != 0;
             bool isGather       = (texOp.Flags & TextureFlags.Gather)      != 0;
             bool hasDerivatives = (texOp.Flags & TextureFlags.Derivatives) != 0;
             bool intCoords      = (texOp.Flags & TextureFlags.IntCoords)   != 0;
@@ -285,6 +291,8 @@ namespace Ryujinx.Graphics.Shader.Translation
             // We normalize by dividing the coords by the texture size.
             if (isRect && !intCoords)
             {
+                config.SetUsedFeature(FeatureFlags.IntegerSampling);
+
                 for (int index = 0; index < coordsCount; index++)
                 {
                     Operand coordSize = Local();
@@ -303,11 +311,15 @@ namespace Ryujinx.Graphics.Shader.Translation
                     node.List.AddBefore(node, new TextureOperation(
                         Instruction.TextureSize,
                         texOp.Type,
+                        texOp.Format,
                         texOp.Flags,
+                        texOp.CbufSlot,
                         texOp.Handle,
                         index,
                         coordSize,
                         texSizeSources));
+
+                    config.SetUsedTexture(Instruction.TextureSize, texOp.Type, texOp.Format, texOp.Flags, texOp.CbufSlot, texOp.Handle);
 
                     Operand source = sources[coordsIndex + index];
 
@@ -345,14 +357,18 @@ namespace Ryujinx.Graphics.Shader.Translation
                 }
                 else
                 {
+                    config.SetUsedFeature(FeatureFlags.IntegerSampling);
+
                     Operand lod = Local();
 
                     node.List.AddBefore(node, new TextureOperation(
                         Instruction.Lod,
                         texOp.Type,
+                        texOp.Format,
                         texOp.Flags,
+                        texOp.CbufSlot,
                         texOp.Handle,
-                        1,
+                        0,
                         lod,
                         lodSources));
 
@@ -374,11 +390,15 @@ namespace Ryujinx.Graphics.Shader.Translation
                         node.List.AddBefore(node, new TextureOperation(
                             Instruction.TextureSize,
                             texOp.Type,
+                            texOp.Format,
                             texOp.Flags,
+                            texOp.CbufSlot,
                             texOp.Handle,
                             index,
                             coordSize,
                             texSizeSources));
+
+                        config.SetUsedTexture(Instruction.TextureSize, texOp.Type, texOp.Format, texOp.Flags, texOp.CbufSlot, texOp.Handle);
 
                         Operand offset = Local();
 
@@ -409,7 +429,9 @@ namespace Ryujinx.Graphics.Shader.Translation
             TextureOperation newTexOp = new TextureOperation(
                 Instruction.TextureSample,
                 texOp.Type,
+                texOp.Format,
                 texOp.Flags & ~(TextureFlags.Offset | TextureFlags.Offsets),
+                texOp.CbufSlot,
                 texOp.Handle,
                 componentIndex,
                 texOp.Dest,
@@ -433,7 +455,14 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             TextureOperation texOp = (TextureOperation)node.Value;
 
-            TextureFormat format = config.GpuAccessor.QueryTextureFormat(texOp.Handle);
+            // We can't query the format of a bindless texture,
+            // because the handle is unknown, it can have any format.
+            if (texOp.Flags.HasFlag(TextureFlags.Bindless))
+            {
+                return node;
+            }
+
+            TextureFormat format = config.GpuAccessor.QueryTextureFormat(texOp.Handle, texOp.CbufSlot);
 
             int maxPositive = format switch
             {
@@ -446,13 +475,15 @@ namespace Ryujinx.Graphics.Shader.Translation
                 _                               => 0
             };
 
-            // The value being 0 means that the format is not a SNORM format, so there's nothing to do here.
+            // The value being 0 means that the format is not a SNORM format,
+            // so there's nothing to do here.
             if (maxPositive == 0)
             {
                 return node;
             }
 
-            // Do normalization. We assume SINT formats are being used as replacement for SNORM (that is not supported).
+            // Do normalization. We assume SINT formats are being used
+            // as replacement for SNORM (which is not supported).
             INode[] uses = texOp.Dest.UseOps.ToArray();
 
             Operation convOp = new Operation(Instruction.ConvertS32ToFP, Local(), texOp.Dest);
@@ -463,7 +494,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             foreach (INode useOp in uses)
             {
-                if (!(useOp is Operation op))
+                if (useOp is not Operation op)
                 {
                     continue;
                 }

@@ -35,9 +35,9 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         private uint _screenShotImageOrientation = 0;
         private uint _idleTimeDetectionExtension = 0;
 
-        public ISelfController(Horizon system, long pid)
+        public ISelfController(ServiceCtx context, long pid)
         {
-            _libraryAppletLaunchableEvent = new KEvent(system.KernelContext);
+            _libraryAppletLaunchableEvent = new KEvent(context.Device.System.KernelContext);
             _pid = pid;
         }
 
@@ -225,6 +225,15 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
             return ResultCode.Success;
         }
 
+        [CommandHipc(41)] // 4.0.0+
+        // IsSystemBufferSharingEnabled()
+        public ResultCode IsSystemBufferSharingEnabled(ServiceCtx context)
+        {
+            // NOTE: Service checks a private field and return an error if the SystemBufferSharing is disabled.
+
+            return ResultCode.NotImplemented;
+        }
+
         [CommandHipc(44)] // 10.0.0+
         // CreateManagedDisplaySeparableLayer() -> (u64, u64)
         public ResultCode CreateManagedDisplaySeparableLayer(ServiceCtx context)
@@ -272,6 +281,17 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
             context.ResponseData.Write(_idleTimeDetectionExtension);
 
             Logger.Stub?.PrintStub(LogClass.ServiceAm, new { _idleTimeDetectionExtension });
+
+            return ResultCode.Success;
+        }
+
+        [CommandHipc(65)]
+        // ReportUserIsActive()
+        public ResultCode ReportUserIsActive(ServiceCtx context)
+        {
+            // TODO: Call idle:sys ReportUserIsActive when implemented.
+
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
             return ResultCode.Success;
         }

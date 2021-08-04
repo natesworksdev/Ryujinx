@@ -1,4 +1,5 @@
-﻿using ARMeilleure.State;
+﻿using ARMeilleure.Memory;
+using ARMeilleure.State;
 using ARMeilleure.Translation;
 
 namespace Ryujinx.Cpu
@@ -7,9 +8,9 @@ namespace Ryujinx.Cpu
     {
         private readonly Translator _translator;
 
-        public CpuContext(MemoryManager memory)
+        public CpuContext(IMemoryManager memory, bool for64Bit)
         {
-            _translator = new Translator(new JitMemoryAllocator(), memory);
+            _translator = new Translator(new JitMemoryAllocator(), memory, for64Bit);
             memory.UnmapEvent += UnmapHandler;
         }
 

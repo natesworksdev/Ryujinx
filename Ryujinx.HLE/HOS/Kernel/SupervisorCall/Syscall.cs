@@ -1095,6 +1095,92 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return result;
         }
 
+        public KernelResult MapTransferMemory(int handle, ulong address, ulong size, KMemoryPermission permission)
+        {
+            if (!PageAligned(address))
+            {
+                return KernelResult.InvalidAddress;
+            }
+
+            if (!PageAligned(size) || size == 0)
+            {
+                return KernelResult.InvalidSize;
+            }
+
+            if (address + size <= address)
+            {
+                return KernelResult.InvalidMemState;
+            }
+
+            if (permission > KMemoryPermission.ReadAndWrite || permission == KMemoryPermission.Write)
+            {
+                return KernelResult.InvalidPermission;
+            }
+
+            KProcess currentProcess = KernelStatic.GetCurrentProcess();
+
+            KTransferMemory transferMemory = currentProcess.HandleTable.GetObject<KTransferMemory>(handle);
+
+            if (transferMemory == null)
+            {
+                return KernelResult.InvalidHandle;
+            }
+
+            if (currentProcess.MemoryManager.IsInvalidRegion(address, size) ||
+                currentProcess.MemoryManager.InsideHeapRegion(address, size) ||
+                currentProcess.MemoryManager.InsideAliasRegion(address, size))
+            {
+                return KernelResult.InvalidMemRange;
+            }
+
+            return transferMemory.MapIntoProcess(
+                currentProcess.MemoryManager,
+                address,
+                size,
+                currentProcess,
+                permission);
+        }
+
+        public KernelResult UnmapTransferMemory(int handle, ulong address, ulong size)
+        {
+            if (!PageAligned(address))
+            {
+                return KernelResult.InvalidAddress;
+            }
+
+            if (!PageAligned(size) || size == 0)
+            {
+                return KernelResult.InvalidSize;
+            }
+
+            if (address + size <= address)
+            {
+                return KernelResult.InvalidMemState;
+            }
+
+            KProcess currentProcess = KernelStatic.GetCurrentProcess();
+
+            KTransferMemory transferMemory = currentProcess.HandleTable.GetObject<KTransferMemory>(handle);
+
+            if (transferMemory == null)
+            {
+                return KernelResult.InvalidHandle;
+            }
+
+            if (currentProcess.MemoryManager.IsInvalidRegion(address, size) ||
+                currentProcess.MemoryManager.InsideHeapRegion(address, size) ||
+                currentProcess.MemoryManager.InsideAliasRegion(address, size))
+            {
+                return KernelResult.InvalidMemRange;
+            }
+
+            return transferMemory.UnmapFromProcess(
+                currentProcess.MemoryManager,
+                address,
+                size,
+                currentProcess);
+        }
+
         public KernelResult MapPhysicalMemory(ulong address, ulong size)
         {
             if (!PageAligned(address))
@@ -1278,7 +1364,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         private static bool PageAligned(ulong position)
         {
-            return (position & (KMemoryManager.PageSize - 1)) == 0;
+            return (position & (KPageTableBase.PageSize - 1)) == 0;
         }
 
         // System
@@ -1409,6 +1495,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             if ((reason & (1UL << 31)) == 0)
             {
                 currentThread.PrintGuestStackTrace();
+                currentThread.PrintGuestRegisterPrintout();
 
                 // As the process is exiting, this is probably caused by emulation termination.
                 if (currentThread.Owner.State == ProcessState.Exiting)
@@ -1503,12 +1590,12 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                                 value = (long)(process.MemoryManager.StackRegionEnd -
                                                process.MemoryManager.StackRegionStart); break;
 
-                            case 16: value = (long)process.PersonalMmHeapPagesCount * KMemoryManager.PageSize; break;
+                            case 16: value = (long)process.PersonalMmHeapPagesCount * KPageTableBase.PageSize; break;
 
                             case 17:
                                 if (process.PersonalMmHeapPagesCount != 0)
                                 {
-                                    value = process.MemoryManager.GetMmUsedPages() * KMemoryManager.PageSize;
+                                    value = process.MemoryManager.GetMmUsedPages() * KPageTableBase.PageSize;
                                 }
 
                                 break;
@@ -1759,7 +1846,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                     return KernelResult.InvalidCombination;
                 }
 
-                KMemoryRegionManager region = _context.MemoryRegions[subId];
+                KMemoryRegionManager region = _context.MemoryManager.MemoryRegions[subId];
 
                 switch (id)
                 {
@@ -1771,7 +1858,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                         {
                             ulong freePagesCount = region.GetFreePages();
 
-                            value = (long)(freePagesCount * KMemoryManager.PageSize);
+                            value = (long)(freePagesCount * KPageTableBase.PageSize);
 
                             break;
                         }

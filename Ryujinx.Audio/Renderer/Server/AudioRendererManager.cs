@@ -22,6 +22,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Memory;
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 
 namespace Ryujinx.Audio.Renderer.Server
@@ -80,6 +81,11 @@ namespace Ryujinx.Audio.Renderer.Server
         /// The <see cref="AudioProcessor"/> instance associated to this manager.
         /// </summary>
         public AudioProcessor Processor { get; }
+
+        /// <summary>
+        /// The dispose state.
+        /// </summary>
+        private int _disposeState;
 
         /// <summary>
         /// Create a new <see cref="AudioRendererManager"/>.
@@ -312,13 +318,29 @@ namespace Ryujinx.Audio.Renderer.Server
 
         public void Dispose()
         {
-            Dispose(true);
+            if (Interlocked.CompareExchange(ref _disposeState, 1, 0) == 0)
+            {
+                Dispose(true);
+            }
         }
 
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
             {
+                // Clone the sessions array to dispose them outside the lock.
+                AudioRenderSystem[] sessions;
+
+                lock (_sessionLock)
+                {
+                    sessions = _sessions.ToArray();
+                }
+
+                foreach (AudioRenderSystem renderer in sessions)
+                {
+                    renderer?.Dispose();
+                }
+
                 lock (_audioProcessorLock)
                 {
                     if (_isRunning)

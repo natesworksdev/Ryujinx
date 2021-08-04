@@ -14,7 +14,7 @@ namespace Ryujinx.Configuration
         /// <summary>
         /// The current version of the file format
         /// </summary>
-        public const int CurrentVersion = 25;
+        public const int CurrentVersion = 28;
 
         public int Version { get; set; }
 
@@ -175,6 +175,11 @@ namespace Ryujinx.Configuration
         public AudioBackend AudioBackend { get; set; }
 
         /// <summary>
+        /// The selected memory manager mode
+        /// </summary>
+        public MemoryManagerMode MemoryManagerMode { get; set; }
+
+        /// <summary>
         /// Expands the RAM amount on the emulated system from 4GB to 6GB
         /// </summary>
         public bool ExpandRam { get; set; }
@@ -218,6 +223,11 @@ namespace Ryujinx.Configuration
         /// Enable or disable keyboard support (Independent from controllers binding)
         /// </summary>
         public bool EnableKeyboard { get; set; }
+
+        /// <summary>
+        /// Enable or disable mouse support (Independent from controllers binding)
+        /// </summary>
+        public bool EnableMouse { get; set; }
 
         /// <summary>
         /// Hotkey Keyboard Bindings

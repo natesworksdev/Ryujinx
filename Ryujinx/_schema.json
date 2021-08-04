@@ -22,6 +22,7 @@
     "enable_fs_integrity_checks",
     "fs_global_access_log_mode",
     "enable_keyboard",
+    "enable_mouse",
     "keyboard_config",
     "controller_config"
   ],
@@ -1210,7 +1211,7 @@
         false
       ]
     },
-      "hide_cursor_on_idle": {
+    "hide_cursor_on_idle": {
       "$id": "#/properties/hide_cursor_on_idle",
       "type": "boolean",
       "title": "Hide Cursor On Idle",
@@ -1278,6 +1279,18 @@
         "Dummy",
         "SoundIo",
         "OpenAl"
+      ]
+    },
+    "memory_manager_mode": {
+      "$id": "#/properties/memory_manager_mode",
+      "type": "string",
+      "title": "The selected memory manager mode",
+      "description": "The selected memory manager mode",
+      "default": "HostMappedUnsafe",
+      "enum": [
+        "SoftwarePageTable",
+        "HostMapped",
+        "HostMappedUnsafe"
       ]
     },
     "ignore_missing_services": {
@@ -1426,12 +1439,24 @@
         false
       ]
     },
+    "enable_mouse": {
+      "$id": "#/properties/enable_mouse",
+      "type": "boolean",
+      "title": "(HID) Mouse Enable",
+      "description": "Enable or disable direct mouse access (HID) support (Provides games access to your mouse as a pointing device)",
+      "default": false,
+      "examples": [
+        true,
+        false
+      ]
+    },
     "hotkeys": {
       "$id": "#/properties/hotkeys",
       "type": "object",
       "title": "Hotkey Controls",
       "required": [
-        "toggle_vsync"
+        "toggle_vsync",
+        "screenshot"        
       ],
       "properties": {
         "toggle_vsync": {
@@ -1439,6 +1464,12 @@
           "$ref": "#/definitions/key",
           "title": "Toggle VSync",
           "default": "Tab"
+        },
+        "screenshot": {
+          "$id": "#/properties/hotkeys/properties/screenshot",
+          "$ref": "#/definitions/key",
+          "title": "Screenshot",
+          "default": "F8"
         }
       }
     },

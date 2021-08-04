@@ -12,7 +12,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
     {
         private const string MainFunctionName = "main";
 
-        public static GlslProgram Generate(StructuredProgramInfo info, ShaderConfig config)
+        public static string Generate(StructuredProgramInfo info, ShaderConfig config)
         {
             CodeGenContext context = new CodeGenContext(info, config);
 
@@ -37,12 +37,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
             PrintFunction(context, info, info.Functions[0], MainFunctionName);
 
-            return new GlslProgram(
-                context.CBufferDescriptors.ToArray(),
-                context.SBufferDescriptors.ToArray(),
-                context.TextureDescriptors.ToArray(),
-                context.ImageDescriptors.ToArray(),
-                context.GetCode());
+            return context.GetCode();
         }
 
         private static void PrintFunction(CodeGenContext context, StructuredProgramInfo info, StructuredFunction function, string funcName = null)
@@ -79,16 +74,16 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                             continue;
                         }
 
-                        if ((context.Config.Flags & TranslationFlags.Feedback) != 0)
+                        if ((context.Config.Options.Flags & TranslationFlags.Feedback) != 0)
                         {
-                            context.AppendLine($"{DefaultNames.OAttributePrefix}{attr}_x = 0;");
-                            context.AppendLine($"{DefaultNames.OAttributePrefix}{attr}_y = 0;");
-                            context.AppendLine($"{DefaultNames.OAttributePrefix}{attr}_z = 0;");
-                            context.AppendLine($"{DefaultNames.OAttributePrefix}{attr}_w = 0;");
+                            context.AppendLine($"{DefaultNames.OAttributePrefix}{attr}_x = 0.0;");
+                            context.AppendLine($"{DefaultNames.OAttributePrefix}{attr}_y = 0.0;");
+                            context.AppendLine($"{DefaultNames.OAttributePrefix}{attr}_z = 0.0;");
+                            context.AppendLine($"{DefaultNames.OAttributePrefix}{attr}_w = 1.0;");
                         }
                         else
                         {
-                            context.AppendLine($"{DefaultNames.OAttributePrefix}{attr} = vec4(0);");
+                            context.AppendLine($"{DefaultNames.OAttributePrefix}{attr} = vec4(0.0, 0.0, 0.0, 1.0);");
                         }
                     }
                 }

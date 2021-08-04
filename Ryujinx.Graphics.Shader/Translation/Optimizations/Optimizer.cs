@@ -1,5 +1,4 @@
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -16,7 +15,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             for (int blkIndex = 0; blkIndex < blocks.Length; blkIndex++)
             {
                 GlobalToStorage.RunPass(blocks[blkIndex], config);
-                BindlessToIndexed.RunPass(blocks[blkIndex]);
+                BindlessToIndexed.RunPass(blocks[blkIndex], config);
                 BindlessElimination.RunPass(blocks[blkIndex], config);
             }
 

@@ -220,6 +220,11 @@ namespace Ryujinx.Configuration
             public ReactiveObject<AudioBackend> AudioBackend { get; private set; }
 
             /// <summary>
+            /// The selected memory manager mode
+            /// </summary>
+            public ReactiveObject<MemoryManagerMode> MemoryManagerMode { get; private set; }
+
+            /// <summary>
             /// Defines the amount of RAM available on the emulated system, and how it is distributed
             /// </summary>
             public ReactiveObject<bool> ExpandRam { get; private set; }
@@ -245,6 +250,8 @@ namespace Ryujinx.Configuration
                 FsGlobalAccessLogMode.Event   += static (sender, e) => LogValueChange(sender, e, nameof(FsGlobalAccessLogMode));
                 AudioBackend                  = new ReactiveObject<AudioBackend>();
                 AudioBackend.Event            += static (sender, e) => LogValueChange(sender, e, nameof(AudioBackend));
+                MemoryManagerMode             = new ReactiveObject<MemoryManagerMode>();
+                MemoryManagerMode.Event       += static (sender, e) => LogValueChange(sender, e, nameof(MemoryManagerMode));
                 ExpandRam                     = new ReactiveObject<bool>();
                 ExpandRam.Event               += static (sender, e) => LogValueChange(sender, e, nameof(ExpandRam));
                 IgnoreMissingServices         = new ReactiveObject<bool>();
@@ -261,6 +268,11 @@ namespace Ryujinx.Configuration
             /// Enable or disable keyboard support (Independent from controllers binding)
             /// </summary>
             public ReactiveObject<bool> EnableKeyboard { get; private set; }
+            
+            /// <summary>
+            /// Enable or disable mouse support (Independent from controllers binding)
+            /// </summary>
+            public ReactiveObject<bool> EnableMouse { get; private set; }
 
             /// <summary>
             /// Hotkey Keyboard Bindings
@@ -277,6 +289,7 @@ namespace Ryujinx.Configuration
             public HidSection()
             {
                 EnableKeyboard = new ReactiveObject<bool>();
+                EnableMouse    = new ReactiveObject<bool>();
                 Hotkeys        = new ReactiveObject<KeyboardHotkeys>();
                 InputConfig    = new ReactiveObject<List<InputConfig>>();
             }
@@ -438,6 +451,7 @@ namespace Ryujinx.Configuration
                 EnableFsIntegrityChecks   = System.EnableFsIntegrityChecks,
                 FsGlobalAccessLogMode     = System.FsGlobalAccessLogMode,
                 AudioBackend              = System.AudioBackend,
+                MemoryManagerMode         = System.MemoryManagerMode,
                 ExpandRam                 = System.ExpandRam,
                 IgnoreMissingServices     = System.IgnoreMissingServices,
                 GuiColumns                = new GuiColumns
@@ -463,6 +477,7 @@ namespace Ryujinx.Configuration
                 CustomThemePath           = Ui.CustomThemePath,
                 StartFullscreen           = Ui.StartFullscreen,
                 EnableKeyboard            = Hid.EnableKeyboard,
+                EnableMouse               = Hid.EnableMouse,
                 Hotkeys                   = Hid.Hotkeys,
                 KeyboardConfig            = new List<object>(),
                 ControllerConfig          = new List<object>(),
@@ -504,6 +519,7 @@ namespace Ryujinx.Configuration
             System.EnableFsIntegrityChecks.Value   = true;
             System.FsGlobalAccessLogMode.Value     = 0;
             System.AudioBackend.Value              = AudioBackend.OpenAl;
+            System.MemoryManagerMode.Value         = MemoryManagerMode.HostMappedUnsafe;
             System.ExpandRam.Value                 = false;
             System.IgnoreMissingServices.Value     = false;
             Ui.GuiColumns.FavColumn.Value          = true;
@@ -523,9 +539,11 @@ namespace Ryujinx.Configuration
             Ui.CustomThemePath.Value               = "";
             Ui.StartFullscreen.Value               = false;
             Hid.EnableKeyboard.Value               = false;
+            Hid.EnableMouse.Value                  = false;
             Hid.Hotkeys.Value = new KeyboardHotkeys
             {
-                ToggleVsync = Key.Tab
+                ToggleVsync = Key.Tab,
+                Screenshot = Key.F8
             };
             Hid.InputConfig.Value = new List<InputConfig>
             {
@@ -810,6 +828,37 @@ namespace Ryujinx.Configuration
                 configurationFileUpdated = true;
             }
 
+            if (configurationFileFormat.Version < 26)
+            {
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 26.");
+
+                configurationFileFormat.MemoryManagerMode = MemoryManagerMode.HostMappedUnsafe;
+
+                configurationFileUpdated = true;
+            }
+
+            if (configurationFileFormat.Version < 27)
+            {
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 27.");
+
+                configurationFileFormat.EnableMouse = false;
+
+                configurationFileUpdated = true;
+            }
+
+            if (configurationFileFormat.Version < 28)
+            {
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 28.");
+
+                configurationFileFormat.Hotkeys = new KeyboardHotkeys
+                {
+                    ToggleVsync = Key.Tab,
+                    Screenshot = Key.F8
+                };
+
+                configurationFileUpdated = true;
+            }
+
             Logger.EnableFileLog.Value             = configurationFileFormat.EnableFileLog;
             Graphics.ResScale.Value                = configurationFileFormat.ResScale;
             Graphics.ResScaleCustom.Value          = configurationFileFormat.ResScaleCustom;
@@ -840,6 +889,7 @@ namespace Ryujinx.Configuration
             System.EnableFsIntegrityChecks.Value   = configurationFileFormat.EnableFsIntegrityChecks;
             System.FsGlobalAccessLogMode.Value     = configurationFileFormat.FsGlobalAccessLogMode;
             System.AudioBackend.Value              = configurationFileFormat.AudioBackend;
+            System.MemoryManagerMode.Value         = configurationFileFormat.MemoryManagerMode;
             System.ExpandRam.Value                 = configurationFileFormat.ExpandRam;
             System.IgnoreMissingServices.Value     = configurationFileFormat.IgnoreMissingServices;
             Ui.GuiColumns.FavColumn.Value          = configurationFileFormat.GuiColumns.FavColumn;
@@ -859,6 +909,7 @@ namespace Ryujinx.Configuration
             Ui.CustomThemePath.Value               = configurationFileFormat.CustomThemePath;
             Ui.StartFullscreen.Value               = configurationFileFormat.StartFullscreen;
             Hid.EnableKeyboard.Value               = configurationFileFormat.EnableKeyboard;
+            Hid.EnableMouse.Value                  = configurationFileFormat.EnableMouse;
             Hid.Hotkeys.Value                      = configurationFileFormat.Hotkeys;
             Hid.InputConfig.Value                  = configurationFileFormat.InputConfig;
 

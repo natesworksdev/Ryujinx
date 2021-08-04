@@ -372,6 +372,49 @@ namespace Ryujinx.Audio.Renderer.Server
         }
 
         /// <summary>
+        /// Generate a new <see cref="LimiterCommandVersion1"/>.
+        /// </summary>
+        /// <param name="bufferOffset">The target buffer offset.</param>
+        /// <param name="parameter">The limiter parameter.</param>
+        /// <param name="state">The limiter state.</param>
+        /// <param name="isEnabled">Set to true if the effect should be active.</param>
+        /// <param name="workBuffer">The work buffer to use for processing.</param>
+        /// <param name="nodeId">The node id associated to this command.</param>
+        public void GenerateLimiterEffectVersion1(uint bufferOffset, LimiterParameter parameter, Memory<LimiterState> state, bool isEnabled, ulong workBuffer, int nodeId)
+        {
+            if (parameter.IsChannelCountValid())
+            {
+                LimiterCommandVersion1 command = new LimiterCommandVersion1(bufferOffset, parameter, state, isEnabled, workBuffer, nodeId);
+
+                command.EstimatedProcessingTime = _commandProcessingTimeEstimator.Estimate(command);
+
+                AddCommand(command);
+            }
+        }
+
+        /// <summary>
+        /// Generate a new <see cref="LimiterCommandVersion2"/>.
+        /// </summary>
+        /// <param name="bufferOffset">The target buffer offset.</param>
+        /// <param name="parameter">The limiter parameter.</param>
+        /// <param name="state">The limiter state.</param>
+        /// <param name="effectResultState">The DSP effect result state.</param>
+        /// <param name="isEnabled">Set to true if the effect should be active.</param>
+        /// <param name="workBuffer">The work buffer to use for processing.</param>
+        /// <param name="nodeId">The node id associated to this command.</param>
+        public void GenerateLimiterEffectVersion2(uint bufferOffset, LimiterParameter parameter, Memory<LimiterState> state, Memory<EffectResultState> effectResultState, bool isEnabled, ulong workBuffer, int nodeId)
+        {
+            if (parameter.IsChannelCountValid())
+            {
+                LimiterCommandVersion2 command = new LimiterCommandVersion2(bufferOffset, parameter, state, effectResultState, isEnabled, workBuffer, nodeId);
+
+                command.EstimatedProcessingTime = _commandProcessingTimeEstimator.Estimate(command);
+
+                AddCommand(command);
+            }
+        }
+
+        /// <summary>
         /// Generate a new <see cref="AuxiliaryBufferCommand"/>.
         /// </summary>
         /// <param name="bufferOffset">The target buffer offset.</param>
@@ -435,7 +478,7 @@ namespace Ryujinx.Audio.Renderer.Server
         /// <param name="outputBufferOffset">The output buffer offset.</param>
         /// <param name="downMixParameter">The downmixer parameters to use.</param>
         /// <param name="nodeId">The node id associated to this command.</param>
-        public void GenerateDownMixSurroundToStereo(uint bufferOffset, Span<byte> inputBufferOffset, Span<byte> outputBufferOffset, ReadOnlySpan<float> downMixParameter, int nodeId)
+        public void GenerateDownMixSurroundToStereo(uint bufferOffset, Span<byte> inputBufferOffset, Span<byte> outputBufferOffset, float[] downMixParameter, int nodeId)
         {
             DownMixSurroundToStereoCommand command = new DownMixSurroundToStereoCommand(bufferOffset, inputBufferOffset, outputBufferOffset, downMixParameter, nodeId);
 

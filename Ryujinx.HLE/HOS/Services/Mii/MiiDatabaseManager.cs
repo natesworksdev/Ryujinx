@@ -101,6 +101,9 @@ namespace Ryujinx.HLE.HOS.Services.Mii
             // Ensure we have valid data in the database
             _database.Format();
 
+            // TODO: Unmount is currently not implemented properly at dispose, implement that and decrement MountCounter.
+            MountCounter = 0;
+
             MountSave();
         }
 
@@ -151,8 +154,6 @@ namespace Ryujinx.HLE.HOS.Services.Mii
                 }
             }
 
-
-
             return result;
         }
 
@@ -183,6 +184,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
             if (result.IsSuccess())
             {
                 result = _filesystemClient.GetFileSize(out long fileSize, handle);
+
                 if (result.IsSuccess())
                 {
                     if (fileSize == Unsafe.SizeOf<NintendoFigurineDatabase>())
@@ -416,35 +418,35 @@ namespace Ryujinx.HLE.HOS.Services.Mii
                 return ResultCode.InvalidStoreData;
             }
 
-            if (!metadata.MiiKeyCode.IsEnabledSpecialMii() && !storeData.IsSpecial())
+            if (!metadata.MiiKeyCode.IsEnabledSpecialMii() && storeData.IsSpecial())
             {
-                if (_database.GetIndexByCreatorId(out int index, storeData.CreateId))
-                {
-                    StoreData oldStoreData = _database.Get(index);
-
-                    if (oldStoreData.IsSpecial())
-                    {
-                        return ResultCode.InvalidOperationOnSpecialMii;
-                    }
-
-                    _database.Replace(index, storeData);
-                }
-                else
-                {
-                    if (_database.IsFull())
-                    {
-                        return ResultCode.DatabaseFull;
-                    }
-
-                    _database.Add(storeData);
-                }
-
-                MarkDirty(metadata);
-
-                return ResultCode.Success;
+                return ResultCode.InvalidOperationOnSpecialMii;
             }
 
-            return ResultCode.InvalidOperationOnSpecialMii;
+            if (_database.GetIndexByCreatorId(out int index, storeData.CreateId))
+            {
+                StoreData oldStoreData = _database.Get(index);
+
+                if (oldStoreData.IsSpecial())
+                {
+                    return ResultCode.InvalidOperationOnSpecialMii;
+                }
+
+                _database.Replace(index, storeData);
+            }
+            else
+            {
+                if (_database.IsFull())
+                {
+                    return ResultCode.DatabaseFull;
+                }
+
+                _database.Add(storeData);
+            }
+
+            MarkDirty(metadata);
+
+            return ResultCode.Success;
         }
 
         public ResultCode Delete(DatabaseSessionMetadata metadata, CreateId createId)

@@ -41,15 +41,15 @@
 
         uint QueryConstantBufferUse()
         {
-            return 0xffff;
+            return 0;
         }
 
-        bool QueryIsTextureBuffer(int handle)
+        bool QueryIsTextureBuffer(int handle, int cbufSlot = -1)
         {
             return false;
         }
 
-        bool QueryIsTextureRectangle(int handle)
+        bool QueryIsTextureRectangle(int handle, int cbufSlot = -1)
         {
             return false;
         }
@@ -74,7 +74,12 @@
             return true;
         }
 
-        TextureFormat QueryTextureFormat(int handle)
+        bool QuerySupportsTextureShadowLod()
+        {
+            return true;
+        }
+
+        TextureFormat QueryTextureFormat(int handle, int cbufSlot = -1)
         {
             return TextureFormat.R8G8B8A8Unorm;
         }

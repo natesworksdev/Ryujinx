@@ -1,9 +1,21 @@
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
+
 using ARMeilleure.Translation;
 using ARMeilleure.Translation.PTC;
+
 using Gtk;
+
 using LibHac.Common;
 using LibHac.FsSystem;
+using LibHac.FsSystem.NcaUtils;
 using LibHac.Ns;
+
 using Ryujinx.Audio.Backends.Dummy;
 using Ryujinx.Audio.Backends.OpenAL;
 using Ryujinx.Audio.Backends.SDL2;
@@ -38,6 +50,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+
 
 using GUI = Gtk.Builder.ObjectAttribute;
 
@@ -75,6 +88,8 @@ namespace Ryujinx.Ui
         public RendererWidgetBase RendererWidget;
         public InputManager InputManager;
 
+        public bool IsFocused;
+
         private static bool UseVulkan = false;
 
 #pragma warning disable CS0169, CS0649, IDE0044
@@ -86,10 +101,15 @@ namespace Ryujinx.Ui
         [GUI] Box             _statusBar;
         [GUI] MenuItem        _optionMenu;
         [GUI] MenuItem        _manageUserProfiles;
+        [GUI] MenuItem        _fileMenu;
+        [GUI] MenuItem        _loadApplicationFile;
+        [GUI] MenuItem        _loadApplicationFolder;
+        [GUI] MenuItem        _appletMenu;
         [GUI] MenuItem        _actionMenu;
         [GUI] MenuItem        _stopEmulation;
         [GUI] MenuItem        _simulateWakeUpMessage;
         [GUI] MenuItem        _scanAmiibo;
+        [GUI] MenuItem        _takeScreenshot;
         [GUI] MenuItem        _fullScreen;
         [GUI] CheckMenuItem   _startFullScreen;
         [GUI] CheckMenuItem   _favToggle;
@@ -158,10 +178,13 @@ namespace Ryujinx.Ui
 
             WindowStateEvent += WindowStateEvent_Changed;
             DeleteEvent      += Window_Close;
+            FocusInEvent     += MainWindow_FocusInEvent;
+            FocusOutEvent    += MainWindow_FocusOutEvent;
 
             _applicationLibrary.ApplicationAdded        += Application_Added;
             _applicationLibrary.ApplicationCountUpdated += ApplicationCount_Updated;
 
+            _fileMenu.StateChanged   += FileMenu_StateChanged;
             _actionMenu.StateChanged += ActionMenu_StateChanged;
             _optionMenu.StateChanged += OptionMenu_StateChanged;
 
@@ -227,6 +250,7 @@ namespace Ryujinx.Ui
 
             _gameTable.EnableSearch = true;
             _gameTable.SearchColumn = 2;
+            _gameTable.SearchEqualFunc = (model, col, key, iter) => !((string)model.GetValue(iter, col)).Contains(key, StringComparison.InvariantCultureIgnoreCase);
 
             UpdateColumns();
             UpdateGameTable();
@@ -271,6 +295,16 @@ namespace Ryujinx.Ui
         private void WindowStateEvent_Changed(object o, WindowStateEventArgs args)
         {
             _fullScreen.Label = args.Event.NewWindowState.HasFlag(Gdk.WindowState.Fullscreen) ? "Exit Fullscreen" : "Enter Fullscreen";
+        }
+
+        private void MainWindow_FocusOutEvent(object o, FocusOutEventArgs args)
+        {
+            IsFocused = false;
+        }
+
+        private void MainWindow_FocusInEvent(object o, FocusInEventArgs args)
+        {
+            IsFocused = true;
         }
 
         private void UpdateColumns()
@@ -431,6 +465,7 @@ namespace Ryujinx.Ui
                                                                           ConfigurationState.Instance.System.FsGlobalAccessLogMode,
                                                                           ConfigurationState.Instance.System.SystemTimeOffset,
                                                                           ConfigurationState.Instance.System.TimeZone,
+                                                                          ConfigurationState.Instance.System.MemoryManagerMode,
                                                                           ConfigurationState.Instance.System.IgnoreMissingServices,
                                                                           ConfigurationState.Instance.Graphics.AspectRatio);
 
@@ -536,7 +571,7 @@ namespace Ryujinx.Ui
             }
         }
 
-        public void LoadApplication(string path)
+        public void LoadApplication(string path, bool startFullscreen = false)
         {
             if (_gameLoaded)
             {
@@ -550,7 +585,7 @@ namespace Ryujinx.Ui
 
                 RendererWidget = CreateRendererWidget();
 
-                SwitchToRenderWidget();
+                SwitchToRenderWidget(startFullscreen);
 
                 InitializeSwitchInstance();
 
@@ -560,7 +595,15 @@ namespace Ryujinx.Ui
 
                 SystemVersion firmwareVersion = _contentManager.GetCurrentFirmwareVersion();
 
-                bool isDirectory = Directory.Exists(path);
+                bool isDirectory     = Directory.Exists(path);
+                bool isFirmwareTitle = false;
+
+                if (path.StartsWith("@SystemContent"))
+                {
+                    path = _virtualFileSystem.SwitchPathToSystemPath(path);
+
+                    isFirmwareTitle = true;
+                }
 
                 if (!SetupValidator.CanStartApplication(_contentManager, path, out UserError userError))
                 {
@@ -621,7 +664,13 @@ namespace Ryujinx.Ui
 
                 Logger.Notice.Print(LogClass.Application, $"Using Firmware Version: {firmwareVersion?.VersionString}");
 
-                if (Directory.Exists(path))
+                if (isFirmwareTitle)
+                {
+                    Logger.Info?.Print(LogClass.Application, "Loading as Firmware Title (NCA).");
+
+                    _emulationContext.LoadNca(path);
+                }
+                else if (Directory.Exists(path))
                 {
                     string[] romFsFiles = Directory.GetFiles(path, "*.istorage");
 
@@ -765,7 +814,7 @@ namespace Ryujinx.Ui
             }
         }
 
-        private void SwitchToRenderWidget()
+        private void SwitchToRenderWidget(bool startFullscreen = false)
         {
             _viewBox.Remove(_gameTableWindow);
             RendererWidget.Expand = true;
@@ -778,7 +827,7 @@ namespace Ryujinx.Ui
             {
                 ToggleExtraWidgets(false);
             }
-            else if (ConfigurationState.Instance.Ui.StartFullscreen.Value)
+            else if (startFullscreen || ConfigurationState.Instance.Ui.StartFullscreen.Value)
             {
                 FullScreen_Toggled(null, null);
             }
@@ -1071,6 +1120,15 @@ namespace Ryujinx.Ui
             ConfigurationState.Instance.Graphics.AspectRatio.Value = ((int)aspectRatio + 1) > Enum.GetNames(typeof(AspectRatio)).Length - 1 ? AspectRatio.Fixed4x3 : aspectRatio + 1;
         }
 
+        private void Focus_Menu_Bar(object sender, KeyReleaseEventArgs args)
+        {
+            if (args.Event.Key == Gdk.Key.Alt_L)
+            {
+                ToggleExtraWidgets(true);
+                _menuBar.GrabFocus();
+            }
+        }
+
         private void Row_Clicked(object sender, ButtonReleaseEventArgs args)
         {
             if (args.Event.Button != 3 /* Right Click */)
@@ -1122,6 +1180,20 @@ namespace Ryujinx.Ui
                     LoadApplication(fileChooser.Filename);
                 }
             }
+        }
+
+        private void FileMenu_StateChanged(object o, StateChangedArgs args)
+        {
+            _appletMenu.Sensitive            = _emulationContext == null && _contentManager.GetCurrentFirmwareVersion() != null && _contentManager.GetCurrentFirmwareVersion().Major > 3;
+            _loadApplicationFile.Sensitive   = _emulationContext == null;
+            _loadApplicationFolder.Sensitive = _emulationContext == null;
+        }
+
+        private void Load_Mii_Edit_Applet(object sender, EventArgs args)
+        {
+            string contentPath = _contentManager.GetInstalledContentPath(0x0100000000001009, StorageId.NandSystem, NcaContentType.Program);
+
+            LoadApplication(contentPath);
         }
 
         private void Open_Ryu_Folder(object sender, EventArgs args)
@@ -1241,6 +1313,15 @@ namespace Ryujinx.Ui
 
                                     GtkDialog.CreateInfoDialog(dialogTitle, message);
                                     Logger.Info?.Print(LogClass.Application, message);
+
+                                    // Purge Applet Cache.
+
+                                    DirectoryInfo miiEditorCacheFolder = new DirectoryInfo(System.IO.Path.Combine(AppDataManager.GamesDirPath, "0100000000001009", "cache"));
+
+                                    if (miiEditorCacheFolder.Exists)
+                                    {
+                                        miiEditorCacheFolder.Delete(true);
+                                    }
                                 });
                             }
                             catch (Exception ex)
@@ -1340,6 +1421,11 @@ namespace Ryujinx.Ui
             settingsWindow.Show();
         }
 
+        private void HideUi_Pressed(object sender, EventArgs args)
+        {
+            ToggleExtraWidgets(false);
+        }
+
         private void ManageUserProfiles_Pressed(object sender, EventArgs args)
         {
             UserProfilesManagerWindow userProfilesManagerWindow = new UserProfilesManagerWindow(_accountManager, _contentManager, _virtualFileSystem);
@@ -1358,7 +1444,8 @@ namespace Ryujinx.Ui
 
         private void ActionMenu_StateChanged(object o, StateChangedArgs args)
         {
-            _scanAmiibo.Sensitive = _emulationContext != null && _emulationContext.System.SearchingForAmiibo(out int _);
+            _scanAmiibo.Sensitive     = _emulationContext != null && _emulationContext.System.SearchingForAmiibo(out int _);
+            _takeScreenshot.Sensitive = _emulationContext != null;
         }
 
         private void Scan_Amiibo(object sender, EventArgs args)
@@ -1380,6 +1467,14 @@ namespace Ryujinx.Ui
             else
             {
                 GtkDialog.CreateInfoDialog($"Amiibo", "The game is currently not ready to receive Amiibo scan data. Ensure that you have an Amiibo-compatible game open and ready to receive Amiibo scan data.");
+            }
+        }
+
+        private void Take_Screenshot(object sender, EventArgs args)
+        {
+            if (_emulationContext != null && RendererWidget != null)
+            {
+                RendererWidget.ScreenshotRequested = true;
             }
         }
 

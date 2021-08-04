@@ -2,6 +2,8 @@ using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Services.Settings.Types;
+using Ryujinx.HLE.HOS.SystemState;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy
@@ -50,7 +52,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // ReceiveMessage() -> nn::am::AppletMessage
         public ResultCode ReceiveMessage(ServiceCtx context)
         {
-            if (!context.Device.System.AppletState.Messages.TryDequeue(out MessageInfo message))
+            if (!context.Device.System.AppletState.Messages.TryDequeue(out AppletMessage message))
             {
                 return ResultCode.NoMessages;
             }
@@ -239,6 +241,18 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         public ResultCode GetCurrentPerformanceConfiguration(ServiceCtx context)
         {
             return (ResultCode)_apmSystemManagerServer.GetCurrentPerformanceConfiguration(context);
+        }
+
+        [CommandHipc(300)] // 9.0.0+
+        // GetSettingsPlatformRegion() -> u8
+        public ResultCode GetSettingsPlatformRegion(ServiceCtx context)
+        {
+            PlatformRegion platformRegion = context.Device.System.State.DesiredRegionCode == (uint)RegionCode.China ? PlatformRegion.China : PlatformRegion.Global;
+
+            // FIXME: Call set:sys GetPlatformRegion
+            context.ResponseData.Write((byte)platformRegion);
+
+            return ResultCode.Success;
         }
 
         [CommandHipc(900)] // 11.0.0+

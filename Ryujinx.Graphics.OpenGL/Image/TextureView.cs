@@ -119,7 +119,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
             _renderer.TextureCopy.Copy(this, (TextureView)destination, srcRegion, dstRegion, linearFilter);
         }
 
-        public byte[] GetData()
+        public unsafe ReadOnlySpan<byte> GetData()
         {
             int size = 0;
 
@@ -128,17 +128,18 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 size += Info.GetMipSize(level);
             }
 
-            byte[] data = new byte[size];
-
-            unsafe
+            if (HwCapabilities.UsePersistentBufferForFlush)
             {
-                fixed (byte* ptr = data)
-                {
-                    WriteTo((IntPtr)ptr);
-                }
+                return _renderer.PersistentBuffers.Default.GetTextureData(this, size);
             }
+            else
+            {
+                IntPtr target = _renderer.PersistentBuffers.Default.GetHostArray(size);
 
-            return data;
+                WriteTo(target);
+
+                return new ReadOnlySpan<byte>(target.ToPointer(), size);
+            }
         }
 
         public void WriteToPbo(int offset, bool forceBgra)

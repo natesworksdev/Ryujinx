@@ -55,16 +55,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             string ApplyScaling(string vector)
             {
-                int index = context.FindImageDescriptorIndex(texOp);
-                TextureUsageFlags flags = TextureUsageFlags.NeedsScaleValue;
-
                 if ((context.Config.Stage == ShaderStage.Fragment || context.Config.Stage == ShaderStage.Compute) &&
                     texOp.Inst == Instruction.ImageLoad &&
                     !isBindless &&
                     !isIndexed)
                 {
                     // Image scales start after texture ones.
-                    int scaleIndex = context.TextureDescriptors.Count + index;
+                    int scaleIndex = context.Config.GetTextureDescriptors().Length + context.FindImageDescriptorIndex(texOp);
 
                     if (pCount == 3 && isArray)
                     {
@@ -75,19 +72,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     {
                         vector = "Helper_TexelFetchScale(" + vector + ", " + scaleIndex + ")";
                     }
-                    else
-                    {
-                        flags |= TextureUsageFlags.ResScaleUnsupported;
-                    }
-                }
-                else
-                {
-                    flags |= TextureUsageFlags.ResScaleUnsupported;
-                }
-
-                if (!isBindless)
-                {
-                    context.ImageDescriptors[index] = context.ImageDescriptors[index].SetFlag(flags);
                 }
 
                 return vector;
@@ -112,7 +96,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             if (texOp.Inst == Instruction.ImageStore)
             {
                 int texIndex = context.FindImageDescriptorIndex(texOp);
-                context.ImageDescriptors[texIndex] = context.ImageDescriptors[texIndex].SetFlag(TextureUsageFlags.ImageStore);
 
                 VariableType type = texOp.Format.GetComponentType();
 
@@ -176,12 +159,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             if (src1 is AstOperand oper && oper.Type == OperandType.Constant)
             {
-                return OperandManager.GetConstantBufferName(oper.Value, offsetExpr, context.Config.Stage, context.CbIndexable);
+                bool cbIndexable = context.Config.UsedFeatures.HasFlag(Translation.FeatureFlags.CbIndexing);
+                return OperandManager.GetConstantBufferName(oper.Value, offsetExpr, context.Config.Stage, cbIndexable);
             }
             else
             {
                 string slotExpr = GetSoureExpr(context, src1, GetSrcVarType(operation.Inst, 0));
-
                 return OperandManager.GetConstantBufferName(slotExpr, offsetExpr, context.Config.Stage);
             }
         }
@@ -205,18 +188,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             return $"{arrayName}[{offsetExpr}]";
         }
 
-        public static string LoadStorage(CodeGenContext context, AstOperation operation, bool forAtomic = false)
+        public static string LoadStorage(CodeGenContext context, AstOperation operation)
         {
             IAstNode src1 = operation.GetSource(0);
             IAstNode src2 = operation.GetSource(1);
 
             string indexExpr  = GetSoureExpr(context, src1, GetSrcVarType(operation.Inst, 0));
             string offsetExpr = GetSoureExpr(context, src2, GetSrcVarType(operation.Inst, 1));
-
-            if (forAtomic)
-            {
-                SetStorageWriteFlag(context, src1, context.Config.Stage);
-            }
 
             return GetStorageBufferAccessor(indexExpr, offsetExpr, context.Config.Stage);
         }
@@ -306,7 +284,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             string src = TypeConversion.ReinterpretCast(context, src3, srcType, VariableType.U32);
 
-            SetStorageWriteFlag(context, src1, context.Config.Stage);
             string sb = GetStorageBufferAccessor(indexExpr, offsetExpr, context.Config.Stage);
 
             return $"{sb} = {src}";
@@ -330,18 +307,30 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             bool isMultisample = (texOp.Type & SamplerType.Multisample) != 0;
             bool isShadow      = (texOp.Type & SamplerType.Shadow)      != 0;
 
+            SamplerType type = texOp.Type & SamplerType.Mask;
+
+            bool is2D   = type == SamplerType.Texture2D;
+            bool isCube = type == SamplerType.TextureCube;
+
+            // 2D Array and Cube shadow samplers with LOD level or bias requires an extension.
+            // If the extension is not supported, just remove the LOD parameter.
+            if (isArray && isShadow && (is2D || isCube) && !context.Config.GpuAccessor.QuerySupportsTextureShadowLod())
+            {
+                hasLodBias = false;
+                hasLodLevel = false;
+            }
+
+            // Cube shadow samplers with LOD level requires an extension.
+            // If the extension is not supported, just remove the LOD level parameter.
+            if (isShadow && isCube && !context.Config.GpuAccessor.QuerySupportsTextureShadowLod())
+            {
+                hasLodLevel = false;
+            }
+
             // TODO: Bindless texture support. For now we just return 0.
             if (isBindless)
             {
                 return NumberFormatter.FormatFloat(0);
-            }
-
-            // This combination is valid, but not available on GLSL.
-            // For now, ignore the LOD level and do a normal sample.
-            // TODO: How to implement it properly?
-            if (hasLodLevel && isArray && isShadow)
-            {
-                hasLodLevel = false;
             }
 
             string texCall = intCoords ? "texelFetch" : "texture";
@@ -470,13 +459,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             {
                 if (intCoords)
                 {
-                    int index = context.FindTextureDescriptorIndex(texOp);
-                    TextureUsageFlags flags = TextureUsageFlags.NeedsScaleValue;
-
                     if ((context.Config.Stage == ShaderStage.Fragment || context.Config.Stage == ShaderStage.Compute) &&
                         !isBindless &&
                         !isIndexed)
                     {
+                        int index = context.FindTextureDescriptorIndex(texOp);
+
                         if (pCount == 3 && isArray)
                         {
                             // The array index is not scaled, just x and y.
@@ -486,22 +474,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                         {
                             vector = "Helper_TexelFetchScale(" + vector + ", " + index + ")";
                         }
-                        else
-                        {
-                            flags |= TextureUsageFlags.ResScaleUnsupported;
-                        }
-                    }
-                    else
-                    {
-                        // Resolution scaling cannot be applied to this texture right now.
-                        // Flag so that we know to blacklist scaling on related textures when binding them.
-
-                        flags |= TextureUsageFlags.ResScaleUnsupported;
-                    }
-
-                    if (!isBindless)
-                    {
-                        context.TextureDescriptors[index] = context.TextureDescriptors[index].SetFlag(flags);
                     }
                 }
 
@@ -634,33 +606,18 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             }
             else
             {
-                return $"textureSize({samplerName}, {lodExpr}){GetMask(texOp.Index)}";
-            }
-        }
+                string texCall = $"textureSize({samplerName}, {lodExpr}){GetMask(texOp.Index)}";
 
-        private static void SetStorageWriteFlag(CodeGenContext context, IAstNode indexExpr, ShaderStage stage)
-        {
-            // Attempt to find a BufferDescriptor with the given index.
-            // If it cannot be resolved or is not constant, assume that the slot expression could potentially index any of them,
-            // and set the flag on all storage buffers.
-
-            int index = -1;
-
-            if (indexExpr is AstOperand operand && operand.Type == OperandType.Constant)
-            {
-                index = context.SBufferDescriptors.FindIndex(buffer => buffer.Slot == operand.Value);
-            }
-
-            if (index != -1)
-            {
-                context.SBufferDescriptors[index] = context.SBufferDescriptors[index].SetFlag(BufferUsageFlags.Write);
-            }
-            else
-            {
-                for (int i = 0; i < context.SBufferDescriptors.Count; i++)
+                if ((context.Config.Stage == ShaderStage.Fragment || context.Config.Stage == ShaderStage.Compute) &&
+                    !isBindless &&
+                    !isIndexed)
                 {
-                    context.SBufferDescriptors[i] = context.SBufferDescriptors[i].SetFlag(BufferUsageFlags.Write);
+                    int index = context.FindTextureDescriptorIndex(texOp);
+
+                    texCall = "Helper_TextureSizeUnscale(" + texCall + ", " + index + ")";
                 }
+
+                return texCall;
             }
         }
 
