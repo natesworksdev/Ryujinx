@@ -60,7 +60,7 @@ namespace Ryujinx.Graphics.Vulkan
         private PipelineFull _pipeline;
         private DebugReportCallbackEXT _debugReportCallback;
 
-        internal TextureBlit Blit { get; private set; }
+        internal HelperShader HelperShader { get; private set; }
         internal PipelineFull PipelineInternal => _pipeline;
 
         public IPipeline Pipeline => _pipeline;
@@ -69,7 +69,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private Func<Instance, Vk, SurfaceKHR> GetSurface;
 
-        internal bool IsIntelGpu { get; private set; }
+        internal Vendor Vendor { get; private set; }
         public string GpuVendor { get; private set; }
         public string GpuRenderer { get; private set; }
         public string GpuVersion { get; private set; }
@@ -163,7 +163,7 @@ namespace Ryujinx.Graphics.Vulkan
             _syncManager = new SyncManager(this, _device);
             _pipeline = new PipelineFull(this, _device);
 
-            Blit = new TextureBlit(this, _device);
+            HelperShader = new HelperShader(this, _device);
 
             _counters = new Counters(this, _device, _pipeline);
 
@@ -295,7 +295,14 @@ namespace Ryujinx.Graphics.Vulkan
                 _ => $"0x{properties.VendorID:X}"
             };
 
-            IsIntelGpu = properties.VendorID == 0x8086;
+            Vendor = properties.VendorID switch
+            {
+                0x1002 => Vendor.Amd,
+                0x10DE => Vendor.Nvidia,
+                0x8086 => Vendor.Intel,
+                _ => Vendor.Unknown
+            };
+
             GpuVendor = vendorName;
             GpuRenderer = Marshal.PtrToStringAnsi((IntPtr)properties.DeviceName);
             GpuVersion = $"Vulkan v{ParseStandardVulkanVersion(properties.ApiVersion)}, Driver v{ParseDriverVersion(ref properties)}";
@@ -340,7 +347,7 @@ namespace Ryujinx.Graphics.Vulkan
             CommandBufferPool.Dispose();
             _counters.Dispose();
             _window.Dispose();
-            Blit.Dispose();
+            HelperShader.Dispose();
             _pipeline.Dispose();
             BufferManager.Dispose();
             DescriptorSetManager.Dispose();

@@ -6,7 +6,7 @@ using VkFormat = Silk.NET.Vulkan.Format;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    class TextureBlit : IDisposable
+    class HelperShader : IDisposable
     {
         private const string VertexShaderSource = @"#version 450 core
 
@@ -53,25 +53,13 @@ void main()
     colour = vec4(texture(tex, tex_coord).rgb, 1.0f);
 }";
 
-        private const string DepthBlitFragmentShaderSource = @"#version 450 core
-
-layout (binding = 32, set = 2) uniform sampler2D tex;
-
-layout (location = 0) in vec2 tex_coord;
-
-void main()
-{
-    gl_FragDepth = texture(tex, tex_coord).r;
-}";
-
         private readonly PipelineBlit _pipeline;
         private readonly ISampler _samplerLinear;
         private readonly ISampler _samplerNearest;
         private readonly IProgram _programColorBlit;
-        private readonly IProgram _programDepthBlit;
         private readonly IProgram _programClearAlpha;
 
-        public TextureBlit(VulkanGraphicsDevice gd, Device device)
+        public HelperShader(VulkanGraphicsDevice gd, Device device)
         {
             _pipeline = new PipelineBlit(gd, device);
 
@@ -115,11 +103,28 @@ void main()
             var vertexShader = gd.CompileShader(ShaderStage.Vertex, vertexBindings, VertexShaderSource);
             var fragmentShaderColorBlit = gd.CompileShader(ShaderStage.Fragment, fragmentBindings, ColorBlitFragmentShaderSource);
             var fragmentShaderClearAlpha = gd.CompileShader(ShaderStage.Fragment, fragmentBindings, ClearAlphaFragmentShaderSource);
-            var fragmentShaderDepthBlit = gd.CompileShader(ShaderStage.Fragment, fragmentBindings, DepthBlitFragmentShaderSource);
 
             _programColorBlit = gd.CreateProgram(new[] { vertexShader, fragmentShaderColorBlit }, null);
             _programClearAlpha = gd.CreateProgram(new[] { vertexShader, fragmentShaderClearAlpha }, null);
-            _programDepthBlit = gd.CreateProgram(new[] { vertexShader, fragmentShaderDepthBlit }, null);
+        }
+
+        public void Blit(
+            VulkanGraphicsDevice gd,
+            TextureView src,
+            Auto<DisposableImageView> dst,
+            int dstWidth,
+            int dstHeight,
+            VkFormat dstFormat,
+            Extents2D srcRegion,
+            Extents2D dstRegion,
+            bool linearFilter,
+            bool clearAlpha = false)
+        {
+            gd.FlushAllCommands();
+
+            using var cbs = gd.CommandBufferPool.Rent();
+
+            Blit(gd, cbs, src, dst, dstWidth, dstHeight, dstFormat, srcRegion, dstRegion, linearFilter, clearAlpha);
         }
 
         public void Blit(
@@ -129,16 +134,9 @@ void main()
             Auto<DisposableImageView> dst,
             int dstWidth,
             int dstHeight,
-            bool dstDepthStencil,
             VkFormat dstFormat,
-            int srcX0,
-            int srcY0,
-            int srcX1,
-            int srcY1,
-            int dstX0,
-            int dstY0,
-            int dstX1,
-            int dstY1,
+            Extents2D srcRegion,
+            Extents2D dstRegion,
             bool linearFilter,
             bool clearAlpha = false)
         {
@@ -146,16 +144,16 @@ void main()
 
             const int RegionBufferSize = 16;
 
-            var sampler = linearFilter && !dstDepthStencil ? _samplerLinear : _samplerNearest;
+            var sampler = linearFilter ? _samplerLinear : _samplerNearest;
 
             _pipeline.SetTextureAndSampler(32, src, sampler);
 
             Span<float> region = stackalloc float[RegionBufferSize / sizeof(float)];
 
-            region[0] = (float)srcX0 / src.Width;
-            region[1] = (float)srcX1 / src.Width;
-            region[2] = (float)srcY0 / src.Height;
-            region[3] = (float)srcY1 / src.Height;
+            region[0] = (float)srcRegion.X1 / src.Width;
+            region[1] = (float)srcRegion.X2 / src.Width;
+            region[2] = (float)srcRegion.Y1 / src.Height;
+            region[3] = (float)srcRegion.Y2 / src.Height;
 
             var bufferHandle = gd.BufferManager.CreateWithHandle(gd, RegionBufferSize);
 
@@ -170,7 +168,7 @@ void main()
             Span<GAL.Viewport> viewports = stackalloc GAL.Viewport[1];
 
             viewports[0] = new GAL.Viewport(
-                new Rectangle<float>(dstX0, dstY0, dstX1 - dstX0, dstY1 - dstY0),
+                new Rectangle<float>(dstRegion.X1, dstRegion.Y1, dstRegion.X2 - dstRegion.X1, dstRegion.Y2 - dstRegion.Y1),
                 ViewportSwizzle.PositiveX,
                 ViewportSwizzle.PositiveY,
                 ViewportSwizzle.PositiveZ,
@@ -182,16 +180,8 @@ void main()
 
             scissors[0] = new Rectangle<int>(0, 0, dstWidth, dstHeight);
 
-            if (dstDepthStencil)
-            {
-                _pipeline.SetProgram(_programDepthBlit);
-            }
-            else
-            {
-                _pipeline.SetProgram(clearAlpha ? _programClearAlpha : _programColorBlit);
-            }
-
-            _pipeline.SetRenderTarget(dst, (uint)dstWidth, (uint)dstHeight, dstDepthStencil, dstFormat);
+            _pipeline.SetProgram(clearAlpha ? _programClearAlpha : _programColorBlit);
+            _pipeline.SetRenderTarget(dst, (uint)dstWidth, (uint)dstHeight, false, dstFormat);
             _pipeline.SetRenderTargetColorMasks(new uint[] { 0xf });
 
             if (clearAlpha)
@@ -201,7 +191,6 @@ void main()
 
             _pipeline.SetViewports(0, viewports);
             _pipeline.SetScissors(scissors);
-            _pipeline.SetDepthTest(new DepthTestDescriptor(false, true, GAL.CompareOp.Always));
             _pipeline.SetPrimitiveTopology(GAL.PrimitiveTopology.TriangleStrip);
             _pipeline.Draw(4, 1, 0, 0);
             _pipeline.Finish();
@@ -256,7 +245,6 @@ void main()
         {
             if (disposing)
             {
-                _programDepthBlit.Dispose();
                 _programClearAlpha.Dispose();
                 _programColorBlit.Dispose();
                 _samplerNearest.Dispose();

@@ -243,7 +243,7 @@ namespace Ryujinx.Graphics.Vulkan
                 data.Length);
 
             // Not flushing commands here causes glitches on Intel (driver bug?)
-            if (_gd.IsIntelGpu)
+            if (_gd.Vendor == Vendor.Intel)
             {
                 _gd.FlushAllCommands();
             }
@@ -347,7 +347,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 holder = _gd.BufferManager.Create(_gd, (size * 2 + 3) & ~3);
 
-                _gd.Blit.ConvertI8ToI16(_gd, cbs, this, holder, offset, size);
+                _gd.HelperShader.ConvertI8ToI16(_gd, cbs, this, holder, offset, size);
 
                 _cachedConvertedIndexBuffers.Add(offset, size, holder);
             }

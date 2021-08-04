@@ -6,5 +6,6 @@
 
         public const bool UseFastBufferUpdates = true;
         public const bool UseGranularBufferTracking = false;
+        public const bool UseSlowSafeBlitOnAmd = true;
     }
 }

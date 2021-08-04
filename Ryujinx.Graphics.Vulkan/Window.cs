@@ -308,23 +308,16 @@ namespace Ryujinx.Graphics.Vulkan
             int dstY0 = crop.FlipY ? dstPaddingY : _height - dstPaddingY;
             int dstY1 = crop.FlipY ? _height - dstPaddingY : dstPaddingY;
 
-            _gd.Blit.Blit(
+            _gd.HelperShader.Blit(
                 _gd,
                 cbs,
                 view,
                 _swapchainImageViews[nextImage],
                 _width,
                 _height,
-                false,
                 _format,
-                srcX0,
-                srcY0,
-                srcX1,
-                srcY1,
-                dstX0,
-                dstY1,
-                dstX1,
-                dstY0,
+                new Extents2D(srcX0, srcY0, srcX1, srcY1),
+                new Extents2D(dstX0, dstY1, dstX1, dstY0),
                 true,
                 true);
 

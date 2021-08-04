@@ -366,6 +366,26 @@ namespace Ryujinx.Graphics.Vulkan
                 }
             }
 
+            if (VulkanConfiguration.UseSlowSafeBlitOnAmd &&
+                _gd.Vendor == Vendor.Amd &&
+                src.Info.Target == Target.Texture2D &&
+                dst.Info.Target == Target.Texture2D &&
+                !dst.Info.Format.IsDepthOrStencil())
+            {
+                _gd.HelperShader.Blit(
+                    _gd,
+                    src,
+                    dst.GetIdentityImageView(),
+                    dst.Width,
+                    dst.Height,
+                    dst.VkFormat,
+                    srcRegion,
+                    dstRegion,
+                    linearFilter);
+
+                return;
+            }
+
             Auto<DisposableImage> srcImage;
             Auto<DisposableImage> dstImage;
 
