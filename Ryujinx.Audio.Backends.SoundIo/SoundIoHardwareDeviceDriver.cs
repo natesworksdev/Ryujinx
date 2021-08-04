@@ -15,14 +15,14 @@ namespace Ryujinx.Audio.Backends.SoundIo
         private readonly SoundIO _audioContext;
         private readonly SoundIODevice _audioDevice;
         private readonly ManualResetEvent _updateRequiredEvent;
-        private readonly ConcurrentDictionary<SoundIoHardwareDeviceSession, object> _sessions;
+        private readonly ConcurrentDictionary<SoundIoHardwareDeviceSession, byte> _sessions;
         private int _disposeState;
 
         public SoundIoHardwareDeviceDriver()
         {
             _audioContext = new SoundIO();
             _updateRequiredEvent = new ManualResetEvent(false);
-            _sessions = new ConcurrentDictionary<SoundIoHardwareDeviceSession, object>();
+            _sessions = new ConcurrentDictionary<SoundIoHardwareDeviceSession, byte>();
 
             _audioContext.Connect();
             _audioContext.FlushEvents();
@@ -142,7 +142,7 @@ namespace Ryujinx.Audio.Backends.SoundIo
 
             SoundIoHardwareDeviceSession session = new SoundIoHardwareDeviceSession(this, memoryManager, sampleFormat, sampleRate, channelCount);
 
-            _sessions.TryAdd(session, null);
+            _sessions.TryAdd(session, 0);
 
             return session;
         }

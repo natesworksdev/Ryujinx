@@ -137,11 +137,6 @@ namespace Ryujinx.Ui
         {
             ConfigurationState.Instance.HideCursorOnIdle.Event -= HideCursorStateChanged;
 
-            if (Window != null)
-            {
-                Window.Cursor = null;
-            }
-
             NpadManager.Dispose();
             Dispose();
         }
@@ -611,7 +606,7 @@ namespace Ryujinx.Ui
             {
                 state |= KeyboardHotkeyState.ToggleVSync;
             }
-            
+
             if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Screenshot))
             {
                 state |= KeyboardHotkeyState.Screenshot;
