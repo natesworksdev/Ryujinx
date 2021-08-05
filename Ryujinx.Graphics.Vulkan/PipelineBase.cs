@@ -803,8 +803,16 @@ namespace Ryujinx.Graphics.Vulkan
 
         protected void UpdatePipelineAttachmentFormats()
         {
-            FramebufferParams.AttachmentFormats.CopyTo(_newState.Internal.AttachmentFormats.ToSpan());
-            _newState.ColorBlendAttachmentStateCount = (uint)FramebufferParams.ColorAttachmentsCount;
+            var dstAttachmentFormats = _newState.Internal.AttachmentFormats.ToSpan();
+            FramebufferParams.AttachmentFormats.CopyTo(dstAttachmentFormats);
+
+            int maxAttachmentIndex = FramebufferParams.MaxColorAttachmentIndex + (FramebufferParams.HasDepthStencil ? 1 : 0);
+            for (int i = FramebufferParams.AttachmentFormats.Length; i <= maxAttachmentIndex; i++)
+            {
+                dstAttachmentFormats[i] = 0;
+            }
+
+            _newState.ColorBlendAttachmentStateCount = (uint)(FramebufferParams.MaxColorAttachmentIndex + 1);
             _newState.HasDepthStencil = FramebufferParams.HasDepthStencil;
         }
 
@@ -826,16 +834,10 @@ namespace Ryujinx.Graphics.Vulkan
             if (hasFramebuffer && FramebufferParams.AttachmentsCount != 0)
             {
                 attachmentDescs = new AttachmentDescription[FramebufferParams.AttachmentsCount];
-                int maxAttachmentIndex = -1;
 
                 for (int i = 0; i < FramebufferParams.AttachmentsCount; i++)
                 {
                     int bindIndex = FramebufferParams.AttachmentIndices[i];
-
-                    if (bindIndex > maxAttachmentIndex)
-                    {
-                        maxAttachmentIndex = bindIndex;
-                    }
 
                     attachmentDescs[i] = new AttachmentDescription(
                         0,
@@ -858,6 +860,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (colorAttachmentsCount != 0)
                 {
+                    int maxAttachmentIndex = FramebufferParams.MaxColorAttachmentIndex;
                     subpass.ColorAttachmentCount = (uint)maxAttachmentIndex + 1;
                     subpass.PColorAttachments = &attachmentReferences[0];
 
