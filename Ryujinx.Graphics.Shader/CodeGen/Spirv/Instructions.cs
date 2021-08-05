@@ -1684,11 +1684,15 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             if (operation.Inst.HasFlag(Instruction.FP64))
             {
-                return new OperationResult(AggregateType.FP64, emitF(context.TypeFP64(), context.GetFP64(src1), context.GetFP64(src2)));
+                var result = emitF(context.TypeFP64(), context.GetFP64(src1), context.GetFP64(src2));
+                context.Decorate(result, Decoration.NoContraction);
+                return new OperationResult(AggregateType.FP64, result);
             }
             else if (operation.Inst.HasFlag(Instruction.FP32))
             {
-                return new OperationResult(AggregateType.FP32, emitF(context.TypeFP32(), context.GetFP32(src1), context.GetFP32(src2)));
+                var result = emitF(context.TypeFP32(), context.GetFP32(src1), context.GetFP32(src2));
+                context.Decorate(result, Decoration.NoContraction);
+                return new OperationResult(AggregateType.FP32, result);
             }
             else
             {
