@@ -30,8 +30,8 @@ namespace Ryujinx.Graphics.Vulkan
             _device = device;
             Bindings = bindings;
 
-            glsl = glsl.Replace("gl_VertexID", "gl_VertexIndex");
-            glsl = glsl.Replace("gl_InstanceID", "gl_InstanceIndex");
+            glsl = glsl.Replace("gl_VertexID", "(gl_VertexIndex - gl_BaseVertex)");
+            glsl = glsl.Replace("gl_InstanceID", "(gl_InstanceIndex - gl_BaseInstance)");
             glsl = glsl.Replace("gl_SubGroupInvocationARB", "gl_SubgroupInvocationID");
             glsl = glsl.Replace("unpackUint2x32(gl_SubGroupEqMaskARB).x", "gl_SubgroupEqMask.x");
             glsl = glsl.Replace("unpackUint2x32(gl_SubGroupGeMaskARB).x", "gl_SubgroupGeMask.x");
