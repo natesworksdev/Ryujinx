@@ -8,6 +8,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         private static readonly Dictionary<int, AttributeInfo> BuiltInAttributes = new Dictionary<int, AttributeInfo>()
         {
             { AttributeConsts.Layer,         new AttributeInfo(AttributeConsts.Layer,         1, AggregateType.S32) },
+            { AttributeConsts.ViewportIndex, new AttributeInfo(AttributeConsts.ViewportIndex, 1, AggregateType.S32) },
             { AttributeConsts.PointSize,     new AttributeInfo(AttributeConsts.PointSize,     1, AggregateType.FP32) },
             { AttributeConsts.PositionX,     new AttributeInfo(AttributeConsts.PositionX,     4, AggregateType.Vector | AggregateType.FP32) },
             { AttributeConsts.PositionY,     new AttributeInfo(AttributeConsts.PositionY,     4, AggregateType.Vector | AggregateType.FP32) },

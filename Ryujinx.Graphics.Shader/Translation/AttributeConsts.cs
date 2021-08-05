@@ -3,6 +3,7 @@ namespace Ryujinx.Graphics.Shader.Translation
     static class AttributeConsts
     {
         public const int Layer         = 0x064;
+        public const int ViewportIndex = 0x068;
         public const int PointSize     = 0x06c;
         public const int PositionX     = 0x070;
         public const int PositionY     = 0x074;
