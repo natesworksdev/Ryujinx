@@ -278,7 +278,7 @@ namespace Ryujinx.Graphics.Vulkan
                 buffer,
                 0,
                 sizeof(long),
-                QueryResultFlags.QueryResult64Bit);
+                QueryResultFlags.QueryResult64Bit | QueryResultFlags.QueryResultWaitBit);
 
             _hasPendingQuery = true;
         }
