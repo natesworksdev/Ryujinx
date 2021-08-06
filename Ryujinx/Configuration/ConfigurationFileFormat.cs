@@ -24,6 +24,11 @@ namespace Ryujinx.Configuration
         public bool EnableFileLog { get; set; }
 
         /// <summary>
+        /// Whether or not backend threading is enabled. The "Auto" setting will determine whether threading should be enabled at runtime.
+        /// </summary>
+        public BackendThreading BackendThreading { get; set; }
+
+        /// <summary>
         /// Resolution Scale. An integer scale applied to applicable render targets. Values 1-4, or -1 to use a custom floating point scale instead.
         /// </summary>
         public int ResScale { get; set; }

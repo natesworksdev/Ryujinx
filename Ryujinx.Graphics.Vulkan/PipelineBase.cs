@@ -744,9 +744,9 @@ namespace Ryujinx.Graphics.Vulkan
             TextureBarrier();
         }
 
-        public void UpdateRenderScale(ShaderStage stage, float[] scales, int textureCount, int imageCount)
+        public void UpdateRenderScale(ShaderStage stage, ReadOnlySpan<float> scales, int textureCount, int imageCount)
         {
-            static bool Copy(float[] from, int fromIndex, Vector4<float>[] to, int toIndex, int count)
+            static bool Copy(ReadOnlySpan<float> from, int fromIndex, Vector4<float>[] to, int toIndex, int count)
             {
                 bool changed = false;
 
