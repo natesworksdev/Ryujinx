@@ -7,7 +7,6 @@ using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
 using Ryujinx.Graphics.GAL;
-using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.Input;
 using Ryujinx.Input.GTK3;
 using Ryujinx.Input.HLE;
@@ -144,8 +143,6 @@ namespace Ryujinx.Ui
         {
             ConfigurationState.Instance.HideCursorOnIdle.Event -= HideCursorStateChanged;
 
-            Window.Cursor = null;
-
             NpadManager.Dispose();
             Dispose();
         }
@@ -157,7 +154,7 @@ namespace Ryujinx.Ui
                 _lastCursorMoveTime = Stopwatch.GetTimestamp();
             }
 
-            if(ConfigurationState.Instance.Hid.EnableMouse)
+            if (ConfigurationState.Instance.Hid.EnableMouse)
             {
                 Window.Cursor = _invisibleCursor;
             }
@@ -580,6 +577,12 @@ namespace Ryujinx.Ui
                     Renderer.Screenshot();
                 }
 
+                if (currentHotkeyState.HasFlag(KeyboardHotkeyState.ShowUi) &&
+                    !_prevHotkeyState.HasFlag(KeyboardHotkeyState.ShowUi))
+                {
+                    (Toplevel as MainWindow).ToggleExtraWidgets(true);
+                }
+
                 _prevHotkeyState = currentHotkeyState;
             }
 
@@ -605,9 +608,10 @@ namespace Ryujinx.Ui
         [Flags]
         private enum KeyboardHotkeyState
         {
-            None,
-            ToggleVSync,
-            Screenshot
+            None = 0,
+            ToggleVSync = 1 << 0,
+            Screenshot = 1 << 1,
+            ShowUi = 1 << 2
         }
 
         private KeyboardHotkeyState GetHotkeyState()
@@ -622,6 +626,11 @@ namespace Ryujinx.Ui
             if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Screenshot))
             {
                 state |= KeyboardHotkeyState.Screenshot;
+            }
+
+            if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUi))
+            {
+                state |= KeyboardHotkeyState.ShowUi;
             }
 
             return state;
