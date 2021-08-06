@@ -38,7 +38,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <summary>
         /// Version of the codegen (to be changed when codegen or guest format change).
         /// </summary>
-        private const ulong ShaderCodeGenVersion = 2469;
+        private const ulong ShaderCodeGenVersion = 2532;
 
         // Progress reporting helpers
         private volatile int _shaderCount;
@@ -112,7 +112,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 int programIndex = 0;
                 List<ShaderCompileTask> activeTasks = new List<ShaderCompileTask>();
 
-                AutoResetEvent taskDoneEvent = new AutoResetEvent(false);
+                using AutoResetEvent taskDoneEvent = new AutoResetEvent(false);
 
                 // This thread dispatches tasks to do shader translation, and creates programs that OpenGL will link in the background.
                 // The program link status is checked in a non-blocking manner so that multiple shaders can be compiled at once.
@@ -206,12 +206,20 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
                                     task.OnTask(compileTask, (bool _, ShaderCompileTask task) =>
                                     {
+                                        if (task.IsFaulted)
+                                        {
+                                            Logger.Warning?.Print(LogClass.Gpu, $"Host shader {key} is corrupted or incompatible, discarding...");
+
+                                            _cacheManager.RemoveProgram(ref key);
+                                            return true; // Exit early, the decoding step failed.
+                                        }
+
                                         ShaderCodeHolder shader = new ShaderCodeHolder(program, shaderProgramInfo, entry.Code);
 
                                         Logger.Info?.Print(LogClass.Gpu, $"Host shader {key} got invalidated, rebuilding from guest...");
 
                                         // Compile shader and create program as the shader program binary got invalidated.
-                                        shader.HostShader = _context.Renderer.CompileShader(ShaderStage.Compute, shader.Program.Code);
+                                        shader.HostShader = _context.Renderer.CompileShader(ShaderStage.Compute, program.Code);
                                         hostProgram = _context.Renderer.CreateProgram(new IShader[] { shader.HostShader }, null);
 
                                         task.OnCompiled(hostProgram, (bool isNewProgramValid, ShaderCompileTask task) =>
@@ -364,6 +372,14 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
                                 task.OnTask(compileTask, (bool _, ShaderCompileTask task) =>
                                 {
+                                    if (task.IsFaulted)
+                                    {
+                                        Logger.Warning?.Print(LogClass.Gpu, $"Host shader {key} is corrupted or incompatible, discarding...");
+
+                                        _cacheManager.RemoveProgram(ref key);
+                                        return true; // Exit early, the decoding step failed.
+                                    }
+
                                     // If the host program was rejected by the gpu driver or isn't in cache, try to build from program sources again.
                                     if (!isHostProgramValid)
                                     {
