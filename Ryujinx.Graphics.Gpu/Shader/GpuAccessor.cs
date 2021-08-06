@@ -68,6 +68,20 @@ namespace Ryujinx.Graphics.Gpu.Shader
         }
 
         /// <summary>
+        /// Reads data from the constant buffer 1.
+        /// </summary>
+        /// <param name="offset">Offset in bytes to read from</param>
+        /// <returns>Value at the given offset</returns>
+        public uint ConstantBuffer1Read(int offset)
+        {
+            ulong baseAddress = _compute
+                ? _channel.BufferManager.GetComputeUniformBufferAddress(1)
+                : _channel.BufferManager.GetGraphicsUniformBufferAddress(_stageIndex, 1);
+
+            return _channel.MemoryManager.Physical.Read<uint>(baseAddress + (ulong)offset);
+        }
+
+        /// <summary>
         /// Prints a log message.
         /// </summary>
         /// <param name="message">Message to print</param>

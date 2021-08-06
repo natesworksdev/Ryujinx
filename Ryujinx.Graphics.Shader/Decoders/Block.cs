@@ -11,8 +11,6 @@ namespace Ryujinx.Graphics.Shader.Decoders
         public Block Next   { get; set; }
         public Block Branch { get; set; }
 
-        public OpCodeBranchIndir BrIndir { get; set; }
-
         public List<OpCode>     OpCodes     { get; }
         public List<OpCodePush> PushOpCodes { get; }
 

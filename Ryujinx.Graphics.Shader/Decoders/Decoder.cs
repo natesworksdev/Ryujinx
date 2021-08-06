@@ -9,8 +9,6 @@ namespace Ryujinx.Graphics.Shader.Decoders
 {
     static class Decoder
     {
-        public const ulong ShaderEndDelimiter = 0xe2400fffff87000f;
-
         public static Block[][] Decode(IGpuAccessor gpuAccessor, ulong startAddress, out bool hasBindless)
         {
             hasBindless = false;
@@ -127,11 +125,14 @@ namespace Ryujinx.Graphics.Shader.Decoders
                             // instruction right after the BRX, and the common target that
                             // all the "cases" should eventually jump to, acting as the
                             // switch break.
-                            Block firstTarget = GetBlock(currBlock.EndAddress);
+                            (int cbBaseOffset, int cbOffsetsCount) = FindBrxTargetRange(currBlock, opBrIndir.Ra.Index);
 
-                            firstTarget.BrIndir = opBrIndir;
-
-                            opBrIndir.PossibleTargets.Add(firstTarget);
+                            for (int i = 0; i < cbOffsetsCount; i++)
+                            {
+                                uint targetOffset = gpuAccessor.ConstantBuffer1Read(cbBaseOffset + i * 4);
+                                Block target = GetBlock(targetOffset);
+                                opBrIndir.PossibleTargets.Add(target);
+                            }
                         }
 
                         if (!IsUnconditionalBranch(lastOp))
@@ -151,21 +152,6 @@ namespace Ryujinx.Graphics.Shader.Decoders
                     {
                         blocks.Add(currBlock);
                     }
-
-                    // Do we have a block after the current one?
-                    if (currBlock.BrIndir != null && HasBlockAfter(gpuAccessor, currBlock, startAddress))
-                    {
-                        bool targetVisited = visited.ContainsKey(currBlock.EndAddress);
-
-                        Block possibleTarget = GetBlock(currBlock.EndAddress);
-
-                        currBlock.BrIndir.PossibleTargets.Add(possibleTarget);
-
-                        if (!targetVisited)
-                        {
-                            possibleTarget.BrIndir = currBlock.BrIndir;
-                        }
-                    }
                 }
 
                 foreach (Block block in blocks.Where(x => x.PushOpCodes.Count != 0))
@@ -180,19 +166,6 @@ namespace Ryujinx.Graphics.Shader.Decoders
             }
 
             return funcs.ToArray();
-        }
-
-        private static bool HasBlockAfter(IGpuAccessor gpuAccessor, Block currBlock, ulong startAdddress)
-        {
-            if (!gpuAccessor.MemoryMapped(startAdddress + currBlock.EndAddress) ||
-                !gpuAccessor.MemoryMapped(startAdddress + currBlock.EndAddress + 7))
-            {
-                return false;
-            }
-
-            ulong inst = gpuAccessor.MemoryRead<ulong>(startAdddress + currBlock.EndAddress);
-
-            return inst != 0UL && inst != ShaderEndDelimiter;
         }
 
         private static bool BinarySearch(List<Block> blocks, ulong address, out int index)
@@ -318,6 +291,45 @@ namespace Ryujinx.Graphics.Shader.Decoders
                     opCode is OpCodeBranchIndir                              ||
                     opCode is OpCodeBranchPop                                ||
                     opCode is OpCodeExit;
+        }
+
+        private static (int, int) FindBrxTargetRange(Block block, int brxReg)
+        {
+            int ldcIndex = FindFirstRegWrite(block, block.OpCodes.Count - 1, brxReg);
+            if (ldcIndex == -1 ||
+                block.OpCodes[ldcIndex] is not OpCodeLdc opLdc ||
+                opLdc.Slot != 1 ||
+                opLdc.IndexMode != CbIndexMode.Default)
+            {
+                return (0, 0);
+            }
+
+            int shlIndex = FindFirstRegWrite(block, ldcIndex, opLdc.Ra.Index);
+            if (shlIndex == -1 || block.OpCodes[shlIndex] is not OpCodeAluImm opShl || opShl.Emitter != InstEmit.Shl || opShl.Immediate != 2)
+            {
+                return (0, 0);
+            }
+
+            int imnmxIndex = FindFirstRegWrite(block, shlIndex, opShl.Ra.Index);
+            if (imnmxIndex == -1 || block.OpCodes[imnmxIndex] is not OpCodeAluImm opImnmx || opImnmx.Emitter != InstEmit.Imnmx)
+            {
+                return (0, 0);
+            }
+
+            return (opLdc.Offset, opImnmx.Immediate + 1);
+        }
+
+        private static int FindFirstRegWrite(Block block, int startAt, int regIndex)
+        {
+            for (int i = startAt - 1; i >= 0; i--)
+            {
+                if (block.OpCodes[i] is IOpCodeRd opRd && opRd.Rd.Index == regIndex)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
         }
 
         private enum MergeType
