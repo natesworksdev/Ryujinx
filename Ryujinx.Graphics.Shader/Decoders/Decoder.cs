@@ -49,83 +49,121 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
                 GetBlock(funcAddress);
 
-                while (workQueue.TryDequeue(out Block currBlock))
+                bool hasNewTarget;
+
+                do
                 {
-                    // Check if the current block is inside another block.
-                    if (BinarySearch(blocks, currBlock.Address, out int nBlkIndex))
+                    while (workQueue.TryDequeue(out Block currBlock))
                     {
-                        Block nBlock = blocks[nBlkIndex];
-
-                        if (nBlock.Address == currBlock.Address)
+                        // Check if the current block is inside another block.
+                        if (BinarySearch(blocks, currBlock.Address, out int nBlkIndex))
                         {
-                            throw new InvalidOperationException("Found duplicate block address on the list.");
-                        }
+                            Block nBlock = blocks[nBlkIndex];
 
-                        nBlock.Split(currBlock);
-                        blocks.Insert(nBlkIndex + 1, currBlock);
-
-                        continue;
-                    }
-
-                    // If we have a block after the current one, set the limit address.
-                    ulong limitAddress = ulong.MaxValue;
-
-                    if (nBlkIndex != blocks.Count)
-                    {
-                        Block nBlock = blocks[nBlkIndex];
-
-                        int nextIndex = nBlkIndex + 1;
-
-                        if (nBlock.Address < currBlock.Address && nextIndex < blocks.Count)
-                        {
-                            limitAddress = blocks[nextIndex].Address;
-                        }
-                        else if (nBlock.Address > currBlock.Address)
-                        {
-                            limitAddress = blocks[nBlkIndex].Address;
-                        }
-                    }
-
-                    FillBlock(gpuAccessor, currBlock, limitAddress, startAddress, out bool blockHasBindless);
-                    hasBindless |= blockHasBindless;
-
-                    if (currBlock.OpCodes.Count != 0)
-                    {
-                        // We should have blocks for all possible branch targets,
-                        // including those from SSY/PBK instructions.
-                        foreach (OpCodePush pushOp in currBlock.PushOpCodes)
-                        {
-                            GetBlock(pushOp.GetAbsoluteAddress());
-                        }
-
-                        // Set child blocks. "Branch" is the block the branch instruction
-                        // points to (when taken), "Next" is the block at the next address,
-                        // executed when the branch is not taken. For Unconditional Branches
-                        // or end of program, Next is null.
-                        OpCode lastOp = currBlock.GetLastOp();
-
-                        if (lastOp is OpCodeBranch opBr)
-                        {
-                            if (lastOp.Emitter == InstEmit.Cal)
+                            if (nBlock.Address == currBlock.Address)
                             {
-                                EnqueueFunction(opBr.GetAbsoluteAddress());
+                                throw new InvalidOperationException("Found duplicate block address on the list.");
                             }
-                            else
+
+                            nBlock.Split(currBlock);
+                            blocks.Insert(nBlkIndex + 1, currBlock);
+
+                            continue;
+                        }
+
+                        // If we have a block after the current one, set the limit address.
+                        ulong limitAddress = ulong.MaxValue;
+
+                        if (nBlkIndex != blocks.Count)
+                        {
+                            Block nBlock = blocks[nBlkIndex];
+
+                            int nextIndex = nBlkIndex + 1;
+
+                            if (nBlock.Address < currBlock.Address && nextIndex < blocks.Count)
                             {
-                                currBlock.Branch = GetBlock(opBr.GetAbsoluteAddress());
+                                limitAddress = blocks[nextIndex].Address;
+                            }
+                            else if (nBlock.Address > currBlock.Address)
+                            {
+                                limitAddress = blocks[nBlkIndex].Address;
                             }
                         }
-                        else if (lastOp is OpCodeBranchIndir opBrIndir)
+
+                        FillBlock(gpuAccessor, currBlock, limitAddress, startAddress, out bool blockHasBindless);
+                        hasBindless |= blockHasBindless;
+
+                        if (currBlock.OpCodes.Count != 0)
+                        {
+                            // We should have blocks for all possible branch targets,
+                            // including those from SSY/PBK instructions.
+                            foreach (OpCodePush pushOp in currBlock.PushOpCodes)
+                            {
+                                GetBlock(pushOp.GetAbsoluteAddress());
+                            }
+
+                            // Set child blocks. "Branch" is the block the branch instruction
+                            // points to (when taken), "Next" is the block at the next address,
+                            // executed when the branch is not taken. For Unconditional Branches
+                            // or end of program, Next is null.
+                            OpCode lastOp = currBlock.GetLastOp();
+
+                            if (lastOp is OpCodeBranch opBr)
+                            {
+                                if (lastOp.Emitter == InstEmit.Cal)
+                                {
+                                    EnqueueFunction(opBr.GetAbsoluteAddress());
+                                }
+                                else
+                                {
+                                    currBlock.Branch = GetBlock(opBr.GetAbsoluteAddress());
+                                }
+                            }
+
+                            if (!IsUnconditionalBranch(lastOp))
+                            {
+                                currBlock.Next = GetBlock(currBlock.EndAddress);
+                            }
+                        }
+
+                        // Insert the new block on the list (sorted by address).
+                        if (blocks.Count != 0)
+                        {
+                            Block nBlock = blocks[nBlkIndex];
+
+                            blocks.Insert(nBlkIndex + (nBlock.Address < currBlock.Address ? 1 : 0), currBlock);
+                        }
+                        else
+                        {
+                            blocks.Add(currBlock);
+                        }
+                    }
+
+                    // Propagate SSY/PBK addresses into their uses (SYNC/BRK).
+                    foreach (Block block in blocks.Where(x => x.PushOpCodes.Count != 0))
+                    {
+                        for (int pushOpIndex = 0; pushOpIndex < block.PushOpCodes.Count; pushOpIndex++)
+                        {
+                            PropagatePushOp(visited, block, pushOpIndex);
+                        }
+                    }
+
+                    // Try to find target for BRX (indirect branch) instructions.
+                    hasNewTarget = false;
+
+                    foreach (Block block in blocks)
+                    {
+                        if (block.GetLastOp() is OpCodeBranchIndir opBrIndir && opBrIndir.PossibleTargets.Count == 0)
                         {
                             ulong baseOffset = opBrIndir.Address + 8 + (ulong)opBrIndir.Offset;
 
                             // An indirect branch could go anywhere,
                             // try to get the possible target offsets from the constant buffer.
-                            (int cbBaseOffset, int cbOffsetsCount) = FindBrxTargetRange(currBlock, opBrIndir.Ra.Index);
+                            (int cbBaseOffset, int cbOffsetsCount) = FindBrxTargetRange(block, opBrIndir.Ra.Index);
 
-                            if (cbOffsetsCount == 0)
+                            if (cbOffsetsCount != 0)
                             {
-                                gpuAccessor.Log($"Failed to find targets for BRX instruction at 0x{opBrIndir.Address:X}.");
+                                hasNewTarget = true;
                             }
 
                             for (int i = 0; i < cbOffsetsCount; i++)
@@ -133,35 +171,17 @@ namespace Ryujinx.Graphics.Shader.Decoders
                                 uint targetOffset = gpuAccessor.ConstantBuffer1Read(cbBaseOffset + i * 4);
                                 Block target = GetBlock(baseOffset + targetOffset);
                                 opBrIndir.PossibleTargets.Add(target);
+                                target.Predecessors.Add(block);
                             }
                         }
-
-                        if (!IsUnconditionalBranch(lastOp))
-                        {
-                            currBlock.Next = GetBlock(currBlock.EndAddress);
-                        }
                     }
 
-                    // Insert the new block on the list (sorted by address).
-                    if (blocks.Count != 0)
-                    {
-                        Block nBlock = blocks[nBlkIndex];
-
-                        blocks.Insert(nBlkIndex + (nBlock.Address < currBlock.Address ? 1 : 0), currBlock);
-                    }
-                    else
-                    {
-                        blocks.Add(currBlock);
-                    }
+                    // If we discovered new branch targets from the BRX instruction,
+                    // we need another round of decoding to decode the new blocks.
+                    // Additionally, we may have more SSY/PBK targets to propagate,
+                    // and new BRX instructions.
                 }
-
-                foreach (Block block in blocks.Where(x => x.PushOpCodes.Count != 0))
-                {
-                    for (int pushOpIndex = 0; pushOpIndex < block.PushOpCodes.Count; pushOpIndex++)
-                    {
-                        PropagatePushOp(visited, block, pushOpIndex);
-                    }
-                }
+                while (hasNewTarget);
 
                 funcs.Add(blocks.ToArray());
             }
@@ -308,8 +328,10 @@ namespace Ryujinx.Graphics.Shader.Decoders
             // On a successful match, "BaseOffset" is the offset in bytes where the jump offsets are
             // located on the constant buffer, and "UpperBound" is the total number of offsets for the BRX, minus 1.
 
-            int ldcIndex = FindFirstRegWrite(block, block.OpCodes.Count - 1, brxReg);
-            if (ldcIndex == -1 || block.OpCodes[ldcIndex] is not OpCodeLdc opLdc)
+            HashSet<Block> visited = new HashSet<Block>();
+
+            var ldcLocation = FindFirstRegWrite(visited, new BlockLocation(block, block.OpCodes.Count - 1), brxReg);
+            if (ldcLocation.Block == null || ldcLocation.Block.OpCodes[ldcLocation.Index] is not OpCodeLdc opLdc)
             {
                 return (0, 0);
             }
@@ -319,8 +341,8 @@ namespace Ryujinx.Graphics.Shader.Decoders
                 return (0, 0);
             }
 
-            int shlIndex = FindFirstRegWrite(block, ldcIndex, opLdc.Ra.Index);
-            if (shlIndex == -1 || block.OpCodes[shlIndex] is not OpCodeAluImm opShl)
+            var shlLocation = FindFirstRegWrite(visited, ldcLocation, opLdc.Ra.Index);
+            if (shlLocation.Block == null || shlLocation.Block.OpCodes[shlLocation.Index] is not OpCodeAluImm opShl)
             {
                 return (0, 0);
             }
@@ -330,8 +352,8 @@ namespace Ryujinx.Graphics.Shader.Decoders
                 return (0, 0);
             }
 
-            int imnmxIndex = FindFirstRegWrite(block, shlIndex, opShl.Ra.Index);
-            if (imnmxIndex == -1 || block.OpCodes[imnmxIndex] is not OpCodeAluImm opImnmx)
+            var imnmxLocation = FindFirstRegWrite(visited, shlLocation, opShl.Ra.Index);
+            if (imnmxLocation.Block == null || imnmxLocation.Block.OpCodes[imnmxLocation.Index] is not OpCodeAluImm opImnmx)
             {
                 return (0, 0);
             }
@@ -346,17 +368,45 @@ namespace Ryujinx.Graphics.Shader.Decoders
             return (opLdc.Offset, opImnmx.Immediate + 1);
         }
 
-        private static int FindFirstRegWrite(Block block, int startAt, int regIndex)
+        private struct BlockLocation
         {
-            for (int i = startAt - 1; i >= 0; i--)
+            public Block Block { get; }
+            public int Index { get; }
+
+            public BlockLocation(Block block, int index)
             {
-                if (block.OpCodes[i] is IOpCodeRd opRd && opRd.Rd.Index == regIndex)
+                Block = block;
+                Index = index;
+            }
+        }
+
+        private static BlockLocation FindFirstRegWrite(HashSet<Block> visited, BlockLocation location, int regIndex)
+        {
+            Queue<BlockLocation> toVisit = new Queue<BlockLocation>();
+            toVisit.Enqueue(location);
+            visited.Add(location.Block);
+
+            while (toVisit.TryDequeue(out var currentLocation))
+            {
+                Block block = currentLocation.Block;
+                for (int i = currentLocation.Index - 1; i >= 0; i--)
                 {
-                    return i;
+                    if (block.OpCodes[i] is IOpCodeRd opRd && opRd.Rd.Index == regIndex)
+                    {
+                        return new BlockLocation(block, i);
+                    }
+                }
+
+                foreach (Block predecessor in block.Predecessors)
+                {
+                    if (visited.Add(predecessor))
+                    {
+                        toVisit.Enqueue(new BlockLocation(predecessor, predecessor.OpCodes.Count));
+                    }
                 }
             }
 
-            return -1;
+            return new BlockLocation(null, 0);
         }
 
         private enum MergeType
@@ -426,6 +476,8 @@ namespace Ryujinx.Graphics.Shader.Decoders
         private static void PropagatePushOp(Dictionary<ulong, Block> blocks, Block currBlock, int pushOpIndex)
         {
             OpCodePush pushOp = currBlock.PushOpCodes[pushOpIndex];
+
+            Block target = blocks[pushOp.GetAbsoluteAddress()];
 
             Stack<PathBlockState> workQueue = new Stack<PathBlockState>();
 
@@ -536,10 +588,12 @@ namespace Ryujinx.Graphics.Shader.Decoders
                         if (branchStack.Count == 0)
                         {
                             // If the entire stack was consumed, then the current pop instruction
-                            // just consumed the address from out push instruction.
-                            op.Targets.Add(pushOp, op.Targets.Count);
-
-                            pushOp.PopOps.TryAdd(op, Local());
+                            // just consumed the address from our push instruction.
+                            if (op.Targets.TryAdd(pushOp, op.Targets.Count))
+                            {
+                                pushOp.PopOps.Add(op, Local());
+                                target.Predecessors.Add(current);
+                            }
                         }
                         else
                         {
