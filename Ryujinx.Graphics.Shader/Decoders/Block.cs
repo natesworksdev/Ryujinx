@@ -24,6 +24,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
                 _next = value;
             }
         }
+
         public Block Branch
         {
             get
