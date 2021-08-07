@@ -20,6 +20,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
         private readonly int _localMemorySize;
         private readonly int _sharedMemorySize;
 
+        public int Cb1DataSize { get; private set; }
+
         /// <summary>
         /// Creates a new instance of the GPU state accessor for graphics shader translation.
         /// </summary>
@@ -74,6 +76,11 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <returns>Value at the given offset</returns>
         public uint ConstantBuffer1Read(int offset)
         {
+            if (Cb1DataSize < offset + 4)
+            {
+                Cb1DataSize = offset + 4;
+            }
+
             ulong baseAddress = _compute
                 ? _channel.BufferManager.GetComputeUniformBufferAddress(1)
                 : _channel.BufferManager.GetGraphicsUniformBufferAddress(_stageIndex, 1);

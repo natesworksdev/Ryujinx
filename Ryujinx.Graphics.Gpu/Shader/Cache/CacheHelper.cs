@@ -391,13 +391,14 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
                     continue;
                 }
 
+                GpuAccessor gpuAccessor = context.GpuAccessor as GpuAccessor;
+
                 ulong cb1DataAddress;
-                int cb1DataSize;
+                int cb1DataSize = gpuAccessor?.Cb1DataSize ?? 0;
 
                 if (context.Stage == ShaderStage.Compute)
                 {
                     cb1DataAddress = channel.BufferManager.GetComputeUniformBufferAddress(1);
-                    cb1DataSize = (int)channel.BufferManager.GetComputeUniformBufferSize(1);
                 }
                 else
                 {
@@ -411,9 +412,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
                     };
 
                     cb1DataAddress = channel.BufferManager.GetGraphicsUniformBufferAddress(stageIndex, 1);
-                    cb1DataSize = (int)channel.BufferManager.GetGraphicsUniformBufferSize(stageIndex, 1);
                 }
-
 
                 int size = context.Size;
 
@@ -437,7 +436,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
 
                 GuestGpuAccessorHeader gpuAccessorHeader = CreateGuestGpuAccessorCache(context.GpuAccessor);
 
-                if (context.GpuAccessor is GpuAccessor)
+                if (gpuAccessor != null)
                 {
                     gpuAccessorHeader.TextureDescriptorCount = context.TextureHandlesForCache.Count;
                 }
@@ -451,7 +450,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
 
                 GuestShaderCacheEntry entry = new GuestShaderCacheEntry(header, code);
 
-                if (context.GpuAccessor is GpuAccessor gpuAccessor)
+                if (gpuAccessor != null)
                 {
                     foreach (int textureHandle in context.TextureHandlesForCache)
                     {
