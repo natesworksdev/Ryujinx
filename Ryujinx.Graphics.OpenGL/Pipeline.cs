@@ -42,8 +42,7 @@ namespace Ryujinx.Graphics.OpenGL
         }
 
         private Vector4<int>[] _fpIsBgra = new Vector4<int>[SupportBuffer.FragmentIsBgraCount];
-        private Vector4<float>[] _fpRenderScale = new Vector4<float>[65];
-        private Vector4<float>[] _cpRenderScale = new Vector4<float>[64];
+        private Vector4<float>[] _renderScale = new Vector4<float>[65];
 
         private TextureBase _unit0Texture;
 
@@ -78,8 +77,7 @@ namespace Ryujinx.Graphics.OpenGL
             }
 
             var v4Zero = new Vector4<float> { X = 0f, Y = 0f, Z = 0f, W = 0f };
-            new Span<Vector4<float>>(_fpRenderScale).Fill(v4Zero);
-            new Span<Vector4<float>>(_cpRenderScale).Fill(v4Zero);
+            new Span<Vector4<float>>(_renderScale).Fill(v4Zero);
 
             _tfbs = new BufferHandle[Constants.MaxTransformFeedbackBuffers];
             _tfbTargets = new BufferRange[Constants.MaxTransformFeedbackBuffers];
@@ -846,8 +844,8 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void SetRenderTargetScale(float scale)
         {
-            _fpRenderScale[0].X = scale;
-            SetSupportBufferData<Vector4<float>>(SupportBuffer.FragmentRenderScaleOffset, _fpRenderScale, 1); // Just the first element.
+            _renderScale[0].X = scale;
+            SetSupportBufferData<Vector4<float>>(SupportBuffer.FragmentRenderScaleOffset, _renderScale, 1); // Just the first element.
         }
 
         public void SetRenderTargetColorMasks(ReadOnlySpan<uint> componentMasks)
@@ -1185,36 +1183,25 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void UpdateRenderScale(ShaderStage stage, float[] scales, int textureCount, int imageCount)
         {
-            static bool Copy(float[] from, int fromIndex, Vector4<float>[] to, int toIndex, int count)
+            if (stage != ShaderStage.Compute && stage != ShaderStage.Fragment)
             {
-                bool changed = false;
-
-                for (int index = 0; index < count; index++)
-                {
-                    if (to[toIndex + index].X != from[fromIndex + index])
-                    {
-                        to[toIndex + index].X = from[fromIndex + index];
-                        changed = true;
-                    }
-                }
-
-                return changed;
+                return;
             }
 
-            switch (stage)
+            bool changed = false;
+
+            for (int index = 0; index < textureCount + imageCount; index++)
             {
-                case ShaderStage.Fragment:
-                    if (Copy(scales, 0, _fpRenderScale, 1, textureCount + imageCount))
-                    {
-                        SetSupportBufferData<Vector4<float>>(SupportBuffer.FragmentRenderScaleOffset, _fpRenderScale, 1 + textureCount + imageCount);
-                    }
-                    break;
-                case ShaderStage.Compute:
-                    if (Copy(scales, 0, _cpRenderScale, 0, textureCount + imageCount))
-                    {
-                        SetSupportBufferData<Vector4<float>>(SupportBuffer.ComputeRenderScaleOffset, _cpRenderScale, textureCount + imageCount);
-                    }
-                    break;
+                if (_renderScale[1 + index].X != scales[index])
+                {
+                    _renderScale[1 + index].X = scales[index];
+                    changed = true;
+                }
+            }
+
+            if (changed)
+            {
+                SetSupportBufferData<Vector4<float>>(SupportBuffer.FragmentRenderScaleOffset, _renderScale, 1 + textureCount + imageCount);
             }
         }
 
