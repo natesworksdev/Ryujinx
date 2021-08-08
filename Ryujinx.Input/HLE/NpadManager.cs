@@ -1,8 +1,10 @@
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
+using Ryujinx.Common.Configuration.Hid.Controller.Motion;
 using Ryujinx.Common.Configuration.Hid.Keyboard;
 using Ryujinx.HLE.HOS.Services.Hid;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -163,9 +165,12 @@ namespace Ryujinx.Input.HLE
                 foreach (InputConfig inputConfig in _inputConfig)
                 {
                     GamepadInput inputState = default;
-                    SixAxisInput motionState = default;
+                    (SixAxisInput, SixAxisInput) motionState = default;
 
                     NpadController controller = _controllers[(int)inputConfig.PlayerIndex];
+                    Ryujinx.HLE.HOS.Services.Hid.PlayerIndex playerIndex = (Ryujinx.HLE.HOS.Services.Hid.PlayerIndex)inputConfig.PlayerIndex;
+
+                    bool isJoyconPair = false;
 
                     // Do we allow input updates and is a controller connected?
                     if (!_blockInputUpdates && controller != null)
@@ -174,12 +179,17 @@ namespace Ryujinx.Input.HLE
 
                         controller.UpdateUserConfiguration(inputConfig);
                         controller.Update();
+                        controller.UpdateRumble(_device.Hid.Npads.GetRumbleQueue(playerIndex));
 
                         inputState = controller.GetHLEInputState();
 
                         inputState.Buttons |= _device.Hid.UpdateStickButtons(inputState.LStick, inputState.RStick);
 
-                        motionState = controller.GetHLEMotionState();
+                        isJoyconPair = inputConfig.ControllerType == Common.Configuration.Hid.ControllerType.JoyconPair;
+
+                        var altMotionState = isJoyconPair ? controller.GetHLEMotionState(true) : default;
+
+                        motionState = (controller.GetHLEMotionState(), altMotionState);
 
                         if (_enableKeyboard)
                         {
@@ -189,14 +199,21 @@ namespace Ryujinx.Input.HLE
                     else
                     {
                         // Ensure that orientation isn't null
-                        motionState.Orientation = new float[9];
+                        motionState.Item1.Orientation = new float[9];
                     }
 
-                    inputState.PlayerId = (Ryujinx.HLE.HOS.Services.Hid.PlayerIndex)inputConfig.PlayerIndex;
-                    motionState.PlayerId = (Ryujinx.HLE.HOS.Services.Hid.PlayerIndex)inputConfig.PlayerIndex;
+                    inputState.PlayerId = playerIndex;
+                    motionState.Item1.PlayerId = playerIndex;
 
                     hleInputStates.Add(inputState);
-                    hleMotionStates.Add(motionState);
+                    hleMotionStates.Add(motionState.Item1);
+
+                    if (isJoyconPair && !motionState.Item2.Equals(default))
+                    {
+                        motionState.Item2.PlayerId = playerIndex;
+
+                        hleMotionStates.Add(motionState.Item2);
+                    }
                 }
 
                 _device.Hid.Npads.Update(hleInputStates);

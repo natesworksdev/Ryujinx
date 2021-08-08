@@ -119,9 +119,27 @@ namespace Ryujinx.Graphics.OpenGL.Image
             _renderer.TextureCopy.Copy(this, (TextureView)destination, srcRegion, dstRegion, linearFilter);
         }
 
-        public byte[] GetData()
+        public unsafe ReadOnlySpan<byte> GetData()
         {
-            return _renderer.PersistentBuffers.Default.GetTextureData(this);
+            int size = 0;
+
+            for (int level = 0; level < Info.Levels; level++)
+            {
+                size += Info.GetMipSize(level);
+            }
+
+            if (HwCapabilities.UsePersistentBufferForFlush)
+            {
+                return _renderer.PersistentBuffers.Default.GetTextureData(this, size);
+            }
+            else
+            {
+                IntPtr target = _renderer.PersistentBuffers.Default.GetHostArray(size);
+
+                WriteTo(target);
+
+                return new ReadOnlySpan<byte>(target.ToPointer(), size);
+            }
         }
 
         public void WriteToPbo(int offset, bool forceBgra)

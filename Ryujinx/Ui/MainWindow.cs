@@ -101,6 +101,7 @@ namespace Ryujinx.Ui
         [GUI] MenuItem        _simulateWakeUpMessage;
         [GUI] MenuItem        _scanAmiibo;
         [GUI] MenuItem        _takeScreenshot;
+        [GUI] MenuItem        _hideUi;
         [GUI] MenuItem        _fullScreen;
         [GUI] CheckMenuItem   _startFullScreen;
         [GUI] CheckMenuItem   _favToggle;
@@ -242,6 +243,8 @@ namespace Ryujinx.Ui
             _gameTable.EnableSearch = true;
             _gameTable.SearchColumn = 2;
             _gameTable.SearchEqualFunc = (model, col, key, iter) => !((string)model.GetValue(iter, col)).Contains(key, StringComparison.InvariantCultureIgnoreCase);
+
+            _hideUi.Label = _hideUi.Label.Replace("SHOWUIKEY", ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUi.ToString());
 
             UpdateColumns();
             UpdateGameTable();
@@ -1362,6 +1365,11 @@ namespace Ryujinx.Ui
 
             settingsWindow.SetSizeRequest((int)(settingsWindow.DefaultWidth * Program.WindowScaleFactor), (int)(settingsWindow.DefaultHeight * Program.WindowScaleFactor));
             settingsWindow.Show();
+        }
+
+        private void HideUi_Pressed(object sender, EventArgs args)
+        {
+            ToggleExtraWidgets(false);
         }
 
         private void ManageUserProfiles_Pressed(object sender, EventArgs args)
