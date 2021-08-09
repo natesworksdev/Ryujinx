@@ -20,7 +20,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// <summary>
         /// Maximum number of indices that the index buffer may have to make the index counting profitable.
         /// </summary>
-        private const int MaximumIndexCountThreshold = 8192;
+        private const int MaximumIndexCountThreshold = 65536;
 
         /// <summary>
         /// Checks if getting the vertex buffer size from the maximum index buffer index is worth it.
