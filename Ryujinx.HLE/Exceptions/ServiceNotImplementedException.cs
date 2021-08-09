@@ -62,7 +62,8 @@ namespace Ryujinx.HLE.Exceptions
 
             if (callingType != null && callingMethod != null)
             {
-                var ipcCommands = callingMethod.GetCustomAttribute<CommandTipcAttribute>() != null ? 
+                // If the type is past 0xF, we are using TIPC
+                var ipcCommands = Request.Type > IpcMessageType.TipcCloseSession ?
                     Service.TipcCommands : Service.HipcCommands;
 
                 // Find the handler for the method called
