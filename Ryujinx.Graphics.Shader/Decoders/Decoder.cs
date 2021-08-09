@@ -391,7 +391,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
                 Block block = currentLocation.Block;
                 for (int i = currentLocation.Index - 1; i >= 0; i--)
                 {
-                    if (block.OpCodes[i] is IOpCodeRd opRd && opRd.Rd.Index == regIndex)
+                    if (WritesToRegister(block.OpCodes[i], regIndex))
                     {
                         return new BlockLocation(block, i);
                     }
@@ -407,6 +407,20 @@ namespace Ryujinx.Graphics.Shader.Decoders
             }
 
             return new BlockLocation(null, 0);
+        }
+
+        private static bool WritesToRegister(OpCode opCode, int regIndex)
+        {
+            // Predicate instruction only ever writes to predicate, so we shouldn't check those.
+            if (opCode.Emitter == InstEmit.Fsetp ||
+                opCode.Emitter == InstEmit.Hsetp2 ||
+                opCode.Emitter == InstEmit.Isetp ||
+                opCode.Emitter == InstEmit.R2p)
+            {
+                return false;
+            }
+
+            return opCode is IOpCodeRd opRd && opRd.Rd.Index == regIndex;
         }
 
         private enum MergeType
