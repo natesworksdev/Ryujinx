@@ -9,6 +9,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 {
     static class Declarations
     {
+        // At least 16 attributes are guaranteed by the spec.
+        public const int MaxAttributes = 16;
+
+        private const int PerPatchAttributeBaseLocation = 0;
+
         public static void Declare(CodeGenContext context, StructuredProgramInfo info)
         {
             context.AppendLine("#version 450 core");
@@ -136,6 +141,22 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                     context.AppendLine();
                 }
+                else if (context.Config.Stage == ShaderStage.TessellationControl)
+                {
+                    int threadsPerInputPrimitive = context.Config.ThreadsPerInputPrimitive;
+
+                    context.AppendLine($"layout (vertices = {threadsPerInputPrimitive}) out;");
+                    context.AppendLine();
+                }
+                else if (context.Config.Stage == ShaderStage.TessellationEvaluation)
+                {
+                    string patchType = context.Config.GpuAccessor.QueryTessPatchType().ToGlsl();
+                    string spacing = context.Config.GpuAccessor.QueryTessSpacing().ToGlsl();
+                    string windingOrder = context.Config.GpuAccessor.QueryTessCw() ? "cw" : "ccw";
+
+                    context.AppendLine($"layout ({patchType}, {spacing}, {windingOrder}) in;");
+                    context.AppendLine();
+                }
 
                 if (context.Config.UsedInputAttributes != 0 || context.Config.GpPassthrough)
                 {
@@ -147,6 +168,20 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 if (context.Config.UsedOutputAttributes != 0 || context.Config.Stage != ShaderStage.Fragment)
                 {
                     DeclareOutputAttributes(context, info);
+
+                    context.AppendLine();
+                }
+
+                if (context.Config.UsedInputAttributesPerPatch != 0)
+                {
+                    DeclareInputAttributesPerPatch(context, context.Config.UsedInputAttributesPerPatch);
+
+                    context.AppendLine();
+                }
+
+                if (context.Config.UsedOutputAttributesPerPatch != 0)
+                {
+                    DeclareUsedOutputAttributesPerPatch(context, context.Config.UsedOutputAttributesPerPatch);
 
                     context.AppendLine();
                 }
@@ -424,17 +459,25 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 while (usedAttributes != 0)
                 {
                     int index = BitOperations.TrailingZeroCount(usedAttributes);
-
                     DeclareInputAttribute(context, info, index);
-
                     usedAttributes &= ~(1 << index);
                 }
             }
         }
 
+        private static void DeclareInputAttributesPerPatch(CodeGenContext context, int usedAttributes)
+        {
+            while (usedAttributes != 0)
+            {
+                int index = BitOperations.TrailingZeroCount(usedAttributes);
+                DeclareInputAttributePerPatch(context, index);
+                usedAttributes &= ~(1 << index);
+            }
+        }
+
         private static void DeclareInputAttribute(CodeGenContext context, StructuredProgramInfo info, int attr)
         {
-            string suffix = context.Config.Stage == ShaderStage.Geometry ? "[]" : string.Empty;
+            string suffix = OperandManager.IsArrayAttribute(context.Config.Stage, isOutAttr: false) ? "[]" : string.Empty;
             string iq = string.Empty;
 
             if (context.Config.Stage == ShaderStage.Fragment)
@@ -465,6 +508,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
         }
 
+        private static void DeclareInputAttributePerPatch(CodeGenContext context, int attr)
+        {
+            string name = $"{DefaultNames.PerPatchAttributePrefix}{attr}";
+
+            context.AppendLine($"patch in vec4 {name};");
+        }
+
         private static void DeclareOutputAttributes(CodeGenContext context, StructuredProgramInfo info)
         {
             if (context.Config.UsedFeatures.HasFlag(FeatureFlags.OaIndexing))
@@ -477,9 +527,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 while (usedAttributes != 0)
                 {
                     int index = BitOperations.TrailingZeroCount(usedAttributes);
-
                     DeclareOutputAttribute(context, index);
-
                     usedAttributes &= ~(1 << index);
                 }
             }
@@ -487,7 +535,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private static void DeclareOutputAttribute(CodeGenContext context, int attr)
         {
-            string name = $"{DefaultNames.OAttributePrefix}{attr}";
+            string suffix = OperandManager.IsArrayAttribute(context.Config.Stage, isOutAttr: true) ? "[]" : string.Empty;
+            string name = $"{DefaultNames.OAttributePrefix}{attr}{suffix}";
 
             if ((context.Config.Options.Flags & TranslationFlags.Feedback) != 0)
             {
@@ -502,6 +551,23 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             {
                 context.AppendLine($"layout (location = {attr}) out vec4 {name};");
             }
+        }
+
+        private static void DeclareUsedOutputAttributesPerPatch(CodeGenContext context, int usedAttributes)
+        {
+            while (usedAttributes != 0)
+            {
+                int index = BitOperations.TrailingZeroCount(usedAttributes);
+                DeclareOutputAttributePerPatch(context, index);
+                usedAttributes &= ~(1 << index);
+            }
+        }
+
+        private static void DeclareOutputAttributePerPatch(CodeGenContext context, int attr)
+        {
+            string name = $"{DefaultNames.PerPatchAttributePrefix}{attr}";
+
+            context.AppendLine($"patch out vec4 {name};");
         }
 
         private static void DeclareSupportUniformBlock(CodeGenContext context, bool isFragment, int scaleElements)

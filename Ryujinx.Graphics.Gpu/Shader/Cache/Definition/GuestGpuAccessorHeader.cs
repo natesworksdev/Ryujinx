@@ -52,7 +52,12 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache.Definition
         /// <summary>
         /// Unused/reserved.
         /// </summary>
-        public ushort Reserved2;
+        public byte TessellationModePacked;
+
+        /// <summary>
+        /// Unused/reserved.
+        /// </summary>
+        public byte Reserved2;
 
         /// <summary>
         /// GPU boolean state that can influence shader compilation.

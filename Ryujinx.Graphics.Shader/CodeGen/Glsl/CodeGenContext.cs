@@ -1,3 +1,4 @@
+using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.StructuredIr;
 using Ryujinx.Graphics.Shader.Translation;
 using System.Text;
@@ -72,11 +73,15 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private static int FindDescriptorIndex(TextureDescriptor[] array, AstTextureOperation texOp)
         {
+            // Can we trust the type on this texture operation?
+            // If not then just ignore the type.
+            bool accurateType = !texOp.Inst.IsTextureQuery();
+
             for (int i = 0; i < array.Length; i++)
             {
                 var descriptor = array[i];
 
-                if (descriptor.Type == texOp.Type &&
+                if ((!accurateType || descriptor.Type == texOp.Type) &&
                     descriptor.CbufSlot == texOp.CbufSlot &&
                     descriptor.HandleIndex == texOp.Handle &&
                     descriptor.Format == texOp.Format)

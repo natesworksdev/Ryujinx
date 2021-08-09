@@ -61,11 +61,20 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             { AttributeConsts.CtaIdY,              new BuiltInAttribute("gl_WorkGroupID.y",       VariableType.U32)  },
             { AttributeConsts.CtaIdZ,              new BuiltInAttribute("gl_WorkGroupID.z",       VariableType.U32)  },
             { AttributeConsts.LaneId,              new BuiltInAttribute(null,                     VariableType.U32)  },
+            { AttributeConsts.InvocationId,        new BuiltInAttribute("gl_InvocationID",        VariableType.S32)  },
+            { AttributeConsts.PrimitiveId,         new BuiltInAttribute("gl_PrimitiveID",         VariableType.S32)  },
+            { AttributeConsts.PatchVerticesIn,     new BuiltInAttribute("gl_PatchVerticesIn",     VariableType.S32)  },
             { AttributeConsts.EqMask,              new BuiltInAttribute(null,                     VariableType.U32)  },
             { AttributeConsts.GeMask,              new BuiltInAttribute(null,                     VariableType.U32)  },
             { AttributeConsts.GtMask,              new BuiltInAttribute(null,                     VariableType.U32)  },
             { AttributeConsts.LeMask,              new BuiltInAttribute(null,                     VariableType.U32)  },
             { AttributeConsts.LtMask,              new BuiltInAttribute(null,                     VariableType.U32)  },
+            { AttributeConsts.TessLevelOuter0,     new BuiltInAttribute("gl_TessLevelOuter[0]",   VariableType.F32)  },
+            { AttributeConsts.TessLevelOuter1,     new BuiltInAttribute("gl_TessLevelOuter[1]",   VariableType.F32)  },
+            { AttributeConsts.TessLevelOuter2,     new BuiltInAttribute("gl_TessLevelOuter[2]",   VariableType.F32)  },
+            { AttributeConsts.TessLevelOuter3,     new BuiltInAttribute("gl_TessLevelOuter[3]",   VariableType.F32)  },
+            { AttributeConsts.TessLevelInner0,     new BuiltInAttribute("gl_TessLevelInner[0]",   VariableType.F32)  },
+            { AttributeConsts.TessLevelInner1,     new BuiltInAttribute("gl_TessLevelInner[1]",   VariableType.F32)  },
 
             // Support uniforms.
             { AttributeConsts.FragmentOutputIsBgraBase + 0,  new BuiltInAttribute($"{DefaultNames.SupportBlockIsBgraName}[0]",  VariableType.Bool) },
@@ -99,17 +108,19 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             return operand.Type switch
             {
                 OperandType.Argument => GetArgumentName(operand.Value),
-                OperandType.Attribute => GetAttributeName(operand.Value, config),
+                OperandType.Attribute => GetAttributeName(operand.Value, config, perPatch: false),
+                OperandType.AttributePerPatch => GetAttributeName(operand.Value, config, perPatch: true),
                 OperandType.Constant => NumberFormatter.FormatInt(operand.Value),
-                OperandType.ConstantBuffer => GetConstantBufferName(
-                    operand.CbufSlot,
-                    operand.CbufOffset,
-                    config.Stage,
-                    config.UsedFeatures.HasFlag(FeatureFlags.CbIndexing)),
+                OperandType.ConstantBuffer => GetConstantBufferName(operand, config),
                 OperandType.LocalVariable => _locals[operand],
                 OperandType.Undefined => DefaultNames.UndefinedName,
                 _ => throw new ArgumentException($"Invalid operand type \"{operand.Type}\".")
             };
+        }
+
+        private static string GetConstantBufferName(AstOperand operand, ShaderConfig config)
+        {
+            return GetConstantBufferName(operand.CbufSlot, operand.CbufOffset, config.Stage, config.UsedFeatures.HasFlag(FeatureFlags.CbIndexing));
         }
 
         public static string GetConstantBufferName(int slot, int offset, ShaderStage stage, bool cbIndexable)
@@ -142,14 +153,19 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             return GetVec4Indexed(GetUbName(stage, slotExpr) + $"[{offsetExpr} >> 2]", offsetExpr + " & 3", indexElement);
         }
 
-        public static string GetOutAttributeName(int value, ShaderConfig config)
+        public static string GetOutAttributeName(int value, ShaderConfig config, bool perPatch)
         {
-            return GetAttributeName(value, config, isOutAttr: true);
+            return GetAttributeName(value, config, perPatch, isOutAttr: true);
         }
 
-        public static string GetAttributeName(int value, ShaderConfig config, bool isOutAttr = false, string indexExpr = "0")
+        public static string GetAttributeName(int value, ShaderConfig config, bool perPatch, bool isOutAttr = false, string indexExpr = "0")
         {
-            value &= ~3;
+            if ((value & AttributeConsts.LoadOutputMask) != 0)
+            {
+                isOutAttr = true;
+            }
+
+            value &= AttributeConsts.Mask & ~3;
             char swzMask = GetSwizzleMask((value >> 2) & 3);
 
             if (value >= AttributeConsts.UserAttributeBase && value < AttributeConsts.UserAttributeEnd)
@@ -160,7 +176,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                     ? DefaultNames.OAttributePrefix
                     : DefaultNames.IAttributePrefix;
 
-                if (config.UsedFeatures.HasFlag(isOutAttr ? FeatureFlags.OaIndexing : FeatureFlags.IaIndexing))
+                bool indexable = config.UsedFeatures.HasFlag(isOutAttr ? FeatureFlags.OaIndexing : FeatureFlags.IaIndexing);
+
+                if (!indexable && perPatch)
+                {
+                    prefix = DefaultNames.PerPatchAttributePrefix;
+                }
+
+                if (indexable)
                 {
                     string name = prefix;
 
@@ -175,9 +198,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 {
                     string name = $"{prefix}{(value >> 4)}_{swzMask}";
 
-                    if (config.Stage == ShaderStage.Geometry && !isOutAttr)
+                    if (!perPatch && IsArrayAttribute(config.Stage, isOutAttr))
                     {
-                        name += $"[{indexExpr}]";
+                        name += isOutAttr ? "[gl_InvocationID]" : $"[{indexExpr}]";
                     }
 
                     return name;
@@ -186,9 +209,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 {
                     string name = $"{prefix}{(value >> 4)}";
 
-                    if (config.Stage == ShaderStage.Geometry && !isOutAttr)
+                    if (!perPatch && IsArrayAttribute(config.Stage, isOutAttr))
                     {
-                        name += $"[{indexExpr}]";
+                        name += isOutAttr ? "[gl_InvocationID]" : $"[{indexExpr}]";
                     }
 
                     return name + '.' + swzMask;
@@ -250,9 +273,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                     string name = builtInAttr.Name;
 
-                    if (config.Stage == ShaderStage.Geometry && (value & AttributeConsts.SpecialMask) == 0 && !isOutAttr)
+                    if (!perPatch && IsArrayAttribute(config.Stage, isOutAttr) && IsArrayBuiltIn(value))
                     {
-                        name = $"gl_in[{indexExpr}].{name}";
+                        name = isOutAttr ? $"gl_out[gl_InvocationID].{name}" : $"gl_in[{indexExpr}].{name}";
                     }
 
                     return name;
@@ -276,6 +299,32 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
 
             return $"{name}[{attrExpr} >> 2][{attrExpr} & 3]";
+        }
+
+        public static bool IsArrayAttribute(ShaderStage stage, bool isOutAttr)
+        {
+            if (isOutAttr)
+            {
+                return stage == ShaderStage.TessellationControl;
+            }
+            else
+            {
+                return stage == ShaderStage.TessellationControl ||
+                       stage == ShaderStage.TessellationEvaluation ||
+                       stage == ShaderStage.Geometry;
+            }
+        }
+
+        private static bool IsArrayBuiltIn(int attr)
+        {
+            if (attr <= AttributeConsts.TessLevelInner1 ||
+                attr == AttributeConsts.TessCoordX ||
+                attr == AttributeConsts.TessCoordY)
+            {
+                return false;
+            }
+
+            return (attr & AttributeConsts.SpecialMask) == 0;
         }
 
         public static string GetUbName(ShaderStage stage, int slot, bool cbIndexable)
