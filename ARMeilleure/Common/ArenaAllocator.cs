@@ -28,6 +28,11 @@ namespace ARMeilleure.Common
             _extras = new List<IntPtr>();
         }
 
+        public Span<T> AllocateSpan<T>(int count) where T : unmanaged
+        {
+            return new Span<T>(Allocate<T>(count), count);
+        }
+
         public override void* Allocate(int size)
         {
             if (size > _pageSize)

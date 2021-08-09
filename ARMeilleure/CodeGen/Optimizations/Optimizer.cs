@@ -1,5 +1,6 @@
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
+using System;
 using System.Diagnostics;
 using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
 
@@ -9,45 +10,45 @@ namespace ARMeilleure.CodeGen.Optimizations
     {
         public static void RunPass(ControlFlowGraph cfg)
         {
+            // Scratch buffer used to store uses.
+            Span<Operation> buffer = default;
+
             bool modified;
 
             do
             {
                 modified = false;
 
-                for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
+                for (BasicBlock block = cfg.Blocks.Last; block != null; block = block.ListPrevious)
                 {
-                    Operation node = block.Operations.First;
+                    Operation node;
+                    Operation prevNode;
 
-                    while (node != default)
+                    for (node = block.Operations.Last; node != default; node = prevNode)
                     {
-                        Operation nextNode = node.ListNext;
+                        prevNode = node.ListPrevious;
 
-                        bool isUnused = IsUnused(node);
-
-                        if (node.Instruction == Instruction.Phi || isUnused)
+                        if (IsUnused(node))
                         {
-                            if (isUnused)
-                            {
-                                RemoveNode(block, node);
+                            RemoveNode(block, node);
 
-                                modified = true;
-                            }
+                            modified = true;
 
-                            node = nextNode;
-
+                            continue;
+                        }
+                        else if (node.Instruction == Instruction.Phi)
+                        {
                             continue;
                         }
 
                         ConstantFolding.RunPass(node);
-
                         Simplification.RunPass(node);
 
                         if (DestIsLocalVar(node))
                         {   
                             if (IsPropagableCompare(node))
                             {
-                                modified |= PropagateCompare(node);
+                                modified |= PropagateCompare(ref buffer, node);
 
                                 if (modified && IsUnused(node))
                                 {
@@ -56,15 +57,13 @@ namespace ARMeilleure.CodeGen.Optimizations
                             }
                             else if (IsPropagableCopy(node))
                             {
-                                PropagateCopy(node);
+                                PropagateCopy(ref buffer, node);
 
                                 RemoveNode(block, node);
 
                                 modified = true;
                             }
                         }
-
-                        node = nextNode;
                     }
                 }
             }
@@ -82,11 +81,11 @@ namespace ARMeilleure.CodeGen.Optimizations
                 for (BasicBlock block = cfg.Blocks.Last; block != null; block = block.ListPrevious)
                 {
                     Operation node;
-                    Operation nextNode;
+                    Operation prevNode;
 
-                    for (node = block.Operations.Last; node != default; node = nextNode)
+                    for (node = block.Operations.Last; node != default; node = prevNode)
                     {
-                        nextNode = node.ListPrevious;
+                        prevNode = node.ListPrevious;
 
                         if (IsUnused(node))
                         {
@@ -100,7 +99,21 @@ namespace ARMeilleure.CodeGen.Optimizations
             while (modified);
         }
 
-        private static bool PropagateCompare(Operation compOp)
+        private static Span<Operation> GetUses(ref Span<Operation> buffer, Operand operand)
+        {
+            ReadOnlySpan<Operation> uses = operand.Uses;
+
+            if (buffer.Length < uses.Length)
+            {
+                buffer = Allocators.Default.AllocateSpan<Operation>(uses.Length);
+            }
+
+            uses.CopyTo(buffer);
+
+            return buffer.Slice(0, uses.Length);
+        }
+
+        private static bool PropagateCompare(ref Span<Operation> buffer, Operation compOp)
         {
             // Try to propagate Compare operations into their BranchIf uses, when these BranchIf uses are in the form
             // of:
@@ -147,7 +160,7 @@ namespace ARMeilleure.CodeGen.Optimizations
 
             Comparison compType = (Comparison)comp.AsInt32();
 
-            Operation[] uses = dest.Uses.ToArray();
+            Span<Operation> uses = GetUses(ref buffer, dest);
 
             foreach (Operation use in uses)
             {
@@ -180,13 +193,13 @@ namespace ARMeilleure.CodeGen.Optimizations
             return modified;
         }
 
-        private static void PropagateCopy(Operation copyOp)
+        private static void PropagateCopy(ref Span<Operation> buffer, Operation copyOp)
         {
             // Propagate copy source operand to all uses of the destination operand.
             Operand dest   = copyOp.Destination;
             Operand source = copyOp.GetSource(0);
 
-            Operation[] uses = dest.Uses.ToArray();
+            Span<Operation> uses = GetUses(ref buffer, dest);
 
             foreach (Operation use in uses)
             {
