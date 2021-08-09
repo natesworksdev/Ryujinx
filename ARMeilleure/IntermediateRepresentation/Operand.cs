@@ -1,12 +1,13 @@
 using ARMeilleure.Common;
 using ARMeilleure.Translation.PTC;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace ARMeilleure.IntermediateRepresentation
 {
-    unsafe struct Operand
+    unsafe struct Operand : IEquatable<Operand>
     {
         internal struct Data
         {
@@ -256,58 +257,60 @@ namespace ARMeilleure.IntermediateRepresentation
             }
         }
 
-        private static void Add<T>(in T item, ref T* data, ref ushort count, ref ushort capacity) where T : unmanaged
-        {
-            int newCount = count + 1;
-
-            if (newCount > ushort.MaxValue)
-            {
-                throw new OverflowException();
-            }
-
-            if (newCount > capacity)
-            {
-                var oldSpan = new Span<T>(data, count);
-
-                capacity *= 2;
-                data = Allocators.References.Allocate<T>(capacity);
-
-                oldSpan.CopyTo(new Span<T>(data, count));
-            }
-
-            data[count++] = item;
-        }
-
-        private static void Remove<T>(in T item, ref T* data, ref ushort count) where T : unmanaged
-        {
-            int index = -1;
-            var span = new Span<T>(data, count);
-
-            for (int i = 0; i < span.Length; i++)
-            {
-                if (span[i].Equals(item))
-                {
-                    index = i;
-                    break;
-                }
-            }
-
-            if (index != -1)
-            {
-                if (index + 1 < count)
-                {
-                    span.Slice(index + 1).CopyTo(span.Slice(index));
-                }
-
-                count--;
-            }
-        }
-
         private static void New<T>(ref T* data, ref ushort count, ref ushort capacity, ushort initialCapacity) where T : unmanaged
         {
             count = 0;
             capacity = initialCapacity;
             data = Allocators.References.Allocate<T>(initialCapacity);
+        }
+
+        private static void Add<T>(T item, ref T* data, ref ushort count, ref ushort capacity) where T : unmanaged
+        {
+            if (count < capacity)
+            {
+                data[(uint)count++] = item;
+
+                return;
+            }
+
+            // Could not add item in the fast path, fallback onto the slow path.
+            ExpandAdd(item, ref data, ref count, ref capacity);
+
+            static void ExpandAdd(T item, ref T* data, ref ushort count, ref ushort capacity)
+            {
+                ushort newCount = checked((ushort)(count + 1));
+                ushort newCapacity = (ushort)Math.Min(capacity * 2, ushort.MaxValue);
+
+                var oldSpan = new Span<T>(data, count);
+
+                capacity = newCapacity;
+                data = Allocators.References.Allocate<T>(capacity);
+
+                oldSpan.CopyTo(new Span<T>(data, count));
+
+                data[count] = item;
+                count = newCount;
+            }
+        }
+
+        private static void Remove<T>(in T item, ref T* data, ref ushort count) where T : unmanaged
+        {
+            var span = new Span<T>(data, count);
+
+            for (int i = 0; i < span.Length; i++)
+            {
+                if (EqualityComparer<T>.Default.Equals(span[i], item))
+                {
+                    if (i + 1 < count)
+                    {
+                        span.Slice(i + 1).CopyTo(span.Slice(i));
+                    }
+
+                    count--;
+
+                    return;
+                }
+            }
         }
 
         public override int GetHashCode()

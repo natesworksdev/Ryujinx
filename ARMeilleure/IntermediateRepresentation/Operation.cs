@@ -1,11 +1,10 @@
-using ARMeilleure.Common;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace ARMeilleure.IntermediateRepresentation
 {
-    unsafe struct Operation : IIntrusiveListNode<Operation>
+    unsafe struct Operation : IEquatable<Operation>, IIntrusiveListNode<Operation>
     {
         internal struct Data
         {
