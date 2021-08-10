@@ -29,7 +29,7 @@ namespace ARMeilleure.Translation
 
                         predecessor.Append(Operation(Instruction.Copy, local, source));
 
-                        operation.SetSource(index * 2 + 1, default);
+                        phi.SetSource(index, default);
                     }
 
                     Operation copyOp = Operation(Instruction.Copy, operation.Destination, local);

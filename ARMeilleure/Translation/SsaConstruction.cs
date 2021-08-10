@@ -220,7 +220,7 @@ namespace ARMeilleure.Translation
 
             if (node != default)
             {
-                while (node.ListNext != default && node.Instruction == Instruction.Phi)
+                while (node.ListNext != default && node.ListNext.Instruction == Instruction.Phi)
                 {
                     node = node.ListNext;
                 }
