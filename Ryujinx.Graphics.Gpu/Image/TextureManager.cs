@@ -141,7 +141,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Check if a texture's scale must be updated to match the configured res scale.
+        /// Check if a texture's scale must be updated to match the configured resolution scale.
         /// </summary>
         /// <param name="texture">The texture to check</param>
         /// <returns>True if the scale needs updating, false if the scale is up to date</returns>
