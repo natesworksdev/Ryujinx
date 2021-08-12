@@ -30,6 +30,19 @@ namespace Ryujinx.Graphics.Shader.Translation
             IsNonMain = isNonMain;
             _operations = new List<Operation>();
             _labels = new Dictionary<ulong, Operand>();
+
+            EmitStart();
+        }
+
+        private void EmitStart()
+        {
+            if (Config.Stage == ShaderStage.Vertex &&
+                Config.Options.TargetApi == TargetApi.Vulkan &&
+                (Config.Options.Flags & TranslationFlags.VertexA) == 0)
+            {
+                // Vulkan requires the point size to be always written on the shader if the primitive topology is points.
+                this.Copy(Attribute(AttributeConsts.PointSize), ConstF(Config.GpuAccessor.QueryPointSize()));
+            }
         }
 
         public T GetOp<T>() where T : unmanaged
@@ -43,7 +56,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             Operation operation = new Operation(inst, dest, sources);
 
-            Add(operation);
+            _operations.Add(operation);
 
             return dest;
         }
@@ -167,6 +180,15 @@ namespace Ryujinx.Graphics.Shader.Translation
                 this.Copy(Attribute(AttributeConsts.PositionX), this.FPFusedMultiplyAdd(x, xScale, negativeOne));
                 this.Copy(Attribute(AttributeConsts.PositionY), this.FPFusedMultiplyAdd(y, yScale, negativeOne));
             }
+
+            if (Config.GpuAccessor.QueryTransformDepthMinusOneToOne())
+            {
+                Operand z = Attribute(AttributeConsts.PositionZ);
+                Operand w = Attribute(AttributeConsts.PositionW);
+                Operand halfW = this.FPMultiply(w, ConstF(0.5f));
+
+                this.Copy(Attribute(AttributeConsts.PositionZ), this.FPFusedMultiplyAdd(z, ConstF(0.5f), halfW));
+            }
         }
 
         public void PrepareForVertexReturn(out Operand oldXLocal, out Operand oldYLocal, out Operand oldZLocal)
@@ -184,8 +206,15 @@ namespace Ryujinx.Graphics.Shader.Translation
                 oldYLocal = null;
             }
 
-            // Will be used by Vulkan backend for depth mode emulation.
-            oldZLocal = null;
+            if (Config.GpuAccessor.QueryTransformDepthMinusOneToOne())
+            {
+                oldZLocal = Local();
+                this.Copy(oldYLocal, Attribute(AttributeConsts.PositionZ | AttributeConsts.LoadOutputMask));
+            }
+            else
+            {
+                oldZLocal = null;
+            }
 
             PrepareForVertexReturn();
         }

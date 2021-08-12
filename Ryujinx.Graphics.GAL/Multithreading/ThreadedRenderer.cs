@@ -337,6 +337,11 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             return box.Result;
         }
 
+        public HardwareInfo GetHardwareInfo()
+        {
+            return _baseRenderer.GetHardwareInfo();
+        }
+
         /// <summary>
         /// Initialize the base renderer. Must be called on the render thread.
         /// </summary>

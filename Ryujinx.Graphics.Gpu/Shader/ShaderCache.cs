@@ -8,6 +8,7 @@ using Ryujinx.Graphics.Shader;
 using Ryujinx.Graphics.Shader.Translation;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 namespace Ryujinx.Graphics.Gpu.Shader
@@ -214,7 +215,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             GpuAccessorState gpuAccessorState = new GpuAccessorState(poolState, computeState, default, specState);
             GpuAccessor gpuAccessor = new GpuAccessor(_context, channel, gpuAccessorState);
 
-            TranslatorContext translatorContext = DecodeComputeShader(gpuAccessor, gpuVa);
+            TranslatorContext translatorContext = DecodeComputeShader(gpuAccessor, _context.Capabilities.Api, gpuVa);
 
             TranslatedShader translatedShader = TranslateShader(_dumper, channel, translatorContext, cachedGuestCode);
 
@@ -260,6 +261,18 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 return gpShaders;
             }
 
+            AttributeType[] attributeTypes = new AttributeType[Constants.TotalVertexAttribs];
+
+            for (int location = 0; location < attributeTypes.Length; location++)
+            {
+                attributeTypes[location] = state.VertexAttribState[location].UnpackType() switch
+                {
+                    3 => AttributeType.Sint,
+                    4 => AttributeType.Uint,
+                    _ => AttributeType.Float
+                };
+            }
+
             TransformFeedbackDescriptor[] transformFeedbackDescriptors = GetTransformFeedbackDescriptors(ref state);
 
             ShaderSpecializationState specState = new ShaderSpecializationState(graphicsState, transformFeedbackDescriptors);
@@ -270,14 +283,16 @@ namespace Ryujinx.Graphics.Gpu.Shader
             TranslatorContext[] translatorContexts = new TranslatorContext[Constants.ShaderStages + 1];
             TranslatorContext nextStage = null;
 
+            TargetApi api = _context.Capabilities.Api;
+
             for (int stageIndex = Constants.ShaderStages - 1; stageIndex >= 0; stageIndex--)
             {
                 ulong gpuVa = addressesSpan[stageIndex + 1];
 
                 if (gpuVa != 0)
                 {
-                    GpuAccessor gpuAccessor = new GpuAccessor(_context, channel, gpuAccessorState, stageIndex);
-                    TranslatorContext currentStage = DecodeGraphicsShader(gpuAccessor, DefaultFlags, gpuVa);
+                    GpuAccessor gpuAccessor = new GpuAccessor(_context, channel, gpuAccessorState, attributeTypes, stageIndex);
+                    TranslatorContext currentStage = DecodeGraphicsShader(gpuAccessor, api, DefaultFlags, gpuVa);
 
                     if (nextStage != null)
                     {
@@ -286,7 +301,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
                     if (stageIndex == 0 && addresses.VertexA != 0)
                     {
-                        translatorContexts[0] = DecodeGraphicsShader(gpuAccessor, DefaultFlags | TranslationFlags.VertexA, addresses.VertexA);
+                        translatorContexts[0] = DecodeGraphicsShader(gpuAccessor, api, DefaultFlags | TranslationFlags.VertexA, addresses.VertexA);
                     }
 
                     translatorContexts[stageIndex + 1] = currentStage;
@@ -355,7 +370,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <returns>Shader source</returns>
         public static ShaderSource CreateShaderSource(ShaderProgram program)
         {
-            return new ShaderSource(program.Code, program.BinaryCode, program.Info.Stage, program.Language);
+            return new ShaderSource(program.Code, program.BinaryCode, GetBindings(program.Info), program.Info.Stage, program.Language);
         }
 
         /// <summary>
@@ -480,11 +495,12 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// Decode the binary Maxwell shader code to a translator context.
         /// </summary>
         /// <param name="gpuAccessor">GPU state accessor</param>
+        /// <param name="api">Graphics API that will be used with the shader</param>
         /// <param name="gpuVa">GPU virtual address of the binary shader code</param>
         /// <returns>The generated translator context</returns>
-        public static TranslatorContext DecodeComputeShader(IGpuAccessor gpuAccessor, ulong gpuVa)
+        public static TranslatorContext DecodeComputeShader(IGpuAccessor gpuAccessor, TargetApi api, ulong gpuVa)
         {
-            var options = new TranslationOptions(TargetLanguage.Glsl, TargetApi.OpenGL, DefaultFlags | TranslationFlags.Compute);
+            var options = CreateTranslationOptions(api, DefaultFlags | TranslationFlags.Compute);
             return Translator.CreateContext(gpuVa, gpuAccessor, options);
         }
 
@@ -495,12 +511,13 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// This will combine the "Vertex A" and "Vertex B" shader stages, if specified, into one shader.
         /// </remarks>
         /// <param name="gpuAccessor">GPU state accessor</param>
+        /// <param name="api">Graphics API that will be used with the shader</param>
         /// <param name="flags">Flags that controls shader translation</param>
         /// <param name="gpuVa">GPU virtual address of the shader code</param>
         /// <returns>The generated translator context</returns>
-        public static TranslatorContext DecodeGraphicsShader(IGpuAccessor gpuAccessor, TranslationFlags flags, ulong gpuVa)
+        public static TranslatorContext DecodeGraphicsShader(IGpuAccessor gpuAccessor, TargetApi api, TranslationFlags flags, ulong gpuVa)
         {
-            var options = new TranslationOptions(TargetLanguage.Glsl, TargetApi.OpenGL, flags);
+            var options = CreateTranslationOptions(api, flags);
             return Translator.CreateContext(gpuVa, gpuAccessor, options);
         }
 
@@ -593,6 +610,41 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 ShaderStage.Fragment => 4,
                 _ => 0
             };
+        }
+
+        private static ShaderBindings GetBindings(ShaderProgramInfo info)
+        {
+            static bool IsBuffer(TextureDescriptor descriptor)
+            {
+                return (descriptor.Type & SamplerType.Mask) == SamplerType.TextureBuffer;
+            }
+
+            static bool IsNotBuffer(TextureDescriptor descriptor)
+            {
+                return !IsBuffer(descriptor);
+            }
+
+            var uniformBufferBindings = info.CBuffers.Select(x => x.Binding).ToArray();
+            var storageBufferBindings = info.SBuffers.Select(x => x.Binding).ToArray();
+            var textureBindings = info.Textures.Where(IsNotBuffer).Select(x => x.Binding).ToArray();
+            var imageBindings = info.Images.Where(IsNotBuffer).Select(x => x.Binding).ToArray();
+            var bufferTextureBindings = info.Textures.Where(IsBuffer).Select(x => x.Binding).ToArray();
+            var bufferImageBindings = info.Images.Where(IsBuffer).Select(x => x.Binding).ToArray();
+
+            return new ShaderBindings(
+                uniformBufferBindings,
+                storageBufferBindings,
+                textureBindings,
+                imageBindings,
+                bufferTextureBindings,
+                bufferImageBindings);
+        }
+
+        private static TranslationOptions CreateTranslationOptions(TargetApi api, TranslationFlags flags)
+        {
+            TargetLanguage lang = GraphicsConfig.EnableSpirvCompilation ? TargetLanguage.Spirv : TargetLanguage.Glsl;
+
+            return new TranslationOptions(lang, api, flags);
         }
 
         /// <summary>

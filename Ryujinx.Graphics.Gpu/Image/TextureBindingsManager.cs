@@ -444,6 +444,25 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Counts the total number of texture bindings used by all shader stages.
+        /// </summary>
+        /// <returns>The total amount of textures used</returns>
+        private int GetTextureBindingsCount()
+        {
+            int count = 0;
+
+            for (int i = 0; i < _textureBindings.Length; i++)
+            {
+                if (_textureBindings[i] != null)
+                {
+                    count += _textureBindings[i].Length;
+                }
+            }
+
+            return count;
+        }
+
+        /// <summary>
         /// Ensures that the texture bindings are visible to the host GPU.
         /// Note: this actually performs the binding using the host graphics API.
         /// </summary>
@@ -519,7 +538,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                         state.ScaleIndex = index;
                         state.UsageFlags = usageFlags;
 
-                        _context.Renderer.Pipeline.SetTexture(bindingInfo.Binding, hostTextureRebind);
+                        _context.Renderer.Pipeline.SetTextureAndSampler(bindingInfo.Binding, hostTextureRebind, state.Sampler);
                     }
 
                     continue;
@@ -532,7 +551,10 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 specStateMatches &= specState.MatchesTexture(stage, index, descriptor);
 
+                Sampler sampler = _samplerPool?.Get(samplerId);
+
                 ITexture hostTexture = texture?.GetTargetTexture(bindingInfo.Target);
+                ISampler hostSampler = sampler?.GetHostSampler(texture);
 
                 if (hostTexture != null && texture.Target == Target.TextureBuffer)
                 {
@@ -543,7 +565,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
                 else
                 {
-                    if (state.Texture != hostTexture)
+                    if (state.Texture != hostTexture || state.Sampler != hostSampler)
                     {
                         if (UpdateScale(texture, usageFlags, index, stage))
                         {
@@ -554,22 +576,13 @@ namespace Ryujinx.Graphics.Gpu.Image
                         state.ScaleIndex = index;
                         state.UsageFlags = usageFlags;
 
-                        _context.Renderer.Pipeline.SetTexture(bindingInfo.Binding, hostTexture);
-                    }
-
-                    Sampler sampler = samplerPool?.Get(samplerId);
-                    state.CachedSampler = sampler;
-
-                    ISampler hostSampler = sampler?.GetHostSampler(texture);
-
-                    if (state.Sampler != hostSampler)
-                    {
                         state.Sampler = hostSampler;
 
-                        _context.Renderer.Pipeline.SetSampler(bindingInfo.Binding, hostSampler);
+                        _context.Renderer.Pipeline.SetTextureAndSampler(bindingInfo.Binding, hostTexture, hostSampler);
                     }
 
                     state.CachedTexture = texture;
+                    state.CachedSampler = sampler;
                     state.InvalidatedSequence = texture?.InvalidatedSequence ?? 0;
                 }
             }
