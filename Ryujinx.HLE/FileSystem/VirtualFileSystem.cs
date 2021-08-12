@@ -23,18 +23,18 @@ namespace Ryujinx.HLE.FileSystem
 {
     public class VirtualFileSystem : IDisposable
     {
-        public const string NandPath   = AppDataManager.DefaultNandDir;
+        public const string NandPath = AppDataManager.DefaultNandDir;
         public const string SdCardPath = AppDataManager.DefaultSdcardDir;
 
-        public static string SafeNandPath   = Path.Combine(NandPath, "safe");
+        public static string SafeNandPath = Path.Combine(NandPath, "safe");
         public static string SystemNandPath = Path.Combine(NandPath, "system");
-        public static string UserNandPath   = Path.Combine(NandPath, "user");
-        
+        public static string UserNandPath = Path.Combine(NandPath, "user");
+
         private static bool _isInitialized = false;
 
-        public KeySet           KeySet   { get; private set; }
+        public KeySet KeySet { get; private set; }
         public EmulatedGameCard GameCard { get; private set; }
-        public EmulatedSdCard   SdCard   { get; private set; }
+        public EmulatedSdCard SdCard { get; private set; }
 
         public ModLoader ModLoader { get; private set; }
 
@@ -197,8 +197,8 @@ namespace Ryujinx.HLE.FileSystem
         {
             KeySet ??= KeySet.CreateDefaultKeySet();
 
-            string keyFile        = null;
-            string titleKeyFile   = null;
+            string keyFile = null;
+            string titleKeyFile = null;
             string consoleKeyFile = null;
 
             if (AppDataManager.Mode == AppDataManager.LaunchMode.UserProfile)
@@ -210,8 +210,8 @@ namespace Ryujinx.HLE.FileSystem
 
             void LoadSetAtPath(string basePath)
             {
-                string localKeyFile        = Path.Combine(basePath, "prod.keys");
-                string localTitleKeyFile   = Path.Combine(basePath, "title.keys");
+                string localKeyFile = Path.Combine(basePath, "prod.keys");
+                string localTitleKeyFile = Path.Combine(basePath, "title.keys");
                 string localConsoleKeyFile = Path.Combine(basePath, "console.keys");
 
                 if (File.Exists(localKeyFile))
@@ -295,15 +295,70 @@ namespace Ryujinx.HLE.FileSystem
                 {
                     rc = FixExtraData(out bool wasFixNeeded, hos, in info[i]);
 
+                    if (ResultFs.TargetNotFound.Includes(rc))
+                    {
+                        // If the save wasn't found, try to create the directory for its save data ID
+                        rc = CreateSaveDataDirectory(hos, in info[i]);
+
+                        if (rc.IsFailure())
+                        {
+                            Logger.Warning?.Print(LogClass.Application, $"Error {rc.ToStringWithName()} when creating save data 0x{info[i].SaveDataId:x} in the {spaceId} save data space");
+
+                            // Don't bother fixing the extra data if we couldn't create the directory
+                            continue;
+                        }
+
+                        Logger.Info?.Print(LogClass.Application, $"Recreated directory for save data 0x{info[i].SaveDataId:x} in the {spaceId} save data space");
+
+                        // Try to fix the extra data in the new directory
+                        rc = FixExtraData(out wasFixNeeded, hos, in info[i]);
+                    }
+
                     if (rc.IsFailure())
                     {
                         Logger.Warning?.Print(LogClass.Application, $"Error {rc.ToStringWithName()} when fixing extra data for save data 0x{info[i].SaveDataId:x} in the {spaceId} save data space");
                     }
                     else if (wasFixNeeded)
                     {
-                        Logger.Info?.Print(LogClass.Application, $"Tried to rebuild extra data for save data 0x{info[i].SaveDataId:x} in the {spaceId} save data space");
+                        Logger.Info?.Print(LogClass.Application, $"Fixed extra data for save data 0x{info[i].SaveDataId:x} in the {spaceId} save data space");
                     }
                 }
+            }
+        }
+
+        private static Result CreateSaveDataDirectory(HorizonClient hos, in SaveDataInfo info)
+        {
+            if (info.SpaceId != SaveDataSpaceId.User && info.SpaceId != SaveDataSpaceId.System)
+                return Result.Success;
+
+            const string mountName = "SaveDir";
+            var mountNameU8 = mountName.ToU8Span();
+
+            BisPartitionId partitionId = info.SpaceId switch
+            {
+                SaveDataSpaceId.System => BisPartitionId.System,
+                SaveDataSpaceId.User => BisPartitionId.User,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
+            Result rc = hos.Fs.MountBis(mountNameU8, partitionId);
+            if (rc.IsFailure()) return rc;
+            try
+            {
+                var path = $"{mountName}:/save/{info.SaveDataId:x16}".ToU8Span();
+
+                rc = hos.Fs.GetEntryType(out _, path);
+
+                if (ResultFs.PathNotFound.Includes(rc))
+                {
+                    rc = hos.Fs.CreateDirectory(path);
+                }
+
+                return rc;
+            }
+            finally
+            {
+                hos.Fs.Unmount(mountNameU8);
             }
         }
 
