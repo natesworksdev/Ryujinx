@@ -219,6 +219,16 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
         }
 
+        public void SetAllInputUserAttributes()
+        {
+            UsedInputAttributes |= 0xffff;
+        }
+
+        public void SetAllOutputUserAttributes()
+        {
+            UsedOutputAttributes |= 0xffff;
+        }
+
         public void SetClipDistanceWritten(int index)
         {
             ClipDistancesWritten |= (byte)(1 << index);

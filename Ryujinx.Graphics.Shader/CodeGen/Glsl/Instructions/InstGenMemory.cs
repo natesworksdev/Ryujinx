@@ -138,14 +138,17 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             IAstNode src1 = operation.GetSource(0);
             IAstNode src2 = operation.GetSource(1);
 
-            if (!(src1 is AstOperand attr) || attr.Type != OperandType.Attribute)
-            {
-                throw new InvalidOperationException("First source of LoadAttribute must be a attribute.");
-            }
-
             string indexExpr = GetSoureExpr(context, src2, GetSrcVarType(operation.Inst, 1));
 
-            return OperandManager.GetAttributeName(attr, context.Config, isOutAttr: false, indexExpr);
+            if (src1 is AstOperand operand && operand.Type == OperandType.Constant)
+            {
+                return OperandManager.GetAttributeName(operand.Value, context.Config, isOutAttr: false, indexExpr);
+            }
+            else
+            {
+                string attrExpr = GetSoureExpr(context, src1, GetSrcVarType(operation.Inst, 0));
+                return OperandManager.GetAttributeName(attrExpr, context.Config, isOutAttr: false, indexExpr);
+            }
         }
 
         public static string LoadConstant(CodeGenContext context, AstOperation operation)
@@ -160,10 +163,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             var config = context.Config;
             bool indexElement = !config.GpuAccessor.QueryHostHasVectorIndexingBug();
 
-            if (src1 is AstOperand oper && oper.Type == OperandType.Constant)
+            if (src1 is AstOperand operand && operand.Type == OperandType.Constant)
             {
                 bool cbIndexable = config.UsedFeatures.HasFlag(Translation.FeatureFlags.CbIndexing);
-                return OperandManager.GetConstantBufferName(oper.Value, offsetExpr, config.Stage, cbIndexable, indexElement);
+                return OperandManager.GetConstantBufferName(operand.Value, offsetExpr, config.Stage, cbIndexable, indexElement);
             }
             else
             {
