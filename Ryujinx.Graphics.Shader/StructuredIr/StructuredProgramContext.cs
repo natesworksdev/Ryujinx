@@ -277,6 +277,11 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
         public AstOperand GetOperandDef(Operand operand)
         {
+            if (operand.Type == OperandType.Attribute)
+            {
+                Info.Outputs.Add(operand.Value);
+            }
+
             return GetOperand(operand);
         }
 
@@ -286,6 +291,11 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             if (operand.Type.IsAttribute() && (operand.Value & AttributeConsts.LoadOutputMask) != 0)
             {
                 return GetOperandDef(operand);
+            }
+
+            if (operand.Type == OperandType.Attribute)
+            {
+                Info.Inputs.Add(operand.Value);
             }
 
             return GetOperand(operand);

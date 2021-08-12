@@ -169,7 +169,10 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
                             tessMode,
                             false,
                             false,
-                            false);
+                            false,
+                            false,
+                            false,
+                            1f);
 
                         TransformFeedbackDescriptor[] tfdNew = null;
 
