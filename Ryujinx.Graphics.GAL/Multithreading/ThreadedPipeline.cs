@@ -227,9 +227,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             _renderer.QueueCommand();
         }
 
-        public void SetStorageBuffers(ReadOnlySpan<BufferRange> buffers)
+        public void SetStorageBuffers(int first, ReadOnlySpan<BufferRange> buffers)
         {
-            _renderer.New<SetStorageBuffersCommand>().Set(_renderer.CopySpan(buffers));
+            _renderer.New<SetStorageBuffersCommand>().Set(first, _renderer.CopySpan(buffers));
             _renderer.QueueCommand();
         }
 
@@ -245,9 +245,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             _renderer.QueueCommand();
         }
 
-        public void SetUniformBuffers(ReadOnlySpan<BufferRange> buffers)
+        public void SetUniformBuffers(int first, ReadOnlySpan<BufferRange> buffers)
         {
-            _renderer.New<SetUniformBuffersCommand>().Set(_renderer.CopySpan(buffers));
+            _renderer.New<SetUniformBuffersCommand>().Set(first, _renderer.CopySpan(buffers));
             _renderer.QueueCommand();
         }
 
