@@ -246,7 +246,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             return new Capabilities(
                 TargetApi.Vulkan,
-                false,
+                Vendor == Vendor.Intel && RuntimeInformation.IsOSPlatform(OSPlatform.Windows),
                 false,
                 features.TextureCompressionAstcLdr,
                 features.ShaderStorageImageReadWithoutFormat,
