@@ -155,6 +155,9 @@ namespace Ryujinx.Headless.SDL2
         [Option("graphics-shaders-dump-path", Required = false, HelpText = "Dumps shaders in this local directory. (Developer only)")]
         public string GraphicsShadersDumpPath { get; set; }
 
+        [Option("graphics-backend", Required = false, Default = GraphicsBackend.OpenGl, HelpText = "Change Graphics Backend to use.")]
+        public GraphicsBackend GraphicsBackend { get; set; }
+
         // Hacks
 
         [Option("expand-ram", Required = false, Default = false, HelpText = "Expands the RAM amount on the emulated system from 4GB to 6GB.")]

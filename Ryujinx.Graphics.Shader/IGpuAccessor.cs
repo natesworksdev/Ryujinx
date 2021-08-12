@@ -1,4 +1,6 @@
-﻿namespace Ryujinx.Graphics.Shader
+﻿using System;
+
+namespace Ryujinx.Graphics.Shader
 {
     public interface IGpuAccessor
     {
@@ -17,6 +19,11 @@
         bool MemoryMapped(ulong address)
         {
             return true;
+        }
+
+        AttributeType QueryAttributeType(int location)
+        {
+            return AttributeType.Float;
         }
 
         int QueryComputeLocalSizeX()
@@ -64,6 +71,16 @@
             return 16;
         }
 
+        bool QueryProgramPointSize()
+        {
+            return true;
+        }
+
+        float QueryPointSize()
+        {
+            return 1f;
+        }
+
         bool QueryHostSupportsImageLoadFormatted()
         {
             return true;
@@ -97,6 +114,26 @@
         TextureFormat QueryTextureFormat(int handle, int cbufSlot = -1)
         {
             return TextureFormat.R8G8B8A8Unorm;
+        }
+
+        bool QueryTransformDepthMinusOneToOne()
+        {
+            return false;
+        }
+
+        bool QueryTransformFeedbackEnabled()
+        {
+            return false;
+        }
+
+        ReadOnlySpan<byte> QueryTransformFeedbackVaryingLocations(int bufferIndex)
+        {
+            return ReadOnlySpan<byte>.Empty;
+        }
+
+        int QueryTransformFeedbackStride(int bufferIndex)
+        {
+            return 0;
         }
 
         bool QueryEarlyZForce()

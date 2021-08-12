@@ -107,9 +107,9 @@ namespace Ryujinx.Ui
             _nativeWindow.SwapBuffers();
         }
 
-        public override string GetGpuVendorName()
+        protected override string GetGpuBackendName()
         {
-            return ((Renderer)Renderer).GpuVendor;
+            return "OpenGL";
         }
 
         protected override void Dispose(bool disposing)

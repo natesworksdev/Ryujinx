@@ -959,38 +959,25 @@ namespace Ryujinx.Graphics.OpenGL
             _framebuffer.SetDrawBuffers(colors.Length);
         }
 
-        public void SetSampler(int binding, ISampler sampler)
+        public unsafe void SetScissors(ReadOnlySpan<Rectangle<int>> regions)
         {
-            if (sampler == null)
+            int count = Math.Min(regions.Length, Constants.MaxViewports);
+
+            int* v = stackalloc int[count * 4];
+
+            for (int index = 0; index < count; index++)
             {
-                return;
-            }
+                int vIndex = index * 4;
 
-            ((Sampler)sampler).Bind(binding);
-        }
+                v[vIndex] = regions[index].X;
+                v[vIndex + 1] = regions[index].Y;
+                v[vIndex + 2] = regions[index].Width;
+                v[vIndex + 3] = regions[index].Height;
 
-        public void SetScissor(int index, bool enable, int x, int y, int width, int height)
-        {
-            uint mask = 1u << index;
-
-            if (!enable)
-            {
-                if ((_scissorEnables & mask) != 0)
-                {
-                    _scissorEnables &= ~mask;
-                    GL.Disable(IndexedEnableCap.ScissorTest, index);
-                }
-
-                return;
-            }
-
-            if ((_scissorEnables & mask) == 0)
-            {
-                _scissorEnables |= mask;
                 GL.Enable(IndexedEnableCap.ScissorTest, index);
             }
 
-            GL.ScissorIndexed(index, x, y, width, height);
+            GL.ScissorArray(0, count, v);
         }
 
         public void SetStencilTest(StencilTestDescriptor stencilTest)
@@ -1039,22 +1026,23 @@ namespace Ryujinx.Graphics.OpenGL
             SetBuffers(first, buffers, isStorage: true);
         }
 
-        public void SetTexture(int binding, ITexture texture)
+        public void SetTextureAndSampler(int binding, ITexture texture, ISampler sampler)
         {
-            if (texture == null)
+            if (texture != null && sampler != null)
             {
-                return;
-            }
+                if (binding == 0)
+                {
+                    _unit0Texture = (TextureBase)texture;
+                }
+                else
+                {
+                    ((TextureBase)texture).Bind(binding);
+                }
 
-            if (binding == 0)
-            {
-                _unit0Texture = (TextureBase)texture;
-            }
-            else
-            {
-                ((TextureBase)texture).Bind(binding);
+                ((Sampler)sampler).Bind(binding);
             }
         }
+
 
         public void SetTransformFeedbackBuffers(ReadOnlySpan<BufferRange> buffers)
         {

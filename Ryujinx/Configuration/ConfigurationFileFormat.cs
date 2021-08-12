@@ -259,6 +259,11 @@ namespace Ryujinx.Configuration
         public List<InputConfig> InputConfig { get; set; }
 
         /// <summary>
+        /// Graphics backend
+        /// </summary>
+        public GraphicsBackend GraphicsBackend { get; set; }
+
+        /// <summary>
         /// Loads a configuration file from disk
         /// </summary>
         /// <param name="path">The path to the JSON configuration file</param>

@@ -129,6 +129,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
                 _state.State.SetTexHeaderPoolCMaximumIndex,
                 _state.State.SetBindlessTextureConstantBufferSlotSelect,
                 false,
+                false,
+                false,
+                0f,
                 PrimitiveTopology.Points);
 
             ShaderBundle cs = memoryManager.Physical.ShaderCache.GetComputeShader(

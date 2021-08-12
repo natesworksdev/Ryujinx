@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
     {
         public static void Declare(CodeGenContext context, StructuredProgramInfo info)
         {
-            context.AppendLine("#version 450 core");
+            context.AppendLine(context.Config.Options.TargetApi == TargetApi.Vulkan ? "#version 460 core" : "#version 450 core");
             context.AppendLine("#extension GL_ARB_gpu_shader_int64 : enable");
             context.AppendLine("#extension GL_ARB_shader_ballot : enable");
             context.AppendLine("#extension GL_ARB_shader_group_vote : enable");
@@ -140,6 +140,20 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                     context.AppendLine();
                 }
+
+                if (context.Config.Stage != ShaderStage.Compute &&
+                    context.Config.Stage != ShaderStage.Fragment &&
+                    (context.Config.Options.Flags & TranslationFlags.Feedback) != 0)
+                {
+                    var tfOutput = context.GetTransformFeedbackOutput(AttributeConsts.PositionX);
+                    if (tfOutput.Valid)
+                    {
+                        context.AppendLine($"layout (xfb_buffer = {tfOutput.Buffer}, xfb_offset = {tfOutput.Offset}, xfb_stride = {tfOutput.Stride}) out gl_PerVertex");
+                        context.EnterScope();
+                        context.AppendLine("vec4 gl_Position;");
+                        context.LeaveScope(";");
+                    }
+                }
             }
             else
             {
@@ -251,11 +265,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             switch (type)
             {
                 case VariableType.Bool: return "bool";
-                case VariableType.F32:  return "precise float";
-                case VariableType.F64:  return "double";
+                case VariableType.F32: return "precise float";
+                case VariableType.F64: return "double";
                 case VariableType.None: return "void";
-                case VariableType.S32:  return "int";
-                case VariableType.U32:  return "uint";
+                case VariableType.S32: return "int";
+                case VariableType.U32: return "uint";
             }
 
             throw new ArgumentException($"Invalid variable type \"{type}\".");
@@ -440,18 +454,40 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             string pass = (context.Config.PassthroughAttributes & (1 << attr)) != 0 ? "passthrough, " : string.Empty;
             string name = $"{DefaultNames.IAttributePrefix}{attr}";
 
-            if ((context.Config.Options.Flags & TranslationFlags.Feedback) != 0)
+            if (context.Config.Options.Flags.HasFlag(TranslationFlags.Feedback))
             {
+                string type;
+
+                if (context.Config.Stage == ShaderStage.Vertex)
+                {
+                    type = context.Config.GpuAccessor.QueryAttributeType(attr).GetScalarType();
+                }
+                else
+                {
+                    type = AttributeType.Float.GetScalarType();
+                }
+
                 for (int c = 0; c < 4; c++)
                 {
                     char swzMask = "xyzw"[c];
 
-                    context.AppendLine($"layout ({pass}location = {attr}, component = {c}) {iq}in float {name}_{swzMask}{suffix};");
+                    context.AppendLine($"layout ({pass}location = {attr}, component = {c}) {iq}in {type} {name}_{swzMask}{suffix};");
                 }
             }
             else
             {
-                context.AppendLine($"layout ({pass}location = {attr}) {iq}in vec4 {name}{suffix};");
+                string type;
+
+                if (context.Config.Stage == ShaderStage.Vertex)
+                {
+                    type = context.Config.GpuAccessor.QueryAttributeType(attr).GetVec4Type();
+                }
+                else
+                {
+                    type = AttributeType.Float.GetVec4Type();
+                }
+
+                context.AppendLine($"layout ({pass}location = {attr}) {iq}in {type} {name}{suffix};");
             }
         }
 
@@ -479,13 +515,21 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
         {
             string name = $"{DefaultNames.OAttributePrefix}{attr}";
 
-            if ((context.Config.Options.Flags & TranslationFlags.Feedback) != 0)
+            if (context.Config.Options.Flags.HasFlag(TranslationFlags.Feedback))
             {
                 for (int c = 0; c < 4; c++)
                 {
                     char swzMask = "xyzw"[c];
 
-                    context.AppendLine($"layout (location = {attr}, component = {c}) out float {name}_{swzMask};");
+                    string xfb = string.Empty;
+
+                    var tfOutput = context.GetTransformFeedbackOutput(attr, c);
+                    if (tfOutput.Valid)
+                    {
+                        xfb = $", xfb_buffer = {tfOutput.Buffer}, xfb_offset = {tfOutput.Offset}, xfb_stride = {tfOutput.Stride}";
+                    }
+
+                    context.AppendLine($"layout (location = {attr}, component = {c}{xfb}) out float {name}_{swzMask};");
                 }
             }
             else

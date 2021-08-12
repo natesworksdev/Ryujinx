@@ -67,7 +67,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.SDL2.Common", "Ryuj
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.Audio.Backends.SDL2", "Ryujinx.Audio.Backends.SDL2\Ryujinx.Audio.Backends.SDL2.csproj", "{D99A395A-8569-4DB0-B336-900647890052}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ryujinx.Headless.SDL2", "Ryujinx.Headless.SDL2\Ryujinx.Headless.SDL2.csproj", "{390DC343-5CB4-4C79-A5DD-E3ED235E4C49}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.Headless.SDL2", "Ryujinx.Headless.SDL2\Ryujinx.Headless.SDL2.csproj", "{390DC343-5CB4-4C79-A5DD-E3ED235E4C49}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.Graphics.Vulkan", "Ryujinx.Graphics.Vulkan\Ryujinx.Graphics.Vulkan.csproj", "{D4D09B08-D580-4D69-B886-C35D2853F6C8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spv.Generator", "SpvGen\Spv.Generator.csproj", "{D0720AC9-8AE7-417C-AB39-82CE984045C4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -195,6 +199,14 @@ Global
 		{390DC343-5CB4-4C79-A5DD-E3ED235E4C49}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{390DC343-5CB4-4C79-A5DD-E3ED235E4C49}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{390DC343-5CB4-4C79-A5DD-E3ED235E4C49}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4D09B08-D580-4D69-B886-C35D2853F6C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4D09B08-D580-4D69-B886-C35D2853F6C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4D09B08-D580-4D69-B886-C35D2853F6C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4D09B08-D580-4D69-B886-C35D2853F6C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0720AC9-8AE7-417C-AB39-82CE984045C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0720AC9-8AE7-417C-AB39-82CE984045C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0720AC9-8AE7-417C-AB39-82CE984045C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0720AC9-8AE7-417C-AB39-82CE984045C4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -277,11 +277,21 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
         public AstOperand GetOperandDef(Operand operand)
         {
+            if (operand.Type == OperandType.Attribute)
+            {
+                Info.Outputs.Add(operand.Value);
+            }
+
             return GetOperand(operand);
         }
 
         public AstOperand GetOperandUse(Operand operand)
         {
+            if (operand.Type == OperandType.Attribute)
+            {
+                Info.Inputs.Add(operand.Value);
+            }
+
             return GetOperand(operand);
         }
 
