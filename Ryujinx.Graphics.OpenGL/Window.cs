@@ -42,25 +42,22 @@ namespace Ryujinx.Graphics.OpenGL
 
         private void CopyTextureToFrameBufferRGB(int drawFramebuffer, int readFramebuffer, TextureView view, ImageCrop crop)
         {
-            (int oldDrawFramebufferHandle, int oldReadFramebufferHandle) = ((Pipeline)_renderer.Pipeline).GetBoundFramebuffers();
+            int oldDrawFramebufferHandle = ((Pipeline)_renderer.Pipeline).GetBoundDrawFramebuffer();
 
             GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, drawFramebuffer);
-            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, readFramebuffer);
 
             TextureView viewConverted = view.Format.IsBgr() ? _renderer.TextureCopy.BgraSwap(view) : view;
 
-            GL.FramebufferTexture(
-                FramebufferTarget.ReadFramebuffer,
+            GL.NamedFramebufferTexture(
+                readFramebuffer,
                 FramebufferAttachment.ColorAttachment0,
                 viewConverted.Handle,
                 0);
 
-            GL.ReadBuffer(ReadBufferMode.ColorAttachment0);
+            GL.NamedFramebufferReadBuffer(readFramebuffer, ReadBufferMode.ColorAttachment0);
 
             GL.Disable(EnableCap.RasterizerDiscard);
             GL.Disable(IndexedEnableCap.ScissorTest, 0);
-
-            GL.Clear(ClearBufferMask.ColorBufferBit);
 
             int srcX0, srcX1, srcY0, srcY1;
             float scale = view.ScaleFactor;
@@ -112,12 +109,18 @@ namespace Ryujinx.Graphics.OpenGL
 
             if (ScreenCaptureRequested)
             {
+                GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, readFramebuffer);
+
                 CaptureFrame(srcX0, srcY0, srcX1, srcY1, view.Format.IsBgr(), crop.FlipX, crop.FlipY);
+
+                GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, 0);
 
                 ScreenCaptureRequested = false;
             }
 
-            GL.BlitFramebuffer(
+            GL.BlitNamedFramebuffer(
+                readFramebuffer,
+                drawFramebuffer,
                 srcX0,
                 srcY0,
                 srcX1,
@@ -131,15 +134,13 @@ namespace Ryujinx.Graphics.OpenGL
 
             // Remove Alpha channel
             GL.ColorMask(false, false, false, true);
-            GL.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-            GL.Clear(ClearBufferMask.ColorBufferBit);
+            GL.ClearNamedFramebuffer(drawFramebuffer, ClearBuffer.Color, 0, new float[] { 0.0f, 0.0f, 0.0f, 1.0f });
 
             for (int i = 0; i < Constants.MaxRenderTargets; i++)
             {
                 ((Pipeline)_renderer.Pipeline).RestoreComponentMask(i);
             }
 
-            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, oldReadFramebufferHandle);
             GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, oldDrawFramebufferHandle);
 
             ((Pipeline)_renderer.Pipeline).RestoreScissor0Enable();
@@ -157,7 +158,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             if (handle == 0)
             {
-                handle = GL.GenFramebuffer();
+                handle = Framebuffer.Create();
 
                 _copyFramebufferHandle = handle;
             }

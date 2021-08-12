@@ -17,9 +17,28 @@ namespace Ryujinx.Graphics.OpenGL
         private int _colorsCount;
         private bool _dualSourceBlend;
 
+        public unsafe static int Create()
+        {
+            int localHandle = 0;
+
+            if (HwCapabilities.Vendor == HwCapabilities.GpuVendor.Nvidia)
+            {
+                // Nvidia bug, cf. https://forums.developer.nvidia.com/t/bug-spec-violation-checknamedframebufferstatus-returns-gl-framebuffer-incomplete-dimensions-ext-under-gl-4-5-core/58647
+                GL.GenFramebuffers(1, &localHandle);
+                GL.BindFramebuffer(FramebufferTarget.Framebuffer, localHandle);
+            }
+            else
+            {
+                GL.CreateFramebuffers(1, &localHandle);
+            }
+
+
+            return localHandle;
+        }
+
         public Framebuffer()
         {
-            Handle = GL.GenFramebuffer();
+            Handle = Create();
 
             _colors = new TextureView[8];
         }
@@ -40,7 +59,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             FramebufferAttachment attachment = FramebufferAttachment.ColorAttachment0 + index;
 
-            GL.FramebufferTexture(FramebufferTarget.Framebuffer, attachment, color?.Handle ?? 0, 0);
+            GL.NamedFramebufferTexture(Handle, attachment, color?.Handle ?? 0, 0);
 
             _colors[index] = color;
         }
@@ -50,7 +69,7 @@ namespace Ryujinx.Graphics.OpenGL
             // Detach the last depth/stencil buffer if there is any.
             if (_lastDsAttachment != 0)
             {
-                GL.FramebufferTexture(FramebufferTarget.Framebuffer, _lastDsAttachment, 0, 0);
+                GL.NamedFramebufferTexture(Handle, _lastDsAttachment, 0, 0);
             }
 
             if (depthStencil != null)
@@ -70,8 +89,8 @@ namespace Ryujinx.Graphics.OpenGL
                     attachment = FramebufferAttachment.StencilAttachment;
                 }
 
-                GL.FramebufferTexture(
-                    FramebufferTarget.Framebuffer,
+                GL.NamedFramebufferTexture(
+                    Handle,
                     attachment,
                     depthStencil.Handle,
                     0);
@@ -94,7 +113,7 @@ namespace Ryujinx.Graphics.OpenGL
             // we can only have one draw buffer.
             if (enable)
             {
-                GL.DrawBuffer(DrawBufferMode.ColorAttachment0);
+                GL.NamedFramebufferDrawBuffer(Handle, DrawBufferMode.ColorAttachment0);
             }
             else if (oldEnable)
             {
@@ -121,7 +140,7 @@ namespace Ryujinx.Graphics.OpenGL
                 drawBuffers[index] = DrawBuffersEnum.ColorAttachment0 + index;
             }
 
-            GL.DrawBuffers(colorsCount, drawBuffers);
+            GL.NamedFramebufferDrawBuffers(Handle, colorsCount, drawBuffers);
         }
 
         private static bool IsPackedDepthStencilFormat(Format format)

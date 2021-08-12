@@ -31,7 +31,6 @@ namespace Ryujinx.Graphics.OpenGL
         private bool _depthMask;
 
         private int _boundDrawFramebuffer;
-        private int _boundReadFramebuffer;
 
         private CounterQueueEvent _activeConditionalRender;
 
@@ -45,8 +44,6 @@ namespace Ryujinx.Graphics.OpenGL
 
         private Vector4<int>[] _fpIsBgra = new Vector4<int>[SupportBuffer.FragmentIsBgraCount];
         private Vector4<float>[] _renderScale = new Vector4<float>[65];
-
-        private TextureBase _unit0Texture;
 
         private FrontFaceDirection _frontFace;
         private ClipOrigin _clipOrigin;
@@ -121,7 +118,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             float[] colors = new float[] { color.Red, color.Green, color.Blue, color.Alpha };
 
-            GL.ClearBuffer(OpenTK.Graphics.OpenGL.ClearBuffer.Color, index, colors);
+            GL.ClearNamedFramebuffer(_boundDrawFramebuffer, OpenTK.Graphics.OpenGL.ClearBuffer.Color, index, colors);
 
             RestoreComponentMask(index);
         }
@@ -146,15 +143,15 @@ namespace Ryujinx.Graphics.OpenGL
 
             if (depthMask && stencilMask != 0)
             {
-                GL.ClearBuffer(ClearBufferCombined.DepthStencil, 0, depthValue, stencilValue);
+                GL.ClearNamedFramebuffer(_boundDrawFramebuffer, ClearBufferCombined.DepthStencil, 0, depthValue, stencilValue);
             }
             else if (depthMask)
             {
-                GL.ClearBuffer(OpenTK.Graphics.OpenGL.ClearBuffer.Depth, 0, ref depthValue);
+                GL.ClearNamedFramebuffer(_boundDrawFramebuffer, OpenTK.Graphics.OpenGL.ClearBuffer.Depth, 0, ref depthValue);
             }
             else if (stencilMask != 0)
             {
-                GL.ClearBuffer(OpenTK.Graphics.OpenGL.ClearBuffer.Stencil, 0, ref stencilValue);
+                GL.ClearNamedFramebuffer(_boundDrawFramebuffer, OpenTK.Graphics.OpenGL.ClearBuffer.Stencil, 0, ref stencilValue);
             }
 
             if (stencilMaskChanged)
@@ -185,8 +182,6 @@ namespace Ryujinx.Graphics.OpenGL
                 Logger.Debug?.Print(LogClass.Gpu, "Dispatch error, shader not linked.");
                 return;
             }
-
-            PrepareForDispatch();
 
             GL.DispatchCompute(groupsX, groupsY, groupsZ);
         }
@@ -1045,15 +1040,8 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 return;
             }
-
-            if (binding == 0)
-            {
-                _unit0Texture = (TextureBase)texture;
-            }
-            else
-            {
-                ((TextureBase)texture).Bind(binding);
-            }
+            
+            ((TextureBase)texture).Bind(binding);
         }
 
         public void SetTransformFeedbackBuffers(ReadOnlySpan<BufferRange> buffers)
@@ -1064,6 +1052,7 @@ namespace Ryujinx.Graphics.OpenGL
             }
 
             int count = Math.Min(buffers.Length, Constants.MaxTransformFeedbackBuffers);
+            int[] bufferHandles = new int[count];
 
             for (int i = 0; i < count; i++)
             {
@@ -1072,7 +1061,7 @@ namespace Ryujinx.Graphics.OpenGL
 
                 if (buffer.Handle == BufferHandle.Null)
                 {
-                    GL.BindBufferBase(BufferRangeTarget.TransformFeedbackBuffer, i, 0);
+                    bufferHandles[i] = 0;
                     continue;
                 }
 
@@ -1083,8 +1072,10 @@ namespace Ryujinx.Graphics.OpenGL
 
                 Buffer.Resize(_tfbs[i], buffer.Size);
                 Buffer.Copy(buffer.Handle, _tfbs[i], buffer.Offset, 0, buffer.Size);
-                GL.BindBufferBase(BufferRangeTarget.TransformFeedbackBuffer, i, _tfbs[i].ToInt32());
+                bufferHandles[i] = _tfbs[i].ToInt32();
             }
+
+            GL.BindBuffersBase(BufferRangeTarget.TransformFeedbackBuffer, 0, count, bufferHandles);
 
             if (_tfEnabled)
             {
@@ -1176,18 +1167,29 @@ namespace Ryujinx.Graphics.OpenGL
         {
             BufferRangeTarget target = isStorage ? BufferRangeTarget.ShaderStorageBuffer : BufferRangeTarget.UniformBuffer;
 
+            int[] bufferHandles = new int[buffers.Length];
+            IntPtr[] bufferOffsets = new IntPtr[buffers.Length];
+            IntPtr[] bufferSizes = new IntPtr[buffers.Length];
+
             for (int index = 0; index < buffers.Length; index++)
             {
                 BufferRange buffer = buffers[index];
 
                 if (buffer.Handle == BufferHandle.Null)
                 {
-                    GL.BindBufferRange(target, first + index, 0, IntPtr.Zero, 0);
+                    bufferHandles[index] = 0;
+                    bufferOffsets[index] = IntPtr.Zero;
+                    bufferSizes[index] = (IntPtr)1;
+
                     continue;
                 }
 
-                GL.BindBufferRange(target, first + index, buffer.Handle.ToInt32(), (IntPtr)buffer.Offset, buffer.Size);
+                bufferHandles[index] = buffer.Handle.ToInt32();
+                bufferOffsets[index] = (IntPtr)buffer.Offset;
+                bufferSizes[index] = (IntPtr)buffer.Size;
             }
+
+            GL.BindBuffersRange(target, first, buffers.Length, bufferHandles, bufferOffsets, bufferSizes);
         }
 
         private void SetOrigin(ClipOrigin origin)
@@ -1232,20 +1234,20 @@ namespace Ryujinx.Graphics.OpenGL
                 _framebuffer = new Framebuffer();
 
                 int boundHandle = _framebuffer.Bind();
-                _boundDrawFramebuffer = _boundReadFramebuffer = boundHandle;
+                _boundDrawFramebuffer = boundHandle;
 
                 GL.Enable(EnableCap.FramebufferSrgb);
             }
         }
 
-        internal (int drawHandle, int readHandle) GetBoundFramebuffers()
+        internal int  GetBoundDrawFramebuffer()
         {
             if (BackgroundContextWorker.InBackground)
             {
-                return (0, 0);
+                return 0;
             }
 
-            return (_boundDrawFramebuffer, _boundReadFramebuffer);
+            return _boundDrawFramebuffer;
         }
 
         public void UpdateRenderScale(ShaderStage stage, ReadOnlySpan<float> scales, int textureCount, int imageCount)
@@ -1277,24 +1279,11 @@ namespace Ryujinx.Graphics.OpenGL
             Buffer.SetData(_supportBuffer, offset, MemoryMarshal.Cast<T, byte>(data.Slice(0, count)));
         }
 
-        private void PrepareForDispatch()
-        {
-            if (_unit0Texture != null)
-            {
-                _unit0Texture.Bind(0);
-            }
-        }
-
         private void PreDraw()
         {
             DrawCount++;
 
             _vertexArray.Validate();
-
-            if (_unit0Texture != null)
-            {
-                _unit0Texture.Bind(0);
-            }
         }
 
         private void PostDraw()

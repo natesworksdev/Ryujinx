@@ -26,13 +26,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
         public void Bind(int unit)
         {
-            Bind(Target.Convert(), unit);
-        }
-
-        protected void Bind(TextureTarget target, int unit)
-        {
-            GL.ActiveTexture(TextureUnit.Texture0 + unit);
-            GL.BindTexture(target, Handle);
+            GL.BindTextureUnit(unit, Handle);
         }
     }
 }

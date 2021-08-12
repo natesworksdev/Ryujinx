@@ -23,9 +23,18 @@ namespace Ryujinx.Graphics.OpenGL
         private BufferRange _indexBuffer;
         private BufferHandle _tempIndexBuffer;
 
+        public unsafe int Create()
+        {
+            int localHnadle;
+
+            GL.CreateVertexArrays(1, &localHnadle);
+
+            return localHnadle;
+        }
+
         public VertexArray()
         {
-            Handle = GL.GenVertexArray();
+            Handle = Create();
 
             _vertexAttribs = new VertexAttribDescriptor[Constants.MaxVertexAttribs];
             _vertexBuffers = new VertexBufferDescriptor[Constants.MaxVertexBuffers];
@@ -47,15 +56,15 @@ namespace Ryujinx.Graphics.OpenGL
 
                 if (vb.Buffer.Handle != BufferHandle.Null)
                 {
-                    GL.BindVertexBuffer(bindingIndex, vb.Buffer.Handle.ToInt32(), (IntPtr)vb.Buffer.Offset, vb.Stride);
-                    GL.VertexBindingDivisor(bindingIndex, vb.Divisor);
+                    GL.VertexArrayVertexBuffer(Handle, bindingIndex, vb.Buffer.Handle.ToInt32(), (IntPtr)vb.Buffer.Offset, vb.Stride);
+                    GL.VertexArrayBindingDivisor(Handle, bindingIndex, vb.Divisor);
                     _vertexBuffersInUse |= 1u << bindingIndex;
                 }
                 else
                 {
                     if ((_vertexBuffersInUse & (1u << bindingIndex)) != 0)
                     {
-                        GL.BindVertexBuffer(bindingIndex, 0, IntPtr.Zero, 0);
+                        GL.VertexArrayVertexBuffer(Handle, bindingIndex, 0, IntPtr.Zero, 0);
                         _vertexBuffersInUse &= ~(1u << bindingIndex);
                     }
                 }
@@ -103,16 +112,16 @@ namespace Ryujinx.Graphics.OpenGL
                 {
                     VertexAttribType type = (VertexAttribType)fmtInfo.PixelType;
 
-                    GL.VertexAttribFormat(index, size, type, fmtInfo.Normalized, offset);
+                    GL.VertexArrayAttribFormat(Handle, index, size, type, fmtInfo.Normalized, offset);
                 }
                 else
                 {
-                    VertexAttribIntegerType type = (VertexAttribIntegerType)fmtInfo.PixelType;
+                    VertexAttribType type = (VertexAttribType)fmtInfo.PixelType;
 
-                    GL.VertexAttribIFormat(index, size, type, offset);
+                    GL.VertexArrayAttribIFormat(Handle, index, size, type, offset);
                 }
 
-                GL.VertexAttribBinding(index, attrib.BufferIndex);
+                GL.VertexArrayAttribBinding(Handle, index, attrib.BufferIndex);
 
                 _vertexAttribs[index] = attrib;
             }
@@ -135,12 +144,12 @@ namespace Ryujinx.Graphics.OpenGL
         {
             Buffer.Resize(_tempIndexBuffer, _indexBuffer.Size);
             Buffer.Copy(_indexBuffer.Handle, _tempIndexBuffer, _indexBuffer.Offset, 0, _indexBuffer.Size);
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, _tempIndexBuffer.ToInt32());
+            GL.VertexArrayElementBuffer(Handle, _tempIndexBuffer.ToInt32());
         }
 
         public void RestoreIndexBuffer()
         {
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, _indexBuffer.Handle.ToInt32());
+            GL.VertexArrayElementBuffer(Handle, _indexBuffer.Handle.ToInt32());
         }
 
         public void Validate()

@@ -23,7 +23,15 @@ namespace Ryujinx.Graphics.OpenGL.Image
             _renderer = renderer;
             Info      = info;
 
-            Handle = GL.GenTexture();
+            unsafe
+            {
+                int localHandle = 0;
+
+                GL.CreateTextures(info.Target.Convert(), 1, &localHandle);
+
+                Handle = localHandle;
+            }
+
             ScaleFactor = scaleFactor;
 
             CreateImmutableStorage();
@@ -32,10 +40,6 @@ namespace Ryujinx.Graphics.OpenGL.Image
         private void CreateImmutableStorage()
         {
             TextureTarget target = Info.Target.Convert();
-
-            GL.ActiveTexture(TextureUnit.Texture0);
-
-            GL.BindTexture(target, Handle);
 
             FormatInfo format = FormatTable.GetFormatInfo(Info.Format);
 
@@ -53,16 +57,16 @@ namespace Ryujinx.Graphics.OpenGL.Image
             switch (Info.Target)
             {
                 case Target.Texture1D:
-                    GL.TexStorage1D(
-                        TextureTarget1d.Texture1D,
+                    GL.TextureStorage1D(
+                        Handle,
                         Info.Levels,
                         internalFormat,
                         Info.Width);
                     break;
 
                 case Target.Texture1DArray:
-                    GL.TexStorage2D(
-                        TextureTarget2d.Texture1DArray,
+                    GL.TextureStorage2D(
+                        Handle,
                         Info.Levels,
                         internalFormat,
                         Info.Width,
@@ -70,8 +74,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                     break;
 
                 case Target.Texture2D:
-                    GL.TexStorage2D(
-                        TextureTarget2d.Texture2D,
+                    GL.TextureStorage2D(
+                        Handle,
                         Info.Levels,
                         internalFormat,
                         Info.Width,
@@ -79,8 +83,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                     break;
 
                 case Target.Texture2DArray:
-                    GL.TexStorage3D(
-                        TextureTarget3d.Texture2DArray,
+                    GL.TextureStorage3D(
+                        Handle,
                         Info.Levels,
                         internalFormat,
                         Info.Width,
@@ -89,8 +93,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                     break;
 
                 case Target.Texture2DMultisample:
-                    GL.TexStorage2DMultisample(
-                        TextureTargetMultisample2d.Texture2DMultisample,
+                    GL.TextureStorage2DMultisample(
+                        Handle,
                         Info.Samples,
                         internalFormat,
                         Info.Width,
@@ -99,8 +103,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                     break;
 
                 case Target.Texture2DMultisampleArray:
-                    GL.TexStorage3DMultisample(
-                        TextureTargetMultisample3d.Texture2DMultisampleArray,
+                    GL.TextureStorage3DMultisample(
+                        Handle,
                         Info.Samples,
                         internalFormat,
                         Info.Width,
@@ -110,8 +114,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                     break;
 
                 case Target.Texture3D:
-                    GL.TexStorage3D(
-                        TextureTarget3d.Texture3D,
+                    GL.TextureStorage3D(
+                        Handle,
                         Info.Levels,
                         internalFormat,
                         Info.Width,
@@ -120,8 +124,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                     break;
 
                 case Target.Cubemap:
-                    GL.TexStorage2D(
-                        TextureTarget2d.TextureCubeMap,
+                    GL.TextureStorage2D(
+                        Handle,
                         Info.Levels,
                         internalFormat,
                         Info.Width,
@@ -129,8 +133,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                     break;
 
                 case Target.CubemapArray:
-                    GL.TexStorage3D(
-                        (TextureTarget3d)All.TextureCubeMapArray,
+                    GL.TextureStorage3D(
+                        Handle,
                         Info.Levels,
                         internalFormat,
                         Info.Width,

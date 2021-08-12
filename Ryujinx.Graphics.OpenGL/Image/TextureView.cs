@@ -58,10 +58,6 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 FirstLayer,
                 Info.GetLayers());
 
-            GL.ActiveTexture(TextureUnit.Texture0);
-
-            GL.BindTexture(target, Handle);
-
             int[] swizzleRgba = new int[]
             {
                 (int)Info.SwizzleR.Convert(),
@@ -79,7 +75,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 swizzleRgba[2] = temp;
             }
 
-            GL.TexParameter(target, TextureParameterName.TextureSwizzleRgba, swizzleRgba);
+            GL.TextureParameter(Handle, TextureParameterName.TextureSwizzleRgba, swizzleRgba);
 
             int maxLevel = Info.Levels - 1;
 
@@ -88,8 +84,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 maxLevel = 0;
             }
 
-            GL.TexParameter(target, TextureParameterName.TextureMaxLevel, maxLevel);
-            GL.TexParameter(target, TextureParameterName.DepthStencilTextureMode, (int)Info.DepthStencilMode.Convert());
+            GL.TextureParameter(Handle, TextureParameterName.TextureMaxLevel, maxLevel);
+            GL.TextureParameter(Handle, TextureParameterName.DepthStencilTextureMode, (int)Info.DepthStencilMode.Convert());
         }
 
         public ITexture CreateView(TextureCreateInfo info, int firstLayer, int firstLevel)
@@ -156,8 +152,6 @@ namespace Ryujinx.Graphics.OpenGL.Image
         {
             TextureTarget target = Target.Convert();
 
-            Bind(target, 0);
-
             FormatInfo format = FormatTable.GetFormatInfo(Info.Format);
 
             PixelFormat pixelFormat = format.PixelFormat;
@@ -181,11 +175,11 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
             if (format.IsCompressed)
             {
-                GL.GetCompressedTexImage(target, level, data);
+                GL.GetCompressedTextureImage(Handle, level, resultOffset, data);
             }
             else
             {
-                GL.GetTexImage(target, level, pixelFormat, pixelType, data);
+                GL.GetTextureImage(Handle, level, pixelFormat, pixelType, resultOffset, data);
             }
 
             return resultOffset;
@@ -194,8 +188,6 @@ namespace Ryujinx.Graphics.OpenGL.Image
         private void WriteTo(IntPtr data, bool forceBgra = false)
         {
             TextureTarget target = Target.Convert();
-
-            Bind(target, 0);
 
             FormatInfo format = FormatTable.GetFormatInfo(Info.Format);
 
@@ -218,31 +210,16 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 }
             }
 
-            int faces = 1;
-
-            if (target == TextureTarget.TextureCubeMap)
-            {
-                target = TextureTarget.TextureCubeMapPositiveX;
-
-                faces = 6;
-            }
-
             for (int level = 0; level < Info.Levels; level++)
             {
-                for (int face = 0; face < faces; face++)
+                if (format.IsCompressed)
                 {
-                    int faceOffset = face * Info.GetMipSize2D(level);
-
-                    if (format.IsCompressed)
-                    {
-                        GL.GetCompressedTexImage(target + face, level, data + faceOffset);
-                    }
-                    else
-                    {
-                        GL.GetTexImage(target + face, level, pixelFormat, pixelType, data + faceOffset);
-                    }
+                    GL.GetCompressedTextureImage(Handle, level, Info.GetMipSize(level), data);
                 }
-
+                else
+                {
+                    GL.GetTextureImage(Handle, level, pixelFormat, pixelType, Info.GetMipSize(level), data);
+                }
                 data += Info.GetMipSize(level);
             }
         }
@@ -287,8 +264,12 @@ namespace Ryujinx.Graphics.OpenGL.Image
             TextureTarget target = Target.Convert();
 
             int mipSize = Info.GetMipSize2D(level);
+            int maxLevels = 1 + (int)Math.Floor(Math.Log2(width * height));
 
-            Bind(target, 0);
+            if (level > maxLevels)
+            {
+                return;
+            }
 
             FormatInfo format = FormatTable.GetFormatInfo(Info.Format);
 
@@ -297,8 +278,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 case Target.Texture1D:
                     if (format.IsCompressed)
                     {
-                        GL.CompressedTexSubImage1D(
-                            target,
+                        GL.CompressedTextureSubImage1D(
+                            Handle,
                             level,
                             0,
                             width,
@@ -308,8 +289,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                     }
                     else
                     {
-                        GL.TexSubImage1D(
-                            target,
+                        GL.TextureSubImage1D(
+                            Handle,
                             level,
                             0,
                             width,
@@ -322,8 +303,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 case Target.Texture1DArray:
                     if (format.IsCompressed)
                     {
-                        GL.CompressedTexSubImage2D(
-                            target,
+                        GL.CompressedTextureSubImage2D(
+                            Handle,
                             level,
                             0,
                             layer,
@@ -335,8 +316,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                     }
                     else
                     {
-                        GL.TexSubImage2D(
-                            target,
+                        GL.TextureSubImage2D(
+                            Handle,
                             level,
                             0,
                             layer,
@@ -351,8 +332,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 case Target.Texture2D:
                     if (format.IsCompressed)
                     {
-                        GL.CompressedTexSubImage2D(
-                            target,
+                        GL.CompressedTextureSubImage2D(
+                            Handle,
                             level,
                             0,
                             0,
@@ -364,8 +345,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                     }
                     else
                     {
-                        GL.TexSubImage2D(
-                            target,
+                        GL.TextureSubImage2D(
+                            Handle,
                             level,
                             0,
                             0,
@@ -382,8 +363,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 case Target.CubemapArray:
                     if (format.IsCompressed)
                     {
-                        GL.CompressedTexSubImage3D(
-                            target,
+                        GL.CompressedTextureSubImage3D(
+                            Handle,
                             level,
                             0,
                             0,
@@ -397,8 +378,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                     }
                     else
                     {
-                        GL.TexSubImage3D(
-                            target,
+                        GL.TextureSubImage3D(
+                            Handle,
                             level,
                             0,
                             0,
@@ -415,26 +396,30 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 case Target.Cubemap:
                     if (format.IsCompressed)
                     {
-                        GL.CompressedTexSubImage2D(
-                            TextureTarget.TextureCubeMapPositiveX + layer,
+                        GL.CompressedTextureSubImage3D(
+                            Handle,
                             level,
                             0,
                             0,
+                            layer,
                             width,
                             height,
+                            1,
                             format.PixelFormat,
                             mipSize,
                             data);
                     }
                     else
                     {
-                        GL.TexSubImage2D(
-                            TextureTarget.TextureCubeMapPositiveX + layer,
+                        GL.TextureSubImage3D(
+                            Handle,
                             level,
                             0,
                             0,
+                            layer,
                             width,
                             height,
+                            1,
                             format.PixelFormat,
                             format.PixelType,
                             data);
@@ -447,17 +432,13 @@ namespace Ryujinx.Graphics.OpenGL.Image
         {
             TextureTarget target = Target.Convert();
             int baseLevel = 0;
+            int targetHandle = Handle;
 
             // glTexSubImage on cubemap views is broken on Intel, we have to use the storage instead.
             if (Target == Target.Cubemap && HwCapabilities.Vendor == HwCapabilities.GpuVendor.IntelWindows)
             {
-                GL.ActiveTexture(TextureUnit.Texture0);
-                GL.BindTexture(target, Storage.Handle);
                 baseLevel = FirstLevel;
-            }
-            else
-            {
-                Bind(target, 0);
+                targetHandle = Storage.Handle;
             }
 
             FormatInfo format = FormatTable.GetFormatInfo(Info.Format);
@@ -484,8 +465,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                     case Target.Texture1D:
                         if (format.IsCompressed)
                         {
-                            GL.CompressedTexSubImage1D(
-                                target,
+                            GL.CompressedTextureSubImage1D(
+                                targetHandle,
                                 level,
                                 0,
                                 width,
@@ -495,8 +476,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                         }
                         else
                         {
-                            GL.TexSubImage1D(
-                                target,
+                            GL.TextureSubImage1D(
+                                targetHandle,
                                 level,
                                 0,
                                 width,
@@ -510,8 +491,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                     case Target.Texture2D:
                         if (format.IsCompressed)
                         {
-                            GL.CompressedTexSubImage2D(
-                                target,
+                            GL.CompressedTextureSubImage2D(
+                                targetHandle,
                                 level,
                                 0,
                                 0,
@@ -523,8 +504,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                         }
                         else
                         {
-                            GL.TexSubImage2D(
-                                target,
+                            GL.TextureSubImage2D(
+                                targetHandle,
                                 level,
                                 0,
                                 0,
@@ -541,8 +522,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                     case Target.CubemapArray:
                         if (format.IsCompressed)
                         {
-                            GL.CompressedTexSubImage3D(
-                                target,
+                            GL.CompressedTextureSubImage3D(
+                                targetHandle,
                                 level,
                                 0,
                                 0,
@@ -556,8 +537,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                         }
                         else
                         {
-                            GL.TexSubImage3D(
-                                target,
+                            GL.TextureSubImage3D(
+                                targetHandle,
                                 level,
                                 0,
                                 0,
@@ -578,26 +559,30 @@ namespace Ryujinx.Graphics.OpenGL.Image
                         {
                             if (format.IsCompressed)
                             {
-                                GL.CompressedTexSubImage2D(
-                                    TextureTarget.TextureCubeMapPositiveX + face,
+                                GL.CompressedTextureSubImage3D(
+                                    targetHandle,
                                     baseLevel + level,
                                     0,
                                     0,
+                                    face,
                                     width,
                                     height,
+                                    1,
                                     format.PixelFormat,
                                     mipSize / 6,
                                     data + faceOffset);
                             }
                             else
                             {
-                                GL.TexSubImage2D(
-                                    TextureTarget.TextureCubeMapPositiveX + face,
+                                GL.TextureSubImage3D(
+                                    targetHandle,
                                     baseLevel + level,
                                     0,
                                     0,
+                                    face,
                                     width,
                                     height,
+                                    1,
                                     format.PixelFormat,
                                     format.PixelType,
                                     data + faceOffset);

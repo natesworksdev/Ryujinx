@@ -29,10 +29,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
         {
             TextureView srcConverted = src.Format.IsBgr() != dst.Format.IsBgr() ? BgraSwap(src) : src;
 
-            (int oldDrawFramebufferHandle, int oldReadFramebufferHandle) = ((Pipeline)_renderer.Pipeline).GetBoundFramebuffers();
-
-            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, GetSrcFramebufferLazy());
-            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, GetDstFramebufferLazy());
+            int srcFb = GetSrcFramebufferLazy();
+            int dstFb = GetDstFramebufferLazy();
 
             int levels = Math.Min(src.Info.Levels, dst.Info.Levels);
             int layers = Math.Min(src.Info.GetLayers(), dst.Info.GetLayers());
@@ -43,13 +41,13 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 {
                     if (layers > 1)
                     {
-                        Attach(FramebufferTarget.ReadFramebuffer, src.Format, srcConverted.Handle, level, layer);
-                        Attach(FramebufferTarget.DrawFramebuffer, dst.Format, dst.Handle, level, layer);
+                        Attach(srcFb, src.Format, srcConverted.Handle, level, layer);
+                        Attach(dstFb, dst.Format, dst.Handle, level, layer);
                     }
                     else
                     {
-                        Attach(FramebufferTarget.ReadFramebuffer, src.Format, srcConverted.Handle, level);
-                        Attach(FramebufferTarget.DrawFramebuffer, dst.Format, dst.Handle, level);
+                        Attach(srcFb, src.Format, srcConverted.Handle, level);
+                        Attach(dstFb, dst.Format, dst.Handle, level);
                     }
 
                     ClearBufferMask mask = GetMask(src.Format);
@@ -63,13 +61,15 @@ namespace Ryujinx.Graphics.OpenGL.Image
                         ? BlitFramebufferFilter.Linear
                         : BlitFramebufferFilter.Nearest;
 
-                    GL.ReadBuffer(ReadBufferMode.ColorAttachment0);
-                    GL.DrawBuffer(DrawBufferMode.ColorAttachment0);
+                    GL.NamedFramebufferReadBuffer(srcFb, ReadBufferMode.ColorAttachment0);
+                    GL.NamedFramebufferDrawBuffer(dstFb, DrawBufferMode.ColorAttachment0);
 
                     GL.Disable(EnableCap.RasterizerDiscard);
                     GL.Disable(IndexedEnableCap.ScissorTest, 0);
 
-                    GL.BlitFramebuffer(
+                    GL.BlitNamedFramebuffer(
+                        srcFb,
+                        dstFb,
                         srcRegion.X1,
                         srcRegion.Y1,
                         srcRegion.X2,
@@ -88,12 +88,6 @@ namespace Ryujinx.Graphics.OpenGL.Image
                     dstRegion = dstRegion.Reduce(1);
                 }
             }
-
-            Attach(FramebufferTarget.ReadFramebuffer, src.Format, 0);
-            Attach(FramebufferTarget.DrawFramebuffer, dst.Format, 0);
-
-            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, oldReadFramebufferHandle);
-            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, oldDrawFramebufferHandle);
 
             ((Pipeline)_renderer.Pipeline).RestoreScissor0Enable();
             ((Pipeline)_renderer.Pipeline).RestoreRasterizerDiscard();
@@ -275,18 +269,18 @@ namespace Ryujinx.Graphics.OpenGL.Image
             }
         }
 
-        private static void Attach(FramebufferTarget target, Format format, int handle, int level = 0)
+        private static void Attach(int fbHandle, Format format, int handle, int level = 0)
         {
             FramebufferAttachment attachment = AttachmentForFormat(format);
 
-            GL.FramebufferTexture(target, attachment, handle, level);
+            GL.NamedFramebufferTexture(fbHandle, attachment, handle, level);
         }
 
-        private static void Attach(FramebufferTarget target, Format format, int handle, int level, int layer)
+        private static void Attach(int fbHandle, Format format, int handle, int level, int layer)
         {
             FramebufferAttachment attachment = AttachmentForFormat(format);
 
-            GL.FramebufferTextureLayer(target, attachment, handle, level, layer);
+            GL.NamedFramebufferTextureLayer(fbHandle, attachment, handle, level, layer);
         }
 
         private static ClearBufferMask GetMask(Format format)
@@ -429,18 +423,17 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
             if (_copyPboSize < requiredSize && _copyPboHandle != 0)
             {
-                GL.DeleteBuffer(_copyPboHandle);
+                GL.NamedBufferData(_copyPboHandle, requiredSize, IntPtr.Zero, BufferUsageHint.DynamicCopy);
 
-                _copyPboHandle = 0;
+                _copyPboSize = requiredSize;
             }
 
             if (_copyPboHandle == 0)
             {
-                _copyPboHandle = GL.GenBuffer();
+                _copyPboHandle = Buffer.Create().ToInt32();
                 _copyPboSize = requiredSize;
 
-                GL.BindBuffer(BufferTarget.PixelPackBuffer, _copyPboHandle);
-                GL.BufferData(BufferTarget.PixelPackBuffer, requiredSize, IntPtr.Zero, BufferUsageHint.DynamicCopy);
+                GL.NamedBufferData(_copyPboHandle, requiredSize, IntPtr.Zero, BufferUsageHint.DynamicCopy);
             }
         }
 
@@ -448,7 +441,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
         {
             if (_srcFramebuffer == 0)
             {
-                _srcFramebuffer = GL.GenFramebuffer();
+                _srcFramebuffer = Framebuffer.Create();
             }
 
             return _srcFramebuffer;
@@ -458,7 +451,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
         {
             if (_dstFramebuffer == 0)
             {
-                _dstFramebuffer = GL.GenFramebuffer();
+                _dstFramebuffer = Framebuffer.Create();
             }
 
             return _dstFramebuffer;

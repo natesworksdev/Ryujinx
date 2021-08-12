@@ -7,9 +7,18 @@ namespace Ryujinx.Graphics.OpenGL.Image
     {
         public int Handle { get; private set; }
 
+        private unsafe int Create()
+        {
+            int localHandle;
+
+            GL.CreateSamplers(1, &localHandle);
+
+            return localHandle;
+        }
+
         public Sampler(SamplerCreateInfo info)
         {
-            Handle = GL.GenSampler();
+            Handle = Create();
 
             GL.SamplerParameter(Handle, SamplerParameterName.TextureMinFilter, (int)info.MinFilter.Convert());
             GL.SamplerParameter(Handle, SamplerParameterName.TextureMagFilter, (int)info.MagFilter.Convert());
