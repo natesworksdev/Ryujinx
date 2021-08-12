@@ -2,6 +2,7 @@ using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Engine.Threed;
 using Ryujinx.Graphics.Gpu.Image;
 using Ryujinx.Graphics.Shader;
+using Ryujinx.Graphics.Shader.Translation;
 
 namespace Ryujinx.Graphics.Gpu.Shader
 {
@@ -11,14 +12,86 @@ namespace Ryujinx.Graphics.Gpu.Shader
     class GpuAccessorBase
     {
         private readonly GpuContext _context;
+        private readonly ResourceCounts _resourceCounts;
+        private readonly int _stageIndex;
 
         /// <summary>
         /// Creates a new GPU accessor.
         /// </summary>
         /// <param name="context">GPU context</param>
-        public GpuAccessorBase(GpuContext context)
+        public GpuAccessorBase(GpuContext context, ResourceCounts resourceCounts, int stageIndex)
         {
             _context = context;
+            _resourceCounts = resourceCounts;
+            _stageIndex = stageIndex;
+        }
+
+        /// <inheritdoc/>
+        public int QueryBindingConstantBuffer(int index)
+        {
+            if (_context.Capabilities.Api == TargetApi.Vulkan)
+            {
+                return 1 + GetStageIndex() * 18 + index;
+            }
+            else
+            {
+                return _resourceCounts.UniformBuffersCount++;
+            }
+        }
+
+        /// <inheritdoc/>
+        public int QueryBindingStorageBuffer(int index)
+        {
+            if (_context.Capabilities.Api == TargetApi.Vulkan)
+            {
+                return GetStageIndex() * 16 + index;
+            }
+            else
+            {
+                return _resourceCounts.StorageBuffersCount++;
+            }
+        }
+
+        /// <inheritdoc/>
+        public int QueryBindingTexture(int index)
+        {
+            if (_context.Capabilities.Api == TargetApi.Vulkan)
+            {
+                return GetStageIndex() * 32 + index;
+            }
+            else
+            {
+                return _resourceCounts.TexturesCount++;
+            }
+        }
+
+        /// <inheritdoc/>
+        public int QueryBindingImage(int index)
+        {
+            if (_context.Capabilities.Api == TargetApi.Vulkan)
+            {
+                return GetStageIndex() * 8 + index;
+            }
+            else
+            {
+                return _resourceCounts.ImagesCount++;
+            }
+        }
+
+        private int GetStageIndex()
+        {
+            // This is just a simple remapping to ensure that most frequently used shader stages
+            // have the lowest binding numbers.
+            // This is useful because if we need to run on a system with a low limit on the bindings,
+            // then we can still get most games working as the most common shaders will have low binding numbers.
+            return _stageIndex switch
+            {
+                4 => 1, // Fragment
+                3 => 2, // Geometry
+                1 => 3, // Tessellation control
+                2 => 4, // Tessellation evaluation
+                _ => 0 // Vertex/Compute
+            };
         }
 
         /// <summary>

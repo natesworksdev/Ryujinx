@@ -34,7 +34,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             ShaderSpecializationState oldSpecState,
             ShaderSpecializationState newSpecState,
             ResourceCounts counts,
-            int stageIndex) : base(context)
+            int stageIndex) : base(context, counts, stageIndex)
         {
             _data = data;
             _cb1Data = cb1Data;
@@ -65,30 +65,6 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         public ReadOnlySpan<ulong> GetCode(ulong address, int minimumSize)
         {
             return MemoryMarshal.Cast<byte, ulong>(_data.Span.Slice((int)address));
-        }
-
-        /// <inheritdoc/>
-        public int QueryBindingConstantBuffer(int index)
-        {
-            return _resourceCounts.UniformBuffersCount++;
-        }
-
-        /// <inheritdoc/>
-        public int QueryBindingStorageBuffer(int index)
-        {
-            return _resourceCounts.StorageBuffersCount++;
-        }
-
-        /// <inheritdoc/>
-        public int QueryBindingTexture(int index)
-        {
-            return _resourceCounts.TexturesCount++;
-        }
-
-        /// <inheritdoc/>
-        public int QueryBindingImage(int index)
-        {
-            return _resourceCounts.ImagesCount++;
         }
 
         /// <inheritdoc/>

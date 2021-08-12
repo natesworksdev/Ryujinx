@@ -567,6 +567,8 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             TranslatorContext[] translatorContexts = new TranslatorContext[Constants.ShaderStages + 1];
             TranslatorContext nextStage = null;
 
+            TargetApi api = _context.Capabilities.Api;
+
             for (int stageIndex = Constants.ShaderStages - 1; stageIndex >= 0; stageIndex--)
             {
                 CachedShaderStage shader = shaders[stageIndex + 1];
@@ -577,7 +579,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                     byte[] cb1Data = shader.Cb1Data;
 
                     DiskCacheGpuAccessor gpuAccessor = new DiskCacheGpuAccessor(_context, guestCode, cb1Data, specState, newSpecState, counts, stageIndex);
-                    TranslatorContext currentStage = DecodeGraphicsShader(gpuAccessor, DefaultFlags, 0);
+                    TranslatorContext currentStage = DecodeGraphicsShader(gpuAccessor, api, DefaultFlags, 0);
 
                     if (nextStage != null)
                     {
@@ -590,7 +592,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                         byte[] cb1DataA = shaders[0].Cb1Data;
 
                         DiskCacheGpuAccessor gpuAccessorA = new DiskCacheGpuAccessor(_context, guestCodeA, cb1DataA, specState, newSpecState, counts, 0);
-                        translatorContexts[0] = DecodeGraphicsShader(gpuAccessorA, DefaultFlags | TranslationFlags.VertexA, 0);
+                        translatorContexts[0] = DecodeGraphicsShader(gpuAccessorA, api, DefaultFlags | TranslationFlags.VertexA, 0);
                     }
 
                     translatorContexts[stageIndex + 1] = currentStage;
@@ -651,7 +653,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             ShaderSpecializationState newSpecState = new ShaderSpecializationState(specState.ComputeState);
             DiskCacheGpuAccessor gpuAccessor = new DiskCacheGpuAccessor(_context, shader.Code, shader.Cb1Data, specState, newSpecState, counts, 0);
 
-            TranslatorContext translatorContext = DecodeComputeShader(gpuAccessor, 0);
+            TranslatorContext translatorContext = DecodeComputeShader(gpuAccessor, _context.Capabilities.Api, 0);
 
             ShaderProgram program = translatorContext.Translate();
 

@@ -13,6 +13,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
     {
         private readonly GpuChannel _channel;
         private readonly GpuAccessorState _state;
+        private readonly AttributeType[] _attributeTypes;
         private readonly int _stageIndex;
         private readonly bool _compute;
 
@@ -22,11 +23,18 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <param name="context">GPU context</param>
         /// <param name="channel">GPU channel</param>
         /// <param name="state">Current GPU state</param>
+        /// <param name="attributeTypes">Type of the vertex attributes consumed by the shader</param>
         /// <param name="stageIndex">Graphics shader stage index (0 = Vertex, 4 = Fragment)</param>
-        public GpuAccessor(GpuContext context, GpuChannel channel, GpuAccessorState state, int stageIndex) : base(context)
+        public GpuAccessor(
+            GpuContext context,
+            GpuChannel channel,
+            GpuAccessorState state,
+            AttributeType[] attributeTypes,
+            int stageIndex) : base(context, state.ResourceCounts, stageIndex)
         {
             _channel = channel;
             _state = state;
+            _attributeTypes = attributeTypes;
             _stageIndex = stageIndex;
         }
 
@@ -36,7 +44,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <param name="context">GPU context</param>
         /// <param name="channel">GPU channel</param>
         /// <param name="state">Current GPU state</param>
-        public GpuAccessor(GpuContext context, GpuChannel channel, GpuAccessorState state) : base(context)
+        public GpuAccessor(GpuContext context, GpuChannel channel, GpuAccessorState state) : base(context, state.ResourceCounts, 0)
         {
             _channel = channel;
             _state = state;
@@ -67,27 +75,14 @@ namespace Ryujinx.Graphics.Gpu.Shader
         }
 
         /// <inheritdoc/>
-        public int QueryBindingConstantBuffer(int index)
+        public AttributeType QueryAttributeType(int location)
         {
-            return _state.ResourceCounts.UniformBuffersCount++;
-        }
+            if (_attributeTypes != null)
+            {
+                return _attributeTypes[location];
+            }
 
-        /// <inheritdoc/>
-        public int QueryBindingStorageBuffer(int index)
-        {
-            return _state.ResourceCounts.StorageBuffersCount++;
-        }
-
-        /// <inheritdoc/>
-        public int QueryBindingTexture(int index)
-        {
-            return _state.ResourceCounts.TexturesCount++;
-        }
-
-        /// <inheritdoc/>
-        public int QueryBindingImage(int index)
-        {
-            return _state.ResourceCounts.ImagesCount++;
+            return AttributeType.Float;
         }
 
         /// <inheritdoc/>
@@ -121,6 +116,18 @@ namespace Ryujinx.Graphics.Gpu.Shader
         {
             _state.SpecializationState?.RecordPrimitiveTopology();
             return ConvertToInputTopology(_state.GraphicsState.Topology, _state.GraphicsState.TessellationMode);
+        }
+
+        /// <inheritdoc/>
+        public bool QueryProgramPointSize()
+        {
+            return _state.GraphicsState.ProgramPointSizeEnable;
+        }
+
+        /// <inheritdoc/>
+        public float QueryPointSize()
+        {
+            return _state.GraphicsState.PointSize;
         }
 
         /// <inheritdoc/>
@@ -190,6 +197,12 @@ namespace Ryujinx.Graphics.Gpu.Shader
                     handle,
                     cbufSlot);
             }
+        }
+
+        /// <inheritdoc/>
+        public bool QueryTransformDepthMinusOneToOne()
+        {
+            return _state.GraphicsState.DepthMode;
         }
 
         /// <inheritdoc/>

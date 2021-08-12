@@ -87,6 +87,11 @@ namespace Ryujinx.Graphics.OpenGL
             Buffer.Delete(buffer);
         }
 
+        public HardwareInfo GetHardwareInfo()
+        {
+            return new HardwareInfo(GpuVendor, GpuRenderer);
+        }
+
         public ReadOnlySpan<byte> GetBufferData(BufferHandle buffer, int offset, int size)
         {
             return Buffer.GetData(this, buffer, offset, size);
