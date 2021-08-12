@@ -15,6 +15,7 @@ using Ryujinx.Ui.Widgets;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
@@ -72,7 +73,7 @@ namespace Ryujinx.Ui.App
 
                 try
                 {
-                    content = Directory.GetFiles(dir, "*");
+                    content = Directory.GetFiles(dir, "*").Where(x => new FileInfo(x).Length > 0).ToArray();
                 }
                 catch (UnauthorizedAccessException)
                 {
