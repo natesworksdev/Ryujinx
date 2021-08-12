@@ -250,9 +250,18 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             }
         }
 
-        public IShader CompileShader(ShaderStage stage, string code)
+        public IShader CompileShader(ShaderStage stage, ShaderBindings bindings, string code)
         {
-            var shader = new ThreadedShader(this, stage, code);
+            var shader = new ThreadedShader(this, stage, bindings, code);
+            New<CompileShaderCommand>().Set(Ref(shader));
+            QueueCommand();
+
+            return shader;
+        }
+
+        public IShader CompileShader(ShaderStage stage, ShaderBindings bindings, byte[] code)
+        {
+            var shader = new ThreadedShader(this, stage, bindings, code);
             New<CompileShaderCommand>().Set(Ref(shader));
             QueueCommand();
 
@@ -344,6 +353,11 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             InvokeCommand();
 
             return box.Result;
+        }
+
+        public HardwareInfo GetHardwareInfo()
+        {
+            return _baseRenderer.GetHardwareInfo();
         }
 
         /// <summary>

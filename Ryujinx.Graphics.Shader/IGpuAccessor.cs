@@ -16,6 +16,11 @@ namespace Ryujinx.Graphics.Shader
 
         ReadOnlySpan<ulong> GetCode(ulong address, int minimumSize);
 
+        AttributeType QueryAttributeType(int location)
+        {
+            return AttributeType.Float;
+        }
+
         int QueryComputeLocalSizeX()
         {
             return 1;
@@ -96,6 +101,16 @@ namespace Ryujinx.Graphics.Shader
             return true;
         }
 
+        float QueryPointSize()
+        {
+            return 1f;
+        }
+
+        bool QueryProgramPointSize()
+        {
+            return true;
+        }
+
         SamplerType QuerySamplerType(int handle, int cbufSlot = -1)
         {
             return SamplerType.Texture2D;
@@ -129,6 +144,11 @@ namespace Ryujinx.Graphics.Shader
         TextureFormat QueryTextureFormat(int handle, int cbufSlot = -1)
         {
             return TextureFormat.R8G8B8A8Unorm;
+        }
+
+        bool QueryTransformDepthMinusOneToOne()
+        {
+            return false;
         }
 
         bool QueryTransformFeedbackEnabled()
