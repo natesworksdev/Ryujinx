@@ -416,11 +416,21 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// </summary>
         private void UpdateScissorState()
         {
+            const int MinX = 0;
+            const int MinY = 0;
+            const int MaxW = 0xffff;
+            const int MaxH = 0xffff;
+
+            Span<Rectangle<int>> regions = stackalloc Rectangle<int>[Constants.TotalViewports];
+
             for (int index = 0; index < Constants.TotalViewports; index++)
             {
                 ScissorState scissor = _state.State.ScissorState[index];
 
-                bool enable = scissor.Enable && (scissor.X1 != 0 || scissor.Y1 != 0 || scissor.X2 != 0xffff || scissor.Y2 != 0xffff);
+                bool enable = scissor.Enable && (scissor.X1 != MinX ||
+                                                 scissor.Y1 != MinY ||
+                                                 scissor.X2 != MaxW ||
+                                                 scissor.Y2 != MaxH);
 
                 if (enable)
                 {
@@ -450,13 +460,15 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                         height = (int)Math.Ceiling(height * scale);
                     }
 
-                    _context.Renderer.Pipeline.SetScissor(index, true, x, y, width, height);
+                    regions[index] = new Rectangle<int>(x, y, width, height);
                 }
                 else
                 {
-                    _context.Renderer.Pipeline.SetScissor(index, false, 0, 0, 0, 0);
+                    regions[index] = new Rectangle<int>(MinX, MinY, MaxW, MaxH);
                 }
             }
+
+            _context.Renderer.Pipeline.SetScissors(regions);
         }
 
         /// <summary>
@@ -539,7 +551,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     height *= scale;
                 }
 
-                RectangleF region = new RectangleF(x, y, width, height);
+                Rectangle<float> region = new Rectangle<float>(x, y, width, height);
 
                 ViewportSwizzle swizzleX = transform.UnpackSwizzleX();
                 ViewportSwizzle swizzleY = transform.UnpackSwizzleY();
@@ -559,6 +571,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 viewports[index] = new Viewport(region, swizzleX, swizzleY, swizzleZ, swizzleW, depthNear, depthFar);
             }
 
+            _context.Renderer.Pipeline.SetDepthMode(GetDepthMode());
             _context.Renderer.Pipeline.SetViewports(0, viewports);
         }
 
@@ -1013,6 +1026,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 _state.State.TexturePoolState.MaximumId,
                 (int)_state.State.TextureBufferIndex,
                 _state.State.EarlyZForce,
+                GetDepthMode() == DepthMode.MinusOneToOne,
+                _state.State.VertexProgramPointSize,
+                _state.State.PointSize,
                 _drawState.Topology,
                 _state.State.TessMode);
 
@@ -1088,6 +1104,25 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             }
 
             _context.Renderer.Pipeline.SetProgram(gs.HostProgram);
+        }
+
+        private DepthMode GetDepthMode()
+        {
+            ref var transform = ref _state.State.ViewportTransform[0];
+            ref var extents = ref _state.State.ViewportExtents[0];
+
+            // Try to guess the depth mode being used on the high level API
+            // based on current transform.
+            // It is setup like so by said APIs:
+            // If depth mode is ZeroToOne:
+            //  TranslateZ = Near
+            //  ScaleZ = Far - Near
+            // If depth mode is MinusOneToOne:
+            //  TranslateZ = (Near + Far) / 2
+            //  ScaleZ = (Far - Near) / 2
+            // DepthNear/Far are sorted such as that Near is always less than Far.
+            return extents.DepthNear != transform.TranslateZ &&
+                   extents.DepthFar != transform.TranslateZ ? DepthMode.MinusOneToOne : DepthMode.ZeroToOne;
         }
 
         /// <summary>

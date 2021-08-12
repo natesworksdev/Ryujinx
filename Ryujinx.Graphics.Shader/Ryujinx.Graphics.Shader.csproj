@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Ryujinx.Common\Ryujinx.Common.csproj" />
+    <ProjectReference Include="..\SpvGen\Spv.Generator.csproj" />
   </ItemGroup>
 
   <ItemGroup>
