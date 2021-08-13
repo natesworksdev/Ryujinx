@@ -42,25 +42,31 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     break;
                 }
 
-                Operand src;
-
                 if (op.Phys)
                 {
                     Operand userAttrOffset = context.ISubtract(GetSrcA(context), Const(AttributeConsts.UserAttributeBase));
                     Operand userAttrIndex = context.ShiftRightU32(userAttrOffset, Const(2));
 
-                    src = userAttrIndex;
+                    context.Copy(Register(rd), context.LoadAttribute(Const(AttributeConsts.UserAttributeBase), userAttrIndex, primVertex));
 
                     context.Config.SetUsedFeature(FeatureFlags.IaIndexing);
                 }
-                else
+                else if (op.Rc.IsRZ)
                 {
-                    src = Const(op.AttributeOffset + index * 4);
+                    Operand src = Attribute(op.AttributeOffset + index * 4);
 
                     context.FlagAttributeRead(src.Value);
-                }
 
-                context.Copy(Register(rd), context.LoadAttribute(src, primVertex));
+                    context.Copy(Register(rd), src);
+                }
+                else
+                {
+                    Operand src = Const(op.AttributeOffset + index * 4);
+
+                    context.FlagAttributeRead(src.Value);
+
+                    context.Copy(Register(rd), context.LoadAttribute(src, Const(0), primVertex));
+                }
             }
         }
 
@@ -77,11 +83,23 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
                 Register rd = new Register(op.Rd.Index + index, RegisterType.Gpr);
 
-                Operand dest = Attribute(op.AttributeOffset + index * 4);
+                if (op.Phys)
+                {
+                    Operand userAttrOffset = context.ISubtract(GetSrcA(context), Const(AttributeConsts.UserAttributeBase));
+                    Operand userAttrIndex = context.ShiftRightU32(userAttrOffset, Const(2));
 
-                context.FlagAttributeWritten(dest.Value);
+                    context.StoreAttribute(Const(AttributeConsts.UserAttributeBase), userAttrIndex, Register(rd));
 
-                context.Copy(dest, Register(rd));
+                    context.Config.SetUsedFeature(FeatureFlags.OaIndexing);
+                }
+                else
+                {
+                    Operand dest = Attribute(op.AttributeOffset + index * 4);
+
+                    context.FlagAttributeWritten(dest.Value);
+
+                    context.Copy(dest, Register(rd));
+                }
             }
         }
 
@@ -169,7 +187,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 Operand userAttrOffset = context.ISubtract(GetSrcA(context), Const(AttributeConsts.UserAttributeBase));
                 Operand userAttrIndex = context.ShiftRightU32(userAttrOffset, Const(2));
 
-                res = context.LoadAttribute(userAttrIndex, Const(0));
+                res = context.LoadAttribute(Const(AttributeConsts.UserAttributeBase), userAttrIndex, Const(0));
                 res = context.FPMultiply(res, Attribute(AttributeConsts.PositionW));
 
                 context.Config.SetUsedFeature(FeatureFlags.IaIndexing);

@@ -406,7 +406,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             {
                 string suffix = context.Config.Stage == ShaderStage.Geometry ? "[]" : string.Empty;
 
-                context.AppendLine($"layout (location = 0) in vec4 {DefaultNames.IAttributePrefix}[16]{suffix};");
+                context.AppendLine($"layout (location = 0) in vec4 {DefaultNames.IAttributePrefix}[{Constants.MaxAttributes}]{suffix};");
             }
             else
             {
@@ -457,14 +457,21 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private static void DeclareOutputAttributes(CodeGenContext context, StructuredProgramInfo info)
         {
-            int usedAttribtes = context.Config.UsedOutputAttributes;
-            while (usedAttribtes != 0)
+            if (context.Config.UsedFeatures.HasFlag(FeatureFlags.OaIndexing))
             {
-                int index = BitOperations.TrailingZeroCount(usedAttribtes);
+                context.AppendLine($"layout (location = 0) out vec4 {DefaultNames.OAttributePrefix}[{Constants.MaxAttributes}];");
+            }
+            else
+            {
+                int usedAttribtes = context.Config.UsedOutputAttributes;
+                while (usedAttribtes != 0)
+                {
+                    int index = BitOperations.TrailingZeroCount(usedAttribtes);
 
-                DeclareOutputAttribute(context, index);
+                    DeclareOutputAttribute(context, index);
 
-                usedAttribtes &= ~(1 << index);
+                    usedAttribtes &= ~(1 << index);
+                }
             }
         }
 

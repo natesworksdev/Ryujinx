@@ -246,14 +246,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 ? DefaultNames.OAttributePrefix
                 : DefaultNames.IAttributePrefix;
 
-            string name = $"{prefix}[({attrExpr}) >> 2]";
+            string name = $"{prefix}[{attrExpr} >> 2]";
 
             if (config.Stage == ShaderStage.Geometry && !isOutAttr)
             {
                 name += $"[{indexExpr}]";
             }
 
-            return $"{name}[({attrExpr}) & 3]";
+            return $"{name}[{attrExpr} & 3]";
         }
 
         public static string GetUbName(ShaderStage stage, int slot, bool cbIndexable)
