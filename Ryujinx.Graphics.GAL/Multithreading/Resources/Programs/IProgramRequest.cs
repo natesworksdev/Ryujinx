@@ -5,5 +5,4 @@
         ThreadedProgram Threaded { get; set; }
         IProgram Create(IRenderer renderer);
     }
-
 }
