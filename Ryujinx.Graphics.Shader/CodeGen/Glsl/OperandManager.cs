@@ -161,14 +161,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                 if (config.UsedFeatures.HasFlag(isOutAttr ? FeatureFlags.OaIndexing : FeatureFlags.IaIndexing))
                 {
-                    string name = $"{prefix}[{(value >> 4)}]";
+                    string name = prefix;
 
                     if (config.Stage == ShaderStage.Geometry && !isOutAttr)
                     {
                         name += $"[{indexExpr}]";
                     }
 
-                    return name+ '.' + swzMask;
+                    return name + $"[{(value >> 4)}]." + swzMask;
                 }
                 else if (config.Options.Flags.HasFlag(TranslationFlags.Feedback))
                 {
@@ -242,18 +242,16 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         public static string GetAttributeName(string attrExpr, ShaderConfig config, bool isOutAttr = false, string indexExpr = "0")
         {
-            string prefix = isOutAttr
+            string name = isOutAttr
                 ? DefaultNames.OAttributePrefix
                 : DefaultNames.IAttributePrefix;
-
-            string name = $"{prefix}[{attrExpr} >> 2]";
 
             if (config.Stage == ShaderStage.Geometry && !isOutAttr)
             {
                 name += $"[{indexExpr}]";
             }
 
-            return $"{name}[{attrExpr} & 3]";
+            return $"{name}[{attrExpr} >> 2][{attrExpr} & 3]";
         }
 
         public static string GetUbName(ShaderStage stage, int slot, bool cbIndexable)

@@ -406,7 +406,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             {
                 string suffix = context.Config.Stage == ShaderStage.Geometry ? "[]" : string.Empty;
 
-                context.AppendLine($"layout (location = 0) in vec4 {DefaultNames.IAttributePrefix}[{Constants.MaxAttributes}]{suffix};");
+                context.AppendLine($"layout (location = 0) in vec4 {DefaultNames.IAttributePrefix}{suffix}[{Constants.MaxAttributes}];");
             }
             else
             {
