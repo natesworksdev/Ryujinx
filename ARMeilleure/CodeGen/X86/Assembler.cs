@@ -294,12 +294,12 @@ namespace ARMeilleure.CodeGen.X86
             _instTable[(int)inst] = info;
         }
 
-        public Assembler(Stream stream, PtcInfo ptcInfo = default)
+        public Assembler(Stream stream, PtcInfo ptcInfo = null)
         {
             _stream = stream;
 
             _ptcInfo     = ptcInfo;
-            _ptcDisabled = ptcInfo == default;
+            _ptcDisabled = ptcInfo == null;
         }
 
         public void Add(Operand dest, Operand source, OperandType type)
@@ -1153,7 +1153,7 @@ namespace ARMeilleure.CodeGen.X86
 
                 X86Register baseRegLow = (X86Register)(baseReg.Index & 0b111);
 
-                needsSibByte      = memOp.Index != default     || baseRegLow == X86Register.Rsp;
+                needsSibByte      = memOp.Index != default  || baseRegLow == X86Register.Rsp;
                 needsDisplacement = memOp.Displacement != 0 || baseRegLow == X86Register.Rbp;
 
                 if (needsDisplacement)
