@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
@@ -7,8 +8,10 @@ namespace ARMeilleure.IntermediateRepresentation
     {
         private struct Data
         {
+#pragma warning disable CS0649
             public byte Kind;
             public byte Type;
+#pragma warning restore CS0649
             public byte Scale;
             public Operand BaseAddress;
             public Operand Index;
@@ -16,6 +19,13 @@ namespace ARMeilleure.IntermediateRepresentation
         }
 
         private Data* _data;
+
+        public MemoryOperand(Operand operand)
+        {
+            Debug.Assert(operand.Kind == OperandKind.Memory);
+
+            _data = (Data*)Unsafe.As<Operand, IntPtr>(ref operand);
+        }
 
         public Operand BaseAddress
         {
@@ -39,13 +49,6 @@ namespace ARMeilleure.IntermediateRepresentation
         {
             get => _data->Displacement;
             set => _data->Displacement = value;
-        }
-
-        public static MemoryOperand Cast(Operand operand)
-        {
-            Debug.Assert(operand.Kind == OperandKind.Memory);
-
-            return Unsafe.As<Operand, MemoryOperand>(ref operand);
         }
     }
 }

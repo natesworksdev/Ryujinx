@@ -106,7 +106,7 @@ namespace ARMeilleure.IntermediateRepresentation
         {
             Debug.Assert(Kind == OperandKind.Memory);
 
-            return MemoryOperand.Cast(this);
+            return new MemoryOperand(this);
         }
 
         public int GetLocalNumber()
