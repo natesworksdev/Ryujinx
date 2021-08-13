@@ -467,16 +467,20 @@ namespace Ryujinx.Ui
             };
             renderLoopThread.Start();
 
-            Thread nvStutterWorkaround = new Thread(NVStutterWorkaround)
+            Thread nvStutterWorkaround = null;
+            if (Renderer is Graphics.OpenGL.Renderer)
             {
-                Name = "GUI.NVStutterWorkaround"
-            };
-            nvStutterWorkaround.Start();
+                nvStutterWorkaround = new Thread(NVStutterWorkaround)
+                {
+                    Name = "GUI.NVStutterWorkaround"
+                };
+                nvStutterWorkaround.Start();
+            }
 
             MainLoop();
 
             renderLoopThread.Join();
-            nvStutterWorkaround.Join();
+            nvStutterWorkaround?.Join();
 
             Exit();
         }
