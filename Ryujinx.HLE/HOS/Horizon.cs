@@ -460,7 +460,6 @@ namespace Ryujinx.HLE.HOS
                 }
                 else
                 {
-                    SimulateWakeUpMessage();
                     Device.AudioDeviceDriver.GetPauseEvent().Set();
                 }
             }
