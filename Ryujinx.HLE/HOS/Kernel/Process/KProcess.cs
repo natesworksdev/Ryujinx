@@ -1085,18 +1085,25 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
         public KernelResult SetActivity(bool pause)
         {
+            KernelContext.CriticalSection.Enter();
+
             if (State != ProcessState.Exiting && State != ProcessState.Exited)
             {
                 if (pause)
                 {
                     if (IsPaused)
                     {
+                        KernelContext.CriticalSection.Leave();
+
                         return KernelResult.InvalidState;
                     }
 
-                    foreach (KThread thread in _threads)
+                    lock (_threadingLock)
                     {
-                        thread.Suspend();
+                        foreach (KThread thread in _threads)
+                        {
+                            thread.Suspend(ThreadSchedState.ProcessPauseFlag);
+                        }
                     }
 
                     IsPaused = true;
@@ -1105,19 +1112,28 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                 {
                     if (!IsPaused)
                     {
+                        KernelContext.CriticalSection.Leave();
+
                         return KernelResult.InvalidState;
                     }
 
-                    foreach (KThread thread in _threads)
+                    lock (_threadingLock)
                     {
-                        thread.Resume();
+                        foreach (KThread thread in _threads)
+                        {
+                            thread.Resume(ThreadSchedState.ProcessPauseFlag);
+                        }
                     }
 
                     IsPaused = false;
                 }
 
+                KernelContext.CriticalSection.Leave();
+
                 return KernelResult.Success;
             }
+
+            KernelContext.CriticalSection.Leave();
 
             return KernelResult.InvalidState;
         }

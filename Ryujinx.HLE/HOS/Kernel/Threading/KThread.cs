@@ -471,20 +471,20 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             KernelContext.CriticalSection.Leave();
         }
 
-        public void Suspend()
+        public void Suspend(ThreadSchedState type)
         {
-            _forcePauseFlags |= ThreadSchedState.ThreadPauseFlag;
+            _forcePauseFlags |= type;
 
             CombineForcePauseFlags();
         }
 
-        public void Resume()
+        public void Resume(ThreadSchedState type)
         {
             ThreadSchedState oldForcePauseFlags = _forcePauseFlags;
 
-            _forcePauseFlags &= ~ThreadSchedState.ThreadPauseFlag;
+            _forcePauseFlags &= ~type;
 
-            if ((oldForcePauseFlags & ~ThreadSchedState.ThreadPauseFlag) == ThreadSchedState.None)
+            if ((oldForcePauseFlags & ~type) == ThreadSchedState.None)
             {
                 ThreadSchedState oldSchedFlags = SchedFlags;
 
@@ -518,7 +518,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                     // Pause, the force pause flag should be clear (thread is NOT paused).
                     if ((_forcePauseFlags & ThreadSchedState.ThreadPauseFlag) == 0)
                     {
-                        Suspend();
+                        Suspend(ThreadSchedState.ThreadPauseFlag);
                     }
                     else
                     {
@@ -530,7 +530,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                     // Unpause, the force pause flag should be set (thread is paused).
                     if ((_forcePauseFlags & ThreadSchedState.ThreadPauseFlag) != 0)
                     {
-                        Resume();
+                        Resume(ThreadSchedState.ThreadPauseFlag);
                     }
                     else
                     {
