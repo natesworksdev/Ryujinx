@@ -254,7 +254,6 @@ namespace Ryujinx.Audio.Renderer.Dsp
             if (disposing)
             {
                 _event.Dispose();
-                _pauseEvent.Dispose();
             }
         }
     }
