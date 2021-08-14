@@ -1085,6 +1085,12 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
         public KernelResult SetActivity(bool pause)
         {
+            if (Flags.HasFlag(ProcessCreationFlags.IsApplication))
+            {
+                // we only want to suspend game process
+                return KernelResult.Success;
+            }
+
             KernelContext.CriticalSection.Enter();
 
             if (State != ProcessState.Exiting && State != ProcessState.Exited)
