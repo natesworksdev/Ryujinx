@@ -471,6 +471,29 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             KernelContext.CriticalSection.Leave();
         }
 
+        public void Suspend()
+        {
+            _forcePauseFlags |= ThreadSchedState.ThreadPauseFlag;
+
+            CombineForcePauseFlags();
+        }
+
+        public void Resume()
+        {
+            ThreadSchedState oldForcePauseFlags = _forcePauseFlags;
+
+            _forcePauseFlags &= ~ThreadSchedState.ThreadPauseFlag;
+
+            if ((oldForcePauseFlags & ~ThreadSchedState.ThreadPauseFlag) == ThreadSchedState.None)
+            {
+                ThreadSchedState oldSchedFlags = SchedFlags;
+
+                SchedFlags &= ThreadSchedState.LowMask;
+
+                AdjustScheduling(oldSchedFlags);
+            }
+        }
+
         public KernelResult SetActivity(bool pause)
         {
             KernelResult result = KernelResult.Success;
@@ -495,9 +518,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                     // Pause, the force pause flag should be clear (thread is NOT paused).
                     if ((_forcePauseFlags & ThreadSchedState.ThreadPauseFlag) == 0)
                     {
-                        _forcePauseFlags |= ThreadSchedState.ThreadPauseFlag;
-
-                        CombineForcePauseFlags();
+                        Suspend();
                     }
                     else
                     {
@@ -509,18 +530,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                     // Unpause, the force pause flag should be set (thread is paused).
                     if ((_forcePauseFlags & ThreadSchedState.ThreadPauseFlag) != 0)
                     {
-                        ThreadSchedState oldForcePauseFlags = _forcePauseFlags;
-
-                        _forcePauseFlags &= ~ThreadSchedState.ThreadPauseFlag;
-
-                        if ((oldForcePauseFlags & ~ThreadSchedState.ThreadPauseFlag) == ThreadSchedState.None)
-                        {
-                            ThreadSchedState oldSchedFlags = SchedFlags;
-
-                            SchedFlags &= ThreadSchedState.LowMask;
-
-                            AdjustScheduling(oldSchedFlags);
-                        }
+                        Resume();
                     }
                     else
                     {

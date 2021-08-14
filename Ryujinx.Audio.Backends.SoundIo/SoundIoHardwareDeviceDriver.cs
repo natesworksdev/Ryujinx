@@ -225,6 +225,7 @@ namespace Ryujinx.Audio.Backends.SoundIo
 
                 _audioContext.Disconnect();
                 _audioContext.Dispose();
+                _pauseEvent.Dispose();
             }
         }
 

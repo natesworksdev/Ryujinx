@@ -77,6 +77,7 @@ namespace Ryujinx.Audio.Backends.Dummy
             if (disposing)
             {
                 // NOTE: The _updateRequiredEvent will be disposed somewhere else.
+                _pauseEvent.Dispose();
             }
         }
 

@@ -143,6 +143,8 @@ namespace Ryujinx.Audio.Backends.SDL2
                 }
 
                 SDL2Driver.Instance.Dispose();
+
+                _pauseEvent.Dispose();
             }
         }
 

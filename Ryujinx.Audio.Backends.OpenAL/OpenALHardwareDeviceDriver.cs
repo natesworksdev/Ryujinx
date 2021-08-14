@@ -139,6 +139,8 @@ namespace Ryujinx.Audio.Backends.OpenAL
 
                 ALC.DestroyContext(_context);
                 ALC.CloseDevice(_device);
+
+                _pauseEvent.Dispose();
             }
         }
 

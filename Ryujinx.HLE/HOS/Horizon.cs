@@ -451,12 +451,12 @@ namespace Ryujinx.HLE.HOS
             {
                 foreach (KProcess process in KernelContext.Processes.Values)
                 {
-                    process.SetThreadActivity(pause);
+                    process.SetActivity(pause);
                 }
 
                 if (pause)
                 {
-                    Device.AudioDeviceDriver.GetPauseEvent().Reset();
+                   Device.AudioDeviceDriver.GetPauseEvent().Reset();
                 }
                 else
                 {
