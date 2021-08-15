@@ -26,6 +26,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
         private int _instanceIndex;
 
+        private const int IndexBufferCountMethodOffset = 0x5f8;
+
         /// <summary>
         /// Creates a new instance of the draw manager.
         /// </summary>
@@ -322,7 +324,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             int maxDrawCount,
             int stride)
         {
-            //_state.Write((int)_state.State.IndexBufferCount * 4, indexCount);
+            engine.Write(IndexBufferCountMethodOffset * 4, indexCount);
 
             _context.Renderer.Pipeline.SetPrimitiveTopology(topology);
             _drawState.Topology = topology;
