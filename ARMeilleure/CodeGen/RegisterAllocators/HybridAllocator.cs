@@ -86,29 +86,29 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             var localInfo = new LocalInfo[cfg.Blocks.Count * 3];
             int localInfoCount = 0;
 
+            // The "visited" state is stored in the MSB of the local's value.
+            const ulong VisitedMask = 1ul << 63;
+
             bool IsVisited(Operand local)
             {
-                // The "visited" state is stored in the MSB of the local's value.
-                return (local.GetValue() & (1ul << 63)) != 0;
+                return (local.GetValueUnsafe() & VisitedMask) != 0;
             }
 
             void SetVisited(Operand local)
             {
-                local.GetValue() |= (1ul << 63) | (uint)++localInfoCount;
+                local.GetValueUnsafe() |= VisitedMask | (uint)++localInfoCount;
             }
 
             ref LocalInfo GetLocalInfo(Operand local)
             {
                 Debug.Assert(local.Kind == OperandKind.LocalVariable);
 
-                ref ulong value = ref local.GetValue();
-
                 if (!IsVisited(local))
                 {
-                    throw new Exception();
+                    throw new InvalidOperationException("Local was not visisted yet. Used before defined?");
                 }
 
-                return ref localInfo[(uint)value - 1];
+                return ref localInfo[(uint)local.GetValueUnsafe() - 1];
             }
 
             for (int index = cfg.PostOrderBlocks.Length - 1; index >= 0; index--)
@@ -269,8 +269,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                     bool folded = false;
 
-                    // If operation is a copy of a local, and that local is living on the stack. We can turn that copy
-                    // into fill, instead of inserting a fill before it.
+                    // If operation is a copy of a local and that local is living on the stack, we turn the copy into
+                    // a fill, instead of inserting a fill before it.
                     if (node.Instruction == Instruction.Copy)
                     {
                         Operand source = node.GetSource(0);
@@ -376,7 +376,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         {
                             Operand temp = info.Temp;
 
-                            if (temp == default|| info.Sequence != sequence)
+                            if (temp == default || info.Sequence != sequence)
                             {
                                 temp = dest.Type.IsInteger()
                                     ? GetSpillTemp(dest, intSpillTempRegisters, ref intLocalAsg)

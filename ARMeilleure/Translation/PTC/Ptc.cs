@@ -9,7 +9,6 @@ using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using System;
 using System.Buffers.Binary;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -28,7 +27,7 @@ namespace ARMeilleure.Translation.PTC
         private const string OuterHeaderMagicString = "PTCohd\0\0";
         private const string InnerHeaderMagicString = "PTCihd\0\0";
 
-        private const uint InternalVersion = 2228; //! To be incremented manually for each change to the ARMeilleure project.
+        private const uint InternalVersion = 2515; //! To be incremented manually for each change to the ARMeilleure project.
 
         private const string ActualDir = "0";
         private const string BackupDir = "1";

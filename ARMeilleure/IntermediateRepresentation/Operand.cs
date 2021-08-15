@@ -146,7 +146,7 @@ namespace ARMeilleure.IntermediateRepresentation
             return BitConverter.Int64BitsToDouble((long)Value);
         }
 
-        public ref ulong GetValue()
+        internal ref ulong GetValueUnsafe()
         {
             return ref _data->Value;
         }
