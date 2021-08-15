@@ -914,14 +914,15 @@ namespace Ryujinx.Configuration
                 configurationFileUpdated = true;
             }
 
-            if (configurationFileFormat.Version < 29)
+            if (configurationFileFormat.Version < 31)
             {
-                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 29.");
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 31.");
 
                 configurationFileFormat.Hotkeys = new KeyboardHotkeys
                 {
                     ToggleVsync = configurationFileFormat.Hotkeys.ToggleVsync,
                     Screenshot = configurationFileFormat.Hotkeys.Screenshot,
+                    ShowUi = configurationFileFormat.Hotkeys.ShowUi,
                     Pause = Key.F5
                 };
 
