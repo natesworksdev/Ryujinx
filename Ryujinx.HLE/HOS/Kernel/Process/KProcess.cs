@@ -1085,12 +1085,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
         public KernelResult SetActivity(bool pause)
         {
-            if (Flags.HasFlag(ProcessCreationFlags.IsApplication))
-            {
-                // we only want to suspend game process
-                return KernelResult.Success;
-            }
-
             KernelContext.CriticalSection.Enter();
 
             if (State != ProcessState.Exiting && State != ProcessState.Exited)
@@ -1109,7 +1103,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                         foreach (KThread thread in _threads)
                         {
                             thread.Suspend(ThreadSchedState.ProcessPauseFlag);
-                            thread.Context.Suspend();
                         }
                     }
 
@@ -1128,7 +1121,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                     {
                         foreach (KThread thread in _threads)
                         {
-                            thread.Context.Resume();
                             thread.Resume(ThreadSchedState.ProcessPauseFlag);
                         }
                     }

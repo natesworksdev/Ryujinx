@@ -451,16 +451,22 @@ namespace Ryujinx.HLE.HOS
             {
                 foreach (KProcess process in KernelContext.Processes.Values)
                 {
-                    process.SetActivity(pause);
+                    if (!process.Flags.HasFlag(ProcessCreationFlags.IsApplication))
+                    {
+                        // only game process should be paused
+                        process.SetActivity(pause);
+                    }
                 }
 
                 if (pause)
                 {
                     Device.AudioDeviceDriver.GetPauseEvent().Reset();
+                    ARMeilleure.State.ExecutionContext.SuspendCounter();
                 }
                 else
                 {
                     Device.AudioDeviceDriver.GetPauseEvent().Set();
+                    ARMeilleure.State.ExecutionContext.ResumeCounter();
                 }
             }
         }
