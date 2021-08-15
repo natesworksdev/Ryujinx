@@ -145,6 +145,16 @@ namespace ARMeilleure.State
             _nativeContext.SetCounter(0);
         }
 
+        public void Suspend()
+        {
+            _tickCounter.Stop();
+        }
+
+        public void Resume()
+        {
+            _tickCounter.Start();
+        }
+
         public void Dispose()
         {
             _nativeContext.Dispose();

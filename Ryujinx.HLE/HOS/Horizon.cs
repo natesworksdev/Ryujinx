@@ -456,7 +456,7 @@ namespace Ryujinx.HLE.HOS
 
                 if (pause)
                 {
-                   Device.AudioDeviceDriver.GetPauseEvent().Reset();
+                    Device.AudioDeviceDriver.GetPauseEvent().Reset();
                 }
                 else
                 {
