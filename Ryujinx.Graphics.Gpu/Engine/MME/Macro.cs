@@ -49,7 +49,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
 
             if (_executionEngine == null)
             {
-                if (GraphicsConfig.EnableMacroHLE && MacroHLETable.TryGetMacroHLEFunction(code.Slice(Position), out _hleFunction))
+                if (GraphicsConfig.EnableMacroHLE && MacroHLETable.TryGetMacroHLEFunction(code.Slice(Position), context.Capabilities, out _hleFunction))
                 {
                     _executionEngine = new MacroHLE(processor, _hleFunction);
                 }

@@ -1,4 +1,5 @@
 ﻿using Ryujinx.Common;
+using Ryujinx.Graphics.GAL;
 using System;
 using System.Runtime.InteropServices;
 
@@ -48,13 +49,24 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
             new TableEntry(MacroHLEFunctionName.MultiDrawElementsIndirectCount, new Hash128(0x890AF57ED3FB1C37, 0x35D0C95C61F5386F), 0x19C)
         };
 
+        private static bool IsMacroHLESupported(Capabilities caps, MacroHLEFunctionName name)
+        {
+            if (name == MacroHLEFunctionName.MultiDrawElementsIndirectCount)
+            {
+                return caps.SupportsIndirectParameters;
+            }
+
+            return false;
+        }
+
         /// <summary>
         /// Checks if there's a fast, High-level implementation of the specified Macro code available.
         /// </summary>
         /// <param name="code">Macro code to be checked</param>
-        /// <param name="name">Name of the function if a implementation is available, otherwise <see cref="MacroHLEFunctionName.None"/></param>
-        /// <returns>True if there is a implementation available, false otherwise</returns>
-        public static bool TryGetMacroHLEFunction(ReadOnlySpan<int> code, out MacroHLEFunctionName name)
+        /// <param name="caps">Renderer capabilities to check for this macro HLE support</param>
+        /// <param name="name">Name of the function if a implementation is available and supported, otherwise <see cref="MacroHLEFunctionName.None"/></param>
+        /// <returns>True if there is a implementation available and supported, false otherwise</returns>
+        public static bool TryGetMacroHLEFunction(ReadOnlySpan<int> code, Capabilities caps, out MacroHLEFunctionName name)
         {
             var mc = MemoryMarshal.Cast<int, byte>(code);
 
@@ -66,7 +78,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
                 if (hash == entry.Hash)
                 {
                     name = entry.Name;
-                    return true;
+                    return IsMacroHLESupported(caps, name);
                 }
             }
 
