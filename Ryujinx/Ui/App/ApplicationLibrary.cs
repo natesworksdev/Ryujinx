@@ -11,11 +11,9 @@ using Ryujinx.Configuration.System;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.Loaders.Npdm;
-using Ryujinx.Ui.Widgets;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
@@ -629,9 +627,7 @@ namespace Ryujinx.Ui.App
             {
                 Logger.Warning?.Print(LogClass.Application, $"Your key set is missing a key with the name: {exception.Name}. Errored File: {updatePath}");
             }
-
             version = "";
-
             return false;
         }
     }
