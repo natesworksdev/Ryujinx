@@ -89,6 +89,9 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 }
             }
 
+            Attach(srcFb, src.Format, 0);
+            Attach(dstFb, dst.Format, 0);
+
             ((Pipeline)_renderer.Pipeline).RestoreScissor0Enable();
             ((Pipeline)_renderer.Pipeline).RestoreRasterizerDiscard();
 
