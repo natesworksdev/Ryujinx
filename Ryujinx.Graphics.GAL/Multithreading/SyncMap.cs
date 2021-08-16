@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace Ryujinx.Graphics.GAL.Multithreading
 {
-    class SyncMap
+    class SyncMap : IDisposable
     {
         private HashSet<ulong> _inFlight = new HashSet<ulong>();
         private AutoResetEvent _inFlightChanged = new AutoResetEvent(false);
@@ -51,6 +52,11 @@ namespace Ryujinx.Graphics.GAL.Multithreading
                 // Signal other threads which might still be waiting.
                 _inFlightChanged.Set();
             }
+        }
+
+        public void Dispose()
+        {
+            _inFlightChanged.Dispose();
         }
     }
 }

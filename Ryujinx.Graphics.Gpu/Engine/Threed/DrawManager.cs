@@ -227,9 +227,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             if (_drawState.Topology != topology)
             {
                 _context.Renderer.Pipeline.SetPrimitiveTopology(topology);
-            }
 
-            _drawState.Topology = topology;
+                _drawState.Topology = topology;
+            }
         }
 
         /// <summary>
