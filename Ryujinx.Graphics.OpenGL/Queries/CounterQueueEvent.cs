@@ -1,4 +1,5 @@
 ﻿using OpenTK.Graphics.OpenGL;
+using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using System;
 using System.Threading;
@@ -20,6 +21,9 @@ namespace Ryujinx.Graphics.OpenGL.Queries
 
         private CounterQueue _queue;
         private BufferedQuery _counter;
+
+        private bool _hostAccessReserved = false;
+        private int _refCount = 1; // Starts with a reference from the counter queue.
 
         private object _lock = new object();
         private ulong _result = ulong.MaxValue;
@@ -98,15 +102,60 @@ namespace Ryujinx.Graphics.OpenGL.Queries
             _queue.FlushTo(this);
         }
 
-        public void Dispose()
+        public void DecrementRefCount()
         {
-            Disposed = true;
+            if (Interlocked.Decrement(ref _refCount) == 0)
+            {
+                DisposeInternal();
+            }
+        }
+
+        public bool ReserveForHostAccess()
+        {
+            if (_hostAccessReserved)
+            {
+                return true;
+            }
+
+            if (IsValueAvailable())
+            {
+                return false;
+            }
+
+            if (Interlocked.Increment(ref _refCount) == 1)
+            {
+                Interlocked.Decrement(ref _refCount);
+
+                return false;
+            }
+
+            _hostAccessReserved = true;
+
+            return true;
+        }
+
+        public void ReleaseHostAccess()
+        {
+            _hostAccessReserved = false;
+
+            DecrementRefCount();
+        }
+
+        private void DisposeInternal()
+        {
             _queue.ReturnQueryObject(_counter);
         }
 
-        public bool IsValueAvailable()
+        private bool IsValueAvailable()
         {
             return _result != ulong.MaxValue || _counter.TryGetResult(out _);
+        }
+
+        public void Dispose()
+        {
+            Disposed = true;
+
+            DecrementRefCount();
         }
     }
 }

@@ -95,7 +95,7 @@ namespace Ryujinx.Graphics.OpenGL.Queries
             }
         }
 
-        public CounterQueueEvent QueueReport(EventHandler<ulong> resultHandler, ulong lastDrawIndex)
+        public CounterQueueEvent QueueReport(EventHandler<ulong> resultHandler, ulong lastDrawIndex, bool hostReserved)
         {
             CounterQueueEvent result;
             ulong draws = lastDrawIndex - _current.DrawIndex;
@@ -104,6 +104,12 @@ namespace Ryujinx.Graphics.OpenGL.Queries
             {
                 // A query's result only matters if more than one draw was performed during it.
                 // Otherwise, dummy it out and return 0 immediately.
+
+                if (hostReserved)
+                {
+                    // This counter event is guaranteed to be available for host conditional rendering.
+                    _current.ReserveForHostAccess();
+                }
 
                 if (draws > 0)
                 {

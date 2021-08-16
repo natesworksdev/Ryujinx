@@ -294,7 +294,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             {
                 if (compare == 0 && evt.Type == CounterType.SamplesPassed && evt.ClearCounter)
                 {
-                    if (evt.IsValueAvailable())
+                    if (!evt.ReserveForHostAccess())
                     {
                         return false;
                     }
