@@ -84,6 +84,11 @@ namespace Ryujinx.Graphics.OpenGL.Image
             }
         }
 
+        public bool isDisposed()
+        {
+            return Handle == 0;
+        }
+
         public void Release()
         {
             Dispose();

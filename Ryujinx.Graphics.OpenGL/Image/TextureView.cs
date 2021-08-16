@@ -613,6 +613,11 @@ namespace Ryujinx.Graphics.OpenGL.Image
             }
         }
 
+        public bool isDisposed()
+        {
+            return Handle == 0;
+        }
+
         /// <summary>
         /// Release the view without necessarily disposing the parent if we are the default view.
         /// This allows it to be added to the resource pool and reused later.

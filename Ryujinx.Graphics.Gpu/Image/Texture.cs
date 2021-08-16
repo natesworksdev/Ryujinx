@@ -835,7 +835,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public void ExternalFlush(ulong address, ulong size)
         {
-            if (!IsModified)
+            if (!IsModified || HostTexture.isDisposed())
             {
                 return;
             }
