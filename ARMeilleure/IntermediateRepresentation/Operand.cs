@@ -359,7 +359,7 @@ namespace ARMeilleure.IntermediateRepresentation
                 {
                     if (_internTable == null)
                     {
-                        _internTable = (Data*)NativeAllocator.Instance.Allocate(sizeof(Data) * InternTableSize);
+                        _internTable = (Data*)NativeAllocator.Instance.Allocate((uint)sizeof(Data) * InternTableSize);
 
                         // Make sure the table is zeroed.
                         new Span<Data>(_internTable, InternTableSize).Clear();

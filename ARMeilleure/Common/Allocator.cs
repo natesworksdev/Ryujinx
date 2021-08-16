@@ -4,12 +4,12 @@ namespace ARMeilleure.Common
 {
     unsafe abstract class Allocator : IDisposable
     {
-        public T* Allocate<T>(int count = 1) where T : unmanaged
+        public T* Allocate<T>(ulong count = 1) where T : unmanaged
         {
-            return (T*)Allocate(count * sizeof(T));
+            return (T*)Allocate(count * (uint)sizeof(T));
         }
 
-        public abstract void* Allocate(int size);
+        public abstract void* Allocate(ulong size);
 
         public abstract void Free(void* block);
 
@@ -17,7 +17,7 @@ namespace ARMeilleure.Common
 
         public void Dispose()
         {
-            Dispose(disposing: true);
+            Dispose(true);
             GC.SuppressFinalize(this);
         }
     }

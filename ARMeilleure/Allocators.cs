@@ -1,7 +1,6 @@
 ﻿using ARMeilleure.Common;
 using System;
 using System.Runtime.CompilerServices;
-using System.Threading;
 
 namespace ARMeilleure
 {
@@ -18,7 +17,7 @@ namespace ARMeilleure
         public static ArenaAllocator References => GetAllocator(ref _references, 64 * 1024, 8);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static ArenaAllocator GetAllocator(ref ArenaAllocator alloc, int pageSize, int pageCount)
+        private static ArenaAllocator GetAllocator(ref ArenaAllocator alloc, uint pageSize, uint pageCount)
         {
             if (alloc == null)
             {

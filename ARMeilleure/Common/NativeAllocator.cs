@@ -3,13 +3,13 @@ using System.Runtime.InteropServices;
 
 namespace ARMeilleure.Common
 {
-    unsafe class NativeAllocator : Allocator
+    unsafe sealed class NativeAllocator : Allocator
     {
         public static NativeAllocator Instance { get; } = new();
 
-        public override void* Allocate(int size)
+        public override void* Allocate(ulong size)
         {
-            void* result = (void*)Marshal.AllocHGlobal(size);
+            void* result = (void*)Marshal.AllocHGlobal((IntPtr)size);
 
             if (result == null)
             {

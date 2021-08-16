@@ -149,7 +149,7 @@ namespace ARMeilleure.Common
 
             if (!_pages.TryGetValue(pageIndex, out IntPtr page))
             {
-                page = (IntPtr)NativeAllocator.Instance.Allocate(sizeof(TEntry) * _pageCapacity);
+                page = (IntPtr)NativeAllocator.Instance.Allocate((uint)sizeof(TEntry) * (uint)_pageCapacity);
 
                 _pages.Add(pageIndex, page);
             }

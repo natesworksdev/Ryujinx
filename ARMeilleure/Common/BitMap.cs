@@ -131,7 +131,7 @@ namespace ARMeilleure.Common
                 var oldMask = _masks;
                 var oldSpan = new Span<long>(_masks, _count);
 
-                _masks = _allocator.Allocate<long>(count);
+                _masks = _allocator.Allocate<long>((uint)count);
                 _count = count;
 
                 var newSpan = new Span<long>(_masks, _count);
