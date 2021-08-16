@@ -264,12 +264,6 @@ namespace Ryujinx.Graphics.OpenGL.Image
             TextureTarget target = Target.Convert();
 
             int mipSize = Info.GetMipSize2D(level);
-            int maxLevels = 1 + (int)Math.Floor(Math.Log2(width * height));
-
-            if (level > maxLevels)
-            {
-                return;
-            }
 
             FormatInfo format = FormatTable.GetFormatInfo(Info.Format);
 

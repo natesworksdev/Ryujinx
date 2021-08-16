@@ -25,11 +25,11 @@ namespace Ryujinx.Graphics.OpenGL
 
         public unsafe int Create()
         {
-            int localHnadle;
+            int localHandle;
 
-            GL.CreateVertexArrays(1, &localHnadle);
+            GL.CreateVertexArrays(1, &localHandle);
 
-            return localHnadle;
+            return localHandle;
         }
 
         public VertexArray()

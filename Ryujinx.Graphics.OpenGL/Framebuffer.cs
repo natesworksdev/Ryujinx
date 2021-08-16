@@ -32,7 +32,6 @@ namespace Ryujinx.Graphics.OpenGL
                 GL.CreateFramebuffers(1, &localHandle);
             }
 
-
             return localHandle;
         }
 

@@ -1052,7 +1052,7 @@ namespace Ryujinx.Graphics.OpenGL
             }
 
             int count = Math.Min(buffers.Length, Constants.MaxTransformFeedbackBuffers);
-            int[] bufferHandles = new int[count];
+            Span<int> bufferHandles = stackalloc int[count];
 
             for (int i = 0; i < count; i++)
             {
@@ -1075,7 +1075,7 @@ namespace Ryujinx.Graphics.OpenGL
                 bufferHandles[i] = _tfbs[i].ToInt32();
             }
 
-            GL.BindBuffersBase(BufferRangeTarget.TransformFeedbackBuffer, 0, count, bufferHandles);
+            GL.BindBuffersBase(BufferRangeTarget.TransformFeedbackBuffer, 0, count, bufferHandles.ToArray());
 
             if (_tfEnabled)
             {
@@ -1167,9 +1167,9 @@ namespace Ryujinx.Graphics.OpenGL
         {
             BufferRangeTarget target = isStorage ? BufferRangeTarget.ShaderStorageBuffer : BufferRangeTarget.UniformBuffer;
 
-            int[] bufferHandles = new int[buffers.Length];
-            IntPtr[] bufferOffsets = new IntPtr[buffers.Length];
-            IntPtr[] bufferSizes = new IntPtr[buffers.Length];
+            Span<int> bufferHandles = stackalloc int[buffers.Length];
+            Span<IntPtr> bufferOffsets = stackalloc IntPtr[buffers.Length];
+            Span<IntPtr> bufferSizes = stackalloc IntPtr[buffers.Length];
 
             for (int index = 0; index < buffers.Length; index++)
             {
@@ -1189,7 +1189,7 @@ namespace Ryujinx.Graphics.OpenGL
                 bufferSizes[index] = (IntPtr)buffer.Size;
             }
 
-            GL.BindBuffersRange(target, first, buffers.Length, bufferHandles, bufferOffsets, bufferSizes);
+            GL.BindBuffersRange(target, first, buffers.Length, bufferHandles.ToArray(), bufferOffsets.ToArray(), bufferSizes.ToArray());
         }
 
         private void SetOrigin(ClipOrigin origin)
