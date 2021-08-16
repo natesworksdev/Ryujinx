@@ -429,6 +429,13 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
             // Dispose the renderer.
             _baseRenderer.Dispose();
+
+            // Dispose events.
+            _frameComplete.Dispose();
+            _galWorkAvailable.Dispose();
+            _invokeRun.Dispose();
+
+            Sync.Dispose();
         }
     }
 }
