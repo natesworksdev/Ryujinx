@@ -175,7 +175,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
                 if (counter?.Invalid != true)
                 {
-                    _channel.MemoryManager.WriteUntracked(gpuVa, MemoryMarshal.Cast<CounterData, byte>(MemoryMarshal.CreateSpan(ref counterData, 1)));
+                    _channel.MemoryManager.Write(gpuVa, counterData);
                 }
             }
 
