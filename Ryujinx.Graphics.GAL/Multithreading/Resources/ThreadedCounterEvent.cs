@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Graphics.GAL.Multithreading.Commands.CounterEvent;
 using Ryujinx.Graphics.GAL.Multithreading.Model;
+using System.Threading;
 
 namespace Ryujinx.Graphics.GAL.Multithreading.Resources
 {
@@ -12,6 +13,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Resources
 
         public CounterType Type { get; }
         public bool ClearCounter { get; }
+
+        private bool _reserved;
+        private int _createLock;
 
         public ThreadedCounterEvent(ThreadedRenderer renderer, CounterType type, bool clearCounter)
         {
@@ -38,9 +42,39 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Resources
             Base.Flush();
         }
 
-        public bool IsValueAvailable()
+        public bool ReserveForHostAccess()
         {
-            return Base?.IsValueAvailable() ?? false;
+            if (Base != null)
+            {
+                return Base.ReserveForHostAccess();
+            }
+            else
+            {
+                bool result = true;
+
+                // A very light lock, as this case is uncommon.
+                ThreadedHelpers.SpinUntilExchange(ref _createLock, 1, 0);
+
+                if (Base != null)
+                {
+                    result = Base.ReserveForHostAccess();
+                }
+                else
+                {
+                    _reserved = true;
+                }
+
+                Volatile.Write(ref _createLock, 0);
+
+                return result;
+            }
+        }
+
+        public void Create(IRenderer renderer, CounterType type, System.EventHandler<ulong> eventHandler, bool hostReserved)
+        {
+            ThreadedHelpers.SpinUntilExchange(ref _createLock, 1, 0);
+            Base = renderer.ReportCounter(type, eventHandler, hostReserved || _reserved);
+            Volatile.Write(ref _createLock, 0);
         }
     }
 }
