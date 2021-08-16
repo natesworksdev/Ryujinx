@@ -37,7 +37,6 @@ namespace Ryujinx.Ui.App
 
         private VirtualFileSystem _virtualFileSystem;
         private Language          _desiredTitleLanguage;
-        private bool              _loadingError;
 
         public ApplicationLibrary(VirtualFileSystem virtualFileSystem)
         {
@@ -73,7 +72,7 @@ namespace Ryujinx.Ui.App
 
                 try
                 {
-                    content = Directory.GetFiles(dir, "*").Where(x => new FileInfo(x).Length > 0).ToArray();
+                    content = Directory.GetFiles(dir, "*");
                 }
                 catch (UnauthorizedAccessException)
                 {
@@ -118,7 +117,6 @@ namespace Ryujinx.Ui.App
             int numApplicationsFound  = 0;
             int numApplicationsLoaded = 0;
 
-            _loadingError         = false;
             _desiredTitleLanguage = desiredTitleLanguage;
 
             // Builds the applications list with paths to found applications
@@ -302,7 +300,6 @@ namespace Ryujinx.Ui.App
                                 Logger.Warning?.Print(LogClass.Application, $"The file encountered was not of a valid type. File: '{applicationPath}' Error: {exception}");
 
                                 numApplicationsFound--;
-                                _loadingError = true;
 
                                 continue;
                             }
@@ -383,7 +380,6 @@ namespace Ryujinx.Ui.App
                                 Logger.Warning?.Print(LogClass.Application, $"The file encountered was not of a valid type. Errored File: {applicationPath}");
 
                                 numApplicationsFound--;
-                                _loadingError = true;
 
                                 continue;
                             }
@@ -404,7 +400,6 @@ namespace Ryujinx.Ui.App
                     Logger.Warning?.Print(LogClass.Application, exception.Message);
 
                     numApplicationsFound--;
-                    _loadingError = true;
 
                     continue;
                 }
@@ -453,14 +448,6 @@ namespace Ryujinx.Ui.App
                 NumAppsFound  = numApplicationsFound,
                 NumAppsLoaded = numApplicationsLoaded
             });
-
-            if (_loadingError)
-            {
-                Gtk.Application.Invoke(delegate
-                {
-                    GtkDialog.CreateErrorDialog("One or more files encountered could not be loaded, check logs for more info.");
-                });
-            }
         }
 
         protected void OnApplicationAdded(ApplicationAddedEventArgs e)
