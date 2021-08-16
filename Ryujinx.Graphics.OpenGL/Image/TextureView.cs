@@ -20,7 +20,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
             TextureStorage    parent,
             TextureCreateInfo info,
             int               firstLayer,
-            int               firstLevel) : base(info, parent.ScaleFactor)
+            int               firstLevel) : base(info, parent.ScaleFactor, false)
         {
             _renderer = renderer;
             _parent   = parent;
