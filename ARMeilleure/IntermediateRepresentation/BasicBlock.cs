@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace ARMeilleure.IntermediateRepresentation
 {
-    class BasicBlock : IIntrusiveListNode<BasicBlock>
+    class BasicBlock : IEquatable<BasicBlock>, IIntrusiveListNode<BasicBlock>
     {
         private const uint MaxSuccessors = 2;
 
@@ -147,5 +147,20 @@ namespace ARMeilleure.IntermediateRepresentation
         private static void ThrowNull(string name) => throw new ArgumentNullException(name);
         private static void ThrowOutOfRange(string name) => throw new ArgumentOutOfRangeException(name);
         private static void ThrowSuccessorOverflow() => throw new OverflowException($"BasicBlock can only have {MaxSuccessors} successors.");
+
+        public bool Equals(BasicBlock other)
+        {
+            return other == this;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as BasicBlock);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 }

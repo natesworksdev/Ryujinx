@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
@@ -8,7 +9,7 @@ namespace ARMeilleure.IntermediateRepresentation
     /// Represents a efficient linked list that stores the pointer on the object directly and does not allocate.
     /// </summary>
     /// <typeparam name="T">Type of the list items</typeparam>
-    class IntrusiveList<T> where T : IIntrusiveListNode<T>
+    class IntrusiveList<T> where T : IEquatable<T>, IIntrusiveListNode<T>
     {
         /// <summary>
         /// First item of the list, or null if empty.
@@ -24,6 +25,18 @@ namespace ARMeilleure.IntermediateRepresentation
         /// Total number of items on the list.
         /// </summary>
         public int Count { get; private set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IntrusiveList{T}"/> class.
+        /// </summary>
+        /// <exception cref="ArgumentException"><typeparamref name="T"/> is not pointer sized.</exception>
+        public IntrusiveList()
+        {
+            if (Unsafe.SizeOf<T>() != IntPtr.Size)
+            {
+                throw new ArgumentException("T must be a reference type or a pointer sized struct.");
+            }
+        }
 
         /// <summary>
         /// Adds a item as the first item of the list.
@@ -180,18 +193,16 @@ namespace ARMeilleure.IntermediateRepresentation
             Count--;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool EqualsNull(T a)
         {
-            Debug.Assert(Unsafe.SizeOf<T>() == IntPtr.Size);
-
-            return Unsafe.As<T, IntPtr>(ref a) == IntPtr.Zero;
+            return EqualityComparer<T>.Default.Equals(a, default);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool Equals(T a, T b)
         {
-            Debug.Assert(Unsafe.SizeOf<T>() == IntPtr.Size);
-
-            return Unsafe.As<T, IntPtr>(ref a) == Unsafe.As<T, IntPtr>(ref b);
+            return EqualityComparer<T>.Default.Equals(a, b);
         }
     }
 }
