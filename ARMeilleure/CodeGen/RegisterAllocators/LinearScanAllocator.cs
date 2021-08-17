@@ -170,42 +170,55 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             int availableRegisters = context.Masks.GetAvailableRegisters(regType);
 
             int[] freePositions = new int[RegistersCount];
+            int freePositionsCount = 0;
 
             for (int index = 0; index < RegistersCount; index++)
             {
                 if ((availableRegisters & (1 << index)) != 0)
                 {
                     freePositions[index] = int.MaxValue;
+                    freePositionsCount++;
                 }
             }
 
             foreach (int iIndex in context.Active)
             {
                 LiveInterval interval = _intervals[iIndex];
+                Register reg = interval.Register;
 
-                if (interval.Register.Type == regType)
+                if (reg.Type == regType)
                 {
-                    freePositions[interval.Register.Index] = 0;
+                    freePositions[reg.Index] = 0;
+                    freePositionsCount--;
                 }
+            }
+
+            // If all registers are already active, return early. No point in inspecting the inactive set to look for
+            // holes.
+            if (freePositionsCount == 0)
+            {
+                return false;
             }
 
             foreach (int iIndex in context.Inactive)
             {
                 LiveInterval interval = _intervals[iIndex];
+                Register reg = interval.Register;
 
-                if (interval.Register.Type == regType)
+                ref int freePosition = ref freePositions[reg.Index];
+
+                if (reg.Type == regType && freePosition != 0)
                 {
                     int overlapPosition = interval.GetOverlapPosition(current);
 
-                    if (overlapPosition != LiveInterval.NotFound && freePositions[interval.Register.Index] > overlapPosition)
+                    if (overlapPosition != LiveInterval.NotFound && freePosition > overlapPosition)
                     {
-                        freePositions[interval.Register.Index] = overlapPosition;
+                        freePosition = overlapPosition;
                     }
                 }
             }
 
             int selectedReg = GetHighestValueIndex(freePositions);
-
             int selectedNextUse = freePositions[selectedReg];
 
             // Intervals starts and ends at odd positions, unless they span an entire
