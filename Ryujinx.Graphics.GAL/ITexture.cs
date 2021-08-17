@@ -20,7 +20,5 @@ namespace Ryujinx.Graphics.GAL
         void SetData(ReadOnlySpan<byte> data, int layer, int level);
         void SetStorage(BufferRange buffer);
         void Release();
-
-        bool isDisposed();
     }
 }

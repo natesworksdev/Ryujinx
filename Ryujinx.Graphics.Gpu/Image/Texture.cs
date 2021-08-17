@@ -90,6 +90,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         private bool _dirty = true;
         private int _updateCount;
         private byte[] _currentData;
+        public bool _disposed = false;
 
         private ITexture _arrayViewTexture;
         private Target   _arrayViewTarget;
@@ -835,7 +836,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public void ExternalFlush(ulong address, ulong size)
         {
-            if (!IsModified || HostTexture.isDisposed())
+            if (!IsModified || _disposed)
             {
                 return;
             }
@@ -1451,6 +1452,8 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             _flushHostTexture?.Release();
             _flushHostTexture = null;
+
+            _disposed = true;
         }
 
         /// <summary>
