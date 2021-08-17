@@ -175,11 +175,11 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
             if (format.IsCompressed)
             {
-                GL.GetCompressedTextureImage(Handle, level, resultOffset, data);
+                GL.GetCompressedTextureImage(Handle, level, mipSize, data);
             }
             else
             {
-                GL.GetTextureImage(Handle, level, pixelFormat, pixelType, resultOffset, data);
+                GL.GetTextureImage(Handle, level, pixelFormat, pixelType, mipSize, data);
             }
 
             return resultOffset;
