@@ -786,7 +786,7 @@ namespace ARMeilleure.Translation.PTC
 
             int degreeOfParallelism = Environment.ProcessorCount;
 
-            // If there is enough cores lying around, we leave one alone for other tasks.
+            // If there are enough cores lying around, we leave one alone for other tasks.
             if (degreeOfParallelism > 4)
             {
                 degreeOfParallelism--;
