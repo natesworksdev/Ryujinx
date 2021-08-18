@@ -13,12 +13,8 @@ using Ryujinx.Common;
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Runtime;
 using System.Threading;
-
-using static ARMeilleure.Common.BitMapPool;
-using static ARMeilleure.IntermediateRepresentation.OperandHelper;
-using static ARMeilleure.IntermediateRepresentation.OperationHelper;
+using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
 
 namespace ARMeilleure.Translation
 {
@@ -202,13 +198,9 @@ namespace ARMeilleure.Translation
 
                 ClearJitCache();
 
-                DisposePools();
-
                 Stubs.Dispose();
                 FunctionTable.Dispose();
                 CountTable.Dispose();
-
-                GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
             }
         }
 
@@ -295,8 +287,6 @@ namespace ARMeilleure.Translation
                 mode: Aarch32Mode.User,
                 hasTtc: ttcInfo != null);
 
-            PreparePool(highCq ? 1 : 0);
-
             Logger.StartPass(PassName.Translation);
 
             EmitSynchronization(context);
@@ -308,7 +298,7 @@ namespace ARMeilleure.Translation
 
             ControlFlowGraph cfg = EmitAndGetCFG(context, blocks, out Counter<uint> counter);
 
-            Logger.EndPass(PassName.Translation);
+            Logger.EndPass(PassName.Translation, cfg);
 
             Logger.StartPass(PassName.RegisterUsage);
 
@@ -325,16 +315,12 @@ namespace ARMeilleure.Translation
             if (!context.HasPtc)
             {
                 func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, options, ttcInfo);
-
-                ResetPool(highCq ? 1 : 0);
             }
             else
             {
                 using PtcInfo ptcInfo = new PtcInfo();
 
                 func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, options, ptcInfo);
-
-                ResetPool(highCq ? 1 : 0);
 
                 Hash128 hash = ComputeHash(address, funcSize);
 
@@ -348,26 +334,9 @@ namespace ARMeilleure.Translation
                 ttcInfo.TranslatedFunc = translatedFunc;
             }
 
+            Allocators.ResetAll();
+
             return translatedFunc;
-        }
-
-        internal static void PreparePool(int groupId = 0)
-        {
-            PrepareOperandPool(groupId);
-            PrepareOperationPool(groupId);
-        }
-
-        internal static void ResetPool(int groupId = 0)
-        {
-            ResetOperationPool(groupId);
-            ResetOperandPool(groupId);
-        }
-
-        internal static void DisposePools()
-        {
-            DisposeOperandPools();
-            DisposeOperationPools();
-            DisposeBitMapPools();
         }
 
         private struct Range
@@ -452,7 +421,7 @@ namespace ARMeilleure.Translation
                             EmitSynchronization(context);
                         }
 
-                        Operand lblPredicateSkip = null;
+                        Operand lblPredicateSkip = default;
 
                         if (opCode is OpCode32 op && op.Cond < Condition.Al)
                         {
@@ -470,7 +439,7 @@ namespace ARMeilleure.Translation
                             throw new InvalidOperationException($"Invalid instruction \"{opCode.Instruction.Name}\".");
                         }
 
-                        if (lblPredicateSkip != null)
+                        if (lblPredicateSkip != default)
                         {
                             context.MarkLabel(lblPredicateSkip);
                         }

@@ -99,6 +99,8 @@ namespace Ryujinx.Graphics.OpenGL
         public Capabilities GetCapabilities()
         {
             return new Capabilities(
+                HwCapabilities.Vendor == HwCapabilities.GpuVendor.IntelWindows,
+                HwCapabilities.Vendor == HwCapabilities.GpuVendor.AmdWindows,
                 HwCapabilities.SupportsAstcCompression,
                 HwCapabilities.SupportsImageLoadFormatted,
                 HwCapabilities.SupportsMismatchingViewFormat,
@@ -142,6 +144,7 @@ namespace Ryujinx.Graphics.OpenGL
                 GL.Arb.MaxShaderCompilerThreads(Math.Min(Environment.ProcessorCount, 8));
             }
 
+            _pipeline.Initialize();
             _counters.Initialize();
         }
 

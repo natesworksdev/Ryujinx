@@ -9,8 +9,7 @@ using ARMeilleure.Translation.PTC;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-
-using static ARMeilleure.IntermediateRepresentation.OperandHelper;
+using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
 
 namespace ARMeilleure.Translation
 {
@@ -150,7 +149,7 @@ namespace ARMeilleure.Translation
         {
             if (_optOpLastCompare == null || _optOpLastCompare != _optOpLastFlagSet)
             {
-                return null;
+                return default;
             }
 
             Operand n = _optCmpTempN;
@@ -205,7 +204,7 @@ namespace ARMeilleure.Translation
                 }
             }
 
-            return null;
+            return default;
         }
     }
 }
