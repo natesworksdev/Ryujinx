@@ -1,6 +1,7 @@
 using OpenTK.Graphics.OpenGL;
 using Ryujinx.Graphics.GAL;
 using System;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.OpenGL
 {
@@ -12,14 +13,14 @@ namespace Ryujinx.Graphics.OpenGL
 
             valueArr[0] = value;
 
-            GL.ClearNamedBufferSubData<uint>(
+            GL.ClearNamedBufferSubData(
                 destination.ToInt32(),
                 PixelInternalFormat.Rgba8ui,
                 (IntPtr)offset,
                 size,
                 PixelFormat.RgbaInteger,
-                PixelType.UnsignedByte,
-                valueArr.ToArray());
+                PixelType.UnsignedInt,
+                (IntPtr)MemoryMarshal.GetReference(valueArr));
         }
 
         public unsafe static BufferHandle Create()
