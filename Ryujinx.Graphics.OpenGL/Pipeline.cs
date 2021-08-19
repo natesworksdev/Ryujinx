@@ -1075,7 +1075,7 @@ namespace Ryujinx.Graphics.OpenGL
                 bufferHandles[i] = _tfbs[i].ToInt32();
             }
 
-            GL.BindBuffersBase(BufferRangeTarget.TransformFeedbackBuffer, 0, count, bufferHandles.ToArray());
+            GL.BindBuffersBase(BufferRangeTarget.TransformFeedbackBuffer, 0, count, ref bufferHandles[0]);
 
             if (_tfEnabled)
             {
@@ -1189,7 +1189,7 @@ namespace Ryujinx.Graphics.OpenGL
                 bufferSizes[index] = (IntPtr)buffer.Size;
             }
 
-            GL.BindBuffersRange(target, first, buffers.Length, bufferHandles.ToArray(), bufferOffsets.ToArray(), bufferSizes.ToArray());
+            GL.BindBuffersRange(target, first, buffers.Length, ref bufferHandles[0], ref bufferOffsets[0], ref bufferSizes[0]);
         }
 
         private void SetOrigin(ClipOrigin origin)
