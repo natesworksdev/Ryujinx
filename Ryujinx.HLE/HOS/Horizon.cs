@@ -113,6 +113,8 @@ namespace Ryujinx.HLE.HOS
 
         internal LibHacHorizonManager LibHacHorizonManager { get; private set; }
 
+        public bool IsPaused { get; private set; }
+
         public Horizon(Switch device)
         {
             KernelContext = new KernelContext(
@@ -458,17 +460,18 @@ namespace Ryujinx.HLE.HOS
                     }
                 }
 
-                if (pause)
+                if (pause && !IsPaused)
                 {
                     Device.AudioDeviceDriver.GetPauseEvent().Reset();
                     ARMeilleure.State.ExecutionContext.SuspendCounter();
                 }
-                else
+                else if (!pause && IsPaused)
                 {
                     Device.AudioDeviceDriver.GetPauseEvent().Set();
                     ARMeilleure.State.ExecutionContext.ResumeCounter();
                 }
             }
+            IsPaused = pause;
         }
 
     }

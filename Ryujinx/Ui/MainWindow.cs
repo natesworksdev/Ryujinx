@@ -1287,7 +1287,6 @@ namespace Ryujinx.Ui
             _pauseEmulation.Visible = true;
             _pauseEmulation.Sensitive = false;
             _resumeEmulation.Visible = false;
-            _emulationContext.System.TogglePauseEmulation(false);
             RendererWidget?.Exit();
         }
 
