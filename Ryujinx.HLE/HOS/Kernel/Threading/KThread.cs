@@ -842,19 +842,22 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
             if (!IsSchedulable)
             {
-                // Ensure our thread is running and we have an event.
-                StartHostThread();
+                if (!_forcedUnschedulable)
+                {
+                    // Ensure our thread is running and we have an event.
+                    StartHostThread();
 
-                // If the thread is not schedulable, we want to just run or pause
-                // it directly as we don't care about priority or the core it is
-                // running on in this case.
-                if (SchedFlags == ThreadSchedState.Running)
-                {
-                    _schedulerWaitEvent.Set();
-                }
-                else
-                {
-                    _schedulerWaitEvent.Reset();
+                    // If the thread is not schedulable, we want to just run or pause
+                    // it directly as we don't care about priority or the core it is
+                    // running on in this case.
+                    if (SchedFlags == ThreadSchedState.Running)
+                    {
+                        _schedulerWaitEvent.Set();
+                    }
+                    else
+                    {
+                        _schedulerWaitEvent.Reset();
+                    }
                 }
 
                 return;

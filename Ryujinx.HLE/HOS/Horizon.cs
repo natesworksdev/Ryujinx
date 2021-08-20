@@ -451,9 +451,9 @@ namespace Ryujinx.HLE.HOS
             {
                 foreach (KProcess process in KernelContext.Processes.Values)
                 {
-                    if (!process.Flags.HasFlag(ProcessCreationFlags.IsApplication))
+                    if (process.Flags.HasFlag(ProcessCreationFlags.IsApplication))
                     {
-                        // only game process should be paused
+                        // Only game process should be paused.
                         process.SetActivity(pause);
                     }
                 }
