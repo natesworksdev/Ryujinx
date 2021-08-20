@@ -118,7 +118,7 @@ namespace Ryujinx.Modules
             catch (Exception exception)
             {
                 Logger.Error?.Print(LogClass.Application, exception.Message);
-                GtkDialog.CreateErrorDialog("An error occurred when trying to get release information from AppVeyor.", "This can be caused if a new release is being compiled by AppVeyor. Try again in a few minutes.");
+                GtkDialog.CreateErrorDialog("An error occurred when trying to get release information from AppVeyor. This can be caused if a new release is being compiled by AppVeyor. Try again in a few minutes.");
 
                 return;
             }
