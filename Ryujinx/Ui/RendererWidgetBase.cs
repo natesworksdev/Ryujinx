@@ -489,6 +489,8 @@ namespace Ryujinx.Ui
 
         public void Exit()
         {
+            Device.System.TogglePauseEmulation(false);
+
             TouchScreenManager?.Dispose();
             NpadManager?.Dispose();
 
