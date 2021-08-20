@@ -2,8 +2,11 @@
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Common.Configuration.Hid.Controller.Motion;
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Services.Hid;
 using System;
+using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
@@ -343,28 +346,6 @@ namespace Ryujinx.Input.HLE
             }
         }
 
-        private static short ClampAxis(float value)
-        {
-            if (value <= -short.MaxValue)
-            {
-                return -short.MaxValue;
-            }
-            else
-            {
-                return (short)(value * short.MaxValue);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static JoystickPosition ApplyDeadzone(float x, float y, float deadzone)
-        {
-            return new JoystickPosition
-            {
-                Dx = ClampAxis(MathF.Abs(x) > deadzone ? x : 0.0f),
-                Dy = ClampAxis(MathF.Abs(y) > deadzone ? y : 0.0f)
-            };
-        }
-
         public GamepadInput GetHLEInputState()
         {
             GamepadInput state = new GamepadInput();
@@ -400,11 +381,51 @@ namespace Ryujinx.Input.HLE
                 (float leftAxisX, float leftAxisY) = State.GetStick(StickInputId.Left);
                 (float rightAxisX, float rightAxisY) = State.GetStick(StickInputId.Right);
 
-                state.LStick = ApplyDeadzone(leftAxisX, leftAxisY, controllerConfig.DeadzoneLeft);
-                state.RStick = ApplyDeadzone(rightAxisX, rightAxisY, controllerConfig.DeadzoneRight);
+                state.LStick = ClampToCircle(ApplyDeadzone(leftAxisX, leftAxisY, controllerConfig.DeadzoneLeft));
+                state.RStick = ClampToCircle(ApplyDeadzone(rightAxisX, rightAxisY, controllerConfig.DeadzoneRight));
             }
 
             return state;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static JoystickPosition ApplyDeadzone(float x, float y, float deadzone)
+        {
+            return new JoystickPosition
+            {
+                Dx = ClampAxis(MathF.Abs(x) > deadzone ? x : 0.0f),
+                Dy = ClampAxis(MathF.Abs(y) > deadzone ? y : 0.0f)
+            };
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static short ClampAxis(float value)
+        {
+            if (value <= -short.MaxValue)
+            {
+                return -short.MaxValue;
+            }
+            else
+            {
+                return (short)(value * short.MaxValue);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static JoystickPosition ClampToCircle(JoystickPosition position)
+        {
+            Vector2 point = new Vector2(position.Dx, position.Dy);
+
+            if (point.Length() > short.MaxValue)
+            {
+                point = point / point.Length() * short.MaxValue;
+            }
+
+            return new JoystickPosition
+            {
+                Dx = (int)point.X,
+                Dy = (int)point.Y
+            };
         }
 
         public SixAxisInput GetHLEMotionState(bool isJoyconRightPair = false)
@@ -515,6 +536,30 @@ namespace Ryujinx.Input.HLE
         public void Dispose()
         {
             Dispose(true);
+        }
+
+        public void UpdateRumble(ConcurrentQueue<(HidVibrationValue, HidVibrationValue)> queue)
+        {
+            if (queue.TryDequeue(out (HidVibrationValue, HidVibrationValue) dualVibrationValue))
+            {
+                if (_config is StandardControllerInputConfig controllerConfig && controllerConfig.Rumble.EnableRumble)
+                {
+                    HidVibrationValue leftVibrationValue = dualVibrationValue.Item1;
+                    HidVibrationValue rightVibrationValue = dualVibrationValue.Item2;
+
+                    float low = Math.Min(1f, (float)((rightVibrationValue.AmplitudeLow * 0.85 + rightVibrationValue.AmplitudeHigh * 0.15) * controllerConfig.Rumble.StrongRumble));
+                    float high = Math.Min(1f, (float)((leftVibrationValue.AmplitudeLow * 0.15 + leftVibrationValue.AmplitudeHigh * 0.85) * controllerConfig.Rumble.WeakRumble));
+
+                    _gamepad.Rumble(low, high, uint.MaxValue);
+
+                    Logger.Debug?.Print(LogClass.Hid, $"Effect for {controllerConfig.PlayerIndex} " +
+                        $"L.low.amp={leftVibrationValue.AmplitudeLow}, " +
+                        $"L.high.amp={leftVibrationValue.AmplitudeHigh}, " +
+                        $"R.low.amp={rightVibrationValue.AmplitudeLow}, " +
+                        $"R.high.amp={rightVibrationValue.AmplitudeHigh} " +
+                        $"--> ({low}, {high})");
+                }
+            }
         }
     }
 }

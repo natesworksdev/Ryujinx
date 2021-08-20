@@ -52,9 +52,10 @@ namespace Ryujinx.Ui
 {
     public class MainWindow : Window
     {
-        private readonly VirtualFileSystem _virtualFileSystem;
-        private readonly ContentManager    _contentManager;
-        private readonly AccountManager    _accountManager;
+        private readonly VirtualFileSystem    _virtualFileSystem;
+        private readonly ContentManager       _contentManager;
+        private readonly AccountManager       _accountManager;
+        private readonly LibHacHorizonManager _libHacHorizonManager;
 
         private UserChannelPersistence _userChannelPersistence;
 
@@ -101,6 +102,7 @@ namespace Ryujinx.Ui
         [GUI] MenuItem        _simulateWakeUpMessage;
         [GUI] MenuItem        _scanAmiibo;
         [GUI] MenuItem        _takeScreenshot;
+        [GUI] MenuItem        _hideUi;
         [GUI] MenuItem        _fullScreen;
         [GUI] CheckMenuItem   _startFullScreen;
         [GUI] CheckMenuItem   _favToggle;
@@ -156,13 +158,27 @@ namespace Ryujinx.Ui
             // Hide emulation context status bar.
             _statusBar.Hide();
 
-            // Instanciate HLE objects.
-            _virtualFileSystem      = VirtualFileSystem.CreateInstance();
+            // Instantiate HLE objects.
+            _virtualFileSystem    = VirtualFileSystem.CreateInstance();
+            _libHacHorizonManager = new LibHacHorizonManager();
+
+            _libHacHorizonManager.InitializeFsServer(_virtualFileSystem);
+            _libHacHorizonManager.InitializeArpServer();
+            _libHacHorizonManager.InitializeBcatServer();
+            _libHacHorizonManager.InitializeSystemClients();
+
+            // Save data created before we supported extra data in directory save data will not work properly if
+            // given empty extra data. Luckily some of that extra data can be created using the data from the
+            // save data indexer, which should be enough to check access permissions for user saves.
+            // Every single save data's extra data will be checked and fixed if needed each time the emulator is opened.
+            // Consider removing this at some point in the future when we don't need to worry about old saves.
+            VirtualFileSystem.FixExtraData(_libHacHorizonManager.RyujinxClient);
+
             _contentManager         = new ContentManager(_virtualFileSystem);
-            _accountManager         = new AccountManager(_virtualFileSystem);
+            _accountManager         = new AccountManager(_libHacHorizonManager.RyujinxClient);
             _userChannelPersistence = new UserChannelPersistence();
 
-            // Instanciate GUI objects.
+            // Instantiate GUI objects.
             _applicationLibrary = new ApplicationLibrary(_virtualFileSystem);
             _uiHandler          = new GtkHostUiHandler(this);
             _deviceExitStatus   = new AutoResetEvent(false);
@@ -242,6 +258,8 @@ namespace Ryujinx.Ui
             _gameTable.EnableSearch = true;
             _gameTable.SearchColumn = 2;
             _gameTable.SearchEqualFunc = (model, col, key, iter) => !((string)model.GetValue(iter, col)).Contains(key, StringComparison.InvariantCultureIgnoreCase);
+
+            _hideUi.Label = _hideUi.Label.Replace("SHOWUIKEY", ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUi.ToString());
 
             UpdateColumns();
             UpdateGameTable();
@@ -370,7 +388,7 @@ namespace Ryujinx.Ui
 
         private void InitializeSwitchInstance()
         {
-            _virtualFileSystem.Reload();
+            _virtualFileSystem.ReloadKeySet();
 
             IRenderer renderer;
 
@@ -440,6 +458,7 @@ namespace Ryujinx.Ui
             IntegrityCheckLevel fsIntegrityCheckLevel = ConfigurationState.Instance.System.EnableFsIntegrityChecks ? IntegrityCheckLevel.ErrorOnInvalid : IntegrityCheckLevel.None;
 
             HLE.HLEConfiguration configuration = new HLE.HLEConfiguration(_virtualFileSystem,
+                                                                          _libHacHorizonManager,
                                                                           _contentManager,
                                                                           _accountManager,
                                                                           _userChannelPersistence,
@@ -1072,15 +1091,6 @@ namespace Ryujinx.Ui
             ConfigurationState.Instance.Graphics.AspectRatio.Value = ((int)aspectRatio + 1) > Enum.GetNames(typeof(AspectRatio)).Length - 1 ? AspectRatio.Fixed4x3 : aspectRatio + 1;
         }
 
-        private void Focus_Menu_Bar(object sender, KeyReleaseEventArgs args)
-        {
-            if (args.Event.Key == Gdk.Key.Alt_L)
-            {
-                ToggleExtraWidgets(true);
-                _menuBar.GrabFocus();
-            }
-        }
-
         private void Row_Clicked(object sender, ButtonReleaseEventArgs args)
         {
             if (args.Event.Button != 3 /* Right Click */)
@@ -1101,7 +1111,7 @@ namespace Ryujinx.Ui
 
             BlitStruct<ApplicationControlProperty> controlData = (BlitStruct<ApplicationControlProperty>)_tableStore.GetValue(treeIter, 10);
 
-            _ = new GameTableContextMenu(this, _virtualFileSystem, _accountManager, titleFilePath, titleName, titleId, controlData);
+            _ = new GameTableContextMenu(this, _virtualFileSystem, _accountManager, _libHacHorizonManager.RyujinxClient, titleFilePath, titleName, titleId, controlData);
         }
 
         private void Load_Application_File(object sender, EventArgs args)
@@ -1217,14 +1227,14 @@ namespace Ryujinx.Ui
 
                     SystemVersion firmwareVersion = _contentManager.VerifyFirmwarePackage(filename);
 
-                    string dialogTitle = $"Install Firmware {firmwareVersion.VersionString}";
-
-                    if (firmwareVersion == null)
+                    if (firmwareVersion is null)
                     {
                         GtkDialog.CreateErrorDialog($"A valid system firmware was not found in {filename}.");
 
                         return;
                     }
+
+                    string dialogTitle = $"Install Firmware {firmwareVersion.VersionString}";
 
                     SystemVersion currentVersion = _contentManager.GetCurrentFirmwareVersion();
 
@@ -1298,7 +1308,7 @@ namespace Ryujinx.Ui
                 catch (LibHac.MissingKeyException ex)
                 {
                     Logger.Error?.Print(LogClass.Application, ex.ToString());
-                    UserErrorDialog.CreateUserErrorDialog(UserError.NoKeys);
+                    UserErrorDialog.CreateUserErrorDialog(UserError.FirmwareParsingFailed);
                 }
                 catch (Exception ex)
                 {

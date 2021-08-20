@@ -1,6 +1,7 @@
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
+using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Common.Configuration.Hid.Keyboard;
 using Ryujinx.Common.Logging;
 using Ryujinx.Configuration.System;
@@ -543,7 +544,8 @@ namespace Ryujinx.Configuration
             Hid.Hotkeys.Value = new KeyboardHotkeys
             {
                 ToggleVsync = Key.Tab,
-                Screenshot = Key.F8
+                Screenshot = Key.F8,
+                ShowUi = Key.F4
             };
             Hid.InputConfig.Value = new List<InputConfig>
             {
@@ -855,6 +857,40 @@ namespace Ryujinx.Configuration
                     ToggleVsync = Key.Tab,
                     Screenshot = Key.F8
                 };
+
+                configurationFileUpdated = true;
+            }
+
+            if (configurationFileFormat.Version < 29)
+            {
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 29.");
+
+                configurationFileFormat.Hotkeys = new KeyboardHotkeys
+                {
+                    ToggleVsync = Key.Tab,
+                    Screenshot = Key.F8,
+                    ShowUi = Key.F4
+                };
+
+                configurationFileUpdated = true;
+            }
+
+            if (configurationFileFormat.Version < 30)
+            {
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 30.");
+
+                foreach(InputConfig config in configurationFileFormat.InputConfig)
+                {
+                    if (config is StandardControllerInputConfig controllerConfig)
+                    {
+                        controllerConfig.Rumble = new RumbleConfigController
+                        {
+                            EnableRumble = false,
+                            StrongRumble = 1f,
+                            WeakRumble = 1f
+                        };
+                    }
+                }
 
                 configurationFileUpdated = true;
             }

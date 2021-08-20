@@ -9,7 +9,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
     /// </summary>
     class GpuAccessor : TextureDescriptorCapableGpuAccessor, IGpuAccessor
     {
-        private readonly GpuContext _context;
         private readonly GpuChannel _channel;
         private readonly GpuAccessorState _state;
         private readonly int _stageIndex;
@@ -20,6 +19,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
         private readonly int _localMemorySize;
         private readonly int _sharedMemorySize;
 
+        public int Cb1DataSize { get; private set; }
+
         /// <summary>
         /// Creates a new instance of the GPU state accessor for graphics shader translation.
         /// </summary>
@@ -27,9 +28,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <param name="channel">GPU channel</param>
         /// <param name="state">Current GPU state</param>
         /// <param name="stageIndex">Graphics shader stage index (0 = Vertex, 4 = Fragment)</param>
-        public GpuAccessor(GpuContext context, GpuChannel channel, GpuAccessorState state, int stageIndex)
+        public GpuAccessor(GpuContext context, GpuChannel channel, GpuAccessorState state, int stageIndex) : base(context)
         {
-            _context = context;
             _channel = channel;
             _state = state;
             _stageIndex = stageIndex;
@@ -54,9 +54,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
             int localSizeY,
             int localSizeZ,
             int localMemorySize,
-            int sharedMemorySize)
+            int sharedMemorySize) : base(context)
         {
-            _context = context;
             _channel = channel;
             _state = state;
             _compute = true;
@@ -65,6 +64,25 @@ namespace Ryujinx.Graphics.Gpu.Shader
             _localSizeZ = localSizeZ;
             _localMemorySize = localMemorySize;
             _sharedMemorySize = sharedMemorySize;
+        }
+
+        /// <summary>
+        /// Reads data from the constant buffer 1.
+        /// </summary>
+        /// <param name="offset">Offset in bytes to read from</param>
+        /// <returns>Value at the given offset</returns>
+        public uint ConstantBuffer1Read(int offset)
+        {
+            if (Cb1DataSize < offset + 4)
+            {
+                Cb1DataSize = offset + 4;
+            }
+
+            ulong baseAddress = _compute
+                ? _channel.BufferManager.GetComputeUniformBufferAddress(1)
+                : _channel.BufferManager.GetGraphicsUniformBufferAddress(_stageIndex, 1);
+
+            return _channel.MemoryManager.Physical.Read<uint>(baseAddress + (ulong)offset);
         }
 
         /// <summary>
@@ -160,30 +178,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 _ => InputTopology.Points,
             };
         }
-
-        /// <summary>
-        /// Queries host storage buffer alignment required.
-        /// </summary>
-        /// <returns>Host storage buffer alignment in bytes</returns>
-        public int QueryStorageBufferOffsetAlignment() => _context.Capabilities.StorageBufferOffsetAlignment;
-
-        /// <summary>
-        /// Queries host support for readable images without a explicit format declaration on the shader.
-        /// </summary>
-        /// <returns>True if formatted image load is supported, false otherwise</returns>
-        public bool QuerySupportsImageLoadFormatted() => _context.Capabilities.SupportsImageLoadFormatted;
-
-        /// <summary>
-        /// Queries host GPU non-constant texture offset support.
-        /// </summary>
-        /// <returns>True if the GPU and driver supports non-constant texture offsets, false otherwise</returns>
-        public bool QuerySupportsNonConstantTextureOffset() => _context.Capabilities.SupportsNonConstantTextureOffset;
-
-        /// <summary>
-        /// Queries host GPU texture shadow LOD support.
-        /// </summary>
-        /// <returns>True if the GPU and driver supports texture shadow LOD, false otherwise</returns>
-        public bool QuerySupportsTextureShadowLod() => _context.Capabilities.SupportsTextureShadowLod;
 
         /// <summary>
         /// Gets the texture descriptor for a given texture on the pool.

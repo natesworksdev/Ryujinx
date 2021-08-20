@@ -7,6 +7,11 @@
             // No default log output.
         }
 
+        uint ConstantBuffer1Read(int offset)
+        {
+            return 0;
+        }
+
         T MemoryRead<T>(ulong address) where T : unmanaged;
 
         bool MemoryMapped(ulong address)
@@ -44,6 +49,36 @@
             return 0;
         }
 
+        bool QueryHostHasFrontFacingBug()
+        {
+            return false;
+        }
+
+        bool QueryHostHasVectorIndexingBug()
+        {
+            return false;
+        }
+
+        int QueryHostStorageBufferOffsetAlignment()
+        {
+            return 16;
+        }
+
+        bool QueryHostSupportsImageLoadFormatted()
+        {
+            return true;
+        }
+
+        bool QueryHostSupportsNonConstantTextureOffset()
+        {
+            return true;
+        }
+
+        bool QueryHostSupportsTextureShadowLod()
+        {
+            return true;
+        }
+
         bool QueryIsTextureBuffer(int handle, int cbufSlot = -1)
         {
             return false;
@@ -57,26 +92,6 @@
         InputTopology QueryPrimitiveTopology()
         {
             return InputTopology.Points;
-        }
-
-        int QueryStorageBufferOffsetAlignment()
-        {
-            return 16;
-        }
-
-        bool QuerySupportsImageLoadFormatted()
-        {
-            return true;
-        }
-
-        bool QuerySupportsNonConstantTextureOffset()
-        {
-            return true;
-        }
-
-        bool QuerySupportsTextureShadowLod()
-        {
-            return true;
         }
 
         TextureFormat QueryTextureFormat(int handle, int cbufSlot = -1)

@@ -41,6 +41,10 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         private readonly TranslationCounts _counts;
 
+        public int UsedInputAttributes { get; private set; }
+        public int UsedOutputAttributes { get; private set; }
+        public int PassthroughAttributes { get; private set; }
+
         private int _usedConstantBuffers;
         private int _usedStorageBuffers;
         private int _usedStorageBuffersWrite;
@@ -141,7 +145,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             // When the formatted load extension is supported, we don't need to
             // specify a format, we can just declare it without a format and the GPU will handle it.
-            if (GpuAccessor.QuerySupportsImageLoadFormatted())
+            if (GpuAccessor.QueryHostSupportsImageLoadFormatted())
             {
                 return TextureFormat.Unknown;
             }
@@ -170,6 +174,8 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             TextureHandlesForCache.UnionWith(other.TextureHandlesForCache);
 
+            UsedInputAttributes |= other.UsedInputAttributes;
+            UsedOutputAttributes |= other.UsedOutputAttributes;
             _usedConstantBuffers |= other._usedConstantBuffers;
             _usedStorageBuffers |= other._usedStorageBuffers;
             _usedStorageBuffersWrite |= other._usedStorageBuffersWrite;
@@ -188,6 +194,28 @@ namespace Ryujinx.Graphics.Shader.Translation
                 {
                     _usedImages[kv.Key] = MergeTextureMeta(kv.Value, _usedImages[kv.Key]);
                 }
+            }
+        }
+
+        public void SetInputUserAttribute(int index)
+        {
+            UsedInputAttributes |= 1 << index;
+        }
+
+        public void SetOutputUserAttribute(int index)
+        {
+            UsedOutputAttributes |= 1 << index;
+        }
+
+        public void MergeOutputUserAttributes(int mask)
+        {
+            if (GpPassthrough)
+            {
+                PassthroughAttributes = mask & ~UsedOutputAttributes;
+            }
+            else
+            {
+                UsedOutputAttributes |= mask;
             }
         }
 

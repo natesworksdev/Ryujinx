@@ -68,14 +68,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             { AttributeConsts.LtMask,              new BuiltInAttribute("unpackUint2x32(gl_SubGroupLtMaskARB).x", VariableType.U32)  },
 
             // Support uniforms.
-            { AttributeConsts.FragmentOutputIsBgraBase + 0,  new BuiltInAttribute($"{DefaultNames.IsBgraName}[0]",  VariableType.Bool) },
-            { AttributeConsts.FragmentOutputIsBgraBase + 4,  new BuiltInAttribute($"{DefaultNames.IsBgraName}[1]",  VariableType.Bool) },
-            { AttributeConsts.FragmentOutputIsBgraBase + 8,  new BuiltInAttribute($"{DefaultNames.IsBgraName}[2]",  VariableType.Bool) },
-            { AttributeConsts.FragmentOutputIsBgraBase + 12, new BuiltInAttribute($"{DefaultNames.IsBgraName}[3]",  VariableType.Bool) },
-            { AttributeConsts.FragmentOutputIsBgraBase + 16, new BuiltInAttribute($"{DefaultNames.IsBgraName}[4]",  VariableType.Bool) },
-            { AttributeConsts.FragmentOutputIsBgraBase + 20, new BuiltInAttribute($"{DefaultNames.IsBgraName}[5]",  VariableType.Bool) },
-            { AttributeConsts.FragmentOutputIsBgraBase + 24, new BuiltInAttribute($"{DefaultNames.IsBgraName}[6]",  VariableType.Bool) },
-            { AttributeConsts.FragmentOutputIsBgraBase + 28, new BuiltInAttribute($"{DefaultNames.IsBgraName}[7]",  VariableType.Bool) }
+            { AttributeConsts.FragmentOutputIsBgraBase + 0,  new BuiltInAttribute($"{DefaultNames.SupportBlockIsBgraName}[0]",  VariableType.Bool) },
+            { AttributeConsts.FragmentOutputIsBgraBase + 4,  new BuiltInAttribute($"{DefaultNames.SupportBlockIsBgraName}[1]",  VariableType.Bool) },
+            { AttributeConsts.FragmentOutputIsBgraBase + 8,  new BuiltInAttribute($"{DefaultNames.SupportBlockIsBgraName}[2]",  VariableType.Bool) },
+            { AttributeConsts.FragmentOutputIsBgraBase + 12, new BuiltInAttribute($"{DefaultNames.SupportBlockIsBgraName}[3]",  VariableType.Bool) },
+            { AttributeConsts.FragmentOutputIsBgraBase + 16, new BuiltInAttribute($"{DefaultNames.SupportBlockIsBgraName}[4]",  VariableType.Bool) },
+            { AttributeConsts.FragmentOutputIsBgraBase + 20, new BuiltInAttribute($"{DefaultNames.SupportBlockIsBgraName}[5]",  VariableType.Bool) },
+            { AttributeConsts.FragmentOutputIsBgraBase + 24, new BuiltInAttribute($"{DefaultNames.SupportBlockIsBgraName}[6]",  VariableType.Bool) },
+            { AttributeConsts.FragmentOutputIsBgraBase + 28, new BuiltInAttribute($"{DefaultNames.SupportBlockIsBgraName}[7]",  VariableType.Bool) }
         };
 
         private Dictionary<AstOperand, string> _locals;
@@ -117,8 +117,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             return $"{GetUbName(stage, slot, cbIndexable)}[{offset >> 2}].{GetSwizzleMask(offset & 3)}";
         }
 
-        private static string GetVec4Indexed(string vectorName, string indexExpr)
+        private static string GetVec4Indexed(string vectorName, string indexExpr, bool indexElement)
         {
+            if (indexElement)
+            {
+                return $"{vectorName}[{indexExpr}]";
+            }
+
             string result = $"{vectorName}.x";
             for (int i = 1; i < 4; i++)
             {
@@ -127,14 +132,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             return $"({result})";
         }
 
-        public static string GetConstantBufferName(int slot, string offsetExpr, ShaderStage stage, bool cbIndexable)
+        public static string GetConstantBufferName(int slot, string offsetExpr, ShaderStage stage, bool cbIndexable, bool indexElement)
         {
-            return GetVec4Indexed(GetUbName(stage, slot, cbIndexable) + $"[{offsetExpr} >> 2]", offsetExpr + " & 3");
+            return GetVec4Indexed(GetUbName(stage, slot, cbIndexable) + $"[{offsetExpr} >> 2]", offsetExpr + " & 3", indexElement);
         }
 
-        public static string GetConstantBufferName(string slotExpr, string offsetExpr, ShaderStage stage)
+        public static string GetConstantBufferName(string slotExpr, string offsetExpr, ShaderStage stage, bool indexElement)
         {
-            return GetVec4Indexed(GetUbName(stage, slotExpr) + $"[{offsetExpr} >> 2]", offsetExpr + " & 3");
+            return GetVec4Indexed(GetUbName(stage, slotExpr) + $"[{offsetExpr} >> 2]", offsetExpr + " & 3", indexElement);
         }
 
         public static string GetOutAttributeName(AstOperand attr, ShaderConfig config)
@@ -194,10 +199,19 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                     {
                         switch (value & ~3)
                         {
-                            case AttributeConsts.PositionX: return "(gl_FragCoord.x / fp_renderScale[0])";
-                            case AttributeConsts.PositionY: return "(gl_FragCoord.y / fp_renderScale[0])";
+                            case AttributeConsts.PositionX: return $"(gl_FragCoord.x / {DefaultNames.SupportBlockRenderScaleName}[0])";
+                            case AttributeConsts.PositionY: return $"(gl_FragCoord.y / {DefaultNames.SupportBlockRenderScaleName}[0])";
                             case AttributeConsts.PositionZ: return "gl_FragCoord.z";
                             case AttributeConsts.PositionW: return "gl_FragCoord.w";
+
+                            case AttributeConsts.FrontFacing:
+                                if (config.GpuAccessor.QueryHostHasFrontFacingBug())
+                                {
+                                    // This is required for Intel on Windows, gl_FrontFacing sometimes returns incorrect
+                                    // (flipped) values. Doing this seems to fix it.
+                                    return "(-floatBitsToInt(float(gl_FrontFacing)) < 0)";
+                                }
+                                break;
                         }
                     }
 
