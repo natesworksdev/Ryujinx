@@ -98,7 +98,7 @@ namespace Ryujinx.HLE.HOS
             try
             {
                 RyujinxClient.Fs.CleanDirectoryRecursively("sdcard:/Nintendo/save".ToU8Span()).IgnoreResult();
-                RyujinxClient.Fs.CleanDirectoryRecursively("sdcard:/save".ToU8Span()).IgnoreResult();
+                RyujinxClient.Fs.DeleteDirectoryRecursively("sdcard:/save".ToU8Span()).IgnoreResult();
             }
             finally
             {
