@@ -33,6 +33,8 @@ namespace Ryujinx.Graphics.OpenGL
         private int _boundDrawFramebuffer;
         private int _boundReadFramebuffer;
 
+        private CounterQueueEvent _activeConditionalRender;
+
         private struct Vector4<T>
         {
             public T X;
@@ -1190,7 +1192,7 @@ namespace Ryujinx.Graphics.OpenGL
             return (_boundDrawFramebuffer, _boundReadFramebuffer);
         }
 
-        public void UpdateRenderScale(ShaderStage stage, float[] scales, int textureCount, int imageCount)
+        public void UpdateRenderScale(ShaderStage stage, ReadOnlySpan<float> scales, int textureCount, int imageCount)
         {
             if (stage != ShaderStage.Compute && stage != ShaderStage.Fragment)
             {
@@ -1296,16 +1298,18 @@ namespace Ryujinx.Graphics.OpenGL
                 //  - Comparing against 0.
                 //  - Event has not already been flushed.
 
-                if (evt.Disposed)
-                {
-                    // If the event has been flushed, then just use the values on the CPU.
-                    // The query object may already be repurposed for another draw (eg. begin + end).
-                    return false;
-                }
-
                 if (compare == 0 && evt.Type == QueryTarget.SamplesPassed && evt.ClearCounter)
                 {
+                    if (!value.ReserveForHostAccess())
+                    {
+                        // If the event has been flushed, then just use the values on the CPU.
+                        // The query object may already be repurposed for another draw (eg. begin + end).
+                        return false;
+                    }
+
                     GL.BeginConditionalRender(evt.Query, isEqual ? ConditionalRenderType.QueryNoWaitInverted : ConditionalRenderType.QueryNoWait);
+                    _activeConditionalRender = evt;
+
                     return true;
                 }
             }
@@ -1325,6 +1329,9 @@ namespace Ryujinx.Graphics.OpenGL
         public void EndHostConditionalRendering()
         {
             GL.EndConditionalRender();
+
+            _activeConditionalRender?.ReleaseHostAccess();
+            _activeConditionalRender = null;
         }
 
         public void Dispose()
@@ -1344,6 +1351,7 @@ namespace Ryujinx.Graphics.OpenGL
                 }
             }
 
+            _activeConditionalRender?.ReleaseHostAccess();
             _framebuffer?.Dispose();
             _vertexArray?.Dispose();
         }
