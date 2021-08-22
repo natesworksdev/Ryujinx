@@ -408,7 +408,7 @@ namespace Ryujinx.Ui
                 if (SDL2HardwareDeviceDriver.IsSupported)
                 {
                     deviceDriver = new SDL2HardwareDeviceDriver();
-                }    
+                }
                 else
                 {
                     Logger.Warning?.Print(LogClass.Audio, "SDL2 is not supported, trying to fall back to OpenAL.");
