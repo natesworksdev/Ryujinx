@@ -169,6 +169,52 @@ namespace ARMeilleure.Instructions
             SetIntA32(context, op.CRn, context.ConvertI64ToI32(context.ShiftRightUI(result, Const(32))));
         }
 
+        public static void Msr(ArmEmitterContext context)
+        {
+            OpCode32Msr op = (OpCode32Msr)context.CurrOp;
+
+            if (op.Rn == RegisterAlias.Aarch32Pc || op.Mask == 0)
+            {
+                InstEmit.Und(context);
+
+                return;
+            }
+
+            if ((op.Opc & 2) != 0)
+            {
+                throw new NotImplementedException("SPSR");
+            }
+            else
+            {
+                if ((op.Mask & 8) != 0)
+                {
+                    Operand value = GetIntA32(context, op.Rn);
+
+                    EmitSetNzcv(context, value);
+
+                    Operand q = context.ShiftRightUI(value, Const((int)PState.QFlag));
+                    q = context.BitwiseAnd(q, Const(1));
+
+                    SetFlag(context, PState.QFlag, q);
+                }
+
+                if ((op.Mask & 4) != 0)
+                {
+                    throw new NotImplementedException("APSR_g");
+                }
+
+                if ((op.Mask & 2) != 0)
+                {
+                    throw new NotImplementedException("CPSR_x");
+                }
+
+                if ((op.Mask & 1) != 0)
+                {
+                    throw new NotImplementedException("CPSR_c");
+                }
+            }
+        }
+
         public static void Nop(ArmEmitterContext context) { }
 
         public static void Vmrs(ArmEmitterContext context)
