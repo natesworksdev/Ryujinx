@@ -1,4 +1,4 @@
-﻿namespace Ryujinx.Configuration
+﻿namespace Ryujinx.Common.Configuration
 {
     public enum BackendThreading
     {
