@@ -425,21 +425,21 @@ namespace Ryujinx.Ui
                     else
                     {
                         Logger.Warning?.Print(LogClass.Audio, "OpenAL is not supported, trying to fall back to SoundIO.");
-                    }
+                         
+                        if (SoundIoHardwareDeviceDriver.IsSupported)
+                        {
+                            Logger.Warning?.Print(LogClass.Audio, "Found SoundIO, changing configuration.");
 
-                    if (SoundIoHardwareDeviceDriver.IsSupported)
-                    {
-                        Logger.Warning?.Print(LogClass.Audio, "Found SoundIO, changing configuration.");
+                            ConfigurationState.Instance.System.AudioBackend.Value = AudioBackend.SoundIo;
+                            SaveConfig();
 
-                        ConfigurationState.Instance.System.AudioBackend.Value = AudioBackend.SoundIo;
-                        SaveConfig();
-
-                        deviceDriver = new SoundIoHardwareDeviceDriver();
-                    }
-                    else
-                    {
-                        Logger.Warning?.Print(LogClass.Audio, "SoundIO is not supported, falling back to dummy audio out.");
-                    }           
+                            deviceDriver = new SoundIoHardwareDeviceDriver();
+                        }
+                        else
+                        {
+                            Logger.Warning?.Print(LogClass.Audio, "SoundIO is not supported, falling back to dummy audio out.");
+                        }           
+                    }   
                 }
             }
             else if (ConfigurationState.Instance.System.AudioBackend.Value == AudioBackend.SoundIo)
@@ -464,21 +464,21 @@ namespace Ryujinx.Ui
                     else
                     {
                         Logger.Warning?.Print(LogClass.Audio, "SDL2 is not supported, trying to fall back to OpenAL.");
+
+                        if (OpenALHardwareDeviceDriver.IsSupported)
+                        {
+                            Logger.Warning?.Print(LogClass.Audio, "Found OpenAL, changing configuration.");
+
+                            ConfigurationState.Instance.System.AudioBackend.Value = AudioBackend.OpenAl;
+                            SaveConfig();
+
+                            deviceDriver = new OpenALHardwareDeviceDriver();
+                        }
+                        else
+                        {
+                            Logger.Warning?.Print(LogClass.Audio, "OpenAL is not supported, falling back to dummy audio out.");
+                        }           
                     }
-
-                    if (OpenALHardwareDeviceDriver.IsSupported)
-                    {
-                        Logger.Warning?.Print(LogClass.Audio, "Found OpenAL, changing configuration.");
-
-                        ConfigurationState.Instance.System.AudioBackend.Value = AudioBackend.OpenAl;
-                        SaveConfig();
-
-                        deviceDriver = new OpenALHardwareDeviceDriver();
-                    }
-                    else
-                    {
-                        Logger.Warning?.Print(LogClass.Audio, "OpenAL is not supported, falling back to dummy audio out.");
-                    }           
                 }
             }
             else if (ConfigurationState.Instance.System.AudioBackend.Value == AudioBackend.OpenAl)
@@ -503,20 +503,20 @@ namespace Ryujinx.Ui
                     else
                     {
                         Logger.Warning?.Print(LogClass.Audio, "SDL2 is not supported, trying to fall back to SoundIO.");
-                    }
-                    
-                    if (SoundIoHardwareDeviceDriver.IsSupported)
-                    {
-                        Logger.Warning?.Print(LogClass.Audio, "Found SoundIO, changing configuration.");
+                        
+                        if (SoundIoHardwareDeviceDriver.IsSupported)
+                        {
+                            Logger.Warning?.Print(LogClass.Audio, "Found SoundIO, changing configuration.");
 
-                        ConfigurationState.Instance.System.AudioBackend.Value = AudioBackend.SoundIo;
-                        SaveConfig();
+                            ConfigurationState.Instance.System.AudioBackend.Value = AudioBackend.SoundIo;
+                            SaveConfig();
 
-                        deviceDriver = new SoundIoHardwareDeviceDriver();
-                    }
-                    else
-                    {
-                        Logger.Warning?.Print(LogClass.Audio, "SoundIO is not supported, falling back to dummy audio out.");
+                            deviceDriver = new SoundIoHardwareDeviceDriver();
+                        }
+                        else
+                        {
+                            Logger.Warning?.Print(LogClass.Audio, "SoundIO is not supported, falling back to dummy audio out.");
+                        }
                     }
                 }
             }
