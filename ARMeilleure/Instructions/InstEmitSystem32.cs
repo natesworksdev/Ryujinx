@@ -171,7 +171,7 @@ namespace ARMeilleure.Instructions
 
         public static void Msr(ArmEmitterContext context)
         {
-            OpCode32Msr op = (OpCode32Msr)context.CurrOp;
+            OpCode32MsrReg op = (OpCode32MsrReg)context.CurrOp;
 
             if (op.Rn == RegisterAlias.Aarch32Pc || op.Mask == 0)
             {
