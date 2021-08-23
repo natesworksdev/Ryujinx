@@ -278,7 +278,7 @@ namespace Ryujinx.HLE.HOS
                 systemEvents[i] = new AudioKernelEvent(systemEvent);
             }
 
-            AudioManager.Initialize(Device.AudioDeviceDriver, AudioOutputManager.Update, AudioInputManager.Update);
+            AudioManager.Initialize(Device.AudioDeviceDriver.GetUpdateRequiredEvent(), AudioOutputManager.Update, AudioInputManager.Update);
 
             AudioRendererManager.Initialize(systemEvents, Device.AudioDeviceDriver);
 

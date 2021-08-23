@@ -15,7 +15,6 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-using Ryujinx.Audio.Integration;
 using System;
 using System.Threading;
 
@@ -45,11 +44,6 @@ namespace Ryujinx.Audio
         /// The worker thread in charge of handling sessions update.
         /// </summary>
         private Thread _workerThread;
-
-        /// <summary>
-        /// The audio device driver.
-        /// </summary>
-        private IHardwareDeviceDriver _deviceDriver;
 
         /// <summary>
         /// Create a new <see cref="AudioManager"/>.
@@ -84,15 +78,14 @@ namespace Ryujinx.Audio
         /// <summary>
         /// Initialize update handlers.
         /// </summary>
-        /// <param name="deviceDriver ">The device driver to get the driver event when an audio buffer finished playing/being captured and the pause event</param>
+        /// <param name="updatedRequiredEvent ">The driver event that will get signaled by the device driver when an audio buffer finished playing/being captured</param>
         /// <param name="outputCallback">The callback to call when an audio buffer finished playing</param>
         /// <param name="inputCallback">The callback to call when an audio buffer was captured</param>
-        public void Initialize(IHardwareDeviceDriver deviceDriver, Action outputCallback, Action inputCallback)
+        public void Initialize(ManualResetEvent updatedRequiredEvent, Action outputCallback, Action inputCallback)
         {
             lock (_lock)
             {
-                _deviceDriver = deviceDriver;
-                _updateRequiredEvents[0] = deviceDriver.GetUpdateRequiredEvent();
+                _updateRequiredEvents[0] = updatedRequiredEvent;
                 _actions[0] = outputCallback;
                 _actions[1] = inputCallback;
             }
