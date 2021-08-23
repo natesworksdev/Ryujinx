@@ -180,7 +180,7 @@ namespace ARMeilleure.Instructions
                 return;
             }
 
-            if ((op.Opc & 2) != 0)
+            if (op.R)
             {
                 throw new NotImplementedException("SPSR");
             }
