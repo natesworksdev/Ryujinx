@@ -33,7 +33,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AsyncContext
 
                 try
                 {
-                    await taskAsync(_token);
+                    await taskAsync(_token).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
