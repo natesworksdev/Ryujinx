@@ -271,7 +271,7 @@ namespace Ryujinx.Modules
 
                             try
                             {
-                                InstallUpdate(updateDialog, updateFile);
+                                async Task InstallUpdate(updateDialog, updateFile);
                             }
                             catch (Exception e)
                             {
@@ -320,7 +320,7 @@ namespace Ryujinx.Modules
                 client.DownloadDataCompleted += (_, args) =>
                 {
                     File.WriteAllBytes(updateFile, args.Result);
-                    InstallUpdate(updateDialog, updateFile);
+                    async Task InstallUpdate(updateDialog, updateFile);
                 };
 
                 client.DownloadDataAsync(new Uri(downloadUrl));
@@ -338,7 +338,7 @@ namespace Ryujinx.Modules
             }
         }
 
-        private static async task InstallUpdate(UpdateDialog updateDialog, string updateFile)
+        private static async Task InstallUpdate(UpdateDialog updateDialog, string updateFile)
         {
             // Extract Update
             updateDialog.MainText.Text     = "Extracting Update...";
