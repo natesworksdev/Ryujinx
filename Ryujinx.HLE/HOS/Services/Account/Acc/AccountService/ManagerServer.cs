@@ -68,7 +68,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
             Logger.Stub?.PrintStub(LogClass.ServiceAcc);
 
             // TODO: Use a real function instead, with the CancellationToken.
-            await Task.CompletedTask;
+            await Task.CompletedTask.ConfigureAwait(false);
         }
 
         public ResultCode LoadIdTokenCache(ServiceCtx context)
