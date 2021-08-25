@@ -128,16 +128,16 @@ namespace Ryujinx.Ui.Windows
             {
                 amiiboJsonString = File.ReadAllText(_amiiboJsonPath);
 
-                if (await NeedsUpdate(JsonSerializer.Deserialize<AmiiboJson>(amiiboJsonString).LastUpdated))
+                if (await NeedsUpdate(JsonSerializer.Deserialize<AmiiboJson>(amiiboJsonString).LastUpdated).ConfigureAwait(false))
                 {
-                    amiiboJsonString = await DownloadAmiiboJson();
+                    amiiboJsonString = await DownloadAmiiboJson().ConfigureAwait(false);
                 }
             }
             else
             {
                 try
                 {
-                    amiiboJsonString = await DownloadAmiiboJson();
+                    amiiboJsonString = await DownloadAmiiboJson().ConfigureAwait(false);
                 }
                 catch
                 {
