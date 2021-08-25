@@ -271,7 +271,7 @@ namespace Ryujinx.Modules
 
                             try
                             {
-                                async Task InstallUpdate(updateDialog, updateFile);
+                                InstallUpdate(updateDialog, updateFile);
                             }
                             catch (Exception e)
                             {
@@ -320,7 +320,7 @@ namespace Ryujinx.Modules
                 client.DownloadDataCompleted += (_, args) =>
                 {
                     File.WriteAllBytes(updateFile, args.Result);
-                    async Task InstallUpdate(updateDialog, updateFile);
+                    InstallUpdate(updateDialog, updateFile);
                 };
 
                 client.DownloadDataAsync(new Uri(downloadUrl));
