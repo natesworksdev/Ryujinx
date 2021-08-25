@@ -338,7 +338,7 @@ namespace Ryujinx.Modules
             }
         }
 
-        private static async void InstallUpdate(UpdateDialog updateDialog, string updateFile)
+        private static async task InstallUpdate(UpdateDialog updateDialog, string updateFile)
         {
             // Extract Update
             updateDialog.MainText.Text     = "Extracting Update...";
