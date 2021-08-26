@@ -889,7 +889,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                             type,
                             flags,
                             handle,
-                            compIndex,
+                            compIndex ^ 1, // The instruction component order is the inverse of GLSL's.
                             tempDest,
                             sources);
 
@@ -897,9 +897,9 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
                         tempDest = context.FPMultiply(tempDest, ConstF(256.0f));
 
-                        Operand finalValue = context.FPConvertToS32(tempDest);
+                        Operand fixedPointValue = context.FPConvertToS32(tempDest);
 
-                        context.Copy(dest, finalValue);
+                        context.Copy(dest, fixedPointValue);
                     }
                 }
             }
@@ -1055,6 +1055,8 @@ namespace Ryujinx.Graphics.Shader.Instructions
             {
                 return;
             }
+
+            context.Config.SetUsedFeature(FeatureFlags.IntegerSampling);
 
             TextureProperty property = (TextureProperty)op.RawOpCode.Extract(22, 6);
 

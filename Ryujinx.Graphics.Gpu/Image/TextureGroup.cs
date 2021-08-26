@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Cpu.Tracking;
 using Ryujinx.Graphics.GAL;
+using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.Graphics.Texture;
 using Ryujinx.Memory.Range;
 using System;
@@ -28,7 +29,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public bool HasCopyDependencies { get; set; }
 
-        private GpuContext _context;
+        private readonly GpuContext _context;
+        private readonly PhysicalMemory _physicalMemory;
 
         private int[] _allOffsets;
         private int[] _sliceSizes;
@@ -51,11 +53,13 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Create a new texture group.
         /// </summary>
         /// <param name="context">GPU context that the texture group belongs to</param>
+        /// <param name="physicalMemory">Physical memory where the <paramref name="storage"/> texture is mapped</param>
         /// <param name="storage">The storage texture for this group</param>
-        public TextureGroup(GpuContext context, Texture storage)
+        public TextureGroup(GpuContext context, PhysicalMemory physicalMemory, Texture storage)
         {
             Storage = storage;
             _context = context;
+            _physicalMemory = physicalMemory;
 
             _is3D = storage.Info.Target == Target.Texture3D;
             _layers = storage.Info.GetSlices();
@@ -79,11 +83,13 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Consume the dirty flags for a given texture. The state is shared between views of the same layers and levels.
+        /// Check and optionally consume the dirty flags for a given texture.
+        /// The state is shared between views of the same layers and levels.
         /// </summary>
         /// <param name="texture">The texture being used</param>
+        /// <param name="consume">True to consume the dirty flags and reprotect, false to leave them as is</param>
         /// <returns>True if a flag was dirty, false otherwise</returns>
-        public bool ConsumeDirty(Texture texture)
+        public bool CheckDirty(Texture texture, bool consume)
         {
             bool dirty = false;
 
@@ -97,7 +103,11 @@ namespace Ryujinx.Graphics.Gpu.Image
                     {
                         if (handle.Dirty)
                         {
-                            handle.Reprotect();
+                            if (consume)
+                            {
+                                handle.Reprotect();
+                            }
+
                             dirty = true;
                         }
                     }
@@ -211,7 +221,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                             int endOffset = (offsetIndex + 1 == _allOffsets.Length) ? (int)Storage.Size : _allOffsets[offsetIndex + 1];
                             int size = endOffset - offset;
 
-                            ReadOnlySpan<byte> data = _context.PhysicalMemory.GetSpan(Storage.Range.GetSlice((ulong)offset, (ulong)size));
+                            ReadOnlySpan<byte> data = _physicalMemory.GetSpan(Storage.Range.GetSlice((ulong)offset, (ulong)size));
 
                             data = Storage.ConvertToHostCompatibleFormat(data, info.BaseLevel, true);
 
@@ -448,13 +458,13 @@ namespace Ryujinx.Graphics.Gpu.Image
                     index = handleIndex;
                     baseLevel = 0;
 
-                    int layerLevels = _levels;
+                    int levelLayers = _layers;
 
-                    while (handleIndex >= layerLevels)
+                    while (handleIndex >= levelLayers)
                     {
-                        handleIndex -= layerLevels;
+                        handleIndex -= levelLayers;
                         baseLevel++;
-                        layerLevels = Math.Max(layerLevels >> 1, 1);
+                        levelLayers = Math.Max(levelLayers >> 1, 1);
                     }
 
                     baseLayer = handleIndex;
@@ -488,13 +498,13 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 int baseLevel = 0;
 
-                int layerLevels = _layers;
+                int levelLayers = _layers;
 
-                while (index >= layerLevels)
+                while (index >= levelLayers)
                 {
-                    index -= layerLevels;
+                    index -= levelLayers;
                     baseLevel++;
-                    layerLevels = Math.Max(layerLevels >> 1, 1);
+                    levelLayers = Math.Max(levelLayers >> 1, 1);
                 }
 
                 return (index, baseLevel);
@@ -561,7 +571,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>A CpuRegionHandle covering the given range</returns>
         private CpuRegionHandle GenerateHandle(ulong address, ulong size)
         {
-            return _context.PhysicalMemory.BeginTracking(address, size);
+            return _physicalMemory.BeginTracking(address, size);
         }
 
         /// <summary>

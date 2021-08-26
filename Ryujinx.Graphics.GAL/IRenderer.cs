@@ -6,6 +6,8 @@ namespace Ryujinx.Graphics.GAL
 {
     public interface IRenderer : IDisposable
     {
+        event EventHandler<ScreenCaptureImageInfo> ScreenCaptured;
+
         IPipeline Pipeline { get; }
 
         IWindow Window { get; }
@@ -25,7 +27,7 @@ namespace Ryujinx.Graphics.GAL
 
         void DeleteBuffer(BufferHandle buffer);
 
-        byte[] GetBufferData(BufferHandle buffer, int offset, int size);
+        ReadOnlySpan<byte> GetBufferData(BufferHandle buffer, int offset, int size);
 
         Capabilities GetCapabilities();
 
@@ -44,5 +46,7 @@ namespace Ryujinx.Graphics.GAL
         void WaitSync(ulong id);
 
         void Initialize(GraphicsDebugLevel logLevel);
+
+        void Screenshot();
     }
 }

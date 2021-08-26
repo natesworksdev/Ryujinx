@@ -1,7 +1,6 @@
 using ARMeilleure.IntermediateRepresentation;
 using System;
-
-using static ARMeilleure.IntermediateRepresentation.OperandHelper;
+using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
 
 namespace ARMeilleure.CodeGen.Optimizations
 {
@@ -72,7 +71,7 @@ namespace ARMeilleure.CodeGen.Optimizations
             }
             else if (IsConstEqual(x, 0) || IsConstEqual(y, 0))
             {
-                operation.TurnIntoCopy(Const(0));
+                operation.TurnIntoCopy(Const(x.Type, 0));
             }
         }
 

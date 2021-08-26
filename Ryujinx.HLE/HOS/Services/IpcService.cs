@@ -153,7 +153,7 @@ namespace Ryujinx.HLE.HOS.Services
             {
                 string dbgMessage = $"{service.GetType().FullName}: {commandId}";
 
-                throw new ServiceNotImplementedException(service, context, dbgMessage, false);
+                throw new ServiceNotImplementedException(service, context, dbgMessage);
             }
         }
 
@@ -194,7 +194,7 @@ namespace Ryujinx.HLE.HOS.Services
             {
                 string dbgMessage = $"{GetType().FullName}: {commandId}";
 
-                throw new ServiceNotImplementedException(this, context, dbgMessage, true);
+                throw new ServiceNotImplementedException(this, context, dbgMessage);
             }
         }
 
@@ -264,6 +264,19 @@ namespace Ryujinx.HLE.HOS.Services
         public void SetParent(IpcService parent)
         {
             _parent = parent._parent;
+        }
+
+        public virtual void DestroyAtExit()
+        {
+            foreach (object domainObject in _domainObjects.Values)
+            {
+                if (domainObject != this && domainObject is IDisposable disposableObj)
+                {
+                    disposableObj.Dispose();
+                }
+            }
+
+            _domainObjects.Clear();
         }
     }
 }

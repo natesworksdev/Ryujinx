@@ -5,7 +5,7 @@ using ARMeilleure.Translation;
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper32;
-using static ARMeilleure.IntermediateRepresentation.OperandHelper;
+using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
 
 namespace ARMeilleure.Instructions
 {
@@ -112,6 +112,24 @@ namespace ARMeilleure.Instructions
             else
             {
                 EmitVectorBinaryOpZx32(context, (op1, op2) => context.BitwiseExclusiveOr(op1, op2));
+            }
+        }
+
+        public static void Vorn_I(ArmEmitterContext context)
+        {
+            if (Optimizations.UseSse2)
+            {
+                Operand mask = context.VectorOne();
+
+                EmitVectorBinaryOpSimd32(context, (n, m) =>
+                {
+                    m = context.AddIntrinsic(Intrinsic.X86Pandn, m, mask);
+                    return context.AddIntrinsic(Intrinsic.X86Por, n, m);
+                });
+            }
+            else
+            {
+                EmitVectorBinaryOpZx32(context, (op1, op2) => context.BitwiseOr(op1, context.BitwiseNot(op2)));
             }
         }
 

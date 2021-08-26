@@ -70,7 +70,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 (int)Info.SwizzleA.Convert()
             };
 
-            if (Info.Format.IsBgra8())
+            if (Info.Format.IsBgr())
             {
                 // Swap B <-> R for BGRA formats, as OpenGL has no support for them
                 // and we need to manually swap the components on read/write on the GPU.
@@ -119,7 +119,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
             _renderer.TextureCopy.Copy(this, (TextureView)destination, srcRegion, dstRegion, linearFilter);
         }
 
-        public byte[] GetData()
+        public unsafe ReadOnlySpan<byte> GetData()
         {
             int size = 0;
 
@@ -128,17 +128,18 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 size += Info.GetMipSize(level);
             }
 
-            byte[] data = new byte[size];
-
-            unsafe
+            if (HwCapabilities.UsePersistentBufferForFlush)
             {
-                fixed (byte* ptr = data)
-                {
-                    WriteTo((IntPtr)ptr);
-                }
+                return _renderer.PersistentBuffers.Default.GetTextureData(this, size);
             }
+            else
+            {
+                IntPtr target = _renderer.PersistentBuffers.Default.GetHostArray(size);
 
-            return data;
+                WriteTo(target);
+
+                return new ReadOnlySpan<byte>(target.ToPointer(), size);
+            }
         }
 
         public void WriteToPbo(int offset, bool forceBgra)
@@ -434,8 +435,19 @@ namespace Ryujinx.Graphics.OpenGL.Image
         private void ReadFrom(IntPtr data, int size)
         {
             TextureTarget target = Target.Convert();
+            int baseLevel = 0;
 
-            Bind(target, 0);
+            // glTexSubImage on cubemap views is broken on Intel, we have to use the storage instead.
+            if (Target == Target.Cubemap && HwCapabilities.Vendor == HwCapabilities.GpuVendor.IntelWindows)
+            {
+                GL.ActiveTexture(TextureUnit.Texture0);
+                GL.BindTexture(target, Storage.Handle);
+                baseLevel = FirstLevel;
+            }
+            else
+            {
+                Bind(target, 0);
+            }
 
             FormatInfo format = FormatTable.GetFormatInfo(Info.Format);
 
@@ -456,7 +468,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                     return;
                 }
 
-                switch (Info.Target)
+                switch (Target)
                 {
                     case Target.Texture1D:
                         if (format.IsCompressed)
@@ -557,7 +569,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                             {
                                 GL.CompressedTexSubImage2D(
                                     TextureTarget.TextureCubeMapPositiveX + face,
-                                    level,
+                                    baseLevel + level,
                                     0,
                                     0,
                                     width,
@@ -570,7 +582,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                             {
                                 GL.TexSubImage2D(
                                     TextureTarget.TextureCubeMapPositiveX + face,
-                                    level,
+                                    baseLevel + level,
                                     0,
                                     0,
                                     width,

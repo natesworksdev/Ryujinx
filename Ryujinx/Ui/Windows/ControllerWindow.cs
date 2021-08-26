@@ -34,6 +34,8 @@ namespace Ryujinx.Ui.Windows
         private bool _isWaitingForInput;
 
 #pragma warning disable CS0649, IDE0044
+        [GUI] Adjustment   _controllerStrongRumble;
+        [GUI] Adjustment   _controllerWeakRumble;
         [GUI] Adjustment   _controllerDeadzoneLeft;
         [GUI] Adjustment   _controllerDeadzoneRight;
         [GUI] Adjustment   _controllerTriggerThreshold;
@@ -99,19 +101,21 @@ namespace Ryujinx.Ui.Windows
         [GUI] ToggleButton _rSl;
         [GUI] ToggleButton _rSr;
         [GUI] Image        _controllerImage;
+        [GUI] CheckButton  _enableRumble;
+        [GUI] Box          _rumbleBox;
 #pragma warning restore CS0649, IDE0044
 
         private MainWindow _mainWindow;
         private IGamepadDriver _gtk3KeyboardDriver;
         private IGamepad _selectedGamepad;
         private bool _mousePressed;
+        private bool _middleMousePressed;
 
         public ControllerWindow(MainWindow mainWindow, PlayerIndex controllerId) : this(mainWindow, new Builder("Ryujinx.Ui.Windows.ControllerWindow.glade"), controllerId) { }
 
         private ControllerWindow(MainWindow mainWindow, Builder builder, PlayerIndex controllerId) : base(builder.GetObject("_controllerWin").Handle)
         {
             _mainWindow = mainWindow;
-            _mousePressed = false;
             _selectedGamepad = null;
 
             // NOTE: To get input in this window, we need to bind a custom keyboard driver instead of using the InputManager one as the main window isn't focused...
@@ -231,12 +235,12 @@ namespace Ryujinx.Ui.Windows
 
         private static string GetShrinkedGamepadName(string str)
         {
-            const string ShrinkChars = "..";
-            const int MaxSize = 52;
+            const string ShrinkChars = "...";
+            const int MaxSize = 50;
 
-            if (str.Length > MaxSize - ShrinkChars.Length)
+            if (str.Length > MaxSize)
             {
-                return str.Substring(0, MaxSize) + ShrinkChars;
+                return str.Substring(0, MaxSize - ShrinkChars.Length) + ShrinkChars;
             }
 
             return str;
@@ -314,6 +318,7 @@ namespace Ryujinx.Ui.Windows
                 _deadZoneRightBox.Hide();
                 _triggerThresholdBox.Hide();
                 _motionBox.Hide();
+                _rumbleBox.Hide();
             }
             else if (_inputDevice.ActiveId != null && _inputDevice.ActiveId.StartsWith("controller"))
             {
@@ -407,6 +412,8 @@ namespace Ryujinx.Ui.Windows
             _zR.Label                         = "Unbound";
             _rSl.Label                        = "Unbound";
             _rSr.Label                        = "Unbound";
+            _controllerStrongRumble.Value     = 1;
+            _controllerWeakRumble.Value       = 1;
             _controllerDeadzoneLeft.Value     = 0;
             _controllerDeadzoneRight.Value    = 0;
             _controllerTriggerThreshold.Value = 0;
@@ -419,6 +426,7 @@ namespace Ryujinx.Ui.Windows
             _gyroDeadzone.Value               = 1;
             _dsuServerHost.Buffer.Text        = "";
             _dsuServerPort.Buffer.Text        = "";
+            _enableRumble.Active              = false;
         }
 
         private void SetValues(InputConfig config)
@@ -497,6 +505,9 @@ namespace Ryujinx.Ui.Windows
                     _zR.Label                         = controllerConfig.RightJoycon.ButtonZr.ToString();
                     _rSl.Label                        = controllerConfig.RightJoycon.ButtonSl.ToString();
                     _rSr.Label                        = controllerConfig.RightJoycon.ButtonSr.ToString();
+                    _controllerStrongRumble.Value     = controllerConfig.Rumble.StrongRumble;
+                    _controllerWeakRumble.Value       = controllerConfig.Rumble.WeakRumble;
+                    _enableRumble.Active              = controllerConfig.Rumble.EnableRumble;
                     _controllerDeadzoneLeft.Value     = controllerConfig.DeadzoneLeft;
                     _controllerDeadzoneRight.Value    = controllerConfig.DeadzoneRight;
                     _controllerTriggerThreshold.Value = controllerConfig.TriggerThreshold;
@@ -706,7 +717,13 @@ namespace Ryujinx.Ui.Windows
                         InvertStickY = _invertRStickY.Active,
                         StickButton  = rStickButton,
                     },
-                    Motion           = motionConfig
+                    Motion           = motionConfig,
+                    Rumble           = new RumbleConfigController
+                    {
+                        StrongRumble = (float)_controllerStrongRumble.Value,
+                        WeakRumble   = (float)_controllerWeakRumble.Value,
+                        EnableRumble = _enableRumble.Active
+                    }
                 };
             }
 
@@ -852,10 +869,16 @@ namespace Ryujinx.Ui.Windows
 
                 Application.Invoke(delegate
                 {
-                    if (pressedButton != "")
+                    if (_middleMousePressed)
+                    {
+                        button.Label = "Unbound";
+                    }
+                    else if (pressedButton != "")
                     {
                         button.Label = pressedButton;
                     }
+
+                    _middleMousePressed = false;
 
                     ButtonPressEvent -= MouseClick;
                     keyboard.Dispose();
@@ -883,6 +906,7 @@ namespace Ryujinx.Ui.Windows
         private void MouseClick(object sender, ButtonPressEventArgs args)
         {
             _mousePressed = true;
+            _middleMousePressed = args.Event.Button == 2;
         }
 
         private void SetProfiles()
@@ -931,7 +955,7 @@ namespace Ryujinx.Ui.Windows
                         Version          = InputConfig.CurrentVersion,
                         Backend          = InputBackendType.WindowKeyboard,
                         Id               = null,
-                        ControllerType   = ControllerType.JoyconPair,
+                        ControllerType   = ControllerType.ProController,
                         LeftJoycon       = new LeftJoyconCommonConfig<Key>
                         {
                             DpadUp       = Key.Up,
@@ -1038,6 +1062,12 @@ namespace Ryujinx.Ui.Windows
                             EnableMotion = true,
                             Sensitivity  = 100,
                             GyroDeadzone = 1,
+                        },
+                        Rumble = new RumbleConfigController
+                        {
+                            StrongRumble = 1f,
+                            WeakRumble   = 1f,
+                            EnableRumble = false
                         }
                     };
                 }
@@ -1101,7 +1131,7 @@ namespace Ryujinx.Ui.Windows
 
             if (_inputDevice.ActiveId == "disabled" || _profile.ActiveId == "default" || _profile.ActiveId == null) return;
 
-            MessageDialog confirmDialog = GtkDialog.CreateConfirmationDialog("Deleting Profile", "This action is irreversible, are your sure you want to continue?");
+            MessageDialog confirmDialog = GtkDialog.CreateConfirmationDialog("Deleting Profile", "This action is irreversible, are you sure you want to continue?");
 
             if (confirmDialog.Run() == (int)ResponseType.Yes)
             {
@@ -1143,7 +1173,7 @@ namespace Ryujinx.Ui.Windows
 
             if (_mainWindow.RendererWidget != null)
             {
-                _mainWindow.RendererWidget.NpadManager.ReloadConfiguration(newConfig, ConfigurationState.Instance.Hid.EnableKeyboard);
+                _mainWindow.RendererWidget.NpadManager.ReloadConfiguration(newConfig, ConfigurationState.Instance.Hid.EnableKeyboard, ConfigurationState.Instance.Hid.EnableMouse);
             }
 
             // Atomically replace and signal input change.

@@ -285,9 +285,16 @@ namespace Ryujinx.Cpu
         }
 
         /// <inheritdoc/>
-        public WritableRegion GetWritableRegion(ulong va, int size)
+        public WritableRegion GetWritableRegion(ulong va, int size, bool tracked = false)
         {
-            AssertMapped(va, (ulong)size);
+            if (tracked)
+            {
+                SignalMemoryTracking(va, (ulong)size, true);
+            }
+            else
+            {
+                AssertMapped(va, (ulong)size);
+            }
 
             return _addressSpaceMirror.GetWritableRegion(va, size);
         }
@@ -586,9 +593,9 @@ namespace Ryujinx.Cpu
         }
 
         /// <inheritdoc/>
-        public CpuMultiRegionHandle BeginGranularTracking(ulong address, ulong size, ulong granularity)
+        public CpuMultiRegionHandle BeginGranularTracking(ulong address, ulong size, IEnumerable<IRegionHandle> handles, ulong granularity)
         {
-            return new CpuMultiRegionHandle(Tracking.BeginGranularTracking(address, size, granularity));
+            return new CpuMultiRegionHandle(Tracking.BeginGranularTracking(address, size, handles, granularity));
         }
 
         /// <inheritdoc/>

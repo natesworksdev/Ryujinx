@@ -66,7 +66,9 @@ namespace Ryujinx.Memory
             {
                 int copySize = (int)Math.Min(MaxChunkSize, size - subOffset);
 
-                GetWritableRegion(va + subOffset, copySize).Memory.Span.Fill(0);
+                using var writableRegion = GetWritableRegion(va + subOffset, copySize);
+
+                writableRegion.Memory.Span.Fill(0);
             }
         }
 
@@ -85,9 +87,10 @@ namespace Ryujinx.Memory
         /// </summary>
         /// <param name="va">Virtual address of the data</param>
         /// <param name="size">Size of the data</param>
+        /// <param name="tracked">True if write tracking is triggered on the span</param>
         /// <returns>A writable region of memory containing the data</returns>
         /// <exception cref="InvalidMemoryRegionException">Throw for unhandled invalid or unmapped memory accesses</exception>
-        WritableRegion GetWritableRegion(ulong va, int size);
+        WritableRegion GetWritableRegion(ulong va, int size, bool tracked = false);
 
         /// <summary>
         /// Gets a reference for the given type at the specified virtual memory address.

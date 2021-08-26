@@ -17,6 +17,7 @@ namespace Ryujinx.Audio.Backends.SoundIo
         private DynamicRingBuffer _ringBuffer;
         private ulong _playedSampleCount;
         private ManualResetEvent _updateRequiredEvent;
+        private int _disposeState;
 
         public SoundIoHardwareDeviceSession(SoundIoHardwareDeviceDriver driver, IVirtualMemoryManager memoryManager, SampleFormat requestedSampleFormat, uint requestedSampleRate, uint requestedChannelCount) : base(memoryManager, requestedSampleFormat, requestedSampleRate, requestedChannelCount)
         {
@@ -422,20 +423,21 @@ namespace Ryujinx.Audio.Backends.SoundIo
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing)
+            if (disposing && _driver.Unregister(this))
             {
                 PrepareToClose();
                 Stop();
 
                 _outputStream.Dispose();
-
-                _driver.Unregister(this);
             }
         }
 
         public override void Dispose()
         {
-            Dispose(true);
+            if (Interlocked.CompareExchange(ref _disposeState, 1, 0) == 0)
+            {
+                Dispose(true);
+            }
         }
     }
 }

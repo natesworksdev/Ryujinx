@@ -1,6 +1,5 @@
 ﻿using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
-using Ryujinx.Graphics.Gpu.State;
 using Ryujinx.Graphics.Shader;
 
 namespace Ryujinx.Graphics.Gpu.Shader
@@ -10,8 +9,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
     /// </summary>
     class GpuAccessor : TextureDescriptorCapableGpuAccessor, IGpuAccessor
     {
-        private readonly GpuContext _context;
-        private readonly GpuState _state;
+        private readonly GpuChannel _channel;
+        private readonly GpuAccessorState _state;
         private readonly int _stageIndex;
         private readonly bool _compute;
         private readonly int _localSizeX;
@@ -20,15 +19,18 @@ namespace Ryujinx.Graphics.Gpu.Shader
         private readonly int _localMemorySize;
         private readonly int _sharedMemorySize;
 
+        public int Cb1DataSize { get; private set; }
+
         /// <summary>
         /// Creates a new instance of the GPU state accessor for graphics shader translation.
         /// </summary>
         /// <param name="context">GPU context</param>
+        /// <param name="channel">GPU channel</param>
         /// <param name="state">Current GPU state</param>
         /// <param name="stageIndex">Graphics shader stage index (0 = Vertex, 4 = Fragment)</param>
-        public GpuAccessor(GpuContext context, GpuState state, int stageIndex)
+        public GpuAccessor(GpuContext context, GpuChannel channel, GpuAccessorState state, int stageIndex) : base(context)
         {
-            _context = context;
+            _channel = channel;
             _state = state;
             _stageIndex = stageIndex;
         }
@@ -37,6 +39,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// Creates a new instance of the GPU state accessor for compute shader translation.
         /// </summary>
         /// <param name="context">GPU context</param>
+        /// <param name="channel">GPU channel</param>
         /// <param name="state">Current GPU state</param>
         /// <param name="localSizeX">Local group size X of the compute shader</param>
         /// <param name="localSizeY">Local group size Y of the compute shader</param>
@@ -45,14 +48,15 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <param name="sharedMemorySize">Shared memory size of the compute shader</param>
         public GpuAccessor(
             GpuContext context,
-            GpuState state,
+            GpuChannel channel,
+            GpuAccessorState state,
             int localSizeX,
             int localSizeY,
             int localSizeZ,
             int localMemorySize,
-            int sharedMemorySize)
+            int sharedMemorySize) : base(context)
         {
-            _context = context;
+            _channel = channel;
             _state = state;
             _compute = true;
             _localSizeX = localSizeX;
@@ -60,6 +64,25 @@ namespace Ryujinx.Graphics.Gpu.Shader
             _localSizeZ = localSizeZ;
             _localMemorySize = localMemorySize;
             _sharedMemorySize = sharedMemorySize;
+        }
+
+        /// <summary>
+        /// Reads data from the constant buffer 1.
+        /// </summary>
+        /// <param name="offset">Offset in bytes to read from</param>
+        /// <returns>Value at the given offset</returns>
+        public uint ConstantBuffer1Read(int offset)
+        {
+            if (Cb1DataSize < offset + 4)
+            {
+                Cb1DataSize = offset + 4;
+            }
+
+            ulong baseAddress = _compute
+                ? _channel.BufferManager.GetComputeUniformBufferAddress(1)
+                : _channel.BufferManager.GetGraphicsUniformBufferAddress(_stageIndex, 1);
+
+            return _channel.MemoryManager.Physical.Read<uint>(baseAddress + (ulong)offset);
         }
 
         /// <summary>
@@ -79,7 +102,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <returns>Data at the memory location</returns>
         public override T MemoryRead<T>(ulong address)
         {
-            return _context.MemoryManager.Read<T>(address);
+            return _channel.MemoryManager.Read<T>(address);
         }
 
         /// <summary>
@@ -89,7 +112,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <returns>True if the address is mapped, false otherwise</returns>
         public bool MemoryMapped(ulong address)
         {
-            return _context.MemoryManager.IsMapped(address);
+            return _channel.MemoryManager.IsMapped(address);
         }
 
         /// <summary>
@@ -129,8 +152,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
         public uint QueryConstantBufferUse()
         {
             return _compute
-                ? _context.Methods.BufferManager.GetComputeUniformBufferUseMask()
-                : _context.Methods.BufferManager.GetGraphicsUniformBufferUseMask(_stageIndex);
+                ? _channel.BufferManager.GetComputeUniformBufferUseMask()
+                : _channel.BufferManager.GetGraphicsUniformBufferUseMask(_stageIndex);
         }
 
         /// <summary>
@@ -139,46 +162,22 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <returns>Current primitive topology</returns>
         public InputTopology QueryPrimitiveTopology()
         {
-            switch (_context.Methods.Topology)
+            return _state.Topology switch
             {
-                case PrimitiveTopology.Points:
-                    return InputTopology.Points;
-                case PrimitiveTopology.Lines:
-                case PrimitiveTopology.LineLoop:
-                case PrimitiveTopology.LineStrip:
-                    return InputTopology.Lines;
-                case PrimitiveTopology.LinesAdjacency:
-                case PrimitiveTopology.LineStripAdjacency:
-                    return InputTopology.LinesAdjacency;
-                case PrimitiveTopology.Triangles:
-                case PrimitiveTopology.TriangleStrip:
-                case PrimitiveTopology.TriangleFan:
-                    return InputTopology.Triangles;
-                case PrimitiveTopology.TrianglesAdjacency:
-                case PrimitiveTopology.TriangleStripAdjacency:
-                    return InputTopology.TrianglesAdjacency;
-            }
-
-            return InputTopology.Points;
+                PrimitiveTopology.Points => InputTopology.Points,
+                PrimitiveTopology.Lines or
+                PrimitiveTopology.LineLoop or
+                PrimitiveTopology.LineStrip => InputTopology.Lines,
+                PrimitiveTopology.LinesAdjacency or
+                PrimitiveTopology.LineStripAdjacency => InputTopology.LinesAdjacency,
+                PrimitiveTopology.Triangles or
+                PrimitiveTopology.TriangleStrip or
+                PrimitiveTopology.TriangleFan => InputTopology.Triangles,
+                PrimitiveTopology.TrianglesAdjacency or
+                PrimitiveTopology.TriangleStripAdjacency => InputTopology.TrianglesAdjacency,
+                _ => InputTopology.Points,
+            };
         }
-
-        /// <summary>
-        /// Queries host storage buffer alignment required.
-        /// </summary>
-        /// <returns>Host storage buffer alignment in bytes</returns>
-        public int QueryStorageBufferOffsetAlignment() => _context.Capabilities.StorageBufferOffsetAlignment;
-
-        /// <summary>
-        /// Queries host support for readable images without a explicit format declaration on the shader.
-        /// </summary>
-        /// <returns>True if formatted image load is supported, false otherwise</returns>
-        public bool QuerySupportsImageLoadFormatted() => _context.Capabilities.SupportsImageLoadFormatted;
-
-        /// <summary>
-        /// Queries host GPU non-constant texture offset support.
-        /// </summary>
-        /// <returns>True if the GPU and driver supports non-constant texture offsets, false otherwise</returns>
-        public bool QuerySupportsNonConstantTextureOffset() => _context.Capabilities.SupportsNonConstantTextureOffset;
 
         /// <summary>
         /// Gets the texture descriptor for a given texture on the pool.
@@ -190,11 +189,22 @@ namespace Ryujinx.Graphics.Gpu.Shader
         {
             if (_compute)
             {
-                return _context.Methods.TextureManager.GetComputeTextureDescriptor(_state, handle, cbufSlot);
+                return _channel.TextureManager.GetComputeTextureDescriptor(
+                    _state.TexturePoolGpuVa,
+                    _state.TextureBufferIndex,
+                    _state.TexturePoolMaximumId,
+                    handle,
+                    cbufSlot);
             }
             else
             {
-                return _context.Methods.TextureManager.GetGraphicsTextureDescriptor(_state, _stageIndex, handle, cbufSlot);
+                return _channel.TextureManager.GetGraphicsTextureDescriptor(
+                    _state.TexturePoolGpuVa,
+                    _state.TextureBufferIndex,
+                    _state.TexturePoolMaximumId,
+                    _stageIndex,
+                    handle,
+                    cbufSlot);
             }
         }
 
@@ -204,7 +214,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <returns>True if early depth testing is forced</returns>
         public bool QueryEarlyZForce()
         {
-            return _state.Get<bool>(MethodOffset.EarlyZForce);
+            return _state.EarlyZForce;
         }
     }
 }

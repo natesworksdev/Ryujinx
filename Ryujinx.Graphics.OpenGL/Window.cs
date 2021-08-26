@@ -16,6 +16,8 @@ namespace Ryujinx.Graphics.OpenGL
 
         internal BackgroundContextWorker BackgroundContext { get; private set; }
 
+        internal bool ScreenCaptureRequested { get; set; }
+
         public Window(Renderer renderer)
         {
             _renderer = renderer;
@@ -43,7 +45,7 @@ namespace Ryujinx.Graphics.OpenGL
             GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, drawFramebuffer);
             GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, readFramebuffer);
 
-            TextureView viewConverted = view.Format.IsBgra8() ? _renderer.TextureCopy.BgraSwap(view) : view;
+            TextureView viewConverted = view.Format.IsBgr() ? _renderer.TextureCopy.BgraSwap(view) : view;
 
             GL.FramebufferTexture(
                 FramebufferTarget.ReadFramebuffer,
@@ -106,6 +108,13 @@ namespace Ryujinx.Graphics.OpenGL
             int dstY0 = crop.FlipY ? dstPaddingY : _height - dstPaddingY;
             int dstY1 = crop.FlipY ? _height - dstPaddingY : dstPaddingY;
 
+            if (ScreenCaptureRequested)
+            {
+                CaptureFrame(srcX0, srcY0, srcX1, srcY1, view.Format.IsBgr(), crop.FlipX, crop.FlipY);
+
+                ScreenCaptureRequested = false;
+            }
+
             GL.BlitFramebuffer(
                 srcX0,
                 srcY0,
@@ -157,6 +166,16 @@ namespace Ryujinx.Graphics.OpenGL
         public void InitializeBackgroundContext(IOpenGLContext baseContext)
         {
             BackgroundContext = new BackgroundContextWorker(baseContext);
+        }
+
+        public void CaptureFrame(int x, int y, int width, int height, bool isBgra, bool flipX, bool flipY)
+        {
+            long size = Math.Abs(4 * width * height);
+            byte[] bitmap = new byte[size];
+
+            GL.ReadPixels(x, y, width, height, isBgra ? PixelFormat.Bgra : PixelFormat.Rgba, PixelType.UnsignedByte, bitmap);
+
+            _renderer.OnScreenCaptured(new ScreenCaptureImageInfo(width, height, isBgra, bitmap, flipX, flipY));
         }
 
         public void Dispose()

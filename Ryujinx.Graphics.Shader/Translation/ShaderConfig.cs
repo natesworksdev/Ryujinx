@@ -29,7 +29,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public IGpuAccessor GpuAccessor { get; }
 
-        public TranslationFlags Flags { get; }
+        public TranslationOptions Options { get; }
 
         public int Size { get; private set; }
 
@@ -40,6 +40,10 @@ namespace Ryujinx.Graphics.Shader.Translation
         public HashSet<int> TextureHandlesForCache { get; }
 
         private readonly TranslationCounts _counts;
+
+        public int UsedInputAttributes { get; private set; }
+        public int UsedOutputAttributes { get; private set; }
+        public int PassthroughAttributes { get; private set; }
 
         private int _usedConstantBuffers;
         private int _usedStorageBuffers;
@@ -94,18 +98,18 @@ namespace Ryujinx.Graphics.Shader.Translation
         public int FirstConstantBufferBinding { get; private set; }
         public int FirstStorageBufferBinding { get; private set; }
 
-        public ShaderConfig(IGpuAccessor gpuAccessor, TranslationFlags flags, TranslationCounts counts)
+        public ShaderConfig(IGpuAccessor gpuAccessor, TranslationOptions options, TranslationCounts counts)
         {
             Stage                  = ShaderStage.Compute;
             GpuAccessor            = gpuAccessor;
-            Flags                  = flags;
+            Options                = options;
             _counts                = counts;
             TextureHandlesForCache = new HashSet<int>();
             _usedTextures          = new Dictionary<TextureInfo, TextureMeta>();
             _usedImages            = new Dictionary<TextureInfo, TextureMeta>();
         }
 
-        public ShaderConfig(ShaderHeader header, IGpuAccessor gpuAccessor, TranslationFlags flags, TranslationCounts counts) : this(gpuAccessor, flags, counts)
+        public ShaderConfig(ShaderHeader header, IGpuAccessor gpuAccessor, TranslationOptions options, TranslationCounts counts) : this(gpuAccessor, options, counts)
         {
             Stage             = header.Stage;
             GpPassthrough     = header.Stage == ShaderStage.Geometry && header.GpPassthrough;
@@ -141,7 +145,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             // When the formatted load extension is supported, we don't need to
             // specify a format, we can just declare it without a format and the GPU will handle it.
-            if (GpuAccessor.QuerySupportsImageLoadFormatted())
+            if (GpuAccessor.QueryHostSupportsImageLoadFormatted())
             {
                 return TextureFormat.Unknown;
             }
@@ -170,6 +174,8 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             TextureHandlesForCache.UnionWith(other.TextureHandlesForCache);
 
+            UsedInputAttributes |= other.UsedInputAttributes;
+            UsedOutputAttributes |= other.UsedOutputAttributes;
             _usedConstantBuffers |= other._usedConstantBuffers;
             _usedStorageBuffers |= other._usedStorageBuffers;
             _usedStorageBuffersWrite |= other._usedStorageBuffersWrite;
@@ -188,6 +194,28 @@ namespace Ryujinx.Graphics.Shader.Translation
                 {
                     _usedImages[kv.Key] = MergeTextureMeta(kv.Value, _usedImages[kv.Key]);
                 }
+            }
+        }
+
+        public void SetInputUserAttribute(int index)
+        {
+            UsedInputAttributes |= 1 << index;
+        }
+
+        public void SetOutputUserAttribute(int index)
+        {
+            UsedOutputAttributes |= 1 << index;
+        }
+
+        public void MergeOutputUserAttributes(int mask)
+        {
+            if (GpPassthrough)
+            {
+                PassthroughAttributes = mask & ~UsedOutputAttributes;
+            }
+            else
+            {
+                UsedOutputAttributes |= mask;
             }
         }
 
@@ -242,7 +270,8 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
             else
             {
-                SetUsedTextureOrImage(_usedTextures, cbufSlot, handle, type, TextureFormat.Unknown, flags.HasFlag(TextureFlags.IntCoords), false, accurateType);
+                bool intCoords = flags.HasFlag(TextureFlags.IntCoords) || inst == Instruction.TextureSize;
+                SetUsedTextureOrImage(_usedTextures, cbufSlot, handle, type, TextureFormat.Unknown, intCoords, false, accurateType);
             }
         }
 

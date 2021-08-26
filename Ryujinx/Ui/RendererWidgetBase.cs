@@ -4,19 +4,26 @@ using Gdk;
 using Gtk;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
+using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
 using Ryujinx.Graphics.GAL;
-using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.Input;
+using Ryujinx.Input.GTK3;
 using Ryujinx.Input.HLE;
 using Ryujinx.Ui.Widgets;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 using System;
 using System.Diagnostics;
-using System.Linq;
+using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Ryujinx.Ui
 {
+    using Image = SixLabors.ImageSharp.Image;
     using Key = Input.Key;
     using Switch = HLE.Switch;
 
@@ -28,18 +35,16 @@ namespace Ryujinx.Ui
 
         public ManualResetEvent WaitEvent { get; set; }
         public NpadManager NpadManager { get; }
+        public TouchScreenManager TouchScreenManager { get; }
         public Switch Device { get; private set; }
         public IRenderer Renderer { get; private set; }
+
+        public bool ScreenshotRequested { get; set; }
 
         public static event EventHandler<StatusUpdatedEventArgs> StatusUpdatedEvent;
 
         private bool _isActive;
         private bool _isStopped;
-        private bool _isFocused;
-
-        private double _mouseX;
-        private double _mouseY;
-        private bool _mousePressed;
 
         private bool _toggleFullscreen;
         private bool _toggleDockedMode;
@@ -66,11 +71,16 @@ namespace Ryujinx.Ui
 
         private int _windowHeight;
         private int _windowWidth;
+        private bool _isMouseInClient;
 
         public RendererWidgetBase(InputManager inputManager, GraphicsDebugLevel glLogLevel)
         {
+            var mouseDriver = new GTK3MouseDriver(this);
+
             _inputManager = inputManager;
+            _inputManager.SetMouseDriver(mouseDriver);
             NpadManager = _inputManager.CreateNpadManager();
+            TouchScreenManager = _inputManager.CreateTouchScreenManager();
             _keyboardInterface = (IKeyboard)_inputManager.KeyboardDriver.GetGamepad("0");
 
             WaitEvent = new ManualResetEvent(false);
@@ -86,10 +96,11 @@ namespace Ryujinx.Ui
             AddEvents((int)(EventMask.ButtonPressMask
                           | EventMask.ButtonReleaseMask
                           | EventMask.PointerMotionMask
+                          | EventMask.ScrollMask
+                          | EventMask.EnterNotifyMask
+                          | EventMask.LeaveNotifyMask
                           | EventMask.KeyPressMask
                           | EventMask.KeyReleaseMask));
-
-            Shown += Renderer_Shown;
 
             _exitEvent = new ManualResetEvent(false);
 
@@ -122,16 +133,6 @@ namespace Ryujinx.Ui
             });
         }
 
-        private void Parent_FocusOutEvent(object o, Gtk.FocusOutEventArgs args)
-        {
-            _isFocused = false;
-        }
-
-        private void Parent_FocusInEvent(object o, Gtk.FocusInEventArgs args)
-        {
-            _isFocused = true;
-        }
-
         private void Renderer_Destroyed(object sender, EventArgs e)
         {
             ConfigurationState.Instance.HideCursorOnIdle.Event -= HideCursorStateChanged;
@@ -140,48 +141,39 @@ namespace Ryujinx.Ui
             Dispose();
         }
 
-        private void Renderer_Shown(object sender, EventArgs e)
-        {
-            _isFocused = ParentWindow.State.HasFlag(Gdk.WindowState.Focused);
-        }
-
-        protected override bool OnButtonPressEvent(EventButton evnt)
-        {
-            _mouseX = evnt.X;
-            _mouseY = evnt.Y;
-
-            if (evnt.Button == 1)
-            {
-                _mousePressed = true;
-            }
-
-            return false;
-        }
-
-        protected override bool OnButtonReleaseEvent(EventButton evnt)
-        {
-            if (evnt.Button == 1)
-            {
-                _mousePressed = false;
-            }
-
-            return false;
-        }
-
         protected override bool OnMotionNotifyEvent(EventMotion evnt)
         {
-            if (evnt.Device.InputSource == InputSource.Mouse)
-            {
-                _mouseX = evnt.X;
-                _mouseY = evnt.Y;
-            }
-
             if (_hideCursorOnIdle)
             {
                 _lastCursorMoveTime = Stopwatch.GetTimestamp();
             }
 
+            if (ConfigurationState.Instance.Hid.EnableMouse)
+            {
+                Window.Cursor = _invisibleCursor;
+            }
+
+            _isMouseInClient = true;
+
             return false;
+        }
+
+        protected override bool OnEnterNotifyEvent(EventCrossing evnt)
+        {
+            Window.Cursor = ConfigurationState.Instance.Hid.EnableMouse ? _invisibleCursor : null;
+
+            _isMouseInClient = true;
+
+            return base.OnEnterNotifyEvent(evnt);
+        }
+
+        protected override bool OnLeaveNotifyEvent(EventCrossing evnt)
+        {
+            Window.Cursor = null;
+
+            _isMouseInClient = false;
+
+            return base.OnLeaveNotifyEvent(evnt);
         }
 
         protected override void OnGetPreferredHeight(out int minimumHeight, out int naturalHeight)
@@ -286,10 +278,15 @@ namespace Ryujinx.Ui
 
             _toggleDockedMode = toggleDockedMode;
 
-            if (_hideCursorOnIdle)
+            if (_hideCursorOnIdle && !ConfigurationState.Instance.Hid.EnableMouse)
             {
                 long cursorMoveDelta = Stopwatch.GetTimestamp() - _lastCursorMoveTime;
                 Window.Cursor = (cursorMoveDelta >= CursorHideIdleTime * Stopwatch.Frequency) ? _invisibleCursor : null;
+            }
+
+            if(ConfigurationState.Instance.Hid.EnableMouse && _isMouseInClient)
+            {
+                Window.Cursor = _invisibleCursor;
             }
         }
 
@@ -299,7 +296,72 @@ namespace Ryujinx.Ui
             Renderer = Device.Gpu.Renderer;
             Renderer?.Window.SetSize(_windowWidth, _windowHeight);
 
-            NpadManager.Initialize(device, ConfigurationState.Instance.Hid.InputConfig, ConfigurationState.Instance.Hid.EnableKeyboard);
+            if (Renderer != null)
+            {
+                Renderer.ScreenCaptured += Renderer_ScreenCaptured;
+            }
+
+            NpadManager.Initialize(device, ConfigurationState.Instance.Hid.InputConfig, ConfigurationState.Instance.Hid.EnableKeyboard, ConfigurationState.Instance.Hid.EnableMouse);
+            TouchScreenManager.Initialize(device);
+        }
+
+        private unsafe void Renderer_ScreenCaptured(object sender, ScreenCaptureImageInfo e)
+        {
+            if (e.Data.Length > 0 && e.Height > 0 && e.Width > 0)
+            {
+                Task.Run(() =>
+                {
+                    lock (this)
+                    {
+                        var    currentTime = DateTime.Now;
+                        string filename    = $"ryujinx_capture_{currentTime.Year}-{currentTime.Month:D2}-{currentTime.Day:D2}_{currentTime.Hour:D2}-{currentTime.Minute:D2}-{currentTime.Second:D2}.png";
+                        string directory   = AppDataManager.Mode switch
+                        {
+                            AppDataManager.LaunchMode.Portable => System.IO.Path.Combine(AppDataManager.BaseDirPath, "screenshots"),
+                            _ => System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyPictures), "Ryujinx")
+                        };
+
+                        string path = System.IO.Path.Combine(directory, filename);
+
+                        try
+                        {
+                            Directory.CreateDirectory(directory);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Error?.Print(LogClass.Application, $"Failed to create directory at path {directory}. Error : {ex.GetType().Name}", "Screenshot");
+
+                            return;
+                        }
+
+                        Image image = e.IsBgra ? Image.LoadPixelData<Bgra32>(e.Data, e.Width, e.Height)
+                                               : Image.LoadPixelData<Rgba32>(e.Data, e.Width, e.Height);
+
+                        if (e.FlipX)
+                        {
+                            image.Mutate(x => x.Flip(FlipMode.Horizontal));
+                        }
+
+                        if (e.FlipY)
+                        {
+                            image.Mutate(x => x.Flip(FlipMode.Vertical));
+                        }
+
+                        image.SaveAsPng(path, new PngEncoder()
+                        {
+                            ColorType = PngColorType.Rgb
+                        });
+
+                        image.Dispose();
+
+                        Logger.Notice.Print(LogClass.Application, $"Screenshot saved to {path}", "Screenshot");
+                    }
+                });
+            }
+            else
+            {
+                Logger.Error?.Print(LogClass.Application, $"Screenshot is empty. Size : {e.Data.Length} bytes. Resolution : {e.Width}x{e.Height}", "Screenshot");
+            }
         }
 
         public void Render()
@@ -367,10 +429,7 @@ namespace Ryujinx.Ui
 
             _isActive = true;
 
-            Gtk.Window parent = this.Toplevel as Gtk.Window;
-
-            parent.FocusInEvent += Parent_FocusInEvent;
-            parent.FocusOutEvent += Parent_FocusOutEvent;
+            Gtk.Window parent = Toplevel as Gtk.Window;
 
             Application.Invoke(delegate
             {
@@ -412,6 +471,7 @@ namespace Ryujinx.Ui
 
         public void Exit()
         {
+            TouchScreenManager?.Dispose();
             NpadManager?.Dispose();
 
             if (_isStopped)
@@ -470,9 +530,9 @@ namespace Ryujinx.Ui
                 return false;
             }
 
-            if (_isFocused)
+            if ((Toplevel as MainWindow).IsFocused)
             {
-                Gtk.Application.Invoke(delegate
+                Application.Invoke(delegate
                 {
                     KeyboardStateSnapshot keyboard = _keyboardInterface.GetKeyboardStateSnapshot();
 
@@ -488,9 +548,9 @@ namespace Ryujinx.Ui
                 });
             }
 
-            NpadManager.Update();
+            NpadManager.Update(ConfigurationState.Instance.Graphics.AspectRatio.Value.ToFloat());
 
-            if (_isFocused)
+            if ((Toplevel as MainWindow).IsFocused)
             {
                 KeyboardHotkeyState currentHotkeyState = GetHotkeyState();
 
@@ -500,67 +560,35 @@ namespace Ryujinx.Ui
                     Device.EnableDeviceVsync = !Device.EnableDeviceVsync;
                 }
 
+                if ((currentHotkeyState.HasFlag(KeyboardHotkeyState.Screenshot) &&
+                    !_prevHotkeyState.HasFlag(KeyboardHotkeyState.Screenshot)) || ScreenshotRequested)
+                {
+                    ScreenshotRequested = false;
+
+                    Renderer.Screenshot();
+                }
+
+                if (currentHotkeyState.HasFlag(KeyboardHotkeyState.ShowUi) &&
+                    !_prevHotkeyState.HasFlag(KeyboardHotkeyState.ShowUi))
+                {
+                    (Toplevel as MainWindow).ToggleExtraWidgets(true);
+                }
+
                 _prevHotkeyState = currentHotkeyState;
             }
 
             // Touchscreen
             bool hasTouch = false;
 
-            // Get screen touch position from left mouse click
-            // OpenTK always captures mouse events, even if out of focus, so check if window is focused.
-            if (_isFocused && _mousePressed)
+            // Get screen touch position
+            if ((Toplevel as MainWindow).IsFocused && !ConfigurationState.Instance.Hid.EnableMouse)
             {
-                float aspectWidth = SwitchPanelHeight * ConfigurationState.Instance.Graphics.AspectRatio.Value.ToFloat();
-
-                int screenWidth = AllocatedWidth;
-                int screenHeight = AllocatedHeight;
-
-                if (AllocatedWidth > AllocatedHeight * aspectWidth / SwitchPanelHeight)
-                {
-                    screenWidth = (int)(AllocatedHeight * aspectWidth) / SwitchPanelHeight;
-                }
-                else
-                {
-                    screenHeight = (AllocatedWidth * SwitchPanelHeight) / (int)aspectWidth;
-                }
-
-                int startX = (AllocatedWidth - screenWidth) >> 1;
-                int startY = (AllocatedHeight - screenHeight) >> 1;
-
-                int endX = startX + screenWidth;
-                int endY = startY + screenHeight;
-
-                if (_mouseX >= startX &&
-                    _mouseY >= startY &&
-                    _mouseX < endX &&
-                    _mouseY < endY)
-                {
-                    int screenMouseX = (int)_mouseX - startX;
-                    int screenMouseY = (int)_mouseY - startY;
-
-                    int mX = (screenMouseX * (int)aspectWidth) / screenWidth;
-                    int mY = (screenMouseY * SwitchPanelHeight) / screenHeight;
-
-                    TouchPoint currentPoint = new TouchPoint
-                    {
-                        X = (uint)mX,
-                        Y = (uint)mY,
-
-                        // Placeholder values till more data is acquired
-                        DiameterX = 10,
-                        DiameterY = 10,
-                        Angle = 90
-                    };
-
-                    hasTouch = true;
-
-                    Device.Hid.Touchscreen.Update(currentPoint);
-                }
+                hasTouch = TouchScreenManager.Update(true, (_inputManager.MouseDriver as GTK3MouseDriver).IsButtonPressed(MouseButton.Button1), ConfigurationState.Instance.Graphics.AspectRatio.Value.ToFloat());
             }
 
             if (!hasTouch)
             {
-                Device.Hid.Touchscreen.Update();
+                TouchScreenManager.Update(false);
             }
 
             Device.Hid.DebugPad.Update();
@@ -568,12 +596,13 @@ namespace Ryujinx.Ui
             return true;
         }
 
-
         [Flags]
         private enum KeyboardHotkeyState
         {
-            None,
-            ToggleVSync
+            None = 0,
+            ToggleVSync = 1 << 0,
+            Screenshot = 1 << 1,
+            ShowUi = 1 << 2
         }
 
         private KeyboardHotkeyState GetHotkeyState()
@@ -583,6 +612,16 @@ namespace Ryujinx.Ui
             if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ToggleVsync))
             {
                 state |= KeyboardHotkeyState.ToggleVSync;
+            }
+
+            if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Screenshot))
+            {
+                state |= KeyboardHotkeyState.Screenshot;
+            }
+
+            if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUi))
+            {
+                state |= KeyboardHotkeyState.ShowUi;
             }
 
             return state;

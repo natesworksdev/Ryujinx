@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
 {
     static class Helper
     {
-        public static ushort CalculateCrc16BE(ReadOnlySpan<byte> data, int crc = 0)
+        public static ushort CalculateCrc16(ReadOnlySpan<byte> data, int crc, bool reverseEndianess)
         {
             const ushort poly = 0x1021;
 
@@ -25,13 +25,18 @@ namespace Ryujinx.HLE.HOS.Services.Mii
                 }
             }
 
-            return BinaryPrimitives.ReverseEndianness((ushort)crc);
+            if (reverseEndianess)
+            {
+                return (ushort)(BinaryPrimitives.ReverseEndianness(crc) >> 16);
+            }
+
+            return (ushort)crc;
         }
 
         public static UInt128 GetDeviceId()
         {
             // FIXME: call set:sys GetMiiAuthorId
-            return new UInt128(0, 1);
+            return new UInt128("5279754d69694e780000000000000000"); // RyuMiiNx
         }
 
         public static ReadOnlySpan<byte> Ver3FacelineColorTable => new byte[] { 0, 1, 2, 3, 4, 5 };

@@ -1,14 +1,14 @@
 using LibHac;
+using LibHac.Sf;
 using Ryujinx.HLE.HOS.Ipc;
-using System;
 
 namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
 {
-    class IStorage : IpcService, IDisposable
+    class IStorage : DisposableIpcService
     {
-        private LibHac.Fs.IStorage _baseStorage;
+        private ReferenceCountedDisposable<LibHac.FsSrv.Sf.IStorage> _baseStorage;
 
-        public IStorage(LibHac.Fs.IStorage baseStorage)
+        public IStorage(ReferenceCountedDisposable<LibHac.FsSrv.Sf.IStorage> baseStorage)
         {
             _baseStorage = baseStorage;
         }
@@ -32,7 +32,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
 
                 byte[] data = new byte[size];
 
-                Result result = _baseStorage.Read((long)offset, data);
+                Result result = _baseStorage.Target.Read((long)offset, new OutBuffer(data), (long)size);
 
                 context.Memory.Write(buffDesc.Position, data);
 
@@ -46,21 +46,16 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
         // GetSize() -> u64 size
         public ResultCode GetSize(ServiceCtx context)
         {
-            Result result = _baseStorage.GetSize(out long size);
+            Result result = _baseStorage.Target.GetSize(out long size);
 
             context.ResponseData.Write(size);
 
             return (ResultCode)result.Value;
         }
 
-        public void Dispose()
+        protected override void Dispose(bool isDisposing)
         {
-            Dispose(true);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
+            if (isDisposing)
             {
                 _baseStorage?.Dispose();
             }

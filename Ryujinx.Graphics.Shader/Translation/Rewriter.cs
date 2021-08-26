@@ -93,7 +93,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 sbSlot        = PrependOperation(Instruction.ConditionalSelect, inRange, Const(slot), sbSlot);
             }
 
-            Operand alignMask = Const(-config.GpuAccessor.QueryStorageBufferOffsetAlignment());
+            Operand alignMask = Const(-config.GpuAccessor.QueryHostStorageBufferOffsetAlignment());
 
             Operand baseAddrTrunc = PrependOperation(Instruction.BitwiseAnd,    sbBaseAddrLow, alignMask);
             Operand byteOffset    = PrependOperation(Instruction.Subtract,      addrLow, baseAddrTrunc);
@@ -145,7 +145,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             bool hasOffset  = (texOp.Flags & TextureFlags.Offset)  != 0;
             bool hasOffsets = (texOp.Flags & TextureFlags.Offsets) != 0;
 
-            bool hasInvalidOffset = (hasOffset || hasOffsets) && !config.GpuAccessor.QuerySupportsNonConstantTextureOffset();
+            bool hasInvalidOffset = (hasOffset || hasOffsets) && !config.GpuAccessor.QueryHostSupportsNonConstantTextureOffset();
 
             bool isBindless = (texOp.Flags & TextureFlags.Bindless) != 0;
 
@@ -155,7 +155,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             {
                 return node;
             }
-            
+
             bool isGather       = (texOp.Flags & TextureFlags.Gather)      != 0;
             bool hasDerivatives = (texOp.Flags & TextureFlags.Derivatives) != 0;
             bool intCoords      = (texOp.Flags & TextureFlags.IntCoords)   != 0;
@@ -291,6 +291,8 @@ namespace Ryujinx.Graphics.Shader.Translation
             // We normalize by dividing the coords by the texture size.
             if (isRect && !intCoords)
             {
+                config.SetUsedFeature(FeatureFlags.IntegerSampling);
+
                 for (int index = 0; index < coordsCount; index++)
                 {
                     Operand coordSize = Local();
@@ -311,10 +313,13 @@ namespace Ryujinx.Graphics.Shader.Translation
                         texOp.Type,
                         texOp.Format,
                         texOp.Flags,
+                        texOp.CbufSlot,
                         texOp.Handle,
                         index,
                         coordSize,
                         texSizeSources));
+
+                    config.SetUsedTexture(Instruction.TextureSize, texOp.Type, texOp.Format, texOp.Flags, texOp.CbufSlot, texOp.Handle);
 
                     Operand source = sources[coordsIndex + index];
 
@@ -352,6 +357,8 @@ namespace Ryujinx.Graphics.Shader.Translation
                 }
                 else
                 {
+                    config.SetUsedFeature(FeatureFlags.IntegerSampling);
+
                     Operand lod = Local();
 
                     node.List.AddBefore(node, new TextureOperation(
@@ -359,8 +366,9 @@ namespace Ryujinx.Graphics.Shader.Translation
                         texOp.Type,
                         texOp.Format,
                         texOp.Flags,
+                        texOp.CbufSlot,
                         texOp.Handle,
-                        1,
+                        0,
                         lod,
                         lodSources));
 
@@ -384,10 +392,13 @@ namespace Ryujinx.Graphics.Shader.Translation
                             texOp.Type,
                             texOp.Format,
                             texOp.Flags,
+                            texOp.CbufSlot,
                             texOp.Handle,
                             index,
                             coordSize,
                             texSizeSources));
+
+                        config.SetUsedTexture(Instruction.TextureSize, texOp.Type, texOp.Format, texOp.Flags, texOp.CbufSlot, texOp.Handle);
 
                         Operand offset = Local();
 
@@ -420,6 +431,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 texOp.Type,
                 texOp.Format,
                 texOp.Flags & ~(TextureFlags.Offset | TextureFlags.Offsets),
+                texOp.CbufSlot,
                 texOp.Handle,
                 componentIndex,
                 texOp.Dest,

@@ -55,15 +55,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             string ApplyScaling(string vector)
             {
-                int index = context.FindImageDescriptorIndex(texOp);
-
                 if ((context.Config.Stage == ShaderStage.Fragment || context.Config.Stage == ShaderStage.Compute) &&
                     texOp.Inst == Instruction.ImageLoad &&
                     !isBindless &&
                     !isIndexed)
                 {
                     // Image scales start after texture ones.
-                    int scaleIndex = context.Config.GetTextureDescriptors().Length + index;
+                    int scaleIndex = context.Config.GetTextureDescriptors().Length + context.FindImageDescriptorIndex(texOp);
 
                     if (pCount == 3 && isArray)
                     {
@@ -159,15 +157,18 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             offsetExpr = Enclose(offsetExpr, src2, Instruction.ShiftRightS32, isLhs: true);
 
+            var config = context.Config;
+            bool indexElement = !config.GpuAccessor.QueryHostHasVectorIndexingBug();
+
             if (src1 is AstOperand oper && oper.Type == OperandType.Constant)
             {
-                bool cbIndexable = context.Config.UsedFeatures.HasFlag(Translation.FeatureFlags.CbIndexing);
-                return OperandManager.GetConstantBufferName(oper.Value, offsetExpr, context.Config.Stage, cbIndexable);
+                bool cbIndexable = config.UsedFeatures.HasFlag(Translation.FeatureFlags.CbIndexing);
+                return OperandManager.GetConstantBufferName(oper.Value, offsetExpr, config.Stage, cbIndexable, indexElement);
             }
             else
             {
                 string slotExpr = GetSoureExpr(context, src1, GetSrcVarType(operation.Inst, 0));
-                return OperandManager.GetConstantBufferName(slotExpr, offsetExpr, context.Config.Stage);
+                return OperandManager.GetConstantBufferName(slotExpr, offsetExpr, config.Stage, indexElement);
             }
         }
 
@@ -309,18 +310,30 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             bool isMultisample = (texOp.Type & SamplerType.Multisample) != 0;
             bool isShadow      = (texOp.Type & SamplerType.Shadow)      != 0;
 
+            SamplerType type = texOp.Type & SamplerType.Mask;
+
+            bool is2D   = type == SamplerType.Texture2D;
+            bool isCube = type == SamplerType.TextureCube;
+
+            // 2D Array and Cube shadow samplers with LOD level or bias requires an extension.
+            // If the extension is not supported, just remove the LOD parameter.
+            if (isArray && isShadow && (is2D || isCube) && !context.Config.GpuAccessor.QueryHostSupportsTextureShadowLod())
+            {
+                hasLodBias = false;
+                hasLodLevel = false;
+            }
+
+            // Cube shadow samplers with LOD level requires an extension.
+            // If the extension is not supported, just remove the LOD level parameter.
+            if (isShadow && isCube && !context.Config.GpuAccessor.QueryHostSupportsTextureShadowLod())
+            {
+                hasLodLevel = false;
+            }
+
             // TODO: Bindless texture support. For now we just return 0.
             if (isBindless)
             {
                 return NumberFormatter.FormatFloat(0);
-            }
-
-            // This combination is valid, but not available on GLSL.
-            // For now, ignore the LOD level and do a normal sample.
-            // TODO: How to implement it properly?
-            if (hasLodLevel && isArray && isShadow)
-            {
-                hasLodLevel = false;
             }
 
             string texCall = intCoords ? "texelFetch" : "texture";
@@ -449,12 +462,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             {
                 if (intCoords)
                 {
-                    int index = context.FindTextureDescriptorIndex(texOp);
-
                     if ((context.Config.Stage == ShaderStage.Fragment || context.Config.Stage == ShaderStage.Compute) &&
                         !isBindless &&
                         !isIndexed)
                     {
+                        int index = context.FindTextureDescriptorIndex(texOp);
+
                         if (pCount == 3 && isArray)
                         {
                             // The array index is not scaled, just x and y.
@@ -596,7 +609,18 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             }
             else
             {
-                return $"textureSize({samplerName}, {lodExpr}){GetMask(texOp.Index)}";
+                string texCall = $"textureSize({samplerName}, {lodExpr}){GetMask(texOp.Index)}";
+
+                if ((context.Config.Stage == ShaderStage.Fragment || context.Config.Stage == ShaderStage.Compute) &&
+                    !isBindless &&
+                    !isIndexed)
+                {
+                    int index = context.FindTextureDescriptorIndex(texOp);
+
+                    texCall = "Helper_TextureSizeUnscale(" + texCall + ", " + index + ")";
+                }
+
+                return texCall;
             }
         }
 

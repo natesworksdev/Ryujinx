@@ -1,6 +1,7 @@
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
+using Ryujinx.Common.Configuration.Hid.Controller;
 using Ryujinx.Common.Configuration.Hid.Keyboard;
 using Ryujinx.Common.Logging;
 using Ryujinx.Configuration.System;
@@ -268,6 +269,11 @@ namespace Ryujinx.Configuration
             /// Enable or disable keyboard support (Independent from controllers binding)
             /// </summary>
             public ReactiveObject<bool> EnableKeyboard { get; private set; }
+            
+            /// <summary>
+            /// Enable or disable mouse support (Independent from controllers binding)
+            /// </summary>
+            public ReactiveObject<bool> EnableMouse { get; private set; }
 
             /// <summary>
             /// Hotkey Keyboard Bindings
@@ -284,6 +290,7 @@ namespace Ryujinx.Configuration
             public HidSection()
             {
                 EnableKeyboard = new ReactiveObject<bool>();
+                EnableMouse    = new ReactiveObject<bool>();
                 Hotkeys        = new ReactiveObject<KeyboardHotkeys>();
                 InputConfig    = new ReactiveObject<List<InputConfig>>();
             }
@@ -471,6 +478,7 @@ namespace Ryujinx.Configuration
                 CustomThemePath           = Ui.CustomThemePath,
                 StartFullscreen           = Ui.StartFullscreen,
                 EnableKeyboard            = Hid.EnableKeyboard,
+                EnableMouse               = Hid.EnableMouse,
                 Hotkeys                   = Hid.Hotkeys,
                 KeyboardConfig            = new List<object>(),
                 ControllerConfig          = new List<object>(),
@@ -532,9 +540,12 @@ namespace Ryujinx.Configuration
             Ui.CustomThemePath.Value               = "";
             Ui.StartFullscreen.Value               = false;
             Hid.EnableKeyboard.Value               = false;
+            Hid.EnableMouse.Value                  = false;
             Hid.Hotkeys.Value = new KeyboardHotkeys
             {
-                ToggleVsync = Key.Tab
+                ToggleVsync = Key.Tab,
+                Screenshot = Key.F8,
+                ShowUi = Key.F4
             };
             Hid.InputConfig.Value = new List<InputConfig>
             {
@@ -828,6 +839,62 @@ namespace Ryujinx.Configuration
                 configurationFileUpdated = true;
             }
 
+            if (configurationFileFormat.Version < 27)
+            {
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 27.");
+
+                configurationFileFormat.EnableMouse = false;
+
+                configurationFileUpdated = true;
+            }
+
+            if (configurationFileFormat.Version < 28)
+            {
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 28.");
+
+                configurationFileFormat.Hotkeys = new KeyboardHotkeys
+                {
+                    ToggleVsync = Key.Tab,
+                    Screenshot = Key.F8
+                };
+
+                configurationFileUpdated = true;
+            }
+
+            if (configurationFileFormat.Version < 29)
+            {
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 29.");
+
+                configurationFileFormat.Hotkeys = new KeyboardHotkeys
+                {
+                    ToggleVsync = Key.Tab,
+                    Screenshot = Key.F8,
+                    ShowUi = Key.F4
+                };
+
+                configurationFileUpdated = true;
+            }
+
+            if (configurationFileFormat.Version < 30)
+            {
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 30.");
+
+                foreach(InputConfig config in configurationFileFormat.InputConfig)
+                {
+                    if (config is StandardControllerInputConfig controllerConfig)
+                    {
+                        controllerConfig.Rumble = new RumbleConfigController
+                        {
+                            EnableRumble = false,
+                            StrongRumble = 1f,
+                            WeakRumble = 1f
+                        };
+                    }
+                }
+
+                configurationFileUpdated = true;
+            }
+
             Logger.EnableFileLog.Value             = configurationFileFormat.EnableFileLog;
             Graphics.ResScale.Value                = configurationFileFormat.ResScale;
             Graphics.ResScaleCustom.Value          = configurationFileFormat.ResScaleCustom;
@@ -878,6 +945,7 @@ namespace Ryujinx.Configuration
             Ui.CustomThemePath.Value               = configurationFileFormat.CustomThemePath;
             Ui.StartFullscreen.Value               = configurationFileFormat.StartFullscreen;
             Hid.EnableKeyboard.Value               = configurationFileFormat.EnableKeyboard;
+            Hid.EnableMouse.Value                  = configurationFileFormat.EnableMouse;
             Hid.Hotkeys.Value                      = configurationFileFormat.Hotkeys;
             Hid.InputConfig.Value                  = configurationFileFormat.InputConfig;
 
