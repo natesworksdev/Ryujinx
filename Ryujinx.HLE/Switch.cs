@@ -9,6 +9,7 @@ using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Apm;
 using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices;
+using Ryujinx.HLE.Ui;
 using Ryujinx.Memory;
 using System;
 

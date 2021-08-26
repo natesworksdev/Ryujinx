@@ -1,4 +1,6 @@
 ﻿using Ryujinx.HLE.HOS.Services.Am.AppletAE;
+using Ryujinx.HLE.Ui;
+using Ryujinx.Memory;
 using System;
 using System.Runtime.InteropServices;
 
@@ -13,9 +15,9 @@ namespace Ryujinx.HLE.HOS.Applets
 
         ResultCode GetResult();
 
-        Span<byte> GetGraphicsA8B8G8R8(int width, int height, int pitch, int size)
+        bool DrawTo(RenderingSurfaceInfo surfaceInfo, IVirtualMemoryManager destination, ulong position)
         {
-            return null;
+            return false;
         }
 
         static T ReadStruct<T>(ReadOnlySpan<byte> data) where T : unmanaged

@@ -1,141 +1,107 @@
 using Gtk;
-using Ryujinx.HLE;
+using Ryujinx.HLE.Ui;
+using Ryujinx.Input.GTK3;
 using Ryujinx.Ui.Widgets;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Ryujinx.Ui.Applet
 {
+    /// <summary>
+    /// Class that forwards key events to a GTK Entry so they can be processed into text.
+    /// </summary>
     internal class GtkDynamicTextInputHandler : IDynamicTextInputHandler
     {
-        private const int ForceOperationWaitMilliseconds = 3000;
+        private readonly Window              _parent;
+        private readonly OffscreenWindow     _inputToTextWindow = new OffscreenWindow();
+        private readonly RawInputToTextEntry _inputToTextEntry  = new RawInputToTextEntry();
 
-        private readonly Window _parent;
-        private readonly OffscreenWindow _inputToTextWindow = new OffscreenWindow();
-        private readonly RawInputToTextEntry _inputToTextEntry = new RawInputToTextEntry();
+        private bool _canProcessInput;
 
-        private readonly Gdk.Key _acceptKey;
-        private readonly Gdk.Key _cancelKey;
+        public event DynamicTextChangedHandler TextChangedEvent;
+        public event KeyPressedHandler         KeyPressedEvent;
+        public event KeyReleasedHandler        KeyReleasedEvent;
 
-        private CancellationTokenSource _forceEventCancel = null;
-        private object _forceEventLock = new object();
+        public bool TextProcessingEnabled
+        {
+            get
+            {
+                return Volatile.Read(ref _canProcessInput);
+            }
 
-        public event DynamicTextChangedEvent TextChanged;
+            set
+            {
+                Volatile.Write(ref _canProcessInput, value);
+            }
+        }
 
-        public string AcceptKeyName { get { return _acceptKey.ToString(); } }
-
-        public string CancelKeyName { get { return _cancelKey.ToString(); } }
-
-        public GtkDynamicTextInputHandler(Window parent, Gdk.Key acceptKey, Gdk.Key cancelKey)
+        public GtkDynamicTextInputHandler(Window parent)
         {
             _parent = parent;
-            _parent.KeyPressEvent += HandleKeyPressEvent;
+            _parent.KeyPressEvent   += HandleKeyPressEvent;
             _parent.KeyReleaseEvent += HandleKeyReleaseEvent;
-            _acceptKey = acceptKey;
-            _cancelKey = cancelKey;
+
             _inputToTextWindow.Add(_inputToTextEntry);
+
+            _inputToTextEntry.TruncateMultiline = true;
+
+            // Start with input processing turned off so the text box won't accumulate text 
+            // if the user is playing on the keyboard.
+            _canProcessInput = false;
         }
 
         [GLib.ConnectBefore()]
         private void HandleKeyPressEvent(object o, KeyPressEventArgs args)
         {
-            if (args.Event.Key == _acceptKey)
+            var key = (Common.Configuration.Hid.Key)GTK3MappingHelper.ToInputKey(args.Event.Key);
+
+            if (!(KeyPressedEvent?.Invoke(key)).GetValueOrDefault(true))
             {
-                InvokeTextChanged(true, false);
-                _inputToTextEntry.Text = "";
+                return;
             }
-            else if (args.Event.Key == _cancelKey)
-            {
-                InvokeTextChanged(false, true);
-                _inputToTextEntry.Text = "";
-            }
-            else
+
+            if (_canProcessInput)
             {
                 _inputToTextEntry.SendKeyPressEvent(o, args);
-                InvokeTextChanged(false, false);
+                _inputToTextEntry.GetSelectionBounds(out int selectionStart, out int selectionEnd);
+                TextChangedEvent?.Invoke(_inputToTextEntry.Text, selectionStart, selectionEnd, _inputToTextEntry.OverwriteMode);
             }
-        }
-
-        private void InvokeTextChanged(bool isAccept, bool isCancel)
-        {
-            string text = _inputToTextEntry.Text;
-
-            _inputToTextEntry.GetSelectionBounds(out int selectionStart, out int selectionEnd);
-
-            if (isAccept || isCancel)
-            {
-                // If the the accept or cancel keys are pressed, try to spawn one and just one task
-                // to check if the key is being held for long enough. Holding the key means the
-                // user is trying to force a status, maybe because of a soft-lock.
-
-                // Note: The lock is required to ensure a single task will spawn, that's because
-                // the key pressed event will begin to repeat if the key is held long enough.
-
-                lock (_forceEventLock)
-                {
-                    if (_forceEventCancel == null)
-                    {
-                        var eventCancel = new CancellationTokenSource();
-
-                        Task.Run(() =>
-                        {
-                            // Wait to see if the key is released and the force operation is cancelled.
-
-                            if (!eventCancel.Token.WaitHandle.WaitOne(ForceOperationWaitMilliseconds))
-                            {
-                                TextChanged?.Invoke(text, selectionStart, selectionEnd, isAccept, isCancel, true);
-                            }
-
-                            // Clear the event cancel to notify that the task finished.
-
-                            lock (_forceEventLock)
-                            {
-                                _forceEventCancel = null;
-                            }
-                        });
-
-                        _forceEventCancel = eventCancel;
-                    }
-                }
-            }
-
-            TextChanged?.Invoke(text, selectionStart, selectionEnd, isAccept, isCancel, false);
         }
 
         [GLib.ConnectBefore()]
         private void HandleKeyReleaseEvent(object o, KeyReleaseEventArgs args)
         {
-            if (args.Event.Key == _acceptKey || args.Event.Key == _cancelKey)
-            {
-                // Cancel the force event if it exists.
+            var key = (Common.Configuration.Hid.Key)GTK3MappingHelper.ToInputKey(args.Event.Key);
 
-                lock (_forceEventLock)
-                {
-                    if (_forceEventCancel != null)
-                    {
-                        _forceEventCancel.Cancel();
-                        _forceEventCancel = null;
-                    }
-                }
+            if (!(KeyReleasedEvent?.Invoke(key)).GetValueOrDefault(true))
+            {
+                return;
             }
 
-           _inputToTextEntry.SendKeyReleaseEvent(o, args);
+            if (_canProcessInput)
+            {
+                // TODO (caian): This solution may have problems if the pause is sent after a key press
+                // and before a key release. But for now GTK Entry does not seem to use release events.
+                _inputToTextEntry.SendKeyReleaseEvent(o, args);
+                _inputToTextEntry.GetSelectionBounds(out int selectionStart, out int selectionEnd);
+                TextChangedEvent?.Invoke(_inputToTextEntry.Text, selectionStart, selectionEnd, _inputToTextEntry.OverwriteMode);
+            }
         }
 
-        public void SetText(string text)
+        public void SetText(string text, int cursorBegin)
         {
             _inputToTextEntry.Text = text;
-            _inputToTextEntry.Position = text.Length;
+            _inputToTextEntry.Position = cursorBegin;
         }
 
-        public void SetMaxLength(int maxLength)
+        public void SetText(string text, int cursorBegin, int cursorEnd)
         {
-            _inputToTextEntry.MaxLength = maxLength;
+            _inputToTextEntry.Text = text;
+            _inputToTextEntry.SelectRegion(cursorBegin, cursorEnd);
         }
 
         public void Dispose()
         {
-            _parent.KeyPressEvent -= HandleKeyPressEvent;
+            _parent.KeyPressEvent   -= HandleKeyPressEvent;
             _parent.KeyReleaseEvent -= HandleKeyReleaseEvent;
         }
     }

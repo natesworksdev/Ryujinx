@@ -32,11 +32,23 @@
 
   <ItemGroup>
     <None Remove="Homebrew.npdm" />
+    <None Remove="HOS\Applets\SoftwareKeyboard\Resources\Icon_Accept.png" />
+    <None Remove="HOS\Applets\SoftwareKeyboard\Resources\Icon_BtnA.png" />
+    <None Remove="HOS\Applets\SoftwareKeyboard\Resources\Icon_BtnB.png" />
+    <None Remove="HOS\Applets\SoftwareKeyboard\Resources\Icon_Cancel.png" />
+    <None Remove="HOS\Applets\SoftwareKeyboard\Resources\Icon_F5.png" />
+    <None Remove="HOS\Applets\SoftwareKeyboard\Resources\Icon_F6.png" />
+    <None Remove="HOS\Applets\SoftwareKeyboard\Resources\Icon_KeyF5.png" />
+    <None Remove="HOS\Applets\SoftwareKeyboard\Resources\Icon_Tab.png" />
+    <None Remove="HOS\Applets\SoftwareKeyboard\Resources\Overlay_Enter.png" />
     <None Remove="HOS\Services\Account\Acc\DefaultUserImage.jpg" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Homebrew.npdm" />
+    <EmbeddedResource Include="HOS\Applets\SoftwareKeyboard\Resources\Icon_BtnA.png" />
+    <EmbeddedResource Include="HOS\Applets\SoftwareKeyboard\Resources\Icon_BtnB.png" />
+    <EmbeddedResource Include="HOS\Applets\SoftwareKeyboard\Resources\Icon_KeyF5.png" />
     <EmbeddedResource Include="HOS\Services\Account\Acc\DefaultUserImage.jpg" />
   </ItemGroup>
 

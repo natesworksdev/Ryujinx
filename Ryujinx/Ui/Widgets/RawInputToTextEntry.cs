@@ -13,5 +13,15 @@ namespace Ryujinx.Ui.Widgets
         {
             base.OnKeyReleaseEvent(args.Event);
         }
+
+        public void SendButtonPressEvent(object o, ButtonPressEventArgs args)
+        {
+            base.OnButtonPressEvent(args.Event);
+        }
+
+        public void SendButtonReleaseEvent(object o, ButtonReleaseEventArgs args)
+        {
+            base.OnButtonReleaseEvent(args.Event);
+        }
     }
 }

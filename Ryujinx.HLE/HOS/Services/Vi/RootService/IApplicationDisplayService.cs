@@ -6,6 +6,7 @@ using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Services.SurfaceFlinger;
 using Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService;
+using Ryujinx.HLE.Ui;
 using System;
 using System.Diagnostics;
 using System.Text;
@@ -277,6 +278,8 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
             Debug.Assert(layerBuffSize == size);
 
+            RenderingSurfaceInfo surfaceInfo = new RenderingSurfaceInfo(ColorFormat.A8B8G8R8, (uint)layerWidth, (uint)layerHeight, (uint)pitch, (uint)layerBuffSize);
+
             // Get the applet associated with the handle.
             object appletObject = context.Device.System.AppletState.IndirectLayerHandles.GetData((int)layerHandle);
 
@@ -291,16 +294,12 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
             IApplet applet = appletObject as IApplet;
 
-            Span<byte> graphics = applet.GetGraphicsA8B8G8R8((int)layerWidth, (int)layerHeight, pitch, (int)layerBuffSize);
-
-            if (graphics == null)
+            if (!applet.DrawTo(surfaceInfo, context.Memory, layerBuffPosition))
             {
-                Logger.Error?.Print(LogClass.ServiceVi, $"Applet returned no graphics for indirect layer handle {layerHandle}");
+                Logger.Error?.Print(LogClass.ServiceVi, $"Applet did not draw on indirect layer handle {layerHandle}");
 
                 return ResultCode.Success;
             }
-
-            context.Memory.Write((ulong)layerBuffPosition, graphics);
 
             context.ResponseData.Write(layerWidth);
             context.ResponseData.Write(layerHeight);

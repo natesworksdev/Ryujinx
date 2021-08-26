@@ -1,16 +1,14 @@
 ﻿using LibHac.FsSystem;
 using Ryujinx.Audio.Integration;
-using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
-using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.FileSystem.Content;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.HLE.HOS.SystemState;
+using Ryujinx.HLE.Ui;
 using System;
-using System.Collections.Generic;
 
 namespace Ryujinx.HLE
 {
