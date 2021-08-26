@@ -410,14 +410,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
             else
             {
-                int usedAttribtes = context.Config.UsedInputAttributes;
-                while (usedAttribtes != 0)
+                int usedAttributes = context.Config.UsedInputAttributes;
+                while (usedAttributes != 0)
                 {
-                    int index = BitOperations.TrailingZeroCount(usedAttribtes);
+                    int index = BitOperations.TrailingZeroCount(usedAttributes);
 
                     DeclareInputAttribute(context, info, index);
 
-                    usedAttribtes &= ~(1 << index);
+                    usedAttributes &= ~(1 << index);
                 }
             }
         }
@@ -463,14 +463,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
             else
             {
-                int usedAttribtes = context.Config.UsedOutputAttributes;
-                while (usedAttribtes != 0)
+                int usedAttributes = context.Config.UsedOutputAttributes;
+                while (usedAttributes != 0)
                 {
-                    int index = BitOperations.TrailingZeroCount(usedAttribtes);
+                    int index = BitOperations.TrailingZeroCount(usedAttributes);
 
                     DeclareOutputAttribute(context, index);
 
-                    usedAttribtes &= ~(1 << index);
+                    usedAttributes &= ~(1 << index);
                 }
             }
         }

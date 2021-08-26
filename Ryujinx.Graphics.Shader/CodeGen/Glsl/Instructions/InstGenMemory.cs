@@ -141,7 +141,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             if (!(src1 is AstOperand baseAttr) || baseAttr.Type != OperandType.Constant)
             {
-                throw new InvalidOperationException($"First input of {nameof(Instruction.StoreAttribute)} must be a constant operand.");
+                throw new InvalidOperationException($"First input of {nameof(Instruction.LoadAttribute)} must be a constant operand.");
             }
 
             string indexExpr = GetSoureExpr(context, src3, GetSrcVarType(operation.Inst, 2));
