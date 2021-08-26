@@ -133,6 +133,8 @@ namespace Ryujinx.Graphics.GAL.Multithreading
                 ClearRenderTargetColorCommand.Run(ref GetCommand<ClearRenderTargetColorCommand>(memory), threaded, renderer);
             _lookup[(int)CommandType.ClearRenderTargetDepthStencil] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
                 ClearRenderTargetDepthStencilCommand.Run(ref GetCommand<ClearRenderTargetDepthStencilCommand>(memory), threaded, renderer);
+            _lookup[(int)CommandType.CommandBufferBarrier] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                CommandBufferBarrierCommand.Run(ref GetCommand<CommandBufferBarrierCommand>(memory), threaded, renderer);
             _lookup[(int)CommandType.CopyBuffer] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
                 CopyBufferCommand.Run(ref GetCommand<CopyBufferCommand>(memory), threaded, renderer);
             _lookup[(int)CommandType.DispatchCompute] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
@@ -145,6 +147,10 @@ namespace Ryujinx.Graphics.GAL.Multithreading
                 EndHostConditionalRenderingCommand.Run(renderer);
             _lookup[(int)CommandType.EndTransformFeedback] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
                 EndTransformFeedbackCommand.Run(ref GetCommand<EndTransformFeedbackCommand>(memory), threaded, renderer);
+            _lookup[(int)CommandType.MultiDrawIndirectCount] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                MultiDrawIndirectCountCommand.Run(ref GetCommand<MultiDrawIndirectCountCommand>(memory), threaded, renderer);
+            _lookup[(int)CommandType.MultiDrawIndexedIndirectCount] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
+                MultiDrawIndexedIndirectCountCommand.Run(ref GetCommand<MultiDrawIndexedIndirectCountCommand>(memory), threaded, renderer);
             _lookup[(int)CommandType.SetAlphaTest] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>
                 SetAlphaTestCommand.Run(ref GetCommand<SetAlphaTestCommand>(memory), threaded, renderer);
             _lookup[(int)CommandType.SetBlendState] = (Span<byte> memory, ThreadedRenderer threaded, IRenderer renderer) =>

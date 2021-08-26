@@ -53,6 +53,12 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             _renderer.QueueCommand();
         }
 
+        public void CommandBufferBarrier()
+        {
+            _renderer.New<CommandBufferBarrierCommand>();
+            _renderer.QueueCommand();
+        }
+
         public void CopyBuffer(BufferHandle source, BufferHandle destination, int srcOffset, int dstOffset, int size)
         {
             _renderer.New<CopyBufferCommand>().Set(source, destination, srcOffset, dstOffset, size);
@@ -86,6 +92,18 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         public void EndTransformFeedback()
         {
             _renderer.New<EndTransformFeedbackCommand>();
+            _renderer.QueueCommand();
+        }
+
+        public void MultiDrawIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride)
+        {
+            _renderer.New<MultiDrawIndirectCountCommand>().Set(indirectBuffer, parameterBuffer, maxDrawCount, stride);
+            _renderer.QueueCommand();
+        }
+
+        public void MultiDrawIndexedIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride)
+        {
+            _renderer.New<MultiDrawIndexedIndirectCountCommand>().Set(indirectBuffer, parameterBuffer, maxDrawCount, stride);
             _renderer.QueueCommand();
         }
 
