@@ -1,4 +1,6 @@
-﻿namespace ARMeilleure.Decoders
+﻿using ARMeilleure.State;
+
+namespace ARMeilleure.Decoders
 {
     class OpCode32MsrReg : OpCode32
     {
@@ -17,6 +19,11 @@
             Rd = (opCode >> 12) & 0xf;
             Banked = ((opCode >> 9) & 1) != 0;
             Rn = (opCode >> 0) & 0xf;
+
+            if (Rn == RegisterAlias.Aarch32Pc || Mask == 0)
+            {
+                Instruction = InstDescriptor.Undefined;
+            }
         }
     }
 }

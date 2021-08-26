@@ -173,13 +173,6 @@ namespace ARMeilleure.Instructions
         {
             OpCode32MsrReg op = (OpCode32MsrReg)context.CurrOp;
 
-            if (op.Rn == RegisterAlias.Aarch32Pc || op.Mask == 0)
-            {
-                InstEmit.Und(context);
-
-                return;
-            }
-
             if (op.R)
             {
                 throw new NotImplementedException("SPSR");
