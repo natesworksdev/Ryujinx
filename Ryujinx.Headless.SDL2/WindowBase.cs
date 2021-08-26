@@ -34,7 +34,7 @@ namespace Ryujinx.Headless.SDL2
 
         protected IntPtr WindowHandle { get; set; }
 
-        public IHostUiTheme HostUiTheme => throw new NotImplementedException();
+        public IHostUiTheme HostUiTheme { get; }
 
         protected SDL2MouseDriver MouseDriver;
         private InputManager _inputManager;
@@ -68,6 +68,7 @@ namespace Ryujinx.Headless.SDL2
             _exitEvent = new ManualResetEvent(false);
             _aspectRatio = aspectRatio;
             _enableMouse = enableMouse;
+            HostUiTheme = new HeadlessHostUiTheme();
 
             SDL2Driver.Instance.Initialize();
         }
@@ -341,7 +342,7 @@ namespace Ryujinx.Headless.SDL2
 
         public IDynamicTextInputHandler CreateDynamicTextInputHandler()
         {
-            throw new NotImplementedException();
+            return new HeadlessDynamicTextInputHandler();
         }
 
         public void ExecuteProgram(Switch device, ProgramSpecifyKind kind, ulong value)
