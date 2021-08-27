@@ -140,12 +140,9 @@ namespace Ryujinx.Memory.Tracking
                 {
                     lock (_preActionLock)
                     {
-                        if (_preAction != null)
-                        {
-                            _preAction.Invoke(address, size);
+                        _preAction?.Invoke(address, size);
 
-                            _preAction = null;
-                        }
+                        _preAction = null;
                     }
                 }
                 finally
