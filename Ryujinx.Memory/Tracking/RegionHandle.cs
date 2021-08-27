@@ -115,37 +115,41 @@ namespace Ryujinx.Memory.Tracking
         /// <param name="write">Whether the region was written to or read</param>
         internal void Signal(ulong address, ulong size, bool write, ref IList<RegionHandle> handleIterable)
         {
-            lock (this)
+            // If this handle was already unmapped (even if just partially),
+            // then we have nothing to do until it is mapped again.
+            // The pre-action should be still consumed to avoid flushing on remap.
+            if (Unmapped)
             {
-                RegionSignal action = Interlocked.Exchange(ref _preAction, null);
+                Interlocked.Exchange(ref _preAction, null);
+                return;
+            }
 
-                // If this handle was already unmapped (even if just partially),
-                // then we have nothing to do until it is mapped again.
-                // The pre-action should be still consumed to avoid flushing on remap.
-                if (Unmapped)
+            if (_preAction != null)
+            {
+                // Copy the handles list in case it changes when we're out of the lock.
+                if (handleIterable is List<RegionHandle>)
                 {
-                    return;
+                    handleIterable = handleIterable.ToArray();
                 }
 
-                if (action != null)
+                // Temporarily release the tracking lock while we're running the action.
+                Monitor.Exit(_tracking.TrackingLock);
+
+                try
                 {
-                    // Copy the handles list in case it changes when we're out of the lock.
-                    if (handleIterable is List<RegionHandle>)
+                    lock (this)
                     {
-                        handleIterable = handleIterable.ToArray();
-                    }
+                        if (_preAction != null)
+                        {
+                            _preAction.Invoke(address, size);
 
-                    // Temporarily release the tracking lock while we're running the action.
-                    Monitor.Exit(_tracking.TrackingLock);
-
-                    try
-                    {
-                        action.Invoke(address, size);
+                            _preAction = null;
+                        }
                     }
-                    finally
-                    {
-                        Monitor.Enter(_tracking.TrackingLock);
-                    }
+                }
+                finally
+                {
+                    Monitor.Enter(_tracking.TrackingLock);
                 }
             }
 
@@ -223,14 +227,19 @@ namespace Ryujinx.Memory.Tracking
         {
             ClearVolatile();
 
-            RegionSignal lastAction = Interlocked.Exchange(ref _preAction, action);
-            if (lastAction == null && action != lastAction)
+            lock (this)
             {
-                lock (_tracking.TrackingLock)
+                RegionSignal lastAction = _preAction;
+                _preAction = action;
+
+                if (lastAction == null && action != lastAction)
                 {
-                    foreach (VirtualRegion region in _regions)
+                    lock (_tracking.TrackingLock)
                     {
-                        region.UpdateProtection();
+                        foreach (VirtualRegion region in _regions)
+                        {
+                            region.UpdateProtection();
+                        }
                     }
                 }
             }
