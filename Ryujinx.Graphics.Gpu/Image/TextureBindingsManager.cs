@@ -218,7 +218,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (result != _scales[index])
             {
-                _scaleChanged |= true;
+                _scaleChanged = true;
 
                 _scales[index] = result;
             }
