@@ -627,7 +627,9 @@ namespace Ryujinx.Ui.App
             {
                 Logger.Warning?.Print(LogClass.Application, $"Your key set is missing a key with the name: {exception.Name}. Errored File: {updatePath}");
             }
+
             version = "";
+
             return false;
         }
     }
