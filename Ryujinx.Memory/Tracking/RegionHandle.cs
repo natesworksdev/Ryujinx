@@ -35,6 +35,7 @@ namespace Ryujinx.Memory.Tracking
 
         private event Action _onDirty;
 
+        private object _preActionLock = new object();
         private RegionSignal _preAction; // Action to perform before a read or write. This will block the memory access.
         private readonly List<VirtualRegion> _regions;
         private readonly MemoryTracking _tracking;
@@ -137,7 +138,7 @@ namespace Ryujinx.Memory.Tracking
 
                 try
                 {
-                    lock (this)
+                    lock (_preActionLock)
                     {
                         if (_preAction != null)
                         {
@@ -227,7 +228,7 @@ namespace Ryujinx.Memory.Tracking
         {
             ClearVolatile();
 
-            lock (this)
+            lock (_preActionLock)
             {
                 RegionSignal lastAction = _preAction;
                 _preAction = action;
