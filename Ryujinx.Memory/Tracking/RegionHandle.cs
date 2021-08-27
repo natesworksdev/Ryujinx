@@ -115,34 +115,37 @@ namespace Ryujinx.Memory.Tracking
         /// <param name="write">Whether the region was written to or read</param>
         internal void Signal(ulong address, ulong size, bool write, ref IList<RegionHandle> handleIterable)
         {
-            RegionSignal action = Interlocked.Exchange(ref _preAction, null);
-
-            // If this handle was already unmapped (even if just partially),
-            // then we have nothing to do until it is mapped again.
-            // The pre-action should be still consumed to avoid flushing on remap.
-            if (Unmapped)
+            lock (this)
             {
-                return;
-            }
+                RegionSignal action = Interlocked.Exchange(ref _preAction, null);
 
-            if (action != null)
-            {
-                // Copy the handles list in case it changes when we're out of the lock.
-                if (handleIterable is List<RegionHandle>)
+                // If this handle was already unmapped (even if just partially),
+                // then we have nothing to do until it is mapped again.
+                // The pre-action should be still consumed to avoid flushing on remap.
+                if (Unmapped)
                 {
-                    handleIterable = handleIterable.ToArray();
+                    return;
                 }
 
-                // Temporarily release the tracking lock while we're running the action.
-                Monitor.Exit(_tracking.TrackingLock);
+                if (action != null)
+                {
+                    // Copy the handles list in case it changes when we're out of the lock.
+                    if (handleIterable is List<RegionHandle>)
+                    {
+                        handleIterable = handleIterable.ToArray();
+                    }
 
-                try
-                {
-                    action.Invoke(address, size);
-                }
-                finally
-                {
-                    Monitor.Enter(_tracking.TrackingLock);
+                    // Temporarily release the tracking lock while we're running the action.
+                    Monitor.Exit(_tracking.TrackingLock);
+
+                    try
+                    {
+                        action.Invoke(address, size);
+                    }
+                    finally
+                    {
+                        Monitor.Enter(_tracking.TrackingLock);
+                    }
                 }
             }
 
