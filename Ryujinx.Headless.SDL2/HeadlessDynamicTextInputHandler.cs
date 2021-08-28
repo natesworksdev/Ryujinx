@@ -12,8 +12,8 @@ namespace Ryujinx.Headless.SDL2
         private bool _canProcessInput;
 
         public event DynamicTextChangedHandler TextChangedEvent;
-        public event KeyPressedHandler         KeyPressedEvent;
-        public event KeyReleasedHandler        KeyReleasedEvent;
+        public event KeyPressedHandler         KeyPressedEvent  { add { } remove { } }
+        public event KeyReleasedHandler        KeyReleasedEvent { add { } remove { } }
 
         public bool TextProcessingEnabled
         {
@@ -42,16 +42,10 @@ namespace Ryujinx.Headless.SDL2
             _canProcessInput = false;
         }
 
-        public void SetText(string text, int cursorBegin)
-        {
-        }
+        public void SetText(string text, int cursorBegin) { }
 
-        public void SetText(string text, int cursorBegin, int cursorEnd)
-        {
-        }
+        public void SetText(string text, int cursorBegin, int cursorEnd) { }
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
     }
 }

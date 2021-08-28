@@ -32,19 +32,19 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
         private Bitmap               _surface    = null;
         private object               _renderLock = new object();
 
-        private string _inputText     = "";
-        private int    _cursorStart   = 0;
-        private int    _cursorEnd     = 0;
-        private bool   _acceptPressed = false;
-        private bool   _cancelPressed = false;
-        private bool   _overwriteMode = false;
-        private bool   _typingEnabled = true;
+        private string _inputText         = "";
+        private int    _cursorStart       = 0;
+        private int    _cursorEnd         = 0;
+        private bool   _acceptPressed     = false;
+        private bool   _cancelPressed     = false;
+        private bool   _overwriteMode     = false;
+        private bool   _typingEnabled     = true;
         private bool   _controllerEnabled = true;
 
-        private Image _ryujinxLogo     = null;
-        private Image _padAcceptIcon   = null;
-        private Image _padCancelIcon   = null;
-        private Image _keyModeIcon     = null;
+        private Image _ryujinxLogo   = null;
+        private Image _padAcceptIcon = null;
+        private Image _padCancelIcon = null;
+        private Image _keyModeIcon   = null;
 
         private float _textBoxOutlineWidth;
         private float _padPressedPenWidth;
@@ -134,11 +134,11 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             string font = uiTheme.FontFamily;
 
-            _messageFont     = new System.Drawing.Font(font, 26                , FontStyle.Regular, GraphicsUnit.Pixel);
-            _inputTextFont   = new System.Drawing.Font(font, _inputTextFontSize, FontStyle.Regular, GraphicsUnit.Pixel);
-            _labelsTextFont  = new System.Drawing.Font(font, 24                , FontStyle.Regular, GraphicsUnit.Pixel);
-            _padSymbolFont   = new System.Drawing.Font(font, _padButtonFontSize, FontStyle.Regular, GraphicsUnit.Pixel);
-            _keyCapFont      = new System.Drawing.Font(font, 15                , FontStyle.Regular, GraphicsUnit.Pixel);
+            _messageFont    = new System.Drawing.Font(font, 26                , FontStyle.Regular, GraphicsUnit.Pixel);
+            _inputTextFont  = new System.Drawing.Font(font, _inputTextFontSize, FontStyle.Regular, GraphicsUnit.Pixel);
+            _labelsTextFont = new System.Drawing.Font(font, 24                , FontStyle.Regular, GraphicsUnit.Pixel);
+            _padSymbolFont  = new System.Drawing.Font(font, _padButtonFontSize, FontStyle.Regular, GraphicsUnit.Pixel);
+            _keyCapFont     = new System.Drawing.Font(font, 15                , FontStyle.Regular, GraphicsUnit.Pixel);
 
             // System.Drawing has serious problems measuring strings, so it requires a per-pixel calibration
             // to ensure we are rendering text inside the proper region
@@ -501,8 +501,8 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
                 {
                     // Show the blinking cursor.
 
-                    int cursorStart                = Math.Min(_inputText.Length, _cursorStart);
-                    string textUntilCursor         = _inputText.Substring(0, cursorStart);
+                    int        cursorStart         = Math.Min(_inputText.Length, _cursorStart);
+                    string     textUntilCursor     = _inputText.Substring(0, cursorStart);
                     RectangleF cursorTextRectangle = MeasureString(graphics, textUntilCursor, _inputTextFont);
 
                     cursorVisible       = true;
@@ -547,7 +547,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
                 }
                 else
                 {
-                    graphics.DrawRectangle(cursorPen  , cursorPositionXLeft, cursorPositionYTop, cursorWidth, cursorHeight);
+                    graphics.DrawRectangle(cursorPen,   cursorPositionXLeft, cursorPositionYTop, cursorWidth, cursorHeight);
                     graphics.FillRectangle(cursorBrush, cursorPositionXLeft, cursorPositionYTop, cursorWidth, cursorHeight);
 
                     var cursorRectangle = new RectangleF(cursorPositionXLeft, cursorPositionYTop, cursorWidth, cursorHeight);

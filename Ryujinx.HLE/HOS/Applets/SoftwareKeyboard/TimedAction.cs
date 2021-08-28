@@ -56,9 +56,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
             }
         }
 
-        public TimedAction()
-        {
-        }
+        public TimedAction() { }
 
         private void Reset(Thread thread, TRef<bool> cancelled)
         {

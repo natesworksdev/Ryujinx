@@ -12,8 +12,6 @@ namespace Ryujinx.Headless.SDL2
         public ThemeColor SelectionBackgroundColor => new ThemeColor(1, 1, 1, 1);
         public ThemeColor SelectionForegroundColor => new ThemeColor(1, 0, 0, 0);
 
-        public HeadlessHostUiTheme()
-        {
-        }
+        public HeadlessHostUiTheme() { }
     }
 }

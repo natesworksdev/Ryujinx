@@ -9,9 +9,7 @@
     {
         public T Value;
 
-        public TRef()
-        {
-        }
+        public TRef() { }
 
         public TRef(T value)
         {
