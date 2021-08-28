@@ -33,6 +33,8 @@ namespace Ryujinx.Graphics.OpenGL
         private int _boundDrawFramebuffer;
         private int _boundReadFramebuffer;
 
+        private CounterQueueEvent _activeConditionalRender;
+
         private struct Vector4<T>
         {
             public T X;
@@ -164,6 +166,11 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 GL.DepthMask(_depthMask);
             }
+        }
+
+        public void CommandBufferBarrier()
+        {
+            GL.MemoryBarrier(MemoryBarrierFlags.CommandBarrierBit);
         }
 
         public void CopyBuffer(BufferHandle source, BufferHandle destination, int srcOffset, int dstOffset, int size)
@@ -543,6 +550,57 @@ namespace Ryujinx.Graphics.OpenGL
             _tfEnabled = false;
         }
 
+        public void MultiDrawIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride)
+        {
+            if (!_program.IsLinked)
+            {
+                Logger.Debug?.Print(LogClass.Gpu, "Draw error, shader not linked.");
+                return;
+            }
+
+            PreDraw();
+
+            GL.BindBuffer((BufferTarget)All.DrawIndirectBuffer, indirectBuffer.Handle.ToInt32());
+            GL.BindBuffer((BufferTarget)All.ParameterBuffer, parameterBuffer.Handle.ToInt32());
+
+            GL.MultiDrawArraysIndirectCount(
+                _primitiveType,
+                (IntPtr)indirectBuffer.Offset,
+                (IntPtr)parameterBuffer.Offset,
+                maxDrawCount,
+                stride);
+
+            PostDraw();
+        }
+
+        public void MultiDrawIndexedIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride)
+        {
+            if (!_program.IsLinked)
+            {
+                Logger.Debug?.Print(LogClass.Gpu, "Draw error, shader not linked.");
+                return;
+            }
+
+            PreDraw();
+
+            _vertexArray.SetRangeOfIndexBuffer();
+
+            GL.BindBuffer((BufferTarget)All.DrawIndirectBuffer, indirectBuffer.Handle.ToInt32());
+            GL.BindBuffer((BufferTarget)All.ParameterBuffer, parameterBuffer.Handle.ToInt32());
+
+            GL.MultiDrawElementsIndirectCount(
+                _primitiveType,
+                (Version46)_elementsType,
+                (IntPtr)indirectBuffer.Offset,
+                (IntPtr)parameterBuffer.Offset,
+                maxDrawCount,
+                stride);
+
+            _vertexArray.RestoreIndexBuffer();
+
+            PostDraw();
+        }
+
         public void SetAlphaTest(bool enable, float reference, CompareOp op)
         {
             if (!enable)
@@ -741,7 +799,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             EnsureVertexArray();
 
-            _vertexArray.SetIndexBuffer(buffer.Handle);
+            _vertexArray.SetIndexBuffer(buffer);
         }
 
         public void SetLogicOpState(bool enable, LogicalOp op)
@@ -1190,7 +1248,7 @@ namespace Ryujinx.Graphics.OpenGL
             return (_boundDrawFramebuffer, _boundReadFramebuffer);
         }
 
-        public void UpdateRenderScale(ShaderStage stage, float[] scales, int textureCount, int imageCount)
+        public void UpdateRenderScale(ShaderStage stage, ReadOnlySpan<float> scales, int textureCount, int imageCount)
         {
             if (stage != ShaderStage.Compute && stage != ShaderStage.Fragment)
             {
@@ -1296,16 +1354,18 @@ namespace Ryujinx.Graphics.OpenGL
                 //  - Comparing against 0.
                 //  - Event has not already been flushed.
 
-                if (evt.Disposed)
-                {
-                    // If the event has been flushed, then just use the values on the CPU.
-                    // The query object may already be repurposed for another draw (eg. begin + end).
-                    return false;
-                }
-
                 if (compare == 0 && evt.Type == QueryTarget.SamplesPassed && evt.ClearCounter)
                 {
+                    if (!value.ReserveForHostAccess())
+                    {
+                        // If the event has been flushed, then just use the values on the CPU.
+                        // The query object may already be repurposed for another draw (eg. begin + end).
+                        return false;
+                    }
+
                     GL.BeginConditionalRender(evt.Query, isEqual ? ConditionalRenderType.QueryNoWaitInverted : ConditionalRenderType.QueryNoWait);
+                    _activeConditionalRender = evt;
+
                     return true;
                 }
             }
@@ -1325,6 +1385,9 @@ namespace Ryujinx.Graphics.OpenGL
         public void EndHostConditionalRendering()
         {
             GL.EndConditionalRender();
+
+            _activeConditionalRender?.ReleaseHostAccess();
+            _activeConditionalRender = null;
         }
 
         public void Dispose()
@@ -1344,6 +1407,7 @@ namespace Ryujinx.Graphics.OpenGL
                 }
             }
 
+            _activeConditionalRender?.ReleaseHostAccess();
             _framebuffer?.Dispose();
             _vertexArray?.Dispose();
         }
