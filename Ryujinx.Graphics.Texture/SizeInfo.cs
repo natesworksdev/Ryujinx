@@ -96,17 +96,18 @@ namespace Ryujinx.Graphics.Texture
 
         public IEnumerable<Region> AllRegions()
         {
-            for (int i = 0; i < AllOffsets.Length; i++)
+            if (_is3D)
             {
-                int offset = AllOffsets[i];
-
-                if (_is3D)
+                for (int i = 0; i < _mipOffsets.Length; i++)
                 {
-                    yield return new Region(offset, SliceSizes[i / _depth]);
+                    yield return new Region(_mipOffsets[i], SliceSizes[i]);
                 }
-                else
+            }
+            else
+            {
+                for (int i = 0; i < AllOffsets.Length; i++)
                 {
-                    yield return new Region(offset, SliceSizes[i % _levels]);
+                    yield return new Region(AllOffsets[i], SliceSizes[i % _levels]);
                 }
             }
         }
