@@ -639,6 +639,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                             if (!texture.DataOverlaps(overlap))
                             {
                                 // Allow textures to overlap if their data does not actually overlap.
+                                // This typically happens when mip level subranges of a layered texture are used. (each texture fills the gaps of the others)
                                 continue;
                             }
 

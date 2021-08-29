@@ -2,8 +2,8 @@
 {
     public struct Region
     {
-        public int Offset;
-        public int Size;
+        public int Offset { get; }
+        public int Size { get; }
 
         public Region(int offset, int size)
         {
