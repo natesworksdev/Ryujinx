@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Texture
 {
@@ -90,6 +92,23 @@ namespace Ryujinx.Graphics.Texture
             }
 
             return true;
+        }
+
+        public IEnumerable<Region> AllRegions()
+        {
+            for (int i = 0; i < AllOffsets.Length; i++)
+            {
+                int offset = AllOffsets[i];
+
+                if (_is3D)
+                {
+                    yield return new Region(offset, SliceSizes[i / _depth]);
+                }
+                else
+                {
+                    yield return new Region(offset, SliceSizes[i % _levels]);
+                }
+            }
         }
     }
 }

@@ -636,6 +636,12 @@ namespace Ryujinx.Graphics.Gpu.Image
                                 continue;
                             }
 
+                            if (!texture.DataOverlaps(overlap))
+                            {
+                                // Allow textures to overlap if their data does not actually overlap.
+                                continue;
+                            }
+
                             // The overlap texture is going to contain garbage data after we draw, or is generally incompatible.
                             // If the texture cannot be entirely contained in the new address space, and one of its view children is compatible with us,
                             // it must be flushed before removal, so that the data is not lost.
