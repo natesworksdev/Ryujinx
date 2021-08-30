@@ -82,45 +82,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             Declarations.DeclareLocals(context, function);
             Declarations.DeclareLocalForArgs(context, info.Functions);
 
-            if (funcIndex == 0)
-            {
-                var v4Type = context.TypeVector(context.TypeFP32(), 4);
-                var zero = context.Constant(context.TypeFP32(), 0f);
-                var one = context.Constant(context.TypeFP32(), 1f);
-
-                // Some games will leave some elements of gl_Position uninitialized,
-                // in those cases, the elements will contain undefined values according
-                // to the spec, but on NVIDIA they seems to be always initialized to (0, 0, 0, 1),
-                // so we do explicit initialization to avoid UB on non-NVIDIA gpus.
-                if (context.Config.Stage == ShaderStage.Vertex)
-                {
-                    var elemPointer = context.GetAttributeVectorPointer(new AstOperand(OperandType.Attribute, AttributeConsts.PositionX), true);
-                    context.Store(elemPointer, context.CompositeConstruct(v4Type, zero, zero, zero, one));
-                }
-
-                // Ensure that unused attributes are set, otherwise the downstream
-                // compiler may eliminate them.
-                // (Not needed for fragment shader as it is the last stage).
-                if (context.Config.Stage != ShaderStage.Compute &&
-                    context.Config.Stage != ShaderStage.Fragment &&
-                    !context.Config.GpPassthrough)
-                {
-                    for (int attr = 0; attr < Declarations.MaxAttributes; attr++)
-                    {
-                        if (context.Config.Options.Flags.HasFlag(TranslationFlags.Feedback))
-                        {
-                            throw new NotImplementedException();
-                        }
-                        else
-                        {
-                            int currAttr = AttributeConsts.UserAttributeBase + attr * 16;
-                            var elemPointer = context.GetAttributeVectorPointer(new AstOperand(OperandType.Attribute, currAttr), true);
-                            context.Store(elemPointer, context.CompositeConstruct(v4Type, zero, zero, zero, one));
-                        }
-                    }
-                }
-            }
-
             Generate(context, function.MainBlock);
 
             context.FunctionEnd();
