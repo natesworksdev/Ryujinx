@@ -353,6 +353,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     sourcesList[xIndex] = context.ShiftRightS32(sourcesList[xIndex], Const(GetComponentSizeInBytesLog2(op.Type)));
                 }
 
+                // TODO: FP and 64-bit formats.
                 format = (op.Type == ReductionType.SD32 || op.Type == ReductionType.SD64) ?
                     context.Config.GetTextureFormatAtomic(op.HandleOffset) :
                     GetTextureFormat(op.Type);
@@ -477,6 +478,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     sourcesList[xIndex] = context.ShiftRightS32(sourcesList[xIndex], Const(GetComponentSizeInBytesLog2(op.Type)));
                 }
 
+                // TODO: FP and 64-bit formats.
                 format = (op.Type == ReductionType.SD32 || op.Type == ReductionType.SD64) ?
                     context.Config.GetTextureFormatAtomic(op.HandleOffset) :
                     GetTextureFormat(op.Type);

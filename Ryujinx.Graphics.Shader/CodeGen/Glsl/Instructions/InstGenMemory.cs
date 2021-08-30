@@ -18,7 +18,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             // TODO: Bindless texture support. For now we just return 0/do nothing.
             if (isBindless)
             {
-                return texOp.Inst == Instruction.ImageLoad ? NumberFormatter.FormatFloat(0) : "// imageStore(bindless)";
+                return texOp.Inst switch
+                {
+                    Instruction.ImageStore => "// imageStore(bindless)",
+                    Instruction.ImageLoad => NumberFormatter.FormatFloat(0),
+                    _ => NumberFormatter.FormatInt(0)
+                };
             }
 
             bool isArray   = (texOp.Type & SamplerType.Array)   != 0;
@@ -32,8 +37,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     TextureFlags.Add        => "imageAtomicAdd",
                     TextureFlags.Minimum    => "imageAtomicMin",
                     TextureFlags.Maximum    => "imageAtomicMax",
-                    TextureFlags.Increment  => "imageAtomicAdd", // TODO
-                    TextureFlags.Decrement  => "imageAtomicAdd", // TODO
+                    TextureFlags.Increment  => "imageAtomicAdd", // TODO: Clamp value.
+                    TextureFlags.Decrement  => "imageAtomicAdd", // TODO: Clamp value.
                     TextureFlags.BitwiseAnd => "imageAtomicAnd",
                     TextureFlags.BitwiseOr  => "imageAtomicOr",
                     TextureFlags.BitwiseXor => "imageAtomicXor",
@@ -157,7 +162,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     Append(Src(type)); // Compare value.
                 }
 
-                Append(Src(type));
+                string value = (texOp.Flags & TextureFlags.AtomicMask) switch
+                {
+                    TextureFlags.Increment => NumberFormatter.FormatInt(1, type), // TODO: Clamp value
+                    TextureFlags.Decrement => NumberFormatter.FormatInt(-1, type), // TODO: Clamp value
+                    _ => Src(type)
+                };
+
+                Append(value);
 
                 texCall += ")";
 
