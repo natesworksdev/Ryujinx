@@ -769,8 +769,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
                         sourcesList.Add(Ra());
                         sourcesList.Add(Const(0));
                         break;
-                    default:
-                        break;
                 }
 
                 if ((flags & TextureFlags.Offset) != 0)
