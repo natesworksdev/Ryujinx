@@ -240,8 +240,6 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             }
             else if (selectedNextUse < current.GetEnd())
             {
-                Debug.Assert(selectedNextUse > current.GetStart(), "Trying to split interval at the start.");
-
                 LiveInterval splitChild = current.Split(selectedNextUse);
 
                 if (splitChild.UsesCount != 0)

@@ -10,9 +10,11 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
     {
         public const int NotFound = -1;
 
+        private int _end;
+        private LiveRange _firstRange;
+
         private readonly LiveInterval _parent;
         private readonly SortedIntegerList _usePositions;
-        private readonly List<LiveRange> _ranges;
         private readonly SortedList<int, LiveInterval> _childs;
 
         public Operand Local { get; }
@@ -21,7 +23,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         public int SpillOffset { get; private set; }
 
         public bool IsFixed { get; }
-        public bool IsEmpty => _ranges.Count == 0;
+        public bool IsEmpty => _firstRange == default;
         public bool IsSplit => _childs != null && _childs.Count != 0;
         public bool IsSpilled => SpillOffset != -1;
 
@@ -29,12 +31,12 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         public LiveInterval(Operand local = default, LiveInterval parent = null)
         {
-            Local   = local;
+            Local = local;
 
+            _firstRange = default;
             _usePositions = new SortedIntegerList();
-            _ranges = new List<LiveRange>();
 
-            // Only parent parent intervals can have child splits.
+            // Only parent intervals can have child splits.
             if (parent != null)
             {
                 _parent = parent;
@@ -51,195 +53,107 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         public LiveInterval(Register register) : this()
         {
-            IsFixed  = true;
+            IsFixed = true;
             Register = register;
         }
 
         public void SetStart(int position)
         {
-            if (_ranges.Count != 0)
+            if (_firstRange != default)
             {
-                Debug.Assert(position != _ranges[0].End);
+                Debug.Assert(position != _firstRange.End);
 
-                _ranges[0] = new LiveRange(position, _ranges[0].End);
+                _firstRange.Start = position;
             }
             else
             {
-                _ranges.Add(new LiveRange(position, position + 1));
+                _firstRange = new LiveRange(position, position + 1);
+                _end = position + 1;
             }
         }
 
         public int GetStart()
         {
-            if (_ranges.Count == 0)
-            {
-                throw new InvalidOperationException("Empty interval.");
-            }
+            Debug.Assert(!IsEmpty);
 
-            return _ranges[0].Start;
-        }
-
-        public void SetEnd(int position)
-        {
-            if (_ranges.Count != 0)
-            {
-                int lastIdx = _ranges.Count - 1;
-
-                Debug.Assert(position != _ranges[lastIdx].Start);
-
-                _ranges[lastIdx] = new LiveRange(_ranges[lastIdx].Start, position);
-            }
-            else
-            {
-                _ranges.Add(new LiveRange(position, position + 1));
-            }
+            return _firstRange.Start;
         }
 
         public int GetEnd()
         {
-            if (_ranges.Count == 0)
-            {
-                throw new InvalidOperationException("Empty interval.");
-            }
+            Debug.Assert(!IsEmpty);
 
-            return _ranges[_ranges.Count - 1].End;
+            return _end;
         }
 
         public void AddRange(int start, int end)
         {
-            if (start >= end)
+            Debug.Assert(start < end, $"Invalid range start position {start}, {end}");
+
+            if (_firstRange != default)
             {
-                throw new ArgumentException("Invalid range start position " + start + ", " + end);
-            }
-
-            int index = _ranges.BinarySearch(new LiveRange(start, end));
-
-            if (index >= 0)
-            {
-                // New range insersects with an existing range, we need to remove
-                // all the intersecting ranges before adding the new one.
-                // We also extend the new range as needed, based on the values of
-                // the existing ranges being removed.
-                int lIndex = index;
-                int rIndex = index;
-
-                while (lIndex > 0 && _ranges[lIndex - 1].End >= start)
+                // If the new range ends exactly where the first range start, then coalesce together.
+                if (end == _firstRange.Start)
                 {
-                    lIndex--;
+                    _firstRange.Start = start;
+
+                    return;
                 }
-
-                while (rIndex + 1 < _ranges.Count && _ranges[rIndex + 1].Start <= end)
+                // If the new range is already contained, then coalesce together.
+                else if (start >= _firstRange.Start)
                 {
-                    rIndex++;
-                }
+                    if (end > _firstRange.End)
+                    {
+                        _firstRange.End = end;
+                    }
 
-                if (start > _ranges[lIndex].Start)
-                {
-                    start = _ranges[lIndex].Start;
-                }
-
-                if (end < _ranges[rIndex].End)
-                {
-                    end = _ranges[rIndex].End;
-                }
-
-                _ranges.RemoveRange(lIndex, (rIndex - lIndex) + 1);
-
-                InsertRange(lIndex, start, end);
-            }
-            else
-            {
-                InsertRange(~index, start, end);
-            }
-        }
-
-        private void InsertRange(int index, int start, int end)
-        {
-            // Here we insert a new range on the ranges list.
-            // If possible, we extend an existing range rather than inserting a new one.
-            // We can extend an existing range if any of the following conditions are true:
-            // - The new range starts right after the end of the previous range on the list.
-            // - The new range ends right before the start of the next range on the list.
-            // If both cases are true, we can extend either one. We prefer to extend the
-            // previous range, and then remove the next one, but theres no specific reason
-            // for that, extending either one will do.
-            int? extIndex = null;
-
-            if (index > 0 && _ranges[index - 1].End == start)
-            {
-                start = _ranges[index - 1].Start;
-
-                extIndex = index - 1;
-            }
-
-            if (index < _ranges.Count && _ranges[index].Start == end)
-            {
-                end = _ranges[index].End;
-
-                if (extIndex.HasValue)
-                {
-                    _ranges.RemoveAt(index);
-                }
-                else
-                {
-                    extIndex = index;
+                    return;
                 }
             }
 
-            if (extIndex.HasValue)
-            {
-                _ranges[extIndex.Value] = new LiveRange(start, end);
-            }
-            else
-            {
-                _ranges.Insert(index, new LiveRange(start, end));
-            }
+            _firstRange = new LiveRange(start, end, _firstRange);
+            _end = Math.Max(_end, end);
         }
 
         public void AddUsePosition(int position)
         {
-            // Inserts are in descending order, but ascending is faster for SortedIntegerList<>.
-            // We flip the ordering, then iterate backwards when using the final list.
+            // Inserts are in descending order, but ascending is faster for SortedIntegerList<>. We flip the ordering,
+            // then iterate backwards when using the final list.
             _usePositions.Add(-position);
         }
 
         public bool Overlaps(int position)
         {
-            return _ranges.BinarySearch(new LiveRange(position, position + 1)) >= 0;
-        }
+            LiveRange curr = _firstRange;
 
-        public bool Overlaps(LiveInterval other)
-        {
-            foreach (LiveRange range in other._ranges)
+            while (curr != default && curr.Start <= position)
             {
-                if (_ranges.BinarySearch(range) >= 0)
+                if (curr.Overlaps(position))
                 {
                     return true;
                 }
+
+                curr = curr.Next;
             }
 
             return false;
         }
 
+        public bool Overlaps(LiveInterval other)
+        {
+            return GetOverlapPosition(other) != NotFound;
+        }
+
         public int GetOverlapPosition(LiveInterval other)
         {
-            foreach (LiveRange range in other._ranges)
+            for (LiveRange a = _firstRange; a != default; a = a.Next)
             {
-                int overlapIndex = _ranges.BinarySearch(range);
-
-                if (overlapIndex >= 0)
+                for (LiveRange b = other._firstRange; b != default; b = b.Next)
                 {
-                    // It's possible that we have multiple overlaps within a single interval,
-                    // in this case, we pick the one with the lowest start position, since
-                    // we return the first overlap position.
-                    while (overlapIndex > 0 && _ranges[overlapIndex - 1].End > range.Start)
+                    if (a.Overlaps(b))
                     {
-                        overlapIndex--;
+                        return a.Start;
                     }
-
-                    LiveRange overlappingRange = _ranges[overlapIndex];
-
-                    return overlappingRange.Start;
                 }
             }
 
@@ -269,66 +183,73 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         public int NextUseAfter(int position)
         {
             int index = _usePositions.FindLessEqualIndex(-position);
+
             return (index >= 0) ? -_usePositions[index] : NotFound;
         }
 
         public void RemoveAfter(int position)
         {
             int index = _usePositions.FindLessEqualIndex(-position);
+
             _usePositions.RemoveRange(0, index + 1);
         }
 
         public LiveInterval Split(int position)
         {
-            LiveInterval right = new LiveInterval(Local, _parent);
+            LiveInterval result = new(Local, _parent);
+            result._end = _end;
 
-            int splitIndex = 0;
+            LiveRange prev = default;
+            LiveRange curr = _firstRange;
 
-            for (; splitIndex < _ranges.Count; splitIndex++)
+            while (curr != default)
             {
-                LiveRange range = _ranges[splitIndex];
-
-                if (position > range.Start && position < range.End)
-                {
-                    right._ranges.Add(new LiveRange(position, range.End));
-
-                    range = new LiveRange(range.Start, position);
-
-                    _ranges[splitIndex++] = range;
-
-                    break;
-                }
-
-                if (range.Start >= position)
+                if (curr.Start >= position || curr.Overlaps(position))
                 {
                     break;
                 }
+
+                prev = curr;
+                curr = curr.Next;
             }
 
-            if (splitIndex < _ranges.Count)
+            Debug.Assert(curr != default);
+
+            if (curr.Start >= position)
             {
-                int count = _ranges.Count - splitIndex;
+                prev.Next = default;
 
-                right._ranges.AddRange(_ranges.GetRange(splitIndex, count));
+                result._firstRange = curr;
 
-                _ranges.RemoveRange(splitIndex, count);
+                _end = prev.End;
+            }
+            else
+            {
+                result._firstRange = new LiveRange(position, curr.End, curr.Next);
+
+                curr.End = position;
+                curr.Next = default;
+
+                _end = curr.End;
             }
 
             int addAfter = _usePositions.FindLessEqualIndex(-position);
+
             for (int index = addAfter; index >= 0; index--)
             {
                 int usePosition = _usePositions[index];
-                right._usePositions.Add(usePosition);
+
+                result._usePositions.Add(usePosition);
             }
 
-            RemoveAfter(position);
+            _usePositions.RemoveRange(0, addAfter + 1);
 
-            Debug.Assert(_ranges.Count != 0, "Left interval is empty after split.");
-            Debug.Assert(right._ranges.Count != 0, "Right interval is empty after split.");
+            AddSplitChild(result);
 
-            AddSplitChild(right);
+            Debug.Assert(!IsEmpty, "Left interval is empty after split.");
+            Debug.Assert(!result.IsEmpty, "Right interval is empty after split.");
 
-            return right;
+            return result;
         }
 
         private void AddSplitChild(LiveInterval child)
@@ -376,19 +297,31 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             SpillOffset = offset;
         }
 
-        public int CompareTo(LiveInterval other)
+        public int CompareTo(LiveInterval interval)
         {
-            if (_ranges.Count == 0 || other._ranges.Count == 0)
+            if (_firstRange == default || interval._firstRange == default)
             {
-                return _ranges.Count.CompareTo(other._ranges.Count);
+                return 0;
             }
 
-            return _ranges[0].Start.CompareTo(other._ranges[0].Start);
+            return _firstRange.Start.CompareTo(interval._firstRange.Start);
         }
 
         public override string ToString()
         {
-            return string.Join("; ", _ranges);
+            IEnumerable<LiveRange> GetRanges()
+            {
+                LiveRange curr = _firstRange;
+
+                while (curr != default)
+                {
+                    yield return curr;
+
+                    curr = curr.Next;
+                }
+            }
+
+            return string.Join("; ", GetRanges());
         }
     }
 }

@@ -49,6 +49,7 @@ namespace ARMeilleure.Common
         public int FindLessEqualIndex(int value)
         {
             int index = _items.BinarySearch(value);
+
             return (index < 0) ? (-2 - index) : index;
         }
 
