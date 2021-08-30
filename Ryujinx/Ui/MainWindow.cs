@@ -1280,6 +1280,7 @@ namespace Ryujinx.Ui
             {
                 UpdateGameMetadata(_emulationContext.Application.TitleIdText);
             }
+
             RendererWidget?.Exit();
         }
 
