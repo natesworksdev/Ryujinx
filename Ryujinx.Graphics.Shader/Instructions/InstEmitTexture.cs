@@ -1587,7 +1587,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 ReductionType.S64         => 3,
                 ReductionType.SD32        => 2,
                 ReductionType.SD64        => 3,
-                _ => 2
+                _                         => 2
             };
         }
 

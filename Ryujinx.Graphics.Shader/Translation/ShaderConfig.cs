@@ -162,7 +162,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             return format;
         }
 
-        private bool FormatSupportedAtomic(TextureFormat format)
+        private bool FormatSupportsAtomic(TextureFormat format)
         {
             return format == TextureFormat.R32Sint || format == TextureFormat.R32Uint;
         }
@@ -174,7 +174,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             var format = GpuAccessor.QueryTextureFormat(handle, cbufSlot);
 
-            if (!FormatSupportedAtomic(format))
+            if (!FormatSupportsAtomic(format))
             {
                 GpuAccessor.Log($"Unsupported format for texture {handle}: {format}.");
 

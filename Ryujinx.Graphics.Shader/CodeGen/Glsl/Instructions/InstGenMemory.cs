@@ -51,7 +51,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             {
                 texCall = texOp.Inst == Instruction.ImageLoad ? "imageLoad" : "imageStore";
             }
-             
 
             int srcIndex = isBindless ? 1 : 0;
 
