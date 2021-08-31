@@ -261,6 +261,9 @@ namespace Ryujinx.Graphics.Vulkan
             bool srcUsesStorageFormat = src.VkFormat == src.Storage.VkFormat;
             bool dstUsesStorageFormat = dst.VkFormat == dst.Storage.VkFormat;
 
+            int layers = Math.Min(dst.Info.GetDepthOrLayers(), src.Info.GetDepthOrLayers());
+            int levels = Math.Min(dst.Info.Levels, src.Info.Levels);
+
             if (srcUsesStorageFormat && dstUsesStorageFormat)
             {
                 if ((srcRegion.X1 | dstRegion.X1) == 0 &&
@@ -288,8 +291,8 @@ namespace Ryujinx.Graphics.Vulkan
                         0,
                         0,
                         0,
-                        1,
-                        1);
+                        layers,
+                        levels);
 
                     return;
                 }
@@ -309,6 +312,8 @@ namespace Ryujinx.Graphics.Vulkan
                         dst.FirstLayer,
                         src.FirstLevel,
                         dst.FirstLevel,
+                        layers,
+                        levels,
                         linearFilter);
 
                     return;
@@ -336,6 +341,8 @@ namespace Ryujinx.Graphics.Vulkan
                             0,
                             src.FirstLevel,
                             0,
+                            layers,
+                            levels,
                             false,
                             aspectFlags,
                             aspectFlags);
@@ -355,8 +362,8 @@ namespace Ryujinx.Graphics.Vulkan
                             0,
                             0,
                             0,
-                            1,
-                            1);
+                            layers,
+                            levels);
                     }
 
                     BlitAndCopy(ref d32StorageInfo, d32Storage, ImageAspectFlags.ImageAspectDepthBit);
@@ -413,6 +420,8 @@ namespace Ryujinx.Graphics.Vulkan
                 dst.FirstLevel,
                 src.FirstLayer,
                 dst.FirstLayer,
+                layers,
+                levels,
                 linearFilter,
                 ImageAspectFlags.ImageAspectColorBit,
                 ImageAspectFlags.ImageAspectColorBit);
