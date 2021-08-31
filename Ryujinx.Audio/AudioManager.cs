@@ -123,7 +123,7 @@ namespace Ryujinx.Audio
         }
 
         /// <summary>
-        /// Stop updating the <see cref="AudioManager"/> without stopping worker thread.
+        /// Stop updating the <see cref="AudioManager"/> without stopping the worker thread.
         /// </summary>
         public void StopUpdates()
         {

@@ -387,6 +387,12 @@ namespace Ryujinx.HLE.HOS
             {
                 _isDisposed = true;
 
+                // "Soft" stops AudioRenderer and AudioManager to avoid some sound between resume and stop.
+                AudioRendererManager.StopSendingCommands();
+                AudioManager.StopUpdates();
+
+                TogglePauseEmulation(false);
+
                 KProcess terminationProcess = new KProcess(KernelContext);
                 KThread terminationThread = new KThread(KernelContext);
 
@@ -447,7 +453,7 @@ namespace Ryujinx.HLE.HOS
             }
         }
 
-        public void TogglePauseEmulation(bool pause, bool exit = false)
+        public void TogglePauseEmulation(bool pause)
         {
             lock (KernelContext.Processes)
             {
@@ -467,19 +473,11 @@ namespace Ryujinx.HLE.HOS
                 }
                 else if (!pause && IsPaused)
                 {
-                    if (exit)
-                    {
-                        // "Soft" stops AudioRenderer and AudioManager to avoid some sound between resume and stop.
-                        AudioRendererManager.StopSendingCommands();
-                        AudioManager.StopUpdates();
-                    }
-
                     Device.AudioDeviceDriver.GetPauseEvent().Set();
                     ARMeilleure.State.ExecutionContext.ResumeCounter();
                 }
             }
             IsPaused = pause;
         }
-
     }
 }
