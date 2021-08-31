@@ -134,11 +134,11 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             string font = uiTheme.FontFamily;
 
-            _messageFont    = new System.Drawing.Font(font, 26                , FontStyle.Regular, GraphicsUnit.Pixel);
+            _messageFont    = new System.Drawing.Font(font, 26,                 FontStyle.Regular, GraphicsUnit.Pixel);
             _inputTextFont  = new System.Drawing.Font(font, _inputTextFontSize, FontStyle.Regular, GraphicsUnit.Pixel);
-            _labelsTextFont = new System.Drawing.Font(font, 24                , FontStyle.Regular, GraphicsUnit.Pixel);
+            _labelsTextFont = new System.Drawing.Font(font, 24,                 FontStyle.Regular, GraphicsUnit.Pixel);
             _padSymbolFont  = new System.Drawing.Font(font, _padButtonFontSize, FontStyle.Regular, GraphicsUnit.Pixel);
-            _keyCapFont     = new System.Drawing.Font(font, 15                , FontStyle.Regular, GraphicsUnit.Pixel);
+            _keyCapFont     = new System.Drawing.Font(font, 15,                 FontStyle.Regular, GraphicsUnit.Pixel);
 
             // System.Drawing has serious problems measuring strings, so it requires a per-pixel calibration
             // to ensure we are rendering text inside the proper region
