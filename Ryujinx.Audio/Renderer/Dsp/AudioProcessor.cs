@@ -206,6 +206,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
             while (true)
             {
                 _pauseEvent?.WaitOne();
+
                 MailboxMessage message = _mailbox.ReceiveMessage();
 
                 if (message == MailboxMessage.Stop)

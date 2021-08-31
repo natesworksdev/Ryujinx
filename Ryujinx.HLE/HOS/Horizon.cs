@@ -447,7 +447,7 @@ namespace Ryujinx.HLE.HOS
             }
         }
 
-        public void TogglePauseEmulation(bool pause)
+        public void TogglePauseEmulation(bool pause, bool exit = false)
         {
             lock (KernelContext.Processes)
             {
@@ -467,6 +467,13 @@ namespace Ryujinx.HLE.HOS
                 }
                 else if (!pause && IsPaused)
                 {
+                    if (exit)
+                    {
+                        // "Soft" stops AudioRenderer and AudioManager to avoid some sound between resume and stop.
+                        AudioRendererManager.StopSendingCommands();
+                        AudioManager.StopUpdates();
+                    }
+
                     Device.AudioDeviceDriver.GetPauseEvent().Set();
                     ARMeilleure.State.ExecutionContext.ResumeCounter();
                 }
