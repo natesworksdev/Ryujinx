@@ -21,19 +21,21 @@ namespace Ryujinx.Graphics.Vulkan
             int dstLayer,
             int srcLevel,
             int dstLevel,
+            int layers,
+            int levels,
             bool linearFilter,
             ImageAspectFlags srcAspectFlags = 0,
             ImageAspectFlags dstAspectFlags = 0)
         {
-            static (Offset3D, Offset3D) ExtentsToOffset3D(Extents2D extents, int width, int height)
+            static (Offset3D, Offset3D) ExtentsToOffset3D(Extents2D extents, int width, int height, int level)
             {
                 static int Clamp(int value, int max)
                 {
                     return Math.Clamp(value, 0, max);
                 }
 
-                var xy1 = new Offset3D(Clamp(extents.X1, width), Clamp(extents.Y1, height), 0);
-                var xy2 = new Offset3D(Clamp(extents.X2, width), Clamp(extents.Y2, height), 1);
+                var xy1 = new Offset3D(Clamp(extents.X1, width) >> level, Clamp(extents.Y1, height) >> level, 0);
+                var xy2 = new Offset3D(Clamp(extents.X2, width) >> level, Clamp(extents.Y2, height) >> level, 1);
 
                 return (xy1, xy2);
             }
@@ -48,26 +50,37 @@ namespace Ryujinx.Graphics.Vulkan
                 dstAspectFlags = dstInfo.Format.ConvertAspectFlags();
             }
 
-            var srcSl = new ImageSubresourceLayers(srcAspectFlags, (uint)srcLevel, (uint)srcLayer, 1);
-            var dstSl = new ImageSubresourceLayers(dstAspectFlags, (uint)dstLevel, (uint)dstLayer, 1);
-
             var srcOffsets = new ImageBlit.SrcOffsetsBuffer();
             var dstOffsets = new ImageBlit.DstOffsetsBuffer();
 
-            (srcOffsets.Element0, srcOffsets.Element1) = ExtentsToOffset3D(srcRegion, srcInfo.Width, srcInfo.Height);
-            (dstOffsets.Element0, dstOffsets.Element1) = ExtentsToOffset3D(dstRegion, dstInfo.Width, dstInfo.Height);
-
-            var region = new ImageBlit()
-            {
-                SrcSubresource = srcSl,
-                SrcOffsets = srcOffsets,
-                DstSubresource = dstSl,
-                DstOffsets = dstOffsets
-            };
-
             var filter = linearFilter && !dstInfo.Format.IsDepthOrStencil() ? Filter.Linear : Filter.Nearest;
 
-            api.CmdBlitImage(commandBuffer, srcImage, ImageLayout.General, dstImage, ImageLayout.General, 1, region, filter);
+            for (int level = 0; level < levels; level++)
+            {
+                var srcSl = new ImageSubresourceLayers(srcAspectFlags, (uint)srcLevel, (uint)srcLayer, (uint)layers);
+                var dstSl = new ImageSubresourceLayers(dstAspectFlags, (uint)dstLevel, (uint)dstLayer, (uint)layers);
+
+                (srcOffsets.Element0, srcOffsets.Element1) = ExtentsToOffset3D(srcRegion, srcInfo.Width, srcInfo.Height, level);
+                (dstOffsets.Element0, dstOffsets.Element1) = ExtentsToOffset3D(dstRegion, dstInfo.Width, dstInfo.Height, level);
+
+                var region = new ImageBlit()
+                {
+                    SrcSubresource = srcSl,
+                    SrcOffsets = srcOffsets,
+                    DstSubresource = dstSl,
+                    DstOffsets = dstOffsets
+                };
+
+                api.CmdBlitImage(commandBuffer, srcImage, ImageLayout.General, dstImage, ImageLayout.General, 1, region, filter);
+
+                srcLevel++;
+                dstLevel++;
+
+                if (srcInfo.Target == Target.Texture3D || dstInfo.Target == Target.Texture3D)
+                {
+                    layers = Math.Max(1, layers >> 1);
+                }
+            }
         }
 
         public static void Copy(
