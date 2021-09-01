@@ -1306,7 +1306,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
             // TODO: Validate and use property.
             Instruction inst = Instruction.TextureSize;
 
-            SamplerType type = SamplerType.Texture2D;
+            SamplerType type = (op.ComponentMask & 4) != 0 ? SamplerType.Texture3D : SamplerType.Texture2D;
 
             TextureFlags flags = bindless ? TextureFlags.Bindless : TextureFlags.None;
 
