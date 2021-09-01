@@ -15,7 +15,9 @@ using Ryujinx.Graphics.GAL.Multithreading;
 using Ryujinx.Graphics.Gpu;
 using Ryujinx.Graphics.Gpu.Shader;
 using Ryujinx.Graphics.OpenGL;
+using Ryujinx.Graphics.Vulkan;
 using Ryujinx.Headless.SDL2.OpenGL;
+using Ryujinx.Headless.SDL2.Vulkan;
 using Ryujinx.HLE;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.FileSystem.Content;
@@ -24,6 +26,7 @@ using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.Input;
 using Ryujinx.Input.HLE;
 using Ryujinx.Input.SDL2;
+using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -387,7 +390,7 @@ namespace Ryujinx.Headless.SDL2
             }
 
             // Setup graphics configuration
-            GraphicsConfig.EnableShaderCache = (bool)option.EnableShaderCache;
+            GraphicsConfig.EnableShaderCache = (bool)option.EnableShaderCache && option.GraphicsBackend != GraphicsBackend.Vulkan;
             GraphicsConfig.ResScale = option.ResScale;
             GraphicsConfig.MaxAnisotropy = option.MaxAnisotropy;
             GraphicsConfig.ShadersDumpPath = option.GraphicsShadersDumpPath;
@@ -433,10 +436,29 @@ namespace Ryujinx.Headless.SDL2
             Logger.Info?.Print(LogClass.Application, label);
         }
 
-        private static Switch InitializeEmulationContext(WindowBase window, Options options)
+        private static (WindowBase, IRenderer) CreateRenderer(Options options)
         {
-            IRenderer renderer = new Renderer();
+            WindowBase window;
+            IRenderer renderer;
 
+            if (options.GraphicsBackend == GraphicsBackend.Vulkan)
+            {
+                VulkanWindow vulkanWindow = new VulkanWindow(_inputManager, options.LoggingGraphicsDebugLevel, options.AspectRatio, (bool)options.EnableMouse);
+                window = vulkanWindow;
+                renderer = new VulkanGraphicsDevice((instance, vk) => new SurfaceKHR((ulong)(vulkanWindow.CreateWindowSurface(instance.Handle))),
+                                                    vulkanWindow.GetRequiredInstanceExtensions);
+            }
+            else
+            {
+                window = new OpenGLWindow(_inputManager, options.LoggingGraphicsDebugLevel, options.AspectRatio, (bool)options.EnableMouse);
+                renderer = new Renderer();
+            }
+
+            return (window, renderer);
+        }
+
+        private static Switch InitializeEmulationContext(WindowBase window, IRenderer renderer, Options options)
+        {
             BackendThreading threadingMode = options.BackendThreading;
 
             bool threadedGAL = threadingMode == BackendThreading.On || (threadingMode == BackendThreading.Auto && renderer.PreferThreading);
@@ -500,8 +522,11 @@ namespace Ryujinx.Headless.SDL2
 
             Logger.RestartTime();
 
-            _window = new OpenGLWindow(_inputManager, options.LoggingGraphicsDebugLevel, options.AspectRatio, (bool)options.EnableMouse);
-            _emulationContext = InitializeEmulationContext(_window, options);
+            (WindowBase window, IRenderer renderer) = CreateRenderer(options);
+
+            _window = window;
+
+            _emulationContext = InitializeEmulationContext(window, renderer, options);
 
             SetupProgressHandler();
 

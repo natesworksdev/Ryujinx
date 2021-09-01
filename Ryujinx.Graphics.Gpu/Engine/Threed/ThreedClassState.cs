@@ -273,6 +273,15 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         {
             return Attribute & 0x3fe00000;
         }
+
+         /// <summary>
+        /// Unpacks the Maxwell attribute component type.
+        /// </summary>
+        /// <returns>Attribute component type</returns>
+        public uint UnpackType()
+        {
+            return (Attribute >> 27) & 7;
+        }
     }
 
     /// <summary>

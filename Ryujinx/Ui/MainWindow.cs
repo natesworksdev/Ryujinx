@@ -29,6 +29,7 @@ using Ryujinx.Configuration;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.GAL.Multithreading;
 using Ryujinx.Graphics.OpenGL;
+using Ryujinx.Graphics.Vulkan;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.FileSystem.Content;
 using Ryujinx.HLE.HOS;
@@ -43,6 +44,8 @@ using Ryujinx.Ui.Applet;
 using Ryujinx.Ui.Helper;
 using Ryujinx.Ui.Widgets;
 using Ryujinx.Ui.Windows;
+using Silk.NET.Vulkan;
+using SPB.Graphics.Vulkan;
 
 using GUI = Gtk.Builder.ObjectAttribute;
 
@@ -83,8 +86,6 @@ namespace Ryujinx.Ui
 
         public bool IsFocused;
 
-        private static bool UseVulkan = false;
-
 #pragma warning disable CS0169, CS0649, IDE0044
 
         [GUI] public MenuItem ExitMenuItem;
@@ -119,6 +120,7 @@ namespace Ryujinx.Ui
         [GUI] CheckMenuItem   _fileExtToggle;
         [GUI] CheckMenuItem   _pathToggle;
         [GUI] CheckMenuItem   _fileSizeToggle;
+        [GUI] Label           _gpuBackend;
         [GUI] Label           _dockedMode;
         [GUI] Label           _aspectRatio;
         [GUI] Label           _gameStatus;
@@ -393,9 +395,10 @@ namespace Ryujinx.Ui
 
             IRenderer renderer;
 
-            if (UseVulkan)
+            if (ConfigurationState.Instance.Graphics.GraphicsBackend == GraphicsBackend.Vulkan)
             {
-                throw new NotImplementedException();
+                renderer = new VulkanGraphicsDevice((instance, vk) => new SurfaceKHR((ulong)((VKRenderer)RendererWidget).CreateWindowSurface(instance.Handle)),
+                                                    VulkanHelper.GetRequiredInstanceExtensions);
             }
             else
             {
@@ -860,7 +863,7 @@ namespace Ryujinx.Ui
 
         private RendererWidgetBase CreateRendererWidget()
         {
-            if (UseVulkan)
+            if (ConfigurationState.Instance.Graphics.GraphicsBackend == GraphicsBackend.Vulkan)
             {
                 return new VKRenderer(InputManager, ConfigurationState.Instance.Logger.GraphicsDebugLevel);
             }
@@ -1015,7 +1018,7 @@ namespace Ryujinx.Ui
             Graphics.Gpu.GraphicsConfig.ResScale          = (resScale == -1) ? resScaleCustom : resScale;
             Graphics.Gpu.GraphicsConfig.MaxAnisotropy     = ConfigurationState.Instance.Graphics.MaxAnisotropy;
             Graphics.Gpu.GraphicsConfig.ShadersDumpPath   = ConfigurationState.Instance.Graphics.ShadersDumpPath;
-            Graphics.Gpu.GraphicsConfig.EnableShaderCache = ConfigurationState.Instance.Graphics.EnableShaderCache;
+            Graphics.Gpu.GraphicsConfig.EnableShaderCache = ConfigurationState.Instance.Graphics.EnableShaderCache && ConfigurationState.Instance.Graphics.GraphicsBackend != GraphicsBackend.Vulkan;
         }
 
         public void SaveConfig()
@@ -1105,6 +1108,7 @@ namespace Ryujinx.Ui
                 _fifoStatus.Text  = args.FifoStatus;
                 _gpuName.Text     = args.GpuName;
                 _dockedMode.Text  = args.DockedMode;
+                _gpuBackend.Text  = args.GpuBackend;
                 _aspectRatio.Text = args.AspectRatio;
 
                 if (args.VSyncEnabled)
