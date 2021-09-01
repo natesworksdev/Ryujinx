@@ -22,7 +22,7 @@ namespace Ryujinx.HLE.HOS.Applets
         private const int MaxUserWords       = 0x1388;
         private const int MaxUiTextSize      = 100;
 
-        private const Key CycleInputModesKey = Key.F5;
+        private const Key CycleInputModesKey = Key.F6;
 
         private readonly Switch _device;
 

@@ -93,7 +93,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             string padAcceptIconPath = "Ryujinx.HLE.HOS.Applets.SoftwareKeyboard.Resources.Icon_BtnA.png";
             string padCancelIconPath = "Ryujinx.HLE.HOS.Applets.SoftwareKeyboard.Resources.Icon_BtnB.png";
-            string keyModeIconPath   = "Ryujinx.HLE.HOS.Applets.SoftwareKeyboard.Resources.Icon_KeyF5.png";
+            string keyModeIconPath   = "Ryujinx.HLE.HOS.Applets.SoftwareKeyboard.Resources.Icon_KeyF6.png";
 
             _padAcceptIcon = LoadResource(Assembly.GetExecutingAssembly(), padAcceptIconPath  , 0, 0);
             _padCancelIcon = LoadResource(Assembly.GetExecutingAssembly(), padCancelIconPath  , 0, 0);

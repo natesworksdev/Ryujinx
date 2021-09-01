@@ -15,7 +15,7 @@
    inkscape:export-filename="C:\Users\caian\source\repos\Ryujinx\Ryujinx.HLE\HOS\Applets\SoftwareKeyboard\Resources\Icon_KeyF5.png"
    inkscape:export-xdpi="96"
    inkscape:export-ydpi="96"
-   sodipodi:docname="buttons_f5.svg"
+   sodipodi:docname="Icon_KeyF5.svg"
    inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)">
   <defs
      id="defs2" />
@@ -38,7 +38,7 @@
      inkscape:window-width="1267"
      inkscape:window-height="976"
      inkscape:window-x="242"
-     inkscape:window-y="34"
+     inkscape:window-y="25"
      inkscape:window-maximized="0" />
   <metadata
      id="metadata5">
@@ -48,7 +48,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -76,7 +76,7 @@
          id="tspan833"
          x="1.0762799"
          y="4.2016153"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333px;font-family:Consolas;-inkscape-font-specification:Consolas;stroke-width:0.264578">F5</tspan></text>
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333px;font-family:Consolas;-inkscape-font-specification:Consolas;stroke-width:0.264578">F6</tspan></text>
     <rect
        style="fill:none;fill-opacity:1;stroke:#757575;stroke-width:0.26458333;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
        id="rect891"
