@@ -1254,6 +1254,8 @@ namespace Ryujinx.Graphics.Gpu.Image
                 Group.SignalModifying(this, bound, !wasModified);
             }
 
+            _physicalMemory.TextureCache.Lift(this);
+
             if (bound)
             {
                 IncrementReferenceCount();
@@ -1262,8 +1264,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 DecrementReferenceCount();
             }
-
-            _physicalMemory.TextureCache.Lift(this);
         }
 
         /// <summary>
