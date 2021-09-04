@@ -33,6 +33,7 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly Image _image;
         private readonly Auto<DisposableImage> _imageAuto;
         private readonly Auto<MemoryAllocation> _allocationAuto;
+        private Auto<MemoryAllocation> _foreignAllocationAuto;
 
         private Dictionary<GAL.Format, TextureStorage> _aliasedStorages;
 
@@ -140,6 +141,8 @@ namespace Ryujinx.Graphics.Vulkan
             }
             else
             {
+                _foreignAllocationAuto = foreignAllocation;
+                foreignAllocation.IncrementReferenceCount();
                 var allocation = foreignAllocation.GetUnsafe();
 
                 gd.Api.BindImageMemory(device, _image, allocation.Memory, allocation.Offset).ThrowOnError();
@@ -277,6 +280,8 @@ namespace Ryujinx.Graphics.Vulkan
 
             _imageAuto.Dispose();
             _allocationAuto?.Dispose();
+            _foreignAllocationAuto?.DecrementReferenceCount();
+            _foreignAllocationAuto = null;
         }
     }
 }
