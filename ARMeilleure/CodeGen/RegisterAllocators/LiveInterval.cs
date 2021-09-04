@@ -12,6 +12,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         private int _end;
         private LiveRange _firstRange;
+        private LiveRange _prevRange;
+        private LiveRange _currRange;
 
         private readonly LiveInterval _parent;
         private readonly SortedIntegerList _usePositions;
@@ -34,6 +36,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             Local = local;
 
             _firstRange = default;
+            _currRange = default;
             _usePositions = new SortedIntegerList();
 
             // Only parent intervals can have child splits.
@@ -57,6 +60,34 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             Register = register;
         }
 
+        public void Reset()
+        {
+            _prevRange = default;
+            _currRange = _firstRange;
+        }
+
+        public void Forward(int position)
+        {
+            LiveRange prev = _prevRange;
+            LiveRange curr = _currRange;
+
+            while (curr != default && curr.Start < position && !curr.Overlaps(position))
+            {
+                prev = curr;
+                curr = curr.Next;
+            }
+
+            _prevRange = prev;
+            _currRange = curr;
+        }
+
+        public int GetStart()
+        {
+            Debug.Assert(!IsEmpty, "Empty LiveInterval cannot have a start position.");
+
+            return _firstRange.Start;
+        }
+
         public void SetStart(int position)
         {
             if (_firstRange != default)
@@ -72,16 +103,9 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             }
         }
 
-        public int GetStart()
-        {
-            Debug.Assert(!IsEmpty);
-
-            return _firstRange.Start;
-        }
-
         public int GetEnd()
         {
-            Debug.Assert(!IsEmpty);
+            Debug.Assert(!IsEmpty, "Empty LiveInterval cannot have an end position.");
 
             return _end;
         }
@@ -124,7 +148,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         public bool Overlaps(int position)
         {
-            LiveRange curr = _firstRange;
+            LiveRange curr = _currRange;
 
             while (curr != default && curr.Start <= position)
             {
@@ -146,9 +170,9 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         public int GetOverlapPosition(LiveInterval other)
         {
-            for (LiveRange a = _firstRange; a != default; a = a.Next)
+            for (LiveRange a = _currRange; a != default; a = a.Next)
             {
-                for (LiveRange b = other._firstRange; b != default; b = b.Next)
+                for (LiveRange b = other._currRange; b != default; b = b.Next)
                 {
                     if (a.Overlaps(b))
                     {
@@ -199,21 +223,14 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             LiveInterval result = new(Local, _parent);
             result._end = _end;
 
-            LiveRange prev = default;
-            LiveRange curr = _firstRange;
+            LiveRange prev = _prevRange;
+            LiveRange curr = _currRange;
 
-            while (curr != default)
+            while (curr != default && curr.Start < position && !curr.Overlaps(position))
             {
-                if (curr.Start >= position || curr.Overlaps(position))
-                {
-                    break;
-                }
-
                 prev = curr;
                 curr = curr.Next;
             }
-
-            Debug.Assert(curr != default);
 
             if (curr.Start >= position)
             {
@@ -248,6 +265,9 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             Debug.Assert(!IsEmpty, "Left interval is empty after split.");
             Debug.Assert(!result.IsEmpty, "Right interval is empty after split.");
+
+            // Make sure the iterator in the new split is pointing to the start.
+            result.Reset();
 
             return result;
         }

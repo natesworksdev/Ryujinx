@@ -132,6 +132,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             {
                 LiveInterval interval = _intervals[iIndex];
 
+                interval.Forward(current.GetStart());
+
                 if (interval.GetEnd() < current.GetStart())
                 {
                     context.Active.Clear(iIndex);
@@ -146,6 +148,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             foreach (int iIndex in context.Inactive)
             {
                 LiveInterval interval = _intervals[iIndex];
+
+                interval.Forward(current.GetStart());
 
                 if (interval.GetEnd() < current.GetStart())
                 {
@@ -618,6 +622,12 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 return block.Index >= blocksCount;
             }
 
+            // Reset iterators to beginning because GetSplitChild depends on the state of the iterator.
+            foreach (LiveInterval interval in _intervals)
+            {
+                interval.Reset();
+            }
+
             for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
             {
                 if (IsSplitEdgeBlock(block))
@@ -958,6 +968,11 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         AddIntervalCallerSavedReg(context.Masks.VecCallerSavedRegisters, operationPos, RegisterType.Vector);
                     }
                 }
+            }
+
+            foreach (LiveInterval interval in _parentIntervals)
+            {
+                interval.Reset();
             }
         }
 
