@@ -3,6 +3,7 @@ using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using VkBuffer = Silk.NET.Vulkan.Buffer;
 using VkFormat = Silk.NET.Vulkan.Format;
 
 namespace Ryujinx.Graphics.Vulkan
@@ -28,7 +29,9 @@ namespace Ryujinx.Graphics.Vulkan
 
         private readonly Device _device;
 
-        private readonly TextureCreateInfo _info;
+        private TextureCreateInfo _info;
+
+        public TextureCreateInfo Info => _info;
 
         private readonly Image _image;
         private readonly Auto<DisposableImage> _imageAuto;
@@ -175,7 +178,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 _aliasedStorages ??= new Dictionary<GAL.Format, TextureStorage>();
 
-                var info = NewCreateInfoWith(_info, format, _info.BytesPerPixel);
+                var info = NewCreateInfoWith(ref _info, format, _info.BytesPerPixel);
 
                 storage = new TextureStorage(_gd, default, _device, info, ScaleFactor, _allocationAuto);
 
@@ -185,11 +188,21 @@ namespace Ryujinx.Graphics.Vulkan
             return storage;
         }
 
-        public static TextureCreateInfo NewCreateInfoWith(TextureCreateInfo info, GAL.Format format, int bytesPerPixel)
+        public static TextureCreateInfo NewCreateInfoWith(ref TextureCreateInfo info, GAL.Format format, int bytesPerPixel)
+        {
+            return NewCreateInfoWith(ref info, format, bytesPerPixel, info.Width, info.Height);
+        }
+
+        public static TextureCreateInfo NewCreateInfoWith(
+            ref TextureCreateInfo info,
+            GAL.Format format,
+            int bytesPerPixel,
+            int width,
+            int height)
         {
             return new TextureCreateInfo(
-                info.Width,
-                info.Height,
+                width,
+                height,
                 info.Depth,
                 info.Levels,
                 info.Samples,
@@ -264,6 +277,92 @@ namespace Ryujinx.Graphics.Vulkan
         public TextureView CreateView(TextureCreateInfo info, int firstLayer, int firstLevel)
         {
             return new TextureView(_gd, _device, info, this, firstLayer, firstLevel);
+        }
+
+        public void CopyFromOrToBuffer(
+            CommandBuffer commandBuffer,
+            VkBuffer buffer,
+            Image image,
+            int size,
+            bool to,
+            int x,
+            int y,
+            int dstLayer,
+            int dstLevel,
+            int dstLayers,
+            int dstLevels,
+            bool singleSlice,
+            ImageAspectFlags aspectFlags)
+        {
+            bool is3D = Info.Target == Target.Texture3D;
+            int width = Info.Width;
+            int height = Info.Height;
+            int depth = is3D && !singleSlice ? Info.Depth : 1;
+            int layer = is3D ? 0 : dstLayer;
+            int layers = dstLayers;
+            int levels = dstLevels;
+
+            int offset = 0;
+
+            for (int level = 0; level < levels; level++)
+            {
+                int mipSize = GetBufferDataLength(Info.GetMipSize(level));
+
+                int endOffset = offset + mipSize;
+
+                if ((uint)endOffset > (uint)size)
+                {
+                    break;
+                }
+
+                int rowLength = (Info.GetMipStride(level) / Info.BytesPerPixel) * Info.BlockWidth;
+
+                var sl = new ImageSubresourceLayers(
+                    aspectFlags,
+                    (uint)(dstLevel + level),
+                    (uint)layer,
+                    (uint)layers);
+
+                var extent = new Extent3D((uint)width, (uint)height, (uint)depth);
+
+                int z = is3D ? dstLayer : 0;
+
+                var region = new BufferImageCopy((ulong)offset, (uint)rowLength, (uint)height, sl, new Offset3D(x, y, z), extent);
+
+                if (to)
+                {
+                    _gd.Api.CmdCopyImageToBuffer(commandBuffer, image, ImageLayout.General, buffer, 1, region);
+                }
+                else
+                {
+                    _gd.Api.CmdCopyBufferToImage(commandBuffer, buffer, image, ImageLayout.General, 1, region);
+                }
+
+                offset += mipSize;
+
+                width = Math.Max(1, width >> 1);
+                height = Math.Max(1, height >> 1);
+
+                if (Info.Target == Target.Texture3D)
+                {
+                    depth = Math.Max(1, depth >> 1);
+                }
+            }
+        }
+
+        private int GetBufferDataLength(int length)
+        {
+            if (NeedsD24S8Conversion())
+            {
+                return length * 2;
+            }
+
+            return length;
+        }
+
+        private bool NeedsD24S8Conversion()
+        {
+            return Info.Format == GAL.Format.D24UnormS8Uint && VkFormat == VkFormat.D32SfloatS8Uint;
         }
 
         public void Dispose()

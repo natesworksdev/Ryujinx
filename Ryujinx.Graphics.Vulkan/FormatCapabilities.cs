@@ -56,7 +56,8 @@ namespace Ryujinx.Graphics.Vulkan
                 requiredFeatures |= FormatFeatureFlags.FormatFeatureStorageImageBit;
             }
 
-            if (!FormatSupports(srcFormat, requiredFeatures))
+            if (!FormatSupports(srcFormat, requiredFeatures) ||
+                (srcFormat == GAL.Format.D24UnormS8Uint && VulkanConfiguration.ForceD24S8Unsupported))
             {
                 // The format is not supported. Can we convert it to a higher precision format?
                 if (srcFormat == GAL.Format.D24UnormS8Uint)
