@@ -845,19 +845,45 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                 for (Operation node = block.Operations.First; node != default; node = node.ListNext)
                 {
-                    Sources(node, (source) =>
+                    for (int i = 0; i < node.SourcesCount; i++)
                     {
-                        int id = GetOperandId(source);
-
-                        if (!liveKill.IsSet(id))
-                        {
-                            liveGen.Set(id);
-                        }
-                    });
+                        VisitSource(node.GetSource(i));
+                    }
 
                     for (int i = 0; i < node.DestinationsCount; i++)
                     {
-                        Operand dest = node.GetDestination(i);
+                        VisitDestination(node.GetDestination(i));
+                    }
+
+                    void VisitSource(Operand source)
+                    {
+                        if (IsLocalOrRegister(source.Kind))
+                        {
+                            int id = GetOperandId(source);
+
+                            if (!liveKill.IsSet(id))
+                            {
+                                liveGen.Set(id);
+                            }
+                        }
+                        else if (source.Kind == OperandKind.Memory)
+                        {
+                            MemoryOperand memOp = source.GetMemory();
+
+                            if (memOp.BaseAddress != default)
+                            {
+                                VisitSource(memOp.BaseAddress);
+                            }
+
+                            if (memOp.Index != default)
+                            {
+                                VisitSource(memOp.Index);
+                            }
+                        }
+                    }
+
+                    void VisitDestination(Operand dest)
+                    {
                         liveKill.Set(GetOperandId(dest));
                     }
                 }
@@ -941,31 +967,57 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                     continue;
                 }
 
-                foreach (Operation node in BottomOperations(block))
+                for (Operation node = block.Operations.Last; node != default; node = node.ListPrevious)
                 {
                     operationPos -= InstructionGap;
 
                     for (int i = 0; i < node.DestinationsCount; i++)
                     {
-                        Operand dest = node.GetDestination(i);
-                        LiveInterval interval = _intervals[GetOperandId(dest)];
-
-                        interval.SetStart(operationPos + 1);
-                        interval.AddUsePosition(operationPos + 1);
+                        VisitDestination(node.GetDestination(i));
                     }
 
-                    Sources(node, (source) =>
+                    for (int i = 0; i < node.SourcesCount; i++)
                     {
-                        LiveInterval interval = _intervals[GetOperandId(source)];
-
-                        interval.AddRange(blockStart, operationPos + 1);
-                        interval.AddUsePosition(operationPos);
-                    });
+                        VisitSource(node.GetSource(i));
+                    }
 
                     if (node.Instruction == Instruction.Call)
                     {
                         AddIntervalCallerSavedReg(context.Masks.IntCallerSavedRegisters, operationPos, RegisterType.Integer);
                         AddIntervalCallerSavedReg(context.Masks.VecCallerSavedRegisters, operationPos, RegisterType.Vector);
+                    }
+
+                    void VisitSource(Operand source)
+                    {
+                        if (IsLocalOrRegister(source.Kind))
+                        {
+                            LiveInterval interval = _intervals[GetOperandId(source)];
+
+                            interval.AddRange(blockStart, operationPos + 1);
+                            interval.AddUsePosition(operationPos);
+                        }
+                        else if (source.Kind == OperandKind.Memory)
+                        {
+                            MemoryOperand memOp = source.GetMemory();
+
+                            if (memOp.BaseAddress != default)
+                            {
+                                VisitSource(memOp.BaseAddress);
+                            }
+
+                            if (memOp.Index != default)
+                            {
+                                VisitSource(memOp.Index);
+                            }
+                        }
+                    }
+
+                    void VisitDestination(Operand dest)
+                    {
+                        LiveInterval interval = _intervals[GetOperandId(dest)];
+
+                        interval.SetStart(operationPos + 1);
+                        interval.AddUsePosition(operationPos + 1);
                     }
                 }
             }
@@ -1011,45 +1063,6 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         private static int GetRegisterId(Register register)
         {
             return (register.Index << 1) | (register.Type == RegisterType.Vector ? 1 : 0);
-        }
-
-        private static IEnumerable<Operation> BottomOperations(BasicBlock block)
-        {
-            Operation node = block.Operations.Last;
-
-            while (node != default)
-            {
-                yield return node;
-
-                node = node.ListPrevious;
-            }
-        }
-
-        private static void Sources(Operation node, Action<Operand> action)
-        {
-            for (int index = 0; index < node.SourcesCount; index++)
-            {
-                Operand source = node.GetSource(index);
-
-                if (IsLocalOrRegister(source.Kind))
-                {
-                    action(source);
-                }
-                else if (source.Kind == OperandKind.Memory)
-                {
-                    MemoryOperand memOp = source.GetMemory();
-
-                    if (memOp.BaseAddress != default)
-                    {
-                        action(memOp.BaseAddress);
-                    }
-
-                    if (memOp.Index != default)
-                    {
-                        action(memOp.Index);
-                    }
-                }
-            }
         }
 
         private static bool IsLocalOrRegister(OperandKind kind)
