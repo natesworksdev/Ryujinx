@@ -34,7 +34,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
 
         private static readonly VmRegion[] _vmRegions = new VmRegion[]
         {
-            new VmRegion(BigPageSize << 16, SmallRegionLimit),
+            new VmRegion((ulong)BigPageSize << 16, SmallRegionLimit),
             new VmRegion(SmallRegionLimit, DefaultUserSize)
         };
 
