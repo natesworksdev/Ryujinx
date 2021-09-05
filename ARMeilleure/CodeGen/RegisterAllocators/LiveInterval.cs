@@ -170,15 +170,31 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         public int GetOverlapPosition(LiveInterval other)
         {
-            for (LiveRange a = _currRange; a != default; a = a.Next)
+            LiveRange a = _currRange;
+            LiveRange b = other._currRange;
+
+            while (a != default)
             {
-                for (LiveRange b = other._currRange; b != default; b = b.Next)
+                while (b != default && b.Start < a.Start)
                 {
                     if (a.Overlaps(b))
                     {
                         return a.Start;
                     }
+
+                    b = b.Next;
                 }
+
+                if (b == default)
+                {
+                    break;
+                }
+                else if (a.Overlaps(b))
+                {
+                    return a.Start;
+                }
+
+                a = a.Next;
             }
 
             return NotFound;
