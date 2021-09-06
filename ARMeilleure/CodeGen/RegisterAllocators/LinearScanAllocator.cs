@@ -780,7 +780,6 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         private void NumberLocals(ControlFlowGraph cfg)
         {
             _operationNodes = new List<(IntrusiveList<Operation>, Operation)>();
-
             _intervals = new List<LiveInterval>();
 
             for (int index = 0; index < RegistersCount; index++)
@@ -789,7 +788,18 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 _intervals.Add(new LiveInterval(new Register(index, RegisterType.Vector)));
             }
 
-            HashSet<Operand> visited = new HashSet<Operand>();
+            // The "visited" state is stored in the MSB of the local's value.
+            const ulong VisitedMask = 1ul << 63;
+
+            bool IsVisited(Operand local)
+            {
+                return (local.GetValueUnsafe() & VisitedMask) != 0;
+            }
+
+            void SetVisited(Operand local)
+            {
+                local.GetValueUnsafe() |= VisitedMask;
+            }
 
             _operationsCount = 0;
 
@@ -805,11 +815,13 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                     {
                         Operand dest = node.GetDestination(i);
 
-                        if (dest.Kind == OperandKind.LocalVariable && visited.Add(dest))
+                        if (dest.Kind == OperandKind.LocalVariable && !IsVisited(dest))
                         {
                             dest.NumberLocal(_intervals.Count);
 
                             _intervals.Add(new LiveInterval(dest));
+
+                            SetVisited(dest);
                         }
                     }
                 }
