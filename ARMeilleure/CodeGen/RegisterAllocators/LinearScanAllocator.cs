@@ -650,7 +650,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         succIndex = successor.GetSuccessor(0).Index;
                     }
 
-                    CopyResolver copyResolver = new CopyResolver();
+                    CopyResolver copyResolver = null;
 
                     foreach (int iIndex in _blockLiveIn[succIndex])
                     {
@@ -669,11 +669,16 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                         if (left != null && right != null && left != right)
                         {
+                            if (copyResolver == null)
+                            {
+                                copyResolver = new CopyResolver();
+                            }
+
                             copyResolver.AddSplit(left, right);
                         }
                     }
 
-                    if (!copyResolver.HasCopy)
+                    if (copyResolver == null || !copyResolver.HasCopy)
                     {
                         continue;
                     }
