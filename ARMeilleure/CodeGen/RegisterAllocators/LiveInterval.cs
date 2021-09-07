@@ -1,4 +1,3 @@
-using ARMeilleure.Common;
 using ARMeilleure.IntermediateRepresentation;
 using System;
 using System.Collections.Generic;
@@ -15,8 +14,9 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         private LiveRange _prevRange;
         private LiveRange _currRange;
 
+        private UseList _usePositions;
+
         private readonly LiveInterval _parent;
-        private readonly SortedIntegerList _usePositions;
         private readonly SortedList<int, LiveInterval> _childs;
 
         public Operand Local { get; }
@@ -37,7 +37,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             _firstRange = default;
             _currRange = default;
-            _usePositions = new SortedIntegerList();
+            _usePositions = new UseList();
 
             // Only parent intervals can have child splits.
             if (parent != null)
@@ -141,9 +141,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         public void AddUsePosition(int position)
         {
-            // Inserts are in descending order, but ascending is faster for SortedIntegerList<>. We flip the ordering,
-            // then iterate backwards when using the final list.
-            _usePositions.Add(-position);
+            _usePositions.Add(position);
         }
 
         public bool Overlaps(int position)
@@ -205,33 +203,19 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             return _parent._childs.Values;
         }
 
-        public IList<int> UsePositions()
+        public ReadOnlySpan<int> UsePositions()
         {
-            return _usePositions.GetList();
+            return _usePositions.Span;
         }
 
         public int FirstUse()
         {
-            if (_usePositions.Count == 0)
-            {
-                return NotFound;
-            }
-
-            return -_usePositions.Last();
+            return _usePositions.FirstUse;
         }
 
         public int NextUseAfter(int position)
         {
-            int index = _usePositions.FindLessEqualIndex(-position);
-
-            return (index >= 0) ? -_usePositions[index] : NotFound;
-        }
-
-        public void RemoveAfter(int position)
-        {
-            int index = _usePositions.FindLessEqualIndex(-position);
-
-            _usePositions.RemoveRange(0, index + 1);
+            return _usePositions.NextUse(position);
         }
 
         public LiveInterval Split(int position)
@@ -266,16 +250,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 _end = curr.End;
             }
 
-            int addAfter = _usePositions.FindLessEqualIndex(-position);
-
-            for (int index = addAfter; index >= 0; index--)
-            {
-                int usePosition = _usePositions[index];
-
-                result._usePositions.Add(usePosition);
-            }
-
-            _usePositions.RemoveRange(0, addAfter + 1);
+            result._usePositions = _usePositions.Split(position);
 
             AddSplitChild(result);
 

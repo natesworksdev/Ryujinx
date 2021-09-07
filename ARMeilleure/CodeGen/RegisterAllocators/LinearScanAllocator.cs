@@ -753,10 +753,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         {
             Operand register = GetRegister(current);
 
-            IList<int> usePositions = current.UsePositions();
-            for (int i = usePositions.Count - 1; i >= 0; i--)
+            foreach (int usePosition in current.UsePositions())
             {
-                int usePosition = -usePositions[i];
                 (_, Operation operation) = GetOperationNode(usePosition);
 
                 for (int index = 0; index < operation.SourcesCount; index++)
