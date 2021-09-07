@@ -112,9 +112,9 @@ namespace Ryujinx.Graphics.Texture
         {
             if (_isLinear)
             {
-                int start = y * _stride + x * _bytesPerPixel;
+                int start = y * Math.Abs(_stride) + x * _bytesPerPixel;
                 int end = (y + height - 1) * Math.Abs(_stride) + (x + width) * _bytesPerPixel;
-                return (start, end - start);
+                return (y * _stride + x * _bytesPerPixel, end - start);
             }
             else
             {
