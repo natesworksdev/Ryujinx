@@ -558,14 +558,14 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             CopyResolver GetCopyResolver(int position)
             {
-                CopyResolver copyResolver = new CopyResolver();
-
-                if (copyResolvers.TryAdd(position, copyResolver))
+                if (!copyResolvers.TryGetValue(position, out CopyResolver copyResolver))
                 {
-                    return copyResolver;
+                    copyResolver = new CopyResolver();
+
+                    copyResolvers.Add(position, copyResolver);
                 }
 
-                return copyResolvers[position];
+                return copyResolver;
             }
 
             foreach (LiveInterval interval in _intervals.Where(x => x.IsSplit))
