@@ -97,8 +97,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
             else
             {
-                memoryManager.WriteUntracked(gpuVa, data);
                 BufferCache.ForceDirty(memoryManager, gpuVa, (ulong)data.Length);
+                memoryManager.WriteUntracked(gpuVa, data);
             }
         }
 
