@@ -20,17 +20,13 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         private const int RegistersCount = 16;
 
         private HashSet<int> _blockEdges;
-
         private LiveRange[] _blockRanges;
-
         private BitMap[] _blockLiveIn;
 
         private List<LiveInterval> _intervals;
-
         private LiveInterval[] _parentIntervals;
 
         private List<(IntrusiveList<Operation>, Operation)> _operationNodes;
-
         private int _operationsCount;
 
         private class AllocationContext
@@ -45,6 +41,11 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             public int IntUsedRegisters { get; set; }
             public int VecUsedRegisters { get; set; }
 
+            private readonly int[] _intFreePositions;
+            private readonly int[] _vecFreePositions;
+            private readonly int _intFreePositionsCount;
+            private readonly int _vecFreePositionsCount;
+
             public AllocationContext(StackAllocator stackAlloc, RegisterMasks masks, int intervalsCount)
             {
                 StackAlloc = stackAlloc;
@@ -52,6 +53,43 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                 Active   = new BitMap(Allocators.Default, intervalsCount);
                 Inactive = new BitMap(Allocators.Default, intervalsCount);
+
+                PopulateFreePositions(RegisterType.Integer, out _intFreePositions, out _intFreePositionsCount);
+                PopulateFreePositions(RegisterType.Vector, out _vecFreePositions, out _vecFreePositionsCount);
+
+                void PopulateFreePositions(RegisterType type, out int[] positions, out int count)
+                {
+                    positions = new int[RegistersCount];
+                    count = BitOperations.PopCount((uint)masks.GetAvailableRegisters(type));
+
+                    int mask = masks.GetAvailableRegisters(type);
+
+                    for (int i = 0; i < positions.Length; i++)
+                    {
+                        if ((mask & (1 << i)) != 0)
+                        {
+                            positions[i] = int.MaxValue;
+                        }
+                    }
+                }
+            }
+
+            public void GetFreePositions(RegisterType type, in Span<int> positions, out int count)
+            {
+                if (type == RegisterType.Integer)
+                {
+                    _intFreePositions.CopyTo(positions);
+
+                    count = _intFreePositionsCount;
+                }
+                else
+                {
+                    Debug.Assert(type == RegisterType.Vector);
+
+                    _vecFreePositions.CopyTo(positions);
+
+                    count = _vecFreePositionsCount;
+                }
             }
 
             public void MoveActiveToInactive(int bit)
@@ -171,19 +209,9 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         {
             RegisterType regType = current.Local.Type.ToRegisterType();
 
-            int availableRegisters = context.Masks.GetAvailableRegisters(regType);
+            Span<int> freePositions = stackalloc int[RegistersCount];
 
-            int[] freePositions = new int[RegistersCount];
-            int freePositionsCount = 0;
-
-            for (int index = 0; index < RegistersCount; index++)
-            {
-                if ((availableRegisters & (1 << index)) != 0)
-                {
-                    freePositions[index] = int.MaxValue;
-                    freePositionsCount++;
-                }
-            }
+            context.GetFreePositions(regType, freePositions, out int freePositionsCount);
 
             foreach (int iIndex in context.Active)
             {
@@ -420,24 +448,24 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             }
         }
 
-        private static int GetHighestValueIndex(int[] array)
+        private static int GetHighestValueIndex(Span<int> span)
         {
-            int higuest = array[0];
+            int highest = span[0];
 
-            if (higuest == int.MaxValue)
+            if (highest == int.MaxValue)
             {
                 return 0;
             }
 
             int selected = 0;
 
-            for (int index = 1; index < array.Length; index++)
+            for (int index = 1; index < span.Length; index++)
             {
-                int current = array[index];
+                int current = span[index];
 
-                if (higuest < current)
+                if (highest < current)
                 {
-                    higuest  = current;
+                    highest  = current;
                     selected = index;
 
                     if (current == int.MaxValue)
