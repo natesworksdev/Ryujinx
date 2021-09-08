@@ -19,7 +19,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         public LiveRange(int start, int end, LiveRange next = default)
         {
-            _data = Allocators.Default.Allocate<Data>();
+            _data = Allocators.LiveRanges.Allocate<Data>();
 
             Start = start;
             End = end;

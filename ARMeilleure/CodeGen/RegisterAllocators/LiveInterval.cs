@@ -5,71 +5,87 @@ using System.Diagnostics;
 
 namespace ARMeilleure.CodeGen.RegisterAllocators
 {
-    class LiveInterval : IComparable<LiveInterval>
+    unsafe struct LiveInterval : IComparable<LiveInterval>
     {
         public const int NotFound = -1;
 
-        private int _end;
-        private LiveRange _firstRange;
-        private LiveRange _prevRange;
-        private LiveRange _currRange;
+        private struct Data
+        {
+            public int End;
+            public int SpillOffset;
 
-        private UseList _usePositions;
+            public LiveRange FirstRange;
+            public LiveRange PrevRange;
+            public LiveRange CurrRange;
 
-        private readonly LiveInterval _parent;
-        private readonly SortedList<int, LiveInterval> _childs;
+            public LiveInterval Parent;
 
-        public Operand Local { get; }
-        public Register Register { get; set; }
+            public UseList Uses;
+            public LiveIntervalList Children;
 
-        public int SpillOffset { get; private set; }
+            public Operand Local;
+            public Register Register;
 
-        public bool IsFixed { get; }
-        public bool IsEmpty => _firstRange == default;
-        public bool IsSplit => _childs != null && _childs.Count != 0;
+            public byte IsFixed;
+        }
+
+        private Data* _data;
+
+        private ref int End => ref _data->End;
+        private ref LiveRange FirstRange => ref _data->FirstRange;
+        private ref LiveRange CurrRange => ref _data->CurrRange;
+        private ref LiveRange PrevRange => ref _data->PrevRange;
+        private ref LiveInterval Parent => ref _data->Parent;
+        private ref UseList Uses => ref _data->Uses;
+        private ref LiveIntervalList Children => ref _data->Children;
+
+        public Operand Local => _data->Local;
+        public ref Register Register => ref _data->Register;
+        public ref int SpillOffset => ref _data->SpillOffset;
+
+        public bool IsFixed => _data->IsFixed != 0;
+        public bool IsEmpty => FirstRange == default;
+        public bool IsSplit => Children.Count != 0;
         public bool IsSpilled => SpillOffset != -1;
 
-        public int UsesCount => _usePositions.Count;
+        public int UsesCount => Uses.Count;
 
-        public LiveInterval(Operand local = default, LiveInterval parent = null)
+        public LiveInterval(Operand local = default, LiveInterval parent = default)
         {
-            Local = local;
+            _data = Allocators.LiveIntervals.Allocate<Data>();
+            *_data = default;
 
-            _firstRange = default;
-            _currRange = default;
-            _usePositions = new UseList();
+            _data->IsFixed = 0;
+            _data->Local = local;
 
-            // Only parent intervals can have child splits.
-            if (parent != null)
-            {
-                _parent = parent;
-                _childs = null;
-            }
-            else
-            {
-                _parent = this;
-                _childs = new SortedList<int, LiveInterval>();
-            }
+            Parent = parent == default ? this : parent;
+            Uses = new UseList();
+            Children = new LiveIntervalList();
+
+            FirstRange = default;
+            CurrRange = default;
+            PrevRange = default;
 
             SpillOffset = -1;
         }
 
-        public LiveInterval(Register register) : this()
+        public LiveInterval(Register register) : this(local: default, parent: default)
         {
-            IsFixed = true;
+            _data->IsFixed = 1;
+
             Register = register;
         }
 
         public void Reset()
         {
-            _prevRange = default;
-            _currRange = _firstRange;
+            PrevRange = default;
+            CurrRange = FirstRange;
         }
 
         public void Forward(int position)
         {
-            LiveRange prev = _prevRange;
-            LiveRange curr = _currRange;
+            LiveRange prev = PrevRange;
+            LiveRange curr = CurrRange;
 
             while (curr != default && curr.Start < position && !curr.Overlaps(position))
             {
@@ -77,29 +93,29 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 curr = curr.Next;
             }
 
-            _prevRange = prev;
-            _currRange = curr;
+            PrevRange = prev;
+            CurrRange = curr;
         }
 
         public int GetStart()
         {
             Debug.Assert(!IsEmpty, "Empty LiveInterval cannot have a start position.");
 
-            return _firstRange.Start;
+            return FirstRange.Start;
         }
 
         public void SetStart(int position)
         {
-            if (_firstRange != default)
+            if (FirstRange != default)
             {
-                Debug.Assert(position != _firstRange.End);
+                Debug.Assert(position != FirstRange.End);
 
-                _firstRange.Start = position;
+                FirstRange.Start = position;
             }
             else
             {
-                _firstRange = new LiveRange(position, position + 1);
-                _end = position + 1;
+                FirstRange = new LiveRange(position, position + 1); 
+                End = position + 1;
             }
         }
 
@@ -107,46 +123,46 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         {
             Debug.Assert(!IsEmpty, "Empty LiveInterval cannot have an end position.");
 
-            return _end;
+            return End;
         }
 
         public void AddRange(int start, int end)
         {
             Debug.Assert(start < end, $"Invalid range start position {start}, {end}");
 
-            if (_firstRange != default)
+            if (FirstRange != default)
             {
                 // If the new range ends exactly where the first range start, then coalesce together.
-                if (end == _firstRange.Start)
+                if (end == FirstRange.Start)
                 {
-                    _firstRange.Start = start;
+                    FirstRange.Start = start;
 
                     return;
                 }
                 // If the new range is already contained, then coalesce together.
-                else if (start >= _firstRange.Start)
+                else if (start >= FirstRange.Start)
                 {
-                    if (end > _firstRange.End)
+                    if (end > FirstRange.End)
                     {
-                        _firstRange.End = end;
+                        FirstRange.End = end;
                     }
 
                     return;
                 }
             }
 
-            _firstRange = new LiveRange(start, end, _firstRange);
-            _end = Math.Max(_end, end);
+            FirstRange = new LiveRange(start, end, FirstRange);
+            End = Math.Max(End, end);
         }
 
         public void AddUsePosition(int position)
         {
-            _usePositions.Add(position);
+            Uses.Add(position);
         }
 
         public bool Overlaps(int position)
         {
-            LiveRange curr = _currRange;
+            LiveRange curr = CurrRange;
 
             while (curr != default && curr.Start <= position)
             {
@@ -168,8 +184,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         public int GetOverlapPosition(LiveInterval other)
         {
-            LiveRange a = _currRange;
-            LiveRange b = other._currRange;
+            LiveRange a = CurrRange;
+            LiveRange b = other.CurrRange;
 
             while (a != default)
             {
@@ -198,33 +214,33 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             return NotFound;
         }
 
-        public IEnumerable<LiveInterval> SplitChilds()
+        public ReadOnlySpan<LiveInterval> SplitChildren()
         {
-            return _parent._childs.Values;
+            return Parent.Children.Span;
         }
 
         public ReadOnlySpan<int> UsePositions()
         {
-            return _usePositions.Span;
+            return Uses.Span;
         }
 
         public int FirstUse()
         {
-            return _usePositions.FirstUse;
+            return Uses.FirstUse;
         }
 
         public int NextUseAfter(int position)
         {
-            return _usePositions.NextUse(position);
+            return Uses.NextUse(position);
         }
 
         public LiveInterval Split(int position)
         {
-            LiveInterval result = new(Local, _parent);
-            result._end = _end;
+            LiveInterval result = new(Local, Parent);
+            result.End = End;
 
-            LiveRange prev = _prevRange;
-            LiveRange curr = _currRange;
+            LiveRange prev = PrevRange;
+            LiveRange curr = CurrRange;
 
             while (curr != default && curr.Start < position && !curr.Overlaps(position))
             {
@@ -236,21 +252,21 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             {
                 prev.Next = default;
 
-                result._firstRange = curr;
+                result.FirstRange = curr;
 
-                _end = prev.End;
+                End = prev.End;
             }
             else
             {
-                result._firstRange = new LiveRange(position, curr.End, curr.Next);
+                result.FirstRange = new LiveRange(position, curr.End, curr.Next);
 
                 curr.End = position;
                 curr.Next = default;
 
-                _end = curr.End;
+                End = curr.End;
             }
 
-            result._usePositions = _usePositions.Split(position);
+            result.Uses = Uses.Split(position);
 
             AddSplitChild(result);
 
@@ -267,7 +283,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         {
             Debug.Assert(!child.IsEmpty, "Trying to insert a empty interval.");
 
-            _parent._childs.Add(child.GetStart(), child);
+            Parent.Children.Add(child);
         }
 
         public LiveInterval GetSplitChild(int position)
@@ -277,7 +293,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 return this;
             }
 
-            foreach (LiveInterval splitChild in _parent._childs.Values)
+            foreach (LiveInterval splitChild in SplitChildren())
             {
                 if (splitChild.Overlaps(position))
                 {
@@ -285,12 +301,12 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 }
             }
 
-            return null;
+            return default;
         }
 
         public bool TrySpillWithSiblingOffset()
         {
-            foreach (LiveInterval splitChild in _parent._childs.Values)
+            foreach (LiveInterval splitChild in SplitChildren())
             {
                 if (splitChild.IsSpilled)
                 {
@@ -310,29 +326,63 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         public int CompareTo(LiveInterval interval)
         {
-            if (_firstRange == default || interval._firstRange == default)
+            if (FirstRange == default || interval.FirstRange == default)
             {
                 return 0;
             }
 
-            return _firstRange.Start.CompareTo(interval._firstRange.Start);
+            return GetStart().CompareTo(interval.GetStart());
+        }
+
+        public bool Equals(LiveInterval interval)
+        {
+            return interval._data == _data;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is LiveInterval interval && Equals(interval);
+        }
+
+        public static bool operator ==(LiveInterval a, LiveInterval b)
+        {
+            return a.Equals(b);
+        }
+
+        public static bool operator !=(LiveInterval a, LiveInterval b)
+        {
+            return !a.Equals(b);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine((IntPtr)_data);
         }
 
         public override string ToString()
         {
-            IEnumerable<LiveRange> GetRanges()
+            LiveInterval self = this;
+
+            IEnumerable<string> GetRanges()
             {
-                LiveRange curr = _firstRange;
+                LiveRange curr = self.CurrRange;
 
                 while (curr != default)
                 {
-                    yield return curr;
+                    if (curr == self.CurrRange)
+                    {
+                        yield return "*" + curr;
+                    }
+                    else
+                    {
+                        yield return curr.ToString();
+                    }
 
                     curr = curr.Next;
                 }
             }
 
-            return string.Join("; ", GetRanges());
+            return string.Join(", ", GetRanges());
         }
     }
 }

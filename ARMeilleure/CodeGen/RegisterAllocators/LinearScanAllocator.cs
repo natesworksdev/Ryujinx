@@ -600,7 +600,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             {
                 LiveInterval previous = interval;
 
-                foreach (LiveInterval splitChild in interval.SplitChilds())
+                foreach (LiveInterval splitChild in interval.SplitChildren())
                 {
                     int splitPosition = splitChild.GetStart();
 
@@ -695,7 +695,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         LiveInterval left  = interval.GetSplitChild(lEnd);
                         LiveInterval right = interval.GetSplitChild(rStart);
 
-                        if (left != null && right != null && left != right)
+                        if (left != default && right != default && left != right)
                         {
                             if (copyResolver == null)
                             {
