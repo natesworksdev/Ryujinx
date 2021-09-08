@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ARMeilleure.Translation.PTC
+namespace ARMeilleure.CodeGen.Linking
 {
     /// <summary>
     /// Represents a symbol.

@@ -1,9 +1,9 @@
 using ARMeilleure.CodeGen;
+using ARMeilleure.CodeGen.Linking;
 using ARMeilleure.CodeGen.X86;
 using ARMeilleure.Diagnostics;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation.Cache;
-using ARMeilleure.Translation.PTC;
 using System;
 using System.Runtime.InteropServices;
 
@@ -15,10 +15,9 @@ namespace ARMeilleure.Translation
             ControlFlowGraph cfg,
             OperandType[]    argTypes,
             OperandType      retType,
-            CompilerOptions  options,
-            PtcInfo          ptcInfo = null)
+            CompilerOptions  options)
         {
-            CompiledFunction func = Compile(cfg, argTypes, retType, options, ptcInfo);
+            CompiledFunction func = Compile(cfg, argTypes, retType, options);
 
             IntPtr codePtr = JitCache.Map(func);
 
@@ -29,8 +28,7 @@ namespace ARMeilleure.Translation
             ControlFlowGraph cfg,
             OperandType[]    argTypes,
             OperandType      retType,
-            CompilerOptions  options,
-            PtcInfo          ptcInfo = null)
+            CompilerOptions  options)
         {
             Logger.StartPass(PassName.Dominance);
 
@@ -57,7 +55,7 @@ namespace ARMeilleure.Translation
 
             CompilerContext cctx = new(cfg, argTypes, retType, options);
 
-            return CodeGenerator.Generate(cctx, ptcInfo);
+            return CodeGenerator.Generate(cctx);
         }
     }
 }

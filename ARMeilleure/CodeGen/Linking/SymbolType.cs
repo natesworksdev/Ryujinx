@@ -1,4 +1,4 @@
-﻿namespace ARMeilleure.Translation.PTC
+﻿namespace ARMeilleure.CodeGen.Linking
 {
     /// <summary>
     /// Types of <see cref="Symbol"/>.
