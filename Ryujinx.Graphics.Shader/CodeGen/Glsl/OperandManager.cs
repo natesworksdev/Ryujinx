@@ -60,6 +60,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             { AttributeConsts.CtaIdX,              new BuiltInAttribute("gl_WorkGroupID.x",       VariableType.U32)  },
             { AttributeConsts.CtaIdY,              new BuiltInAttribute("gl_WorkGroupID.y",       VariableType.U32)  },
             { AttributeConsts.CtaIdZ,              new BuiltInAttribute("gl_WorkGroupID.z",       VariableType.U32)  },
+            { AttributeConsts.LaneId,              new BuiltInAttribute(null,                     VariableType.U32)  },
+            { AttributeConsts.EqMask,              new BuiltInAttribute(null,                     VariableType.U32)  },
+            { AttributeConsts.GeMask,              new BuiltInAttribute(null,                     VariableType.U32)  },
+            { AttributeConsts.GtMask,              new BuiltInAttribute(null,                     VariableType.U32)  },
+            { AttributeConsts.LeMask,              new BuiltInAttribute(null,                     VariableType.U32)  },
+            { AttributeConsts.LtMask,              new BuiltInAttribute(null,                     VariableType.U32)  },
 
             // Support uniforms.
             { AttributeConsts.FragmentOutputIsBgraBase + 0,  new BuiltInAttribute($"{DefaultNames.SupportBlockIsBgraName}[0]",  VariableType.Bool) },
