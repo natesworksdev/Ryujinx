@@ -299,6 +299,10 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 {
                     return splitChild;
                 }
+                else if (splitChild.GetStart() > position)
+                {
+                    break;
+                }
             }
 
             return default;
