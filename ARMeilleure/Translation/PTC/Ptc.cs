@@ -4,7 +4,6 @@ using ARMeilleure.CodeGen.Unwinding;
 using ARMeilleure.CodeGen.X86;
 using ARMeilleure.Common;
 using ARMeilleure.Memory;
-using ARMeilleure.Translation.Cache;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
@@ -728,15 +727,10 @@ namespace ARMeilleure.Translation.PTC
             UnwindInfo unwindInfo,
             bool highCq)
         {
-            CompiledFunction cFunc = new CompiledFunction(code, unwindInfo, RelocInfo.Empty);
+            var cFunc = new CompiledFunction(code, unwindInfo, RelocInfo.Empty);
+            var gFunc = cFunc.Map<GuestFunction>();
 
-            IntPtr codePtr = JitCache.Map(cFunc);
-
-            GuestFunction gFunc = Marshal.GetDelegateForFunctionPointer<GuestFunction>(codePtr);
-
-            TranslatedFunction tFunc = new TranslatedFunction(gFunc, callCounter, guestSize, highCq);
-
-            return tFunc;
+            return new TranslatedFunction(gFunc, callCounter, guestSize, highCq);
         }
 
         private static void UpdateInfo(InfoEntry infoEntry)
