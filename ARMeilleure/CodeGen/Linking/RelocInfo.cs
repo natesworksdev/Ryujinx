@@ -5,7 +5,7 @@ namespace ARMeilleure.CodeGen.Linking
     /// <summary>
     /// Represents relocation information about a <see cref="CompiledFunction"/>.
     /// </summary>
-    struct RelocInfo
+    readonly struct RelocInfo
     {
         /// <summary>
         /// Gets an empty <see cref="RelocInfo"/>.
@@ -15,9 +15,9 @@ namespace ARMeilleure.CodeGen.Linking
         private readonly RelocEntry[] _entries;
 
         /// <summary>
-        /// Gets the <see cref="RelocEntry"/>s.
+        /// Gets the set of <see cref="RelocEntry"/>.
         /// </summary>
-        public RelocEntry[] Entries => _entries ?? Array.Empty<RelocEntry>();
+        public ReadOnlySpan<RelocEntry> Entries => _entries ?? Array.Empty<RelocEntry>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RelocInfo"/> struct with the specified set of
