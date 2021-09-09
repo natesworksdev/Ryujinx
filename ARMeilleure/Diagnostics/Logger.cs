@@ -1,4 +1,4 @@
-using ARMeilleure.Translation;
+using ARMeilleure.IntermediateRepresentation;
 using System;
 using System.Diagnostics;
 

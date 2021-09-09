@@ -1,5 +1,4 @@
-﻿using ARMeilleure.Translation;
-using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
+﻿using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
 
 namespace ARMeilleure.IntermediateRepresentation
 {

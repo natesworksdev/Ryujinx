@@ -1,4 +1,4 @@
-using ARMeilleure.Translation;
+using ARMeilleure.IntermediateRepresentation;
 
 namespace ARMeilleure.CodeGen.RegisterAllocators
 {

@@ -1,6 +1,5 @@
 using ARMeilleure.Common;
 using ARMeilleure.IntermediateRepresentation;
-using ARMeilleure.Translation;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

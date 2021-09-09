@@ -1,5 +1,4 @@
 using ARMeilleure.IntermediateRepresentation;
-using ARMeilleure.Translation;
 
 namespace ARMeilleure.CodeGen
 {
