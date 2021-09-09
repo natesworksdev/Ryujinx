@@ -244,11 +244,19 @@ namespace ARMeilleure.Translation
 
         internal TranslatedFunction Translate(ulong address, ExecutionMode mode, bool highCq)
         {
-            var context = new ArmEmitterContext(
-                Memory,
-                CountTable,
-                FunctionTable,
-                Stubs,
+            var retType = OperandType.I64;
+            var argTypes = new OperandType[] { OperandType.I64 };
+            var options = highCq ? CompilerOptions.HighCq : CompilerOptions.None;
+
+            if (Ptc.State != PtcState.Disabled)
+            {
+                options |= CompilerOptions.Relocatable;
+            }
+
+            using var context = new CompilerContext(argTypes, retType, options);
+            var emitter = new ArmEmitterContext(
+                context,
+                this,
                 address,
                 highCq,
                 mode: Aarch32Mode.User);
@@ -261,14 +269,14 @@ namespace ARMeilleure.Translation
 
             Logger.StartPass(PassName.Translation);
 
-            EmitSynchronization(context);
+            EmitSynchronization(emitter);
 
             if (blocks[0].Address != address)
             {
-                context.Branch(context.GetLabel(address));
+                emitter.Branch(emitter.GetLabel(address));
             }
 
-            ControlFlowGraph cfg = EmitAndGetCFG(context, blocks, out Range funcRange, out Counter<uint> counter);
+            ControlFlowGraph cfg = EmitAndGetCFG(emitter, blocks, out Range funcRange, out Counter<uint> counter);
 
             ulong funcSize = funcRange.End - funcRange.Start;
 
@@ -280,19 +288,9 @@ namespace ARMeilleure.Translation
 
             Logger.EndPass(PassName.RegisterUsage);
 
-            var retType = OperandType.I64;
-            var argTypes = new OperandType[] { OperandType.I64 };
+            CompiledFunction compiledFunc = Compiler.Compile(context);
 
-            var options = highCq ? CompilerOptions.HighCq : CompilerOptions.None;
-
-            if (context.HasPtc)
-            {
-                options |= CompilerOptions.Relocatable;
-            }
-
-            CompiledFunction compiledFunc = Compiler.Compile(cfg, argTypes, retType, options);
-
-            if (context.HasPtc)
+            if (options.HasFlag(CompilerOptions.Relocatable))
             {
                 Hash128 hash = Ptc.ComputeHash(Memory, address, funcSize);
 
@@ -300,8 +298,6 @@ namespace ARMeilleure.Translation
             }
 
             GuestFunction func = compiledFunc.Map<GuestFunction>();
-
-            Allocators.ResetAll();
 
             return new TranslatedFunction(func, counter, funcSize, highCq);
         }

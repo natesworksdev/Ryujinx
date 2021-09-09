@@ -104,7 +104,7 @@ namespace ARMeilleure.CodeGen.Optimizations
 
             if (buffer.Length < uses.Length)
             {
-                buffer = Allocators.Default.AllocateSpan<Operation>((uint)uses.Length);
+                buffer = CompilerContext.Allocators.Default.AllocateSpan<Operation>((uint)uses.Length);
             }
 
             uses.CopyTo(buffer);

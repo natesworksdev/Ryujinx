@@ -49,8 +49,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 StackAlloc = stackAlloc;
                 Masks      = masks;
 
-                Active   = new BitMap(Allocators.Default, intervalsCount);
-                Inactive = new BitMap(Allocators.Default, intervalsCount);
+                Active   = new BitMap(CompilerContext.Allocators.Default, intervalsCount);
+                Inactive = new BitMap(CompilerContext.Allocators.Default, intervalsCount);
             }
 
             public void MoveActiveToInactive(int bit)
@@ -818,8 +818,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             // Compute local live sets.
             for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
             {
-                BitMap liveGen  = new BitMap(Allocators.Default, mapSize);
-                BitMap liveKill = new BitMap(Allocators.Default, mapSize);
+                BitMap liveGen  = new BitMap(CompilerContext.Allocators.Default, mapSize);
+                BitMap liveKill = new BitMap(CompilerContext.Allocators.Default, mapSize);
 
                 for (Operation node = block.Operations.First; node != default; node = node.ListNext)
                 {
@@ -850,8 +850,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             for (int index = 0; index < cfg.Blocks.Count; index++)
             {
-                blkLiveIn [index] = new BitMap(Allocators.Default, mapSize);
-                blkLiveOut[index] = new BitMap(Allocators.Default, mapSize);
+                blkLiveIn [index] = new BitMap(CompilerContext.Allocators.Default, mapSize);
+                blkLiveOut[index] = new BitMap(CompilerContext.Allocators.Default, mapSize);
             }
 
             bool modified;

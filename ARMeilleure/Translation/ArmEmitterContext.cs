@@ -1,3 +1,4 @@
+using ARMeilleure.CodeGen;
 using ARMeilleure.CodeGen.Linking;
 using ARMeilleure.Common;
 using ARMeilleure.Decoders;
@@ -6,10 +7,10 @@ using ARMeilleure.Instructions;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Memory;
 using ARMeilleure.State;
-using ARMeilleure.Translation.PTC;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+
 using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
 
 namespace ARMeilleure.Translation
@@ -42,10 +43,9 @@ namespace ARMeilleure.Translation
 
         public OpCode CurrOp { get; set; }
 
-        public IMemoryManager Memory { get; }
-
         public bool HasPtc { get; }
 
+        public IMemoryManager Memory { get; }
         public EntryTable<uint> CountTable { get; }
         public AddressTable<ulong> FunctionTable { get; }
         public TranslatorStubs Stubs { get; }
@@ -55,19 +55,19 @@ namespace ARMeilleure.Translation
         public Aarch32Mode Mode { get; }
 
         public ArmEmitterContext(
-            IMemoryManager memory,
-            EntryTable<uint> countTable,
-            AddressTable<ulong> funcTable,
-            TranslatorStubs stubs,
+            CompilerContext context,
+            Translator translator,
             ulong entryAddress,
             bool highCq,
-            Aarch32Mode mode)
+            Aarch32Mode mode) : base(context)
         {
-            HasPtc = Ptc.State != PtcState.Disabled;
-            Memory = memory;
-            CountTable = countTable;
-            FunctionTable = funcTable;
-            Stubs = stubs;
+            HasPtc = context.Options.HasFlag(CompilerOptions.Relocatable);
+
+            Memory = translator.Memory;
+            CountTable = translator.CountTable;
+            FunctionTable = translator.FunctionTable;
+            Stubs = translator.Stubs;
+
             EntryAddress = entryAddress;
             HighCq = highCq;
             Mode = mode;

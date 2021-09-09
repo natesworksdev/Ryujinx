@@ -6,6 +6,7 @@ using ARMeilleure.Translation.Cache;
 using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
+
 using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
 
 namespace ARMeilleure.Translation
@@ -132,19 +133,23 @@ namespace ARMeilleure.Translation
         /// <returns>Generated <see cref="DispatchStub"/></returns>
         private IntPtr GenerateDispatchStub()
         {
-            var context = new EmitterContext();
+            var retType = OperandType.I64;
+            var argTypes = new[] { OperandType.I64 };
+
+            using var context = new CompilerContext(argTypes, retType, CompilerOptions.HighCq);
+            var emitter = new EmitterContext(context);
 
             Operand lblFallback = Label();
             Operand lblEnd = Label();
 
             // Load the target guest address from the native context.
-            Operand nativeContext = context.LoadArgument(OperandType.I64, 0);
-            Operand guestAddress = context.Load(OperandType.I64,
-                context.Add(nativeContext, Const((ulong)NativeContext.GetDispatchAddressOffset())));
+            Operand nativeContext = emitter.LoadArgument(OperandType.I64, 0);
+            Operand guestAddress = emitter.Load(OperandType.I64,
+                emitter.Add(nativeContext, Const((ulong)NativeContext.GetDispatchAddressOffset())));
 
             // Check if guest address is within range of the AddressTable.
-            Operand masked = context.BitwiseAnd(guestAddress, Const(~_translator.FunctionTable.Mask));
-            context.BranchIfTrue(lblFallback, masked);
+            Operand masked = emitter.BitwiseAnd(guestAddress, Const(~_translator.FunctionTable.Mask));
+            emitter.BranchIfTrue(lblFallback, masked);
 
             Operand index = default;
             Operand page = Const((long)_translator.FunctionTable.Base);
@@ -157,29 +162,27 @@ namespace ARMeilleure.Translation
                 // be encoded as an immediate on x86's bitwise and operation.
                 Operand mask = Const(level.Mask >> level.Index);
 
-                index = context.BitwiseAnd(context.ShiftRightUI(guestAddress, Const(level.Index)), mask);
+                index = emitter.BitwiseAnd(emitter.ShiftRightUI(guestAddress, Const(level.Index)), mask);
 
                 if (i < _translator.FunctionTable.Levels.Length - 1)
                 {
-                    page = context.Load(OperandType.I64, context.Add(page, context.ShiftLeft(index, Const(3))));
-                    context.BranchIfFalse(lblFallback, page);
+                    page = emitter.Load(OperandType.I64, emitter.Add(page, emitter.ShiftLeft(index, Const(3))));
+                    emitter.BranchIfFalse(lblFallback, page);
                 }
             }
 
             Operand hostAddress;
-            Operand hostAddressAddr = context.Add(page, context.ShiftLeft(index, Const(3)));
-            hostAddress = context.Load(OperandType.I64, hostAddressAddr);
-            context.Tailcall(hostAddress, nativeContext);
+            Operand hostAddressAddr = emitter.Add(page, emitter.ShiftLeft(index, Const(3)));
+            hostAddress = emitter.Load(OperandType.I64, hostAddressAddr);
+            emitter.Tailcall(hostAddress, nativeContext);
 
-            context.MarkLabel(lblFallback);
-            hostAddress = context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetFunctionAddress)), guestAddress);
-            context.Tailcall(hostAddress, nativeContext);
+            emitter.MarkLabel(lblFallback);
+            hostAddress = emitter.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetFunctionAddress)), guestAddress);
+            emitter.Tailcall(hostAddress, nativeContext);
 
-            var cfg = context.GetControlFlowGraph();
-            var retType = OperandType.I64;
-            var argTypes = new[] { OperandType.I64 };
+            emitter.GetControlFlowGraph();
 
-            var func = Compiler.Compile(cfg, argTypes, retType, CompilerOptions.HighCq).Map<GuestFunction>();
+            var func = Compiler.Compile(context).Map<GuestFunction>();
 
             return Marshal.GetFunctionPointerForDelegate(func);
         }
@@ -190,22 +193,24 @@ namespace ARMeilleure.Translation
         /// <returns>Generated <see cref="SlowDispatchStub"/></returns>
         private static IntPtr GenerateSlowDispatchStub()
         {
-            var context = new EmitterContext();
-
-            // Load the target guest address from the native context.
-            Operand nativeContext = context.LoadArgument(OperandType.I64, 0);
-            Operand guestAddress = context.Load(OperandType.I64,
-                context.Add(nativeContext, Const((ulong)NativeContext.GetDispatchAddressOffset())));
-
-            MethodInfo getFuncAddress = typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetFunctionAddress));
-            Operand hostAddress = context.Call(getFuncAddress, guestAddress);
-            context.Tailcall(hostAddress, nativeContext);
-
-            var cfg = context.GetControlFlowGraph();
             var retType = OperandType.I64;
             var argTypes = new[] { OperandType.I64 };
 
-            var func = Compiler.Compile(cfg, argTypes, retType, CompilerOptions.HighCq).Map<GuestFunction>();
+            using var context = new CompilerContext(argTypes, retType, CompilerOptions.HighCq);
+            var emitter = new EmitterContext(context);
+
+            // Load the target guest address from the native context.
+            Operand nativeContext = emitter.LoadArgument(OperandType.I64, 0);
+            Operand guestAddress = emitter.Load(OperandType.I64,
+                emitter.Add(nativeContext, Const((ulong)NativeContext.GetDispatchAddressOffset())));
+
+            MethodInfo getFuncAddress = typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetFunctionAddress));
+            Operand hostAddress = emitter.Call(getFuncAddress, guestAddress);
+            emitter.Tailcall(hostAddress, nativeContext);
+
+            emitter.GetControlFlowGraph();
+
+            var func = Compiler.Compile(context).Map<GuestFunction>();
 
             return Marshal.GetFunctionPointerForDelegate(func);
         }
@@ -216,34 +221,36 @@ namespace ARMeilleure.Translation
         /// <returns><see cref="DispatchLoop"/> function</returns>
         private DispatcherFunction GenerateDispatchLoop()
         {
-            var context = new EmitterContext();
+            var retType = OperandType.None;
+            var argTypes = new[] { OperandType.I64, OperandType.I64 };
+
+            using var context = new CompilerContext(argTypes, retType, CompilerOptions.HighCq);
+            var emitter = new EmitterContext(context);
 
             Operand beginLbl = Label();
             Operand endLbl = Label();
 
-            Operand nativeContext = context.LoadArgument(OperandType.I64, 0);
-            Operand guestAddress = context.Copy(
-                context.AllocateLocal(OperandType.I64),
-                context.LoadArgument(OperandType.I64, 1));
+            Operand nativeContext = emitter.LoadArgument(OperandType.I64, 0);
+            Operand guestAddress = emitter.Copy(
+                emitter.AllocateLocal(OperandType.I64),
+                emitter.LoadArgument(OperandType.I64, 1));
 
-            Operand runningAddress = context.Add(nativeContext, Const((ulong)NativeContext.GetRunningOffset()));
-            Operand dispatchAddress = context.Add(nativeContext, Const((ulong)NativeContext.GetDispatchAddressOffset()));
+            Operand runningAddress = emitter.Add(nativeContext, Const((ulong)NativeContext.GetRunningOffset()));
+            Operand dispatchAddress = emitter.Add(nativeContext, Const((ulong)NativeContext.GetDispatchAddressOffset()));
 
-            context.MarkLabel(beginLbl);
-            context.Store(dispatchAddress, guestAddress);
-            context.Copy(guestAddress, context.Call(Const((ulong)DispatchStub), OperandType.I64, nativeContext));
-            context.BranchIfFalse(endLbl, guestAddress);
-            context.BranchIfFalse(endLbl, context.Load(OperandType.I32, runningAddress));
-            context.Branch(beginLbl);
+            emitter.MarkLabel(beginLbl);
+            emitter.Store(dispatchAddress, guestAddress);
+            emitter.Copy(guestAddress, emitter.Call(Const((ulong)DispatchStub), OperandType.I64, nativeContext));
+            emitter.BranchIfFalse(endLbl, guestAddress);
+            emitter.BranchIfFalse(endLbl, emitter.Load(OperandType.I32, runningAddress));
+            emitter.Branch(beginLbl);
 
-            context.MarkLabel(endLbl);
-            context.Return();
+            emitter.MarkLabel(endLbl);
+            emitter.Return();
 
-            var cfg = context.GetControlFlowGraph();
-            var retType = OperandType.None;
-            var argTypes = new[] { OperandType.I64, OperandType.I64 };
+            emitter.GetControlFlowGraph();
 
-            return Compiler.Compile(cfg, argTypes, retType, CompilerOptions.HighCq).Map<DispatcherFunction>();
+            return Compiler.Compile(context).Map<DispatcherFunction>();
         }
     }
 }

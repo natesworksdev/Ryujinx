@@ -216,106 +216,108 @@ namespace ARMeilleure.Signal
 
         private static UnixExceptionHandler GenerateUnixSignalHandler(IntPtr signalStructPtr)
         {
-            EmitterContext context = new EmitterContext();
+            var retType = OperandType.None;
+            var argTypes = new OperandType[] { OperandType.I32, OperandType.I64, OperandType.I64 };
+
+            using var context = new CompilerContext(argTypes, retType, CompilerOptions.HighCq);
+            var emitter = new EmitterContext(context);
 
             // (int sig, SigInfo* sigInfo, void* ucontext)
-            Operand sigInfoPtr = context.LoadArgument(OperandType.I64, 1);
+            Operand sigInfoPtr = emitter.LoadArgument(OperandType.I64, 1);
 
-            Operand structAddressOffset = context.Load(OperandType.I64, Const((ulong)signalStructPtr + StructAddressOffset));
-            Operand structWriteOffset = context.Load(OperandType.I64, Const((ulong)signalStructPtr + StructWriteOffset));
+            Operand structAddressOffset = emitter.Load(OperandType.I64, Const((ulong)signalStructPtr + StructAddressOffset));
+            Operand structWriteOffset = emitter.Load(OperandType.I64, Const((ulong)signalStructPtr + StructWriteOffset));
 
-            Operand faultAddress = context.Load(OperandType.I64, context.Add(sigInfoPtr, context.ZeroExtend32(OperandType.I64, structAddressOffset)));
-            Operand writeFlag = context.Load(OperandType.I64, context.Add(sigInfoPtr, context.ZeroExtend32(OperandType.I64, structWriteOffset)));
+            Operand faultAddress = emitter.Load(OperandType.I64, emitter.Add(sigInfoPtr, emitter.ZeroExtend32(OperandType.I64, structAddressOffset)));
+            Operand writeFlag = emitter.Load(OperandType.I64, emitter.Add(sigInfoPtr, emitter.ZeroExtend32(OperandType.I64, structWriteOffset)));
 
-            Operand isWrite = context.ICompareNotEqual(writeFlag, Const(0L)); // Normalize to 0/1.
+            Operand isWrite = emitter.ICompareNotEqual(writeFlag, Const(0L)); // Normalize to 0/1.
 
-            Operand isInRegion = EmitGenericRegionCheck(context, signalStructPtr, faultAddress, isWrite);
+            Operand isInRegion = EmitGenericRegionCheck(emitter, signalStructPtr, faultAddress, isWrite);
 
             Operand endLabel = Label();
 
-            context.BranchIfTrue(endLabel, isInRegion);
+            emitter.BranchIfTrue(endLabel, isInRegion);
 
-            Operand unixOldSigaction = context.Load(OperandType.I64, Const((ulong)signalStructPtr + UnixOldSigaction));
-            Operand unixOldSigaction3Arg = context.Load(OperandType.I64, Const((ulong)signalStructPtr + UnixOldSigaction3Arg));
+            Operand unixOldSigaction = emitter.Load(OperandType.I64, Const((ulong)signalStructPtr + UnixOldSigaction));
+            Operand unixOldSigaction3Arg = emitter.Load(OperandType.I64, Const((ulong)signalStructPtr + UnixOldSigaction3Arg));
             Operand threeArgLabel = Label();
 
-            context.BranchIfTrue(threeArgLabel, unixOldSigaction3Arg);
+            emitter.BranchIfTrue(threeArgLabel, unixOldSigaction3Arg);
 
-            context.Call(unixOldSigaction, OperandType.None, context.LoadArgument(OperandType.I32, 0));
-            context.Branch(endLabel);
+            emitter.Call(unixOldSigaction, OperandType.None, emitter.LoadArgument(OperandType.I32, 0));
+            emitter.Branch(endLabel);
 
-            context.MarkLabel(threeArgLabel);
-
-            context.Call(unixOldSigaction,
+            emitter.MarkLabel(threeArgLabel);
+            emitter.Call(unixOldSigaction,
                 OperandType.None,
-                context.LoadArgument(OperandType.I32, 0),
+                emitter.LoadArgument(OperandType.I32, 0),
                 sigInfoPtr,
-                context.LoadArgument(OperandType.I64, 2)
+                emitter.LoadArgument(OperandType.I64, 2)
                 );
 
-            context.MarkLabel(endLabel);
+            emitter.MarkLabel(endLabel);
+            emitter.Return();
 
-            context.Return();
+            emitter.GetControlFlowGraph();
 
-            ControlFlowGraph cfg = context.GetControlFlowGraph();
-
-            OperandType[] argTypes = new OperandType[] { OperandType.I32, OperandType.I64, OperandType.I64 };
-
-            return Compiler.Compile(cfg, argTypes, OperandType.None, CompilerOptions.HighCq).Map<UnixExceptionHandler>();
+            return Compiler.Compile(context).Map<UnixExceptionHandler>();
         }
 
         private static VectoredExceptionHandler GenerateWindowsSignalHandler(IntPtr signalStructPtr)
         {
-            EmitterContext context = new EmitterContext();
+            var retType = OperandType.I32;
+            var argTypes = new OperandType[] { OperandType.I64 };
+
+            using var context = new CompilerContext(argTypes, retType, CompilerOptions.HighCq);
+            var emitter = new EmitterContext(context);
 
             // (ExceptionPointers* exceptionInfo)
-            Operand exceptionInfoPtr = context.LoadArgument(OperandType.I64, 0);
-            Operand exceptionRecordPtr = context.Load(OperandType.I64, exceptionInfoPtr);
+            Operand exceptionInfoPtr = emitter.LoadArgument(OperandType.I64, 0);
+            Operand exceptionRecordPtr = emitter.Load(OperandType.I64, exceptionInfoPtr);
 
             // First thing's first - this catches a number of exceptions, but we only want access violations.
             Operand validExceptionLabel = Label();
 
-            Operand exceptionCode = context.Load(OperandType.I32, exceptionRecordPtr);
+            Operand exceptionCode = emitter.Load(OperandType.I32, exceptionRecordPtr);
 
-            context.BranchIf(validExceptionLabel, exceptionCode, Const(EXCEPTION_ACCESS_VIOLATION), Comparison.Equal);
+            emitter.BranchIf(validExceptionLabel, exceptionCode, Const(EXCEPTION_ACCESS_VIOLATION), Comparison.Equal);
 
-            context.Return(Const(EXCEPTION_CONTINUE_SEARCH)); // Don't handle this one.
+            emitter.Return(Const(EXCEPTION_CONTINUE_SEARCH)); // Don't handle this one.
 
-            context.MarkLabel(validExceptionLabel);
+            emitter.MarkLabel(validExceptionLabel);
 
             // Next, read the address of the invalid access, and whether it is a write or not.
 
-            Operand structAddressOffset = context.Load(OperandType.I32, Const((ulong)signalStructPtr + StructAddressOffset));
-            Operand structWriteOffset = context.Load(OperandType.I32, Const((ulong)signalStructPtr + StructWriteOffset));
+            Operand structAddressOffset = emitter.Load(OperandType.I32, Const((ulong)signalStructPtr + StructAddressOffset));
+            Operand structWriteOffset = emitter.Load(OperandType.I32, Const((ulong)signalStructPtr + StructWriteOffset));
 
-            Operand faultAddress = context.Load(OperandType.I64, context.Add(exceptionRecordPtr, context.ZeroExtend32(OperandType.I64, structAddressOffset)));
-            Operand writeFlag = context.Load(OperandType.I64, context.Add(exceptionRecordPtr, context.ZeroExtend32(OperandType.I64, structWriteOffset)));
+            Operand faultAddress = emitter.Load(OperandType.I64, emitter.Add(exceptionRecordPtr, emitter.ZeroExtend32(OperandType.I64, structAddressOffset)));
+            Operand writeFlag = emitter.Load(OperandType.I64, emitter.Add(exceptionRecordPtr, emitter.ZeroExtend32(OperandType.I64, structWriteOffset)));
 
-            Operand isWrite = context.ICompareNotEqual(writeFlag, Const(0L)); // Normalize to 0/1.
+            Operand isWrite = emitter.ICompareNotEqual(writeFlag, Const(0L)); // Normalize to 0/1.
 
-            Operand isInRegion = EmitGenericRegionCheck(context, signalStructPtr, faultAddress, isWrite);
+            Operand isInRegion = EmitGenericRegionCheck(emitter, signalStructPtr, faultAddress, isWrite);
 
             Operand endLabel = Label();
 
             // If the region check result is false, then run the next vectored exception handler.
 
-            context.BranchIfTrue(endLabel, isInRegion);
+            emitter.BranchIfTrue(endLabel, isInRegion);
 
-            context.Return(Const(EXCEPTION_CONTINUE_SEARCH));
+            emitter.Return(Const(EXCEPTION_CONTINUE_SEARCH));
 
-            context.MarkLabel(endLabel);
+            emitter.MarkLabel(endLabel);
 
             // Otherwise, return to execution.
 
-            context.Return(Const(EXCEPTION_CONTINUE_EXECUTION));
+            emitter.Return(Const(EXCEPTION_CONTINUE_EXECUTION));
 
             // Compile and return the function.
 
-            ControlFlowGraph cfg = context.GetControlFlowGraph();
+            emitter.GetControlFlowGraph();
 
-            OperandType[] argTypes = new OperandType[] { OperandType.I64 };
-
-            return Compiler.Compile(cfg, argTypes, OperandType.I32, CompilerOptions.HighCq).Map<VectoredExceptionHandler>();
+            return Compiler.Compile(context).Map<VectoredExceptionHandler>();
         }
     }
 }

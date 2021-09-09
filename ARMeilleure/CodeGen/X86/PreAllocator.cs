@@ -952,7 +952,7 @@ namespace ARMeilleure.CodeGen.X86
 
             Debug.Assert(source.Kind == OperandKind.Constant, "Non-constant LoadArgument source kind.");
 
-            int retArgs = cctx.FuncReturnType == OperandType.V128 ? 1 : 0;
+            int retArgs = cctx.ReturnType == OperandType.V128 ? 1 : 0;
 
             int index = source.AsInt32() + retArgs;
 
@@ -1021,7 +1021,7 @@ namespace ARMeilleure.CodeGen.X86
 
             for (int cIndex = 0; cIndex < index; cIndex++)
             {
-                OperandType argType = cctx.FuncArgTypes[cIndex];
+                OperandType argType = cctx.ArgumentTypes[cIndex];
 
                 if (argType.IsInteger())
                 {

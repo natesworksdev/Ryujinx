@@ -1,3 +1,4 @@
+using ARMeilleure.CodeGen;
 using ARMeilleure.CodeGen.Linking;
 using ARMeilleure.Common;
 using System;
@@ -261,7 +262,7 @@ namespace ARMeilleure.IntermediateRepresentation
         {
             count = 0;
             capacity = initialCapacity;
-            data = Allocators.References.Allocate<T>(initialCapacity);
+            data = CompilerContext.Allocators.References.Allocate<T>(initialCapacity);
         }
 
         private static void Add<T>(T item, ref T* data, ref ushort count, ref ushort capacity) where T : unmanaged
@@ -284,7 +285,7 @@ namespace ARMeilleure.IntermediateRepresentation
                 var oldSpan = new Span<T>(data, count);
 
                 capacity = newCapacity;
-                data = Allocators.References.Allocate<T>(capacity);
+                data = CompilerContext.Allocators.References.Allocate<T>(capacity);
 
                 oldSpan.CopyTo(new Span<T>(data, count));
 
@@ -404,7 +405,7 @@ namespace ARMeilleure.IntermediateRepresentation
                 // If we could not get a slot from the intern table, we allocate somewhere else and store there.
                 if (data == null)
                 {
-                    data = Allocators.Operands.Allocate<Data>();
+                    data = CompilerContext.Allocators.Operands.Allocate<Data>();
                 }
 
                 *data = default;

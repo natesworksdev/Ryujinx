@@ -1,3 +1,4 @@
+using ARMeilleure.CodeGen;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -251,7 +252,7 @@ namespace ARMeilleure.IntermediateRepresentation
             // We only need to allocate a new buffer if we're increasing the size.
             else if (newCapacity > capacity)
             {
-                list = Allocators.References.Allocate<Operand>((uint)newCapacity);
+                list = CompilerContext.Allocators.References.Allocate<Operand>((uint)newCapacity);
             }
 
             capacity = (ushort)newCapacity;
@@ -264,7 +265,7 @@ namespace ARMeilleure.IntermediateRepresentation
         {
             private static Operation Make(Instruction inst, int destCount, int srcCount)
             {
-                Data* data = Allocators.Operations.Allocate<Data>();
+                Data* data = CompilerContext.Allocators.Operations.Allocate<Data>();
                 *data = default;
 
                 Operation result = new();

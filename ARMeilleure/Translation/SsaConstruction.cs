@@ -1,3 +1,4 @@
+using ARMeilleure.CodeGen;
 using ARMeilleure.Common;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
@@ -18,7 +19,7 @@ namespace ARMeilleure.Translation
             public DefMap()
             {
                 _map = new Dictionary<int, Operand>();
-                _phiMasks = new BitMap(Allocators.Default, RegisterConsts.TotalCount);
+                _phiMasks = new BitMap(CompilerContext.Allocators.Default, RegisterConsts.TotalCount);
             }
 
             public bool TryAddOperand(int key, Operand operand)

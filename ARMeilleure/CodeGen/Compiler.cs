@@ -7,15 +7,6 @@ namespace ARMeilleure.CodeGen
 {
     static class Compiler
     {
-        public static CompiledFunction Compile(
-            ControlFlowGraph cfg,
-            OperandType[] argTypes,
-            OperandType retType,
-            CompilerOptions options)
-        {
-            return Compile(new CompilerContext(cfg, argTypes, retType, options));
-        }
-
         public static CompiledFunction Compile(CompilerContext context)
         {
             ControlFlowGraph cfg = context.Cfg;
