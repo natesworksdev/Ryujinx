@@ -1,6 +1,6 @@
 using System;
 
-namespace ARMeilleure.Translation
+namespace ARMeilleure.CodeGen
 {
     [Flags]
     enum CompilerOptions

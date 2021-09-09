@@ -1,4 +1,5 @@
-﻿using ARMeilleure.Instructions;
+﻿using ARMeilleure.CodeGen;
+using ARMeilleure.Instructions;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using ARMeilleure.Translation.Cache;

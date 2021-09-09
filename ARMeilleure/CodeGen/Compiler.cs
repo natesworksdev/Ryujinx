@@ -1,18 +1,26 @@
-using ARMeilleure.CodeGen;
 using ARMeilleure.CodeGen.X86;
 using ARMeilleure.Diagnostics;
 using ARMeilleure.IntermediateRepresentation;
+using ARMeilleure.Translation;
 
-namespace ARMeilleure.Translation
+namespace ARMeilleure.CodeGen
 {
     static class Compiler
     {
         public static CompiledFunction Compile(
             ControlFlowGraph cfg,
-            OperandType[]    argTypes,
-            OperandType      retType,
-            CompilerOptions  options)
+            OperandType[] argTypes,
+            OperandType retType,
+            CompilerOptions options)
         {
+            return Compile(new CompilerContext(cfg, argTypes, retType, options));
+        }
+
+        public static CompiledFunction Compile(CompilerContext context)
+        {
+            ControlFlowGraph cfg = context.Cfg;
+            CompilerOptions options = context.Options;
+
             Logger.StartPass(PassName.Dominance);
 
             if ((options & CompilerOptions.SsaForm) != 0)
@@ -36,9 +44,7 @@ namespace ARMeilleure.Translation
 
             Logger.EndPass(PassName.SsaConstruction, cfg);
 
-            CompilerContext cctx = new(cfg, argTypes, retType, options);
-
-            return CodeGenerator.Generate(cctx);
+            return CodeGenerator.Generate(context);
         }
     }
 }

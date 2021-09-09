@@ -1,4 +1,5 @@
-﻿using ARMeilleure.IntermediateRepresentation;
+﻿using ARMeilleure.CodeGen;
+using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
 using System;
 using System.Runtime.CompilerServices;
