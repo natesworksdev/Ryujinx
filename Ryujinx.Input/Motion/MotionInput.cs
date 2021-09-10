@@ -39,8 +39,6 @@ namespace Ryujinx.Input
 
                         Rotation = Vector3.Zero;
 
-                        _filter.Reset();
-
                         _calibrationFrame = 0;
                     }
                 }
