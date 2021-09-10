@@ -122,6 +122,8 @@ namespace Ryujinx.Graphics.OpenGL
                 return;
             }
 
+            // If we have mismatching targets, then we need to force
+            // the layered attachments to use only the base layer.
             _needsLayersValidation = false;
 
             Target prev = default;
