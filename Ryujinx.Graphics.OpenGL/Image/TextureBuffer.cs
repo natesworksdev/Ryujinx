@@ -13,9 +13,19 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
         private BufferHandle _buffer;
 
-        public TextureBuffer(Renderer renderer, TextureCreateInfo info) : base(info)
+        private readonly Format _format;
+
+        public int Width { get; }
+        public int Height { get; }
+        public float ScaleFactor { get; }
+
+        public TextureBuffer(Renderer renderer, TextureCreateInfo info) : base(Target.TextureBuffer)
         {
             _renderer = renderer;
+            _format = info.Format;
+            Width = info.Width;
+            Height = info.Height;
+            ScaleFactor = 1f;
         }
 
         public void CopyTo(ITexture destination, int firstLayer, int firstLevel)
@@ -71,7 +81,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
             Bind(0);
 
-            SizedInternalFormat format = (SizedInternalFormat)FormatTable.GetFormatInfo(Info.Format).PixelInternalFormat;
+            SizedInternalFormat format = (SizedInternalFormat)FormatTable.GetFormatInfo(_format).PixelInternalFormat;
 
             GL.TexBufferRange(TextureBufferTarget.TextureBuffer, format, _buffer.ToInt32(), (IntPtr)buffer.Offset, buffer.Size);
         }

@@ -957,6 +957,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             _framebuffer.AttachDepthStencil(depthStencilView);
             _framebuffer.SetDrawBuffers(colors.Length);
+            _framebuffer.Validate();
         }
 
         public void SetSampler(int binding, ISampler sampler)

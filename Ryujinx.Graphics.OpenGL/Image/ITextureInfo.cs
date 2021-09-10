@@ -9,6 +9,6 @@ namespace Ryujinx.Graphics.OpenGL.Image
         int FirstLayer => 0;
         int FirstLevel => 0;
 
-        TextureCreateInfo Info { get; }
+        ref TextureCreateInfo Info { get; }
     }
 }

@@ -4,13 +4,29 @@ using System;
 
 namespace Ryujinx.Graphics.OpenGL.Image
 {
-    class TextureView : TextureBase, ITexture, ITextureInfo
+    class TextureView : TextureBase, ITexture
     {
         private readonly Renderer _renderer;
 
         private readonly TextureStorage _parent;
 
-        public ITextureInfo Storage => _parent;
+        private TextureCreateInfo _info;
+
+        public ref TextureCreateInfo Info => ref _info;
+
+        public bool Layered => _info.Target == Target.Texture1DArray ||
+                               _info.Target == Target.Texture2DArray ||
+                               _info.Target == Target.Texture2DMultisampleArray ||
+                               _info.Target == Target.Texture3D;
+
+        public int Width => _info.Width;
+        public int Height => _info.Height;
+        public float ScaleFactor { get; }
+
+        public Target Target => _info.Target;
+        public Format Format => _info.Format;
+
+        public TextureStorage Storage => _parent;
 
         public int FirstLayer { get; private set; }
         public int FirstLevel { get; private set; }
@@ -20,10 +36,13 @@ namespace Ryujinx.Graphics.OpenGL.Image
             TextureStorage    parent,
             TextureCreateInfo info,
             int               firstLayer,
-            int               firstLevel) : base(info, parent.ScaleFactor)
+            int               firstLevel) : base(info.Target)
         {
             _renderer = renderer;
             _parent   = parent;
+            _info     = info;
+
+            ScaleFactor = parent.ScaleFactor;
 
             FirstLayer = firstLayer;
             FirstLevel = firstLevel;
@@ -452,7 +471,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
             if (Target == Target.Cubemap && HwCapabilities.Vendor == HwCapabilities.GpuVendor.IntelWindows)
             {
                 GL.ActiveTexture(TextureUnit.Texture0);
-                GL.BindTexture(target, Storage.Handle);
+                GL.BindTexture(target, _parent.Handle);
                 baseLevel = FirstLevel;
             }
             else

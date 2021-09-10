@@ -105,8 +105,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
         }
 
         public void CopyUnscaled(
-            ITextureInfo src,
-            ITextureInfo dst,
+            TextureView src,
+            TextureView dst,
             int srcLayer,
             int dstLayer,
             int srcLevel,
@@ -133,8 +133,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
         }
 
         public void CopyUnscaled(
-            ITextureInfo src,
-            ITextureInfo dst,
+            TextureView src,
+            TextureView dst,
             int srcLayer,
             int dstLayer,
             int srcLevel,
