@@ -11,7 +11,7 @@ namespace Ryujinx.HLE
         private const int FrameTypeGame   = 0;
         private const int PercentTypeFifo = 0;
 
-        private double[] _averageFrameRate;
+        private double[] _FrameRate;
         private double[] _accumulatedFrameTime;
         private double[] _previousFrameTime;
 
@@ -32,7 +32,7 @@ namespace Ryujinx.HLE
 
         public PerformanceStatistics()
         {
-            _averageFrameRate     = new double[1];
+            _FrameRate     = new double[1];
             _accumulatedFrameTime = new double[1];
             _previousFrameTime    = new double[1];
 
@@ -60,11 +60,11 @@ namespace Ryujinx.HLE
 
         private void ResetTimerElapsed(object sender, ElapsedEventArgs e)
         {
-            CalculateAverageFrameRate(FrameTypeGame);
+            CalculateFrameRate(FrameTypeGame);
             CalculateAveragePercent(PercentTypeFifo);
         }
 
-        private void CalculateAverageFrameRate(int frameType)
+        private void CalculateFrameRate(int frameType)
         {
             double frameRate = 0;
 
@@ -75,7 +75,7 @@ namespace Ryujinx.HLE
                     frameRate = _framesRendered[frameType] / _accumulatedFrameTime[frameType];
                 }
 
-                _averageFrameRate[frameType] = LinearInterpolate(_averageFrameRate[frameType], frameRate);
+                _FrameRate[frameType] = frameRate;
 
                 _framesRendered[frameType] = 0;
 
@@ -102,11 +102,6 @@ namespace Ryujinx.HLE
 
                 _accumulatedActiveTime[percentType] = 0;
             }
-        }
-
-        private double LinearInterpolate(double lhs, double rhs)
-        {
-            return lhs * (1.0 - FrameRateWeight) + rhs * FrameRateWeight;
         }
 
         public void RecordGameFrameTime()
@@ -167,12 +162,17 @@ namespace Ryujinx.HLE
 
         public double GetGameFrameRate()
         {
-            return _averageFrameRate[FrameTypeGame];
+            return _FrameRate[FrameTypeGame];
         }
 
         public double GetFifoPercent()
         {
             return _averagePercent[PercentTypeFifo];
+        }
+
+        public double GetGameFrameTime()
+        {
+            return 1000/(_FrameRate[FrameTypeGame]);
         }
     }
 }

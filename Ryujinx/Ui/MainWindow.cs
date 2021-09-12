@@ -124,6 +124,7 @@ namespace Ryujinx.Ui
         [GUI] Label           _dockedMode;
         [GUI] Label           _aspectRatio;
         [GUI] Label           _gameStatus;
+        [GUI] Label           _gameTime;
         [GUI] TreeView        _gameTable;
         [GUI] TreeSelection   _gameTableSelection;
         [GUI] ScrolledWindow  _gameTableWindow;
@@ -1105,6 +1106,7 @@ namespace Ryujinx.Ui
             Application.Invoke(delegate
             {
                 _gameStatus.Text  = args.GameStatus;
+                _gameTime.Text  = args.GameTime;
                 _fifoStatus.Text  = args.FifoStatus;
                 _gpuName.Text     = args.GpuName;
                 _dockedMode.Text  = args.DockedMode;
