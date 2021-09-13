@@ -32,10 +32,10 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         {
             public int Uses { get; set; }
             public int UsesAllocated { get; set; }
-            public int Register { get; set; }
-            public int SpillOffset { get; set; }
             public int Sequence { get; set; }
             public Operand Temp { get; set; }
+            public Operand Register { get; set; }
+            public Operand SpillOffset { get; set; }
             public OperandType Type { get; }
 
             private int _first;
@@ -49,10 +49,10 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 Type = type;
 
                 UsesAllocated = 0;
-                Register = 0;
-                SpillOffset = 0;
                 Sequence = 0;
                 Temp = default;
+                Register = default;
+                SpillOffset = default;
 
                 _first = -1;
                 _last  = -1;
@@ -227,23 +227,23 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                         Debug.Assert(info.UsesAllocated <= info.Uses);
 
-                        if (info.Register != -1)
+                        if (info.Register != default)
                         {
-                            Operand reg = Register(info.Register, local.Type.ToRegisterType(), local.Type);
-
                             if (info.UsesAllocated == info.Uses)
                             {
+                                Register reg = info.Register.GetRegister();
+
                                 if (local.Type.IsInteger())
                                 {
-                                    intLocalFreeRegisters |= 1 << info.Register;
+                                    intLocalFreeRegisters |= 1 << reg.Index;
                                 }
                                 else
                                 {
-                                    vecLocalFreeRegisters |= 1 << info.Register;
+                                    vecLocalFreeRegisters |= 1 << reg.Index;
                                 }
                             }
 
-                            return reg;
+                            return info.Register;
                         }
                         else
                         {
@@ -259,7 +259,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                                 info.Temp = temp;
                             }
 
-                            Operation fillOp = Operation(Instruction.Fill, temp, Const(info.SpillOffset));
+                            Operation fillOp = Operation(Instruction.Fill, temp, info.SpillOffset);
 
                             block.Operations.AddBefore(node, fillOp);
 
@@ -279,9 +279,9 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         {
                             ref LocalInfo info = ref GetLocalInfo(source);
 
-                            if (info.Register == -1)
+                            if (info.Register == default)
                             {
-                                Operation fillOp = Operation(Instruction.Fill, node.Destination, Const(info.SpillOffset));
+                                Operation fillOp = Operation(Instruction.Fill, node.Destination, info.SpillOffset);
 
                                 block.Operations.AddBefore(node, fillOp);
                                 block.Operations.Remove(node);
@@ -344,7 +344,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                             {
                                 int selectedReg = BitOperations.TrailingZeroCount(mask);
 
-                                info.Register = selectedReg;
+                                info.Register = Register(selectedReg, info.Type.ToRegisterType(), info.Type);
 
                                 if (dest.Type.IsInteger())
                                 {
@@ -359,8 +359,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                             }
                             else
                             {
-                                info.Register    = -1;
-                                info.SpillOffset = stackAlloc.Allocate(dest.Type.GetSizeInBytes());
+                                info.Register    = default;
+                                info.SpillOffset = Const(stackAlloc.Allocate(dest.Type.GetSizeInBytes()));
                             }
                         }
 
@@ -368,9 +368,9 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                         Debug.Assert(info.UsesAllocated <= info.Uses);
 
-                        if (info.Register != -1)
+                        if (info.Register != default)
                         {
-                            node.SetDestination(i, Register(info.Register, dest.Type.ToRegisterType(), dest.Type));
+                            node.SetDestination(i, info.Register);
                         }
                         else
                         {
@@ -388,7 +388,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                             node.SetDestination(i, temp);
 
-                            Operation spillOp = Operation(Instruction.Spill, default, Const(info.SpillOffset), temp);
+                            Operation spillOp = Operation(Instruction.Spill, default, info.SpillOffset, temp);
 
                             block.Operations.AddAfter(node, spillOp);
 
