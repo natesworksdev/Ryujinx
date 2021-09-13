@@ -88,7 +88,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             void ThrowNotVisisted()
             {
-                throw new InvalidOperationException("Local was not visisted yet. Used before defined?");
+                throw new InvalidOperationException("Local was not visited yet. Used before defined?");
             }
 
             // The "visited" state is stored in the MSB of the local's value.
