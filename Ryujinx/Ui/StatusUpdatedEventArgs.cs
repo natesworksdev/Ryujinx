@@ -8,17 +8,15 @@ namespace Ryujinx.Ui
         public string DockedMode;
         public string AspectRatio;
         public string GameStatus;
-        public string GameTime;
         public string FifoStatus;
         public string GpuName;
 
-        public StatusUpdatedEventArgs(bool vSyncEnabled, string dockedMode, string aspectRatio, string gameStatus, string gameTime, string fifoStatus, string gpuName)
+        public StatusUpdatedEventArgs(bool vSyncEnabled, string dockedMode, string aspectRatio, string gameStatus, string fifoStatus, string gpuName)
         {
             VSyncEnabled = vSyncEnabled;
             DockedMode   = dockedMode;
             AspectRatio  = aspectRatio;
             GameStatus   = gameStatus;
-            GameTime     = gameTime;
             FifoStatus   = fifoStatus;
             GpuName      = gpuName;
         }
