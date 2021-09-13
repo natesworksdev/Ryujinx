@@ -96,7 +96,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             void SetVisited(Operand local)
             {
-                local.GetValueUnsafe() |= VisitedMask | (uint)++localInfoCount;
+                local.GetValueUnsafe() |= VisitedMask;
             }
 
             ref LocalInfo GetLocalInfo(Operand local)
@@ -163,13 +163,14 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                             }
                             else
                             {
-                                SetVisited(dest);
+                                dest.NumberLocal(++localInfoCount);
 
                                 if (localInfoCount > localInfo.Length)
                                 {
                                     Array.Resize(ref localInfo, localInfoCount * 2);
                                 }
 
+                                SetVisited(dest);
                                 GetLocalInfo(dest) = new LocalInfo(dest.Type, UsesCount(dest), block.Index);
                             }
                         }
@@ -295,13 +296,11 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                     if (!folded)
                     {
-                        for (int i = 0; i < node.SourcesCount; i++)
+                        foreach (ref Operand source in node.SourcesUnsafe)
                         {
-                            Operand source = node.GetSource(i);
-
                             if (source.Kind == OperandKind.LocalVariable)
                             {
-                                node.SetSource(i, AllocateRegister(source));
+                                source = AllocateRegister(source);
                             }
                             else if (source.Kind == OperandKind.Memory)
                             {
@@ -323,10 +322,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                     int intLocalAsg = 0;
                     int vecLocalAsg = 0;
 
-                    for (int i = 0; i < node.DestinationsCount; i++)
+                    foreach (ref Operand dest in node.DestinationsUnsafe)
                     {
-                        Operand dest = node.GetDestination(i);
-
                         if (dest.Kind != OperandKind.LocalVariable)
                         {
                             continue;
@@ -370,7 +367,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                         if (info.Register != default)
                         {
-                            node.SetDestination(i, info.Register);
+                            dest = info.Register;
                         }
                         else
                         {
@@ -386,7 +383,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                                 info.Temp     = temp;
                             }
 
-                            node.SetDestination(i, temp);
+                            dest = temp;
 
                             Operation spillOp = Operation(Instruction.Spill, default, info.SpillOffset, temp);
 
