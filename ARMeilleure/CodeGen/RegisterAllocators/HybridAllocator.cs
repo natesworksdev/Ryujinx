@@ -86,6 +86,11 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             var localInfo = new LocalInfo[cfg.Blocks.Count * 3];
             int localInfoCount = 0;
 
+            void ThrowNotVisisted()
+            {
+                throw new InvalidOperationException("Local was not visisted yet. Used before defined?");
+            }
+
             // The "visited" state is stored in the MSB of the local's value.
             const ulong VisitedMask = 1ul << 63;
 
@@ -105,7 +110,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                 if (!IsVisited(local))
                 {
-                    throw new InvalidOperationException("Local was not visisted yet. Used before defined?");
+                    ThrowNotVisisted();
                 }
 
                 return ref localInfo[(uint)local.GetValueUnsafe() - 1];
