@@ -47,7 +47,7 @@ namespace Ryujinx.HLE
             _frameLock   = new object[] { new object() };
             _percentLock = new object[] { new object() };
 
-            _resetTimer = new Timer(1000);
+            _resetTimer = new Timer(750);
 
             _resetTimer.Elapsed += ResetTimerElapsed;
 
