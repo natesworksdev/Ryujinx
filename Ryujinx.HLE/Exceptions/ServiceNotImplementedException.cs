@@ -18,7 +18,8 @@ namespace Ryujinx.HLE.Exceptions
         public ServiceCtx Context { get; }
         public IpcMessage Request { get; }
 
-        public ServiceNotImplementedException(IpcService service, ServiceCtx context) : this(service, context, "The service call is not implemented.") { }
+        public ServiceNotImplementedException(IpcService service, ServiceCtx context)
+            : this(service, context, "The service call is not implemented.") { }
 
         public ServiceNotImplementedException(IpcService service, ServiceCtx context, string message) : base(message)
         {
