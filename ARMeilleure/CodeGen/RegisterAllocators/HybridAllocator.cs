@@ -86,7 +86,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             var localInfo = new LocalInfo[cfg.Blocks.Count * 3];
             int localInfoCount = 0;
 
-            void ThrowNotVisisted()
+            void ThrowNotVisited()
             {
                 throw new InvalidOperationException("Local was not visited yet. Used before defined?");
             }
@@ -110,7 +110,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                 if (!IsVisited(local))
                 {
-                    ThrowNotVisisted();
+                    ThrowNotVisited();
                 }
 
                 return ref localInfo[(uint)local.GetValueUnsafe() - 1];
