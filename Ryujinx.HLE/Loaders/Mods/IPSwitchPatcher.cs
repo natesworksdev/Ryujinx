@@ -17,7 +17,7 @@ namespace Ryujinx.HLE.Loaders.Mods
             Comment
         }
 
-        readonly StreamReader _reader;
+        private readonly StreamReader _reader;
         public string BuildId { get; }
 
         public IPSwitchPatcher(StreamReader reader)
