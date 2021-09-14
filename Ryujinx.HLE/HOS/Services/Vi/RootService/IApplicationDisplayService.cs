@@ -172,12 +172,10 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
                 return ResultCode.InvalidValue;
             }
 
-            if (_openDisplayInfo.ContainsKey((ulong)displayId))
+            if (!_openDisplayInfo.TryAdd((ulong)displayId, _displayInfo[displayId]))
             {
                 return ResultCode.AlreadyOpened;
             }
-
-            _openDisplayInfo.Add((ulong)displayId, _displayInfo[displayId]);
 
             context.ResponseData.Write(displayId);
 
