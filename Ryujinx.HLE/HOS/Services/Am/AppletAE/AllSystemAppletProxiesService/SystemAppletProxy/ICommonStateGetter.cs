@@ -198,8 +198,8 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
             //       IOperationModeManager::GetDefaultDisplayResolution of omm service call IManagerDisplayService::GetDisplayResolution of vi service.
             (ulong width, ulong height) = AndroidSurfaceComposerClient.GetDisplayInfo(context);
 
-            context.ResponseData.Write(width);
-            context.ResponseData.Write(height);
+            context.ResponseData.Write((uint)width);
+            context.ResponseData.Write((uint)height);
 
             return ResultCode.Success;
         }
