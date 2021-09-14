@@ -123,8 +123,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
             for (int i = 0; i < (int)displayCounter; i++)
             {
-                MemoryHelper.FillWithZeros(context.Memory, displayInfoBuffer + (ulong)(i * Unsafe.SizeOf<DisplayInfo>()), 0x60);
-
+                context.Memory.Fill(displayInfoBuffer + (ulong)(i * Unsafe.SizeOf<DisplayInfo>()), (ulong)(Unsafe.SizeOf<DisplayInfo>()), 0x00);
                 context.Memory.Write(displayInfoBuffer, _displayInfo[i]);
             }
 
