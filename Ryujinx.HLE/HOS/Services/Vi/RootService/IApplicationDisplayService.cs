@@ -194,14 +194,12 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
         {
             ulong displayId = context.RequestData.ReadUInt64();
 
-            if (_openedDisplayInfo.TryGetValue(displayId, out _))
+            if (!_openedDisplayInfo.Remove(displayId))
             {
-                _openedDisplayInfo.Remove(displayId);
-
-                return ResultCode.Success;
+                return ResultCode.InvalidValue;
             }
 
-            return ResultCode.InvalidValue;
+            return ResultCode.Success;
         }
 
         [CommandHipc(1101)]
@@ -277,8 +275,6 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
             ulong parcelPtr = context.Request.ReceiveBuff[0].Position;
 
             // TODO: support multi display.
-            //Display disp = _displays.GetData<Display>((int)displayId);
-
             IBinder producer = context.Device.System.SurfaceFlinger.CreateLayer(0, out long layerId);
 
             context.Device.System.SurfaceFlinger.SetRenderLayer(layerId);
