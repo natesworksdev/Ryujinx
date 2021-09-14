@@ -75,7 +75,7 @@ namespace Ryujinx.HLE
                 }
 
                 _averageFrameRate[frameType]     = LinearInterpolate(_averageFrameRate[frameType], frameRate);
-                _FrameRate[frameType]            = frameRate;
+                _frameRate[frameType]            = frameRate;
                 _framesRendered[frameType]       = 0;
                 _accumulatedFrameTime[frameType] = 0;
             }
