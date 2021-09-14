@@ -214,8 +214,8 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
             // NOTE: Returns ResultCode.InvalidArguments if width and height pointer are null, doesn't occur in our case.
 
             // NOTE: Values are hardcoded in original service.
-            context.ResponseData.Write((ulong)1280); // Width
-            context.ResponseData.Write((ulong)720);  // Height
+            context.ResponseData.Write(1280UL); // Width
+            context.ResponseData.Write(720UL);  // Height
 
             return ResultCode.Success;
         }
