@@ -306,31 +306,22 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         {
             RegisterType regType = current.Local.Type.ToRegisterType();
 
-            int availableRegisters = context.Masks.GetAvailableRegisters(regType);
+            Span<int> usePositions = stackalloc int[RegistersCount];
+            Span<int> blockedPositions = stackalloc int[RegistersCount];
 
-            int[] usePositions     = new int[RegistersCount];
-            int[] blockedPositions = new int[RegistersCount];
+            context.GetFreePositions(regType, usePositions, out _);
+            context.GetFreePositions(regType, blockedPositions, out _);
 
-            for (int index = 0; index < RegistersCount; index++)
-            {
-                if ((availableRegisters & (1 << index)) != 0)
-                {
-                    usePositions[index] = int.MaxValue;
-
-                    blockedPositions[index] = int.MaxValue;
-                }
-            }
-
-            void SetUsePosition(int index, int position)
+            void SetUsePosition(in Span<int> usePositions, int index, int position)
             {
                 usePositions[index] = Math.Min(usePositions[index], position);
             }
 
-            void SetBlockedPosition(int index, int position)
+            void SetBlockedPosition(in Span<int> usePositions, in Span<int> blockedPositions, int index, int position)
             {
                 blockedPositions[index] = Math.Min(blockedPositions[index], position);
 
-                SetUsePosition(index, position);
+                SetUsePosition(usePositions, index, position);
             }
 
             foreach (int iIndex in context.Active)
@@ -341,9 +332,9 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 {
                     int nextUse = interval.NextUseAfter(current.GetStart());
 
-                    if (nextUse != -1)
+                    if (nextUse != LiveInterval.NotFound)
                     {
-                        SetUsePosition(interval.Register.Index, nextUse);
+                        SetUsePosition(usePositions, interval.Register.Index, nextUse);
                     }
                 }
             }
@@ -356,9 +347,9 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 {
                     int nextUse = interval.NextUseAfter(current.GetStart());
 
-                    if (nextUse != -1)
+                    if (nextUse != LiveInterval.NotFound)
                     {
-                        SetUsePosition(interval.Register.Index, nextUse);
+                        SetUsePosition(usePositions, interval.Register.Index, nextUse);
                     }
                 }
             }
@@ -369,7 +360,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                 if (interval.IsFixed && interval.Register.Type == regType)
                 {
-                    SetBlockedPosition(interval.Register.Index, 0);
+                    SetBlockedPosition(usePositions, blockedPositions, interval.Register.Index, 0);
                 }
             }
 
@@ -383,13 +374,12 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                     if (overlapPosition != LiveInterval.NotFound)
                     {
-                        SetBlockedPosition(interval.Register.Index, overlapPosition);
+                        SetBlockedPosition(usePositions, blockedPositions, interval.Register.Index, overlapPosition);
                     }
                 }
             }
 
             int selectedReg = GetHighestValueIndex(usePositions);
-
             int currentFirstUse = current.FirstUse();
 
             Debug.Assert(currentFirstUse >= 0, "Current interval has no uses.");
