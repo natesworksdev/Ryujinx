@@ -42,9 +42,13 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService
         // GetDisplayMode(u64) -> nn::vi::DisplayModeInfo
         public ResultCode GetDisplayMode(ServiceCtx context)
         {
+            ulong displayId = context.RequestData.ReadUInt64();
+
+            (ulong width, ulong height) = AndroidSurfaceComposerClient.GetDisplayInfo(context, displayId);
+
             // TODO: De-hardcode resolution.
-            context.ResponseData.Write(1280);
-            context.ResponseData.Write(720);
+            context.ResponseData.Write(width);
+            context.ResponseData.Write(height);
             context.ResponseData.Write(60.0f);
             context.ResponseData.Write(0);
 
