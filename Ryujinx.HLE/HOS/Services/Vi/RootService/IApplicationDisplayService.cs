@@ -20,15 +20,15 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
         private readonly ViServiceType _serviceType;
 
         private readonly List<DisplayInfo>              _displayInfo;
-        private readonly Dictionary<ulong, DisplayInfo> _openedDisplayInfo;
+        private readonly Dictionary<ulong, DisplayInfo> _openDisplayInfo;
 
         private int _vsyncEventHandle;
 
         public IApplicationDisplayService(ViServiceType serviceType)
         {
-            _serviceType       = serviceType;
-            _displayInfo       = new List<DisplayInfo>();
-            _openedDisplayInfo = new Dictionary<ulong, DisplayInfo>();
+            _serviceType     = serviceType;
+            _displayInfo     = new List<DisplayInfo>();
+            _openDisplayInfo = new Dictionary<ulong, DisplayInfo>();
 
             void AddDisplayInfo(string name, bool layerLimitEnabled, ulong layerLimitMax, ulong width, ulong height)
             {
@@ -119,15 +119,15 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
             ulong displayInfoBuffer = context.Request.ReceiveBuff[0].Position;
 
             // TODO: Determine when more than one display is needed.
-            ulong displayCounter = 1;
+            ulong displayCount = 1;
 
-            for (int i = 0; i < (int)displayCounter; i++)
+            for (int i = 0; i < (int)displayCount; i++)
             {
                 context.Memory.Fill(displayInfoBuffer + (ulong)(i * Unsafe.SizeOf<DisplayInfo>()), (ulong)(Unsafe.SizeOf<DisplayInfo>()), 0x00);
                 context.Memory.Write(displayInfoBuffer, _displayInfo[i]);
             }
 
-            context.ResponseData.Write(displayCounter);
+            context.ResponseData.Write(displayCount);
 
             return ResultCode.Success;
         }
@@ -165,14 +165,6 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
                 return ResultCode.InvalidValue;
             }
 
-            foreach (var openedDisplayInfo in _openedDisplayInfo)
-            {
-                if (Encoding.ASCII.GetString(openedDisplayInfo.Value.Name.ToSpan()) == name)
-                {
-                    return ResultCode.AlreadyOpened;
-                }
-            }
-
             int displayId = _displayInfo.FindIndex(display => Encoding.ASCII.GetString(display.Name.ToSpan()).Trim('\0') == name);
 
             if (displayId == -1)
@@ -180,7 +172,12 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
                 return ResultCode.InvalidValue;
             }
 
-            _openedDisplayInfo.Add((ulong)displayId, _displayInfo[displayId]);
+            if (_openDisplayInfo.ContainsKey((ulong)displayId))
+            {
+                return ResultCode.AlreadyOpened;
+            }
+
+            _openDisplayInfo.Add((ulong)displayId, _displayInfo[displayId]);
 
             context.ResponseData.Write(displayId);
 
@@ -193,7 +190,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
         {
             ulong displayId = context.RequestData.ReadUInt64();
 
-            if (!_openedDisplayInfo.Remove(displayId))
+            if (!_openDisplayInfo.Remove(displayId))
             {
                 return ResultCode.InvalidValue;
             }
@@ -420,7 +417,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
         {
             ulong displayId = context.RequestData.ReadUInt64();
 
-            if (!_openedDisplayInfo.TryGetValue(displayId, out _))
+            if (!_openDisplayInfo.ContainsKey(displayId))
             {
                 return ResultCode.InvalidValue;
             }
