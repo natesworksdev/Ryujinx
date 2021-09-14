@@ -312,29 +312,29 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             context.GetFreePositions(regType, usePositions, out _);
             context.GetFreePositions(regType, blockedPositions, out _);
 
-            void SetUsePosition(in Span<int> usePositions, int index, int position)
-            {
-                usePositions[index] = Math.Min(usePositions[index], position);
-            }
-
-            void SetBlockedPosition(in Span<int> usePositions, in Span<int> blockedPositions, int index, int position)
-            {
-                blockedPositions[index] = Math.Min(blockedPositions[index], position);
-
-                SetUsePosition(usePositions, index, position);
-            }
-
             foreach (int iIndex in context.Active)
             {
                 LiveInterval interval = _intervals[iIndex];
+                Register reg = interval.Register;
 
-                if (!interval.IsFixed && interval.Register.Type == regType)
+                if (reg.Type == regType)
                 {
-                    int nextUse = interval.NextUseAfter(current.GetStart());
+                    ref int usePosition = ref usePositions[reg.Index];
+                    ref int blockedPosition = ref blockedPositions[reg.Index];
 
-                    if (nextUse != LiveInterval.NotFound)
+                    if (interval.IsFixed)
                     {
-                        SetUsePosition(usePositions, interval.Register.Index, nextUse);
+                        usePosition = 0;
+                        blockedPosition = 0;
+                    }
+                    else
+                    {
+                        int nextUse = interval.NextUseAfter(current.GetStart());
+
+                        if (nextUse != LiveInterval.NotFound && usePosition > nextUse)
+                        {
+                            usePosition = nextUse;
+                        }
                     }
                 }
             }
@@ -342,39 +342,31 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             foreach (int iIndex in context.Inactive)
             {
                 LiveInterval interval = _intervals[iIndex];
+                Register reg = interval.Register;
 
-                if (!interval.IsFixed && interval.Register.Type == regType && interval.Overlaps(current))
+                if (reg.Type == regType)
                 {
-                    int nextUse = interval.NextUseAfter(current.GetStart());
+                    ref int usePosition = ref usePositions[reg.Index];
+                    ref int blockedPosition = ref blockedPositions[reg.Index];
 
-                    if (nextUse != LiveInterval.NotFound)
+                    if (interval.IsFixed)
                     {
-                        SetUsePosition(usePositions, interval.Register.Index, nextUse);
+                        int overlapPosition = interval.GetOverlapPosition(current);
+
+                        if (overlapPosition != LiveInterval.NotFound)
+                        {
+                            blockedPosition = Math.Min(blockedPosition, overlapPosition);
+                            usePosition = Math.Min(usePosition, overlapPosition);
+                        }
                     }
-                }
-            }
-
-            foreach (int iIndex in context.Active)
-            {
-                LiveInterval interval = _intervals[iIndex];
-
-                if (interval.IsFixed && interval.Register.Type == regType)
-                {
-                    SetBlockedPosition(usePositions, blockedPositions, interval.Register.Index, 0);
-                }
-            }
-
-            foreach (int iIndex in context.Inactive)
-            {
-                LiveInterval interval = _intervals[iIndex];
-
-                if (interval.IsFixed && interval.Register.Type == regType)
-                {
-                    int overlapPosition = interval.GetOverlapPosition(current);
-
-                    if (overlapPosition != LiveInterval.NotFound)
+                    else if (interval.Overlaps(current))
                     {
-                        SetBlockedPosition(usePositions, blockedPositions, interval.Register.Index, overlapPosition);
+                        int nextUse = interval.NextUseAfter(current.GetStart());
+
+                        if (nextUse != LiveInterval.NotFound && usePosition > nextUse)
+                        {
+                            usePosition = nextUse;
+                        }
                     }
                 }
             }
