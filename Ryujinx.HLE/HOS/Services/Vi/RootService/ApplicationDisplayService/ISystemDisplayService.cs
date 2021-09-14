@@ -46,11 +46,12 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService
 
             (ulong width, ulong height) = AndroidSurfaceComposerClient.GetDisplayInfo(context, displayId);
 
-            // TODO: De-hardcode resolution.
             context.ResponseData.Write((uint)width);
             context.ResponseData.Write((uint)height);
             context.ResponseData.Write(60.0f);
             context.ResponseData.Write(0);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceVi);
 
             return ResultCode.Success;
         }
