@@ -198,7 +198,7 @@ namespace Ryujinx.Headless.SDL2
                             Device.EnableDeviceVsync,
                             dockedMode,
                             Device.Configuration.AspectRatio.ToText(),
-                            $"Game: {Device.Statistics.GetGameFrameRate():0} FPS ({Device.Statistics.GetGameFrameTime():00.00} ms)",
+                            $"Game: {Device.Statistics.GetGameFrameRate():00.00} FPS ({Device.Statistics.GetGameFrameTime():00.00} ms)",
                             $"FIFO: {Device.Statistics.GetFifoPercent():0.00} %",
                             $"GPU: {_gpuVendorName}"));
 
