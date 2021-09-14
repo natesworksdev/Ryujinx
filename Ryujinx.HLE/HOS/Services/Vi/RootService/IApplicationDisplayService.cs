@@ -177,7 +177,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
                 return ResultCode.AlreadyOpened;
             }
 
-            context.ResponseData.Write(displayId);
+            context.ResponseData.Write((ulong)displayId);
 
             return ResultCode.Success;
         }
