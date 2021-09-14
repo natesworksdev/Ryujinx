@@ -10,7 +10,7 @@ namespace Ryujinx.HLE
         private const int    PercentTypeFifo = 0;
 
         private double[] _averageFrameRate;
-        private double[] _FrameRate;
+        private double[] _frameRate;
         private double[] _accumulatedFrameTime;
         private double[] _previousFrameTime;
 
@@ -32,7 +32,7 @@ namespace Ryujinx.HLE
         public PerformanceStatistics()
         {
             _averageFrameRate     = new double[1];
-            _FrameRate            = new double[1];
+            _frameRate            = new double[1];
             _accumulatedFrameTime = new double[1];
             _previousFrameTime    = new double[1];
 
@@ -75,11 +75,8 @@ namespace Ryujinx.HLE
                 }
 
                 _averageFrameRate[frameType] = LinearInterpolate(_averageFrameRate[frameType], frameRate);
-
-                _FrameRate[frameType] = frameRate;
-
+                _frameRate[frameType] = frameRate;
                 _framesRendered[frameType] = 0;
-
                 _accumulatedFrameTime[frameType] = 0;
             }
         }
@@ -163,7 +160,7 @@ namespace Ryujinx.HLE
 
         public double GetGameFrameRate()
         {
-            return _FrameRate[FrameTypeGame];
+            return _frameRate[FrameTypeGame];
         }
 
         public double GetFifoPercent()
@@ -173,7 +170,7 @@ namespace Ryujinx.HLE
 
         public double GetGameFrameTime()
         {
-            return 1000/(_FrameRate[FrameTypeGame]);
+            return 1000 / _frameRate[FrameTypeGame];
         }
     }
 }
