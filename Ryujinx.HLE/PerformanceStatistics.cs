@@ -5,7 +5,6 @@ namespace Ryujinx.HLE
 {
     public class PerformanceStatistics
     {
-        private const double FrameRateWeight = 0.5;
         private const int    FrameTypeGame   = 0;
         private const int    PercentTypeFifo = 0;
 
