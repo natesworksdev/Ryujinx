@@ -112,8 +112,6 @@ namespace Ryujinx.Common.Collections
             }
 
             Insert(start, end, value);
-
-            //ValidateTree();
         }
 
         /// <summary>
@@ -122,6 +120,7 @@ namespace Ryujinx.Common.Collections
         /// <param name="key">Key of the node to remove</param>
         /// <param name="value">Value to remove</param>
         /// <exception cref="ArgumentNullException"><paramref name="key"/> is null</exception>
+        /// <returns>Number of deleted values</returns>
         public int Remove(K key, V value)
         {
             if (key == null)
@@ -139,7 +138,7 @@ namespace Ryujinx.Common.Collections
         /// <summary>
         /// Adds all the nodes in the dictionary into <paramref name="list"/>.
         /// <br></br>
-        /// The nodes will be added in Sorted by Key Order.
+        /// The nodes will be added and sorted by Key Order.
         /// </summary>
         public List<RangeNode<K, V>> AsList()
         {
@@ -167,7 +166,9 @@ namespace Ryujinx.Common.Collections
 
             return list;
         }
+
         #endregion
+
         #region Private Methods (BST)
 
         /// <summary>
@@ -370,7 +371,7 @@ namespace Ryujinx.Common.Collections
         }
 
         /// <summary>
-        /// Removes instances of <param name="value"> from the dictionary after searching for it with <param name="key">.
+        /// Removes instances of <paramref name="value"> from the dictionary after searching for it with <paramref name="key">.
         /// </summary>
         /// <param name="key">Key to search for</param>
         /// <param name="value">Value to delete</param>
@@ -470,7 +471,7 @@ namespace Ryujinx.Common.Collections
         }
 
         /// <summary>
-        /// Finds the node whose key immediately less than <paramref name="node"/>.Key.
+        /// Finds the node whose key is immediately less than <paramref name="node"/>.
         /// </summary>
         /// <param name="node">Node to find the predecessor of</param>
         /// <returns>Predecessor of <paramref name="node"/></returns>
@@ -685,7 +686,7 @@ namespace Ryujinx.Common.Collections
 
         #region Safety-Methods
 
-        // These methods save memory by allowing us to forego sentinel nil nodes, as well as serve as protection against nullpointerexceptions.
+        // These methods save memory by allowing us to forego sentinel nil nodes, as well as serve as protection against NullPointerExceptions.
 
         /// <summary>
         /// Returns the color of <paramref name="node"/>, or Black if it is null.

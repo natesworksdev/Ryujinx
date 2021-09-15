@@ -183,7 +183,7 @@ namespace Ryujinx.Common.Collections
         /// <summary>
         /// Adds all the nodes in the dictionary into <paramref name="list"/>.
         /// <br></br>
-        /// The nodes will be added in Sorted by Key Order.
+        /// The nodes will be added and sorted by Key Order.
         /// </summary>
         public List<KeyValuePair<K, V>> AsList()
         {
@@ -211,7 +211,9 @@ namespace Ryujinx.Common.Collections
 
             return list;
         }
+
         #endregion
+
         #region Private Methods (BST)
 
         /// <summary>
@@ -519,7 +521,7 @@ namespace Ryujinx.Common.Collections
         }
 
         /// <summary>
-        /// Finds the node with the key immediately greater than <paramref name="node"/>.Key.
+        /// Finds the node with the key is immediately greater than <paramref name="node"/>.
         /// </summary>
         /// <param name="node">Node to find the successor of</param>
         /// <returns>Successor of <paramref name="node"/></returns>
@@ -539,7 +541,7 @@ namespace Ryujinx.Common.Collections
         }
 
         /// <summary>
-        /// Finds the node whose key immediately less than <paramref name="node"/>.Key.
+        /// Finds the node whose key is immediately less than <paramref name="node"/>.
         /// </summary>
         /// <param name="node">Node to find the predecessor of</param>
         /// <returns>Predecessor of <paramref name="node"/></returns>
@@ -557,7 +559,9 @@ namespace Ryujinx.Common.Collections
             }
             return parent;
         }
+
         #endregion
+
         #region Private Methods (RBL)
 
         private void RestoreBalanceAfterRemoval(Node<K, V> balanceNode)
@@ -748,7 +752,7 @@ namespace Ryujinx.Common.Collections
 
         #region Safety-Methods
 
-        // These methods save memory by allowing us to forego sentinel nil nodes, as well as serve as protection against nullpointerexceptions.
+        // These methods save memory by allowing us to forego sentinel nil nodes, as well as serve as protection against NullPointerExceptions.
 
         /// <summary>
         /// Returns the color of <paramref name="node"/>, or Black if it is null.
