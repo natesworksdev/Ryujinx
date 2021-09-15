@@ -137,32 +137,13 @@ namespace Ryujinx.Common.Collections
 
         /// <summary>
         /// Adds all the nodes in the dictionary into <paramref name="list"/>.
-        /// <br></br>
-        /// The nodes will be added and sorted by Key Order.
         /// </summary>
+        /// <returns>A list of all RangeNodes sorted by Key Order</returns>
         public List<RangeNode<K, V>> AsList()
         {
             List<RangeNode<K, V>> list = new List<RangeNode<K, V>>();
 
-            Queue<IntervalTreeNode<K, V>> nodes = new Queue<IntervalTreeNode<K, V>>();
-
-            if (this._root != null)
-            {
-                nodes.Enqueue(this._root);
-            }
-            while (nodes.Count > 0)
-            {
-                IntervalTreeNode<K, V> node = nodes.Dequeue();
-                list.AddRange(node.Values);
-                if (node.Left != null)
-                {
-                    nodes.Enqueue(node.Left);
-                }
-                if (node.Right != null)
-                {
-                    nodes.Enqueue(node.Right);
-                }
-            }
+            AddToList(_root, list);
 
             return list;
         }
@@ -170,6 +151,25 @@ namespace Ryujinx.Common.Collections
         #endregion
 
         #region Private Methods (BST)
+
+        /// <summary>
+        /// Adds all RangeNodes that are children of or contained within <paramref name="node"/> into <paramref name="list"/>, in Key Order.
+        /// </summary>
+        /// <param name="node">The node to search for RangeNodes within</param>
+        /// <param name="list">The list to add RangeNodes to</param>
+        private void AddToList(IntervalTreeNode<K, V> node, List<RangeNode<K, V>> list)
+        {
+            if (node == null)
+            {
+                return;
+            }
+
+            AddToList(node.Left, list);
+
+            list.AddRange(node.Values);
+
+            AddToList(node.Right, list);
+        }
 
         /// <summary>
         /// Retrieve the node reference whose key is <paramref name="key"/>, or null if no such node exists.
@@ -228,9 +228,9 @@ namespace Ryujinx.Common.Collections
                     // Contains this node. Add overlaps to list.
                     foreach (RangeNode<K,V> overlap in node.Values)
                     {
-                        if (end.CompareTo(overlap.Start) > 0 && start.CompareTo(overlap.End) < 0)
+                        if (start.CompareTo(overlap.End) < 0)
                         {
-                            if (overlaps.Length == overlapCount)
+                            if (overlaps.Length >= overlapCount)
                             {
                                 Array.Resize(ref overlaps, overlapCount + ArrayGrowthSize);
                             }
@@ -686,7 +686,7 @@ namespace Ryujinx.Common.Collections
 
         #region Safety-Methods
 
-        // These methods save memory by allowing us to forego sentinel nil nodes, as well as serve as protection against NullPointerExceptions.
+        // These methods save memory by allowing us to forego sentinel nil nodes, as well as serve as protection against NullReferenceExceptions.
 
         /// <summary>
         /// Returns the color of <paramref name="node"/>, or Black if it is null.

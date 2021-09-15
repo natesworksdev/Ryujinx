@@ -86,37 +86,39 @@ namespace Ryujinx.Memory.Range
             for (int i = 0; i < range.Count; i++)
             {
                 var subrange = range.GetSubRange(i);
-                int newOverlaps = _items.Get(subrange.Address, subrange.EndAddress, ref output, overlapCount);
+                overlapCount = _items.Get(subrange.Address, subrange.EndAddress, ref output, overlapCount);
+            }
 
-                if (i > 0)
+            // Remove any duplicates, caused by items having multiple sub range nodes in the tree.
+            if (overlapCount > 1)
+            {
+                int insertPtr = 0;
+                for (int i = 0; i < overlapCount; i++)
                 {
-                    // Filter new overlaps - remove duplicates.
-                    int insertPtr = overlapCount;
+                    T item = output[i];
+                    bool duplicate = false;
 
-                    for (int newI = overlapCount; newI < newOverlaps; newI++)
+                    for (int j = insertPtr - 1; j >= 0; j--)
                     {
-                        bool duplicate = false;
-                        for (int oldI = 0; oldI < overlapCount; oldI++)
+                        if (item.Equals(output[j]))
                         {
-                            if (output[newI].Equals(output[oldI]))
-                            {
-                                duplicate = true;
-                                break;
-                            }
-                        }
-
-                        if (!duplicate)
-                        {
-                            output[insertPtr++] = output[newI];
+                            duplicate = true;
+                            break;
                         }
                     }
 
-                    overlapCount = insertPtr;
+                    if (!duplicate)
+                    {
+                        if (insertPtr != i)
+                        {
+                            output[insertPtr] = item;
+                        }
+
+                        insertPtr++;
+                    }
                 }
-                else
-                {
-                    overlapCount = newOverlaps;
-                }
+
+                overlapCount = insertPtr;
             }
 
             return overlapCount;
