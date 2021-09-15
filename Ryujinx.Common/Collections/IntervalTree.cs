@@ -454,13 +454,8 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="node">Root Node</param>
         /// <returns>Node with the maximum key in the tree of <paramref name="node"/></returns>
-        /// <exception cref="ArgumentNullException"><paramref name="node"/> is null</exception>
         private static IntervalTreeNode<K, V> Maximum(IntervalTreeNode<K, V> node)
         {
-            if (node == null)
-            {
-                throw new ArgumentNullException(nameof(node));
-            }
             IntervalTreeNode<K, V> tmp = node;
             while (tmp.Right != null)
             {
