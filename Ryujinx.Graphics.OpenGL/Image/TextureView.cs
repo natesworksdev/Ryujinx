@@ -249,25 +249,40 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
         public void SetData(ReadOnlySpan<byte> data)
         {
-            unsafe
+            if (HwCapabilities.UsePersistentBufferForFlush && data.Length < PersistentTextureBuffer.TextureMaxSize)
             {
-                fixed (byte* ptr = data)
+                _renderer.PersistentBuffers.Textures.SetTextureData(this, data, data.Length);
+            }
+            else
+            {
+                unsafe
                 {
-                    ReadFrom((IntPtr)ptr, data.Length);
+                    fixed (byte* ptr = data)
+                    {
+                        ReadFrom((IntPtr)ptr, data.Length);
+                    }
                 }
             }
         }
 
         public void SetData(ReadOnlySpan<byte> data, int layer, int level)
         {
-            unsafe
-            {
-                fixed (byte* ptr = data)
-                {
-                    int width = Math.Max(Info.Width >> level, 1);
-                    int height = Math.Max(Info.Height >> level, 1);
+            int width = Math.Max(Info.Width >> level, 1);
+            int height = Math.Max(Info.Height >> level, 1);
+            int mipSize = Info.GetMipSize2D(level);
 
-                    ReadFrom2D((IntPtr)ptr, layer, level, width, height);
+            if (HwCapabilities.UsePersistentBufferForFlush && mipSize < PersistentTextureBuffer.TextureMaxSize)
+            {
+                _renderer.PersistentBuffers.Textures.SetTextureData(this, data, mipSize, layer, level, width, height);
+            }
+            else
+            {
+                unsafe
+                {
+                    fixed (byte* ptr = data)
+                    {
+                        ReadFrom2D((IntPtr)ptr, layer, level, width, height);
+                    }
                 }
             }
         }
