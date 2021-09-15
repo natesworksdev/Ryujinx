@@ -11,19 +11,19 @@ namespace Ryujinx.Memory.Range
     /// <typeparam name="T">Type of the range.</typeparam>
     public class RangeList<T> : IEnumerable<T> where T : IRange
     {
-        private readonly struct RangeItem<T> where T : IRange
+        private readonly struct RangeItem<TValue> where TValue : IRange
         {
             public readonly ulong Address;
             public readonly ulong EndAddress;
 
-            public readonly T Item;
+            public readonly TValue Value;
 
-            public RangeItem(T item)
+            public RangeItem(TValue value)
             {
-                Item = item;
+                Value = value;
 
-                Address = item.Address;
-                EndAddress = item.Address + item.Size;
+                Address = value.Address;
+                EndAddress = value.Address + value.Size;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -114,7 +114,7 @@ namespace Ryujinx.Memory.Range
 
                 while (index < Count)
                 {
-                    if (_items[index].Item.Equals(item))
+                    if (_items[index].Value.Equals(item))
                     {
                         RemoveAt(index);
 
@@ -150,7 +150,7 @@ namespace Ryujinx.Memory.Range
 
                 while (index < Count)
                 {
-                    if (_items[index].Item.Equals(item))
+                    if (_items[index].Value.Equals(item))
                     {
                         _items[index] = new RangeItem<T>(item);
 
@@ -200,7 +200,7 @@ namespace Ryujinx.Memory.Range
                 return default(T);
             }
 
-            return _items[index].Item;
+            return _items[index].Value;
         }
 
         /// <summary>
@@ -243,7 +243,7 @@ namespace Ryujinx.Memory.Range
                         Array.Resize(ref output, outputIndex + ArrayGrowthSize);
                     }
 
-                    output[outputIndex++] = item.Item;
+                    output[outputIndex++] = item.Value;
                 }
             }
 
@@ -302,7 +302,7 @@ namespace Ryujinx.Memory.Range
                         Array.Resize(ref output, outputIndex + ArrayGrowthSize);
                     }
 
-                    output[outputIndex++] = _items[index++].Item;
+                    output[outputIndex++] = _items[index++].Value;
                 }
                 while (index < Count && _items[index].OverlapsWith(address, endAddress));
             }
@@ -343,7 +343,7 @@ namespace Ryujinx.Memory.Range
                         Array.Resize(ref output, outputIndex + ArrayGrowthSize);
                     }
 
-                    output[outputIndex++] = overlap.Item;
+                    output[outputIndex++] = overlap.Value;
                 }
             }
 
@@ -427,7 +427,7 @@ namespace Ryujinx.Memory.Range
         {
             for (int i = 0; i < Count; i++)
             {
-                yield return _items[i].Item;
+                yield return _items[i].Value;
             }
         }
 
@@ -435,7 +435,7 @@ namespace Ryujinx.Memory.Range
         {
             for (int i = 0; i < Count; i++)
             {
-                yield return _items[i].Item;
+                yield return _items[i].Value;
             }
         }
     }
