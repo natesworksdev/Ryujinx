@@ -214,6 +214,7 @@ namespace Ryujinx.Ui
 
             _actionMenu.Sensitive = false;
             _pauseEmulation.Sensitive = false;
+            _resumeEmulation.Sensitive = false;
 
             if (ConfigurationState.Instance.Ui.GuiColumns.FavColumn)        _favToggle.Active        = true;
             if (ConfigurationState.Instance.Ui.GuiColumns.IconColumn)       _iconToggle.Active       = true;
