@@ -962,6 +962,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 UpdateUserClipState();
             }
 
+#pragma warning disable CA2014 // Do not use stackalloc in loops - ShaderStages is constant, so the loop won't cause unbounded allocation.
             for (int stage = 0; stage < Constants.ShaderStages; stage++)
             {
                 ShaderProgramInfo info = gs.Shaders[stage]?.Info;
@@ -977,7 +978,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     continue;
                 }
 
-                var textureBindings = new TextureBindingInfo[info.Textures.Count];
+                Span<TextureBindingInfo> textureBindings = stackalloc TextureBindingInfo[info.Textures.Count];
 
                 for (int index = 0; index < info.Textures.Count; index++)
                 {
@@ -995,7 +996,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
                 _channel.TextureManager.SetGraphicsTextures(stage, textureBindings);
 
-                var imageBindings = new TextureBindingInfo[info.Images.Count];
+                Span<TextureBindingInfo> imageBindings = stackalloc TextureBindingInfo[info.Images.Count];
 
                 for (int index = 0; index < info.Images.Count; index++)
                 {
@@ -1018,6 +1019,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 _channel.BufferManager.SetGraphicsStorageBufferBindings(stage, info.SBuffers);
                 _channel.BufferManager.SetGraphicsUniformBufferBindings(stage, info.CBuffers);
             }
+
+#pragma warning restore CA2014 // Do not use stackalloc in loops
 
             _context.Renderer.Pipeline.SetProgram(gs.HostProgram);
         }

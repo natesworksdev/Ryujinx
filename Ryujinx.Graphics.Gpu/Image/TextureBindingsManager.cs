@@ -11,6 +11,9 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// </summary>
     class TextureBindingsManager : IDisposable
     {
+        private const int InitialTextureStateSize = 32;
+        private const int InitialImageStateSize = 8;
+
         private const int HandleHigh = 16;
         private const int HandleMask = (1 << HandleHigh) - 1;
 
@@ -43,6 +46,9 @@ namespace Ryujinx.Graphics.Gpu.Image
         private readonly TextureStatePerStage[][] _textureState;
         private readonly TextureStatePerStage[][] _imageState;
 
+        private int[] _textureBindingsCount;
+        private int[] _imageBindingsCount;
+
         private int _textureBufferIndex;
 
         private bool _rebind;
@@ -72,6 +78,18 @@ namespace Ryujinx.Graphics.Gpu.Image
             _textureState = new TextureStatePerStage[stages][];
             _imageState   = new TextureStatePerStage[stages][];
 
+            _textureBindingsCount = new int[stages];
+            _imageBindingsCount = new int[stages];
+
+            for (int stage = 0; stage < stages; stage++)
+            {
+                _textureBindings[stage] = new TextureBindingInfo[InitialTextureStateSize];
+                _imageBindings[stage] = new TextureBindingInfo[InitialImageStateSize];
+
+                _textureState[stage] = new TextureStatePerStage[InitialTextureStateSize];
+                _imageState[stage] = new TextureStatePerStage[InitialImageStateSize];
+            }
+
             _scales = new float[64];
 
             for (int i = 0; i < 64; i++)
@@ -85,10 +103,22 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="stage">Shader stage number, or 0 for compute shaders</param>
         /// <param name="bindings">Texture bindings</param>
-        public void SetTextures(int stage, TextureBindingInfo[] bindings)
+        public void SetTextures(int stage, Span<TextureBindingInfo> bindings)
         {
-            _textureBindings[stage] = bindings;
-            _textureState[stage] = new TextureStatePerStage[bindings.Length];
+            if (bindings.Length > _textureBindings[stage].Length)
+            {
+                Array.Resize(ref _textureBindings[stage], bindings.Length);
+                Array.Resize(ref _textureState[stage], bindings.Length);
+            }
+
+            bindings.CopyTo(_textureBindings[stage]);
+
+            for (int i = 0; i < bindings.Length; i++)
+            {
+                _textureState[stage][i] = new TextureStatePerStage();
+            }
+
+            _textureBindingsCount[stage] = bindings.Length;
         }
 
         /// <summary>
@@ -96,10 +126,22 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="stage">Shader stage number, or 0 for compute shaders</param>
         /// <param name="bindings">Image bindings</param>
-        public void SetImages(int stage, TextureBindingInfo[] bindings)
+        public void SetImages(int stage, Span<TextureBindingInfo> bindings)
         {
-            _imageBindings[stage] = bindings;
-            _imageState[stage] = new TextureStatePerStage[bindings.Length];
+            if (bindings.Length > _imageBindings[stage].Length)
+            {
+                Array.Resize(ref _imageBindings[stage], bindings.Length);
+                Array.Resize(ref _imageState[stage], bindings.Length);
+            }
+
+            bindings.CopyTo(_imageBindings[stage]);
+
+            for (int i = 0; i < bindings.Length; i++)
+            {
+                _imageState[stage][i] = new TextureStatePerStage();
+            }
+
+            _imageBindingsCount[stage] = bindings.Length;
         }
 
         /// <summary>
@@ -235,7 +277,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             if (_scaleChanged)
             {
-                _context.Renderer.Pipeline.UpdateRenderScale(stage, _scales, _textureBindings[stageIndex]?.Length ?? 0, _imageBindings[stageIndex]?.Length ?? 0);
+                _context.Renderer.Pipeline.UpdateRenderScale(stage, _scales, _textureBindingsCount[stageIndex], _imageBindingsCount[stageIndex]);
 
                 _scaleChanged = false;
             }
@@ -285,7 +327,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="stageIndex">The stage number of the specified shader stage</param>
         private void CommitTextureBindings(TexturePool pool, ShaderStage stage, int stageIndex)
         {
-            if (_textureBindings[stageIndex] == null || _textureBindings[stageIndex].Length == 0)
+            int textureCount = _textureBindingsCount[stageIndex];
+            if (textureCount == 0)
             {
                 return;
             }
@@ -304,7 +347,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 return;
             }
 
-            for (int index = 0; index < _textureBindings[stageIndex].Length; index++)
+            for (int index = 0; index < textureCount; index++)
             {
                 TextureBindingInfo bindingInfo = _textureBindings[stageIndex][index];
 
@@ -381,21 +424,22 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="stageIndex">The stage number of the specified shader stage</param>
         private void CommitImageBindings(TexturePool pool, ShaderStage stage, int stageIndex)
         {
-            if (_imageBindings[stageIndex] == null)
+            int imageCount = _imageBindingsCount[stageIndex];
+            if (imageCount == 0)
             {
                 return;
             }
 
-            if (pool == null && _imageBindings[stageIndex].Length != 0)
+            if (pool == null)
             {
                 Logger.Error?.Print(LogClass.Gpu, $"Shader stage \"{stage}\" uses images, but texture pool was not set.");
                 return;
             }
 
             // Scales for images appear after the texture ones.
-            int baseScaleIndex = _textureBindings[stageIndex]?.Length ?? 0;
+            int baseScaleIndex = _textureBindingsCount[stageIndex];
 
-            for (int index = 0; index < _imageBindings[stageIndex].Length; index++)
+            for (int index = 0; index < imageCount; index++)
             {
                 TextureBindingInfo bindingInfo = _imageBindings[stageIndex][index];
 

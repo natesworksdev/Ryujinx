@@ -46,7 +46,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Sets texture bindings on the compute pipeline.
         /// </summary>
         /// <param name="bindings">The texture bindings</param>
-        public void SetComputeTextures(TextureBindingInfo[] bindings)
+        public void SetComputeTextures(Span<TextureBindingInfo> bindings)
         {
             _cpBindingsManager.SetTextures(0, bindings);
         }
@@ -56,7 +56,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="stage">The index of the shader stage to bind the textures</param>
         /// <param name="bindings">The texture bindings</param>
-        public void SetGraphicsTextures(int stage, TextureBindingInfo[] bindings)
+        public void SetGraphicsTextures(int stage, Span<TextureBindingInfo> bindings)
         {
             _gpBindingsManager.SetTextures(stage, bindings);
         }
@@ -65,7 +65,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Sets image bindings on the compute pipeline.
         /// </summary>
         /// <param name="bindings">The image bindings</param>
-        public void SetComputeImages(TextureBindingInfo[] bindings)
+        public void SetComputeImages(Span<TextureBindingInfo> bindings)
         {
             _cpBindingsManager.SetImages(0, bindings);
         }
@@ -75,7 +75,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="stage">The index of the shader stage to bind the images</param>
         /// <param name="bindings">The image bindings</param>
-        public void SetGraphicsImages(int stage, TextureBindingInfo[] bindings)
+        public void SetGraphicsImages(int stage, Span<TextureBindingInfo> bindings)
         {
             _gpBindingsManager.SetImages(stage, bindings);
         }
