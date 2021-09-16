@@ -59,6 +59,8 @@ namespace Ryujinx.Graphics.OpenGL
             GL.Disable(EnableCap.RasterizerDiscard);
             GL.Disable(IndexedEnableCap.ScissorTest, 0);
 
+            GL.Clear(ClearBufferMask.ColorBufferBit);
+
             int srcX0, srcX1, srcY0, srcY1;
             float scale = view.ScaleFactor;
 
@@ -134,7 +136,8 @@ namespace Ryujinx.Graphics.OpenGL
 
             // Remove Alpha channel
             GL.ColorMask(false, false, false, true);
-            GL.ClearNamedFramebuffer(drawFramebuffer, ClearBuffer.Color, 0, new float[] { 0.0f, 0.0f, 0.0f, 1.0f });
+            GL.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            GL.Clear(ClearBufferMask.ColorBufferBit);
 
             for (int i = 0; i < Constants.MaxRenderTargets; i++)
             {
