@@ -27,7 +27,7 @@ namespace Ryujinx.Graphics.OpenGL
 
     class PersistentTextureBuffer : IDisposable
     {
-        public const int TextureMaxSize = 1 * 1024 * 1024;
+        public const int TextureMaxSize = 16 * 1024 * 1024;
         public const int TextureMaxNumber = 3;
 
         private const int CopyBufferSize = TextureMaxNumber * TextureMaxSize;
@@ -36,6 +36,7 @@ namespace Ryujinx.Graphics.OpenGL
         private IntPtr[] _syncs;
         private int _copyBufferHandle = 0;
         private int _currentIndex = 0;
+        private int _currentOffset = 0;
 
         private void Init()
         {
@@ -60,7 +61,12 @@ namespace Ryujinx.Graphics.OpenGL
         {
             Init();
 
-            int offset = _currentIndex * TextureMaxSize;
+            if (_currentOffset + size > TextureMaxSize)
+            {
+                _syncs[_currentIndex] = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags.None);
+                _currentIndex = (_currentIndex + 1) % TextureMaxNumber;
+                _currentOffset = 0;
+            }
 
             if (_syncs[_currentIndex] != IntPtr.Zero)
             {
@@ -74,6 +80,8 @@ namespace Ryujinx.Graphics.OpenGL
                 GL.DeleteSync(_syncs[_currentIndex]);
                 _syncs[_currentIndex] = IntPtr.Zero;
             }
+
+            int offset = _currentIndex * TextureMaxSize + _currentOffset;
 
             Span<byte> buffer = new Span<byte>((_bufferMap + offset).ToPointer(), size);
             data.CopyTo(buffer);
@@ -91,9 +99,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             GL.BindBuffer(BufferTarget.PixelUnpackBuffer, 0);
 
-            _syncs[_currentIndex] = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags.None);
-
-            _currentIndex = (_currentIndex + 1) % TextureMaxNumber;
+            _currentOffset += size;
         }
 
         public void Dispose()
@@ -107,6 +113,7 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 if (_syncs[i] != IntPtr.Zero)
                 {
+                    GL.ClientWaitSync(_syncs[i], ClientWaitSyncFlags.SyncFlushCommandsBit, 0);
                     GL.DeleteSync(_syncs[i]);
                 }
             }
