@@ -7,20 +7,22 @@ namespace Ryujinx.Graphics.OpenGL
 {
     static class Buffer
     {
-        public static void Clear(BufferHandle destination, int offset, int size, uint value)
+        public unsafe static void Clear(BufferHandle destination, int offset, int size, uint value)
         {
-            Span<uint> valueArr = stackalloc uint[1];
+            uint* valuePtr = stackalloc uint[3];
 
-            valueArr[0] = value;
+            valuePtr[0] = value;
+            valuePtr[1] = value;
+            valuePtr[2] = value;
 
             GL.ClearNamedBufferSubData(
                 destination.ToInt32(),
                 PixelInternalFormat.Rgba8ui,
                 (IntPtr)offset,
-                size,
+                (IntPtr)size,
                 PixelFormat.RgbaInteger,
                 PixelType.UnsignedInt,
-                (IntPtr)MemoryMarshal.GetReference(valueArr));
+                (IntPtr)valuePtr);
         }
 
         public unsafe static BufferHandle Create()
