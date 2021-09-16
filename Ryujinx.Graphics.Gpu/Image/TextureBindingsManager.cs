@@ -99,49 +99,57 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Binds textures for a given shader stage.
+        /// Rents the texture bindings array for a given stage, so that they can be modified.
         /// </summary>
         /// <param name="stage">Shader stage number, or 0 for compute shaders</param>
-        /// <param name="bindings">Texture bindings</param>
-        public void SetTextures(int stage, Span<TextureBindingInfo> bindings)
+        /// <param name="count">The number of bindings needed</param>
+        /// <returns>The texture bindings array</returns>
+        public TextureBindingInfo[] RentTextureBindings(int stage, int count)
         {
-            if (bindings.Length > _textureBindings[stage].Length)
+            if (count > _textureBindings[stage].Length)
             {
-                Array.Resize(ref _textureBindings[stage], bindings.Length);
-                Array.Resize(ref _textureState[stage], bindings.Length);
+                Array.Resize(ref _textureBindings[stage], count);
+                Array.Resize(ref _textureState[stage], count);
             }
 
-            bindings.CopyTo(_textureBindings[stage]);
+            int toClear = Math.Max(_textureBindingsCount[stage], count);
+            TextureStatePerStage[] state = _textureState[stage];
 
-            for (int i = 0; i < bindings.Length; i++)
+            for (int i = 0; i < toClear; i++)
             {
-                _textureState[stage][i] = new TextureStatePerStage();
+                state[i] = new TextureStatePerStage();
             }
 
-            _textureBindingsCount[stage] = bindings.Length;
+            _textureBindingsCount[stage] = count;
+
+            return _textureBindings[stage];
         }
 
         /// <summary>
-        /// Binds images for a given shader stage.
+        /// Rents the image bindings array for a given stage, so that they can be modified.
         /// </summary>
         /// <param name="stage">Shader stage number, or 0 for compute shaders</param>
-        /// <param name="bindings">Image bindings</param>
-        public void SetImages(int stage, Span<TextureBindingInfo> bindings)
+        /// <param name="count">The number of bindings needed</param>
+        /// <returns>The image bindings array</returns>
+        public TextureBindingInfo[] RentImageBindings(int stage, int count)
         {
-            if (bindings.Length > _imageBindings[stage].Length)
+            if (count > _imageBindings[stage].Length)
             {
-                Array.Resize(ref _imageBindings[stage], bindings.Length);
-                Array.Resize(ref _imageState[stage], bindings.Length);
+                Array.Resize(ref _imageBindings[stage], count);
+                Array.Resize(ref _imageState[stage], count);
             }
 
-            bindings.CopyTo(_imageBindings[stage]);
+            int toClear = Math.Max(_imageBindingsCount[stage], count);
+            TextureStatePerStage[] state = _imageState[stage];
 
-            for (int i = 0; i < bindings.Length; i++)
+            for (int i = 0; i < toClear; i++)
             {
-                _imageState[stage][i] = new TextureStatePerStage();
+                state[i] = new TextureStatePerStage();
             }
 
-            _imageBindingsCount[stage] = bindings.Length;
+            _imageBindingsCount[stage] = count;
+
+            return _imageBindings[stage];
         }
 
         /// <summary>
