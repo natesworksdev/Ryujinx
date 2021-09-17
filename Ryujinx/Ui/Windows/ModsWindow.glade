@@ -118,8 +118,8 @@
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
                     <property name="tooltip_text" translatable="yes">Open the mod folder shared by all games in file explorer</property>
-                    <property name="margin_right">10</property>
                     <property name="margin_left">10</property>
+                    <property name="margin_right">10</property>
                     <signal name="clicked" handler="OpenGlobalFolderButton_Clicked" swapped="no"/>
                   </object>
                   <packing>
