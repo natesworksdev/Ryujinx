@@ -9,7 +9,7 @@ namespace Ryujinx.Ui.Widgets
         private MenuItem _openSaveBcatDirMenuItem;
         private MenuItem _manageTitleUpdatesMenuItem;
         private MenuItem _manageDlcMenuItem;
-        private MenuItem _openTitleModDirMenuItem;
+        private MenuItem _manageModsMenuItem;
         private Menu     _extractSubMenu;
         private MenuItem _extractMenuItem;
         private MenuItem _extractRomFsMenuItem;
@@ -70,13 +70,13 @@ namespace Ryujinx.Ui.Widgets
             _manageDlcMenuItem.Activated += ManageDlc_Clicked;
 
             //
-            // _openTitleModDirMenuItem
+            // _manageModsMenuItem
             //
-            _openTitleModDirMenuItem = new MenuItem("Open Mods Directory")
+            _manageModsMenuItem = new MenuItem("Manage Mods")
             {
                 TooltipText = "Open the directory which contains Application's Mods."
             };
-            _openTitleModDirMenuItem.Activated += OpenTitleModDir_Clicked;
+            _manageModsMenuItem.Activated += ManageMods_Clicked;
 
             //
             // _extractSubMenu
@@ -187,7 +187,7 @@ namespace Ryujinx.Ui.Widgets
             Add(new SeparatorMenuItem());
             Add(_manageTitleUpdatesMenuItem);
             Add(_manageDlcMenuItem);
-            Add(_openTitleModDirMenuItem);
+            Add(_manageModsMenuItem);
             Add(new SeparatorMenuItem());
             Add(_manageCacheMenuItem);
             Add(_extractMenuItem);

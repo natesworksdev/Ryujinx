@@ -421,6 +421,41 @@ namespace Ryujinx.HLE.HOS
             CollectMods(AppMods, Patches, searchDirPaths);
         }
 
+        public void CollectModsFiltered(IEnumerable<ulong> titles, HashSet<ModEntry> enabledMods, params string[] searchDirPaths)
+        {
+            Clear();
+
+            Dictionary<ulong, ModCache> allAppMods = new Dictionary<ulong, ModCache>(); // key is TitleId
+            PatchCache allPatches = new PatchCache();
+
+            foreach (ulong titleId in titles)
+            {
+                allAppMods[titleId] = new ModCache();
+            }
+
+            CollectMods(allAppMods, allPatches, searchDirPaths);
+
+            Patches.Initialized = allPatches.Initialized;
+
+            FilterMods(allPatches.KipPatches, Patches.KipPatches, enabledMods);
+            FilterMods(allPatches.NroPatches, Patches.NroPatches, enabledMods);
+            FilterMods(allPatches.NsoPatches, Patches.NsoPatches, enabledMods);
+
+            foreach (ulong titleId in titles)
+            {
+                ModCache unfilteredModCache = allAppMods[titleId];
+                ModCache filteredModCache = new ModCache();
+
+                FilterMods(unfilteredModCache.RomfsContainers, filteredModCache.RomfsContainers, enabledMods);
+                FilterMods(unfilteredModCache.ExefsContainers, filteredModCache.ExefsContainers, enabledMods);
+                FilterMods(unfilteredModCache.RomfsDirs      , filteredModCache.RomfsDirs      , enabledMods);
+                FilterMods(unfilteredModCache.ExefsDirs      , filteredModCache.ExefsDirs      , enabledMods);
+                FilterMods(unfilteredModCache.Cheats         , filteredModCache.Cheats         , enabledMods);
+
+                AppMods[titleId] = filteredModCache;
+            }
+        }
+
         internal IStorage ApplyRomFsMods(ulong titleId, IStorage baseStorage)
         {
             if (!AppMods.TryGetValue(titleId, out ModCache mods) || mods.RomfsDirs.Count + mods.RomfsContainers.Count == 0)
@@ -735,6 +770,36 @@ namespace Ryujinx.HLE.HOS
             }
 
             return count > 0;
+        }
+
+        private void FilterMods<T>(List<Mod<T>> unfiltered, List<Mod<T>> filtered, HashSet<ModEntry> enabledMods) where T : FileSystemInfo
+        {
+            foreach (var mod in unfiltered)
+            {
+                if (enabledMods.Contains(new ModEntry(mod.Name, mod.Path.FullName)))
+                {
+                    filtered.Add(mod);
+                }
+                else
+                {
+                    Logger.Info?.Print(LogClass.ModLoader, $"Mod {mod.Name} is not enabled");
+                }
+            }
+        }
+
+        private void FilterMods(List<Cheat> unfiltered, List<Cheat> filtered, HashSet<ModEntry> enabledMods)
+        {
+            foreach (var mod in unfiltered)
+            {
+                if (enabledMods.Contains(new ModEntry(mod.Name, mod.Path.FullName)))
+                {
+                    filtered.Add(mod);
+                }
+                else
+                {
+                    Logger.Info?.Print(LogClass.ModLoader, $"Mod {mod.Name} is not enabled");
+                }
+            }
         }
     }
 }

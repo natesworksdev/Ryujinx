@@ -189,7 +189,7 @@ namespace Ryujinx.Ui.Widgets
 
             ResponseType response    = (ResponseType)fileChooser.Run();
             string       destination = fileChooser.Filename;
-            
+
             fileChooser.Dispose();
 
             if (response == ResponseType.Accept)
@@ -465,12 +465,9 @@ namespace Ryujinx.Ui.Widgets
             new DlcWindow(_virtualFileSystem, _titleIdText, _titleName).Show();
         }
 
-        private void OpenTitleModDir_Clicked(object sender, EventArgs args)
+        private void ManageMods_Clicked(object sender, EventArgs args)
         {
-            string modsBasePath  = _virtualFileSystem.ModLoader.GetModsBasePath();
-            string titleModsPath = _virtualFileSystem.ModLoader.GetTitleDir(modsBasePath, _titleIdText);
-
-            OpenHelper.OpenFolder(titleModsPath);
+            new ModsWindow(_virtualFileSystem, _titleId, _titleIdText, _titleName).Show();
         }
 
         private void ExtractRomFs_Clicked(object sender, EventArgs args)
@@ -491,7 +488,7 @@ namespace Ryujinx.Ui.Widgets
         private void OpenPtcDir_Clicked(object sender, EventArgs args)
         {
             string ptcDir  = System.IO.Path.Combine(AppDataManager.GamesDirPath, _titleIdText, "cache", "cpu");
-            
+
             string mainPath   = System.IO.Path.Combine(ptcDir, "0");
             string backupPath = System.IO.Path.Combine(ptcDir, "1");
 
@@ -516,7 +513,7 @@ namespace Ryujinx.Ui.Widgets
 
             OpenHelper.OpenFolder(shaderCacheDir);
         }
-        
+
         private void PurgePtcCache_Clicked(object sender, EventArgs args)
         {
             DirectoryInfo mainDir   = new DirectoryInfo(System.IO.Path.Combine(AppDataManager.GamesDirPath, _titleIdText, "cache", "cpu", "0"));
@@ -527,7 +524,7 @@ namespace Ryujinx.Ui.Widgets
             List<FileInfo> cacheFiles = new List<FileInfo>();
 
             if (mainDir.Exists)
-            { 
+            {
                 cacheFiles.AddRange(mainDir.EnumerateFiles("*.cache"));
             }
 
@@ -540,9 +537,9 @@ namespace Ryujinx.Ui.Widgets
             {
                 foreach (FileInfo file in cacheFiles)
                 {
-                    try 
-                    { 
-                        file.Delete(); 
+                    try
+                    {
+                        file.Delete();
                     }
                     catch(Exception e)
                     {

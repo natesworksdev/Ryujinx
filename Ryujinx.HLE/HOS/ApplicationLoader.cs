@@ -81,7 +81,7 @@ namespace Ryujinx.HLE.HOS
 
             MetaLoader metaData = ReadNpdm(codeFs);
 
-            _device.Configuration.VirtualFileSystem.ModLoader.CollectMods(new[] { TitleId }, _device.Configuration.VirtualFileSystem.ModLoader.GetModsBasePath());
+            CollectModsFiltered(new[] { TitleId });
 
             if (TitleId != 0)
             {
@@ -374,7 +374,7 @@ namespace Ryujinx.HLE.HOS
 
             MetaLoader metaData = ReadNpdm(codeFs);
 
-            _device.Configuration.VirtualFileSystem.ModLoader.CollectMods(_device.Configuration.ContentManager.GetAocTitleIds().Prepend(TitleId), _device.Configuration.VirtualFileSystem.ModLoader.GetModsBasePath());
+            CollectModsFiltered(_device.Configuration.ContentManager.GetAocTitleIds().Prepend(TitleId));
 
             if (controlNca != null)
             {
@@ -777,6 +777,30 @@ namespace Ryujinx.HLE.HOS
             }
 
             return resultCode;
+        }
+
+        private void CollectModsFiltered(IEnumerable<ulong> titles)
+        {
+            string titleId         = $"{TitleId:x16}";
+            string enabledModsFile = Path.Combine(AppDataManager.GamesDirPath, titleId, "enabled_mods.json");
+            string modsBasePath    = _device.Configuration.VirtualFileSystem.ModLoader.GetModsBasePath();
+
+            HashSet<ModEntry> enabledMods = new HashSet<ModEntry>();
+
+            try
+            {
+                foreach (var enabledMod in JsonHelper.DeserializeFromFile<List<ModEntry>>(enabledModsFile))
+                {
+                    // Convert each mod path to global so it is easier to compare internally.
+                    enabledMods.Add(new ModEntry(enabledMod.Name, Path.Combine(modsBasePath, enabledMod.Path)));
+                }
+            }
+            catch
+            {
+                Logger.Error?.Print(LogClass.Application, $"Failed to load list of enabled mods for title {titleId}");
+            }
+
+            _device.Configuration.VirtualFileSystem.ModLoader.CollectModsFiltered(titles, enabledMods, modsBasePath);
         }
     }
 }
