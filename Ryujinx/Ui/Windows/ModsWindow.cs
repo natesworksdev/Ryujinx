@@ -98,11 +98,37 @@ namespace Ryujinx.Ui.Windows
             _selectedMods = 0;
         }
 
+        private void Save()
+        {
+            // Save the list of enabled mods
+
+            List<ModEntry> enabledMods = new List<ModEntry>();
+
+            if (_modsTreeView.Model.GetIterFirst(out TreeIter parentIter))
+            {
+                do
+                {
+                    if ((bool)_modsTreeView.Model.GetValue(parentIter, 0))
+                    {
+                        string name = (string)_modsTreeView.Model.GetValue(parentIter, 1);
+                        string path = (string)_modsTreeView.Model.GetValue(parentIter, 3);
+                        enabledMods.Add(new ModEntry(name, path));
+                    }
+                }
+                while (_modsTreeView.Model.IterNext(ref parentIter));
+            }
+
+            using (FileStream modsJsonStream = File.Create(_modsJsonPath, 4096, FileOptions.WriteThrough))
+            {
+                modsJsonStream.Write(Encoding.UTF8.GetBytes(JsonHelper.Serialize(enabledMods, true)));
+            }
+        }
+
         private void Refresh()
         {
-            Clear();
+            // Clear the tree and reload the enabled mods.
 
-            // Load the enabled mods
+            Clear();
 
             HashSet<ModEntry> enabledMods = new HashSet<ModEntry>();
 
@@ -207,28 +233,7 @@ namespace Ryujinx.Ui.Windows
         }
         private void ModsWindow_DeleteEvent(object sender, DeleteEventArgs args)
         {
-            // Save the list of enabled mods
-
-            List<ModEntry> enabledMods = new List<ModEntry>();
-
-            if (_modsTreeView.Model.GetIterFirst(out TreeIter parentIter))
-            {
-                do
-                {
-                    if ((bool)_modsTreeView.Model.GetValue(parentIter, 0))
-                    {
-                        string name = (string)_modsTreeView.Model.GetValue(parentIter, 1);
-                        string path = (string)_modsTreeView.Model.GetValue(parentIter, 3);
-                        enabledMods.Add(new ModEntry(name, path));
-                    }
-                }
-                while (_modsTreeView.Model.IterNext(ref parentIter));
-            }
-
-            using (FileStream modsJsonStream = File.Create(_modsJsonPath, 4096, FileOptions.WriteThrough))
-            {
-                modsJsonStream.Write(Encoding.UTF8.GetBytes(JsonHelper.Serialize(enabledMods, true)));
-            }
+            Save();
         }
 
         private Nca TryCreateNca(IStorage ncaStorage, string containerPath)
@@ -247,6 +252,7 @@ namespace Ryujinx.Ui.Windows
 
         private void RefreshButton_Clicked(object sender, EventArgs args)
         {
+            Save();
             Refresh();
         }
 
