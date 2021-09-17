@@ -17,6 +17,8 @@
       <object class="GtkBox" id="MainPatchesBox">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
+        <property name="margin_left">10</property>
+        <property name="margin_right">10</property>
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkBox" id="PatchesBox">
@@ -95,6 +97,38 @@
                     <property name="expand">True</property>
                     <property name="fill">True</property>
                     <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="_selectAll">
+                    <property name="label" translatable="yes">Select all</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <property name="tooltip_text" translatable="yes">Enables all mods from the list</property>
+                    <property name="margin_left">10</property>
+                    <signal name="clicked" handler="SelectAllButton_Clicked" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="_deselectAll">
+                    <property name="label" translatable="yes">Deselect all</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <property name="tooltip_text" translatable="yes">Disables all mods from the list</property>
+                    <property name="margin_left">10</property>
+                    <signal name="clicked" handler="DeselectAllButton_Clicked" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
                   </packing>
                 </child>
               </object>

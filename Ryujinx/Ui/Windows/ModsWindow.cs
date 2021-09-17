@@ -59,8 +59,7 @@ namespace Ryujinx.Ui.Windows
                 bool newValue = !(bool)_modsTreeView.Model.GetValue(treeIter, 0);
                 _selectedMods += newValue ? 1 : -1;
                 _modsTreeView.Model.SetValue(treeIter, 0, newValue);
-                _modsInfoLabel.Text = string.Format(_modsInfoLabelFormat, _titleName, _selectedMods);
-
+                UpdateInfoLabel();
             };
 
             _modsTreeView.AppendColumn("Enabled", enableToggle,           "active", 0);
@@ -195,6 +194,11 @@ namespace Ryujinx.Ui.Windows
 
             Logger.Info?.Print(LogClass.Application, $"Loaded {titleIds.Count} title ids for title");
 
+            UpdateInfoLabel();
+        }
+
+        private void UpdateInfoLabel()
+        {
             _modsInfoLabel.Text = string.Format(_modsInfoLabelFormat, _titleName, _selectedMods);
         }
 
@@ -237,24 +241,45 @@ namespace Ryujinx.Ui.Windows
             Save();
         }
 
-        private Nca TryCreateNca(IStorage ncaStorage, string containerPath)
-        {
-            try
-            {
-                return new Nca(_virtualFileSystem.KeySet, ncaStorage);
-            }
-            catch (Exception exception)
-            {
-                GtkDialog.CreateErrorDialog($"{exception.Message}. Errored File: {containerPath}");
-            }
-
-            return null;
-        }
-
         private void RefreshButton_Clicked(object sender, EventArgs args)
         {
             Save();
             Refresh();
+        }
+
+        private void SelectAllButton_Clicked(object sender, EventArgs args)
+        {
+            _selectedMods = 0;
+
+            if (_modsTreeView.Model.GetIterFirst(out TreeIter parentIter))
+            {
+                do
+                {
+                    _modsTreeView.Model.SetValue(parentIter, 0, true);
+                    _selectedMods++;
+                }
+                while (_modsTreeView.Model.IterNext(ref parentIter));
+            }
+
+            UpdateInfoLabel();
+        }
+
+        private void DeselectAllButton_Clicked(object sender, EventArgs args)
+        {
+            List<ModEntry> enabledMods = new List<ModEntry>();
+
+            if (_modsTreeView.Model.GetIterFirst(out TreeIter parentIter))
+            {
+                do
+                {
+                    _modsTreeView.Model.SetValue(parentIter, 0, false);
+                    _selectedMods++;
+                }
+                while (_modsTreeView.Model.IterNext(ref parentIter));
+            }
+
+            _selectedMods = 0;
+            UpdateInfoLabel();
         }
 
         private void OpenGlobalFolderButton_Clicked(object sender, EventArgs args)
