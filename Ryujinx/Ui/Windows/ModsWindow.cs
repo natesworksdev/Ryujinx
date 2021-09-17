@@ -67,6 +67,7 @@ namespace Ryujinx.Ui.Windows
             _modsTreeView.AppendColumn("Name",    new CellRendererText(), "text",   1);
             _modsTreeView.AppendColumn("Type",    new CellRendererText(), "text",   2);
             _modsTreeView.AppendColumn("Path",    new CellRendererText(), "text",   3);
+            _modsTreeView.ButtonReleaseEvent += Row_Clicked;
 
             Refresh();
         }
@@ -267,6 +268,36 @@ namespace Ryujinx.Ui.Windows
             string titleModsPath = _virtualFileSystem.ModLoader.GetTitleDir(modsBasePath, _titleIdText);
 
             OpenHelper.OpenFolder(titleModsPath);
+        }
+
+        private void Row_Clicked(object sender, ButtonReleaseEventArgs args)
+        {
+            if (args.Event.Button != 3 /* Right Click */)
+            {
+                return;
+            }
+
+            _modsTreeSelection.GetSelected(out TreeIter treeIter);
+
+            if (treeIter.UserData == IntPtr.Zero)
+            {
+                return;
+            }
+
+            string path = System.IO.Path.Combine(_virtualFileSystem.ModLoader.GetModsBasePath(), (string)_modsTreeView.Model.GetValue(treeIter, 3));
+
+            if (!Directory.Exists(path))
+            {
+                // Open the containing directory if the mod is a single file.
+                path = new DirectoryInfo(path).Parent.FullName;
+            }
+
+            _ = new ModsTreeViewContextMenu(path);
+        }
+
+        private void OpenModFolderMenuItem_Activated(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
         }
     }
 }
