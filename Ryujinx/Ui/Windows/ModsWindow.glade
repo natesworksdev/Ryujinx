@@ -101,13 +101,13 @@
                 </child>
                 <child>
                   <object class="GtkButton" id="_selectAll">
-                    <property name="label" translatable="yes">Select all</property>
+                    <property name="label" translatable="yes">Enable all</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
                     <property name="tooltip_text" translatable="yes">Enables all mods from the list</property>
                     <property name="margin_left">10</property>
-                    <signal name="clicked" handler="SelectAllButton_Clicked" swapped="no"/>
+                    <signal name="clicked" handler="EnableAllButton_Clicked" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">True</property>
@@ -117,13 +117,13 @@
                 </child>
                 <child>
                   <object class="GtkButton" id="_deselectAll">
-                    <property name="label" translatable="yes">Deselect all</property>
+                    <property name="label" translatable="yes">Disable all</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
                     <property name="tooltip_text" translatable="yes">Disables all mods from the list</property>
                     <property name="margin_left">10</property>
-                    <signal name="clicked" handler="DeselectAllButton_Clicked" swapped="no"/>
+                    <signal name="clicked" handler="DisableAllButton_Clicked" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">True</property>

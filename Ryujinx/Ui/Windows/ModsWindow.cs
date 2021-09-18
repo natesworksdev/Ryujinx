@@ -247,7 +247,7 @@ namespace Ryujinx.Ui.Windows
             Refresh();
         }
 
-        private void SelectAllButton_Clicked(object sender, EventArgs args)
+        private void EnableAllButton_Clicked(object sender, EventArgs args)
         {
             _selectedMods = 0;
 
@@ -264,7 +264,7 @@ namespace Ryujinx.Ui.Windows
             UpdateInfoLabel();
         }
 
-        private void DeselectAllButton_Clicked(object sender, EventArgs args)
+        private void DisableAllButton_Clicked(object sender, EventArgs args)
         {
             List<ModEntry> enabledMods = new List<ModEntry>();
 
