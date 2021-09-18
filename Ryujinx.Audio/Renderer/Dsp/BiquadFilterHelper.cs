@@ -95,7 +95,6 @@ namespace Ryujinx.Audio.Renderer.Dsp
                     outputBuffer[i] = output;
                 }
             }
-
         }
     }
 }
