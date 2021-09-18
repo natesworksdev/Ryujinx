@@ -1,5 +1,6 @@
 using ARMeilleure.IntermediateRepresentation;
 using System;
+using System.Runtime.CompilerServices;
 
 namespace ARMeilleure.CodeGen
 {
@@ -12,18 +13,25 @@ namespace ARMeilleure.CodeGen
         private static CompilerAllocators _allocators;
 
         /// <summary>
+        /// Allocate and initialize the arena allocators. This is the unlikely path to <see cref="Allocators"/>.
+        /// </summary>
+        /// <returns>Initialized allocators</returns>
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static CompilerAllocators InitializeAllocators() => _allocators = new CompilerAllocators();
+
+        /// <summary>
         /// Gets the <see cref="CompilerAllocators"/> associated the current thread.
         /// </summary>
         public static CompilerAllocators Allocators
         {
             get
             {
-                if (_allocators == null)
+                if (_allocators != null)
                 {
-                    _allocators = new CompilerAllocators();
+                    return _allocators;
                 }
 
-                return _allocators;
+                return InitializeAllocators();
             }
         }
 
@@ -51,18 +59,15 @@ namespace ARMeilleure.CodeGen
         public CompilerOptions Options { get; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CompilerContext"/> class with the spcified argument types,
+        /// Initializes a new instance of the <see cref="CompilerContext"/> class with the specified argument types,
         /// return type and compiler options.
         /// </summary>
         /// <param name="argTypes">Argument types to use</param>
         /// <param name="retType">Return type to use</param>
         /// <param name="options">Compiler options to use</param>
-        public CompilerContext(
-            OperandType[] argTypes,
-            OperandType retType,
-            CompilerOptions options)
+        public CompilerContext(OperandType[] argTypes, OperandType retType, CompilerOptions options)
         {
-            ArgumentTypes = argTypes;
+            ArgumentTypes = argTypes ?? Array.Empty<OperandType>();
             ReturnType = retType;
             Options = options;
 
