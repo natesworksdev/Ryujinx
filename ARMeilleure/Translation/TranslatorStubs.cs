@@ -136,8 +136,8 @@ namespace ARMeilleure.Translation
             var retType = OperandType.I64;
             var argTypes = new[] { OperandType.I64 };
 
-            using var context = new CompilerContext(argTypes, retType, CompilerOptions.HighCq);
-            var emitter = new EmitterContext(context);
+            using var compiler = new Compiler(argTypes, retType, CompilerOptions.HighCq);
+            var emitter = new EmitterContext(compiler);
 
             Operand lblFallback = Label();
             Operand lblEnd = Label();
@@ -182,7 +182,7 @@ namespace ARMeilleure.Translation
 
             emitter.GetControlFlowGraph();
 
-            var func = Compiler.Compile(context).Map<GuestFunction>();
+            var func = compiler.Compile().Map<GuestFunction>();
 
             return Marshal.GetFunctionPointerForDelegate(func);
         }
@@ -196,8 +196,8 @@ namespace ARMeilleure.Translation
             var retType = OperandType.I64;
             var argTypes = new[] { OperandType.I64 };
 
-            using var context = new CompilerContext(argTypes, retType, CompilerOptions.HighCq);
-            var emitter = new EmitterContext(context);
+            using var compiler = new Compiler(argTypes, retType, CompilerOptions.HighCq);
+            var emitter = new EmitterContext(compiler);
 
             // Load the target guest address from the native context.
             Operand nativeContext = emitter.LoadArgument(OperandType.I64, 0);
@@ -210,7 +210,7 @@ namespace ARMeilleure.Translation
 
             emitter.GetControlFlowGraph();
 
-            var func = Compiler.Compile(context).Map<GuestFunction>();
+            var func = compiler.Compile().Map<GuestFunction>();
 
             return Marshal.GetFunctionPointerForDelegate(func);
         }
@@ -224,8 +224,8 @@ namespace ARMeilleure.Translation
             var retType = OperandType.None;
             var argTypes = new[] { OperandType.I64, OperandType.I64 };
 
-            using var context = new CompilerContext(argTypes, retType, CompilerOptions.HighCq);
-            var emitter = new EmitterContext(context);
+            using var compiler = new Compiler(argTypes, retType, CompilerOptions.HighCq);
+            var emitter = new EmitterContext(compiler);
 
             Operand beginLbl = Label();
             Operand endLbl = Label();
@@ -250,7 +250,7 @@ namespace ARMeilleure.Translation
 
             emitter.GetControlFlowGraph();
 
-            return Compiler.Compile(context).Map<DispatcherFunction>();
+            return compiler.Compile().Map<DispatcherFunction>();
         }
     }
 }

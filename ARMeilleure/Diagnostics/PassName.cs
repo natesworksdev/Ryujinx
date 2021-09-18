@@ -7,6 +7,7 @@ namespace ARMeilleure.Diagnostics
         RegisterUsage,
         Dominance,
         SsaConstruction,
+        RegisterToLocal,
         Optimization,
         PreAllocation,
         RegisterAllocation,

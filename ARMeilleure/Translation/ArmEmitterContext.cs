@@ -55,7 +55,7 @@ namespace ARMeilleure.Translation
         public Aarch32Mode Mode { get; }
 
         public ArmEmitterContext(
-            CompilerContext context,
+            Compiler context,
             Translator translator,
             ulong entryAddress,
             bool highCq,

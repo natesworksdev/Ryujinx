@@ -253,9 +253,9 @@ namespace ARMeilleure.Translation
                 options |= CompilerOptions.Relocatable;
             }
 
-            using var context = new CompilerContext(argTypes, retType, options);
+            using var compiler = new Compiler(argTypes, retType, options);
             var emitter = new ArmEmitterContext(
-                context,
+                compiler,
                 this,
                 address,
                 highCq,
@@ -288,7 +288,7 @@ namespace ARMeilleure.Translation
 
             Logger.EndPass(PassName.RegisterUsage);
 
-            CompiledFunction compiledFunc = Compiler.Compile(context);
+            CompiledFunction compiledFunc = compiler.Compile();
 
             if (options.HasFlag(CompilerOptions.Relocatable))
             {

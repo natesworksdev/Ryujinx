@@ -219,7 +219,7 @@ namespace ARMeilleure.Signal
             var retType = OperandType.None;
             var argTypes = new OperandType[] { OperandType.I32, OperandType.I64, OperandType.I64 };
 
-            using var context = new CompilerContext(argTypes, retType, CompilerOptions.HighCq);
+            using var context = new Compiler(argTypes, retType, CompilerOptions.HighCq);
             var emitter = new EmitterContext(context);
 
             // (int sig, SigInfo* sigInfo, void* ucontext)
@@ -261,7 +261,7 @@ namespace ARMeilleure.Signal
 
             emitter.GetControlFlowGraph();
 
-            return Compiler.Compile(context).Map<UnixExceptionHandler>();
+            return context.Compile().Map<UnixExceptionHandler>();
         }
 
         private static VectoredExceptionHandler GenerateWindowsSignalHandler(IntPtr signalStructPtr)
@@ -269,7 +269,7 @@ namespace ARMeilleure.Signal
             var retType = OperandType.I32;
             var argTypes = new OperandType[] { OperandType.I64 };
 
-            using var context = new CompilerContext(argTypes, retType, CompilerOptions.HighCq);
+            using var context = new Compiler(argTypes, retType, CompilerOptions.HighCq);
             var emitter = new EmitterContext(context);
 
             // (ExceptionPointers* exceptionInfo)
@@ -317,7 +317,7 @@ namespace ARMeilleure.Signal
 
             emitter.GetControlFlowGraph();
 
-            return Compiler.Compile(context).Map<VectoredExceptionHandler>();
+            return context.Compile().Map<VectoredExceptionHandler>();
         }
     }
 }

@@ -14,7 +14,7 @@ namespace ARMeilleure.IntermediateRepresentation
     {
         private int _localsCount;
 
-        private readonly CompilerContext _context;
+        private readonly Compiler _context;
         private readonly Dictionary<Operand, BasicBlock> _irLabels;
         private readonly IntrusiveList<BasicBlock> _irBlocks;
 
@@ -24,11 +24,11 @@ namespace ARMeilleure.IntermediateRepresentation
         private bool _needsNewBlock;
         private BasicBlockFrequency _nextBlockFreq;
 
-        public EmitterContext(CompilerContext context)
+        public EmitterContext(Compiler context)
         {
             _localsCount = 0;
 
-            _context = context;
+            _context = context ?? throw new ArgumentNullException(nameof(context));
             _irLabels = new Dictionary<Operand, BasicBlock>();
             _irBlocks = new IntrusiveList<BasicBlock>();
 
@@ -675,10 +675,7 @@ namespace ARMeilleure.IntermediateRepresentation
         {
             var cfg = new ControlFlowGraph(_irBlocks.First, _irBlocks, _localsCount);
 
-            if (_context != null)
-            {
-                _context.Cfg = cfg;
-            }
+            _context.Cfg = cfg;
 
             return cfg;
         }

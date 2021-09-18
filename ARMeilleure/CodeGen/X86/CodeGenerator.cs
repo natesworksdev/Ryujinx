@@ -91,7 +91,7 @@ namespace ARMeilleure.CodeGen.X86
             _instTable[(int)inst] = func;
         }
 
-        public static CompiledFunction Generate(CompilerContext cctx)
+        public static CompiledFunction Generate(Compiler cctx)
         {
             ControlFlowGraph cfg = cctx.Cfg;
 
