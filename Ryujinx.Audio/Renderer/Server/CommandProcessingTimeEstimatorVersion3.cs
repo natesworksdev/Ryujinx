@@ -29,8 +29,8 @@ namespace Ryujinx.Audio.Renderer.Server
     /// </summary>
     public class CommandProcessingTimeEstimatorVersion3 : ICommandProcessingTimeEstimator
     {
-        private uint _sampleCount;
-        private uint _bufferCount;
+        protected uint _sampleCount;
+        protected uint _bufferCount;
 
         public CommandProcessingTimeEstimatorVersion3(uint sampleCount, uint bufferCount)
         {
@@ -755,12 +755,12 @@ namespace Ryujinx.Audio.Renderer.Server
             }
         }
 
-        public uint Estimate(GroupedBiquadFilterCommand command)
+        public virtual uint Estimate(GroupedBiquadFilterCommand command)
         {
             return 0;
         }
 
-        public uint Estimate(CaptureBufferCommand command)
+        public virtual uint Estimate(CaptureBufferCommand command)
         {
             return 0;
         }

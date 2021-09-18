@@ -32,9 +32,9 @@ namespace Ryujinx.Audio.Renderer.Dsp
         /// <remarks>This is implemented with a direct form 2.</remarks>
         /// <param name="parameter">The biquad filter parameter</param>
         /// <param name="state">The biquad filter state</param>
-        /// <param name="outputBuffer">The output buffer to write the result.</param>
-        /// <param name="inputBuffer">The input buffer to write the result.</param>
-        /// <param name="sampleCount">The count of samples to process.</param>
+        /// <param name="outputBuffer">The output buffer to write the result</param>
+        /// <param name="inputBuffer">The input buffer to write the result</param>
+        /// <param name="sampleCount">The count of samples to process</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ProcessBiquadFilter(ref BiquadFilterParameter parameter, ref BiquadFilterState state, Span<float> outputBuffer, ReadOnlySpan<float> inputBuffer, uint sampleCount)
         {
@@ -62,10 +62,10 @@ namespace Ryujinx.Audio.Renderer.Dsp
         /// </summary>
         /// <remarks>This is implemented with a direct form 1.</remarks>
         /// <param name="parameters">The biquad filter parameter</param>
-        /// <param name="state">The biquad filter state</param>
-        /// <param name="outputBuffer">The output buffer to write the result.</param>
-        /// <param name="inputBuffer">The input buffer to write the result.</param>
-        /// <param name="sampleCount">The count of samples to process.</param>
+        /// <param name="states">The biquad filter state</param>
+        /// <param name="outputBuffer">The output buffer to write the result</param>
+        /// <param name="inputBuffer">The input buffer to write the result</param>
+        /// <param name="sampleCount">The count of samples to process</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ProcessBiquadFilter(ReadOnlySpan<BiquadFilterParameter> parameters, Span<BiquadFilterState> states, Span<float> outputBuffer, ReadOnlySpan<float> inputBuffer, uint sampleCount)
         {

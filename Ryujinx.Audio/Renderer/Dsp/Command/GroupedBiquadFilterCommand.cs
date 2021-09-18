@@ -35,15 +35,15 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
         private Memory<BiquadFilterState> _biquadFilterStates;
         private int _inputBufferIndex;
         private int _outputBufferIndex;
-        private bool[] _isInitlaized;
+        private bool[] _isInitialized;
 
-        public GroupedBiquadFilterCommand(int baseIndex, ref ReadOnlySpan<BiquadFilterParameter> filters, Memory<BiquadFilterState> biquadFilterStateMemory, int inputBufferOffset, int outputBufferOffset, ReadOnlySpan<bool> isInitialized, int nodeId)
+        public GroupedBiquadFilterCommand(int baseIndex, ReadOnlySpan<BiquadFilterParameter> filters, Memory<BiquadFilterState> biquadFilterStateMemory, int inputBufferOffset, int outputBufferOffset, ReadOnlySpan<bool> isInitialized, int nodeId)
         {
             _parameters = filters.ToArray();
             _biquadFilterStates = biquadFilterStateMemory;
             _inputBufferIndex = baseIndex + inputBufferOffset;
             _outputBufferIndex = baseIndex + outputBufferOffset;
-            _isInitlaized = isInitialized.ToArray();
+            _isInitialized = isInitialized.ToArray();
 
             Enabled = true;
             NodeId = nodeId;
@@ -58,15 +58,15 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
 
             for (int i = 0; i < _parameters.Length; i++)
             {
-                if (!_isInitlaized[i])
+                if (!_isInitialized[i])
                 {
                     states[i] = new BiquadFilterState();
                 }
             }
 
-            // NOTE: Nintendo also implement a hot path for double biquad filters but not generic path when the command definition suggest it could be.
+            // NOTE: Nintendo also implements a hot path for double biquad filters, but no generic path when the command definition suggests it could be done.
             // As such we currently only implement a generic path for simplicity.
-            // TODO: Implement double biquad filters fast path
+            // TODO: Implement double biquad filters fast path.
             if (_parameters.Length == 1)
             {
                 BiquadFilterHelper.ProcessBiquadFilter(ref _parameters[0], ref states[0], outputBuffer, inputBuffer, context.SampleCount);

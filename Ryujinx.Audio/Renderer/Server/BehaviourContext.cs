@@ -101,7 +101,7 @@ namespace Ryujinx.Audio.Renderer.Server
         /// REV10:
         /// Added Bluetooth audio device support and removed the unused "GetAudioSystemMasterVolumeSetting" audio device API.
         /// A new effect was added: Capture. This effect allows the client side to capture audio buffers of a mix.
-        /// A new command was added for double biquad filters on voices. This is implemented using a direct form 1. (instead of the usual direct form 2)
+        /// A new command was added for double biquad filters on voices. This is implemented using a direct form 1 (instead of the usual direct form 2).
         /// A new version of the command estimator was added to support the new commands.
         /// </summary>
         /// <remarks>This was added in system update 13.0.0</remarks>

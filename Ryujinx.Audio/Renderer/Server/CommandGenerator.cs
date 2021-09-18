@@ -151,9 +151,9 @@ namespace Ryujinx.Audio.Renderer.Server
 
         private void GenerateBiquadFilterForVoice(ref VoiceState voiceState, Memory<VoiceUpdateState> state, int baseIndex, int bufferOffset, int nodeId)
         {
-            bool supportOptimizedPath = _rendererContext.BehaviourContext.IsBiquadFilterGroupedOptimizationSupported();
+            bool supportsOptimizedPath = _rendererContext.BehaviourContext.IsBiquadFilterGroupedOptimizationSupported();
 
-            if (supportOptimizedPath && voiceState.BiquadFilters[0].Enable && voiceState.BiquadFilters[1].Enable)
+            if (supportsOptimizedPath && voiceState.BiquadFilters[0].Enable && voiceState.BiquadFilters[1].Enable)
             {
                 Memory<byte> biquadStateRawMemory = SpanMemoryManager<byte>.Cast(state).Slice(VoiceUpdateState.BiquadStateOffset, VoiceUpdateState.BiquadStateSize * Constants.VoiceBiquadFilterCount);
                 Memory<BiquadFilterState> stateMemory = SpanMemoryManager<BiquadFilterState>.Cast(biquadStateRawMemory);
@@ -455,7 +455,7 @@ namespace Ryujinx.Audio.Renderer.Server
 
                     uint updateCount;
 
-                    if ((channelIndex - 1) != 0)
+                    if (channelIndex != 1)
                     {
                         updateCount = 0;
                     }
@@ -588,7 +588,7 @@ namespace Ryujinx.Audio.Renderer.Server
 
                     uint updateCount;
 
-                    if ((channelIndex - 1) != 0)
+                    if (channelIndex != 1)
                     {
                         updateCount = 0;
                     }
@@ -598,14 +598,14 @@ namespace Ryujinx.Audio.Renderer.Server
                     }
 
                     _commandBuffer.GenerateCaptureEffect(bufferOffset,
-                                                     effect.Parameter.Input[i],
-                                                     effect.State.SendBufferInfo,
-                                                     effect.IsEnabled,
-                                                     effect.Parameter.BufferStorageSize,
-                                                     effect.State.SendBufferInfoBase,
-                                                     updateCount,
-                                                     writeOffset,
-                                                     nodeId);
+                                                         effect.Parameter.Input[i],
+                                                         effect.State.SendBufferInfo,
+                                                         effect.IsEnabled,
+                                                         effect.Parameter.BufferStorageSize,
+                                                         effect.State.SendBufferInfoBase,
+                                                         updateCount,
+                                                         writeOffset,
+                                                         nodeId);
 
                     writeOffset = newUpdateCount;
 

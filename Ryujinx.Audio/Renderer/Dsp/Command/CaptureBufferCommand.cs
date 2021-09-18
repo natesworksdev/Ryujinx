@@ -38,8 +38,8 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
 
         public uint InputBufferIndex { get; }
 
-        public ulong CpuBufferInfo { get; }
-        public ulong DspBufferInfo { get; }
+        public ulong CpuBufferInfoAddress { get; }
+        public ulong DspBufferInfoAddress { get; }
 
         public CpuAddress OutputBuffer { get; }
         public uint CountMax { get; }
@@ -54,8 +54,8 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
             Enabled = true;
             NodeId = nodeId;
             InputBufferIndex = bufferOffset + inputBufferOffset;
-            CpuBufferInfo = sendBufferInfo;
-            DspBufferInfo = sendBufferInfo + (ulong)Unsafe.SizeOf<AuxiliaryBufferHeader>();
+            CpuBufferInfoAddress = sendBufferInfo;
+            DspBufferInfoAddress = sendBufferInfo + (ulong)Unsafe.SizeOf<AuxiliaryBufferHeader>();
             OutputBuffer = outputBuffer;
             CountMax = countMax;
             UpdateCount = updateCount;
@@ -71,7 +71,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                 return 0;
             }
 
-            uint targetWriteOffset = writeOffset + AuxiliaryBufferInfo.GetWriteOffset(memoryManager, DspBufferInfo);
+            uint targetWriteOffset = writeOffset + AuxiliaryBufferInfo.GetWriteOffset(memoryManager, DspBufferInfoAddress);
 
             if (targetWriteOffset > countMax)
             {
@@ -95,15 +95,15 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
 
             if (updateCount != 0)
             {
-                uint dspTotalSampleCount = AuxiliaryBufferInfo.GetTotalSampleCount(memoryManager, DspBufferInfo);
-                uint cpuTotalSampleCount = AuxiliaryBufferInfo.GetTotalSampleCount(memoryManager, CpuBufferInfo);
+                uint dspTotalSampleCount = AuxiliaryBufferInfo.GetTotalSampleCount(memoryManager, DspBufferInfoAddress);
+                uint cpuTotalSampleCount = AuxiliaryBufferInfo.GetTotalSampleCount(memoryManager, CpuBufferInfoAddress);
 
                 uint totalSampleCountDiff = dspTotalSampleCount - cpuTotalSampleCount;
 
                 if (totalSampleCountDiff >= countMax)
                 {
-                    uint dspLostSampleCount = AuxiliaryBufferInfo.GetLostSampleCount(memoryManager, DspBufferInfo);
-                    uint cpuLostSampleCount = AuxiliaryBufferInfo.GetLostSampleCount(memoryManager, CpuBufferInfo);
+                    uint dspLostSampleCount = AuxiliaryBufferInfo.GetLostSampleCount(memoryManager, DspBufferInfoAddress);
+                    uint cpuLostSampleCount = AuxiliaryBufferInfo.GetLostSampleCount(memoryManager, CpuBufferInfoAddress);
 
                     uint lostSampleCountDiff = dspLostSampleCount - cpuLostSampleCount;
                     uint newLostSampleCount = lostSampleCountDiff + updateCount;
@@ -113,16 +113,16 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
                         newLostSampleCount = cpuLostSampleCount - 1;
                     }
 
-                    AuxiliaryBufferInfo.SetLostSampleCount(memoryManager, DspBufferInfo, newLostSampleCount);
+                    AuxiliaryBufferInfo.SetLostSampleCount(memoryManager, DspBufferInfoAddress, newLostSampleCount);
                 }
 
-                uint newWriteOffset = (AuxiliaryBufferInfo.GetWriteOffset(memoryManager, DspBufferInfo) + updateCount) % countMax;
+                uint newWriteOffset = (AuxiliaryBufferInfo.GetWriteOffset(memoryManager, DspBufferInfoAddress) + updateCount) % countMax;
 
-                AuxiliaryBufferInfo.SetWriteOffset(memoryManager, DspBufferInfo, newWriteOffset);
+                AuxiliaryBufferInfo.SetWriteOffset(memoryManager, DspBufferInfoAddress, newWriteOffset);
 
                 uint newTotalSampleCount = totalSampleCountDiff + newWriteOffset;
 
-                AuxiliaryBufferInfo.SetTotalSampleCount(memoryManager, DspBufferInfo, newTotalSampleCount);
+                AuxiliaryBufferInfo.SetTotalSampleCount(memoryManager, DspBufferInfoAddress, newTotalSampleCount);
             }
 
             return count;
@@ -147,7 +147,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
             }
             else
             {
-                AuxiliaryBufferInfo.Reset(context.MemoryManager, DspBufferInfo);
+                AuxiliaryBufferInfo.Reset(context.MemoryManager, DspBufferInfoAddress);
             }
         }
     }

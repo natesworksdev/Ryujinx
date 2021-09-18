@@ -79,7 +79,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
 
             public static void Reset(IVirtualMemoryManager manager, ulong bufferAddress)
             {
-                // NOTE: lost sample count is never reset since REV10.
+                // NOTE: Lost sample count is never reset, since REV10.
                 manager.Write(bufferAddress + ReadOffsetPosition, 0UL);
                 manager.Write(bufferAddress + TotalSampleCountPosition, 0);
             }

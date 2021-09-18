@@ -233,7 +233,7 @@ namespace Ryujinx.Audio.Renderer.Server
         /// <param name="nodeId">The node id associated to this command.</param>
         public void GenerateGroupedBiquadFilter(int baseIndex, ReadOnlySpan<BiquadFilterParameter> filters, Memory<BiquadFilterState> biquadFilterStatesMemory, int inputBufferOffset, int outputBufferOffset, ReadOnlySpan<bool> isInitialized, int nodeId)
         {
-            GroupedBiquadFilterCommand command = new GroupedBiquadFilterCommand(baseIndex, ref filters, biquadFilterStatesMemory, inputBufferOffset, outputBufferOffset, isInitialized, nodeId);
+            GroupedBiquadFilterCommand command = new GroupedBiquadFilterCommand(baseIndex, filters, biquadFilterStatesMemory, inputBufferOffset, outputBufferOffset, isInitialized, nodeId);
 
             command.EstimatedProcessingTime = _commandProcessingTimeEstimator.Estimate(command);
 
