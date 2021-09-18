@@ -1,4 +1,4 @@
-//
+﻿//
 // Copyright (c) 2019-2021 Ryujinx
 //
 // This program is free software: you can redistribute it and/or modify
@@ -25,14 +25,14 @@ using static Ryujinx.Audio.Renderer.Parameter.VoiceInParameter;
 namespace Ryujinx.Audio.Renderer.Server
 {
     /// <summary>
-    /// <see cref="ICommandProcessingTimeEstimator"/> version 3. (added with REV8)
+    /// <see cref="ICommandProcessingTimeEstimator"/> version 4. (added with REV10)
     /// </summary>
-    public class CommandProcessingTimeEstimatorVersion3 : ICommandProcessingTimeEstimator
+    public class CommandProcessingTimeEstimatorVersion4 : ICommandProcessingTimeEstimator
     {
         private uint _sampleCount;
         private uint _bufferCount;
 
-        public CommandProcessingTimeEstimatorVersion3(uint sampleCount, uint bufferCount)
+        public CommandProcessingTimeEstimatorVersion4(uint sampleCount, uint bufferCount)
         {
             _sampleCount = sampleCount;
             _bufferCount = bufferCount;
@@ -757,12 +757,36 @@ namespace Ryujinx.Audio.Renderer.Server
 
         public uint Estimate(GroupedBiquadFilterCommand command)
         {
-            return 0;
+            Debug.Assert(_sampleCount == 160 || _sampleCount == 240);
+
+            if (_sampleCount == 160)
+            {
+                return (uint)7424.5f;
+            }
+
+            return (uint)9730.4f;
         }
 
         public uint Estimate(CaptureBufferCommand command)
         {
-            return 0;
+            Debug.Assert(_sampleCount == 160 || _sampleCount == 240);
+
+            if (_sampleCount == 160)
+            {
+                if (command.Enabled)
+                {
+                    return (uint)435.2f;
+                }
+
+                return (uint)4261.0f;
+            }
+
+            if (command.Enabled)
+            {
+                return (uint)5858.26f;
+            }
+
+            return (uint)435.2f;
         }
     }
 }
