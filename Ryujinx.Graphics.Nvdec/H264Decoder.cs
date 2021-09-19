@@ -10,9 +10,7 @@ namespace Ryujinx.Graphics.Nvdec
     {
         private const int MbSizeInPixels = 16;
 
-        private static readonly Decoder _decoder = new Decoder();
-
-        public unsafe static void Decode(NvdecDevice device, ResourceManager rm, ref NvdecRegisters state)
+        public unsafe static void Decode(NvdecDevice device, NvdecDecoderContext context, ResourceManager rm, ref NvdecRegisters state)
         {
             PictureInfo pictureInfo = rm.Gmm.DeviceRead<PictureInfo>(state.SetPictureInfoOffset);
             H264PictureInfo info = pictureInfo.Convert();
@@ -22,9 +20,11 @@ namespace Ryujinx.Graphics.Nvdec
             int width  = (int)pictureInfo.PicWidthInMbs * MbSizeInPixels;
             int height = (int)pictureInfo.PicHeightInMbs * MbSizeInPixels;
 
-            ISurface outputSurface = rm.Cache.Get(_decoder, CodecId.H264, 0, 0, width, height);
+            Decoder decoder = context.GetDecoder();
 
-            if (_decoder.Decode(ref info, outputSurface, bitstream))
+            ISurface outputSurface = rm.Cache.Get(decoder, CodecId.H264, 0, 0, width, height);
+
+            if (decoder.Decode(ref info, outputSurface, bitstream))
             {
                 int li = (int)pictureInfo.LumaOutputSurfaceIndex;
                 int ci = (int)pictureInfo.ChromaOutputSurfaceIndex;

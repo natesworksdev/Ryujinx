@@ -3,14 +3,20 @@ using Ryujinx.Graphics.Device;
 using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.Graphics.Nvdec.Image;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Ryujinx.Graphics.Nvdec
 {
-    public class NvdecDevice : IDeviceState
+    public class NvdecDevice : IDeviceStateWithContext
     {
         private readonly ResourceManager _rm;
         private readonly DeviceState<NvdecRegisters> _state;
+
+        private long _currentId;
+        private ConcurrentDictionary<long, NvdecDecoderContext> _contexts;
+        private NvdecDecoderContext _currentContext;
 
         public event Action<FrameDecodedEventArgs> FrameDecoded;
 
@@ -21,6 +27,30 @@ namespace Ryujinx.Graphics.Nvdec
             {
                 { nameof(NvdecRegisters.Execute), new RwCallback(Execute, null) }
             });
+            _contexts = new ConcurrentDictionary<long, NvdecDecoderContext>();
+        }
+
+        public long CreateContext()
+        {
+            long id = Interlocked.Increment(ref _currentId);
+            _contexts.TryAdd(id, new NvdecDecoderContext());
+            return id;
+        }
+
+        public void DestroyContext(long id)
+        {
+            if (_contexts.TryRemove(id, out var context))
+            {
+                context.Dispose();
+            }
+        }
+
+        public void BindContext(long id)
+        {
+            if (_contexts.TryGetValue(id, out var context))
+            {
+                _currentContext = context;
+            }
         }
 
         public int Read(int offset) => _state.Read(offset);
@@ -36,7 +66,7 @@ namespace Ryujinx.Graphics.Nvdec
             switch (codecId)
             {
                 case CodecId.H264:
-                    H264Decoder.Decode(this, _rm, ref _state.State);
+                    H264Decoder.Decode(this, _currentContext, _rm, ref _state.State);
                     break;
                 case CodecId.Vp9:
                     Vp9Decoder.Decode(this, _rm, ref _state.State);
