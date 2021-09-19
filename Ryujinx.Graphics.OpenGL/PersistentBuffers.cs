@@ -45,7 +45,7 @@ namespace Ryujinx.Graphics.OpenGL
                 _copyBufferHandle = GL.GenBuffer();
 
                 GL.BindBuffer(BufferTarget.CopyWriteBuffer, _copyBufferHandle);
-                GL.BufferStorage(BufferTarget.CopyWriteBuffer, CopyBufferSize, IntPtr.Zero, BufferStorageFlags.MapWriteBit | BufferStorageFlags.MapPersistentBit | BufferStorageFlags.MapCoherentBit);
+                GL.BufferStorage(BufferTarget.CopyWriteBuffer, CopyBufferSize, IntPtr.Zero, BufferStorageFlags.MapWriteBit | BufferStorageFlags.MapPersistentBit | BufferStorageFlags.MapCoherentBit | BufferStorageFlags.ClientStorageBit);
 
                 _bufferMap = GL.MapBufferRange(BufferTarget.CopyWriteBuffer, IntPtr.Zero, CopyBufferSize, BufferAccessMask.MapWriteBit | BufferAccessMask.MapPersistentBit | BufferAccessMask.MapCoherentBit);
                 _syncs = new IntPtr[TextureMaxNumber];
