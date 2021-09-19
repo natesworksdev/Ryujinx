@@ -559,6 +559,7 @@ namespace Ryujinx.Ui
                                                                           ConfigurationState.Instance.System.EnablePtc,
                                                                           fsIntegrityCheckLevel,
                                                                           ConfigurationState.Instance.System.FsGlobalAccessLogMode,
+                                                                          ConfigurationState.Instance.System.fPrecision,
                                                                           ConfigurationState.Instance.System.SystemTimeOffset,
                                                                           ConfigurationState.Instance.System.TimeZone,
                                                                           ConfigurationState.Instance.System.MemoryManagerMode,

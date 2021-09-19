@@ -7,6 +7,11 @@
     <property name="step-increment">1</property>
     <property name="page-increment">10</property>
   </object>
+  <object class="GtkAdjustment" id="_fPrecisionSpinAdjustment">
+    <property name="upper">15</property>
+    <property name="step-increment">1</property>
+    <property name="page-increment">5</property>
+  </object>
   <object class="GtkAdjustment" id="_systemTimeDaySpinAdjustment">
     <property name="lower">1</property>
     <property name="upper">31</property>
@@ -2432,6 +2437,46 @@
                                         <property name="tooltip-text" translatable="yes">Enables FS access log output to the console. Possible modes are 0-3</property>
                                         <property name="text" translatable="yes">0</property>
                                         <property name="adjustment">_fsLogSpinAdjustment</property>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">True</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="padding">5</property>
+                                    <property name="position">9</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkBox">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <child>
+                                      <object class="GtkLabel">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="tooltip-text" translatable="yes">Adjustment to fps precision</property>
+                                        <property name="label" translatable="yes">FPS monitor precision:</property>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="padding">5</property>
+                                        <property name="position">0</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkSpinButton">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">True</property>
+                                        <property name="tooltip-text" translatable="yes">Adjustment to fps precision. Values from 0-15</property>
+                                        <property name="text" translatable="yes">0</property>
+                                        <property name="adjustment">_fPrecisionSpinAdjustment</property>
                                       </object>
                                       <packing>
                                         <property name="expand">True</property>

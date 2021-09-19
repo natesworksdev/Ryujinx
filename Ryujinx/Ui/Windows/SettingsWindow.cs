@@ -42,6 +42,7 @@ namespace Ryujinx.Ui.Windows
         [GUI] CheckButton     _guestLogToggle;
         [GUI] CheckButton     _fsAccessLogToggle;
         [GUI] Adjustment      _fsLogSpinAdjustment;
+        [GUI] Adjustment      _fPrecisionSpinAdjustment;
         [GUI] ComboBoxText    _graphicsDebugLevel;
         [GUI] CheckButton     _dockedModeToggle;
         [GUI] CheckButton     _discordToggle;
@@ -311,6 +312,7 @@ namespace Ryujinx.Ui.Windows
             _resScaleText.Visible                = _resScaleCombo.ActiveId == "-1";
             _graphicsShadersDumpPath.Buffer.Text = ConfigurationState.Instance.Graphics.ShadersDumpPath;
             _fsLogSpinAdjustment.Value           = ConfigurationState.Instance.System.FsGlobalAccessLogMode;
+            _fPrecisionSpinAdjustment.Value      = ConfigurationState.Instance.System.fPrecision;
             _systemTimeOffset                    = ConfigurationState.Instance.System.SystemTimeOffset;
 
             _gameDirsBox.AppendColumn("", new CellRendererText(), "text", 0);
@@ -493,6 +495,7 @@ namespace Ryujinx.Ui.Windows
             ConfigurationState.Instance.Graphics.ShadersDumpPath.Value         = _graphicsShadersDumpPath.Buffer.Text;
             ConfigurationState.Instance.Ui.GameDirs.Value                      = gameDirs;
             ConfigurationState.Instance.System.FsGlobalAccessLogMode.Value     = (int)_fsLogSpinAdjustment.Value;
+            ConfigurationState.Instance.System.fPrecision.Value                = (int)_fPrecisionSpinAdjustment.Value;
             ConfigurationState.Instance.Graphics.MaxAnisotropy.Value           = float.Parse(_anisotropy.ActiveId, CultureInfo.InvariantCulture);
             ConfigurationState.Instance.Graphics.AspectRatio.Value             = Enum.Parse<AspectRatio>(_aspectRatio.ActiveId);
             ConfigurationState.Instance.Graphics.BackendThreading.Value        = backendThreading;

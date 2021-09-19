@@ -175,6 +175,11 @@ namespace Ryujinx.Configuration
         public int FsGlobalAccessLogMode { get; set; }
 
         /// <summary>
+        /// Enables FS access log output to the console. Possible modes are 0-3
+        /// </summary>
+        public int fPrecision { get; set; }
+
+        /// <summary>
         /// The selected audio backend
         /// </summary>
         public AudioBackend AudioBackend { get; set; }

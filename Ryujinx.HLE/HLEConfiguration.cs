@@ -159,6 +159,7 @@ namespace Ryujinx.HLE
                                 bool                   enablePtc,
                                 IntegrityCheckLevel    fsIntegrityCheckLevel,
                                 int                    fsGlobalAccessLogMode,
+                                int                    fPrecision,
                                 long                   systemTimeOffset,
                                 string                 timeZone,
                                 MemoryManagerMode      memoryManagerMode,

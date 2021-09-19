@@ -418,6 +418,8 @@ namespace Ryujinx.Ui
                     {
                         string dockedMode = ConfigurationState.Instance.System.EnableDockedMode ? "Docked" : "Handheld";
                         float scale = Graphics.Gpu.GraphicsConfig.ResScale;
+                        int precision = ConfigurationState.Instance.System.fPrecision;
+                        double fps = Math.Round(Device.Statistics.GetGameFrameRate(), precision);
                         if (scale != 1)
                         {
                             dockedMode += $" ({scale}x)";
@@ -427,7 +429,7 @@ namespace Ryujinx.Ui
                             Device.EnableDeviceVsync,
                             dockedMode,
                             ConfigurationState.Instance.Graphics.AspectRatio.Value.ToText(),
-                            $"Game: {Device.Statistics.GetGameFrameRate():00.00} FPS ({Device.Statistics.GetGameFrameTime():00.00} ms)",
+                            $"Game: {fps} FPS ({Device.Statistics.GetGameFrameTime():00.00} ms)",
                             $"FIFO: {Device.Statistics.GetFifoPercent():0.00} %",
                             $"GPU: {_gpuVendorName}"));
 

@@ -85,6 +85,9 @@ namespace Ryujinx.Headless.SDL2
         [Option("fs-global-access-log-mode", Required = false, Default = 0, HelpText = "Enables FS access log output to the console.")]
         public int FsGlobalAccessLogMode { get; set; }
 
+        [Option("fps-precision", Required = false, Default = 2, HelpText = "Allows change to fps precision")]
+        public int fPrecision { get; set; }
+
         [Option("enable-vsync", Required = false, Default = true, HelpText = "Enables Vertical Sync.")]
         public bool? EnableVsync { get; set; }
 

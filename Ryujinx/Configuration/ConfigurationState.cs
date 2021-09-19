@@ -216,6 +216,11 @@ namespace Ryujinx.Configuration
             public ReactiveObject<int> FsGlobalAccessLogMode { get; private set; }
 
             /// <summary>
+            /// Enables FS access log output to the console. Possible modes are 0-3
+            /// </summary>
+            public ReactiveObject<int> fPrecision { get; private set; }
+
+            /// <summary>
             /// The selected audio backend
             /// </summary>
             public ReactiveObject<AudioBackend> AudioBackend { get; private set; }
@@ -249,6 +254,9 @@ namespace Ryujinx.Configuration
                 EnableFsIntegrityChecks.Event += static (sender, e) => LogValueChange(sender, e, nameof(EnableFsIntegrityChecks));
                 FsGlobalAccessLogMode         = new ReactiveObject<int>();
                 FsGlobalAccessLogMode.Event   += static (sender, e) => LogValueChange(sender, e, nameof(FsGlobalAccessLogMode));
+                AudioBackend                  = new ReactiveObject<AudioBackend>();
+                fPrecision                    = new ReactiveObject<int>();
+                fPrecision.Event              += static (sender, e) => LogValueChange(sender, e, nameof(fPrecision));
                 AudioBackend                  = new ReactiveObject<AudioBackend>();
                 AudioBackend.Event            += static (sender, e) => LogValueChange(sender, e, nameof(AudioBackend));
                 MemoryManagerMode             = new ReactiveObject<MemoryManagerMode>();
@@ -459,6 +467,7 @@ namespace Ryujinx.Configuration
                 EnablePtc                 = System.EnablePtc,
                 EnableFsIntegrityChecks   = System.EnableFsIntegrityChecks,
                 FsGlobalAccessLogMode     = System.FsGlobalAccessLogMode,
+                fPrecision                = System.fPrecision,
                 AudioBackend              = System.AudioBackend,
                 MemoryManagerMode         = System.MemoryManagerMode,
                 ExpandRam                 = System.ExpandRam,
@@ -528,6 +537,7 @@ namespace Ryujinx.Configuration
             System.EnablePtc.Value                 = true;
             System.EnableFsIntegrityChecks.Value   = true;
             System.FsGlobalAccessLogMode.Value     = 0;
+            System.fPrecision.Value                = 2;
             System.AudioBackend.Value              = AudioBackend.SDL2;
             System.MemoryManagerMode.Value         = MemoryManagerMode.HostMappedUnsafe;
             System.ExpandRam.Value                 = false;
@@ -959,6 +969,7 @@ namespace Ryujinx.Configuration
             System.EnablePtc.Value                 = configurationFileFormat.EnablePtc;
             System.EnableFsIntegrityChecks.Value   = configurationFileFormat.EnableFsIntegrityChecks;
             System.FsGlobalAccessLogMode.Value     = configurationFileFormat.FsGlobalAccessLogMode;
+            System.fPrecision.Value                = configurationFileFormat.fPrecision;
             System.AudioBackend.Value              = configurationFileFormat.AudioBackend;
             System.MemoryManagerMode.Value         = configurationFileFormat.MemoryManagerMode;
             System.ExpandRam.Value                 = configurationFileFormat.ExpandRam;
