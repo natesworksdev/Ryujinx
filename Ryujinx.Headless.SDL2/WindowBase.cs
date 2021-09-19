@@ -189,6 +189,7 @@ namespace Ryujinx.Headless.SDL2
                     {
                         string dockedMode = Device.System.State.DockedMode ? "Docked" : "Handheld";
                         float scale = Graphics.Gpu.GraphicsConfig.ResScale;
+                        int FpsPrecision = HLEConfiguration.fpsPrecision;
                         if (scale != 1)
                         {
                             dockedMode += $" ({scale}x)";
