@@ -110,6 +110,11 @@ namespace Ryujinx.HLE
         internal readonly int FsGlobalAccessLogMode;
 
         /// <summary>
+        /// FPS precision value.
+        /// </summary>
+        public static int fpsPrecision;
+
+        /// <summary>
         /// The system time offset to apply to the time service steady and local clocks.
         /// </summary>
         /// <remarks>This cannot be changed after <see cref="Switch"/> instantiation.</remarks>
