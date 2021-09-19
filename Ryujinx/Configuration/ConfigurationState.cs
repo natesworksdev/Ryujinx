@@ -218,7 +218,7 @@ namespace Ryujinx.Configuration
             /// <summary>
             /// Enables FS access log output to the console. Possible modes are 0-3
             /// </summary>
-            public ReactiveObject<int> fPrecision { get; private set; }
+            public ReactiveObject<int> fpsPrecision { get; private set; }
 
             /// <summary>
             /// The selected audio backend
@@ -255,8 +255,8 @@ namespace Ryujinx.Configuration
                 FsGlobalAccessLogMode         = new ReactiveObject<int>();
                 FsGlobalAccessLogMode.Event   += static (sender, e) => LogValueChange(sender, e, nameof(FsGlobalAccessLogMode));
                 AudioBackend                  = new ReactiveObject<AudioBackend>();
-                fPrecision                    = new ReactiveObject<int>();
-                fPrecision.Event              += static (sender, e) => LogValueChange(sender, e, nameof(fPrecision));
+                fpsPrecision                  = new ReactiveObject<int>();
+                fpsPrecision.Event            += static (sender, e) => LogValueChange(sender, e, nameof(fpsPrecision));
                 AudioBackend                  = new ReactiveObject<AudioBackend>();
                 AudioBackend.Event            += static (sender, e) => LogValueChange(sender, e, nameof(AudioBackend));
                 MemoryManagerMode             = new ReactiveObject<MemoryManagerMode>();
@@ -467,7 +467,7 @@ namespace Ryujinx.Configuration
                 EnablePtc                 = System.EnablePtc,
                 EnableFsIntegrityChecks   = System.EnableFsIntegrityChecks,
                 FsGlobalAccessLogMode     = System.FsGlobalAccessLogMode,
-                fPrecision                = System.fPrecision,
+                fpsPrecision              = System.fpsPrecision,
                 AudioBackend              = System.AudioBackend,
                 MemoryManagerMode         = System.MemoryManagerMode,
                 ExpandRam                 = System.ExpandRam,
@@ -537,7 +537,7 @@ namespace Ryujinx.Configuration
             System.EnablePtc.Value                 = true;
             System.EnableFsIntegrityChecks.Value   = true;
             System.FsGlobalAccessLogMode.Value     = 0;
-            System.fPrecision.Value                = 2;
+            System.fpsPrecision.Value              = 2;
             System.AudioBackend.Value              = AudioBackend.SDL2;
             System.MemoryManagerMode.Value         = MemoryManagerMode.HostMappedUnsafe;
             System.ExpandRam.Value                 = false;
@@ -939,6 +939,15 @@ namespace Ryujinx.Configuration
                 configurationFileUpdated = true;
             }
 
+            if (configurationFileFormat.Version < 33)
+            {
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 33.");
+
+                configurationFileFormat.fpsPrecision = 2;
+
+                configurationFileUpdated = true;
+            }
+
             Logger.EnableFileLog.Value             = configurationFileFormat.EnableFileLog;
             Graphics.BackendThreading.Value        = configurationFileFormat.BackendThreading;
             Graphics.ResScale.Value                = configurationFileFormat.ResScale;
@@ -969,7 +978,7 @@ namespace Ryujinx.Configuration
             System.EnablePtc.Value                 = configurationFileFormat.EnablePtc;
             System.EnableFsIntegrityChecks.Value   = configurationFileFormat.EnableFsIntegrityChecks;
             System.FsGlobalAccessLogMode.Value     = configurationFileFormat.FsGlobalAccessLogMode;
-            System.fPrecision.Value                = configurationFileFormat.fPrecision;
+            System.fpsPrecision.Value                = configurationFileFormat.fpsPrecision;
             System.AudioBackend.Value              = configurationFileFormat.AudioBackend;
             System.MemoryManagerMode.Value         = configurationFileFormat.MemoryManagerMode;
             System.ExpandRam.Value                 = configurationFileFormat.ExpandRam;
