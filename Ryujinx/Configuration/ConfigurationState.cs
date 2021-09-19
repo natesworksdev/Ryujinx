@@ -978,7 +978,7 @@ namespace Ryujinx.Configuration
             System.EnablePtc.Value                 = configurationFileFormat.EnablePtc;
             System.EnableFsIntegrityChecks.Value   = configurationFileFormat.EnableFsIntegrityChecks;
             System.FsGlobalAccessLogMode.Value     = configurationFileFormat.FsGlobalAccessLogMode;
-            System.fpsPrecision.Value                = configurationFileFormat.fpsPrecision;
+            System.fpsPrecision.Value              = configurationFileFormat.fpsPrecision;
             System.AudioBackend.Value              = configurationFileFormat.AudioBackend;
             System.MemoryManagerMode.Value         = configurationFileFormat.MemoryManagerMode;
             System.ExpandRam.Value                 = configurationFileFormat.ExpandRam;
