@@ -857,7 +857,7 @@ namespace Ryujinx.Ui
 
                 _applicationLibrary.LoadAndSaveMetaData(_emulationContext.Application.TitleIdText, appMetadata =>
                 {
-                    appMetadata.LastPlayed = DateTime.UtcNow.ToString();
+                    appMetadata.LastPlayed = DateTime.UtcNow.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'Z'");
                 });
             }
         }
