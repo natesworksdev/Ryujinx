@@ -175,7 +175,7 @@ namespace Ryujinx.Configuration
         public int FsGlobalAccessLogMode { get; set; }
 
         /// <summary>
-        /// Enables FS access log output to the console. Possible modes are 0-3
+        /// Integer scale to adjust FPS monitor displayed value. Values from 0-15
         /// </summary>
         public int fpsPrecision { get; set; }
 

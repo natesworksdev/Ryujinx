@@ -216,7 +216,7 @@ namespace Ryujinx.Configuration
             public ReactiveObject<int> FsGlobalAccessLogMode { get; private set; }
 
             /// <summary>
-            /// Enables FS access log output to the console. Possible modes are 0-3
+            /// Integer scale to adjust FPS monitor displayed value. Values from 0-15
             /// </summary>
             public ReactiveObject<int> fpsPrecision { get; private set; }
 

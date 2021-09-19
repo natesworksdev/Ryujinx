@@ -110,7 +110,7 @@ namespace Ryujinx.HLE
         internal readonly int FsGlobalAccessLogMode;
 
         /// <summary>
-        /// FPS precision value.
+        /// Integer scale to adjust FPS monitor displayed value. Values from 0-15
         /// </summary>
         public static int fpsPrecision;
 
