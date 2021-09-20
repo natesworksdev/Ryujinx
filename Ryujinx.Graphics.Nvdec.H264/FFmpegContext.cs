@@ -9,18 +9,14 @@ namespace Ryujinx.Graphics.Nvdec.H264
 {
     unsafe class FFmpegContext : IDisposable
     {
-        private readonly av_log_set_callback_callback _logFunc;
+        private static readonly av_log_set_callback_callback _logFunc;
         private readonly AVCodec* _codec;
         private AVPacket* _packet;
         private AVCodecContext* _context;
 
         public FFmpegContext()
         {
-            _logFunc = Log;
 
-            // Redirect log output
-            ffmpeg.av_log_set_level(ffmpeg.AV_LOG_MAX_OFFSET);
-            ffmpeg.av_log_set_callback(_logFunc);
 
             _codec = ffmpeg.avcodec_find_decoder(AVCodecID.AV_CODEC_ID_H264);
             _context = ffmpeg.avcodec_alloc_context3(_codec);
@@ -33,6 +29,12 @@ namespace Ryujinx.Graphics.Nvdec.H264
         static FFmpegContext()
         {
             SetRootPath();
+
+            _logFunc = Log;
+
+            // Redirect log output.
+            ffmpeg.av_log_set_level(ffmpeg.AV_LOG_MAX_OFFSET);
+            ffmpeg.av_log_set_callback(_logFunc);
         }
 
         private static void SetRootPath()
@@ -64,7 +66,7 @@ namespace Ryujinx.Graphics.Nvdec.H264
             }
         }
 
-        private void Log(void* p0, int level, string format, byte* vl)
+        private static void Log(void* p0, int level, string format, byte* vl)
         {
             if (level > ffmpeg.av_log_get_level())
             {
