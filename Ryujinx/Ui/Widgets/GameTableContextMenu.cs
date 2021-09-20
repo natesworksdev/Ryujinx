@@ -541,7 +541,7 @@ namespace Ryujinx.Ui.Widgets
                     {
                         file.Delete();
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         GtkDialog.CreateErrorDialog($"Error purging PPTC cache {file.Name}: {e}");
                     }

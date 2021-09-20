@@ -71,7 +71,7 @@ namespace Ryujinx.Ui.Windows
             Refresh();
         }
 
-        public static string GetModsJsonPath(string titleId)
+        private static string GetModsJsonPath(string titleId)
         {
             return System.IO.Path.Combine(AppDataManager.GamesDirPath, titleId, "enabled_mods.json");
         }

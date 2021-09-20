@@ -448,9 +448,9 @@ namespace Ryujinx.HLE.HOS
 
                 FilterMods(unfilteredModCache.RomfsContainers, filteredModCache.RomfsContainers, enabledMods);
                 FilterMods(unfilteredModCache.ExefsContainers, filteredModCache.ExefsContainers, enabledMods);
-                FilterMods(unfilteredModCache.RomfsDirs      , filteredModCache.RomfsDirs      , enabledMods);
-                FilterMods(unfilteredModCache.ExefsDirs      , filteredModCache.ExefsDirs      , enabledMods);
-                FilterMods(unfilteredModCache.Cheats         , filteredModCache.Cheats         , enabledMods);
+                FilterMods(unfilteredModCache.RomfsDirs,       filteredModCache.RomfsDirs,       enabledMods);
+                FilterMods(unfilteredModCache.ExefsDirs,       filteredModCache.ExefsDirs,       enabledMods);
+                FilterMods(unfilteredModCache.Cheats,          filteredModCache.Cheats,          enabledMods);
 
                 AppMods[titleId] = filteredModCache;
             }
