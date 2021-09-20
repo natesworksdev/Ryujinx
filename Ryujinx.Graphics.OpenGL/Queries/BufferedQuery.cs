@@ -19,18 +19,16 @@ namespace Ryujinx.Graphics.OpenGL.Queries
 
         public BufferedQuery(QueryTarget type)
         {
-            _buffer = GL.GenBuffer();
+            _buffer = Buffer.Create().ToInt32();
             Query = GL.GenQuery();
             _type = type;
-
-            GL.BindBuffer(BufferTarget.QueryBuffer, _buffer);
 
             unsafe
             {
                 long defaultValue = DefaultValue;
-                GL.BufferStorage(BufferTarget.QueryBuffer, sizeof(long), (IntPtr)(&defaultValue), BufferStorageFlags.MapReadBit | BufferStorageFlags.MapWriteBit | BufferStorageFlags.MapPersistentBit);
+                GL.NamedBufferStorage(_buffer, sizeof(long), (IntPtr)(&defaultValue), BufferStorageFlags.MapReadBit | BufferStorageFlags.MapWriteBit | BufferStorageFlags.MapPersistentBit);
             }
-            _bufferMap = GL.MapBufferRange(BufferTarget.QueryBuffer, IntPtr.Zero, sizeof(long), BufferAccessMask.MapReadBit | BufferAccessMask.MapWriteBit | BufferAccessMask.MapPersistentBit);
+            _bufferMap = GL.MapNamedBufferRange(_buffer, IntPtr.Zero, sizeof(long), BufferAccessMask.MapReadBit | BufferAccessMask.MapWriteBit | BufferAccessMask.MapPersistentBit);
         }
 
         public void Reset()
@@ -50,10 +48,8 @@ namespace Ryujinx.Graphics.OpenGL.Queries
 
             if (withResult)
             {
-                GL.BindBuffer(BufferTarget.QueryBuffer, _buffer);
-
                 Marshal.WriteInt64(_bufferMap, -1L);
-                GL.GetQueryObject(Query, GetQueryObjectParam.QueryResult, (long*)0);
+                GL.GetQueryBufferObject(Query, _buffer, QueryObjectParameterName.QueryResult, IntPtr.Zero);
                 GL.MemoryBarrier(MemoryBarrierFlags.QueryBufferBarrierBit | MemoryBarrierFlags.ClientMappedBufferBarrierBit);
             }
         }
@@ -99,8 +95,7 @@ namespace Ryujinx.Graphics.OpenGL.Queries
 
         public void Dispose()
         {
-            GL.BindBuffer(BufferTarget.QueryBuffer, _buffer);
-            GL.UnmapBuffer(BufferTarget.QueryBuffer);
+            GL.UnmapNamedBuffer(_buffer);
             GL.DeleteBuffer(_buffer);
             GL.DeleteQuery(Query);
         }

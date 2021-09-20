@@ -137,7 +137,7 @@ namespace Ryujinx.Graphics.OpenGL
         public void SetIndexBuffer(BufferRange range)
         {
             _indexBuffer = range;
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, range.Handle.ToInt32());
+            GL.VertexArrayElementBuffer(Handle, range.Handle.ToInt32());
         }
 
         public void SetRangeOfIndexBuffer()
