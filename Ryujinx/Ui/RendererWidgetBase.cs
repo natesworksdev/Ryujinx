@@ -389,6 +389,8 @@ namespace Ryujinx.Ui
                 Device.Gpu.InitializeShaderCache();
                 Translator.IsReadyForTranslation.Set();
 
+                (Toplevel as MainWindow)?.ActivatePauseMenu();
+
                 while (_isActive)
                 {
                     if (_isStopped)
@@ -425,7 +427,7 @@ namespace Ryujinx.Ui
                             Device.EnableDeviceVsync,
                             dockedMode,
                             ConfigurationState.Instance.Graphics.AspectRatio.Value.ToText(),
-                            $"Game: {Device.Statistics.GetGameFrameRate():00.00} FPS",
+                            $"Game: {Device.Statistics.GetGameFrameRate():00.00} FPS ({Device.Statistics.GetGameFrameTime():00.00} ms)",
                             $"FIFO: {Device.Statistics.GetFifoPercent():0.00} %",
                             $"GPU: {_gpuVendorName}"));
 
@@ -590,6 +592,12 @@ namespace Ryujinx.Ui
                     (Toplevel as MainWindow).ToggleExtraWidgets(true);
                 }
 
+                if (currentHotkeyState.HasFlag(KeyboardHotkeyState.Pause) &&
+                    !_prevHotkeyState.HasFlag(KeyboardHotkeyState.Pause))
+                {
+                    (Toplevel as MainWindow)?.TogglePause();
+                }
+
                 _prevHotkeyState = currentHotkeyState;
             }
 
@@ -618,7 +626,8 @@ namespace Ryujinx.Ui
             None = 0,
             ToggleVSync = 1 << 0,
             Screenshot = 1 << 1,
-            ShowUi = 1 << 2
+            ShowUi = 1 << 2,
+            Pause = 1 << 3
         }
 
         private KeyboardHotkeyState GetHotkeyState()
@@ -638,6 +647,11 @@ namespace Ryujinx.Ui
             if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUi))
             {
                 state |= KeyboardHotkeyState.ShowUi;
+            }
+
+            if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Pause))
+            {
+                state |= KeyboardHotkeyState.Pause;
             }
 
             return state;

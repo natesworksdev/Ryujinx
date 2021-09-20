@@ -99,6 +99,8 @@ namespace Ryujinx.Ui
         [GUI] MenuItem        _loadApplicationFolder;
         [GUI] MenuItem        _appletMenu;
         [GUI] MenuItem        _actionMenu;
+        [GUI] MenuItem        _pauseEmulation;
+        [GUI] MenuItem        _resumeEmulation;
         [GUI] MenuItem        _stopEmulation;
         [GUI] MenuItem        _simulateWakeUpMessage;
         [GUI] MenuItem        _scanAmiibo;
@@ -211,6 +213,8 @@ namespace Ryujinx.Ui
             }
 
             _actionMenu.Sensitive = false;
+            _pauseEmulation.Sensitive = false;
+            _resumeEmulation.Sensitive = false;
 
             if (ConfigurationState.Instance.Ui.GuiColumns.FavColumn)        _favToggle.Active        = true;
             if (ConfigurationState.Instance.Ui.GuiColumns.IconColumn)       _iconToggle.Active       = true;
@@ -1198,15 +1202,20 @@ namespace Ryujinx.Ui
 
         private void Load_Application_File(object sender, EventArgs args)
         {
-            using (FileChooserDialog fileChooser = new FileChooserDialog("Choose the file to open", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept))
+            using (FileChooserNative fileChooser = new FileChooserNative("Choose the file to open", this, FileChooserAction.Open, "Open", "Cancel"))
             {
-                fileChooser.Filter = new FileFilter();
-                fileChooser.Filter.AddPattern("*.nsp");
-                fileChooser.Filter.AddPattern("*.pfs0");
-                fileChooser.Filter.AddPattern("*.xci");
-                fileChooser.Filter.AddPattern("*.nca");
-                fileChooser.Filter.AddPattern("*.nro");
-                fileChooser.Filter.AddPattern("*.nso");
+                FileFilter filter = new FileFilter()
+                {
+                    Name = "Switch Executables"
+                };
+                filter.AddPattern("*.xci");
+                filter.AddPattern("*.nsp");
+                filter.AddPattern("*.pfs0");
+                filter.AddPattern("*.nca");
+                filter.AddPattern("*.nro");
+                filter.AddPattern("*.nso");
+
+                fileChooser.AddFilter(filter);
 
                 if (fileChooser.Run() == (int)ResponseType.Accept)
                 {
@@ -1217,7 +1226,7 @@ namespace Ryujinx.Ui
 
         private void Load_Application_Folder(object sender, EventArgs args)
         {
-            using (FileChooserDialog fileChooser = new FileChooserDialog("Choose the folder to open", this, FileChooserAction.SelectFolder, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept))
+            using (FileChooserNative fileChooser = new FileChooserNative("Choose the folder to open", this, FileChooserAction.SelectFolder, "Open", "Cancel"))
             {
                 if (fileChooser.Run() == (int)ResponseType.Accept)
                 {
@@ -1276,28 +1285,67 @@ namespace Ryujinx.Ui
 
         private void StopEmulation_Pressed(object sender, EventArgs args)
         {
+            if (_emulationContext != null)
+            {
+                UpdateGameMetadata(_emulationContext.Application.TitleIdText);
+            }
+
+            _pauseEmulation.Sensitive = false;
+            _resumeEmulation.Sensitive = false;
             RendererWidget?.Exit();
+        }
+
+        private void PauseEmulation_Pressed(object sender, EventArgs args)
+        {
+            _pauseEmulation.Sensitive = false;
+            _resumeEmulation.Sensitive = true;
+            _emulationContext.System.TogglePauseEmulation(true);
+        }
+
+        private void ResumeEmulation_Pressed(object sender, EventArgs args)
+        {
+            _pauseEmulation.Sensitive = true;
+            _resumeEmulation.Sensitive = false;
+            _emulationContext.System.TogglePauseEmulation(false);
+        }
+
+        public void ActivatePauseMenu()
+        {
+            _pauseEmulation.Sensitive = true;
+            _resumeEmulation.Sensitive = false;
+        }
+
+        public void TogglePause()
+        {
+            _pauseEmulation.Sensitive ^= true;
+            _resumeEmulation.Sensitive ^= true;
+            _emulationContext.System.TogglePauseEmulation(_resumeEmulation.Sensitive);
         }
 
         private void Installer_File_Pressed(object o, EventArgs args)
         {
-            FileChooserDialog fileChooser = new FileChooserDialog("Choose the firmware file to open", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
+            FileChooserNative fileChooser = new FileChooserNative("Choose the firmware file to open", this, FileChooserAction.Open, "Open", "Cancel");
 
-            fileChooser.Filter = new FileFilter();
-            fileChooser.Filter.AddPattern("*.zip");
-            fileChooser.Filter.AddPattern("*.xci");
+            FileFilter filter = new FileFilter
+            {
+                Name = "Switch Firmware Files"
+            };
+            filter.AddPattern("*.zip");
+            filter.AddPattern("*.xci");
+
+            fileChooser.AddFilter(filter);
 
             HandleInstallerDialog(fileChooser);
         }
 
         private void Installer_Directory_Pressed(object o, EventArgs args)
         {
-            FileChooserDialog directoryChooser = new FileChooserDialog("Choose the firmware directory to open", this, FileChooserAction.SelectFolder, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
+            FileChooserNative directoryChooser = new FileChooserNative("Choose the firmware directory to open", this, FileChooserAction.SelectFolder, "Open", "Cancel");
 
             HandleInstallerDialog(directoryChooser);
         }
 
-        private void HandleInstallerDialog(FileChooserDialog fileChooser)
+        private void HandleInstallerDialog(FileChooserNative fileChooser)
         {
             if (fileChooser.Run() == (int)ResponseType.Accept)
             {

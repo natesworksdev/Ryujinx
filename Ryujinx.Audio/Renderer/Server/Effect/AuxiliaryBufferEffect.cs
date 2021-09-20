@@ -23,7 +23,7 @@ using Ryujinx.Audio.Renderer.Server.MemoryPool;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-
+using static Ryujinx.Audio.Renderer.Dsp.State.AuxiliaryBufferHeader;
 using DspAddress = System.UInt64;
 
 namespace Ryujinx.Audio.Renderer.Server.Effect
@@ -73,7 +73,7 @@ namespace Ryujinx.Audio.Renderer.Server.Effect
 
             if (BufferUnmapped || parameter.IsNew)
             {
-                ulong bufferSize = (ulong)Unsafe.SizeOf<int>() * Parameter.BufferStorageSize + (ulong)Unsafe.SizeOf<AuxiliaryBufferHeader>() * 2;
+                ulong bufferSize = (ulong)Unsafe.SizeOf<int>() * Parameter.BufferStorageSize + (ulong)Unsafe.SizeOf<AuxiliaryBufferHeader>();
 
                 bool sendBufferUnmapped = !mapper.TryAttachBuffer(out updateErrorInfo, ref WorkBuffers[0], Parameter.SendBufferInfoAddress, bufferSize);
                 bool returnBufferUnmapped = !mapper.TryAttachBuffer(out updateErrorInfo, ref WorkBuffers[1], Parameter.ReturnBufferInfoAddress, bufferSize);
@@ -85,11 +85,11 @@ namespace Ryujinx.Audio.Renderer.Server.Effect
                     DspAddress sendDspAddress = WorkBuffers[0].GetReference(false);
                     DspAddress returnDspAddress = WorkBuffers[1].GetReference(false);
 
-                    State.SendBufferInfo = sendDspAddress + (uint)Unsafe.SizeOf<AuxiliaryBufferHeader>();
-                    State.SendBufferInfoBase = sendDspAddress + (uint)Unsafe.SizeOf<AuxiliaryBufferHeader>() * 2;
+                    State.SendBufferInfo = sendDspAddress + (uint)Unsafe.SizeOf<AuxiliaryBufferInfo>();
+                    State.SendBufferInfoBase = sendDspAddress + (uint)Unsafe.SizeOf<AuxiliaryBufferHeader>();
 
-                    State.ReturnBufferInfo = returnDspAddress + (uint)Unsafe.SizeOf<AuxiliaryBufferHeader>();
-                    State.ReturnBufferInfoBase = returnDspAddress + (uint)Unsafe.SizeOf<AuxiliaryBufferHeader>() * 2;
+                    State.ReturnBufferInfo = returnDspAddress + (uint)Unsafe.SizeOf<AuxiliaryBufferInfo>();
+                    State.ReturnBufferInfoBase = returnDspAddress + (uint)Unsafe.SizeOf<AuxiliaryBufferHeader>();
                 }
             }
         }

@@ -48,6 +48,12 @@ namespace Ryujinx.Graphics.Gpu.Shader
         public bool QueryHostSupportsNonConstantTextureOffset() => _context.Capabilities.SupportsNonConstantTextureOffset;
 
         /// <summary>
+        /// Queries host GPU shader ballot support.
+        /// </summary>
+        /// <returns>True if the GPU and driver supports shader ballot, false otherwise</returns>
+        public bool QueryHostSupportsShaderBallot() => _context.Capabilities.SupportsShaderBallot;
+
+        /// <summary>
         /// Queries host GPU texture shadow LOD support.
         /// </summary>
         /// <returns>True if the GPU and driver supports texture shadow LOD, false otherwise</returns>
@@ -119,14 +125,14 @@ namespace Ryujinx.Graphics.Gpu.Shader
         }
 
         /// <summary>
-        /// Queries texture target information.
+        /// Queries sampler type information.
         /// </summary>
         /// <param name="handle">Texture handle</param>
         /// <param name="cbufSlot">Constant buffer slot for the texture handle</param>
-        /// <returns>True if the texture is a buffer texture, false otherwise</returns>
-        public bool QueryIsTextureBuffer(int handle, int cbufSlot = -1)
+        /// <returns>The sampler type value for the given handle</returns>
+        public SamplerType QuerySamplerType(int handle, int cbufSlot = -1)
         {
-            return GetTextureDescriptor(handle, cbufSlot).UnpackTextureTarget() == TextureTarget.TextureBuffer;
+            return GetTextureDescriptor(handle, cbufSlot).UnpackTextureTarget().ConvertSamplerType();
         }
 
         /// <summary>

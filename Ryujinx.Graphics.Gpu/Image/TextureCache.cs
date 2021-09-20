@@ -100,6 +100,18 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Determines if any texture exists within the target memory range.
+        /// </summary>
+        /// <param name="memoryManager">The GPU memory manager</param>
+        /// <param name="gpuVa">GPU virtual address to search for textures</param>
+        /// <param name="size">The size of the range</param>
+        /// <returns>True if any texture exists in the range, false otherwise</returns>
+        public bool IsTextureInRange(MemoryManager memoryManager, ulong gpuVa, ulong size)
+        {
+            return _textures.FindOverlaps(memoryManager.GetPhysicalRegions(gpuVa, size), ref _textureOverlaps) != 0;
+        }
+
+        /// <summary>
         /// Determines if a given texture is "safe" for upscaling from its info.
         /// Note that this is different from being compatible - this elilinates targets that would have detrimental effects when scaled.
         /// </summary>
@@ -152,6 +164,17 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Lifts the texture to the top of the AutoDeleteCache. This is primarily used to enforce that
+        /// data written to a target will be flushed to memory should the texture be deleted, but also
+        /// keeps rendered textures alive without a pool reference.
+        /// </summary>
+        /// <param name="texture">Texture to lift</param>
+        public void Lift(Texture texture)
+        {
+            _cache.Lift(texture);
         }
 
         /// <summary>
@@ -442,14 +465,6 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (texture != null)
             {
-                if (!isSamplerTexture)
-                {
-                    // If not a sampler texture, it is managed by the auto delete
-                    // cache, ensure that it is on the "top" of the list to avoid
-                    // deletion.
-                    _cache.Lift(texture);
-                }
-
                 ChangeSizeIfNeeded(info, texture, isSamplerTexture, sizeHint);
 
                 texture.SynchronizeMemory();
@@ -633,6 +648,13 @@ namespace Ryujinx.Graphics.Gpu.Image
                             if (info.GobBlocksInZ > 1 && info.GobBlocksInZ == overlap.Info.GobBlocksInZ)
                             {
                                 // Allow overlapping slices of 3D textures. Could be improved in future by making sure the textures don't overlap.
+                                continue;
+                            }
+
+                            if (!texture.DataOverlaps(overlap))
+                            {
+                                // Allow textures to overlap if their data does not actually overlap.
+                                // This typically happens when mip level subranges of a layered texture are used. (each texture fills the gaps of the others)
                                 continue;
                             }
 
@@ -842,7 +864,6 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 if (match)
                 {
-                    _cache.Lift(texture);
                     return texture;
                 }
             }

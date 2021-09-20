@@ -215,6 +215,28 @@ namespace Ryujinx.Audio.Renderer.Server
         }
 
         /// <summary>
+        /// Stop sending commands to the <see cref="AudioProcessor"/> without stopping the worker thread.
+        /// </summary>
+        public void StopSendingCommands()
+        {
+            lock (_sessionLock)
+            {
+                foreach (AudioRenderSystem renderer in _sessions)
+                {
+                    renderer?.Disable();
+                }
+            }
+
+            lock (_audioProcessorLock)
+            {
+                if (_isRunning)
+                {
+                    StopLocked();
+                }
+            }
+        }
+
+        /// <summary>
         /// Worker main function. This is used to dispatch audio renderer commands to the <see cref="AudioProcessor"/>.
         /// </summary>
         private void SendCommands()
@@ -226,7 +248,7 @@ namespace Ryujinx.Audio.Renderer.Server
             {
                 lock (_sessionLock)
                 {
-                    foreach(AudioRenderSystem renderer in _sessions)
+                    foreach (AudioRenderSystem renderer in _sessions)
                     {
                         renderer?.SendCommands();
                     }
