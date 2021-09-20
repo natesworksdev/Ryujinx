@@ -52,7 +52,25 @@ namespace Ryujinx.Graphics.Gpu.Synchronization
                         Callback  = callback
                     };
 
-                    _waiters.Add(waiterInformation);
+                    // Compute the target index of the waiter handler in the list to ensure that event callbacks will be called in order.
+                    int targetIndex;
+
+                    for (targetIndex = 0; targetIndex < _waiters.Count; targetIndex++)
+                    {
+                        if (_waiters[targetIndex].Threshold >= waiterInformation.Threshold)
+                        {
+                            break;
+                        }
+                    }
+
+                    if (targetIndex == _waiters.Count)
+                    {
+                        _waiters.Add(waiterInformation);
+                    }
+                    else
+                    {
+                        _waiters.Insert(targetIndex, waiterInformation);
+                    }
 
                     return waiterInformation;
                 }
