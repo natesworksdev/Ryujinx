@@ -2,7 +2,6 @@
 using Ryujinx.Graphics.Device;
 using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.Graphics.Nvdec.Image;
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
@@ -17,8 +16,6 @@ namespace Ryujinx.Graphics.Nvdec
         private long _currentId;
         private ConcurrentDictionary<long, NvdecDecoderContext> _contexts;
         private NvdecDecoderContext _currentContext;
-
-        public event Action<FrameDecodedEventArgs> FrameDecoded;
 
         public NvdecDevice(MemoryManager gmm)
         {
@@ -66,20 +63,15 @@ namespace Ryujinx.Graphics.Nvdec
             switch (codecId)
             {
                 case CodecId.H264:
-                    H264Decoder.Decode(this, _currentContext, _rm, ref _state.State);
+                    H264Decoder.Decode(_currentContext, _rm, ref _state.State);
                     break;
                 case CodecId.Vp9:
-                    Vp9Decoder.Decode(this, _rm, ref _state.State);
+                    Vp9Decoder.Decode(_rm, ref _state.State);
                     break;
                 default:
                     Logger.Error?.Print(LogClass.Nvdec, $"Unsupported codec \"{codecId}\".");
                     break;
             }
-        }
-
-        internal void OnFrameDecoded(CodecId codecId, uint lumaOffset, uint chromaOffset)
-        {
-            FrameDecoded?.Invoke(new FrameDecodedEventArgs(codecId, lumaOffset, chromaOffset));
         }
     }
 }

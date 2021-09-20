@@ -550,6 +550,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
         public override void Close()
         {
+            _host1xContext.Host1x.DestroyContext(_contextId);
             Channel.Dispose();
         }
 

@@ -102,23 +102,29 @@ namespace Ryujinx.Graphics.Nvdec.H264
 
         public int DecodeFrame(Surface output, ReadOnlySpan<byte> bitstream)
         {
-            // Ensure the packet is clean before proceeding
-            ffmpeg.av_packet_unref(_packet);
+            int result;
 
-            fixed (byte* ptr = bitstream)
+            if (bitstream.Length != 0)
             {
-                _packet->data = ptr;
-                _packet->size = bitstream.Length;
+                // Ensure the packet is clean before proceeding
+                ffmpeg.av_packet_unref(_packet);
 
-                int rc = ffmpeg.avcodec_send_packet(_context, _packet);
-
-                if (rc != 0)
+                fixed (byte* ptr = bitstream)
                 {
-                    return rc;
+                    _packet->data = ptr;
+                    _packet->size = bitstream.Length;
+
+                    result = ffmpeg.avcodec_send_packet(_context, _packet);
+                    if (result != 0)
+                    {
+                        return result;
+                    }
                 }
             }
 
-            return ffmpeg.avcodec_receive_frame(_context, output.Frame);
+            result = ffmpeg.avcodec_receive_frame(_context, output.Frame);
+            output.FrameNumber = output.Frame->coded_picture_number;
+            return result;
         }
 
         public void Dispose()

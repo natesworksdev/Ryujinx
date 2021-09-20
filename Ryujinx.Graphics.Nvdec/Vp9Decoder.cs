@@ -15,7 +15,7 @@ namespace Ryujinx.Graphics.Nvdec
     {
         private static Decoder _decoder = new Decoder();
 
-        public unsafe static void Decode(NvdecDevice device, ResourceManager rm, ref NvdecRegisters state)
+        public unsafe static void Decode(ResourceManager rm, ref NvdecRegisters state)
         {
             PictureInfo pictureInfo = rm.Gmm.DeviceRead<PictureInfo>(state.SetPictureInfoOffset);
             EntropyProbs entropy = rm.Gmm.DeviceRead<EntropyProbs>(state.SetVp9EntropyProbsOffset);
@@ -60,8 +60,6 @@ namespace Ryujinx.Graphics.Nvdec
             if (_decoder.Decode(ref info, currentSurface, bitstream, mvsIn, mvsOut))
             {
                 SurfaceWriter.Write(rm.Gmm, currentSurface, lumaOffset, chromaOffset);
-
-                device.OnFrameDecoded(CodecId.Vp9, lumaOffset, chromaOffset);
             }
 
             WriteBackwardUpdates(rm.Gmm, state.SetVp9BackwardUpdatesOffset, ref info.BackwardUpdateCounts);
