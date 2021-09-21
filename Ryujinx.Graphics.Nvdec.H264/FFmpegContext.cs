@@ -16,8 +16,6 @@ namespace Ryujinx.Graphics.Nvdec.H264
 
         public FFmpegContext()
         {
-
-
             _codec = ffmpeg.avcodec_find_decoder(AVCodecID.AV_CODEC_ID_H264);
             _context = ffmpeg.avcodec_alloc_context3(_codec);
 
