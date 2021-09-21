@@ -312,7 +312,7 @@ namespace Ryujinx.Ui.Windows
             _resScaleText.Visible                = _resScaleCombo.ActiveId == "-1";
             _graphicsShadersDumpPath.Buffer.Text = ConfigurationState.Instance.Graphics.ShadersDumpPath;
             _fsLogSpinAdjustment.Value           = ConfigurationState.Instance.System.FsGlobalAccessLogMode;
-            _fpsPrecisionSpinAdjustment.Value    = ConfigurationState.Instance.System.fpsPrecision;
+            _fpsPrecisionSpinAdjustment.Value    = ConfigurationState.Instance.Ui.fpsPrecision;
             _systemTimeOffset                    = ConfigurationState.Instance.System.SystemTimeOffset;
 
             _gameDirsBox.AppendColumn("", new CellRendererText(), "text", 0);
@@ -495,7 +495,7 @@ namespace Ryujinx.Ui.Windows
             ConfigurationState.Instance.Graphics.ShadersDumpPath.Value         = _graphicsShadersDumpPath.Buffer.Text;
             ConfigurationState.Instance.Ui.GameDirs.Value                      = gameDirs;
             ConfigurationState.Instance.System.FsGlobalAccessLogMode.Value     = (int)_fsLogSpinAdjustment.Value;
-            ConfigurationState.Instance.System.fpsPrecision.Value              = (int)_fpsPrecisionSpinAdjustment.Value;
+            ConfigurationState.Instance.Ui.fpsPrecision.Value                  = (int)_fpsPrecisionSpinAdjustment.Value;
             ConfigurationState.Instance.Graphics.MaxAnisotropy.Value           = float.Parse(_anisotropy.ActiveId, CultureInfo.InvariantCulture);
             ConfigurationState.Instance.Graphics.AspectRatio.Value             = Enum.Parse<AspectRatio>(_aspectRatio.ActiveId);
             ConfigurationState.Instance.Graphics.BackendThreading.Value        = backendThreading;

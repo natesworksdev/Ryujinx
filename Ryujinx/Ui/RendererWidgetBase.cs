@@ -417,9 +417,9 @@ namespace Ryujinx.Ui
                     if (_ticks >= _ticksPerFrame)
                     {
                         string dockedMode = ConfigurationState.Instance.System.EnableDockedMode ? "Docked" : "Handheld";
-                        float scale = Graphics.Gpu.GraphicsConfig.ResScale;
-                        int precision = ConfigurationState.Instance.System.fpsPrecision;
-                        double fps = Math.Round(Device.Statistics.GetGameFrameRate(), precision);
+                        float scale       = Graphics.Gpu.GraphicsConfig.ResScale;
+                        int precision     = ConfigurationState.Instance.Ui.fpsPrecision;
+                        double fps        = Math.Round(Device.Statistics.GetGameFrameRate(), precision);
                         
                         if (scale != 1)
                         {

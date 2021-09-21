@@ -88,14 +88,21 @@ namespace Ryujinx.Configuration
             /// </summary>
             public ReactiveObject<bool> StartFullscreen { get; private set; }
 
+            // <summary>
+            /// Integer scale to adjust FPS monitor displayed value. Values from 0-15
+            /// </summary>
+            public ReactiveObject<int> fpsPrecision { get; private set; }
+
             public UiSection()
             {
-                GuiColumns        = new Columns();
-                ColumnSort        = new ColumnSortSettings();
-                GameDirs          = new ReactiveObject<List<string>>();
-                EnableCustomTheme = new ReactiveObject<bool>();
-                CustomThemePath   = new ReactiveObject<string>();
-                StartFullscreen   = new ReactiveObject<bool>();
+                GuiColumns         = new Columns();
+                ColumnSort         = new ColumnSortSettings();
+                GameDirs           = new ReactiveObject<List<string>>();
+                EnableCustomTheme  = new ReactiveObject<bool>();
+                CustomThemePath    = new ReactiveObject<string>();
+                StartFullscreen    = new ReactiveObject<bool>();
+                fpsPrecision       = new ReactiveObject<int>();
+                fpsPrecision.Event += static (sender, e) => LogValueChange(sender, e, nameof(fpsPrecision));
             }
         }
 
@@ -216,11 +223,6 @@ namespace Ryujinx.Configuration
             public ReactiveObject<int> FsGlobalAccessLogMode { get; private set; }
 
             /// <summary>
-            /// Integer scale to adjust FPS monitor displayed value. Values from 0-15
-            /// </summary>
-            public ReactiveObject<int> fpsPrecision { get; private set; }
-
-            /// <summary>
             /// The selected audio backend
             /// </summary>
             public ReactiveObject<AudioBackend> AudioBackend { get; private set; }
@@ -255,8 +257,6 @@ namespace Ryujinx.Configuration
                 FsGlobalAccessLogMode         = new ReactiveObject<int>();
                 FsGlobalAccessLogMode.Event   += static (sender, e) => LogValueChange(sender, e, nameof(FsGlobalAccessLogMode));
                 AudioBackend                  = new ReactiveObject<AudioBackend>();
-                fpsPrecision                  = new ReactiveObject<int>();
-                fpsPrecision.Event            += static (sender, e) => LogValueChange(sender, e, nameof(fpsPrecision));
                 AudioBackend                  = new ReactiveObject<AudioBackend>();
                 AudioBackend.Event            += static (sender, e) => LogValueChange(sender, e, nameof(AudioBackend));
                 MemoryManagerMode             = new ReactiveObject<MemoryManagerMode>();
@@ -467,7 +467,6 @@ namespace Ryujinx.Configuration
                 EnablePtc                 = System.EnablePtc,
                 EnableFsIntegrityChecks   = System.EnableFsIntegrityChecks,
                 FsGlobalAccessLogMode     = System.FsGlobalAccessLogMode,
-                fpsPrecision              = System.fpsPrecision,
                 AudioBackend              = System.AudioBackend,
                 MemoryManagerMode         = System.MemoryManagerMode,
                 ExpandRam                 = System.ExpandRam,
@@ -494,6 +493,7 @@ namespace Ryujinx.Configuration
                 EnableCustomTheme         = Ui.EnableCustomTheme,
                 CustomThemePath           = Ui.CustomThemePath,
                 StartFullscreen           = Ui.StartFullscreen,
+                fpsPrecision              = Ui.fpsPrecision,
                 EnableKeyboard            = Hid.EnableKeyboard,
                 EnableMouse               = Hid.EnableMouse,
                 Hotkeys                   = Hid.Hotkeys,
@@ -537,7 +537,7 @@ namespace Ryujinx.Configuration
             System.EnablePtc.Value                 = true;
             System.EnableFsIntegrityChecks.Value   = true;
             System.FsGlobalAccessLogMode.Value     = 0;
-            System.fpsPrecision.Value              = 2;
+            Ui.fpsPrecision.Value                  = 2;
             System.AudioBackend.Value              = AudioBackend.SDL2;
             System.MemoryManagerMode.Value         = MemoryManagerMode.HostMappedUnsafe;
             System.ExpandRam.Value                 = false;
@@ -978,7 +978,7 @@ namespace Ryujinx.Configuration
             System.EnablePtc.Value                 = configurationFileFormat.EnablePtc;
             System.EnableFsIntegrityChecks.Value   = configurationFileFormat.EnableFsIntegrityChecks;
             System.FsGlobalAccessLogMode.Value     = configurationFileFormat.FsGlobalAccessLogMode;
-            System.fpsPrecision.Value              = configurationFileFormat.fpsPrecision;
+            Ui.fpsPrecision.Value                  = configurationFileFormat.fpsPrecision;
             System.AudioBackend.Value              = configurationFileFormat.AudioBackend;
             System.MemoryManagerMode.Value         = configurationFileFormat.MemoryManagerMode;
             System.ExpandRam.Value                 = configurationFileFormat.ExpandRam;
