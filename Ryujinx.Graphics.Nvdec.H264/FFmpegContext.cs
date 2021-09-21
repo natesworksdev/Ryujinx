@@ -9,6 +9,7 @@ namespace Ryujinx.Graphics.Nvdec.H264
 {
     unsafe class FFmpegContext : IDisposable
     {
+        private readonly AVCodec_decode _h264Decode;
         private static readonly av_log_set_callback_callback _logFunc;
         private readonly AVCodec* _codec;
         private AVPacket* _packet;
@@ -18,10 +19,13 @@ namespace Ryujinx.Graphics.Nvdec.H264
         {
             _codec = ffmpeg.avcodec_find_decoder(AVCodecID.AV_CODEC_ID_H264);
             _context = ffmpeg.avcodec_alloc_context3(_codec);
+            _context->debug |= ffmpeg.FF_DEBUG_MMCO;
 
             ffmpeg.avcodec_open2(_context, _codec, null);
 
             _packet = ffmpeg.av_packet_alloc();
+
+            _h264Decode = Marshal.GetDelegateForFunctionPointer<AVCodec_decode>(_codec->decode.Pointer);
         }
 
         static FFmpegContext()
@@ -103,28 +107,39 @@ namespace Ryujinx.Graphics.Nvdec.H264
         public int DecodeFrame(Surface output, ReadOnlySpan<byte> bitstream)
         {
             int result;
+            int gotFrame;
 
-            if (bitstream.Length != 0)
+            fixed (byte* ptr = bitstream)
             {
-                // Ensure the packet is clean before proceeding
-                ffmpeg.av_packet_unref(_packet);
-
-                fixed (byte* ptr = bitstream)
-                {
-                    _packet->data = ptr;
-                    _packet->size = bitstream.Length;
-
-                    result = ffmpeg.avcodec_send_packet(_context, _packet);
-                    if (result != 0)
-                    {
-                        return result;
-                    }
-                }
+                _packet->data = ptr;
+                _packet->size = bitstream.Length;
+                result = _h264Decode(_context, output.Frame, &gotFrame, _packet);
             }
 
-            result = ffmpeg.avcodec_receive_frame(_context, output.Frame);
-            output.FrameNumber = output.Frame->coded_picture_number;
-            return result;
+            if (gotFrame == 0)
+            {
+                ffmpeg.av_frame_unref(output.Frame);
+
+                // If the frame was not delivered, it was probably delayed.
+                // Get the next delayed frame by passing a 0 length packet.
+                _packet->data = null;
+                _packet->size = 0;
+                result = _h264Decode(_context, output.Frame, &gotFrame, _packet);
+
+                // We need to set B frames to 0 as we already consumed all delayed frames.
+                // This prevents the decoder from trying to return a delayed frame next time.
+                _context->has_b_frames = 0;
+            }
+
+            ffmpeg.av_packet_unref(_packet);
+
+            if (gotFrame == 0)
+            {
+                ffmpeg.av_frame_unref(output.Frame);
+                return -1;
+            }
+
+            return result < 0 ? result : 0;
         }
 
         public void Dispose()

@@ -40,6 +40,8 @@ namespace Ryujinx.Graphics.Nvdec
             {
                 context.Dispose();
             }
+
+            _rm.Cache.Trim();
         }
 
         public void BindContext(long id)

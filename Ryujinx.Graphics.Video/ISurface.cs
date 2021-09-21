@@ -14,6 +14,5 @@ namespace Ryujinx.Graphics.Video
         int UvWidth { get; }
         int UvHeight { get; }
         int UvStride { get; }
-        int FrameNumber { get; }
     }
 }

@@ -21,7 +21,6 @@ namespace Ryujinx.Graphics.Nvdec.H264
         public int UvWidth => (Frame->width + 1) >> 1;
         public int UvHeight => (Frame->height + 1) >> 1;
         public int UvStride => Frame->linesize[1];
-        public int FrameNumber { get; set; }
 
         public Surface(int width, int height)
         {
