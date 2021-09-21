@@ -6,7 +6,7 @@ namespace Ryujinx.Graphics.Nvdec.Types.H264
     {
 #pragma warning disable CS0649
         public uint Flags;
-        public Array2<uint> FIeldOrderCnt;
+        public Array2<uint> FieldOrderCnt;
         public uint FrameNum;
 #pragma warning restore CS0649
 
