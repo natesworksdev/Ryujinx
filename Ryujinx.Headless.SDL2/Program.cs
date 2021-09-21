@@ -462,12 +462,12 @@ namespace Ryujinx.Headless.SDL2
                                                                   (bool)options.EnablePtc,
                                                                   (bool)options.EnableFsIntegrityChecks ? LibHac.FsSystem.IntegrityCheckLevel.ErrorOnInvalid : LibHac.FsSystem.IntegrityCheckLevel.None,
                                                                   options.FsGlobalAccessLogMode,
-                                                                  options.fpsPrecision,
                                                                   options.SystemTimeOffset,
                                                                   options.SystemTimeZone,
                                                                   options.MemoryManagerMode,
                                                                   (bool)options.IgnoreMissingServices,
-                                                                  options.AspectRatio);
+                                                                  options.AspectRatio,
+                                                                  options.fpsPrecision);
 
             return new Switch(configuration);
         }

@@ -164,12 +164,12 @@ namespace Ryujinx.HLE
                                 bool                   enablePtc,
                                 IntegrityCheckLevel    fsIntegrityCheckLevel,
                                 int                    fsGlobalAccessLogMode,
-                                int                    fpsPrecision,
                                 long                   systemTimeOffset,
                                 string                 timeZone,
                                 MemoryManagerMode      memoryManagerMode,
                                 bool                   ignoreMissingServices,
-                                AspectRatio            aspectRatio)
+                                AspectRatio            aspectRatio,
+                                int                    fpsPrecision)
         {
             VirtualFileSystem      = virtualFileSystem;
             LibHacHorizonManager   = libHacHorizonManager;

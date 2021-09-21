@@ -559,12 +559,12 @@ namespace Ryujinx.Ui
                                                                           ConfigurationState.Instance.System.EnablePtc,
                                                                           fsIntegrityCheckLevel,
                                                                           ConfigurationState.Instance.System.FsGlobalAccessLogMode,
-                                                                          ConfigurationState.Instance.Ui.fpsPrecision,
                                                                           ConfigurationState.Instance.System.SystemTimeOffset,
                                                                           ConfigurationState.Instance.System.TimeZone,
                                                                           ConfigurationState.Instance.System.MemoryManagerMode,
                                                                           ConfigurationState.Instance.System.IgnoreMissingServices,
-                                                                          ConfigurationState.Instance.Graphics.AspectRatio);
+                                                                          ConfigurationState.Instance.Graphics.AspectRatio,
+                                                                          ConfigurationState.Instance.Ui.fpsPrecision);
 
             _emulationContext = new HLE.Switch(configuration);
         }
