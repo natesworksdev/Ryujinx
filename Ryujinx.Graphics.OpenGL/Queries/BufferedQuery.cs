@@ -17,10 +17,19 @@ namespace Ryujinx.Graphics.OpenGL.Queries
         private IntPtr _bufferMap;
         private QueryTarget _type;
 
+        private unsafe int Create(QueryTarget type)
+        {
+            int handle;
+
+            GL.CreateQueries(type, 1, &handle);
+
+            return handle;
+        }
+
         public BufferedQuery(QueryTarget type)
         {
             _buffer = Buffer.Create().ToInt32();
-            Query = GL.GenQuery();
+            Query = Create(type);
             _type = type;
 
             unsafe
