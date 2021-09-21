@@ -31,6 +31,7 @@ namespace Ryujinx.Graphics.Nvdec
         {
             long id = Interlocked.Increment(ref _currentId);
             _contexts.TryAdd(id, new NvdecDecoderContext());
+
             return id;
         }
 
