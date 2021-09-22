@@ -444,7 +444,7 @@ namespace Ryujinx.Ui
                             
                             case 1:
                                 fpsString       = fps.ToString("00 FPS");
-                                frameTimeString = Device.Statistics.GetGameFrameTime().ToString("(00.00 ms)");
+                                frameTimeString = frameTime.ToString("(00.00 ms)");
                                 if (Double.IsInfinity(frameTime))
                                 {
                                     frameTimeString = "(NaN ms)";
@@ -453,7 +453,7 @@ namespace Ryujinx.Ui
 
                             case 2:
                                 fpsString       = fps.ToString("00 FPS");
-                                frameTimeString = Device.Statistics.GetGameFrameTime().ToString("(00 ms)");
+                                frameTimeString = frameTime.ToString("(00 ms)");
                                 if (Double.IsInfinity(frameTime))
                                 {
                                     frameTimeString = "(NaN ms)";
