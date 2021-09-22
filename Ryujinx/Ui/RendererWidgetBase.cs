@@ -54,6 +54,10 @@ namespace Ryujinx.Ui
 
         private long _ticks = 0;
 
+        public string fps;
+
+        public string frameTime;
+
         private readonly Stopwatch _chrono;
 
         private KeyboardHotkeyState _prevHotkeyState;
@@ -419,18 +423,45 @@ namespace Ryujinx.Ui
                         string dockedMode = ConfigurationState.Instance.System.EnableDockedMode ? "Docked" : "Handheld";
                         float scale       = Graphics.Gpu.GraphicsConfig.ResScale;
                         int precision     = ConfigurationState.Instance.Ui.fpsPrecision;
-                        double fps        = Math.Round(Device.Statistics.GetGameFrameRate(), precision);
                         
                         if (scale != 1)
                         {
                             dockedMode += $" ({scale}x)";
                         }
 
+                        switch (precision)
+                        {
+                            case 0:
+                                fps = Device.Statistics.GetGameFrameRate().ToString("00.00 FPS");
+                                frameTime = Device.Statistics.GetGameFrameTime().ToString("(00.00 ms)");
+                                break;
+                            
+                            case 1:
+                                fps = Device.Statistics.GetGameFrameRate().ToString("00 FPS");
+                                frameTime = Device.Statistics.GetGameFrameTime().ToString("(00.00 ms)");
+                                break;
+
+                            case 2:
+                                fps = Device.Statistics.GetGameFrameRate().ToString("00 FPS");
+                                frameTime = Device.Statistics.GetGameFrameTime().ToString("(00 ms)");
+                                break;
+                            
+                            case 3:
+                                fps = Device.Statistics.GetGameFrameRate().ToString("00.00 FPS");
+                                frameTime = "";
+                                break;
+                            
+                            case 4:
+                                fps = Device.Statistics.GetGameFrameRate().ToString("00 FPS");
+                                frameTime = "";
+                                break;
+                        }
+
                         StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
                             Device.EnableDeviceVsync,
                             dockedMode,
                             ConfigurationState.Instance.Graphics.AspectRatio.Value.ToText(),
-                            $"Game: {fps} FPS ({Device.Statistics.GetGameFrameTime():00.00} ms)",
+                            $"Game: {fps} {frameTime}",
                             $"FIFO: {Device.Statistics.GetFifoPercent():0.00} %",
                             $"GPU: {_gpuVendorName}"));
 

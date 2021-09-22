@@ -89,7 +89,7 @@ namespace Ryujinx.Configuration
             public ReactiveObject<bool> StartFullscreen { get; private set; }
 
             // <summary>
-            /// Integer scale to adjust FPS monitor displayed value. Values from 0-15
+            /// Integer scale to adjust frame metric displayed value. Values from 0-4
             /// </summary>
             public ReactiveObject<int> fpsPrecision { get; private set; }
 
@@ -537,7 +537,7 @@ namespace Ryujinx.Configuration
             System.EnablePtc.Value                 = true;
             System.EnableFsIntegrityChecks.Value   = true;
             System.FsGlobalAccessLogMode.Value     = 0;
-            Ui.fpsPrecision.Value                  = 2;
+            Ui.fpsPrecision.Value                  = 0;
             System.AudioBackend.Value              = AudioBackend.SDL2;
             System.MemoryManagerMode.Value         = MemoryManagerMode.HostMappedUnsafe;
             System.ExpandRam.Value                 = false;
@@ -943,7 +943,7 @@ namespace Ryujinx.Configuration
             {
                 Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 33.");
 
-                configurationFileFormat.fpsPrecision = 2;
+                configurationFileFormat.fpsPrecision = 0;
 
                 configurationFileUpdated = true;
             }

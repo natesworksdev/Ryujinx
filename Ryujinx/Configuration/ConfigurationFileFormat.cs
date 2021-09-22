@@ -175,7 +175,7 @@ namespace Ryujinx.Configuration
         public int FsGlobalAccessLogMode { get; set; }
 
         /// <summary>
-        /// Integer scale to adjust FPS monitor displayed value. Values from 0-15
+        /// Integer scale to adjust frame metric displayed value. Values from 0-4
         /// </summary>
         public int fpsPrecision { get; set; }
 

@@ -42,7 +42,7 @@ namespace Ryujinx.Ui.Windows
         [GUI] CheckButton     _guestLogToggle;
         [GUI] CheckButton     _fsAccessLogToggle;
         [GUI] Adjustment      _fsLogSpinAdjustment;
-        [GUI] Adjustment      _fpsPrecisionSpinAdjustment;
+        [GUI] ComboBoxText    _fpsPrecisionCombo;
         [GUI] ComboBoxText    _graphicsDebugLevel;
         [GUI] CheckButton     _dockedModeToggle;
         [GUI] CheckButton     _discordToggle;
@@ -306,13 +306,13 @@ namespace Ryujinx.Ui.Windows
             _resScaleCombo.SetActiveId(ConfigurationState.Instance.Graphics.ResScale.Value.ToString());
             _anisotropy.SetActiveId(ConfigurationState.Instance.Graphics.MaxAnisotropy.Value.ToString());
             _aspectRatio.SetActiveId(((int)ConfigurationState.Instance.Graphics.AspectRatio.Value).ToString());
+            _fpsPrecisionCombo.SetActiveId(ConfigurationState.Instance.Ui.fpsPrecision.Value.ToString());
 
             _custThemePath.Buffer.Text           = ConfigurationState.Instance.Ui.CustomThemePath;
             _resScaleText.Buffer.Text            = ConfigurationState.Instance.Graphics.ResScaleCustom.Value.ToString();
             _resScaleText.Visible                = _resScaleCombo.ActiveId == "-1";
             _graphicsShadersDumpPath.Buffer.Text = ConfigurationState.Instance.Graphics.ShadersDumpPath;
             _fsLogSpinAdjustment.Value           = ConfigurationState.Instance.System.FsGlobalAccessLogMode;
-            _fpsPrecisionSpinAdjustment.Value    = ConfigurationState.Instance.Ui.fpsPrecision;
             _systemTimeOffset                    = ConfigurationState.Instance.System.SystemTimeOffset;
 
             _gameDirsBox.AppendColumn("", new CellRendererText(), "text", 0);
@@ -495,7 +495,7 @@ namespace Ryujinx.Ui.Windows
             ConfigurationState.Instance.Graphics.ShadersDumpPath.Value         = _graphicsShadersDumpPath.Buffer.Text;
             ConfigurationState.Instance.Ui.GameDirs.Value                      = gameDirs;
             ConfigurationState.Instance.System.FsGlobalAccessLogMode.Value     = (int)_fsLogSpinAdjustment.Value;
-            ConfigurationState.Instance.Ui.fpsPrecision.Value                  = (int)_fpsPrecisionSpinAdjustment.Value;
+            ConfigurationState.Instance.Ui.fpsPrecision.Value                  = int.Parse(_fpsPrecisionCombo.ActiveId);
             ConfigurationState.Instance.Graphics.MaxAnisotropy.Value           = float.Parse(_anisotropy.ActiveId, CultureInfo.InvariantCulture);
             ConfigurationState.Instance.Graphics.AspectRatio.Value             = Enum.Parse<AspectRatio>(_aspectRatio.ActiveId);
             ConfigurationState.Instance.Graphics.BackendThreading.Value        = backendThreading;
