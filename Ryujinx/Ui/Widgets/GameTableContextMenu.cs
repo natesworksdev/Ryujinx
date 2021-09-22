@@ -454,6 +454,42 @@ namespace Ryujinx.Ui.Widgets
             OpenSaveDir(saveDataFilter);
         }
 
+        private void PurgeSave_Clicked(object sender, EventArgs args)
+        {
+            SaveDataFilter saveDataFilter = new SaveDataFilter();
+            saveDataFilter.SetProgramId(new ProgramId(_titleId));
+
+            if (!TryFindSaveData(_titleName, _titleId, _controlData, saveDataFilter, out ulong saveDataId))
+            {
+                return;
+            }
+            MessageDialog warningDialog = GtkDialog.CreateConfirmationDialog("Warning", $"You are about to delete the save for :\n\n<b>{_titleName}</b>\n\nAre you sure you want to proceed?");
+            DirectoryInfo saveDir = new DirectoryInfo(System.IO.Path.Combine(_virtualFileSystem.GetNandPath(), $"user/save/{saveDataId:x16}"));
+            List<DirectoryInfo> saveDirectory = new List<DirectoryInfo>();
+
+            if (saveDir.Exists)
+            {
+                saveDirectory.AddRange(saveDir.EnumerateDirectories("*"));
+            }
+
+            if (saveDirectory.Count > 0 && warningDialog.Run() == (int)ResponseType.Yes)
+            {
+                foreach (DirectoryInfo directory in saveDirectory)
+                {
+                    try
+                    {
+                        directory.Delete(true);
+                    }
+                    catch (Exception e)
+                    {
+                        GtkDialog.CreateErrorDialog($"Error purging saves at {directory.Name}: {e}");
+                    }
+                }
+            }
+
+            warningDialog.Dispose();
+        }
+
         private void ManageTitleUpdates_Clicked(object sender, EventArgs args)
         {
             new TitleUpdateWindow(_parent, _virtualFileSystem, _titleIdText, _titleName).Show();

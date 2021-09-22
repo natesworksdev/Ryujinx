@@ -7,6 +7,7 @@ namespace Ryujinx.Ui.Widgets
         private MenuItem _openSaveUserDirMenuItem;
         private MenuItem _openSaveDeviceDirMenuItem;
         private MenuItem _openSaveBcatDirMenuItem;
+        private MenuItem _purgeSaveMenuItem;
         private MenuItem _manageTitleUpdatesMenuItem;
         private MenuItem _manageDlcMenuItem;
         private MenuItem _openTitleModDirMenuItem;
@@ -50,6 +51,15 @@ namespace Ryujinx.Ui.Widgets
                 TooltipText = "Open the directory which contains Application's BCAT Saves."
             };
             _openSaveBcatDirMenuItem.Activated += OpenSaveBcatDir_Clicked;
+            
+            //
+            // _purgeSaveMenuItem
+            //
+            _purgeSaveMenuItem = new MenuItem("Delete Save File")
+            {
+                TooltipText = "Delete the Application's Save file (if it exists)."
+            };
+            _purgeSaveMenuItem.Activated += PurgeSave_Clicked;
 
             //
             // _manageTitleUpdatesMenuItem
@@ -184,6 +194,7 @@ namespace Ryujinx.Ui.Widgets
             Add(_openSaveUserDirMenuItem);
             Add(_openSaveDeviceDirMenuItem);
             Add(_openSaveBcatDirMenuItem);
+            Add(_purgeSaveMenuItem);
             Add(new SeparatorMenuItem());
             Add(_manageTitleUpdatesMenuItem);
             Add(_manageDlcMenuItem);
