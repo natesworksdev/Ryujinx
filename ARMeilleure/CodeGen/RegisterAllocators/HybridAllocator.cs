@@ -3,6 +3,7 @@ using ARMeilleure.Translation;
 using System;
 using System.Diagnostics;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
 using static ARMeilleure.IntermediateRepresentation.Operation.Factory;
 
@@ -10,9 +11,6 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 {
     class HybridAllocator : IRegisterAllocator
     {
-        private const int RegistersCount = 16;
-        private const int MaxIROperands  = 4;
-
         private struct BlockInfo
         {
             public bool HasCall { get; }
@@ -74,6 +72,38 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             }
         }
 
+        private const int MaxIROperands = 4;
+        // The "visited" state is stored in the MSB of the local's value.
+        private const ulong VisitedMask = 1ul << 63;
+
+        private BlockInfo[] _blockInfo;
+        private LocalInfo[] _localInfo;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsVisited(Operand local)
+        {
+            Debug.Assert(local.Kind == OperandKind.LocalVariable);
+
+            return (local.GetValueUnsafe() & VisitedMask) != 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void SetVisited(Operand local)
+        {
+            Debug.Assert(local.Kind == OperandKind.LocalVariable);
+
+            local.GetValueUnsafe() |= VisitedMask;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private ref LocalInfo GetLocalInfo(Operand local)
+        {
+            Debug.Assert(local.Kind == OperandKind.LocalVariable);
+            Debug.Assert(IsVisited(local), "Local variable not visited. Used before defined?");
+
+            return ref _localInfo[(uint)local.GetValueUnsafe() - 1];
+        }
+
         public AllocationResult RunPass(ControlFlowGraph cfg, StackAllocator stackAlloc, RegisterMasks regMasks)
         {
             int intUsedRegisters = 0;
@@ -82,39 +112,10 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             int intFreeRegisters = regMasks.IntAvailableRegisters;
             int vecFreeRegisters = regMasks.VecAvailableRegisters;
 
-            var blockInfo = new BlockInfo[cfg.Blocks.Count];
-            var localInfo = new LocalInfo[cfg.Blocks.Count * 3];
+            _blockInfo = new BlockInfo[cfg.Blocks.Count];
+            _localInfo = new LocalInfo[cfg.Blocks.Count * 3];
+
             int localInfoCount = 0;
-
-            void ThrowNotVisited()
-            {
-                throw new InvalidOperationException("Local was not visited yet. Used before defined?");
-            }
-
-            // The "visited" state is stored in the MSB of the local's value.
-            const ulong VisitedMask = 1ul << 63;
-
-            bool IsVisited(Operand local)
-            {
-                return (local.GetValueUnsafe() & VisitedMask) != 0;
-            }
-
-            void SetVisited(Operand local)
-            {
-                local.GetValueUnsafe() |= VisitedMask;
-            }
-
-            ref LocalInfo GetLocalInfo(Operand local)
-            {
-                Debug.Assert(local.Kind == OperandKind.LocalVariable);
-
-                if (!IsVisited(local))
-                {
-                    ThrowNotVisited();
-                }
-
-                return ref localInfo[(uint)local.GetValueUnsafe() - 1];
-            }
 
             for (int index = cfg.PostOrderBlocks.Length - 1; index >= 0; index--)
             {
@@ -132,10 +133,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         hasCall = true;
                     }
 
-                    for (int i = 0; i < node.SourcesCount; i++)
+                    foreach (Operand source in node.SourcesUnsafe)
                     {
-                        Operand source = node.GetSource(i);
-
                         if (source.Kind == OperandKind.LocalVariable)
                         {
                             GetLocalInfo(source).SetBlockIndex(block.Index);
@@ -156,10 +155,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         }
                     }
 
-                    for (int i = 0; i < node.DestinationsCount; i++)
+                    foreach (Operand dest in node.DestinationsUnsafe)
                     {
-                        Operand dest = node.GetDestination(i);
-
                         if (dest.Kind == OperandKind.LocalVariable)
                         {
                             if (IsVisited(dest))
@@ -170,9 +167,9 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                             {
                                 dest.NumberLocal(++localInfoCount);
 
-                                if (localInfoCount > localInfo.Length)
+                                if (localInfoCount > _localInfo.Length)
                                 {
-                                    Array.Resize(ref localInfo, localInfoCount * 2);
+                                    Array.Resize(ref _localInfo, localInfoCount * 2);
                                 }
 
                                 SetVisited(dest);
@@ -193,7 +190,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                     }
                 }
 
-                blockInfo[block.Index] = new BlockInfo(hasCall, intFixedRegisters, vecFixedRegisters);
+                _blockInfo[block.Index] = new BlockInfo(hasCall, intFixedRegisters, vecFixedRegisters);
             }
 
             int sequence = 0;
@@ -202,7 +199,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             {
                 BasicBlock block = cfg.PostOrderBlocks[index];
 
-                BlockInfo blkInfo = blockInfo[block.Index];
+                ref BlockInfo blkInfo = ref _blockInfo[block.Index];
 
                 int intLocalFreeRegisters = intFreeRegisters & ~blkInfo.IntFixedRegisters;
                 int vecLocalFreeRegisters = vecFreeRegisters & ~blkInfo.VecFixedRegisters;
