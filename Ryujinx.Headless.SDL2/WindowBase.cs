@@ -44,8 +44,8 @@ namespace Ryujinx.Headless.SDL2
         private readonly ManualResetEvent _exitEvent;
 
         private long _ticks;
-        private string fps;
-        private string frameTime;
+        private string fpsString;
+        private string frameTimeString;
         private bool _isActive;
         private bool _isStopped;
         private uint _windowId;
@@ -192,6 +192,8 @@ namespace Ryujinx.Headless.SDL2
                         string dockedMode = Device.System.State.DockedMode ? "Docked" : "Handheld";
                         float scale = Graphics.Gpu.GraphicsConfig.ResScale;
                         int precision = HLEConfiguration.fpsPrecision;
+                        double fps = Device.Statistics.GetGameFrameRate();
+                        double frameTime = Device.Statistics.GetGameFrameTime();
 
                         if (scale != 1)
                         {
@@ -201,36 +203,50 @@ namespace Ryujinx.Headless.SDL2
                         switch (precision)
                         {
                             case 0:
-                                fps = Device.Statistics.GetGameFrameRate().ToString("00.00 FPS");
-                                frameTime = Device.Statistics.GetGameFrameTime().ToString("(00.00 ms)");
+                                fpsString       = fps.ToString("00.00 FPS");
+                                frameTimeString = frameTime.ToString("(00.00 ms)");
+                                if (Double.IsInfinity(frameTime))
+                                {
+                                    frameTimeString = "(NaN ms)";
+                                }
                                 break;
                             
                             case 1:
-                                fps = Device.Statistics.GetGameFrameRate().ToString("00 FPS");
-                                frameTime = Device.Statistics.GetGameFrameTime().ToString("(00.00 ms)");
+                                fpsString       = fps.ToString("00 FPS");
+                                frameTimeString = frameTime.ToString("(00.00 ms)");
+                                if (Double.IsInfinity(frameTime))
+                                {
+                                    frameTimeString = "(NaN ms)";
+                                }
                                 break;
 
                             case 2:
-                                fps = Device.Statistics.GetGameFrameRate().ToString("00 FPS");
-                                frameTime = Device.Statistics.GetGameFrameTime().ToString("(00 ms)");
+                                fpsString       = fps.ToString("00 FPS");
+                                frameTimeString = frameTime.ToString("(00 ms)");
+                                if (Double.IsInfinity(frameTime))
+                                {
+                                    frameTimeString = "(NaN ms)";
+                                }
+
                                 break;
                             
                             case 3:
-                                fps = Device.Statistics.GetGameFrameRate().ToString("00.00 FPS");
-                                frameTime = "";
+                                fpsString       = fps.ToString("00.00 FPS");
+                                frameTimeString = "";
                                 break;
                             
                             case 4:
-                                fps = Device.Statistics.GetGameFrameRate().ToString("00 FPS");
-                                frameTime = "";
+                                fpsString       = fps.ToString("00 FPS");
+                                frameTimeString = "";
                                 break;
                         }
+
 
                         StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
                             Device.EnableDeviceVsync,
                             dockedMode,
                             Device.Configuration.AspectRatio.ToText(),
-                            $"Game: {fps} {frameTime}",
+                            $"Game: {fpsString} {frameTimeString}",
                             $"FIFO: {Device.Statistics.GetFifoPercent():0.00} %",
                             $"GPU: {_gpuVendorName}"));
 
