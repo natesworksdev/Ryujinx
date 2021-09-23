@@ -4,11 +4,14 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace ARMeilleure.CodeGen.X86
 {
     class Assembler
     {
+        private const int ReservedBytesForJump = 1;
+
         private const int BadOp       = 0;
         private const int OpModRMBits = 24;
 
@@ -35,7 +38,7 @@ namespace ARMeilleure.CodeGen.X86
             PrefixF2   = 4 << PrefixBit
         }
 
-        private struct InstructionInfo
+        private readonly struct InstructionInfo
         {
             public int OpRMR     { get; }
             public int OpRMImm8  { get; }
@@ -63,11 +66,6 @@ namespace ARMeilleure.CodeGen.X86
         }
 
         private readonly static InstructionInfo[] _instTable;
-
-        private readonly Stream _stream;
-
-        public List<RelocEntry> Relocs { get; }
-        public bool HasRelocs => Relocs != null;
 
         static Assembler()
         {
@@ -288,17 +286,74 @@ namespace ARMeilleure.CodeGen.X86
             Add(X86Instruction.Xor,          new InstructionInfo(0x00000031, 0x06000083, 0x06000081, BadOp,      0x00000033, InstructionFlags.None));
             Add(X86Instruction.Xorpd,        new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f57, InstructionFlags.Vex | InstructionFlags.Prefix66));
             Add(X86Instruction.Xorps,        new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f57, InstructionFlags.Vex));
+
+            static void Add(X86Instruction inst, InstructionInfo info)
+            {
+                _instTable[(int)inst] = info;
+            }
         }
 
-        private static void Add(X86Instruction inst, InstructionInfo info)
+        private struct Jump
         {
-            _instTable[(int)inst] = info;
+            public bool IsConditional { get; }
+            public X86Condition Condition { get; }
+            public Operand JumpLabel { get; }
+            public long? JumpTarget { get; set; }
+            public long JumpPosition { get; }
+            public long Offset { get; set; }
+            public int InstSize { get; set; }
+
+            public Jump(Operand jumpLabel, long jumpPosition)
+            {
+                IsConditional = false;
+                Condition = 0;
+                JumpLabel = jumpLabel;
+                JumpTarget = null;
+                JumpPosition = jumpPosition;
+
+                Offset = 0;
+                InstSize = 0;
+            }
+
+            public Jump(X86Condition condition, Operand jumpLabel, long jumpPosition)
+            {
+                IsConditional = true;
+                Condition = condition;
+                JumpLabel = jumpLabel;
+                JumpTarget = null;
+                JumpPosition = jumpPosition;
+
+                Offset = 0;
+                InstSize = 0;
+            }
         }
+
+        private struct Reloc
+        {
+            public int JumpIndex { get; set; }
+            public int Position { get; set; }
+            public Symbol Symbol { get; set; }
+        }
+
+        private readonly List<Jump> _jumps;
+        private readonly List<Reloc> _relocs;
+        private readonly Dictionary<Operand, long> _labels;
+        private readonly Stream _stream;
+
+        public bool HasRelocs => _relocs != null;
 
         public Assembler(Stream stream, bool relocatable)
         {
             _stream = stream;
-            Relocs = relocatable ? new List<RelocEntry>() : null;
+            _labels = new Dictionary<Operand, long>();
+            _jumps = new List<Jump>();
+
+            _relocs = relocatable ? new List<Reloc>() : null;
+        }
+
+        public void MarkLabel(Operand label)
+        {
+            _labels.Add(label, _stream.Position);
         }
 
         public void Add(Operand dest, Operand source, OperandType type)
@@ -343,7 +398,7 @@ namespace ARMeilleure.CodeGen.X86
 
         public void Cmovcc(Operand dest, Operand source, OperandType type, X86Condition condition)
         {
-            InstructionInfo info = _instTable[(int)X86Instruction.Cmovcc];
+            ref readonly InstructionInfo info = ref _instTable[(int)X86Instruction.Cmovcc];
 
             WriteOpCode(dest, default, source, type, info.Flags, info.OpRRM | (int)condition, rrm: true);
         }
@@ -463,7 +518,7 @@ namespace ARMeilleure.CodeGen.X86
 
         public void Imul(Operand dest, Operand src1, Operand src2, OperandType type)
         {
-            InstructionInfo info = _instTable[(int)X86Instruction.Imul];
+            ref readonly InstructionInfo info = ref _instTable[(int)X86Instruction.Imul];
 
             if (src2.Kind != OperandKind.Constant)
             {
@@ -495,9 +550,24 @@ namespace ARMeilleure.CodeGen.X86
             WriteByte(imm);
         }
 
+        public void Jcc(X86Condition condition, Operand dest)
+        {
+            if (dest.Kind == OperandKind.Label)
+            {
+                _jumps.Add(new Jump(condition, dest, _stream.Position));
+
+                // ReservedBytesForJump
+                WriteByte(0);
+            }
+            else
+            {
+                throw new ArgumentException("Destination operand must be of kind Label", nameof(dest));
+            }
+        }
+
         public void Jcc(X86Condition condition, long offset)
         {
-            if (!HasRelocs && ConstFitsOnS8(offset))
+            if (ConstFitsOnS8(offset))
             {
                 WriteByte((byte)(0x70 | (int)condition));
 
@@ -518,7 +588,7 @@ namespace ARMeilleure.CodeGen.X86
 
         public void Jmp(long offset)
         {
-            if (!HasRelocs && ConstFitsOnS8(offset))
+            if (ConstFitsOnS8(offset))
             {
                 WriteByte(0xeb);
 
@@ -538,7 +608,17 @@ namespace ARMeilleure.CodeGen.X86
 
         public void Jmp(Operand dest)
         {
-            WriteInstruction(dest, default, OperandType.None, X86Instruction.Jmp);
+            if (dest.Kind == OperandKind.Label)
+            {
+                _jumps.Add(new Jump(dest, _stream.Position));
+
+                // ReservedBytesForJump
+                WriteByte(0);
+            }
+            else
+            {
+                WriteInstruction(dest, default, OperandType.None, X86Instruction.Jmp);
+            }
         }
 
         public void Ldmxcsr(Operand dest)
@@ -568,7 +648,7 @@ namespace ARMeilleure.CodeGen.X86
 
         public void Movd(Operand dest, Operand source)
         {
-            InstructionInfo info = _instTable[(int)X86Instruction.Movd];
+            ref readonly InstructionInfo info = ref _instTable[(int)X86Instruction.Movd];
 
             if (source.Type.IsInteger() || source.Kind == OperandKind.Memory)
             {
@@ -597,7 +677,7 @@ namespace ARMeilleure.CodeGen.X86
 
         public void Movq(Operand dest, Operand source)
         {
-            InstructionInfo info = _instTable[(int)X86Instruction.Movd];
+            ref readonly InstructionInfo info = ref _instTable[(int)X86Instruction.Movd];
 
             InstructionFlags flags = info.Flags | InstructionFlags.RexW;
 
@@ -811,7 +891,7 @@ namespace ARMeilleure.CodeGen.X86
 
         public void Setcc(Operand dest, X86Condition condition)
         {
-            InstructionInfo info = _instTable[(int)X86Instruction.Setcc];
+            ref readonly InstructionInfo info = ref _instTable[(int)X86Instruction.Setcc];
 
             WriteOpCode(dest, default, default, OperandType.None, info.Flags, info.OpRRM | (int)condition);
         }
@@ -936,7 +1016,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private void WriteInstruction(Operand dest, Operand source, OperandType type, X86Instruction inst)
         {
-            InstructionInfo info = _instTable[(int)inst];
+            ref readonly InstructionInfo info = ref _instTable[(int)inst];
 
             if (source != default)
             {
@@ -981,7 +1061,12 @@ namespace ARMeilleure.CodeGen.X86
 
                         if (HasRelocs && source.Relocatable)
                         {
-                            Relocs.Add(new RelocEntry((int)_stream.Position, source.Symbol));
+                            _relocs.Add(new Reloc
+                            {
+                                JumpIndex = _jumps.Count - 1,
+                                Position = (int)_stream.Position,
+                                Symbol = source.Symbol
+                            });
                         }
 
                         WriteUInt64(imm);
@@ -1025,7 +1110,7 @@ namespace ARMeilleure.CodeGen.X86
             X86Instruction inst,
             OperandType type = OperandType.None)
         {
-            InstructionInfo info = _instTable[(int)inst];
+            ref readonly InstructionInfo info = ref _instTable[(int)inst];
 
             if (src2 != default)
             {
@@ -1376,6 +1461,162 @@ namespace ARMeilleure.CodeGen.X86
             return rexPrefix;
         }
 
+        public (byte[], RelocInfo) GetCode()
+        {
+            var jumps = CollectionsMarshal.AsSpan(_jumps);
+            var relocs = CollectionsMarshal.AsSpan(_relocs);
+
+            // Write jump relative offsets.
+            bool modified;
+
+            do
+            {
+                modified = false;
+
+                for (int i = 0; i < jumps.Length; i++)
+                {
+                    ref Jump jump = ref jumps[i];
+
+                    // If jump target not resolved yet, resolve it.
+                    if (jump.JumpTarget == null)
+                    {
+                        jump.JumpTarget = _labels[jump.JumpLabel];
+                    }
+
+                    long jumpTarget = jump.JumpTarget.Value;
+                    long offset = jumpTarget - jump.JumpPosition;
+
+                    if (offset < 0)
+                    {
+                        for (int j = i - 1; j >= 0; j--)
+                        {
+                            ref Jump jump2 = ref jumps[j];
+
+                            if (jump2.JumpPosition < jumpTarget)
+                            {
+                                break;
+                            }
+
+                            offset -= jump2.InstSize - ReservedBytesForJump;
+                        }
+                    }
+                    else
+                    {
+                        for (int j = i + 1; j < jumps.Length; j++)
+                        {
+                            ref Jump jump2 = ref jumps[j];
+
+                            if (jump2.JumpPosition >= jumpTarget)
+                            {
+                                break;
+                            }
+
+                            offset += jump2.InstSize - ReservedBytesForJump;
+                        }
+
+                        offset -= ReservedBytesForJump;
+                    }
+
+                    if (jump.IsConditional)
+                    {
+                        jump.InstSize = GetJccLength(offset);
+                    }
+                    else
+                    {
+                        jump.InstSize = GetJmpLength(offset);
+                    }
+
+                    // The jump is relative to the next instruction, not the current one.
+                    // Since we didn't know the next instruction address when calculating
+                    // the offset (as the size of the current jump instruction was not known),
+                    // we now need to compensate the offset with the jump instruction size.
+                    // It's also worth noting that:
+                    // - This is only needed for backward jumps.
+                    // - The GetJmpLength and GetJccLength also compensates the offset
+                    // internally when computing the jump instruction size.
+                    if (offset < 0)
+                    {
+                        offset -= jump.InstSize;
+                    }
+
+                    if (jump.Offset != offset)
+                    {
+                        jump.Offset = offset;
+
+                        modified = true;
+                    }
+                }
+            }
+            while (modified);
+
+            // Write the code, ignoring the dummy bytes after jumps, into a new stream.
+            _stream.Seek(0, SeekOrigin.Begin);
+
+            using var codeStream = new MemoryStream();
+            var assembler = new Assembler(codeStream, HasRelocs);
+
+            bool hasRelocs = HasRelocs;
+            int relocIndex = 0;
+            int relocOffset = 0;
+            var relocEntries = hasRelocs
+                ? new RelocEntry[relocs.Length]
+                : Array.Empty<RelocEntry>();
+
+            for (int i = 0; i < jumps.Length; i++)
+            {
+                ref Jump jump = ref jumps[i];
+
+                // If has relocations, calculate their new positions compensating for jumps.
+                if (hasRelocs)
+                {
+                    relocOffset += jump.InstSize - ReservedBytesForJump;
+
+                    for (; relocIndex < relocEntries.Length; relocIndex++)
+                    {
+                        ref Reloc reloc = ref relocs[relocIndex];
+
+                        if (reloc.JumpIndex > i)
+                        {
+                            break;
+                        }
+
+                        relocEntries[relocIndex] = new RelocEntry(reloc.Position + relocOffset, reloc.Symbol);
+                    }
+                }
+
+                Span<byte> buffer = new byte[jump.JumpPosition - _stream.Position];
+
+                _stream.Read(buffer);
+                _stream.Seek(ReservedBytesForJump, SeekOrigin.Current);
+
+                codeStream.Write(buffer);
+
+                if (jump.IsConditional)
+                {
+                    assembler.Jcc(jump.Condition, jump.Offset);
+                }
+                else
+                {
+                    assembler.Jmp(jump.Offset);
+                }
+            }
+
+            // Write remaining relocations. This case happens when there are no jumps assembled.
+            for (; relocIndex < relocEntries.Length; relocIndex++)
+            {
+                ref Reloc reloc = ref relocs[relocIndex];
+
+                relocEntries[relocIndex] = new RelocEntry(reloc.Position + relocOffset, reloc.Symbol);
+            }
+
+            _stream.CopyTo(codeStream);
+
+            var code = codeStream.ToArray();
+            var relocInfo = new RelocInfo(relocEntries);
+
+            return (code, relocInfo);
+        }
+
         private static bool Is64Bits(OperandType type)
         {
             return type == OperandType.I64 || type == OperandType.FP64;
@@ -1395,9 +1636,9 @@ namespace ARMeilleure.CodeGen.X86
             return ConstFitsOnS32(value);
         }
 
-        public static int GetJccLength(long offset, bool relocatable = false)
+        private static int GetJccLength(long offset)
         {
-            if (!relocatable && ConstFitsOnS8(offset < 0 ? offset - 2 : offset))
+            if (ConstFitsOnS8(offset < 0 ? offset - 2 : offset))
             {
                 return 2;
             }
@@ -1411,9 +1652,9 @@ namespace ARMeilleure.CodeGen.X86
             }
         }
 
-        public static int GetJmpLength(long offset, bool relocatable = false)
+        private static int GetJmpLength(long offset)
         {
-            if (!relocatable && ConstFitsOnS8(offset < 0 ? offset - 2 : offset))
+            if (ConstFitsOnS8(offset < 0 ? offset - 2 : offset))
             {
                 return 2;
             }
