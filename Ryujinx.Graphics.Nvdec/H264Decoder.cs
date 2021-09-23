@@ -27,7 +27,7 @@ namespace Ryujinx.Graphics.Nvdec
 
             Decoder decoder = context.GetDecoder();
 
-            ISurface outputSurface = rm.Cache.Get(decoder, CodecId.H264, 0, 0, width, height);
+            ISurface outputSurface = rm.Cache.Get(decoder, 0, 0, width, height);
 
             if (decoder.Decode(ref info, outputSurface, bitstream))
             {

@@ -22,7 +22,7 @@ namespace Ryujinx.Graphics.Nvdec
 
             ISurface Rent(uint lumaOffset, uint chromaOffset, FrameSize size)
             {
-                return rm.Cache.Get(_decoder, CodecId.Vp9, lumaOffset, chromaOffset, size.Width, size.Height);
+                return rm.Cache.Get(_decoder, lumaOffset, chromaOffset, size.Width, size.Height);
             }
 
             ISurface lastSurface    = Rent(state.SetSurfaceLumaOffset[0], state.SetSurfaceChromaOffset[0], pictureInfo.LastFrameSize);

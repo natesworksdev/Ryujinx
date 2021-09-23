@@ -21,7 +21,7 @@ namespace Ryujinx.Graphics.Nvdec.Image
             public uint ChromaOffset;
             public int Width;
             public int Height;
-            public CodecId CodecId;
+            public IDecoder Owner;
             public ISurface Surface;
         }
 
@@ -34,7 +34,7 @@ namespace Ryujinx.Graphics.Nvdec.Image
             _gmm = gmm;
         }
 
-        public ISurface Get(IDecoder decoder, CodecId codecId, uint lumaOffset, uint chromaOffset, int width, int height)
+        public ISurface Get(IDecoder decoder, uint lumaOffset, uint chromaOffset, int width, int height)
         {
             lock (_pool)
             {
@@ -47,7 +47,7 @@ namespace Ryujinx.Graphics.Nvdec.Image
 
                     if (item.LumaOffset == lumaOffset &&
                         item.ChromaOffset == chromaOffset &&
-                        item.CodecId == codecId &&
+                        item.Owner == decoder &&
                         item.Width == width &&
                         item.Height == height)
                     {
@@ -68,7 +68,7 @@ namespace Ryujinx.Graphics.Nvdec.Image
                     {
                         ref CacheItem item = ref _pool[i];
 
-                        if (item.ReferenceCount == 0 && item.CodecId == codecId && item.Width == width && item.Height == height)
+                        if (item.ReferenceCount == 0 && item.Owner == decoder && item.Width == width && item.Height == height)
                         {
                             item.ReferenceCount = 1;
                             item.LumaOffset = lumaOffset;
@@ -111,7 +111,7 @@ namespace Ryujinx.Graphics.Nvdec.Image
                         item.ChromaOffset = chromaOffset;
                         item.Width = width;
                         item.Height = height;
-                        item.CodecId = codecId;
+                        item.Owner = decoder;
                         item.Surface = surface;
                     }
                     else
