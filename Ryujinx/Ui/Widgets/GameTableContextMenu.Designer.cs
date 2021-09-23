@@ -57,7 +57,7 @@ namespace Ryujinx.Ui.Widgets
             //
             _purgeSaveMenuItem = new MenuItem("Delete Save File")
             {
-                TooltipText = "Delete the Application's Save file (if it exists)."
+                TooltipText = "Delete all the Application's Save file (if they exists)."
             };
             _purgeSaveMenuItem.Activated += PurgeSave_Clicked;
 

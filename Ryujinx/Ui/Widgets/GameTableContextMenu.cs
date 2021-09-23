@@ -463,7 +463,7 @@ namespace Ryujinx.Ui.Widgets
             {
                 return;
             }
-            MessageDialog warningDialog = GtkDialog.CreateConfirmationDialog("Warning", $"You are about to delete the save for :\n\n<b>{_titleName}</b>\n\nAre you sure you want to proceed?");
+            MessageDialog warningDialog = GtkDialog.CreateConfirmationDialog("Warning", $"You are about to delete all savedata for :\n<b>{_titleName}</b>\nAre you sure you want to proceed?\nFiles can't be recovered once deleted!");
             DirectoryInfo saveDir = new DirectoryInfo(System.IO.Path.Combine(_virtualFileSystem.GetNandPath(), $"user/save/{saveDataId:x16}"));
             List<DirectoryInfo> saveDirectory = new List<DirectoryInfo>();
 
