@@ -25,6 +25,7 @@ using System.Reflection;
 using System.Threading;
 
 using static LibHac.Fs.ApplicationSaveDataManagement;
+using ApplicationId = LibHac.ApplicationId;
 
 namespace Ryujinx.Ui.Widgets
 {
@@ -458,36 +459,15 @@ namespace Ryujinx.Ui.Widgets
         {
             SaveDataFilter saveDataFilter = new SaveDataFilter();
             saveDataFilter.SetProgramId(new ProgramId(_titleId));
-
-            if (!TryFindSaveData(_titleName, _titleId, _controlData, saveDataFilter, out ulong saveDataId))
-            {
-                return;
-            }
+            TryFindSaveData(_titleName, _titleId, _controlData, saveDataFilter, out ulong saveDataId);
             MessageDialog warningDialog = GtkDialog.CreateConfirmationDialog("Warning", $"You are about to delete all savedata for :\n<b>{_titleName}</b>\nAre you sure you want to proceed?\nFiles can't be recovered once deleted!");
-            DirectoryInfo saveDir = new DirectoryInfo(System.IO.Path.Combine(_virtualFileSystem.GetNandPath(), $"user/save/{saveDataId:x16}"));
-            List<DirectoryInfo> saveDirectory = new List<DirectoryInfo>();
-
-            if (saveDir.Exists)
+            if (warningDialog.Run() == (int)ResponseType.Yes)
             {
-                saveDirectory.AddRange(saveDir.EnumerateDirectories("*"));
-            }
-
-            if (saveDirectory.Count > 0 && warningDialog.Run() == (int)ResponseType.Yes)
-            {
-                foreach (DirectoryInfo directory in saveDirectory)
+                if (_horizonClient.Fs.DeleteSaveData(saveDataId) != Result.Success)
                 {
-                    try
-                    {
-                        directory.Delete(true);
-                    }
-                    catch (Exception e)
-                    {
-                        GtkDialog.CreateErrorDialog($"Error purging saves at {directory.Name}: {e}");
-                    }
+                    _horizonClient.Fs.DeleteDeviceSaveData(new ApplicationId());
                 }
             }
-
-            warningDialog.Dispose();
         }
 
         private void ManageTitleUpdates_Clicked(object sender, EventArgs args)
