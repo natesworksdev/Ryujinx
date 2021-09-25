@@ -49,6 +49,14 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
+        public void RegisterPreciseAction(PreciseRegionSignal action)
+        {
+            foreach (var regionHandle in _cpuRegionHandles)
+            {
+                regionHandle.RegisterPreciseAction(action);
+            }
+        }
+
         public void Reprotect(bool asDirty = false)
         {
             foreach (var regionHandle in _cpuRegionHandles)

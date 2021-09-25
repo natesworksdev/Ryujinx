@@ -31,6 +31,18 @@ namespace Ryujinx.Memory.Tracking
             UpdateProtection();
         }
 
+        public override void SignalPrecise(ulong address, ulong size, bool write)
+        {
+            IList<RegionHandle> handles = Handles;
+
+            for (int i = 0; i < handles.Count; i++)
+            {
+                handles[i].SignalPrecise(address, size, write, ref handles);
+            }
+
+            UpdateProtection();
+        }
+
         /// <summary>
         /// Signal that this region has been mapped or unmapped.
         /// </summary>
