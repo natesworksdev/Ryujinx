@@ -459,15 +459,23 @@ namespace Ryujinx.Ui.Widgets
         {
             SaveDataFilter saveDataFilter = new SaveDataFilter();
             saveDataFilter.SetProgramId(new ProgramId(_titleId));
-            TryFindSaveData(_titleName, _titleId, _controlData, saveDataFilter, out ulong saveDataId);
+            if (!TryFindSaveData(_titleName, _titleId, _controlData, saveDataFilter, out ulong saveDataId)) {return;}
             MessageDialog warningDialog = GtkDialog.CreateConfirmationDialog("Warning", $"You are about to delete all savedata for :\n<b>{_titleName}</b>\nAre you sure you want to proceed?\nFiles can't be recovered once deleted!");
             if (warningDialog.Run() == (int)ResponseType.Yes)
             {
-                if (_horizonClient.Fs.DeleteSaveData(saveDataId) != Result.Success)
+                try
                 {
-                    _horizonClient.Fs.DeleteDeviceSaveData(new ApplicationId());
+                    if (_horizonClient.Fs.DeleteSaveData(saveDataId) == Result.Success)
+                    {
+                        _horizonClient.Fs.DeleteDeviceSaveData(new ApplicationId());
+                    }
+                }
+                catch(Exception e)
+                {
+                    GtkDialog.CreateErrorDialog($"Error deleting savedata for {_titleName}[{_titleId}]: {e}");
                 }
             }
+            warningDialog.Dispose();
         }
 
         private void ManageTitleUpdates_Clicked(object sender, EventArgs args)
