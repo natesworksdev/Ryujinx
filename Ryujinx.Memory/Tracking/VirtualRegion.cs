@@ -35,12 +35,19 @@ namespace Ryujinx.Memory.Tracking
         {
             IList<RegionHandle> handles = Handles;
 
+            bool allPrecise = true;
+
             for (int i = 0; i < handles.Count; i++)
             {
-                handles[i].SignalPrecise(address, size, write, ref handles);
+                allPrecise &= handles[i].SignalPrecise(address, size, write, ref handles);
             }
 
-            UpdateProtection();
+            // Only update protection if a regular signal handler was called.
+            // This allows precise actions to skip reprotection costs if they want (they can still do it manually).
+            if (!allPrecise)
+            {
+                UpdateProtection();
+            }
         }
 
         /// <summary>

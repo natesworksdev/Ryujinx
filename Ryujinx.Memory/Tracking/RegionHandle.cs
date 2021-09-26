@@ -175,14 +175,17 @@ namespace Ryujinx.Memory.Tracking
         /// <param name="size">Size of the region affected in bytes</param>
         /// <param name="write">Whether the region was written to or read</param>
         /// <param name="handleIterable">Reference to the handles being iterated, in case the list needs to be copied</param>
-        internal void SignalPrecise(ulong address, ulong size, bool write, ref IList<RegionHandle> handleIterable)
+        /// <returns>True if a precise action was performed and returned true, false otherwise</returns>
+        internal bool SignalPrecise(ulong address, ulong size, bool write, ref IList<RegionHandle> handleIterable)
         {
             if (!Unmapped && _preciseAction != null && _preciseAction(address, size, write))
             {
-                return;
+                return true;
             }
 
             Signal(address, size, write, ref handleIterable);
+
+            return false;
         }
 
         /// <summary>
