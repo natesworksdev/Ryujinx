@@ -44,8 +44,8 @@ namespace Ryujinx.Headless.SDL2
         private readonly ManualResetEvent _exitEvent;
 
         private long _ticks;
-        private string fpsString;
-        private string frameTimeString;
+        private string _fpsString;
+        private string _frameTimeString;
         private bool _isActive;
         private bool _isStopped;
         private uint _windowId;
@@ -190,10 +190,10 @@ namespace Ryujinx.Headless.SDL2
                     if (_ticks >= _ticksPerFrame)
                     {
                         string dockedMode = Device.System.State.DockedMode ? "Docked" : "Handheld";
-                        float scale = Graphics.Gpu.GraphicsConfig.ResScale;
-                        int precision = SDL2.Options.FpsPrecision;
-                        double fps = Device.Statistics.GetGameFrameRate();
-                        double frameTime = Device.Statistics.GetGameFrameTime();
+                        float  scale      = Graphics.Gpu.GraphicsConfig.ResScale;
+                        int    precision  = SDL2.Options.FpsPrecision;
+                        double fps        = Device.Statistics.GetGameFrameRate();
+                        double frameTime  = Device.Statistics.GetGameFrameTime();
 
                         if (scale != 1)
                         {
@@ -203,40 +203,40 @@ namespace Ryujinx.Headless.SDL2
                         switch (precision)
                         {
                             case 0:
-                                fpsString       = fps.ToString("00.00 FPS");
-                                frameTimeString = frameTime.ToString("(00.00 ms)");
+                                _fpsString       = fps.ToString("00.00 FPS");
+                                _frameTimeString = frameTime.ToString("(00.00 ms)");
                                 if (Double.IsInfinity(frameTime))
                                 {
-                                    frameTimeString = "(NaN ms)";
+                                    _frameTimeString = "(NaN ms)";
                                 }
                                 break;
                             
                             case 1:
-                                fpsString       = fps.ToString("00 FPS");
-                                frameTimeString = frameTime.ToString("(00.00 ms)");
+                                _fpsString       = fps.ToString("00 FPS");
+                                _frameTimeString = frameTime.ToString("(00.00 ms)");
                                 if (Double.IsInfinity(frameTime))
                                 {
-                                    frameTimeString = "(NaN ms)";
+                                    _frameTimeString = "(NaN ms)";
                                 }
                                 break;
 
                             case 2:
-                                fpsString       = fps.ToString("00 FPS");
-                                frameTimeString = frameTime.ToString("(00 ms)");
+                                _fpsString       = fps.ToString("00 FPS");
+                                _frameTimeString = frameTime.ToString("(00 ms)");
                                 if (Double.IsInfinity(frameTime))
                                 {
-                                    frameTimeString = "(NaN ms)";
+                                    _frameTimeString = "(NaN ms)";
                                 }
                                 break;
                             
                             case 3:
-                                fpsString       = fps.ToString("00.00 FPS");
-                                frameTimeString = "";
+                                _fpsString       = fps.ToString("00.00 FPS");
+                                _frameTimeString = "";
                                 break;
                             
                             case 4:
-                                fpsString       = fps.ToString("00 FPS");
-                                frameTimeString = "";
+                                _fpsString       = fps.ToString("00 FPS");
+                                _frameTimeString = "";
                                 break;
                         }
 
@@ -244,7 +244,7 @@ namespace Ryujinx.Headless.SDL2
                             Device.EnableDeviceVsync,
                             dockedMode,
                             Device.Configuration.AspectRatio.ToText(),
-                            $"Game: {fpsString} {frameTimeString}",
+                            $"Game: {_fpsString} {_frameTimeString}",
                             $"FIFO: {Device.Statistics.GetFifoPercent():0.00} %",
                             $"GPU: {_gpuVendorName}"));
 

@@ -110,11 +110,6 @@ namespace Ryujinx.HLE
         internal readonly int FsGlobalAccessLogMode;
 
         /// <summary>
-        /// Integer scale to adjust frame metric displayed value. Values from 0-4
-        /// </summary>
-        internal readonly int FpsPrecision;
-
-        /// <summary>
         /// The system time offset to apply to the time service steady and local clocks.
         /// </summary>
         /// <remarks>This cannot be changed after <see cref="Switch"/> instantiation.</remarks>
@@ -125,7 +120,6 @@ namespace Ryujinx.HLE
         /// </summary>
         /// <remarks>This cannot be changed after <see cref="Switch"/> instantiation.</remarks>
         internal readonly string TimeZone;
-
 
         /// <summary>
         /// </summary>
