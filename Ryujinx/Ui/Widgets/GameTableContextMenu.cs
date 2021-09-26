@@ -69,6 +69,8 @@ namespace Ryujinx.Ui.Widgets
             _openSaveUserDirMenuItem.Sensitive   = !Utilities.IsZeros(controlData.ByteSpan) && controlData.Value.UserAccountSaveDataSize      > 0;
             _openSaveDeviceDirMenuItem.Sensitive = !Utilities.IsZeros(controlData.ByteSpan) && controlData.Value.DeviceSaveDataSize           > 0;
             _openSaveBcatDirMenuItem.Sensitive   = !Utilities.IsZeros(controlData.ByteSpan) && controlData.Value.BcatDeliveryCacheStorageSize > 0;
+            _purgeSaveDeviceMenuItem.Sensitive   = !Utilities.IsZeros(controlData.ByteSpan) && controlData.Value.DeviceSaveDataSize           > 0;
+            _purgeSaveUserMenuItem.Sensitive     = !Utilities.IsZeros(controlData.ByteSpan) && controlData.Value.UserAccountSaveDataSize      > 0;
 
             string fileExt = System.IO.Path.GetExtension(_titleFilePath).ToLower();
             bool   hasNca  = fileExt == ".nca" || fileExt == ".nsp" || fileExt == ".pfs0" || fileExt == ".xci";
@@ -455,27 +457,56 @@ namespace Ryujinx.Ui.Widgets
             OpenSaveDir(saveDataFilter);
         }
 
-        private void PurgeSave_Clicked(object sender, EventArgs args)
+        private void PurgeSaveData(SaveDataFilter saveDataFilter, SaveDataType saveDataType)
         {
-            SaveDataFilter saveDataFilter = new SaveDataFilter();
             saveDataFilter.SetProgramId(new ProgramId(_titleId));
-            if (!TryFindSaveData(_titleName, _titleId, _controlData, saveDataFilter, out ulong saveDataId)) {return;}
-            MessageDialog warningDialog = GtkDialog.CreateConfirmationDialog("Warning", $"You are about to delete all savedata for :\n<b>{_titleName}</b>\nAre you sure you want to proceed?\nFiles can't be recovered once deleted!");
+            if (!TryFindSaveData(_titleName, _titleId, _controlData, saveDataFilter, out ulong saveDataId))
+            {
+                return;
+            }
+            MessageDialog warningDialog = GtkDialog.CreateConfirmationDialog("Warning", $"You are about to delete the {saveDataType.ToString().ToLower()}'s savedata for :\n<b>{_titleName}</b>\nAre you sure you want to proceed?\nFiles can't be recovered once deleted!");
             if (warningDialog.Run() == (int)ResponseType.Yes)
             {
-                try
+                if (saveDataType.Equals(SaveDataType.Account))
                 {
-                    if (_horizonClient.Fs.DeleteSaveData(saveDataId) == Result.Success)
+                    try
+                    {
+                        _horizonClient.Fs.DeleteSaveData(saveDataId);
+                    }
+                    catch (Exception e)
+                    {
+                        GtkDialog.CreateErrorDialog($"Error deleting user save data for {_titleName}[{_titleId}]: {e}");
+                    }
+                }
+                else
+                {
+                    try
                     {
                         _horizonClient.Fs.DeleteDeviceSaveData(new ApplicationId());
                     }
-                }
-                catch(Exception e)
-                {
-                    GtkDialog.CreateErrorDialog($"Error deleting savedata for {_titleName}[{_titleId}]: {e}");
+                    catch (Exception e)
+                    {
+                        GtkDialog.CreateErrorDialog($"Error deleting device save data for {_titleName}[{_titleId}]: {e}");
+                    }
                 }
             }
             warningDialog.Dispose();
+        }
+
+        private void PurgeUserSaveData_Clicked(object sender, EventArgs args)
+        {
+            SaveDataFilter saveDataFilter = new SaveDataFilter();
+            SaveDataType saveDataType = SaveDataType.Account;
+
+            PurgeSaveData(saveDataFilter, saveDataType);
+        }
+        
+        private void PurgeDeviceSaveData_Clicked(object sender, EventArgs args)
+        {
+            SaveDataFilter saveDataFilter = new SaveDataFilter();
+            SaveDataType saveDataType = SaveDataType.Device;
+            
+            PurgeSaveData(saveDataFilter, saveDataType);
         }
 
         private void ManageTitleUpdates_Clicked(object sender, EventArgs args)

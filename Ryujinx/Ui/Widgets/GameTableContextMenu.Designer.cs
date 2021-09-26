@@ -7,7 +7,8 @@ namespace Ryujinx.Ui.Widgets
         private MenuItem _openSaveUserDirMenuItem;
         private MenuItem _openSaveDeviceDirMenuItem;
         private MenuItem _openSaveBcatDirMenuItem;
-        private MenuItem _purgeSaveMenuItem;
+        private MenuItem _purgeSaveUserMenuItem;
+        private MenuItem _purgeSaveDeviceMenuItem;
         private MenuItem _manageTitleUpdatesMenuItem;
         private MenuItem _manageDlcMenuItem;
         private MenuItem _openTitleModDirMenuItem;
@@ -53,13 +54,22 @@ namespace Ryujinx.Ui.Widgets
             _openSaveBcatDirMenuItem.Activated += OpenSaveBcatDir_Clicked;
             
             //
-            // _purgeSaveMenuItem
+            // _purgeSaveUserMenuItem
             //
-            _purgeSaveMenuItem = new MenuItem("Delete Save File")
+            _purgeSaveUserMenuItem = new MenuItem("Delete User Save Data")
             {
-                TooltipText = "Delete all the Application's Save file (if they exists)."
+                TooltipText = "Delete the User's Application's Save file (if it exists)."
             };
-            _purgeSaveMenuItem.Activated += PurgeSave_Clicked;
+            _purgeSaveUserMenuItem.Activated += PurgeUserSaveData_Clicked;
+            
+            //
+            // _purgeSaveDeviceMenuItem
+            //
+            _purgeSaveDeviceMenuItem = new MenuItem("Delete Device Save Data")
+            {
+                TooltipText = "Delete the Device's Application's Save file (if it exists)."
+            };
+            _purgeSaveUserMenuItem.Activated += PurgeDeviceSaveData_Clicked;
 
             //
             // _manageTitleUpdatesMenuItem
@@ -194,7 +204,8 @@ namespace Ryujinx.Ui.Widgets
             Add(_openSaveUserDirMenuItem);
             Add(_openSaveDeviceDirMenuItem);
             Add(_openSaveBcatDirMenuItem);
-            Add(_purgeSaveMenuItem);
+            Add(_purgeSaveUserMenuItem);
+            Add(_purgeSaveDeviceMenuItem);
             Add(new SeparatorMenuItem());
             Add(_manageTitleUpdatesMenuItem);
             Add(_manageDlcMenuItem);
