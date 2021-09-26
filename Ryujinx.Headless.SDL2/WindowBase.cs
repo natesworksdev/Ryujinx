@@ -191,7 +191,7 @@ namespace Ryujinx.Headless.SDL2
                     {
                         string dockedMode = Device.System.State.DockedMode ? "Docked" : "Handheld";
                         float scale = Graphics.Gpu.GraphicsConfig.ResScale;
-                        int precision = HLEConfiguration.fpsPrecision;
+                        int precision = SDL2.Options.FpsPrecision;
                         double fps = Device.Statistics.GetGameFrameRate();
                         double frameTime = Device.Statistics.GetGameFrameTime();
 
@@ -227,7 +227,6 @@ namespace Ryujinx.Headless.SDL2
                                 {
                                     frameTimeString = "(NaN ms)";
                                 }
-
                                 break;
                             
                             case 3:
@@ -240,7 +239,6 @@ namespace Ryujinx.Headless.SDL2
                                 frameTimeString = "";
                                 break;
                         }
-
 
                         StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
                             Device.EnableDeviceVsync,

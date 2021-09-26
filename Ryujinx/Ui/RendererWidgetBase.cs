@@ -54,9 +54,9 @@ namespace Ryujinx.Ui
 
         private long _ticks = 0;
 
-        private string fpsString;
+        private string _fpsString;
 
-        private string frameTimeString;
+        private string _frameTimeString;
 
         private readonly Stopwatch _chrono;
 
@@ -422,7 +422,7 @@ namespace Ryujinx.Ui
                     {
                         string dockedMode = ConfigurationState.Instance.System.EnableDockedMode ? "Docked" : "Handheld";
                         float scale       = Graphics.Gpu.GraphicsConfig.ResScale;
-                        int precision     = ConfigurationState.Instance.Ui.fpsPrecision;
+                        int precision     = ConfigurationState.Instance.Ui.FpsPrecision;
                         double fps        = Device.Statistics.GetGameFrameRate();
                         double frameTime  = Device.Statistics.GetGameFrameTime();
                         
@@ -434,40 +434,40 @@ namespace Ryujinx.Ui
                         switch (precision)
                         {
                             case 0:
-                                fpsString       = fps.ToString("00.00 FPS");
-                                frameTimeString = frameTime.ToString("(00.00 ms)");
+                                _fpsString       = fps.ToString("00.00 FPS");
+                                _frameTimeString = frameTime.ToString("(00.00 ms)");
                                 if (Double.IsInfinity(frameTime))
                                 {
-                                    frameTimeString = "(NaN ms)";
+                                    _frameTimeString = "(NaN ms)";
                                 }
                                 break;
                             
                             case 1:
-                                fpsString       = fps.ToString("00 FPS");
-                                frameTimeString = frameTime.ToString("(00.00 ms)");
+                                _fpsString       = fps.ToString("00 FPS");
+                                _frameTimeString = frameTime.ToString("(00.00 ms)");
                                 if (Double.IsInfinity(frameTime))
                                 {
-                                    frameTimeString = "(NaN ms)";
+                                    _frameTimeString = "(NaN ms)";
                                 }
                                 break;
 
                             case 2:
-                                fpsString       = fps.ToString("00 FPS");
-                                frameTimeString = frameTime.ToString("(00 ms)");
+                                _fpsString       = fps.ToString("00 FPS");
+                                _frameTimeString = frameTime.ToString("(00 ms)");
                                 if (Double.IsInfinity(frameTime))
                                 {
-                                    frameTimeString = "(NaN ms)";
+                                    _frameTimeString = "(NaN ms)";
                                 }
                                 break;
                             
                             case 3:
-                                fpsString       = fps.ToString("00.00 FPS");
-                                frameTimeString = "";
+                                _fpsString       = fps.ToString("00.00 FPS");
+                                _frameTimeString = "";
                                 break;
                             
                             case 4:
-                                fpsString       = fps.ToString("00 FPS");
-                                frameTimeString = "";
+                                _fpsString       = fps.ToString("00 FPS");
+                                _frameTimeString = "";
                                 break;
                         }
 
@@ -475,7 +475,7 @@ namespace Ryujinx.Ui
                             Device.EnableDeviceVsync,
                             dockedMode,
                             ConfigurationState.Instance.Graphics.AspectRatio.Value.ToText(),
-                            $"Game: {fpsString} {frameTimeString}",
+                            $"Game: {_fpsString} {_frameTimeString}",
                             $"FIFO: {Device.Statistics.GetFifoPercent():0.00} %",
                             $"GPU: {_gpuVendorName}"));
 

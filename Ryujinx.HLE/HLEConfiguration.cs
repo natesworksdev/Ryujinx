@@ -112,7 +112,7 @@ namespace Ryujinx.HLE
         /// <summary>
         /// Integer scale to adjust frame metric displayed value. Values from 0-4
         /// </summary>
-        public static int fpsPrecision;
+        internal readonly int FpsPrecision;
 
         /// <summary>
         /// The system time offset to apply to the time service steady and local clocks.
@@ -168,8 +168,7 @@ namespace Ryujinx.HLE
                                 string                 timeZone,
                                 MemoryManagerMode      memoryManagerMode,
                                 bool                   ignoreMissingServices,
-                                AspectRatio            aspectRatio,
-                                int                    fpsPrecision)
+                                AspectRatio            aspectRatio)
         {
             VirtualFileSystem      = virtualFileSystem;
             LibHacHorizonManager   = libHacHorizonManager;

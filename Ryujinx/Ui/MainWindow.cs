@@ -563,8 +563,7 @@ namespace Ryujinx.Ui
                                                                           ConfigurationState.Instance.System.TimeZone,
                                                                           ConfigurationState.Instance.System.MemoryManagerMode,
                                                                           ConfigurationState.Instance.System.IgnoreMissingServices,
-                                                                          ConfigurationState.Instance.Graphics.AspectRatio,
-                                                                          ConfigurationState.Instance.Ui.fpsPrecision);
+                                                                          ConfigurationState.Instance.Graphics.AspectRatio);
 
             _emulationContext = new HLE.Switch(configuration);
         }

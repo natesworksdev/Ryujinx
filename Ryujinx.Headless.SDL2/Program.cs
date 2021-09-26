@@ -466,8 +466,7 @@ namespace Ryujinx.Headless.SDL2
                                                                   options.SystemTimeZone,
                                                                   options.MemoryManagerMode,
                                                                   (bool)options.IgnoreMissingServices,
-                                                                  options.AspectRatio,
-                                                                  options.fpsPrecision);
+                                                                  options.AspectRatio);
 
             return new Switch(configuration);
         }

@@ -306,7 +306,7 @@ namespace Ryujinx.Ui.Windows
             _resScaleCombo.SetActiveId(ConfigurationState.Instance.Graphics.ResScale.Value.ToString());
             _anisotropy.SetActiveId(ConfigurationState.Instance.Graphics.MaxAnisotropy.Value.ToString());
             _aspectRatio.SetActiveId(((int)ConfigurationState.Instance.Graphics.AspectRatio.Value).ToString());
-            _fpsPrecisionCombo.SetActiveId(ConfigurationState.Instance.Ui.fpsPrecision.Value.ToString());
+            _fpsPrecisionCombo.SetActiveId(ConfigurationState.Instance.Ui.FpsPrecision.Value.ToString());
 
             _custThemePath.Buffer.Text           = ConfigurationState.Instance.Ui.CustomThemePath;
             _resScaleText.Buffer.Text            = ConfigurationState.Instance.Graphics.ResScaleCustom.Value.ToString();
@@ -495,7 +495,7 @@ namespace Ryujinx.Ui.Windows
             ConfigurationState.Instance.Graphics.ShadersDumpPath.Value         = _graphicsShadersDumpPath.Buffer.Text;
             ConfigurationState.Instance.Ui.GameDirs.Value                      = gameDirs;
             ConfigurationState.Instance.System.FsGlobalAccessLogMode.Value     = (int)_fsLogSpinAdjustment.Value;
-            ConfigurationState.Instance.Ui.fpsPrecision.Value                  = int.Parse(_fpsPrecisionCombo.ActiveId);
+            ConfigurationState.Instance.Ui.FpsPrecision.Value                  = int.Parse(_fpsPrecisionCombo.ActiveId);
             ConfigurationState.Instance.Graphics.MaxAnisotropy.Value           = float.Parse(_anisotropy.ActiveId, CultureInfo.InvariantCulture);
             ConfigurationState.Instance.Graphics.AspectRatio.Value             = Enum.Parse<AspectRatio>(_aspectRatio.ActiveId);
             ConfigurationState.Instance.Graphics.BackendThreading.Value        = backendThreading;
