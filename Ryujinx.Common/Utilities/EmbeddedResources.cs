@@ -57,7 +57,7 @@ namespace Ryujinx.Common
 
                 using (var mem = new MemoryStream())
                 {
-                    await stream.CopyToAsync(mem).ConfigureAwait(false);
+                    await stream.CopyToAsync(mem);
 
                     return mem.ToArray();
                 }
@@ -105,7 +105,7 @@ namespace Ryujinx.Common
 
                 using (var reader = new StreamReader(stream))
                 {
-                    return await reader.ReadToEndAsync().ConfigureAwait(false);
+                    return await reader.ReadToEndAsync();
                 }
             }
         }
