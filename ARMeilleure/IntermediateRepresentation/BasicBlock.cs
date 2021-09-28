@@ -118,7 +118,7 @@ namespace ARMeilleure.IntermediateRepresentation
             oldBlock = block;
         }
 
-        public void Append(Operation node)
+        public Operation Append(Operation node)
         {
             Operation last = Operations.Last;
 
@@ -127,7 +127,7 @@ namespace ARMeilleure.IntermediateRepresentation
             {
                 Operations.AddLast(node);
 
-                return;
+                return node;
             }
 
             switch (last.Instruction)
@@ -135,12 +135,10 @@ namespace ARMeilleure.IntermediateRepresentation
                 case Instruction.Return:
                 case Instruction.Tailcall:
                 case Instruction.BranchIf:
-                    Operations.AddBefore(last, node);
-                    break;
+                    return Operations.AddBefore(last, node);
 
                 default:
-                    Operations.AddLast(node);
-                    break;
+                    return Operations.AddLast(node);
             }
         }
 
