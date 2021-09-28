@@ -467,7 +467,7 @@ namespace Ryujinx.Ui.Widgets
             MessageDialog warningDialog = GtkDialog.CreateConfirmationDialog("Warning", $"You are about to delete the {saveDataType.ToString().ToLower()}'s savedata for :\n<b>{_titleName}</b>\nAre you sure you want to proceed?\nFiles can't be recovered once deleted!");
             if (warningDialog.Run() == (int)ResponseType.Yes)
             {
-                if (saveDataType.Equals(SaveDataType.Account))
+                if (saveDataType == SaveDataType.Account)
                 {
                     try
                     {
@@ -478,11 +478,11 @@ namespace Ryujinx.Ui.Widgets
                         GtkDialog.CreateErrorDialog($"Error deleting user save data for {_titleName}[{_titleId}]: {e}");
                     }
                 }
-                else
+                else if(saveDataType == SaveDataType.Device)
                 {
                     try
                     {
-                        _horizonClient.Fs.DeleteDeviceSaveData(new ApplicationId());
+                        _horizonClient.Fs.DeleteDeviceSaveData(new ApplicationId(_titleId));
                     }
                     catch (Exception e)
                     {

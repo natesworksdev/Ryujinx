@@ -58,7 +58,7 @@ namespace Ryujinx.Ui.Widgets
             //
             _purgeSaveUserMenuItem = new MenuItem("Delete User Save Data")
             {
-                TooltipText = "Delete the User's Application's Save file (if it exists)."
+                TooltipText = "Delete the Application's user save data (if it exists)."
             };
             _purgeSaveUserMenuItem.Activated += PurgeUserSaveData_Clicked;
             
@@ -67,9 +67,9 @@ namespace Ryujinx.Ui.Widgets
             //
             _purgeSaveDeviceMenuItem = new MenuItem("Delete Device Save Data")
             {
-                TooltipText = "Delete the Device's Application's Save file (if it exists)."
+                TooltipText = "Delete the Application's device save data (if it exists)."
             };
-            _purgeSaveUserMenuItem.Activated += PurgeDeviceSaveData_Clicked;
+            _purgeSaveDeviceMenuItem.Activated += PurgeDeviceSaveData_Clicked;
 
             //
             // _manageTitleUpdatesMenuItem
