@@ -75,18 +75,28 @@ namespace Ryujinx.Ui.Windows
             return System.IO.Path.Combine(AppDataManager.GamesDirPath, titleId, "enabled_mods.json");
         }
 
+        private void ForEachTreeViewItem(Action<TreeIter> action)
+        {
+            if (!_modsTreeView.Model.GetIterFirst(out TreeIter iterator))
+            {
+                return;
+            }
+
+            do
+            {
+                action(iterator);
+            }
+            while (_modsTreeView.Model.IterNext(ref iterator));
+        }
+
         private void Clear()
         {
             List<TreeIter> toRemove = new List<TreeIter>();
 
-            if (_modsTreeView.Model.GetIterFirst(out TreeIter iter))
+            ForEachTreeViewItem((iterator) =>
             {
-                do
-                {
-                    toRemove.Add(iter);
-                }
-                while (_modsTreeView.Model.IterNext(ref iter));
-            }
+                toRemove.Add(iterator);
+            });
 
             foreach (TreeIter i in toRemove)
             {
@@ -103,23 +113,46 @@ namespace Ryujinx.Ui.Windows
 
             List<ModEntry> enabledMods = new List<ModEntry>();
 
-            if (_modsTreeView.Model.GetIterFirst(out TreeIter parentIter))
+            ForEachTreeViewItem((iterator) =>
             {
-                do
+                if ((bool)_modsTreeView.Model.GetValue(iterator, 0))
                 {
-                    if ((bool)_modsTreeView.Model.GetValue(parentIter, 0))
-                    {
-                        string name = (string)_modsTreeView.Model.GetValue(parentIter, 1);
-                        string path = (string)_modsTreeView.Model.GetValue(parentIter, 3);
-                        enabledMods.Add(new ModEntry(name, path));
-                    }
+                    string name = (string)_modsTreeView.Model.GetValue(iterator, 1);
+                    string path = (string)_modsTreeView.Model.GetValue(iterator, 3);
+                    enabledMods.Add(new ModEntry(name, path));
                 }
-                while (_modsTreeView.Model.IterNext(ref parentIter));
-            }
+            });
 
             using (FileStream modsJsonStream = File.Create(_modsJsonPath, 4096, FileOptions.WriteThrough))
             {
                 modsJsonStream.Write(Encoding.UTF8.GetBytes(JsonHelper.Serialize(enabledMods, true)));
+            }
+        }
+
+        private void WarnUserIfModsMissing(HashSet<ModEntry> jsonEnabledMods)
+        {
+            // Build a hash set from the current loaded mods to check if there is any mod missing that was previously enabled in the JSON.
+
+            HashSet<ModEntry> listedMods = new HashSet<ModEntry>();
+
+            ForEachTreeViewItem((iterator) =>
+            {
+                if ((bool)_modsTreeView.Model.GetValue(iterator, 0))
+                {
+                    string name = (string)_modsTreeView.Model.GetValue(iterator, 1);
+                    string path = (string)_modsTreeView.Model.GetValue(iterator, 3);
+                    listedMods.Add(new ModEntry(name, path));
+                }
+            });
+
+            foreach (var mod in jsonEnabledMods)
+            {
+                if (!listedMods.Contains(mod))
+                {
+                    GtkDialog.CreateWarningDialog("Some mods previously enabled are missing.", "Missing mods removed from the list!");
+
+                    return;
+                }
             }
         }
 
@@ -194,6 +227,8 @@ namespace Ryujinx.Ui.Windows
             Logger.Info?.Print(LogClass.Application, $"Loaded {titleIds.Count} title ids for title");
 
             UpdateInfoLabel();
+
+            WarnUserIfModsMissing(enabledMods);
         }
 
         private void UpdateInfoLabel()
