@@ -236,6 +236,7 @@ namespace Ryujinx.Ui.Windows
                 enabledModsFound++;
             }
         }
+
         private void ModsWindow_DeleteEvent(object sender, DeleteEventArgs args)
         {
             Save();
