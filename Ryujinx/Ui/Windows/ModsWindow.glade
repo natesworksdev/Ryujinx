@@ -52,6 +52,7 @@
                       <object class="GtkTreeView" id="_modsTreeView">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
+                        <signal name="button-release-event" handler="ModsTreeView_RowClicked" swapped="no"/>
                         <child internal-child="selection">
                           <object class="GtkTreeSelection" id="_modsTreeSelection"/>
                         </child>

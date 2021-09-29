@@ -66,7 +66,6 @@ namespace Ryujinx.Ui.Windows
             _modsTreeView.AppendColumn("Name",    new CellRendererText(), "text",   1);
             _modsTreeView.AppendColumn("Type",    new CellRendererText(), "text",   2);
             _modsTreeView.AppendColumn("Path",    new CellRendererText(), "text",   3);
-            _modsTreeView.ButtonReleaseEvent += Row_Clicked;
 
             Refresh();
         }
@@ -296,7 +295,7 @@ namespace Ryujinx.Ui.Windows
             OpenHelper.OpenFolder(titleModsPath);
         }
 
-        private void Row_Clicked(object sender, ButtonReleaseEventArgs args)
+        private void ModsTreeView_RowClicked(object sender, ButtonReleaseEventArgs args)
         {
             if (args.Event.Button != 3 /* Right Click */)
             {
