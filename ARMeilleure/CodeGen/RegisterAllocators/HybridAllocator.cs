@@ -206,12 +206,6 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 int intLocalFreeRegisters = intFreeRegisters & ~blkInfo.IntFixedRegisters;
                 int vecLocalFreeRegisters = vecFreeRegisters & ~blkInfo.VecFixedRegisters;
 
-                if (blkInfo.HasCall)
-                {
-                    intLocalFreeRegisters &= ~regMasks.IntCallerSavedRegisters;
-                    vecLocalFreeRegisters &= ~regMasks.VecCallerSavedRegisters;
-                }
-
                 int intActiveRegisters = 0;
                 int vecActiveRegisters = 0;
 
@@ -245,9 +239,39 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                             }
                         }
                     }
+                    // If operation is call, spill caller saved registers.
+                    else if (node.Instruction == Instruction.Call)
+                    {
+                        int intCallerSavedRegisters = regMasks.IntCallerSavedRegisters & intActiveRegisters;
+                        int vecCallerSavedRegisters = regMasks.VecCallerSavedRegisters & vecActiveRegisters;
 
-                    // If the operation is folded to a fill, no need ot inspect sources; since sources of fills are
-                    // constant operands which does not require registers.
+                        while (intCallerSavedRegisters != 0)
+                        {
+                            int reg = BitOperations.TrailingZeroCount(intCallerSavedRegisters);
+
+                            SpillRegister(ref GetLocalInfo(intActive[reg]), node);
+
+                            intActive[reg] = default;
+                            intActiveRegisters &= ~(1 << reg);
+                            intCurrActiveRegisters |= 1 << reg;
+                            intCallerSavedRegisters &= ~(1 << reg);
+                        }
+
+                        while (vecCallerSavedRegisters != 0)
+                        {
+                            int reg = BitOperations.TrailingZeroCount(vecCallerSavedRegisters);
+
+                            SpillRegister(ref GetLocalInfo(vecActive[reg]), node);
+
+                            vecActive[reg] = default;
+                            vecActiveRegisters &= ~(1 << reg);
+                            vecCurrActiveRegisters |= 1 << reg;
+                            vecCallerSavedRegisters &= ~(1 << reg);
+                        }
+                    }
+
+                    // If the operation is folded to a fill, no need to inspect sources; since sources of fills are
+                    // constant operands which do not require registers.
                     if (!folded)
                     {
                         foreach (ref Operand source in node.SourcesUnsafe)
@@ -314,7 +338,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         if (info.UsesAllocated == info.Uses)
                         {
                             // If the local is not a block local, we have to spill it; otherwise this would cause
-                            // issues when the local is used a in a loop.
+                            // issues when the local is used in a loop.
                             if (!info.IsBlockLocal)
                             {
                                 SpillRegister(ref info, node);
