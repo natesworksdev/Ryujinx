@@ -457,37 +457,49 @@ namespace Ryujinx.Ui.Widgets
             OpenSaveDir(saveDataFilter);
         }
 
-        private void PurgeSaveData(SaveDataFilter saveDataFilter, SaveDataType saveDataType)
+        private void PurgeSaveData(SaveDataFilter saveDataFilter ,SaveDataType saveDataType)
         {
             saveDataFilter.SetProgramId(new ProgramId(_titleId));
-            if (!TryFindSaveData(_titleName, _titleId, _controlData, saveDataFilter, out ulong saveDataId))
+            saveDataFilter.SetSaveDataType(saveDataType);
+            Result findSaveData = _horizonClient.Fs.FindSaveDataWithFilter(out SaveDataInfo saveDataInfo, SaveDataSpaceId.User, in saveDataFilter);
+            if (findSaveData.IsFailure())
             {
                 return;
             }
+            ulong saveDataId = saveDataInfo.SaveDataId;
             MessageDialog warningDialog = GtkDialog.CreateConfirmationDialog("Warning", $"You are about to delete the {saveDataType.ToString().ToLower()}'s savedata for :\n<b>{_titleName}</b>\nAre you sure you want to proceed?\nFiles can't be recovered once deleted!");
             if (warningDialog.Run() == (int)ResponseType.Yes)
             {
-                if (saveDataType == SaveDataType.Account)
+                switch (saveDataType)
                 {
-                    try
-                    {
-                        _horizonClient.Fs.DeleteSaveData(saveDataId);
-                    }
-                    catch (Exception e)
-                    {
-                        GtkDialog.CreateErrorDialog($"Error deleting user save data for {_titleName}[{_titleId}]: {e}");
-                    }
-                }
-                else if(saveDataType == SaveDataType.Device)
-                {
-                    try
-                    {
-                        _horizonClient.Fs.DeleteDeviceSaveData(new ApplicationId(_titleId));
-                    }
-                    catch (Exception e)
-                    {
-                        GtkDialog.CreateErrorDialog($"Error deleting device save data for {_titleName}[{_titleId}]: {e}");
-                    }
+                    case SaveDataType.Account:
+                        try
+                        {
+                            if (_horizonClient.Fs.DeleteSaveData(SaveDataSpaceId.User, saveDataId).IsFailure())
+                            {
+                                GtkDialog.CreateErrorDialog($"Error deleting user save data");
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Logger.Error?.Print(LogClass.Application, $"User save data for {_titleName}[{_titleId}] could not be deleted: {e}");
+                        }
+
+                        break;
+                    case SaveDataType.Device:
+                        try
+                        {
+                            if (_horizonClient.Fs.DeleteDeviceSaveData(new ApplicationId(_titleId)).IsFailure())
+                            {
+                                GtkDialog.CreateErrorDialog($"Error deleting device save data");
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Logger.Error?.Print(LogClass.Application, $"Device save data for {_titleName}[{_titleId}] could not be deleted: {e}");
+                        }
+
+                        break;
                 }
             }
             warningDialog.Dispose();
@@ -496,6 +508,7 @@ namespace Ryujinx.Ui.Widgets
         private void PurgeUserSaveData_Clicked(object sender, EventArgs args)
         {
             SaveDataFilter saveDataFilter = new SaveDataFilter();
+            saveDataFilter.SetUserId(new LibHac.Fs.UserId((ulong)_accountManager.LastOpenedUser.UserId.High, (ulong)_accountManager.LastOpenedUser.UserId.Low));
             SaveDataType saveDataType = SaveDataType.Account;
 
             PurgeSaveData(saveDataFilter, saveDataType);
@@ -504,9 +517,10 @@ namespace Ryujinx.Ui.Widgets
         private void PurgeDeviceSaveData_Clicked(object sender, EventArgs args)
         {
             SaveDataFilter saveDataFilter = new SaveDataFilter();
+            saveDataFilter.SetSaveDataType(SaveDataType.Device);
             SaveDataType saveDataType = SaveDataType.Device;
             
-            PurgeSaveData(saveDataFilter, saveDataType);
+            PurgeSaveData(saveDataFilter,saveDataType);
         }
 
         private void ManageTitleUpdates_Clicked(object sender, EventArgs args)
