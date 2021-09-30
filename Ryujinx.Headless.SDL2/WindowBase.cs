@@ -54,8 +54,9 @@ namespace Ryujinx.Headless.SDL2
 
         private AspectRatio _aspectRatio;
         private bool _enableMouse;
+        private int fpsPrecision;
 
-        public WindowBase(InputManager inputManager, GraphicsDebugLevel glLogLevel, AspectRatio aspectRatio, bool enableMouse)
+        public WindowBase(InputManager inputManager, GraphicsDebugLevel glLogLevel, AspectRatio aspectRatio, bool enableMouse, int FpsPrecision)
         {
             MouseDriver = new SDL2MouseDriver();
             _inputManager = inputManager;
@@ -69,6 +70,7 @@ namespace Ryujinx.Headless.SDL2
             _exitEvent = new ManualResetEvent(false);
             _aspectRatio = aspectRatio;
             _enableMouse = enableMouse;
+            fpsPrecision = FpsPrecision;
 
             SDL2Driver.Instance.Initialize();
         }
@@ -191,7 +193,7 @@ namespace Ryujinx.Headless.SDL2
                     {
                         string dockedMode = Device.System.State.DockedMode ? "Docked" : "Handheld";
                         float  scale      = Graphics.Gpu.GraphicsConfig.ResScale;
-                        int    precision  = SDL2.Options.FpsPrecision;
+                        int    precision  = fpsPrecision;
                         double fps        = Device.Statistics.GetGameFrameRate();
                         double frameTime  = Device.Statistics.GetGameFrameTime();
 

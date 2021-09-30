@@ -500,7 +500,7 @@ namespace Ryujinx.Headless.SDL2
 
             Logger.RestartTime();
 
-            _window = new OpenGLWindow(_inputManager, options.LoggingGraphicsDebugLevel, options.AspectRatio, (bool)options.EnableMouse);
+            _window = new OpenGLWindow(_inputManager, options.LoggingGraphicsDebugLevel, options.AspectRatio, (bool)options.EnableMouse, (int)options.FpsPrecision);
             _emulationContext = InitializeEmulationContext(_window, options);
 
             SetupProgressHandler();
