@@ -197,6 +197,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             Operand[] intActive = new Operand[RegistersCount];
             Operand[] vecActive = new Operand[RegistersCount];
 
+            Operation dummyNode = Operation(Instruction.Extended, default);
+
             for (int index = cfg.PostOrderBlocks.Length - 1; index >= 0; index--)
             {
                 BasicBlock block = cfg.PostOrderBlocks[index];
@@ -339,7 +341,11 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         {
                             // If the local is not a block local, we have to spill it; otherwise this would cause
                             // issues when the local is used in a loop.
-                            if (!info.IsBlockLocal)
+                            //
+                            // If the local has only a single definition, we can skip spilling because the definition
+                            // will be spilled at the block where it was defined's exit or it will be spilled because it
+                            // was evicted.
+                            if (!info.IsBlockLocal && local.AssignmentsCount > 1)
                             {
                                 SpillRegister(ref info, node);
                             }
@@ -456,11 +462,11 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 // next block.
                 if ((intActiveRegisters | vecActiveRegisters) != 0)
                 {
-                    // If the block has 0 successors then the control flow exits. This means we can skip spilling and
-                    // since we're exiting anyways.
+                    // If the block has 0 successors then the control flow exits. This means we can skip spilling since
+                    // we're exiting anyways.
                     bool needSpill = block.SuccessorsCount > 0;
 
-                    Operation dummyNode = block.Append(Operation(Instruction.Extended, default));
+                    dummyNode = block.Append(dummyNode);
 
                     while (intActiveRegisters != 0)
                     {
