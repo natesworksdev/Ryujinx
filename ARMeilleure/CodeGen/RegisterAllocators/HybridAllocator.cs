@@ -13,16 +13,11 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
     {
         private struct BlockInfo
         {
-            public bool HasCall { get; }
+            public int FixedRegisters { get; }
 
-            public int IntFixedRegisters { get; }
-            public int VecFixedRegisters { get; }
-
-            public BlockInfo(bool hasCall, int intFixedRegisters, int vecFixedRegisters)
+            public BlockInfo(int fixedRegisters)
             {
-                HasCall           = hasCall;
-                IntFixedRegisters = intFixedRegisters;
-                VecFixedRegisters = vecFixedRegisters;
+                FixedRegisters = fixedRegisters;
             }
         }
 
@@ -35,6 +30,9 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             public Operand Register { get; set; }
             public Operand SpillOffset { get; set; }
             public OperandType Type { get; }
+
+            // Cached to avoid redundant computations.
+            public RegisterType RegisterType { get; }
 
             private int _first;
             private int _last;
@@ -51,6 +49,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 Temp = default;
                 Register = default;
                 SpillOffset = default;
+
+                RegisterType = Type.ToRegisterType();
 
                 _first = -1;
                 _last  = -1;
@@ -73,6 +73,9 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         }
 
         private const int RegistersCount = 16;
+
+        private const int IntMask = (1 << RegistersCount) - 1;
+        private const int VecMask = IntMask << RegistersCount;
 
         // The "visited" state is stored in the MSB of the local's value.
         private const ulong VisitedMask = 1ul << 63;
@@ -107,12 +110,6 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         public AllocationResult RunPass(ControlFlowGraph cfg, StackAllocator stackAlloc, RegisterMasks regMasks)
         {
-            int intUsedRegisters = 0;
-            int vecUsedRegisters = 0;
-
-            int intFreeRegisters = regMasks.IntAvailableRegisters;
-            int vecFreeRegisters = regMasks.VecAvailableRegisters;
-
             _blockInfo = new BlockInfo[cfg.Blocks.Count];
             _localInfo = new LocalInfo[cfg.Blocks.Count * 3];
 
@@ -122,18 +119,10 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             {
                 BasicBlock block = cfg.PostOrderBlocks[index];
 
-                int intFixedRegisters = 0;
-                int vecFixedRegisters = 0;
-
-                bool hasCall = false;
+                int fixedRegisters = 0;
 
                 for (Operation node = block.Operations.First; node != default; node = node.ListNext)
                 {
-                    if (node.Instruction == Instruction.Call)
-                    {
-                        hasCall = true;
-                    }
-
                     foreach (Operand source in node.SourcesUnsafe)
                     {
                         if (source.Kind == OperandKind.LocalVariable)
@@ -179,47 +168,40 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         }
                         else if (dest.Kind == OperandKind.Register)
                         {
-                            if (dest.Type.IsInteger())
-                            {
-                                intFixedRegisters |= 1 << dest.GetRegister().Index;
-                            }
-                            else
-                            {
-                                vecFixedRegisters |= 1 << dest.GetRegister().Index;
-                            }
+                            fixedRegisters |= 1 << Index(dest.GetRegister());
                         }
                     }
                 }
 
-                _blockInfo[block.Index] = new BlockInfo(hasCall, intFixedRegisters, vecFixedRegisters);
+                _blockInfo[block.Index] = new BlockInfo(fixedRegisters);
             }
 
-            Operand[] intActive = new Operand[RegistersCount];
-            Operand[] vecActive = new Operand[RegistersCount];
+            int usedRegisters = 0;
+            int freeRegisters = Merge(regMasks.VecAvailableRegisters, regMasks.IntAvailableRegisters);
+            int callerSavedRegisters = Merge(regMasks.VecCallerSavedRegisters, regMasks.IntCallerSavedRegisters);
+
+            Operand[] active = new Operand[RegistersCount * 2];
 
             Operation dummyNode = Operation(Instruction.Extended, default);
 
             for (int index = cfg.PostOrderBlocks.Length - 1; index >= 0; index--)
             {
                 BasicBlock block = cfg.PostOrderBlocks[index];
+                BlockInfo blkInfo = _blockInfo[block.Index];
 
-                ref BlockInfo blkInfo = ref _blockInfo[block.Index];
-
-                int intLocalFreeRegisters = intFreeRegisters & ~blkInfo.IntFixedRegisters;
-                int vecLocalFreeRegisters = vecFreeRegisters & ~blkInfo.VecFixedRegisters;
-
-                int intActiveRegisters = 0;
-                int vecActiveRegisters = 0;
+                int freeLocalRegisters = freeRegisters & ~blkInfo.FixedRegisters;
+                int activeRegisters = 0;
 
                 for (Operation node = block.Operations.First; node != default; node = node.ListNext)
                 {
                     bool folded = false;
 
-                    int intCurrActiveRegisters = 0;
-                    int vecCurrActiveRegisters = 0;
+                    // Set of registers currently being used on the operation. These registers are __not__ candidate for
+                    // allocation or spilling in the current operation.
+                    int activeCurrRegisters = 0;
 
-                    // If operation is a copy of a local and that local is living on the stack, we turn the copy into
-                    // a fill, instead of inserting a fill before it.
+                    // If operation is a copy of a local and that local is living on the stack, we turn the copy into a
+                    // fill, instead of inserting a fill before it.
                     if (node.Instruction == Instruction.Copy)
                     {
                         Operand source = node.GetSource(0);
@@ -239,36 +221,6 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                                 folded = true;
                             }
-                        }
-                    }
-                    // If operation is call, spill caller saved registers.
-                    else if (node.Instruction == Instruction.Call)
-                    {
-                        int intCallerSavedRegisters = regMasks.IntCallerSavedRegisters & intActiveRegisters;
-                        int vecCallerSavedRegisters = regMasks.VecCallerSavedRegisters & vecActiveRegisters;
-
-                        while (intCallerSavedRegisters != 0)
-                        {
-                            int reg = BitOperations.TrailingZeroCount(intCallerSavedRegisters);
-
-                            SpillRegister(ref GetLocalInfo(intActive[reg]), node);
-
-                            intActive[reg] = default;
-                            intActiveRegisters &= ~(1 << reg);
-                            intCurrActiveRegisters |= 1 << reg;
-                            intCallerSavedRegisters &= ~(1 << reg);
-                        }
-
-                        while (vecCallerSavedRegisters != 0)
-                        {
-                            int reg = BitOperations.TrailingZeroCount(vecCallerSavedRegisters);
-
-                            SpillRegister(ref GetLocalInfo(vecActive[reg]), node);
-
-                            vecActive[reg] = default;
-                            vecActiveRegisters &= ~(1 << reg);
-                            vecCurrActiveRegisters |= 1 << reg;
-                            vecCallerSavedRegisters &= ~(1 << reg);
                         }
                     }
 
@@ -299,6 +251,25 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         }
                     }
 
+                    // If operation is a call, spill caller saved registers which are in the active set.
+                    if (node.Instruction == Instruction.Call)
+                    {
+                        int toSpill = callerSavedRegisters & activeRegisters;
+
+                        while (toSpill != 0)
+                        {
+                            int reg = BitOperations.TrailingZeroCount(toSpill);
+
+                            SpillRegister(ref GetLocalInfo(active[reg]), node);
+
+                            activeRegisters &= ~(1 << reg);
+                            activeCurrRegisters |= 1 << reg;
+                            active[reg] = default;
+
+                            toSpill &= ~(1 << reg);
+                        }
+                    }
+
                     foreach (ref Operand dest in node.DestinationsUnsafe)
                     {
                         if (dest.Kind == OperandKind.LocalVariable)
@@ -325,16 +296,9 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         }
 
                         Operand result = info.Register;
-                        Register reg = info.Register.GetRegister();
+                        int reg = Index(result.GetRegister());
 
-                        if (local.Type.IsInteger())
-                        {
-                            intCurrActiveRegisters |= 1 << reg.Index;
-                        }
-                        else
-                        {
-                            vecCurrActiveRegisters |= 1 << reg.Index;
-                        }
+                        activeCurrRegisters |= 1 << reg;
 
                         // If we've reached the last use of the local, we can free the register "gracefully".
                         if (info.UsesAllocated == info.Uses)
@@ -350,16 +314,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                                 SpillRegister(ref info, node);
                             }
 
-                            if (local.Type.IsInteger())
-                            {
-                                intActiveRegisters &= ~(1 << reg.Index);
-                                intActive[reg.Index] = default;
-                            }
-                            else
-                            {
-                                vecActiveRegisters &= ~(1 << reg.Index);
-                                vecActive[reg.Index] = default;
-                            }
+                            activeRegisters &= ~(1 << reg);
+                            active[reg] = default;
 
                             info.Register = default;
                         }
@@ -381,10 +337,21 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                             return info.Register;
                         }
 
-                        int mask = local.Type.IsInteger()
-                            ? intLocalFreeRegisters & ~(intActiveRegisters | intCurrActiveRegisters)
-                            : vecLocalFreeRegisters & ~(vecActiveRegisters | vecCurrActiveRegisters);
+                        int typeCount;
+                        int typeMask;
 
+                        if (info.RegisterType == RegisterType.Integer)
+                        {
+                            typeMask = IntMask;
+                            typeCount = 0;
+                        }
+                        else
+                        {
+                            typeMask = VecMask;
+                            typeCount = RegistersCount;
+                        }
+
+                        int mask = freeLocalRegisters & ~(activeRegisters | activeCurrRegisters) & typeMask;
                         int selectedReg;
 
                         // If we have inactive registers available, use one of them.
@@ -395,64 +362,40 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         // Otherwise we spill an active register and use the that register.
                         else
                         {
+                            int spillMask = activeRegisters & ~activeCurrRegisters & typeMask;
                             int spillReg;
-                            int spillMask;
                             Operand spillLocal;
-                            Operand[] spillActive;
-
-                            if (local.Type.IsInteger())
-                            {
-                                spillMask = intActiveRegisters & ~intCurrActiveRegisters;
-                                spillActive = intActive;
-                            }
-                            else
-                            {
-                                spillMask = vecActiveRegisters & ~vecCurrActiveRegisters;
-                                spillActive = vecActive;
-                            }
 
                             // The heuristic will select the first register which is holding a non block local. This is
                             // based on the assumption that block locals are more likely to be used next.
                             //
                             // TODO: Quite often, this assumption is not necessarily true, investigate other heuristics.
-                            int tempMask = spillMask;
-
                             do
                             {
-                                spillReg = BitOperations.TrailingZeroCount(tempMask);
-                                spillLocal = spillActive[spillReg];
+                                spillReg = BitOperations.TrailingZeroCount(spillMask);
+                                spillLocal = active[spillReg];
 
                                 if (!GetLocalInfo(spillLocal).IsBlockLocal)
                                 {
                                     break;
                                 }
 
-                                tempMask &= ~(1 << spillReg);
+                                spillMask &= ~(1 << spillReg);
                             }
-                            while (tempMask != 0);
+                            while (spillMask != 0);
 
                             SpillRegister(ref GetLocalInfo(spillLocal), node);
 
                             selectedReg = spillReg;
                         }
 
-                        info.Register = Register(selectedReg, local.Type.ToRegisterType(), local.Type);
+                        info.Register = Register(selectedReg - typeCount, info.RegisterType, local.Type);
 
                         // Move selected register to the active set.
-                        if (local.Type.IsInteger())
-                        {
-                            intUsedRegisters |= 1 << selectedReg;
-                            intActiveRegisters |= 1 << selectedReg;
-                            intCurrActiveRegisters |= 1 << selectedReg;
-                            intActive[selectedReg] = local;
-                        }
-                        else
-                        {
-                            vecUsedRegisters |= 1 << selectedReg;
-                            vecActiveRegisters |= 1 << selectedReg;
-                            vecCurrActiveRegisters |= 1 << selectedReg;
-                            vecActive[selectedReg] = local;
-                        }
+                        usedRegisters |= 1 << selectedReg;
+                        activeRegisters |= 1 << selectedReg;
+                        activeCurrRegisters |= 1 << selectedReg;
+                        active[selectedReg] = local;
 
                         return info.Register;
                     }
@@ -460,7 +403,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                 // If there are still registers in the active set after allocation of the block, we spill them for the
                 // next block.
-                if ((intActiveRegisters | vecActiveRegisters) != 0)
+                if (activeRegisters != 0)
                 {
                     // If the block has 0 successors then the control flow exits. This means we can skip spilling since
                     // we're exiting anyways.
@@ -468,10 +411,10 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                     dummyNode = block.Append(dummyNode);
 
-                    while (intActiveRegisters != 0)
+                    while (activeRegisters != 0)
                     {
-                        int reg = BitOperations.TrailingZeroCount(intActiveRegisters);
-                        ref LocalInfo info = ref GetLocalInfo(intActive[reg]);
+                        int reg = BitOperations.TrailingZeroCount(activeRegisters);
+                        ref LocalInfo info = ref GetLocalInfo(active[reg]);
 
                         if (needSpill && !info.IsBlockLocal)
                         {
@@ -482,26 +425,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                             info.Register = default;
                         }
 
-                        intActiveRegisters &= ~(1 << reg);
-                        intActive[reg] = default;
-                    }
-
-                    while (vecActiveRegisters != 0)
-                    {
-                        int reg = BitOperations.TrailingZeroCount(vecActiveRegisters);
-                        ref LocalInfo info = ref GetLocalInfo(vecActive[reg]);
-
-                        if (needSpill && !info.IsBlockLocal)
-                        {
-                            SpillRegister(ref info, dummyNode);
-                        }
-                        else
-                        {
-                            info.Register = default;
-                        }
-
-                        vecActiveRegisters &= ~(1 << reg);
-                        vecActive[reg] = default;
+                        activeRegisters &= ~(1 << reg);
+                        active[reg] = default;
                     }
 
                     block.Operations.Remove(dummyNode);
@@ -534,7 +459,34 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 }
             }
 
+            var (vecUsedRegisters, intUsedRegisters) = Split(usedRegisters);
+
             return new AllocationResult(intUsedRegisters, vecUsedRegisters, stackAlloc.TotalSize);
+        }
+
+        private static int Index(Register reg)
+        {
+            int index = reg.Index;
+
+            if (reg.Type == RegisterType.Vector)
+            {
+                index += RegistersCount;
+            }
+
+            return index;
+        }
+
+        private static int Merge(int vecSet, int intSet)
+        {
+            return vecSet << RegistersCount | intSet;
+        }
+
+        private static (int, int) Split(int set)
+        {
+            int intMask = (1 << RegistersCount) - 1;
+            int vecMask = intMask << RegistersCount;
+
+            return ((int)((uint)(set & vecMask) >> RegistersCount), set & intMask);
         }
 
         private static int UsesCount(Operand local)
