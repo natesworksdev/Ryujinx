@@ -182,6 +182,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             Operand[] active = new Operand[RegistersCount * 2];
 
+            int activeRegisters = 0;
+
             Operation dummyNode = Operation(Instruction.Extended, default);
 
             for (int index = cfg.PostOrderBlocks.Length - 1; index >= 0; index--)
@@ -190,7 +192,6 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 BlockInfo blkInfo = _blockInfo[block.Index];
 
                 int freeLocalRegisters = freeRegisters & ~blkInfo.FixedRegisters;
-                int activeRegisters = 0;
 
                 for (Operation node = block.Operations.First; node != default; node = node.ListNext)
                 {
@@ -405,6 +406,23 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 // next block.
                 if (activeRegisters != 0)
                 {
+                    // If the current block has a single successor and the next block has a single predecessor, we can
+                    // allocate across them without spilling anything.
+                    //
+                    // NOTE: We still have to check if they have matching fixed register sets.
+                    if (index > 0 && block.SuccessorsCount == 1)
+                    {
+                        BasicBlock nextBlock = cfg.PostOrderBlocks[index - 1];
+                        BlockInfo nextBlkInfo = _blockInfo[nextBlock.Index];
+
+                        if (nextBlock.Predecessors.Count == 1 &&
+                            nextBlkInfo.FixedRegisters == blkInfo.FixedRegisters &&
+                            block.GetSuccessor(0) == nextBlock)
+                        {
+                            continue;
+                        }
+                    }
+
                     // If the block has 0 successors then the control flow exits. This means we can skip spilling since
                     // we're exiting anyways.
                     bool needSpill = block.SuccessorsCount > 0;
