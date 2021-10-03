@@ -4359,8 +4359,8 @@ namespace Ryujinx.Graphics.Shader.Decoders
         public int Pred => (int)((_opcode >> 16) & 0x7);
         public bool PredInv => (_opcode & 0x80000) != 0;
         public bool WriteCC => (_opcode & 0x800000000000) != 0;
-        public bool MH => (_opcode & 0x4000000000000) != 0;
-        public XModeShf XmdShf => (XModeShf)((_opcode >> 48) & 0x3);
+        public bool M => (_opcode & 0x4000000000000) != 0;
+        public XModeShf XModeShf => (XModeShf)((_opcode >> 48) & 0x3);
         public MaxShift MaxShift => (MaxShift)((_opcode >> 37) & 0x3);
         public int Imm6 => (int)((_opcode >> 20) & 0x3F);
     }
