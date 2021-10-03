@@ -14,8 +14,8 @@ namespace Ryujinx.Graphics.Shader.Instructions
         {
             InstPset op = context.GetOp<InstPset>();
 
-            Operand srcA = context.BitwiseNot(Register(op.Src2Pred, RegisterType.Predicate), op.Src1PredInv);
-            Operand srcB = context.BitwiseNot(Register(op.Src1Pred, RegisterType.Predicate), op.Src2PredInv);
+            Operand srcA = context.BitwiseNot(Register(op.Src2Pred, RegisterType.Predicate), op.Src2PredInv);
+            Operand srcB = context.BitwiseNot(Register(op.Src1Pred, RegisterType.Predicate), op.Src1PredInv);
             Operand srcC = context.BitwiseNot(Register(op.SrcPred, RegisterType.Predicate), op.SrcPredInv);
 
             Operand res = GetPredLogicalOp(context, op.BoolOpAB, srcA, srcB);
@@ -37,8 +37,8 @@ namespace Ryujinx.Graphics.Shader.Instructions
         {
             InstPsetp op = context.GetOp<InstPsetp>();
 
-            Operand srcA = context.BitwiseNot(Register(op.Src2Pred, RegisterType.Predicate), op.Src1PredInv);
-            Operand srcB = context.BitwiseNot(Register(op.Src1Pred, RegisterType.Predicate), op.Src2PredInv);
+            Operand srcA = context.BitwiseNot(Register(op.Src2Pred, RegisterType.Predicate), op.Src2PredInv);
+            Operand srcB = context.BitwiseNot(Register(op.Src1Pred, RegisterType.Predicate), op.Src1PredInv);
 
             Operand p0Res = GetPredLogicalOp(context, op.BoolOpAB, srcA, srcB);
             Operand p1Res = context.BitwiseNot(p0Res);
