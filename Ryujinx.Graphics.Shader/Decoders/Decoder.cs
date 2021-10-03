@@ -625,7 +625,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
                 pushOpIndex = 0;
 
                 bool hasNext = current.HasNext();
-                if (current.HasNext())
+                if (hasNext)
                 {
                     Push(new PathBlockState(current.Successors[0]));
                 }

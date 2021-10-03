@@ -348,7 +348,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
         {
             InstHmul2R op = context.GetOp<InstHmul2R>();
 
-
             var srcA = GetHalfSrc(context, op.ASwizzle, op.SrcA, false, op.AbsA);
             var srcB = GetHalfSrc(context, op.BSwizzle, op.SrcB, op.NegA, op.AbsB);
 
