@@ -222,7 +222,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
             Add("1110101111100xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Out,         InstEmit.OutC,        InstProps.Rd  | InstProps.Ra);
             Add("0101110011101xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.P2r,         InstEmit.P2rR,        InstProps.Rd  | InstProps.Ra  | InstProps.Rb);
             Add("0011100x11101xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.P2r,         InstEmit.P2rI,        InstProps.Rd  | InstProps.Ra  | InstProps.Ib);
-            Add("0011100x11101xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.P2r,         InstEmit.P2rC,        InstProps.Rd  | InstProps.Ra);
+            Add("0100110011101xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.P2r,         InstEmit.P2rC,        InstProps.Rd  | InstProps.Ra);
             Add("111000101010xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Pbk,         InstEmit.Pbk,         InstProps.NoPred);
             Add("111000101011xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Pcnt,        InstEmit.Pcnt,        InstProps.NoPred);
             Add("111000100011xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Pexit,       InstEmit.Pexit);
