@@ -86,7 +86,7 @@ namespace Ryujinx.Headless.SDL2
         public int FsGlobalAccessLogMode { get; set; }
 
         [Option("fps-precision", Required = false, Default = 0, HelpText = "Integer scale to adjust frame metric displayed value. Values from 0-4")]
-        public int FpsPrecision { get; set; }
+        public uint FpsPrecision { get; set; }
 
         [Option("enable-vsync", Required = false, Default = true, HelpText = "Enables Vertical Sync.")]
         public bool? EnableVsync { get; set; }

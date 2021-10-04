@@ -177,7 +177,7 @@ namespace Ryujinx.Configuration
         /// <summary>
         /// Integer scale to adjust frame metric displayed value. Values from 0-4
         /// </summary>
-        public int FpsPrecision { get; set; }
+        public uint FpsPrecision { get; set; }
 
         /// <summary>
         /// The selected audio backend

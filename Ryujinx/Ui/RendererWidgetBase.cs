@@ -55,7 +55,6 @@ namespace Ryujinx.Ui
         private long _ticks = 0;
 
         private string _fpsString;
-
         private string _frameTimeString;
 
         private readonly Stopwatch _chrono;
@@ -422,7 +421,6 @@ namespace Ryujinx.Ui
                     {
                         string dockedMode = ConfigurationState.Instance.System.EnableDockedMode ? "Docked" : "Handheld";
                         float  scale      = Graphics.Gpu.GraphicsConfig.ResScale;
-                        int    precision  = ConfigurationState.Instance.Ui.FpsPrecision;
                         double fps        = Device.Statistics.GetGameFrameRate();
                         double frameTime  = Device.Statistics.GetGameFrameTime();
                         
@@ -431,7 +429,7 @@ namespace Ryujinx.Ui
                             dockedMode += $" ({scale}x)";
                         }
 
-                        switch (precision)
+                        switch (ConfigurationState.Instance.Ui.FpsPrecision)
                         {
                             case 0:
                                 _fpsString       = fps.ToString("00.00 FPS");

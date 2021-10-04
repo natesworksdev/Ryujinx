@@ -91,7 +91,7 @@ namespace Ryujinx.Configuration
             // <summary>
             /// Integer scale to adjust frame metric displayed value. Values from 0-4
             /// </summary>
-            public ReactiveObject<int> FpsPrecision { get; private set; }
+            public ReactiveObject<uint> FpsPrecision { get; private set; }
 
             public UiSection()
             {
@@ -101,7 +101,7 @@ namespace Ryujinx.Configuration
                 EnableCustomTheme  = new ReactiveObject<bool>();
                 CustomThemePath    = new ReactiveObject<string>();
                 StartFullscreen    = new ReactiveObject<bool>();
-                FpsPrecision       = new ReactiveObject<int>();
+                FpsPrecision       = new ReactiveObject<uint>();
                 FpsPrecision.Event += static (sender, e) => LogValueChange(sender, e, nameof(FpsPrecision));
             }
         }
