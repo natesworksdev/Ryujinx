@@ -203,6 +203,10 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                 case Instruction.ShuffleXor:
                     context.Info.HelperFunctionsMask |= HelperFunctionsMask.ShuffleXor;
                     break;
+                case Instruction.StoreStorage16:
+                case Instruction.StoreStorage8:
+                    context.Info.HelperFunctionsMask |= HelperFunctionsMask.StoreStorageSmallInt;
+                    break;
                 case Instruction.SwizzleAdd:
                     context.Info.HelperFunctionsMask |= HelperFunctionsMask.SwizzleAdd;
                     break;

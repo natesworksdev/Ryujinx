@@ -383,6 +383,42 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             return $"{sb} = {src}";
         }
 
+        public static string StoreStorage16(CodeGenContext context, AstOperation operation)
+        {
+            IAstNode src1 = operation.GetSource(0);
+            IAstNode src2 = operation.GetSource(1);
+            IAstNode src3 = operation.GetSource(2);
+
+            string indexExpr  = GetSoureExpr(context, src1, GetSrcVarType(operation.Inst, 0));
+            string offsetExpr = GetSoureExpr(context, src2, GetSrcVarType(operation.Inst, 1));
+
+            VariableType srcType = OperandManager.GetNodeDestType(context, src3);
+
+            string src = TypeConversion.ReinterpretCast(context, src3, srcType, VariableType.U32);
+
+            string sb = GetStorageBufferAccessor(indexExpr, offsetExpr, context.Config.Stage);
+
+            return $"{HelperFunctionNames.StoreStorage16}({indexExpr}, {offsetExpr}, {src})";
+        }
+
+        public static string StoreStorage8(CodeGenContext context, AstOperation operation)
+        {
+            IAstNode src1 = operation.GetSource(0);
+            IAstNode src2 = operation.GetSource(1);
+            IAstNode src3 = operation.GetSource(2);
+
+            string indexExpr  = GetSoureExpr(context, src1, GetSrcVarType(operation.Inst, 0));
+            string offsetExpr = GetSoureExpr(context, src2, GetSrcVarType(operation.Inst, 1));
+
+            VariableType srcType = OperandManager.GetNodeDestType(context, src3);
+
+            string src = TypeConversion.ReinterpretCast(context, src3, srcType, VariableType.U32);
+
+            string sb = GetStorageBufferAccessor(indexExpr, offsetExpr, context.Config.Stage);
+
+            return $"{HelperFunctionNames.StoreStorage8}({indexExpr}, {offsetExpr}, {src})";
+        }
+
         public static string TextureSample(CodeGenContext context, AstOperation operation)
         {
             AstTextureOperation texOp = (AstTextureOperation)operation;

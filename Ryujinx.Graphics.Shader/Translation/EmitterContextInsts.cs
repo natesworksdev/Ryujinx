@@ -627,6 +627,16 @@ namespace Ryujinx.Graphics.Shader.Translation
             return context.Add(Instruction.StoreGlobal, null, a, b, c);
         }
 
+        public static Operand StoreGlobal16(this EmitterContext context, Operand a, Operand b, Operand c)
+        {
+            return context.Add(Instruction.StoreGlobal16, null, a, b, c);
+        }
+
+        public static Operand StoreGlobal8(this EmitterContext context, Operand a, Operand b, Operand c)
+        {
+            return context.Add(Instruction.StoreGlobal8, null, a, b, c);
+        }
+
         public static Operand StoreLocal(this EmitterContext context, Operand a, Operand b)
         {
             return context.Add(Instruction.StoreLocal, null, a, b);

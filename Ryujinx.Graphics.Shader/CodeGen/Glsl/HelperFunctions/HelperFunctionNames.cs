@@ -13,5 +13,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
         public static string ShuffleUp   = "Helper_ShuffleUp";
         public static string ShuffleXor  = "Helper_ShuffleXor";
         public static string SwizzleAdd  = "Helper_SwizzleAdd";
+
+        public static string StoreStorage16  = "Helper_StoreStorage16";
+        public static string StoreStorage8   = "Helper_StoreStorage8";
     }
 }

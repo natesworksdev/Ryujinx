@@ -401,8 +401,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return;
             }
 
-            bool isSmallInt = size < LsSize2.B32;
-
             int count = GetVectorCount((LsSize)size);
 
             (Operand addrLow, Operand addrHigh) = Get40BitsAddress(context, new Register(ra, RegisterType.Gpr), extended, offset);
@@ -415,14 +413,20 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
                 Operand value = Register(isRz ? rd : rd + index, RegisterType.Gpr);
 
-                if (isSmallInt)
+                Operand addrLowOffset = context.IAdd(addrLow, Const(index * 4));
+
+                if (size == LsSize2.U8 || size == LsSize2.S8)
                 {
-                    Operand word = context.LoadGlobal(addrLow, addrHigh);
-
-                    value = InsertSmallInt(context, (LsSize)size, bitOffset, word, value);
+                    context.StoreGlobal8(addrLowOffset, addrHigh, value);
                 }
-
-                context.StoreGlobal(context.IAdd(addrLow, Const(index * 4)), addrHigh, value);
+                else if (size == LsSize2.U16 || size == LsSize2.S16)
+                {
+                    context.StoreGlobal16(addrLowOffset, addrHigh, value);
+                }
+                else
+                {
+                    context.StoreGlobal(addrLowOffset, addrHigh, value);
+                }
             }
         }
 

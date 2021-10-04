@@ -188,6 +188,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     case Instruction.StoreStorage:
                         return StoreStorage(context, operation);
 
+                    case Instruction.StoreStorage16:
+                        return StoreStorage16(context, operation);
+
+                    case Instruction.StoreStorage8:
+                        return StoreStorage8(context, operation);
+
                     case Instruction.TextureSample:
                         return TextureSample(context, operation);
 
