@@ -1,13 +1,12 @@
 ﻿using Ryujinx.Common.Memory;
+using Ryujinx.Graphics.Video;
+using System;
 
 namespace Ryujinx.Graphics.Nvdec.Types.Vp8
 {
     struct PictureInfo
     {
-        public Array10<uint> Unknown0;
-        public uint BitstreamSize;
-        public uint BlockLayout; // Not supported on T210
-        public uint WorkBufferSizeShr8;
+        public Array13<uint> Unknown0;
 
         public uint gptimer_timeout_value;
 
@@ -16,9 +15,12 @@ namespace Ryujinx.Graphics.Nvdec.Types.Vp8
 
         public byte keyFrame;        // 1: key frame; 0: not
         public byte version;
+        /*
         public byte tileFormat; //                : 2 ;   // 0: TBL; 1: KBL;
         public byte gob_height;//                 : 3 ;   // Set GOB height, 0: GOB_2, 1: GOB_4, 2: GOB_8, 3: GOB_16, 4: GOB_32 (NVDEC3 onwards)
         public byte reserverd_surface_format; //   : 3 ;
+        */
+        public byte flags;
         public byte errorConcealOn;  // 1: error conceal on; 0: off
 
         public uint firstPartSize;   // the size of first partition(frame header and mb header partition)
@@ -108,5 +110,17 @@ namespace Ryujinx.Graphics.Nvdec.Types.Vp8
         public uint UnknownFC;
 #pragma warning restore CS0649
         */
+
+        public Vp8PictureInfo Convert()
+        {
+            return new Vp8PictureInfo()
+            {
+                KeyFrame = keyFrame,
+                FirstPartSize = firstPartSize,
+                Version = version,
+                FrameWidth = FrameWidth,
+                FrameHeight = FrameHeight
+            };
+        }
     }
 }
