@@ -10,6 +10,7 @@
     <ProjectReference Include="..\Ryujinx.Graphics.Device\Ryujinx.Graphics.Device.csproj" />
     <ProjectReference Include="..\Ryujinx.Graphics.Gpu\Ryujinx.Graphics.Gpu.csproj" />
     <ProjectReference Include="..\Ryujinx.Graphics.Nvdec.H264\Ryujinx.Graphics.Nvdec.H264.csproj" />
+    <ProjectReference Include="..\Ryujinx.Graphics.Nvdec.Vp8\Ryujinx.Graphics.Nvdec.Vp8.csproj" />
     <ProjectReference Include="..\Ryujinx.Graphics.Nvdec.Vp9\Ryujinx.Graphics.Nvdec.Vp9.csproj" />
     <ProjectReference Include="..\Ryujinx.Graphics.Texture\Ryujinx.Graphics.Texture.csproj" />
     <ProjectReference Include="..\Ryujinx.Graphics.Video\Ryujinx.Graphics.Video.csproj" />
