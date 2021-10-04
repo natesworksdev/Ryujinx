@@ -1,5 +1,4 @@
 using Ryujinx.Graphics.Shader.Decoders;
-using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.Translation;
 
 namespace Ryujinx.Graphics.Shader.Instructions
