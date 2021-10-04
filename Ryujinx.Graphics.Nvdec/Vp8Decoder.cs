@@ -10,7 +10,7 @@ namespace Ryujinx.Graphics.Nvdec
     {
         private static readonly Decoder _decoder = new Decoder();
 
-        public unsafe static void Decode(NvdecDevice device, ResourceManager rm, ref NvdecRegisters state)
+        public static void Decode(NvdecDevice device, ResourceManager rm, ref NvdecRegisters state)
         {
             PictureInfo pictureInfo = rm.Gmm.DeviceRead<PictureInfo>(state.SetPictureInfoOffset);
             ReadOnlySpan<byte> bitstream = rm.Gmm.DeviceGetSpan(state.SetBitstreamOffset, (int)pictureInfo.VLDBufferSize);
