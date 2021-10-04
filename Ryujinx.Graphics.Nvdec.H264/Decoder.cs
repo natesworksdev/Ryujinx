@@ -1,4 +1,6 @@
-﻿using Ryujinx.Graphics.Video;
+﻿using FFmpeg.AutoGen;
+using Ryujinx.Graphics.Video;
+using Ryujinx.Graphics.Video.FFmpeg;
 using System;
 
 namespace Ryujinx.Graphics.Nvdec.H264
@@ -11,25 +13,25 @@ namespace Ryujinx.Graphics.Nvdec.H264
 
         private readonly byte[] _workBuffer = new byte[WorkBufferSize];
 
-        private FFmpegContext _context = new FFmpegContext();
+        private FFmpegContext _context = new FFmpegContext(AVCodecID.AV_CODEC_ID_H264);
 
         private int _oldOutputWidth;
         private int _oldOutputHeight;
 
         public ISurface CreateSurface(int width, int height)
         {
-            return new Surface(width, height);
+            return new FFmpegSurface(width, height);
         }
 
         public bool Decode(ref H264PictureInfo pictureInfo, ISurface output, ReadOnlySpan<byte> bitstream)
         {
-            Surface outSurf = (Surface)output;
+            FFmpegSurface outSurf = (FFmpegSurface)output;
 
             if (outSurf.RequestedWidth != _oldOutputWidth ||
                 outSurf.RequestedHeight != _oldOutputHeight)
             {
                 _context.Dispose();
-                _context = new FFmpegContext();
+                _context = new FFmpegContext(AVCodecID.AV_CODEC_ID_H264);
 
                 _oldOutputWidth = outSurf.RequestedWidth;
                 _oldOutputHeight = outSurf.RequestedHeight;

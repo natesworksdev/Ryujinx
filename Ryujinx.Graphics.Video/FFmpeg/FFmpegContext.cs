@@ -5,9 +5,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace Ryujinx.Graphics.Nvdec.H264
+namespace Ryujinx.Graphics.Video.FFmpeg
 {
-    unsafe class FFmpegContext : IDisposable
+    public unsafe class FFmpegContext : IDisposable
     {
         private readonly AVCodec_decode _h264Decode;
         private static readonly av_log_set_callback_callback _logFunc;
@@ -15,9 +15,9 @@ namespace Ryujinx.Graphics.Nvdec.H264
         private AVPacket* _packet;
         private AVCodecContext* _context;
 
-        public FFmpegContext()
+        public FFmpegContext(AVCodecID codecID)
         {
-            _codec = ffmpeg.avcodec_find_decoder(AVCodecID.AV_CODEC_ID_H264);
+            _codec = ffmpeg.avcodec_find_decoder(codecID);
             _context = ffmpeg.avcodec_alloc_context3(_codec);
             _context->debug |= ffmpeg.FF_DEBUG_MMCO;
 
@@ -104,7 +104,7 @@ namespace Ryujinx.Graphics.Nvdec.H264
             }
         }
 
-        public int DecodeFrame(Surface output, ReadOnlySpan<byte> bitstream)
+        public int DecodeFrame(FFmpegSurface output, ReadOnlySpan<byte> bitstream)
         {
             ffmpeg.av_frame_unref(output.Frame);
 

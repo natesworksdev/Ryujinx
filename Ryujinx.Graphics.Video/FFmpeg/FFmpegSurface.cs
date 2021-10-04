@@ -1,10 +1,9 @@
 ﻿using FFmpeg.AutoGen;
-using Ryujinx.Graphics.Video;
 using System;
 
-namespace Ryujinx.Graphics.Nvdec.H264
+namespace Ryujinx.Graphics.Video.FFmpeg
 {
-    unsafe class Surface : ISurface
+    public unsafe class FFmpegSurface : ISurface
     {
         public AVFrame* Frame { get; }
 
@@ -22,7 +21,7 @@ namespace Ryujinx.Graphics.Nvdec.H264
         public int UvHeight => (Frame->height + 1) >> 1;
         public int UvStride => Frame->linesize[1];
 
-        public Surface(int width, int height)
+        public FFmpegSurface(int width, int height)
         {
             RequestedWidth = width;
             RequestedHeight = height;
