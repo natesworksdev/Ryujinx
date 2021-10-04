@@ -34,7 +34,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp8
                     vpx_codec_err_t res = vpx_decoder.vpx_codec_dec_init(_vp8Decoder, algo, cfg, 0);
                 }
 
-                Logger.Error?.PrintMsg(LogClass.Nvdec, $"Attempting to decode {bitstream.ToArray().Length} bytes.");
+                //Logger.Error?.PrintMsg(LogClass.Nvdec, $"Attempting to decode {bitstream.ToArray().Length} bytes.");
 
                 int uncompHeaderSize = pictureInfo.KeyFrame != 0 ? 10 : 3;
 
@@ -84,16 +84,17 @@ namespace Ryujinx.Graphics.Nvdec.Vp8
                 }
                 else
                 {
-                    int dwidth = (int)img.d_w;
-                    int dheight = (int)img.d_h;
-                    int sz = dwidth * dheight;
+                    outSurf.YPlane = new Plane((IntPtr)img.planes[0], (int)img.d_w * img.stride[0]);
+                    outSurf.UPlane = new Plane((IntPtr)img.planes[1], (int)img.d_w * img.stride[1]);
+                    outSurf.VPlane = new Plane((IntPtr)img.planes[2], (int)img.d_w * img.stride[2]);
 
-                    outSurf.YPlane = new Plane((IntPtr)img.planes[0], dheight * img.stride[0]);
-                    outSurf.UPlane = new Plane((IntPtr)img.planes[1], dheight * img.stride[1]);
-                    outSurf.VPlane = new Plane((IntPtr)img.planes[2], dheight * img.stride[2]);
+                    outSurf.Width = (int)img.d_w;
+                    outSurf.Height = (int)img.d_h;
 
-                    outSurf.Width = dwidth;
-                    outSurf.Height = dheight;
+                    outSurf.Stride = img.stride[0];
+                    outSurf.UvWidth = (int)img.d_w / 2;
+                    outSurf.UvHeight = (int)img.d_h / 2;
+                    outSurf.UvStride = img.stride[1];
 
                     return true;
                 }
