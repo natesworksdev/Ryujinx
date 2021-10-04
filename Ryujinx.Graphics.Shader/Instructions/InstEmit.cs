@@ -292,13 +292,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
             context.Config.GpuAccessor.Log("Shader instruction Longjmp is not implemented.");
         }
 
-        public static void Nop(EmitterContext context)
-        {
-            InstNop op = context.GetOp<InstNop>();
-
-            context.Config.GpuAccessor.Log("Shader instruction Nop is not implemented.");
-        }
-
         public static void P2rR(EmitterContext context)
         {
             InstP2rR op = context.GetOp<InstP2rR>();

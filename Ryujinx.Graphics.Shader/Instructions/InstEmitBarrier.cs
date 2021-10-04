@@ -24,7 +24,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
         {
             InstDepbar op = context.GetOp<InstDepbar>();
 
-            // Do nothing.
+            // No operation.
         }
 
         public static void Membar(EmitterContext context)
