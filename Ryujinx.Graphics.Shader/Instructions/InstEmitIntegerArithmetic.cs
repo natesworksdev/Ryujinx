@@ -331,7 +331,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 }
                 else
                 {
-                    // TODO: Warning.
+                    context.Config.GpuAccessor.Log($"Iadd3 has invalid component selection {part}.");
                 }
 
                 return src;
