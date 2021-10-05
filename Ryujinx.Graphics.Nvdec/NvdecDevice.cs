@@ -14,8 +14,8 @@ namespace Ryujinx.Graphics.Nvdec
         private readonly DeviceState<NvdecRegisters> _state;
 
         private long _currentId;
-        private ConcurrentDictionary<long, H264DecoderContext> _contexts;
-        private H264DecoderContext _currentContext;
+        private ConcurrentDictionary<long, NvdecDecoderContext> _contexts;
+        private NvdecDecoderContext _currentContext;
 
         public NvdecDevice(MemoryManager gmm)
         {
@@ -24,13 +24,13 @@ namespace Ryujinx.Graphics.Nvdec
             {
                 { nameof(NvdecRegisters.Execute), new RwCallback(Execute, null) }
             });
-            _contexts = new ConcurrentDictionary<long, H264DecoderContext>();
+            _contexts = new ConcurrentDictionary<long, NvdecDecoderContext>();
         }
 
         public long CreateContext()
         {
             long id = Interlocked.Increment(ref _currentId);
-            _contexts.TryAdd(id, new H264DecoderContext());
+            _contexts.TryAdd(id, new NvdecDecoderContext());
 
             return id;
         }
@@ -69,7 +69,7 @@ namespace Ryujinx.Graphics.Nvdec
                     H264Decoder.Decode(_currentContext, _rm, ref _state.State);
                     break;
                 case CodecId.Vp8:
-                    Vp8Decoder.Decode(_rm, ref _state.State);
+                    Vp8Decoder.Decode(_currentContext, _rm, ref _state.State);
                     break;
                 case CodecId.Vp9:
                     Vp9Decoder.Decode(_rm, ref _state.State);

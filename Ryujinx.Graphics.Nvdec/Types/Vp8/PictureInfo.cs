@@ -1,6 +1,5 @@
 ﻿using Ryujinx.Common.Memory;
 using Ryujinx.Graphics.Video;
-using System;
 
 namespace Ryujinx.Graphics.Nvdec.Types.Vp8
 {
