@@ -59,7 +59,8 @@ namespace Ryujinx.HLE.HOS.Services.Spl
         {
             configValue = default;
 
-            SystemVersion version = context.Device.System.ContentManager.GetCurrentFirmwareVersion();
+            SystemVersion version    = context.Device.System.ContentManager.GetCurrentFirmwareVersion();
+            MemorySize    memorySize = context.Device.Configuration.MemoryConfiguration.ToKernelMemorySize();
 
             switch (configItem)
             {
@@ -67,11 +68,11 @@ namespace Ryujinx.HLE.HOS.Services.Spl
                     configValue = 0;
                     break;
                 case ConfigItem.DramId:
-                    if (context.Device.Configuration.MemoryConfiguration.ToKernelMemorySize() == MemorySize.MemorySize8GB)
+                    if (memorySize == MemorySize.MemorySize8GB)
                     {
                         configValue = (ulong)DramId.IowaSamsung8GB;
                     }
-                    else if (context.Device.Configuration.MemoryConfiguration.ToKernelMemorySize() == MemorySize.MemorySize6GB)
+                    else if (memorySize == MemorySize.MemorySize6GB)
                     {
                         configValue = (ulong)DramId.IcosaSamsung6GB;
                     }
@@ -116,62 +117,6 @@ namespace Ryujinx.HLE.HOS.Services.Spl
                     return SmcResult.NotImplemented;
                 case ConfigItem.Package2Hash:
                     return SmcResult.NotImplemented;
-                case ConfigItem.ExosphereApiVersion:
-                    // Get information about the current exosphere version.
-                    configValue = ((ulong)(1 & 0xFF)            << 56) |
-                                  ((ulong)(1 & 0xFF)            << 48) |
-                                  ((ulong)(1 & 0xFF)            << 40) |
-                                  ((ulong)0                     << 32) | // KeyGeneration
-                                  ((ulong)version.Major         << 24) |
-                                  ((ulong)version.Minor         << 16) |
-                                  ((ulong)version.Micro         << 8)  |
-                                  ((ulong)version.RevisionMajor << 0);
-                    break;
-                case ConfigItem.ExosphereNeedsReboot:
-                    // We are executing, so we aren't in the process of rebooting.
-                    configValue = 0;
-                    break;
-                case ConfigItem.ExosphereNeedsShutdown:
-                    // We are executing, so we aren't in the process of shutting down.
-                    configValue = 0;
-                    break;
-                case ConfigItem.ExosphereGitCommitHash:
-                    // Get information about the current exosphere git commit hash.
-                    configValue = 0;
-                    break;
-                case ConfigItem.ExosphereHasRcmBugPatch:
-                    // Get information about whether this unit has the RCM bug patched.
-                    configValue = 1;
-                    break;
-                case ConfigItem.ExosphereBlankProdInfo:
-                    // Get whether this unit should simulate a "blanked" PRODINFO.
-                    configValue = 0;
-                    break;
-                case ConfigItem.ExosphereAllowCalWrites:
-                    // Get whether this unit should allow writing to the calibration partition.
-                    configValue = 1;
-                    break;
-                case ConfigItem.ExosphereEmummcType:
-                    // Get what kind of emummc this unit has active.
-                    configValue = 0;
-                    break;
-                case ConfigItem.ExospherePayloadAddress:
-                    // Gets the physical address of the reboot payload buffer, if one exists.
-                    return SmcResult.NotInitialized;
-                case ConfigItem.ExosphereLogConfiguration:
-                    // Get the log configuration.
-                    configValue = 0;
-                    break;
-                case ConfigItem.ExosphereForceEnableUsb30:
-                    // Get whether usb 3.0 should be force-enabled.
-                    configValue = 1;
-                    break;
-                case ConfigItem.ExosphereSupportedHosVersion:
-                    // Get information about the supported hos version.
-                    configValue = ((ulong)(version.Major & 0xFF) << 24) |
-                                  ((ulong)(version.Minor & 0xFF) << 16) |
-                                  ((ulong)(version.Micro & 0xFF) << 8);
-                    break;
                 default:
                     return SmcResult.InvalidArgument;
             }
