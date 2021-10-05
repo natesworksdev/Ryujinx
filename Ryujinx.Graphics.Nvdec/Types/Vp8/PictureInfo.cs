@@ -64,7 +64,7 @@ namespace Ryujinx.Graphics.Nvdec.Types.Vp8
         {
             return new Vp8PictureInfo()
             {
-                KeyFrame = KeyFrame,
+                KeyFrame = KeyFrame != 0,
                 FirstPartSize = FirstPartSize,
                 Version = Version,
                 FrameWidth = FrameWidth,

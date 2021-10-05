@@ -19,20 +19,20 @@ namespace Ryujinx.Graphics.Nvdec.FFmpeg.Vp8
         {
             Surface outSurf = (Surface)output;
 
-            int uncompHeaderSize = pictureInfo.KeyFrame != 0 ? 10 : 3;
+            int uncompHeaderSize = pictureInfo.KeyFrame ? 10 : 3;
 
             byte[] header = new byte[uncompHeaderSize];
 
             uint firstPartSizeShifted = pictureInfo.FirstPartSize << 5;
 
-            header[0] = (byte)(pictureInfo.KeyFrame != 0 ? 0 : 1);
+            header[0] = (byte)(pictureInfo.KeyFrame ? 0 : 1);
             header[0] |= (byte)((pictureInfo.Version & 7) << 1);
             header[0] |= 1 << 4;
             header[0] |= (byte)firstPartSizeShifted;
             header[1] |= (byte)(firstPartSizeShifted >> 8);
             header[2] |= (byte)(firstPartSizeShifted >> 16);
 
-            if (pictureInfo.KeyFrame != 0)
+            if (pictureInfo.KeyFrame)
             {
                 header[3] = 0x9d;
                 header[4] = 0x01;

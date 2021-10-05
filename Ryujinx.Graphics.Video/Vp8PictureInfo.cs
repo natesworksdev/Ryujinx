@@ -2,7 +2,7 @@
 {
     public ref struct Vp8PictureInfo
     {
-        public byte KeyFrame;
+        public bool KeyFrame;
         public uint FirstPartSize;
         public uint Version;
         public ushort FrameWidth;
