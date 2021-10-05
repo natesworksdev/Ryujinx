@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Nvdec.FFmpeg
 {
-    public unsafe class FFmpegContext : IDisposable
+    unsafe class FFmpegContext : IDisposable
     {
         private readonly AVCodec_decode _decoder;
         private static readonly av_log_set_callback_callback _logFunc;
