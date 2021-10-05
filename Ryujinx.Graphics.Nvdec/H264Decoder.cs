@@ -1,4 +1,4 @@
-﻿using Ryujinx.Graphics.Nvdec.H264;
+﻿using Ryujinx.Graphics.Nvdec.FFmpeg.H264;
 using Ryujinx.Graphics.Nvdec.Image;
 using Ryujinx.Graphics.Nvdec.Types.H264;
 using Ryujinx.Graphics.Video;
@@ -10,7 +10,7 @@ namespace Ryujinx.Graphics.Nvdec
     {
         private const int MbSizeInPixels = 16;
 
-        public unsafe static void Decode(NvdecDecoderContext context, ResourceManager rm, ref NvdecRegisters state)
+        public static void Decode(H264DecoderContext context, ResourceManager rm, ref NvdecRegisters state)
         {
             PictureInfo pictureInfo = rm.Gmm.DeviceRead<PictureInfo>(state.SetPictureInfoOffset);
             H264PictureInfo info = pictureInfo.Convert();

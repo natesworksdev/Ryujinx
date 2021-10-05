@@ -1,9 +1,9 @@
-using Ryujinx.Graphics.Nvdec.H264;
+using Ryujinx.Graphics.Nvdec.FFmpeg.H264;
 using System;
 
 namespace Ryujinx.Graphics.Nvdec
 {
-    class NvdecDecoderContext : IDisposable
+    class H264DecoderContext : IDisposable
     {
         private Decoder _decoder;
 

@@ -5,19 +5,19 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace Ryujinx.Graphics.Video.FFmpeg
+namespace Ryujinx.Graphics.Nvdec.Vp8
 {
     public unsafe class FFmpegContext : IDisposable
     {
-        private readonly AVCodec_decode _h264Decode;
+        private readonly AVCodec_decode _vp8Decode;
         private static readonly av_log_set_callback_callback _logFunc;
         private readonly AVCodec* _codec;
         private AVPacket* _packet;
         private AVCodecContext* _context;
 
-        public FFmpegContext(AVCodecID codecID)
+        public FFmpegContext()
         {
-            _codec = ffmpeg.avcodec_find_decoder(codecID);
+            _codec = ffmpeg.avcodec_find_decoder(AVCodecID.AV_CODEC_ID_VP8);
             _context = ffmpeg.avcodec_alloc_context3(_codec);
             _context->debug |= ffmpeg.FF_DEBUG_MMCO;
 
@@ -25,7 +25,7 @@ namespace Ryujinx.Graphics.Video.FFmpeg
 
             _packet = ffmpeg.av_packet_alloc();
 
-            _h264Decode = Marshal.GetDelegateForFunctionPointer<AVCodec_decode>(_codec->decode.Pointer);
+            _vp8Decode = Marshal.GetDelegateForFunctionPointer<AVCodec_decode>(_codec->decode.Pointer);
         }
 
         static FFmpegContext()
@@ -104,7 +104,7 @@ namespace Ryujinx.Graphics.Video.FFmpeg
             }
         }
 
-        public int DecodeFrame(FFmpegSurface output, ReadOnlySpan<byte> bitstream)
+        public int DecodeFrame(Surface output, ReadOnlySpan<byte> bitstream)
         {
             ffmpeg.av_frame_unref(output.Frame);
 
@@ -115,7 +115,7 @@ namespace Ryujinx.Graphics.Video.FFmpeg
             {
                 _packet->data = ptr;
                 _packet->size = bitstream.Length;
-                result = _h264Decode(_context, output.Frame, &gotFrame, _packet);
+                result = _vp8Decode(_context, output.Frame, &gotFrame, _packet);
             }
 
             if (gotFrame == 0)
@@ -126,7 +126,7 @@ namespace Ryujinx.Graphics.Video.FFmpeg
                 // Get the next delayed frame by passing a 0 length packet.
                 _packet->data = null;
                 _packet->size = 0;
-                result = _h264Decode(_context, output.Frame, &gotFrame, _packet);
+                result = _vp8Decode(_context, output.Frame, &gotFrame, _packet);
 
                 // We need to set B frames to 0 as we already consumed all delayed frames.
                 // This prevents the decoder from trying to return a delayed frame next time.
@@ -138,6 +138,7 @@ namespace Ryujinx.Graphics.Video.FFmpeg
             if (gotFrame == 0)
             {
                 ffmpeg.av_frame_unref(output.Frame);
+
                 return -1;
             }
 
