@@ -4,7 +4,7 @@ using System;
 
 namespace Ryujinx.Graphics.Nvdec.FFmpeg
 {
-    public unsafe class Surface : ISurface
+    unsafe class Surface : ISurface
     {
         public AVFrame* Frame { get; }
 
