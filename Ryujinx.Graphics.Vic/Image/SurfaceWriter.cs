@@ -23,7 +23,7 @@ namespace Ryujinx.Graphics.Vic.Image
                     break;
                 case PixelFormat.Y8___V8U8_N420:
                     WriteNv12(rm, input, ref config, ref offsets);
-                    break;    
+                    break;
                 default:
                     Logger.Error?.Print(LogClass.Vic, $"Unsupported pixel format \"{config.OutPixelFormat}\".");
                     break;
