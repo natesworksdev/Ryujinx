@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace ARMeilleure.CodeGen.RegisterAllocators
 {
-    unsafe struct LiveInterval : IComparable<LiveInterval>
+    unsafe readonly struct LiveInterval : IComparable<LiveInterval>
     {
         public const int NotFound = -1;
 
@@ -26,10 +26,10 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             public Operand Local;
             public Register Register;
 
-            public byte IsFixed;
+            public bool IsFixed;
         }
 
-        private Data* _data;
+        private readonly Data* _data;
 
         private ref int End => ref _data->End;
         private ref LiveRange FirstRange => ref _data->FirstRange;
@@ -43,7 +43,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         public ref Register Register => ref _data->Register;
         public ref int SpillOffset => ref _data->SpillOffset;
 
-        public bool IsFixed => _data->IsFixed != 0;
+        public bool IsFixed => _data->IsFixed;
         public bool IsEmpty => FirstRange == default;
         public bool IsSplit => Children.Count != 0;
         public bool IsSpilled => SpillOffset != -1;
@@ -55,7 +55,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             _data = Allocators.LiveIntervals.Allocate<Data>();
             *_data = default;
 
-            _data->IsFixed = 0;
+            _data->IsFixed = false;
             _data->Local = local;
 
             Parent = parent == default ? this : parent;
@@ -71,7 +71,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         public LiveInterval(Register register) : this(local: default, parent: default)
         {
-            _data->IsFixed = 1;
+            _data->IsFixed = true;
 
             Register = register;
         }
@@ -281,7 +281,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         private void AddSplitChild(LiveInterval child)
         {
-            Debug.Assert(!child.IsEmpty, "Trying to insert a empty interval.");
+            Debug.Assert(!child.IsEmpty, "Trying to insert an empty interval.");
 
             Parent.Children.Add(child);
         }

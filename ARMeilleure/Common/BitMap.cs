@@ -195,7 +195,7 @@ namespace ARMeilleure.Common
                     _mask &= ~(1L << _bit);
                 }
 
-                // Manually hoist these loads, because RyuJIT is not.
+                // Manually hoist these loads, because RyuJIT does not.
                 long count = (uint)_map._count;
                 long* masks = _map._masks;
 
