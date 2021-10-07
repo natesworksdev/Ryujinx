@@ -26,6 +26,11 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             Next = next;
         }
 
+        public bool Overlaps(int start, int end)
+        {
+            return Start < end && start < End;
+        }
+
         public bool Overlaps(LiveRange range)
         {
             return Start < range.End && range.Start < End;

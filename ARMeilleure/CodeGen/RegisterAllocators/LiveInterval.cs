@@ -140,19 +140,21 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                     return;
                 }
                 // If the new range is already contained, then coalesce together.
-                else if (start >= FirstRange.Start)
+                else if (FirstRange.Overlaps(start, end))
                 {
-                    if (end > FirstRange.End)
-                    {
-                        FirstRange.End = end;
-                    }
+                    FirstRange.Start = Math.Min(FirstRange.Start, start);
+                    FirstRange.End = Math.Max(FirstRange.End, end);
+                    End = Math.Max(End, end);
 
+                    Debug.Assert(FirstRange.Next == default || !FirstRange.Overlaps(FirstRange.Next));
                     return;
                 }
             }
 
             FirstRange = new LiveRange(start, end, FirstRange);
             End = Math.Max(End, end);
+
+            Debug.Assert(FirstRange.Next == default || !FirstRange.Overlaps(FirstRange.Next));
         }
 
         public void AddUsePosition(int position)
