@@ -347,13 +347,13 @@ namespace Ryujinx.Graphics.Vulkan
             var featuresIndexU8 = new PhysicalDeviceIndexTypeUint8FeaturesEXT()
             {
                 SType = StructureType.PhysicalDeviceIndexTypeUint8FeaturesExt,
-                IndexTypeUint8 = supportedExtensions.Contains("VK_EXT_index_type_uint8")
+                IndexTypeUint8 = true
             };
 
             var featuresTransformFeedback = new PhysicalDeviceTransformFeedbackFeaturesEXT()
             {
                 SType = StructureType.PhysicalDeviceTransformFeedbackFeaturesExt,
-                PNext = &featuresIndexU8,
+                PNext = supportedExtensions.Contains("VK_EXT_index_type_uint8") ? &featuresIndexU8 : null,
                 TransformFeedback = true
             };
 
