@@ -79,5 +79,30 @@ namespace Ryujinx.Graphics.Gpu
         /// Byte alignment for block linear textures
         /// </summary>
         public const int GobAlignment = 64;
+
+                /// <summary>
+        /// Maximum width and height for 1D, 2D and cube textures, including array and multisample variants.
+        /// </summary>
+        public const int MaxTextureSize = 0x4000;
+
+        /// <summary>
+        /// Maximum width, height and depth for 3D textures.
+        /// </summary>
+        public const int Max3DTextureSize = 0x800;
+
+        /// <summary>
+        /// Maximum layers for array textures.
+        /// </summary>
+        public const int MaxArrayTextureLayers = 0x800;
+
+        /// <summary>
+        /// Maximum width (effectively the size in pixels) for buffer textures.
+        /// </summary>
+        public const int MaxBufferTextureSize = 0x8000000;
+
+        /// <summary>
+        /// Alignment in bytes for pitch linear textures.
+        /// </summary>
+        public const int LinearStrideAlignment = 0x20;
     }
 }

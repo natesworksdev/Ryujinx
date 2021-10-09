@@ -358,6 +358,10 @@ namespace Ryujinx.Graphics.Gpu.Image
                 {
                     CommitBindlessResources(texturePool, ShaderStage.Compute, 0);
                 }
+                else if (_bindlessTextureFlags[0].HasFlag(BindlessTextureFlags.BindlessFull))
+                {
+                    texturePool.LoadAll(_context.Renderer, _samplerPool);
+                }
             }
             else
             {
@@ -371,6 +375,10 @@ namespace Ryujinx.Graphics.Gpu.Image
                     if (_bindlessTextureFlags[stageIndex].HasFlag(BindlessTextureFlags.BindlessNvn))
                     {
                         CommitBindlessResources(texturePool, stage, stageIndex);
+                    }
+                    else if (_bindlessTextureFlags[stageIndex].HasFlag(BindlessTextureFlags.BindlessFull))
+                    {
+                        texturePool.LoadAll(_context.Renderer, _samplerPool);
                     }
                 }
             }

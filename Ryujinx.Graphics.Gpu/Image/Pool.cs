@@ -20,6 +20,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         protected T1[] Items;
         protected T2[] DescriptorCache;
 
+        protected readonly BitMap ModifiedEntries;
+
         /// <summary>
         /// The maximum ID value of resources on the pool (inclusive).
         /// </summary>
@@ -55,6 +57,8 @@ namespace Ryujinx.Graphics.Gpu.Image
             MaximumId = maximumId;
 
             int count = maximumId + 1;
+
+            ModifiedEntries = new BitMap(count);
 
             ulong size = (ulong)(uint)count * DescriptorSize;
 
