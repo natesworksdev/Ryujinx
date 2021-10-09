@@ -10,7 +10,6 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 {
@@ -65,13 +64,13 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
         private Pen _selectionBoxPen;
         private Pen _padPressedPen;
 
-        private int                 _inputTextFontSize;
-        private int                 _padButtonFontSize;
-        private System.Drawing.Font _messageFont;
-        private System.Drawing.Font _inputTextFont;
-        private System.Drawing.Font _labelsTextFont;
-        private System.Drawing.Font _padSymbolFont;
-        private System.Drawing.Font _keyCapFont;
+        private int  _inputTextFontSize;
+        private int  _padButtonFontSize;
+        private Font _messageFont;
+        private Font _inputTextFont;
+        private Font _labelsTextFont;
+        private Font _padSymbolFont;
+        private Font _keyCapFont;
 
         private float      _inputTextCalibrationHeight;
         private float      _panelPositionY;
@@ -134,11 +133,11 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             string font = uiTheme.FontFamily;
 
-            _messageFont    = new System.Drawing.Font(font, 26,                 FontStyle.Regular, GraphicsUnit.Pixel);
-            _inputTextFont  = new System.Drawing.Font(font, _inputTextFontSize, FontStyle.Regular, GraphicsUnit.Pixel);
-            _labelsTextFont = new System.Drawing.Font(font, 24,                 FontStyle.Regular, GraphicsUnit.Pixel);
-            _padSymbolFont  = new System.Drawing.Font(font, _padButtonFontSize, FontStyle.Regular, GraphicsUnit.Pixel);
-            _keyCapFont     = new System.Drawing.Font(font, 15,                 FontStyle.Regular, GraphicsUnit.Pixel);
+            _messageFont    = new Font(font, 26,                 FontStyle.Regular, GraphicsUnit.Pixel);
+            _inputTextFont  = new Font(font, _inputTextFontSize, FontStyle.Regular, GraphicsUnit.Pixel);
+            _labelsTextFont = new Font(font, 24,                 FontStyle.Regular, GraphicsUnit.Pixel);
+            _padSymbolFont  = new Font(font, _padButtonFontSize, FontStyle.Regular, GraphicsUnit.Pixel);
+            _keyCapFont     = new Font(font, 15,                 FontStyle.Regular, GraphicsUnit.Pixel);
 
             // System.Drawing has serious problems measuring strings, so it requires a per-pixel calibration
             // to ensure we are rendering text inside the proper region
@@ -353,7 +352,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
             return rectangle;
         }
 
-        private float CalibrateTextHeight(System.Drawing.Font font)
+        private float CalibrateTextHeight(Font font)
         {
             // This is a pixel-wise calibration that tests the offset of a reference character because Windows text measurement
             // is horrible when compared to other frameworks like Cairo and diverge across systems and fonts.
@@ -419,7 +418,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
             }
         }
 
-        private void DrawString(System.Drawing.Graphics graphics, string text, System.Drawing.Font font, Brush brush, PointF point)
+        private void DrawString(System.Drawing.Graphics graphics, string text, Font font, Brush brush, PointF point)
         {
             var format = CreateStringFormat(text);
             graphics.DrawString(text, font, brush, point, format);
