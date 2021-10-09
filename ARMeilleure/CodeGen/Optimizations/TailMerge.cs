@@ -4,20 +4,15 @@ using static ARMeilleure.IntermediateRepresentation.Operation.Factory;
 
 namespace ARMeilleure.CodeGen.Optimizations
 {
-    class TailMerge
+    static class TailMerge
     {
         public static void RunPass(in CompilerContext cctx)
         {
-            if (cctx.FuncReturnType != OperandType.I64)
-            {
-                return;
-            }
-
             ControlFlowGraph cfg = cctx.Cfg;
 
             BasicBlock mergedReturn = new(cfg.Blocks.Count);
 
-            Operand returnValue = cfg.AllocateLocal(OperandType.I64);
+            Operand returnValue = cfg.AllocateLocal(cctx.FuncReturnType);
             Operation returnOp = Operation(Instruction.Return, default, returnValue);
 
             mergedReturn.Frequency = BasicBlockFrequency.Cold;
@@ -42,7 +37,7 @@ namespace ARMeilleure.CodeGen.Optimizations
             cfg.Update();
         }
 
-        static BasicBlock PrepareMerge(BasicBlock from, BasicBlock to)
+        private static BasicBlock PrepareMerge(BasicBlock from, BasicBlock to)
         {
             BasicBlock fromPred = from.Predecessors.Count == 1 ? from.Predecessors[0] : null;
 
