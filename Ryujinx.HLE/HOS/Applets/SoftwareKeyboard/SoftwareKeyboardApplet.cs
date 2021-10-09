@@ -405,7 +405,7 @@ namespace Ryujinx.HLE.HOS.Applets
 
                             newCalc = keyboardCalc.ToExtended();
                         }
-                        else if (remaining == Marshal.SizeOf<SoftwareKeyboardCalcEx>())
+                        else if (remaining == Marshal.SizeOf<SoftwareKeyboardCalcEx>() || remaining == SoftwareKeyboardCalcEx.AlternativeSize)
                         {
                             var keyboardCalcData = reader.ReadBytes((int)remaining);
 

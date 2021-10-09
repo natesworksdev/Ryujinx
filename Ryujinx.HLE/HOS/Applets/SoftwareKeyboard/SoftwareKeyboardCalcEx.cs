@@ -9,6 +9,12 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
     [StructLayout(LayoutKind.Sequential, Pack=1, CharSet = CharSet.Unicode)]
     struct SoftwareKeyboardCalcEx
     {
+        /// <summary>
+        /// This struct was built following Switchbrew's specs, but this size (larger) is also found in real games.
+        /// It's assumed that this is padding at the end of this struct, because all members seem OK.
+        /// </summary>
+        public const int AlternativeSize = 1256;
+
         public const int InputTextLength = 505;
 
         public uint Unknown;

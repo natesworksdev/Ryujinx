@@ -213,7 +213,6 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
             calc.SeGroup                  = SeGroup;
             calc.TriggerFlag              = TriggerFlag;
             calc.Trigger                  = Trigger;
-            calc.Padding                  = Padding;
 
             return calc;
         }
