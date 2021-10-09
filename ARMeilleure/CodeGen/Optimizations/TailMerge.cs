@@ -8,6 +8,11 @@ namespace ARMeilleure.CodeGen.Optimizations
     {
         public static void RunPass(in CompilerContext cctx)
         {
+            if (cctx.FuncReturnType == OperandType.None)
+            {
+                return;
+            }
+
             ControlFlowGraph cfg = cctx.Cfg;
 
             BasicBlock mergedReturn = new(cfg.Blocks.Count);
