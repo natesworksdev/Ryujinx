@@ -8,17 +8,23 @@ namespace ARMeilleure.CodeGen.Optimizations
     {
         public static void RunPass(in CompilerContext cctx)
         {
-            if (cctx.FuncReturnType == OperandType.None)
-            {
-                return;
-            }
-
             ControlFlowGraph cfg = cctx.Cfg;
 
             BasicBlock mergedReturn = new(cfg.Blocks.Count);
 
-            Operand returnValue = cfg.AllocateLocal(cctx.FuncReturnType);
-            Operation returnOp = Operation(Instruction.Return, default, returnValue);
+            Operand returnValue;
+            Operation returnOp;
+
+            if (cctx.FuncReturnType == OperandType.None)
+            {
+                returnValue = default;
+                returnOp = Operation(Instruction.Return, default);
+            }
+            else
+            {
+                returnValue = cfg.AllocateLocal(cctx.FuncReturnType);
+                returnOp = Operation(Instruction.Return, default, returnValue);
+            }
 
             mergedReturn.Frequency = BasicBlockFrequency.Cold;
             mergedReturn.Operations.AddLast(returnOp);
@@ -29,12 +35,18 @@ namespace ARMeilleure.CodeGen.Optimizations
 
                 if (op != default && op.Instruction == Instruction.Return)
                 {
-                    Operation copyOp = Operation(Instruction.Copy, returnValue, op.GetSource(0));
-
                     block.Operations.Remove(op);
 
-                    BasicBlock mergeBlock = PrepareMerge(block, mergedReturn);
-                    mergeBlock.Append(copyOp);
+                    if (cctx.FuncReturnType == OperandType.None)
+                    {
+                        PrepareMerge(block, mergedReturn);
+                    }
+                    else
+                    {
+                        Operation copyOp = Operation(Instruction.Copy, returnValue, op.GetSource(0));
+
+                        PrepareMerge(block, mergedReturn).Append(copyOp);
+                    }
                 }
             }
 
