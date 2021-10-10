@@ -51,6 +51,25 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                     Operand src0 = Utils.FindLastOperation(handleCombineOp.GetSource(0), block);
                     Operand src1 = Utils.FindLastOperation(handleCombineOp.GetSource(1), block);
 
+                    if (src0.AsgOp is Operation src0AsgOp && src0AsgOp.Inst == Instruction.BitwiseAnd &&
+                        src1.AsgOp is Operation src1AsgOp && src1AsgOp.Inst == Instruction.BitwiseAnd)
+                    {
+                        src0 = GetSourceForMaskedHandle(src0AsgOp, 0xFFFFF);
+                        src1 = GetSourceForMaskedHandle(src1AsgOp, 0xFFF00000);
+
+                        // The OR operation is commutative, so we can also try to swap the operands to get a match.
+                        if (src0 == null || src1 == null)
+                        {
+                            src0 = GetSourceForMaskedHandle(src1AsgOp, 0xFFFFF);
+                            src1 = GetSourceForMaskedHandle(src0AsgOp, 0xFFF00000);
+                        }
+
+                        if (src0 == null || src1 == null)
+                        {
+                            continue;
+                        }
+                    }
+
                     if (src0.Type != OperandType.ConstantBuffer || src1.Type != OperandType.ConstantBuffer)
                     {
                         continue;
@@ -89,10 +108,41 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
             }
         }
 
+        private static Operand GetSourceForMaskedHandle(Operation asgOp, uint mask)
+        {
+            // Assume it was already checked that the operation is bitwise AND.
+            Operand src0 = asgOp.GetSource(0);
+            Operand src1 = asgOp.GetSource(1);
+
+            if (src0.Type == OperandType.ConstantBuffer && src1.Type == OperandType.ConstantBuffer)
+            {
+                // We can't check if the mask matches here as both operands are from a constant buffer.
+                // Be optimistic and assume it matches. Avoid constant buffer 1 as official drivers
+                // uses this one to store compiler constants.
+                return src0.GetCbufSlot() == 1 ? src1 : src0;
+            }
+            else if (src0.Type == OperandType.ConstantBuffer && src1.Type == OperandType.Constant)
+            {
+                if ((uint)src1.Value == mask)
+                {
+                    return src0;
+                }
+            }
+            else if (src0.Type == OperandType.Constant && src1.Type == OperandType.ConstantBuffer)
+            {
+                if ((uint)src0.Value == mask)
+                {
+                    return src1;
+                }
+            }
+
+            return null;
+        }
+
         private static void SetHandle(ShaderConfig config, TextureOperation texOp, int cbufOffset, int cbufSlot, bool rewriteSamplerType)
         {
             texOp.SetHandle(cbufOffset, cbufSlot);
-            
+
             if (rewriteSamplerType)
             {
                 texOp.Type = config.GpuAccessor.QuerySamplerType(cbufOffset, cbufSlot);
