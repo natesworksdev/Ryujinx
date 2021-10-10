@@ -1,3 +1,4 @@
+using Ryujinx.Common.Logging;
 using Ryujinx.Cpu.Tracking;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Memory.Range;
@@ -104,6 +105,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
             if (_useGranular)
             {
                 _memoryTrackingGranular = physicalMemory.BeginGranularTracking(address, size, baseHandles);
+
+                _memoryTrackingGranular.RegisterPreciseAction(address, size, PreciseAction);
             }
             else
             {
@@ -123,6 +126,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
                         handle.Dispose();
                     }
                 }
+
+                _memoryTracking.RegisterPreciseAction(PreciseAction);
             }
 
             _externalFlushDelegate = new RegionSignal(ExternalFlush);
@@ -254,10 +259,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="size">The size of the region</param>
         public void ClearModified(ulong address, ulong size)
         {
-            if (_modifiedRanges != null)
-            {
-                _modifiedRanges.Clear(address, size);
-            }
+            _modifiedRanges?.Clear(address, size);
         }
 
         /// <summary>
@@ -270,7 +272,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             if (_useGranular)
             {
-                _modifiedRanges.GetRanges(Address, Size, (address, size) =>
+                _modifiedRanges?.GetRanges(Address, Size, (address, size) =>
                 {
                     _memoryTrackingGranular.RegisterAction(address, size, _externalFlushDelegate);
                     SynchronizeMemory(address, size);
@@ -297,8 +299,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     _syncActionRegistered = true;
                 }
 
-                EnsureRangeList();
-                _modifiedRanges.InheritRanges(from._modifiedRanges, (ulong address, ulong size) =>
+                Action<ulong, ulong> registerRangeAction = (ulong address, ulong size) =>
                 {
                     if (_useGranular)
                     {
@@ -308,7 +309,19 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     {
                         _memoryTracking.RegisterAction(_externalFlushDelegate);
                     }
-                });
+                };
+
+                if (_modifiedRanges == null)
+                {
+                    _modifiedRanges = from._modifiedRanges;
+                    _modifiedRanges.ReregisterRanges(registerRangeAction);
+
+                    from._modifiedRanges = null;
+                }
+                else
+                {
+                    _modifiedRanges.InheritRanges(from._modifiedRanges, registerRangeAction);
+                }
             }
         }
 
@@ -376,10 +389,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="mSize">Size of the region to force dirty</param>
         public void ForceDirty(ulong mAddress, ulong mSize)
         {
-            if (_modifiedRanges != null)
-            {
-                _modifiedRanges.Clear(mAddress, mSize);
-            }
+            _modifiedRanges?.Clear(mAddress, mSize);
 
             if (_useGranular)
             {
@@ -453,6 +463,38 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
+        /// An action to be performed when a precise memory access occurs to this resource.
+        /// For buffers, this skips flush-on-write by punching holes directly into the modified range list.
+        /// </summary>
+        /// <param name="address">Address of the memory action</param>
+        /// <param name="size">Size in bytes</param>
+        /// <param name="write">True if the access was a write, false otherwise</param>
+        private bool PreciseAction(ulong address, ulong size, bool write)
+        {
+            if (!write)
+            {
+                // We only want to skip flush-on-write.
+                return false;
+            }
+
+            if (address < Address)
+            {
+                address = Address;
+            }
+
+            ulong maxSize = Address + Size - address;
+
+            if (size > maxSize)
+            {
+                size = maxSize;
+            }
+
+            ForceDirty(address, size);
+
+            return true;
+        }
+
+        /// <summary>
         /// Called when part of the memory for this buffer has been unmapped.
         /// Calls are from non-GPU threads.
         /// </summary>
@@ -460,7 +502,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="size">Size of the unmapped region</param>
         public void Unmapped(ulong address, ulong size)
         {
-            _modifiedRanges?.Clear(address, size);
+            BufferModifiedRangeList modifiedRanges = _modifiedRanges;
+
+            modifiedRanges?.Clear(address, size);
 
             UnmappedSequence++;
         }

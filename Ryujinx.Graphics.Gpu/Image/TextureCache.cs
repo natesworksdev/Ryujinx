@@ -100,18 +100,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Determines if any texture exists within the target memory range.
-        /// </summary>
-        /// <param name="memoryManager">The GPU memory manager</param>
-        /// <param name="gpuVa">GPU virtual address to search for textures</param>
-        /// <param name="size">The size of the range</param>
-        /// <returns>True if any texture exists in the range, false otherwise</returns>
-        public bool IsTextureInRange(MemoryManager memoryManager, ulong gpuVa, ulong size)
-        {
-            return _textures.FindOverlaps(memoryManager.GetPhysicalRegions(gpuVa, size), ref _textureOverlaps) != 0;
-        }
-
-        /// <summary>
         /// Determines if a given texture is "safe" for upscaling from its info.
         /// Note that this is different from being compatible - this elilinates targets that would have detrimental effects when scaled.
         /// </summary>
@@ -244,11 +232,18 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="memoryManager">GPU memory manager where the texture is mapped</param>
         /// <param name="colorState">Color buffer texture to find or create</param>
+        /// <param name="layered">Indicates if the texture might be accessed with a non-zero layer index</param>
         /// <param name="samplesInX">Number of samples in the X direction, for MSAA</param>
         /// <param name="samplesInY">Number of samples in the Y direction, for MSAA</param>
         /// <param name="sizeHint">A hint indicating the minimum used size for the texture</param>
         /// <returns>The texture</returns>
-        public Texture FindOrCreateTexture(MemoryManager memoryManager, RtColorState colorState, int samplesInX, int samplesInY, Size sizeHint)
+        public Texture FindOrCreateTexture(
+            MemoryManager memoryManager,
+            RtColorState colorState,
+            bool layered,
+            int samplesInX,
+            int samplesInY,
+            Size sizeHint)
         {
             bool isLinear = colorState.MemoryLayout.UnpackIsLinear();
 
@@ -263,13 +258,13 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
             else if ((samplesInX | samplesInY) != 1)
             {
-                target = colorState.Depth > 1
+                target = colorState.Depth > 1 && layered
                     ? Target.Texture2DMultisampleArray
                     : Target.Texture2DMultisample;
             }
             else
             {
-                target = colorState.Depth > 1
+                target = colorState.Depth > 1 && layered
                     ? Target.Texture2DArray
                     : Target.Texture2D;
             }

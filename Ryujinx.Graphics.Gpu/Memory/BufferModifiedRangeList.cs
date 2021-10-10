@@ -60,6 +60,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// </summary>
     class BufferModifiedRangeList : RangeList<BufferModifiedRange>
     {
+        private const int BackingInitialSize = 8;
+
         private GpuContext _context;
 
         private object _lock = new object();
@@ -68,7 +70,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// Creates a new instance of a modified range list.
         /// </summary>
         /// <param name="context">GPU context that the buffer range list belongs to</param>
-        public BufferModifiedRangeList(GpuContext context)
+        public BufferModifiedRangeList(GpuContext context) : base(BackingInitialSize)
         {
             _context = context;
         }
@@ -309,6 +311,40 @@ namespace Ryujinx.Graphics.Gpu.Memory
             ulong currentSync = _context.SyncNumber;
             foreach (BufferModifiedRange range in inheritRanges)
             {
+                if (range.SyncNumber != currentSync)
+                {
+                    rangeAction(range.Address, range.Size);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Calls the given action for modified ranges that aren't from the current sync number.
+        /// </summary>
+        /// <param name="rangeAction">The action to call for each modified range</param>
+        public void ReregisterRanges(Action<ulong, ulong> rangeAction)
+        {
+            ref var ranges = ref ThreadStaticArray<BufferModifiedRange>.Get();
+
+            // Range list must be consistent for this operation.
+            lock (_lock)
+            {
+                if (ranges.Length < Count)
+                {
+                    Array.Resize(ref ranges, Count);
+                }
+
+                int i = 0;
+                foreach (BufferModifiedRange range in this)
+                {
+                    ranges[i++] = range;
+                }
+            }
+
+            ulong currentSync = _context.SyncNumber;
+            for (int i = 0; i < Count; i++)
+            {
+                BufferModifiedRange range = ranges[i];
                 if (range.SyncNumber != currentSync)
                 {
                     rangeAction(range.Address, range.Size);
