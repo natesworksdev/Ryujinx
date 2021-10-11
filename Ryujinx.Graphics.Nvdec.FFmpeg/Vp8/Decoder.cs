@@ -21,31 +21,28 @@ namespace Ryujinx.Graphics.Nvdec.FFmpeg.Vp8
 
             int uncompHeaderSize = pictureInfo.KeyFrame ? 10 : 3;
 
-            byte[] header = new byte[uncompHeaderSize];
+            byte[] frame = new byte[bitstream.Length + uncompHeaderSize];
 
             uint firstPartSizeShifted = pictureInfo.FirstPartSize << 5;
 
-            header[0] = (byte)(pictureInfo.KeyFrame ? 0 : 1);
-            header[0] |= (byte)((pictureInfo.Version & 7) << 1);
-            header[0] |= 1 << 4;
-            header[0] |= (byte)firstPartSizeShifted;
-            header[1] |= (byte)(firstPartSizeShifted >> 8);
-            header[2] |= (byte)(firstPartSizeShifted >> 16);
+            frame[0] = (byte)(pictureInfo.KeyFrame ? 0 : 1);
+            frame[0] |= (byte)((pictureInfo.Version & 7) << 1);
+            frame[0] |= 1 << 4;
+            frame[0] |= (byte)firstPartSizeShifted;
+            frame[1] |= (byte)(firstPartSizeShifted >> 8);
+            frame[2] |= (byte)(firstPartSizeShifted >> 16);
 
             if (pictureInfo.KeyFrame)
             {
-                header[3] = 0x9d;
-                header[4] = 0x01;
-                header[5] = 0x2a;
-                header[6] = (byte)pictureInfo.FrameWidth;
-                header[7] = (byte)((pictureInfo.FrameWidth >> 8) & 0x3F);
-                header[8] = (byte)pictureInfo.FrameHeight;
-                header[9] = (byte)((pictureInfo.FrameHeight >> 8) & 0x3F);
+                frame[3] = 0x9d;
+                frame[4] = 0x01;
+                frame[5] = 0x2a;
+                frame[6] = (byte)pictureInfo.FrameWidth;
+                frame[7] = (byte)((pictureInfo.FrameWidth >> 8) & 0x3F);
+                frame[8] = (byte)pictureInfo.FrameHeight;
+                frame[9] = (byte)((pictureInfo.FrameHeight >> 8) & 0x3F);
             }
 
-            byte[] frame = new byte[bitstream.Length + uncompHeaderSize];
-
-            header.CopyTo(frame, 0);
             bitstream.CopyTo(new Span<byte>(frame).Slice(uncompHeaderSize));
 
             return _context.DecodeFrame(outSurf, frame) == 0;
