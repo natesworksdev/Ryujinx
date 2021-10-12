@@ -135,10 +135,10 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 if (isLongShift)
                 {
                     // res = B >= 32 ? A << (B - 32) : res
-                    Operand upperShift = context.ShiftLeft(srcA, context.ISubtract(srcB, Const(32)));
+                    Operand lowerShift = context.ShiftLeft(srcA, context.ISubtract(srcB, Const(32)));
 
                     Operand shiftGreaterThan31 = context.ICompareGreaterOrEqualUnsigned(srcB, Const(32));
-                    res = context.ConditionalSelect(shiftGreaterThan31, upperShift, res);
+                    res = context.ConditionalSelect(shiftGreaterThan31, lowerShift, res);
                 }
             }
             else
