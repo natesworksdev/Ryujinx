@@ -46,7 +46,7 @@ namespace ARMeilleure.Translation
 
                 RegisterToLocal.Rename(cfg);
 
-                Logger.StartPass(PassName.RegisterToLocal);
+                Logger.EndPass(PassName.RegisterToLocal, cfg);
             }
 
             return CodeGenerator.Generate(cctx);
