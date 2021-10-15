@@ -120,7 +120,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 
                     bool timedOut = Fence.Wait(gpuContext, Timeout.InfiniteTimeSpan);
 
-                    GpuSignaled();
+                    ResetFailingState();
 
                     return timedOut;
                 }
