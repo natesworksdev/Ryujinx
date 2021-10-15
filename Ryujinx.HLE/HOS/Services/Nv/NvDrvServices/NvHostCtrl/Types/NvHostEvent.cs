@@ -68,10 +68,17 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
             }
         }
 
-        private void GpuSignaled()
+        private void GpuSignaled(SyncpointWaiterHandle waiterInformation)
         {
             lock (Lock)
             {
+                // If the signal does not match our current waiter,
+                // then it is from a past fence and we should just ignore it.
+                if (waiterInformation != null && waiterInformation != _waiterInformation)
+                {
+                    return;
+                }
+
                 ResetFailingState();
 
                 Signal();
@@ -89,6 +96,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
                 if (oldState == NvHostEventState.Waiting && _waiterInformation != null)
                 {
                     gpuContext.Synchronization.UnregisterCallback(Fence.Id, _waiterInformation);
+                    _waiterInformation = null;
 
                     if (_previousFailingFence.Id == Fence.Id && _previousFailingFence.Value == Fence.Value)
                     {
