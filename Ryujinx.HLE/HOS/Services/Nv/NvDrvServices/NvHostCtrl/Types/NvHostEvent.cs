@@ -108,9 +108,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
         {
             lock (Lock)
             {
-                Fence = fence;
-                State = NvHostEventState.Waiting;
-
                 // NOTE: nvservices code should always wait on the GPU side.
                 //       If we do this, we may get an abort or undefined behaviour when the GPU processing thread is blocked for a long period (for example, during shader compilation).
                 //       The reason for this is that the NVN code will try to wait until giving up.
@@ -129,6 +126,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
                 }
                 else
                 {
+                    Fence = fence;
+                    State = NvHostEventState.Waiting;
+
                     _waiterInformation = gpuContext.Synchronization.RegisterCallbackOnSyncpoint(Fence.Id, Fence.Value, GpuSignaled);
 
                     return true;

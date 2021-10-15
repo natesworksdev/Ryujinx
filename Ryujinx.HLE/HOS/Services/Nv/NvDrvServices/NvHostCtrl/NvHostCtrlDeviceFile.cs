@@ -316,7 +316,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 
                 lock (hostEvent.Lock)
                 {
-
                     NvHostEventState oldState = hostEvent.State;
 
                     if (oldState == NvHostEventState.Waiting)
@@ -486,7 +485,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
                 if (Event != null)
                 {
                     if (Event.State == NvHostEventState.Available ||
-                        Event.State == NvHostEventState.Signaled   ||
+                        Event.State == NvHostEventState.Signaled ||
                         Event.State == NvHostEventState.Cancelled)
                     {
                         eventIndex = index;
