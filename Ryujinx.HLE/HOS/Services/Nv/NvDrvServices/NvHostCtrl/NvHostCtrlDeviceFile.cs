@@ -314,23 +314,11 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
                     return NvInternalResult.InvalidInput;
                 }
 
-                lock (hostEvent.Lock)
-                {
-                    NvHostEventState oldState = hostEvent.State;
+                hostEvent.Cancel(_device.Gpu);
 
-                    if (oldState == NvHostEventState.Waiting)
-                    {
-                        hostEvent.State = NvHostEventState.Cancelling;
+                _device.System.HostSyncpoint.UpdateMin(hostEvent.Fence.Id);
 
-                        hostEvent.Cancel(_device.Gpu);
-                    }
-
-                    hostEvent.State = NvHostEventState.Cancelled;
-
-                    _device.System.HostSyncpoint.UpdateMin(hostEvent.Fence.Id);
-
-                    return NvInternalResult.Success;
-                }
+                return NvInternalResult.Success;
             }
         }
 

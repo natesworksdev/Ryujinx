@@ -82,7 +82,11 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
         {
             lock (Lock)
             {
-                if (_waiterInformation != null)
+                NvHostEventState oldState = State;
+
+                State = NvHostEventState.Cancelling;
+
+                if (oldState == NvHostEventState.Waiting && _waiterInformation != null)
                 {
                     gpuContext.Synchronization.UnregisterCallback(Fence.Id, _waiterInformation);
 
@@ -96,9 +100,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 
                         _previousFailingFence = Fence;
                     }
-
-                    Signal();
                 }
+
+                State = NvHostEventState.Cancelled;
 
                 Event.WritableEvent.Clear();
             }
