@@ -9,9 +9,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 {
     static class Declarations
     {
-        // At least 16 attributes are guaranteed by the spec.
-        public const int MaxAttributes = 16;
-
         public static void Declare(CodeGenContext context, StructuredProgramInfo info)
         {
             context.AppendLine("#version 450 core");
