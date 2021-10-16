@@ -51,22 +51,57 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                     Operand src0 = Utils.FindLastOperation(handleCombineOp.GetSource(0), block);
                     Operand src1 = Utils.FindLastOperation(handleCombineOp.GetSource(1), block);
 
-                    if (src0.AsgOp is Operation src0AsgOp && src0AsgOp.Inst == Instruction.BitwiseAnd &&
-                        src1.AsgOp is Operation src1AsgOp && src1AsgOp.Inst == Instruction.BitwiseAnd)
+                    TextureHandleType handleType = TextureHandleType.SeparateSamplerHandle;
+
+                    // Try to match masked pattern:
+                    // - samplerHandle = samplerHandle & 0xFFF00000;
+                    // - textureHandle = textureHandle & 0xFFFFF;
+                    // - combinedHandle = samplerHandle | textureHandle;
+                    // where samplerHandle and textureHandle comes from a constant buffer, and shifted pattern:
+                    // - samplerHandle = samplerId << 20;
+                    // - combinedHandle = samplerHandle | textureHandle;
+                    // where samplerId and textureHandle comes from a constant buffer.
+                    if (src0.AsgOp is Operation src0AsgOp)
                     {
-                        src0 = GetSourceForMaskedHandle(src0AsgOp, 0xFFFFF);
-                        src1 = GetSourceForMaskedHandle(src1AsgOp, 0xFFF00000);
-
-                        // The OR operation is commutative, so we can also try to swap the operands to get a match.
-                        if (src0 == null || src1 == null)
+                        if (src1.AsgOp is Operation src1AsgOp &&
+                            src0AsgOp.Inst == Instruction.BitwiseAnd &&
+                            src1AsgOp.Inst == Instruction.BitwiseAnd)
                         {
-                            src0 = GetSourceForMaskedHandle(src1AsgOp, 0xFFFFF);
-                            src1 = GetSourceForMaskedHandle(src0AsgOp, 0xFFF00000);
+                            src0 = GetSourceForMaskedHandle(src0AsgOp, 0xFFFFF);
+                            src1 = GetSourceForMaskedHandle(src1AsgOp, 0xFFF00000);
+
+                            // The OR operation is commutative, so we can also try to swap the operands to get a match.
+                            if (src0 == null || src1 == null)
+                            {
+                                src0 = GetSourceForMaskedHandle(src1AsgOp, 0xFFFFF);
+                                src1 = GetSourceForMaskedHandle(src0AsgOp, 0xFFF00000);
+                            }
+
+                            if (src0 == null || src1 == null)
+                            {
+                                continue;
+                            }
                         }
-
-                        if (src0 == null || src1 == null)
+                        else if (src0AsgOp.Inst == Instruction.ShiftLeft)
                         {
-                            continue;
+                            Operand shift = src0AsgOp.GetSource(1);
+
+                            if (shift.Type == OperandType.Constant && shift.Value == 20)
+                            {
+                                src0 = src1;
+                                src1 = src0AsgOp.GetSource(0);
+                                handleType = TextureHandleType.SeparateSamplerId;
+                            }
+                        }
+                    }
+                    else if (src1.AsgOp is Operation src1AsgOp && src1AsgOp.Inst == Instruction.ShiftLeft)
+                    {
+                        Operand shift = src1AsgOp.GetSource(1);
+
+                        if (shift.Type == OperandType.Constant && shift.Value == 20)
+                        {
+                            src1 = src1AsgOp.GetSource(0);
+                            handleType = TextureHandleType.SeparateSamplerId;
                         }
                     }
 
@@ -78,8 +113,8 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
                     SetHandle(
                         config,
                         texOp,
-                        src0.GetCbufOffset() | ((src1.GetCbufOffset() + 1) << 16),
-                        src0.GetCbufSlot() | ((src1.GetCbufSlot() + 1) << 16),
+                        TextureHandle.PackOffsets(src0.GetCbufOffset(), src1.GetCbufOffset(), handleType),
+                        TextureHandle.PackSlots(src0.GetCbufSlot(), src1.GetCbufSlot()),
                         rewriteSamplerType);
                 }
                 else if (texOp.Inst == Instruction.ImageLoad ||
