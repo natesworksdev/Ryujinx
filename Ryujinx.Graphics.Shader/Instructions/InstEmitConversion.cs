@@ -281,6 +281,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 srcType == ISrcDstFmt.S16 ||
                 srcType == ISrcDstFmt.S32;
             bool dstIsSignedInt =
+                dstType == ISrcDstFmt.S8 ||
                 dstType == ISrcDstFmt.S16 ||
                 dstType == ISrcDstFmt.S32;
             bool srcIsSmallInt =
