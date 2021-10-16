@@ -603,7 +603,8 @@ namespace Ryujinx.Ui.Windows
                         DpadUp       = lDPadUp,
                         DpadDown     = lDPadDown,
                         DpadLeft     = lDPadLeft,
-                        DpadRight    = lDPadRight
+                        DpadRight    = lDPadRight,
+                        Capture      = Key.PrintScreen
                     },
                     LeftJoyconStick = new JoyconConfigKeyboardStick<Key>
                     {
@@ -623,7 +624,8 @@ namespace Ryujinx.Ui.Windows
                         ButtonR      = rButtonR,
                         ButtonZr     = rButtonZr,
                         ButtonSl     = rButtonSl,
-                        ButtonSr     = rButtonSr
+                        ButtonSr     = rButtonSr,
+                        Home         = Key.Home
                     },
                     RightJoyconStick = new JoyconConfigKeyboardStick<Key>
                     {
@@ -714,7 +716,8 @@ namespace Ryujinx.Ui.Windows
                         DpadUp       = lDPadUp,
                         DpadDown     = lDPadDown,
                         DpadLeft     = lDPadLeft,
-                        DpadRight    = lDPadRight
+                        DpadRight    = lDPadRight,
+                        Capture      = ConfigGamepadInputId.Capture
                     },
                     LeftJoyconStick = new JoyconConfigControllerStick<ConfigGamepadInputId, ConfigStickInputId>
                     {
@@ -734,7 +737,8 @@ namespace Ryujinx.Ui.Windows
                         ButtonR      = rButtonR,
                         ButtonZr     = rButtonZr,
                         ButtonSl     = rButtonSl,
-                        ButtonSr     = rButtonSr
+                        ButtonSr     = rButtonSr,
+                        Home         = ConfigGamepadInputId.Home
                     },
                     RightJoyconStick = new JoyconConfigControllerStick<ConfigGamepadInputId, ConfigStickInputId>
                     {
@@ -992,8 +996,9 @@ namespace Ryujinx.Ui.Windows
                             ButtonMinus  = Key.Minus,
                             ButtonL      = Key.E,
                             ButtonZl     = Key.Q,
-                            ButtonSl     = Key.Unbound,
-                            ButtonSr     = Key.Unbound
+                            ButtonSl     = Key.R,
+                            ButtonSr     = Key.V,
+                            Capture      = Key.PrintScreen
                         },
 
                         LeftJoyconStick  = new JoyconConfigKeyboardStick<Key>
@@ -1014,8 +1019,9 @@ namespace Ryujinx.Ui.Windows
                             ButtonPlus   = Key.Plus,
                             ButtonR      = Key.U,
                             ButtonZr     = Key.O,
-                            ButtonSl     = Key.Unbound,
-                            ButtonSr     = Key.Unbound
+                            ButtonSl     = Key.Y,
+                            ButtonSr     = Key.N,
+                            Home         = Key.Home
                         },
 
                         RightJoyconStick = new JoyconConfigKeyboardStick<Key>

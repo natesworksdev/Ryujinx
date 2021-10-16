@@ -148,8 +148,8 @@ namespace Ryujinx.Headless.SDL2
                             ButtonMinus  = Key.Minus,
                             ButtonL      = Key.E,
                             ButtonZl     = Key.Q,
-                            ButtonSl     = Key.Unbound,
-                            ButtonSr     = Key.Unbound
+                            ButtonSl     = Key.R,
+                            ButtonSr     = Key.V
                         },
 
                         LeftJoyconStick  = new JoyconConfigKeyboardStick<Key>
@@ -170,8 +170,8 @@ namespace Ryujinx.Headless.SDL2
                             ButtonPlus   = Key.Plus,
                             ButtonR      = Key.U,
                             ButtonZr     = Key.O,
-                            ButtonSl     = Key.Unbound,
-                            ButtonSr     = Key.Unbound
+                            ButtonSl     = Key.Y,
+                            ButtonSr     = Key.N
                         },
 
                         RightJoyconStick = new JoyconConfigKeyboardStick<Key>
@@ -208,8 +208,8 @@ namespace Ryujinx.Headless.SDL2
                             ButtonMinus  = ConfigGamepadInputId.Minus,
                             ButtonL      = ConfigGamepadInputId.LeftShoulder,
                             ButtonZl     = ConfigGamepadInputId.LeftTrigger,
-                            ButtonSl     = ConfigGamepadInputId.Unbound,
-                            ButtonSr     = ConfigGamepadInputId.Unbound,
+                            ButtonSl     = ConfigGamepadInputId.SingleLeftTrigger0,
+                            ButtonSr     = ConfigGamepadInputId.SingleRightTrigger0,
                         },
 
                         LeftJoyconStick = new JoyconConfigControllerStick<ConfigGamepadInputId, ConfigStickInputId>
@@ -230,8 +230,8 @@ namespace Ryujinx.Headless.SDL2
                             ButtonPlus   = ConfigGamepadInputId.Plus,
                             ButtonR      = ConfigGamepadInputId.RightShoulder,
                             ButtonZr     = ConfigGamepadInputId.RightTrigger,
-                            ButtonSl     = ConfigGamepadInputId.Unbound,
-                            ButtonSr     = ConfigGamepadInputId.Unbound,
+                            ButtonSl     = ConfigGamepadInputId.SingleLeftTrigger1,
+                            ButtonSr     = ConfigGamepadInputId.SingleRightTrigger1,
                         },
 
                         RightJoyconStick = new JoyconConfigControllerStick<ConfigGamepadInputId, ConfigStickInputId>

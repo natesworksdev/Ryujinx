@@ -155,6 +155,11 @@ namespace Ryujinx.Input.HLE
             ReloadConfiguration(inputConfig, enableKeyboard, enableMouse);
         }
 
+        private static bool checkButton(ControllerKeys buttons, ControllerKeys check)
+        {
+            return (buttons & check) == check;
+        }
+
         public void Update(float aspectRatio = 0)
         {
             lock (_lock)
@@ -187,14 +192,25 @@ namespace Ryujinx.Input.HLE
 
                         inputState.Buttons |= _device.Hid.UpdateStickButtons(inputState.LStick, inputState.RStick);
 
-                        ControllerKeys specialCombo1 = ControllerKeys.Minus|ControllerKeys.L|ControllerKeys.Plus|ControllerKeys.R;
-                        ControllerKeys specialCombo2 = ControllerKeys.Minus|ControllerKeys.Plus;
+                        ControllerKeys SpecialCombo1 = ControllerKeys.Minus|ControllerKeys.L|ControllerKeys.Plus|ControllerKeys.R;
+                        ControllerKeys SpecialCombo2 = ControllerKeys.Minus|ControllerKeys.Plus;
 
-                        if ((inputState.Buttons & specialCombo1) == specialCombo1) {
+                        if (checkButton(inputState.Buttons, SpecialCombo1)) {
                             OnComboPressed(new ComboPressedEventArgs(ComboType.SpecialOne));
                         }
-                        else if ((inputState.Buttons & specialCombo2) == specialCombo2) {
+                        else if (checkButton(inputState.Buttons, SpecialCombo2)) {
                             OnComboPressed(new ComboPressedEventArgs(ComboType.SpecialTwo));
+                        }
+                        /*else if (checkButton(inputState.Buttons, ControllerKeys.Home)) {
+                            ComboPressedEventArgs args = new ComboPressedEventArgs(ComboType.Home);
+                            OnComboPressed(args);
+                            if (args.GetConsumed()) {
+                               Dispose();
+                               return;
+                            }
+                        }*/
+                        else if (checkButton(inputState.Buttons, ControllerKeys.Capture)) {
+                            OnComboPressed(new ComboPressedEventArgs(ComboType.Capture));
                         }
 
                         isJoyconPair = inputConfig.ControllerType == Common.Configuration.Hid.ControllerType.JoyconPair;

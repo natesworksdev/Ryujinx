@@ -75,6 +75,7 @@ namespace Ryujinx.Ui
         private bool _hideCursorOnIdle;
         private InputManager _inputManager;
         private IKeyboard _keyboardInterface;
+        private IGamepad _gamepadInterface;
         private GraphicsDebugLevel _glLogLevel;
         private string _gpuVendorName;
         private bool _isMouseInClient;
@@ -86,9 +87,10 @@ namespace Ryujinx.Ui
             _inputManager = inputManager;
             _inputManager.SetMouseDriver(mouseDriver);
             NpadManager = _inputManager.CreateNpadManager();
-            NpadManager.ComboPressed += Combo_Pressed;
+            NpadManager.ComboPressed += OnComboPressed;
             TouchScreenManager = _inputManager.CreateTouchScreenManager();
-            _keyboardInterface = (IKeyboard)_inputManager.KeyboardDriver.GetGamepad("0");
+            _keyboardInterface = (IKeyboard)_inputManager.KeyboardDriver.GetGamepad(_inputManager.KeyboardDriver.GamepadsIds.ToArray()[0]);
+            _gamepadInterface = (IGamepad)_inputManager.GamepadDriver.GetGamepad(_inputManager.GamepadDriver.GamepadsIds.ToArray()[0]);
 
             WaitEvent = new ManualResetEvent(false);
 
@@ -235,8 +237,16 @@ namespace Ryujinx.Ui
             return result;
         }
 
-        private void HandleScreenState(KeyboardStateSnapshot keyboard)
+        private void HandleScreenState(IKeyboard keyboard, IGamepad gamepad)
         {
+            if (gamepad.IsPressed(GamepadButtonInputId.Home) || keyboard.IsPressed(Key.Home))
+            {
+                if (!ConfigurationState.Instance.ShowConfirmExit || GtkDialog.CreateExitDialog(keyboard, gamepad))
+                {
+                    Exit();
+                }
+            }
+
             bool toggleFullscreen = keyboard.IsPressed(Key.F11)
                                 || ((keyboard.IsPressed(Key.AltLeft)
                                 || keyboard.IsPressed(Key.AltRight))
@@ -564,11 +574,10 @@ namespace Ryujinx.Ui
             {
                 Application.Invoke(delegate
                 {
-                    KeyboardStateSnapshot keyboard = _keyboardInterface.GetKeyboardStateSnapshot();
 
-                    HandleScreenState(keyboard);
+                    HandleScreenState(_keyboardInterface, _gamepadInterface);
 
-                    if (keyboard.IsPressed(Key.Delete))
+                    if (_keyboardInterface.IsPressed(Key.Delete))
                     {
                         if (!ParentWindow.State.HasFlag(WindowState.Fullscreen))
                         {
@@ -713,9 +722,22 @@ namespace Ryujinx.Ui
             return state;
         }
 
-        private void Combo_Pressed(object sender, ComboPressedEventArgs args)
+        private void OnComboPressed(object sender, ComboPressedEventArgs args)
         {
-            ComboPressed?.Invoke(null, args);
+            ComboType Combo = args.GetCombo();
+            if (Combo == ComboType.Home)
+            {
+                Logger.Info?.Print(LogClass.Application, "Home button pressed");
+                if (!ConfigurationState.Instance.ShowConfirmExit || GtkDialog.CreateExitDialog())
+                {
+                    args.SetConsumed(true);
+                    Exit();
+                }
+            }
+            else
+            {
+                ComboPressed?.Invoke(null, args);
+            }
         }
     }
 }

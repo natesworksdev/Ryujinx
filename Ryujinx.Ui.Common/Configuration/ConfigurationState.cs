@@ -670,8 +670,9 @@ namespace Ryujinx.Ui.Common.Configuration
                             ButtonMinus  = Key.Minus,
                             ButtonL      = Key.E,
                             ButtonZl     = Key.Q,
-                            ButtonSl     = Key.Unbound,
-                            ButtonSr     = Key.Unbound
+                            ButtonSl     = Key.R,
+                            ButtonSr     = Key.V,
+                            Capture      = Key.PrintScreen
                         },
 
                         LeftJoyconStick  = new JoyconConfigKeyboardStick<Key>
@@ -692,8 +693,9 @@ namespace Ryujinx.Ui.Common.Configuration
                             ButtonPlus   = Key.Plus,
                             ButtonR      = Key.U,
                             ButtonZr     = Key.O,
-                            ButtonSl     = Key.Unbound,
-                            ButtonSr     = Key.Unbound
+                            ButtonSl     = Key.Y,
+                            ButtonSr     = Key.N,
+                            Home         = Key.Home
                         },
 
                         RightJoyconStick = new JoyconConfigKeyboardStick<Key>
@@ -888,8 +890,9 @@ namespace Ryujinx.Ui.Common.Configuration
                                 ButtonMinus  = Key.Minus,
                                 ButtonL      = Key.E,
                                 ButtonZl     = Key.Q,
-                                ButtonSl     = Key.Unbound,
-                                ButtonSr     = Key.Unbound
+                                ButtonSl     = Key.R,
+                                ButtonSr     = Key.V,
+                                Capture      = Key.PrintScreen
                             },
 
                             LeftJoyconStick  = new JoyconConfigKeyboardStick<Key>
@@ -910,8 +913,9 @@ namespace Ryujinx.Ui.Common.Configuration
                                 ButtonPlus   = Key.Plus,
                                 ButtonR      = Key.U,
                                 ButtonZr     = Key.O,
-                                ButtonSl     = Key.Unbound,
-                                ButtonSr     = Key.Unbound
+                                ButtonSl     = Key.Y,
+                                ButtonSr     = Key.N,
+                                Home         = Key.Home
                             },
 
                             RightJoyconStick = new JoyconConfigKeyboardStick<Key>

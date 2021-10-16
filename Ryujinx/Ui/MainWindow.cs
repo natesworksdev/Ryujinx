@@ -964,10 +964,10 @@ namespace Ryujinx.Ui
 
             DisplaySleep.Prevent();
 
-            if (runOnce)
-            {
-                RendererWidget.ComboPressed += Combo_Pressed;
-            }
+            //if (runOnce)
+            //{
+                RendererWidget.ComboPressed += OnComboPressed;
+            //}
 
             RendererWidget.Initialize(_emulationContext);
 
@@ -988,11 +988,12 @@ namespace Ryujinx.Ui
             });
         }
 
-        private void Combo_Pressed(object sender, ComboPressedEventArgs args)
+        private void OnComboPressed(object sender, ComboPressedEventArgs args)
         {
-            if (args.Combo == ComboType.SpecialOne)
+            ComboType Combo = args.GetCombo();
+            if (Combo == ComboType.SpecialOne)
             {
-                Logger.Info?.Print(LogClass.Application, "Exit from game");
+                Logger.Info?.Print(LogClass.Application, "Exit from Ryujinx");
                 Thread applicationLibraryThread = new Thread(() =>
                 {
                     End();
@@ -1001,10 +1002,15 @@ namespace Ryujinx.Ui
                 applicationLibraryThread.IsBackground = true;
                 applicationLibraryThread.Start();
             }
-            else if (args.Combo == ComboType.SpecialTwo)
+            else if (Combo == ComboType.SpecialTwo)
             {
                 Logger.Info?.Print(LogClass.Application, "WakeupCombo");
                 Simulate_WakeUp_Message_Pressed(null, null);
+            }
+            else if (Combo == ComboType.Capture)
+            {
+                Logger.Info?.Print(LogClass.Application, "Capture button pressed");
+                TakeScreenshot();
             }
         }
 
@@ -1349,6 +1355,11 @@ namespace Ryujinx.Ui
 
         private void StopEmulation_Pressed(object sender, EventArgs args)
         {
+            StopEmulation();
+        }
+
+        private void StopEmulation()
+        {
             if (_emulationContext != null)
             {
                 UpdateGameMetadata(_emulationContext.Application.TitleIdText);
@@ -1647,7 +1658,12 @@ namespace Ryujinx.Ui
             }
         }
 
-        private void Take_Screenshot(object sender, EventArgs args)
+        private void TakeScreenshot_pressed(object sender, EventArgs args)
+        {
+            TakeScreenshot();
+        }
+
+        private void TakeScreenshot()
         {
             if (_emulationContext != null && RendererWidget != null)
             {

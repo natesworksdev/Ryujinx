@@ -11,5 +11,6 @@
         public Button DpadDown { get; set; }
         public Button DpadLeft { get; set; }
         public Button DpadRight { get; set; }
+        public Button Capture { get; set; }
     }
 }

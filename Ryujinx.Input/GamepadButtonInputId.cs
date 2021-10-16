@@ -33,8 +33,8 @@
         Back = Minus,
         Start = Plus,
 
-        Guide,
-        Misc1,
+        Home,
+        Capture,
 
         // Xbox Elite paddle
         Paddle1,

@@ -11,5 +11,6 @@
         public Button ButtonB { get; set; }
         public Button ButtonY { get; set; }
         public Button ButtonA { get; set; }
+        public Button Start { get; set; }
     }
 }

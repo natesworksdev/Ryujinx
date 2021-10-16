@@ -33,6 +33,8 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         SrLeft      = 1 << 25,
         SlRight     = 1 << 26,
         SrRight     = 1 << 27,
+        Home        = 1 << 28,
+        Capture     = 1 << 29,
 
         // Generic Catch-all
         Up    = DpadUp    | LStickUp    | RStickUp,

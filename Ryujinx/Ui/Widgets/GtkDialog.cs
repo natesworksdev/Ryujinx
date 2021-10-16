@@ -3,6 +3,9 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Ui.Common.Configuration;
 using System.Collections.Generic;
 using System.Reflection;
+using Ryujinx.Input;
+using System.Threading;
+
 
 namespace Ryujinx.Ui.Widgets
 {
@@ -62,7 +65,7 @@ namespace Ryujinx.Ui.Widgets
             return new GtkDialog("Ryujinx - Confirmation", mainText, secondaryText, MessageType.Question, ButtonsType.YesNo);
         }
 
-        internal static bool CreateChoiceDialog(string title, string mainText, string secondaryText)
+        internal static bool CreateChoiceDialog(string title, string mainText, string secondaryText, IKeyboard keyboard = null, IGamepad gamepad = null)
         {
             if (_isChoiceDialogOpen)
             {
@@ -71,7 +74,48 @@ namespace Ryujinx.Ui.Widgets
 
             _isChoiceDialogOpen = true;
 
-            ResponseType response = (ResponseType)new GtkDialog(title, mainText, secondaryText, MessageType.Question, ButtonsType.YesNo).Run();
+            GtkDialog dialog = new GtkDialog(title, mainText, secondaryText, MessageType.Question, ButtonsType.YesNo);
+
+            if (keyboard != null || gamepad != null)
+            {
+                Thread inputThread = new Thread(() =>
+                {
+                    while (true)
+                    {
+                        Thread.Sleep(10);
+                        if ((keyboard != null && keyboard.IsPressed(Ryujinx.Input.Key.Left))
+                            || (gamepad != null && gamepad.IsPressed(GamepadButtonInputId.DpadLeft)))
+                        {
+                            System.Console.Write("left\n");
+                            dialog.ChildFocus(Gtk.DirectionType.TabBackward);
+                            Thread.Sleep(300);
+                        } else if ((keyboard != null && keyboard.IsPressed(Ryujinx.Input.Key.Right))
+                            || (gamepad != null && gamepad.IsPressed(GamepadButtonInputId.DpadRight)))
+                        {
+                            System.Console.Write("Right\n");
+                            dialog.ChildFocus(Gtk.DirectionType.TabForward);
+                            Thread.Sleep(300);
+                        } else if ((keyboard != null && keyboard.IsPressed(Ryujinx.Input.Key.A))
+                            || (gamepad != null && gamepad.IsPressed(GamepadButtonInputId.A)))
+                        {
+                            System.Console.Write("A\n");
+                            dialog.Respond(ResponseType.No);
+                            Thread.Sleep(300);
+                        } else if ((keyboard != null && keyboard.IsPressed(Ryujinx.Input.Key.B))
+                            || (gamepad != null && gamepad.IsPressed(GamepadButtonInputId.B)))
+                        {
+                            System.Console.Write("B\n");
+                            dialog.Respond(ResponseType.Yes);
+                            Thread.Sleep(300);
+                        }
+                    }
+                });
+                inputThread.Name = "GUI.InputThread";
+                inputThread.IsBackground = true;
+                inputThread.Start();
+            }
+
+            ResponseType response = (ResponseType)dialog.Run();
 
             _isChoiceDialogOpen = false;
 
@@ -106,9 +150,9 @@ namespace Ryujinx.Ui.Widgets
             return "";
         }
 
-        internal static bool CreateExitDialog()
+        internal static bool CreateExitDialog(IKeyboard keyboard = null, IGamepad gamepad = null)
         {
-            return CreateChoiceDialog("Ryujinx - Exit", "Are you sure you want to close Ryujinx?", "All unsaved data will be lost!");
+            return CreateChoiceDialog("Ryujinx - Exit", "Are you sure you want to close Ryujinx?", "All unsaved data will be lost!", keyboard, gamepad);
         }
     }
 }
