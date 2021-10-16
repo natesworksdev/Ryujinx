@@ -2731,7 +2731,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         public bool NegB => (_opcode & 0x200000000000) != 0;
         public ByteSel ByteSel => (ByteSel)((_opcode >> 41) & 0x3);
         public ISrcDstFmt IDstFmt => (ISrcDstFmt)((int)((_opcode >> 10) & 0x4) | (int)((_opcode >> 8) & 0x3));
-        public ISrcDstFmt SrcFmt => (ISrcDstFmt)((int)((_opcode >> 11) & 0x4) | (int)((_opcode >> 10) & 0x3));
+        public ISrcDstFmt ISrcFmt => (ISrcDstFmt)((int)((_opcode >> 11) & 0x4) | (int)((_opcode >> 10) & 0x3));
     }
 
     struct InstI2iI
@@ -2748,7 +2748,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         public bool NegB => (_opcode & 0x200000000000) != 0;
         public ByteSel ByteSel => (ByteSel)((_opcode >> 41) & 0x3);
         public ISrcDstFmt IDstFmt => (ISrcDstFmt)((int)((_opcode >> 10) & 0x4) | (int)((_opcode >> 8) & 0x3));
-        public ISrcDstFmt SrcFmt => (ISrcDstFmt)((int)((_opcode >> 11) & 0x4) | (int)((_opcode >> 10) & 0x3));
+        public ISrcDstFmt ISrcFmt => (ISrcDstFmt)((int)((_opcode >> 11) & 0x4) | (int)((_opcode >> 10) & 0x3));
     }
 
     struct InstI2iC
@@ -2766,7 +2766,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
         public bool NegB => (_opcode & 0x200000000000) != 0;
         public ByteSel ByteSel => (ByteSel)((_opcode >> 41) & 0x3);
         public ISrcDstFmt IDstFmt => (ISrcDstFmt)((int)((_opcode >> 10) & 0x4) | (int)((_opcode >> 8) & 0x3));
-        public ISrcDstFmt SrcFmt => (ISrcDstFmt)((int)((_opcode >> 11) & 0x4) | (int)((_opcode >> 10) & 0x3));
+        public ISrcDstFmt ISrcFmt => (ISrcDstFmt)((int)((_opcode >> 11) & 0x4) | (int)((_opcode >> 10) & 0x3));
     }
 
     struct InstIaddR

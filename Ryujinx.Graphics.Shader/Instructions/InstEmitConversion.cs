@@ -98,7 +98,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             var src = GetSrcReg(context, op.SrcB);
 
-            EmitI2I(context, op.SrcFmt, op.IDstFmt, src, op.ByteSel, op.Dest, op.AbsB, op.NegB, op.Sat);
+            EmitI2I(context, op.ISrcFmt, op.IDstFmt, src, op.ByteSel, op.Dest, op.AbsB, op.NegB, op.Sat);
         }
 
         public static void I2iI(EmitterContext context)
@@ -107,7 +107,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             var src = GetSrcImm(context, Imm20ToSInt(op.Imm20));
 
-            EmitI2I(context, op.SrcFmt, op.IDstFmt, src, op.ByteSel, op.Dest, op.AbsB, op.NegB, op.Sat);
+            EmitI2I(context, op.ISrcFmt, op.IDstFmt, src, op.ByteSel, op.Dest, op.AbsB, op.NegB, op.Sat);
         }
 
         public static void I2iC(EmitterContext context)
@@ -116,7 +116,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             var src = GetSrcCbuf(context, op.CbufSlot, op.CbufOffset);
 
-            EmitI2I(context, op.SrcFmt, op.IDstFmt, src, op.ByteSel, op.Dest, op.AbsB, op.NegB, op.Sat);
+            EmitI2I(context, op.ISrcFmt, op.IDstFmt, src, op.ByteSel, op.Dest, op.AbsB, op.NegB, op.Sat);
         }
 
         private static void EmitF2F(
