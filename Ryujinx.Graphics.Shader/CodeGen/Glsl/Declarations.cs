@@ -260,12 +260,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
         {
             switch (type)
             {
-                case VariableType.Bool: return "bool";
+                case VariableType.Bool: return "precise bool";
                 case VariableType.F32:  return "precise float";
-                case VariableType.F64:  return "double";
+                case VariableType.F64:  return "precise double";
                 case VariableType.None: return "void";
-                case VariableType.S32:  return "int";
-                case VariableType.U32:  return "uint";
+                case VariableType.S32:  return "precise int";
+                case VariableType.U32:  return "precise uint";
             }
 
             throw new ArgumentException($"Invalid variable type \"{type}\".");
