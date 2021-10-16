@@ -113,6 +113,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             Add(Instruction.StoreAttribute,           InstType.Special);
             Add(Instruction.StoreLocal,               InstType.Special);
             Add(Instruction.StoreShared,              InstType.Special);
+            Add(Instruction.StoreShared16,            InstType.Special);
+            Add(Instruction.StoreShared8,             InstType.Special);
             Add(Instruction.StoreStorage,             InstType.Special);
             Add(Instruction.StoreStorage16,           InstType.Special);
             Add(Instruction.StoreStorage8,            InstType.Special);

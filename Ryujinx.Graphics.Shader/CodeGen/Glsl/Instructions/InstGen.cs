@@ -185,6 +185,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     case Instruction.StoreShared:
                         return StoreShared(context, operation);
 
+                    case Instruction.StoreShared16:
+                        return StoreShared16(context, operation);
+
+                    case Instruction.StoreShared8:
+                        return StoreShared8(context, operation);
+
                     case Instruction.StoreStorage:
                         return StoreStorage(context, operation);
 

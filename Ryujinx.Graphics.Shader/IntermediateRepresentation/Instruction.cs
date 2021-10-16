@@ -115,6 +115,8 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
         StoreGlobal8,
         StoreLocal,
         StoreShared,
+        StoreShared16,
+        StoreShared8,
         StoreStorage,
         StoreStorage16,
         StoreStorage8,

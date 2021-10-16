@@ -647,6 +647,16 @@ namespace Ryujinx.Graphics.Shader.Translation
             return context.Add(Instruction.StoreShared, null, a, b);
         }
 
+        public static Operand StoreShared16(this EmitterContext context, Operand a, Operand b)
+        {
+            return context.Add(Instruction.StoreShared16, null, a, b);
+        }
+
+        public static Operand StoreShared8(this EmitterContext context, Operand a, Operand b)
+        {
+            return context.Add(Instruction.StoreShared8, null, a, b);
+        }
+
         public static Operand UnpackDouble2x32High(this EmitterContext context, Operand a)
         {
             return UnpackDouble2x32(context, a, 1);

@@ -366,23 +366,33 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 Operand value = Register(isRz ? rd : rd + index, RegisterType.Gpr);
                 Operand elemOffset = context.IAdd(wordOffset, Const(index));
 
-                if (isSmallInt)
+                if (isSmallInt && region == MemoryRegion.Local)
                 {
-                    Operand word = null;
-
-                    switch (region)
-                    {
-                        case MemoryRegion.Local: word = context.LoadLocal(elemOffset); break;
-                        case MemoryRegion.Shared: word = context.LoadShared(elemOffset); break;
-                    }
+                    Operand word = context.LoadLocal(elemOffset);
 
                     value = InsertSmallInt(context, (LsSize)size, bitOffset, word, value);
                 }
 
-                switch (region)
+                if (region == MemoryRegion.Local)
                 {
-                    case MemoryRegion.Local: context.StoreLocal(elemOffset, value); break;
-                    case MemoryRegion.Shared: context.StoreShared(elemOffset, value); break;
+                    context.StoreLocal(elemOffset, value);
+                }
+                else if (region == MemoryRegion.Shared)
+                {
+                    switch (size)
+                    {
+                        case LsSize2.U8:
+                        case LsSize2.S8:
+                            context.StoreShared8(baseOffset, value);
+                            break;
+                        case LsSize2.U16:
+                        case LsSize2.S16:
+                            context.StoreShared16(baseOffset, value);
+                            break;
+                        default:
+                            context.StoreShared(elemOffset, value);
+                            break;
+                    }
                 }
             }
         }
