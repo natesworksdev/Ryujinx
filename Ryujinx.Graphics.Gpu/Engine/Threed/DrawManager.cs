@@ -319,6 +319,51 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             _drawState.DrawIndexed = oldDrawIndexed;
         }
 
+        public void DrawTexture(ThreedClass engine, int argument)
+        {
+            static float FixedToFloat(int fixedValue)
+            {
+                return fixedValue * (1f / 4096);
+            }
+
+            float dstX0 = FixedToFloat(_state.State.DrawTextureDstX);
+            float dstY0 = FixedToFloat(_state.State.DrawTextureDstY);
+            float dstWidth = FixedToFloat(_state.State.DrawTextureDstWidth);
+            float dstHeight = FixedToFloat(_state.State.DrawTextureDstHeight);
+
+            // FIXME: This should not be necessary.
+            if (_state.State.DrawTextureFactorX < 0)
+            {
+                dstX0 -= dstWidth;
+            }
+
+            if (_state.State.DrawTextureFactorY < 0)
+            {
+                dstY0 -= dstHeight;
+            }
+
+            float dstX1 = dstX0 + dstWidth;
+            float dstY1 = dstY0 + dstHeight;
+
+            float srcX0 = FixedToFloat(_state.State.DrawTextureSrcX);
+            float srcY0 = FixedToFloat(_state.State.DrawTextureSrcY);
+            float srcX1 = ((float)_state.State.DrawTextureFactorX / (1UL << 32)) * dstWidth + srcX0;
+            float srcY1 = ((float)_state.State.DrawTextureFactorY / (1UL << 32)) * dstHeight + srcY0;
+
+            engine.UpdateState();
+
+            int textureId = _state.State.DrawTextureTextureId;
+            int samplerId = _state.State.DrawTextureSamplerId;
+
+            (var texture, var sampler) = _channel.TextureManager.GetGraphicsTextureAndSampler(textureId, samplerId);
+
+            _context.Renderer.Pipeline.DrawTexture(
+                texture?.HostTexture,
+                sampler?.HostSampler,
+                new Extents2DF(srcX0, srcY0, srcX1, srcY1),
+                new Extents2DF(dstX0, dstY0, dstX1, dstY1));
+        }
+
         /// <summary>
         /// Performs a indirect multi-draw, with parameters from a GPU buffer.
         /// </summary>

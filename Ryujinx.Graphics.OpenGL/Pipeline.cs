@@ -544,6 +544,25 @@ namespace Ryujinx.Graphics.OpenGL
             }
         }
 
+        public void DrawTexture(ITexture texture, ISampler sampler, Extents2DF srcRegion, Extents2DF dstRegion)
+        {
+            if (texture is TextureView view && sampler is Sampler samp)
+            {
+                GL.NV.DrawTexture(
+                    view.Handle,
+                    samp.Handle,
+                    dstRegion.X1,
+                    dstRegion.Y1,
+                    dstRegion.X2,
+                    dstRegion.Y2,
+                    0,
+                    srcRegion.X1 / view.Width,
+                    srcRegion.Y1 / view.Height,
+                    srcRegion.X2 / view.Width,
+                    srcRegion.Y2 / view.Height);
+            }
+        }
+
         public void EndTransformFeedback()
         {
             GL.EndTransformFeedback();
