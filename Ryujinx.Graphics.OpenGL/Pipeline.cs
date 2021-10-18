@@ -12,6 +12,8 @@ namespace Ryujinx.Graphics.OpenGL
 {
     class Pipeline : IPipeline, IDisposable
     {
+        private readonly DrawTextureEmulation _drawTexture;
+
         internal ulong DrawCount { get; private set; }
 
         private Program _program;
@@ -30,6 +32,9 @@ namespace Ryujinx.Graphics.OpenGL
         private int _stencilFrontMask;
         private bool _depthMask;
 
+        private float[] _viewportArray = Array.Empty<float>();
+        private double[] _depthRangeArray = Array.Empty<double>();
+
         private int _boundDrawFramebuffer;
         private int _boundReadFramebuffer;
 
@@ -47,6 +52,7 @@ namespace Ryujinx.Graphics.OpenGL
         private Vector4<float>[] _renderScale = new Vector4<float>[65];
 
         private TextureBase _unit0Texture;
+        private Sampler _unit0Sampler;
 
         private FrontFaceDirection _frontFace;
         private ClipOrigin _clipOrigin;
@@ -67,6 +73,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         internal Pipeline()
         {
+            _drawTexture = new DrawTextureEmulation();
             _rasterizerDiscard = false;
             _clipOrigin = ClipOrigin.LowerLeft;
             _clipDepthMode = ClipDepthMode.NegativeOneToOne;
@@ -548,18 +555,40 @@ namespace Ryujinx.Graphics.OpenGL
         {
             if (texture is TextureView view && sampler is Sampler samp)
             {
-                GL.NV.DrawTexture(
-                    view.Handle,
-                    samp.Handle,
-                    dstRegion.X1,
-                    dstRegion.Y1,
-                    dstRegion.X2,
-                    dstRegion.Y2,
-                    0,
-                    srcRegion.X1 / view.Width,
-                    srcRegion.Y1 / view.Height,
-                    srcRegion.X2 / view.Width,
-                    srcRegion.Y2 / view.Height);
+                if (HwCapabilities.SupportsDrawTexture)
+                {
+                    GL.NV.DrawTexture(
+                        view.Handle,
+                        samp.Handle,
+                        dstRegion.X1,
+                        dstRegion.Y1,
+                        dstRegion.X2,
+                        dstRegion.Y2,
+                        0,
+                        srcRegion.X1 / view.Width,
+                        srcRegion.Y1 / view.Height,
+                        srcRegion.X2 / view.Width,
+                        srcRegion.Y2 / view.Height);
+                }
+                else
+                {
+                    _drawTexture.Draw(
+                        view,
+                        samp,
+                        dstRegion.X1,
+                        dstRegion.Y1,
+                        dstRegion.X2,
+                        dstRegion.Y2,
+                        srcRegion.X1 / view.Width,
+                        srcRegion.Y1 / view.Height,
+                        srcRegion.X2 / view.Width,
+                        srcRegion.Y2 / view.Height);
+
+                    _program?.Bind();
+                    _unit0Sampler?.Bind(0);
+
+                    GL.ViewportArray(0, 1, _viewportArray);
+                }
             }
         }
 
@@ -1013,7 +1042,14 @@ namespace Ryujinx.Graphics.OpenGL
                 return;
             }
 
-            ((Sampler)sampler).Bind(binding);
+            Sampler samp = (Sampler)sampler;
+
+            if (binding == 0)
+            {
+                _unit0Sampler = samp;
+            }
+
+            samp.Bind(binding);
         }
 
         public void SetScissor(int index, bool enable, int x, int y, int width, int height)
@@ -1171,9 +1207,11 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void SetViewports(int first, ReadOnlySpan<Viewport> viewports)
         {
-            float[] viewportArray = new float[viewports.Length * 4];
+            Array.Resize(ref _viewportArray, viewports.Length * 4);
+            Array.Resize(ref _depthRangeArray, viewports.Length * 2);
 
-            double[] depthRangeArray = new double[viewports.Length * 2];
+            float[] viewportArray = _viewportArray;
+            double[] depthRangeArray = _depthRangeArray;
 
             for (int index = 0; index < viewports.Length; index++)
             {
@@ -1205,7 +1243,6 @@ namespace Ryujinx.Graphics.OpenGL
             SetOrigin(flipY ? ClipOrigin.UpperLeft : ClipOrigin.LowerLeft);
 
             GL.ViewportArray(first, viewports.Length, viewportArray);
-
             GL.DepthRangeArray(first, viewports.Length, depthRangeArray);
         }
 
@@ -1326,10 +1363,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         private void PrepareForDispatch()
         {
-            if (_unit0Texture != null)
-            {
-                _unit0Texture.Bind(0);
-            }
+            _unit0Texture?.Bind(0);
         }
 
         private void PreDraw()
@@ -1337,11 +1371,7 @@ namespace Ryujinx.Graphics.OpenGL
             DrawCount++;
 
             _vertexArray.Validate();
-
-            if (_unit0Texture != null)
-            {
-                _unit0Texture.Bind(0);
-            }
+            _unit0Texture?.Bind(0);
         }
 
         private void PostDraw()
@@ -1457,6 +1487,7 @@ namespace Ryujinx.Graphics.OpenGL
             _activeConditionalRender?.ReleaseHostAccess();
             _framebuffer?.Dispose();
             _vertexArray?.Dispose();
+            _drawTexture.Dispose();
         }
     }
 }
