@@ -37,6 +37,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             NumberFormatter.TryFormat(0, type, out string zero);
 
+            // Starting in the 496.13 NVIDIA driver, there's an issue with assignments to negated expressions.
+            // (-expr) does not work, but (0.0 - expr) does. This should be removed once the issue is resolved.
+
             return $"{zero} - {Enclose(srcExpr, src, operation.Inst, info, false)}";
         }
 
@@ -164,6 +167,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     case Instruction.Lod:
                         return Lod(context, operation);
 
+                    case Instruction.Negate:
+                        return Negate(context, operation, info);
+
                     case Instruction.PackDouble2x32:
                         return PackDouble2x32(context, operation);
 
@@ -193,9 +199,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
                     case Instruction.UnpackHalf2x16:
                         return UnpackHalf2x16(context, operation);
-
-                    case Instruction.Negate:
-                        return Negate(context, operation, info);
                 }
             }
 
