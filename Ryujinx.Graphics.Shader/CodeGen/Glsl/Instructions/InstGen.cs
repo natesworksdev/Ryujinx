@@ -37,7 +37,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             NumberFormatter.TryFormat(0, type, out string zero);
 
-            // Starting in the 496.13 NVIDIA driver, there's an issue with assignments to negated expressions.
+            // Starting in the 496.13 NVIDIA driver, there's an issue with assigning variables to negated expressions.
             // (-expr) does not work, but (0.0 - expr) does. This should be removed once the issue is resolved.
 
             return $"{zero} - {Enclose(srcExpr, src, operation.Inst, info, false)}";
