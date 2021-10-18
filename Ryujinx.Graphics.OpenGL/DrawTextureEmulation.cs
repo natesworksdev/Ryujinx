@@ -8,32 +8,32 @@ namespace Ryujinx.Graphics.OpenGL
     {
         private const string VertexShader = @"#version 430 core
 
-            uniform float srcX0;
-            uniform float srcY0;
-            uniform float srcX1;
-            uniform float srcY1;
+uniform float srcX0;
+uniform float srcY0;
+uniform float srcX1;
+uniform float srcY1;
 
-            layout (location = 0) out vec2 texcoord;
+layout (location = 0) out vec2 texcoord;
 
-            void main()
-            {
-                bool x1 = (gl_VertexID & 1) != 0;
-                bool y1 = (gl_VertexID & 2) != 0;
-                gl_Position = vec4(x1 ? 1 : -1, y1 ? -1 : 1, 0, 1);
-                texcoord = vec2(x1 ? srcX1 : srcX0, y1 ? srcY1 : srcY0);
-            }";
+void main()
+{
+    bool x1 = (gl_VertexID & 1) != 0;
+    bool y1 = (gl_VertexID & 2) != 0;
+    gl_Position = vec4(x1 ? 1 : -1, y1 ? -1 : 1, 0, 1);
+    texcoord = vec2(x1 ? srcX1 : srcX0, y1 ? srcY1 : srcY0);
+}";
 
         private const string FragmentShader = @"#version 430 core
 
-            layout (location = 0) uniform sampler2D tex;
+layout (location = 0) uniform sampler2D tex;
 
-            layout (location = 0) in vec2 texcoord;
-            layout (location = 0) out vec4 colour;
+layout (location = 0) in vec2 texcoord;
+layout (location = 0) out vec4 colour;
 
-            void main()
-            {
-                colour = texture(tex, texcoord);
-            }";
+void main()
+{
+    colour = texture(tex, texcoord);
+}";
 
         private int _vsHandle;
         private int _fsHandle;
