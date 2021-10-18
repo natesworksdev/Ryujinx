@@ -343,8 +343,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
             float srcX0 = FixedToFloat(_state.State.DrawTextureSrcX);
             float srcY0 = FixedToFloat(_state.State.DrawTextureSrcY);
-            float srcX1 = ((float)_state.State.DrawTextureFactorX / (1UL << 32)) * dstWidth + srcX0;
-            float srcY1 = ((float)_state.State.DrawTextureFactorY / (1UL << 32)) * dstHeight + srcY0;
+            float srcX1 = ((float)_state.State.DrawTextureDuDx / (1UL << 32)) * dstWidth + srcX0;
+            float srcY1 = ((float)_state.State.DrawTextureDvDy / (1UL << 32)) * dstHeight + srcY0;
 
             engine.UpdateState();
 

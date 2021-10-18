@@ -748,8 +748,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         public int DrawTextureDstY;
         public int DrawTextureDstWidth;
         public int DrawTextureDstHeight;
-        public long DrawTextureFactorX;
-        public long DrawTextureFactorY;
+        public long DrawTextureDuDx;
+        public long DrawTextureDvDy;
         public int DrawTextureSamplerId;
         public int DrawTextureTextureId;
         public int DrawTextureSrcX;
