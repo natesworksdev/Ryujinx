@@ -31,6 +31,9 @@ namespace Ryujinx.Graphics.OpenGL
 
         private int _stencilFrontMask;
         private bool _depthMask;
+        private bool _depthTestEnable;
+        private bool _stencilTestEnable;
+        private bool _cullEnable;
 
         private float[] _viewportArray = Array.Empty<float>();
         private double[] _depthRangeArray = Array.Empty<double>();
@@ -572,6 +575,31 @@ namespace Ryujinx.Graphics.OpenGL
                 }
                 else
                 {
+                    static void Disable(EnableCap cap, bool enabled)
+                    {
+                        if (enabled)
+                        {
+                            GL.Disable(cap);
+                        }
+                    }
+
+                    static void Enable(EnableCap cap, bool enabled)
+                    {
+                        if (enabled)
+                        {
+                            GL.Enable(cap);
+                        }
+                    }
+
+                    Disable(EnableCap.CullFace, _cullEnable);
+                    Disable(EnableCap.StencilTest, _stencilTestEnable);
+                    Disable(EnableCap.DepthTest, _depthTestEnable);
+
+                    if (_depthMask)
+                    {
+                        GL.DepthMask(false);
+                    }
+
                     _drawTexture.Draw(
                         view,
                         samp,
@@ -588,6 +616,15 @@ namespace Ryujinx.Graphics.OpenGL
                     _unit0Sampler?.Bind(0);
 
                     GL.ViewportArray(0, 1, _viewportArray);
+
+                    Enable(EnableCap.CullFace, _cullEnable);
+                    Enable(EnableCap.StencilTest, _stencilTestEnable);
+                    Enable(EnableCap.DepthTest, _depthTestEnable);
+
+                    if (_depthMask)
+                    {
+                        GL.DepthMask(true);
+                    }
                 }
             }
         }
@@ -802,10 +839,13 @@ namespace Ryujinx.Graphics.OpenGL
 
             GL.DepthMask(depthTest.WriteEnable);
             _depthMask = depthTest.WriteEnable;
+            _depthTestEnable = depthTest.TestEnable;
         }
 
         public void SetFaceCulling(bool enable, Face face)
         {
+            _cullEnable = enable;
+
             if (!enable)
             {
                 GL.Disable(EnableCap.CullFace);
@@ -1078,6 +1118,8 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void SetStencilTest(StencilTestDescriptor stencilTest)
         {
+            _stencilTestEnable = stencilTest.TestEnable;
+
             if (!stencilTest.TestEnable)
             {
                 GL.Disable(EnableCap.StencilTest);

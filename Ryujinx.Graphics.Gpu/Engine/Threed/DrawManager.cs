@@ -331,13 +331,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             float dstWidth = FixedToFloat(_state.State.DrawTextureDstWidth);
             float dstHeight = FixedToFloat(_state.State.DrawTextureDstHeight);
 
-            // FIXME: This should not be necessary.
-            if (_state.State.DrawTextureFactorX < 0)
-            {
-                dstX0 -= dstWidth;
-            }
-
-            if (_state.State.DrawTextureFactorY < 0)
+            // TODO: Confirm behaviour on hardware.
+            // When this is active, the origin appears to be on the bottom.
+            if (_state.State.YControl.HasFlag(YControl.NegateY))
             {
                 dstY0 -= dstHeight;
             }
