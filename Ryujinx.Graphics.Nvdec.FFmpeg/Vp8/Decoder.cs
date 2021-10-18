@@ -1,5 +1,4 @@
-﻿using FFmpeg.AutoGen;
-using Ryujinx.Graphics.Video;
+﻿using Ryujinx.Graphics.Video;
 using System;
 
 namespace Ryujinx.Graphics.Nvdec.FFmpeg.Vp8
@@ -8,7 +7,7 @@ namespace Ryujinx.Graphics.Nvdec.FFmpeg.Vp8
     {
         public bool IsHardwareAccelerated => false;
 
-        private readonly FFmpegContext _context = new FFmpegContext(AVCodecID.AV_CODEC_ID_VP8);
+        private readonly FFmpegContext _context = new FFmpegContext("vp8");
 
         public ISurface CreateSurface(int width, int height)
         {

@@ -15,9 +15,9 @@ namespace Ryujinx.Graphics.Nvdec.FFmpeg
         private AVPacket* _packet;
         private AVCodecContext* _context;
 
-        public FFmpegContext(AVCodecID codecId)
+        public FFmpegContext(string name)
         {
-            _codec = ffmpeg.avcodec_find_decoder(codecId);
+            _codec = ffmpeg.avcodec_find_decoder_by_name(name);
             _context = ffmpeg.avcodec_alloc_context3(_codec);
 
             ffmpeg.avcodec_open2(_context, _codec, null);
