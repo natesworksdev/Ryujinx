@@ -84,7 +84,7 @@ namespace Ryujinx.Graphics.OpenGL
             else
             {
                 srcY0 = view.Height - crop.Bottom;
-                srcY1 = crop.Bottom - crop.Top;
+                srcY1 = view.Height - crop.Top;
             }
 
             if (scale != 1f)
