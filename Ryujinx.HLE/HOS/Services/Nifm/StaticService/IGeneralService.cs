@@ -93,7 +93,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
         {
             IPAddress[] hostAddresses = Dns.GetHostAddresses(Dns.GetHostName());
 
-            if(hostAddresses == null)
+            if (hostAddresses == null)
             {
                 return ResultCode.NoInternetConnection;
             }
