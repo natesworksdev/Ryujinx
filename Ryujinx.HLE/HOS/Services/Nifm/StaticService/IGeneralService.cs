@@ -100,9 +100,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 
             IPAddress localIP = hostAddresses[hostAddresses.Length - 1].MapToIPv4();
 
-            IpV4Address responseIP = new IpV4Address(localIP);
-
-            context.ResponseData.WriteStruct(responseIP);
+            context.ResponseData.WriteStruct(new IpV4Address(localIP));
 
             Logger.Info?.Print(LogClass.ServiceNifm, $"Console's local IP is \"{localIP.ToString()}\".");
 
