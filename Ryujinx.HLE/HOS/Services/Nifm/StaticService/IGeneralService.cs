@@ -4,6 +4,7 @@ using Ryujinx.HLE.HOS.Services.Nifm.StaticService.GeneralService;
 using Ryujinx.HLE.HOS.Services.Nifm.StaticService.Types;
 using Ryujinx.HLE.Utilities;
 using System;
+using System.Net;
 using System.Net.NetworkInformation;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -90,16 +91,20 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
         // GetCurrentIpAddress() -> nn::nifm::IpV4Address
         public ResultCode GetCurrentIpAddress(ServiceCtx context)
         {
-            (_, UnicastIPAddressInformation unicastAddress) = GetLocalInterface();
+            IPAddress[] hostAddresses = Dns.GetHostAddresses(Dns.GetHostName());
 
-            if (unicastAddress == null)
+            if(hostAddresses == null)
             {
                 return ResultCode.NoInternetConnection;
             }
 
-            context.ResponseData.WriteStruct(new IpV4Address(unicastAddress.Address));
+            IPAddress localIP = hostAddresses[hostAddresses.Length - 1].MapToIPv4();
 
-            Logger.Info?.Print(LogClass.ServiceNifm, $"Console's local IP is \"{unicastAddress.Address}\".");
+            IpV4Address responseIP = new IpV4Address(localIP);
+
+            context.ResponseData.WriteStruct(responseIP);
+
+            Logger.Info?.Print(LogClass.ServiceNifm, $"Console's local IP is \"{localIP.ToString()}\".");
 
             return ResultCode.Success;
         }
