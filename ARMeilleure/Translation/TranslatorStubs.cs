@@ -14,7 +14,7 @@ namespace ARMeilleure.Translation
     /// </summary>
     class TranslatorStubs : IDisposable
     {
-        private static readonly Lazy<IntPtr> _slowDispatchStub = new(GenerateSlowDispatchStub, isThreadSafe: true);
+        private readonly Lazy<IntPtr> _slowDispatchStub;
 
         private bool _disposed;
 
@@ -84,6 +84,7 @@ namespace ARMeilleure.Translation
             _translator = translator ?? throw new ArgumentNullException(nameof(translator));
             _dispatchStub = new(GenerateDispatchStub, isThreadSafe: true);
             _dispatchLoop = new(GenerateDispatchLoop, isThreadSafe: true);
+            _slowDispatchStub = new(GenerateSlowDispatchStub, isThreadSafe: true);
         }
 
         /// <summary>
@@ -105,12 +106,12 @@ namespace ARMeilleure.Translation
             {
                 if (_dispatchStub.IsValueCreated)
                 {
-                    JitCache.Unmap(_dispatchStub.Value);
+                    _translator.JitCache.Unmap(_dispatchStub.Value);
                 }
 
                 if (_dispatchLoop.IsValueCreated)
                 {
-                    JitCache.Unmap(Marshal.GetFunctionPointerForDelegate(_dispatchLoop.Value));
+                    _translator.JitCache.Unmap(Marshal.GetFunctionPointerForDelegate(_dispatchLoop.Value));
                 }
 
                 _disposed = true;
@@ -178,7 +179,7 @@ namespace ARMeilleure.Translation
             var retType = OperandType.I64;
             var argTypes = new[] { OperandType.I64 };
 
-            var func = Compiler.Compile(cfg, argTypes, retType, CompilerOptions.HighCq).Map<GuestFunction>();
+            var func = Compiler.Compile(cfg, argTypes, retType, CompilerOptions.HighCq).Map<GuestFunction>(_translator.JitCache);
 
             return Marshal.GetFunctionPointerForDelegate(func);
         }
@@ -187,7 +188,7 @@ namespace ARMeilleure.Translation
         /// Generates a <see cref="SlowDispatchStub"/>.
         /// </summary>
         /// <returns>Generated <see cref="SlowDispatchStub"/></returns>
-        private static IntPtr GenerateSlowDispatchStub()
+        private IntPtr GenerateSlowDispatchStub()
         {
             var context = new EmitterContext();
 
@@ -204,7 +205,7 @@ namespace ARMeilleure.Translation
             var retType = OperandType.I64;
             var argTypes = new[] { OperandType.I64 };
 
-            var func = Compiler.Compile(cfg, argTypes, retType, CompilerOptions.HighCq).Map<GuestFunction>();
+            var func = Compiler.Compile(cfg, argTypes, retType, CompilerOptions.HighCq).Map<GuestFunction>(_translator.JitCache);
 
             return Marshal.GetFunctionPointerForDelegate(func);
         }
@@ -242,7 +243,7 @@ namespace ARMeilleure.Translation
             var retType = OperandType.None;
             var argTypes = new[] { OperandType.I64, OperandType.I64 };
 
-            return Compiler.Compile(cfg, argTypes, retType, CompilerOptions.HighCq).Map<DispatcherFunction>();
+            return Compiler.Compile(cfg, argTypes, retType, CompilerOptions.HighCq).Map<DispatcherFunction>(_translator.JitCache);
         }
     }
 }

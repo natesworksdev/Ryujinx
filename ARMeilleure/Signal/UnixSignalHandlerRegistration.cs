@@ -49,8 +49,16 @@ namespace ARMeilleure.Signal
             return old;
         }
 
-        public static bool RestoreExceptionHandler(SigAction oldAction)
+        public static bool RestoreExceptionHandler(IntPtr oldHandler, int oldFlags)
         {
+            SigAction oldAction = new SigAction
+            {
+                sa_handler = oldHandler,
+                sa_flags = oldFlags
+            };
+
+            sigemptyset(ref oldAction.sa_mask);
+
             return sigaction((int)Signum.SIGSEGV, ref oldAction, out SigAction _) == 0;
         }
     }

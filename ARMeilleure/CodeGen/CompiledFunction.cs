@@ -44,11 +44,12 @@ namespace ARMeilleure.CodeGen
         /// Maps the <see cref="CompiledFunction"/> onto the <see cref="JitCache"/> and returns a delegate of type
         /// <typeparamref name="T"/> pointing to the mapped function.
         /// </summary>
+        /// <param name="cache"><see cref="JitCache"/> to use</param>
         /// <typeparam name="T">Type of delegate</typeparam>
         /// <returns>A delegate of type <typeparamref name="T"/> pointing to the mapped function</returns>
-        public T Map<T>()
+        public T Map<T>(JitCache cache)
         {
-            IntPtr codePtr = JitCache.Map(this);
+            IntPtr codePtr = cache.Map(this);
 
             return Marshal.GetDelegateForFunctionPointer<T>(codePtr);
         }

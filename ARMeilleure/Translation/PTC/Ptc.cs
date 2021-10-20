@@ -4,6 +4,7 @@ using ARMeilleure.CodeGen.Unwinding;
 using ARMeilleure.CodeGen.X86;
 using ARMeilleure.Common;
 using ARMeilleure.Memory;
+using ARMeilleure.Translation.Cache;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
@@ -581,7 +582,7 @@ namespace ARMeilleure.Translation.PTC
 
                     UnwindInfo unwindInfo = ReadUnwindInfo(unwindInfosReader);
 
-                    TranslatedFunction func = FastTranslate(code, callCounter, infoEntry.GuestSize, unwindInfo, infoEntry.HighCq);
+                    TranslatedFunction func = FastTranslate(code, callCounter, infoEntry.GuestSize, unwindInfo, infoEntry.HighCq, translator.JitCache);
 
                     translator.RegisterFunction(infoEntry.Address, func);
 
@@ -728,10 +729,11 @@ namespace ARMeilleure.Translation.PTC
             Counter<uint> callCounter,
             ulong guestSize,
             UnwindInfo unwindInfo,
-            bool highCq)
+            bool highCq,
+            JitCache jitCache)
         {
             var cFunc = new CompiledFunction(code, unwindInfo, RelocInfo.Empty);
-            var gFunc = cFunc.Map<GuestFunction>();
+            var gFunc = cFunc.Map<GuestFunction>(jitCache);
 
             return new TranslatedFunction(gFunc, callCounter, guestSize, highCq);
         }

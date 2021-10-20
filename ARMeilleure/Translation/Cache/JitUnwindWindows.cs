@@ -1,13 +1,14 @@
 // https://github.com/MicrosoftDocs/cpp-docs/blob/master/docs/build/exception-handling-x64.md
 
 using ARMeilleure.CodeGen.Unwinding;
+using ARMeilleure.Common;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace ARMeilleure.Translation.Cache
 {
-    static class JitUnwindWindows
+    unsafe class JitUnwindWindows : IDisposable
     {
         private const int MaxUnwindCodesArraySize = 32; // Must be an even value.
 
@@ -24,7 +25,7 @@ namespace ARMeilleure.Translation.Cache
             public byte SizeOfProlog;
             public byte CountOfUnwindCodes;
             public byte FrameRegister;
-            public unsafe fixed ushort UnwindCodes[MaxUnwindCodesArraySize];
+            public fixed ushort UnwindCodes[MaxUnwindCodesArraySize];
         }
 
         private enum UnwindOp
@@ -40,10 +41,10 @@ namespace ARMeilleure.Translation.Cache
             PushMachframe = 10
         }
 
-        private unsafe delegate RuntimeFunction* GetRuntimeFunctionCallback(ulong controlPc, IntPtr context);
+        private delegate RuntimeFunction* GetRuntimeFunctionCallback(ulong controlPc, IntPtr context);
 
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
-        private static unsafe extern bool RtlInstallFunctionTableCallback(
+        private static extern bool RtlInstallFunctionTableCallback(
             ulong tableIdentifier,
             ulong baseAddress,
             uint length,
@@ -51,50 +52,50 @@ namespace ARMeilleure.Translation.Cache
             IntPtr context,
             string outOfProcessCallbackDll);
 
-        private static GetRuntimeFunctionCallback _getRuntimeFunctionCallback;
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+        private static extern bool RtlDeleteFunctionTable(ulong tableIdentifier);
 
-        private static int _sizeOfRuntimeFunction;
+        private bool _disposed;
+        private readonly ulong _identifier;
+        private readonly JitCache _jitCache;
+        private readonly GetRuntimeFunctionCallback _getRuntimeFunctionCallback;
 
-        private unsafe static RuntimeFunction* _runtimeFunction;
+        private readonly void* _workBuffer;
+        private readonly RuntimeFunction* _runtimeFunction;
+        private readonly UnwindInfo* _unwindInfo;
 
-        private unsafe static UnwindInfo* _unwindInfo;
-
-        public static void InstallFunctionTableHandler(IntPtr codeCachePointer, uint codeCacheLength, IntPtr workBufferPtr)
+        public JitUnwindWindows(JitCache jitCache)
         {
-            ulong codeCachePtr = (ulong)codeCachePointer.ToInt64();
+            _jitCache = jitCache;
 
-            _sizeOfRuntimeFunction = Marshal.SizeOf<RuntimeFunction>();
+            _workBuffer = (void*)jitCache.Base;
+            _runtimeFunction = (RuntimeFunction*)_workBuffer;
+            _unwindInfo = (UnwindInfo*)((byte*)_workBuffer + Marshal.SizeOf<RuntimeFunction>());
 
-            bool result;
+            _getRuntimeFunctionCallback = new GetRuntimeFunctionCallback(FunctionTableHandler);
 
-            unsafe
-            {
-                _runtimeFunction = (RuntimeFunction*)workBufferPtr;
+            ulong codeCachePtr = (ulong)_jitCache.Base;
+            uint codeCacheLength = (uint)_jitCache.Size;
 
-                _unwindInfo = (UnwindInfo*)(workBufferPtr + _sizeOfRuntimeFunction);
+            _identifier = codeCachePtr | 3;
 
-                _getRuntimeFunctionCallback = new GetRuntimeFunctionCallback(FunctionTableHandler);
-
-                result = RtlInstallFunctionTableCallback(
-                    codeCachePtr | 3,
+            if (!RtlInstallFunctionTableCallback(
+                    _identifier,
                     codeCachePtr,
                     codeCacheLength,
                     _getRuntimeFunctionCallback,
-                    codeCachePointer,
-                    null);
-            }
-
-            if (!result)
+                    _jitCache.Base,
+                    null))
             {
                 throw new InvalidOperationException("Failure installing function table callback.");
             }
         }
 
-        private static unsafe RuntimeFunction* FunctionTableHandler(ulong controlPc, IntPtr context)
+        private RuntimeFunction* FunctionTableHandler(ulong controlPc, IntPtr context)
         {
             int offset = (int)((long)controlPc - context.ToInt64());
 
-            if (!JitCache.TryFind(offset, out CacheEntry funcEntry))
+            if (!_jitCache.TryFind(offset, out CacheEntry funcEntry))
             {
                 return null; // Not found.
             }
@@ -175,7 +176,7 @@ namespace ARMeilleure.Translation.Cache
 
             _runtimeFunction->BeginAddress = (uint)funcEntry.Offset;
             _runtimeFunction->EndAddress   = (uint)(funcEntry.Offset + funcEntry.Size);
-            _runtimeFunction->UnwindData   = (uint)_sizeOfRuntimeFunction;
+            _runtimeFunction->UnwindData   = (uint)Marshal.SizeOf<RuntimeFunction>();
 
             return _runtimeFunction;
         }
@@ -183,6 +184,32 @@ namespace ARMeilleure.Translation.Cache
         private static ushort PackUnwindOp(UnwindOp op, int prologOffset, int opInfo)
         {
             return (ushort)(prologOffset | ((int)op << 8) | (opInfo << 12));
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            if (!RtlDeleteFunctionTable(_identifier))
+            {
+                throw new InvalidOperationException("Failure uninstalling function table.");
+            }
+
+            _disposed = true;
+        }
+
+        ~JitUnwindWindows()
+        {
+            Dispose(false);
         }
     }
 }

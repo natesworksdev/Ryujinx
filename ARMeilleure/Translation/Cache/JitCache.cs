@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 
 namespace ARMeilleure.Translation.Cache
 {
-    static class JitCache
+    class JitCache : IDisposable
     {
         private const int PageSize = 4 * 1024;
         private const int PageMask = PageSize - 1;
@@ -16,49 +16,42 @@ namespace ARMeilleure.Translation.Cache
         private const int CodeAlignment = 4; // Bytes.
         private const int CacheSize = 2047 * 1024 * 1024;
 
-        private static ReservedRegion _jitRegion;
+        private readonly object _lock;
+        private readonly ReservedRegion _codeRegion;
+        private readonly List<CacheEntry> _cacheEntries;
+        private readonly CacheMemoryAllocator _cacheAllocator;
+        private readonly JitUnwindWindows _jitUnwindWindows;
 
-        private static CacheMemoryAllocator _cacheAllocator;
+        public int Size { get; }
+        public IntPtr Base => _codeRegion.Pointer;
 
-        private static readonly List<CacheEntry> _cacheEntries = new List<CacheEntry>();
-
-        private static readonly object _lock = new object();
-        private static bool _initialized;
-
-        public static IntPtr Base => _jitRegion.Pointer;
-
-        public static void Initialize(IJitMemoryAllocator allocator)
+        public JitCache(IJitMemoryAllocator allocator)
         {
-            if (_initialized) return;
+            Size = CacheSize;
 
-            lock (_lock)
+            _lock = new object();
+
+            _codeRegion = new ReservedRegion(allocator, (uint)Size);
+            _cacheEntries = new List<CacheEntry>();
+            _cacheAllocator = new CacheMemoryAllocator(Size);
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                if (_initialized) return;
+                Allocate(PageSize);
 
-                _jitRegion = new ReservedRegion(allocator, CacheSize);
-
-                _cacheAllocator = new CacheMemoryAllocator(CacheSize);
-
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    JitUnwindWindows.InstallFunctionTableHandler(_jitRegion.Pointer, CacheSize, _jitRegion.Pointer + Allocate(PageSize));
-                }
-
-                _initialized = true;
+                _jitUnwindWindows = new JitUnwindWindows(this);
             }
         }
 
-        public static IntPtr Map(CompiledFunction func)
+        public IntPtr Map(CompiledFunction func)
         {
             byte[] code = func.Code;
 
             lock (_lock)
             {
-                Debug.Assert(_initialized);
-
                 int funcOffset = Allocate(code.Length);
 
-                IntPtr funcPtr = _jitRegion.Pointer + funcOffset;
+                IntPtr funcPtr = _codeRegion.Pointer + funcOffset;
 
                 ReprotectAsWritable(funcOffset, code.Length);
 
@@ -72,13 +65,11 @@ namespace ARMeilleure.Translation.Cache
             }
         }
 
-        public static void Unmap(IntPtr pointer)
+        public void Unmap(IntPtr pointer)
         {
             lock (_lock)
             {
-                Debug.Assert(_initialized);
-
-                int funcOffset = (int)(pointer.ToInt64() - _jitRegion.Pointer.ToInt64());
+                int funcOffset = (int)(pointer.ToInt64() - _codeRegion.Pointer.ToInt64());
 
                 bool result = TryFind(funcOffset, out CacheEntry entry);
                 Debug.Assert(result);
@@ -89,27 +80,27 @@ namespace ARMeilleure.Translation.Cache
             }
         }
 
-        private static void ReprotectAsWritable(int offset, int size)
+        private void ReprotectAsWritable(int offset, int size)
         {
             int endOffs = offset + size;
 
             int regionStart = offset & ~PageMask;
             int regionEnd = (endOffs + PageMask) & ~PageMask;
 
-            _jitRegion.Block.MapAsRwx((ulong)regionStart, (ulong)(regionEnd - regionStart));
+            _codeRegion.Block.MapAsRwx((ulong)regionStart, (ulong)(regionEnd - regionStart));
         }
 
-        private static void ReprotectAsExecutable(int offset, int size)
+        private void ReprotectAsExecutable(int offset, int size)
         {
             int endOffs = offset + size;
 
             int regionStart = offset & ~PageMask;
             int regionEnd = (endOffs + PageMask) & ~PageMask;
 
-            _jitRegion.Block.MapAsRx((ulong)regionStart, (ulong)(regionEnd - regionStart));
+            _codeRegion.Block.MapAsRx((ulong)regionStart, (ulong)(regionEnd - regionStart));
         }
 
-        private static int Allocate(int codeSize)
+        private int Allocate(int codeSize)
         {
             codeSize = AlignCodeSize(codeSize);
 
@@ -120,7 +111,7 @@ namespace ARMeilleure.Translation.Cache
                 throw new OutOfMemoryException("JIT Cache exhausted.");
             }
 
-            _jitRegion.ExpandIfNeeded((ulong)allocOffset + (ulong)codeSize);
+            _codeRegion.ExpandIfNeeded((ulong)allocOffset + (ulong)codeSize);
 
             return allocOffset;
         }
@@ -130,7 +121,7 @@ namespace ARMeilleure.Translation.Cache
             return checked(codeSize + (CodeAlignment - 1)) & ~(CodeAlignment - 1);
         }
 
-        private static void Add(int offset, int size, UnwindInfo unwindInfo)
+        private void Add(int offset, int size, UnwindInfo unwindInfo)
         {
             CacheEntry entry = new CacheEntry(offset, size, unwindInfo);
 
@@ -144,7 +135,7 @@ namespace ARMeilleure.Translation.Cache
             _cacheEntries.Insert(index, entry);
         }
 
-        private static void Remove(int offset)
+        private void Remove(int offset)
         {
             int index = _cacheEntries.BinarySearch(new CacheEntry(offset, 0, default));
 
@@ -159,7 +150,7 @@ namespace ARMeilleure.Translation.Cache
             }
         }
 
-        public static bool TryFind(int offset, out CacheEntry entry)
+        public bool TryFind(int offset, out CacheEntry entry)
         {
             lock (_lock)
             {
@@ -179,6 +170,12 @@ namespace ARMeilleure.Translation.Cache
 
             entry = default;
             return false;
+        }
+
+        public void Dispose()
+        {
+            _jitUnwindWindows?.Dispose();
+            _codeRegion.Dispose();
         }
     }
 }

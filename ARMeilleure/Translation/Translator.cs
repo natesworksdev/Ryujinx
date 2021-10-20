@@ -49,6 +49,10 @@ namespace ARMeilleure.Translation
         private readonly AutoResetEvent _backgroundTranslatorEvent;
         private readonly ReaderWriterLock _backgroundTranslatorLock;
 
+        private NativeSignalHandler SignalHandler { get; }
+
+        internal JitCache JitCache { get; }
+
         internal ConcurrentDictionary<ulong, TranslatedFunction> Functions { get; }
         internal AddressTable<ulong> FunctionTable { get; }
         internal EntryTable<uint> CountTable { get; }
@@ -72,7 +76,7 @@ namespace ARMeilleure.Translation
             _backgroundTranslatorEvent = new AutoResetEvent(false);
             _backgroundTranslatorLock = new ReaderWriterLock();
 
-            JitCache.Initialize(allocator);
+            JitCache = new JitCache(allocator);
 
             CountTable = new EntryTable<uint>();
             Functions = new ConcurrentDictionary<ulong, TranslatedFunction>();
@@ -83,7 +87,7 @@ namespace ARMeilleure.Translation
 
             if (memory.Type.IsHostMapped())
             {
-                NativeSignalHandler.InitializeSignalHandler();
+                SignalHandler = new NativeSignalHandler(JitCache);
             }
         }
 
@@ -188,9 +192,13 @@ namespace ARMeilleure.Translation
             {
                 _backgroundTranslatorEvent.Set();
 
-                ClearJitCache();
+                // Ensure no attempt will be made to compile new functions due to rejit.
+                ClearRejitQueue(allowRequeue: false);
 
-                Stubs.Dispose();
+                Functions.Clear();
+
+                SignalHandler?.Dispose();
+                JitCache.Dispose();
                 FunctionTable.Dispose();
                 CountTable.Dispose();
             }
@@ -299,7 +307,7 @@ namespace ARMeilleure.Translation
                 Ptc.WriteCompiledFunction(address, funcSize, hash, highCq, compiledFunc);
             }
 
-            GuestFunction func = compiledFunc.Map<GuestFunction>();
+            GuestFunction func = compiledFunc.Map<GuestFunction>(JitCache);
 
             Allocators.ResetAll();
 
@@ -474,28 +482,6 @@ namespace ARMeilleure.Translation
         private void EnqueueForDeletion(ulong guestAddress, TranslatedFunction func)
         {
             _oldFuncs.Enqueue(new(guestAddress, func));
-        }
-
-        private void ClearJitCache()
-        {
-            // Ensure no attempt will be made to compile new functions due to rejit.
-            ClearRejitQueue(allowRequeue: false);
-
-            foreach (var func in Functions.Values)
-            {
-                JitCache.Unmap(func.FuncPtr);
-
-                func.CallCounter?.Dispose();
-            }
-
-            Functions.Clear();
-
-            while (_oldFuncs.TryDequeue(out var kv))
-            {
-                JitCache.Unmap(kv.Value.FuncPtr);
-
-                kv.Value.CallCounter?.Dispose();
-            }
         }
 
         private void ClearRejitQueue(bool allowRequeue)
