@@ -98,11 +98,16 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
                 return ResultCode.NoInternetConnection;
             }
 
-            IPAddress localIP = hostAddresses[hostAddresses.Length - 1].MapToIPv4();
+            foreach(IPAddress address in hostAddresses)
+            {
+                if (address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                {
+                    context.ResponseData.WriteStruct(new IpV4Address(address));
+                    Logger.Info?.Print(LogClass.ServiceNifm, $"Console's local IP is \"{address.ToString()}\".");
+                    break;
+                }
 
-            context.ResponseData.WriteStruct(new IpV4Address(localIP));
-
-            Logger.Info?.Print(LogClass.ServiceNifm, $"Console's local IP is \"{localIP.ToString()}\".");
+            }
 
             return ResultCode.Success;
         }
