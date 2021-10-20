@@ -91,7 +91,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
         // GetCurrentIpAddress() -> nn::nifm::IpV4Address
         public ResultCode GetCurrentIpAddress(ServiceCtx context)
         {
-            IPAddress[] hostAddresses = Dns.GetHostAddresses(Dns.GetHostName());
+            IPAddress[] hostAddresses = Dns.GetHostAddresses("");
 
             if (hostAddresses == null)
             {
