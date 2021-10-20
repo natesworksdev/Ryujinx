@@ -15,6 +15,10 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
     {
         private GeneralServiceDetail _generalServiceDetail;
 
+        private IPInterfaceProperties _targetPropertiesCache = null;
+
+        private UnicastIPAddressInformation _targetAddressInfoCache = null;
+
         public IGeneralService()
         {
             _generalServiceDetail = new GeneralServiceDetail
@@ -22,6 +26,8 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
                 ClientId                     = GeneralServiceManager.Count,
                 IsAnyInternetRequestAccepted = true // NOTE: Why not accept any internet request?
             };
+
+            NetworkChange.NetworkAddressChanged += new NetworkAddressChangedEventHandler(LocalInterfaceCacheHandler);
 
             GeneralServiceManager.Add(_generalServiceDetail);
         }
@@ -91,23 +97,16 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
         // GetCurrentIpAddress() -> nn::nifm::IpV4Address
         public ResultCode GetCurrentIpAddress(ServiceCtx context)
         {
-            IPAddress[] hostAddresses = Dns.GetHostAddresses("");
+            (_, UnicastIPAddressInformation unicastAddress) = GetLocalInterface();
 
-            if (hostAddresses == null)
+            if (unicastAddress == null)
             {
                 return ResultCode.NoInternetConnection;
             }
 
-            foreach(IPAddress address in hostAddresses)
-            {
-                if (address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
-                {
-                    context.ResponseData.WriteStruct(new IpV4Address(address));
-                    Logger.Info?.Print(LogClass.ServiceNifm, $"Console's local IP is \"{address.ToString()}\".");
-                    break;
-                }
+            context.ResponseData.WriteStruct(new IpV4Address(unicastAddress.Address));
 
-            }
+            Logger.Info?.Print(LogClass.ServiceNifm, $"Console's local IP is \"{unicastAddress.Address}\".");
 
             return ResultCode.Success;
         }
@@ -173,6 +172,11 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
                 return (null, null);
             }
 
+            if(_targetPropertiesCache != null && _targetAddressInfoCache != null)
+            {
+                return (_targetPropertiesCache, _targetAddressInfoCache);
+            }
+
             IPInterfaceProperties       targetProperties  = null;
             UnicastIPAddressInformation targetAddressInfo = null;
 
@@ -202,7 +206,18 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
                 }
             }
 
+            _targetPropertiesCache  = targetProperties;
+            _targetAddressInfoCache = targetAddressInfo;
+
             return (targetProperties, targetAddressInfo);
+        }
+
+        private void LocalInterfaceCacheHandler(object sender, EventArgs e)
+        {
+            Logger.Info?.Print(LogClass.ServiceNifm, $"NetworkAddress changed, invalidating cached data.");
+
+            _targetPropertiesCache  = null;
+            _targetAddressInfoCache = null;
         }
 
         protected override void Dispose(bool isDisposing)
