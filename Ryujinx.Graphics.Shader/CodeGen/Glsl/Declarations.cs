@@ -431,6 +431,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                 string imageTypeName = descriptor.Type.ToGlslImageType(descriptor.Format.GetComponentType());
 
+                if (descriptor.Flags.HasFlag(TextureUsageFlags.ImageCoherent))
+                {
+                    imageTypeName = "coherent " + imageTypeName;
+                }
+
                 string layout = descriptor.Format.ToGlslFormat();
 
                 if (!string.IsNullOrEmpty(layout))
