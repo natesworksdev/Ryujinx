@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
     enum KMemoryPermission : uint
     {
         None = 0,
-        Mask = 0xff,
+        Mask = uint.MaxValue,
 
         Read     = 1 << 0,
         Write    = 1 << 1,
