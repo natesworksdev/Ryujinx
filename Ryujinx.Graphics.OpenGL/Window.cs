@@ -69,13 +69,13 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 if (crop.FlipX)
                 {
-                    srcX0 = 0;
-                    srcX1 = (int)(view.Width / scale);
+                    srcX0 = (int)(view.Width / scale);
+                    srcX1 = 0;
                 }
                 else
                 {
-                    srcX0 = (int)(view.Width / scale);
-                    srcX1 = 0;
+                    srcX0 = 0;
+                    srcX1 = (int)(view.Width / scale);
                 }
             }
             else
