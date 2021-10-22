@@ -57,6 +57,7 @@ namespace Ryujinx
             // Parse Arguments.
             string launchPathArg      = null;
             string baseDirPathArg     = null;
+            List<string> dirGames     = null;
             bool   startFullscreenArg = false;
             bool   listGames = false;
             bool   showVersion = false;
@@ -84,10 +85,10 @@ namespace Ryujinx
                 {
                     Console.Write(@"Ryujinx [options] [file]
 
--h, --help         Show this help
--v, --version      Show Ryujinx version
--f, --fullscreen   Run in fullscreen
-    --list-games   List Available games in json format
+-h, --help              Show this help
+-v, --version           Show Ryujinx version
+-f, --fullscreen        Run in fullscreen
+    --list-games [dir]  List Available games in json format
 
 ");
                     return;
@@ -110,6 +111,13 @@ namespace Ryujinx
                 else if (arg == "--list-games")
                 {
                     listGames = true;
+                    if (i + 1 >= args.Length || args[i + 1].StartsWith('-') )
+                    {
+                        continue;
+                    }
+
+                    dirGames = new List<string>();
+                    dirGames.Add(args[++i]);
                 }
                 else if (launchPathArg == null)
                 {
@@ -199,6 +207,10 @@ namespace Ryujinx
 
             if (listGames)
             {
+                if (dirGames == null)
+                {
+                    dirGames = ConfigurationState.Instance.Ui.GameDirs;
+                }
                 ArrayList gameMetadataArray           = new ArrayList();
                 VirtualFileSystem virtualFileSystem   = VirtualFileSystem.CreateInstance();
                 ContentManager contentManager         = new ContentManager(virtualFileSystem);
@@ -213,7 +225,7 @@ namespace Ryujinx
                     };
                     gameMetadataArray.Add(data);
                 };
-                applicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs, ConfigurationState.Instance.System.Language);
+                applicationLibrary.LoadApplications(dirGames, ConfigurationState.Instance.System.Language);
                 Console.Write(JsonHelper.Serialize(gameMetadataArray, true));
                 return;
             }
