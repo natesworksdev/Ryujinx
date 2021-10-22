@@ -171,17 +171,36 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             initializationOperations = 0;
 
-            Dictionary<ulong, int> funcIds = new Dictionary<ulong, int>();
+            Dictionary<ulong, FunctionId> funcIds = new Dictionary<ulong, FunctionId>();
+            int funcUid = 0;
 
             for (int funcIndex = 0; funcIndex < cfg.Length; funcIndex++)
             {
-                funcIds.Add(cfg[funcIndex][0].Address, funcIndex);
+                Block[] blocks = cfg[funcIndex];
+                FunctionId functionId;
+
+                if (funcIndex != 0)
+                {
+                    FunctionMatchResult matchResult = FunctionMatch.FindMatch(cfg, funcIndex);
+                    functionId = matchResult != FunctionMatchResult.NoMatch ? new FunctionId(matchResult) : new FunctionId(funcUid++);
+                }
+                else
+                {
+                    functionId = new FunctionId(funcUid++);
+                }
+
+                funcIds.Add(blocks[0].Address, functionId);
             }
 
             List<FunctionCode> funcs = new List<FunctionCode>();
 
             for (int funcIndex = 0; funcIndex < cfg.Length; funcIndex++)
             {
+                if (funcIds[cfg[funcIndex][0].Address].IsCompilerGenerated)
+                {
+                    continue;
+                }
+
                 EmitterContext context = new EmitterContext(config, funcIndex != 0, funcIds);
 
                 if (initializeOutputs && funcIndex == 0)

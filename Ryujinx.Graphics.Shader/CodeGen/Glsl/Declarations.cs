@@ -32,6 +32,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             {
                 context.AppendLine("#extension GL_ARB_compute_shader : enable");
             }
+            else if (context.Config.Stage == ShaderStage.Fragment)
+            {
+                context.AppendLine("#extension GL_ARB_fragment_shader_interlock : enable");
+            }
 
             if (context.Config.GpPassthrough)
             {

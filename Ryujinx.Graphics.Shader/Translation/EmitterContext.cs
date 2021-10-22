@@ -19,11 +19,11 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public int OperationsCount => _operations.Count;
 
-        private readonly IReadOnlyDictionary<ulong, int> _funcs;
+        private readonly IReadOnlyDictionary<ulong, FunctionId> _funcs;
         private readonly List<Operation> _operations;
         private readonly Dictionary<ulong, Operand> _labels;
 
-        public EmitterContext(ShaderConfig config, bool isNonMain, IReadOnlyDictionary<ulong, int> funcs)
+        public EmitterContext(ShaderConfig config, bool isNonMain, IReadOnlyDictionary<ulong, FunctionId> funcs)
         {
             Config = config;
             IsNonMain = isNonMain;
@@ -154,7 +154,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             return label;
         }
 
-        public int GetFunctionId(ulong address)
+        public FunctionId GetFunctionId(ulong address)
         {
             return _funcs[address];
         }
