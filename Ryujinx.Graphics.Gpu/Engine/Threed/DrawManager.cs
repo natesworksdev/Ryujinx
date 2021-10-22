@@ -319,6 +319,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             _drawState.DrawIndexed = oldDrawIndexed;
         }
 
+        /// <summary>
+        /// Performs a texture draw with a source texture and sampler ID, along with source
+        /// and destination coordinates and sizes.
+        /// </summary>
+        /// <param name="engine">3D engine where this method is being called</param>
+        /// <param name="argument">Method call argument</param>
         public void DrawTexture(ThreedClass engine, int argument)
         {
             static float FixedToFloat(int fixedValue)
@@ -352,6 +358,18 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             int samplerId = _state.State.DrawTextureSamplerId;
 
             (var texture, var sampler) = _channel.TextureManager.GetGraphicsTextureAndSampler(textureId, samplerId);
+
+            srcX0 *= texture.ScaleFactor;
+            srcY0 *= texture.ScaleFactor;
+            srcX1 *= texture.ScaleFactor;
+            srcY1 *= texture.ScaleFactor;
+
+            float dstScale = _channel.TextureManager.RenderTargetScale;
+
+            dstX0 *= dstScale;
+            dstY0 *= dstScale;
+            dstX1 *= dstScale;
+            dstY1 *= dstScale;
 
             _context.Renderer.Pipeline.DrawTexture(
                 texture?.HostTexture,
