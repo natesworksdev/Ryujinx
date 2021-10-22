@@ -67,24 +67,56 @@ namespace Ryujinx.Graphics.OpenGL
 
             if (crop.Left == 0 && crop.Right == 0)
             {
-                srcX0 = 0;
-                srcX1 = (int)(view.Width / scale);
+                if (crop.FlipX)
+                {
+                    srcX0 = 0;
+                    srcX1 = (int)(view.Width / scale);
+                }
+                else
+                {
+                    srcX0 = (int)(view.Width / scale);
+                    srcX1 = 0;
+                }
             }
             else
             {
-                srcX0 = crop.Left;
-                srcX1 = crop.Right;
+                if (crop.FlipX)
+                {
+                    srcX0 = crop.Right;
+                    srcX1 = crop.Left;
+                }
+                else
+                {
+                    srcX0 = crop.Left;
+                    srcX1 = crop.Right;
+                }
             }
 
             if (crop.Top == 0 && crop.Bottom == 0)
             {
-                srcY0 = 0;
-                srcY1 = (int)(view.Height / scale);
+                if (crop.FlipY)
+                {
+                    srcY0 = 0;
+                    srcY1 = (int)(view.Height / scale);
+                }
+                else
+                {
+                    srcY0 = (int)(view.Height / scale);
+                    srcY1 = 0;
+                }
             }
             else
             {
-                srcY0 = view.Height - crop.Bottom;
-                srcY1 = view.Height - crop.Top;
+                if (crop.FlipY)
+                {
+                    srcY0 = crop.Top;
+                    srcY1 = crop.Bottom;
+                }
+                else
+                {
+                    srcY0 = view.Height - crop.Top;
+                    srcY1 = view.Height - crop.Bottom;
+                }
             }
 
             if (scale != 1f)
@@ -104,11 +136,11 @@ namespace Ryujinx.Graphics.OpenGL
             int dstPaddingX = (_width  - dstWidth)  / 2;
             int dstPaddingY = (_height - dstHeight) / 2;
 
-            int dstX0 = crop.FlipX ? _width - dstPaddingX : dstPaddingX;
-            int dstX1 = crop.FlipX ? dstPaddingX : _width - dstPaddingX;
+            int dstX0 = dstPaddingX;
+            int dstX1 = _width - dstPaddingX;
 
-            int dstY0 = crop.FlipY ? dstPaddingY : _height - dstPaddingY;
-            int dstY1 = crop.FlipY ? _height - dstPaddingY : dstPaddingY;
+            int dstY0 = dstPaddingY;
+            int dstY1 = _height - dstPaddingY;
 
             if (ScreenCaptureRequested)
             {
