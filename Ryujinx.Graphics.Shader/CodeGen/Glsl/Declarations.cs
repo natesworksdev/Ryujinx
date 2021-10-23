@@ -567,9 +567,16 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private static void DeclareInputAttributePerPatch(CodeGenContext context, int attr)
         {
+            string layout = string.Empty;
+
+            if (context.Config.Options.TargetApi == TargetApi.Vulkan)
+            {
+                layout = $"layout (location = {32 + attr}) ";
+            }
+
             string name = $"{DefaultNames.PerPatchAttributePrefix}{attr}";
 
-            context.AppendLine($"patch in vec4 {name};");
+            context.AppendLine($"{layout}patch in vec4 {name};");
         }
 
         private static void DeclareOutputAttributes(CodeGenContext context, StructuredProgramInfo info)
@@ -630,9 +637,16 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private static void DeclareOutputAttributePerPatch(CodeGenContext context, int attr)
         {
+            string layout = string.Empty;
+
+            if (context.Config.Options.TargetApi == TargetApi.Vulkan)
+            {
+                layout = $"layout (location = {32 + attr}) ";
+            }
+
             string name = $"{DefaultNames.PerPatchAttributePrefix}{attr}";
 
-            context.AppendLine($"patch out vec4 {name};");
+            context.AppendLine($"{layout}patch out vec4 {name};");
         }
 
         private static void DeclareSupportUniformBlock(CodeGenContext context, ShaderStage stage, int scaleElements)
