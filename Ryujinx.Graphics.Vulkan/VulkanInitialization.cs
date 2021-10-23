@@ -341,6 +341,7 @@ namespace Ryujinx.Graphics.Vulkan
                 ShaderImageGatherExtended = true,
                 // ShaderStorageImageReadWithoutFormat = true,
                 // ShaderStorageImageWriteWithoutFormat = true,
+                TessellationShader = true,
                 VertexPipelineStoresAndAtomics = true
             };
 
