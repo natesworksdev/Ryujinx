@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Kernel.Common
 {
-    enum LimitableResource : uint
+    enum LimitableResource : byte
     {
         Memory         = 0,
         Thread         = 1,
