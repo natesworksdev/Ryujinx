@@ -279,7 +279,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return _syscall.CreateResourceLimit(out handle);
         }
 
-        public KernelResult SetResourceLimitLimitValue64([R(1)] int handle, [R(2)] LimitableResource resource, [R(1)] long limitValue)
+        public KernelResult SetResourceLimitLimitValue64([R(0)] int handle, [R(1)] LimitableResource resource, [R(2)] long limitValue)
         {
             return _syscall.SetResourceLimitLimitValue(handle, resource, limitValue);
         }
