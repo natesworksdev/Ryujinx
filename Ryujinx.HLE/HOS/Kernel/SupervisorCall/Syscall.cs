@@ -848,10 +848,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.InvalidMemState;
             }
 
-            return currentProcess.MemoryManager.SetMemoryPermission(
-                address,
-                size,
-                permission);
+            return currentProcess.MemoryManager.SetMemoryPermission(address, size, permission);
         }
 
         public KernelResult SetMemoryAttribute(
