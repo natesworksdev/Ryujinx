@@ -76,7 +76,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         public abstract bool SupportsMemoryAliasing { get; }
 
         private MemoryFillValue _heapFillValue;
-        private MemoryFillValue _stackFillValue;
         private MemoryFillValue _ipcFillValue;
 
         public KPageTableBase(KernelContext context)
@@ -88,7 +87,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             _isKernel = false;
 
             _heapFillValue = MemoryFillValue.Zero;
-            _stackFillValue = MemoryFillValue.Zero;
             _ipcFillValue = MemoryFillValue.Zero;
         }
 
