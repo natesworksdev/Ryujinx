@@ -36,6 +36,15 @@ namespace Ryujinx.HLE.Utilities
             return output;
         }
 
+        public static string ReadInlinedAsciiString(BinaryReader reader, int maxSize)
+        {
+            byte[] data = reader.ReadBytes(maxSize);
+
+            int stringSize = Array.IndexOf<byte>(data, 0);
+
+            return Encoding.ASCII.GetString(data, 0, stringSize < 0 ? maxSize : stringSize);
+        }
+
         public static byte[] HexToBytes(string hexString)
         {
             // Ignore last character if HexLength % 2 != 0.
