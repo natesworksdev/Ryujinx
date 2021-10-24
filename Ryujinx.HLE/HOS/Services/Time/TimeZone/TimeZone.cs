@@ -113,6 +113,16 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             return BinaryPrimitives.ReadInt32BigEndian(bytes);
         }
 
+        private static int Detzcode32(int value)
+        {
+            if (BitConverter.IsLittleEndian)
+            {
+                return BinaryPrimitives.ReverseEndianness(value);
+            }
+
+            return value;
+        }
+
         private static long Detzcode64(ReadOnlySpan<byte> bytes)
         {
             return BinaryPrimitives.ReadInt64BigEndian(bytes);
@@ -900,12 +910,12 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
             streamLength -= Marshal.SizeOf<TzifHeader>();
 
-            int ttisGMTCount = Detzcode32(header.TtisGMTCount.ToSpan());
-            int ttisSTDCount = Detzcode32(header.TtisSTDCount.ToSpan());
-            int leapCount    = Detzcode32(header.LeapCount.ToSpan());
-            int timeCount    = Detzcode32(header.TimeCount.ToSpan());
-            int typeCount    = Detzcode32(header.TypeCount.ToSpan());
-            int charCount    = Detzcode32(header.CharCount.ToSpan());
+            int ttisGMTCount = Detzcode32(header.TtisGMTCount);
+            int ttisSTDCount = Detzcode32(header.TtisSTDCount);
+            int leapCount    = Detzcode32(header.LeapCount);
+            int timeCount    = Detzcode32(header.TimeCount);
+            int typeCount    = Detzcode32(header.TypeCount);
+            int charCount    = Detzcode32(header.CharCount);
 
             if (!(0 <= leapCount
                 && leapCount < TzMaxLeaps
