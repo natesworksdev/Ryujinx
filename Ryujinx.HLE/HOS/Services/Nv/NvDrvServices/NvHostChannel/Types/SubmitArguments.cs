@@ -24,9 +24,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel.Types
     {
         public uint Id;
         public uint Incrs;
-        public uint    Reserved1;
-        public uint    Reserved2;
-        public uint    Reserved3;
+        public uint Reserved1;
+        public uint Reserved2;
+        public uint Reserved3;
     }
 
     [StructLayout(LayoutKind.Sequential)]
