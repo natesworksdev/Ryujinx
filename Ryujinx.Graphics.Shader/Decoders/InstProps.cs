@@ -17,11 +17,12 @@ namespace Ryujinx.Graphics.Shader.Decoders
         TPd = 4 << 7,
         VPd = 5 << 7,
         PdMask = 7 << 7,
-        Pdn = 1 << 10,
 
-        Tex = 1 << 11,
-        TexB = 1 << 12,
-        Bra = 1 << 13,
-        NoPred = 1 << 14
+        Pdn = 1 << 10,
+        Ps = 1 << 11,
+        Tex = 1 << 12,
+        TexB = 1 << 13,
+        Bra = 1 << 14,
+        NoPred = 1 << 15
     }
 }

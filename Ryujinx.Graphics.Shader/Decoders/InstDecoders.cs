@@ -1172,19 +1172,19 @@ namespace Ryujinx.Graphics.Shader.Decoders
         public CctltOp CctltOp => (CctltOp)((_opcode >> 0) & 0x3);
     }
 
-    struct InstContUnsup
+    struct InstCont
     {
         private ulong _opcode;
-        public InstContUnsup(ulong opcode) => _opcode = opcode;
+        public InstCont(ulong opcode) => _opcode = opcode;
         public int Pred => (int)((_opcode >> 16) & 0x7);
         public bool PredInv => (_opcode & 0x80000) != 0;
         public Ccc Ccc => (Ccc)((_opcode >> 0) & 0x1F);
     }
 
-    struct InstCsetUnsup
+    struct InstCset
     {
         private ulong _opcode;
-        public InstCsetUnsup(ulong opcode) => _opcode = opcode;
+        public InstCset(ulong opcode) => _opcode = opcode;
         public int Dest => (int)((_opcode >> 0) & 0xFF);
         public int Pred => (int)((_opcode >> 16) & 0x7);
         public bool PredInv => (_opcode & 0x80000) != 0;
