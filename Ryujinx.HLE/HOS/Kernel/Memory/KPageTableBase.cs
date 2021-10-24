@@ -2789,8 +2789,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         /// <param name="pagesCount">Number of pages to map</param>
         /// <param name="srcPa">Physical address where the pages should be mapped. May be ignored if aliasing is not supported</param>
         /// <param name="permission">Permission of the region to be mapped</param>
-        /// <param name="shouldFillPages">Indicate if the pages should be filled with the <paramref name="fillValue"/> value.</param>
-        /// <param name="fillValue">The value used to fill pages when <paramref name="shouldFillPages"/> is set to true.</param>
+        /// <param name="shouldFillPages">Indicate if the pages should be filled with the <paramref name="fillValue"/> value</param>
+        /// <param name="fillValue">The value used to fill pages when <paramref name="shouldFillPages"/> is set to true</param>
         /// <returns>Result of the mapping operation</returns>
         protected abstract KernelResult MapPages(ulong dstVa, ulong pagesCount, ulong srcPa, KMemoryPermission permission, bool shouldFillPages = false, byte fillValue = 0);
 
@@ -2800,8 +2800,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         /// <param name="address">Destination virtual address that should be mapped</param>
         /// <param name="pageList">List of physical memory pages where the pages should be mapped. May be ignored if aliasing is not supported</param>
         /// <param name="permission">Permission of the region to be mapped</param>
-        /// <param name="shouldFillPages">Indicate if the pages should be filled with the <paramref name="fillValue"/> value.</param>
-        /// <param name="fillValue">The value used to fill pages when <paramref name="shouldFillPages"/> is set to true.</param>
+        /// <param name="shouldFillPages">Indicate if the pages should be filled with the <paramref name="fillValue"/> value</param>
+        /// <param name="fillValue">The value used to fill pages when <paramref name="shouldFillPages"/> is set to true</param>
         /// <returns>Result of the mapping operation</returns>
         protected abstract KernelResult MapPages(ulong address, KPageList pageList, KMemoryPermission permission, bool shouldFillPages = false, byte fillValue = 0);
 
