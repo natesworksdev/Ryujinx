@@ -30,7 +30,7 @@ namespace Ryujinx.HLE.FileSystem.Content
                 RevisionMinor = reader.ReadByte();
 
                 reader.ReadBytes(2); // Padding
-                
+
                 PlatformString = StringUtils.ReadInlinedAsciiString(reader, 0x20);
                 Hex            = StringUtils.ReadInlinedAsciiString(reader, 0x40);
                 VersionString  = StringUtils.ReadInlinedAsciiString(reader, 0x18);
