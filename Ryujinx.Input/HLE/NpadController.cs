@@ -414,7 +414,7 @@ namespace Ryujinx.Input.HLE
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static JoystickPosition ClampToCircle(JoystickPosition position, float range)
         {
-            Vector2 point = (new Vector2(position.Dx, position.Dy))*(range);
+            Vector2 point = new Vector2(position.Dx, position.Dy)*range;
 
             if (point.Length() > short.MaxValue)
             {
