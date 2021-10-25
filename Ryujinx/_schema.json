@@ -644,6 +644,30 @@
             0.05
           ]
         },
+        "range_left": {
+          "$id": "#/definitions/controller_config/properties/range_left",
+          "type": "number",
+          "title": "Left Joystick Range",
+          "description": "Controller Left Analog Stick Range Modifier",
+          "default": 1.0,
+          "minimum": 0.0,
+          "maximum": 2.0,
+          "examples": [
+            0.8
+          ]
+        },
+        "range_right": {
+          "$id": "#/definitions/controller_config/properties/range_right",
+          "type": "number",
+          "title": "Left Joystick Range",
+          "description": "Controller Right Analog Stick Range Modifier",
+          "default": 1.0,
+          "minimum": 0.0,
+          "maximum": 2.0,
+          "examples": [
+            0.8
+          ]
+        },
         "trigger_threshold": {
           "$id": "#/definitions/controller_config/properties/trigger_threshold",
           "type": "number",
