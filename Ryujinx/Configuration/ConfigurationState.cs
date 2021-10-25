@@ -925,7 +925,21 @@ namespace Ryujinx.Configuration
                     ShowUi = configurationFileFormat.Hotkeys.ShowUi,
                     Pause = Key.F5
                 };
+            }
 
+            if (configurationFileFormat.Version < 33)
+            {
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 33.");
+
+                foreach (InputConfig config in configurationFileFormat.InputConfig)
+                {
+                    if (config is StandardControllerInputConfig controllerConfig)
+                    {
+                        controllerConfig.RangeLeft  = 1.0f;
+                        controllerConfig.RangeRight = 1.0f;
+                    }
+                }
+                
                 configurationFileUpdated = true;
             }
 
