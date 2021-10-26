@@ -652,7 +652,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
             DrawString(graphics, ControllerToggleText, _labelsTextFont, _textNormalBrush, labelPosition);
         }
 
-        private unsafe bool TryCopyTo(IVirtualMemoryManager destination, ulong position)
+        private bool TryCopyTo(IVirtualMemoryManager destination, ulong position)
         {
             if (_surface == null)
             {
@@ -667,22 +667,24 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             // Convert the pixel format used in System.Drawing to the one required by a Switch Surface.
             int dataLength    = surfaceData.Stride * surfaceData.Height;
-            byte* dataPointer = (byte*)surfaceData.Scan0;
-            byte* dataEnd     = dataPointer + dataLength;
 
-            for (; dataPointer < dataEnd; dataPointer += 4)
+            byte[] data = new byte[dataLength];
+            Span<uint> dataConvert = MemoryMarshal.Cast<byte, uint>(data);
+
+            Marshal.Copy(surfaceData.Scan0, data, 0, dataLength);
+
+            for (int i = 0; i < data.Length; i++)
             {
-                *(uint*)dataPointer = (uint)(
-                     (*(dataPointer + 0) << 16) |
-                     (*(dataPointer + 1) << 8 ) |
-                     (*(dataPointer + 2) << 0 ) |
-                     (*(dataPointer + 3) << 24));
+                dataConvert[0] = (uint)(
+                     (data[i + 0] << 16) |
+                     (data[i + 1] << 8 ) |
+                     (data[i + 2] << 0 ) |
+                     (data[i + 3] << 24));
             }
 
             try
             {
-                Span<byte> dataSpan = new Span<byte>((void*)surfaceData.Scan0, dataLength);
-                destination.Write(position, dataSpan);
+                destination.Write(position, data);
             }
             finally
             {
