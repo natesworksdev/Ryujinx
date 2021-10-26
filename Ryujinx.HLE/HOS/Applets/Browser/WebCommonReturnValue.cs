@@ -1,10 +1,21 @@
-﻿namespace Ryujinx.HLE.HOS.Applets.Browser
+﻿using System;
+using System.Runtime.InteropServices;
+
+namespace Ryujinx.HLE.HOS.Applets.Browser
 {
-    public unsafe struct WebCommonReturnValue
+    public struct WebCommonReturnValue
     {
         public WebExitReason ExitReason;
         public uint          Padding;
-        public fixed byte    LastUrl[0x1000];
+        public LastUrlStruct LastUrl;
         public ulong         LastUrlSize;
+
+        [StructLayout(LayoutKind.Sequential, Size = 0x1000)]
+        public struct LastUrlStruct
+        {
+            private byte element;
+
+            public Span<byte> ToSpan() => MemoryMarshal.CreateSpan(ref element, 0x1000);
+        }
     }
 }

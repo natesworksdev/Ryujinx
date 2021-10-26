@@ -1,4 +1,5 @@
-﻿using Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Common;
+﻿using Ryujinx.Common.Memory;
+using Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Common;
 
 namespace Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Npad
 {
@@ -30,7 +31,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Types.SharedMemory.Npad
         public NpadBatteryLevel BatteryLevelJoyRight;
         public uint AppletFooterUiAttributes;
         public AppletFooterUiType AppletFooterUiType;
-        private unsafe fixed byte _reserved2[0x7B];
+        private Array123<byte> _reserved2;
         public RingLifo<NpadGcTriggerState> GcTrigger;
         public NpadLarkType LarkTypeLeftAndMain;
         public NpadLarkType LarkTypeRight;
