@@ -1,44 +1,32 @@
+using Ryujinx.Common.Memory;
+using System;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Ro
 {
-    [StructLayout(LayoutKind.Explicit, Size = 0x350)]
-    unsafe struct NrrHeader
+    [StructLayout(LayoutKind.Sequential, Size = 0x350)]
+    struct NrrHeader
     {
-        [FieldOffset(0)]
         public uint Magic;
-
-        [FieldOffset(0x4)]
-        public uint CertificationSignatureKeyGeneration; // 9.0.0+
-
-        [FieldOffset(0x8)]
-        public ulong Reserved;
-
-        [FieldOffset(0x10)]
+        public uint KeyGeneration; // 9.0.0+
+        private Array8<byte> _reserved;
         public NRRCertification Certification;
-
-        [FieldOffset(0x230)]
-        public fixed byte NrrSignature[0x100];
-
-        [FieldOffset(0x330)]
+        public NrrSignature Signature;
         public ulong TitleId;
+        public uint Size;
+        public byte Kind; // 7.0.0+
+        private Array3<byte> _reserved2;
+        public uint HashesOffset;
+        public uint HashesCount;
+        private Array8<byte> _reserved3;
 
-        [FieldOffset(0x338)]
-        public uint NrrSize;
 
-        [FieldOffset(0x33C)]
-        public byte Type; // 7.0.0+
+        [StructLayout(LayoutKind.Sequential, Size = 0x100)]
+        public struct NrrSignature
+        {
+            private byte element;
 
-        [FieldOffset(0x33D)]
-        public fixed byte Reserved2[0x3];
-
-        [FieldOffset(0x340)]
-        public uint HashOffset;
-
-        [FieldOffset(0x344)]
-        public uint HashCount;
-
-        [FieldOffset(0x348)]
-        public ulong Reserved3;
+            public Span<byte> ToSpan() => MemoryMarshal.CreateSpan(ref element, 0x100);
+        }
     }
 }
