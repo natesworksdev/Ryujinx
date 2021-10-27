@@ -34,8 +34,7 @@ namespace Ryujinx.HLE.HOS.Applets.Error
             _horizon = horizon;
         }
 
-        public ResultCode Start(AppletSession normalSession,
-                                AppletSession interactiveSession)
+        public ResultCode Start(AppletSession normalSession, AppletSession interactiveSession)
         {
             _normalSession   = normalSession;
             _commonArguments = IApplet.ReadStruct<CommonArguments>(_normalSession.Pop());

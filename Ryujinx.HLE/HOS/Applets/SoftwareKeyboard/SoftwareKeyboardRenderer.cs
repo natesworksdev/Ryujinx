@@ -666,7 +666,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
             Debug.Assert(surfaceData.Stride * surfaceData.Height == _surfaceInfo.Size);
 
             // Convert the pixel format used in System.Drawing to the one required by a Switch Surface.
-            int dataLength    = surfaceData.Stride * surfaceData.Height;
+            int dataLength = surfaceData.Stride * surfaceData.Height;
 
             byte[] data = new byte[dataLength];
             Span<uint> dataConvert = MemoryMarshal.Cast<byte, uint>(data);
