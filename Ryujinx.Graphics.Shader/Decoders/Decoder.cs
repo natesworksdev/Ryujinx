@@ -10,9 +10,9 @@ namespace Ryujinx.Graphics.Shader.Decoders
 {
     static class Decoder
     {
-        public static Block[][] Decode(ShaderConfig config, ulong startAddress)
+        public static DecodedProgram Decode(ShaderConfig config, ulong startAddress)
         {
-            List<Block[]> funcs = new List<Block[]>();
+            Dictionary<ulong, DecodedFunction> funcs = new Dictionary<ulong, DecodedFunction>();
 
             Queue<ulong> funcQueue = new Queue<ulong>();
             HashSet<ulong> funcVisited = new HashSet<ulong>();
@@ -157,10 +157,10 @@ namespace Ryujinx.Graphics.Shader.Decoders
                 }
                 while (hasNewTarget);
 
-                funcs.Add(blocks.ToArray());
+                funcs.Add(funcAddress, new DecodedFunction(blocks.ToArray()));
             }
 
-            return funcs.ToArray();
+            return new DecodedProgram(funcs);
         }
 
         private static bool BinarySearch(List<Block> blocks, ulong address, out int index)

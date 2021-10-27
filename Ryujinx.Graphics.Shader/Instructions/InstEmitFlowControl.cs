@@ -67,11 +67,11 @@ namespace Ryujinx.Graphics.Shader.Instructions
         {
             InstCal op = context.GetOp<InstCal>();
 
-            FunctionId functionId = context.GetFunctionId(context.CurrOp.GetAbsoluteAddress());
+            DecodedFunction function = context.Program.GetFunctionByAddress(context.CurrOp.GetAbsoluteAddress());
 
-            if (functionId.IsCompilerGenerated)
+            if (function.IsCompilerGenerated)
             {
-                switch (functionId.MatchName)
+                switch (function.MatchName)
                 {
                     case FunctionMatchResult.FSIBegin:
                         context.FSIBegin();
@@ -83,7 +83,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
             }
             else
             {
-                context.Call(functionId.Index, false);
+                context.Call(function.Id, false);
             }
         }
 
