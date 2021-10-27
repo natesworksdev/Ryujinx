@@ -673,13 +673,13 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             Marshal.Copy(surfaceData.Scan0, data, 0, dataLength);
 
-            for (int i = 0; i < data.Length; i++)
+            for (int i = 0; i < dataConvert.Length; i++)
             {
-                dataConvert[0] = (uint)(
-                     (data[i + 0] << 16) |
-                     (data[i + 1] << 8 ) |
-                     (data[i + 2] << 0 ) |
-                     (data[i + 3] << 24));
+                dataConvert[i] = (uint)(
+                     (data[(i * sizeof(uint)) + 0] << 16) |
+                     (data[(i * sizeof(uint)) + 1] << 8 ) |
+                     (data[(i * sizeof(uint)) + 2] << 0 ) |
+                     (data[(i * sizeof(uint)) + 3] << 24));
             }
 
             try
