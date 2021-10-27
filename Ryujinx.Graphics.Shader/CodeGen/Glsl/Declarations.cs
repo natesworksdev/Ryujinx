@@ -34,7 +34,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
             else if (context.Config.Stage == ShaderStage.Fragment)
             {
-                context.AppendLine("#extension GL_ARB_fragment_shader_interlock : enable");
+                if (context.Config.GpuAccessor.QueryHostSupportsFragmentShaderInterlock())
+                {
+                    context.AppendLine("#extension GL_ARB_fragment_shader_interlock : enable");
+                }
+                else if (context.Config.GpuAccessor.QueryHostSupportsFragmentShaderOrderingIntel())
+                {
+                    context.AppendLine("#extension GL_INTEL_fragment_shader_ordering : enable");
+                }
             }
 
             if (context.Config.GpPassthrough)
