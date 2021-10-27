@@ -1,5 +1,4 @@
-﻿using System;
-using System.Runtime.InteropServices;
+﻿using Ryujinx.Common.Memory;
 
 namespace Ryujinx.HLE.HOS.Applets.Browser
 {
@@ -7,15 +6,7 @@ namespace Ryujinx.HLE.HOS.Applets.Browser
     {
         public WebExitReason ExitReason;
         public uint          Padding;
-        public LastUrlStruct LastUrl;
+        public ByteArray4096 LastUrl;
         public ulong         LastUrlSize;
-
-        [StructLayout(LayoutKind.Sequential, Size = 0x1000)]
-        public struct LastUrlStruct
-        {
-            private byte element;
-
-            public Span<byte> ToSpan() => MemoryMarshal.CreateSpan(ref element, 0x1000);
-        }
     }
 }
