@@ -6,12 +6,14 @@ namespace Ryujinx.Graphics.Shader.Decoders
 {
     struct DecodedProgram : IEnumerable<DecodedFunction>
     {
+        public DecodedFunction MainFunction { get; }
         private readonly IReadOnlyDictionary<ulong, DecodedFunction> _functions;
         private readonly List<DecodedFunction> _functionsWithId;
         public int FunctionsWithIdCount => _functionsWithId.Count;
 
-        public DecodedProgram(IReadOnlyDictionary<ulong, DecodedFunction> functions)
+        public DecodedProgram(DecodedFunction mainFunction, IReadOnlyDictionary<ulong, DecodedFunction> functions)
         {
+            MainFunction = mainFunction;
             _functions = functions;
             _functionsWithId = new List<DecodedFunction>();
         }

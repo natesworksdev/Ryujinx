@@ -1,7 +1,6 @@
 using Ryujinx.Graphics.Shader.Decoders;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Graphics.Shader.Translation
@@ -16,16 +15,18 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public static void RunPass(DecodedProgram program)
         {
-            DecodedFunction[] functions = program.OrderBy(x => x.Address).ToArray();
-
-            program.AddFunctionAndSetId(functions[0]);
-
             byte[] externalRegs = new byte[4];
             bool hasGetAddress = false;
 
-            for (int index = 1; index < functions.Length; index++)
+            foreach (DecodedFunction function in program)
             {
-                DecodedFunction function = functions[index];
+                if (function == program.MainFunction)
+                {
+                    continue;
+                }
+
+                int externalReg4 = 0;
+
                 TreeNode[] functionTree = BuildTree(function.Blocks);
 
                 if (Matches(_fsiGetAddressTree, functionTree))
@@ -33,66 +34,57 @@ namespace Ryujinx.Graphics.Shader.Translation
                     externalRegs[1] = functionTree[0].GetRd();
                     externalRegs[2] = functionTree[2].GetRd();
                     externalRegs[3] = functionTree[1].GetRd();
-                    hasGetAddress = externalRegs[1] + 1 == functionTree[3].GetRd() &&
-                        !AnyEqual(externalRegs[1], externalRegs[2], externalRegs[3]) &&
-                        !AnyEqual(externalRegs[1] + 1, externalRegs[2], externalRegs[3]);
-                    if (hasGetAddress)
-                    {
-                        function.MatchName = FunctionMatchResult.Unused;
-                    }
-                    break;
+                    externalReg4 = functionTree[3].GetRd();
                 }
                 else if (Matches(_fsiGetAddressV2Tree, functionTree))
                 {
                     externalRegs[1] = functionTree[2].GetRd();
                     externalRegs[2] = functionTree[1].GetRd();
                     externalRegs[3] = functionTree[0].GetRd();
-                    hasGetAddress = externalRegs[1] + 1 == functionTree[3].GetRd() &&
-                        !AnyEqual(externalRegs[1], externalRegs[2], externalRegs[3]) &&
-                        !AnyEqual(externalRegs[1] + 1, externalRegs[2], externalRegs[3]);
-                    if (hasGetAddress)
-                    {
-                        function.MatchName = FunctionMatchResult.Unused;
-                    }
+                    externalReg4 = functionTree[3].GetRd();
+                }
+
+                // Ensure the register allocation is valid.
+                // If so, then we have a match.
+                if (externalRegs[1] != externalRegs[2] &&
+                    externalRegs[2] != externalRegs[3] &&
+                    externalRegs[1] != externalRegs[3] &&
+                    externalRegs[1] + 1 != externalRegs[2] &&
+                    externalRegs[1] + 1 != externalRegs[3] &&
+                    externalRegs[1] + 1 == externalReg4 &&
+                    externalRegs[2] != RegisterConsts.RegisterZeroIndex &&
+                    externalRegs[3] != RegisterConsts.RegisterZeroIndex &&
+                    externalReg4 != RegisterConsts.RegisterZeroIndex)
+                {
+                    hasGetAddress = true;
+                    function.Type = FunctionType.Unused;
                     break;
                 }
             }
 
-            for (int index = 1; index < functions.Length; index++)
+            foreach (DecodedFunction function in program)
             {
-                DecodedFunction function = functions[index];
-
-                if (function.IsCompilerGenerated)
+                if (function.IsCompilerGenerated || function == program.MainFunction)
                 {
                     continue;
                 }
 
                 if (hasGetAddress)
                 {
-                    if (Matches(_fsiIsLastWarpThreadPatternTree, function))
+                    TreeNode[] functionTree = BuildTree(function.Blocks);
+
+                    if (MatchesFsi(_fsiBeginPatternTree, program, function, functionTree, externalRegs))
                     {
-                        function.MatchName = FunctionMatchResult.Unused;
+                        function.Type = FunctionType.BuiltInFSIBegin;
                         continue;
                     }
-                    else if (MatchesFsi(_fsiBeginPatternTree, program, function, externalRegs))
+                    else if (MatchesFsi(_fsiEndPatternTree, program, function, functionTree, externalRegs))
                     {
-                        function.MatchName = FunctionMatchResult.FSIBegin;
-                        continue;
-                    }
-                    else if (MatchesFsi(_fsiEndPatternTree, program, function, externalRegs))
-                    {
-                        function.MatchName = FunctionMatchResult.FSIEnd;
+                        function.Type = FunctionType.BuiltInFSIEnd;
                         continue;
                     }
                 }
-
-                program.AddFunctionAndSetId(function);
             }
-        }
-
-        private static bool AnyEqual(int x, int y, int z)
-        {
-            return x == y || y == z || x == z;
         }
 
         private struct TreeNodeUse
@@ -129,17 +121,20 @@ namespace Ryujinx.Graphics.Shader.Translation
             public readonly InstOp Op;
             public readonly List<TreeNodeUse> Uses;
             public TreeNodeType Type { get; }
+            public byte Order { get; }
 
-            public TreeNode()
+            public TreeNode(byte order)
             {
                 Type = TreeNodeType.Label;
+                Order = order;
             }
 
-            public TreeNode(InstOp op)
+            public TreeNode(InstOp op, byte order)
             {
                 Op = op;
                 Uses = new List<TreeNodeUse>();
                 Type = TreeNodeType.Op;
+                Order = order;
             }
 
             public byte GetPd()
@@ -220,13 +215,15 @@ namespace Ryujinx.Graphics.Shader.Translation
                 return new TreeNodeUse(-1, null);
             }
 
+            byte order = 0;
+
             for (int index = 0; index < blocks.Length; index++)
             {
                 Block block = blocks[index];
 
                 if (block.Predecessors.Count > 1)
                 {
-                    TreeNode label = new TreeNode();
+                    TreeNode label = new TreeNode(order++);
                     nodes.Add(label);
                     labels.Add(block.Address, label);
                 }
@@ -235,7 +232,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 {
                     InstOp op = block.OpCodes[opIndex];
 
-                    TreeNode node = new TreeNode(op);
+                    TreeNode node = new TreeNode(op, IsOrderDependant(op.Name) ? order : (byte)0);
 
                     // Add uses.
 
@@ -311,7 +308,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             return nodes.ToArray();
         }
 
-        private static bool InstHasSideEffects(InstName name)
+        private static bool IsOrderDependant(InstName name)
         {
             switch (name)
             {
@@ -319,24 +316,19 @@ namespace Ryujinx.Graphics.Shader.Translation
                 case InstName.AtomCas:
                 case InstName.Atoms:
                 case InstName.AtomsCas:
-                case InstName.Bar:
-                case InstName.Membar:
-                case InstName.Red:
-                case InstName.St:
-                case InstName.Stg:
-                case InstName.Stl:
-                case InstName.Sts:
-                case InstName.Sust:
-                case InstName.SustB:
-                case InstName.SustD:
-                case InstName.SustDB:
+                case InstName.Ld:
+                case InstName.Ldg:
+                case InstName.Ldl:
+                case InstName.Lds:
                 case InstName.Suatom:
                 case InstName.SuatomB:
                 case InstName.SuatomB2:
                 case InstName.SuatomCas:
                 case InstName.SuatomCasB:
-                case InstName.Sured:
-                case InstName.SuredB:
+                case InstName.Suld:
+                case InstName.SuldB:
+                case InstName.SuldD:
+                case InstName.SuldDB:
                     return true;
             }
 
@@ -348,6 +340,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             List<PatternTreeNodeUse> Uses { get; }
             InstName Name { get; }
             TreeNodeType Type { get; }
+            byte Order { get; }
             bool IsImm { get; }
             bool Matches(in InstOp opInfo);
         }
@@ -378,14 +371,16 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             public InstName Name { get; }
             public TreeNodeType Type { get; }
+            public byte Order { get; }
             public bool IsImm { get; }
             public PatternTreeNodeUse Out => new PatternTreeNodeUse(0, this);
 
-            public PatternTreeNode(InstName name, Func<T, bool> match, TreeNodeType type = TreeNodeType.Op, bool isImm = false)
+            public PatternTreeNode(InstName name, Func<T, bool> match, TreeNodeType type = TreeNodeType.Op, byte order = 0, bool isImm = false)
             {
                 Name = name;
                 _match = match;
                 Type = type;
+                Order = order;
                 IsImm = isImm;
                 Uses = new List<PatternTreeNodeUse>();
             }
@@ -420,7 +415,12 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
         }
 
-        private static bool MatchesFsi(IPatternTreeNode[] pattern, DecodedProgram program, DecodedFunction function, byte[] externalRegs)
+        private static bool MatchesFsi(
+            IPatternTreeNode[] pattern,
+            DecodedProgram program,
+            DecodedFunction function,
+            TreeNode[] functionTree,
+            byte[] externalRegs)
         {
             if (function.Blocks.Length == 0)
             {
@@ -444,12 +444,13 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             externalRegs[0] = callTargetTree[0].GetPd();
 
-            return Matches(pattern, function, externalRegs);
-        }
+            if (Matches(pattern, functionTree, externalRegs))
+            {
+                callTarget.RemoveCaller(function);
+                return true;
+            }
 
-        private static bool Matches(IPatternTreeNode[] pTree, DecodedFunction function, byte[] externalRegs = null)
-        {
-            return Matches(pTree, BuildTree(function.Blocks), externalRegs);
+            return false;
         }
 
         private static bool Matches(IPatternTreeNode[] pTree, TreeNode[] cTree, byte[] externalRegs = null)
@@ -474,6 +475,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             if (!pTreeNode.Matches(in cTreeNode.Op) ||
                 pTreeNode.Type != cTreeNode.Type ||
+                pTreeNode.Order != cTreeNode.Order ||
                 pTreeNode.IsImm != cTreeNode.Op.Props.HasFlag(InstProps.Ib))
             {
                 return false;
@@ -531,12 +533,20 @@ namespace Ryujinx.Graphics.Shader.Translation
                         .Use(PT)
                         .Use(Iscadd(cc: false, 8)
                             .Use(PT)
-                            .Use(Lop32i(LogicOp.And, 0xff).Use(PT).Use(affinityValue).Out)
-                            .Use(Lop32i(LogicOp.And, 0xff).Use(PT).Use(orderingTicketValue).Out).Out),
-                    ShrU32W(16).Use(PT).Use(orderingTicketValue),
+                            .Use(Lop32i(LogicOp.And, 0xff)
+                                .Use(PT)
+                                .Use(affinityValue).Out)
+                            .Use(Lop32i(LogicOp.And, 0xff)
+                                .Use(PT)
+                                .Use(orderingTicketValue).Out).Out),
+                    ShrU32W(16)
+                        .Use(PT)
+                        .Use(orderingTicketValue),
                     Iadd32i(0x200)
                         .Use(PT)
-                        .Use(Lop32i(LogicOp.And, 0xfe00).Use(PT).Use(orderingTicketValue).Out),
+                        .Use(Lop32i(LogicOp.And, 0xfe00)
+                            .Use(PT)
+                            .Use(orderingTicketValue).Out),
                     Iadd(x: true, 0, 405).Use(PT).Use(RZ),
                     Ret().Use(PT)
                 };
@@ -549,16 +559,22 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                 return new IPatternTreeNode[]
                 {
-                    ShrU32W(16).Use(PT).Use(orderingTicketValue),
+                    ShrU32W(16)
+                        .Use(PT)
+                        .Use(orderingTicketValue),
                     Iadd32i(0x200)
                         .Use(PT)
-                        .Use(Lop32i(LogicOp.And, 0xfe00).Use(PT).Use(orderingTicketValue).Out),
+                        .Use(Lop32i(LogicOp.And, 0xfe00)
+                            .Use(PT)
+                            .Use(orderingTicketValue).Out),
                     Iscadd(cc: true, 2, 0, 404)
                         .Use(PT)
                         .Use(Bfi(0x808)
                             .Use(PT)
                             .Use(affinityValue)
-                            .Use(Lop32i(LogicOp.And, 0xff).Use(PT).Use(orderingTicketValue).Out).Out),
+                            .Use(Lop32i(LogicOp.And, 0xff)
+                                .Use(PT)
+                                .Use(orderingTicketValue).Out).Out),
                     Iadd(x: true, 0, 405).Use(PT).Use(RZ),
                     Ret().Use(PT)
                 };
@@ -581,7 +597,10 @@ namespace Ryujinx.Graphics.Shader.Translation
                                 .Use(IsetpU32(IComp.Ne)
                                     .Use(PT)
                                     .Use(PT)
-                                    .Use(Lop(negB: true, LogicOp.PassB).Use(PT).Use(RZ).Use(threadKillValue).OutAt(1))
+                                    .Use(Lop(negB: true, LogicOp.PassB)
+                                        .Use(PT)
+                                        .Use(RZ)
+                                        .Use(threadKillValue).OutAt(1))
                                     .Use(RZ).Out).OutAt(1)).Out)
                         .Use(laneIdValue),
                     Ret().Use(PT)
@@ -609,9 +628,16 @@ namespace Ryujinx.Graphics.Shader.Translation
                 {
                     Cal(),
                     Ret().Use(CallArg(0).Inv),
-                    Ret().Use(HighU16Equals(LdgE(CacheOpLd.Cg, LsSize.B32).Use(PT).Use(addressLowValue).Out)),
+                    Ret()
+                        .Use(HighU16Equals(LdgE(CacheOpLd.Cg, LsSize.B32)
+                            .Use(PT)
+                            .Use(addressLowValue).Out)),
                     label = Label(),
-                    Bra().Use(HighU16Equals(LdgE(CacheOpLd.Cg, LsSize.B32).Use(PT).Use(addressLowValue).Out).Inv).Use(label.Out),
+                    Bra()
+                        .Use(HighU16Equals(LdgE(CacheOpLd.Cg, LsSize.B32, 1)
+                            .Use(PT)
+                            .Use(addressLowValue).Out).Inv)
+                        .Use(label.Out),
                     Ret().Use(PT)
                 };
             }
@@ -631,15 +657,33 @@ namespace Ryujinx.Graphics.Shader.Translation
                     Cal(),
                     Ret().Use(CallArg(0).Inv),
                     Membar(Decoders.Membar.Vc).Use(PT),
-                    Ret().Use(IsetpU32(IComp.Ne).Use(PT).Use(PT).Use(threadKillValue).Use(RZ).Out),
+                    Ret().Use(IsetpU32(IComp.Ne)
+                        .Use(PT)
+                        .Use(PT)
+                        .Use(threadKillValue)
+                        .Use(RZ).Out),
                     RedE(RedOp.Add, AtomSize.U32)
-                        .Use(IsetpU32(IComp.Eq).Use(PT).Use(PT).Use(FloU32().Use(PT).Use(voteResult).Out).Use(laneIdValue).Out)
+                        .Use(IsetpU32(IComp.Eq)
+                            .Use(PT)
+                            .Use(PT)
+                            .Use(FloU32()
+                                .Use(PT)
+                                .Use(voteResult).Out)
+                            .Use(laneIdValue).Out)
                         .Use(addressLowValue)
-                        .Use(XmadH1H1(XmadCop.Cbcc, psl: true, mrg: false)
+                        .Use(Xmad(XmadCop.Cbcc, psl: true, hiloA: true, hiloB: true)
                             .Use(PT)
                             .Use(incrementValue)
-                            .Use(XmadH0H1(XmadCop.Cfull, psl: false, mrg: true).Use(PT).Use(incrementValue).Use(popcResult).Use(RZ).Out)
-                            .Use(XmadH0H0(XmadCop.Cfull, psl: false, mrg: false).Use(PT).Use(incrementValue).Use(popcResult).Use(RZ).Out).Out),
+                            .Use(Xmad(XmadCop.Cfull, mrg: true, hiloB: true)
+                                .Use(PT)
+                                .Use(incrementValue)
+                                .Use(popcResult)
+                                .Use(RZ).Out)
+                            .Use(Xmad(XmadCop.Cfull)
+                                .Use(PT)
+                                .Use(incrementValue)
+                                .Use(popcResult)
+                                .Use(RZ).Out).Out),
                     Ret().Use(PT)
                 };
             }
@@ -740,14 +784,14 @@ namespace Ryujinx.Graphics.Shader.Translation
                 return new(InstName.Shr, (op) => !op.Signed && !op.Brev && op.M && op.XMode == 0 && op.Imm20 == imm, isImm: true);
             }
 
-            private static PatternTreeNode<InstLdg> LdgE(CacheOpLd cacheOp, LsSize size)
+            private static PatternTreeNode<InstLdg> LdgE(CacheOpLd cacheOp, LsSize size, byte order = 0)
             {
-                return new(InstName.Ldg, (op) => op.E && op.CacheOp == cacheOp && op.LsSize == size);
+                return new(InstName.Ldg, (op) => op.E && op.CacheOp == cacheOp && op.LsSize == size, order: order);
             }
 
-            private static PatternTreeNode<InstRed> RedE(RedOp redOp, AtomSize size)
+            private static PatternTreeNode<InstRed> RedE(RedOp redOp, AtomSize size, byte order = 0)
             {
-                return new(InstName.Red, (op) => op.E && op.RedOp == redOp && op.RedSize == size);
+                return new(InstName.Red, (op) => op.E && op.RedOp == redOp && op.RedSize == size, order: order);
             }
 
             private static PatternTreeNode<InstVote> Vote(VoteMode mode)
@@ -755,12 +799,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 return new(InstName.Vote, (op) => op.VoteMode == mode);
             }
 
-            private static PatternTreeNode<InstXmadR> XmadH0H0(XmadCop cop, bool psl, bool mrg) => Xmad(cop, psl, mrg, false, false);
-            private static PatternTreeNode<InstXmadR> XmadH0H1(XmadCop cop, bool psl, bool mrg) => Xmad(cop, psl, mrg, false, true);
-            private static PatternTreeNode<InstXmadR> XmadH1H0(XmadCop cop, bool psl, bool mrg) => Xmad(cop, psl, mrg, true, false);
-            private static PatternTreeNode<InstXmadR> XmadH1H1(XmadCop cop, bool psl, bool mrg) => Xmad(cop, psl, mrg, true, true);
-
-            private static PatternTreeNode<InstXmadR> Xmad(XmadCop cop, bool psl, bool mrg, bool hiloA, bool hiloB)
+            private static PatternTreeNode<InstXmadR> Xmad(XmadCop cop, bool psl = false, bool mrg = false, bool hiloA = false, bool hiloB = false)
             {
                 return new(InstName.Xmad, (op) => op.XmadCop == cop && op.Psl == psl && op.Mrg == mrg && op.HiloA == hiloA && op.HiloB == hiloB);
             }

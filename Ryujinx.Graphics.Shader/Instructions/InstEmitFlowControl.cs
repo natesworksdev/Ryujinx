@@ -71,12 +71,12 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             if (function.IsCompilerGenerated)
             {
-                switch (function.MatchName)
+                switch (function.Type)
                 {
-                    case FunctionMatchResult.FSIBegin:
+                    case FunctionType.BuiltInFSIBegin:
                         context.FSIBegin();
                         break;
-                    case FunctionMatchResult.FSIEnd:
+                    case FunctionType.BuiltInFSIEnd:
                         context.FSIEnd();
                         break;
                 }

@@ -4,7 +4,7 @@ using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.StructuredIr;
 using Ryujinx.Graphics.Shader.Translation.Optimizations;
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 
 using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
@@ -164,6 +164,11 @@ namespace Ryujinx.Graphics.Shader.Translation
             initializationOperations = 0;
 
             FunctionMatch.RunPass(program);
+
+            foreach (DecodedFunction function in program.OrderBy(x => x.Address).Where(x => !x.IsCompilerGenerated))
+            {
+                program.AddFunctionAndSetId(function);
+            }
 
             FunctionCode[] functions = new FunctionCode[program.FunctionsWithIdCount];
 
