@@ -6,7 +6,6 @@ namespace Ryujinx.Graphics.Shader.Decoders
     class DecodedFunction
     {
         private readonly HashSet<DecodedFunction> _callers;
-        private int _referenceCount;
 
         public bool IsCompilerGenerated => Type != FunctionType.User;
         public FunctionType Type { get; set; }
