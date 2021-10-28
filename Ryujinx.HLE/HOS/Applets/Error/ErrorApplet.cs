@@ -94,6 +94,7 @@ namespace Ryujinx.HLE.HOS.Applets.Error
                 SystemLanguage.LatinAmericanSpanish => "es-419",
                 SystemLanguage.SimplifiedChinese    => "zh-Hans",
                 SystemLanguage.TraditionalChinese   => "zh-Hant",
+                SystemLanguage.BrazilianPortuguese  => "pt-BR",
                 _                                   => "en-US"
             };
         }
@@ -149,7 +150,7 @@ namespace Ryujinx.HLE.HOS.Applets.Error
             }
 
             string message = GetMessageText(module, description, "DlgMsg");
-        
+
             if (message == "")
             {
                 message = "An error has occured.\n\n"
