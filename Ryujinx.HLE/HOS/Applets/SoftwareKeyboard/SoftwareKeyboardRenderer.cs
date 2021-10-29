@@ -1,12 +1,14 @@
 ﻿using Ryujinx.HLE.Ui;
 using Ryujinx.Memory;
 using System;
+using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Drawing.Text;
 using System.IO;
+using System.Numerics;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -675,11 +677,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             for (int i = 0; i < dataConvert.Length; i++)
             {
-                dataConvert[i] = (uint)(
-                     (data[(i * sizeof(uint)) + 0] << 16) |
-                     (data[(i * sizeof(uint)) + 1] << 8 ) |
-                     (data[(i * sizeof(uint)) + 2] << 0 ) |
-                     (data[(i * sizeof(uint)) + 3] << 24));
+                dataConvert[i] = BitOperations.RotateRight(BinaryPrimitives.ReverseEndianness(dataConvert[i]), 8);
             }
 
             try
