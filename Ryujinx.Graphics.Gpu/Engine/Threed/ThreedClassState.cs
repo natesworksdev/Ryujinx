@@ -5,6 +5,7 @@ using Ryujinx.Graphics.Gpu.Engine.Types;
 using Ryujinx.Graphics.Gpu.Image;
 using Ryujinx.Graphics.Shader;
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Graphics.Gpu.Engine.Threed
 {
@@ -435,6 +436,47 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
     }
 
     /// <summary>
+    /// RGB color components packed as 16-bit float values.
+    /// </summary>
+    struct RgbHalf
+    {
+        public uint R;
+        public uint G;
+        public uint B;
+        public uint Padding;
+
+        /// <summary>
+        /// Unpacks the red color component as a 16-bit float value.
+        /// </summary>
+        /// <returns>The component value</returns>
+        public Half UnpackR()
+        {
+            ushort value = (ushort)R;
+            return Unsafe.As<ushort, Half>(ref value);
+        }
+
+        /// <summary>
+        /// Unpacks the green color component as a 16-bit float value.
+        /// </summary>
+        /// <returns>The component value</returns>
+        public Half UnpackG()
+        {
+            ushort value = (ushort)G;
+            return Unsafe.As<ushort, Half>(ref value);
+        }
+
+        /// <summary>
+        /// Unpacks the blue color component as a 16-bit float value.
+        /// </summary>
+        /// <returns>The component value</returns>
+        public Half UnpackB()
+        {
+            ushort value = (ushort)B;
+            return Unsafe.As<ushort, Half>(ref value);
+        }
+    }
+
+    /// <summary>
     /// Condition for conditional rendering.
     /// </summary>
     enum Condition
@@ -781,11 +823,16 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         public fixed uint ReservedDB8[2];
         public DepthBiasState DepthBiasState;
         public int PatchVertices;
-        public fixed uint ReservedDD0[4];
+        public uint ReservedDD0;
+        public uint BlendUcodeSize;
+        public fixed uint ReservedDD8[2];
         public uint TextureBarrier;
         public uint WatchdogTimer;
         public Boolean32 PrimitiveRestartDrawArrays;
-        public fixed uint ReservedDEC[5];
+        public uint ReservedDEC;
+        public uint LoadBlendUcodeStart;
+        public uint LoadBlendUcodeInstruction;
+        public fixed uint ReservedDF8[2];
         public Array16<ScissorState> ScissorState;
         public fixed uint ReservedF00[21];
         public StencilBackMasks StencilBackMasks;
@@ -850,7 +897,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         public fixed uint Reserved142C[2];
         public uint FirstVertex;
         public uint FirstInstance;
-        public fixed uint Reserved143C[53];
+        public fixed uint Reserved143C[17];
+        public Array8<RgbHalf> BlendUcodeConstants;
+        public fixed uint Reserved1500[4];
         public uint ClipDistanceEnable;
         public uint Reserved1514;
         public float PointSize;
