@@ -215,6 +215,14 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 #pragma warning restore CS0649
     }
 
+    enum BlendUcodeEnable
+    {
+        Disabled = 0,
+        EnableRGB = 1,
+        EnableAlpha = 2,
+        EnableRGBA = 3
+    }
+
     /// <summary>
     /// Scissor state.
     /// </summary>
@@ -794,7 +802,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         public Boolean32 EarlyZForce;
         public fixed uint Reserved214[45];
         public uint SyncpointAction;
-        public fixed uint Reserved2CC[21];
+        public fixed uint Reserved2CC[10];
+        public uint BlendUcodeNormalizedDst;
+        public fixed uint Reserved2F8[10];
         public TessMode TessMode;
         public Array4<float> TessOuterLevel;
         public Array2<float> TessInnerLevel;
@@ -823,7 +833,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         public fixed uint ReservedDB8[2];
         public DepthBiasState DepthBiasState;
         public int PatchVertices;
-        public uint ReservedDD0;
+        public BlendUcodeEnable BlendUcodeEnable;
         public uint BlendUcodeSize;
         public fixed uint ReservedDD8[2];
         public uint TextureBarrier;

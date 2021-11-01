@@ -111,11 +111,9 @@ namespace Ryujinx.Graphics.Vulkan
             var defaultScale = new Vector4<float> { X = 1f, Y = 0f, Z = 0f, W = 0f };
             new Span<Vector4<float>>(_renderScale).Fill(defaultScale);
 
-            _newState.Initialize();
-            _newState.LineWidth = 1f;
-            _newState.SamplesCount = 1;
+            _storedBlend = new PipelineColorBlendAttachmentState[Constants.MaxRenderTargets];
 
-            _storedBlend = new PipelineColorBlendAttachmentState[8];
+            _newState.Initialize();
         }
 
         public void Initialize()
@@ -675,6 +673,57 @@ namespace Ryujinx.Graphics.Vulkan
             // This is currently handled using shader specialization, as Vulkan does not support alpha test.
             // In the future, we may want to use this to write the reference value into the support buffer,
             // to avoid creating one version of the shader per reference value used.
+        }
+
+        public void SetBlendState(AdvancedBlendDescriptor blend)
+        {
+            for (int index = 0; index < Constants.MaxRenderTargets; index++)
+            {
+                ref var vkBlend = ref _newState.Internal.ColorBlendAttachmentState[index];
+
+                if (index == 0)
+                {
+                    var blendOp = blend.Mode.Convert();
+
+                    vkBlend = new PipelineColorBlendAttachmentState(
+                        blendEnable: true,
+                        colorBlendOp: blendOp,
+                        alphaBlendOp: blendOp,
+                        colorWriteMask: vkBlend.ColorWriteMask);
+
+                    vkBlend.BlendEnable = true;
+                    vkBlend.SrcColorBlendFactor = Silk.NET.Vulkan.BlendFactor.Zero;
+                    vkBlend.DstColorBlendFactor = Silk.NET.Vulkan.BlendFactor.Zero;
+                    vkBlend.ColorBlendOp = blend.Mode.Convert();
+                    vkBlend.SrcAlphaBlendFactor = Silk.NET.Vulkan.BlendFactor.Zero;
+                    vkBlend.DstAlphaBlendFactor = Silk.NET.Vulkan.BlendFactor.Zero;
+                    vkBlend.AlphaBlendOp = blend.Mode.Convert();
+
+                    if (Gd.Capabilities.SupportsBlendEquationAdvancedNonPreMultipliedSrcColor)
+                    {
+                        _newState.AdvancedBlendSrcPreMultiplied = blend.SrcPreMultiplied;
+                    }
+
+                    if (Gd.Capabilities.SupportsBlendEquationAdvancedCorrelatedOverlap)
+                    {
+                        _newState.AdvancedBlendOverlap = blend.Overlap.Convert();
+                    }
+                }
+                else
+                {
+                    vkBlend = new PipelineColorBlendAttachmentState(
+                        colorWriteMask: vkBlend.ColorWriteMask);
+                }
+
+                if (vkBlend.ColorWriteMask == 0)
+                {
+                    _storedBlend[0] = vkBlend;
+
+                    vkBlend = new PipelineColorBlendAttachmentState();
+                }
+            }
+
+            SignalStateChange();
         }
 
         public void SetBlendState(int index, BlendDescriptor blend)
