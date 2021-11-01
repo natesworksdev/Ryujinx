@@ -1171,7 +1171,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 if (_context.Capabilities.SupportsBlendEquationAdvanced && _blendManager.TryGetAdvancedBlend(out var blendDescriptor))
                 {
                     // Try to HLE it using advanced blend on the host if we can.
-                    Logger.Info?.Print(LogClass.Gpu, $"Advanced blend mode: {blendDescriptor.Mode} {blendDescriptor.Overlap} {blendDescriptor.SrcPreMultiplied}");
                     _context.Renderer.Pipeline.SetBlendState(blendDescriptor);
                     return;
                 }
