@@ -600,6 +600,11 @@ namespace Ryujinx.Graphics.OpenGL
                         GL.DepthMask(false);
                     }
 
+                    if (_tfEnabled)
+                    {
+                        GL.EndTransformFeedback();
+                    }
+
                     _drawTexture.Draw(
                         view,
                         samp,
@@ -624,6 +629,11 @@ namespace Ryujinx.Graphics.OpenGL
                     if (_depthMask)
                     {
                         GL.DepthMask(true);
+                    }
+
+                    if (_tfEnabled)
+                    {
+                        GL.BeginTransformFeedback(_tfTopology);
                     }
                 }
             }
