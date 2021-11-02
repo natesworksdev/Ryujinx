@@ -72,8 +72,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 
             charInfo.SetFromStoreData(StoreData.BuildDefault(utilityImpl, 0));
 
-            // TODO: Maybe change the "no name" by the player name when user profile will be implemented.
-            // charInfo.Nickname = Nickname.FromString("Nickname");
+            charInfo.Nickname = Nickname.FromString("Nickname");
 
             RegisterInfo registerInfo = new RegisterInfo()
             {
