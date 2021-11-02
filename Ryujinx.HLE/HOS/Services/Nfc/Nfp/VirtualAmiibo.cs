@@ -63,7 +63,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
             };
         }
 
-        public static RegisterInfo GetRegisterInfo(string amiiboId)
+        public static RegisterInfo GetRegisterInfo(string amiiboId, string nickname)
         {
             VirtualAmiiboFile amiiboFile = LoadAmiiboFile(amiiboId);
 
