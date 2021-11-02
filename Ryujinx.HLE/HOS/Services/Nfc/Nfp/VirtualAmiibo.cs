@@ -72,7 +72,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 
             charInfo.SetFromStoreData(StoreData.BuildDefault(utilityImpl, 0));
 
-            charInfo.Nickname = Nickname.FromString("Nickname");
+            charInfo.Nickname = Nickname.FromString(nickname);
 
             RegisterInfo registerInfo = new RegisterInfo()
             {
