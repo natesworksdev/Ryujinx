@@ -410,8 +410,6 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 
             ulong pidPlaceHolder = context.RequestData.ReadUInt64();
 
-            Logger.Stub?.PrintStub(LogClass.ServiceSfdnsres, new { enableNsdResolve, cancelHandle, pidPlaceHolder, host, service });
-
             IPHostEntry hostEntry = null;
 
             NetDbError netDbErrorCode = NetDbError.Success;
