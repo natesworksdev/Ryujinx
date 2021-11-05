@@ -533,7 +533,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     }
                     else
                     {
-                        // If we can't from the viewport transform, then just use the depth mode register.
+                        // If we can't guess from the viewport transform, then just use the depth mode register.
                         depthMode = (DepthMode)(_state.State.DepthMode & 1);
                     }
 
