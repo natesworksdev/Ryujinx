@@ -228,7 +228,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
             }
             else if (attr >= AttributeConsts.BackColorDiffuseR && attr < AttributeConsts.ClipDistance0)
             {
-                return ConstF(0);
+                return ConstF(((attr >> 2) & 3) == 3 ? 1f : 0f);
             }
             else if (attr >= AttributeConsts.TexCoordBase && attr < AttributeConsts.TexCoordEnd)
             {
