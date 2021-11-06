@@ -125,6 +125,8 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             Operand res;
 
+            bool isFixedFunc = false;
+
             if (op.Idx)
             {
                 Operand userAttrOffset = context.ISubtract(GetSrcReg(context, op.SrcA), Const(AttributeConsts.UserAttributeBase));
@@ -137,7 +139,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
             }
             else
             {
-                res = FixedFuncToUserAttributeIpa(context, op.Imm10);
+                isFixedFunc = TryFixedFuncToUserAttributeIpa(context, op.Imm10, out res);
 
                 if (op.Imm10 >= AttributeConsts.UserAttributeBase && op.Imm10 < AttributeConsts.UserAttributeEnd)
                 {
@@ -150,7 +152,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 }
             }
 
-            if (op.IpaOp == IpaOp.Multiply)
+            if (op.IpaOp == IpaOp.Multiply && !isFixedFunc)
             {
                 Operand srcB = GetSrcReg(context, op.SrcB);
 
@@ -212,30 +214,34 @@ namespace Ryujinx.Graphics.Shader.Instructions
             }
         }
 
-        private static Operand FixedFuncToUserAttributeIpa(EmitterContext context, int attr)
+        private static bool TryFixedFuncToUserAttributeIpa(EmitterContext context, int attr, out Operand selectedAttr)
         {
             if (attr >= AttributeConsts.FrontColorDiffuseR && attr < AttributeConsts.BackColorDiffuseR)
             {
+                // TODO: If two sided rendering is enabled, then this should return
+                // FrontColor if the fragment is front facing, and back color otherwise.
                 int index = (attr - AttributeConsts.FrontColorDiffuseR) >> 4;
                 int userAttrIndex = context.Config.GetFreeUserAttribute(isOutput: false, index);
                 Operand frontAttr = Attribute(AttributeConsts.UserAttributeBase + userAttrIndex * 16 + (attr & 0xf));
-                Operand backAttr = Attribute(AttributeConsts.UserAttributeBase + (userAttrIndex + 2) * 16 + (attr & 0xf));
 
                 context.Config.SetInputUserAttributeFixedFunc(userAttrIndex);
-                context.Config.SetInputUserAttributeFixedFunc(userAttrIndex + 2);
 
-                return context.ConditionalSelect(Attribute(AttributeConsts.FrontFacing), frontAttr, backAttr);
+                selectedAttr = frontAttr;
+                return true;
             }
             else if (attr >= AttributeConsts.BackColorDiffuseR && attr < AttributeConsts.ClipDistance0)
             {
-                return ConstF(((attr >> 2) & 3) == 3 ? 1f : 0f);
+                selectedAttr = ConstF(((attr >> 2) & 3) == 3 ? 1f : 0f);
+                return true;
             }
             else if (attr >= AttributeConsts.TexCoordBase && attr < AttributeConsts.TexCoordEnd)
             {
-                attr = FixedFuncToUserAttribute(context.Config, attr, AttributeConsts.TexCoordBase, 4, isOutput: false);
+                selectedAttr = Attribute(FixedFuncToUserAttribute(context.Config, attr, AttributeConsts.TexCoordBase, 4, isOutput: false));
+                return true;
             }
 
-            return Attribute(attr);
+            selectedAttr = Attribute(attr);
+            return false;
         }
 
         private static int FixedFuncToUserAttribute(ShaderConfig config, int attr, bool isOutput)

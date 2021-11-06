@@ -44,7 +44,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         public const int TessCoordY          = 0x2f4;
         public const int InstanceId          = 0x2f8;
         public const int VertexId            = 0x2fc;
-        public const int TexCoordCount       = 8;
+        public const int TexCoordCount       = 10;
         public const int TexCoordBase        = 0x300;
         public const int TexCoordEnd         = TexCoordBase + TexCoordCount * 16;
         public const int FrontFacing         = 0x3fc;
