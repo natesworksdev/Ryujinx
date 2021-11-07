@@ -112,7 +112,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                                 InputTopology.LinesAdjacency => 2,
                                 InputTopology.Triangles or
                                 InputTopology.TrianglesAdjacency => 3,
-                                _ => 3
+                                _ => 1
                             };
 
                             patchVerticesIn = Const(inputVertices << 16);
