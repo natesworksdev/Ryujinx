@@ -107,7 +107,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>True if anisotropic filtering can be forced, false otherwise</returns>
         private static bool AllowForceAnisotropy(Texture texture)
         {
-            if (!(texture.Target == Target.Texture2D || texture.Target == Target.Texture2DArray))
+            if (texture == null || !(texture.Target == Target.Texture2D || texture.Target == Target.Texture2DArray))
             {
                 return false;
             }
