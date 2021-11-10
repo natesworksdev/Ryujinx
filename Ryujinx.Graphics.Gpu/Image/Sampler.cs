@@ -1,5 +1,6 @@
 using Ryujinx.Graphics.GAL;
 using System;
+using System.Numerics;
 
 namespace Ryujinx.Graphics.Gpu.Image
 {
@@ -11,7 +12,12 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <summary>
         /// Host sampler object.
         /// </summary>
-        public ISampler HostSampler { get; }
+        private ISampler _hostSampler { get; }
+
+        /// <summary>
+        /// Host sampler object, with anisotropy forced.
+        /// </summary>
+        private ISampler _anisoSampler { get; }
 
         /// <summary>
         /// Creates a new instance of the cached sampler.
@@ -42,13 +48,10 @@ namespace Ryujinx.Graphics.Gpu.Image
             float maxLod     = descriptor.UnpackMaxLod();
             float mipLodBias = descriptor.UnpackMipLodBias();
 
-            float maxRequestedAnisotropy = GraphicsConfig.MaxAnisotropy >= 0 && GraphicsConfig.MaxAnisotropy <= 16 ? GraphicsConfig.MaxAnisotropy : descriptor.UnpackMaxAnisotropy();
+            float maxRequestedAnisotropy = descriptor.UnpackMaxAnisotropy();
             float maxSupportedAnisotropy = context.Capabilities.MaximumSupportedAnisotropy;
 
-            if (maxRequestedAnisotropy > maxSupportedAnisotropy)
-                maxRequestedAnisotropy = maxSupportedAnisotropy;
-
-            HostSampler = context.Renderer.CreateSampler(new SamplerCreateInfo(
+            _hostSampler = context.Renderer.CreateSampler(new SamplerCreateInfo(
                 minFilter,
                 magFilter,
                 seamlessCubemap,
@@ -61,7 +64,56 @@ namespace Ryujinx.Graphics.Gpu.Image
                 minLod,
                 maxLod,
                 mipLodBias,
-                maxRequestedAnisotropy));
+                Math.Min(maxRequestedAnisotropy, maxSupportedAnisotropy)));
+
+            if (GraphicsConfig.MaxAnisotropy >= 0 && GraphicsConfig.MaxAnisotropy <= 16 && (minFilter == MinFilter.LinearMipmapNearest || minFilter == MinFilter.LinearMipmapLinear))
+            {
+                maxRequestedAnisotropy = GraphicsConfig.MaxAnisotropy;
+
+                _anisoSampler = context.Renderer.CreateSampler(new SamplerCreateInfo(
+                    minFilter,
+                    magFilter,
+                    seamlessCubemap,
+                    addressU,
+                    addressV,
+                    addressP,
+                    compareMode,
+                    compareOp,
+                    color,
+                    minLod,
+                    maxLod,
+                    mipLodBias,
+                    Math.Min(maxRequestedAnisotropy, maxSupportedAnisotropy)));
+            }
+        }
+
+        /// <summary>
+        /// Gets a host sampler for the given texture.
+        /// </summary>
+        /// <param name="texture">Texture to be sampled</param>
+        /// <returns>A host sampler</returns>
+        public ISampler GetHostSampler(Texture texture)
+        {
+            return _anisoSampler != null && AllowForceAnisotropy(texture) ? _anisoSampler : _hostSampler;
+        }
+
+        /// <summary>
+        /// Determine if the given texture can have anisotropic filtering forced.
+        /// Filtered textures that we might want to force anisotropy on should have a full set of mip levels.
+        /// </summary>
+        /// <param name="texture">The texture</param>
+        /// <returns>True if anisotropic filtering can be forced, false otherwise</returns>
+        private static bool AllowForceAnisotropy(Texture texture)
+        {
+            if (!(texture.Info.Target == Target.Texture2D || texture.Info.Target == Target.Texture2DArray))
+            {
+                return false;
+            }
+
+            int maxSize = Math.Max(texture.Info.Width, texture.Info.Height);
+            int maxLevels = BitOperations.Log2((uint)maxSize) + 1;
+
+            return texture.Info.Levels >= maxLevels;
         }
 
         /// <summary>
@@ -69,7 +121,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public void Dispose()
         {
-            HostSampler.Dispose();
+            _hostSampler.Dispose();
+            _anisoSampler?.Dispose();
         }
     }
 }
