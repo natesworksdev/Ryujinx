@@ -9,15 +9,17 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// </summary>
     class Sampler : IDisposable
     {
+        private const int MinLevelsForAnisotropic = 5;
+
         /// <summary>
         /// Host sampler object.
         /// </summary>
-        private ISampler _hostSampler { get; }
+        private readonly ISampler _hostSampler;
 
         /// <summary>
         /// Host sampler object, with anisotropy forced.
         /// </summary>
-        private ISampler _anisoSampler { get; }
+        private readonly ISampler _anisoSampler;
 
         /// <summary>
         /// Creates a new instance of the cached sampler.
@@ -99,7 +101,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
         /// <summary>
         /// Determine if the given texture can have anisotropic filtering forced.
-        /// Filtered textures that we might want to force anisotropy on should have a full set of mip levels.
+        /// Filtered textures that we might want to force anisotropy on should have a lot of mip levels.
         /// </summary>
         /// <param name="texture">The texture</param>
         /// <returns>True if anisotropic filtering can be forced, false otherwise</returns>
@@ -113,7 +115,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             int maxSize = Math.Max(texture.Info.Width, texture.Info.Height);
             int maxLevels = BitOperations.Log2((uint)maxSize) + 1;
 
-            return texture.Info.Levels >= maxLevels;
+            return texture.Info.Levels >= Math.Min(MinLevelsForAnisotropic, maxLevels);
         }
 
         /// <summary>
