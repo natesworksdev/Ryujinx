@@ -220,7 +220,10 @@ namespace Ryujinx.Modules
 
             for (int i = 0; i < ConnectionCount; i++)
             {
+#pragma warning disable SYSLIB0014
+                // TODO: WebClient is obsolete and need to be replaced with a more complex logic using HttpClient.
                 using (WebClient client = new WebClient())
+#pragma warning restore SYSLIB0014
                 {
                     webClients.Add(client);
 
