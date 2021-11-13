@@ -26,6 +26,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
         private readonly List<WaitingObject> _waitingObjects;
         private AutoResetEvent _waitEvent;
         private bool _keepRunning;
+        private long _enforceWakeupFromSpinWait;
 
         public KTimeManager(KernelContext context)
         {
@@ -48,6 +49,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
             lock (_context.CriticalSection.Lock)
             {
                 _waitingObjects.Add(new WaitingObject(schedulerObj, timePoint));
+                Interlocked.Exchange(ref _enforceWakeupFromSpinWait, timeout < 1000000 ? 1 : 0);
             }
 
             _waitEvent.Set();
@@ -63,14 +65,17 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
 
         private void WaitAndCheckScheduledObjects()
         {
+            SpinWait spinWait = new SpinWait();
+            WaitingObject next;
+
             using (_waitEvent = new AutoResetEvent(false))
             {
                 while (_keepRunning)
                 {
-                    WaitingObject next;
-
                     lock (_context.CriticalSection.Lock)
                     {
+                        Interlocked.Exchange(ref _enforceWakeupFromSpinWait, 0);
+
                         next = _waitingObjects.OrderBy(x => x.TimePoint).FirstOrDefault();
                     }
 
@@ -85,6 +90,20 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
                             if (ms > 0)
                             {
                                 _waitEvent.WaitOne(ms);
+                            }
+                            else
+                            {
+                                while (Interlocked.Read(ref _enforceWakeupFromSpinWait) != 1 && PerformanceCounter.ElapsedTicks <= next.TimePoint)
+                                {
+                                    if (spinWait.NextSpinWillYield)
+                                    {
+                                        Thread.Yield();
+
+                                        spinWait.Reset();
+                                    }
+
+                                    spinWait.SpinOnce();
+                                }
                             }
                         }
 
