@@ -19,7 +19,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         public void SvcCall(object sender, InstExceptionEventArgs e)
         {
-            ExecutionContext context = (ExecutionContext)sender;
+            KThread currentThread = KernelStatic.GetCurrentThread();
+
+            currentThread.UpdatePinnedState();
+
+            ExecutionContext context = (ExecutionContext)sender; 
 
             if (context.IsAarch32)
             {
@@ -43,13 +47,6 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
                 svcFunc(_syscall64, context);
             }
-
-            PostSvcHandler();
-        }
-
-        private void PostSvcHandler()
-        {
-            KThread currentThread = KernelStatic.GetCurrentThread();
 
             currentThread.HandlePostSyscall();
         }
