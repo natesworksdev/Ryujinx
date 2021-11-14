@@ -751,6 +751,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         {
             KThread currentThread = KernelStatic.GetCurrentThread();
 
+            // TODO: integrate pinning changes.
+
             if (currentThread.IsSchedulable)
             {
                 KernelContext.Schedulers[currentThread.CurrentCore].Schedule();

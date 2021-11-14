@@ -581,7 +581,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             KernelContext.CriticalSection.Leave();
             KernelContext.CriticalSection.Leave();
 
-            if (pause)
+            if (result == KernelResult.Success && pause)
             {
                 bool isPinnedThreadRunning = true;
 
@@ -617,6 +617,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                     {
                         isPinnedThreadRunning = GetEffectiveRunningCore() >= 0;
                     }
+
+                    KernelContext.CriticalSection.Leave();
                 }
             }
 
