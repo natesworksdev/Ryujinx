@@ -9,7 +9,6 @@ using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.Memory;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 

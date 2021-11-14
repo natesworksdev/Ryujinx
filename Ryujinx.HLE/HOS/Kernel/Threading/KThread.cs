@@ -453,9 +453,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
         private int GetEffectiveRunningCore()
         {
-            int coreNumber;
-
-            for (coreNumber = 0; coreNumber < KScheduler.CpuCoresCount; coreNumber++)
+            for (int coreNumber = 0; coreNumber < KScheduler.CpuCoresCount; coreNumber++)
             {
                 if (KernelContext.Schedulers[coreNumber].CurrentThread == this)
                 {
@@ -752,7 +750,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
                 KernelContext.CriticalSection.Leave();
             }
-
 
             return KernelResult.Success;
         }
