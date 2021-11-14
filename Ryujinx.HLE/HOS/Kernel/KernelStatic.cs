@@ -50,6 +50,11 @@ namespace Ryujinx.HLE.HOS.Kernel
             CurrentThread = thread;
         }
 
+        internal static KernelContext GetContext()
+        {
+            return Context;
+        }
+
         internal static KThread GetCurrentThread()
         {
             return CurrentThread;

@@ -1319,20 +1319,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             _pinnedWaiters.Clear();
         }
 
-        public void UpdatePinnedState()
-        {
-            KernelContext.CriticalSection.Enter();
-
-            if (Owner != null && GetUserDisableCount() != 0 && Owner.PinnedThreads[CurrentCore] == null)
-            {
-                Owner.PinThread(this);
-
-                SetUserInterruptFlag();
-            }
-
-            KernelContext.CriticalSection.Leave();
-        }
-
         public void SynchronizePreemptionState()
         {
             KernelContext.CriticalSection.Enter();

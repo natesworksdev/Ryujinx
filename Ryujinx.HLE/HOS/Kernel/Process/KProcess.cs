@@ -749,11 +749,27 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
         private void InterruptHandler(object sender, EventArgs e)
         {
+            KernelContext kernelContext = KernelStatic.GetContext();
             KThread currentThread = KernelStatic.GetCurrentThread();
 
-            // TODO: integrate pinning changes.
+            if (currentThread.Owner != null &&
+                currentThread.GetUserDisableCount() != 0 &&
+                currentThread.Owner.PinnedThreads[currentThread.CurrentCore] == null)
+            {
+                kernelContext.CriticalSection.Enter();
 
-            if (currentThread.IsSchedulable)
+                currentThread.Owner.PinThread(currentThread);
+
+                currentThread.SetUserInterruptFlag();
+
+                if (currentThread.IsSchedulable)
+                {
+                    KernelContext.Schedulers[currentThread.CurrentCore].Schedule();
+                }
+
+                kernelContext.CriticalSection.Leave();
+            }
+            else if (currentThread.IsSchedulable)
             {
                 KernelContext.Schedulers[currentThread.CurrentCore].Schedule();
             }
