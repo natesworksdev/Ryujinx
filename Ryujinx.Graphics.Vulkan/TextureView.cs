@@ -636,6 +636,8 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (_gd.CommandBufferPool.OwnedByCurrentThread)
             {
+                _gd.FlushAllCommands();
+
                 return GetData(_gd.CommandBufferPool);
             }
             else if (_gd.BackgroundQueue.Handle != 0)
