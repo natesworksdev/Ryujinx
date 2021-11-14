@@ -116,6 +116,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
         public long LastPc { get; set; }
 
+        private object ActivityOperationLock = new object();
+
         public KThread(KernelContext context) : base(context)
         {
             WaitSyncObjects = new KSynchronizationObject[MaxWaitSyncObjects];
@@ -535,94 +537,96 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
         public KernelResult SetActivity(bool pause)
         {
-            KernelResult result = KernelResult.Success;
-
-            KernelContext.CriticalSection.Enter();
-
-            ThreadSchedState lowNibble = SchedFlags & ThreadSchedState.LowMask;
-
-            if (lowNibble != ThreadSchedState.Paused && lowNibble != ThreadSchedState.Running)
+            lock (ActivityOperationLock)
             {
+                KernelResult result = KernelResult.Success;
+
+                KernelContext.CriticalSection.Enter();
+
+                ThreadSchedState lowNibble = SchedFlags & ThreadSchedState.LowMask;
+
+                if (lowNibble != ThreadSchedState.Paused && lowNibble != ThreadSchedState.Running)
+                {
+                    KernelContext.CriticalSection.Leave();
+
+                    return KernelResult.InvalidState;
+                }
+
+                if (!ShallBeTerminated && SchedFlags != ThreadSchedState.TerminationPending)
+                {
+                    if (pause)
+                    {
+                        // Pause, the force pause flag should be clear (thread is NOT paused).
+                        if ((_forcePauseFlags & ThreadSchedState.ThreadPauseFlag) == 0)
+                        {
+                            Suspend(ThreadSchedState.ThreadPauseFlag);
+                        }
+                        else
+                        {
+                            result = KernelResult.InvalidState;
+                        }
+                    }
+                    else
+                    {
+                        // Unpause, the force pause flag should be set (thread is paused).
+                        if ((_forcePauseFlags & ThreadSchedState.ThreadPauseFlag) != 0)
+                        {
+                            Resume(ThreadSchedState.ThreadPauseFlag);
+                        }
+                        else
+                        {
+                            result = KernelResult.InvalidState;
+                        }
+                    }
+                }
+
                 KernelContext.CriticalSection.Leave();
 
-                return KernelResult.InvalidState;
-            }
-
-            KernelContext.CriticalSection.Enter();
-
-            if (!ShallBeTerminated && SchedFlags != ThreadSchedState.TerminationPending)
-            {
-                if (pause)
+                if (result == KernelResult.Success && pause)
                 {
-                    // Pause, the force pause flag should be clear (thread is NOT paused).
-                    if ((_forcePauseFlags & ThreadSchedState.ThreadPauseFlag) == 0)
+                    bool isThreadRunning = true;
+
+                    while (isThreadRunning)
                     {
-                        Suspend(ThreadSchedState.ThreadPauseFlag);
-                    }
-                    else
-                    {
-                        result = KernelResult.InvalidState;
-                    }
-                }
-                else
-                {
-                    // Unpause, the force pause flag should be set (thread is paused).
-                    if ((_forcePauseFlags & ThreadSchedState.ThreadPauseFlag) != 0)
-                    {
-                        Resume(ThreadSchedState.ThreadPauseFlag);
-                    }
-                    else
-                    {
-                        result = KernelResult.InvalidState;
-                    }
-                }
-            }
+                        KernelContext.CriticalSection.Enter();
 
-            KernelContext.CriticalSection.Leave();
-            KernelContext.CriticalSection.Leave();
-
-            if (result == KernelResult.Success && pause)
-            {
-                bool isPinnedThreadRunning = true;
-
-                while (isPinnedThreadRunning)
-                {
-                    KernelContext.CriticalSection.Enter();
-
-                    if (TerminationRequested)
-                    {
-                        KernelContext.CriticalSection.Leave();
-
-                        break;
-                    }
-
-                    isPinnedThreadRunning = false;
-
-                    if (IsPinned)
-                    {
                         if (TerminationRequested)
                         {
                             KernelContext.CriticalSection.Leave();
 
-                            return KernelResult.ThreadTerminating;
+                            break;
                         }
 
-                        KThread currentThread = KernelStatic.GetCurrentThread();
+                        isThreadRunning = false;
 
-                        _pinnedWaiters.AddLast(currentThread);
+                        if (IsPinned)
+                        {
+                            KThread currentThread = KernelStatic.GetCurrentThread();
 
-                        currentThread.Reschedule(ThreadSchedState.Paused);
+                            if (currentThread.TerminationRequested)
+                            {
+                                KernelContext.CriticalSection.Leave();
+
+                                result = KernelResult.ThreadTerminating;
+
+                                break;
+                            }
+
+                            _pinnedWaiters.AddLast(currentThread);
+
+                            currentThread.Reschedule(ThreadSchedState.Paused);
+                        }
+                        else
+                        {
+                            isThreadRunning = GetEffectiveRunningCore() >= 0;
+                        }
+
+                        KernelContext.CriticalSection.Leave();
                     }
-                    else
-                    {
-                        isPinnedThreadRunning = GetEffectiveRunningCore() >= 0;
-                    }
-
-                    KernelContext.CriticalSection.Leave();
                 }
-            }
 
-            return result;
+                return result;
+            }
         }
 
         public void CancelSynchronization()
@@ -658,102 +662,105 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
         public KernelResult SetCoreAndAffinityMask(int newCore, long newAffinityMask)
         {
-            KernelContext.CriticalSection.Enter();
-
-            bool isCoreMigrationDisabled = _coreMigrationDisableCount != 0;
-
-            // The value -3 is "do not change the preferred core".
-            if (newCore == -3)
-            {
-                newCore = isCoreMigrationDisabled ? _originalPreferredCore : PreferredCore;
-
-                if ((newAffinityMask & (1 << newCore)) == 0)
-                {
-                    KernelContext.CriticalSection.Leave();
-
-                    return KernelResult.InvalidCombination;
-                }
-            }
-
-            if (isCoreMigrationDisabled)
-            {
-                _originalPreferredCore = newCore;
-                _originalAffinityMask = newAffinityMask;
-            }
-            else
-            {
-                long oldAffinityMask = AffinityMask;
-
-                PreferredCore = newCore;
-                AffinityMask = newAffinityMask;
-
-                if (oldAffinityMask != newAffinityMask)
-                {
-                    int oldCore = ActiveCore;
-
-                    if (oldCore >= 0 && ((AffinityMask >> oldCore) & 1) == 0)
-                    {
-                        if (PreferredCore < 0)
-                        {
-                            ActiveCore = sizeof(ulong) * 8 - 1 - BitOperations.LeadingZeroCount((ulong)AffinityMask);
-                        }
-                        else
-                        {
-                            ActiveCore = PreferredCore;
-                        }
-                    }
-
-                    AdjustSchedulingForNewAffinity(oldAffinityMask, oldCore);
-                }
-            }
-
-            KernelContext.CriticalSection.Leave();
-
-            bool targetThreadPinned = true;
-
-            while (targetThreadPinned)
+            lock (ActivityOperationLock)
             {
                 KernelContext.CriticalSection.Enter();
 
-                if (TerminationRequested)
-                {
-                    KernelContext.CriticalSection.Leave();
+                bool isCoreMigrationDisabled = _coreMigrationDisableCount != 0;
 
-                    break;
+                // The value -3 is "do not change the preferred core".
+                if (newCore == -3)
+                {
+                    newCore = isCoreMigrationDisabled ? _originalPreferredCore : PreferredCore;
+
+                    if ((newAffinityMask & (1 << newCore)) == 0)
+                    {
+                        KernelContext.CriticalSection.Leave();
+
+                        return KernelResult.InvalidCombination;
+                    }
                 }
 
-                targetThreadPinned = false;
-
-                int coreNumber = GetEffectiveRunningCore();
-                bool isPinnedThreadCurrentlyRunning = coreNumber >=0;
-
-                if (isPinnedThreadCurrentlyRunning && ((1 << coreNumber) & AffinityMask) == 0)
+                if (isCoreMigrationDisabled)
                 {
-                    if (IsPinned)
-                    {
-                        if (TerminationRequested)
-                        {
-                            KernelContext.CriticalSection.Leave();
+                    _originalPreferredCore = newCore;
+                    _originalAffinityMask = newAffinityMask;
+                }
+                else
+                {
+                    long oldAffinityMask = AffinityMask;
 
-                            return KernelResult.ThreadTerminating;
+                    PreferredCore = newCore;
+                    AffinityMask = newAffinityMask;
+
+                    if (oldAffinityMask != newAffinityMask)
+                    {
+                        int oldCore = ActiveCore;
+
+                        if (oldCore >= 0 && ((AffinityMask >> oldCore) & 1) == 0)
+                        {
+                            if (PreferredCore < 0)
+                            {
+                                ActiveCore = sizeof(ulong) * 8 - 1 - BitOperations.LeadingZeroCount((ulong)AffinityMask);
+                            }
+                            else
+                            {
+                                ActiveCore = PreferredCore;
+                            }
                         }
 
-                        KThread currentThread = KernelStatic.GetCurrentThread();
-
-                        _pinnedWaiters.AddLast(currentThread);
-
-                        currentThread.Reschedule(ThreadSchedState.Paused);
-                    }
-                    else
-                    {
-                        targetThreadPinned = true;
+                        AdjustSchedulingForNewAffinity(oldAffinityMask, oldCore);
                     }
                 }
 
                 KernelContext.CriticalSection.Leave();
-            }
 
-            return KernelResult.Success;
+                bool targetThreadPinned = true;
+
+                while (targetThreadPinned)
+                {
+                    KernelContext.CriticalSection.Enter();
+
+                    if (TerminationRequested)
+                    {
+                        KernelContext.CriticalSection.Leave();
+
+                        break;
+                    }
+
+                    targetThreadPinned = false;
+
+                    int coreNumber = GetEffectiveRunningCore();
+                    bool isPinnedThreadCurrentlyRunning = coreNumber >= 0;
+
+                    if (isPinnedThreadCurrentlyRunning && ((1 << coreNumber) & AffinityMask) == 0)
+                    {
+                        if (IsPinned)
+                        {
+                            KThread currentThread = KernelStatic.GetCurrentThread();
+
+                            if (currentThread.TerminationRequested)
+                            {
+                                KernelContext.CriticalSection.Leave();
+
+                                return KernelResult.ThreadTerminating;
+                            }
+
+                            _pinnedWaiters.AddLast(currentThread);
+
+                            currentThread.Reschedule(ThreadSchedState.Paused);
+                        }
+                        else
+                        {
+                            targetThreadPinned = true;
+                        }
+                    }
+
+                    KernelContext.CriticalSection.Leave();
+                }
+
+                return KernelResult.Success;
+            }
         }
 
         private void CombineForcePauseFlags()
