@@ -508,7 +508,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             if (timeout > 0)
             {
-                timeout += KTimeManager.DefaultTimeIncrementNanoSeconds;
+                timeout += KTimeManager.DefaultTimeIncrementNanoseconds;
             }
 
             return ReplyAndReceive(handles, replyTargetHandle, timeout, out handleIndex);
@@ -554,7 +554,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             {
                 if (timeout > 0)
                 {
-                    timeout += KTimeManager.DefaultTimeIncrementNanoSeconds;
+                    timeout += KTimeManager.DefaultTimeIncrementNanoseconds;
                 }
 
                 while ((result = _context.Synchronization.WaitFor(syncObjs, timeout, out handleIndex)) == KernelResult.Success)
@@ -656,7 +656,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             {
                 if (timeout > 0)
                 {
-                    timeout += KTimeManager.DefaultTimeIncrementNanoSeconds;
+                    timeout += KTimeManager.DefaultTimeIncrementNanoseconds;
                 }
 
                 while ((result = _context.Synchronization.WaitFor(syncObjs, timeout, out handleIndex)) == KernelResult.Success)
@@ -2132,7 +2132,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             }
             else
             {
-                KernelStatic.GetCurrentThread().Sleep(timeout + KTimeManager.DefaultTimeIncrementNanoSeconds);
+                KernelStatic.GetCurrentThread().Sleep(timeout + KTimeManager.DefaultTimeIncrementNanoseconds);
             }
         }
 
@@ -2475,7 +2475,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             if (timeout > 0)
             {
-                timeout += KTimeManager.DefaultTimeIncrementNanoSeconds;
+                timeout += KTimeManager.DefaultTimeIncrementNanoseconds;
             }
 
             KernelResult result = _context.Synchronization.WaitFor(syncObjs, timeout, out handleIndex);
@@ -2563,7 +2563,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             if (timeout > 0)
             {
-                timeout += KTimeManager.DefaultTimeIncrementNanoSeconds;
+                timeout += KTimeManager.DefaultTimeIncrementNanoseconds;
             }
 
             return currentProcess.AddressArbiter.WaitProcessWideKeyAtomic(
@@ -2598,7 +2598,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             if (timeout > 0)
             {
-                timeout += KTimeManager.DefaultTimeIncrementNanoSeconds;
+                timeout += KTimeManager.DefaultTimeIncrementNanoseconds;
             }
 
             return type switch

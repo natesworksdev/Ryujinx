@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
 {
     class KTimeManager : IDisposable
     {
-        public static readonly long DefaultTimeIncrementNanoSeconds = ConvertGuestTicksToNanoSeconds(2);
+        public static readonly long DefaultTimeIncrementNanoseconds = ConvertGuestTicksToNanoseconds(2);
 
         private class WaitingObject
         {
@@ -49,7 +49,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
             lock (_context.CriticalSection.Lock)
             {
                 _waitingObjects.Add(new WaitingObject(schedulerObj, timePoint));
-                Interlocked.Exchange(ref _enforceWakeupFromSpinWait, timeout < 1000000 ? 1 : 0);
+
+                if (timeout < 1000000)
+                {
+                    Interlocked.Exchange(ref _enforceWakeupFromSpinWait, 1);
+                }
             }
 
             _waitEvent.Set();
@@ -104,6 +108,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
 
                                     spinWait.SpinOnce();
                                 }
+
+                                spinWait.Reset();
                             }
                         }
 
@@ -156,7 +162,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
             return (nsDiv * tickDiv) * 1000000000 + nsDiv * tickMod + nsMod * tickDiv + baseTicks;
         }
 
-        public static long ConvertGuestTicksToNanoSeconds(long ticks)
+        public static long ConvertGuestTicksToNanoseconds(long ticks)
         {
             return (long)Math.Ceiling(ticks * (1000000000.0 / 19200000.0));
         }
