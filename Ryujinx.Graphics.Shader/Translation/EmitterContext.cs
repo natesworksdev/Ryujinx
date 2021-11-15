@@ -234,6 +234,8 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
             else if (Config.Stage == ShaderStage.Fragment)
             {
+                bool supportsBgra = Config.Options.TargetApi == TargetApi.Vulkan;
+
                 if (Config.OmapDepth)
                 {
                     Operand dest = Attribute(AttributeConsts.FragmentOutputDepth);
