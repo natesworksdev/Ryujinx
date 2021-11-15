@@ -21,6 +21,7 @@ namespace Ryujinx.Graphics.Vulkan
         private Auto<DisposableImageView>[] _imageRefs;
         private TextureBuffer[] _bufferTextureRefs;
         private TextureBuffer[] _bufferImageRefs;
+        private GAL.Format[] _bufferImageFormats;
 
         private DescriptorBufferInfo[] _uniformBuffers;
         private DescriptorBufferInfo[] _storageBuffers;
@@ -113,9 +114,11 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     Array.Resize(ref _bufferImages, binding + 1);
                     Array.Resize(ref _bufferImageRefs, binding + 1);
+                    Array.Resize(ref _bufferImageFormats, binding + 1);
                 }
 
                 _bufferImageRefs[binding] = imageBuffer;
+                _bufferImageFormats[binding] = imageFormat;
 
                 SignalDirty(DirtyFlags.BufferImage);
             }
@@ -127,9 +130,9 @@ namespace Ryujinx.Graphics.Vulkan
                     Array.Resize(ref _imageRefs, binding + 1);
                 }
 
-                if (image != null)
+                if (image is TextureView view)
                 {
-                    _imageRefs[binding] = ((TextureView)image).GetIdentityImageView();
+                    _imageRefs[binding] = view.GetView(imageFormat).GetIdentityImageView();
                     _images[binding] = new DescriptorImageInfo()
                     {
                         ImageLayout = ImageLayout.General
@@ -432,7 +435,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                         for (int i = 0; i < count; i++)
                         {
-                            _bufferImages[binding + i] = _bufferImageRefs[binding + i]?.GetBufferView(cbs) ?? default;
+                            _bufferImages[binding + i] = _bufferImageRefs[binding + i]?.GetBufferView(cbs, _bufferImageFormats[binding + i]) ?? default;
                         }
 
                         ReadOnlySpan<BufferView> bufferImages = _bufferImages;
