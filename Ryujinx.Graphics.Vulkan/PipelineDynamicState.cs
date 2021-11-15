@@ -20,7 +20,7 @@ namespace Ryujinx.Graphics.Vulkan
         private uint _frontReference;
 
         public int ViewportsCount;
-        private Array16<Viewport> _viewports;
+        public Array16<Viewport> Viewports;
 
         private enum DirtyFlags
         {
@@ -70,8 +70,13 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetViewport(int index, Viewport viewport)
         {
-            _viewports[index] = viewport;
+            Viewports[index] = viewport;
 
+            _dirty |= DirtyFlags.Viewport;
+        }
+
+        public void SetViewportsDirty()
+        {
             _dirty |= DirtyFlags.Viewport;
         }
 
@@ -127,7 +132,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private void RecordViewport(Vk api, CommandBuffer commandBuffer)
         {
-            api.CmdSetViewport(commandBuffer, 0, (uint)ViewportsCount, _viewports.ToSpan());
+            api.CmdSetViewport(commandBuffer, 0, (uint)ViewportsCount, Viewports.ToSpan());
         }
     }
 }
