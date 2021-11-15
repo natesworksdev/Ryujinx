@@ -292,7 +292,50 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void DrawTexture(ITexture texture, ISampler sampler, Extents2DF srcRegion, Extents2DF dstRegion)
         {
-            throw new NotImplementedException();
+            if (texture is TextureView srcTexture)
+            {
+                var oldCullMode = _newState.CullMode;
+                var oldStencilTestEnable = _newState.StencilTestEnable;
+                var oldDepthTestEnable = _newState.DepthTestEnable;
+                var oldDepthWriteEnable = _newState.DepthWriteEnable;
+                var oldTopology = _newState.Topology;
+                var oldViewports = VulkanConfiguration.UseDynamicState ? _dynamicState.Viewports : _newState.Internal.Viewports;
+                var oldViewportsCount = _newState.ViewportsCount;
+
+                _newState.CullMode = CullModeFlags.CullModeNone;
+                _newState.StencilTestEnable = false;
+                _newState.DepthTestEnable = false;
+                _newState.DepthWriteEnable = false;
+                SignalStateChange();
+
+                Gd.HelperShader.DrawTexture(
+                    Gd,
+                    this,
+                    srcTexture,
+                    sampler,
+                    srcRegion,
+                    dstRegion);
+
+                _newState.CullMode = oldCullMode;
+                _newState.StencilTestEnable = oldStencilTestEnable;
+                _newState.DepthTestEnable = oldDepthTestEnable;
+                _newState.DepthWriteEnable = oldDepthWriteEnable;
+                _newState.Topology = oldTopology;
+
+                if (VulkanConfiguration.UseDynamicState)
+                {
+                    _dynamicState.Viewports = oldViewports;
+                    _dynamicState.ViewportsCount = (int)oldViewportsCount;
+                    _dynamicState.SetViewportsDirty();
+                }
+                else
+                {
+                    _newState.Internal.Viewports = oldViewports;
+                }
+
+                _newState.ViewportsCount = oldViewportsCount;
+                SignalStateChange();
+            }
         }
 
         public void EndTransformFeedback()
@@ -425,7 +468,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetFaceCulling(bool enable, Face face)
         {
-            _newState.CullMode = enable ? face.Convert() : 0;
+            _newState.CullMode = enable ? face.Convert() : CullModeFlags.CullModeNone;
             SignalStateChange();
         }
 

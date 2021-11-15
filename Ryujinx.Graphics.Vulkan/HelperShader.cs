@@ -155,6 +155,20 @@ void main()
             region[2] = (float)srcRegion.Y1 / src.Height;
             region[3] = (float)srcRegion.Y2 / src.Height;
 
+            if (dstRegion.X1 > dstRegion.X2)
+            {
+                float temp = region[0];
+                region[0] = region[1];
+                region[1] = temp;
+            }
+
+            if (dstRegion.Y1 > dstRegion.Y2)
+            {
+                float temp = region[2];
+                region[2] = region[3];
+                region[3] = temp;
+            }
+
             var bufferHandle = gd.BufferManager.CreateWithHandle(gd, RegionBufferSize);
 
             gd.BufferManager.SetData<float>(bufferHandle, 0, region);
@@ -167,8 +181,14 @@ void main()
 
             Span<GAL.Viewport> viewports = stackalloc GAL.Viewport[1];
 
+            var rect = new Rectangle<float>(
+                MathF.Min(dstRegion.X1, dstRegion.X2),
+                MathF.Min(dstRegion.Y1, dstRegion.Y2),
+                MathF.Abs(dstRegion.X2 - dstRegion.X1),
+                MathF.Abs(dstRegion.Y2 - dstRegion.Y1));
+
             viewports[0] = new GAL.Viewport(
-                new Rectangle<float>(dstRegion.X1, dstRegion.Y1, dstRegion.X2 - dstRegion.X1, dstRegion.Y2 - dstRegion.Y1),
+                rect,
                 ViewportSwizzle.PositiveX,
                 ViewportSwizzle.PositiveY,
                 ViewportSwizzle.PositiveZ,
@@ -194,6 +214,76 @@ void main()
             _pipeline.SetPrimitiveTopology(GAL.PrimitiveTopology.TriangleStrip);
             _pipeline.Draw(4, 1, 0, 0);
             _pipeline.Finish();
+
+            gd.BufferManager.Delete(bufferHandle);
+        }
+
+        public void DrawTexture(
+            VulkanGraphicsDevice gd,
+            PipelineBase pipeline,
+            TextureView src,
+            ISampler srcSampler,
+            Extents2DF srcRegion,
+            Extents2DF dstRegion)
+        {
+            const int RegionBufferSize = 16;
+
+            pipeline.SetTextureAndSampler(32, src, srcSampler);
+
+            Span<float> region = stackalloc float[RegionBufferSize / sizeof(float)];
+
+            region[0] = srcRegion.X1 / src.Width;
+            region[1] = srcRegion.X2 / src.Width;
+            region[2] = srcRegion.Y1 / src.Height;
+            region[3] = srcRegion.Y2 / src.Height;
+
+            if (dstRegion.X1 > dstRegion.X2)
+            {
+                float temp = region[0];
+                region[0] = region[1];
+                region[1] = temp;
+            }
+
+            if (dstRegion.Y1 > dstRegion.Y2)
+            {
+                float temp = region[2];
+                region[2] = region[3];
+                region[3] = temp;
+            }
+
+            var bufferHandle = gd.BufferManager.CreateWithHandle(gd, RegionBufferSize);
+
+            gd.BufferManager.SetData<float>(bufferHandle, 0, region);
+
+            Span<BufferRange> bufferRanges = stackalloc BufferRange[1];
+
+            bufferRanges[0] = new BufferRange(bufferHandle, 0, RegionBufferSize);
+
+            pipeline.SetUniformBuffers(1, bufferRanges);
+
+            Span<GAL.Viewport> viewports = stackalloc GAL.Viewport[1];
+
+            var rect = new Rectangle<float>(
+                MathF.Min(dstRegion.X1, dstRegion.X2),
+                MathF.Min(dstRegion.Y1, dstRegion.Y2),
+                MathF.Abs(dstRegion.X2 - dstRegion.X1),
+                MathF.Abs(dstRegion.Y2 - dstRegion.Y1));
+
+            viewports[0] = new GAL.Viewport(
+                rect,
+                ViewportSwizzle.PositiveX,
+                ViewportSwizzle.PositiveY,
+                ViewportSwizzle.PositiveZ,
+                ViewportSwizzle.PositiveW,
+                0f,
+                1f);
+
+            Span<Rectangle<int>> scissors = stackalloc Rectangle<int>[1];
+
+            pipeline.SetProgram(_programColorBlit);
+            pipeline.SetViewports(0, viewports);
+            pipeline.SetPrimitiveTopology(GAL.PrimitiveTopology.TriangleStrip);
+            pipeline.Draw(4, 1, 0, 0);
 
             gd.BufferManager.Delete(bufferHandle);
         }
