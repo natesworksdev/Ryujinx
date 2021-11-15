@@ -1,6 +1,7 @@
 ﻿using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using VkBuffer = Silk.NET.Vulkan.Buffer;
 using VkFormat = Silk.NET.Vulkan.Format;
@@ -17,6 +18,7 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly Auto<DisposableImageView> _imageViewIdentity;
         private readonly Auto<DisposableImageView> _imageView2dArray;
         private BufferHolder _flushStorage;
+        private Dictionary<GAL.Format, TextureView> _selfManagedViews;
 
         private TextureCreateInfo _info;
 
@@ -608,7 +610,46 @@ namespace Ryujinx.Graphics.Vulkan
                    _gd.FormatCapabilities.FormatSupports(GAL.Format.S8Uint, formatFeatureFlags);
         }
 
+        public TextureView GetView(GAL.Format format)
+        {
+            if (format == Info.Format)
+            {
+                return this;
+            }
+
+            if (_selfManagedViews != null && _selfManagedViews.TryGetValue(format, out var view))
+            {
+                return view;
+            }
+
+            view = CreateViewImpl(new TextureCreateInfo(
+                Info.Width,
+                Info.Height,
+                Info.Depth,
+                Info.Levels,
+                Info.Samples,
+                Info.BlockWidth,
+                Info.BlockHeight,
+                Info.BytesPerPixel,
+                format,
+                Info.DepthStencilMode,
+                Info.Target,
+                Info.SwizzleR,
+                Info.SwizzleG,
+                Info.SwizzleB,
+                Info.SwizzleA), 0, 0);
+
+            (_selfManagedViews ??= new Dictionary<GAL.Format, TextureView>()).Add(format, view);
+
+            return view;
+        }
+
         public ITexture CreateView(TextureCreateInfo info, int firstLayer, int firstLevel)
+        {
+            return CreateViewImpl(info, firstLayer, firstLevel);
+        }
+
+        private TextureView CreateViewImpl(TextureCreateInfo info, int firstLayer, int firstLevel)
         {
             return new TextureView(_gd, _device, info, Storage, FirstLayer + firstLayer, FirstLevel + firstLevel);
         }
@@ -916,6 +957,16 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void Dispose()
         {
+            if (_selfManagedViews != null)
+            {
+                foreach (var view in _selfManagedViews.Values)
+                {
+                    view.Dispose();
+                }
+
+                _selfManagedViews = null;
+            }
+
             Dispose(true);
         }
 
