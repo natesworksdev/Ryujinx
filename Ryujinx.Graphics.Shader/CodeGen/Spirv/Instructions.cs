@@ -60,10 +60,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             Add(Instruction.ConditionalSelect,        GenerateConditionalSelect);
             Add(Instruction.ConvertFP32ToFP64,        GenerateConvertFP32ToFP64);
             Add(Instruction.ConvertFP64ToFP32,        GenerateConvertFP64ToFP32);
-            Add(Instruction.ConvertFPToS32,           GenerateConvertFPToS32);
-            Add(Instruction.ConvertFPToU32,           GenerateConvertFPToU32);
-            Add(Instruction.ConvertS32ToFP,           GenerateConvertS32ToFP);
-            Add(Instruction.ConvertU32ToFP,           GenerateConvertU32ToFP);
+            Add(Instruction.ConvertFP32ToS32,         GenerateConvertFP32ToS32);
+            Add(Instruction.ConvertFP32ToU32,         GenerateConvertFP32ToU32);
+            Add(Instruction.ConvertS32ToFP32,         GenerateConvertS32ToFP32);
+            Add(Instruction.ConvertU32ToFP32,         GenerateConvertU32ToFP32);
             Add(Instruction.Cosine,                   GenerateCosine);
             Add(Instruction.Ddx,                      GenerateDdx);
             Add(Instruction.Ddy,                      GenerateDdy);
@@ -409,7 +409,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             return new OperationResult(AggregateType.FP32, context.FConvert(context.TypeFP32(), context.GetFP64(source)));
         }
 
-        private static OperationResult GenerateConvertFPToS32(CodeGenContext context, AstOperation operation)
+        private static OperationResult GenerateConvertFP32ToS32(CodeGenContext context, AstOperation operation)
         {
             var source = operation.GetSource(0);
 
@@ -423,7 +423,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             }
         }
 
-        private static OperationResult GenerateConvertFPToU32(CodeGenContext context, AstOperation operation)
+        private static OperationResult GenerateConvertFP32ToU32(CodeGenContext context, AstOperation operation)
         {
             var source = operation.GetSource(0);
 
@@ -437,7 +437,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             }
         }
 
-        private static OperationResult GenerateConvertS32ToFP(CodeGenContext context, AstOperation operation)
+        private static OperationResult GenerateConvertS32ToFP32(CodeGenContext context, AstOperation operation)
         {
             var source = operation.GetSource(0);
 
@@ -451,7 +451,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             }
         }
 
-        private static OperationResult GenerateConvertU32ToFP(CodeGenContext context, AstOperation operation)
+        private static OperationResult GenerateConvertU32ToFP32(CodeGenContext context, AstOperation operation)
         {
             var source = operation.GetSource(0);
 
