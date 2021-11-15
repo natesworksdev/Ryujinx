@@ -281,7 +281,7 @@ void main()
             Span<Rectangle<int>> scissors = stackalloc Rectangle<int>[1];
 
             pipeline.SetProgram(_programColorBlit);
-            pipeline.SetViewports(0, viewports);
+            pipeline.SetViewports(0, viewports, false);
             pipeline.SetPrimitiveTopology(GAL.PrimitiveTopology.TriangleStrip);
             pipeline.Draw(4, 1, 0, 0);
 
