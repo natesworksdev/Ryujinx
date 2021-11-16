@@ -139,7 +139,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
                 File.WriteAllBytes(hostManifestPath, newHostManifestContent);
 
                 guestArchive.CommitUpdate();
-                guestArchive.CommitUpdate();
+                hostArchive.CommitUpdate();
 
                 guestArchive.Close();
                 hostArchive.Close();
