@@ -17,6 +17,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private const ulong BufferAlignmentSize = 0x1000;
         private const ulong BufferAlignmentMask = BufferAlignmentSize - 1;
 
+        private const ulong MaxDynamicGrowthSize = 0x100000;
+
         private readonly GpuContext _context;
         private readonly PhysicalMemory _physicalMemory;
 
@@ -170,6 +172,19 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 if (_bufferOverlaps[0].Address > address || _bufferOverlaps[0].EndAddress < endAddress)
                 {
+                    if (overlapsCount == 1)
+                    {
+                        // Try to grow the buffer by 1.5x of its current size.
+                        // This improves performance in the cases where the buffer is resized often by small amounts.
+                        ulong existingSize = _bufferOverlaps[0].Size;
+                        ulong growthSize = (existingSize + Math.Min(existingSize >> 1, MaxDynamicGrowthSize)) & ~BufferAlignmentMask;
+
+                        size = Math.Max(size, growthSize);
+                        endAddress = address + size;
+
+                        overlapsCount = _buffers.FindOverlapsNonOverlapping(address, size, ref _bufferOverlaps);
+                    }
+
                     for (int index = 0; index < overlapsCount; index++)
                     {
                         Buffer buffer = _bufferOverlaps[index];
@@ -183,7 +198,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
                         }
                     }
 
-                    Buffer newBuffer = new Buffer(_context, _physicalMemory, address, endAddress - address, _bufferOverlaps.Take(overlapsCount));
+                    ulong newSize = endAddress - address;
+
+                    Buffer newBuffer = new Buffer(_context, _physicalMemory, address, newSize, _bufferOverlaps.Take(overlapsCount));
 
                     lock (_buffers)
                     {
@@ -202,7 +219,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                         buffer.DisposeData();
                     }
 
-                    newBuffer.SynchronizeMemory(address, endAddress - address);
+                    newBuffer.SynchronizeMemory(address, newSize);
 
                     // Existing buffers were modified, we need to rebind everything.
                     NotifyBuffersModified?.Invoke();
