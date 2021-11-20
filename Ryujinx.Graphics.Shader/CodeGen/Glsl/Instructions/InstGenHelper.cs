@@ -25,7 +25,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             Add(Instruction.AtomicXor,                InstType.AtomicBinary,   "atomicXor");
             Add(Instruction.Absolute,                 InstType.CallUnary,      "abs");
             Add(Instruction.Add,                      InstType.OpBinaryCom,    "+",               2);
-            Add(Instruction.Ballot,                   InstType.CallUnary,      "ballotARB");
+            Add(Instruction.Ballot,                   InstType.Special);
             Add(Instruction.Barrier,                  InstType.CallNullary,    "barrier");
             Add(Instruction.BitCount,                 InstType.CallUnary,      "bitCount");
             Add(Instruction.BitfieldExtractS32,       InstType.CallTernary,    "bitfieldExtract");
@@ -53,10 +53,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             Add(Instruction.ConditionalSelect,        InstType.OpTernary,      "?:",              12);
             Add(Instruction.ConvertFP32ToFP64,        InstType.CallUnary,      "double");
             Add(Instruction.ConvertFP64ToFP32,        InstType.CallUnary,      "float");
-            Add(Instruction.ConvertFPToS32,           InstType.CallUnary,      "int");
-            Add(Instruction.ConvertFPToU32,           InstType.CallUnary,      "uint");
-            Add(Instruction.ConvertS32ToFP,           InstType.CallUnary,      "float");
-            Add(Instruction.ConvertU32ToFP,           InstType.CallUnary,      "float");
+            Add(Instruction.ConvertFP32ToS32,         InstType.CallUnary,      "int");
+            Add(Instruction.ConvertFP32ToU32,         InstType.CallUnary,      "uint");
+            Add(Instruction.ConvertFP64ToS32,         InstType.CallUnary,      "int");
+            Add(Instruction.ConvertFP64ToU32,         InstType.CallUnary,      "uint");
+            Add(Instruction.ConvertS32ToFP32,         InstType.CallUnary,      "float");
+            Add(Instruction.ConvertS32ToFP64,         InstType.CallUnary,      "double");
+            Add(Instruction.ConvertU32ToFP32,         InstType.CallUnary,      "float");
+            Add(Instruction.ConvertU32ToFP64,         InstType.CallUnary,      "double");
             Add(Instruction.Cosine,                   InstType.CallUnary,      "cos");
             Add(Instruction.Ddx,                      InstType.CallUnary,      "dFdx");
             Add(Instruction.Ddy,                      InstType.CallUnary,      "dFdy");
@@ -65,6 +69,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             Add(Instruction.EmitVertex,               InstType.CallNullary,    "EmitVertex");
             Add(Instruction.EndPrimitive,             InstType.CallNullary,    "EndPrimitive");
             Add(Instruction.ExponentB2,               InstType.CallUnary,      "exp2");
+            Add(Instruction.FSIBegin,                 InstType.Special);
+            Add(Instruction.FSIEnd,                   InstType.Special);
             Add(Instruction.FindFirstSetS32,          InstType.CallUnary,      "findMSB");
             Add(Instruction.FindFirstSetU32,          InstType.CallUnary,      "findMSB");
             Add(Instruction.Floor,                    InstType.CallUnary,      "floor");
@@ -72,6 +78,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             Add(Instruction.GroupMemoryBarrier,       InstType.CallNullary,    "groupMemoryBarrier");
             Add(Instruction.ImageLoad,                InstType.Special);
             Add(Instruction.ImageStore,               InstType.Special);
+            Add(Instruction.ImageAtomic,              InstType.Special);
             Add(Instruction.IsNan,                    InstType.CallUnary,      "isnan");
             Add(Instruction.LoadAttribute,            InstType.Special);
             Add(Instruction.LoadConstant,             InstType.Special);
@@ -96,7 +103,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             Add(Instruction.Multiply,                 InstType.OpBinaryCom,    "*",               1);
             Add(Instruction.MultiplyHighS32,          InstType.CallBinary,     HelperFunctionNames.MultiplyHighS32);
             Add(Instruction.MultiplyHighU32,          InstType.CallBinary,     HelperFunctionNames.MultiplyHighU32);
-            Add(Instruction.Negate,                   InstType.OpUnary,        "-",               0);
+            Add(Instruction.Negate,                   InstType.Special);
             Add(Instruction.ReciprocalSquareRoot,     InstType.CallUnary,      "inversesqrt");
             Add(Instruction.Return,                   InstType.OpNullary,      "return");
             Add(Instruction.Round,                    InstType.CallUnary,      "roundEven");
@@ -109,9 +116,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             Add(Instruction.ShuffleXor,               InstType.CallQuaternary, HelperFunctionNames.ShuffleXor);
             Add(Instruction.Sine,                     InstType.CallUnary,      "sin");
             Add(Instruction.SquareRoot,               InstType.CallUnary,      "sqrt");
+            Add(Instruction.StoreAttribute,           InstType.Special);
             Add(Instruction.StoreLocal,               InstType.Special);
             Add(Instruction.StoreShared,              InstType.Special);
+            Add(Instruction.StoreShared16,            InstType.Special);
+            Add(Instruction.StoreShared8,             InstType.Special);
             Add(Instruction.StoreStorage,             InstType.Special);
+            Add(Instruction.StoreStorage16,           InstType.Special);
+            Add(Instruction.StoreStorage8,            InstType.Special);
             Add(Instruction.Subtract,                 InstType.OpBinary,       "-",               2);
             Add(Instruction.SwizzleAdd,               InstType.CallTernary,    HelperFunctionNames.SwizzleAdd);
             Add(Instruction.TextureSample,            InstType.Special);

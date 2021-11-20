@@ -13,6 +13,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         private readonly GpuChannel _channel;
         private readonly DeviceStateWithShadow<ThreedClassState> _state;
         private readonly DrawState _drawState;
+        private bool _topologySet;
 
         private bool _instancedDrawPending;
         private bool _instancedIndexed;
@@ -25,6 +26,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         private int _instancedDrawStateCount;
 
         private int _instanceIndex;
+
+        private const int IndexBufferCountMethodOffset = 0x5f8;
 
         /// <summary>
         /// Creates a new instance of the draw manager.
@@ -39,6 +42,14 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             _channel = channel;
             _state = state;
             _drawState = drawState;
+        }
+
+        /// <summary>
+        /// Marks the entire state as dirty, forcing a full host state update before the next draw.
+        /// </summary>
+        public void ForceStateDirty()
+        {
+            _topologySet = false;
         }
 
         /// <summary>
@@ -222,9 +233,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 _instanceIndex = 0;
             }
 
-            _context.Renderer.Pipeline.SetPrimitiveTopology(topology);
-
-            _drawState.Topology = topology;
+            if (_drawState.Topology != topology || !_topologySet)
+            {
+                _context.Renderer.Pipeline.SetPrimitiveTopology(topology);
+                _drawState.Topology = topology;
+                _topologySet = true;
+            }
         }
 
         /// <summary>
@@ -298,10 +312,128 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             bool oldDrawIndexed = _drawState.DrawIndexed;
 
             _drawState.DrawIndexed = true;
+            engine.ForceStateDirty(IndexBufferCountMethodOffset * 4);
 
             DrawEnd(engine, firstIndex, indexCount);
 
             _drawState.DrawIndexed = oldDrawIndexed;
+        }
+
+        /// <summary>
+        /// Performs a texture draw with a source texture and sampler ID, along with source
+        /// and destination coordinates and sizes.
+        /// </summary>
+        /// <param name="engine">3D engine where this method is being called</param>
+        /// <param name="argument">Method call argument</param>
+        public void DrawTexture(ThreedClass engine, int argument)
+        {
+            static float FixedToFloat(int fixedValue)
+            {
+                return fixedValue * (1f / 4096);
+            }
+
+            float dstX0 = FixedToFloat(_state.State.DrawTextureDstX);
+            float dstY0 = FixedToFloat(_state.State.DrawTextureDstY);
+            float dstWidth = FixedToFloat(_state.State.DrawTextureDstWidth);
+            float dstHeight = FixedToFloat(_state.State.DrawTextureDstHeight);
+
+            // TODO: Confirm behaviour on hardware.
+            // When this is active, the origin appears to be on the bottom.
+            if (_state.State.YControl.HasFlag(YControl.NegateY))
+            {
+                dstY0 -= dstHeight;
+            }
+
+            float dstX1 = dstX0 + dstWidth;
+            float dstY1 = dstY0 + dstHeight;
+
+            float srcX0 = FixedToFloat(_state.State.DrawTextureSrcX);
+            float srcY0 = FixedToFloat(_state.State.DrawTextureSrcY);
+            float srcX1 = ((float)_state.State.DrawTextureDuDx / (1UL << 32)) * dstWidth + srcX0;
+            float srcY1 = ((float)_state.State.DrawTextureDvDy / (1UL << 32)) * dstHeight + srcY0;
+
+            engine.UpdateState();
+
+            int textureId = _state.State.DrawTextureTextureId;
+            int samplerId = _state.State.DrawTextureSamplerId;
+
+            (var texture, var sampler) = _channel.TextureManager.GetGraphicsTextureAndSampler(textureId, samplerId);
+
+            srcX0 *= texture.ScaleFactor;
+            srcY0 *= texture.ScaleFactor;
+            srcX1 *= texture.ScaleFactor;
+            srcY1 *= texture.ScaleFactor;
+
+            float dstScale = _channel.TextureManager.RenderTargetScale;
+
+            dstX0 *= dstScale;
+            dstY0 *= dstScale;
+            dstX1 *= dstScale;
+            dstY1 *= dstScale;
+
+            _context.Renderer.Pipeline.DrawTexture(
+                texture?.HostTexture,
+                sampler?.GetHostSampler(texture),
+                new Extents2DF(srcX0, srcY0, srcX1, srcY1),
+                new Extents2DF(dstX0, dstY0, dstX1, dstY1));
+        }
+
+        /// <summary>
+        /// Performs a indirect multi-draw, with parameters from a GPU buffer.
+        /// </summary>
+        /// <param name="engine">3D engine where this method is being called</param>
+        /// <param name="topology">Primitive topology</param>
+        /// <param name="indirectBuffer">GPU buffer with the draw parameters, such as count, first index, etc</param>
+        /// <param name="parameterBuffer">GPU buffer with the draw count</param>
+        /// <param name="maxDrawCount">Maximum number of draws that can be made</param>
+        /// <param name="stride">Distance in bytes between each element on the <paramref name="indirectBuffer"/> array</param>
+        public void MultiDrawIndirectCount(
+            ThreedClass engine,
+            int indexCount,
+            PrimitiveTopology topology,
+            BufferRange indirectBuffer,
+            BufferRange parameterBuffer,
+            int maxDrawCount,
+            int stride)
+        {
+            engine.Write(IndexBufferCountMethodOffset * 4, indexCount);
+
+            _context.Renderer.Pipeline.SetPrimitiveTopology(topology);
+            _drawState.Topology = topology;
+            _topologySet = true;
+
+            ConditionalRenderEnabled renderEnable = ConditionalRendering.GetRenderEnable(
+                _context,
+                _channel.MemoryManager,
+                _state.State.RenderEnableAddress,
+                _state.State.RenderEnableCondition);
+
+            if (renderEnable == ConditionalRenderEnabled.False)
+            {
+                _drawState.DrawIndexed = false;
+                return;
+            }
+
+            _drawState.FirstIndex = _state.State.IndexBufferState.First;
+            _drawState.IndexCount = indexCount;
+
+            engine.UpdateState();
+
+            if (_drawState.DrawIndexed)
+            {
+                _context.Renderer.Pipeline.MultiDrawIndexedIndirectCount(indirectBuffer, parameterBuffer, maxDrawCount, stride);
+            }
+            else
+            {
+                _context.Renderer.Pipeline.MultiDrawIndirectCount(indirectBuffer, parameterBuffer, maxDrawCount, stride);
+            }
+
+            _drawState.DrawIndexed = false;
+
+            if (renderEnable == ConditionalRenderEnabled.Host)
+            {
+                _context.Renderer.Pipeline.EndHostConditionalRendering();
+            }
         }
 
         /// <summary>

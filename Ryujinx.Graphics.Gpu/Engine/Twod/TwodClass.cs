@@ -119,13 +119,15 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
                 srcCopyTexture,
                 offset,
                 srcCopyTextureFormat,
-                true,
+                false,
                 srcHint);
 
             if (srcTexture == null)
             {
                 return;
             }
+
+            memoryManager.Physical.TextureCache.Lift(srcTexture);
 
             // When the source texture that was found has a depth format,
             // we must enforce the target texture also has a depth format,

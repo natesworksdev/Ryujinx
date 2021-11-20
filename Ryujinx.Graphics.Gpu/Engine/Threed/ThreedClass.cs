@@ -1,4 +1,5 @@
 ﻿using Ryujinx.Graphics.Device;
+using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Engine.InlineToMemory;
 using System;
 using System.Collections.Generic;
@@ -35,6 +36,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 { nameof(ThreedClassState.SyncpointAction), new RwCallback(IncrementSyncpoint, null) },
                 { nameof(ThreedClassState.TextureBarrier), new RwCallback(TextureBarrier, null) },
                 { nameof(ThreedClassState.TextureBarrierTiled), new RwCallback(TextureBarrierTiled, null) },
+                { nameof(ThreedClassState.DrawTextureSrcY), new RwCallback(DrawTexture, null) },
                 { nameof(ThreedClassState.VbElementU8), new RwCallback(VbElementU8, null) },
                 { nameof(ThreedClassState.VbElementU16), new RwCallback(VbElementU16, null) },
                 { nameof(ThreedClassState.VbElementU32), new RwCallback(VbElementU32, null) },
@@ -138,7 +140,17 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// </summary>
         public void ForceStateDirty()
         {
+            _drawManager.ForceStateDirty();
             _stateUpdater.SetAllDirty();
+        }
+
+        /// <summary>
+        /// Marks the specified register offset as dirty, forcing the associated state to update on the next draw.
+        /// </summary>
+        /// <param name="offset">Register offset</param>
+        public void ForceStateDirty(int offset)
+        {
+            _stateUpdater.SetDirty(offset);
         }
 
         /// <summary>
@@ -209,6 +221,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         {
             uint syncpointId = (uint)argument & 0xFFFF;
 
+            _context.AdvanceSequence();
             _context.CreateHostSyncIfNeeded();
             _context.Renderer.UpdateCounters(); // Poll the query counters, the game may want an updated result.
             _context.Synchronization.IncrementSyncpoint(syncpointId);
@@ -237,6 +250,15 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         private void TextureBarrierTiled(int argument)
         {
             _context.Renderer.Pipeline.TextureBarrierTiled();
+        }
+
+        /// <summary>
+        /// Draws a texture, without needing to specify shader programs.
+        /// </summary>
+        /// <param name="argument">Method call argument</param>
+        private void DrawTexture(int argument)
+        {
+            _drawManager.DrawTexture(this, argument);
         }
 
         /// <summary>
@@ -432,6 +454,26 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         private static int Zero()
         {
             return 0;
+        }
+
+        /// <summary>
+        /// Performs a indirect multi-draw, with parameters from a GPU buffer.
+        /// </summary>
+        /// <param name="indexCount">Index Buffer Count</param>
+        /// <param name="topology">Primitive topology</param>
+        /// <param name="indirectBuffer">GPU buffer with the draw parameters, such as count, first index, etc</param>
+        /// <param name="parameterBuffer">GPU buffer with the draw count</param>
+        /// <param name="maxDrawCount">Maximum number of draws that can be made</param>
+        /// <param name="stride">Distance in bytes between each element on the <paramref name="indirectBuffer"/> array</param>
+        public void MultiDrawIndirectCount(
+            int indexCount,
+            PrimitiveTopology topology,
+            BufferRange indirectBuffer,
+            BufferRange parameterBuffer,
+            int maxDrawCount,
+            int stride)
+        {
+            _drawManager.MultiDrawIndirectCount(this, indexCount, topology, indirectBuffer, parameterBuffer, maxDrawCount, stride);
         }
     }
 }

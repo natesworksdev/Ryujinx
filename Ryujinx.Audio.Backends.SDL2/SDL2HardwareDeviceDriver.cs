@@ -15,11 +15,13 @@ namespace Ryujinx.Audio.Backends.SDL2
     public class SDL2HardwareDeviceDriver : IHardwareDeviceDriver
     {
         private readonly ManualResetEvent _updateRequiredEvent;
+        private readonly ManualResetEvent _pauseEvent;
         private readonly ConcurrentDictionary<SDL2HardwareDeviceSession, byte> _sessions;
 
         public SDL2HardwareDeviceDriver()
         {
             _updateRequiredEvent = new ManualResetEvent(false);
+            _pauseEvent = new ManualResetEvent(true);
             _sessions = new ConcurrentDictionary<SDL2HardwareDeviceSession, byte>();
 
             SDL2Driver.Instance.Initialize();
@@ -42,6 +44,11 @@ namespace Ryujinx.Audio.Backends.SDL2
         public ManualResetEvent GetUpdateRequiredEvent()
         {
             return _updateRequiredEvent;
+        }
+
+        public ManualResetEvent GetPauseEvent()
+        {
+            return _pauseEvent;
         }
 
         public IHardwareDeviceSession OpenDeviceSession(Direction direction, IVirtualMemoryManager memoryManager, SampleFormat sampleFormat, uint sampleRate, uint channelCount)
@@ -96,23 +103,13 @@ namespace Ryujinx.Audio.Backends.SDL2
             };
         }
 
-        // TODO: Fix this in SDL2-CS.
-        [DllImport("SDL2", EntryPoint = "SDL_OpenAudioDevice", CallingConvention = CallingConvention.Cdecl)]
-        private static extern uint SDL_OpenAudioDevice_Workaround(
-            IntPtr name,
-            int iscapture,
-            ref SDL_AudioSpec desired,
-            out SDL_AudioSpec obtained,
-            uint allowed_changes
-        );
-
         internal static uint OpenStream(SampleFormat requestedSampleFormat, uint requestedSampleRate, uint requestedChannelCount, uint sampleCount, SDL_AudioCallback callback)
         {
             SDL_AudioSpec desired = GetSDL2Spec(requestedSampleFormat, requestedSampleRate, requestedChannelCount, sampleCount);
 
             desired.callback = callback;
 
-            uint device = SDL_OpenAudioDevice_Workaround(IntPtr.Zero, 0, ref desired, out SDL_AudioSpec got, 0);
+            uint device = SDL_OpenAudioDevice(IntPtr.Zero, 0, ref desired, out SDL_AudioSpec got, 0);
 
             if (device == 0)
             {
@@ -146,6 +143,8 @@ namespace Ryujinx.Audio.Backends.SDL2
                 }
 
                 SDL2Driver.Instance.Dispose();
+
+                _pauseEvent.Dispose();
             }
         }
 

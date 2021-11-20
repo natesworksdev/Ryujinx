@@ -1456,7 +1456,8 @@
       "title": "Hotkey Controls",
       "required": [
         "toggle_vsync",
-        "screenshot"        
+        "screenshot",
+        "pause"
       ],
       "properties": {
         "toggle_vsync": {
@@ -1470,6 +1471,12 @@
           "$ref": "#/definitions/key",
           "title": "Screenshot",
           "default": "F8"
+        },
+        "pause": {
+          "$id": "#/properties/hotkeys/properties/pause",
+          "$ref": "#/definitions/key",
+          "title": "Toggle Pause",
+          "default": "F5"
         }
       }
     },

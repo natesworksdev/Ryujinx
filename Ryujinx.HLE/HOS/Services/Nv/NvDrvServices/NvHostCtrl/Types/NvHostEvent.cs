@@ -1,6 +1,8 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gpu;
 using Ryujinx.Graphics.Gpu.Synchronization;
+using Ryujinx.HLE.HOS.Kernel;
+using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Nv.Types;
 using System;
@@ -8,11 +10,12 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 {
-    class NvHostEvent : IDisposable
+    class NvHostEvent
     {
         public NvFence          Fence;
         public NvHostEventState State;
         public KEvent           Event;
+        public int              EventHandle;
 
         private uint                  _eventId;
         private NvHostSyncpt          _syncpointManager;
@@ -21,7 +24,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
         private NvFence _previousFailingFence;
         private uint    _failingCount;
 
-        public object Lock = new object();
+        public readonly object Lock = new object();
 
         /// <summary>
         /// Max failing count until waiting on CPU.
@@ -36,6 +39,11 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
             State = NvHostEventState.Available;
 
             Event = new KEvent(system.KernelContext);
+
+            if (KernelStatic.GetCurrentProcess().HandleTable.GenerateHandle(Event.ReadableEvent, out EventHandle) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
 
             _eventId = eventId;
 
@@ -68,10 +76,17 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
             }
         }
 
-        private void GpuSignaled()
+        private void GpuSignaled(SyncpointWaiterHandle waiterInformation)
         {
             lock (Lock)
             {
+                // If the signal does not match our current waiter,
+                // then it is from a past fence and we should just ignore it.
+                if (waiterInformation != null && waiterInformation != _waiterInformation)
+                {
+                    return;
+                }
+
                 ResetFailingState();
 
                 Signal();
@@ -82,9 +97,14 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
         {
             lock (Lock)
             {
-                if (_waiterInformation != null)
+                NvHostEventState oldState = State;
+
+                State = NvHostEventState.Cancelling;
+
+                if (oldState == NvHostEventState.Waiting && _waiterInformation != null)
                 {
                     gpuContext.Synchronization.UnregisterCallback(Fence.Id, _waiterInformation);
+                    _waiterInformation = null;
 
                     if (_previousFailingFence.Id == Fence.Id && _previousFailingFence.Value == Fence.Value)
                     {
@@ -96,9 +116,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 
                         _previousFailingFence = Fence;
                     }
-
-                    Signal();
                 }
+
+                State = NvHostEventState.Cancelled;
 
                 Event.WritableEvent.Clear();
             }
@@ -108,9 +128,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
         {
             lock (Lock)
             {
-                Fence = fence;
-                State = NvHostEventState.Waiting;
-
                 // NOTE: nvservices code should always wait on the GPU side.
                 //       If we do this, we may get an abort or undefined behaviour when the GPU processing thread is blocked for a long period (for example, during shader compilation).
                 //       The reason for this is that the NVN code will try to wait until giving up.
@@ -121,14 +138,17 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
                 {
                     Logger.Warning?.Print(LogClass.ServiceNv, "GPU processing thread is too slow, waiting on CPU...");
 
-                    bool timedOut = Fence.Wait(gpuContext, Timeout.InfiniteTimeSpan);
+                    Fence.Wait(gpuContext, Timeout.InfiniteTimeSpan);
 
-                    GpuSignaled();
+                    ResetFailingState();
 
-                    return timedOut;
+                    return false;
                 }
                 else
                 {
+                    Fence = fence;
+                    State = NvHostEventState.Waiting;
+
                     _waiterInformation = gpuContext.Synchronization.RegisterCallbackOnSyncpoint(Fence.Id, Fence.Value, GpuSignaled);
 
                     return true;
@@ -153,10 +173,13 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
             return res;
         }
 
-        public void Dispose()
+        public void CloseEvent(ServiceCtx context)
         {
-            Event.ReadableEvent.DecrementReferenceCount();
-            Event.WritableEvent.DecrementReferenceCount();
+            if (EventHandle != 0)
+            {
+                context.Process.HandleTable.CloseHandle(EventHandle);
+                EventHandle = 0;
+            }
         }
     }
 }

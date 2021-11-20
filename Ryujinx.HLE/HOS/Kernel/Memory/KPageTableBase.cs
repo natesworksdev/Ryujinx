@@ -75,6 +75,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
         public abstract bool SupportsMemoryAliasing { get; }
 
+        private MemoryFillValue _heapFillValue;
+        private MemoryFillValue _ipcFillValue;
+
         public KPageTableBase(KernelContext context)
         {
             Context = context;
@@ -82,6 +85,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             _blockManager = new KMemoryBlockManager();
 
             _isKernel = false;
+
+            _heapFillValue = MemoryFillValue.Zero;
+            _ipcFillValue = MemoryFillValue.Zero;
         }
 
         private static readonly int[] AddrSpaceSizes = new int[] { 32, 36, 32, 39 };
@@ -298,6 +304,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             StackRegionEnd = stackRegion.End;
             TlsIoRegionStart = tlsIoRegion.Start;
             TlsIoRegionEnd = tlsIoRegion.End;
+
+            // TODO: Check kernel configuration via secure monitor call when implemented to set memory fill values. 
 
             _currentHeapAddr = HeapRegionStart;
             _heapCapacity = 0;
@@ -738,7 +746,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                         return KernelResult.InvalidMemState;
                     }
 
-                    result = MapPages(_currentHeapAddr, pageList, KMemoryPermission.ReadAndWrite);
+                    result = MapPages(_currentHeapAddr, pageList, KMemoryPermission.ReadAndWrite, true, (byte)_heapFillValue);
 
                     if (result != KernelResult.Success)
                     {
@@ -797,6 +805,52 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             address = HeapRegionStart;
 
             return KernelResult.Success;
+        }
+
+        public KernelResult SetMemoryPermission(ulong address, ulong size, KMemoryPermission permission)
+        {
+            lock (_blockManager)
+            {
+                if (CheckRange(
+                    address,
+                    size,
+                    MemoryState.PermissionChangeAllowed,
+                    MemoryState.PermissionChangeAllowed,
+                    KMemoryPermission.None,
+                    KMemoryPermission.None,
+                    MemoryAttribute.Mask,
+                    MemoryAttribute.None,
+                    MemoryAttribute.IpcAndDeviceMapped,
+                    out MemoryState oldState,
+                    out KMemoryPermission oldPermission,
+                    out _))
+                {
+                    if (permission != oldPermission)
+                    {
+                        if (!_slabManager.CanAllocate(MaxBlocksNeededForInsertion))
+                        {
+                            return KernelResult.OutOfResource;
+                        }
+
+                        ulong pagesCount = size / PageSize;
+
+                        KernelResult result = Reprotect(address, pagesCount, permission);
+
+                        if (result != KernelResult.Success)
+                        {
+                            return result;
+                        }
+
+                        _blockManager.InsertBlock(address, pagesCount, oldState, permission);
+                    }
+
+                    return KernelResult.Success;
+                }
+                else
+                {
+                    return KernelResult.InvalidMemState;
+                }
+            }
         }
 
         public ulong GetTotalHeapSize()
@@ -1737,7 +1791,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 {
                     ulong unusedSizeBefore = address - addressTruncated;
 
-                    Context.Memory.ZeroFill(GetDramAddressFromPa(dstFirstPagePa), unusedSizeBefore);
+                    Context.Memory.Fill(GetDramAddressFromPa(dstFirstPagePa), unusedSizeBefore, (byte)_ipcFillValue);
 
                     ulong copySize = addressRounded <= endAddr ? addressRounded - address : size;
                     var data = srcPageTable.GetSpan(addressTruncated + unusedSizeBefore, (int)copySize);
@@ -1755,7 +1809,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                 if (unusedSizeAfter != 0)
                 {
-                    Context.Memory.ZeroFill(GetDramAddressFromPa(firstPageFillAddress), unusedSizeAfter);
+                    Context.Memory.Fill(GetDramAddressFromPa(firstPageFillAddress), unusedSizeAfter, (byte)_ipcFillValue);
                 }
 
                 KernelResult result = MapPages(currentVa, 1, dstFirstPagePa, permission);
@@ -1807,7 +1861,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     unusedSizeAfter = PageSize;
                 }
 
-                Context.Memory.ZeroFill(GetDramAddressFromPa(lastPageFillAddr), unusedSizeAfter);
+                Context.Memory.Fill(GetDramAddressFromPa(lastPageFillAddr), unusedSizeAfter, (byte)_ipcFillValue);
 
                 KernelResult result = MapPages(currentVa, 1, dstLastPagePa, permission);
 
@@ -2780,8 +2834,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         /// <param name="pagesCount">Number of pages to map</param>
         /// <param name="srcPa">Physical address where the pages should be mapped. May be ignored if aliasing is not supported</param>
         /// <param name="permission">Permission of the region to be mapped</param>
+        /// <param name="shouldFillPages">Indicate if the pages should be filled with the <paramref name="fillValue"/> value</param>
+        /// <param name="fillValue">The value used to fill pages when <paramref name="shouldFillPages"/> is set to true</param>
         /// <returns>Result of the mapping operation</returns>
-        protected abstract KernelResult MapPages(ulong dstVa, ulong pagesCount, ulong srcPa, KMemoryPermission permission);
+        protected abstract KernelResult MapPages(ulong dstVa, ulong pagesCount, ulong srcPa, KMemoryPermission permission, bool shouldFillPages = false, byte fillValue = 0);
 
         /// <summary>
         /// Maps a region of memory into the specified physical memory region.
@@ -2789,8 +2845,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         /// <param name="address">Destination virtual address that should be mapped</param>
         /// <param name="pageList">List of physical memory pages where the pages should be mapped. May be ignored if aliasing is not supported</param>
         /// <param name="permission">Permission of the region to be mapped</param>
+        /// <param name="shouldFillPages">Indicate if the pages should be filled with the <paramref name="fillValue"/> value</param>
+        /// <param name="fillValue">The value used to fill pages when <paramref name="shouldFillPages"/> is set to true</param>
         /// <returns>Result of the mapping operation</returns>
-        protected abstract KernelResult MapPages(ulong address, KPageList pageList, KMemoryPermission permission);
+        protected abstract KernelResult MapPages(ulong address, KPageList pageList, KMemoryPermission permission, bool shouldFillPages = false, byte fillValue = 0);
 
         /// <summary>
         /// Maps a region of memory into the specified host memory ranges.

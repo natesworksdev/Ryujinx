@@ -1,5 +1,5 @@
+using ARMeilleure.CodeGen.Linking;
 using ARMeilleure.Common;
-using ARMeilleure.Translation.PTC;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -146,6 +146,7 @@ namespace ARMeilleure.IntermediateRepresentation
             return BitConverter.Int64BitsToDouble((long)Value);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal ref ulong GetValueUnsafe()
         {
             return ref _data->Value;

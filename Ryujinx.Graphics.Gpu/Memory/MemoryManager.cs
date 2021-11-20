@@ -63,10 +63,33 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         /// <typeparam name="T">Type of the data</typeparam>
         /// <param name="va">GPU virtual address where the data is located</param>
+        /// <param name="tracked">True if read tracking is triggered on the memory region</param>
         /// <returns>The data at the specified memory location</returns>
-        public T Read<T>(ulong va) where T : unmanaged
+        public T Read<T>(ulong va, bool tracked = false) where T : unmanaged
         {
-            return MemoryMarshal.Cast<byte, T>(GetSpan(va, Unsafe.SizeOf<T>()))[0];
+            int size = Unsafe.SizeOf<T>();
+
+            if (IsContiguous(va, size))
+            {
+                ulong address = Translate(va);
+
+                if (tracked)
+                {
+                    return Physical.ReadTracked<T>(address);
+                }
+                else
+                {
+                    return Physical.Read<T>(address);
+                }
+            }
+            else
+            {
+                Span<byte> data = new byte[size];
+
+                ReadImpl(va, data, tracked);
+
+                return MemoryMarshal.Cast<byte, T>(data)[0];
+            }
         }
 
         /// <summary>
@@ -169,6 +192,16 @@ namespace Ryujinx.Graphics.Gpu.Memory
         public void Write(ulong va, ReadOnlySpan<byte> data)
         {
             WriteImpl(va, data, Physical.Write);
+        }
+
+        /// <summary>
+        /// Writes data to GPU mapped memory, destined for a tracked resource.
+        /// </summary>
+        /// <param name="va">GPU virtual address to write the data into</param>
+        /// <param name="data">The data to be written</param>
+        public void WriteTrackedResource(ulong va, ReadOnlySpan<byte> data)
+        {
+            WriteImpl(va, data, Physical.WriteTrackedResource);
         }
 
         /// <summary>

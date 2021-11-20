@@ -139,11 +139,33 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// Reads data from the application process.
         /// </summary>
         /// <typeparam name="T">Type of the structure</typeparam>
-        /// <param name="gpuVa">Address to read from</param>
+        /// <param name="address">Address to read from</param>
         /// <returns>The data at the specified memory location</returns>
         public T Read<T>(ulong address) where T : unmanaged
         {
-            return MemoryMarshal.Cast<byte, T>(GetSpan(address, Unsafe.SizeOf<T>()))[0];
+            return _cpuMemory.Read<T>(address);
+        }
+
+        /// <summary>
+        /// Reads data from the application process, with write tracking.
+        /// </summary>
+        /// <typeparam name="T">Type of the structure</typeparam>
+        /// <param name="address">Address to read from</param>
+        /// <returns>The data at the specified memory location</returns>
+        public T ReadTracked<T>(ulong address) where T : unmanaged
+        {
+            return _cpuMemory.ReadTracked<T>(address);
+        }
+
+        /// <summary>
+        /// Writes data to the application process, triggering a precise memory tracking event.
+        /// </summary>
+        /// <param name="address">Address to write into</param>
+        /// <param name="data">Data to be written</param>
+        public void WriteTrackedResource(ulong address, ReadOnlySpan<byte> data)
+        {
+            _cpuMemory.SignalMemoryTracking(address, (ulong)data.Length, true, precise: true);
+            _cpuMemory.WriteUntracked(address, data);
         }
 
         /// <summary>

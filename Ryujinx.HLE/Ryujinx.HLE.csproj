@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,7 +19,7 @@
 
   <ItemGroup>
     <PackageReference Include="Concentus" Version="1.1.7" />
-    <PackageReference Include="LibHac" Version="0.13.2" />
+    <PackageReference Include="LibHac" Version="0.13.3" />
     <PackageReference Include="MsgPack.Cli" Version="1.0.1" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta11" />
   </ItemGroup>
@@ -32,11 +31,17 @@
 
   <ItemGroup>
     <None Remove="Homebrew.npdm" />
+    <None Remove="HOS\Applets\SoftwareKeyboard\Resources\Icon_BtnA.png" />
+    <None Remove="HOS\Applets\SoftwareKeyboard\Resources\Icon_BtnB.png" />
+    <None Remove="HOS\Applets\SoftwareKeyboard\Resources\Icon_KeyF6.png" />
     <None Remove="HOS\Services\Account\Acc\DefaultUserImage.jpg" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Homebrew.npdm" />
+    <EmbeddedResource Include="HOS\Applets\SoftwareKeyboard\Resources\Icon_BtnA.png" />
+    <EmbeddedResource Include="HOS\Applets\SoftwareKeyboard\Resources\Icon_BtnB.png" />
+    <EmbeddedResource Include="HOS\Applets\SoftwareKeyboard\Resources\Icon_KeyF6.png" />
     <EmbeddedResource Include="HOS\Services\Account\Acc\DefaultUserImage.jpg" />
   </ItemGroup>
 

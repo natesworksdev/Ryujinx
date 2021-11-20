@@ -68,7 +68,7 @@ namespace Ryujinx.Memory
 
                 using var writableRegion = GetWritableRegion(va + subOffset, copySize);
 
-                writableRegion.Memory.Span.Fill(0);
+                writableRegion.Memory.Span.Fill(value);
             }
         }
 
@@ -135,7 +135,8 @@ namespace Ryujinx.Memory
         /// <param name="va">Virtual address of the region</param>
         /// <param name="size">Size of the region</param>
         /// <param name="write">True if the region was written, false if read</param>
-        void SignalMemoryTracking(ulong va, ulong size, bool write);
+        /// <param name="precise">True if the access is precise, false otherwise</param>
+        void SignalMemoryTracking(ulong va, ulong size, bool write, bool precise = false);
 
         /// <summary>
         /// Reprotect a region of virtual memory for tracking.

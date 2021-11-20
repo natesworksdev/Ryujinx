@@ -11,11 +11,8 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// </summary>
     class TextureBindingsManager : IDisposable
     {
-        private const int HandleHigh = 16;
-        private const int HandleMask = (1 << HandleHigh) - 1;
-
-        private const int SlotHigh = 16;
-        private const int SlotMask = (1 << SlotHigh) - 1;
+        private const int InitialTextureStateSize = 32;
+        private const int InitialImageStateSize = 8;
 
         private readonly GpuContext _context;
 
@@ -43,6 +40,9 @@ namespace Ryujinx.Graphics.Gpu.Image
         private readonly TextureStatePerStage[][] _textureState;
         private readonly TextureStatePerStage[][] _imageState;
 
+        private int[] _textureBindingsCount;
+        private int[] _imageBindingsCount;
+
         private int _textureBufferIndex;
 
         private bool _rebind;
@@ -56,12 +56,14 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="context">The GPU context that the texture bindings manager belongs to</param>
         /// <param name="channel">The GPU channel that the texture bindings manager belongs to</param>
         /// <param name="poolCache">Texture pools cache used to get texture pools from</param>
+        /// <param name="scales">Array where the scales for the currently bound textures are stored</param>
         /// <param name="isCompute">True if the bindings manager is used for the compute engine</param>
-        public TextureBindingsManager(GpuContext context, GpuChannel channel, TexturePoolCache poolCache, bool isCompute)
+        public TextureBindingsManager(GpuContext context, GpuChannel channel, TexturePoolCache poolCache, float[] scales, bool isCompute)
         {
             _context          = context;
             _channel          = channel;
             _texturePoolCache = poolCache;
+            _scales           = scales;
             _isCompute        = isCompute;
 
             int stages = isCompute ? 1 : Constants.ShaderStages;
@@ -72,34 +74,71 @@ namespace Ryujinx.Graphics.Gpu.Image
             _textureState = new TextureStatePerStage[stages][];
             _imageState   = new TextureStatePerStage[stages][];
 
-            _scales = new float[64];
+            _textureBindingsCount = new int[stages];
+            _imageBindingsCount = new int[stages];
 
-            for (int i = 0; i < 64; i++)
+            for (int stage = 0; stage < stages; stage++)
             {
-                _scales[i] = 1f;
+                _textureBindings[stage] = new TextureBindingInfo[InitialTextureStateSize];
+                _imageBindings[stage] = new TextureBindingInfo[InitialImageStateSize];
+
+                _textureState[stage] = new TextureStatePerStage[InitialTextureStateSize];
+                _imageState[stage] = new TextureStatePerStage[InitialImageStateSize];
             }
         }
 
         /// <summary>
-        /// Binds textures for a given shader stage.
+        /// Rents the texture bindings array for a given stage, so that they can be modified.
         /// </summary>
         /// <param name="stage">Shader stage number, or 0 for compute shaders</param>
-        /// <param name="bindings">Texture bindings</param>
-        public void SetTextures(int stage, TextureBindingInfo[] bindings)
+        /// <param name="count">The number of bindings needed</param>
+        /// <returns>The texture bindings array</returns>
+        public TextureBindingInfo[] RentTextureBindings(int stage, int count)
         {
-            _textureBindings[stage] = bindings;
-            _textureState[stage] = new TextureStatePerStage[bindings.Length];
+            if (count > _textureBindings[stage].Length)
+            {
+                Array.Resize(ref _textureBindings[stage], count);
+                Array.Resize(ref _textureState[stage], count);
+            }
+
+            int toClear = Math.Max(_textureBindingsCount[stage], count);
+            TextureStatePerStage[] state = _textureState[stage];
+
+            for (int i = 0; i < toClear; i++)
+            {
+                state[i] = new TextureStatePerStage();
+            }
+
+            _textureBindingsCount[stage] = count;
+
+            return _textureBindings[stage];
         }
 
         /// <summary>
-        /// Binds images for a given shader stage.
+        /// Rents the image bindings array for a given stage, so that they can be modified.
         /// </summary>
         /// <param name="stage">Shader stage number, or 0 for compute shaders</param>
-        /// <param name="bindings">Image bindings</param>
-        public void SetImages(int stage, TextureBindingInfo[] bindings)
+        /// <param name="count">The number of bindings needed</param>
+        /// <returns>The image bindings array</returns>
+        public TextureBindingInfo[] RentImageBindings(int stage, int count)
         {
-            _imageBindings[stage] = bindings;
-            _imageState[stage] = new TextureStatePerStage[bindings.Length];
+            if (count > _imageBindings[stage].Length)
+            {
+                Array.Resize(ref _imageBindings[stage], count);
+                Array.Resize(ref _imageState[stage], count);
+            }
+
+            int toClear = Math.Max(_imageBindingsCount[stage], count);
+            TextureStatePerStage[] state = _imageState[stage];
+
+            for (int i = 0; i < toClear; i++)
+            {
+                state[i] = new TextureStatePerStage();
+            }
+
+            _imageBindingsCount[stage] = count;
+
+            return _imageBindings[stage];
         }
 
         /// <summary>
@@ -163,6 +202,22 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Gets a texture and a sampler from their respective pools from a texture ID and a sampler ID.
+        /// </summary>
+        /// <param name="textureId">ID of the texture</param>
+        /// <param name="samplerId">ID of the sampler</param>
+        public (Texture, Sampler) GetTextureAndSampler(int textureId, int samplerId)
+        {
+            ulong texturePoolAddress = _texturePoolAddress;
+
+            TexturePool texturePool = texturePoolAddress != 0
+                ? _texturePoolCache.FindOrCreate(_channel, texturePoolAddress, _texturePoolMaximumId)
+                : null;
+
+            return (texturePool.Get(textureId), _samplerPool.Get(samplerId));
+        }
+
+        /// <summary>
         /// Updates the texture scale for a given texture or image.
         /// </summary>
         /// <param name="texture">Start GPU virtual address of the pool</param>
@@ -177,8 +232,6 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if ((binding.Flags & TextureUsageFlags.NeedsScaleValue) != 0 && texture != null)
             {
-                _scaleChanged |= true;
-
                 switch (stage)
                 {
                     case ShaderStage.Fragment:
@@ -218,7 +271,13 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
             }
 
-            _scales[index] = result;
+            if (result != _scales[index])
+            {
+                _scaleChanged = true;
+
+                _scales[index] = result;
+            }
+
             return changed;
         }
 
@@ -231,7 +290,9 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             if (_scaleChanged)
             {
-                _context.Renderer.Pipeline.UpdateRenderScale(stage, _scales, _textureBindings[stageIndex]?.Length ?? 0, _imageBindings[stageIndex]?.Length ?? 0);
+                _context.Renderer.Pipeline.UpdateRenderScale(stage, _scales, _textureBindingsCount[stageIndex], _imageBindingsCount[stageIndex]);
+
+                _scaleChanged = false;
             }
         }
 
@@ -279,7 +340,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="stageIndex">The stage number of the specified shader stage</param>
         private void CommitTextureBindings(TexturePool pool, ShaderStage stage, int stageIndex)
         {
-            if (_textureBindings[stageIndex] == null || _textureBindings[stageIndex].Length == 0)
+            int textureCount = _textureBindingsCount[stageIndex];
+            if (textureCount == 0)
             {
                 return;
             }
@@ -292,29 +354,11 @@ namespace Ryujinx.Graphics.Gpu.Image
                 return;
             }
 
-            if (samplerPool == null)
-            {
-                Logger.Error?.Print(LogClass.Gpu, $"Shader stage \"{stage}\" uses textures, but sampler pool was not set.");
-                return;
-            }
-
-            for (int index = 0; index < _textureBindings[stageIndex].Length; index++)
+            for (int index = 0; index < textureCount; index++)
             {
                 TextureBindingInfo bindingInfo = _textureBindings[stageIndex][index];
 
-                int textureBufferIndex;
-                int samplerBufferIndex;
-
-                if (bindingInfo.CbufSlot < 0)
-                {
-                    textureBufferIndex = _textureBufferIndex;
-                    samplerBufferIndex = textureBufferIndex;
-                }
-                else
-                {
-                    textureBufferIndex = bindingInfo.CbufSlot & SlotMask;
-                    samplerBufferIndex = ((bindingInfo.CbufSlot >> SlotHigh) != 0) ? (bindingInfo.CbufSlot >> SlotHigh) - 1 : textureBufferIndex;
-                }
+                (int textureBufferIndex, int samplerBufferIndex) = TextureHandle.UnpackSlots(bindingInfo.CbufSlot, _textureBufferIndex);
 
                 int packedId = ReadPackedId(stageIndex, bindingInfo.Handle, textureBufferIndex, samplerBufferIndex);
                 int textureId = UnpackTextureId(packedId);
@@ -353,9 +397,9 @@ namespace Ryujinx.Graphics.Gpu.Image
                     _channel.BufferManager.SetBufferTextureStorage(hostTexture, texture.Range.GetSubRange(0).Address, texture.Size, bindingInfo, bindingInfo.Format, false);
                 }
 
-                Sampler sampler = samplerPool.Get(samplerId);
+                Sampler sampler = samplerPool?.Get(samplerId);
 
-                ISampler hostSampler = sampler?.HostSampler;
+                ISampler hostSampler = sampler?.GetHostSampler(texture);
 
                 if (_textureState[stageIndex][index].Sampler != hostSampler || _rebind)
                 {
@@ -375,37 +419,26 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="stageIndex">The stage number of the specified shader stage</param>
         private void CommitImageBindings(TexturePool pool, ShaderStage stage, int stageIndex)
         {
-            if (_imageBindings[stageIndex] == null)
+            int imageCount = _imageBindingsCount[stageIndex];
+            if (imageCount == 0)
             {
                 return;
             }
 
-            if (pool == null && _imageBindings[stageIndex].Length != 0)
+            if (pool == null)
             {
                 Logger.Error?.Print(LogClass.Gpu, $"Shader stage \"{stage}\" uses images, but texture pool was not set.");
                 return;
             }
 
             // Scales for images appear after the texture ones.
-            int baseScaleIndex = _textureBindings[stageIndex]?.Length ?? 0;
+            int baseScaleIndex = _textureBindingsCount[stageIndex];
 
-            for (int index = 0; index < _imageBindings[stageIndex].Length; index++)
+            for (int index = 0; index < imageCount; index++)
             {
                 TextureBindingInfo bindingInfo = _imageBindings[stageIndex][index];
 
-                int textureBufferIndex;
-                int samplerBufferIndex;
-
-                if (bindingInfo.CbufSlot < 0)
-                {
-                    textureBufferIndex = _textureBufferIndex;
-                    samplerBufferIndex = textureBufferIndex;
-                }
-                else
-                {
-                    textureBufferIndex = bindingInfo.CbufSlot & SlotMask;
-                    samplerBufferIndex = ((bindingInfo.CbufSlot >> SlotHigh) != 0) ? (bindingInfo.CbufSlot >> SlotHigh) - 1 : textureBufferIndex;
-                }
+                (int textureBufferIndex, int samplerBufferIndex) = TextureHandle.UnpackSlots(bindingInfo.CbufSlot, _textureBufferIndex);
 
                 int packedId = ReadPackedId(stageIndex, bindingInfo.Handle, textureBufferIndex, samplerBufferIndex);
                 int textureId = UnpackTextureId(packedId);
@@ -475,8 +508,9 @@ namespace Ryujinx.Graphics.Gpu.Image
             int handle,
             int cbufSlot)
         {
-            int textureBufferIndex = cbufSlot < 0 ? bufferIndex : cbufSlot & SlotMask;
-            int packedId = ReadPackedId(stageIndex, handle, textureBufferIndex, textureBufferIndex);
+            (int textureBufferIndex, int samplerBufferIndex) = TextureHandle.UnpackSlots(cbufSlot, bufferIndex);
+
+            int packedId = ReadPackedId(stageIndex, handle, textureBufferIndex, samplerBufferIndex);
             int textureId = UnpackTextureId(packedId);
 
             ulong poolAddress = _channel.MemoryManager.Translate(poolGpuVa);
@@ -497,11 +531,13 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>The packed texture and sampler ID (the real texture handle)</returns>
         private int ReadPackedId(int stageIndex, int wordOffset, int textureBufferIndex, int samplerBufferIndex)
         {
+            (int textureWordOffset, int samplerWordOffset, TextureHandleType handleType) = TextureHandle.UnpackOffsets(wordOffset);
+
             ulong textureBufferAddress = _isCompute
                 ? _channel.BufferManager.GetComputeUniformBufferAddress(textureBufferIndex)
                 : _channel.BufferManager.GetGraphicsUniformBufferAddress(stageIndex, textureBufferIndex);
 
-            int handle = _channel.MemoryManager.Physical.Read<int>(textureBufferAddress + (ulong)(wordOffset & HandleMask) * 4);
+            int handle = _channel.MemoryManager.Physical.Read<int>(textureBufferAddress + (uint)textureWordOffset * 4);
 
             // The "wordOffset" (which is really the immediate value used on texture instructions on the shader)
             // is a 13-bit value. However, in order to also support separate samplers and textures (which uses
@@ -509,13 +545,20 @@ namespace Ryujinx.Graphics.Gpu.Image
             // another offset for the sampler.
             // The shader translator has code to detect separate texture and sampler uses with a bindless texture,
             // turn that into a regular texture access and produce those special handles with values on the higher 16 bits.
-            if (wordOffset >> HandleHigh != 0)
+            if (handleType != TextureHandleType.CombinedSampler)
             {
                 ulong samplerBufferAddress = _isCompute
                     ? _channel.BufferManager.GetComputeUniformBufferAddress(samplerBufferIndex)
                     : _channel.BufferManager.GetGraphicsUniformBufferAddress(stageIndex, samplerBufferIndex);
 
-                handle |= _channel.MemoryManager.Physical.Read<int>(samplerBufferAddress + (ulong)((wordOffset >> HandleHigh) - 1) * 4);
+                int samplerHandle = _channel.MemoryManager.Physical.Read<int>(samplerBufferAddress + (uint)samplerWordOffset * 4);
+
+                if (handleType == TextureHandleType.SeparateSamplerId)
+                {
+                    samplerHandle <<= 20;
+                }
+
+                handle |= samplerHandle;
             }
 
             return handle;

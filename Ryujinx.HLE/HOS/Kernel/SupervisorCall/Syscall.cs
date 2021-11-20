@@ -820,6 +820,38 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return process.MemoryManager.SetHeapSize(size, out position);
         }
 
+        public KernelResult SetMemoryPermission(ulong address, ulong size, KMemoryPermission permission)
+        {
+            if (!PageAligned(address))
+            {
+                return KernelResult.InvalidAddress;
+            }
+
+            if (!PageAligned(size) || size == 0)
+            {
+                return KernelResult.InvalidSize;
+            }
+
+            if (address + size <= address)
+            {
+                return KernelResult.InvalidMemState;
+            }
+
+            if (permission != KMemoryPermission.None && (permission | KMemoryPermission.Write) != KMemoryPermission.ReadAndWrite)
+            {
+                return KernelResult.InvalidPermission;
+            }
+
+            KProcess currentProcess = KernelStatic.GetCurrentProcess();
+
+            if (!currentProcess.MemoryManager.InsideAddrSpace(address, size))
+            {
+                return KernelResult.InvalidMemState;
+            }
+
+            return currentProcess.MemoryManager.SetMemoryPermission(address, size, permission);
+        }
+
         public KernelResult SetMemoryAttribute(
             ulong position,
             ulong size,
@@ -845,6 +877,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             }
 
             KProcess process = KernelStatic.GetCurrentProcess();
+
+            if (!process.MemoryManager.InsideAddrSpace(position, size))
+            {
+                return KernelResult.InvalidMemState;
+            }
 
             KernelResult result = process.MemoryManager.SetMemoryAttribute(
                 position,
@@ -2032,6 +2069,95 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             }
 
             return KernelResult.Success;
+        }
+
+        public KernelResult GetResourceLimitLimitValue(int handle, LimitableResource resource, out long limitValue)
+        {
+            limitValue = 0;
+
+            if (resource >= LimitableResource.Count)
+            {
+                return KernelResult.InvalidEnumValue;
+            }
+
+            KResourceLimit resourceLimit = KernelStatic.GetCurrentProcess().HandleTable.GetObject<KResourceLimit>(handle);
+
+            if (resourceLimit == null)
+            {
+                return KernelResult.InvalidHandle;
+            }
+
+            limitValue = resourceLimit.GetLimitValue(resource);
+
+            return KernelResult.Success;
+        }
+
+        public KernelResult GetResourceLimitCurrentValue(int handle, LimitableResource resource, out long limitValue)
+        {
+            limitValue = 0;
+
+            if (resource >= LimitableResource.Count)
+            {
+                return KernelResult.InvalidEnumValue;
+            }
+
+            KResourceLimit resourceLimit = KernelStatic.GetCurrentProcess().HandleTable.GetObject<KResourceLimit>(handle);
+
+            if (resourceLimit == null)
+            {
+                return KernelResult.InvalidHandle;
+            }
+
+            limitValue = resourceLimit.GetCurrentValue(resource);
+
+            return KernelResult.Success;
+        }
+
+        public KernelResult GetResourceLimitPeakValue(int handle, LimitableResource resource, out long peak)
+        {
+            peak = 0;
+
+            if (resource >= LimitableResource.Count)
+            {
+                return KernelResult.InvalidEnumValue;
+            }
+
+            KResourceLimit resourceLimit = KernelStatic.GetCurrentProcess().HandleTable.GetObject<KResourceLimit>(handle);
+
+            if (resourceLimit == null)
+            {
+                return KernelResult.InvalidHandle;
+            }
+
+            peak = resourceLimit.GetPeakValue(resource);
+
+            return KernelResult.Success;
+        }
+
+        public KernelResult CreateResourceLimit(out int handle)
+        {
+            KResourceLimit limit = new KResourceLimit(_context);
+
+            KProcess process = KernelStatic.GetCurrentProcess();
+
+            return process.HandleTable.GenerateHandle(limit, out handle);
+        }
+
+        public KernelResult SetResourceLimitLimitValue(int handle, LimitableResource resource, long limitValue)
+        {
+            if (resource >= LimitableResource.Count)
+            {
+                return KernelResult.InvalidEnumValue;
+            }
+
+            KResourceLimit resourceLimit = KernelStatic.GetCurrentProcess().HandleTable.GetObject<KResourceLimit>(handle);
+
+            if (resourceLimit == null)
+            {
+                return KernelResult.InvalidHandle;
+            }
+
+            return resourceLimit.SetLimitValue(resource, limitValue);
         }
 
         // Thread

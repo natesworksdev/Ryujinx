@@ -3,10 +3,10 @@ using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
-using Ryujinx.HLE;
+using Ryujinx.Graphics.GAL.Multithreading;
 using Ryujinx.HLE.HOS.Applets;
 using Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.ApplicationProxy.Types;
-using Ryujinx.HLE.HOS.Services.Hid;
+using Ryujinx.HLE.Ui;
 using Ryujinx.Input;
 using Ryujinx.Input.HLE;
 using Ryujinx.SDL2.Common;
@@ -34,6 +34,9 @@ namespace Ryujinx.Headless.SDL2
         public event EventHandler<StatusUpdatedEventArgs> StatusUpdatedEvent;
 
         protected IntPtr WindowHandle { get; set; }
+
+        public IHostUiTheme HostUiTheme { get; }
+
         protected SDL2MouseDriver MouseDriver;
         private InputManager _inputManager;
         private IKeyboard _keyboardInterface;
@@ -66,6 +69,7 @@ namespace Ryujinx.Headless.SDL2
             _exitEvent = new ManualResetEvent(false);
             _aspectRatio = aspectRatio;
             _enableMouse = enableMouse;
+            HostUiTheme = new HeadlessHostUiTheme();
 
             SDL2Driver.Instance.Initialize();
         }
@@ -73,7 +77,15 @@ namespace Ryujinx.Headless.SDL2
         public void Initialize(Switch device, List<InputConfig> inputConfigs, bool enableKeyboard, bool enableMouse)
         {
             Device = device;
-            Renderer = Device.Gpu.Renderer;
+
+            IRenderer renderer = Device.Gpu.Renderer;
+
+            if (renderer is ThreadedRenderer tr)
+            {
+                renderer = tr.BaseRenderer;
+            }
+
+            Renderer = renderer;
 
             NpadManager.Initialize(device, inputConfigs, enableKeyboard, enableMouse);
             TouchScreenManager.Initialize(device);
@@ -148,52 +160,55 @@ namespace Ryujinx.Headless.SDL2
 
             _gpuVendorName = GetGpuVendorName();
 
-            Device.Gpu.InitializeShaderCache();
-            Translator.IsReadyForTranslation.Set();
-
-            while (_isActive)
+            Device.Gpu.Renderer.RunLoop(() =>
             {
-                if (_isStopped)
+                Device.Gpu.InitializeShaderCache();
+                Translator.IsReadyForTranslation.Set();
+
+                while (_isActive)
                 {
-                    return;
-                }
-
-                _ticks += _chrono.ElapsedTicks;
-
-                _chrono.Restart();
-
-                if (Device.WaitFifo())
-                {
-                    Device.Statistics.RecordFifoStart();
-                    Device.ProcessFrame();
-                    Device.Statistics.RecordFifoEnd();
-                }
-
-                while (Device.ConsumeFrameAvailable())
-                {
-                    Device.PresentFrame(SwapBuffers);
-                }
-
-                if (_ticks >= _ticksPerFrame)
-                {
-                    string dockedMode = Device.System.State.DockedMode ? "Docked" : "Handheld";
-                    float scale = Graphics.Gpu.GraphicsConfig.ResScale;
-                    if (scale != 1)
+                    if (_isStopped)
                     {
-                        dockedMode += $" ({scale}x)";
+                        return;
                     }
 
-                    StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
-                        Device.EnableDeviceVsync,
-                        dockedMode,
-                        Device.Configuration.AspectRatio.ToText(),
-                        $"Game: {Device.Statistics.GetGameFrameRate():00.00} FPS",
-                        $"FIFO: {Device.Statistics.GetFifoPercent():0.00} %",
-                        $"GPU: {_gpuVendorName}"));
+                    _ticks += _chrono.ElapsedTicks;
 
-                    _ticks = Math.Min(_ticks - _ticksPerFrame, _ticksPerFrame);
+                    _chrono.Restart();
+
+                    if (Device.WaitFifo())
+                    {
+                        Device.Statistics.RecordFifoStart();
+                        Device.ProcessFrame();
+                        Device.Statistics.RecordFifoEnd();
+                    }
+
+                    while (Device.ConsumeFrameAvailable())
+                    {
+                        Device.PresentFrame(SwapBuffers);
+                    }
+
+                    if (_ticks >= _ticksPerFrame)
+                    {
+                        string dockedMode = Device.System.State.DockedMode ? "Docked" : "Handheld";
+                        float scale = Graphics.Gpu.GraphicsConfig.ResScale;
+                        if (scale != 1)
+                        {
+                            dockedMode += $" ({scale}x)";
+                        }
+
+                        StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
+                            Device.EnableDeviceVsync,
+                            dockedMode,
+                            Device.Configuration.AspectRatio.ToText(),
+                            $"Game: {Device.Statistics.GetGameFrameRate():00.00} FPS ({Device.Statistics.GetGameFrameTime():00.00} ms)",
+                            $"FIFO: {Device.Statistics.GetFifoPercent():0.00} %",
+                            $"GPU: {_gpuVendorName}"));
+
+                        _ticks = Math.Min(_ticks - _ticksPerFrame, _ticksPerFrame);
+                    }
                 }
-            }
+            });
 
             FinalizeRenderer();
         }
@@ -295,16 +310,20 @@ namespace Ryujinx.Headless.SDL2
             };
             renderLoopThread.Start();
 
-            Thread nvStutterWorkaround = new Thread(NVStutterWorkaround)
+            Thread nvStutterWorkaround = null;
+            if (Renderer is Graphics.OpenGL.Renderer)
             {
-                Name = "GUI.NVStutterWorkaround"
-            };
-            nvStutterWorkaround.Start();
+                nvStutterWorkaround = new Thread(NVStutterWorkaround)
+                {
+                    Name = "GUI.NVStutterWorkaround"
+                };
+                nvStutterWorkaround.Start();
+            }
 
             MainLoop();
 
             renderLoopThread.Join();
-            nvStutterWorkaround.Join();
+            nvStutterWorkaround?.Join();
 
             Exit();
         }
@@ -335,6 +354,11 @@ namespace Ryujinx.Headless.SDL2
                            + "Please reconfigure Input now and then press OK.";
 
             return DisplayMessageDialog("Controller Applet", message);
+        }
+
+        public IDynamicTextInputHandler CreateDynamicTextInputHandler()
+        {
+            return new HeadlessDynamicTextInputHandler();
         }
 
         public void ExecuteProgram(Switch device, ProgramSpecifyKind kind, ulong value)

@@ -1,4 +1,6 @@
-﻿namespace Ryujinx.Graphics.Shader
+﻿using System;
+
+namespace Ryujinx.Graphics.Shader
 {
     public interface IGpuAccessor
     {
@@ -12,12 +14,7 @@
             return 0;
         }
 
-        T MemoryRead<T>(ulong address) where T : unmanaged;
-
-        bool MemoryMapped(ulong address)
-        {
-            return true;
-        }
+        ReadOnlySpan<ulong> GetCode(ulong address, int minimumSize);
 
         int QueryComputeLocalSizeX()
         {
@@ -64,6 +61,16 @@
             return 16;
         }
 
+        bool QueryHostSupportsFragmentShaderInterlock()
+        {
+            return true;
+        }
+
+        bool QueryHostSupportsFragmentShaderOrderingIntel()
+        {
+            return false;
+        }
+
         bool QueryHostSupportsImageLoadFormatted()
         {
             return true;
@@ -74,14 +81,19 @@
             return true;
         }
 
+        bool QueryHostSupportsShaderBallot()
+        {
+            return true;
+        }
+
         bool QueryHostSupportsTextureShadowLod()
         {
             return true;
         }
 
-        bool QueryIsTextureBuffer(int handle, int cbufSlot = -1)
+        SamplerType QuerySamplerType(int handle, int cbufSlot = -1)
         {
-            return false;
+            return SamplerType.Texture2D;
         }
 
         bool QueryIsTextureRectangle(int handle, int cbufSlot = -1)
@@ -92,6 +104,21 @@
         InputTopology QueryPrimitiveTopology()
         {
             return InputTopology.Points;
+        }
+
+        bool QueryTessCw()
+        {
+            return false;
+        }
+
+        TessPatchType QueryTessPatchType()
+        {
+            return TessPatchType.Triangles;
+        }
+
+        TessSpacing QueryTessSpacing()
+        {
+            return TessSpacing.EqualSpacing;
         }
 
         TextureFormat QueryTextureFormat(int handle, int cbufSlot = -1)

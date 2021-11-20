@@ -9,7 +9,6 @@ using Ryujinx.Audio.Output;
 using Ryujinx.Audio.Renderer.Device;
 using Ryujinx.Audio.Renderer.Server;
 using Ryujinx.HLE.FileSystem.Content;
-using Ryujinx.HLE.HOS.Font;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Process;
@@ -25,6 +24,7 @@ using Ryujinx.HLE.HOS.Services.Nfc.Nfp.NfpManager;
 using Ryujinx.HLE.HOS.Services.Nv;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl;
 using Ryujinx.HLE.HOS.Services.Pcv.Bpc;
+using Ryujinx.HLE.HOS.Services.Sdb.Pl;
 using Ryujinx.HLE.HOS.Services.Settings;
 using Ryujinx.HLE.HOS.Services.Sm;
 using Ryujinx.HLE.HOS.Services.SurfaceFlinger;
@@ -87,11 +87,10 @@ namespace Ryujinx.HLE.HOS
 
         internal KTransferMemory AppletCaptureBufferTransfer { get; private set; }
 
-        internal SharedFontManager Font { get; private set; }
-
-        internal AccountManager AccountManager { get; private set; }
-        internal ContentManager ContentManager { get; private set; }
-        internal CaptureManager CaptureManager { get; private set; }
+        internal SharedFontManager SharedFontManager { get; private set; }
+        internal AccountManager    AccountManager    { get; private set; }
+        internal ContentManager    ContentManager    { get; private set; }
+        internal CaptureManager    CaptureManager    { get; private set; }
 
         internal KEvent VsyncEvent { get; private set; }
 
@@ -112,6 +111,8 @@ namespace Ryujinx.HLE.HOS
         internal NvHostSyncpt HostSyncpoint { get; private set; }
 
         internal LibHacHorizonManager LibHacHorizonManager { get; private set; }
+
+        public bool IsPaused { get; private set; }
 
         public Horizon(Switch device)
         {
@@ -173,15 +174,14 @@ namespace Ryujinx.HLE.HOS
 
             AppletState.SetFocus(true);
 
-            Font = new SharedFontManager(device, fontStorage);
-
             VsyncEvent = new KEvent(KernelContext);
 
             DisplayResolutionChangeEvent = new KEvent(KernelContext);
 
-            AccountManager = device.Configuration.AccountManager;
-            ContentManager = device.Configuration.ContentManager;
-            CaptureManager = new CaptureManager(device);
+            SharedFontManager = new SharedFontManager(device, fontStorage);
+            AccountManager    = device.Configuration.AccountManager;
+            ContentManager    = device.Configuration.ContentManager;
+            CaptureManager    = new CaptureManager(device);
 
             LibHacHorizonManager = device.Configuration.LibHacHorizonManager;
 
@@ -385,6 +385,16 @@ namespace Ryujinx.HLE.HOS
             {
                 _isDisposed = true;
 
+                // "Soft" stops AudioRenderer and AudioManager to avoid some sound between resume and stop.
+                if (IsPaused)
+                {
+                    AudioManager.StopUpdates();
+
+                    TogglePauseEmulation(false);
+
+                    AudioRendererManager.StopSendingCommands();
+                }
+
                 KProcess terminationProcess = new KProcess(KernelContext);
                 KThread terminationThread = new KThread(KernelContext);
 
@@ -443,6 +453,33 @@ namespace Ryujinx.HLE.HOS
                 
                 KernelContext.Dispose();
             }
+        }
+
+        public void TogglePauseEmulation(bool pause)
+        {
+            lock (KernelContext.Processes)
+            {
+                foreach (KProcess process in KernelContext.Processes.Values)
+                {
+                    if (process.Flags.HasFlag(ProcessCreationFlags.IsApplication))
+                    {
+                        // Only game process should be paused.
+                        process.SetActivity(pause);
+                    }
+                }
+
+                if (pause && !IsPaused)
+                {
+                    Device.AudioDeviceDriver.GetPauseEvent().Reset();
+                    ARMeilleure.State.ExecutionContext.SuspendCounter();
+                }
+                else if (!pause && IsPaused)
+                {
+                    Device.AudioDeviceDriver.GetPauseEvent().Set();
+                    ARMeilleure.State.ExecutionContext.ResumeCounter();
+                }
+            }
+            IsPaused = pause;
         }
     }
 }

@@ -6,7 +6,6 @@ using Ryujinx.Graphics.Gpu.Shader;
 using Ryujinx.Graphics.Shader;
 using Ryujinx.Graphics.Texture;
 using System;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -31,6 +30,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
         private readonly ShaderProgramInfo[] _currentProgramInfo;
 
+        private bool _vtgWritesRtLayer;
         private byte _vsClipDistancesWritten;
 
         private bool _prevDrawIndexed;
@@ -72,6 +72,11 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     nameof(ThreedClassState.VertexBufferState),
                     nameof(ThreedClassState.VertexBufferEndAddress)),
 
+                new StateUpdateCallbackEntry(UpdateTessellationState,
+                    nameof(ThreedClassState.TessOuterLevel),
+                    nameof(ThreedClassState.TessInnerLevel),
+                    nameof(ThreedClassState.PatchVertices)),
+
                 new StateUpdateCallbackEntry(UpdateTfBufferState, nameof(ThreedClassState.TfBufferState)),
                 new StateUpdateCallbackEntry(UpdateUserClipState, nameof(ThreedClassState.ClipDistanceEnable)),
 
@@ -99,6 +104,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     nameof(ThreedClassState.ViewportTransform),
                     nameof(ThreedClassState.ViewportExtents),
                     nameof(ThreedClassState.YControl)),
+
+                new StateUpdateCallbackEntry(UpdatePolygonMode,
+                    nameof(ThreedClassState.PolygonModeFront),
+                    nameof(ThreedClassState.PolygonModeBack)),
 
                 new StateUpdateCallbackEntry(UpdateDepthBiasState,
                     nameof(ThreedClassState.DepthBiasState),
@@ -260,6 +269,17 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         }
 
         /// <summary>
+        /// Updates tessellation state based on the guest GPU state.
+        /// </summary>
+        private void UpdateTessellationState()
+        {
+            _context.Renderer.Pipeline.SetPatchParameters(
+                _state.State.PatchVertices,
+                _state.State.TessOuterLevel.ToSpan(),
+                _state.State.TessInnerLevel.ToSpan());
+        }
+
+        /// <summary>
         /// Updates transform feedback buffer state based on the guest GPU state.
         /// </summary>
         private void UpdateTfBufferState()
@@ -334,6 +354,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 Image.Texture color = memoryManager.Physical.TextureCache.FindOrCreateTexture(
                     memoryManager,
                     colorState,
+                    _vtgWritesRtLayer,
                     samplesInX,
                     samplesInY,
                     sizeHint);
@@ -541,6 +562,14 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             }
 
             _context.Renderer.Pipeline.SetViewports(0, viewports);
+        }
+
+        /// <summary>
+        /// Updates polygon mode state based on current GPU state.
+        /// </summary>
+        private void UpdatePolygonMode()
+        {
+            _context.Renderer.Pipeline.SetPolygonMode(_state.State.PolygonModeFront, _state.State.PolygonModeBack);
         }
 
         /// <summary>
@@ -948,7 +977,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 _state.State.TexturePoolState.MaximumId,
                 (int)_state.State.TextureBufferIndex,
                 _state.State.EarlyZForce,
-                _drawState.Topology);
+                _drawState.Topology,
+                _state.State.TessMode);
 
             ShaderBundle gs = _channel.MemoryManager.Physical.ShaderCache.GetGraphicsShader(ref _state.State, _channel, gas, addresses);
 
@@ -956,6 +986,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
             _drawState.VsUsesInstanceId = gs.Shaders[0]?.Info.UsesInstanceId ?? false;
             _vsClipDistancesWritten = gs.Shaders[0]?.Info.ClipDistancesWritten ?? 0;
+            _vtgWritesRtLayer = false;
 
             if (oldVsClipDistancesWritten != _vsClipDistancesWritten)
             {
@@ -970,14 +1001,19 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
                 if (info == null)
                 {
-                    _channel.TextureManager.SetGraphicsTextures(stage, Array.Empty<TextureBindingInfo>());
-                    _channel.TextureManager.SetGraphicsImages(stage, Array.Empty<TextureBindingInfo>());
+                    _channel.TextureManager.RentGraphicsTextureBindings(stage, 0);
+                    _channel.TextureManager.RentGraphicsImageBindings(stage, 0);
                     _channel.BufferManager.SetGraphicsStorageBufferBindings(stage, null);
                     _channel.BufferManager.SetGraphicsUniformBufferBindings(stage, null);
                     continue;
                 }
 
-                var textureBindings = new TextureBindingInfo[info.Textures.Count];
+                Span<TextureBindingInfo> textureBindings = _channel.TextureManager.RentGraphicsTextureBindings(stage, info.Textures.Count);
+
+                if (info.UsesRtLayer)
+                {
+                    _vtgWritesRtLayer = true;
+                }
 
                 for (int index = 0; index < info.Textures.Count; index++)
                 {
@@ -993,9 +1029,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                         descriptor.Flags);
                 }
 
-                _channel.TextureManager.SetGraphicsTextures(stage, textureBindings);
-
-                var imageBindings = new TextureBindingInfo[info.Images.Count];
+                TextureBindingInfo[] imageBindings = _channel.TextureManager.RentGraphicsImageBindings(stage, info.Images.Count);
 
                 for (int index = 0; index < info.Images.Count; index++)
                 {
@@ -1012,8 +1046,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                         descriptor.HandleIndex,
                         descriptor.Flags);
                 }
-
-                _channel.TextureManager.SetGraphicsImages(stage, imageBindings);
 
                 _channel.BufferManager.SetGraphicsStorageBufferBindings(stage, info.SBuffers);
                 _channel.BufferManager.SetGraphicsUniformBufferBindings(stage, info.CBuffers);

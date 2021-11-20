@@ -1,6 +1,8 @@
 using Ryujinx.Graphics.Shader.Decoders;
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
 
@@ -8,26 +10,33 @@ namespace Ryujinx.Graphics.Shader.Translation
 {
     class EmitterContext
     {
-        public Block  CurrBlock { get; set; }
-        public OpCode CurrOp    { get; set; }
-
+        public DecodedProgram Program { get; }
         public ShaderConfig Config { get; }
 
         public bool IsNonMain { get; }
 
+        public Block CurrBlock { get; set; }
+        public InstOp CurrOp { get; set; }
+
         public int OperationsCount => _operations.Count;
 
-        private readonly IReadOnlyDictionary<ulong, int> _funcs;
         private readonly List<Operation> _operations;
         private readonly Dictionary<ulong, Operand> _labels;
 
-        public EmitterContext(ShaderConfig config, bool isNonMain, IReadOnlyDictionary<ulong, int> funcs)
+        public EmitterContext(DecodedProgram program, ShaderConfig config, bool isNonMain)
         {
+            Program = program;
             Config = config;
             IsNonMain = isNonMain;
-            _funcs = funcs;
             _operations = new List<Operation>();
             _labels = new Dictionary<ulong, Operand>();
+        }
+
+        public T GetOp<T>() where T : unmanaged
+        {
+            Debug.Assert(Unsafe.SizeOf<T>() == sizeof(ulong));
+            ulong op = CurrOp.RawOpCode;
+            return Unsafe.As<ulong, T>(ref op);
         }
 
         public Operand Add(Instruction inst, Operand dest = null, params Operand[] sources)
@@ -121,6 +130,11 @@ namespace Ryujinx.Graphics.Shader.Translation
                         break;
                 }
             }
+
+            if (Config.Stage != ShaderStage.Fragment && attribute == AttributeConsts.Layer)
+            {
+                Config.SetUsedFeature(FeatureFlags.RtLayer);
+            }
         }
 
         public void MarkLabel(Operand label)
@@ -138,11 +152,6 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
 
             return label;
-        }
-
-        public int GetFunctionId(ulong address)
-        {
-            return _funcs[address];
         }
 
         public void PrepareForReturn()
@@ -181,7 +190,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                             Operand isBgra = Attribute(AttributeConsts.FragmentOutputIsBgraBase + rtIndex * 4);
 
                             Operand lblIsBgra = Label();
-                            Operand lblEnd    = Label();
+                            Operand lblEnd = Label();
 
                             this.BranchIfTrue(lblIsBgra, isBgra);
 
@@ -202,7 +211,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                     if (target.Enabled)
                     {
-                        Config.SetOutputUserAttribute(rtIndex);
+                        Config.SetOutputUserAttribute(rtIndex, perPatch: false);
                         regIndexBase += 4;
                     }
                 }

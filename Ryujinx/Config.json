@@ -1,6 +1,7 @@
 {
   "version": 29,
   "enable_file_log": true,
+  "backend_threading": "Auto",
   "res_scale": 1,
   "res_scale_custom": 1,
   "max_anisotropy": -1,
@@ -59,7 +60,8 @@
   "hotkeys": {
     "toggle_vsync": "Tab",
     "screenshot": "F8",
-    "show_ui": "F4"
+    "show_ui": "F4",
+    "pause":  "F5"
   },
   "keyboard_config": [],
   "controller_config": [],

@@ -60,14 +60,14 @@ namespace Ryujinx.Graphics.Gpu.Shader
         }
 
         /// <summary>
-        /// Reads data from GPU memory.
+        /// Gets a span of the specified memory location, containing shader code.
         /// </summary>
-        /// <typeparam name="T">Type of the data to be read</typeparam>
         /// <param name="address">GPU virtual address of the data</param>
-        /// <returns>Data at the memory location</returns>
-        public override T MemoryRead<T>(ulong address)
+        /// <param name="minimumSize">Minimum size that the returned span may have</param>
+        /// <returns>Span of the memory location</returns>
+        public override ReadOnlySpan<ulong> GetCode(ulong address, int minimumSize)
         {
-            return MemoryMarshal.Cast<byte, T>(_data.Span.Slice((int)address))[0];
+            return MemoryMarshal.Cast<byte, ulong>(_data.Span.Slice((int)address));
         }
 
         /// <summary>
@@ -132,6 +132,33 @@ namespace Ryujinx.Graphics.Gpu.Shader
         public InputTopology QueryPrimitiveTopology()
         {
             return _header.PrimitiveTopology;
+        }
+
+        /// <summary>
+        /// Queries the tessellation evaluation shader primitive winding order.
+        /// </summary>
+        /// <returns>True if the primitive winding order is clockwise, false if counter-clockwise</returns>
+        public bool QueryTessCw()
+        {
+            return (_header.TessellationModePacked & 0x10) != 0;
+        }
+
+        /// <summary>
+        /// Queries the tessellation evaluation shader abstract patch type.
+        /// </summary>
+        /// <returns>Abstract patch type</returns>
+        public TessPatchType QueryTessPatchType()
+        {
+            return (TessPatchType)(_header.TessellationModePacked & 3);
+        }
+
+        /// <summary>
+        /// Queries the tessellation evaluation shader spacing between tessellated vertices of the patch.
+        /// </summary>
+        /// <returns>Spacing between tessellated vertices of the patch</returns>
+        public TessSpacing QueryTessSpacing()
+        {
+            return (TessSpacing)((_header.TessellationModePacked >> 2) & 3);
         }
 
         /// <summary>

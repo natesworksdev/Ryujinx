@@ -53,30 +53,29 @@ namespace Ryujinx.HLE.HOS.Services.Ro
                 return ResultCode.InvalidAddress;
             }
 
-            StructReader reader = new StructReader(_owner.CpuMemory, nrrAddress);
-            NrrHeader    header = reader.Read<NrrHeader>();
+            NrrHeader header = _owner.CpuMemory.Read<NrrHeader>(nrrAddress);
 
             if (header.Magic != NrrMagic)
             {
                 return ResultCode.InvalidNrr;
             }
-            else if (header.NrrSize != nrrSize)
+            else if (header.Size != nrrSize)
             {
                 return ResultCode.InvalidSize;
             }
 
             List<byte[]> hashes = new List<byte[]>();
 
-            for (int i = 0; i < header.HashCount; i++)
+            for (int i = 0; i < header.HashesCount; i++)
             {
-                byte[] temp = new byte[0x20];
+                byte[] hash = new byte[0x20];
 
-                _owner.CpuMemory.Read(nrrAddress + header.HashOffset + (uint)(i * 0x20), temp);
+                _owner.CpuMemory.Read(nrrAddress + header.HashesOffset + (uint)(i * 0x20), hash);
 
-                hashes.Add(temp);
+                hashes.Add(hash);
             }
 
-            nrrInfo = new NrrInfo((ulong)nrrAddress, header, hashes);
+            nrrInfo = new NrrInfo(nrrAddress, header, hashes);
 
             return ResultCode.Success;
         }

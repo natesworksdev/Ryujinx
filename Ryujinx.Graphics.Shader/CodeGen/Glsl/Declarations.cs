@@ -13,7 +13,17 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
         {
             context.AppendLine("#version 450 core");
             context.AppendLine("#extension GL_ARB_gpu_shader_int64 : enable");
-            context.AppendLine("#extension GL_ARB_shader_ballot : enable");
+
+            if (context.Config.GpuAccessor.QueryHostSupportsShaderBallot())
+            {
+                context.AppendLine("#extension GL_ARB_shader_ballot : enable");
+            }
+            else
+            {
+                context.AppendLine("#extension GL_KHR_shader_subgroup_basic : enable");
+                context.AppendLine("#extension GL_KHR_shader_subgroup_ballot : enable");
+            }
+
             context.AppendLine("#extension GL_ARB_shader_group_vote : enable");
             context.AppendLine("#extension GL_EXT_shader_image_load_formatted : enable");
             context.AppendLine("#extension GL_EXT_texture_shadow_lod : enable");
@@ -21,6 +31,17 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             if (context.Config.Stage == ShaderStage.Compute)
             {
                 context.AppendLine("#extension GL_ARB_compute_shader : enable");
+            }
+            else if (context.Config.Stage == ShaderStage.Fragment)
+            {
+                if (context.Config.GpuAccessor.QueryHostSupportsFragmentShaderInterlock())
+                {
+                    context.AppendLine("#extension GL_ARB_fragment_shader_interlock : enable");
+                }
+                else if (context.Config.GpuAccessor.QueryHostSupportsFragmentShaderOrderingIntel())
+                {
+                    context.AppendLine("#extension GL_INTEL_fragment_shader_ordering : enable");
+                }
             }
 
             if (context.Config.GpPassthrough)
@@ -126,6 +147,22 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                     context.AppendLine();
                 }
+                else if (context.Config.Stage == ShaderStage.TessellationControl)
+                {
+                    int threadsPerInputPrimitive = context.Config.ThreadsPerInputPrimitive;
+
+                    context.AppendLine($"layout (vertices = {threadsPerInputPrimitive}) out;");
+                    context.AppendLine();
+                }
+                else if (context.Config.Stage == ShaderStage.TessellationEvaluation)
+                {
+                    string patchType = context.Config.GpuAccessor.QueryTessPatchType().ToGlsl();
+                    string spacing = context.Config.GpuAccessor.QueryTessSpacing().ToGlsl();
+                    string windingOrder = context.Config.GpuAccessor.QueryTessCw() ? "cw" : "ccw";
+
+                    context.AppendLine($"layout ({patchType}, {spacing}, {windingOrder}) in;");
+                    context.AppendLine();
+                }
 
                 if (context.Config.UsedInputAttributes != 0 || context.Config.GpPassthrough)
                 {
@@ -137,6 +174,20 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 if (context.Config.UsedOutputAttributes != 0 || context.Config.Stage != ShaderStage.Fragment)
                 {
                     DeclareOutputAttributes(context, info);
+
+                    context.AppendLine();
+                }
+
+                if (context.Config.UsedInputAttributesPerPatch != 0)
+                {
+                    DeclareInputAttributesPerPatch(context, context.Config.UsedInputAttributesPerPatch);
+
+                    context.AppendLine();
+                }
+
+                if (context.Config.UsedOutputAttributesPerPatch != 0)
+                {
+                    DeclareUsedOutputAttributesPerPatch(context, context.Config.UsedOutputAttributesPerPatch);
 
                     context.AppendLine();
                 }
@@ -228,6 +279,16 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             if ((info.HelperFunctionsMask & HelperFunctionsMask.ShuffleXor) != 0)
             {
                 AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/ShuffleXor.glsl");
+            }
+
+            if ((info.HelperFunctionsMask & HelperFunctionsMask.StoreSharedSmallInt) != 0)
+            {
+                AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/StoreSharedSmallInt.glsl");
+            }
+
+            if ((info.HelperFunctionsMask & HelperFunctionsMask.StoreStorageSmallInt) != 0)
+            {
+                AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/StoreStorageSmallInt.glsl");
             }
 
             if ((info.HelperFunctionsMask & HelperFunctionsMask.SwizzleAdd) != 0)
@@ -381,6 +442,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                 string imageTypeName = descriptor.Type.ToGlslImageType(descriptor.Format.GetComponentType());
 
+                if (descriptor.Flags.HasFlag(TextureUsageFlags.ImageCoherent))
+                {
+                    imageTypeName = "coherent " + imageTypeName;
+                }
+
                 string layout = descriptor.Format.ToGlslFormat();
 
                 if (!string.IsNullOrEmpty(layout))
@@ -402,20 +468,37 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private static void DeclareInputAttributes(CodeGenContext context, StructuredProgramInfo info)
         {
-            int usedAttribtes = context.Config.UsedInputAttributes;
-            while (usedAttribtes != 0)
+            if (context.Config.UsedFeatures.HasFlag(FeatureFlags.IaIndexing))
             {
-                int index = BitOperations.TrailingZeroCount(usedAttribtes);
+                string suffix = context.Config.Stage == ShaderStage.Geometry ? "[]" : string.Empty;
 
-                DeclareInputAttribute(context, info, index);
+                context.AppendLine($"layout (location = 0) in vec4 {DefaultNames.IAttributePrefix}{suffix}[{Constants.MaxAttributes}];");
+            }
+            else
+            {
+                int usedAttributes = context.Config.UsedInputAttributes;
+                while (usedAttributes != 0)
+                {
+                    int index = BitOperations.TrailingZeroCount(usedAttributes);
+                    DeclareInputAttribute(context, info, index);
+                    usedAttributes &= ~(1 << index);
+                }
+            }
+        }
 
-                usedAttribtes &= ~(1 << index);
+        private static void DeclareInputAttributesPerPatch(CodeGenContext context, int usedAttributes)
+        {
+            while (usedAttributes != 0)
+            {
+                int index = BitOperations.TrailingZeroCount(usedAttributes);
+                DeclareInputAttributePerPatch(context, index);
+                usedAttributes &= ~(1 << index);
             }
         }
 
         private static void DeclareInputAttribute(CodeGenContext context, StructuredProgramInfo info, int attr)
         {
-            string suffix = context.Config.Stage == ShaderStage.Geometry ? "[]" : string.Empty;
+            string suffix = OperandManager.IsArrayAttribute(context.Config.Stage, isOutAttr: false) ? "[]" : string.Empty;
             string iq = string.Empty;
 
             if (context.Config.Stage == ShaderStage.Fragment)
@@ -446,22 +529,35 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
         }
 
+        private static void DeclareInputAttributePerPatch(CodeGenContext context, int attr)
+        {
+            string name = $"{DefaultNames.PerPatchAttributePrefix}{attr}";
+
+            context.AppendLine($"patch in vec4 {name};");
+        }
+
         private static void DeclareOutputAttributes(CodeGenContext context, StructuredProgramInfo info)
         {
-            int usedAttribtes = context.Config.UsedOutputAttributes;
-            while (usedAttribtes != 0)
+            if (context.Config.UsedFeatures.HasFlag(FeatureFlags.OaIndexing))
             {
-                int index = BitOperations.TrailingZeroCount(usedAttribtes);
-
-                DeclareOutputAttribute(context, index);
-
-                usedAttribtes &= ~(1 << index);
+                context.AppendLine($"layout (location = 0) out vec4 {DefaultNames.OAttributePrefix}[{Constants.MaxAttributes}];");
+            }
+            else
+            {
+                int usedAttributes = context.Config.UsedOutputAttributes;
+                while (usedAttributes != 0)
+                {
+                    int index = BitOperations.TrailingZeroCount(usedAttributes);
+                    DeclareOutputAttribute(context, index);
+                    usedAttributes &= ~(1 << index);
+                }
             }
         }
 
         private static void DeclareOutputAttribute(CodeGenContext context, int attr)
         {
-            string name = $"{DefaultNames.OAttributePrefix}{attr}";
+            string suffix = OperandManager.IsArrayAttribute(context.Config.Stage, isOutAttr: true) ? "[]" : string.Empty;
+            string name = $"{DefaultNames.OAttributePrefix}{attr}{suffix}";
 
             if ((context.Config.Options.Flags & TranslationFlags.Feedback) != 0)
             {
@@ -476,6 +572,23 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             {
                 context.AppendLine($"layout (location = {attr}) out vec4 {name};");
             }
+        }
+
+        private static void DeclareUsedOutputAttributesPerPatch(CodeGenContext context, int usedAttributes)
+        {
+            while (usedAttributes != 0)
+            {
+                int index = BitOperations.TrailingZeroCount(usedAttributes);
+                DeclareOutputAttributePerPatch(context, index);
+                usedAttributes &= ~(1 << index);
+            }
+        }
+
+        private static void DeclareOutputAttributePerPatch(CodeGenContext context, int attr)
+        {
+            string name = $"{DefaultNames.PerPatchAttributePrefix}{attr}";
+
+            context.AppendLine($"patch out vec4 {name};");
         }
 
         private static void DeclareSupportUniformBlock(CodeGenContext context, bool isFragment, int scaleElements)
@@ -514,6 +627,17 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             code = code.Replace("\t", CodeGenContext.Tab);
             code = code.Replace("$SHARED_MEM$", DefaultNames.SharedMemoryName);
             code = code.Replace("$STORAGE_MEM$", OperandManager.GetShaderStagePrefix(context.Config.Stage) + "_" + DefaultNames.StorageNamePrefix);
+
+            if (context.Config.GpuAccessor.QueryHostSupportsShaderBallot())
+            {
+                code = code.Replace("$SUBGROUP_INVOCATION$", "gl_SubGroupInvocationARB");
+                code = code.Replace("$SUBGROUP_BROADCAST$", "readInvocationARB");
+            }
+            else
+            {
+                code = code.Replace("$SUBGROUP_INVOCATION$", "gl_SubgroupInvocationID");
+                code = code.Replace("$SUBGROUP_BROADCAST$", "subgroupBroadcast");
+            }
 
             context.AppendLine(code);
             context.AppendLine();

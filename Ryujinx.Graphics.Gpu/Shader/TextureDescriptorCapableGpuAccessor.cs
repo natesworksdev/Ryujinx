@@ -1,6 +1,7 @@
 ﻿using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Image;
 using Ryujinx.Graphics.Shader;
+using System;
 
 namespace Ryujinx.Graphics.Gpu.Shader
 {
@@ -13,7 +14,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             _context = context;
         }
 
-        public abstract T MemoryRead<T>(ulong address) where T : unmanaged;
+        public abstract ReadOnlySpan<ulong> GetCode(ulong address, int minimumSize);
 
         public abstract ITextureDescriptor GetTextureDescriptor(int handle, int cbufSlot);
 
@@ -36,6 +37,18 @@ namespace Ryujinx.Graphics.Gpu.Shader
         public int QueryHostStorageBufferOffsetAlignment() => _context.Capabilities.StorageBufferOffsetAlignment;
 
         /// <summary>
+        /// Queries host support for fragment shader ordering critical sections on the shader code.
+        /// </summary>
+        /// <returns>True if fragment shader interlock is supported, false otherwise</returns>
+        public bool QueryHostSupportsFragmentShaderInterlock() => _context.Capabilities.SupportsFragmentShaderInterlock;
+
+        /// <summary>
+        /// Queries host support for fragment shader ordering scoped critical sections on the shader code.
+        /// </summary>
+        /// <returns>True if fragment shader ordering is supported, false otherwise</returns>
+        public bool QueryHostSupportsFragmentShaderOrderingIntel() => _context.Capabilities.SupportsFragmentShaderOrderingIntel;
+
+        /// <summary>
         /// Queries host support for readable images without a explicit format declaration on the shader.
         /// </summary>
         /// <returns>True if formatted image load is supported, false otherwise</returns>
@@ -46,6 +59,12 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// </summary>
         /// <returns>True if the GPU and driver supports non-constant texture offsets, false otherwise</returns>
         public bool QueryHostSupportsNonConstantTextureOffset() => _context.Capabilities.SupportsNonConstantTextureOffset;
+
+        /// <summary>
+        /// Queries host GPU shader ballot support.
+        /// </summary>
+        /// <returns>True if the GPU and driver supports shader ballot, false otherwise</returns>
+        public bool QueryHostSupportsShaderBallot() => _context.Capabilities.SupportsShaderBallot;
 
         /// <summary>
         /// Queries host GPU texture shadow LOD support.
@@ -119,14 +138,14 @@ namespace Ryujinx.Graphics.Gpu.Shader
         }
 
         /// <summary>
-        /// Queries texture target information.
+        /// Queries sampler type information.
         /// </summary>
         /// <param name="handle">Texture handle</param>
         /// <param name="cbufSlot">Constant buffer slot for the texture handle</param>
-        /// <returns>True if the texture is a buffer texture, false otherwise</returns>
-        public bool QueryIsTextureBuffer(int handle, int cbufSlot = -1)
+        /// <returns>The sampler type value for the given handle</returns>
+        public SamplerType QuerySamplerType(int handle, int cbufSlot = -1)
         {
-            return GetTextureDescriptor(handle, cbufSlot).UnpackTextureTarget() == TextureTarget.TextureBuffer;
+            return GetTextureDescriptor(handle, cbufSlot).UnpackTextureTarget().ConvertSamplerType();
         }
 
         /// <summary>

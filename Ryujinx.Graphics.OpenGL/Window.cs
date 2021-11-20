@@ -23,13 +23,15 @@ namespace Ryujinx.Graphics.OpenGL
             _renderer = renderer;
         }
 
-        public void Present(ITexture texture, ImageCrop crop)
+        public void Present(ITexture texture, ImageCrop crop, Action swapBuffersCallback)
         {
             GL.Disable(EnableCap.FramebufferSrgb);
 
             CopyTextureToFrameBufferRGB(0, GetCopyFramebufferHandleLazy(), (TextureView)texture, crop);
 
             GL.Enable(EnableCap.FramebufferSrgb);
+
+            swapBuffersCallback();
         }
 
         public void SetSize(int width, int height)
@@ -45,7 +47,7 @@ namespace Ryujinx.Graphics.OpenGL
             GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, drawFramebuffer);
             GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, readFramebuffer);
 
-            TextureView viewConverted = view.Format.IsBgra8() ? _renderer.TextureCopy.BgraSwap(view) : view;
+            TextureView viewConverted = view.Format.IsBgr() ? _renderer.TextureCopy.BgraSwap(view) : view;
 
             GL.FramebufferTexture(
                 FramebufferTarget.ReadFramebuffer,
@@ -110,7 +112,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             if (ScreenCaptureRequested)
             {
-                CaptureFrame(srcX0, srcY0, srcX1, srcY1, view.Format.IsBgra8(), crop.FlipX, crop.FlipY);
+                CaptureFrame(srcX0, srcY0, srcX1, srcY1, view.Format.IsBgr(), crop.FlipX, crop.FlipY);
 
                 ScreenCaptureRequested = false;
             }
@@ -174,7 +176,7 @@ namespace Ryujinx.Graphics.OpenGL
             byte[] bitmap = new byte[size];
 
             GL.ReadPixels(x, y, width, height, isBgra ? PixelFormat.Bgra : PixelFormat.Rgba, PixelType.UnsignedByte, bitmap);
-            
+
             _renderer.OnScreenCaptured(new ScreenCaptureImageInfo(width, height, isBgra, bitmap, flipX, flipY));
         }
 

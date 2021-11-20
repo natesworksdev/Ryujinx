@@ -1,5 +1,8 @@
 ﻿using LibHac;
 using LibHac.Bcat;
+using LibHac.Common;
+using LibHac.Fs.Fsa;
+using LibHac.Fs.Shim;
 using LibHac.FsSrv.Impl;
 using LibHac.Loader;
 using LibHac.Ncm;
@@ -13,16 +16,15 @@ namespace Ryujinx.HLE.HOS
     public class LibHacHorizonManager
     {
         private LibHac.Horizon Server { get; set; }
-        public HorizonClient RyujinxClient { get; private set; }
 
+        public HorizonClient RyujinxClient     { get; private set; }
         public HorizonClient ApplicationClient { get; private set; }
-
-        public HorizonClient AccountClient { get; private set; }
-        public HorizonClient AmClient { get; private set; }
-        public HorizonClient BcatClient { get; private set; }
-        public HorizonClient FsClient { get; private set; }
-        public HorizonClient NsClient { get; private set; }
-        public HorizonClient SdbClient { get; private set; }
+        public HorizonClient AccountClient     { get; private set; }
+        public HorizonClient AmClient          { get; private set; }
+        public HorizonClient BcatClient        { get; private set; }
+        public HorizonClient FsClient          { get; private set; }
+        public HorizonClient NsClient          { get; private set; }
+        public HorizonClient SdbClient         { get; private set; }
 
         internal LibHacIReader ArpIReader { get; private set; }
 
@@ -46,8 +48,7 @@ namespace Ryujinx.HLE.HOS
 
         public void InitializeBcatServer()
         {
-            BcatClient = Server.CreateHorizonClient(new ProgramLocation(SystemProgramId.Bcat, StorageId.BuiltInSystem),
-                BcatFsPermissions);
+            BcatClient = Server.CreateHorizonClient(new ProgramLocation(SystemProgramId.Bcat, StorageId.BuiltInSystem), BcatFsPermissions);
 
             _ = new BcatServer(BcatClient);
         }
@@ -57,27 +58,42 @@ namespace Ryujinx.HLE.HOS
             virtualFileSystem.InitializeFsServer(Server, out var fsClient);
 
             FsClient = fsClient;
+
+            CleanSdCardDirectory();
         }
 
         public void InitializeSystemClients()
         {
-            AccountClient = Server.CreateHorizonClient(new ProgramLocation(SystemProgramId.Account, StorageId.BuiltInSystem),
-                AccountFsPermissions);
-
-            AmClient = Server.CreateHorizonClient(new ProgramLocation(SystemProgramId.Am, StorageId.BuiltInSystem),
-                AmFsPermissions);
-
-            NsClient = Server.CreateHorizonClient(new ProgramLocation(SystemProgramId.Ns, StorageId.BuiltInSystem),
-                NsFsPermissions);
-
-            SdbClient = Server.CreateHorizonClient(new ProgramLocation(SystemProgramId.Sdb, StorageId.BuiltInSystem),
-                SdbFacData, SdbFacDescriptor);
+            AccountClient = Server.CreateHorizonClient(new ProgramLocation(SystemProgramId.Account, StorageId.BuiltInSystem), AccountFsPermissions);
+            AmClient      = Server.CreateHorizonClient(new ProgramLocation(SystemProgramId.Am,      StorageId.BuiltInSystem), AmFsPermissions);
+            NsClient      = Server.CreateHorizonClient(new ProgramLocation(SystemProgramId.Ns,      StorageId.BuiltInSystem), NsFsPermissions);
+            SdbClient     = Server.CreateHorizonClient(new ProgramLocation(SystemProgramId.Sdb,     StorageId.BuiltInSystem), SdbFacData, SdbFacDescriptor);
         }
 
         public void InitializeApplicationClient(ProgramId programId, in Npdm npdm)
         {
-            ApplicationClient = Server.CreateHorizonClient(new ProgramLocation(programId, StorageId.BuiltInUser),
-                npdm.FsAccessControlData, npdm.FsAccessControlDescriptor);
+            ApplicationClient = Server.CreateHorizonClient(new ProgramLocation(programId, StorageId.BuiltInUser), npdm.FsAccessControlData, npdm.FsAccessControlDescriptor);
+        }
+
+        // This function was added to avoid errors that come from a user's keys or SD encryption seed changing.
+        // Catching these errors and recreating the file ended up not working because of the different ways
+        // applications respond to a file suddenly containing all zeros or having a length of zero.
+        // Clearing the SD card save directory was determined to be the best option for the moment since
+        // the saves on the SD card are meant as caches that can be deleted at any time.
+        private void CleanSdCardDirectory()
+        {
+            Result rc = RyujinxClient.Fs.MountSdCard("sdcard".ToU8Span());
+            if (rc.IsFailure()) return;
+
+            try
+            {
+                RyujinxClient.Fs.CleanDirectoryRecursively("sdcard:/Nintendo/save".ToU8Span()).IgnoreResult();
+                RyujinxClient.Fs.DeleteDirectoryRecursively("sdcard:/save".ToU8Span()).IgnoreResult();
+            }
+            finally
+            {
+                RyujinxClient.Fs.Unmount("sdcard".ToU8Span());
+            }
         }
 
         private static AccessControlBits.Bits AccountFsPermissions => AccessControlBits.Bits.SystemSaveData |

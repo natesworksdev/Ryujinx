@@ -9,7 +9,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 {
     public class TranslatorContext
     {
-        private readonly Block[][] _cfg;
+        private readonly DecodedProgram _program;
         private ShaderConfig _config;
 
         public ulong Address { get; }
@@ -23,19 +23,22 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public IGpuAccessor GpuAccessor => _config.GpuAccessor;
 
-        internal TranslatorContext(ulong address, Block[][] cfg, ShaderConfig config)
+        internal TranslatorContext(ulong address, DecodedProgram program, ShaderConfig config)
         {
             Address = address;
+            _program = program;
             _config = config;
-            _cfg    = cfg;
         }
 
         private static bool IsUserAttribute(Operand operand)
         {
-            return operand != null &&
-                   operand.Type == OperandType.Attribute &&
-                   operand.Value >= AttributeConsts.UserAttributeBase &&
-                   operand.Value < AttributeConsts.UserAttributeEnd;
+            if (operand != null && operand.Type.IsAttribute())
+            {
+                int value = operand.Value & AttributeConsts.Mask;
+                return value >= AttributeConsts.UserAttributeBase && value < AttributeConsts.UserAttributeEnd;
+            }
+
+            return false;
         }
 
         private static FunctionCode[] Combine(FunctionCode[] a, FunctionCode[] b, int aStart)
@@ -103,17 +106,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                         if (temp != null)
                         {
-                            // TODO: LoadAttribute should accept any integer value as first argument,
-                            // then we don't need special case here. Right now it expects the first
-                            // operand to be of type "attribute".
-                            if ((operation.Inst & Instruction.Mask) == Instruction.LoadAttribute)
-                            {
-                                operation.TurnIntoCopy(temp);
-                            }
-                            else
-                            {
-                                operation.SetSource(srcIndex, temp);
-                            }
+                            operation.SetSource(srcIndex, temp);
                         }
                     }
                 }
@@ -143,16 +136,16 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             if (nextStage != null)
             {
-                _config.MergeOutputUserAttributes(nextStage._config.UsedInputAttributes);
+                _config.MergeFromtNextStage(nextStage._config);
             }
 
-            FunctionCode[] code = EmitShader(_cfg, _config, initializeOutputs: other == null, out _);
+            FunctionCode[] code = EmitShader(_program, _config, initializeOutputs: other == null, out _);
 
             if (other != null)
             {
-                other._config.MergeOutputUserAttributes(_config.UsedOutputAttributes);
+                other._config.MergeOutputUserAttributes(_config.UsedOutputAttributes, 0);
 
-                FunctionCode[] otherCode = EmitShader(other._cfg, other._config, initializeOutputs: true, out int aStart);
+                FunctionCode[] otherCode = EmitShader(other._program, other._config, initializeOutputs: true, out int aStart);
 
                 code = Combine(otherCode, code, aStart);
 

@@ -7,6 +7,7 @@ using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
 using Ryujinx.Graphics.GAL;
+using Ryujinx.Graphics.GAL.Multithreading;
 using Ryujinx.Input;
 using Ryujinx.Input.GTK3;
 using Ryujinx.Input.HLE;
@@ -293,7 +294,15 @@ namespace Ryujinx.Ui
         public void Initialize(Switch device)
         {
             Device = device;
-            Renderer = Device.Gpu.Renderer;
+
+            IRenderer renderer = Device.Gpu.Renderer;
+
+            if (renderer is ThreadedRenderer tr)
+            {
+                renderer = tr.BaseRenderer;
+            }
+
+            Renderer = renderer;
             Renderer?.Window.SetSize(_windowWidth, _windowHeight);
 
             if (Renderer != null)
@@ -375,52 +384,57 @@ namespace Ryujinx.Ui
 
             _gpuVendorName = GetGpuVendorName();
 
-            Device.Gpu.InitializeShaderCache();
-            Translator.IsReadyForTranslation.Set();
-
-            while (_isActive)
+            Device.Gpu.Renderer.RunLoop(() =>
             {
-                if (_isStopped)
+                Device.Gpu.InitializeShaderCache();
+                Translator.IsReadyForTranslation.Set();
+
+                (Toplevel as MainWindow)?.ActivatePauseMenu();
+
+                while (_isActive)
                 {
-                    return;
-                }
-
-                _ticks += _chrono.ElapsedTicks;
-
-                _chrono.Restart();
-
-                if (Device.WaitFifo())
-                {
-                    Device.Statistics.RecordFifoStart();
-                    Device.ProcessFrame();
-                    Device.Statistics.RecordFifoEnd();
-                }
-
-                while (Device.ConsumeFrameAvailable())
-                {
-                    Device.PresentFrame(SwapBuffers);
-                }
-
-                if (_ticks >= _ticksPerFrame)
-                {
-                    string dockedMode = ConfigurationState.Instance.System.EnableDockedMode ? "Docked" : "Handheld";
-                    float scale = Graphics.Gpu.GraphicsConfig.ResScale;
-                    if (scale != 1)
+                    if (_isStopped)
                     {
-                        dockedMode += $" ({scale}x)";
+                        return;
                     }
 
-                    StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
-                        Device.EnableDeviceVsync,
-                        dockedMode,
-                        ConfigurationState.Instance.Graphics.AspectRatio.Value.ToText(),
-                        $"Game: {Device.Statistics.GetGameFrameRate():00.00} FPS",
-                        $"FIFO: {Device.Statistics.GetFifoPercent():0.00} %",
-                        $"GPU: {_gpuVendorName}"));
+                    _ticks += _chrono.ElapsedTicks;
 
-                    _ticks = Math.Min(_ticks - _ticksPerFrame, _ticksPerFrame);
+                    _chrono.Restart();
+
+                    if (Device.WaitFifo())
+                    {
+                        Device.Statistics.RecordFifoStart();
+                        Device.ProcessFrame();
+                        Device.Statistics.RecordFifoEnd();
+                    }
+
+                    while (Device.ConsumeFrameAvailable())
+                    {
+                        Device.PresentFrame(SwapBuffers);
+                    }
+
+                    if (_ticks >= _ticksPerFrame)
+                    {
+                        string dockedMode = ConfigurationState.Instance.System.EnableDockedMode ? "Docked" : "Handheld";
+                        float scale = Graphics.Gpu.GraphicsConfig.ResScale;
+                        if (scale != 1)
+                        {
+                            dockedMode += $" ({scale}x)";
+                        }
+
+                        StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
+                            Device.EnableDeviceVsync,
+                            dockedMode,
+                            ConfigurationState.Instance.Graphics.AspectRatio.Value.ToText(),
+                            $"Game: {Device.Statistics.GetGameFrameRate():00.00} FPS ({Device.Statistics.GetGameFrameTime():00.00} ms)",
+                            $"FIFO: {Device.Statistics.GetFifoPercent():0.00} %",
+                            $"GPU: {_gpuVendorName}"));
+
+                        _ticks = Math.Min(_ticks - _ticksPerFrame, _ticksPerFrame);
+                    }
                 }
-            }
+            });
         }
 
         public void Start()
@@ -455,16 +469,20 @@ namespace Ryujinx.Ui
             };
             renderLoopThread.Start();
 
-            Thread nvStutterWorkaround = new Thread(NVStutterWorkaround)
+            Thread nvStutterWorkaround = null;
+            if (Renderer is Graphics.OpenGL.Renderer)
             {
-                Name = "GUI.NVStutterWorkaround"
-            };
-            nvStutterWorkaround.Start();
+                nvStutterWorkaround = new Thread(NVStutterWorkaround)
+                {
+                    Name = "GUI.NVStutterWorkaround"
+                };
+                nvStutterWorkaround.Start();
+            }
 
             MainLoop();
 
             renderLoopThread.Join();
-            nvStutterWorkaround.Join();
+            nvStutterWorkaround?.Join();
 
             Exit();
         }
@@ -574,6 +592,12 @@ namespace Ryujinx.Ui
                     (Toplevel as MainWindow).ToggleExtraWidgets(true);
                 }
 
+                if (currentHotkeyState.HasFlag(KeyboardHotkeyState.Pause) &&
+                    !_prevHotkeyState.HasFlag(KeyboardHotkeyState.Pause))
+                {
+                    (Toplevel as MainWindow)?.TogglePause();
+                }
+
                 _prevHotkeyState = currentHotkeyState;
             }
 
@@ -602,7 +626,8 @@ namespace Ryujinx.Ui
             None = 0,
             ToggleVSync = 1 << 0,
             Screenshot = 1 << 1,
-            ShowUi = 1 << 2
+            ShowUi = 1 << 2,
+            Pause = 1 << 3
         }
 
         private KeyboardHotkeyState GetHotkeyState()
@@ -622,6 +647,11 @@ namespace Ryujinx.Ui
             if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUi))
             {
                 state |= KeyboardHotkeyState.ShowUi;
+            }
+
+            if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Pause))
+            {
+                state |= KeyboardHotkeyState.Pause;
             }
 
             return state;

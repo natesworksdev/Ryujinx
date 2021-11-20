@@ -40,6 +40,8 @@ namespace Ryujinx.Graphics.OpenGL
         public string GpuRenderer { get; private set; }
         public string GpuVersion { get; private set; }
 
+        public bool PreferThreading => true;
+
         public Renderer()
         {
             _pipeline = new Pipeline();
@@ -102,11 +104,15 @@ namespace Ryujinx.Graphics.OpenGL
                 HwCapabilities.Vendor == HwCapabilities.GpuVendor.IntelWindows,
                 HwCapabilities.Vendor == HwCapabilities.GpuVendor.AmdWindows,
                 HwCapabilities.SupportsAstcCompression,
+                HwCapabilities.SupportsFragmentShaderInterlock,
+                HwCapabilities.SupportsFragmentShaderOrdering,
                 HwCapabilities.SupportsImageLoadFormatted,
                 HwCapabilities.SupportsMismatchingViewFormat,
                 HwCapabilities.SupportsNonConstantTextureOffset,
+                HwCapabilities.SupportsShaderBallot,
                 HwCapabilities.SupportsTextureShadowLod,
                 HwCapabilities.SupportsViewportSwizzle,
+                HwCapabilities.SupportsIndirectParameters,
                 HwCapabilities.MaximumComputeSharedMemorySize,
                 HwCapabilities.MaximumSupportedAnisotropy,
                 HwCapabilities.StorageBufferOffsetAlignment);
@@ -128,9 +134,9 @@ namespace Ryujinx.Graphics.OpenGL
             ResourcePool.Tick();
         }
 
-        public ICounterEvent ReportCounter(CounterType type, EventHandler<ulong> resultHandler)
+        public ICounterEvent ReportCounter(CounterType type, EventHandler<ulong> resultHandler, bool hostReserved)
         {
-            return _counters.QueueReport(type, resultHandler, _pipeline.DrawCount);
+            return _counters.QueueReport(type, resultHandler, _pipeline.DrawCount, hostReserved);
         }
 
         public void Initialize(GraphicsDebugLevel glLogLevel)
@@ -162,8 +168,10 @@ namespace Ryujinx.Graphics.OpenGL
             _counters.QueueReset(type);
         }
 
-        public void BackgroundContextAction(Action action)
+        public void BackgroundContextAction(Action action, bool alwaysBackground = false)
         {
+            // alwaysBackground is ignored, since we cannot switch from the current context.
+
             if (IOpenGLContext.HasContext())
             {
                 action(); // We have a context already - use that (assuming it is the main one).

@@ -110,11 +110,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
 
             ulong dstGpuVa = ((ulong)state.OffsetOutUpperValue << 32) | state.OffsetOut;
 
-            ulong dstBaseAddress = _channel.MemoryManager.Translate(dstGpuVa);
-
-            // Trigger read tracking, to flush any managed resources in the destination region.
-            _channel.MemoryManager.Physical.GetSpan(dstBaseAddress, _size, true);
-
             _dstGpuVa = dstGpuVa;
             _dstX = state.SetDstOriginBytesXV;
             _dstY = state.SetDstOriginSamplesYV;
@@ -176,7 +171,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
 
             if (_isLinear && _lineCount == 1)
             {
-                memoryManager.Write(_dstGpuVa, data);
+                memoryManager.WriteTrackedResource(_dstGpuVa, data);
+                _context.AdvanceSequence();
             }
             else
             {
@@ -229,11 +225,11 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
                         memoryManager.Write(dstAddress, data[srcOffset]);
                     }
                 }
+
+                _context.AdvanceSequence();
             }
 
             _finished = true;
-
-            _context.AdvanceSequence();
         }
     }
 }

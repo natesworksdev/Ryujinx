@@ -12,7 +12,6 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// </summary>
     class TexturePool : Pool<Texture, TextureDescriptor>
     {
-        private int _sequenceNumber;
         private readonly GpuChannel _channel;
         private readonly ConcurrentQueue<Texture> _dereferenceQueue = new ConcurrentQueue<Texture>();
 
@@ -45,9 +44,9 @@ namespace Ryujinx.Graphics.Gpu.Image
                 return null;
             }
 
-            if (_sequenceNumber != Context.SequenceNumber)
+            if (SequenceNumber != Context.SequenceNumber)
             {
-                _sequenceNumber = Context.SequenceNumber;
+                SequenceNumber = Context.SequenceNumber;
 
                 SynchronizeMemory();
             }
@@ -85,8 +84,9 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                     TextureDescriptor descriptor = GetDescriptor(id);
 
-                    int width = descriptor.UnpackWidth();
-                    int height = descriptor.UnpackHeight();
+                    int baseLevel = descriptor.UnpackBaseLevel();
+                    int width = Math.Max(1, descriptor.UnpackWidth() >> baseLevel);
+                    int height = Math.Max(1, descriptor.UnpackHeight() >> baseLevel);
 
                     if (texture.Info.Width != width || texture.Info.Height != height)
                     {

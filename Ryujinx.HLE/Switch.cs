@@ -5,6 +5,7 @@ using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Apm;
 using Ryujinx.HLE.HOS.Services.Hid;
+using Ryujinx.HLE.Ui;
 using Ryujinx.Memory;
 using System;
 
@@ -129,6 +130,7 @@ namespace Ryujinx.HLE
 
         public void ProcessFrame()
         {
+            Gpu.ProcessShaderCacheQueue();
             Gpu.Renderer.PreFrame();
 
             Gpu.GPFifo.DispatchCalls();

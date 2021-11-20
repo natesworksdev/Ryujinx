@@ -19,6 +19,8 @@ namespace Ryujinx.Graphics.GAL
             int   stencilValue,
             int   stencilMask);
 
+        void CommandBufferBarrier();
+
         void CopyBuffer(BufferHandle source, BufferHandle destination, int srcOffset, int dstOffset, int size);
 
         void DispatchCompute(int groupsX, int groupsY, int groupsZ);
@@ -30,8 +32,12 @@ namespace Ryujinx.Graphics.GAL
             int firstIndex,
             int firstVertex,
             int firstInstance);
+        void DrawTexture(ITexture texture, ISampler sampler, Extents2DF srcRegion, Extents2DF dstRegion);
 
         void EndTransformFeedback();
+
+        void MultiDrawIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride);
+        void MultiDrawIndexedIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride);
 
         void SetAlphaTest(bool enable, float reference, CompareOp op);
 
@@ -50,10 +56,14 @@ namespace Ryujinx.Graphics.GAL
 
         void SetImage(int binding, ITexture texture, Format imageFormat);
 
+        void SetLineParameters(float width, bool smooth);
+
         void SetLogicOpState(bool enable, LogicalOp op);
 
-        void SetLineParameters(float width, bool smooth);
+        void SetPatchParameters(int vertices, ReadOnlySpan<float> defaultOuterLevel, ReadOnlySpan<float> defaultInnerLevel);
         void SetPointParameters(float size, bool isProgramPointSize, bool enablePointSprite, Origin origin);
+
+        void SetPolygonMode(PolygonMode frontMode, PolygonMode backMode);
 
         void SetPrimitiveRestart(bool enable, int index);
 
@@ -94,6 +104,6 @@ namespace Ryujinx.Graphics.GAL
         bool TryHostConditionalRendering(ICounterEvent value, ICounterEvent compare, bool isEqual);
         void EndHostConditionalRendering();
 
-        void UpdateRenderScale(ShaderStage stage, float[] scales, int textureCount, int imageCount);
+        void UpdateRenderScale(ShaderStage stage, ReadOnlySpan<float> scales, int textureCount, int imageCount);
     }
 }

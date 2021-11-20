@@ -88,6 +88,14 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return result;
         }
 
+        public KernelResult SetMemoryPermission32(
+            [R(0)] ulong position,
+            [R(1)] ulong size,
+            [R(2)] KMemoryPermission permission)
+        {
+            return _syscall.SetMemoryPermission(position, size, permission);
+        }
+
         public KernelResult SetMemoryAttribute32(
             [R(0)] uint position,
             [R(1)] uint size,
@@ -285,6 +293,48 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             valueLow = (int)(value & uint.MaxValue);
 
             return result;
+        }
+
+        public KernelResult GetResourceLimitLimitValue32([R(1)] int handle, [R(2)] LimitableResource resource, [R(1)] out int limitValueLow, [R(2)] out int limitValueHigh)
+        {
+            KernelResult result = _syscall.GetResourceLimitLimitValue(handle, resource, out long limitValue);
+
+            limitValueHigh = (int)(limitValue >> 32);
+            limitValueLow = (int)(limitValue & uint.MaxValue);
+
+            return result;
+        }
+
+        public KernelResult GetResourceLimitCurrentValue32([R(1)] int handle, [R(2)] LimitableResource resource, [R(1)] out int limitValueLow, [R(2)] out int limitValueHigh)
+        {
+            KernelResult result = _syscall.GetResourceLimitCurrentValue(handle, resource, out long limitValue);
+
+            limitValueHigh = (int)(limitValue >> 32);
+            limitValueLow = (int)(limitValue & uint.MaxValue);
+
+            return result;
+        }
+
+        public KernelResult GetResourceLimitPeakValue32([R(1)] int handle, [R(2)] LimitableResource resource, [R(1)] out int peakLow, [R(2)] out int peakHigh)
+        {
+            KernelResult result = _syscall.GetResourceLimitPeakValue(handle, resource, out long peak);
+
+            peakHigh = (int)(peak >> 32);
+            peakLow = (int)(peak & uint.MaxValue);
+
+            return result;
+        }
+
+        public KernelResult CreateResourceLimit32([R(1)] out int handle)
+        {
+            return _syscall.CreateResourceLimit(out handle);
+        }
+
+        public KernelResult SetResourceLimitLimitValue32([R(0)] int handle, [R(1)] LimitableResource resource, [R(2)] uint limitValueLow, [R(3)] uint limitValueHigh)
+        {
+            long limitValue = (long)(limitValueLow | ((ulong)limitValueHigh << 32));
+
+            return _syscall.SetResourceLimitLimitValue(handle, resource, limitValue);
         }
 
         public KernelResult FlushProcessDataCache32(

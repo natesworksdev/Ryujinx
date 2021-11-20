@@ -25,6 +25,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             Dictionary<int, string> svcFuncs64 = new Dictionary<int, string>
             {
                 { 0x01, nameof(Syscall64.SetHeapSize64)                    },
+                { 0x02, nameof(Syscall64.SetMemoryPermission64)            },
                 { 0x03, nameof(Syscall64.SetMemoryAttribute64)             },
                 { 0x04, nameof(Syscall64.MapMemory64)                      },
                 { 0x05, nameof(Syscall64.UnmapMemory64)                    },
@@ -64,10 +65,13 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 { 0x29, nameof(Syscall64.GetInfo64)                        },
                 { 0x2c, nameof(Syscall64.MapPhysicalMemory64)              },
                 { 0x2d, nameof(Syscall64.UnmapPhysicalMemory64)            },
+                { 0x30, nameof(Syscall64.GetResourceLimitLimitValue64)     },
+                { 0x31, nameof(Syscall64.GetResourceLimitCurrentValue64)   },
                 { 0x32, nameof(Syscall64.SetThreadActivity64)              },
                 { 0x33, nameof(Syscall64.GetThreadContext364)              },
                 { 0x34, nameof(Syscall64.WaitForAddress64)                 },
                 { 0x35, nameof(Syscall64.SignalToAddress64)                },
+                { 0x37, nameof(Syscall64.GetResourceLimitPeakValue64)      },
                 { 0x40, nameof(Syscall64.CreateSession64)                  },
                 { 0x41, nameof(Syscall64.AcceptSession64)                  },
                 { 0x43, nameof(Syscall64.ReplyAndReceive64)                },
@@ -87,7 +91,9 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 { 0x75, nameof(Syscall64.UnmapProcessMemory64)             },
                 { 0x77, nameof(Syscall64.MapProcessCodeMemory64)           },
                 { 0x78, nameof(Syscall64.UnmapProcessCodeMemory64)         },
-                { 0x7B, nameof(Syscall64.TerminateProcess64)               }
+                { 0x7B, nameof(Syscall64.TerminateProcess64)               },
+                { 0x7D, nameof(Syscall64.CreateResourceLimit64)            },
+                { 0x7E, nameof(Syscall64.SetResourceLimitLimitValue64)     }
             };
 
             foreach (KeyValuePair<int, string> value in svcFuncs64)
@@ -98,6 +104,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             Dictionary<int, string> svcFuncs32 = new Dictionary<int, string>
             {
                 { 0x01, nameof(Syscall32.SetHeapSize32)                   },
+                { 0x02, nameof(Syscall32.SetMemoryPermission32)           },
                 { 0x03, nameof(Syscall32.SetMemoryAttribute32)            },
                 { 0x04, nameof(Syscall32.MapMemory32)                     },
                 { 0x05, nameof(Syscall32.UnmapMemory32)                   },
@@ -136,10 +143,13 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 { 0x29, nameof(Syscall32.GetInfo32)                       },
                 { 0x2c, nameof(Syscall32.MapPhysicalMemory32)             },
                 { 0x2d, nameof(Syscall32.UnmapPhysicalMemory32)           },
+                { 0x30, nameof(Syscall32.GetResourceLimitLimitValue32)    },
+                { 0x31, nameof(Syscall32.GetResourceLimitCurrentValue32)  },
                 { 0x32, nameof(Syscall32.SetThreadActivity32)             },
                 { 0x33, nameof(Syscall32.GetThreadContext332)             },
                 { 0x34, nameof(Syscall32.WaitForAddress32)                },
                 { 0x35, nameof(Syscall32.SignalToAddress32)               },
+                { 0x37, nameof(Syscall32.GetResourceLimitPeakValue32)     },
                 { 0x40, nameof(Syscall32.CreateSession32)                 },
                 { 0x41, nameof(Syscall32.AcceptSession32)                 },
                 { 0x43, nameof(Syscall32.ReplyAndReceive32)               },
@@ -155,7 +165,9 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 { 0x73, nameof(Syscall32.SetProcessMemoryPermission32)    },
                 { 0x77, nameof(Syscall32.MapProcessCodeMemory32)          },
                 { 0x78, nameof(Syscall32.UnmapProcessCodeMemory32)        },
-                { 0x7B, nameof(Syscall32.TerminateProcess32)              }
+                { 0x7B, nameof(Syscall32.TerminateProcess32)              },
+                { 0x7D, nameof(Syscall32.CreateResourceLimit32)           },
+                { 0x7E, nameof(Syscall32.SetResourceLimitLimitValue32)    }
             };
 
             foreach (KeyValuePair<int, string> value in svcFuncs32)

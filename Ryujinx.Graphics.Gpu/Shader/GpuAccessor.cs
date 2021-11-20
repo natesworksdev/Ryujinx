@@ -1,6 +1,8 @@
 ﻿using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Shader;
+using System;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Gpu.Shader
 {
@@ -95,24 +97,15 @@ namespace Ryujinx.Graphics.Gpu.Shader
         }
 
         /// <summary>
-        /// Reads data from GPU memory.
+        /// Gets a span of the specified memory location, containing shader code.
         /// </summary>
-        /// <typeparam name="T">Type of the data to be read</typeparam>
         /// <param name="address">GPU virtual address of the data</param>
-        /// <returns>Data at the memory location</returns>
-        public override T MemoryRead<T>(ulong address)
+        /// <param name="minimumSize">Minimum size that the returned span may have</param>
+        /// <returns>Span of the memory location</returns>
+        public override ReadOnlySpan<ulong> GetCode(ulong address, int minimumSize)
         {
-            return _channel.MemoryManager.Read<T>(address);
-        }
-
-        /// <summary>
-        /// Checks if a given memory address is mapped.
-        /// </summary>
-        /// <param name="address">GPU virtual address to be checked</param>
-        /// <returns>True if the address is mapped, false otherwise</returns>
-        public bool MemoryMapped(ulong address)
-        {
-            return _channel.MemoryManager.IsMapped(address);
+            int size = Math.Max(minimumSize, 0x1000 - (int)(address & 0xfff));
+            return MemoryMarshal.Cast<byte, ulong>(_channel.MemoryManager.GetSpan(address, size));
         }
 
         /// <summary>
@@ -175,9 +168,30 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 PrimitiveTopology.TriangleFan => InputTopology.Triangles,
                 PrimitiveTopology.TrianglesAdjacency or
                 PrimitiveTopology.TriangleStripAdjacency => InputTopology.TrianglesAdjacency,
-                _ => InputTopology.Points,
+                PrimitiveTopology.Patches => _state.TessellationMode.UnpackPatchType() == TessPatchType.Isolines
+                    ? InputTopology.Lines
+                    : InputTopology.Triangles,
+                _ => InputTopology.Points
             };
         }
+
+        /// <summary>
+        /// Queries the tessellation evaluation shader primitive winding order.
+        /// </summary>
+        /// <returns>True if the primitive winding order is clockwise, false if counter-clockwise</returns>
+        public bool QueryTessCw() => _state.TessellationMode.UnpackCw();
+
+        /// <summary>
+        /// Queries the tessellation evaluation shader abstract patch type.
+        /// </summary>
+        /// <returns>Abstract patch type</returns>
+        public TessPatchType QueryTessPatchType() => _state.TessellationMode.UnpackPatchType();
+
+        /// <summary>
+        /// Queries the tessellation evaluation shader spacing between tessellated vertices of the patch.
+        /// </summary>
+        /// <returns>Spacing between tessellated vertices of the patch</returns>
+        public TessSpacing QueryTessSpacing() => _state.TessellationMode.UnpackSpacing();
 
         /// <summary>
         /// Gets the texture descriptor for a given texture on the pool.

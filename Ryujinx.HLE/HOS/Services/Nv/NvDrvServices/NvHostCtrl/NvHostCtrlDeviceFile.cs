@@ -93,7 +93,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
             return result;
         }
 
-        private KEvent QueryEvent(uint eventId)
+        private int QueryEvent(uint eventId)
         {
             lock (_events)
             {
@@ -113,32 +113,18 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 
                 if (eventSlot >= EventsCount || _events[eventSlot] == null || _events[eventSlot].Fence.Id != syncpointId)
                 {
-                    return null;
+                    return 0;
                 }
 
-                return _events[eventSlot].Event;
+                return _events[eventSlot].EventHandle;
             }
         }
 
         public override NvInternalResult QueryEvent(out int eventHandle, uint eventId)
         {
-            KEvent targetEvent = QueryEvent(eventId);
+            eventHandle = QueryEvent(eventId);
 
-            if (targetEvent != null)
-            {
-                if (Context.Process.HandleTable.GenerateHandle(targetEvent.ReadableEvent, out eventHandle) != KernelResult.Success)
-                {
-                    throw new InvalidOperationException("Out of handles!");
-                }
-            }
-            else
-            {
-                eventHandle = 0;
-
-                return NvInternalResult.InvalidInput;
-            }
-
-            return NvInternalResult.Success;
+            return eventHandle != 0 ? NvInternalResult.Success : NvInternalResult.InvalidInput;
         }
 
         private NvInternalResult SyncptRead(ref NvFence arguments)
@@ -263,7 +249,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
                     hostEvent.State == NvHostEventState.Cancelled ||
                     hostEvent.State == NvHostEventState.Signaled)
                 {
-                    _events[userEventId].Dispose();
+                    _events[userEventId].CloseEvent(Context);
                     _events[userEventId] = null;
 
                     return NvInternalResult.Success;
@@ -314,24 +300,11 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
                     return NvInternalResult.InvalidInput;
                 }
 
-                lock (hostEvent.Lock)
-                {
+                hostEvent.Cancel(_device.Gpu);
 
-                    NvHostEventState oldState = hostEvent.State;
+                _device.System.HostSyncpoint.UpdateMin(hostEvent.Fence.Id);
 
-                    if (oldState == NvHostEventState.Waiting)
-                    {
-                        hostEvent.State = NvHostEventState.Cancelling;
-
-                        hostEvent.Cancel(_device.Gpu);
-                    }
-
-                    hostEvent.State = NvHostEventState.Cancelled;
-
-                    _device.System.HostSyncpoint.UpdateMin(hostEvent.Fence.Id);
-
-                    return NvInternalResult.Success;
-                }
+                return NvInternalResult.Success;
             }
         }
 
@@ -486,7 +459,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
                 if (Event != null)
                 {
                     if (Event.State == NvHostEventState.Available ||
-                        Event.State == NvHostEventState.Signaled   ||
+                        Event.State == NvHostEventState.Signaled ||
                         Event.State == NvHostEventState.Cancelled)
                     {
                         eventIndex = index;
@@ -557,7 +530,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
                                 } while (evnt.State != NvHostEventState.Signaled);
                             }
 
-                            evnt.Dispose();
+                            evnt.CloseEvent(Context);
 
                             _events[i] = null;
                         }

@@ -15,6 +15,8 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public bool GpPassthrough { get; }
 
+        public int ThreadsPerInputPrimitive { get; }
+
         public OutputTopology OutputTopology { get; }
 
         public int MaxOutputVertices { get; }
@@ -41,9 +43,14 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         private readonly TranslationCounts _counts;
 
+        public bool NextUsesFixedFuncAttributes { get; private set; }
         public int UsedInputAttributes { get; private set; }
         public int UsedOutputAttributes { get; private set; }
+        public int UsedInputAttributesPerPatch { get; private set; }
+        public int UsedOutputAttributesPerPatch { get; private set; }
         public int PassthroughAttributes { get; private set; }
+        private int _nextUsedInputAttributes;
+        private int _thisUsedInputAttributes;
 
         private int _usedConstantBuffers;
         private int _usedStorageBuffers;
@@ -111,15 +118,16 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public ShaderConfig(ShaderHeader header, IGpuAccessor gpuAccessor, TranslationOptions options, TranslationCounts counts) : this(gpuAccessor, options, counts)
         {
-            Stage             = header.Stage;
-            GpPassthrough     = header.Stage == ShaderStage.Geometry && header.GpPassthrough;
-            OutputTopology    = header.OutputTopology;
-            MaxOutputVertices = header.MaxOutputVertexCount;
-            LocalMemorySize   = header.ShaderLocalMemoryLowSize + header.ShaderLocalMemoryHighSize;
-            ImapTypes         = header.ImapTypes;
-            OmapTargets       = header.OmapTargets;
-            OmapSampleMask    = header.OmapSampleMask;
-            OmapDepth         = header.OmapDepth;
+            Stage                    = header.Stage;
+            GpPassthrough            = header.Stage == ShaderStage.Geometry && header.GpPassthrough;
+            ThreadsPerInputPrimitive = header.ThreadsPerInputPrimitive;
+            OutputTopology           = header.OutputTopology;
+            MaxOutputVertices        = header.MaxOutputVertexCount;
+            LocalMemorySize          = header.ShaderLocalMemoryLowSize + header.ShaderLocalMemoryHighSize;
+            ImapTypes                = header.ImapTypes;
+            OmapTargets              = header.OmapTargets;
+            OmapSampleMask           = header.OmapSampleMask;
+            OmapDepth                = header.OmapDepth;
         }
 
         public int GetDepthRegister()
@@ -162,6 +170,28 @@ namespace Ryujinx.Graphics.Shader.Translation
             return format;
         }
 
+        private bool FormatSupportsAtomic(TextureFormat format)
+        {
+            return format == TextureFormat.R32Sint || format == TextureFormat.R32Uint;
+        }
+
+        public TextureFormat GetTextureFormatAtomic(int handle, int cbufSlot = -1)
+        {
+            // Atomic image instructions do not support GL_EXT_shader_image_load_formatted,
+            // and must have a type specified. Default to R32Sint if not available.
+
+            var format = GpuAccessor.QueryTextureFormat(handle, cbufSlot);
+
+            if (!FormatSupportsAtomic(format))
+            {
+                GpuAccessor.Log($"Unsupported format for texture {handle}: {format}.");
+
+                format = TextureFormat.R32Sint;
+            }
+
+            return format;
+        }
+
         public void SizeAdd(int size)
         {
             Size += size;
@@ -197,18 +227,53 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
         }
 
-        public void SetInputUserAttribute(int index)
+        public void SetInputUserAttributeFixedFunc(int index)
         {
             UsedInputAttributes |= 1 << index;
         }
 
-        public void SetOutputUserAttribute(int index)
+        public void SetOutputUserAttributeFixedFunc(int index)
         {
             UsedOutputAttributes |= 1 << index;
         }
 
-        public void MergeOutputUserAttributes(int mask)
+        public void SetInputUserAttribute(int index, bool perPatch)
         {
+            if (perPatch)
+            {
+                UsedInputAttributesPerPatch |= 1 << index;
+            }
+            else
+            {
+                int mask = 1 << index;
+
+                UsedInputAttributes |= mask;
+                _thisUsedInputAttributes |= mask;
+            }
+        }
+
+        public void SetOutputUserAttribute(int index, bool perPatch)
+        {
+            if (perPatch)
+            {
+                UsedOutputAttributesPerPatch |= 1 << index;
+            }
+            else
+            {
+                UsedOutputAttributes |= 1 << index;
+            }
+        }
+
+        public void MergeFromtNextStage(ShaderConfig config)
+        {
+            NextUsesFixedFuncAttributes = config.UsedFeatures.HasFlag(FeatureFlags.FixedFuncAttr);
+            MergeOutputUserAttributes(config.UsedInputAttributes, config.UsedInputAttributesPerPatch);
+        }
+
+        public void MergeOutputUserAttributes(int mask, int maskPerPatch)
+        {
+            _nextUsedInputAttributes = mask;
+
             if (GpPassthrough)
             {
                 PassthroughAttributes = mask & ~UsedOutputAttributes;
@@ -216,7 +281,59 @@ namespace Ryujinx.Graphics.Shader.Translation
             else
             {
                 UsedOutputAttributes |= mask;
+                UsedOutputAttributesPerPatch |= maskPerPatch;
             }
+        }
+
+        public bool IsUsedOutputAttribute(int attr)
+        {
+            // The check for fixed function attributes on the next stage is conservative,
+            // returning false if the output is just not used by the next stage is also valid.
+            if (NextUsesFixedFuncAttributes &&
+                attr >= AttributeConsts.UserAttributeBase &&
+                attr < AttributeConsts.UserAttributeEnd)
+            {
+                int index = (attr - AttributeConsts.UserAttributeBase) >> 4;
+                return (_nextUsedInputAttributes & (1 << index)) != 0;
+            }
+
+            return true;
+        }
+
+        public int GetFreeUserAttribute(bool isOutput, int index)
+        {
+            int useMask = isOutput ? _nextUsedInputAttributes : _thisUsedInputAttributes;
+            int bit = -1;
+
+            while (useMask != -1)
+            {
+                bit = BitOperations.TrailingZeroCount(~useMask);
+
+                if (bit == 32)
+                {
+                    bit = -1;
+                    break;
+                }
+                else if (index < 1)
+                {
+                    break;
+                }
+
+                useMask |= 1 << bit;
+                index--;
+            }
+
+            return bit;
+        }
+
+        public void SetAllInputUserAttributes()
+        {
+            UsedInputAttributes |= Constants.AllAttributesMask;
+        }
+
+        public void SetAllOutputUserAttributes()
+        {
+            UsedOutputAttributes |= Constants.AllAttributesMask;
         }
 
         public void SetClipDistanceWritten(int index)
@@ -260,18 +377,19 @@ namespace Ryujinx.Graphics.Shader.Translation
             int handle)
         {
             inst &= Instruction.Mask;
-            bool isImage = inst == Instruction.ImageLoad || inst == Instruction.ImageStore;
-            bool isWrite = inst == Instruction.ImageStore;
-            bool accurateType = inst != Instruction.TextureSize && inst != Instruction.Lod;
+            bool isImage = inst == Instruction.ImageLoad || inst == Instruction.ImageStore || inst == Instruction.ImageAtomic;
+            bool isWrite = inst == Instruction.ImageStore || inst == Instruction.ImageAtomic;
+            bool accurateType = inst != Instruction.Lod;
+            bool coherent = flags.HasFlag(TextureFlags.Coherent);
 
             if (isImage)
             {
-                SetUsedTextureOrImage(_usedImages, cbufSlot, handle, type, format, true, isWrite, false);
+                SetUsedTextureOrImage(_usedImages, cbufSlot, handle, type, format, true, isWrite, false, coherent);
             }
             else
             {
                 bool intCoords = flags.HasFlag(TextureFlags.IntCoords) || inst == Instruction.TextureSize;
-                SetUsedTextureOrImage(_usedTextures, cbufSlot, handle, type, TextureFormat.Unknown, intCoords, false, accurateType);
+                SetUsedTextureOrImage(_usedTextures, cbufSlot, handle, type, TextureFormat.Unknown, intCoords, false, accurateType, coherent);
             }
         }
 
@@ -283,7 +401,8 @@ namespace Ryujinx.Graphics.Shader.Translation
             TextureFormat format,
             bool intCoords,
             bool write,
-            bool accurateType)
+            bool accurateType,
+            bool coherent)
         {
             var dimensions = type.GetDimensions();
             var isIndexed = type.HasFlag(SamplerType.Indexed);
@@ -307,6 +426,11 @@ namespace Ryujinx.Graphics.Shader.Translation
             if (write)
             {
                 usageFlags |= TextureUsageFlags.ImageStore;
+            }
+
+            if (coherent)
+            {
+                usageFlags |= TextureUsageFlags.ImageCoherent;
             }
 
             int arraySize = isIndexed ? SamplerArraySize : 1;

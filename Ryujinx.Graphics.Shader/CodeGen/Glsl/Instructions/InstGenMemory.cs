@@ -18,13 +18,43 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             // TODO: Bindless texture support. For now we just return 0/do nothing.
             if (isBindless)
             {
-                return texOp.Inst == Instruction.ImageLoad ? NumberFormatter.FormatFloat(0) : "// imageStore(bindless)";
+                switch (texOp.Inst)
+                {
+                    case Instruction.ImageStore:
+                        return "// imageStore(bindless)";
+                    case Instruction.ImageLoad:
+                        NumberFormatter.TryFormat(0, texOp.Format.GetComponentType(), out string imageConst);
+                        return imageConst;
+                    default:
+                        return NumberFormatter.FormatInt(0);
+                }
             }
 
             bool isArray   = (texOp.Type & SamplerType.Array)   != 0;
             bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
 
-            string texCall = texOp.Inst == Instruction.ImageLoad ? "imageLoad" : "imageStore";
+            string texCall;
+
+            if (texOp.Inst == Instruction.ImageAtomic)
+            {
+                texCall = (texOp.Flags & TextureFlags.AtomicMask) switch {
+                    TextureFlags.Add        => "imageAtomicAdd",
+                    TextureFlags.Minimum    => "imageAtomicMin",
+                    TextureFlags.Maximum    => "imageAtomicMax",
+                    TextureFlags.Increment  => "imageAtomicAdd", // TODO: Clamp value.
+                    TextureFlags.Decrement  => "imageAtomicAdd", // TODO: Clamp value.
+                    TextureFlags.BitwiseAnd => "imageAtomicAnd",
+                    TextureFlags.BitwiseOr  => "imageAtomicOr",
+                    TextureFlags.BitwiseXor => "imageAtomicXor",
+                    TextureFlags.Swap       => "imageAtomicExchange",
+                    TextureFlags.CAS        => "imageAtomicCompSwap",
+                    _                       => "imageAtomicAdd",
+                };
+            }
+            else
+            {
+                texCall = texOp.Inst == Instruction.ImageLoad ? "imageLoad" : "imageStore";
+            }
 
             int srcIndex = isBindless ? 1 : 0;
 
@@ -95,8 +125,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             if (texOp.Inst == Instruction.ImageStore)
             {
-                int texIndex = context.FindImageDescriptorIndex(texOp);
-
                 VariableType type = texOp.Format.GetComponentType();
 
                 string[] cElems = new string[4];
@@ -128,7 +156,35 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 Append(prefix + "vec4(" + string.Join(", ", cElems) + ")");
             }
 
-            texCall += ")" + (texOp.Inst == Instruction.ImageLoad ? GetMask(texOp.Index) : "");
+            if (texOp.Inst == Instruction.ImageAtomic)
+            {
+                VariableType type = texOp.Format.GetComponentType();
+
+                if ((texOp.Flags & TextureFlags.AtomicMask) == TextureFlags.CAS)
+                {
+                    Append(Src(type)); // Compare value.
+                }
+
+                string value = (texOp.Flags & TextureFlags.AtomicMask) switch
+                {
+                    TextureFlags.Increment => NumberFormatter.FormatInt(1, type), // TODO: Clamp value
+                    TextureFlags.Decrement => NumberFormatter.FormatInt(-1, type), // TODO: Clamp value
+                    _ => Src(type)
+                };
+
+                Append(value);
+
+                texCall += ")";
+
+                if (type != VariableType.S32)
+                {
+                    texCall = "int(" + texCall + ")";
+                }
+            }
+            else
+            {
+                texCall += ")" + (texOp.Inst == Instruction.ImageLoad ? GetMask(texOp.Index) : "");
+            }
 
             return texCall;
         }
@@ -137,15 +193,26 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
         {
             IAstNode src1 = operation.GetSource(0);
             IAstNode src2 = operation.GetSource(1);
+            IAstNode src3 = operation.GetSource(2);
 
-            if (!(src1 is AstOperand attr) || attr.Type != OperandType.Attribute)
+            if (!(src1 is AstOperand baseAttr) || baseAttr.Type != OperandType.Constant)
             {
-                throw new InvalidOperationException("First source of LoadAttribute must be a attribute.");
+                throw new InvalidOperationException($"First input of {nameof(Instruction.LoadAttribute)} must be a constant operand.");
             }
 
-            string indexExpr = GetSoureExpr(context, src2, GetSrcVarType(operation.Inst, 1));
+            string indexExpr = GetSoureExpr(context, src3, GetSrcVarType(operation.Inst, 2));
 
-            return OperandManager.GetAttributeName(attr, context.Config, isOutAttr: false, indexExpr);
+            if (src2 is AstOperand operand && operand.Type == OperandType.Constant)
+            {
+                int attrOffset = baseAttr.Value + (operand.Value << 2);
+                return OperandManager.GetAttributeName(attrOffset, context.Config, perPatch: false, isOutAttr: false, indexExpr);
+            }
+            else
+            {
+                string attrExpr = GetSoureExpr(context, src2, GetSrcVarType(operation.Inst, 1));
+                attrExpr = Enclose(attrExpr, src2, Instruction.ShiftRightS32, isLhs: true);
+                return OperandManager.GetAttributeName(attrExpr, context.Config, isOutAttr: false, indexExpr);
+            }
         }
 
         public static string LoadConstant(CodeGenContext context, AstOperation operation)
@@ -154,16 +221,15 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             IAstNode src2 = operation.GetSource(1);
 
             string offsetExpr = GetSoureExpr(context, src2, GetSrcVarType(operation.Inst, 1));
-
             offsetExpr = Enclose(offsetExpr, src2, Instruction.ShiftRightS32, isLhs: true);
 
             var config = context.Config;
             bool indexElement = !config.GpuAccessor.QueryHostHasVectorIndexingBug();
 
-            if (src1 is AstOperand oper && oper.Type == OperandType.Constant)
+            if (src1 is AstOperand operand && operand.Type == OperandType.Constant)
             {
                 bool cbIndexable = config.UsedFeatures.HasFlag(Translation.FeatureFlags.CbIndexing);
-                return OperandManager.GetConstantBufferName(oper.Value, offsetExpr, config.Stage, cbIndexable, indexElement);
+                return OperandManager.GetConstantBufferName(operand.Value, offsetExpr, config.Stage, cbIndexable, indexElement);
             }
             else
             {
@@ -250,6 +316,35 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             return $"textureQueryLod({samplerName}, {coordsExpr}){GetMask(texOp.Index)}";
         }
 
+        public static string StoreAttribute(CodeGenContext context, AstOperation operation)
+        {
+            IAstNode src1 = operation.GetSource(0);
+            IAstNode src2 = operation.GetSource(1);
+            IAstNode src3 = operation.GetSource(2);
+
+            if (!(src1 is AstOperand baseAttr) || baseAttr.Type != OperandType.Constant)
+            {
+                throw new InvalidOperationException($"First input of {nameof(Instruction.StoreAttribute)} must be a constant operand.");
+            }
+
+            string attrName;
+
+            if (src2 is AstOperand operand && operand.Type == OperandType.Constant)
+            {
+                int attrOffset = baseAttr.Value + (operand.Value << 2);
+                attrName = OperandManager.GetAttributeName(attrOffset, context.Config, perPatch: false, isOutAttr: true);
+            }
+            else
+            {
+                string attrExpr = GetSoureExpr(context, src2, GetSrcVarType(operation.Inst, 1));
+                attrExpr = Enclose(attrExpr, src2, Instruction.ShiftRightS32, isLhs: true);
+                attrName = OperandManager.GetAttributeName(attrExpr, context.Config, isOutAttr: true);
+            }
+
+            string value = GetSoureExpr(context, src3, GetSrcVarType(operation.Inst, 2));
+            return $"{attrName} = {value}";
+        }
+
         public static string StoreLocal(CodeGenContext context, AstOperation operation)
         {
             return StoreLocalOrShared(context, operation, DefaultNames.LocalMemoryName);
@@ -274,6 +369,34 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             return $"{arrayName}[{offsetExpr}] = {src}";
         }
 
+        public static string StoreShared16(CodeGenContext context, AstOperation operation)
+        {
+            IAstNode src1 = operation.GetSource(0);
+            IAstNode src2 = operation.GetSource(1);
+
+            string offsetExpr = GetSoureExpr(context, src1, GetSrcVarType(operation.Inst, 0));
+
+            VariableType srcType = OperandManager.GetNodeDestType(context, src2);
+
+            string src = TypeConversion.ReinterpretCast(context, src2, srcType, VariableType.U32);
+
+            return $"{HelperFunctionNames.StoreShared16}({offsetExpr}, {src})";
+        }
+
+        public static string StoreShared8(CodeGenContext context, AstOperation operation)
+        {
+            IAstNode src1 = operation.GetSource(0);
+            IAstNode src2 = operation.GetSource(1);
+
+            string offsetExpr = GetSoureExpr(context, src1, GetSrcVarType(operation.Inst, 0));
+
+            VariableType srcType = OperandManager.GetNodeDestType(context, src2);
+
+            string src = TypeConversion.ReinterpretCast(context, src2, srcType, VariableType.U32);
+
+            return $"{HelperFunctionNames.StoreShared8}({offsetExpr}, {src})";
+        }
+
         public static string StoreStorage(CodeGenContext context, AstOperation operation)
         {
             IAstNode src1 = operation.GetSource(0);
@@ -290,6 +413,42 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             string sb = GetStorageBufferAccessor(indexExpr, offsetExpr, context.Config.Stage);
 
             return $"{sb} = {src}";
+        }
+
+        public static string StoreStorage16(CodeGenContext context, AstOperation operation)
+        {
+            IAstNode src1 = operation.GetSource(0);
+            IAstNode src2 = operation.GetSource(1);
+            IAstNode src3 = operation.GetSource(2);
+
+            string indexExpr  = GetSoureExpr(context, src1, GetSrcVarType(operation.Inst, 0));
+            string offsetExpr = GetSoureExpr(context, src2, GetSrcVarType(operation.Inst, 1));
+
+            VariableType srcType = OperandManager.GetNodeDestType(context, src3);
+
+            string src = TypeConversion.ReinterpretCast(context, src3, srcType, VariableType.U32);
+
+            string sb = GetStorageBufferAccessor(indexExpr, offsetExpr, context.Config.Stage);
+
+            return $"{HelperFunctionNames.StoreStorage16}({indexExpr}, {offsetExpr}, {src})";
+        }
+
+        public static string StoreStorage8(CodeGenContext context, AstOperation operation)
+        {
+            IAstNode src1 = operation.GetSource(0);
+            IAstNode src2 = operation.GetSource(1);
+            IAstNode src3 = operation.GetSource(2);
+
+            string indexExpr  = GetSoureExpr(context, src1, GetSrcVarType(operation.Inst, 0));
+            string offsetExpr = GetSoureExpr(context, src2, GetSrcVarType(operation.Inst, 1));
+
+            VariableType srcType = OperandManager.GetNodeDestType(context, src3);
+
+            string src = TypeConversion.ReinterpretCast(context, src3, srcType, VariableType.U32);
+
+            string sb = GetStorageBufferAccessor(indexExpr, offsetExpr, context.Config.Stage);
+
+            return $"{HelperFunctionNames.StoreStorage8}({indexExpr}, {offsetExpr}, {src})";
         }
 
         public static string TextureSample(CodeGenContext context, AstOperation operation)

@@ -1,3 +1,4 @@
+using ARMeilleure.CodeGen.Linking;
 using ARMeilleure.CodeGen.Optimizations;
 using ARMeilleure.CodeGen.RegisterAllocators;
 using ARMeilleure.CodeGen.Unwinding;
@@ -5,11 +6,9 @@ using ARMeilleure.Common;
 using ARMeilleure.Diagnostics;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
-using ARMeilleure.Translation.PTC;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Numerics;
 using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
 
@@ -20,7 +19,7 @@ namespace ARMeilleure.CodeGen.X86
         private const int PageSize       = 0x1000;
         private const int StackGuardSize = 0x2000;
 
-        private static Action<CodeGenContext, Operation>[] _instTable;
+        private static readonly Action<CodeGenContext, Operation>[] _instTable;
 
         static CodeGenerator()
         {
@@ -84,34 +83,36 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.ZeroExtend16,            GenerateZeroExtend16);
             Add(Instruction.ZeroExtend32,            GenerateZeroExtend32);
             Add(Instruction.ZeroExtend8,             GenerateZeroExtend8);
+
+            static void Add(Instruction inst, Action<CodeGenContext, Operation> func)
+            {
+                _instTable[(int)inst] = func;
+            }
         }
 
-        private static void Add(Instruction inst, Action<CodeGenContext, Operation> func)
-        {
-            _instTable[(int)inst] = func;
-        }
-
-        public static CompiledFunction Generate(CompilerContext cctx, PtcInfo ptcInfo = null)
+        public static CompiledFunction Generate(CompilerContext cctx)
         {
             ControlFlowGraph cfg = cctx.Cfg;
 
             Logger.StartPass(PassName.Optimization);
 
-            if ((cctx.Options & CompilerOptions.SsaForm)  != 0 &&
-                (cctx.Options & CompilerOptions.Optimize) != 0)
+            if (cctx.Options.HasFlag(CompilerOptions.Optimize))
             {
-                Optimizer.RunPass(cfg);
+                if (cctx.Options.HasFlag(CompilerOptions.SsaForm))
+                {
+                    Optimizer.RunPass(cfg);
+                }
+
+                BlockPlacement.RunPass(cfg);
             }
 
             X86Optimizer.RunPass(cfg);
-
-            BlockPlacement.RunPass(cfg);
 
             Logger.EndPass(PassName.Optimization, cfg);
 
             Logger.StartPass(PassName.PreAllocation);
 
-            StackAllocator stackAlloc = new StackAllocator();
+            StackAllocator stackAlloc = new();
 
             PreAllocator.RunPass(cctx, stackAlloc, out int maxCallArgs);
 
@@ -119,14 +120,14 @@ namespace ARMeilleure.CodeGen.X86
 
             Logger.StartPass(PassName.RegisterAllocation);
 
-            if ((cctx.Options & CompilerOptions.SsaForm) != 0)
+            if (cctx.Options.HasFlag(CompilerOptions.SsaForm))
             {
                 Ssa.Deconstruct(cfg);
             }
 
             IRegisterAllocator regAlloc;
 
-            if ((cctx.Options & CompilerOptions.Lsra) != 0)
+            if (cctx.Options.HasFlag(CompilerOptions.Lsra))
             {
                 regAlloc = new LinearScanAllocator();
             }
@@ -135,7 +136,7 @@ namespace ARMeilleure.CodeGen.X86
                 regAlloc = new HybridAllocator();
             }
 
-            RegisterMasks regMasks = new RegisterMasks(
+            RegisterMasks regMasks = new(
                 CallingConvention.GetIntAvailableRegisters(),
                 CallingConvention.GetVecAvailableRegisters(),
                 CallingConvention.GetIntCallerSavedRegisters(),
@@ -149,53 +150,45 @@ namespace ARMeilleure.CodeGen.X86
 
             Logger.StartPass(PassName.CodeGeneration);
 
-            using (MemoryStream stream = new MemoryStream())
+            bool relocatable = (cctx.Options & CompilerOptions.Relocatable) != 0;
+
+            CodeGenContext context = new(allocResult, maxCallArgs, cfg.Blocks.Count, relocatable);
+
+            UnwindInfo unwindInfo = WritePrologue(context);
+
+            for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
             {
-                CodeGenContext context = new CodeGenContext(stream, allocResult, maxCallArgs, cfg.Blocks.Count, ptcInfo);
+                context.EnterBlock(block);
 
-                UnwindInfo unwindInfo = WritePrologue(context);
-
-                ptcInfo?.WriteUnwindInfo(unwindInfo);
-
-                for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
+                for (Operation node = block.Operations.First; node != default; node = node.ListNext)
                 {
-                    context.EnterBlock(block);
-
-                    for (Operation node = block.Operations.First; node != default; node = node.ListNext)
-                    {
-                        GenerateOperation(context, node);
-                    }
-
-                    if (block.SuccessorsCount == 0)
-                    {
-                        // The only blocks which can have 0 successors are exit blocks.
-                        Operation last = block.Operations.Last;
-
-                        Debug.Assert(last.Instruction == Instruction.Tailcall ||
-                                     last.Instruction == Instruction.Return);
-                    }
-                    else
-                    {
-                        BasicBlock succ = block.GetSuccessor(0);
-
-                        if (succ != block.ListNext)
-                        {
-                            context.JumpTo(succ);
-                        }
-                    }
+                    GenerateOperation(context, node);
                 }
 
-                byte[] code = context.GetCode();
-
-                if (ptcInfo != null)
+                if (block.SuccessorsCount == 0)
                 {
-                    ptcInfo.Code = code;
+                    // The only blocks which can have 0 successors are exit blocks.
+                    Operation last = block.Operations.Last;
+
+                    Debug.Assert(last.Instruction == Instruction.Tailcall ||
+                                 last.Instruction == Instruction.Return);
                 }
+                else
+                {
+                    BasicBlock succ = block.GetSuccessor(0);
 
-                Logger.EndPass(PassName.CodeGeneration);
-
-                return new CompiledFunction(code, unwindInfo);
+                    if (succ != block.ListNext)
+                    {
+                        context.JumpTo(succ);
+                    }
+                }
             }
+
+            (byte[] code, RelocInfo relocInfo) = context.Assembler.GetCode();
+
+            Logger.EndPass(PassName.CodeGeneration);
+
+            return new CompiledFunction(code, unwindInfo, relocInfo);
         }
 
         private static void GenerateOperation(CodeGenContext context, Operation operation)
@@ -874,11 +867,13 @@ namespace ARMeilleure.CodeGen.X86
             // ZF flag is set. We are supposed to return the operand size on that
             // case. So, add an additional jump to handle that case, by moving the
             // operand size constant to the destination register.
-            context.JumpToNear(X86Condition.NotEqual);
+            Operand neLabel = Label();
+
+            context.Assembler.Jcc(X86Condition.NotEqual, neLabel);
 
             context.Assembler.Mov(dest, Const(operandSize | operandMask), OperandType.I32);
 
-            context.JumpHere();
+            context.Assembler.MarkLabel(neLabel);
 
             // BSR returns the zero based index of the last bit set on the operand,
             // starting from the least significant bit. However we are supposed to

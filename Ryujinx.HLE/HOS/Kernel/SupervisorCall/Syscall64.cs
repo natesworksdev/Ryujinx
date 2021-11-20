@@ -110,6 +110,14 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return _syscall.SetHeapSize(size, out position);
         }
 
+        public KernelResult SetMemoryPermission64(
+            [R(0)] ulong position,
+            [R(1)] ulong size,
+            [R(2)] KMemoryPermission permission)
+        {
+            return _syscall.SetMemoryPermission(position, size, permission);
+        }
+
         public KernelResult SetMemoryAttribute64(
             [R(0)] ulong position,
             [R(1)] ulong size,
@@ -278,6 +286,31 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         public KernelResult GetSystemInfo64([R(1)] uint id, [R(2)] int handle, [R(3)] long subId, [R(1)] out long value)
         {
             return _syscall.GetSystemInfo(id, handle, subId, out value);
+        }
+
+        public KernelResult GetResourceLimitLimitValue64([R(1)] int handle, [R(2)] LimitableResource resource, [R(1)] out long limitValue)
+        {
+            return _syscall.GetResourceLimitLimitValue(handle, resource, out limitValue);
+        }
+
+        public KernelResult GetResourceLimitCurrentValue64([R(1)] int handle, [R(2)] LimitableResource resource, [R(1)] out long limitValue)
+        {
+            return _syscall.GetResourceLimitCurrentValue(handle, resource, out limitValue);
+        }
+
+        public KernelResult GetResourceLimitPeakValue64([R(1)] int handle, [R(2)] LimitableResource resource, [R(1)] out long peak)
+        {
+            return _syscall.GetResourceLimitPeakValue(handle, resource, out peak);
+        }
+
+        public KernelResult CreateResourceLimit64([R(1)] out int handle)
+        {
+            return _syscall.CreateResourceLimit(out handle);
+        }
+
+        public KernelResult SetResourceLimitLimitValue64([R(0)] int handle, [R(1)] LimitableResource resource, [R(2)] long limitValue)
+        {
+            return _syscall.SetResourceLimitLimitValue(handle, resource, limitValue);
         }
 
         // Thread
