@@ -104,11 +104,37 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
             _inputTextFontSize = 20;
 
-            string font = uiTheme.FontFamily;
+            CreateFonts(uiTheme.FontFamily);
+        }
 
-            _messageFont    = SystemFonts.CreateFont(font, 26,                 FontStyle.Regular);
-            _inputTextFont  = SystemFonts.CreateFont(font, _inputTextFontSize, FontStyle.Regular);
-            _labelsTextFont = SystemFonts.CreateFont(font, 24,                 FontStyle.Regular);
+        private void CreateFonts(string uiThemeFontFamily)
+        {
+            // Try a list of fonts in case any of them is not available in the system.
+
+            string[] availableFonts = new string[]
+            {
+                uiThemeFontFamily,
+                "Liberation Sans",
+                "FreeSans",
+                "DejaVu Sans"
+            };
+
+            foreach (string fontFamily in availableFonts)
+            {
+                try
+                {
+                    _messageFont    = SystemFonts.CreateFont(fontFamily, 26,                 FontStyle.Regular);
+                    _inputTextFont  = SystemFonts.CreateFont(fontFamily, _inputTextFontSize, FontStyle.Regular);
+                    _labelsTextFont = SystemFonts.CreateFont(fontFamily, 24,                 FontStyle.Regular);
+
+                    return;
+                }
+                catch
+                {
+                }
+            }
+
+            throw new Exception($"None of these fonts were found in the system: {String.Join(", ", availableFonts)}!");
         }
 
         private Color ToColor(ThemeColor color, byte? overrideAlpha = null, bool flipRgb = false)
@@ -468,7 +494,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
             {
                 // Just draw a semi-transparent rectangle on top to fade the component with the background.
                 // TODO (caian): This will not work if one decides to add make background semi-transparent as well.
-                
+
                 context.Fill(_disabledBrush, boundRectangle);
             }
         }
