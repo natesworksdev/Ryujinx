@@ -75,21 +75,28 @@ namespace Ryujinx.Ui.Windows
 
             foreach (DlcContainer dlcContainer in _dlcContainerList)
             {
-                TreeIter parentIter = ((TreeStore)_dlcTreeView.Model).AppendValues(false, "", dlcContainer.Path);
-
-                using FileStream containerFile = File.OpenRead(dlcContainer.Path);
-                PartitionFileSystem pfs = new PartitionFileSystem(containerFile.AsStorage());
-                _virtualFileSystem.ImportTickets(pfs);
-
-                foreach (DlcNca dlcNca in dlcContainer.DlcNcaList)
+                if (File.Exists(dlcContainer.Path))
                 {
-                    pfs.OpenFile(out IFile ncaFile, dlcNca.Path.ToU8Span(), OpenMode.Read).ThrowIfFailure();
-                    Nca nca = TryCreateNca(ncaFile.AsStorage(), dlcContainer.Path);
-                    
-                    if (nca != null)
+                    TreeIter parentIter = ((TreeStore)_dlcTreeView.Model).AppendValues(true, "", dlcContainer.Path);
+                    using FileStream containerFile = File.OpenRead(dlcContainer.Path);
+                    PartitionFileSystem pfs = new PartitionFileSystem(containerFile.AsStorage());
+                    _virtualFileSystem.ImportTickets(pfs);
+
+                    foreach (DlcNca dlcNca in dlcContainer.DlcNcaList)
                     {
-                        ((TreeStore)_dlcTreeView.Model).AppendValues(parentIter, dlcNca.Enabled, nca.Header.TitleId.ToString("X16"), dlcNca.Path);
+                        pfs.OpenFile(out IFile ncaFile, dlcNca.Path.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                        Nca nca = TryCreateNca(ncaFile.AsStorage(), dlcContainer.Path);
+
+                        if (nca != null)
+                        {
+                            ((TreeStore)_dlcTreeView.Model).AppendValues(parentIter, dlcNca.Enabled, nca.Header.TitleId.ToString("X16"), dlcNca.Path);
+                        }
                     }
+                }
+                else
+                {
+                    // DLC file moved or renamed. Show an alert of some kind?
+                    TreeIter parentIter = ((TreeStore)_dlcTreeView.Model).AppendValues(false, "", $"(MISSING) {dlcContainer.Path}");
                 }
             }
         }
