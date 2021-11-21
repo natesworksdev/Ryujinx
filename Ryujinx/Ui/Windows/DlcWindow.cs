@@ -95,7 +95,7 @@ namespace Ryujinx.Ui.Windows
                 }
                 else
                 {
-                    // DLC file moved or renamed. Show an alert of some kind?
+                    // DLC file moved or renamed. Allow the user to remove it without crashing the whole dialog.
                     TreeIter parentIter = ((TreeStore)_dlcTreeView.Model).AppendValues(false, "", $"(MISSING) {dlcContainer.Path}");
                 }
             }
