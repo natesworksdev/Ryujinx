@@ -34,6 +34,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         private bool _running;
 
         private AutoResetEvent _frameComplete = new AutoResetEvent(true);
+        private SemaphoreSlim _queueSlotsAvailable = new SemaphoreSlim(QueueCount);
 
         private ManualResetEventSlim _galWorkAvailable;
         private CircularSpanPool _spanPool;
@@ -136,7 +137,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
                     }
 
                     _consumerPtr = (_consumerPtr + 1) % QueueCount;
-
+                    _queueSlotsAvailable.Release();
                     Interlocked.Decrement(ref _commandCount);
                 }
             }
@@ -154,13 +155,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
         internal ref T New<T>() where T : struct
         {
-            while (_producerPtr == (_consumerPtr + QueueCount - 1) % QueueCount)
-            {
-                // If incrementing the producer pointer would overflow, we need to wait.
-                // _consumerPtr can only move forward, so there's no race to worry about here.
-
-                Thread.Sleep(1);
-            }
+            // If incrementing the producer pointer would overflow, we need to wait.
+            // This semaphore controls access to the fixed number of queue resources
+            _queueSlotsAvailable.Wait();
 
             int taken = _producerPtr;
             _lastProducedPtr = taken;
@@ -432,6 +429,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
             // Dispose events.
             _frameComplete.Dispose();
+            _queueSlotsAvailable.Dispose();
             _galWorkAvailable.Dispose();
             _invokeRun.Dispose();
 
