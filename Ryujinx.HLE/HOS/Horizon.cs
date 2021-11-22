@@ -326,6 +326,16 @@ namespace Ryujinx.HLE.HOS
             }
         }
 
+        public void SetVolume(float volume)
+        {
+            AudioOutputManager.SetVolume(volume);
+        }
+
+        public float GetVolume()
+        {
+            return AudioOutputManager.GetVolume();
+        }
+
         public void ReturnFocus()
         {
             AppletState.SetFocus(true);
