@@ -255,7 +255,6 @@ namespace Ryujinx.Graphics.Gpu
         /// </summary>
         public void Dispose()
         {
-            Renderer.Dispose();
             GPFifo.Dispose();
             HostInitalized.Dispose();
 
@@ -268,6 +267,10 @@ namespace Ryujinx.Graphics.Gpu
             PhysicalMemoryRegistry.Clear();
 
             RunDeferredActions();
+
+            // We must dispose of the actual renderer at the very end because RunDeferredActions()
+            // dispatches Destroy() commands that need to be handled on the renderer thread
+            Renderer.Dispose();
         }
     }
 }
