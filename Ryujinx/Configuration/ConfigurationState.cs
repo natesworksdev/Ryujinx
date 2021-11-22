@@ -944,7 +944,6 @@ namespace Ryujinx.Configuration
                 };
 
                 configurationFileUpdated = true;
-
             }
 
             Logger.EnableFileLog.Value             = configurationFileFormat.EnableFileLog;
