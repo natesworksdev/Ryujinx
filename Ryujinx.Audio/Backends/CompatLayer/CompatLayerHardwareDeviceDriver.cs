@@ -68,7 +68,7 @@ namespace Ryujinx.Audio.Backends.CompatLayer
             };
         }
 
-        public IHardwareDeviceSession OpenDeviceSession(Direction direction, IVirtualMemoryManager memoryManager, SampleFormat sampleFormat, uint sampleRate, uint channelCount)
+        public IHardwareDeviceSession OpenDeviceSession(Direction direction, IVirtualMemoryManager memoryManager, SampleFormat sampleFormat, uint sampleRate, uint channelCount, float volume)
         {
             if (channelCount == 0)
             {
@@ -78,6 +78,11 @@ namespace Ryujinx.Audio.Backends.CompatLayer
             if (sampleRate == 0)
             {
                 sampleRate = Constants.TargetSampleRate;
+            }
+
+            if(volume < 0 || volume > 1)
+            {
+                volume = 1;
             }
 
             if (!_realDriver.SupportsDirection(direction))
@@ -94,7 +99,7 @@ namespace Ryujinx.Audio.Backends.CompatLayer
 
             uint hardwareChannelCount = SelectHardwareChannelCount(channelCount);
 
-            IHardwareDeviceSession realSession = _realDriver.OpenDeviceSession(direction, memoryManager, sampleFormat, sampleRate, hardwareChannelCount);
+            IHardwareDeviceSession realSession = _realDriver.OpenDeviceSession(direction, memoryManager, sampleFormat, sampleRate, hardwareChannelCount, volume);
 
             if (hardwareChannelCount == channelCount)
             {

@@ -207,6 +207,7 @@ namespace Ryujinx.Ui
             ConfigurationState.Instance.System.IgnoreMissingServices.Event += UpdateIgnoreMissingServicesState;
             ConfigurationState.Instance.Graphics.AspectRatio.Event         += UpdateAspectRatioState;
             ConfigurationState.Instance.System.EnableDockedMode.Event      += UpdateDockedModeState;
+            ConfigurationState.Instance.System.AudioVolume.Event           += UpdateAudioVolumeState; 
 
             if (ConfigurationState.Instance.Ui.StartFullscreen)
             {
@@ -304,6 +305,14 @@ namespace Ryujinx.Ui
             if (_emulationContext != null)
             {
                 _emulationContext.System.ChangeDockedModeState(e.NewValue);
+            }
+        }
+
+        private void UpdateAudioVolumeState(object sender, ReactiveEventArgs<float> e)
+        {
+            if(_emulationContext != null)
+            {
+                _emulationContext.SetVolume(e.NewValue);
             }
         }
 
@@ -564,7 +573,8 @@ namespace Ryujinx.Ui
                                                                           ConfigurationState.Instance.System.TimeZone,
                                                                           ConfigurationState.Instance.System.MemoryManagerMode,
                                                                           ConfigurationState.Instance.System.IgnoreMissingServices,
-                                                                          ConfigurationState.Instance.Graphics.AspectRatio);
+                                                                          ConfigurationState.Instance.Graphics.AspectRatio,
+                                                                          ConfigurationState.Instance.System.AudioVolume);
 
             _emulationContext = new HLE.Switch(configuration);
         }
@@ -1178,7 +1188,7 @@ namespace Ryujinx.Ui
 
             if (_emulationContext.IsAudioMuted())
             {
-                _emulationContext.SetVolume(1);
+                _emulationContext.SetVolume(ConfigurationState.Instance.System.AudioVolume);
             }
             else
             {

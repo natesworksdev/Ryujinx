@@ -255,6 +255,7 @@ namespace Ryujinx.HLE.HOS
             }
 
             AudioOutputManager.Initialize(Device.AudioDeviceDriver, audioOutputRegisterBufferEvents);
+            AudioOutputManager.SetVolume(Device.Configuration.AudioVolume);
 
             IWritableEvent[] audioInputRegisterBufferEvents = new IWritableEvent[Constants.AudioInSessionCountMax];
 

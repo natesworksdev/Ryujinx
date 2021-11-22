@@ -32,6 +32,7 @@
   "enable_fs_integrity_checks": true,
   "fs_global_access_log_mode": 0,
   "audio_backend": "OpenAl",
+  "audio_volume": 1,
   "memory_manager_mode": "HostMappedUnsafe",
   "expand_ram": false,
   "ignore_missing_services": false,

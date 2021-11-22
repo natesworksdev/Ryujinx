@@ -208,13 +208,14 @@ namespace Ryujinx.Audio.Output
                                        SampleFormat sampleFormat,
                                        ref AudioInputConfiguration parameter,
                                        ulong appletResourceUserId,
-                                       uint processHandle)
+                                       uint processHandle,
+                                       float volume)
         {
             int sessionId = AcquireSessionId();
 
             _sessionsBufferEvents[sessionId].Clear();
 
-            IHardwareDeviceSession deviceSession = _deviceDriver.OpenDeviceSession(IHardwareDeviceDriver.Direction.Output, memoryManager, sampleFormat, parameter.SampleRate, parameter.ChannelCount);
+            IHardwareDeviceSession deviceSession = _deviceDriver.OpenDeviceSession(IHardwareDeviceDriver.Direction.Output, memoryManager, sampleFormat, parameter.SampleRate, parameter.ChannelCount, volume);
 
             AudioOutputSystem audioOut = new AudioOutputSystem(this, _lock, deviceSession, _sessionsBufferEvents[sessionId]);
 

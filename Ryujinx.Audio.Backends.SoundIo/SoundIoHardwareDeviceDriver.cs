@@ -130,7 +130,7 @@ namespace Ryujinx.Audio.Backends.SoundIo
             return _pauseEvent;
         }
 
-        public IHardwareDeviceSession OpenDeviceSession(Direction direction, IVirtualMemoryManager memoryManager, SampleFormat sampleFormat, uint sampleRate, uint channelCount)
+        public IHardwareDeviceSession OpenDeviceSession(Direction direction, IVirtualMemoryManager memoryManager, SampleFormat sampleFormat, uint sampleRate, uint channelCount, float volume)
         {
             if (channelCount == 0)
             {
@@ -142,12 +142,17 @@ namespace Ryujinx.Audio.Backends.SoundIo
                 sampleRate = Constants.TargetSampleRate;
             }
 
+            if (volume < 0 || volume > 1)
+            {
+                volume = 1;
+            }
+
             if (direction != Direction.Output)
             {
                 throw new NotImplementedException("Input direction is currently not implemented on SoundIO backend!");
             }
 
-            SoundIoHardwareDeviceSession session = new SoundIoHardwareDeviceSession(this, memoryManager, sampleFormat, sampleRate, channelCount);
+            SoundIoHardwareDeviceSession session = new SoundIoHardwareDeviceSession(this, memoryManager, sampleFormat, sampleRate, channelCount, volume);
 
             _sessions.TryAdd(session, 0);
 

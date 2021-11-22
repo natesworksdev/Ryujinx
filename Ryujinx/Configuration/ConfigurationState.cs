@@ -221,6 +221,11 @@ namespace Ryujinx.Configuration
             public ReactiveObject<AudioBackend> AudioBackend { get; private set; }
 
             /// <summary>
+            /// The audio backend volume
+            /// </summary>
+            public ReactiveObject<float> AudioVolume { get; private set; }
+
+            /// <summary>
             /// The selected memory manager mode
             /// </summary>
             public ReactiveObject<MemoryManagerMode> MemoryManagerMode { get; private set; }
@@ -257,6 +262,8 @@ namespace Ryujinx.Configuration
                 ExpandRam.Event               += static (sender, e) => LogValueChange(sender, e, nameof(ExpandRam));
                 IgnoreMissingServices         = new ReactiveObject<bool>();
                 IgnoreMissingServices.Event   += static (sender, e) => LogValueChange(sender, e, nameof(IgnoreMissingServices));
+                AudioVolume                   = new ReactiveObject<float>();
+                AudioVolume.Event             += static (sender, e) => LogValueChange(sender, e, nameof(AudioVolume));
             }
         }
 
@@ -460,6 +467,7 @@ namespace Ryujinx.Configuration
                 EnableFsIntegrityChecks   = System.EnableFsIntegrityChecks,
                 FsGlobalAccessLogMode     = System.FsGlobalAccessLogMode,
                 AudioBackend              = System.AudioBackend,
+                AudioVolume               = System.AudioVolume,
                 MemoryManagerMode         = System.MemoryManagerMode,
                 ExpandRam                 = System.ExpandRam,
                 IgnoreMissingServices     = System.IgnoreMissingServices,
@@ -943,6 +951,8 @@ namespace Ryujinx.Configuration
                     ToggleMute = Key.F2
                 };
 
+                configurationFileFormat.AudioVolume = 1;
+
                 configurationFileUpdated = true;
             }
 
@@ -977,6 +987,7 @@ namespace Ryujinx.Configuration
             System.EnableFsIntegrityChecks.Value   = configurationFileFormat.EnableFsIntegrityChecks;
             System.FsGlobalAccessLogMode.Value     = configurationFileFormat.FsGlobalAccessLogMode;
             System.AudioBackend.Value              = configurationFileFormat.AudioBackend;
+            System.AudioVolume.Value               = configurationFileFormat.AudioVolume;
             System.MemoryManagerMode.Value         = configurationFileFormat.MemoryManagerMode;
             System.ExpandRam.Value                 = configurationFileFormat.ExpandRam;
             System.IgnoreMissingServices.Value     = configurationFileFormat.IgnoreMissingServices;

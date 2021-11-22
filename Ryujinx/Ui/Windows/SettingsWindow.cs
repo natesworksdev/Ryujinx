@@ -65,6 +65,7 @@ namespace Ryujinx.Ui.Windows
         [GUI] EntryCompletion _systemTimeZoneCompletion;
         [GUI] Box             _audioBackendBox;
         [GUI] ComboBox        _audioBackendSelect;
+        [GUI] Scale           _audioVolumeSlider;
         [GUI] SpinButton      _systemTimeYearSpin;
         [GUI] SpinButton      _systemTimeMonthSpin;
         [GUI] SpinButton      _systemTimeDaySpin;
@@ -364,6 +365,14 @@ namespace Ryujinx.Ui.Windows
             _audioBackendBox.Add(_audioBackendSelect);
             _audioBackendSelect.Show();
 
+            _audioVolumeSlider = new Scale(Orientation.Horizontal, 0, 100, 1);
+            _audioVolumeSlider.MarginStart = 10;
+            _audioVolumeSlider.WidthRequest = 200;
+            _audioVolumeSlider.Value = ConfigurationState.Instance.System.AudioVolume * 100;
+
+            _audioBackendBox.Add(_audioVolumeSlider);
+            _audioVolumeSlider.Show();
+
             bool openAlIsSupported  = false;
             bool soundIoIsSupported = false;
             bool sdl2IsSupported    = false;
@@ -498,6 +507,7 @@ namespace Ryujinx.Ui.Windows
             ConfigurationState.Instance.Graphics.BackendThreading.Value        = backendThreading;
             ConfigurationState.Instance.Graphics.ResScale.Value                = int.Parse(_resScaleCombo.ActiveId);
             ConfigurationState.Instance.Graphics.ResScaleCustom.Value          = resScaleCustom;
+            ConfigurationState.Instance.System.AudioVolume.Value               = (float)_audioVolumeSlider.Value / 100.0f;
 
             if (_audioBackendSelect.GetActiveIter(out TreeIter activeIter))
             {

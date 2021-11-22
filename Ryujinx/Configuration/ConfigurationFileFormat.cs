@@ -180,6 +180,11 @@ namespace Ryujinx.Configuration
         public AudioBackend AudioBackend { get; set; }
 
         /// <summary>
+        /// The audio volume
+        /// </summary>
+        public float AudioVolume { get; set; }
+
+        /// <summary>
         /// The selected memory manager mode
         /// </summary>
         public MemoryManagerMode MemoryManagerMode { get; set; }
