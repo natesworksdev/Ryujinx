@@ -225,9 +225,9 @@ namespace Ryujinx.Audio.Output
                 outputDeviceName = audioOut.DeviceName;
                 outputConfiguration = new AudioOutputConfiguration
                 {
-                    ChannelCount  = audioOut.ChannelCount,
-                    SampleFormat  = audioOut.SampleFormat,
-                    SampleRate    = audioOut.SampleRate,
+                    ChannelCount = audioOut.ChannelCount,
+                    SampleFormat = audioOut.SampleFormat,
+                    SampleRate = audioOut.SampleRate,
                     AudioOutState = audioOut.GetState(),
                 };
 
@@ -245,6 +245,38 @@ namespace Ryujinx.Audio.Output
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Sets the volume for all output devices.
+        /// </summary>
+        /// <param name="volume">The volume to set.</param>
+        public void SetVolume(float volume)
+        {
+            if (_sessions == null) return;
+
+            foreach (AudioOutputSystem session in _sessions)
+            {
+                if (session == null) continue;
+                session.SetVolume(volume);
+            }
+        }
+
+        /// <summary>
+        /// Gets the volume for all output devices.
+        /// </summary>
+        /// <returns>A float indicating the volume level.</returns>
+        public float GetVolume()
+        {
+            if (_sessions == null) return 0.0f;
+
+            foreach(AudioOutputSystem session in _sessions)
+            {
+                if (session == null) continue;
+                return session.GetVolume();
+            }
+
+            return 0.0f;
         }
 
         public void Dispose()

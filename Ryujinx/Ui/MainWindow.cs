@@ -133,6 +133,7 @@ namespace Ryujinx.Ui
         [GUI] ProgressBar     _progressBar;
         [GUI] Box             _viewBox;
         [GUI] Label           _vSyncStatus;
+        [GUI] Label           _muteStatus;
         [GUI] Box             _listStatusBox;
         [GUI] Label           _loadingStatusLabel;
         [GUI] ProgressBar     _loadingStatusBar;
@@ -1110,6 +1111,7 @@ namespace Ryujinx.Ui
                 _gpuName.Text     = args.GpuName;
                 _dockedMode.Text  = args.DockedMode;
                 _aspectRatio.Text = args.AspectRatio;
+                _muteStatus.Text  = args.IsMuted ? "Unmute" : "Mute";
 
                 if (args.VSyncEnabled)
                 {
@@ -1168,6 +1170,21 @@ namespace Ryujinx.Ui
         private void DockedMode_Clicked(object sender, ButtonReleaseEventArgs args)
         {
             ConfigurationState.Instance.System.EnableDockedMode.Value = !ConfigurationState.Instance.System.EnableDockedMode.Value;
+        }
+
+        private void MuteStatus_Clicked(object sender, ButtonReleaseEventArgs args)
+        {
+            if (_emulationContext == null) return;
+
+            if (_emulationContext.GetVolume() == 0)
+            {
+                _emulationContext.SetVolume(1);
+            }
+            else
+            {
+                _emulationContext.SetVolume(0);
+            }
+
         }
 
         private void AspectRatio_Clicked(object sender, ButtonReleaseEventArgs args)
