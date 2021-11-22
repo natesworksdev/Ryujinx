@@ -1184,7 +1184,6 @@ namespace Ryujinx.Ui
             {
                 _emulationContext.SetVolume(0);
             }
-
         }
 
         private void AspectRatio_Clicked(object sender, ButtonReleaseEventArgs args)
