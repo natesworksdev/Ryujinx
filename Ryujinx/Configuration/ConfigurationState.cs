@@ -553,6 +553,7 @@ namespace Ryujinx.Configuration
             Hid.Hotkeys.Value = new KeyboardHotkeys
             {
                 ToggleVsync = Key.Tab,
+                ToggleMute = Key.F2,
                 Screenshot = Key.F8,
                 ShowUi = Key.F4,
                 Pause = Key.F5
@@ -927,6 +928,23 @@ namespace Ryujinx.Configuration
                 };
 
                 configurationFileUpdated = true;
+            }
+
+            if(configurationFileFormat.Version < 33)
+            {
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 33.");
+
+                configurationFileFormat.Hotkeys = new KeyboardHotkeys
+                {
+                    ToggleVsync = configurationFileFormat.Hotkeys.ToggleVsync,
+                    Screenshot = configurationFileFormat.Hotkeys.Screenshot,
+                    ShowUi = configurationFileFormat.Hotkeys.ShowUi,
+                    Pause = configurationFileFormat.Hotkeys.Pause,
+                    ToggleMute = Key.F2
+                };
+
+                configurationFileUpdated = true;
+
             }
 
             Logger.EnableFileLog.Value             = configurationFileFormat.EnableFileLog;

@@ -599,6 +599,18 @@ namespace Ryujinx.Ui
                     (Toplevel as MainWindow)?.TogglePause();
                 }
 
+                if (currentHotkeyState.HasFlag(KeyboardHotkeyState.ToggleMute) &&
+                    !_prevHotkeyState.HasFlag(KeyboardHotkeyState.ToggleMute))
+                {
+                    if (Device.IsAudioMuted()) {
+                        Device.SetVolume(1);
+                    }
+                    else
+                    {
+                        Device.SetVolume(0);
+                    }
+                }
+
                 _prevHotkeyState = currentHotkeyState;
             }
 
@@ -628,7 +640,8 @@ namespace Ryujinx.Ui
             ToggleVSync = 1 << 0,
             Screenshot = 1 << 1,
             ShowUi = 1 << 2,
-            Pause = 1 << 3
+            Pause = 1 << 3,
+            ToggleMute = 1 << 4
         }
 
         private KeyboardHotkeyState GetHotkeyState()
@@ -653,6 +666,11 @@ namespace Ryujinx.Ui
             if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Pause))
             {
                 state |= KeyboardHotkeyState.Pause;
+            }
+
+            if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ToggleMute))
+            {
+                state |= KeyboardHotkeyState.ToggleMute;
             }
 
             return state;
