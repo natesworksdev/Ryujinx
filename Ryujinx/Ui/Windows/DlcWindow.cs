@@ -77,7 +77,12 @@ namespace Ryujinx.Ui.Windows
             {
                 if (File.Exists(dlcContainer.Path))
                 {
-                    TreeIter parentIter = ((TreeStore)_dlcTreeView.Model).AppendValues(true, "", dlcContainer.Path);
+                    // The parent tree item has its own "enabled" check box, but it's the actual
+                    // nca entries that store the enabled / disabled state. A bit of a UI inconsistency.
+                    // Maybe a tri-state check box would be better, but for now we check the parent
+                    // "enabled" box if all child NCAs are enabled. Usually fine since each nsp has only one nca.
+                    bool areAllContentPacksEnabled = dlcContainer.DlcNcaList.TrueForAll((nca) => nca.Enabled);
+                    TreeIter parentIter = ((TreeStore)_dlcTreeView.Model).AppendValues(areAllContentPacksEnabled, "", dlcContainer.Path);
                     using FileStream containerFile = File.OpenRead(dlcContainer.Path);
                     PartitionFileSystem pfs = new PartitionFileSystem(containerFile.AsStorage());
                     _virtualFileSystem.ImportTickets(pfs);
