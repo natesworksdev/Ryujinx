@@ -1176,7 +1176,7 @@ namespace Ryujinx.Ui
         {
             if (_emulationContext == null) return;
 
-            if (_emulationContext.GetVolume() == 0)
+            if (_emulationContext.IsAudioMuted())
             {
                 _emulationContext.SetVolume(1);
             }
