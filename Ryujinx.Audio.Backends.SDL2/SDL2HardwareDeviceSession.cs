@@ -92,9 +92,6 @@ namespace Ryujinx.Audio.Backends.SDL2
 
             _ringBuffer.Read(samples, 0, samples.Length);
 
-            samples.AsSpan().CopyTo(streamSpan);
-            streamSpan.Slice(samples.Length).Fill(0);
-
             byte[] streamSrc = new byte[samples.Length];
             fixed (byte* p = streamSrc)
             {
