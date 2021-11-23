@@ -329,17 +329,17 @@ namespace Ryujinx.Modules
 
                         while (true)
                         {
-                            int writtenSize = remoteFileStream.Read(buffer);
+                            int readSize = remoteFileStream.Read(buffer);
 
-                            if (writtenSize == 0)
+                            if (readSize == 0)
                             {
                                 break;
                             }
 
-                            byteWritten += writtenSize;
+                            byteWritten += readSize;
 
                             updateDialog.ProgressBar.Value = ((double)byteWritten / totalBytes) * 100;
-                            updateFileStream.Write(buffer, 0, writtenSize);
+                            updateFileStream.Write(buffer, 0, readSize);
                         }
                     }
                 }
