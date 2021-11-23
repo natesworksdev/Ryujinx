@@ -95,8 +95,20 @@ namespace Ryujinx.Audio.Backends.SDL2
             samples.AsSpan().CopyTo(streamSpan);
             streamSpan.Slice(samples.Length).Fill(0);
 
-            // Apply volume to written data
-            SDL_MixAudioFormat(stream, stream, _nativeSampleFormat, (uint)samples.Length, (int)(_volume * SDL_MIX_MAXVOLUME));
+            byte[] streamSrc = new byte[samples.Length];
+            fixed (byte* p = streamSrc)
+            {
+                // Put samples in a temporary source buffer
+                IntPtr pStreamSrc = (IntPtr)p;
+                Span<byte> streamSrcSpan = new Span<byte>((void*)pStreamSrc, samples.Length);
+                samples.AsSpan().CopyTo(streamSrcSpan);
+
+                // Zero the dest buffer
+                streamSpan.Fill(0);
+
+                // Apply volume to written data
+                SDL_MixAudioFormat(stream, pStreamSrc, _nativeSampleFormat, (uint)samples.Length, (int)(_volume * SDL_MIX_MAXVOLUME));
+            }
 
             ulong sampleCount = GetSampleCount(samples.Length);
 
