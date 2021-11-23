@@ -89,11 +89,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
 
                         if (next.TimePoint > timePoint)
                         {
-                            int ms = (int)((next.TimePoint - timePoint) / PerformanceCounter.TicksPerMillisecond);
+                            long ms = Math.Min((next.TimePoint - timePoint) / PerformanceCounter.TicksPerMillisecond, int.MaxValue);
 
                             if (ms > 0)
                             {
-                                _waitEvent.WaitOne(ms);
+                                _waitEvent.WaitOne((int)ms);
                             }
                             else
                             {
