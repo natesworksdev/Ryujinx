@@ -80,7 +80,7 @@ namespace Ryujinx.Audio.Backends.CompatLayer
                 sampleRate = Constants.TargetSampleRate;
             }
 
-            if(volume < 0 || volume > 1)
+            if (volume < 0 || volume > 1)
             {
                 volume = 1;
             }

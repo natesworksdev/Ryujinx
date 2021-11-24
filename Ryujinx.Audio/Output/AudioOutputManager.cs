@@ -254,12 +254,15 @@ namespace Ryujinx.Audio.Output
         /// <param name="volume">The volume to set.</param>
         public void SetVolume(float volume)
         {
-            if (_sessions == null) return;
-
-            foreach (AudioOutputSystem session in _sessions)
+            if (_sessions != null)
             {
-                if (session == null) continue;
-                session.SetVolume(volume);
+                foreach (AudioOutputSystem session in _sessions)
+                {
+                    if (session != null)
+                    {
+                        session.SetVolume(volume);
+                    }
+                }
             }
         }
 
@@ -269,12 +272,15 @@ namespace Ryujinx.Audio.Output
         /// <returns>A float indicating the volume level.</returns>
         public float GetVolume()
         {
-            if (_sessions == null) return 0.0f;
-
-            foreach(AudioOutputSystem session in _sessions)
+            if (_sessions != null)
             {
-                if (session == null) continue;
-                return session.GetVolume();
+                foreach (AudioOutputSystem session in _sessions)
+                {
+                    if (session != null)
+                    {
+                        return session.GetVolume();
+                    }
+                }
             }
 
             return 0.0f;

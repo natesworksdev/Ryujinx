@@ -602,7 +602,8 @@ namespace Ryujinx.Ui
                 if (currentHotkeyState.HasFlag(KeyboardHotkeyState.ToggleMute) &&
                     !_prevHotkeyState.HasFlag(KeyboardHotkeyState.ToggleMute))
                 {
-                    if (Device.IsAudioMuted()) {
+                    if (Device.IsAudioMuted()) 
+                    {
                         Device.SetVolume(1);
                     }
                     else

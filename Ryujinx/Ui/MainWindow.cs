@@ -310,7 +310,7 @@ namespace Ryujinx.Ui
 
         private void UpdateAudioVolumeState(object sender, ReactiveEventArgs<float> e)
         {
-            if(_emulationContext != null)
+            if (_emulationContext != null)
             {
                 _emulationContext.SetVolume(e.NewValue);
             }
@@ -1184,15 +1184,16 @@ namespace Ryujinx.Ui
 
         private void MuteStatus_Clicked(object sender, ButtonReleaseEventArgs args)
         {
-            if (_emulationContext == null) return;
-
-            if (_emulationContext.IsAudioMuted())
+            if (_emulationContext != null)
             {
-                _emulationContext.SetVolume(ConfigurationState.Instance.System.AudioVolume);
-            }
-            else
-            {
-                _emulationContext.SetVolume(0);
+                if (_emulationContext.IsAudioMuted())
+                {
+                    _emulationContext.SetVolume(ConfigurationState.Instance.System.AudioVolume);
+                }
+                else
+                {
+                    _emulationContext.SetVolume(0);
+                }
             }
         }
 

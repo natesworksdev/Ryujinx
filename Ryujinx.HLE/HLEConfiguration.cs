@@ -144,7 +144,6 @@ namespace Ryujinx.HLE
         /// </summary>
         public float AudioVolume { get; set; }
 
-
         /// <summary>
         /// An action called when HLE force a refresh of output after docked mode changed.
         /// </summary>

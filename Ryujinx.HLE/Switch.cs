@@ -96,7 +96,6 @@ namespace Ryujinx.HLE
             System.FsIntegrityCheckLevel = Configuration.FsIntegrityCheckLevel;
 
             System.GlobalAccessLogMode = Configuration.FsGlobalAccessLogMode;
-
         }
 
         public void LoadCart(string exeFsDir, string romFsFile = null)
