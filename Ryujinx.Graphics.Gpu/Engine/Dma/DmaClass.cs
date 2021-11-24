@@ -4,6 +4,7 @@ using Ryujinx.Graphics.Gpu.Engine.Threed;
 using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.Graphics.Texture;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics;
@@ -207,14 +208,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                     dstBaseOffset += dstStride * (yCount - 1);
                 }
 
-                ReadOnlySpan<byte> srcSpan = memoryManager.GetSpan(srcGpuVa + (ulong)srcBaseOffset, srcSize, true);
-                Span<byte> dstSpan = memoryManager.GetSpan(dstGpuVa + (ulong)dstBaseOffset, dstSize).ToArray();
-
                 bool completeSource = IsTextureCopyComplete(src, srcLinear, srcBpp, srcStride, xCount, yCount);
                 bool completeDest = IsTextureCopyComplete(dst, dstLinear, dstBpp, dstStride, xCount, yCount);
 
                 if (completeSource && completeDest)
                 {
+                    ReadOnlySpan<byte> srcSpan = memoryManager.GetSpan(srcGpuVa + (ulong)srcBaseOffset, srcSize, true);
                     var target = memoryManager.Physical.TextureCache.FindTexture(
                         memoryManager,
                         dst,
@@ -262,55 +261,67 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                         target.SynchronizeMemory();
                         target.SetData(data);
                         target.SignalModified();
-
                         return;
                     }
                     else if (srcCalculator.LayoutMatches(dstCalculator))
                     {
-                        srcSpan.CopyTo(dstSpan); // No layout conversion has to be performed, just copy the data entirely.
-
-                        memoryManager.Write(dstGpuVa + (ulong)dstBaseOffset, dstSpan);
-
+                        // No layout conversion has to be performed, just copy the data entirely.
+                        memoryManager.Write(dstGpuVa + (ulong)dstBaseOffset, srcSpan);
                         return;
                     }
                 }
 
-                unsafe bool Convert<T>(Span<byte> dstSpan, ReadOnlySpan<byte> srcSpan) where T : unmanaged
+                // It would be nice to implement this as a piecewise write a few stride lines at a time,
+                // using a smaller sized pooled buffer to avoid the LOH allocation,
+                // but that's harder than it looks because of the complicated variable offsets that
+                // OffsetCalculator is meant to simplify. So just allocate scratch space for the whole copy for now.
+                byte[] scratchArea = ArrayPool<byte>.Shared.Rent(dstSize);
+                try
                 {
-                    fixed (byte* dstPtr = dstSpan, srcPtr = srcSpan)
+                    ReadOnlySpan<byte> srcSpan = memoryManager.GetSpan(srcGpuVa + (ulong)srcBaseOffset, srcSize, true);
+                    Span<byte> dstSpan = scratchArea.AsSpan(0, dstSize);
+                    unsafe bool Convert<T>(Span<byte> dstSpan, ReadOnlySpan<byte> srcSpan) where T : unmanaged
                     {
-                        byte* dstBase = dstPtr - dstBaseOffset; // Layout offset is relative to the base, so we need to subtract the span's offset.
-                        byte* srcBase = srcPtr - srcBaseOffset;
-
-                        for (int y = 0; y < yCount; y++)
+                        fixed (byte* dstPtr = dstSpan, srcPtr = srcSpan)
                         {
-                            srcCalculator.SetY(srcRegionY + y);
-                            dstCalculator.SetY(dstRegionY + y);
+                            byte* dstBase = dstPtr; // Layout offset is relative to the base, so we need to subtract the span's offset.
+                            byte* srcBase = srcPtr - srcBaseOffset;
 
-                            for (int x = 0; x < xCount; x++)
+                            for (int y = 0; y < yCount; y++)
                             {
-                                int srcOffset = srcCalculator.GetOffset(srcRegionX + x);
-                                int dstOffset = dstCalculator.GetOffset(dstRegionX + x);
+                                srcCalculator.SetY(srcRegionY + y);
+                                dstCalculator.SetY(dstRegionY + y);
 
-                                *(T*)(dstBase + dstOffset) = *(T*)(srcBase + srcOffset);
+                                for (int x = 0; x < xCount; x++)
+                                {
+                                    int srcOffset = srcCalculator.GetOffset(srcRegionX + x);
+                                    int dstOffset = dstCalculator.GetOffset(dstRegionX + x);
+
+                                    *(T*)(dstBase + dstOffset) = *(T*)(srcBase + srcOffset);
+                                }
                             }
                         }
+
+                        return true;
                     }
-                    return true;
+
+                    bool _ = srcBpp switch
+                    {
+                        1 => Convert<byte>(dstSpan, srcSpan),
+                        2 => Convert<ushort>(dstSpan, srcSpan),
+                        4 => Convert<uint>(dstSpan, srcSpan),
+                        8 => Convert<ulong>(dstSpan, srcSpan),
+                        12 => Convert<Bpp12Pixel>(dstSpan, srcSpan),
+                        16 => Convert<Vector128<byte>>(dstSpan, srcSpan),
+                        _ => throw new NotSupportedException($"Unable to copy ${srcBpp} bpp pixel format.")
+                    };
+
+                    memoryManager.Write(dstGpuVa + (ulong)dstBaseOffset, dstSpan);
                 }
-
-                bool _ = srcBpp switch
+                finally
                 {
-                    1 => Convert<byte>(dstSpan, srcSpan),
-                    2 => Convert<ushort>(dstSpan, srcSpan),
-                    4 => Convert<uint>(dstSpan, srcSpan),
-                    8 => Convert<ulong>(dstSpan, srcSpan),
-                    12 => Convert<Bpp12Pixel>(dstSpan, srcSpan),
-                    16 => Convert<Vector128<byte>>(dstSpan, srcSpan),
-                    _ => throw new NotSupportedException($"Unable to copy ${srcBpp} bpp pixel format.")
-                };
-
-                memoryManager.Write(dstGpuVa + (ulong)dstBaseOffset, dstSpan);
+                    ArrayPool<byte>.Shared.Return(scratchArea);
+                }
             }
             else
             {
