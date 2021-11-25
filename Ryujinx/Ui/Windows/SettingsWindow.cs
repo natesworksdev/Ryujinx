@@ -65,6 +65,7 @@ namespace Ryujinx.Ui.Windows
         [GUI] EntryCompletion _systemTimeZoneCompletion;
         [GUI] Box             _audioBackendBox;
         [GUI] ComboBox        _audioBackendSelect;
+        [GUI] Label           _audioVolumeLabel;
         [GUI] Scale           _audioVolumeSlider;
         [GUI] SpinButton      _systemTimeYearSpin;
         [GUI] SpinButton      _systemTimeMonthSpin;
@@ -365,12 +366,16 @@ namespace Ryujinx.Ui.Windows
             _audioBackendBox.Add(_audioBackendSelect);
             _audioBackendSelect.Show();
 
+            _audioVolumeLabel  = new Label("Volume: ");
             _audioVolumeSlider = new Scale(Orientation.Horizontal, 0, 100, 1);
-            _audioVolumeSlider.MarginStart = 10;
+            _audioVolumeLabel.MarginStart   = 10;
+            _audioVolumeSlider.ValuePos     = PositionType.Right;
             _audioVolumeSlider.WidthRequest = 200;
-            _audioVolumeSlider.Value = ConfigurationState.Instance.System.AudioVolume * 100;
+            _audioVolumeSlider.Value        = ConfigurationState.Instance.System.AudioVolume * 100;
 
+            _audioBackendBox.Add(_audioVolumeLabel);
             _audioBackendBox.Add(_audioVolumeSlider);
+            _audioVolumeLabel.Show();
             _audioVolumeSlider.Show();
 
             bool openAlIsSupported  = false;
