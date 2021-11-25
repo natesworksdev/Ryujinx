@@ -154,6 +154,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
         internal ref T New<T>() where T : struct
         {
+            // TODO: remove the disposed check when rendering loop issue is resolved.
             while ((_producerPtr == (_consumerPtr + QueueCount - 1) % QueueCount) && !_disposed)
             {
                 // If incrementing the producer pointer would overflow, we need to wait.
