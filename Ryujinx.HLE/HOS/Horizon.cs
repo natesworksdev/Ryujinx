@@ -334,7 +334,7 @@ namespace Ryujinx.HLE.HOS
 
         public float GetVolume()
         {
-            return AudioOutputManager.GetVolume() > 0 ? AudioOutputManager.GetVolume() : AudioDeviceSessionRegistry.ActiveDevice.MasterVolume;
+            return AudioOutputManager.GetVolume();
         }
 
         public void ReturnFocus()
