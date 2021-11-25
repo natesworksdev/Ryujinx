@@ -1116,12 +1116,12 @@ namespace Ryujinx.Ui
         {
             Application.Invoke(delegate
             {
-                _gameStatus.Text  = args.GameStatus;
-                _fifoStatus.Text  = args.FifoStatus;
-                _gpuName.Text     = args.GpuName;
-                _dockedMode.Text  = args.DockedMode;
-                _aspectRatio.Text = args.AspectRatio;
-                _volumeStatus.Text = $"🔊: {args.Volume * 100}%";
+                _gameStatus.Text   = args.GameStatus;
+                _fifoStatus.Text   = args.FifoStatus;
+                _gpuName.Text      = args.GpuName;
+                _dockedMode.Text   = args.DockedMode;
+                _aspectRatio.Text  = args.AspectRatio;
+                _volumeStatus.Text = GetVolumeLabelText(args.Volume);
 
                 if (args.VSyncEnabled)
                 {
@@ -1182,6 +1182,12 @@ namespace Ryujinx.Ui
             ConfigurationState.Instance.System.EnableDockedMode.Value = !ConfigurationState.Instance.System.EnableDockedMode.Value;
         }
 
+        private string GetVolumeLabelText(float volume)
+        {
+            string icon = volume == 0 ? "🔇" : "🔊";
+
+            return $"{icon} {volume * 100}%";
+        }
         private void VolumeStatus_Clicked(object sender, ButtonReleaseEventArgs args)
         {
             if (_emulationContext != null)
