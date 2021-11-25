@@ -647,15 +647,15 @@
                       <object class="GtkEventBox">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <signal name="button_release_event" handler="MuteStatus_Clicked" swapped="no"/>
+                        <signal name="button_release_event" handler="VolumeStatus_Clicked" swapped="no"/>
                         <child>
-                          <object class="GtkLabel" id="_muteStatus">
+                          <object class="GtkLabel" id="_volumeStatus">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="halign">start</property>
                             <property name="margin_left">5</property>
                             <property name="margin_right">5</property>
-                            <property name="label" translatable="yes">Mute</property>
+                            <property name="label" translatable="yes"></property>
                           </object>
                         </child>
                       </object>

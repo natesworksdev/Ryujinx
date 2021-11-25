@@ -425,7 +425,7 @@ namespace Ryujinx.Ui
 
                         StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
                             Device.EnableDeviceVsync,
-                            Device.IsAudioMuted(),
+                            Device.GetVolume(),
                             dockedMode,
                             ConfigurationState.Instance.Graphics.AspectRatio.Value.ToText(),
                             $"Game: {Device.Statistics.GetGameFrameRate():00.00} FPS ({Device.Statistics.GetGameFrameTime():00.00} ms)",
