@@ -76,6 +76,16 @@ namespace Ryujinx.Audio.Renderer.Utils
             _stream.Flush();
         }
 
+        public void SetVolume(float volume)
+        {
+            throw new NotSupportedException();
+        }
+
+        public float GetVolume()
+        {
+            throw new NotSupportedException();
+        }
+
         public uint GetChannelCount()
         {
             return _channelCount;

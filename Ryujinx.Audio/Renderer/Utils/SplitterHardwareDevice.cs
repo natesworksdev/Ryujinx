@@ -37,6 +37,16 @@ namespace Ryujinx.Audio.Renderer.Utils
             _secondaryDevice?.AppendBuffer(data, channelCount);
         }
 
+        public void SetVolume(float volume)
+        {
+            throw new NotSupportedException();
+        }
+
+        public float GetVolume()
+        {
+            throw new NotSupportedException();
+        }
+
         public uint GetChannelCount()
         {
             return _baseDevice.GetChannelCount();
