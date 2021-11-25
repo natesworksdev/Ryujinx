@@ -604,7 +604,7 @@ namespace Ryujinx.Ui
                 {
                     if (Device.IsAudioMuted()) 
                     {
-                        Device.SetVolume(1);
+                        Device.SetVolume(Device.Configuration.AudioVolume);
                     }
                     else
                     {
