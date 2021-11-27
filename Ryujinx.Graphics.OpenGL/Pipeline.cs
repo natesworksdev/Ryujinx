@@ -43,14 +43,6 @@ namespace Ryujinx.Graphics.OpenGL
 
         private CounterQueueEvent _activeConditionalRender;
 
-        private struct Vector4<T>
-        {
-            public T X;
-            public T Y;
-            public T Z;
-            public T W;
-        }
-
         private Vector4<int>[] _fpIsBgra = new Vector4<int>[SupportBuffer.FragmentIsBgraCount];
         private Vector4<float>[] _renderScale = new Vector4<float>[65];
         private int _fragmentScaleCount;
@@ -69,7 +61,7 @@ namespace Ryujinx.Graphics.OpenGL
         private bool _tfEnabled;
         private TransformFeedbackPrimitiveType _tfTopology;
 
-        private BufferHandle _supportBuffer;
+        private GAL.SupportBufferUpdater _supportBuffer;
         private readonly BufferHandle[] _tfbs;
         private readonly BufferRange[] _tfbTargets;
 
@@ -96,13 +88,13 @@ namespace Ryujinx.Graphics.OpenGL
             _tfbTargets = new BufferRange[Constants.MaxTransformFeedbackBuffers];
         }
 
-        public void Initialize()
+        public void Initialize(Renderer renderer)
         {
-            _supportBuffer = Buffer.Create(SupportBuffer.RequiredSize);
-            GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 0, Unsafe.As<BufferHandle, int>(ref _supportBuffer));
+            _supportBuffer = new GAL.SupportBufferUpdater(renderer);
+            GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 0, Unsafe.As<BufferHandle, int>(ref _supportBuffer.Handle));
 
-            SetSupportBufferData<Vector4<int>>(SupportBuffer.FragmentIsBgraOffset, _fpIsBgra, SupportBuffer.FragmentIsBgraCount);
-            SetSupportBufferData<Vector4<float>>(SupportBuffer.GraphicsRenderScaleOffset, _renderScale, SupportBuffer.RenderScaleMaxCount);
+            _supportBuffer.UpdateFragmentIsBgra(_fpIsBgra, 0, SupportBuffer.FragmentIsBgraCount);
+            _supportBuffer.UpdateRenderScale(_renderScale, 0, SupportBuffer.RenderScaleMaxCount);
         }
 
         public void Barrier()
@@ -559,6 +551,8 @@ namespace Ryujinx.Graphics.OpenGL
         {
             if (texture is TextureView view && sampler is Sampler samp)
             {
+                _supportBuffer.Commit();
+
                 if (HwCapabilities.SupportsDrawTexture)
                 {
                     GL.NV.DrawTexture(
@@ -1039,7 +1033,7 @@ namespace Ryujinx.Graphics.OpenGL
         public void SetRenderTargetScale(float scale)
         {
             _renderScale[0].X = scale;
-            SetSupportBufferData<Vector4<float>>(SupportBuffer.GraphicsRenderScaleOffset, _renderScale, 1); // Just the first element.
+            _supportBuffer.UpdateRenderScale(_renderScale, 0, 1); // Just the first element.
         }
 
         public void SetRenderTargetColorMasks(ReadOnlySpan<uint> componentMasks)
@@ -1077,7 +1071,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             if (isBgraChanged)
             {
-                SetSupportBufferData<Vector4<int>>(SupportBuffer.FragmentIsBgraOffset, _fpIsBgra, SupportBuffer.FragmentIsBgraCount);
+                _supportBuffer.UpdateFragmentIsBgra(_fpIsBgra, 0, SupportBuffer.FragmentIsBgraCount);
             }
 
             TextureView depthStencilView = (TextureView)depthStencil;
@@ -1402,18 +1396,13 @@ namespace Ryujinx.Graphics.OpenGL
             if (fragmentCount != totalCount && fragmentCount != _fragmentScaleCount)
             {
                 _fragmentScaleCount = fragmentCount;
-                SetSupportBufferData<int>(SupportBuffer.FragmentRenderScaleCount, MemoryMarshal.CreateSpan(ref _fragmentScaleCount, 1), 1);
+                _supportBuffer.UpdateFragmentRenderScaleCount(_fragmentScaleCount);
             }
 
             if (changed)
             {
-                SetSupportBufferData<Vector4<float>>(SupportBuffer.GraphicsRenderScaleOffset, _renderScale, 1 + totalCount);
+                _supportBuffer.UpdateRenderScale(_renderScale, 0, 1 + totalCount);
             }
-        }
-
-        private void SetSupportBufferData<T>(int offset, ReadOnlySpan<T> data, int count) where T : unmanaged
-        {
-            Buffer.SetData(_supportBuffer, offset, MemoryMarshal.Cast<T, byte>(data.Slice(0, count)));
         }
 
         private void PrepareForDispatch()
@@ -1427,6 +1416,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             _vertexArray.Validate();
             _unit0Texture?.Bind(0);
+            _supportBuffer.Commit();
         }
 
         private void PostDraw()
@@ -1524,11 +1514,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void Dispose()
         {
-            if (_supportBuffer != BufferHandle.Null)
-            {
-                Buffer.Delete(_supportBuffer);
-                _supportBuffer = BufferHandle.Null;
-            }
+            _supportBuffer?.Dispose();
 
             for (int i = 0; i < Constants.MaxTransformFeedbackBuffers; i++)
             {

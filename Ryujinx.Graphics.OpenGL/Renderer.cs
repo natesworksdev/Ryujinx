@@ -150,7 +150,7 @@ namespace Ryujinx.Graphics.OpenGL
                 GL.Arb.MaxShaderCompilerThreads(Math.Min(Environment.ProcessorCount, 8));
             }
 
-            _pipeline.Initialize();
+            _pipeline.Initialize(this);
             _counters.Initialize();
         }
 
