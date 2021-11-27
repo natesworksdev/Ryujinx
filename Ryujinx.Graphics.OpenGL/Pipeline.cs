@@ -1408,6 +1408,7 @@ namespace Ryujinx.Graphics.OpenGL
         private void PrepareForDispatch()
         {
             _unit0Texture?.Bind(0);
+            _supportBuffer.Commit();
         }
 
         private void PreDraw()
