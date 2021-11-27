@@ -211,8 +211,11 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetUniformBuffers(CommandBuffer commandBuffer, int first, ReadOnlySpan<BufferRange> buffers)
         {
-            Array.Resize(ref _uniformBuffers, first + buffers.Length);
-            Array.Resize(ref _uniformBufferRefs, first + buffers.Length);
+            if (_uniformBuffers.Length < first + buffers.Length)
+            {
+                Array.Resize(ref _uniformBuffers, first + buffers.Length);
+                Array.Resize(ref _uniformBufferRefs, first + buffers.Length);
+            }
 
             for (int i = 0; i < buffers.Length; i++)
             {
