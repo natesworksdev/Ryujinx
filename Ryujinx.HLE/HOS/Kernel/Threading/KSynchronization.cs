@@ -1,6 +1,5 @@
 using Ryujinx.HLE.HOS.Kernel.Common;
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Kernel.Threading
@@ -59,53 +58,47 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             }
             else
             {
-                LinkedListNode<KThread>[] syncNodes = ArrayPool<LinkedListNode<KThread>>.Shared.Rent(syncObjs.Length);
-                try
+                LinkedListNode<KThread>[] syncNodes = new LinkedListNode<KThread>[syncObjs.Length];
+
+                for (int index = 0; index < syncObjs.Length; index++)
                 {
-                    for (int index = 0; index < syncObjs.Length; index++)
-                    {
-                        syncNodes[index] = syncObjs[index].AddWaitingThread(currentThread);
-                    }
-
-                    currentThread.WaitingSync = true;
-                    currentThread.SignaledObj = null;
-                    currentThread.ObjSyncResult = result;
-
-                    currentThread.Reschedule(ThreadSchedState.Paused);
-
-                    if (timeout > 0)
-                    {
-                        _context.TimeManager.ScheduleFutureInvocation(currentThread, timeout);
-                    }
-
-                    _context.CriticalSection.Leave();
-
-                    currentThread.WaitingSync = false;
-
-                    if (timeout > 0)
-                    {
-                        _context.TimeManager.UnscheduleFutureInvocation(currentThread);
-                    }
-
-                    _context.CriticalSection.Enter();
-
-                    result = currentThread.ObjSyncResult;
-
-                    handleIndex = -1;
-
-                    for (int index = 0; index < syncObjs.Length; index++)
-                    {
-                        syncObjs[index].RemoveWaitingThread(syncNodes[index]);
-
-                        if (syncObjs[index] == currentThread.SignaledObj)
-                        {
-                            handleIndex = index;
-                        }
-                    }
+                    syncNodes[index] = syncObjs[index].AddWaitingThread(currentThread);
                 }
-                finally
+
+                currentThread.WaitingSync = true;
+                currentThread.SignaledObj = null;
+                currentThread.ObjSyncResult = result;
+
+                currentThread.Reschedule(ThreadSchedState.Paused);
+
+                if (timeout > 0)
                 {
-                    ArrayPool<LinkedListNode<KThread>>.Shared.Return(syncNodes);
+                    _context.TimeManager.ScheduleFutureInvocation(currentThread, timeout);
+                }
+
+                _context.CriticalSection.Leave();
+
+                currentThread.WaitingSync = false;
+
+                if (timeout > 0)
+                {
+                    _context.TimeManager.UnscheduleFutureInvocation(currentThread);
+                }
+
+                _context.CriticalSection.Enter();
+
+                result = currentThread.ObjSyncResult;
+
+                handleIndex = -1;
+
+                for (int index = 0; index < syncObjs.Length; index++)
+                {
+                    syncObjs[index].RemoveWaitingThread(syncNodes[index]);
+
+                    if (syncObjs[index] == currentThread.SignaledObj)
+                    {
+                        handleIndex = index;
+                    }
                 }
             }
 
