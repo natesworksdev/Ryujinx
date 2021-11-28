@@ -61,7 +61,7 @@ namespace Ryujinx.Graphics.OpenGL
         private bool _tfEnabled;
         private TransformFeedbackPrimitiveType _tfTopology;
 
-        private GAL.SupportBufferUpdater _supportBuffer;
+        private SupportBufferUpdater _supportBuffer;
         private readonly BufferHandle[] _tfbs;
         private readonly BufferRange[] _tfbTargets;
 
