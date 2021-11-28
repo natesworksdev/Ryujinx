@@ -214,8 +214,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                 bool completeSource = IsTextureCopyComplete(src, srcLinear, srcBpp, srcStride, xCount, yCount);
                 bool completeDest = IsTextureCopyComplete(dst, dstLinear, dstBpp, dstStride, xCount, yCount);
 
-                Logger.Info?.PrintMsg(LogClass.Gpu, $"DMA Copy srcSize {srcSize} dstSize {dstSize} srcBpp {srcBpp} dstBpp {dstBpp} cS {completeSource} cD {completeDest} sL {srcLinear} dL {dstLinear}");
-
                 if (completeSource && completeDest)
                 {
                     var target = memoryManager.Physical.TextureCache.FindTexture(
