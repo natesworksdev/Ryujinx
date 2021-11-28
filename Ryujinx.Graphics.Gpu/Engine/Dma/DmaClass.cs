@@ -275,40 +275,42 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
 
                 unsafe bool Convert<T>(Span<byte> dstSpan, ReadOnlySpan<byte> srcSpan) where T : unmanaged
                 {
-                    fixed (byte* dstPtr = dstSpan, srcPtr = srcSpan)
+                    if (srcLinear && dstLinear &&
+                        srcBpp == dstBpp)
                     {
-                        byte* dstBase = dstPtr - dstBaseOffset; // Layout offset is relative to the base, so we need to subtract the span's offset.
-                        byte* srcBase = srcPtr - srcBaseOffset;
-
+                        // Optimized path for purely linear copies - we don't need to calculate every single byte offset,
+                        // and we can make use of Span.CopyTo which is very very fast (even compared to pointers)
                         for (int y = 0; y < yCount; y++)
                         {
                             srcCalculator.SetY(srcRegionY + y);
                             dstCalculator.SetY(dstRegionY + y);
-
-                            for (int x = 0; x < xCount; x++)
-                            {
-                                int srcOffset = srcCalculator.GetOffset(srcRegionX + x);
-                                int dstOffset = dstCalculator.GetOffset(dstRegionX + x);
-
-                                *(T*)(dstBase + dstOffset) = *(T*)(srcBase + srcOffset);
-                            }
+                            int srcOffset = srcCalculator.GetOffset(srcRegionX);
+                            int dstOffset = dstCalculator.GetOffset(dstRegionX);
+                            srcSpan.Slice(srcOffset - srcBaseOffset, xCount * srcBpp)
+                                .CopyTo(dstSpan.Slice(dstOffset - dstBaseOffset, xCount * dstBpp));
                         }
                     }
-                    return true;
-                }
-
-                // Optimized path for 1 bpp linear copies - we don't need to calculate every single byte offset,
-                // and we can make use of Span.CopyTo which is very very fast
-                bool ConvertLinearBytes(Span<byte> dstSpan, ReadOnlySpan<byte> srcSpan)
-                {
-                    for (int y = 0; y < yCount; y++)
+                    else
                     {
-                        srcCalculator.SetY(src.RegionY + y);
-                        dstCalculator.SetY(dst.RegionY + y);
-                        int srcOffset = srcCalculator.GetOffset(src.RegionX);
-                        int dstOffset = dstCalculator.GetOffset(dst.RegionX);
-                        srcSpan.Slice(srcOffset - srcBaseOffset, xCount)
-                            .CopyTo(dstSpan.Slice(dstOffset - dstBaseOffset));
+                        fixed (byte* dstPtr = dstSpan, srcPtr = srcSpan)
+                        {
+                            byte* dstBase = dstPtr - dstBaseOffset; // Layout offset is relative to the base, so we need to subtract the span's offset.
+                            byte* srcBase = srcPtr - srcBaseOffset;
+
+                            for (int y = 0; y < yCount; y++)
+                            {
+                                srcCalculator.SetY(srcRegionY + y);
+                                dstCalculator.SetY(dstRegionY + y);
+
+                                for (int x = 0; x < xCount; x++)
+                                {
+                                    int srcOffset = srcCalculator.GetOffset(srcRegionX + x);
+                                    int dstOffset = dstCalculator.GetOffset(dstRegionX + x);
+
+                                    *(T*)(dstBase + dstOffset) = *(T*)(srcBase + srcOffset);
+                                }
+                            }
+                        }
                     }
 
                     return true;
@@ -321,7 +323,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
 
                 bool _ = srcBpp switch
                 {
-                    1 => (srcLinear && dstLinear) ? ConvertLinearBytes(dstSpan, srcSpan) : Convert<byte>(dstSpan, srcSpan),
+                    1 => Convert<byte>(dstSpan, srcSpan),
                     2 => Convert<ushort>(dstSpan, srcSpan),
                     4 => Convert<uint>(dstSpan, srcSpan),
                     8 => Convert<ulong>(dstSpan, srcSpan),
