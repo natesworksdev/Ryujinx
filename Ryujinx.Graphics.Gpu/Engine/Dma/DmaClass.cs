@@ -1,4 +1,5 @@
 ﻿using Ryujinx.Common;
+using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Device;
 using Ryujinx.Graphics.Gpu.Engine.Threed;
 using Ryujinx.Graphics.Gpu.Memory;
@@ -208,10 +209,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                     dstBaseOffset += dstStride * (yCount - 1);
                 }
 
+                ReadOnlySpan<byte> srcSpan = memoryManager.GetSpan(srcGpuVa + (ulong)srcBaseOffset, srcSize, true);
+
                 bool completeSource = IsTextureCopyComplete(src, srcLinear, srcBpp, srcStride, xCount, yCount);
                 bool completeDest = IsTextureCopyComplete(dst, dstLinear, dstBpp, dstStride, xCount, yCount);
 
-                ReadOnlySpan<byte> srcSpan = memoryManager.GetSpan(srcGpuVa + (ulong)srcBaseOffset, srcSize, true);
+                Logger.Info?.PrintMsg(LogClass.Gpu, $"DMA Copy srcSize {srcSize} dstSize {dstSize} srcBpp {srcBpp} dstBpp {dstBpp} cS {completeSource} cD {completeDest} sL {srcLinear} dL {dstLinear}");
 
                 if (completeSource && completeDest)
                 {
@@ -307,7 +310,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                         int srcOffset = srcCalculator.GetOffset(src.RegionX);
                         int dstOffset = dstCalculator.GetOffset(dst.RegionX);
                         srcSpan.Slice(srcOffset - srcBaseOffset, xCount)
-                            .CopyTo(dstSpan.Slice(dstOffset - dstBaseOffset, xCount));
+                            .CopyTo(dstSpan.Slice(dstOffset - dstBaseOffset));
                     }
 
                     return true;
@@ -320,7 +323,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
 
                 bool _ = srcBpp switch
                 {
-                    1 => ConvertLinearBytes(dstSpan, srcSpan),
+                    1 => (srcLinear && dstLinear) ? ConvertLinearBytes(dstSpan, srcSpan) : Convert<byte>(dstSpan, srcSpan),
                     2 => Convert<ushort>(dstSpan, srcSpan),
                     4 => Convert<uint>(dstSpan, srcSpan),
                     8 => Convert<ulong>(dstSpan, srcSpan),
