@@ -341,7 +341,7 @@ namespace Ryujinx.HLE.HOS
                         }
                         else
                         {
-                            Logger.Warning?.Print(LogClass.Application, $"Cannot find AddOnContent file {dlcContainer.Path}. It may have been moved or renamed");
+                            Logger.Warning?.Print(LogClass.Application, $"Cannot find AddOnContent file {dlcContainer.Path}. It may have been moved or renamed.");
                         }
                     }
                 }
