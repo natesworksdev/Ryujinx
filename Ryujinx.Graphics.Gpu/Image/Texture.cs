@@ -1,5 +1,6 @@
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
+using Ryujinx.Common.Pools;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.Graphics.Texture;
@@ -685,9 +686,9 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
             }
 
-            data = ConvertToHostCompatibleFormat(data);
+            PooledBuffer<byte> convertedData = ConvertToHostCompatibleFormat(data);
 
-            HostTexture.SetData(data);
+            HostTexture.SetData(convertedData);
 
             _hasData = true;
         }
@@ -696,7 +697,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Uploads new texture data to the host GPU.
         /// </summary>
         /// <param name="data">New data</param>
-        public void SetData(ReadOnlySpan<byte> data)
+        public void SetData(PooledBuffer<byte> data)
         {
             BlacklistScale();
 
@@ -715,7 +716,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="data">New data</param>
         /// <param name="layer">Target layer</param>
         /// <param name="level">Target level</param>
-        public void SetData(ReadOnlySpan<byte> data, int layer, int level)
+        public void SetData(PooledBuffer<byte> data, int layer, int level)
         {
             BlacklistScale();
 
@@ -731,7 +732,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="data">Data to be converted</param>
         /// <returns>Converted data</returns>
-        public ReadOnlySpan<byte> ConvertToHostCompatibleFormat(ReadOnlySpan<byte> data, int level = 0, bool single = false)
+        public PooledBuffer<byte> ConvertToHostCompatibleFormat(ReadOnlySpan<byte> data, int level = 0, bool single = false)
         {
             int width = Info.Width;
             int height = Info.Height;
@@ -744,9 +745,11 @@ namespace Ryujinx.Graphics.Gpu.Image
             height = Math.Max(height >> level, 1);
             depth = Math.Max(depth >> level, 1);
 
+            PooledBuffer<byte> returnVal;
+
             if (Info.IsLinear)
             {
-                data = LayoutConverter.ConvertLinearStridedToLinear(
+                returnVal = LayoutConverter.ConvertLinearStridedToLinear(
                     width,
                     height,
                     Info.FormatInfo.BlockWidth,
@@ -757,7 +760,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
             else
             {
-                data = LayoutConverter.ConvertBlockLinearToLinear(
+                returnVal = LayoutConverter.ConvertBlockLinearToLinear(
                     width,
                     height,
                     depth,
@@ -787,25 +790,25 @@ namespace Ryujinx.Graphics.Gpu.Image
                     depth,
                     levels,
                     layers,
-                    out Span<byte> decoded))
+                    out PooledBuffer<byte> decoded))
                 {
                     string texInfo = $"{Info.Target} {Info.FormatInfo.Format} {Info.Width}x{Info.Height}x{Info.DepthOrLayers} levels {Info.Levels}";
 
                     Logger.Debug?.Print(LogClass.Gpu, $"Invalid ASTC texture at 0x{Info.GpuAddress:X} ({texInfo}).");
                 }
 
-                data = decoded;
+                returnVal = decoded;
             }
             else if (Target == Target.Texture3D && Info.FormatInfo.Format.IsBc4())
             {
-                data = BCnDecoder.DecodeBC4(data, width, height, depth, levels, layers, Info.FormatInfo.Format == Format.Bc4Snorm);
+                returnVal = BCnDecoder.DecodeBC4(data, width, height, depth, levels, layers, Info.FormatInfo.Format == Format.Bc4Snorm);
             }
             else if (Target == Target.Texture3D && Info.FormatInfo.Format.IsBc5())
             {
-                data = BCnDecoder.DecodeBC5(data, width, height, depth, levels, layers, Info.FormatInfo.Format == Format.Bc5Snorm);
+                returnVal = BCnDecoder.DecodeBC5(data, width, height, depth, levels, layers, Info.FormatInfo.Format == Format.Bc5Snorm);
             }
 
-            return data;
+            return returnVal;
         }
 
         /// <summary>

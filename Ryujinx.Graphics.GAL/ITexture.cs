@@ -1,3 +1,4 @@
+using Ryujinx.Common.Pools;
 using System;
 
 namespace Ryujinx.Graphics.GAL
@@ -16,8 +17,8 @@ namespace Ryujinx.Graphics.GAL
 
         ReadOnlySpan<byte> GetData();
 
-        void SetData(ReadOnlySpan<byte> data);
-        void SetData(ReadOnlySpan<byte> data, int layer, int level);
+        void SetData(PooledBuffer<byte> data);
+        void SetData(PooledBuffer<byte> data, int layer, int level);
         void SetStorage(BufferRange buffer);
         void Release();
     }

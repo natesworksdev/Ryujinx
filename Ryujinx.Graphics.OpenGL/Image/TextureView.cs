@@ -1,4 +1,5 @@
 using OpenTK.Graphics.OpenGL;
+using Ryujinx.Common.Pools;
 using Ryujinx.Graphics.GAL;
 using System;
 
@@ -252,22 +253,25 @@ namespace Ryujinx.Graphics.OpenGL.Image
             }
         }
 
-        public void SetData(ReadOnlySpan<byte> data)
+        public void SetData(PooledBuffer<byte> data)
         {
             unsafe
             {
-                fixed (byte* ptr = data)
+                fixed (byte* ptr = data.Buffer)
                 {
                     ReadFrom((IntPtr)ptr, data.Length);
                 }
             }
+
+            // The pooled data has now been put where it needs to go, so we can dispose of the pool.
+            data.Dispose();
         }
 
-        public void SetData(ReadOnlySpan<byte> data, int layer, int level)
+        public void SetData(PooledBuffer<byte> data, int layer, int level)
         {
             unsafe
             {
-                fixed (byte* ptr = data)
+                fixed (byte* ptr = data.Buffer)
                 {
                     int width = Math.Max(Info.Width >> level, 1);
                     int height = Math.Max(Info.Height >> level, 1);
@@ -275,6 +279,9 @@ namespace Ryujinx.Graphics.OpenGL.Image
                     ReadFrom2D((IntPtr)ptr, layer, level, width, height);
                 }
             }
+
+            // The pooled data has now been put where it needs to go, so we can dispose of the pool.
+            data.Dispose();
         }
 
         public void ReadFromPbo(int offset, int size)

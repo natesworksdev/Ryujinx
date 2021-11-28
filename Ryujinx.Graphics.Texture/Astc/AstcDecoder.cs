@@ -1,4 +1,5 @@
-﻿using Ryujinx.Common.Utilities;
+﻿using Ryujinx.Common.Pools;
+using Ryujinx.Common.Utilities;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -291,11 +292,11 @@ namespace Ryujinx.Graphics.Texture.Astc
             int depth,
             int levels,
             int layers,
-            out Span<byte> decoded)
+            out PooledBuffer<byte> decoded)
         {
-            byte[] output = new byte[QueryDecompressedSize(width, height, depth, levels, layers)];
+            PooledBuffer<byte> output = BufferPool<byte>.Rent(QueryDecompressedSize(width, height, depth, levels, layers));
 
-            AstcDecoder decoder = new AstcDecoder(data, output, blockWidth, blockHeight, width, height, depth, levels, layers);
+            AstcDecoder decoder = new AstcDecoder(data, output.Buffer, blockWidth, blockHeight, width, height, depth, levels, layers);
 
             Enumerable.Range(0, decoder.TotalBlockCount).AsParallel().ForAll(x => decoder.ProcessBlock(x));
 

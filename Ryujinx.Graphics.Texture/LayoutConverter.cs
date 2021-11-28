@@ -1,4 +1,5 @@
 using Ryujinx.Common;
+using Ryujinx.Common.Pools;
 using System;
 using System.Runtime.Intrinsics;
 using static Ryujinx.Graphics.Texture.BlockLinearConstants;
@@ -93,7 +94,7 @@ namespace Ryujinx.Graphics.Texture
             };
         }
 
-        public static Span<byte> ConvertBlockLinearToLinear(
+        public static PooledBuffer<byte> ConvertBlockLinearToLinear(
             int width,
             int height,
             int depth,
@@ -118,7 +119,7 @@ namespace Ryujinx.Graphics.Texture
                 blockHeight,
                 bytesPerPixel);
 
-            Span<byte> output = new byte[outSize];
+            PooledBuffer<byte> output = BufferPool<byte>.Rent(outSize);
 
             int outOffs = 0;
 
@@ -231,19 +232,19 @@ namespace Ryujinx.Graphics.Texture
 
                 bool _ = bytesPerPixel switch
                 {
-                    1 => Convert<byte>(output, data),
-                    2 => Convert<ushort>(output, data),
-                    4 => Convert<uint>(output, data),
-                    8 => Convert<ulong>(output, data),
-                    12 => Convert<Bpp12Pixel>(output, data),
-                    16 => Convert<Vector128<byte>>(output, data),
+                    1 => Convert<byte>(output.AsSpan, data),
+                    2 => Convert<ushort>(output.AsSpan, data),
+                    4 => Convert<uint>(output.AsSpan, data),
+                    8 => Convert<ulong>(output.AsSpan, data),
+                    12 => Convert<Bpp12Pixel>(output.AsSpan, data),
+                    16 => Convert<Vector128<byte>>(output.AsSpan, data),
                     _ => throw new NotSupportedException($"Unable to convert ${bytesPerPixel} bpp pixel format.")
                 };
             }
             return output;
         }
 
-        public static Span<byte> ConvertLinearStridedToLinear(
+        public static PooledBuffer<byte> ConvertLinearStridedToLinear(
             int width,
             int height,
             int blockWidth,
@@ -258,14 +259,14 @@ namespace Ryujinx.Graphics.Texture
             int outStride = BitUtils.AlignUp(w * bytesPerPixel, HostStrideAlignment);
             int lineSize = Math.Min(stride, outStride);
 
-            Span<byte> output = new byte[h * outStride];
+            PooledBuffer<byte> output = BufferPool<byte>.Rent(h * outStride);
 
             int outOffs = 0;
             int inOffs = 0;
 
             for (int y = 0; y < h; y++)
             {
-                data.Slice(inOffs, lineSize).CopyTo(output.Slice(outOffs, lineSize));
+                data.Slice(inOffs, lineSize).CopyTo(output.AsSpan.Slice(outOffs, lineSize));
 
                 inOffs += stride;
                 outOffs += outStride;

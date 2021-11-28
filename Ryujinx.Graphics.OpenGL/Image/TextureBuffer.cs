@@ -1,4 +1,5 @@
 ﻿using OpenTK.Graphics.OpenGL;
+using Ryujinx.Common.Pools;
 using Ryujinx.Graphics.GAL;
 using System;
 
@@ -43,12 +44,15 @@ namespace Ryujinx.Graphics.OpenGL.Image
             return Buffer.GetData(_renderer, _buffer, _bufferOffset, _bufferSize);
         }
 
-        public void SetData(ReadOnlySpan<byte> data)
+        public void SetData(PooledBuffer<byte> data)
         {
-            Buffer.SetData(_buffer, _bufferOffset, data.Slice(0, Math.Min(data.Length, _bufferSize)));
+            Buffer.SetData(_buffer, _bufferOffset, data.AsSpan.Slice(0, Math.Min(data.Length, _bufferSize)));
+
+            // The pooled data has now been put where it needs to go, so we can dispose of the pool.
+            data.Dispose();
         }
 
-        public void SetData(ReadOnlySpan<byte> data, int layer, int level)
+        public void SetData(PooledBuffer<byte> data, int layer, int level)
         {
             throw new NotSupportedException();
         }
