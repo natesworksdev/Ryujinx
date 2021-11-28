@@ -211,9 +211,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                 bool completeSource = IsTextureCopyComplete(src, srcLinear, srcBpp, srcStride, xCount, yCount);
                 bool completeDest = IsTextureCopyComplete(dst, dstLinear, dstBpp, dstStride, xCount, yCount);
 
+                ReadOnlySpan<byte> srcSpan = memoryManager.GetSpan(srcGpuVa + (ulong)srcBaseOffset, srcSize, true);
+
                 if (completeSource && completeDest)
                 {
-                    ReadOnlySpan<byte> srcSpan = memoryManager.GetSpan(srcGpuVa + (ulong)srcBaseOffset, srcSize, true);
                     var target = memoryManager.Physical.TextureCache.FindTexture(
                         memoryManager,
                         dst,
@@ -271,57 +272,64 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                     }
                 }
 
-                // It would be nice to implement this as a piecewise write a few stride lines at a time,
-                // using a smaller sized pooled buffer to avoid the LOH allocation,
-                // but that's harder than it looks because of the complicated variable offsets that
-                // OffsetCalculator is meant to simplify. So just allocate scratch space for the whole copy for now.
-                byte[] scratchArea = ArrayPool<byte>.Shared.Rent(dstSize);
-                try
+                unsafe bool Convert<T>(Span<byte> dstSpan, ReadOnlySpan<byte> srcSpan) where T : unmanaged
                 {
-                    ReadOnlySpan<byte> srcSpan = memoryManager.GetSpan(srcGpuVa + (ulong)srcBaseOffset, srcSize, true);
-                    Span<byte> dstSpan = scratchArea.AsSpan(0, dstSize);
-                    unsafe bool Convert<T>(Span<byte> dstSpan, ReadOnlySpan<byte> srcSpan) where T : unmanaged
+                    fixed (byte* dstPtr = dstSpan, srcPtr = srcSpan)
                     {
-                        fixed (byte* dstPtr = dstSpan, srcPtr = srcSpan)
+                        byte* dstBase = dstPtr - dstBaseOffset; // Layout offset is relative to the base, so we need to subtract the span's offset.
+                        byte* srcBase = srcPtr - srcBaseOffset;
+
+                        for (int y = 0; y < yCount; y++)
                         {
-                            byte* dstBase = dstPtr; // Layout offset is relative to the base, so we need to subtract the span's offset.
-                            byte* srcBase = srcPtr - srcBaseOffset;
+                            srcCalculator.SetY(srcRegionY + y);
+                            dstCalculator.SetY(dstRegionY + y);
 
-                            for (int y = 0; y < yCount; y++)
+                            for (int x = 0; x < xCount; x++)
                             {
-                                srcCalculator.SetY(srcRegionY + y);
-                                dstCalculator.SetY(dstRegionY + y);
+                                int srcOffset = srcCalculator.GetOffset(srcRegionX + x);
+                                int dstOffset = dstCalculator.GetOffset(dstRegionX + x);
 
-                                for (int x = 0; x < xCount; x++)
-                                {
-                                    int srcOffset = srcCalculator.GetOffset(srcRegionX + x);
-                                    int dstOffset = dstCalculator.GetOffset(dstRegionX + x);
-
-                                    *(T*)(dstBase + dstOffset) = *(T*)(srcBase + srcOffset);
-                                }
+                                *(T*)(dstBase + dstOffset) = *(T*)(srcBase + srcOffset);
                             }
                         }
+                    }
+                    return true;
+                }
 
-                        return true;
+                // Optimized path for 1 bpp linear copies - we don't need to calculate every single byte offset,
+                // and we can make use of Span.CopyTo which is very very fast
+                bool ConvertLinearBytes(Span<byte> dstSpan, ReadOnlySpan<byte> srcSpan)
+                {
+                    for (int y = 0; y < yCount; y++)
+                    {
+                        srcCalculator.SetY(src.RegionY + y);
+                        dstCalculator.SetY(dst.RegionY + y);
+                        int srcOffset = srcCalculator.GetOffset(src.RegionX);
+                        int dstOffset = dstCalculator.GetOffset(dst.RegionX);
+                        srcSpan.Slice(srcOffset - srcBaseOffset, xCount)
+                            .CopyTo(dstSpan.Slice(dstOffset - dstBaseOffset, xCount));
                     }
 
-                    bool _ = srcBpp switch
-                    {
-                        1 => Convert<byte>(dstSpan, srcSpan),
-                        2 => Convert<ushort>(dstSpan, srcSpan),
-                        4 => Convert<uint>(dstSpan, srcSpan),
-                        8 => Convert<ulong>(dstSpan, srcSpan),
-                        12 => Convert<Bpp12Pixel>(dstSpan, srcSpan),
-                        16 => Convert<Vector128<byte>>(dstSpan, srcSpan),
-                        _ => throw new NotSupportedException($"Unable to copy ${srcBpp} bpp pixel format.")
-                    };
+                    return true;
+                }
 
-                    memoryManager.Write(dstGpuVa + (ulong)dstBaseOffset, dstSpan);
-                }
-                finally
+                // OPT: This allocates a (potentially) huge temporary array and then copies an existing
+                // region of memory into it, data that might get overwritten entirely anyways. Ideally this should
+                // all be rewritten to use pooled arrays, but that gets complicated with packed data and strides
+                Span<byte> dstSpan = memoryManager.GetSpan(dstGpuVa + (ulong)dstBaseOffset, dstSize).ToArray();
+
+                bool _ = srcBpp switch
                 {
-                    ArrayPool<byte>.Shared.Return(scratchArea);
-                }
+                    1 => ConvertLinearBytes(dstSpan, srcSpan),
+                    2 => Convert<ushort>(dstSpan, srcSpan),
+                    4 => Convert<uint>(dstSpan, srcSpan),
+                    8 => Convert<ulong>(dstSpan, srcSpan),
+                    12 => Convert<Bpp12Pixel>(dstSpan, srcSpan),
+                    16 => Convert<Vector128<byte>>(dstSpan, srcSpan),
+                    _ => throw new NotSupportedException($"Unable to copy ${srcBpp} bpp pixel format.")
+                };
+
+                memoryManager.Write(dstGpuVa + (ulong)dstBaseOffset, dstSpan);
             }
             else
             {
