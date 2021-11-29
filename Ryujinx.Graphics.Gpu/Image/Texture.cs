@@ -781,23 +781,29 @@ namespace Ryujinx.Graphics.Gpu.Image
             // - BC4/BC5 is not supported on 3D textures.
             if (!_context.Capabilities.SupportsAstcCompression && Info.FormatInfo.Format.IsAstc())
             {
-                if (!AstcDecoder.TryDecodeToRgba8P(
-                    data.ToArray(),
-                    Info.FormatInfo.BlockWidth,
-                    Info.FormatInfo.BlockHeight,
-                    width,
-                    height,
-                    depth,
-                    levels,
-                    layers,
-                    out PooledBuffer<byte> decoded))
+                using (PooledBuffer<byte> scratch = BufferPool<byte>.Rent(data.Length))
                 {
-                    string texInfo = $"{Info.Target} {Info.FormatInfo.Format} {Info.Width}x{Info.Height}x{Info.DepthOrLayers} levels {Info.Levels}";
+                    // OPT - this is a bit of a wasteful copy, the only reason it exists is because
+                    // ASTC decoder stores a temporary reference to the data, so it has to be a Memory instead of Span.
+                    data.CopyTo(scratch.AsSpan);
+                    if (!AstcDecoder.TryDecodeToRgba8P(
+                        scratch,
+                        Info.FormatInfo.BlockWidth,
+                        Info.FormatInfo.BlockHeight,
+                        width,
+                        height,
+                        depth,
+                        levels,
+                        layers,
+                        out PooledBuffer<byte> decoded))
+                    {
+                        string texInfo = $"{Info.Target} {Info.FormatInfo.Format} {Info.Width}x{Info.Height}x{Info.DepthOrLayers} levels {Info.Levels}";
 
-                    Logger.Debug?.Print(LogClass.Gpu, $"Invalid ASTC texture at 0x{Info.GpuAddress:X} ({texInfo}).");
+                        Logger.Debug?.Print(LogClass.Gpu, $"Invalid ASTC texture at 0x{Info.GpuAddress:X} ({texInfo}).");
+                    }
+
+                    returnVal = decoded;
                 }
-
-                returnVal = decoded;
             }
             else if (Target == Target.Texture3D && Info.FormatInfo.Format.IsBc4())
             {

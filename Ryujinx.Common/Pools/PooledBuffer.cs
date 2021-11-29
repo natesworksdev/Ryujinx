@@ -21,7 +21,7 @@ namespace Ryujinx.Common.Pools
 
         internal PooledBuffer(T[] data, int length)
         {
-            Buffer = data;
+            _buffer = data;
             Length = length;
         }
 
@@ -74,7 +74,7 @@ namespace Ryujinx.Common.Pools
         /// <summary>
         /// The contiguous buffer to store data in.
         /// </summary>
-        public T[] Buffer { get; private set; }
+        private T[] _buffer;
 
         /// <summary>
         /// The buffer's intended length. This may be smaller than what is actually available (since a larger pooled buffer may have been used
@@ -83,9 +83,14 @@ namespace Ryujinx.Common.Pools
         public int Length { get; private set; }
 
         /// <summary>
-        /// Returns a pointer to this buffer's data as a span. The pointer will be invalid after the buffer is reclaimed. In other words, this is just a view over the data in-place.
+        /// Returns a pointer to this buffer's data as a span.
         /// </summary>
-        public Span<T> AsSpan => new Span<T>(Buffer, 0, Length);
+        public Span<T> AsSpan => _buffer[0..Length];
+
+        /// <summary>
+        /// Returns a pointer to this buffer's data as a read-only span.
+        /// </summary>
+        public ReadOnlySpan<T> AsReadOnlySpan => _buffer[0..Length];
 
         [SuppressMessage("Usage", "CA1816:Dispose methods should call SuppressFinalize", Justification = "Disposal semantics are different here; we are not freeing memory but instead returning objects to a pool")]
         public void Dispose()
@@ -106,8 +111,8 @@ namespace Ryujinx.Common.Pools
             if (disposing && Length > 0)
             {
                 // if the buffer is zero-length, just keep it zero (this prevents us from corrupting the state of the empty singleton buffer)
-                ArrayPool<T>.Shared.Return(Buffer);
-                Buffer = null;
+                ArrayPool<T>.Shared.Return(_buffer);
+                _buffer = null;
                 Length = -1;
             }
         }

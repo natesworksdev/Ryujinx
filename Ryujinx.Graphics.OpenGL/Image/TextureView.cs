@@ -257,7 +257,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
         {
             unsafe
             {
-                fixed (byte* ptr = data.Buffer)
+                fixed (byte* ptr = data.AsReadOnlySpan)
                 {
                     ReadFrom((IntPtr)ptr, data.Length);
                 }
@@ -271,7 +271,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
         {
             unsafe
             {
-                fixed (byte* ptr = data.Buffer)
+                fixed (byte* ptr = data.AsReadOnlySpan)
                 {
                     int width = Math.Max(Info.Width >> level, 1);
                     int height = Math.Max(Info.Height >> level, 1);
