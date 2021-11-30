@@ -19,11 +19,14 @@ namespace Ryujinx.Common.Pools
         private static readonly PooledBuffer<T> EMPTY_POOLED_BUFFER = new PooledBuffer<T>(Array.Empty<T>(), -1);
 
         /// <summary>
-        /// Returns a disposable <see cref="PooledBuffer{T}" /> instance containing an array of at least the specified number of elements.
+        /// Returns a disposable <see cref="PooledBuffer{T}" /> instance backed by a contiguous array of at least the requested number of elements.
+        /// The internal array is only exposed as a <see cref="Span{T}"/> to prevent user code from storing references to it outside
+        /// of the potential lifetime of the pooled handle.
         /// </summary>
         /// <param name="minimumRequestedSize">The minimum number of elements that you require</param>
-        /// <returns>A pooled buffer of at least the requested size. Buffers are not cleared between rentals, so it may initially contain garbage.</returns>
-        public static PooledBuffer<T> Rent(int minimumRequestedSize = DEFAULT_BUFFER_SIZE)
+        /// <param name="clearArray">Whether to clear the contents of the buffer before returning. If false (by default), the buffer may initially contain garbage.</param>
+        /// <returns>A pooled buffer of exactly the requested size.</returns>
+        public static PooledBuffer<T> Rent(int minimumRequestedSize = DEFAULT_BUFFER_SIZE, bool clearArray = false)
         {
             if (minimumRequestedSize < 0)
             {
@@ -35,7 +38,13 @@ namespace Ryujinx.Common.Pools
                 return EMPTY_POOLED_BUFFER;
             }
 
-            PooledBuffer<T> returnVal = new PooledBuffer<T>(ArrayPool<T>.Shared.Rent(minimumRequestedSize), minimumRequestedSize);
+            T[] array = ArrayPool<T>.Shared.Rent(minimumRequestedSize);
+            if (clearArray)
+            {
+                Array.Clear(array, 0, minimumRequestedSize);
+            }
+
+            PooledBuffer<T> returnVal = new PooledBuffer<T>(array, minimumRequestedSize);
 #if DEBUG
             returnVal.MarkRented();
 #endif

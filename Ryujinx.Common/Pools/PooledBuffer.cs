@@ -85,12 +85,12 @@ namespace Ryujinx.Common.Pools
         /// <summary>
         /// Returns a pointer to this buffer's data as a span.
         /// </summary>
-        public Span<T> AsSpan => _buffer[0..Length];
+        public Span<T> AsSpan => _buffer.AsSpan(0, Length);
 
         /// <summary>
         /// Returns a pointer to this buffer's data as a read-only span.
         /// </summary>
-        public ReadOnlySpan<T> AsReadOnlySpan => _buffer[0..Length];
+        public ReadOnlySpan<T> AsReadOnlySpan => _buffer.AsSpan(0, Length);
 
         [SuppressMessage("Usage", "CA1816:Dispose methods should call SuppressFinalize", Justification = "Disposal semantics are different here; we are not freeing memory but instead returning objects to a pool")]
         public void Dispose()
