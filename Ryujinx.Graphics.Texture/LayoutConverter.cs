@@ -119,7 +119,8 @@ namespace Ryujinx.Graphics.Texture
                 blockHeight,
                 bytesPerPixel);
 
-            PooledBuffer<byte> output = BufferPool<byte>.Rent(outSize);
+            PooledBuffer<byte> outputBuffer = BufferPool<byte>.Rent(outSize);
+            Span<byte> output = outputBuffer.AsSpan;
 
             int outOffs = 0;
 
@@ -232,16 +233,16 @@ namespace Ryujinx.Graphics.Texture
 
                 bool _ = bytesPerPixel switch
                 {
-                    1 => Convert<byte>(output.AsSpan, data),
-                    2 => Convert<ushort>(output.AsSpan, data),
-                    4 => Convert<uint>(output.AsSpan, data),
-                    8 => Convert<ulong>(output.AsSpan, data),
-                    12 => Convert<Bpp12Pixel>(output.AsSpan, data),
-                    16 => Convert<Vector128<byte>>(output.AsSpan, data),
+                    1 => Convert<byte>(output, data),
+                    2 => Convert<ushort>(output, data),
+                    4 => Convert<uint>(output, data),
+                    8 => Convert<ulong>(output, data),
+                    12 => Convert<Bpp12Pixel>(output, data),
+                    16 => Convert<Vector128<byte>>(output, data),
                     _ => throw new NotSupportedException($"Unable to convert ${bytesPerPixel} bpp pixel format.")
                 };
             }
-            return output;
+            return outputBuffer;
         }
 
         public static PooledBuffer<byte> ConvertLinearStridedToLinear(
@@ -259,20 +260,21 @@ namespace Ryujinx.Graphics.Texture
             int outStride = BitUtils.AlignUp(w * bytesPerPixel, HostStrideAlignment);
             int lineSize = Math.Min(stride, outStride);
 
-            PooledBuffer<byte> output = BufferPool<byte>.Rent(h * outStride);
+            PooledBuffer<byte> outputBuffer = BufferPool<byte>.Rent(h * outStride);
+            Span<byte> output = outputBuffer.AsSpan;
 
             int outOffs = 0;
             int inOffs = 0;
 
             for (int y = 0; y < h; y++)
             {
-                data.Slice(inOffs, lineSize).CopyTo(output.AsSpan.Slice(outOffs, lineSize));
+                data.Slice(inOffs, lineSize).CopyTo(output.Slice(outOffs, lineSize));
 
                 inOffs += stride;
                 outOffs += outStride;
             }
 
-            return output;
+            return outputBuffer;
         }
 
         public static void ConvertLinearToBlockLinear(
