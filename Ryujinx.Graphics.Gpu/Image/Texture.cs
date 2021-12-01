@@ -688,7 +688,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             PooledBuffer<byte> convertedData = ConvertToHostCompatibleFormat(data);
 
-            HostTexture.SetData(convertedData);
+            HostTexture.SetData(convertedData.AsReadOnlySpan);
 
             _hasData = true;
         }
@@ -697,7 +697,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Uploads new texture data to the host GPU.
         /// </summary>
         /// <param name="data">New data</param>
-        public void SetData(PooledBuffer<byte> data)
+        public void SetData(ReadOnlySpan<byte> data)
         {
             BlacklistScale();
 
@@ -716,7 +716,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="data">New data</param>
         /// <param name="layer">Target layer</param>
         /// <param name="level">Target level</param>
-        public void SetData(PooledBuffer<byte> data, int layer, int level)
+        public void SetData(ReadOnlySpan<byte> data, int layer, int level)
         {
             BlacklistScale();
 

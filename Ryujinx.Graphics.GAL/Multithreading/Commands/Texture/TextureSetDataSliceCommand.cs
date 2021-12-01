@@ -24,7 +24,10 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Commands.Texture
         public static void Run(ref TextureSetDataSliceCommand command, ThreadedRenderer threaded, IRenderer renderer)
         {
             ThreadedTexture texture = command._texture.Get(threaded);
-            texture.Base.SetData(command._data.Get(threaded), command._layer, command._level);
+            using (PooledBuffer<byte> pooledData = command._data.Get(threaded))
+            {
+                texture.Base.SetData(pooledData.AsReadOnlySpan, command._layer, command._level);
+            }
         }
     }
 }

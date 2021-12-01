@@ -222,9 +222,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                                 srcSpan);
                         }
 
-                        target.SetData(data);
+                        target.SetData(data.AsReadOnlySpan);
                         target.SignalModified();
-
+                        data.Dispose();
                         return;
                     }
                     else if (srcCalculator.LayoutMatches(dstCalculator))

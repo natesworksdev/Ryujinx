@@ -224,11 +224,11 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                             ReadOnlySpan<byte> data = _physicalMemory.GetSpan(Storage.Range.GetSlice((ulong)offset, (ulong)size));
 
-                            PooledBuffer<byte> convertedData = Storage.ConvertToHostCompatibleFormat(data, info.BaseLevel, true);
-
-                            Storage.SetData(convertedData, info.BaseLayer, info.BaseLevel);
-
-                            offsetIndex++;
+                            using (PooledBuffer<byte> convertedData = Storage.ConvertToHostCompatibleFormat(data, info.BaseLevel, true))
+                            {
+                                Storage.SetData(convertedData.AsReadOnlySpan, info.BaseLayer, info.BaseLevel);
+                                offsetIndex++;
+                            }
                         }
                     }
                 }
