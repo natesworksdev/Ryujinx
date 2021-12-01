@@ -776,42 +776,42 @@ namespace Ryujinx.Graphics.Gpu.Image
                     data);
             }
 
+            // If this tex data is compressed, we need to make sure we dispose
+            // of this buffer containing the encoded data after decoding
+            PooledBuffer<byte> encodedTextureBuf = returnVal;
+
             // Handle compressed cases not supported by the host:
             // - ASTC is usually not supported on desktop cards.
             // - BC4/BC5 is not supported on 3D textures.
             if (!_context.Capabilities.SupportsAstcCompression && Info.FormatInfo.Format.IsAstc())
             {
-                using (PooledBuffer<byte> scratch = BufferPool<byte>.Rent(data.Length))
+                if (!AstcDecoder.TryDecodeToRgba8P(
+                    encodedTextureBuf,
+                    Info.FormatInfo.BlockWidth,
+                    Info.FormatInfo.BlockHeight,
+                    width,
+                    height,
+                    depth,
+                    levels,
+                    layers,
+                    out PooledBuffer<byte> decoded))
                 {
-                    // OPT - this is a bit of a wasteful copy, the only reason it exists is because
-                    // ASTC decoder stores a temporary reference to the data, so it has to be a Memory instead of Span.
-                    data.CopyTo(scratch.AsSpan);
-                    if (!AstcDecoder.TryDecodeToRgba8P(
-                        scratch,
-                        Info.FormatInfo.BlockWidth,
-                        Info.FormatInfo.BlockHeight,
-                        width,
-                        height,
-                        depth,
-                        levels,
-                        layers,
-                        out PooledBuffer<byte> decoded))
-                    {
-                        string texInfo = $"{Info.Target} {Info.FormatInfo.Format} {Info.Width}x{Info.Height}x{Info.DepthOrLayers} levels {Info.Levels}";
-
-                        Logger.Debug?.Print(LogClass.Gpu, $"Invalid ASTC texture at 0x{Info.GpuAddress:X} ({texInfo}).");
-                    }
-
-                    returnVal = decoded;
+                    string texInfo = $"{Info.Target} {Info.FormatInfo.Format} {Info.Width}x{Info.Height}x{Info.DepthOrLayers} levels {Info.Levels}";
+                    Logger.Debug?.Print(LogClass.Gpu, $"Invalid ASTC texture at 0x{Info.GpuAddress:X} ({texInfo}).");
                 }
+
+                encodedTextureBuf.Dispose();
+                returnVal = decoded;
             }
             else if (Target == Target.Texture3D && Info.FormatInfo.Format.IsBc4())
             {
-                returnVal = BCnDecoder.DecodeBC4(data, width, height, depth, levels, layers, Info.FormatInfo.Format == Format.Bc4Snorm);
+                returnVal = BCnDecoder.DecodeBC4(encodedTextureBuf.AsSpan, width, height, depth, levels, layers, Info.FormatInfo.Format == Format.Bc4Snorm);
+                encodedTextureBuf.Dispose();
             }
             else if (Target == Target.Texture3D && Info.FormatInfo.Format.IsBc5())
             {
-                returnVal = BCnDecoder.DecodeBC5(data, width, height, depth, levels, layers, Info.FormatInfo.Format == Format.Bc5Snorm);
+                returnVal = BCnDecoder.DecodeBC5(encodedTextureBuf.AsSpan, width, height, depth, levels, layers, Info.FormatInfo.Format == Format.Bc5Snorm);
+                encodedTextureBuf.Dispose();
             }
 
             return returnVal;
