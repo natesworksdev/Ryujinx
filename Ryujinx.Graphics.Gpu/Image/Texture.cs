@@ -90,7 +90,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         private bool _hasData;
         private bool _dirty = true;
         private int _updateCount;
-        private byte[] _currentData;
+        private PooledBuffer<byte> _currentData;
 
         private ITexture _arrayViewTexture;
         private Target   _arrayViewTarget;
@@ -677,8 +677,11 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
                 else
                 {
-                    bool dataMatches = _currentData != null && data.SequenceEqual(_currentData);
-                    _currentData = data.ToArray();
+                    bool dataMatches = _currentData != null && data.SequenceEqual(_currentData.AsSpan);
+                    _currentData?.Dispose();
+                    _currentData = BufferPool<byte>.Rent(data.Length);
+                    data.CopyTo(_currentData.AsSpan);
+
                     if (dataMatches)
                     {
                         return;
@@ -722,6 +725,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             HostTexture.SetData(data, layer, level);
 
+            _currentData?.Dispose();
             _currentData = null;
 
             _hasData = true;
@@ -1452,6 +1456,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         private void DisposeTextures()
         {
+            _currentData?.Dispose();
             _currentData = null;
             HostTexture.Release();
 

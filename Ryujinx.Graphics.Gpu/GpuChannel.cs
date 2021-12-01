@@ -1,4 +1,5 @@
-﻿using Ryujinx.Graphics.Gpu.Engine.GPFifo;
+﻿using Ryujinx.Common.Pools;
+using Ryujinx.Graphics.Gpu.Engine.GPFifo;
 using Ryujinx.Graphics.Gpu.Image;
 using Ryujinx.Graphics.Gpu.Memory;
 using System;
@@ -80,7 +81,7 @@ namespace Ryujinx.Graphics.Gpu
         /// It is intended to be used by nvservices to handle special cases.
         /// </summary>
         /// <param name="commandBuffer">The command buffer containing the prefetched commands</param>
-        public void PushHostCommandBuffer(int[] commandBuffer)
+        public void PushHostCommandBuffer(PooledBuffer<int> commandBuffer)
         {
             _device.PushHostCommandBuffer(_processor, commandBuffer);
         }
