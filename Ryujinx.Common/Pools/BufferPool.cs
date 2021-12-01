@@ -6,11 +6,12 @@ namespace Ryujinx.Common.Pools
     /// <summary>
     /// A centralized, static pool for getting multipurpose buffers of any type.
     /// "But why does this exist when you have <see cref="ArrayPool{T}"/>?" This actually just wraps around
-    /// ArrayPool. The difference is that this also tracks the requested size of the allocated
-    /// buffer, so you can pass it around and users of it know how much of the data is actually valid,
-    /// compared to ArrayPool which just gives you an arbitrary sized array. Also, returning a strongly
-    /// typed <see cref="PooledBuffer{T}"/> codifies the fact that the buffer is part of a pool, and that code
-    /// can more clearly manage lifetime and disposal automatically.
+    /// ArrayPool. The difference is that the rented array is hidden inside of a <see cref="PooledBuffer{T}"/>
+    /// handle and is only exposed as a <see cref="Span{T}"/>. This makes it harder to leak references to the
+    /// pooled array, which makes it a bit easier to track ownership. The PooledBuffer handle is <see cref="IDisposable"/>
+    /// so code analysis can enforce better practice as well. In addition, it also tracks the initial requested
+    /// size of the allocated buffer, so you can pass it around and users of it know how much of the data
+    /// is actually valid, compared to ArrayPool which just gives you an arbitrary sized array.
     /// </summary>
     public static class BufferPool<T>
     {

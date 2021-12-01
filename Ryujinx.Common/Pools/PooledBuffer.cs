@@ -11,9 +11,7 @@ namespace Ryujinx.Common.Pools
 {
     /// <summary>
     /// Represents a reusable pooled buffer of some type T that was rented from a <see cref="BufferPool{T}"/>.
-    /// The actual length of the array may be longer than the actual valid contents; to codify the difference, the Length
-    /// parameter is used (in cases where you pass a buffered pool to some function like a reader that parses data from it).
-    /// This pool should be disposed when you are done using it, after which it is returned to the pool to be reclaimed.
+    /// This buffer should be disposed when you are done using it, after which it is returned to the pool to be reclaimed.
     /// </summary>
     /// <typeparam name="T">The type of data that this buffer holds.</typeparam>
     public class PooledBuffer<T> : IDisposable
@@ -73,13 +71,13 @@ namespace Ryujinx.Common.Pools
 #endif // TRACK_BUFFERPOOL_LEAKS
 
         /// <summary>
-        /// The contiguous buffer to store data in.
+        /// The contiguous buffer to store data in. Intentionally not exposed to callers except as a <see cref="Span{T}"/>, to prevent
+        /// the pooled array handle from leaking. The actual array is usually larger than <see cref="Length"/> because of how ArrayPool behaves.
         /// </summary>
         private T[] _buffer;
 
         /// <summary>
-        /// The buffer's intended length. This may be smaller than what is actually available (since a larger pooled buffer may have been used
-        /// to satisfy the request). This can be used as a signal to indicate the intended data size this buffer is used for.
+        /// The buffer's allocated length.
         /// </summary>
         public int Length { get; private set; }
 
@@ -104,6 +102,7 @@ namespace Ryujinx.Common.Pools
 
         protected virtual void Dispose(bool disposing)
         {
+            // prevent multiple disposal atomically
             if (Interlocked.CompareExchange(ref _disposed, 1, 0) != 0)
             {
                 return;
@@ -112,6 +111,7 @@ namespace Ryujinx.Common.Pools
             if (disposing && Length > 0)
             {
                 // if the buffer is zero-length, just keep it zero (this prevents us from corrupting the state of the empty singleton buffer)
+                // Otherwise, nullify the reference so anyone who mistakenly still has a handle to this object should hopefully fail fast
                 ArrayPool<T>.Shared.Return(_buffer);
                 _buffer = null;
                 Length = -1;
