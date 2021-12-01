@@ -45,7 +45,7 @@ namespace Ryujinx.Common.Pools
             }
 
             PooledBuffer<T> returnVal = new PooledBuffer<T>(array, minimumRequestedSize);
-#if DEBUG
+#if TRACK_BUFFERPOOL_LEAKS
             returnVal.MarkRented();
 #endif
             return returnVal;

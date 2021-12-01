@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Ryujinx.Common.Logging;
+using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -25,7 +26,7 @@ namespace Ryujinx.Common.Pools
             Length = length;
         }
 
-#if DEBUG
+#if TRACK_BUFFERPOOL_LEAKS
         private string _lastRentalStackTrace = "Unknown";
 
 #pragma warning disable CA1063 // suppress "improper" finalizer style
@@ -33,7 +34,7 @@ namespace Ryujinx.Common.Pools
         {
             if (Length > 0)
             {
-                Console.WriteLine("Buffer pool leak detected: Buffer was rented by " + _lastRentalStackTrace);
+                Logger.Warning?.Print(LogClass.Application, $"Buffer pool leak detected: Buffer was rented by {_lastRentalStackTrace}");
                 Dispose(false);
             }
         }
@@ -69,7 +70,7 @@ namespace Ryujinx.Common.Pools
                 }
             }
         }
-#endif // DEBUG
+#endif // TRACK_BUFFERPOOL_LEAKS
 
         /// <summary>
         /// The contiguous buffer to store data in.
@@ -96,7 +97,7 @@ namespace Ryujinx.Common.Pools
         public void Dispose()
         {
             Dispose(true);
-#if DEBUG
+#if TRACK_BUFFERPOOL_LEAKS
             GC.SuppressFinalize(this);
 #endif
         }
