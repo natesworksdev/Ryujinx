@@ -1,4 +1,4 @@
-﻿using Ryujinx.Common.Configuration;
+using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Memory;
 using Ryujinx.HLE.HOS.Services.Mii;
 using Ryujinx.HLE.HOS.Services.Mii.Types;
@@ -84,7 +84,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
                 Reserved1       = new Array64<byte>(),
                 Reserved2       = new Array58<byte>()
             };
-            Encoding.ASCII.GetBytes("Ryujinx").CopyTo(registerInfo.Nickname.ToSpan());
+            Encoding.ASCII.GetBytes(amiiboFile.Name).CopyTo(registerInfo.Nickname.ToSpan());
 
             return registerInfo;
         }
@@ -179,6 +179,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
                 virtualAmiiboFile = new VirtualAmiiboFile()
                 {
                     FileVersion      = 0,
+                    Name             = "Ryujinx",
                     TagUuid          = Array.Empty<byte>(),
                     AmiiboId         = amiiboId,
                     FirstWriteDate   = DateTime.Now,
