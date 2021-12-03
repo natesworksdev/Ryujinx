@@ -142,10 +142,7 @@ namespace Ryujinx.Audio.Backends.SoundIo
                 sampleRate = Constants.TargetSampleRate;
             }
 
-            if (volume < 0 || volume > 1)
-            {
-                volume = 1;
-            }
+            volume = Math.Clamp(volume, 0, 1);
 
             if (direction != Direction.Output)
             {
