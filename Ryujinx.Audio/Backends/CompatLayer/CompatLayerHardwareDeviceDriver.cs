@@ -80,10 +80,7 @@ namespace Ryujinx.Audio.Backends.CompatLayer
                 sampleRate = Constants.TargetSampleRate;
             }
 
-            if (volume < 0 || volume > 1)
-            {
-                volume = 1;
-            }
+            volume = Math.Clamp(volume, 0, 1);
 
             if (!_realDriver.SupportsDirection(direction))
             {
