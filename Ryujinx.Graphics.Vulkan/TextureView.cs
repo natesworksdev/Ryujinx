@@ -187,8 +187,6 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void CopyTo(ITexture destination, int srcLayer, int dstLayer, int srcLevel, int dstLevel)
         {
-            _gd.FlushAllCommands();
-
             var src = this;
             var dst = (TextureView)destination;
 
@@ -197,7 +195,9 @@ namespace Ryujinx.Graphics.Vulkan
                 return;
             }
 
-            using var cbs = _gd.CommandBufferPool.Rent();
+            _gd.PipelineInternal.EndRenderPass();
+
+            var cbs = _gd.PipelineInternal.CurrentCommandBuffer;
 
             var srcImage = src.GetImage().Get(cbs).Value;
             var dstImage = dst.GetImage().Get(cbs).Value;
