@@ -15,4 +15,9 @@
     <ProjectReference Include="..\Ryujinx.Graphics.Shader\Ryujinx.Graphics.Shader.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Shaders\hudshader.frag" />
+    <EmbeddedResource Include="Shaders\hudshader.vert" />
+  </ItemGroup>
+
 </Project>

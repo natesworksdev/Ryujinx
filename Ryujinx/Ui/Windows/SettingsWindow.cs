@@ -49,6 +49,7 @@ namespace Ryujinx.Ui.Windows
         [GUI] CheckButton     _checkUpdatesToggle;
         [GUI] CheckButton     _showConfirmExitToggle;
         [GUI] CheckButton     _hideCursorOnIdleToggle;
+        [GUI] CheckButton     _showOsdToggle;
         [GUI] CheckButton     _vSyncToggle;
         [GUI] CheckButton     _shaderCacheToggle;
         [GUI] CheckButton     _ptcToggle;
@@ -210,6 +211,11 @@ namespace Ryujinx.Ui.Windows
             if (ConfigurationState.Instance.HideCursorOnIdle)
             {
                 _hideCursorOnIdleToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.ShowOsd)
+            {
+                _showOsdToggle.Click();
             }
 
             if (ConfigurationState.Instance.Graphics.EnableVsync)
@@ -495,6 +501,7 @@ namespace Ryujinx.Ui.Windows
             ConfigurationState.Instance.Logger.EnableFileLog.Value             = _fileLogToggle.Active;
             ConfigurationState.Instance.Logger.GraphicsDebugLevel.Value        = Enum.Parse<GraphicsDebugLevel>(_graphicsDebugLevel.ActiveId);
             ConfigurationState.Instance.System.EnableDockedMode.Value          = _dockedModeToggle.Active;
+            ConfigurationState.Instance.ShowOsd.Value                          = _showOsdToggle.Active;
             ConfigurationState.Instance.EnableDiscordIntegration.Value         = _discordToggle.Active;
             ConfigurationState.Instance.CheckUpdatesOnStart.Value              = _checkUpdatesToggle.Active;
             ConfigurationState.Instance.ShowConfirmExit.Value                  = _showConfirmExitToggle.Active;

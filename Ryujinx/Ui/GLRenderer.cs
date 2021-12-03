@@ -2,7 +2,9 @@
 using Gtk;
 using OpenTK.Graphics.OpenGL;
 using Ryujinx.Common.Configuration;
+using Ryujinx.Configuration;
 using Ryujinx.Graphics.OpenGL;
+using Ryujinx.Graphics.OpenGL.Helper;
 using Ryujinx.Input.HLE;
 using SPB.Graphics;
 using SPB.Graphics.OpenGL;
@@ -21,8 +23,10 @@ namespace Ryujinx.Ui
 
         private bool _initializedOpenGL;
 
-        private OpenGLContextBase _openGLContext;
+        private OpenGLContextBase _gameContext;
+        private OpenGLContextBase _renderContext;
         private SwappableNativeWindowBase _nativeWindow;
+        private RenderTarget _stagingRenderTarget;
 
         public GlRenderer(InputManager inputManager, GraphicsDebugLevel glLogLevel) : base(inputManager, glLogLevel)
         {
@@ -45,12 +49,17 @@ namespace Ryujinx.Ui
 
             Window.EnsureNative();
 
-            _openGLContext = PlatformHelper.CreateOpenGLContext(GetGraphicsMode(), 3, 3, _glLogLevel == GraphicsDebugLevel.None ? OpenGLContextFlags.Compat : OpenGLContextFlags.Compat | OpenGLContextFlags.Debug);
-            _openGLContext.Initialize(_nativeWindow);
-            _openGLContext.MakeCurrent(_nativeWindow);
+            _gameContext = PlatformHelper.CreateOpenGLContext(GetGraphicsMode(), 3, 3, _glLogLevel == GraphicsDebugLevel.None ? OpenGLContextFlags.Compat : OpenGLContextFlags.Compat | OpenGLContextFlags.Debug);
+            _gameContext.Initialize(_nativeWindow);
+            _gameContext.MakeCurrent(_nativeWindow);
 
             // Release the GL exclusivity that SPB gave us as we aren't going to use it in GTK Thread.
-            _openGLContext.MakeCurrent(null);
+            _gameContext.MakeCurrent(null);
+
+            _renderContext = PlatformHelper.CreateOpenGLContext(GetGraphicsMode(), 3, 3, _glLogLevel == GraphicsDebugLevel.None ? OpenGLContextFlags.Compat : OpenGLContextFlags.Compat | OpenGLContextFlags.Debug, true, _gameContext);
+            _renderContext.Initialize(_nativeWindow);
+            _renderContext.MakeCurrent(null);
+
 
             WaitEvent.Set();
 
@@ -93,17 +102,59 @@ namespace Ryujinx.Ui
         public override void InitializeRenderer()
         {
             // First take exclusivity on the OpenGL context.
-            ((Renderer)Renderer).InitializeBackgroundContext(SPBOpenGLContext.CreateBackgroundContext(_openGLContext));
+            ((Renderer)Renderer).InitializeBackgroundContext(SPBOpenGLContext.CreateBackgroundContext(_gameContext));
 
-            _openGLContext.MakeCurrent(_nativeWindow);
+            _gameContext.MakeCurrent(_nativeWindow);
+
+            _stagingRenderTarget = GLHelper.GenerateRenderTarget(AllocatedWidth, AllocatedHeight);
+
+            SizeChanged = false;
 
             GL.ClearColor(0, 0, 0, 1.0f);
             GL.Clear(ClearBufferMask.ColorBufferBit);
-            SwapBuffers();
+            SwapBuffers(0);
         }
 
-        public override void SwapBuffers()
+        public override void SwapBuffers(object framebuffer)
         {
+            int boundFrameBuffer = (int)framebuffer;
+
+            if (SizeChanged)
+            {
+                _stagingRenderTarget.Dispose();
+
+                _stagingRenderTarget = GLHelper.GenerateRenderTarget(AllocatedWidth, AllocatedHeight);
+
+                SizeChanged = false;
+            }
+
+            var blitStruct = new BlitStruct
+            {
+                SrcX0 = 0,
+                SrcY0 = 0,
+                SrcX1 = AllocatedWidth,
+                SrcY1 = AllocatedHeight,
+                DstX0 = 0,
+                DstY0 = 0,
+                DstX1 = AllocatedWidth,
+                DstY1 = AllocatedHeight
+            };
+
+            GLHelper.BlitFramebuffer(boundFrameBuffer, ConfigurationState.Instance.ShowOsd ? _stagingRenderTarget.Framebuffer : 0, blitStruct);
+
+            if (ConfigurationState.Instance.ShowOsd)
+            {
+                _gameContext.MakeCurrent(null);
+                _renderContext.MakeCurrent(_nativeWindow);
+
+                Hud.RenderUi(_stagingRenderTarget.Texture);
+
+                _renderContext.MakeCurrent(null);
+                _gameContext.MakeCurrent(_nativeWindow);
+
+                GLHelper.BlitFramebuffer(_stagingRenderTarget.Framebuffer, 0, blitStruct);
+            }
+
             _nativeWindow.SwapBuffers();
         }
 
@@ -117,7 +168,9 @@ namespace Ryujinx.Ui
             // Try to bind the OpenGL context before calling the shutdown event
             try
             {
-                _openGLContext?.MakeCurrent(_nativeWindow);
+                _gameContext?.MakeCurrent(_nativeWindow);
+                
+                _stagingRenderTarget.Dispose();
             }
             catch (Exception) { }
 
@@ -127,11 +180,13 @@ namespace Ryujinx.Ui
             // Unbind context and destroy everything
             try
             {
-                _openGLContext?.MakeCurrent(null);
+                _gameContext?.MakeCurrent(null);
+                _renderContext?.MakeCurrent(null);
             }
             catch (Exception) { }
 
-            _openGLContext.Dispose();
+            _gameContext.Dispose();
+            _renderContext.Dispose();
         }
     }
 }

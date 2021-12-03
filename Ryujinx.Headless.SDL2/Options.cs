@@ -173,5 +173,8 @@ namespace Ryujinx.Headless.SDL2
 
         [Value(0, MetaName = "input", HelpText = "Input to load.", Required = true)]
         public string InputPath { get; set; }
+
+        [Option("show-osd", Required = false, Default = false, HelpText = "Shows performance stats on an On Screen Display")]
+        public bool? ShowOsd { get; set; }
     }
 }

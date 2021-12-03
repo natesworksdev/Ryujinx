@@ -147,6 +147,11 @@ namespace Ryujinx.Configuration
         public bool HideCursorOnIdle { get; set; }
 
         /// <summary>
+        /// Show On Screen Display
+        /// </summary>
+        public bool ShowOsd { get; set; }
+
+        /// <summary>
         /// Enables or disables Vertical Sync
         /// </summary>
         public bool EnableVsync { get; set; }

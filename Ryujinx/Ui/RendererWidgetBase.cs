@@ -2,6 +2,7 @@
 using ARMeilleure.Translation.PTC;
 using Gdk;
 using Gtk;
+using ImGuiNET;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
@@ -12,6 +13,8 @@ using Ryujinx.Input;
 using Ryujinx.Input.GTK3;
 using Ryujinx.Input.HLE;
 using Ryujinx.Ui.Widgets;
+using Ryujinx.Common.Osd;
+using Ryujinx.Graphics.OpenGL;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
@@ -19,6 +22,7 @@ using SixLabors.ImageSharp.Processing;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -74,6 +78,10 @@ namespace Ryujinx.Ui
         private int _windowWidth;
         private bool _isMouseInClient;
 
+        protected OsdContext Hud { get; set; }
+        private StatusUpdatedEventArgs _performanceStatus;
+        protected bool SizeChanged { get; set; } = true;
+
         public RendererWidgetBase(InputManager inputManager, GraphicsDebugLevel glLogLevel)
         {
             var mouseDriver = new GTK3MouseDriver(this);
@@ -109,11 +117,34 @@ namespace Ryujinx.Ui
             _lastCursorMoveTime = Stopwatch.GetTimestamp();
 
             ConfigurationState.Instance.HideCursorOnIdle.Event += HideCursorStateChanged;
+
+            Hud = new OsdContext();
+            Hud.OnUi += Hud_OnUi;
+        }
+
+        private void Hud_OnUi(object sender, EventArgs e)
+        {
+            if (_performanceStatus != null)
+            {
+                var windowFlags = ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoResize;
+                ImGui.SetNextWindowPos(new System.Numerics.Vector2(3, 3));
+                ImGui.SetNextWindowSize(new Vector2(300, 100));
+                ImGui.SetNextWindowBgAlpha(0.5f);
+                if (ImGui.Begin("Hud", windowFlags))
+                {
+                    ImGui.Text("VSync: " + (_performanceStatus.VSyncEnabled ? "ON" : "OFF"));
+                    ImGui.Text(_performanceStatus.DockedMode);
+                    ImGui.Text(_performanceStatus.GameStatus);
+                    ImGui.Text(_performanceStatus.FifoStatus + "\n");
+                    ImGui.Text(_performanceStatus.GpuName);
+                    ImGui.End();
+                }
+            }
         }
 
         public abstract void InitializeRenderer();
 
-        public abstract void SwapBuffers();
+        public abstract void SwapBuffers(object framebuffer);
 
         public abstract string GetGpuVendorName();
 
@@ -223,6 +254,10 @@ namespace Ryujinx.Ui
             _windowHeight = evnt.Height * monitor.ScaleFactor;
 
             Renderer?.Window.SetSize(_windowWidth, _windowHeight);
+
+            Hud.UpdateSize(new System.Numerics.Vector2(_windowWidth, _windowHeight));
+
+            SizeChanged = true;
 
             return result;
         }
@@ -379,6 +414,13 @@ namespace Ryujinx.Ui
             parent.Present();
 
             InitializeRenderer();
+            IOsdRenderer renderer = null;
+            if (this is GlRenderer)
+            {
+                renderer = new GlOsdRenderer();
+            }
+            Hud.InitializeRenderer(renderer);
+            Hud.UpdateSize(new System.Numerics.Vector2(AllocatedWidth, AllocatedHeight));
 
             Device.Gpu.Renderer.Initialize(_glLogLevel);
 
@@ -422,19 +464,22 @@ namespace Ryujinx.Ui
                         {
                             dockedMode += $" ({scale}x)";
                         }
-
-                        StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
+                        _performanceStatus = new StatusUpdatedEventArgs(
                             Device.EnableDeviceVsync,
                             Device.GetVolume(),
                             dockedMode,
                             ConfigurationState.Instance.Graphics.AspectRatio.Value.ToText(),
                             $"Game: {Device.Statistics.GetGameFrameRate():00.00} FPS ({Device.Statistics.GetGameFrameTime():00.00} ms)",
                             $"FIFO: {Device.Statistics.GetFifoPercent():0.00} %",
-                            $"GPU: {_gpuVendorName}"));
+                            $"GPU: {_gpuVendorName}");
+
+                        StatusUpdatedEvent?.Invoke(this,_performanceStatus);
 
                         _ticks = Math.Min(_ticks - _ticksPerFrame, _ticksPerFrame);
                     }
                 }
+
+                Hud?.Dispose();
             });
         }
 
@@ -490,6 +535,7 @@ namespace Ryujinx.Ui
 
         public void Exit()
         {
+            Hud.OnUi -= Hud_OnUi;
             TouchScreenManager?.Dispose();
             NpadManager?.Dispose();
 
@@ -602,7 +648,7 @@ namespace Ryujinx.Ui
                 if (currentHotkeyState.HasFlag(KeyboardHotkeyState.ToggleMute) &&
                     !_prevHotkeyState.HasFlag(KeyboardHotkeyState.ToggleMute))
                 {
-                    if (Device.IsAudioMuted()) 
+                    if (Device.IsAudioMuted())
                     {
                         Device.SetVolume(ConfigurationState.Instance.System.AudioVolume);
                     }
@@ -610,6 +656,12 @@ namespace Ryujinx.Ui
                     {
                         Device.SetVolume(0);
                     }
+                }
+
+                if (currentHotkeyState.HasFlag(KeyboardHotkeyState.ToggleOsd) &&
+                    !_prevHotkeyState.HasFlag(KeyboardHotkeyState.ToggleOsd))
+                {
+                    ConfigurationState.Instance.ShowOsd.Value = !ConfigurationState.Instance.ShowOsd.Value;
                 }
 
                 _prevHotkeyState = currentHotkeyState;
@@ -642,7 +694,8 @@ namespace Ryujinx.Ui
             Screenshot = 1 << 1,
             ShowUi = 1 << 2,
             Pause = 1 << 3,
-            ToggleMute = 1 << 4
+            ToggleMute = 1 << 4,
+            ToggleOsd = 1 << 5
         }
 
         private KeyboardHotkeyState GetHotkeyState()
@@ -672,6 +725,11 @@ namespace Ryujinx.Ui
             if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ToggleMute))
             {
                 state |= KeyboardHotkeyState.ToggleMute;
+            }
+
+            if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ToggleOsd))
+            {
+                state |= KeyboardHotkeyState.ToggleOsd;
             }
 
             return state;

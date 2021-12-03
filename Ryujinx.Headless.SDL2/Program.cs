@@ -53,6 +53,8 @@ namespace Ryujinx.Headless.SDL2
         private static List<InputConfig> _inputConfiguration;
         private static bool _enableKeyboard;
         private static bool _enableMouse;
+        
+        public static Options Options { get; set; }
 
         static void Main(string[] args)
         {
@@ -319,6 +321,8 @@ namespace Ryujinx.Headless.SDL2
         static void Load(Options option)
         {
             IGamepad gamepad;
+
+            Options = option;
 
             if (option.ListInputIds)
             {

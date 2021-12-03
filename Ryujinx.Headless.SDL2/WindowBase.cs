@@ -1,9 +1,13 @@
 ﻿using ARMeilleure.Translation;
+using ImGuiNET;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
+using Ryujinx.Common.Osd;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.GAL.Multithreading;
+using Ryujinx.Graphics.OpenGL;
+using Ryujinx.Headless.SDL2.OpenGL;
 using Ryujinx.HLE.HOS.Applets;
 using Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.ApplicationProxy.Types;
 using Ryujinx.HLE.Ui;
@@ -13,6 +17,7 @@ using Ryujinx.SDL2.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Numerics;
 using System.Threading;
 using static SDL2.SDL;
 using Switch = Ryujinx.HLE.Switch;
@@ -31,11 +36,19 @@ namespace Ryujinx.Headless.SDL2
         public Switch Device { get; private set; }
         public IRenderer Renderer { get; private set; }
 
+        protected OsdContext Hud { get; set; }
+
         public event EventHandler<StatusUpdatedEventArgs> StatusUpdatedEvent;
 
         protected IntPtr WindowHandle { get; set; }
 
         public IHostUiTheme HostUiTheme { get; }
+        public int Width { get; private set; }
+        public int Height { get; private set; }
+
+        protected bool SizeChanged { get; set; }
+
+        private StatusUpdatedEventArgs _performanceStatus;
 
         protected SDL2MouseDriver MouseDriver;
         private InputManager _inputManager;
@@ -55,7 +68,8 @@ namespace Ryujinx.Headless.SDL2
         private AspectRatio _aspectRatio;
         private bool _enableMouse;
 
-        public WindowBase(InputManager inputManager, GraphicsDebugLevel glLogLevel, AspectRatio aspectRatio, bool enableMouse)
+        public WindowBase(InputManager inputManager, GraphicsDebugLevel glLogLevel, AspectRatio aspectRatio,
+            bool enableMouse)
         {
             MouseDriver = new SDL2MouseDriver();
             _inputManager = inputManager;
@@ -72,6 +86,31 @@ namespace Ryujinx.Headless.SDL2
             HostUiTheme = new HeadlessHostUiTheme();
 
             SDL2Driver.Instance.Initialize();
+
+            Hud = new OsdContext();
+            Hud.OnUi += Hud_OnUi;
+            Width = DefaultWidth;
+            Height = DefaultHeight;
+        }
+
+        private void Hud_OnUi(object sender, EventArgs e)
+        {
+            if (_performanceStatus != null)
+            {
+                var windowFlags = ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoResize;
+                ImGui.SetNextWindowPos(new Vector2(3, 3));
+                ImGui.SetNextWindowSize(new Vector2(300, 100));
+                ImGui.SetNextWindowBgAlpha(0.5f);
+                if (ImGui.Begin("Hud", windowFlags))
+                {
+                    ImGui.Text("VSync: " + (_performanceStatus.VSyncEnabled ? "ON" : "OFF"));
+                    ImGui.Text(_performanceStatus.DockedMode);
+                    ImGui.Text(_performanceStatus.GameStatus);
+                    ImGui.Text(_performanceStatus.FifoStatus + "\n");
+                    ImGui.Text(_performanceStatus.GpuName);
+                    ImGui.End();
+                }
+            }
         }
 
         public void Initialize(Switch device, List<InputConfig> inputConfigs, bool enableKeyboard, bool enableMouse)
@@ -126,8 +165,11 @@ namespace Ryujinx.Headless.SDL2
                 switch (evnt.window.windowEvent)
                 {
                     case SDL_WindowEventID.SDL_WINDOWEVENT_SIZE_CHANGED:
-                        Renderer?.Window.SetSize(evnt.window.data1, evnt.window.data2);
-                        MouseDriver.SetClientSize(evnt.window.data1, evnt.window.data2);
+                        Width = evnt.window.data1;
+                        Height = evnt.window.data2;
+                        Renderer?.Window.SetSize(Width,Height);
+                        MouseDriver.SetClientSize(Width, Height);
+                        SizeChanged = true;
                         break;
                     case SDL_WindowEventID.SDL_WINDOWEVENT_CLOSE:
                         Exit();
@@ -146,7 +188,7 @@ namespace Ryujinx.Headless.SDL2
 
         protected abstract void FinalizeRenderer();
 
-        protected abstract void SwapBuffers();
+        protected abstract void SwapBuffers(object framebuffer);
 
         protected abstract string GetGpuVendorName();
 
@@ -157,6 +199,8 @@ namespace Ryujinx.Headless.SDL2
             InitializeRenderer();
 
             Device.Gpu.Renderer.Initialize(_glLogLevel);
+            
+            Hud.UpdateSize(new System.Numerics.Vector2(Width, Height));
 
             _gpuVendorName = GetGpuVendorName();
 
@@ -197,13 +241,15 @@ namespace Ryujinx.Headless.SDL2
                             dockedMode += $" ({scale}x)";
                         }
 
-                        StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
+                        _performanceStatus = new StatusUpdatedEventArgs(
                             Device.EnableDeviceVsync,
                             dockedMode,
                             Device.Configuration.AspectRatio.ToText(),
                             $"Game: {Device.Statistics.GetGameFrameRate():00.00} FPS ({Device.Statistics.GetGameFrameTime():00.00} ms)",
                             $"FIFO: {Device.Statistics.GetFifoPercent():0.00} %",
-                            $"GPU: {_gpuVendorName}"));
+                            $"GPU: {_gpuVendorName}");
+
+                        StatusUpdatedEvent?.Invoke(this, _performanceStatus);
 
                         _ticks = Math.Min(_ticks - _ticksPerFrame, _ticksPerFrame);
                     }

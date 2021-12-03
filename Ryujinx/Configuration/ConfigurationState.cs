@@ -425,6 +425,11 @@ namespace Ryujinx.Configuration
         /// </summary>
         public ReactiveObject<bool> HideCursorOnIdle { get; private set; }
 
+        /// <summary>
+        /// Show On Screen Display
+        /// </summary>
+        public ReactiveObject<bool> ShowOsd { get; private set; }
+
         private ConfigurationState()
         {
             Ui                       = new UiSection();
@@ -436,6 +441,7 @@ namespace Ryujinx.Configuration
             CheckUpdatesOnStart      = new ReactiveObject<bool>();
             ShowConfirmExit          = new ReactiveObject<bool>();
             HideCursorOnIdle         = new ReactiveObject<bool>();
+            ShowOsd                  = new ReactiveObject<bool>();
         }
 
         public ConfigurationFileFormat ToFileFormat()
@@ -468,6 +474,7 @@ namespace Ryujinx.Configuration
                 CheckUpdatesOnStart       = CheckUpdatesOnStart,
                 ShowConfirmExit           = ShowConfirmExit,
                 HideCursorOnIdle          = HideCursorOnIdle,
+                ShowOsd                   = ShowOsd,
                 EnableVsync               = Graphics.EnableVsync,
                 EnableShaderCache         = Graphics.EnableShaderCache,
                 EnablePtc                 = System.EnablePtc,
@@ -539,6 +546,7 @@ namespace Ryujinx.Configuration
             CheckUpdatesOnStart.Value              = true;
             ShowConfirmExit.Value                  = true;
             HideCursorOnIdle.Value                 = false;
+            ShowOsd.Value                          = false;
             Graphics.EnableVsync.Value             = true;
             Graphics.EnableShaderCache.Value       = true;
             System.EnablePtc.Value                 = true;
@@ -574,7 +582,8 @@ namespace Ryujinx.Configuration
                 ToggleMute = Key.F2,
                 Screenshot = Key.F8,
                 ShowUi = Key.F4,
-                Pause = Key.F5
+                Pause = Key.F5,
+                ToggleOsd = Key.F1
             };
             Hid.InputConfig.Value = new List<InputConfig>
             {
@@ -962,6 +971,26 @@ namespace Ryujinx.Configuration
                 };
 
                 configurationFileFormat.AudioVolume = 1;
+                configurationFileFormat.ShowOsd = false;
+
+                configurationFileUpdated = true;
+            }
+
+            if (configurationFileFormat.Version < 34)
+            {
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 34.");
+
+                configurationFileFormat.Hotkeys = new KeyboardHotkeys
+                {
+                    ToggleVsync = configurationFileFormat.Hotkeys.ToggleVsync,
+                    Screenshot = configurationFileFormat.Hotkeys.Screenshot,
+                    ShowUi = configurationFileFormat.Hotkeys.ShowUi,
+                    Pause = configurationFileFormat.Hotkeys.Pause,
+                    ToggleMute = configurationFileFormat.Hotkeys.ToggleMute,
+                    ToggleOsd = Key.F1
+                };
+
+                configurationFileFormat.ShowOsd = false;
 
                 configurationFileUpdated = true;
             }
@@ -1016,6 +1045,7 @@ namespace Ryujinx.Configuration
             CheckUpdatesOnStart.Value              = configurationFileFormat.CheckUpdatesOnStart;
             ShowConfirmExit.Value                  = configurationFileFormat.ShowConfirmExit;
             HideCursorOnIdle.Value                 = configurationFileFormat.HideCursorOnIdle;
+            ShowOsd.Value                          = configurationFileFormat.ShowOsd;
             Graphics.EnableVsync.Value             = configurationFileFormat.EnableVsync;
             Graphics.EnableShaderCache.Value       = configurationFileFormat.EnableShaderCache;
             System.EnablePtc.Value                 = configurationFileFormat.EnablePtc;

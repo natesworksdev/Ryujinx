@@ -7,5 +7,6 @@
         public Key ShowUi { get; set; }
         public Key Pause { get; set; }
         public Key ToggleMute { get; set; }
+        public Key ToggleOsd { get; set; }
     }
 }

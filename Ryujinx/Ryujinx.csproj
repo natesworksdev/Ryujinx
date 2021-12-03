@@ -20,6 +20,7 @@
     <PackageReference Include="DiscordRichPresence" Version="1.0.175" />
     <PackageReference Include="GtkSharp" Version="3.22.25.128" />
     <PackageReference Include="GtkSharp.Dependencies" Version="1.1.0" Condition="'$(RuntimeIdentifier)' != 'linux-x64' AND '$(RuntimeIdentifier)' != 'osx-x64'" />
+    <PackageReference Include="ImGui.NET" Version="1.78.0" />
     <PackageReference Include="Ryujinx.Graphics.Nvdec.Dependencies" Version="4.4.0-build9" Condition="'$(RuntimeIdentifier)' != 'linux-x64' AND '$(RuntimeIdentifier)' != 'osx-x64'" />
     <PackageReference Include="Ryujinx.Audio.OpenAL.Dependencies" Version="1.21.0.1" Condition="'$(RuntimeIdentifier)' != 'linux-x64' AND '$(RuntimeIdentifier)' != 'osx-x64'" />
     <PackageReference Include="OpenTK.Graphics" Version="4.5.0" />
@@ -65,10 +66,15 @@
 
   <ItemGroup>
     <None Remove="Ui\MainWindow.glade" />
+    <None Remove="Ui\Resources\blit.comp" />
     <None Remove="Ui\Resources\Controller_JoyConLeft.svg" />
     <None Remove="Ui\Resources\Controller_JoyConPair.svg" />
     <None Remove="Ui\Resources\Controller_JoyConRight.svg" />
     <None Remove="Ui\Resources\Controller_ProCon.svg" />
+    <None Remove="Ui\Resources\copyshader.frag" />
+    <None Remove="Ui\Resources\copyshader.vert" />
+    <None Remove="Ui\Resources\hudshader.frag" />
+    <None Remove="Ui\Resources\hudshader.vert" />
     <None Remove="Ui\Resources\Icon_NCA.png" />
     <None Remove="Ui\Resources\Icon_NRO.png" />
     <None Remove="Ui\Resources\Icon_NSO.png" />

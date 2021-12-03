@@ -3,6 +3,7 @@ using OpenTK.Graphics.OpenGL;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.OpenGL;
+using Ryujinx.Graphics.OpenGL.Helper;
 using Ryujinx.Input.HLE;
 using System;
 
@@ -102,6 +103,9 @@ namespace Ryujinx.Headless.SDL2.OpenGL
 
         private GraphicsDebugLevel _glLogLevel;
         private SDL2OpenGLContext _openGLContext;
+        private SDL2OpenGLContext _hudContext;
+        private RenderTarget _stagingRenderTarget;
+        private IntPtr _hudWindowHandle;
 
         public OpenGLWindow(InputManager inputManager, GraphicsDebugLevel glLogLevel, AspectRatio aspectRatio, bool enableMouse) : base(inputManager, glLogLevel, aspectRatio, enableMouse)
         {
@@ -133,34 +137,89 @@ namespace Ryujinx.Headless.SDL2.OpenGL
 
             // NOTE: The window handle needs to be disposed by the thread that created it and is handled separately.
             _openGLContext = new SDL2OpenGLContext(context, WindowHandle, false);
+            _openGLContext.MakeCurrent();
+
+            SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
+            _hudWindowHandle = SDL_CreateWindow("Ryujinx osd context window", 0, 0, DefaultWidth, DefaultHeight, SDL_WindowFlags.SDL_WINDOW_OPENGL | SDL_WindowFlags.SDL_WINDOW_HIDDEN);
+            context = SDL_GL_CreateContext(_hudWindowHandle);
+            _hudContext = new SDL2OpenGLContext(context, _hudWindowHandle, true);
+            
+            SDL_GL_MakeCurrent(WindowHandle, IntPtr.Zero);
+            SDL_GL_MakeCurrent(_hudWindowHandle, IntPtr.Zero);
 
             // First take exclusivity on the OpenGL context.
             ((Renderer)Renderer).InitializeBackgroundContext(SDL2OpenGLContext.CreateBackgroundContext(_openGLContext));
 
             _openGLContext.MakeCurrent();
+            
+            Hud.InitializeRenderer(new GlOsdRenderer());
 
             GL.ClearColor(0, 0, 0, 1.0f);
             GL.Clear(ClearBufferMask.ColorBufferBit);
-            SwapBuffers();
+            SwapBuffers(0);
 
             Renderer?.Window.SetSize(DefaultWidth, DefaultHeight);
             MouseDriver.SetClientSize(DefaultWidth, DefaultHeight);
+            SizeChanged = true;
         }
 
         protected override void FinalizeRenderer()
         {
             // Try to bind the OpenGL context before calling the gpu disposal.
             _openGLContext.MakeCurrent();
+            
+            _stagingRenderTarget.Dispose();
+
+            Hud.Dispose();
 
             Device.DisposeGpu();
 
             // Unbind context and destroy everything
             SDL_GL_MakeCurrent(WindowHandle, IntPtr.Zero);
             _openGLContext.Dispose();
+            _hudContext.Dispose();
         }
 
-        protected override void SwapBuffers()
+        protected override void SwapBuffers(object framebuffer)
         {
+            int boundFrameBuffer = (int)framebuffer;
+            
+            if (SizeChanged)
+            {
+                _stagingRenderTarget.Dispose();
+
+                _stagingRenderTarget = GLHelper.GenerateRenderTarget(Width, Height);
+
+                SizeChanged = false;
+            }
+
+            var blitStruct = new BlitStruct
+            {
+                SrcX0 = 0,
+                SrcY0 = 0,
+                SrcX1 = Width,
+                SrcY1 = Height,
+                DstX0 = 0,
+                DstY0 = 0,
+                DstX1 = Width,
+                DstY1 = Height
+            };
+
+            GLHelper.BlitFramebuffer(boundFrameBuffer, (bool)Program.Options.ShowOsd ? _stagingRenderTarget.Framebuffer : 0, blitStruct);
+
+            if ((bool)Program.Options.ShowOsd)
+            {
+                SDL_GL_MakeCurrent(WindowHandle, IntPtr.Zero);
+                _hudContext.MakeCurrent();
+
+                Hud.RenderUi(_stagingRenderTarget.Texture);
+
+                SDL_GL_MakeCurrent(_hudWindowHandle, IntPtr.Zero);
+                _openGLContext.MakeCurrent();
+                
+                GLHelper.BlitFramebuffer(_stagingRenderTarget.Framebuffer, 0, blitStruct);
+            }
+            
             SDL_GL_SwapWindow(WindowHandle);
         }
     }
