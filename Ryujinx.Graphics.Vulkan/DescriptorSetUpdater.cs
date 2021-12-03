@@ -145,8 +145,11 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetStorageBuffers(CommandBuffer commandBuffer, int first, ReadOnlySpan<BufferRange> buffers)
         {
-            Array.Resize(ref _storageBuffers, first + buffers.Length);
-            Array.Resize(ref _storageBufferRefs, first + buffers.Length);
+            if (_storageBuffers.Length < first + buffers.Length)
+            {
+                Array.Resize(ref _storageBuffers, first + buffers.Length);
+                Array.Resize(ref _storageBufferRefs, first + buffers.Length);
+            }
 
             for (int i = 0; i < buffers.Length; i++)
             {
