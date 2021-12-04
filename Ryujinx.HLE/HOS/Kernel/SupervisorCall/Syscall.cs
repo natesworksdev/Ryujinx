@@ -1600,6 +1600,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 case InfoType.TotalNonSystemMemorySize:
                 case InfoType.UsedNonSystemMemorySize:
                 case InfoType.IsApplication:
+                case InfoType.FreeThreadCount:
                     {
                         if (subId != 0)
                         {
@@ -1662,6 +1663,18 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                             case InfoType.UsedNonSystemMemorySize: value = (long)process.GetMemoryUsageWithoutPersonalMmHeap(); break;
 
                             case InfoType.IsApplication: value = process.IsApplication ? 1 : 0; break;
+
+                            case InfoType.FreeThreadCount:
+                                if (process.ResourceLimit != null)
+                                {
+                                    value = process.ResourceLimit.GetLimitValue(LimitableResource.Thread) - process.ResourceLimit.GetCurrentValue(LimitableResource.Thread);
+                                }
+                                else
+                                {
+                                    value = 0;
+                                }
+
+                                break;
                         }
 
                         break;
