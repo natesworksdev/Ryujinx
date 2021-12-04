@@ -1,0 +1,32 @@
+﻿namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
+{
+    enum InfoType : uint
+    {
+        CoreMask,
+        PriorityMask,
+        AliasRegionAddress,
+        AliasRegionSize,
+        HeapRegionAddress,
+        HeapRegionSize,
+        TotalMemorySize,
+        UsedMemorySize,
+        DebuggerAttached,
+        ResourceLimit,
+        IdleTickCount,
+        RandomEntropy,
+        AslrRegionAddress,
+        AslrRegionSize,
+        StackRegionAddress,
+        StackRegionSize,
+        SystemResourceSizeTotal,
+        SystemResourceSizeUsed,
+        ProgramId,
+        InitialProcessIdRange,
+        UserExceptionContextAddress,
+        TotalNonSystemMemorySize,
+        UsedNonSystemMemorySize,
+        IsApplication,
+        FreeThreadCount,
+        ThreadTickCount
+    }
+}
