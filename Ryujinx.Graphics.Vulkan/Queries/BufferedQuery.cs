@@ -27,12 +27,17 @@ namespace Ryujinx.Graphics.Vulkan.Queries
             _api = gd.Api;
             _device = device;
             _pipeline = pipeline;
+            _type = type;
+
+            QueryPipelineStatisticFlags flags = type == CounterType.PrimitivesGenerated ? 
+                QueryPipelineStatisticFlags.QueryPipelineStatisticGeometryShaderPrimitivesBit : 0;
 
             var queryPoolCreateInfo = new QueryPoolCreateInfo()
             {
                 SType = StructureType.QueryPoolCreateInfo,
                 QueryCount = 1,
-                QueryType = GetQueryType(type)
+                QueryType = GetQueryType(type),
+                PipelineStatistics = flags
             };
 
             gd.Api.CreateQueryPool(device, queryPoolCreateInfo, null, out _queryPool).ThrowOnError();
@@ -40,7 +45,7 @@ namespace Ryujinx.Graphics.Vulkan.Queries
             var buffer = gd.BufferManager.Create(gd, sizeof(long), forConditionalRendering: true);
 
             _bufferMap = buffer.Map(0, sizeof(long));
-            Marshal.WriteInt64(_bufferMap, -1L);
+            Marshal.WriteInt64(_bufferMap, DefaultValue);
             _buffer = buffer;
         }
 
@@ -77,7 +82,7 @@ namespace Ryujinx.Graphics.Vulkan.Queries
 
             if (withResult)
             {
-                Marshal.WriteInt64(_bufferMap, -1L);
+                Marshal.WriteInt64(_bufferMap, DefaultValue);
                 _pipeline.CopyQueryResults(_queryPool, _buffer);
                 // _pipeline.FlushCommandsImpl();
             }
@@ -115,7 +120,7 @@ namespace Ryujinx.Graphics.Vulkan.Queries
 
                 if (iterations >= MaxQueryRetries)
                 {
-                    Logger.Error?.Print(LogClass.Gpu, $"Error: Query result timed out. Took more than {MaxQueryRetries} tries.");
+                    Logger.Error?.Print(LogClass.Gpu, $"Error: Query result {_type} timed out. Took more than {MaxQueryRetries} tries.");
                 }
             }
 
