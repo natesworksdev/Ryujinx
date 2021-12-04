@@ -21,6 +21,7 @@
         SystemResourceSizeTotal,
         SystemResourceSizeUsed,
         ProgramId,
+        // NOTE: Added in 4.0.0, removed in 5.0.0.
         InitialProcessIdRange,
         UserExceptionContextAddress,
         TotalNonSystemMemorySize,

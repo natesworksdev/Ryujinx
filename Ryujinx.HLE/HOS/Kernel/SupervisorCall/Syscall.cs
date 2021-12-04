@@ -1599,6 +1599,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 case InfoType.UserExceptionContextAddress:
                 case InfoType.TotalNonSystemMemorySize:
                 case InfoType.UsedNonSystemMemorySize:
+                case InfoType.IsApplication:
                     {
                         if (subId != 0)
                         {
@@ -1659,6 +1660,8 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                             case InfoType.TotalNonSystemMemorySize: value = (long)process.GetMemoryCapacityWithoutPersonalMmHeap(); break;
 
                             case InfoType.UsedNonSystemMemorySize: value = (long)process.GetMemoryUsageWithoutPersonalMmHeap(); break;
+
+                            case InfoType.IsApplication: value = process.IsApplication ? 1 : 0; break;
                         }
 
                         break;
