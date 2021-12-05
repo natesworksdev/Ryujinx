@@ -1,9 +1,10 @@
-﻿using Mono.Unix.Native;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+
+using static Ryujinx.Memory.MemoryManagerUnixHelper;
 
 namespace Ryujinx.Memory
 {
@@ -19,7 +20,7 @@ namespace Ryujinx.Memory
         }
 
         [DllImport("libc", SetLastError = true)]
-        public static extern IntPtr mremap(IntPtr old_address, ulong old_size, ulong new_size, MremapFlags flags, IntPtr new_address);
+        public static extern IntPtr mremap(IntPtr old_address, ulong old_size, ulong new_size, int flags, IntPtr new_address);
 
         [DllImport("libc", SetLastError = true)]
         public static extern int madvise(IntPtr address, ulong size, int advice);
@@ -47,7 +48,7 @@ namespace Ryujinx.Memory
 
             if (shared)
             {
-                flags |= MmapFlags.MAP_SHARED | (MmapFlags)0x80000;
+                flags |= MmapFlags.MAP_SHARED | MmapFlags.MAP_UNLOCKED;
             }
             else
             {
@@ -59,7 +60,7 @@ namespace Ryujinx.Memory
                 flags |= MmapFlags.MAP_NORESERVE;
             }
 
-            IntPtr ptr = Syscall.mmap(IntPtr.Zero, size, prot, flags, -1, 0);
+            IntPtr ptr = mmap(IntPtr.Zero, size, prot, flags, -1, 0);
 
             if (ptr == new IntPtr(-1L))
             {
@@ -77,7 +78,7 @@ namespace Ryujinx.Memory
 
         public static bool Commit(IntPtr address, ulong size)
         {
-            bool success = Syscall.mprotect(address, size, MmapProts.PROT_READ | MmapProts.PROT_WRITE) == 0;
+            bool success = mprotect(address, size, MmapProts.PROT_READ | MmapProts.PROT_WRITE) == 0;
 
             if (success)
             {
@@ -87,7 +88,7 @@ namespace Ryujinx.Memory
                     {
                         ulong sharedAddress = ((ulong)address - (ulong)shared.SourcePointer) + (ulong)shared.Pointer;
 
-                        if (Syscall.mprotect((IntPtr)sharedAddress, size, MmapProts.PROT_READ | MmapProts.PROT_WRITE) != 0)
+                        if (mprotect((IntPtr)sharedAddress, size, MmapProts.PROT_READ | MmapProts.PROT_WRITE) != 0)
                         {
                             return false;
                         }
@@ -108,16 +109,16 @@ namespace Ryujinx.Memory
             }
 
             // Must be writable for madvise to work properly.
-            Syscall.mprotect(address, size, MmapProts.PROT_READ | MmapProts.PROT_WRITE);
+            mprotect(address, size, MmapProts.PROT_READ | MmapProts.PROT_WRITE);
 
             madvise(address, size, isShared ? MADV_REMOVE : MADV_DONTNEED);
 
-            return Syscall.mprotect(address, size, MmapProts.PROT_NONE) == 0;
+            return mprotect(address, size, MmapProts.PROT_NONE) == 0;
         }
 
         public static bool Reprotect(IntPtr address, ulong size, MemoryPermission permission)
         {
-            return Syscall.mprotect(address, size, GetProtection(permission)) == 0;
+            return mprotect(address, size, GetProtection(permission)) == 0;
         }
 
         private static MmapProts GetProtection(MemoryPermission permission)
@@ -138,7 +139,7 @@ namespace Ryujinx.Memory
         {
             if (_allocations.TryRemove(address, out ulong size))
             {
-                return Syscall.munmap(address, size) == 0;
+                return munmap(address, size) == 0;
             }
 
             return false;
@@ -146,14 +147,14 @@ namespace Ryujinx.Memory
 
         public static IntPtr Remap(IntPtr target, IntPtr source, ulong size)
         {
-            int flags = (int)MremapFlags.MREMAP_MAYMOVE;
+            int flags = 1;
 
             if (target != IntPtr.Zero)
             {
                 flags |= 2;
             }
 
-            IntPtr result = mremap(source, 0, size, (MremapFlags)(flags), target);
+            IntPtr result = mremap(source, 0, size, flags, target);
 
             if (result == IntPtr.Zero)
             {
