@@ -84,8 +84,16 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
                 Reserved1       = new Array64<byte>(),
                 Reserved2       = new Array58<byte>()
             };
-            Encoding.ASCII.GetBytes(amiiboFile.Name).CopyTo(registerInfo.Nickname.ToSpan());
-
+            if (amiiboFile.Name == null)
+            {
+                amiiboFile.Name = "Ryujinx";
+                Encoding.ASCII.GetBytes(amiiboFile.Name, registerInfo.Nickname.ToSpan());
+                SaveAmiiboFile(amiiboFile);
+            }
+            else
+            {
+                Encoding.ASCII.GetBytes(amiiboFile.Name, registerInfo.Nickname.ToSpan());
+            }
             return registerInfo;
         }
 
