@@ -32,6 +32,8 @@ namespace Ryujinx.Memory
         private const int MAP_JIT_DARWIN = 0x800;
         private const int MAP_ANONYMOUS_DARWIN = 0x1000;
 
+        public const int MADV_DONTNEED = 4;
+        public const int MADV_REMOVE = 9;
 
         [DllImport("libc", EntryPoint = "mmap", SetLastError = true)]
         private static extern IntPtr Internal_mmap(IntPtr address, ulong length, MmapProts prot, int flags, int fd, long offset);
@@ -41,6 +43,12 @@ namespace Ryujinx.Memory
 
         [DllImport("libc", SetLastError = true)]
         public static extern int munmap(IntPtr address, ulong length);
+
+        [DllImport("libc", SetLastError = true)]
+        public static extern IntPtr mremap(IntPtr old_address, ulong old_size, ulong new_size, int flags, IntPtr new_address);
+
+        [DllImport("libc", SetLastError = true)]
+        public static extern int madvise(IntPtr address, ulong size, int advice);
 
         private static int MmapFlagsToSystemFlags(MmapFlags flags)
         {

@@ -19,15 +19,6 @@ namespace Ryujinx.Memory
             public IntPtr SourcePointer;
         }
 
-        [DllImport("libc", SetLastError = true)]
-        public static extern IntPtr mremap(IntPtr old_address, ulong old_size, ulong new_size, int flags, IntPtr new_address);
-
-        [DllImport("libc", SetLastError = true)]
-        public static extern int madvise(IntPtr address, ulong size, int advice);
-
-        private const int MADV_DONTNEED = 4;
-        private const int MADV_REMOVE = 9;
-
         private static readonly List<UnixSharedMemory> _sharedMemory = new List<UnixSharedMemory>();
         private static readonly ConcurrentDictionary<IntPtr, ulong> _sharedMemorySource = new ConcurrentDictionary<IntPtr, ulong>();
         private static readonly ConcurrentDictionary<IntPtr, ulong> _allocations = new ConcurrentDictionary<IntPtr, ulong>();
