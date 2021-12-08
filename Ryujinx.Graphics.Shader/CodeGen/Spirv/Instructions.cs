@@ -70,6 +70,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             Add(Instruction.Discard,                  GenerateDiscard);
             Add(Instruction.Divide,                   GenerateDivide);
             Add(Instruction.ExponentB2,               GenerateExponentB2);
+            Add(Instruction.FindLSB,                  GenerateFindLSB);
             Add(Instruction.FindMSBS32,               GenerateFindMSBS32);
             Add(Instruction.FindMSBU32,               GenerateFindMSBU32);
             Add(Instruction.Floor,                    GenerateFloor);
@@ -496,10 +497,16 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             return GenerateUnaryExtInst(context, operation, 29);
         }
 
+        private static OperationResult GenerateFindLSB(CodeGenContext context, AstOperation operation)
+        {
+            var source = context.GetU32(operation.GetSource(0));
+            return new OperationResult(AggregateType.U32, context.ExtInst(context.TypeU32(), context.ExtSet, 74, source));
+        }
+
         private static OperationResult GenerateFindMSBS32(CodeGenContext context, AstOperation operation)
         {
             var source = context.GetS32(operation.GetSource(0));
-            return new OperationResult(AggregateType.U32, context.ExtInst(context.TypeU32(), context.ExtSet, 74, source));
+            return new OperationResult(AggregateType.U32, context.ExtInst(context.TypeU32(), context.ExtSet, 75, source));
         }
 
         private static OperationResult GenerateFindMSBU32(CodeGenContext context, AstOperation operation)
