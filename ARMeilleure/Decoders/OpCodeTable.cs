@@ -825,6 +825,7 @@ namespace ARMeilleure.Decoders
             SetA32("<<<<11101x111000xxxx101xx1x0xxxx", InstName.Vcvt,     InstEmit32.Vcvt_FI,  OpCode32SimdCvtFI.Create); // Int to FP32.
             SetA32("111111101x1111xxxxxx101xx1x0xxxx", InstName.Vcvt,     InstEmit32.Vcvt_RM,  OpCode32SimdCvtFI.Create); // The many FP32 to int encodings (fp).
             SetA32("111100111x111011xxxx011xxxx0xxxx", InstName.Vcvt,     InstEmit32.Vcvt_V,   OpCode32SimdCmpZ.Create); // FP and integer, vector.
+            SetA32("1111001x1x>>>xxxxxxx111x0xx1xxxx", InstName.Vcvt,     InstEmit32.Vcvt_V2,  OpCode32SimdCvtFFixed.Create); // Between floating point and fixed point, vector
             SetA32("<<<<11101x00xxxxxxxx101xx0x0xxxx", InstName.Vdiv,     InstEmit32.Vdiv_S,   OpCode32SimdRegS.Create);
             SetA32("<<<<11101xx0xxxxxxxx1011x0x10000", InstName.Vdup,     InstEmit32.Vdup,     OpCode32SimdDupGP.Create);
             SetA32("111100111x11xxxxxxxx11000xx0xxxx", InstName.Vdup,     InstEmit32.Vdup_1,   OpCode32SimdDupElem.Create);
