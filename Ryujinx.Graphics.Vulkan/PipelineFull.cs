@@ -206,14 +206,23 @@ namespace Ryujinx.Graphics.Vulkan
 
             // The GPU will flush the queries to CPU and evaluate the condition there instead.
 
-            FlushCommandsImpl(); // The thread will be stalled manually flushing the counter, so flush GL commands now.
+            FlushPendingQuery(); // The thread will be stalled manually flushing the counter, so flush commands now.
             return false;
         }
 
         public bool TryHostConditionalRendering(ICounterEvent value, ICounterEvent compare, bool isEqual)
         {
-            FlushCommandsImpl(); // The thread will be stalled manually flushing the counter, so flush GL commands now.
+            FlushPendingQuery(); // The thread will be stalled manually flushing the counter, so flush commands now.
             return false;
+        }
+
+        private void FlushPendingQuery()
+        {
+            if (_hasPendingQuery)
+            {
+                _hasPendingQuery = false;
+                FlushCommandsImpl();
+            }
         }
 
         public void FlushCommandsImpl([System.Runtime.CompilerServices.CallerMemberName] string caller = "")
@@ -285,11 +294,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         protected override void SignalProgramChange()
         {
-            if (_hasPendingQuery)
-            {
-                _hasPendingQuery = false;
-                FlushCommandsImpl();
-            }
+            FlushPendingQuery();
         }
     }
 }
