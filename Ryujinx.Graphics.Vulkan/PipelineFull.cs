@@ -165,7 +165,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
             else
             {
-                throw new NotSupportedException();
+                // throw new NotSupportedException();
             }
         }
 
