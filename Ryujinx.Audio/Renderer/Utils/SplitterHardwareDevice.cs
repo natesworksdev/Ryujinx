@@ -45,7 +45,7 @@ namespace Ryujinx.Audio.Renderer.Utils
 
         public float GetVolume()
         {
-            return _baseDevice.GetVolume()
+            return _baseDevice.GetVolume();
         }
 
         public uint GetChannelCount()
