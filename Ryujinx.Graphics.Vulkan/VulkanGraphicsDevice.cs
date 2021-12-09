@@ -73,6 +73,7 @@ namespace Ryujinx.Graphics.Vulkan
         private Func<string[]> GetRequiredExtensions;
 
         internal Vendor Vendor { get; private set; }
+        internal bool IsIntelWindows { get; private set; }
         public string GpuVendor { get; private set; }
         public string GpuRenderer { get; private set; }
         public string GpuVersion { get; private set; }
@@ -266,7 +267,7 @@ namespace Ryujinx.Graphics.Vulkan
             return new Capabilities(
                 api: TargetApi.Vulkan,
                 GpuVendor,
-                hasFrontFacingBug: Vendor == Vendor.Intel && RuntimeInformation.IsOSPlatform(OSPlatform.Windows),
+                hasFrontFacingBug: IsIntelWindows,
                 hasVectorIndexingBug: false,
                 supportsAstcCompression: features.TextureCompressionAstcLdr,
                 supports3DTextureCompression: true,
@@ -340,6 +341,8 @@ namespace Ryujinx.Graphics.Vulkan
                 0x8086 => Vendor.Intel,
                 _ => Vendor.Unknown
             };
+
+            IsIntelWindows = Vendor == Vendor.Intel && RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
             GpuVendor = vendorName;
             GpuRenderer = Marshal.PtrToStringAnsi((IntPtr)properties.DeviceName);
