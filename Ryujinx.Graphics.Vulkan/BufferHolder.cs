@@ -243,7 +243,7 @@ namespace Ryujinx.Graphics.Vulkan
                 data.Length);
 
             // Not flushing commands here causes glitches on Intel (driver bug?)
-            if (_gd.Vendor == Vendor.Intel)
+            if (_gd.IsIntelWindows)
             {
                 _gd.FlushAllCommands();
             }
