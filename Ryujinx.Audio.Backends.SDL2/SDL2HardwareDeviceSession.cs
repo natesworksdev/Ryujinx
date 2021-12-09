@@ -94,13 +94,13 @@ namespace Ryujinx.Audio.Backends.SDL2
 
             fixed (byte* p = samples)
             {
-                IntPtr dStreamSrc = (IntPtr)p;
+                IntPtr pStreamSrc = (IntPtr)p;
 
                 // Zero the dest buffer
                 streamSpan.Fill(0);
 
                 // Apply volume to written data
-                SDL_MixAudioFormat(stream, dStreamSrc, _nativeSampleFormat, (uint)samples.Length, (int)(_volume * SDL_MIX_MAXVOLUME));
+                SDL_MixAudioFormat(stream, pStreamSrc, _nativeSampleFormat, (uint)samples.Length, (int)(_volume * SDL_MIX_MAXVOLUME));
             }
 
             ulong sampleCount = GetSampleCount(samples.Length);

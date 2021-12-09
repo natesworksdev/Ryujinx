@@ -39,22 +39,13 @@ namespace Ryujinx.Audio.Renderer.Utils
 
         public void SetVolume(float volume)
         {
-            _baseDevice?.SetVolume(volume);
-            _secondaryDevice?.SetVolume(volume);
+            _baseDevice.SetVolume(volume);
+            _secondaryDevice.SetVolume(volume);
         }
 
         public float GetVolume()
         {
-            if(_baseDevice != null)
-            {
-                return _baseDevice.GetVolume();
-            }
-            if(_secondaryDevice != null)
-            {
-                return _secondaryDevice.GetVolume();
-            }
-
-            return 0.0f;
+            return _baseDevice.GetVolume()
         }
 
         public uint GetChannelCount()
