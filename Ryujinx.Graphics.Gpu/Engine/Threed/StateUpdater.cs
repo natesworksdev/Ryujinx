@@ -957,6 +957,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
                 _drawState.IsAnyVbInstanced |= divisor != 0;
 
+                ulong vbSize = endAddress.Pack() - address + 1;
                 ulong size;
 
                 if (_drawState.IbStreamer.HasInlineIndexData || _drawState.DrawIndexed || stride == 0 || instanced)
@@ -964,7 +965,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     // This size may be (much) larger than the real vertex buffer size.
                     // Avoid calculating it this way, unless we don't have any other option.
 
-                    size = endAddress.Pack() - address + 1;
+                    size = vbSize;
 
                     if (stride > 0 && indexTypeSmall && _drawState.DrawIndexed && !instanced)
                     {
@@ -988,7 +989,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
                     var drawState = _state.State.VertexBufferDrawState;
 
-                    size = (ulong)((firstInstance + drawState.First + drawState.Count) * stride);
+                    size = Math.Min(vbSize, (ulong)((firstInstance + drawState.First + drawState.Count) * stride));
                 }
 
                 _channel.BufferManager.SetVertexBuffer(index, address, size, stride, divisor);
