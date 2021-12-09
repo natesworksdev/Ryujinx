@@ -340,7 +340,7 @@ namespace Ryujinx.Audio.Renderer.Server
 
         public float GetVolume()
         {
-            if(Processor != null)
+            if (Processor != null)
             {
                 return Processor.GetVolume();
             }

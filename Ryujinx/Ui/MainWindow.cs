@@ -310,10 +310,7 @@ namespace Ryujinx.Ui
 
         private void UpdateAudioVolumeState(object sender, ReactiveEventArgs<float> e)
         {
-            if (_emulationContext != null)
-            {
-                _emulationContext.SetVolume(e.NewValue);
-            }
+            _emulationContext?.SetVolume(e.NewValue);
         }
 
         private void WindowStateEvent_Changed(object o, WindowStateEventArgs args)

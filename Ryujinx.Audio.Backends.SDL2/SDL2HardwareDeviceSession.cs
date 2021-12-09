@@ -82,7 +82,7 @@ namespace Ryujinx.Audio.Backends.SDL2
 
             if (frameCount == 0)
             {
-                // SDL2 left the responsability to the user to clear the buffer.
+                // SDL2 left the responsibility to the user to clear the buffer.
                 streamSpan.Fill(0);
 
                 return;
@@ -92,19 +92,15 @@ namespace Ryujinx.Audio.Backends.SDL2
 
             _ringBuffer.Read(samples, 0, samples.Length);
 
-            byte[] streamSrc = new byte[samples.Length];
-            fixed (byte* p = streamSrc)
+            fixed (byte* p = samples)
             {
-                // Put samples in a temporary source buffer
-                IntPtr pStreamSrc = (IntPtr)p;
-                Span<byte> streamSrcSpan = new Span<byte>((void*)pStreamSrc, samples.Length);
-                samples.AsSpan().CopyTo(streamSrcSpan);
+                IntPtr dStreamSrc = (IntPtr)p;
 
                 // Zero the dest buffer
                 streamSpan.Fill(0);
 
                 // Apply volume to written data
-                SDL_MixAudioFormat(stream, pStreamSrc, _nativeSampleFormat, (uint)samples.Length, (int)(_volume * SDL_MIX_MAXVOLUME));
+                SDL_MixAudioFormat(stream, dStreamSrc, _nativeSampleFormat, (uint)samples.Length, (int)(_volume * SDL_MIX_MAXVOLUME));
             }
 
             ulong sampleCount = GetSampleCount(samples.Length);

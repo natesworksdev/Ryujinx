@@ -260,6 +260,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
 
             return 0f;
         }
+
         public void SetVolume(float volume)
         {
             if (OutputDevices != null)

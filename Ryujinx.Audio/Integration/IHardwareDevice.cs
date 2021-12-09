@@ -36,6 +36,7 @@ namespace Ryujinx.Audio.Integration
         /// </summary>
         /// <returns>The volume level of this device.</returns>
         float GetVolume();
+
         /// <summary>
         /// Get the supported sample rate of this device.
         /// </summary>

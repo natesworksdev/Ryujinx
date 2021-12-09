@@ -258,10 +258,7 @@ namespace Ryujinx.Audio.Output
             {
                 foreach (AudioOutputSystem session in _sessions)
                 {
-                    if (session != null)
-                    {
-                        session.SetVolume(volume);
-                    }
+                    session?.SetVolume(volume);
                 }
             }
         }
