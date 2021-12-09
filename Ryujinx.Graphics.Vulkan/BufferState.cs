@@ -57,7 +57,21 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 var buffer = _buffer.Get(cbs, _offset, _size).Value;
 
-                gd.Api.CmdBindVertexBuffers(cbs.CommandBuffer, binding, 1, buffer, (ulong)_offset);
+                if (gd.Capabilities.SupportsExtendedDynamicState)
+                {
+                    gd.ExtendedDynamicStateApi.CmdBindVertexBuffers2(
+                        cbs.CommandBuffer,
+                        binding,
+                        1,
+                        buffer,
+                        (ulong)_offset,
+                        (ulong)_size,
+                        _stride);
+                }
+                else
+                {
+                    gd.Api.CmdBindVertexBuffers(cbs.CommandBuffer, binding, 1, buffer, (ulong)_offset);
+                }
             }
         }
 
