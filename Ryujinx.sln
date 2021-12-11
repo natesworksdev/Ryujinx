@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29613.14
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31912.275
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx", "Ryujinx\Ryujinx.csproj", "{074045D4-3ED2-4711-9169-E385F2BFB5A0}"
 EndProject
@@ -71,7 +71,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.Graphics.Nvdec.FFmp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.Graphics.Vulkan", "Ryujinx.Graphics.Vulkan\Ryujinx.Graphics.Vulkan.csproj", "{D4D09B08-D580-4D69-B886-C35D2853F6C8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spv.Generator", "SpvGen\Spv.Generator.csproj", "{D0720AC9-8AE7-417C-AB39-82CE984045C4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spv.Generator", "Spv.Generator\Spv.Generator.csproj", "{2BCB3D7A-38C0-4FE7-8FDA-374C6AD56D0E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -203,10 +203,10 @@ Global
 		{D4D09B08-D580-4D69-B886-C35D2853F6C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D4D09B08-D580-4D69-B886-C35D2853F6C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D4D09B08-D580-4D69-B886-C35D2853F6C8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D0720AC9-8AE7-417C-AB39-82CE984045C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D0720AC9-8AE7-417C-AB39-82CE984045C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D0720AC9-8AE7-417C-AB39-82CE984045C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D0720AC9-8AE7-417C-AB39-82CE984045C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2BCB3D7A-38C0-4FE7-8FDA-374C6AD56D0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2BCB3D7A-38C0-4FE7-8FDA-374C6AD56D0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2BCB3D7A-38C0-4FE7-8FDA-374C6AD56D0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2BCB3D7A-38C0-4FE7-8FDA-374C6AD56D0E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
