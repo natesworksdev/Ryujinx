@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using static Spv.Specification;
 
 namespace Spv.Generator
@@ -164,6 +165,7 @@ namespace Spv.Generator
             AddToFunctionDefinitions(label);
         }
 
+
         public void AddLocalVariable(Instruction variable)
         {
             // TODO: ensure it has the local modifier
@@ -195,7 +197,7 @@ namespace Spv.Generator
 
             foreach (Instruction global in _globals)
             {
-                if (global.Opcode == constant.Opcode && global.EqualsResultType(constant) && global.EqualsContent(constant))
+                if (global.Opcode == constant.Opcode && global.EqualsContent(constant) && global.EqualsResultType(constant))
                 {
                     // update the duplicate instance to use the good id so it ends up being encoded right.
                     constant.SetId(global.Id);
@@ -209,21 +211,40 @@ namespace Spv.Generator
             _globals.Add(constant);
         }
 
+        public Instruction ExtInst(Instruction resultType, Instruction set, LiteralInteger instruction, params Operand[] parameters)
+        {
+            Instruction result = new Instruction(Op.OpExtInst, GetNewId(), resultType);
+            
+            result.AddOperand(set);
+            result.AddOperand(instruction);
+            result.AddOperand(parameters);
+            AddToFunctionDefinitions(result);
+            
+            return result;
+        }
+
         public void SetMemoryModel(AddressingModel addressingModel, MemoryModel memoryModel)
         {
             _addressingModel = addressingModel;
             _memoryModel = memoryModel;
         }
 
-        protected virtual void Construct()
+        // TODO: Found a way to make the auto generate one used.
+        public Instruction OpenClPrintf(Instruction resultType, Instruction format, params Instruction[] additionalarguments)
         {
-            throw new NotSupportedException("Construct should be overriden.");
+            Instruction result = new Instruction(Op.OpExtInst, GetNewId(), resultType);
+            
+            result.AddOperand(AddExtInstImport("OpenCL.std"));
+            result.AddOperand((LiteralInteger)184);
+            result.AddOperand(format);
+            result.AddOperand(additionalarguments);
+            AddToFunctionDefinitions(result);
+            
+            return result;
         }
 
         public byte[] Generate()
         {
-            Construct();
-
             using (MemoryStream stream = new MemoryStream())
             {
                 BinaryWriter writer = new BinaryWriter(stream);
