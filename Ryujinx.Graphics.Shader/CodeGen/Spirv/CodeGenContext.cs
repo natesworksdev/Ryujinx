@@ -15,8 +15,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
     {
         public ShaderConfig Config { get; }
 
-        public Instruction ExtSet { get; }
-
         public Dictionary<int, Instruction> UniformBuffers { get; } = new Dictionary<int, Instruction>();
         public Instruction StorageBuffersArray { get; set; }
         public Instruction LocalMemory { get; set; }
@@ -67,8 +65,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             AddCapability(Capability.Shader);
             AddCapability(Capability.Float64);
-
-            ExtSet = AddExtInstImport("GLSL.std.450");
 
             SetMemoryModel(AddressingModel.Logical, MemoryModel.GLSL450);
         }
@@ -275,10 +271,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         public (StructuredFunction, Instruction) GetFunction(int funcIndex)
         {
             return _functions[funcIndex];
-        }
-
-        protected override void Construct()
-        {
         }
 
         public Instruction GetType(AggregateType type, int length = 1)
