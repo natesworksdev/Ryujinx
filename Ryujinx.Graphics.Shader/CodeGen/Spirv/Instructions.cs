@@ -143,7 +143,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateAbsolute(CodeGenContext context, AstOperation operation)
         {
-            return GenerateUnaryExtInst(context, operation, 4, 5);
+            return GenerateUnary(context, operation, context.GlslFAbs, context.GlslSAbs);
         }
 
         private static OperationResult GenerateAdd(CodeGenContext context, AstOperation operation)
@@ -306,17 +306,17 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateCeiling(CodeGenContext context, AstOperation operation)
         {
-            return GenerateUnaryExtInst(context, operation, 9);
+            return GenerateUnary(context, operation, context.GlslCeil, null);
         }
 
         private static OperationResult GenerateClamp(CodeGenContext context, AstOperation operation)
         {
-            return GenerateTernaryExtInst(context, operation, 43, 45);
+            return GenerateTernary(context, operation, context.GlslFClamp, context.GlslSClamp);
         }
 
         private static OperationResult GenerateClampU32(CodeGenContext context, AstOperation operation)
         {
-            return GenerateTernaryExtInstU32(context, operation, 44);
+            return GenerateTernaryU32(context, operation, context.GlslUClamp);
         }
 
         private static OperationResult GenerateComment(CodeGenContext context, AstOperation operation)
@@ -468,7 +468,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateCosine(CodeGenContext context, AstOperation operation)
         {
-            return GenerateUnaryExtInst(context, operation, 14);
+            return GenerateUnary(context, operation, context.GlslCos, null);
         }
 
         private static OperationResult GenerateDdx(CodeGenContext context, AstOperation operation)
@@ -494,35 +494,35 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateExponentB2(CodeGenContext context, AstOperation operation)
         {
-            return GenerateUnaryExtInst(context, operation, 29);
+            return GenerateUnary(context, operation, context.GlslExp2, null);
         }
 
         private static OperationResult GenerateFindLSB(CodeGenContext context, AstOperation operation)
         {
             var source = context.GetU32(operation.GetSource(0));
-            return new OperationResult(AggregateType.U32, context.ExtInst(context.TypeU32(), context.ExtSet, 74, source));
+            return new OperationResult(AggregateType.U32, context.GlslFindILsb(context.TypeU32(), source));
         }
 
         private static OperationResult GenerateFindMSBS32(CodeGenContext context, AstOperation operation)
         {
             var source = context.GetS32(operation.GetSource(0));
-            return new OperationResult(AggregateType.U32, context.ExtInst(context.TypeU32(), context.ExtSet, 75, source));
+            return new OperationResult(AggregateType.U32, context.GlslFindSMsb(context.TypeU32(), source));
         }
 
         private static OperationResult GenerateFindMSBU32(CodeGenContext context, AstOperation operation)
         {
             var source = context.GetU32(operation.GetSource(0));
-            return new OperationResult(AggregateType.U32, context.ExtInst(context.TypeU32(), context.ExtSet, 75, source));
+            return new OperationResult(AggregateType.U32, context.GlslFindUMsb(context.TypeU32(), source));
         }
 
         private static OperationResult GenerateFloor(CodeGenContext context, AstOperation operation)
         {
-            return GenerateUnaryExtInst(context, operation, 8);
+            return GenerateUnary(context, operation, context.GlslFloor, null);
         }
 
         private static OperationResult GenerateFusedMultiplyAdd(CodeGenContext context, AstOperation operation)
         {
-            return GenerateTernaryExtInst(context, operation, 50);
+            return GenerateTernary(context, operation, context.GlslFma, null);
         }
 
         private static OperationResult GenerateGroupMemoryBarrier(CodeGenContext context, AstOperation operation)
@@ -596,7 +596,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             var image = context.Load(imageType, imageVariable);
 
-            var texel = context.ImageRead(context.TypeVector(context.GetType(componentType.Convert()), 4), image, pCoords);
+            var texel = context.ImageRead(context.TypeVector(context.GetType(componentType.Convert()), 4), image, pCoords, ImageOperandsMask.MaskNone);
             var result = context.CompositeExtract(context.TypeFP32(), texel, (SpvLiteralInteger)texOp.Index);
 
             return new OperationResult(componentType.Convert(), result);
@@ -683,7 +683,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             var image = context.Load(imageType, imageVariable);
 
-            context.ImageWrite(image, pCoords, texel);
+            context.ImageWrite(image, pCoords, texel, ImageOperandsMask.MaskNone);
 
             return OperationResult.Invalid;
         }
@@ -831,7 +831,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateLogarithmB2(CodeGenContext context, AstOperation operation)
         {
-            return GenerateUnaryExtInst(context, operation, 30);
+            return GenerateUnary(context, operation, context.GlslLog2, null);
         }
 
         private static OperationResult GenerateLogicalAnd(CodeGenContext context, AstOperation operation)
@@ -864,12 +864,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateMaximum(CodeGenContext context, AstOperation operation)
         {
-            return GenerateBinaryExtInst(context, operation, 40, 42);
+            return GenerateBinary(context, operation, context.GlslFMax, context.GlslSMax);
         }
 
         private static OperationResult GenerateMaximumU32(CodeGenContext context, AstOperation operation)
         {
-            return GenerateBinaryExtInstU32(context, operation, 41);
+            return GenerateBinaryU32(context, operation, context.GlslUMax);
         }
 
         private static OperationResult GenerateMemoryBarrier(CodeGenContext context, AstOperation operation)
@@ -880,12 +880,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateMinimum(CodeGenContext context, AstOperation operation)
         {
-            return GenerateBinaryExtInst(context, operation, 37, 39);
+            return GenerateBinary(context, operation, context.GlslFMin, context.GlslSMin);
         }
 
         private static OperationResult GenerateMinimumU32(CodeGenContext context, AstOperation operation)
         {
-            return GenerateBinaryExtInstU32(context, operation, 38);
+            return GenerateBinaryU32(context, operation, context.GlslUMin);
         }
 
         private static OperationResult GenerateMultiply(CodeGenContext context, AstOperation operation)
@@ -903,14 +903,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             var value0 = context.GetFP32(operation.GetSource(0));
             var value1 = context.GetFP32(operation.GetSource(1));
             var vector = context.CompositeConstruct(context.TypeVector(context.TypeFP32(), 2), value0, value1);
-            var result = context.ExtInst(context.TypeU32(), context.ExtSet, 58, vector);
+            var result = context.GlslPackHalf2x16(context.TypeU32(), vector);
 
             return new OperationResult(AggregateType.U32, result);
         }
 
         private static OperationResult GenerateReciprocalSquareRoot(CodeGenContext context, AstOperation operation)
         {
-            return GenerateUnaryExtInst(context, operation, 32);
+            return GenerateUnary(context, operation, context.GlslInverseSqrt, null);
         }
 
         private static OperationResult GenerateReturn(CodeGenContext context, AstOperation operation)
@@ -921,7 +921,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateRound(CodeGenContext context, AstOperation operation)
         {
-            return GenerateUnaryExtInst(context, operation, 2);
+            return GenerateUnary(context, operation, context.GlslRoundEven, null);
         }
 
         private static OperationResult GenerateShiftLeft(CodeGenContext context, AstOperation operation)
@@ -1064,12 +1064,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateSine(CodeGenContext context, AstOperation operation)
         {
-            return GenerateUnaryExtInst(context, operation, 13);
+            return GenerateUnary(context, operation, context.GlslSin, null);
         }
 
         private static OperationResult GenerateSquareRoot(CodeGenContext context, AstOperation operation)
         {
-            return GenerateUnaryExtInst(context, operation, 31);
+            return GenerateUnary(context, operation, context.GlslSqrt, null);
         }
 
         private static OperationResult GenerateStoreLocal(CodeGenContext context, AstOperation operation)
@@ -1461,13 +1461,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateTruncate(CodeGenContext context, AstOperation operation)
         {
-            return GenerateUnaryExtInst(context, operation, 3);
+            return GenerateUnary(context, operation, context.GlslTrunc, null);
         }
 
         private static OperationResult GenerateUnpackHalf2x16(CodeGenContext context, AstOperation operation)
         {
             var value = context.GetU32(operation.GetSource(0));
-            var vector = context.ExtInst(context.TypeVector(context.TypeFP32(), 2), context.ExtSet, 62, value);
+            var vector = context.GlslUnpackHalf2x16(context.TypeVector(context.TypeFP32(), 2), value);
             var result = context.CompositeExtract(context.TypeFP32(), vector, operation.Index);
 
             return new OperationResult(AggregateType.FP32, result);
@@ -1648,38 +1648,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             return new OperationResult(AggregateType.S32, emitS(context.TypeS32(), context.GetS32(source)));
         }
 
-        private static OperationResult GenerateUnaryExtInst(CodeGenContext context, AstOperation operation, int instruction)
-        {
-            var source = operation.GetSource(0);
-
-            if (operation.Inst.HasFlag(Instruction.FP64))
-            {
-                return new OperationResult(AggregateType.FP64, context.ExtInst(context.TypeFP64(), context.ExtSet, instruction, context.GetFP64(source)));
-            }
-            else
-            {
-                return new OperationResult(AggregateType.FP32, context.ExtInst(context.TypeFP32(), context.ExtSet, instruction, context.GetFP32(source)));
-            }
-        }
-
-        private static OperationResult GenerateUnaryExtInst(CodeGenContext context, AstOperation operation, int instF, int instS)
-        {
-            var source = operation.GetSource(0);
-
-            if (operation.Inst.HasFlag(Instruction.FP64))
-            {
-                return new OperationResult(AggregateType.FP64, context.ExtInst(context.TypeFP64(), context.ExtSet, instF, context.GetFP64(source)));
-            }
-            else if (operation.Inst.HasFlag(Instruction.FP32))
-            {
-                return new OperationResult(AggregateType.FP32, context.ExtInst(context.TypeFP32(), context.ExtSet, instF, context.GetFP32(source)));
-            }
-            else
-            {
-                return new OperationResult(AggregateType.S32, context.ExtInst(context.TypeS32(), context.ExtSet, instS, context.GetS32(source)));
-            }
-        }
-
         private static OperationResult GenerateBinary(
             CodeGenContext context,
             AstOperation operation,
@@ -1729,31 +1697,43 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             return new OperationResult(AggregateType.S32, emitS(context.TypeS32(), context.GetS32(src1), context.GetS32(src2)));
         }
 
-        private static OperationResult GenerateBinaryExtInst(CodeGenContext context, AstOperation operation, int instF, int instS)
+        private static OperationResult GenerateBinaryU32(
+            CodeGenContext context,
+            AstOperation operation,
+            Func<SpvInstruction, SpvInstruction, SpvInstruction, SpvInstruction> emitU)
         {
             var src1 = operation.GetSource(0);
             var src2 = operation.GetSource(1);
+
+            return new OperationResult(AggregateType.U32, emitU(context.TypeU32(), context.GetU32(src1), context.GetU32(src2)));
+        }
+
+        private static OperationResult GenerateTernary(
+            CodeGenContext context,
+            AstOperation operation,
+            Func<SpvInstruction, SpvInstruction, SpvInstruction, SpvInstruction, SpvInstruction> emitF,
+            Func<SpvInstruction, SpvInstruction, SpvInstruction, SpvInstruction, SpvInstruction> emitI)
+        {
+            var src1 = operation.GetSource(0);
+            var src2 = operation.GetSource(1);
+            var src3 = operation.GetSource(2);
 
             if (operation.Inst.HasFlag(Instruction.FP64))
             {
-                return new OperationResult(AggregateType.FP64, context.ExtInst(context.TypeFP64(), context.ExtSet, instF, context.GetFP64(src1), context.GetFP64(src2)));
+                var result = emitF(context.TypeFP64(), context.GetFP64(src1), context.GetFP64(src2), context.GetFP64(src3));
+                context.Decorate(result, Decoration.NoContraction);
+                return new OperationResult(AggregateType.FP64, result);
             }
             else if (operation.Inst.HasFlag(Instruction.FP32))
             {
-                return new OperationResult(AggregateType.FP32, context.ExtInst(context.TypeFP32(), context.ExtSet, instF, context.GetFP32(src1), context.GetFP32(src2)));
+                var result = emitF(context.TypeFP32(), context.GetFP32(src1), context.GetFP32(src2), context.GetFP32(src3));
+                context.Decorate(result, Decoration.NoContraction);
+                return new OperationResult(AggregateType.FP32, result);
             }
             else
             {
-                return new OperationResult(AggregateType.S32, context.ExtInst(context.TypeS32(), context.ExtSet, instS, context.GetS32(src1), context.GetS32(src2)));
+                return new OperationResult(AggregateType.S32, emitI(context.TypeS32(), context.GetS32(src1), context.GetS32(src2), context.GetS32(src3)));
             }
-        }
-
-        private static OperationResult GenerateBinaryExtInstU32(CodeGenContext context, AstOperation operation, int instU)
-        {
-            var src1 = operation.GetSource(0);
-            var src2 = operation.GetSource(1);
-
-            return new OperationResult(AggregateType.U32, context.ExtInst(context.TypeU32(), context.ExtSet, instU, context.GetU32(src1), context.GetU32(src2)));
         }
 
         private static OperationResult GenerateTernaryS32(
@@ -1772,82 +1752,17 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 context.GetS32(src3)));
         }
 
-        private static OperationResult GenerateTernaryExtInst(CodeGenContext context, AstOperation operation, int instF)
+        private static OperationResult GenerateTernaryU32(
+            CodeGenContext context,
+            AstOperation operation,
+            Func<SpvInstruction, SpvInstruction, SpvInstruction, SpvInstruction, SpvInstruction> emitU)
         {
             var src1 = operation.GetSource(0);
             var src2 = operation.GetSource(1);
             var src3 = operation.GetSource(2);
 
-            if (operation.Inst.HasFlag(Instruction.FP64))
-            {
-                return new OperationResult(AggregateType.FP64, context.ExtInst(
-                    context.TypeFP64(),
-                    context.ExtSet,
-                    instF,
-                    context.GetFP64(src1),
-                    context.GetFP64(src2),
-                    context.GetFP64(src3)));
-            }
-            else
-            {
-                return new OperationResult(AggregateType.FP32, context.ExtInst(
-                    context.TypeFP32(),
-                    context.ExtSet,
-                    instF,
-                    context.GetFP32(src1),
-                    context.GetFP32(src2),
-                    context.GetFP32(src3)));
-            }
-        }
-
-        private static OperationResult GenerateTernaryExtInst(CodeGenContext context, AstOperation operation, int instF, int instS)
-        {
-            var src1 = operation.GetSource(0);
-            var src2 = operation.GetSource(1);
-            var src3 = operation.GetSource(2);
-
-            if (operation.Inst.HasFlag(Instruction.FP64))
-            {
-                return new OperationResult(AggregateType.FP64, context.ExtInst(
-                    context.TypeFP64(),
-                    context.ExtSet,
-                    instF,
-                    context.GetFP64(src1),
-                    context.GetFP64(src2),
-                    context.GetFP64(src3)));
-            }
-            else if (operation.Inst.HasFlag(Instruction.FP32))
-            {
-                return new OperationResult(AggregateType.FP32, context.ExtInst(
-                    context.TypeFP32(),
-                    context.ExtSet,
-                    instF,
-                    context.GetFP32(src1),
-                    context.GetFP32(src2),
-                    context.GetFP32(src3)));
-            }
-            else
-            {
-                return new OperationResult(AggregateType.S32, context.ExtInst(
-                    context.TypeS32(),
-                    context.ExtSet,
-                    instS,
-                    context.GetS32(src1),
-                    context.GetS32(src2),
-                    context.GetS32(src3)));
-            }
-        }
-
-        private static OperationResult GenerateTernaryExtInstU32(CodeGenContext context, AstOperation operation, int instU)
-        {
-            var src1 = operation.GetSource(0);
-            var src2 = operation.GetSource(1);
-            var src3 = operation.GetSource(2);
-
-            return new OperationResult(AggregateType.U32, context.ExtInst(
+            return new OperationResult(AggregateType.U32, emitU(
                 context.TypeU32(),
-                context.ExtSet,
-                instU,
                 context.GetU32(src1),
                 context.GetU32(src2),
                 context.GetU32(src3)));
