@@ -99,6 +99,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         private int _updateCount;
         private byte[] _currentData;
 
+        private bool _syncActionRegistered;
+        private bool _actionRemoved;
+        private ulong _modifiedSync;
+        private ulong _registeredSync;
+
         private ITexture _arrayViewTexture;
         private Target   _arrayViewTarget;
 
@@ -832,13 +837,13 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="tracked">Whether or not the flush triggers write tracking. If it doesn't, the texture will not be blacklisted for scaling either.</param>
         public void Flush(bool tracked = true)
         {
-            IsModified = false;
             if (TextureCompatibility.IsFormatHostIncompatible(Info, _context.Capabilities))
             {
                 return; // Flushing this format is not supported, as it may have been converted to another host format.
             }
 
             FlushTextureDataToGuest(tracked);
+            IsModified = false;
         }
 
         /// <summary>
@@ -853,8 +858,35 @@ namespace Ryujinx.Graphics.Gpu.Image
                 return;
             }
 
+            bool needsSync = !_context.IsGpuThread();
+
             _context.Renderer.BackgroundContextAction(() =>
             {
+                bool removeModifiedFlag = true;
+
+                if (needsSync)
+                {
+                    ulong registeredSync = _registeredSync;
+                    long diff = (long)(_context.SyncNumber - registeredSync);
+                    if (diff > 0)
+                    {
+                        //Logger.Error?.PrintMsg(LogClass.Gpu, "Waiting for GPU");
+                        _context.Renderer.WaitSync(registeredSync);
+
+                        if ((long)(_modifiedSync - registeredSync) > 0)
+                        {
+                            // Flush the data in a previous state. Do not remove the modified flag - it will be removed to ignore following writes.
+                            removeModifiedFlag = false;
+                        }
+                    }
+                    else
+                    {
+                        // Data is not ready yet - the flush should be ignored.
+                        Logger.Warning?.PrintMsg(LogClass.Gpu, "Skipping background flush");
+                        _actionRemoved = true;
+                    }
+                }
+
                 IsModified = false;
                 if (TextureCompatibility.IsFormatHostIncompatible(Info, _context.Capabilities))
                 {
@@ -1269,6 +1301,13 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
 
             _physicalMemory.TextureCache.Lift(this);
+
+            if (!_syncActionRegistered)
+            {
+                _modifiedSync = _context.SyncNumber;
+                _context.RegisterSyncAction(SyncAction);
+                _syncActionRegistered = true;
+            }
         }
 
         /// <summary>
@@ -1295,6 +1334,29 @@ namespace Ryujinx.Graphics.Gpu.Image
             else
             {
                 DecrementReferenceCount();
+            }
+
+            if (!_syncActionRegistered)
+            {
+                _modifiedSync = _context.SyncNumber;
+                _context.RegisterSyncAction(SyncAction);
+                _syncActionRegistered = true;
+            }
+        }
+
+        private void SyncAction()
+        {
+            // Register region tracking for CPU? (again)
+            _registeredSync = _modifiedSync;
+            _syncActionRegistered = false;
+
+            if (_actionRemoved)
+            {
+                if (IsModified)
+                {
+                    Group.SignalModified(this, true);
+                }
+                _actionRemoved = false;
             }
         }
 
