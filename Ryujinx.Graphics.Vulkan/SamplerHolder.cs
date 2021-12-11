@@ -16,6 +16,15 @@ namespace Ryujinx.Graphics.Vulkan
 
             (Filter minFilter, SamplerMipmapMode mipFilter) = EnumConversion.Convert(info.MinFilter);
 
+            float minLod = info.MinLod;
+            float maxLod = info.MaxLod;
+
+            if (info.MinFilter == MinFilter.Nearest || info.MinFilter == MinFilter.Linear)
+            {
+                minLod = 0;
+                maxLod = 0.25f;
+            }
+
             var borderColor = GetConstrainedBorderColor(info.BorderColor, out var cantConstrain);
 
             var samplerCreateInfo = new Silk.NET.Vulkan.SamplerCreateInfo()
@@ -32,8 +41,8 @@ namespace Ryujinx.Graphics.Vulkan
                 MaxAnisotropy = info.MaxAnisotropy,
                 CompareEnable = info.CompareMode == CompareMode.CompareRToTexture,
                 CompareOp = info.CompareOp.Convert(),
-                MinLod = info.MinLod,
-                MaxLod = info.MaxLod,
+                MinLod = minLod,
+                MaxLod = maxLod,
                 BorderColor = borderColor,
                 UnnormalizedCoordinates = false // TODO: Use unnormalized coordinates.
             };
