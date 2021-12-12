@@ -24,6 +24,21 @@ namespace Ryujinx.Graphics.Gpu.Shader
         public int TextureBufferIndex { get; }
 
         /// <summary>
+        /// Indicates whenever alpha test is enabled.
+        /// </summary>
+        public bool AlphaTestEnable { get; }
+
+        /// <summary>
+        /// When alpha test is enabled, indicates the comparison that decides if the fragment is discarded.
+        /// </summary>
+        public CompareOp AlphaTestCompare { get; }
+
+        /// <summary>
+        /// When alpha test is enabled, indicates the value to compare with the fragment output alpha.
+        /// </summary>
+        public float AlphaTestReference { get; }
+
+        /// <summary>
         /// Early Z force enable.
         /// </summary>
         public bool EarlyZForce { get; }
@@ -59,6 +74,9 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <param name="texturePoolGpuVa">GPU virtual address of the texture pool</param>
         /// <param name="texturePoolMaximumId">Maximum ID of the texture pool</param>
         /// <param name="textureBufferIndex">Constant buffer slot where the texture handles are located</param>
+        /// <param name="alphaTestEnable">Indicates whenever alpha test is enabled</param>
+        /// <param name="alphaTestCompare">When alpha test is enabled, indicates the comparison that decides if the fragment is discarded</param>
+        /// <param name="alphaTestReference">When alpha test is enabled, indicates the value to compare with the fragment output alpha</param>
         /// <param name="earlyZForce">Early Z force enable</param>
         /// <param name="depthMode">Depth mode zero to one or minus one to one</param>
         /// <param name="programPointSizeEnable">Indicates if the point size is set on the shader or is fixed</param>
@@ -69,6 +87,9 @@ namespace Ryujinx.Graphics.Gpu.Shader
             ulong texturePoolGpuVa,
             int texturePoolMaximumId,
             int textureBufferIndex,
+            bool alphaTestEnable,
+            CompareOp alphaTestCompare,
+            float alphaTestReference,
             bool earlyZForce,
             bool depthMode,
             bool programPointSizeEnable,
@@ -79,6 +100,9 @@ namespace Ryujinx.Graphics.Gpu.Shader
             TexturePoolGpuVa = texturePoolGpuVa;
             TexturePoolMaximumId = texturePoolMaximumId;
             TextureBufferIndex = textureBufferIndex;
+            AlphaTestEnable = alphaTestEnable;
+            AlphaTestCompare = alphaTestCompare;
+            AlphaTestReference = alphaTestReference;
             EarlyZForce = earlyZForce;
             DepthMode = depthMode;
             ProgramPointSizeEnable = programPointSizeEnable;

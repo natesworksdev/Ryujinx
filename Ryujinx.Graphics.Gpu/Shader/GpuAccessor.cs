@@ -1,6 +1,7 @@
 ﻿using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Shader;
+using Ryujinx.Graphics.Shader.Translation;
 using System;
 using System.Runtime.InteropServices;
 
@@ -22,6 +23,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         private readonly int _localSizeZ;
         private readonly int _localMemorySize;
         private readonly int _sharedMemorySize;
+        private readonly bool _isVulkan;
 
         public int Cb1DataSize { get; private set; }
 
@@ -42,6 +44,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             TransformFeedbackDescriptor[] tfd,
             int stageIndex) : base(context)
         {
+            _isVulkan = context.Capabilities.Api == TargetApi.Vulkan;
             _channel = channel;
             _state = state;
             _attributeTypes = attributeTypes;
@@ -121,11 +124,43 @@ namespace Ryujinx.Graphics.Gpu.Shader
         }
 
         /// <summary>
+        /// Gets the comparison used to decide if the fragment should be discarded depending on the alpha value.
+        /// </summary>
+        /// <returns>Alpha test comparison</returns>
+        public AlphaTestOp QueryAlphaTestCompare()
+        {
+            if (!_isVulkan || !_state.AlphaTestEnable)
+            {
+                return AlphaTestOp.Always;
+            }
+
+            return _state.AlphaTestCompare switch
+            {
+                CompareOp.Never or CompareOp.NeverGl => AlphaTestOp.Never,
+                CompareOp.Less or CompareOp.LessGl => AlphaTestOp.Less,
+                CompareOp.Equal or CompareOp.EqualGl => AlphaTestOp.Equal,
+                CompareOp.LessOrEqual or CompareOp.LessOrEqualGl => AlphaTestOp.LessOrEqual,
+                CompareOp.Greater or CompareOp.GreaterGl => AlphaTestOp.Greater,
+                CompareOp.NotEqual or CompareOp.NotEqualGl => AlphaTestOp.NotEqual,
+                CompareOp.GreaterOrEqual or CompareOp.GreaterOrEqualGl => AlphaTestOp.GreaterOrEqual,
+                _ => AlphaTestOp.Always
+            };
+        }
+
+        /// <summary>
+        /// Gets the reference value to be compared with the fragment alpha when alpha test is enabled.
+        /// </summary>
+        /// <returns>Alpha test reference value</returns>
+        public float QueryAlphaTestReference()
+        {
+            return _state.AlphaTestReference;
+        }
+
+        /// <summary>
         /// Gets the type of a vertex attribute at the given location.
         /// </summary>
         /// <param name="address">User attribute location</param>
         /// <returns>Type of the attribute</returns>
-
         public AttributeType QueryAttributeType(int location)
         {
             if (_attributeTypes != null)
