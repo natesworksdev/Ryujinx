@@ -34,6 +34,16 @@ namespace Ryujinx.Graphics.Shader
         /// <returns>Span of the memory location</returns>
         ReadOnlySpan<ulong> GetCode(ulong address, int minimumSize);
 
+        AlphaTestOp QueryAlphaTestCompare()
+        {
+            return AlphaTestOp.Always;
+        }
+
+        float QueryAlphaTestReference()
+        {
+            return 0f;
+        }
+
         AttributeType QueryAttributeType(int location)
         {
             return AttributeType.Float;

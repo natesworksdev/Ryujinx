@@ -236,6 +236,8 @@ namespace Ryujinx.Graphics.Shader.Translation
             {
                 GenerateAlphaToCoverageDitherDiscard();
 
+                bool supportsBgra = Config.GpuAccessor.QueryHostSupportsBgraFormat();
+
                 if (Config.OmapDepth)
                 {
                     Operand dest = Attribute(AttributeConsts.FragmentOutputDepth);
@@ -245,7 +247,40 @@ namespace Ryujinx.Graphics.Shader.Translation
                     this.Copy(dest, src);
                 }
 
-                bool supportsBgra = Config.GpuAccessor.QueryHostSupportsBgraFormat();
+                AlphaTestOp alphaTestOp = Config.GpuAccessor.QueryAlphaTestCompare();
+
+                if (alphaTestOp != AlphaTestOp.Always && (Config.OmapTargets & 8) != 0)
+                {
+                    if (alphaTestOp == AlphaTestOp.Never)
+                    {
+                        this.Discard();
+                    }
+                    else
+                    {
+                        Instruction comparator = alphaTestOp switch
+                        {
+                            AlphaTestOp.Equal => Instruction.CompareEqual,
+                            AlphaTestOp.Greater => Instruction.CompareGreater,
+                            AlphaTestOp.GreaterOrEqual => Instruction.CompareGreaterOrEqual,
+                            AlphaTestOp.Less => Instruction.CompareLess,
+                            AlphaTestOp.LessOrEqual => Instruction.CompareLessOrEqual,
+                            AlphaTestOp.NotEqual => Instruction.CompareNotEqual,
+                            _ => 0
+                        };
+
+                        Debug.Assert(comparator != 0, $"Invalid alpha test operation \"{alphaTestOp}\".");
+
+                        Operand alpha = Register(3, RegisterType.Gpr);
+                        Operand alphaRef = ConstF(Config.GpuAccessor.QueryAlphaTestReference());
+                        Operand alphaPass = Add(Instruction.FP32 | comparator, Local(), alpha, alphaRef);
+                        Operand alphaPassLabel = Label();
+
+                        this.BranchIfTrue(alphaPassLabel, alphaPass);
+                        this.Discard();
+                        this.MarkLabel(alphaPassLabel);
+                    }
+                }
+
                 int regIndexBase = 0;
 
                 for (int rtIndex = 0; rtIndex < 8; rtIndex++)

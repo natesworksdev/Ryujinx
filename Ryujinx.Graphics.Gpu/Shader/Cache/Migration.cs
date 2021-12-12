@@ -172,7 +172,10 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
                             false,
                             false,
                             false,
-                            1f);
+                            1f,
+                            false,
+                            CompareOp.Always,
+                            0f);
 
                         TransformFeedbackDescriptor[] tfdNew = null;
 
