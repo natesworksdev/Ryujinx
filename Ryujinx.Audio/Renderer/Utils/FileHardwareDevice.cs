@@ -78,12 +78,15 @@ namespace Ryujinx.Audio.Renderer.Utils
 
         public void SetVolume(float volume)
         {
-            throw new NotSupportedException();
+            /*
+             * Do nothing, volume is not used for IHardwareDevice at the moment.
+             */
         }
 
         public float GetVolume()
         {
-            throw new NotSupportedException();
+            // IHardwareDevice does not incorporate volume.
+            return 0;
         }
 
         public uint GetChannelCount()
