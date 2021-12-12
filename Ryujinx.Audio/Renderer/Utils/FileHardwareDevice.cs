@@ -78,9 +78,8 @@ namespace Ryujinx.Audio.Renderer.Utils
 
         public void SetVolume(float volume)
         {
-            /*
-             * Do nothing, volume is not used for FileHardwareDevice at the moment.
-             */
+            
+            // Do nothing, volume is not used for FileHardwareDevice at the moment.
         }
 
         public float GetVolume()
