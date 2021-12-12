@@ -168,11 +168,23 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 // Otherwise, we must delete the overlapping buffers and create a bigger buffer
                 // that fits all the data we need. We also need to copy the contents from the
                 // old buffer(s) to the new buffer.
+
                 ulong endAddress = address + size;
 
                 if (_bufferOverlaps[0].Address > address || _bufferOverlaps[0].EndAddress < endAddress)
                 {
-                    if (overlapsCount == 1)
+                    // Check if the following conditions are met:
+                    // - We have a single overlap.
+                    // - The overlap starts at or before the requested range. That is, the overlap happens at the end.
+                    // - The size delta between the new, merged buffer and the old one is of at most 2 pages.
+                    // In this case, we attempt to extend the buffer further than the requested range,
+                    // this can potentially avoid future resizes if the application keeps using overlapping
+                    // sequential memory.
+                    // Allowing for 2 pages (rather than just one) is necessary to catch cases where the
+                    // range crosses a page, and after alignment, ends having a size of 2 pages.
+                    if (overlapsCount == 1 &&
+                        address >= _bufferOverlaps[0].Address &&
+                        endAddress - _bufferOverlaps[0].EndAddress <= BufferAlignmentSize * 2)
                     {
                         // Try to grow the buffer by 1.5x of its current size.
                         // This improves performance in the cases where the buffer is resized often by small amounts.
