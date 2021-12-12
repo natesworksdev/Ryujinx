@@ -16,14 +16,14 @@ namespace Ryujinx.Graphics.Vulkan
         private const string AppName = "Ryujinx.Graphics.Vulkan";
         private const int QueuesCount = 2;
 
-        private static readonly string[] RequiredExtensions = new string[]
+        private static readonly string[] _requiredExtensions = new string[]
         {
             KhrSwapchain.ExtensionName,
             "VK_EXT_shader_subgroup_vote",
             ExtTransformFeedback.ExtensionName
         };
 
-        private static readonly string[] DesirableExtensions = new string[]
+        private static readonly string[] _desirableExtensions = new string[]
         {
             ExtConditionalRendering.ExtensionName,
             ExtExtendedDynamicState.ExtensionName,
@@ -31,6 +31,16 @@ namespace Ryujinx.Graphics.Vulkan
             "VK_EXT_index_type_uint8",
             "VK_EXT_custom_border_color",
             "VK_EXT_robustness2"
+        };
+
+        private static readonly string[] _excludedMessages = new string[]
+        {
+            // NOTE: Done on purpuse right now.
+            "UNASSIGNED-CoreValidation-Shader-OutputNotConsumed",
+            // TODO: Figure out if fixable
+            "VUID-vkCmdDrawIndexed-None-04584",
+            // TODO: might be worth looking into making this happy to possibly optimize copies.
+            "UNASSIGNED-CoreValidation-DrawState-InvalidImageLayout"
         };
 
         public static Instance CreateInstance(Vk api, GraphicsDebugLevel logLevel, string[] requiredExtensions, out ExtDebugReport debugReport, out DebugReportCallbackEXT debugReportCallback)
@@ -64,7 +74,7 @@ namespace Ryujinx.Graphics.Vulkan
                 Logger.Warning?.Print(LogClass.Gpu, $"Missing layer {layerName}");
             }
 
-            if (logLevel == GraphicsDebugLevel.Slowdowns || logLevel == GraphicsDebugLevel.All)
+            if (logLevel != GraphicsDebugLevel.None)
             {
                 AddAvailableLayer("VK_LAYER_KHRONOS_validation");
             }
@@ -155,16 +165,6 @@ namespace Ryujinx.Graphics.Vulkan
             return instance;
         }
 
-        private static string[] ExcludedMessages = new string[]
-        {
-            // NOTE: Done on purpuse right now.
-            "UNASSIGNED-CoreValidation-Shader-OutputNotConsumed",
-            // TODO: Figure out if fixable
-            "VUID-vkCmdDrawIndexed-None-04584",
-            // TODO: might be worth looking into making this happy to possibly optimize copies.
-            "UNASSIGNED-CoreValidation-DrawState-InvalidImageLayout"
-        };
-
         private unsafe static uint DebugReport(
             uint flags,
             DebugReportObjectTypeEXT objectType,
@@ -177,7 +177,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             var msg = Marshal.PtrToStringAnsi((IntPtr)message);
 
-            foreach (string excludedMessagePart in ExcludedMessages)
+            foreach (string excludedMessagePart in _excludedMessages)
             {
                 if (msg.Contains(excludedMessagePart))
                 {
@@ -258,14 +258,14 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     string extensionName = Marshal.PtrToStringAnsi((IntPtr)pExtensionProperties[i].ExtensionName);
 
-                    if (RequiredExtensions.Contains(extensionName))
+                    if (_requiredExtensions.Contains(extensionName))
                     {
                         extensionMatches++;
                     }
                 }
             }
 
-            return extensionMatches == RequiredExtensions.Length && FindSuitableQueueFamily(api, physicalDevice, surface, out _) != InvalidIndex;
+            return extensionMatches == _requiredExtensions.Length && FindSuitableQueueFamily(api, physicalDevice, surface, out _) != InvalidIndex;
         }
 
         public static uint FindSuitableQueueFamily(Vk api, PhysicalDevice physicalDevice, SurfaceKHR surface, out uint queueCount)
@@ -372,7 +372,7 @@ namespace Ryujinx.Graphics.Vulkan
                 DrawIndirectCount = supportedExtensions.Contains(KhrDrawIndirectCount.ExtensionName)
             };
 
-            var enabledExtensions = RequiredExtensions.Union(DesirableExtensions.Intersect(supportedExtensions)).ToArray();
+            var enabledExtensions = _requiredExtensions.Union(_desirableExtensions.Intersect(supportedExtensions)).ToArray();
 
             IntPtr* ppEnabledExtensions = stackalloc IntPtr[enabledExtensions.Length];
 
