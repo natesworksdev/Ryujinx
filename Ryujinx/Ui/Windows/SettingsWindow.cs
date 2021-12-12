@@ -372,7 +372,7 @@ namespace Ryujinx.Ui.Windows
             _audioVolumeSlider.ValuePos     = PositionType.Right;
             _audioVolumeSlider.WidthRequest = 200;
             _audioVolumeSlider.Value        = ConfigurationState.Instance.System.AudioVolume * 100;
-
+            _audioVolumeSlider.ValueChanged += VolumeSlider_OnChange;
             _audioBackendBox.Add(_audioVolumeLabel);
             _audioBackendBox.Add(_audioVolumeSlider);
             _audioVolumeLabel.Show();
@@ -664,6 +664,11 @@ namespace Ryujinx.Ui.Windows
 
             controllerWindow.SetSizeRequest((int)(controllerWindow.DefaultWidth * Program.WindowScaleFactor), (int)(controllerWindow.DefaultHeight * Program.WindowScaleFactor));
             controllerWindow.Show();
+        }
+
+        private void VolumeSlider_OnChange(object sender, EventArgs args)
+        {
+            ConfigurationState.Instance.System.AudioVolume.Value = (float)(_audioVolumeSlider.Value / 100);
         }
 
         private void SaveToggle_Activated(object sender, EventArgs args)

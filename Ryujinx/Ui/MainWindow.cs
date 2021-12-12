@@ -1186,7 +1186,7 @@ namespace Ryujinx.Ui
         {
             string icon = volume == 0 ? "🔇" : "🔊";
 
-            return $"{icon} {volume * 100}%";
+            return $"{icon} {(int)(volume * 100)}%";
         }
 
         private void VolumeStatus_Clicked(object sender, ButtonReleaseEventArgs args)
