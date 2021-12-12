@@ -1,6 +1,8 @@
 ﻿using Ryujinx.Common.Logging;
+using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Image;
 using Ryujinx.Graphics.Shader;
+using Ryujinx.Graphics.Shader.Translation;
 using System;
 using System.Runtime.InteropServices;
 
@@ -16,6 +18,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         private readonly AttributeType[] _attributeTypes;
         private readonly int _stageIndex;
         private readonly bool _compute;
+        private readonly bool _isVulkan;
 
         /// <summary>
         /// Creates a new instance of the GPU state accessor for graphics shader translation.
@@ -32,6 +35,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             AttributeType[] attributeTypes,
             int stageIndex) : base(context, state.ResourceCounts, stageIndex)
         {
+            _isVulkan = context.Capabilities.Api == TargetApi.Vulkan;
             _channel = channel;
             _state = state;
             _attributeTypes = attributeTypes;
@@ -72,6 +76,33 @@ namespace Ryujinx.Graphics.Gpu.Shader
         {
             int size = Math.Max(minimumSize, 0x1000 - (int)(address & 0xfff));
             return MemoryMarshal.Cast<byte, ulong>(_channel.MemoryManager.GetSpan(address, size));
+        }
+
+        /// <inheritdoc/>
+        public AlphaTestOp QueryAlphaTestCompare()
+        {
+            if (!_isVulkan || !_state.GraphicsState.AlphaTestEnable)
+            {
+                return AlphaTestOp.Always;
+            }
+
+            return _state.GraphicsState.AlphaTestCompare switch
+            {
+                CompareOp.Never or CompareOp.NeverGl => AlphaTestOp.Never,
+                CompareOp.Less or CompareOp.LessGl => AlphaTestOp.Less,
+                CompareOp.Equal or CompareOp.EqualGl => AlphaTestOp.Equal,
+                CompareOp.LessOrEqual or CompareOp.LessOrEqualGl => AlphaTestOp.LessOrEqual,
+                CompareOp.Greater or CompareOp.GreaterGl => AlphaTestOp.Greater,
+                CompareOp.NotEqual or CompareOp.NotEqualGl => AlphaTestOp.NotEqual,
+                CompareOp.GreaterOrEqual or CompareOp.GreaterOrEqualGl => AlphaTestOp.GreaterOrEqual,
+                _ => AlphaTestOp.Always
+            };
+        }
+
+        /// <inheritdoc/>
+        public float QueryAlphaTestReference()
+        {
+            return _state.GraphicsState.AlphaTestReference;
         }
 
         /// <inheritdoc/>

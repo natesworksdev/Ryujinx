@@ -46,6 +46,21 @@ namespace Ryujinx.Graphics.Gpu.Shader
         public readonly float PointSize;
 
         /// <summary>
+        /// Indicates whenever alpha test is enabled.
+        /// </summary>
+        public readonly bool AlphaTestEnable;
+
+        /// <summary>
+        /// When alpha test is enabled, indicates the comparison that decides if the fragment is discarded.
+        /// </summary>
+        public readonly CompareOp AlphaTestCompare;
+
+        /// <summary>
+        /// When alpha test is enabled, indicates the value to compare with the fragment output alpha.
+        /// </summary>
+        public readonly float AlphaTestReference;
+
+        /// <summary>
         /// Creates a new GPU graphics state.
         /// </summary>
         /// <param name="earlyZForce">Early Z force enable</param>
@@ -55,6 +70,9 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <param name="depthMode">Depth mode zero to one or minus one to one</param>
         /// <param name="programPointSizeEnable">Indicates if the point size is set on the shader or is fixed</param>
         /// <param name="pointSize">Point size if not set from shader</param>
+        /// <param name="alphaTestEnable">Indicates whenever alpha test is enabled</param>
+        /// <param name="alphaTestCompare">When alpha test is enabled, indicates the comparison that decides if the fragment is discarded</param>
+        /// <param name="alphaTestReference">When alpha test is enabled, indicates the value to compare with the fragment output alpha</param>
         public GpuChannelGraphicsState(
             bool earlyZForce,
             PrimitiveTopology topology,
@@ -62,7 +80,10 @@ namespace Ryujinx.Graphics.Gpu.Shader
             bool viewportTransformDisable,
             bool depthMode,
             bool programPointSizeEnable,
-            float pointSize)
+            float pointSize,
+            bool alphaTestEnable,
+            CompareOp alphaTestCompare,
+            float alphaTestReference)
         {
             EarlyZForce = earlyZForce;
             Topology = topology;
@@ -71,6 +92,9 @@ namespace Ryujinx.Graphics.Gpu.Shader
             DepthMode = depthMode;
             ProgramPointSizeEnable = programPointSizeEnable;
             PointSize = pointSize;
+            AlphaTestEnable = alphaTestEnable;
+            AlphaTestCompare = alphaTestCompare;
+            AlphaTestReference = alphaTestReference;
         }
     }
 }
