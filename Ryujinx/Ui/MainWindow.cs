@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -917,8 +916,12 @@ namespace Ryujinx.Ui
 
             RendererWidget.Dispose();
 
-            _windowsMultimediaTimerResolution?.Dispose();
-            _windowsMultimediaTimerResolution = null;
+            if (OperatingSystem.IsWindows())
+            {
+                _windowsMultimediaTimerResolution?.Dispose();
+                _windowsMultimediaTimerResolution = null;
+            }
+
             DisplaySleep.Restore();
 
             _viewBox.Remove(RendererWidget);
@@ -949,7 +952,7 @@ namespace Ryujinx.Ui
 
         private void CreateGameWindow()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (OperatingSystem.IsWindows())
             {
                 _windowsMultimediaTimerResolution = new WindowsMultimediaTimerResolution(1);
             }
