@@ -19,6 +19,28 @@ namespace Ryujinx.Graphics.Gpu.Image
         private int _firstLevel;
         private int _firstLayer;
 
+        // Sync state for texture flush.
+
+        /// <summary>
+        /// The sync number last registered.
+        /// </summary>
+        private ulong _registeredSync;
+
+        /// <summary>
+        /// The sync number when the texture was last modified by GPU.
+        /// </summary>
+        private ulong _modifiedSync;
+
+        /// <summary>
+        /// Whether an action is currently registered or not;
+        /// </summary>
+        private bool _actionRegistered;
+
+        /// <summary>
+        /// f
+        /// </summary>
+        private bool _syncActionRegistered;
+
         /// <summary>
         /// The byte offset from the start of the storage of this handle.
         /// </summary>
@@ -116,7 +138,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <summary>
         /// Signal that this handle has been modified to any existing dependencies, and set the modified flag.
         /// </summary>
-        public void SignalModified()
+        public void SignalModified(GpuContext context)
         {
             Modified = true;
 
@@ -126,15 +148,29 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 dependency.SignalModified();
             }
+
+            if (!_syncActionRegistered)
+            {
+                _modifiedSync = context.SyncNumber;
+                context.RegisterSyncAction(SyncAction);
+                _syncActionRegistered = true;
+            }
+
+            if (!_actionRegistered)
+            {
+                _group.RegisterAction(this);
+
+                _actionRegistered = true;
+            }
         }
 
         /// <summary>
         /// Signal that this handle has either started or ended being modified.
         /// </summary>
         /// <param name="bound">True if this handle is being bound, false if unbound</param>
-        public void SignalModifying(bool bound)
+        public void SignalModifying(bool bound, GpuContext context)
         {
-            SignalModified();
+            SignalModified(context);
 
             // Note: Bind count currently resets to 0 on inherit for safety, as the handle <-> view relationship can change.
             _bindCount = Math.Max(0, _bindCount + (bound ? 1 : -1));
@@ -156,12 +192,69 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
         }
 
+        public bool Sync(GpuContext context)
+        {
+            _actionRegistered = false;
+
+            bool needsSync = !context.IsGpuThread();
+
+            if (!needsSync)
+            {
+                Modified = false;
+                return true;
+            }
+
+            ulong registeredSync = _registeredSync;
+            long diff = (long)(context.SyncNumber - registeredSync);
+            if (diff > 0)
+            {
+                //Logger.Error?.PrintMsg(LogClass.Gpu, "Waiting for GPU");
+                context.Renderer.WaitSync(registeredSync);
+
+                if ((long)(_modifiedSync - registeredSync) > 0)
+                {
+                    // Flush the data in a previous state. Do not remove the modified flag - it will be removed to ignore following writes.
+                    return true;
+                }
+
+                Modified = false;
+            }
+            else
+            {
+                // Data is not ready yet - flushing old data without waiting or removing modified flag.
+                return true;
+
+                // Data is not ready yet - the flush should be ignored.
+                // The action must be added again once the SyncAction is performed.
+                // Logger.Warning?.PrintMsg(LogClass.Gpu, "Skipping background flush");
+                //return false;
+            }
+
+            return true;
+        }
+
+        private void SyncAction()
+        {
+            // Register region tracking for CPU? (again)
+            _registeredSync = _modifiedSync;
+            _syncActionRegistered = false;
+
+            if (!_actionRegistered)
+            {
+                _group.RegisterAction(this);
+
+                _actionRegistered = true;
+            }
+        }
+
         /// <summary>
         /// Signal that a copy dependent texture has been modified, and must have its data copied to this one.
         /// </summary>
         /// <param name="copyFrom">The texture handle that must defer a copy to this one</param>
         public void DeferCopy(TextureGroupHandle copyFrom)
         {
+            Modified = false;
+
             DeferredCopy = copyFrom;
 
             _group.Storage.SignalGroupDirty();
@@ -252,44 +345,54 @@ namespace Ryujinx.Graphics.Gpu.Image
         public bool Copy(TextureGroupHandle fromHandle = null)
         {
             bool result = false;
+            bool shouldCopy = false;
 
             if (fromHandle == null)
             {
                 fromHandle = DeferredCopy;
 
-                if (fromHandle != null && fromHandle._bindCount == 0)
+                if (fromHandle != null)
                 {
-                    // Repeat the copy in future if the bind count is greater than 0.
-                    DeferredCopy = null;
+                    // Only copy if the copy texture is still modified.
+                    // It will be set as unmodified if new data is written from cpu, as the data previously in the texture will flush.
+                    // It will also set as unmodified if a copy is deferred to it.
+
+                    shouldCopy = fromHandle.Modified;
+
+                    if (fromHandle._bindCount == 0)
+                    {
+                        // Repeat the copy in future if the bind count is greater than 0.
+                        DeferredCopy = null;
+                    }
                 }
             }
-
-            if (fromHandle != null)
+            else
             {
-                // If the copy texture is dirty, do not copy. Its data no longer matters, and this handle should also be dirty.
-                if (!fromHandle.CheckDirty())
+                // If dirty, do not copy. Its data no longer matters, and this handle should also be dirty.
+                shouldCopy = !fromHandle.CheckDirty();
+            }
+
+            if (shouldCopy)
+            {
+                Texture from = fromHandle._group.Storage;
+                Texture to = _group.Storage;
+
+                if (from.ScaleFactor != to.ScaleFactor)
                 {
-                    Texture from = fromHandle._group.Storage;
-                    Texture to = _group.Storage;
-
-                    if (from.ScaleFactor != to.ScaleFactor)
-                    {
-                        to.PropagateScale(from);
-                    }
-
-                    from.HostTexture.CopyTo(
-                        to.HostTexture,
-                        fromHandle._firstLayer,
-                        _firstLayer,
-                        fromHandle._firstLevel,
-                        _firstLevel);
-
-                    Modified = true;
-
-                    _group.RegisterAction(this);
-
-                    result = true;
+                    to.PropagateScale(from);
                 }
+
+                from.HostTexture.CopyTo(
+                    to.HostTexture,
+                    fromHandle._firstLayer,
+                    _firstLayer,
+                    fromHandle._firstLevel,
+                    _firstLevel);
+
+                Modified = true;
+                _group.RegisterAction(this);
+
+                result = true;
             }
 
             return result;

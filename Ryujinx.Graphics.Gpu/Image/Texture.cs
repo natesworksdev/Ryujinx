@@ -73,11 +73,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         public TextureGroup Group { get; private set; }
 
         /// <summary>
-        /// Set when a texture has been modified by the Host GPU since it was last flushed.
-        /// </summary>
-        public bool IsModified { get; internal set; }
-
-        /// <summary>
         /// Set when a texture has been changed size. This indicates that it may need to be
         /// changed again when obtained as a sampler.
         /// </summary>
@@ -103,6 +98,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         private bool _actionRemoved;
         private ulong _modifiedSync;
         private ulong _registeredSync;
+
+        private bool _modifiedStale = true;
 
         private ITexture _arrayViewTexture;
         private Target   _arrayViewTarget;
@@ -663,6 +660,14 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Signal that the modified state is dirty, indicating that the texture group should be notified when it changes.
+        /// </summary>
+        public void SignalModifiedDirty()
+        {
+            _modifiedStale = true;
+        }
+
+        /// <summary>
         /// Fully synchronizes guest and host memory.
         /// This will replace the entire texture with the data present in guest memory.
         /// </summary>
@@ -674,8 +679,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
 
             ReadOnlySpan<byte> data = _physicalMemory.GetSpan(Range);
-
-            IsModified = false;
 
             // If the host does not support ASTC compression, we need to do the decompression.
             // The decompression is slow, so we want to avoid it as much as possible.
@@ -714,8 +717,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             BlacklistScale();
 
             Group.CheckDirty(this, true);
-
-            IsModified = false;
 
             HostTexture.SetData(data);
 
@@ -835,15 +836,34 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// This may cause data corruption if the memory is already being used for something else on the CPU side.
         /// </summary>
         /// <param name="tracked">Whether or not the flush triggers write tracking. If it doesn't, the texture will not be blacklisted for scaling either.</param>
-        public void Flush(bool tracked = true)
+        public void FlushModified(bool tracked = true)
+        {
+            Group.FlushModified(this, tracked);
+        }
+
+        /// <summary>
+        /// Flushes the texture data.
+        /// This causes the texture data to be written back to guest memory.
+        /// If the texture was written by the GPU, this includes all modification made by the GPU
+        /// up to this point.
+        /// Be aware that this is an expensive operation, avoid calling it unless strictly needed.
+        /// This may cause data corruption if the memory is already being used for something else on the CPU side.
+        /// </summary>
+        /// <param name="tracked">Whether or not the flush triggers write tracking. If it doesn't, the texture will not be blacklisted for scaling either.</param>
+        public void Flush(int offset, int size, bool tracked)
         {
             if (TextureCompatibility.IsFormatHostIncompatible(Info, _context.Capabilities))
             {
                 return; // Flushing this format is not supported, as it may have been converted to another host format.
             }
 
-            FlushTextureDataToGuest(tracked);
-            IsModified = false;
+            if (Info.Target == Target.Texture2DMultisample ||
+                Info.Target == Target.Texture2DMultisampleArray)
+            {
+                return; // Flushing multisample textures is not supported, the host does not allow getting their data.
+            }
+
+            FlushTextureDataRangeToGuest(tracked, offset, size);
         }
 
         /// <summary>
@@ -851,43 +871,10 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// The host backend must ensure that we have shared access to the resource from this thread.
         /// This is used when flushing from memory access handlers.
         /// </summary>
-        public void ExternalFlush(ulong address, ulong size)
+        public void ExternalFlush(int offset, int size)
         {
-            if (!IsModified)
-            {
-                return;
-            }
-
-            bool needsSync = !_context.IsGpuThread();
-
             _context.Renderer.BackgroundContextAction(() =>
             {
-                bool removeModifiedFlag = true;
-
-                if (needsSync)
-                {
-                    ulong registeredSync = _registeredSync;
-                    long diff = (long)(_context.SyncNumber - registeredSync);
-                    if (diff > 0)
-                    {
-                        //Logger.Error?.PrintMsg(LogClass.Gpu, "Waiting for GPU");
-                        _context.Renderer.WaitSync(registeredSync);
-
-                        if ((long)(_modifiedSync - registeredSync) > 0)
-                        {
-                            // Flush the data in a previous state. Do not remove the modified flag - it will be removed to ignore following writes.
-                            removeModifiedFlag = false;
-                        }
-                    }
-                    else
-                    {
-                        // Data is not ready yet - the flush should be ignored.
-                        Logger.Warning?.PrintMsg(LogClass.Gpu, "Skipping background flush");
-                        _actionRemoved = true;
-                    }
-                }
-
-                IsModified = false;
                 if (TextureCompatibility.IsFormatHostIncompatible(Info, _context.Capabilities))
                 {
                     return; // Flushing this format is not supported, as it may have been converted to another host format.
@@ -906,7 +893,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     texture = _flushHostTexture = GetScaledHostTexture(1f, _flushHostTexture);
                 }
 
-                FlushTextureDataToGuest(false, texture);
+                FlushTextureDataRangeToGuest(false, offset, size, texture);
             });
         }
 
@@ -940,6 +927,41 @@ namespace Ryujinx.Graphics.Gpu.Image
                 else
                 {
                     _physicalMemory.WriteUntracked(Range, GetTextureDataFromGpu(Span<byte>.Empty, false, texture));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets data from the host GPU, and flushes it to guest memory.
+        /// </summary>
+        /// <remarks>
+        /// This method should be used to retrieve data that was modified by the host GPU.
+        /// This is not cheap, avoid doing that unless strictly needed.
+        /// When possible, the data is written directly into guest memory, rather than copied.
+        /// </remarks>
+        /// <param name="tracked">True if writing the texture data is tracked, false otherwise</param>
+        /// <param name="texture">The specific host texture to flush. Defaults to this texture</param>
+        private void FlushTextureDataRangeToGuest(bool tracked, int offset, int size, ITexture texture = null)
+        {
+            if (offset == 0 && (ulong)size == Size)
+            {
+                FlushTextureDataToGuest(tracked, texture);
+            }
+            else
+            {
+                MultiRange subrange = Range.GetSlice((ulong)offset, (ulong)size);
+
+                // todo: cache storage texture data
+
+                ReadOnlySpan<byte> data = GetTextureDataFromGpu(Span<byte>.Empty, tracked, texture);
+
+                if (tracked)
+                {
+                    _physicalMemory.Write(subrange, data.Slice((int)offset, (int)size));
+                }
+                else
+                {
+                    _physicalMemory.WriteUntracked(subrange, data.Slice((int)offset, (int)size));
                 }
             }
         }
@@ -1293,21 +1315,13 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public void SignalModified()
         {
-            bool wasModified = IsModified;
-            if (!wasModified || Group.HasCopyDependencies)
+            if (_modifiedStale || Group.HasCopyDependencies)
             {
-                IsModified = true;
-                Group.SignalModified(this, !wasModified);
+                _modifiedStale = false;
+                Group.SignalModified(this);
             }
 
             _physicalMemory.TextureCache.Lift(this);
-
-            if (!_syncActionRegistered)
-            {
-                _modifiedSync = _context.SyncNumber;
-                _context.RegisterSyncAction(SyncAction);
-                _syncActionRegistered = true;
-            }
         }
 
         /// <summary>
@@ -1317,12 +1331,10 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="bound">True if the texture has been bound, false if it has been unbound</param>
         public void SignalModifying(bool bound)
         {
-            bool wasModified = IsModified;
-
-            if (!wasModified || Group.HasCopyDependencies)
+            if (_modifiedStale || Group.HasCopyDependencies)
             {
-                IsModified = true;
-                Group.SignalModifying(this, bound, !wasModified);
+                _modifiedStale = false;
+                Group.SignalModifying(this, bound);
             }
 
             _physicalMemory.TextureCache.Lift(this);
@@ -1334,29 +1346,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             else
             {
                 DecrementReferenceCount();
-            }
-
-            if (!_syncActionRegistered)
-            {
-                _modifiedSync = _context.SyncNumber;
-                _context.RegisterSyncAction(SyncAction);
-                _syncActionRegistered = true;
-            }
-        }
-
-        private void SyncAction()
-        {
-            // Register region tracking for CPU? (again)
-            _registeredSync = _modifiedSync;
-            _syncActionRegistered = false;
-
-            if (_actionRemoved)
-            {
-                if (IsModified)
-                {
-                    Group.SignalModified(this, true);
-                }
-                _actionRemoved = false;
             }
         }
 
@@ -1555,7 +1544,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             ChangedMapping = true;
 
-            IsModified = false; // We shouldn't flush this texture, as its memory is no longer mapped.
+            // TODO: somehow tell our handles about this (remember we are on another thread!)
 
             RemoveFromPools(true);
         }

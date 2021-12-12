@@ -136,7 +136,6 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                     bool modified = group.Modified;
                     bool handleDirty = false;
-                    bool handleModified = false;
                     bool handleUnmapped = false;
 
                     foreach (CpuRegionHandle handle in group.Handles)
@@ -149,8 +148,14 @@ namespace Ryujinx.Graphics.Gpu.Image
                         else
                         {
                             handleUnmapped |= handle.Unmapped;
-                            handleModified |= modified;
                         }
+                    }
+                    
+                    // If the modified flag is still present, prefer the data written from gpu.
+                    // A write from CPU will do a flush before writing its data, which should unset this.
+                    if (modified)
+                    {
+                        handleDirty = false;
                     }
 
                     // Evaluate if any copy dependencies need to be fulfilled. A few rules:
@@ -164,7 +169,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     }
                     else
                     {
-                        anyModified |= handleModified;
+                        anyModified |= modified;
                         dirty |= handleDirty;
                     }
 
@@ -252,11 +257,48 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Flush gpu modified ranges for a given texture.
+        /// </summary>
+        /// <param name="texture">The texture being used</param>
+        public void FlushModified(Texture texture, bool tracked)
+        {
+            EvaluateRelevantHandles(texture, (baseHandle, regionCount, split) =>
+            {
+                int offset = 0;
+                int endOffset = 0;
+
+                for (int i = 0; i < regionCount; i++)
+                {
+                    TextureGroupHandle group = _handles[baseHandle + i];
+
+                    if (group.Modified)
+                    {
+                        if (endOffset != group.Offset)
+                        {
+                            if (endOffset > offset)
+                            {
+                                Storage.Flush(offset, endOffset - offset, tracked);
+                            }
+
+                            offset = group.Offset;
+                        }
+
+                        endOffset = group.Offset + group.Size;
+                    }
+                }
+
+                if (endOffset > offset)
+                {
+                    Storage.Flush(offset, endOffset - offset, tracked);
+                }
+            });
+        }
+
+        /// <summary>
         /// Signal that a texture in the group has been modified by the GPU.
         /// </summary>
         /// <param name="texture">The texture that has been modified</param>
-        /// <param name="registerAction">True if the flushing read action should be registered, false otherwise</param>
-        public void SignalModified(Texture texture, bool registerAction)
+        public void SignalModified(Texture texture)
         {
             EvaluateRelevantHandles(texture, (baseHandle, regionCount, split) =>
             {
@@ -264,12 +306,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 {
                     TextureGroupHandle group = _handles[baseHandle + i];
 
-                    group.SignalModified();
-
-                    if (registerAction)
-                    {
-                        RegisterAction(group);
-                    }
+                    group.SignalModified(_context);
                 }
             });
         }
@@ -279,8 +316,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="texture">The texture that has been modified</param>
         /// <param name="bound">True if this texture is being bound, false if unbound</param>
-        /// <param name="registerAction">True if the flushing read action should be registered, false otherwise</param>
-        public void SignalModifying(Texture texture, bool bound, bool registerAction)
+        public void SignalModifying(Texture texture, bool bound)
         {
             EvaluateRelevantHandles(texture, (baseHandle, regionCount, split) =>
             {
@@ -288,12 +324,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 {
                     TextureGroupHandle group = _handles[baseHandle + i];
 
-                    group.SignalModifying(bound);
-
-                    if (registerAction)
-                    {
-                        RegisterAction(group);
-                    }
+                    group.SignalModifying(bound, _context);
                 }
             });
         }
@@ -741,6 +772,11 @@ namespace Ryujinx.Graphics.Gpu.Image
                     }
                 }
             }
+
+            foreach (var oldGroup in oldHandles)
+            {
+                oldGroup.Modified = false;
+            }
         }
 
         /// <summary>
@@ -963,24 +999,34 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// A flush has been requested on a tracked region. Find an appropriate view to flush.
+        /// A flush has been requested on a tracked region. Flush texture data for the given handle.
         /// </summary>
         /// <param name="handle">The handle this flush action is for</param>
         /// <param name="address">The address of the flushing memory access</param>
         /// <param name="size">The size of the flushing memory access</param>
         public void FlushAction(TextureGroupHandle handle, ulong address, ulong size)
         {
-            Storage.ExternalFlush(address, size);
+            if (!handle.Modified)
+            {
+                return;
+            }
+
+            bool shouldFlush = handle.Sync(_context);
+
+            Storage.SignalModifiedDirty();
 
             lock (handle.Overlaps)
             {
-                foreach (Texture overlap in handle.Overlaps)
+                foreach (Texture texture in handle.Overlaps)
                 {
-                    overlap.ExternalFlush(address, size);
+                    texture.SignalModifiedDirty();
                 }
             }
 
-            handle.Modified = false;
+            if (shouldFlush)
+            {
+                Storage.ExternalFlush(handle.Offset, handle.Size);
+            }
         }
 
         /// <summary>
