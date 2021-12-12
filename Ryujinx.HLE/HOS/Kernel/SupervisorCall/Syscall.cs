@@ -506,6 +506,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.UserCopyFailed;
             }
 
+            if (timeout > 0)
+            {
+                timeout += KTimeManager.DefaultTimeIncrementNanoseconds;
+            }
+
             return ReplyAndReceive(handles, replyTargetHandle, timeout, out handleIndex);
         }
 
@@ -547,6 +552,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             if (result == KernelResult.Success)
             {
+                if (timeout > 0)
+                {
+                    timeout += KTimeManager.DefaultTimeIncrementNanoseconds;
+                }
+
                 while ((result = _context.Synchronization.WaitFor(syncObjs, timeout, out handleIndex)) == KernelResult.Success)
                 {
                     KServerSession session = currentProcess.HandleTable.GetObject<KServerSession>(handles[handleIndex]);
@@ -644,6 +654,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             if (result == KernelResult.Success)
             {
+                if (timeout > 0)
+                {
+                    timeout += KTimeManager.DefaultTimeIncrementNanoseconds;
+                }
+
                 while ((result = _context.Synchronization.WaitFor(syncObjs, timeout, out handleIndex)) == KernelResult.Success)
                 {
                     KServerSession session = currentProcess.HandleTable.GetObject<KServerSession>(handles[handleIndex]);
@@ -1560,30 +1575,32 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             Logger.Warning?.Print(LogClass.KernelSvc, str);
         }
 
-        public KernelResult GetInfo(uint id, int handle, long subId, out long value)
+        public KernelResult GetInfo(InfoType id, int handle, long subId, out long value)
         {
             value = 0;
 
             switch (id)
             {
-                case 0:
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                case 12:
-                case 13:
-                case 14:
-                case 15:
-                case 16:
-                case 17:
-                case 18:
-                case 20:
-                case 21:
-                case 22:
+                case InfoType.CoreMask:
+                case InfoType.PriorityMask:
+                case InfoType.AliasRegionAddress:
+                case InfoType.AliasRegionSize:
+                case InfoType.HeapRegionAddress:
+                case InfoType.HeapRegionSize:
+                case InfoType.TotalMemorySize:
+                case InfoType.UsedMemorySize:
+                case InfoType.AslrRegionAddress:
+                case InfoType.AslrRegionSize:
+                case InfoType.StackRegionAddress:
+                case InfoType.StackRegionSize:
+                case InfoType.SystemResourceSizeTotal:
+                case InfoType.SystemResourceSizeUsed:
+                case InfoType.ProgramId:
+                case InfoType.UserExceptionContextAddress:
+                case InfoType.TotalNonSystemMemorySize:
+                case InfoType.UsedNonSystemMemorySize:
+                case InfoType.IsApplication:
+                case InfoType.FreeThreadCount:
                     {
                         if (subId != 0)
                         {
@@ -1601,35 +1618,35 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
                         switch (id)
                         {
-                            case 0: value = process.Capabilities.AllowedCpuCoresMask; break;
-                            case 1: value = process.Capabilities.AllowedThreadPriosMask; break;
+                            case InfoType.CoreMask: value = process.Capabilities.AllowedCpuCoresMask; break;
+                            case InfoType.PriorityMask: value = process.Capabilities.AllowedThreadPriosMask; break;
 
-                            case 2: value = (long)process.MemoryManager.AliasRegionStart; break;
-                            case 3:
+                            case InfoType.AliasRegionAddress: value = (long)process.MemoryManager.AliasRegionStart; break;
+                            case InfoType.AliasRegionSize:
                                 value = (long)(process.MemoryManager.AliasRegionEnd -
                                                process.MemoryManager.AliasRegionStart); break;
 
-                            case 4: value = (long)process.MemoryManager.HeapRegionStart; break;
-                            case 5:
+                            case InfoType.HeapRegionAddress: value = (long)process.MemoryManager.HeapRegionStart; break;
+                            case InfoType.HeapRegionSize:
                                 value = (long)(process.MemoryManager.HeapRegionEnd -
                                                process.MemoryManager.HeapRegionStart); break;
 
-                            case 6: value = (long)process.GetMemoryCapacity(); break;
+                            case InfoType.TotalMemorySize: value = (long)process.GetMemoryCapacity(); break;
 
-                            case 7: value = (long)process.GetMemoryUsage(); break;
+                            case InfoType.UsedMemorySize: value = (long)process.GetMemoryUsage(); break;
 
-                            case 12: value = (long)process.MemoryManager.GetAddrSpaceBaseAddr(); break;
+                            case InfoType.AslrRegionAddress: value = (long)process.MemoryManager.GetAddrSpaceBaseAddr(); break;
 
-                            case 13: value = (long)process.MemoryManager.GetAddrSpaceSize(); break;
+                            case InfoType.AslrRegionSize: value = (long)process.MemoryManager.GetAddrSpaceSize(); break;
 
-                            case 14: value = (long)process.MemoryManager.StackRegionStart; break;
-                            case 15:
+                            case InfoType.StackRegionAddress: value = (long)process.MemoryManager.StackRegionStart; break;
+                            case InfoType.StackRegionSize:
                                 value = (long)(process.MemoryManager.StackRegionEnd -
                                                process.MemoryManager.StackRegionStart); break;
 
-                            case 16: value = (long)process.PersonalMmHeapPagesCount * KPageTableBase.PageSize; break;
+                            case InfoType.SystemResourceSizeTotal: value = (long)process.PersonalMmHeapPagesCount * KPageTableBase.PageSize; break;
 
-                            case 17:
+                            case InfoType.SystemResourceSizeUsed:
                                 if (process.PersonalMmHeapPagesCount != 0)
                                 {
                                     value = process.MemoryManager.GetMmUsedPages() * KPageTableBase.PageSize;
@@ -1637,19 +1654,33 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
                                 break;
 
-                            case 18: value = (long)process.TitleId; break;
+                            case InfoType.ProgramId: value = (long)process.TitleId; break;
 
-                            case 20: value = (long)process.UserExceptionContextAddress; break;
+                            case InfoType.UserExceptionContextAddress: value = (long)process.UserExceptionContextAddress; break;
 
-                            case 21: value = (long)process.GetMemoryCapacityWithoutPersonalMmHeap(); break;
+                            case InfoType.TotalNonSystemMemorySize: value = (long)process.GetMemoryCapacityWithoutPersonalMmHeap(); break;
 
-                            case 22: value = (long)process.GetMemoryUsageWithoutPersonalMmHeap(); break;
+                            case InfoType.UsedNonSystemMemorySize: value = (long)process.GetMemoryUsageWithoutPersonalMmHeap(); break;
+
+                            case InfoType.IsApplication: value = process.IsApplication ? 1 : 0; break;
+
+                            case InfoType.FreeThreadCount:
+                                if (process.ResourceLimit != null)
+                                {
+                                    value = process.ResourceLimit.GetLimitValue(LimitableResource.Thread) - process.ResourceLimit.GetCurrentValue(LimitableResource.Thread);
+                                }
+                                else
+                                {
+                                    value = 0;
+                                }
+
+                                break;
                         }
 
                         break;
                     }
 
-                case 8:
+                case InfoType.DebuggerAttached:
                     {
                         if (handle != 0)
                         {
@@ -1666,7 +1697,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                         break;
                     }
 
-                case 9:
+                case InfoType.ResourceLimit:
                     {
                         if (handle != 0)
                         {
@@ -1698,7 +1729,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                         break;
                     }
 
-                case 10:
+                case InfoType.IdleTickCount:
                     {
                         if (handle != 0)
                         {
@@ -1717,7 +1748,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                         break;
                     }
 
-                case 11:
+                case InfoType.RandomEntropy:
                     {
                         if (handle != 0)
                         {
@@ -1736,7 +1767,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                         break;
                     }
 
-                case 0xf0000002u:
+                case InfoType.ThreadTickCount:
                     {
                         if (subId < -1 || subId > 3)
                         {
@@ -2117,7 +2148,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             }
             else
             {
-                KernelStatic.GetCurrentThread().Sleep(timeout);
+                KernelStatic.GetCurrentThread().Sleep(timeout + KTimeManager.DefaultTimeIncrementNanoseconds);
             }
         }
 
@@ -2458,6 +2489,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 }
             }
 
+            if (timeout > 0)
+            {
+                timeout += KTimeManager.DefaultTimeIncrementNanoseconds;
+            }
+
             KernelResult result = _context.Synchronization.WaitFor(syncObjs, timeout, out handleIndex);
 
             if (result == KernelResult.PortRemoteClosed)
@@ -2541,6 +2577,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             KProcess currentProcess = KernelStatic.GetCurrentProcess();
 
+            if (timeout > 0)
+            {
+                timeout += KTimeManager.DefaultTimeIncrementNanoseconds;
+            }
+
             return currentProcess.AddressArbiter.WaitProcessWideKeyAtomic(
                 mutexAddress,
                 condVarAddress,
@@ -2570,6 +2611,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             }
 
             KProcess currentProcess = KernelStatic.GetCurrentProcess();
+
+            if (timeout > 0)
+            {
+                timeout += KTimeManager.DefaultTimeIncrementNanoseconds;
+            }
 
             return type switch
             {
