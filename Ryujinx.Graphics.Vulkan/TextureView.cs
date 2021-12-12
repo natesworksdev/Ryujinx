@@ -76,13 +76,13 @@ namespace Ryujinx.Graphics.Vulkan
             }
             else if (info.Format == GAL.Format.R4G4B4A4Unorm)
             {
-                var tempR = swizzleR;
                 var tempG = swizzleG;
+                var tempB = swizzleB;
 
-                swizzleR = swizzleA;
-                swizzleG = swizzleB;
-                swizzleB = tempG;
-                swizzleA = tempR;
+                swizzleB = swizzleA;
+                swizzleG = swizzleR;
+                swizzleR = tempG;
+                swizzleA = tempB;
             }
 
             var componentMapping = new ComponentMapping(swizzleR, swizzleG, swizzleB, swizzleA);
