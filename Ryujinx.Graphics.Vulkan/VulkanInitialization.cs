@@ -39,8 +39,10 @@ namespace Ryujinx.Graphics.Vulkan
             "UNASSIGNED-CoreValidation-Shader-OutputNotConsumed",
             // TODO: Figure out if fixable
             "VUID-vkCmdDrawIndexed-None-04584",
-            // TODO: might be worth looking into making this happy to possibly optimize copies.
-            "UNASSIGNED-CoreValidation-DrawState-InvalidImageLayout"
+            // TODO: Might be worth looking into making this happy to possibly optimize copies.
+            "UNASSIGNED-CoreValidation-DrawState-InvalidImageLayout",
+            // TODO: Fix this, it's causing too much noise right now.
+            "VUID-VkSubpassDependency-srcSubpass-00867"
         };
 
         public static Instance CreateInstance(Vk api, GraphicsDebugLevel logLevel, string[] requiredExtensions, out ExtDebugReport debugReport, out DebugReportCallbackEXT debugReportCallback)
@@ -365,10 +367,17 @@ namespace Ryujinx.Graphics.Vulkan
                 NullDescriptor = true
             };
 
+            var featuresExtendedDynamicState = new PhysicalDeviceExtendedDynamicStateFeaturesEXT()
+            {
+                SType = StructureType.PhysicalDeviceExtendedDynamicStateFeaturesExt,
+                PNext = &featuresRobustness2,
+                ExtendedDynamicState = supportedExtensions.Contains(ExtExtendedDynamicState.ExtensionName)
+            };
+
             var featuresVk12 = new PhysicalDeviceVulkan12Features()
             {
                 SType = StructureType.PhysicalDeviceVulkan12Features,
-                PNext = &featuresRobustness2,
+                PNext = &featuresExtendedDynamicState,
                 DrawIndirectCount = supportedExtensions.Contains(KhrDrawIndirectCount.ExtensionName)
             };
 
