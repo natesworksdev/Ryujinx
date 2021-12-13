@@ -341,7 +341,7 @@ namespace Ryujinx.Graphics.Vulkan
         }
 
         public unsafe Auto<DisposablePipeline> CreateGraphicsPipeline(
-            Vk api,
+            VulkanGraphicsDevice gd,
             Device device,
             ShaderCollection program,
             PipelineCache cache,
@@ -481,9 +481,10 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (VulkanConfiguration.UseDynamicState)
                 {
-                    const int DynamicStates = 7;
+                    bool supportsExtDynamicState = gd.Capabilities.SupportsExtendedDynamicState;
+                    int dynamicStatesCount = supportsExtDynamicState ? 8 : 7;
 
-                    DynamicState* dynamicStates = stackalloc DynamicState[DynamicStates];
+                    DynamicState* dynamicStates = stackalloc DynamicState[dynamicStatesCount];
 
                     dynamicStates[0] = DynamicState.Viewport;
                     dynamicStates[1] = DynamicState.Scissor;
@@ -493,10 +494,15 @@ namespace Ryujinx.Graphics.Vulkan
                     dynamicStates[5] = DynamicState.StencilWriteMask;
                     dynamicStates[6] = DynamicState.StencilReference;
 
+                    if (supportsExtDynamicState)
+                    {
+                        dynamicStates[7] = DynamicState.VertexInputBindingStrideExt;
+                    }
+
                     var pipelineDynamicStateCreateInfo = new PipelineDynamicStateCreateInfo()
                     {
                         SType = StructureType.PipelineDynamicStateCreateInfo,
-                        DynamicStateCount = DynamicStates,
+                        DynamicStateCount = (uint)dynamicStatesCount,
                         PDynamicStates = dynamicStates
                     };
 
@@ -522,10 +528,10 @@ namespace Ryujinx.Graphics.Vulkan
                     BasePipelineIndex = -1
                 };
 
-                api.CreateGraphicsPipelines(device, cache, 1, &pipelineCreateInfo, null, &pipelineHandle).ThrowOnError();
+                gd.Api.CreateGraphicsPipelines(device, cache, 1, &pipelineCreateInfo, null, &pipelineHandle).ThrowOnError();
             }
 
-            pipeline = new Auto<DisposablePipeline>(new DisposablePipeline(api, device, pipelineHandle));
+            pipeline = new Auto<DisposablePipeline>(new DisposablePipeline(gd.Api, device, pipelineHandle));
 
             program.AddGraphicsPipeline(ref Internal, pipeline);
 
