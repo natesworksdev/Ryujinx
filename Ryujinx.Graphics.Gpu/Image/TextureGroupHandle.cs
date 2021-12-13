@@ -1,4 +1,5 @@
-﻿using Ryujinx.Cpu.Tracking;
+﻿using Ryujinx.Common.Logging;
+using Ryujinx.Cpu.Tracking;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -152,7 +153,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             if (!_syncActionRegistered)
             {
                 _modifiedSync = context.SyncNumber;
-                context.RegisterSyncAction(SyncAction);
+                context.RegisterSyncAction(SyncAction, true);
                 _syncActionRegistered = true;
             }
 
@@ -208,7 +209,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             long diff = (long)(context.SyncNumber - registeredSync);
             if (diff > 0)
             {
-                //Logger.Error?.PrintMsg(LogClass.Gpu, "Waiting for GPU");
                 context.Renderer.WaitSync(registeredSync);
 
                 if ((long)(_modifiedSync - registeredSync) > 0)
@@ -223,11 +223,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 // Data is not ready yet - flushing old data without waiting or removing modified flag.
                 return true;
-
-                // Data is not ready yet - the flush should be ignored.
-                // The action must be added again once the SyncAction is performed.
-                // Logger.Warning?.PrintMsg(LogClass.Gpu, "Skipping background flush");
-                //return false;
             }
 
             return true;
@@ -342,7 +337,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="fromHandle">The handle to copy from. If not provided, this method will copy from and clear the deferred copy instead</param>
         /// <returns>True if the copy was performed, false otherwise</returns>
-        public bool Copy(TextureGroupHandle fromHandle = null)
+        public bool Copy(GpuContext context, TextureGroupHandle fromHandle = null)
         {
             bool result = false;
             bool shouldCopy = false;
@@ -368,8 +363,10 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
             else
             {
+                // Copies happen directly when initializing a copy dependency.
                 // If dirty, do not copy. Its data no longer matters, and this handle should also be dirty.
-                shouldCopy = !fromHandle.CheckDirty();
+                // Also, only direct copy if the data in this handle is not already modified (can be set by copies from modified handles).
+                shouldCopy = !fromHandle.CheckDirty() && (fromHandle.Modified || !Modified);
             }
 
             if (shouldCopy)
@@ -389,8 +386,24 @@ namespace Ryujinx.Graphics.Gpu.Image
                     fromHandle._firstLevel,
                     _firstLevel);
 
-                Modified = true;
-                _group.RegisterAction(this);
+                if (fromHandle.Modified)
+                {
+                    Modified = true;
+
+                    if (!_syncActionRegistered)
+                    {
+                        _modifiedSync = context.SyncNumber;
+                        context.RegisterSyncAction(SyncAction, true);
+                        _syncActionRegistered = true;
+                    }
+
+                    if (!_actionRegistered)
+                    {
+                        _group.RegisterAction(this);
+
+                        _actionRegistered = true;
+                    }
+                }
 
                 result = true;
             }

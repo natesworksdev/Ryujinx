@@ -212,7 +212,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                         yCount,
                         dstLinear);
 
-                    if (target != null)
+                    if (target != null && !target.Group.HasIncompatibleOverlaps)
                     {
                         ReadOnlySpan<byte> data;
                         if (srcLinear)
@@ -245,6 +245,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                                 srcSpan);
                         }
 
+                        target.SynchronizeMemory();
                         target.SetData(data);
                         target.SignalModified();
 

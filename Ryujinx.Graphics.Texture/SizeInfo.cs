@@ -99,7 +99,8 @@ namespace Ryujinx.Graphics.Texture
             {
                 for (int i = 0; i < _mipOffsets.Length; i++)
                 {
-                    yield return new Region(_mipOffsets[i], SliceSizes[i]);
+                    int maxSize = TotalSize - _mipOffsets[i];
+                    yield return new Region(_mipOffsets[i], Math.Min(maxSize, SliceSizes[i]));
                 }
             }
             else

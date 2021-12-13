@@ -282,9 +282,10 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="hasLayerViews">True if the texture will have layer views</param>
         /// <param name="hasMipViews">True if the texture will have mip views</param>
-        public void InitializeGroup(bool hasLayerViews, bool hasMipViews)
+        /// <param name="incompatibleOverlaps">Groups that overlap with this one but are incompatible</param>
+        public void InitializeGroup(bool hasLayerViews, bool hasMipViews, List<TextureGroup> incompatibleOverlaps)
         {
-            Group = new TextureGroup(_context, _physicalMemory, this);
+            Group = new TextureGroup(_context, _physicalMemory, this, incompatibleOverlaps);
 
             Group.Initialize(ref _sizeInfo, hasLayerViews, hasMipViews);
         }
@@ -873,28 +874,25 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public void ExternalFlush(int offset, int size)
         {
-            _context.Renderer.BackgroundContextAction(() =>
+            if (TextureCompatibility.IsFormatHostIncompatible(Info, _context.Capabilities))
             {
-                if (TextureCompatibility.IsFormatHostIncompatible(Info, _context.Capabilities))
-                {
-                    return; // Flushing this format is not supported, as it may have been converted to another host format.
-                }
+                return; // Flushing this format is not supported, as it may have been converted to another host format.
+            }
 
-                if (Info.Target == Target.Texture2DMultisample ||
-                    Info.Target == Target.Texture2DMultisampleArray)
-                {
-                    return; // Flushing multisample textures is not supported, the host does not allow getting their data.
-                }
+            if (Info.Target == Target.Texture2DMultisample ||
+                Info.Target == Target.Texture2DMultisampleArray)
+            {
+                return; // Flushing multisample textures is not supported, the host does not allow getting their data.
+            }
 
-                ITexture texture = HostTexture;
-                if (ScaleFactor != 1f)
-                {
-                    // If needed, create a texture to flush back to host at 1x scale.
-                    texture = _flushHostTexture = GetScaledHostTexture(1f, _flushHostTexture);
-                }
+            ITexture texture = HostTexture;
+            if (ScaleFactor != 1f)
+            {
+                // If needed, create a texture to flush back to host at 1x scale.
+                texture = _flushHostTexture = GetScaledHostTexture(1f, _flushHostTexture);
+            }
 
-                FlushTextureDataRangeToGuest(false, offset, size, texture);
-            });
+            FlushTextureDataRangeToGuest(false, offset, size, texture);
         }
 
         /// <summary>
@@ -1540,11 +1538,14 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Called when the memory for this texture has been unmapped.
         /// Calls are from non-gpu threads.
         /// </summary>
-        public void Unmapped()
+        public void Unmapped(MultiRange unmapRange)
         {
             ChangedMapping = true;
 
-            // TODO: somehow tell our handles about this (remember we are on another thread!)
+            if (Group.Storage == this)
+            {
+                Group.ClearModified(unmapRange);
+            }
 
             RemoveFromPools(true);
         }
