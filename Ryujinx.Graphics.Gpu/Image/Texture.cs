@@ -84,6 +84,12 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public bool ChangedMapping { get; private set; }
 
+        /// <summary>
+        /// True if the data for this texture must always be flushed when an overlap appears.
+        /// This is useful if SetData is called directly on this texture, but the data is meant for a future texture.
+        /// </summary>
+        public bool AlwaysFlushOnOverlap { get; private set; }
+
         private int _depth;
         private int _layers;
         public int FirstLayer { get; private set; }
@@ -93,11 +99,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         private bool _dirty = true;
         private int _updateCount;
         private byte[] _currentData;
-
-        private bool _syncActionRegistered;
-        private bool _actionRemoved;
-        private ulong _modifiedSync;
-        private ulong _registeredSync;
 
         private bool _modifiedStale = true;
 
@@ -719,6 +720,8 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             Group.CheckDirty(this, true);
 
+            AlwaysFlushOnOverlap = true;
+
             HostTexture.SetData(data);
 
             _hasData = true;
@@ -850,6 +853,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Be aware that this is an expensive operation, avoid calling it unless strictly needed.
         /// This may cause data corruption if the memory is already being used for something else on the CPU side.
         /// </summary>
+        /// <param name="offset">The start offset of the range to flush data in bytes</param>
+        /// <param name="size">The size of the range to flush in bytes</param>
         /// <param name="tracked">Whether or not the flush triggers write tracking. If it doesn't, the texture will not be blacklisted for scaling either.</param>
         public void Flush(int offset, int size, bool tracked)
         {
@@ -872,6 +877,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// The host backend must ensure that we have shared access to the resource from this thread.
         /// This is used when flushing from memory access handlers.
         /// </summary>
+        /// <param name="offset">The start offset of the range to flush data in bytes</param>
+        /// <param name="size">The size of the range to flush in bytes</param>
         public void ExternalFlush(int offset, int size)
         {
             if (TextureCompatibility.IsFormatHostIncompatible(Info, _context.Capabilities))
@@ -896,7 +903,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Gets data from the host GPU, and flushes it to guest memory.
+        /// Gets data from the host GPU, and flushes it all to guest memory.
         /// </summary>
         /// <remarks>
         /// This method should be used to retrieve data that was modified by the host GPU.
@@ -930,7 +937,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Gets data from the host GPU, and flushes it to guest memory.
+        /// Gets data from the host GPU, and flushes it to a range of guest memory.
         /// </summary>
         /// <remarks>
         /// This method should be used to retrieve data that was modified by the host GPU.
@@ -938,6 +945,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// When possible, the data is written directly into guest memory, rather than copied.
         /// </remarks>
         /// <param name="tracked">True if writing the texture data is tracked, false otherwise</param>
+        /// <param name="offset">The start offset of the range to flush data in bytes</param>
+        /// <param name="size">The size of the range to flush in bytes</param>
         /// <param name="texture">The specific host texture to flush. Defaults to this texture</param>
         private void FlushTextureDataRangeToGuest(bool tracked, int offset, int size, ITexture texture = null)
         {
@@ -949,7 +958,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 MultiRange subrange = Range.GetSlice((ulong)offset, (ulong)size);
 
-                // todo: cache storage texture data
+                // TODO: Cache storage data, if possible?
 
                 ReadOnlySpan<byte> data = GetTextureDataFromGpu(Span<byte>.Empty, tracked, texture);
 

@@ -33,12 +33,12 @@ namespace Ryujinx.Graphics.Gpu.Image
         private ulong _modifiedSync;
 
         /// <summary>
-        /// Whether an action is currently registered or not;
+        /// Whether a tracking action is currently registered or not.
         /// </summary>
         private bool _actionRegistered;
 
         /// <summary>
-        /// f
+        /// Whether a sync action is currently registered or not.
         /// </summary>
         private bool _syncActionRegistered;
 
@@ -137,19 +137,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Signal that this handle has been modified to any existing dependencies, and set the modified flag.
+        /// Registers a sync action to happen for this handle, and an interim flush action on the tracking handle.
         /// </summary>
-        public void SignalModified(GpuContext context)
+        /// <param name="context">The GPU context to register a sync action on</param>
+        private void RegisterSync(GpuContext context)
         {
-            Modified = true;
-
-            // If this handle has any copy dependencies, notify the other handle that a copy needs to be performed.
-
-            foreach (TextureDependency dependency in Dependencies)
-            {
-                dependency.SignalModified();
-            }
-
             if (!_syncActionRegistered)
             {
                 _modifiedSync = context.SyncNumber;
@@ -163,6 +155,24 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 _actionRegistered = true;
             }
+        }
+
+        /// <summary>
+        /// Signal that this handle has been modified to any existing dependencies, and set the modified flag.
+        /// </summary>
+        /// <param name="context">The GPU context to register a sync action on</param>
+        public void SignalModified(GpuContext context)
+        {
+            Modified = true;
+
+            // If this handle has any copy dependencies, notify the other handle that a copy needs to be performed.
+
+            foreach (TextureDependency dependency in Dependencies)
+            {
+                dependency.SignalModified();
+            }
+
+            RegisterSync(context);
         }
 
         /// <summary>
@@ -193,42 +203,43 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
         }
 
-        public bool Sync(GpuContext context)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="context"></param>
+        public void Sync(GpuContext context)
         {
             _actionRegistered = false;
 
             bool needsSync = !context.IsGpuThread();
 
-            if (!needsSync)
+            if (needsSync)
             {
-                Modified = false;
-                return true;
-            }
+                ulong registeredSync = _registeredSync;
+                long diff = (long)(context.SyncNumber - registeredSync);
 
-            ulong registeredSync = _registeredSync;
-            long diff = (long)(context.SyncNumber - registeredSync);
-            if (diff > 0)
-            {
-                context.Renderer.WaitSync(registeredSync);
-
-                if ((long)(_modifiedSync - registeredSync) > 0)
+                if (diff > 0)
                 {
-                    // Flush the data in a previous state. Do not remove the modified flag - it will be removed to ignore following writes.
-                    return true;
-                }
+                    context.Renderer.WaitSync(registeredSync);
 
-                Modified = false;
+                    if ((long)(_modifiedSync - registeredSync) > 0)
+                    {
+                        // Flush the data in a previous state. Do not remove the modified flag - it will be removed to ignore following writes.
+                        return;
+                    }
+
+                    Modified = false;
+                }
+                
+                // If the difference is <= 0, no data is not ready yet. Flush any data we can without waiting or removing modified flag.
             }
             else
             {
-                // Data is not ready yet - flushing old data without waiting or removing modified flag.
-                return true;
+                Modified = false;
             }
-
-            return true;
         }
 
-        private void SyncAction()
+    private void SyncAction()
         {
             // Register region tracking for CPU? (again)
             _registeredSync = _modifiedSync;
@@ -390,19 +401,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 {
                     Modified = true;
 
-                    if (!_syncActionRegistered)
-                    {
-                        _modifiedSync = context.SyncNumber;
-                        context.RegisterSyncAction(SyncAction, true);
-                        _syncActionRegistered = true;
-                    }
-
-                    if (!_actionRegistered)
-                    {
-                        _group.RegisterAction(this);
-
-                        _actionRegistered = true;
-                    }
+                    RegisterSync(context);
                 }
 
                 result = true;

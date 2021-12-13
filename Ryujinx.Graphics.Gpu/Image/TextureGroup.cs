@@ -5,6 +5,7 @@ using Ryujinx.Graphics.Texture;
 using Ryujinx.Memory.Range;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Graphics.Gpu.Image
 {
@@ -29,6 +30,9 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public bool HasCopyDependencies { get; set; }
 
+        /// <summary>
+        /// Indicates if this texture has any incompatible overlaps alive.
+        /// </summary>
         public bool HasIncompatibleOverlaps => _incompatibleOverlaps.Count > 0;
 
         private readonly GpuContext _context;
@@ -52,9 +56,10 @@ namespace Ryujinx.Graphics.Gpu.Image
         private bool[] _loadNeeded;
 
         /// <summary>
-        /// Other texture groups that have incompatible overlaps.
+        /// Other texture groups that have incompatible overlaps with this one.
         /// </summary>
         private List<TextureGroup> _incompatibleOverlaps;
+        private bool _incompatibleOverlapsDirty = true;
 
         /// <summary>
         /// Create a new texture group.
@@ -77,6 +82,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             foreach (TextureGroup overlap in incompatibleOverlaps)
             {
                 overlap._incompatibleOverlaps.Add(this);
+                overlap._incompatibleOverlapsDirty = true;
             }
         }
 
@@ -271,9 +277,10 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Flush gpu modified ranges for a given texture.
+        /// Flush modified ranges for a given texture.
         /// </summary>
         /// <param name="texture">The texture being used</param>
+        /// <param name="tracked">True if the flush writes should be tracked, false otherwise</param>
         public void FlushModified(Texture texture, bool tracked)
         {
             EvaluateRelevantHandles(texture, (baseHandle, regionCount, split) =>
@@ -309,15 +316,32 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Clears competing modified flags for all incompatible ranges, if they have possibly been modified.
+        /// </summary>
+        /// <param name="texture">The texture that has been modified</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void ClearIncompatibleOverlaps(Texture texture)
+        {
+            if (_incompatibleOverlapsDirty)
+            {
+                foreach (TextureGroup incompatible in _incompatibleOverlaps)
+                {
+                    incompatible.ClearModified(texture.Range);
+
+                    incompatible._incompatibleOverlapsDirty = true;
+                }
+
+                _incompatibleOverlapsDirty = false;
+            }
+        }
+
+        /// <summary>
         /// Signal that a texture in the group has been modified by the GPU.
         /// </summary>
         /// <param name="texture">The texture that has been modified</param>
         public void SignalModified(Texture texture)
         {
-            foreach (TextureGroup incompatible in _incompatibleOverlaps)
-            {
-                incompatible.ClearModified(texture.Range);
-            }
+            ClearIncompatibleOverlaps(texture);
 
             EvaluateRelevantHandles(texture, (baseHandle, regionCount, split) =>
             {
@@ -337,10 +361,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="bound">True if this texture is being bound, false if unbound</param>
         public void SignalModifying(Texture texture, bool bound)
         {
-            foreach (TextureGroup incompatible in _incompatibleOverlaps)
-            {
-                incompatible.ClearModified(texture.Range);
-            }
+            ClearIncompatibleOverlaps(texture);
 
             EvaluateRelevantHandles(texture, (baseHandle, regionCount, split) =>
             {
@@ -825,11 +846,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             foreach (TextureGroup incompatible in other._incompatibleOverlaps)
             {
-                if (!_incompatibleOverlaps.Contains(incompatible))
-                {
-                    _incompatibleOverlaps.Add(incompatible);
-                    incompatible._incompatibleOverlaps.Add(this);
-                }
+                RegisterIncompatibleOverlap(incompatible);
 
                 incompatible._incompatibleOverlaps.Remove(other);
             }
@@ -1036,6 +1053,10 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
         }
 
+        /// <summary>
+        /// Registers another texture group as an incompatible overlap, if not already registered.
+        /// </summary>
+        /// <param name="other">The texture group to add to the incompatible overlaps list</param>
         public void RegisterIncompatibleOverlap(TextureGroup other)
         {
             if (!_incompatibleOverlaps.Contains(other))
@@ -1043,8 +1064,16 @@ namespace Ryujinx.Graphics.Gpu.Image
                 _incompatibleOverlaps.Add(other);
                 other._incompatibleOverlaps.Add(this);
             }
+
+            other._incompatibleOverlapsDirty = true;
+            _incompatibleOverlapsDirty = true;
         }
 
+        /// <summary>
+        /// Clear modified flags in the given range.
+        /// This will stop any GPU written data from flushing or copying to dependent textures.
+        /// </summary>
+        /// <param name="range">The range to clear modified flags in</param>
         public void ClearModified(MultiRange range)
         {
             TextureGroupHandle[] handles = _handles;
@@ -1098,10 +1127,9 @@ namespace Ryujinx.Graphics.Gpu.Image
                 return;
             }
 
-
             _context.Renderer.BackgroundContextAction(() =>
             {
-                bool shouldFlush = handle.Sync(_context);
+                handle.Sync(_context);
 
                 Storage.SignalModifiedDirty();
 
@@ -1113,10 +1141,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     }
                 }
 
-                if (shouldFlush)
-                {
-                    Storage.ExternalFlush(handle.Offset, handle.Size);
-                }
+                Storage.ExternalFlush(handle.Offset, handle.Size);
             });
         }
 

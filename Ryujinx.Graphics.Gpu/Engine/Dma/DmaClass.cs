@@ -212,7 +212,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                         yCount,
                         dstLinear);
 
-                    if (target != null && !target.Group.HasIncompatibleOverlaps)
+                    if (target != null)
                     {
                         ReadOnlySpan<byte> data;
                         if (srcLinear)

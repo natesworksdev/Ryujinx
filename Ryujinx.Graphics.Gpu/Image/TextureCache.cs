@@ -692,7 +692,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                             bool viewCompatibleChild = overlap.HasViewCompatibleChild(texture);
 
-                            bool flush = overlapInCache && !modified && !texture.Range.Contains(overlap.Range) && viewCompatibleChild;
+                            bool flush = overlapInCache && !modified && (overlap.AlwaysFlushOnOverlap || (!texture.Range.Contains(overlap.Range) && viewCompatibleChild));
 
                             setData |= modified || flush;
 
@@ -854,14 +854,16 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
 
             int addressMatches = _textures.FindOverlaps(address, ref _textureOverlaps);
+            Texture textureMatch = null;
 
             for (int i = 0; i < addressMatches; i++)
             {
                 Texture texture = _textureOverlaps[i];
                 FormatInfo format = texture.Info.FormatInfo;
 
-                if (texture.Info.DepthOrLayers > 1)
+                if (texture.Info.DepthOrLayers > 1 || texture.Info.Levels > 1 || texture.Info.FormatInfo.IsCompressed)
                 {
+                    // Don't support direct buffer copies to anything that isn't a single 2D image, uncompressed.
                     continue;
                 }
 
@@ -889,11 +891,18 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 if (match)
                 {
-                    return texture;
+                    if (textureMatch == null)
+                    {
+                        textureMatch = texture;
+                    }
+                    else if (texture.Group != textureMatch.Group)
+                    {
+                        return null; // It's ambiguous which texture should match between multiple choices, so leave it up to the slow path.
+                    }
                 }
             }
 
-            return null;
+            return textureMatch;
         }
 
         /// <summary>
