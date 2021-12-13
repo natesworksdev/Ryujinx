@@ -294,7 +294,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                     if (group.Modified)
                     {
-                        if (endOffset != group.Offset)
+                        if (endOffset < group.Offset)
                         {
                             if (endOffset > offset)
                             {
