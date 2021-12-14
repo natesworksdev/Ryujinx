@@ -30,7 +30,8 @@ namespace Ryujinx.Ui.Windows
         private readonly TimeZoneContentManager _timeZoneContentManager;
         private readonly HashSet<string>        _validTzRegions;
 
-        private long _systemTimeOffset;
+        private long  _systemTimeOffset;
+        private float _previousVolumeLevel;
 
 #pragma warning disable CS0649, IDE0044
         [GUI] CheckButton     _errorLogToggle;
@@ -366,12 +367,14 @@ namespace Ryujinx.Ui.Windows
             _audioBackendBox.Add(_audioBackendSelect);
             _audioBackendSelect.Show();
 
+            _previousVolumeLevel = ConfigurationState.Instance.System.AudioVolume;
             _audioVolumeLabel  = new Label("Volume: ");
             _audioVolumeSlider = new Scale(Orientation.Horizontal, 0, 100, 1);
             _audioVolumeLabel.MarginStart   = 10;
             _audioVolumeSlider.ValuePos     = PositionType.Right;
             _audioVolumeSlider.WidthRequest = 200;
-            _audioVolumeSlider.Value        = ConfigurationState.Instance.System.AudioVolume * 100;
+
+            _audioVolumeSlider.Value = _previousVolumeLevel * 100;
             _audioVolumeSlider.ValueChanged += VolumeSlider_OnChange;
             _audioBackendBox.Add(_audioVolumeLabel);
             _audioBackendBox.Add(_audioVolumeSlider);
@@ -513,6 +516,8 @@ namespace Ryujinx.Ui.Windows
             ConfigurationState.Instance.Graphics.ResScale.Value                = int.Parse(_resScaleCombo.ActiveId);
             ConfigurationState.Instance.Graphics.ResScaleCustom.Value          = resScaleCustom;
             ConfigurationState.Instance.System.AudioVolume.Value               = (float)_audioVolumeSlider.Value / 100.0f;
+
+            _previousVolumeLevel = ConfigurationState.Instance.System.AudioVolume.Value;
 
             if (_audioBackendSelect.GetActiveIter(out TreeIter activeIter))
             {
@@ -684,6 +689,7 @@ namespace Ryujinx.Ui.Windows
 
         private void CloseToggle_Activated(object sender, EventArgs args)
         {
+            ConfigurationState.Instance.System.AudioVolume.Value = _previousVolumeLevel;
             Dispose();
         }
     }
