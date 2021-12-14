@@ -749,14 +749,13 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
         private void InterruptHandler(object sender, EventArgs e)
         {
-            KernelContext kernelContext = KernelStatic.GetContext();
             KThread currentThread = KernelStatic.GetCurrentThread();
 
             if (currentThread.Owner != null &&
                 currentThread.GetUserDisableCount() != 0 &&
                 currentThread.Owner.PinnedThreads[currentThread.CurrentCore] == null)
             {
-                kernelContext.CriticalSection.Enter();
+                KernelContext.CriticalSection.Enter();
 
                 currentThread.Owner.PinThread(currentThread);
 
@@ -767,7 +766,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                     KernelContext.Schedulers[currentThread.CurrentCore].Schedule();
                 }
 
-                kernelContext.CriticalSection.Leave();
+                KernelContext.CriticalSection.Leave();
             }
             else if (currentThread.IsSchedulable)
             {
