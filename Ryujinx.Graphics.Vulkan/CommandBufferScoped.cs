@@ -31,6 +31,11 @@ namespace Ryujinx.Graphics.Vulkan
             _pool.AddDependency(CommandBufferIndex, dependencyCbs);
         }
 
+        public bool HasWaitable(MultiFenceHolder waitable)
+        {
+            return _pool.HasWaitable(CommandBufferIndex, waitable);
+        }
+
         public FenceHolder GetFence()
         {
             return _pool.GetFence(CommandBufferIndex);

@@ -49,6 +49,7 @@ namespace Ryujinx.Graphics.Vulkan
         internal CommandBufferPool CommandBufferPool { get; private set; }
         internal DescriptorSetManager DescriptorSetManager { get; private set; }
         internal PipelineLayoutCache PipelineLayoutCache { get; private set; }
+        internal BackgroundResources BackgroundResources { get; private set; }
 
         internal BufferManager BufferManager { get; private set; }
 
@@ -170,6 +171,8 @@ namespace Ryujinx.Graphics.Vulkan
 
             PipelineLayoutCache = new PipelineLayoutCache();
 
+            BackgroundResources = new BackgroundResources(this, _device);
+
             BufferManager = new BufferManager(this, _physicalDevice, _device);
 
             _syncManager = new SyncManager(this, _device);
@@ -194,7 +197,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public BufferHandle CreateBuffer(int size)
         {
-            return BufferManager.CreateWithHandle(this, size);
+            return BufferManager.CreateWithHandle(this, size, true);
         }
 
         public IProgram CreateProgram(IShader[] shaders, TransformFeedbackDescriptor[] transformFeedbackDescriptors)
@@ -366,6 +369,7 @@ namespace Ryujinx.Graphics.Vulkan
         public unsafe void Dispose()
         {
             CommandBufferPool.Dispose();
+            BackgroundResources.Dispose();
             _counters.Dispose();
             _window.Dispose();
             HelperShader.Dispose();
