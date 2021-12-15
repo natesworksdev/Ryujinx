@@ -237,12 +237,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 lock (_gd.BackgroundQueueLock)
                 {
-                    using var cbp = new CommandBufferPool(
-                        _gd.Api,
-                        _device,
-                        _gd.BackgroundQueue,
-                        _gd.QueueFamilyIndex,
-                        isLight: true);
+                    var cbp = _gd.BackgroundResources.Get().GetPool();
 
                     using var cbs = cbp.Rent();
 
@@ -426,8 +421,8 @@ namespace Ryujinx.Graphics.Vulkan
                     dstSize += dstTemp.Info.GetMipSize2D(l);
                 }
 
-                using var srcTempBuffer = gd.BufferManager.Create(gd, srcSize);
-                using var dstTempBuffer = gd.BufferManager.Create(gd, dstSize);
+                using var srcTempBuffer = gd.BufferManager.Create(gd, srcSize, deviceLocal: true);
+                using var dstTempBuffer = gd.BufferManager.Create(gd, dstSize, deviceLocal: true);
 
                 src.Storage.CopyFromOrToBuffer(
                     cbs.CommandBuffer,
@@ -669,30 +664,25 @@ namespace Ryujinx.Graphics.Vulkan
 
             bufferHolder.WaitForFences();
             byte[] bitmap = new byte[size];
-            GetDataFromBuffer(bufferHolder.GetDataStorage(0, size)).CopyTo(bitmap);
+            GetDataFromBuffer(bufferHolder.GetDataStorage(0, size), size, Span<byte>.Empty).CopyTo(bitmap);
             return bitmap;
         }
 
         public ReadOnlySpan<byte> GetData()
         {
+            BackgroundResource resources = _gd.BackgroundResources.Get();
+
             if (_gd.CommandBufferPool.OwnedByCurrentThread)
             {
                 _gd.FlushAllCommands();
 
-                return GetData(_gd.CommandBufferPool);
+                return GetData(_gd.CommandBufferPool, resources.GetFlushBuffer());
             }
             else if (_gd.BackgroundQueue.Handle != 0)
             {
                 lock (_gd.BackgroundQueueLock)
                 {
-                    using var cbp = new CommandBufferPool(
-                        _gd.Api,
-                        _device,
-                        _gd.BackgroundQueue,
-                        _gd.QueueFamilyIndex,
-                        isLight: true);
-
-                    return GetData(cbp);
+                    return GetData(resources.GetPool(), resources.GetFlushBuffer());
                 }
             }
             else
@@ -709,46 +699,19 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        private ReadOnlySpan<byte> GetData(CommandBufferPool cbp)
+        private ReadOnlySpan<byte> GetData(CommandBufferPool cbp, PersistentFlushBuffer flushBuffer)
         {
-            int size;
-            var bufferHolder = _flushStorage;
+            int size = 0;
 
-            if (bufferHolder == null)
+            for (int level = 0; level < Info.Levels; level++)
             {
-                size = 0;
-
-                for (int level = 0; level < Info.Levels; level++)
-                {
-                    size += Info.GetMipSize(level);
-                }
-
-                size = GetBufferDataLength(size);
-
-                bufferHolder = _gd.BufferManager.Create(_gd, size);
-
-                var existingStorage = Interlocked.CompareExchange(ref _flushStorage, bufferHolder, null);
-                if (existingStorage != null)
-                {
-                    bufferHolder.Dispose();
-                    bufferHolder = existingStorage;
-                }
-            }
-            else
-            {
-                size = bufferHolder.Size;
+                size += Info.GetMipSize(level);
             }
 
-            using (var cbs = cbp.Rent())
-            {
-                var buffer = bufferHolder.GetBuffer(cbs.CommandBuffer).Get(cbs).Value;
-                var image = GetImage().Get(cbs).Value;
+            size = GetBufferDataLength(size);
 
-                CopyFromOrToBuffer(cbs.CommandBuffer, buffer, image, size, true, 0, 0, Info.GetLayers(), Info.Levels, singleSlice: false);
-            }
-
-            bufferHolder.WaitForFences();
-            return GetDataFromBuffer(bufferHolder.GetDataStorage(0, size));
+            Span<byte> result = flushBuffer.GetTextureData(cbp, this, size);
+            return GetDataFromBuffer(result, size, result);
         }
 
         public void SetData(ReadOnlySpan<byte> data)
@@ -767,12 +730,24 @@ namespace Ryujinx.Graphics.Vulkan
 
             using var bufferHolder = _gd.BufferManager.Create(_gd, bufferDataLength);
 
-            using var cbs = _gd.CommandBufferPool.Rent();
+            Auto<DisposableImage> imageAuto = GetImage();
+
+            // Load texture data inline if the texture has been used on the current command buffer.
+
+            bool loadInline = Storage.HasCommandBufferDependency(_gd.PipelineInternal.CurrentCommandBuffer);
+
+            var cbs = loadInline ? _gd.PipelineInternal.CurrentCommandBuffer : _gd.PipelineInternal.GetPreloadCommandBuffer();
+
+            if (loadInline)
+            {
+                _gd.PipelineInternal.EndRenderPass();
+                Common.Logging.Logger.Error?.PrintMsg(Common.Logging.LogClass.Gpu, "Loaded inline!");
+            }
 
             CopyDataToBuffer(bufferHolder.GetDataStorage(0, bufferDataLength), data);
 
             var buffer = bufferHolder.GetBuffer(cbs.CommandBuffer).Get(cbs).Value;
-            var image = GetImage().Get(cbs).Value;
+            var image = imageAuto.Get(cbs).Value;
 
             CopyFromOrToBuffer(cbs.CommandBuffer, buffer, image, bufferDataLength, false, layer, level, layers, levels, singleSlice);
         }
@@ -808,11 +783,15 @@ namespace Ryujinx.Graphics.Vulkan
             input.CopyTo(storage);
         }
 
-        private ReadOnlySpan<byte> GetDataFromBuffer(ReadOnlySpan<byte> storage)
+        private ReadOnlySpan<byte> GetDataFromBuffer(ReadOnlySpan<byte> storage, int size, Span<byte> output)
         {
             if (NeedsD24S8Conversion())
             {
-                byte[] output = new byte[GetBufferDataLength(storage.Length)];
+                if (output.IsEmpty)
+                {
+                    output = new byte[GetBufferDataLength(size)];
+                }
+
                 FormatConverter.ConvertD32FS8ToD24S8(output, storage);
                 return output;
             }
@@ -825,7 +804,7 @@ namespace Ryujinx.Graphics.Vulkan
             return Info.Format == GAL.Format.D24UnormS8Uint && VkFormat == VkFormat.D32SfloatS8Uint;
         }
 
-        private void CopyFromOrToBuffer(
+        public void CopyFromOrToBuffer(
             CommandBuffer commandBuffer,
             VkBuffer buffer,
             Image image,

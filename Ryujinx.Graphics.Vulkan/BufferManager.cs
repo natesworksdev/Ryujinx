@@ -15,6 +15,14 @@ namespace Ryujinx.Graphics.Vulkan
             MemoryPropertyFlags.MemoryPropertyHostCoherentBit |
             MemoryPropertyFlags.MemoryPropertyHostCachedBit;
 
+        private const MemoryPropertyFlags DeviceLocalBufferMemoryFlags =
+            MemoryPropertyFlags.MemoryPropertyDeviceLocalBit;
+
+        private const MemoryPropertyFlags FlushableDeviceLocalBufferMemoryFlags =
+            MemoryPropertyFlags.MemoryPropertyHostVisibleBit |
+            MemoryPropertyFlags.MemoryPropertyHostCoherentBit |
+            MemoryPropertyFlags.MemoryPropertyDeviceLocalBit;
+
         private const BufferUsageFlags DefaultBufferUsageFlags =
             BufferUsageFlags.BufferUsageTransferSrcBit |
             BufferUsageFlags.BufferUsageTransferDstBit |
@@ -41,9 +49,9 @@ namespace Ryujinx.Graphics.Vulkan
             StagingBuffer = new StagingBuffer(gd, this);
         }
 
-        public BufferHandle CreateWithHandle(VulkanGraphicsDevice gd, int size)
+        public BufferHandle CreateWithHandle(VulkanGraphicsDevice gd, int size, bool deviceLocal)
         {
-            var holder = Create(gd, size);
+            var holder = Create(gd, size, deviceLocal: deviceLocal);
             if (holder == null)
             {
                 return BufferHandle.Null;
@@ -58,7 +66,7 @@ namespace Ryujinx.Graphics.Vulkan
             return handle;
         }
 
-        public unsafe BufferHolder Create(VulkanGraphicsDevice gd, int size, bool forConditionalRendering = false)
+        public unsafe BufferHolder Create(VulkanGraphicsDevice gd, int size, bool forConditionalRendering = false, bool deviceLocal = false)
         {
             var usage = DefaultBufferUsageFlags;
 
@@ -81,7 +89,10 @@ namespace Ryujinx.Graphics.Vulkan
 
             gd.Api.CreateBuffer(_device, in bufferCreateInfo, null, out var buffer).ThrowOnError();
             gd.Api.GetBufferMemoryRequirements(_device, buffer, out var requirements);
-            var allocation = gd.MemoryAllocator.AllocateDeviceMemory(_physicalDevice, requirements, DefaultBufferMemoryFlags);
+
+            var allocateFlags = deviceLocal ? DeviceLocalBufferMemoryFlags : DefaultBufferMemoryFlags;
+
+            var allocation = gd.MemoryAllocator.AllocateDeviceMemory(_physicalDevice, requirements, allocateFlags);
 
             if (allocation.Memory.Handle == 0UL)
             {
