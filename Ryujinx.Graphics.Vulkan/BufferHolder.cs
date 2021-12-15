@@ -129,7 +129,32 @@ namespace Ryujinx.Graphics.Vulkan
 
         public unsafe ReadOnlySpan<byte> GetData(int offset, int size)
         {
-            return GetDataStorage(offset, size);
+            if (_map != IntPtr.Zero)
+            {
+                return GetDataStorage(offset, size);
+            }
+            else
+            {
+                BackgroundResource resource = _gd.BackgroundResources.Get();
+
+                if (_gd.CommandBufferPool.OwnedByCurrentThread)
+                {
+                    _gd.FlushAllCommands();
+
+                    return resource.GetFlushBuffer().GetBufferData(_gd.CommandBufferPool, this, offset, size);
+                }
+                else if (_gd.BackgroundQueue.Handle != 0)
+                {
+                    lock (_gd.BackgroundQueueLock)
+                    {
+                        return resource.GetFlushBuffer().GetBufferData(resource.GetPool(), this, offset, size);
+                    }
+                }
+                else
+                {
+                    return new byte[size];
+                }
+            }
         }
 
         public unsafe Span<byte> GetDataStorage(int offset, int size)
@@ -152,28 +177,37 @@ namespace Ryujinx.Graphics.Vulkan
                 return;
             }
 
-            bool needsFlush = _gd.CommandBufferPool.HasWaitableOnRentedCommandBuffer(_waitable, offset, dataSize);
-            bool needsWait = needsFlush || MayWait(offset, dataSize);
+            if (_map != IntPtr.Zero)
+            {
+                // If persistently mapped, set the data directly if the buffer is not currently in use.
+                //bool needsFlush = _gd.CommandBufferPool.HasWaitableOnRentedCommandBuffer(_waitable, offset, dataSize);
+                bool needsFlush = _buffer.HasRentedCommandBufferDependency(_gd.CommandBufferPool);// (_waitable, offset, dataSize);
+
+                if (!needsFlush)
+                {
+                    WaitForFences(offset, dataSize);
+
+                    data.Slice(0, dataSize).CopyTo(new Span<byte>((void*)(_map + offset), dataSize));
+
+                    return;
+                }
+            }
+
+            if (cbs != null && !_buffer.HasCommandBufferDependency(cbs.Value))
+            {
+                // If the buffer hasn't been used on the command buffer yet, try to preload the data.
+                // This avoids ending and beginning render passes on each buffer data upload.
+
+                cbs = _gd.PipelineInternal.GetPreloadCommandBuffer();
+                endRenderPass = null;
+            }
 
             if (cbs == null ||
-                !needsWait ||
                 !VulkanConfiguration.UseFastBufferUpdates ||
+                data.Length > MaxUpdateBufferSize ||
                 !TryPushData(cbs.Value, endRenderPass, offset, data))
             {
-                // Some pending command might access the buffer,
-                // so we need to ensure they are all submited to the GPU before waiting.
-                // The flush below forces the submission of all pending commands.
-                if (needsFlush)
-                {
-                    _gd.FlushAllCommands();
-                }
-
-                WaitForFences(offset, dataSize);
-
-                if (_map != IntPtr.Zero)
-                {
-                    data.Slice(0, dataSize).CopyTo(new Span<byte>((void*)(_map + offset), dataSize));
-                }
+                _gd.BufferManager.StagingBuffer.PushData(_gd.CommandBufferPool, cbs, endRenderPass, this, offset, data);
             }
         }
 
@@ -188,6 +222,10 @@ namespace Ryujinx.Graphics.Vulkan
             if (_map != IntPtr.Zero)
             {
                 data.Slice(0, dataSize).CopyTo(new Span<byte>((void*)(_map + offset), dataSize));
+            }
+            else
+            {
+                _gd.BufferManager.StagingBuffer.PushData(_gd.CommandBufferPool, null, null, this, offset, data);
             }
         }
 
@@ -206,7 +244,7 @@ namespace Ryujinx.Graphics.Vulkan
                 return false;
             }
 
-            endRenderPass();
+            endRenderPass?.Invoke();
 
             var dstBuffer = GetBuffer(cbs.CommandBuffer, true).Get(cbs, dstOffset, data.Length).Value;
 

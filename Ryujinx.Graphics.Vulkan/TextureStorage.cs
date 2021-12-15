@@ -228,9 +228,41 @@ namespace Ryujinx.Graphics.Vulkan
             return _image;
         }
 
+        public bool HasCommandBufferDependency(CommandBufferScoped cbs)
+        {
+            if (_foreignAllocationAuto != null)
+            {
+                return _foreignAllocationAuto.HasCommandBufferDependency(cbs);
+            }
+            else if (_allocationAuto != null)
+            {
+                return _allocationAuto.HasCommandBufferDependency(cbs);
+            }
+
+            return false;
+        }
+
         private unsafe void InitialTransition(ImageLayout srcLayout, ImageLayout dstLayout)
         {
-            using var cbs = _gd.CommandBufferPool.Rent();
+            CommandBufferScoped cbs;
+            bool useTempCbs = !_gd.CommandBufferPool.OwnedByCurrentThread;
+
+            if (useTempCbs)
+            {
+                cbs = _gd.BackgroundResources.Get().GetPool().Rent();
+            }
+            else
+            {
+                if (_gd.PipelineInternal != null)
+                {
+                    cbs = _gd.PipelineInternal.GetPreloadCommandBuffer();
+                }
+                else
+                {
+                    cbs = _gd.CommandBufferPool.Rent();
+                    useTempCbs = true;
+                }
+            }
 
             var aspectFlags = _info.Format.ConvertAspectFlags();
 
@@ -260,6 +292,11 @@ namespace Ryujinx.Graphics.Vulkan
                 null,
                 1,
                 barrier);
+
+            if (useTempCbs)
+            {
+                cbs.Dispose();
+            }
         }
 
         private static SampleCountFlags ConvertToSampleCountFlags(uint samples)

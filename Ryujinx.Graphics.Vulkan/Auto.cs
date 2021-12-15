@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading;
 
 namespace Ryujinx.Graphics.Vulkan
 {
@@ -66,6 +67,16 @@ namespace Ryujinx.Graphics.Vulkan
             return _value;
         }
 
+        public bool HasCommandBufferDependency(CommandBufferScoped cbs)
+        {
+            return _cbOwnership.IsSet(cbs.CommandBufferIndex);
+        }
+
+        public bool HasRentedCommandBufferDependency(CommandBufferPool cbp)
+        {
+            return _cbOwnership.AnySet();
+        }
+
         public void AddCommandBufferDependencies(CommandBufferScoped cbs)
         {
             // We don't want to add a reference to this object to the command buffer
@@ -94,11 +105,11 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void IncrementReferenceCount()
         {
-            if (_referenceCount == 0)
+            if (Interlocked.Increment(ref _referenceCount) == 1)
             {
+                Interlocked.Decrement(ref _referenceCount);
                 throw new Exception("Attempted to inc ref of dead object.");
             }
-            _referenceCount++;
         }
 
         public void DecrementReferenceCount(int cbIndex)
@@ -109,7 +120,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void DecrementReferenceCount()
         {
-            if (--_referenceCount == 0)
+            if (Interlocked.Decrement(ref _referenceCount) == 0)
             {
                 _value.Dispose();
                 _value = default;
