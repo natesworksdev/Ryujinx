@@ -37,25 +37,55 @@ namespace Ryujinx.Graphics.Vulkan
             _freeSize = BufferSize;
         }
 
-        public unsafe bool TryPushData(CommandBufferScoped cbs, Action endRenderPass, BufferHolder dst, int dstOffset, ReadOnlySpan<byte> data)
+        public unsafe void PushData(CommandBufferPool cbp, CommandBufferScoped? cbs, Action endRenderPass, BufferHolder dst, int dstOffset, ReadOnlySpan<byte> data)
         {
-            if (data.Length > BufferSize)
-            {
-                return false;
-            }
+            bool isRender = cbs != null;
+            CommandBufferScoped scoped = cbs ?? cbp.Rent();
 
-            if (_freeSize < data.Length)
-            {
-                FreeCompleted();
+            // Must push all data to the buffer. If it can't fit, split it up.
 
+            endRenderPass?.Invoke();
+
+            while (data.Length > 0)
+            {
                 if (_freeSize < data.Length)
                 {
-                    return false;
+                    FreeCompleted();
                 }
+
+                while (_freeSize == 0)
+                {
+                    if (!WaitFreeCompleted(cbp))
+                    {
+                        if (isRender)
+                        {
+                            _gd.FlushAllCommands();
+                            scoped = cbp.Rent();
+                            isRender = false;
+                        }
+                        else
+                        {
+                            scoped = cbp.ReturnAndRent(scoped);
+                        }
+                    }
+                }
+
+                int chunkSize = Math.Min(_freeSize, data.Length);
+
+                PushDataImpl(scoped, dst, dstOffset, data.Slice(0, chunkSize));
+
+                dstOffset += chunkSize;
+                data = data.Slice(chunkSize);
             }
 
-            endRenderPass();
+            if (!isRender)
+            {
+                scoped.Dispose();
+            }
+        }
 
+        private void PushDataImpl(CommandBufferScoped cbs, BufferHolder dst, int dstOffset, ReadOnlySpan<byte> data)
+        {
             var srcBuffer = _buffer.GetBuffer();
             var dstBuffer = dst.GetBuffer();
 
@@ -81,14 +111,61 @@ namespace Ryujinx.Graphics.Vulkan
             Debug.Assert(_freeSize >= 0);
 
             _pendingCopies.Enqueue(new PendingCopy(cbs.GetFence(), data.Length));
+        }
+
+        public unsafe bool TryPushData(CommandBufferScoped cbs, Action endRenderPass, BufferHolder dst, int dstOffset, ReadOnlySpan<byte> data)
+        {
+            if (data.Length > BufferSize)
+            {
+                return false;
+            }
+
+            if (_freeSize < data.Length)
+            {
+                FreeCompleted();
+
+                if (_freeSize < data.Length)
+                {
+                    return false;
+                }
+            }
+
+            endRenderPass();
+
+            PushDataImpl(cbs, dst, dstOffset, data);
+
+            return true;
+        }
+
+        private bool WaitFreeCompleted(CommandBufferPool cbp)
+        {
+            if (_pendingCopies.TryPeek(out var pc))
+            {
+                if (!pc.Fence.IsSignaled())
+                {
+                    if (cbp.IsFenceOnRentedCommandBuffer(pc.Fence))
+                    {
+                        return false;
+                    }
+
+                    pc.Fence.Wait();
+                }
+
+                var dequeued = _pendingCopies.Dequeue();
+                Debug.Assert(dequeued.Fence == pc.Fence);
+                _freeSize += pc.Size;
+                pc.Fence.Put();
+            }
 
             return true;
         }
 
         private void FreeCompleted()
         {
-            while (_pendingCopies.TryPeek(out var pc) && pc.Fence.IsSignaled())
+            FenceHolder signalledFence = null;
+            while (_pendingCopies.TryPeek(out var pc) && (pc.Fence == signalledFence || pc.Fence.IsSignaled()))
             {
+                signalledFence = pc.Fence; // Already checked - don't need to do it again.
                 var dequeued = _pendingCopies.Dequeue();
                 Debug.Assert(dequeued.Fence == pc.Fence);
                 _freeSize += pc.Size;

@@ -12,6 +12,29 @@
             _masks = new long[(count + IntMask) / IntSize];
         }
 
+        public bool AnySet()
+        {
+            for (int i = 0; i < _masks.Length; i++)
+            {
+                if (_masks[i] != 0)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public bool IsSet(int bit)
+        {
+            int wordIndex = bit / IntSize;
+            int wordBit = bit & IntMask;
+
+            long wordMask = 1L << wordBit;
+
+            return (_masks[wordIndex] & wordMask) != 0;
+        }
+
         public bool Set(int bit)
         {
             int wordIndex = bit / IntSize;
