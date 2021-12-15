@@ -169,7 +169,7 @@ void main()
                 region[3] = temp;
             }
 
-            var bufferHandle = gd.BufferManager.CreateWithHandle(gd, RegionBufferSize);
+            var bufferHandle = gd.BufferManager.CreateWithHandle(gd, RegionBufferSize, false);
 
             gd.BufferManager.SetData<float>(bufferHandle, 0, region);
 
@@ -251,7 +251,7 @@ void main()
                 region[3] = temp;
             }
 
-            var bufferHandle = gd.BufferManager.CreateWithHandle(gd, RegionBufferSize);
+            var bufferHandle = gd.BufferManager.CreateWithHandle(gd, RegionBufferSize, false);
 
             gd.BufferManager.SetData<float>(bufferHandle, 0, region);
 
