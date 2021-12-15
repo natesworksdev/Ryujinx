@@ -8,7 +8,7 @@ namespace Ryujinx.Graphics.Vulkan
 {
     class CommandBufferPool : IDisposable
     {
-        public const int MaxCommandBuffers = 8;
+        public const int MaxCommandBuffers = 16;
 
         private int _totalCommandBuffers;
         private int _totalCommandBuffersMask;
@@ -19,12 +19,15 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly CommandPool _pool;
         private readonly Thread _owner;
 
+        public int PerFrame = 0;
+
         public bool OwnedByCurrentThread => _owner == Thread.CurrentThread;
 
         private struct ReservedCommandBuffer
         {
             public bool InUse;
             public bool InConsumption;
+            public bool Active;
             public CommandBuffer CommandBuffer;
             public FenceHolder Fence;
             public SemaphoreHolder Semaphore;
@@ -48,6 +51,8 @@ namespace Ryujinx.Graphics.Vulkan
                 Dependants = new List<IAuto>();
                 Waitables = new HashSet<MultiFenceHolder>();
                 Dependencies = new HashSet<SemaphoreHolder>();
+
+                Active = true; // Fence should be refreshed.
             }
         }
 
@@ -120,6 +125,12 @@ namespace Ryujinx.Graphics.Vulkan
             entry.Waitables.Add(waitable);
         }
 
+        public bool HasWaitable(int cbIndex, MultiFenceHolder waitable)
+        {
+            ref var entry = ref _commandBuffers[cbIndex];
+            return entry.Waitables.Contains(waitable);
+        }
+
         public bool HasWaitableOnRentedCommandBuffer(MultiFenceHolder waitable, int offset, int size)
         {
             lock (_commandBuffers)
@@ -140,9 +151,45 @@ namespace Ryujinx.Graphics.Vulkan
             return false;
         }
 
+        public bool IsFenceOnRentedCommandBuffer(FenceHolder fence)
+        {
+            lock (_commandBuffers)
+            {
+                for (int i = 0; i < _totalCommandBuffers; i++)
+                {
+                    ref var entry = ref _commandBuffers[i];
+
+                    if (entry.InUse && entry.Fence == fence)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
         public FenceHolder GetFence(int cbIndex)
         {
             return _commandBuffers[cbIndex].Fence;
+        }
+
+        private void CheckConsumption(int startAt)
+        {
+            int wrapBefore = _totalCommandBuffers + 1;
+            int index = (startAt + wrapBefore) % _totalCommandBuffers;
+
+            for (int i = 0; i < _totalCommandBuffers - 1; i++)
+            {
+                ref var entry = ref _commandBuffers[index];
+
+                if (!entry.InUse && entry.InConsumption && entry.Fence.IsSignaled())
+                {
+                    WaitAndDecrementRef(index);
+                }
+
+                index = (index + wrapBefore) % _totalCommandBuffers;
+            }
         }
 
         public CommandBufferScoped ReturnAndRent(CommandBufferScoped cbs)
@@ -153,8 +200,11 @@ namespace Ryujinx.Graphics.Vulkan
 
         public CommandBufferScoped Rent()
         {
+            PerFrame++;
             lock (_commandBuffers)
             {
+                CheckConsumption(_cursor);
+
                 for (int i = 0; i < _totalCommandBuffers; i++)
                 {
                     int currentIndex = _cursor;
@@ -165,6 +215,7 @@ namespace Ryujinx.Graphics.Vulkan
                     {
                         WaitAndDecrementRef(currentIndex);
                         entry.InUse = true;
+                        entry.Active = true;
 
                         var commandBufferBeginInfo = new CommandBufferBeginInfo()
                         {
@@ -240,6 +291,13 @@ namespace Ryujinx.Graphics.Vulkan
         private void WaitAndDecrementRef(int cbIndex, bool refreshFence = true)
         {
             ref var entry = ref _commandBuffers[cbIndex];
+
+            if (!entry.Active)
+            {
+                return;
+            }
+
+            entry.Active = false;
 
             if (entry.InConsumption)
             {

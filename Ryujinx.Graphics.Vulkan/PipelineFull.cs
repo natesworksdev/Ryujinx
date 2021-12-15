@@ -225,6 +225,16 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
+        public CommandBufferScoped GetPreloadCommandBuffer()
+        {
+            if (PreloadCbs == null)
+            {
+                PreloadCbs = Gd.CommandBufferPool.Rent();
+            }
+
+            return PreloadCbs.Value;
+        }
+
         public void FlushCommandsImpl([System.Runtime.CompilerServices.CallerMemberName] string caller = "")
         {
             // System.Console.WriteLine("flush by " + caller);
@@ -235,6 +245,12 @@ namespace Ryujinx.Graphics.Vulkan
             foreach (var queryPool in _activeQueries)
             {
                 Gd.Api.CmdEndQuery(CommandBuffer, queryPool, 0);
+            }
+
+            if (PreloadCbs != null)
+            {
+                PreloadCbs.Value.Dispose();
+                PreloadCbs = null;
             }
 
             CommandBuffer = (Cbs = Gd.CommandBufferPool.ReturnAndRent(Cbs)).CommandBuffer;

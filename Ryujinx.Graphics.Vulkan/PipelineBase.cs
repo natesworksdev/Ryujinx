@@ -34,6 +34,7 @@ namespace Ryujinx.Graphics.Vulkan
         private PipelineCache _pipelineCache;
 
         protected CommandBufferScoped Cbs;
+        protected CommandBufferScoped? PreloadCbs;
         protected CommandBuffer CommandBuffer;
 
         public CommandBufferScoped CurrentCommandBuffer => Cbs;
