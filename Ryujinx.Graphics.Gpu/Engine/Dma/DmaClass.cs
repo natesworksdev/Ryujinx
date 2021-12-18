@@ -1,4 +1,5 @@
 ﻿using Ryujinx.Common;
+using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Device;
 using Ryujinx.Graphics.Gpu.Engine.Threed;
 using Ryujinx.Graphics.Texture;
@@ -114,10 +115,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                 }
                 else /* if (type == LaunchDmaSemaphoreType.ReleaseFourWordSemaphore) */
                 {
-                    // TODO: Check if this includes a timestamp or any other data.
-
-                    _channel.MemoryManager.Write(address, (ulong)_state.State.SetSemaphorePayload);
-                    _channel.MemoryManager.Write(address + 8, 0UL);
+                    Logger.Warning?.Print(LogClass.Gpu, "DMA semaphore type ReleaseFourWordSemaphore was used, but is not currently implemented.");
                 }
             }
         }
@@ -125,8 +123,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
         /// <summary>
         /// Performs a buffer to buffer, or buffer to texture copy.
         /// </summary>
-        /// <param name="argument">Method call argument</param>
-        private void LaunchDma(int argument)
+        /// <param name="argument">The LaunchDma call argument</param>
+        private void DmaCopy(int argument)
         {
             var memoryManager = _channel.MemoryManager;
 
@@ -141,7 +139,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
 
             if (size == 0)
             {
-                ReleaseSemaphore(argument);
                 return;
             }
 
@@ -250,7 +247,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                         target.SetData(data);
                         target.SignalModified();
 
-                        ReleaseSemaphore(argument);
                         return;
                     }
                     else if (srcCalculator.LayoutMatches(dstCalculator))
@@ -259,7 +255,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
 
                         memoryManager.Write(dstGpuVa + (ulong)dstBaseOffset, dstSpan);
 
-                        ReleaseSemaphore(argument);
                         return;
                     }
                 }
@@ -322,7 +317,15 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                     memoryManager.Physical.BufferCache.CopyBuffer(memoryManager, srcGpuVa, dstGpuVa, size);
                 }
             }
+        }
 
+        /// <summary>
+        /// Performs a buffer to buffer, or buffer to texture copy, then optionally releases a semaphore.
+        /// </summary>
+        /// <param name="argument">Method call argument</param>
+        private void LaunchDma(int argument)
+        {
+            DmaCopy(argument);
             ReleaseSemaphore(argument);
         }
     }
