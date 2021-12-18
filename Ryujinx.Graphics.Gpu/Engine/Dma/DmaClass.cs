@@ -99,6 +99,30 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
         }
 
         /// <summary>
+        /// Releases a semaphore for a given LaunchDma method call.
+        /// </summary>
+        /// <param name="argument">The LaunchDma call argument</param>
+        private void ReleaseSemaphore(int argument)
+        {
+            LaunchDmaSemaphoreType type = (LaunchDmaSemaphoreType)((argument >> 3) & 0x3);
+            if (type != LaunchDmaSemaphoreType.None)
+            {
+                ulong address = ((ulong)_state.State.SetSemaphoreA << 32) | _state.State.SetSemaphoreB;
+                if (type == LaunchDmaSemaphoreType.ReleaseOneWordSemaphore)
+                {
+                    _channel.MemoryManager.Write(address, _state.State.SetSemaphorePayload);
+                }
+                else /* if (type == LaunchDmaSemaphoreType.ReleaseFourWordSemaphore) */
+                {
+                    // TODO: Check if this includes a timestamp or any other data.
+
+                    _channel.MemoryManager.Write(address, (ulong)_state.State.SetSemaphorePayload);
+                    _channel.MemoryManager.Write(address + 8, 0UL);
+                }
+            }
+        }
+
+        /// <summary>
         /// Performs a buffer to buffer, or buffer to texture copy.
         /// </summary>
         /// <param name="argument">Method call argument</param>
@@ -117,6 +141,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
 
             if (size == 0)
             {
+                ReleaseSemaphore(argument);
                 return;
             }
 
@@ -225,6 +250,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                         target.SetData(data);
                         target.SignalModified();
 
+                        ReleaseSemaphore(argument);
                         return;
                     }
                     else if (srcCalculator.LayoutMatches(dstCalculator))
@@ -233,6 +259,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
 
                         memoryManager.Write(dstGpuVa + (ulong)dstBaseOffset, dstSpan);
 
+                        ReleaseSemaphore(argument);
                         return;
                     }
                 }
@@ -295,6 +322,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                     memoryManager.Physical.BufferCache.CopyBuffer(memoryManager, srcGpuVa, dstGpuVa, size);
                 }
             }
+
+            ReleaseSemaphore(argument);
         }
     }
 }
