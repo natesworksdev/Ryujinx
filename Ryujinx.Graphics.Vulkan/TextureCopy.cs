@@ -246,6 +246,23 @@ namespace Ryujinx.Graphics.Vulkan
             int width = Math.Min(srcWidth, dstWidth);
             int height = Math.Min(srcHeight, dstHeight);
 
+            ImageAspectFlags srcAspect = srcInfo.Format.ConvertAspectFlags();
+            ImageAspectFlags dstAspect = dstInfo.Format.ConvertAspectFlags();
+
+            TextureView.InsertImageBarrier(
+                api,
+                commandBuffer,
+                srcImage,
+                AccessFlags.AccessTransferWriteBit,
+                AccessFlags.AccessTransferReadBit,
+                PipelineStageFlags.PipelineStageAllCommandsBit,
+                PipelineStageFlags.PipelineStageTransferBit,
+                srcAspect,
+                srcViewLayer + srcLayer,
+                srcViewLevel + srcLevel,
+                srcLayers,
+                levels);
+
             for (int level = 0; level < levels; level++)
             {
                 // Stop copy if we are already out of the levels range.
@@ -255,13 +272,13 @@ namespace Ryujinx.Graphics.Vulkan
                 }
 
                 var srcSl = new ImageSubresourceLayers(
-                    srcInfo.Format.ConvertAspectFlags(),
+                    srcAspect,
                     (uint)(srcViewLevel + srcLevel + level),
                     (uint)(srcViewLayer + srcLayer),
                     (uint)srcLayers);
 
                 var dstSl = new ImageSubresourceLayers(
-                    dstInfo.Format.ConvertAspectFlags(),
+                    dstAspect,
                     (uint)(dstViewLevel + dstLevel + level),
                     (uint)(dstViewLayer + dstLayer),
                     (uint)dstLayers);
@@ -283,6 +300,20 @@ namespace Ryujinx.Graphics.Vulkan
                     srcDepth = Math.Max(1, srcDepth >> 1);
                 }
             }
+
+            TextureView.InsertImageBarrier(
+                api,
+                commandBuffer,
+                dstImage,
+                AccessFlags.AccessTransferWriteBit,
+                AccessFlags.AccessTransferReadBit,
+                PipelineStageFlags.PipelineStageTransferBit,
+                PipelineStageFlags.PipelineStageAllCommandsBit,
+                dstAspect,
+                dstViewLayer + dstLayer,
+                dstViewLevel + dstLevel,
+                dstLayers,
+                levels);
         }
     }
 }

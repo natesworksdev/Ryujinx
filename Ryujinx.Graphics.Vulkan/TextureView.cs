@@ -153,8 +153,6 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void CopyTo(ITexture destination, int firstLayer, int firstLevel)
         {
-            _gd.FlushAllCommands();
-
             var src = this;
             var dst = (TextureView)destination;
 
@@ -163,7 +161,9 @@ namespace Ryujinx.Graphics.Vulkan
                 return;
             }
 
-            using var cbs = _gd.CommandBufferPool.Rent();
+            _gd.PipelineInternal.EndRenderPass();
+
+            var cbs = _gd.PipelineInternal.CurrentCommandBuffer;
 
             var srcImage = src.GetImage().Get(cbs).Value;
             var dstImage = dst.GetImage().Get(cbs).Value;
@@ -471,7 +471,7 @@ namespace Ryujinx.Graphics.Vulkan
                     aspectFlags);
 
                 InsertImageBarrier(
-                    gd,
+                    gd.Api,
                     cbs.CommandBuffer,
                     srcTemp.GetImage().Get(cbs).Value,
                     AccessFlags.AccessTransferWriteBit,
@@ -504,7 +504,7 @@ namespace Ryujinx.Graphics.Vulkan
                     aspectFlags);
 
                 InsertImageBarrier(
-                    gd,
+                    gd.Api,
                     cbs.CommandBuffer,
                     dstTemp.GetImage().Get(cbs).Value,
                     AccessFlags.AccessTransferWriteBit,
@@ -564,7 +564,7 @@ namespace Ryujinx.Graphics.Vulkan
         }
 
         public static unsafe void InsertImageBarrier(
-            VulkanGraphicsDevice gd,
+            Vk api,
             CommandBuffer commandBuffer,
             Image image,
             AccessFlags srcAccessMask,
@@ -590,7 +590,7 @@ namespace Ryujinx.Graphics.Vulkan
                 SubresourceRange = new ImageSubresourceRange(aspectFlags, (uint)firstLevel, (uint)levels, (uint)firstLayer, (uint)layers)
             };
 
-            gd.Api.CmdPipelineBarrier(
+            api.CmdPipelineBarrier(
                 commandBuffer,
                 srcStageMask,
                 dstStageMask,
