@@ -367,14 +367,14 @@ namespace Ryujinx.Ui.Windows
             _audioBackendBox.Add(_audioBackendSelect);
             _audioBackendSelect.Show();
 
-            _previousVolumeLevel = ConfigurationState.Instance.System.AudioVolume;
-            _audioVolumeLabel  = new Label("Volume: ");
-            _audioVolumeSlider = new Scale(Orientation.Horizontal, 0, 100, 1);
+            _previousVolumeLevel            = ConfigurationState.Instance.System.AudioVolume;
+            _audioVolumeLabel               = new Label("Volume: ");
+            _audioVolumeSlider              = new Scale(Orientation.Horizontal, 0, 100, 1);
             _audioVolumeLabel.MarginStart   = 10;
             _audioVolumeSlider.ValuePos     = PositionType.Right;
             _audioVolumeSlider.WidthRequest = 200;
 
-            _audioVolumeSlider.Value = _previousVolumeLevel * 100;
+            _audioVolumeSlider.Value        =  _previousVolumeLevel * 100;
             _audioVolumeSlider.ValueChanged += VolumeSlider_OnChange;
             _audioBackendBox.Add(_audioVolumeLabel);
             _audioBackendBox.Add(_audioVolumeSlider);
