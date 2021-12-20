@@ -79,14 +79,15 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             Add(Instruction.Ddy,                      VariableType.F32,    VariableType.F32);
             Add(Instruction.Divide,                   VariableType.Scalar, VariableType.Scalar, VariableType.Scalar);
             Add(Instruction.ExponentB2,               VariableType.Scalar, VariableType.Scalar);
-            Add(Instruction.FindFirstSetS32,          VariableType.S32,    VariableType.S32);
-            Add(Instruction.FindFirstSetU32,          VariableType.S32,    VariableType.U32);
+            Add(Instruction.FindLSB,                  VariableType.Int,    VariableType.Int);
+            Add(Instruction.FindMSBS32,               VariableType.S32,    VariableType.S32);
+            Add(Instruction.FindMSBU32,               VariableType.S32,    VariableType.U32);
             Add(Instruction.Floor,                    VariableType.Scalar, VariableType.Scalar);
             Add(Instruction.FusedMultiplyAdd,         VariableType.Scalar, VariableType.Scalar, VariableType.Scalar, VariableType.Scalar);
             Add(Instruction.ImageLoad,                VariableType.F32);
             Add(Instruction.ImageStore,               VariableType.None);
             Add(Instruction.ImageAtomic,              VariableType.S32);
-            Add(Instruction.IsNan,                    VariableType.Bool,   VariableType.F32);
+            Add(Instruction.IsNan,                    VariableType.Bool,   VariableType.Scalar);
             Add(Instruction.LoadAttribute,            VariableType.F32,    VariableType.S32,    VariableType.S32,    VariableType.S32);
             Add(Instruction.LoadConstant,             VariableType.F32,    VariableType.S32,    VariableType.S32);
             Add(Instruction.LoadGlobal,               VariableType.U32,    VariableType.S32,    VariableType.S32);
