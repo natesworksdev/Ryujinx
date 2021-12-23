@@ -82,6 +82,11 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 scoped.Dispose();
             }
+            else if (_gd.IsIntelWindows)
+            {
+                // Not flushing commands here causes glitches on Intel (driver bug?)
+                _gd.FlushAllCommands();
+            }
         }
 
         private void PushDataImpl(CommandBufferScoped cbs, BufferHolder dst, int dstOffset, ReadOnlySpan<byte> data)
