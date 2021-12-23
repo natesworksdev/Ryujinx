@@ -418,9 +418,9 @@ namespace Ryujinx.Graphics.Vulkan
             return extensionProperties.Select(x => Marshal.PtrToStringAnsi((IntPtr)x.ExtensionName)).ToArray();
         }
 
-        public static CommandBufferPool CreateCommandBufferPool(Vk api, Device device, Queue queue, uint queueFamilyIndex)
+        public static CommandBufferPool CreateCommandBufferPool(Vk api, Device device, Queue queue, object queueLock, uint queueFamilyIndex)
         {
-            return new CommandBufferPool(api, device, queue, queueFamilyIndex);
+            return new CommandBufferPool(api, device, queue, queueLock, queueFamilyIndex);
         }
     }
 }
