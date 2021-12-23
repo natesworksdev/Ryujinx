@@ -19,8 +19,6 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly CommandPool _pool;
         private readonly Thread _owner;
 
-        public int PerFrame = 0;
-
         public bool OwnedByCurrentThread => _owner == Thread.CurrentThread;
 
         private struct ReservedCommandBuffer
@@ -125,12 +123,6 @@ namespace Ryujinx.Graphics.Vulkan
             entry.Waitables.Add(waitable);
         }
 
-        public bool HasWaitable(int cbIndex, MultiFenceHolder waitable)
-        {
-            ref var entry = ref _commandBuffers[cbIndex];
-            return entry.Waitables.Contains(waitable);
-        }
-
         public bool HasWaitableOnRentedCommandBuffer(MultiFenceHolder waitable, int offset, int size)
         {
             lock (_commandBuffers)
@@ -200,7 +192,6 @@ namespace Ryujinx.Graphics.Vulkan
 
         public CommandBufferScoped Rent()
         {
-            PerFrame++;
             lock (_commandBuffers)
             {
                 CheckConsumption(_cursor);
