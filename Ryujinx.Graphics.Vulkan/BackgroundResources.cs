@@ -23,7 +23,14 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (_pool == null)
             {
-                _pool = new CommandBufferPool(_gd.Api, _device, _gd.BackgroundQueue, _gd.QueueFamilyIndex, isLight: true);
+                bool useBackground = _gd.BackgroundQueue.Handle != 0 && _gd.Vendor != Vendor.Amd;
+                Queue queue = useBackground ? _gd.BackgroundQueue : _gd.Queue;
+                object queueLock = useBackground ? _gd.BackgroundQueueLock : _gd.QueueLock;
+
+                lock (queueLock)
+                {
+                    _pool = new CommandBufferPool(_gd.Api, _device, queue, queueLock, _gd.QueueFamilyIndex, isLight: true);
+                }
             }
 
             return _pool;
