@@ -352,7 +352,10 @@ namespace Ryujinx.Graphics.Vulkan
                 PResults = &result
             };
 
-            _gd.SwapchainApi.QueuePresent(_gd.Queue, presentInfo);
+            lock (_gd.QueueLock)
+            {
+                _gd.SwapchainApi.QueuePresent(_gd.Queue, presentInfo);
+            }
         }
 
         private unsafe void Transition(

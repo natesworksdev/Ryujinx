@@ -44,6 +44,7 @@ namespace Ryujinx.Graphics.Vulkan
         internal Queue Queue { get; private set; }
         internal Queue BackgroundQueue { get; private set; }
         internal object BackgroundQueueLock { get; private set; }
+        internal object QueueLock { get; private set; }
 
         internal MemoryAllocator MemoryAllocator { get; private set; }
         internal CommandBufferPool CommandBufferPool { get; private set; }
@@ -153,6 +154,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             api.GetDeviceQueue(_device, queueFamilyIndex, 0, out var queue);
             Queue = queue;
+            QueueLock = new object();
 
             if (maxQueueCount >= 2)
             {
@@ -165,7 +167,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             MemoryAllocator = new MemoryAllocator(api, _device, properties.Limits.MaxMemoryAllocationCount);
 
-            CommandBufferPool = VulkanInitialization.CreateCommandBufferPool(api, _device, queue, queueFamilyIndex);
+            CommandBufferPool = VulkanInitialization.CreateCommandBufferPool(api, _device, queue, QueueLock, queueFamilyIndex);
 
             DescriptorSetManager = new DescriptorSetManager(_device);
 
