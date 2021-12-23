@@ -239,7 +239,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
         }
 
-    private void SyncAction()
+        private void SyncAction()
         {
             // Register region tracking for CPU? (again)
             _registeredSync = _modifiedSync;
@@ -408,6 +408,24 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Check if this handle has a dependency to a given texture group.
+        /// </summary>
+        /// <param name="group">The texture group to check for</param>
+        /// <returns>True if there is a dependency, false otherwise</returns>
+        public bool HasDependencyTo(TextureGroup group)
+        {
+            foreach (TextureDependency dep in Dependencies)
+            {
+                if (dep.Other.Handle._group == group)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>

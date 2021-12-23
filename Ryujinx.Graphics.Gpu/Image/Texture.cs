@@ -284,7 +284,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="hasLayerViews">True if the texture will have layer views</param>
         /// <param name="hasMipViews">True if the texture will have mip views</param>
         /// <param name="incompatibleOverlaps">Groups that overlap with this one but are incompatible</param>
-        public void InitializeGroup(bool hasLayerViews, bool hasMipViews, List<TextureGroup> incompatibleOverlaps)
+        public void InitializeGroup(bool hasLayerViews, bool hasMipViews, List<TextureIncompatibleOverlap> incompatibleOverlaps)
         {
             Group = new TextureGroup(_context, _physicalMemory, this, incompatibleOverlaps);
 
@@ -1104,55 +1104,64 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="info">Texture view information</param>
         /// <param name="range">Texture view physical memory ranges</param>
+        /// <param name="layerSize">Layer size on the given texture</param>
+        /// <param name="caps">Host GPU capabilities</param>
         /// <param name="firstLayer">Texture view initial layer on this texture</param>
         /// <param name="firstLevel">Texture view first mipmap level on this texture</param>
         /// <returns>The level of compatiblilty a view with the given parameters created from this texture has</returns>
-        public TextureViewCompatibility IsViewCompatible(TextureInfo info, MultiRange range, int layerSize, out int firstLayer, out int firstLevel)
+        public TextureViewCompatibility IsViewCompatible(TextureInfo info, MultiRange range, int layerSize, Capabilities caps, out int firstLayer, out int firstLevel)
         {
-            int offset = Range.FindOffset(range);
+            TextureViewCompatibility result = TextureViewCompatibility.Full;
 
-            // Out of range.
-            if (offset < 0)
+            result = TextureCompatibility.PropagateViewCompatibility(result, TextureCompatibility.ViewFormatCompatible(Info, info, caps));
+            if (result != TextureViewCompatibility.Incompatible)
             {
-                firstLayer = 0;
-                firstLevel = 0;
+                result = TextureCompatibility.PropagateViewCompatibility(result, TextureCompatibility.ViewTargetCompatible(Info, info));
 
+                if (result == TextureViewCompatibility.Full && Info.FormatInfo.Format != info.FormatInfo.Format && !_context.Capabilities.SupportsMismatchingViewFormat)
+                {
+                    // AMD and Intel have a bug where the view format is always ignored;
+                    // they use the parent format instead.
+                    // Create a copy dependency to avoid this issue.
+
+                    result = TextureViewCompatibility.CopyOnly;
+                }
+
+                if (Info.SamplesInX != info.SamplesInX || Info.SamplesInY != info.SamplesInY)
+                {
+                    result = TextureViewCompatibility.Incompatible;
+                }
+            }
+
+            firstLayer = 0;
+            firstLevel = 0;
+
+            if (result == TextureViewCompatibility.Incompatible)
+            {
                 return TextureViewCompatibility.Incompatible;
             }
 
-            if (!_sizeInfo.FindView(offset, out firstLayer, out firstLevel))
+            int offset = Range.FindOffset(range);
+
+            if (offset < 0 || !_sizeInfo.FindView(offset, out firstLayer, out firstLevel))
             {
-                return TextureViewCompatibility.Incompatible;
+                return TextureViewCompatibility.LayoutIncompatible;
             }
 
             if (!TextureCompatibility.ViewLayoutCompatible(Info, info, firstLevel))
             {
-                return TextureViewCompatibility.Incompatible;
+                return TextureViewCompatibility.LayoutIncompatible;
             }
 
             if (info.GetSlices() > 1 && LayerSize != layerSize)
             {
-                return TextureViewCompatibility.Incompatible;
+                return TextureViewCompatibility.LayoutIncompatible;
             }
 
-            TextureViewCompatibility result = TextureViewCompatibility.Full;
-
-            result = TextureCompatibility.PropagateViewCompatibility(result, TextureCompatibility.ViewFormatCompatible(Info, info));
             result = TextureCompatibility.PropagateViewCompatibility(result, TextureCompatibility.ViewSizeMatches(Info, info, firstLevel));
-            result = TextureCompatibility.PropagateViewCompatibility(result, TextureCompatibility.ViewTargetCompatible(Info, info));
             result = TextureCompatibility.PropagateViewCompatibility(result, TextureCompatibility.ViewSubImagesInBounds(Info, info, firstLayer, firstLevel));
 
-            if (result == TextureViewCompatibility.Full && Info.FormatInfo.Format != info.FormatInfo.Format && !_context.Capabilities.SupportsMismatchingViewFormat)
-            {
-                // AMD and Intel have a bug where the view format is always ignored;
-                // they use the parent format instead.
-                // Create a copy dependency to avoid this issue.
-
-                result = TextureViewCompatibility.CopyOnly;
-            }
-
-            return (Info.SamplesInX == info.SamplesInX &&
-                    Info.SamplesInY == info.SamplesInY) ? result : TextureViewCompatibility.Incompatible;
+            return result;
         }
 
         /// <summary>
@@ -1381,7 +1390,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             foreach (Texture view in _views)
             {
-                if (texture.IsViewCompatible(view.Info, view.Range, view.LayerSize, out _, out _) != TextureViewCompatibility.Incompatible)
+                if (texture.IsViewCompatible(view.Info, view.Range, view.LayerSize, _context.Capabilities, out _, out _) > TextureViewCompatibility.LayoutIncompatible)
                 {
                     return true;
                 }
