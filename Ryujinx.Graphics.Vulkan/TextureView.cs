@@ -233,20 +233,13 @@ namespace Ryujinx.Graphics.Vulkan
 
                 CopyToImpl(cbs, dst, srcRegion, dstRegion, linearFilter);
             }
-            else if (_gd.BackgroundQueue.Handle != 0)
-            {
-                lock (_gd.BackgroundQueueLock)
-                {
-                    var cbp = _gd.BackgroundResources.Get().GetPool();
-
-                    using var cbs = cbp.Rent();
-
-                    CopyToImpl(cbs, dst, srcRegion, dstRegion, linearFilter);
-                }
-            }
             else
             {
-                // TODO...
+                var cbp = _gd.BackgroundResources.Get().GetPool();
+
+                using var cbs = cbp.Rent();
+
+                CopyToImpl(cbs, dst, srcRegion, dstRegion, linearFilter);
             }
         }
 
@@ -678,24 +671,9 @@ namespace Ryujinx.Graphics.Vulkan
 
                 return GetData(_gd.CommandBufferPool, resources.GetFlushBuffer());
             }
-            else if (_gd.BackgroundQueue.Handle != 0)
-            {
-                lock (_gd.BackgroundQueueLock)
-                {
-                    return GetData(resources.GetPool(), resources.GetFlushBuffer());
-                }
-            }
             else
             {
-                // TODO: Flush when the device only supports one queue.
-                int size = 0;
-
-                for (int level = 0; level < Info.Levels; level++)
-                {
-                    size += Info.GetMipSize(level);
-                }
-
-                return new byte[size];
+                return GetData(resources.GetPool(), resources.GetFlushBuffer());
             }
         }
 

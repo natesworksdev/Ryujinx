@@ -143,16 +143,9 @@ namespace Ryujinx.Graphics.Vulkan
 
                     return resource.GetFlushBuffer().GetBufferData(_gd.CommandBufferPool, this, offset, size);
                 }
-                else if (_gd.BackgroundQueue.Handle != 0)
-                {
-                    lock (_gd.BackgroundQueueLock)
-                    {
-                        return resource.GetFlushBuffer().GetBufferData(resource.GetPool(), this, offset, size);
-                    }
-                }
                 else
                 {
-                    return new byte[size];
+                    return resource.GetFlushBuffer().GetBufferData(resource.GetPool(), this, offset, size);
                 }
             }
         }
