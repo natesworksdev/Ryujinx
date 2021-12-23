@@ -180,8 +180,9 @@ namespace Ryujinx.Graphics.Vulkan
             if (_map != IntPtr.Zero)
             {
                 // If persistently mapped, set the data directly if the buffer is not currently in use.
-                //bool needsFlush = _gd.CommandBufferPool.HasWaitableOnRentedCommandBuffer(_waitable, offset, dataSize);
-                bool needsFlush = _buffer.HasRentedCommandBufferDependency(_gd.CommandBufferPool);// (_waitable, offset, dataSize);
+                // TODO: Reintroduce waitable & granular use tracking.
+                // bool needsFlush = _gd.CommandBufferPool.HasWaitableOnRentedCommandBuffer(_waitable, offset, dataSize);
+                bool needsFlush = _buffer.HasRentedCommandBufferDependency(_gd.CommandBufferPool);
 
                 if (!needsFlush)
                 {

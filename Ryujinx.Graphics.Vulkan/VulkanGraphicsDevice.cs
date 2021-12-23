@@ -197,7 +197,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public BufferHandle CreateBuffer(int size)
         {
-            return BufferManager.CreateWithHandle(this, size, true);
+            return BufferManager.CreateWithHandle(this, size, false);
         }
 
         public IProgram CreateProgram(IShader[] shaders, TransformFeedbackDescriptor[] transformFeedbackDescriptors)

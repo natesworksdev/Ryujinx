@@ -741,7 +741,6 @@ namespace Ryujinx.Graphics.Vulkan
             if (loadInline)
             {
                 _gd.PipelineInternal.EndRenderPass();
-                Common.Logging.Logger.Error?.PrintMsg(Common.Logging.LogClass.Gpu, "Loaded inline!");
             }
 
             CopyDataToBuffer(bufferHolder.GetDataStorage(0, bufferDataLength), data);
