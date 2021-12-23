@@ -16,6 +16,7 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly Vk _api;
         private readonly Device _device;
         private readonly Queue _queue;
+        private readonly object _queueLock;
         private readonly CommandPool _pool;
         private readonly Thread _owner;
 
@@ -58,11 +59,12 @@ namespace Ryujinx.Graphics.Vulkan
 
         private int _cursor;
 
-        public unsafe CommandBufferPool(Vk api, Device device, Queue queue, uint queueFamilyIndex, bool isLight = false)
+        public unsafe CommandBufferPool(Vk api, Device device, Queue queue, object queueLock, uint queueFamilyIndex, bool isLight = false)
         {
             _api = api;
             _device = device;
             _queue = queue;
+            _queueLock = queueLock;
             _owner = Thread.CurrentThread;
 
             var commandPoolCreateInfo = new CommandPoolCreateInfo()
@@ -272,7 +274,10 @@ namespace Ryujinx.Graphics.Vulkan
                             PSignalSemaphores = pSignalSemaphores
                         };
 
-                        _api.QueueSubmit(_queue, 1, sInfo, entry.Fence.GetUnsafe());
+                        lock (_queueLock)
+                        {
+                            _api.QueueSubmit(_queue, 1, sInfo, entry.Fence.GetUnsafe());
+                        }
                     }
                 }
                 // _api.QueueWaitIdle(_queue);
