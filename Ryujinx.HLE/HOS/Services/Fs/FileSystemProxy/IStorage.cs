@@ -1,6 +1,11 @@
 using LibHac;
+using LibHac.FsSystem;
 using LibHac.Sf;
+using Ryujinx.Common.Logging;
+using Ryujinx.Common.Pools;
 using Ryujinx.HLE.HOS.Ipc;
+using System;
+using System.Threading.Tasks;
 
 namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
 {
@@ -25,18 +30,21 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
                 IpcBuffDesc buffDesc = context.Request.ReceiveBuff[0];
 
                 // Use smaller length to avoid overflows.
-                if (size > buffDesc.Size)
+                int actualSize = (int)Math.Min(size, 128 * 1024);
+                using (PooledBuffer<byte> scratch = BufferPool<byte>.Rent(actualSize))
                 {
-                    size = buffDesc.Size;
+                    ulong bytesRead = 0;
+                    Result result = Result.Success;
+                    while (bytesRead < size)
+                    {
+                        int thisReadSize = (int)Math.Min((long)actualSize, (long)(size - bytesRead));
+                        result = _baseStorage.Target.Read((long)(offset + bytesRead), new OutBuffer(scratch.AsSpan), (long)thisReadSize);
+                        context.Memory.Write(buffDesc.Position + bytesRead, scratch.AsSpan.Slice(0, thisReadSize));
+                        bytesRead += (ulong)thisReadSize;
+                    }
+
+                    return (ResultCode)result.Value;
                 }
-
-                byte[] data = new byte[size];
-
-                Result result = _baseStorage.Target.Read((long)offset, new OutBuffer(data), (long)size);
-
-                context.Memory.Write(buffDesc.Position, data);
-
-                return (ResultCode)result.Value;
             }
 
             return ResultCode.Success;
