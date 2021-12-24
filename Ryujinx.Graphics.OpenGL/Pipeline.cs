@@ -1179,6 +1179,11 @@ namespace Ryujinx.Graphics.OpenGL
             if (sampler is Sampler glSampler)
             {
                 glSampler.Bind(binding);
+                _unit0Sampler = glSampler;
+            }
+            else
+            {
+                _unit0Sampler = null;
             }
         }
 
