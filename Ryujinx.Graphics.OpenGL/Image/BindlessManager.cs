@@ -50,6 +50,11 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
         private void Register(int textureId, int samplerId, TextureBase texture, Sampler sampler)
         {
+            if (texture == null)
+            {
+                return;
+            }
+
             long bindlessHandle = sampler != null
                 ? GetTextureSamplerHandle(texture.Handle, sampler.Handle)
                 : GetTextureHandle(texture.Handle);
