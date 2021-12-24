@@ -25,7 +25,6 @@ namespace Ryujinx.Graphics.OpenGL
         private IntPtr _indexBaseOffset;
 
         private DrawElementsType _elementsType;
-
         private PrimitiveType _primitiveType;
 
         private int _stencilFrontMask;
@@ -64,9 +63,11 @@ namespace Ryujinx.Graphics.OpenGL
         private readonly BufferHandle[] _tfbs;
         private readonly BufferRange[] _tfbTargets;
 
+        private readonly BindlessManager _bindlessManager;
+
         private ColorF _blendConstant;
 
-        internal Pipeline()
+        internal Pipeline(Renderer renderer)
         {
             _drawTexture = new DrawTextureEmulation();
             _rasterizerDiscard = false;
@@ -85,6 +86,8 @@ namespace Ryujinx.Graphics.OpenGL
 
             _tfbs = new BufferHandle[Constants.MaxTransformFeedbackBuffers];
             _tfbTargets = new BufferRange[Constants.MaxTransformFeedbackBuffers];
+
+            _bindlessManager = new BindlessManager(renderer);
         }
 
         public void Initialize(Renderer renderer)
@@ -702,6 +705,11 @@ namespace Ryujinx.Graphics.OpenGL
             GL.Enable(EnableCap.AlphaTest);
         }
 
+        public void SetBindlessTexture(int textureId, ITexture texture, int samplerId, ISampler sampler)
+        {
+            _bindlessManager.Add(textureId, texture, samplerId, sampler);
+        }
+
         public void SetBlendState(int index, BlendDescriptor blend)
         {
             if (!blend.Enable)
@@ -1082,23 +1090,6 @@ namespace Ryujinx.Graphics.OpenGL
             _framebuffer.SetDrawBuffers(colors.Length);
         }
 
-        public void SetSampler(int binding, ISampler sampler)
-        {
-            if (sampler == null)
-            {
-                return;
-            }
-
-            Sampler samp = (Sampler)sampler;
-
-            if (binding == 0)
-            {
-                _unit0Sampler = samp;
-            }
-
-            samp.Bind(binding);
-        }
-
         public void SetScissor(int index, bool enable, int x, int y, int width, int height)
         {
             uint mask = 1u << index;
@@ -1171,20 +1162,23 @@ namespace Ryujinx.Graphics.OpenGL
             SetBuffers(first, buffers, isStorage: true);
         }
 
-        public void SetTexture(int binding, ITexture texture)
+        public void SetTextureAndSampler(int binding, ITexture texture, ISampler sampler)
         {
-            if (texture == null)
+            if (texture is TextureBase textureBase)
             {
-                return;
+                if (binding == 0)
+                {
+                    _unit0Texture = textureBase;
+                }
+                else
+                {
+                    textureBase.Bind(binding);
+                }
             }
 
-            if (binding == 0)
+            if (sampler is Sampler glSampler)
             {
-                _unit0Texture = (TextureBase)texture;
-            }
-            else
-            {
-                ((TextureBase)texture).Bind(binding);
+                glSampler.Bind(binding);
             }
         }
 

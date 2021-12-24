@@ -11,6 +11,7 @@ namespace Ryujinx.Graphics.OpenGL
         private static readonly Lazy<bool> _supportsFragmentShaderOrdering    = new Lazy<bool>(() => HasExtension("GL_INTEL_fragment_shader_ordering"));
         private static readonly Lazy<bool> _supportsImageLoadFormatted        = new Lazy<bool>(() => HasExtension("GL_EXT_shader_image_load_formatted"));
         private static readonly Lazy<bool> _supportsIndirectParameters        = new Lazy<bool>(() => HasExtension("GL_ARB_indirect_parameters"));
+        private static readonly Lazy<bool> _supportsNvBindlessTexture         = new Lazy<bool>(() => HasExtension("GL_NV_bindless_texture"));
         private static readonly Lazy<bool> _supportsParallelShaderCompile     = new Lazy<bool>(() => HasExtension("GL_ARB_parallel_shader_compile"));
         private static readonly Lazy<bool> _supportsPolygonOffsetClamp        = new Lazy<bool>(() => HasExtension("GL_EXT_polygon_offset_clamp"));
         private static readonly Lazy<bool> _supportsQuads                     = new Lazy<bool>(SupportsQuadsCheck);
@@ -49,6 +50,7 @@ namespace Ryujinx.Graphics.OpenGL
         public static bool SupportsFragmentShaderOrdering    => _supportsFragmentShaderOrdering.Value;
         public static bool SupportsImageLoadFormatted        => _supportsImageLoadFormatted.Value;
         public static bool SupportsIndirectParameters        => _supportsIndirectParameters.Value;
+        public static bool SupportsNvBindlessTexture         => _supportsNvBindlessTexture.Value;
         public static bool SupportsParallelShaderCompile     => _supportsParallelShaderCompile.Value;
         public static bool SupportsPolygonOffsetClamp        => _supportsPolygonOffsetClamp.Value;
         public static bool SupportsQuads                     => _supportsQuads.Value;

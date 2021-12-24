@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Engine.Types;
+using Ryujinx.Graphics.Shader;
 using System;
 
 namespace Ryujinx.Graphics.Gpu.Image
@@ -88,6 +89,25 @@ namespace Ryujinx.Graphics.Gpu.Image
         public TextureBindingInfo[] RentGraphicsImageBindings(int stage, int count)
         {
             return _gpBindingsManager.RentImageBindings(stage, count);
+        }
+
+        /// <summary>
+        /// Sets flags indicating if the current shader uses bindless textures, and how they are used, on the compute pipeline.
+        /// </summary>
+        /// <param name="flags">Bindless texture flags</param>
+        public void SetComputeBindlessTextureFlags(BindlessTextureFlags flags)
+        {
+            _cpBindingsManager.SetBindlessTextureFlags(0, flags);
+        }
+
+        /// <summary>
+        /// Sets flags indicating if the current shader uses bindless textures, and how they are used, on the graphics pipeline.
+        /// </summary>
+        /// <param name="stage">Shader stage number, or 0 for compute shaders</param>
+        /// <param name="flags">Bindless texture flags</param>
+        public void SetGraphicsBindlessTextureFlags(int stage, BindlessTextureFlags flags)
+        {
+            _gpBindingsManager.SetBindlessTextureFlags(stage, flags);
         }
 
         /// <summary>

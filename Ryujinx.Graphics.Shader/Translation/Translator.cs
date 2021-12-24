@@ -80,6 +80,8 @@ namespace Ryujinx.Graphics.Shader.Translation
                     Optimizer.RunPass(cfg.Blocks, config);
 
                     Rewriter.RunPass(cfg.Blocks, config);
+
+                    // BindlessAnalysis.RunPass(cfg.Blocks, config);
                 }
 
                 funcs[i] = new Function(cfg.Blocks, $"fun{i}", false, inArgumentsCount, outArgumentsCount);
@@ -103,6 +105,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 config.GetStorageBufferDescriptors(),
                 config.GetTextureDescriptors(),
                 config.GetImageDescriptors(),
+                config.BindlessTextureFlags,
                 config.UsedFeatures.HasFlag(FeatureFlags.InstanceId),
                 config.UsedFeatures.HasFlag(FeatureFlags.RtLayer),
                 config.ClipDistancesWritten);

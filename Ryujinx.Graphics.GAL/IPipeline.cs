@@ -40,6 +40,8 @@ namespace Ryujinx.Graphics.GAL
 
         void SetAlphaTest(bool enable, float reference, CompareOp op);
 
+        void SetBindlessTexture(int textureId, ITexture texture, int samplerId, ISampler sampler);
+
         void SetBlendState(int index, BlendDescriptor blend);
 
         void SetDepthBias(PolygonModeMask enables, float factor, float units, float clamp);
@@ -76,15 +78,13 @@ namespace Ryujinx.Graphics.GAL
         void SetRenderTargetColorMasks(ReadOnlySpan<uint> componentMask);
         void SetRenderTargets(ITexture[] colors, ITexture depthStencil);
 
-        void SetSampler(int binding, ISampler sampler);
-
         void SetScissor(int index, bool enable, int x, int y, int width, int height);
 
         void SetStencilTest(StencilTestDescriptor stencilTest);
 
         void SetStorageBuffers(int first, ReadOnlySpan<BufferRange> buffers);
 
-        void SetTexture(int binding, ITexture texture);
+        void SetTextureAndSampler(int binding, ITexture texture, ISampler sampler);
 
         void SetTransformFeedbackBuffers(ReadOnlySpan<BufferRange> buffers);
         void SetUniformBuffers(int first, ReadOnlySpan<BufferRange> buffers);

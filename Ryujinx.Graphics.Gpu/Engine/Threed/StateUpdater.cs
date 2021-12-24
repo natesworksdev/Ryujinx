@@ -1114,6 +1114,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                         descriptor.Flags);
                 }
 
+                _channel.TextureManager.SetGraphicsBindlessTextureFlags(stage, info.BindlessTextureFlags);
+
                 _channel.BufferManager.SetGraphicsStorageBufferBindings(stage, info.SBuffers);
                 _channel.BufferManager.SetGraphicsUniformBufferBindings(stage, info.CBuffers);
             }
