@@ -1,5 +1,4 @@
 ﻿using Ryujinx.Common;
-using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Device;
 using Ryujinx.Graphics.Gpu.Engine.Threed;
 using Ryujinx.Graphics.Texture;
@@ -100,31 +99,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
         }
 
         /// <summary>
-        /// Releases a semaphore for a given LaunchDma method call.
-        /// </summary>
-        /// <param name="argument">The LaunchDma call argument</param>
-        private void ReleaseSemaphore(int argument)
-        {
-            LaunchDmaSemaphoreType type = (LaunchDmaSemaphoreType)((argument >> 3) & 0x3);
-            if (type != LaunchDmaSemaphoreType.None)
-            {
-                ulong address = ((ulong)_state.State.SetSemaphoreA << 32) | _state.State.SetSemaphoreB;
-                if (type == LaunchDmaSemaphoreType.ReleaseOneWordSemaphore)
-                {
-                    _channel.MemoryManager.Write(address, _state.State.SetSemaphorePayload);
-                }
-                else /* if (type == LaunchDmaSemaphoreType.ReleaseFourWordSemaphore) */
-                {
-                    Logger.Warning?.Print(LogClass.Gpu, "DMA semaphore type ReleaseFourWordSemaphore was used, but is not currently implemented.");
-                }
-            }
-        }
-
-        /// <summary>
         /// Performs a buffer to buffer, or buffer to texture copy.
         /// </summary>
-        /// <param name="argument">The LaunchDma call argument</param>
-        private void DmaCopy(int argument)
+        /// <param name="argument">Method call argument</param>
+        private void LaunchDma(int argument)
         {
             var memoryManager = _channel.MemoryManager;
 
@@ -317,16 +295,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                     memoryManager.Physical.BufferCache.CopyBuffer(memoryManager, srcGpuVa, dstGpuVa, size);
                 }
             }
-        }
-
-        /// <summary>
-        /// Performs a buffer to buffer, or buffer to texture copy, then optionally releases a semaphore.
-        /// </summary>
-        /// <param name="argument">Method call argument</param>
-        private void LaunchDma(int argument)
-        {
-            DmaCopy(argument);
-            ReleaseSemaphore(argument);
         }
     }
 }
