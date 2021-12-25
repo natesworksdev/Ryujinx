@@ -437,6 +437,8 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
                 }
                 else
                 {
+                    Logger.Info?.Print(LogClass.ServiceSfdnsres, $"Trying to resolve: {host}");
+
                     try
                     {
                         hostEntry = Dns.GetHostEntry(targetHost);
