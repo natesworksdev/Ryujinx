@@ -99,9 +99,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
             _isLinear = (argument & 1) != 0;
 
             _offset = 0;
-            _size = (int)(state.LineLengthIn * state.LineCount);
+            _size = (int)(BitUtils.AlignUp(state.LineLengthIn, 4) * state.LineCount);
 
-            int count = BitUtils.DivRoundUp(_size, 4);
+            int count = _size / 4;
 
             if (_buffer == null || _buffer.Length < count)
             {
@@ -176,6 +176,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
             }
             else
             {
+                int srcOffset = 0;
+
                 var dstCalculator = new OffsetCalculator(
                     _dstWidth,
                     _dstHeight,
@@ -183,8 +185,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
                     _isLinear,
                     _dstGobBlocksInY,
                     1);
-
-                int srcOffset = 0;
 
                 for (int y = _dstY; y < _dstY + _lineCount; y++)
                 {
@@ -223,6 +223,15 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
                         ulong dstAddress = _dstGpuVa + (uint)dstOffset;
 
                         memoryManager.Write(dstAddress, data[srcOffset]);
+                    }
+
+                    // All lines must be aligned to 4 bytes, as the data is pushed one word at a time.
+                    // If our copy length is not a multiple of 4, then we need to skip the padding bytes here.
+                    int misalignment = _lineLengthIn & 3;
+
+                    if (misalignment != 0)
+                    {
+                        srcOffset += 4 - misalignment;
                     }
                 }
 
