@@ -26,7 +26,6 @@ namespace Ryujinx.Graphics.Vulkan
         {
             public bool InUse;
             public bool InConsumption;
-            public bool Active;
             public CommandBuffer CommandBuffer;
             public FenceHolder Fence;
             public SemaphoreHolder Semaphore;
@@ -50,14 +49,15 @@ namespace Ryujinx.Graphics.Vulkan
                 Dependants = new List<IAuto>();
                 Waitables = new HashSet<MultiFenceHolder>();
                 Dependencies = new HashSet<SemaphoreHolder>();
-
-                Active = true; // Fence should be refreshed.
             }
         }
 
         private readonly ReservedCommandBuffer[] _commandBuffers;
 
-        private int _cursor;
+        private readonly int[] _queuedIndexes;
+        private int _queuedIndexesPtr;
+        private int _queuedCount;
+        private int _inUseCount;
 
         public unsafe CommandBufferPool(Vk api, Device device, Queue queue, object queueLock, uint queueFamilyIndex, bool isLight = false)
         {
@@ -82,9 +82,14 @@ namespace Ryujinx.Graphics.Vulkan
 
             _commandBuffers = new ReservedCommandBuffer[_totalCommandBuffers];
 
+            _queuedIndexes = new int[_totalCommandBuffers];
+            _queuedIndexesPtr = 0;
+            _queuedCount = 0;
+
             for (int i = 0; i < _totalCommandBuffers; i++)
             {
                 _commandBuffers[i].Initialize(api, device, _pool);
+                WaitAndDecrementRef(i);
             }
         }
 
@@ -168,22 +173,33 @@ namespace Ryujinx.Graphics.Vulkan
             return _commandBuffers[cbIndex].Fence;
         }
 
-        private void CheckConsumption(int startAt)
+        private int FreeConsumed(bool wait)
         {
-            int wrapBefore = _totalCommandBuffers + 1;
-            int index = (startAt + wrapBefore) % _totalCommandBuffers;
+            int freeEntry = 0;
 
-            for (int i = 0; i < _totalCommandBuffers - 1; i++)
+            while (_queuedCount > 0)
             {
+                int index = _queuedIndexes[_queuedIndexesPtr];
+
                 ref var entry = ref _commandBuffers[index];
 
-                if (!entry.InUse && entry.InConsumption && entry.Fence.IsSignaled())
+                if (wait || !entry.InConsumption || entry.Fence.IsSignaled())
                 {
                     WaitAndDecrementRef(index);
-                }
 
-                index = (index + wrapBefore) % _totalCommandBuffers;
+                    wait = false;
+                    freeEntry = index;
+
+                    _queuedCount--;
+                    _queuedIndexesPtr = (_queuedIndexesPtr + 1) % _totalCommandBuffers;
+                }
+                else
+                {
+                    break;
+                }
             }
+
+            return freeEntry;
         }
 
         public CommandBufferScoped ReturnAndRent(CommandBufferScoped cbs)
@@ -196,19 +212,17 @@ namespace Ryujinx.Graphics.Vulkan
         {
             lock (_commandBuffers)
             {
-                CheckConsumption(_cursor);
+                int cursor = FreeConsumed(_inUseCount + _queuedCount == _totalCommandBuffers);
 
                 for (int i = 0; i < _totalCommandBuffers; i++)
                 {
-                    int currentIndex = _cursor;
+                    ref var entry = ref _commandBuffers[cursor];
 
-                    ref var entry = ref _commandBuffers[currentIndex];
-
-                    if (!entry.InUse)
+                    if (!entry.InUse && !entry.InConsumption)
                     {
-                        WaitAndDecrementRef(currentIndex);
                         entry.InUse = true;
-                        entry.Active = true;
+
+                        _inUseCount++;
 
                         var commandBufferBeginInfo = new CommandBufferBeginInfo()
                         {
@@ -217,10 +231,10 @@ namespace Ryujinx.Graphics.Vulkan
 
                         _api.BeginCommandBuffer(entry.CommandBuffer, commandBufferBeginInfo);
 
-                        return new CommandBufferScoped(this, entry.CommandBuffer, currentIndex);
+                        return new CommandBufferScoped(this, entry.CommandBuffer, cursor);
                     }
 
-                    _cursor = (currentIndex + 1) & _totalCommandBuffersMask;
+                    cursor = (cursor + 1) & _totalCommandBuffersMask;
                 }
 
                 return default;
@@ -244,15 +258,11 @@ namespace Ryujinx.Graphics.Vulkan
 
                 ref var entry = ref _commandBuffers[cbIndex];
 
-                if (_cursor == cbIndex)
-                {
-                    _cursor = (cbIndex + 1) & _totalCommandBuffersMask;
-                }
-
                 Debug.Assert(entry.InUse);
                 Debug.Assert(entry.CommandBuffer.Handle == cbs.CommandBuffer.Handle);
                 entry.InUse = false;
                 entry.InConsumption = true;
+                _inUseCount--;
 
                 var commandBuffer = entry.CommandBuffer;
 
@@ -280,6 +290,10 @@ namespace Ryujinx.Graphics.Vulkan
                         }
                     }
                 }
+
+                int ptr = (_queuedIndexesPtr + _queuedCount) % _totalCommandBuffers;
+                _queuedIndexes[ptr] = cbIndex;
+                _queuedCount++;
                 // _api.QueueWaitIdle(_queue);
             }
         }
@@ -287,13 +301,6 @@ namespace Ryujinx.Graphics.Vulkan
         private void WaitAndDecrementRef(int cbIndex, bool refreshFence = true)
         {
             ref var entry = ref _commandBuffers[cbIndex];
-
-            if (!entry.Active)
-            {
-                return;
-            }
-
-            entry.Active = false;
 
             if (entry.InConsumption)
             {
