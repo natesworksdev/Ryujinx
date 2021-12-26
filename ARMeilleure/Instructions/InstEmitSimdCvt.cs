@@ -217,6 +217,18 @@ namespace ARMeilleure.Instructions
             }
         }
 
+        public static void Fcvtms_V(ArmEmitterContext context)
+        {
+            if (Optimizations.UseSse41)
+            {
+                EmitSse41FcvtsOpF(context, FPRoundingMode.TowardsMinusInfinity, scalar: false);
+            }
+            else
+            {
+                EmitFcvt(context, (op1) => EmitRoundMathCall(context, MidpointRounding.ToNegativeInfinity, op1), signed: true, scalar: false);
+            }
+        }
+
         public static void Fcvtmu_Gp(ArmEmitterContext context)
         {
             if (Optimizations.UseSse41)
