@@ -176,8 +176,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
             }
             else
             {
-                int srcOffset = 0;
-
                 var dstCalculator = new OffsetCalculator(
                     _dstWidth,
                     _dstHeight,
@@ -185,6 +183,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.InlineToMemory
                     _isLinear,
                     _dstGobBlocksInY,
                     1);
+
+                int srcOffset = 0;
 
                 for (int y = _dstY; y < _dstY + _lineCount; y++)
                 {
