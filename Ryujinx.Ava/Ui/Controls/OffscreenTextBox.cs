@@ -32,12 +32,6 @@ namespace Ryujinx.Ava.Ui.Controls
         public void SendText(string text)
         {
             OnTextInput(new TextInputEventArgs(){Text = text, Device = KeyboardDevice.Instance, Source = this, RoutedEvent = TextInputEvent});
-           /* InputManager.Instance.ProcessInput(new RawTextInputEventArgs(
-                KeyboardDevice.Instance,
-                (ulong)DateTime.Now.Ticks,
-                (Window)this.GetVisualRoot(),
-                text
-            ));*/
         }
     }
 }

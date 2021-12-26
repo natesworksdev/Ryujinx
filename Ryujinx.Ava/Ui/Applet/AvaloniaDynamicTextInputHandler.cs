@@ -45,16 +45,20 @@ namespace Ryujinx.Ava.Ui.Applet
 
         private void TextChanged(string text)
         {
-            Task.Run(() => TextChangedEvent?.Invoke(text ?? string.Empty,
+            TextChangedEvent?.Invoke(text ?? string.Empty,
                 _hiddenTextBox.SelectionStart,
-                _hiddenTextBox.SelectionEnd, true));
+                _hiddenTextBox.SelectionEnd, true);
         }
 
         private void SelectionChanged(int selection)
         {
-            Task.Run(() => TextChangedEvent?.Invoke(_hiddenTextBox.Text ?? string.Empty,
+            if (_hiddenTextBox.SelectionEnd < _hiddenTextBox.SelectionStart)
+            {
+                _hiddenTextBox.SelectionStart = _hiddenTextBox.SelectionEnd;
+            }
+            TextChangedEvent?.Invoke(_hiddenTextBox.Text ?? string.Empty,
                 _hiddenTextBox.SelectionStart,
-                _hiddenTextBox.SelectionEnd, true));
+                _hiddenTextBox.SelectionEnd, true);
         }
 
         private void AvaloniaDynamicTextInputHandler_TextInput(object sender,TextInputEventArgs e)
