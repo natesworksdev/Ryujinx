@@ -53,8 +53,6 @@ namespace Ryujinx.Headless.SDL2
         private static List<InputConfig> _inputConfiguration;
         private static bool _enableKeyboard;
         private static bool _enableMouse;
-        
-        public static Options Options { get; set; }
 
         static void Main(string[] args)
         {
@@ -322,8 +320,6 @@ namespace Ryujinx.Headless.SDL2
         {
             IGamepad gamepad;
 
-            Options = option;
-
             if (option.ListInputIds)
             {
                 Logger.Info?.Print(LogClass.Application, "Input Ids:");
@@ -522,7 +518,7 @@ namespace Ryujinx.Headless.SDL2
 
             Logger.RestartTime();
 
-            _window = new OpenGLWindow(_inputManager, options.LoggingGraphicsDebugLevel, options.AspectRatio, (bool)options.EnableMouse);
+            _window = new OpenGLWindow(_inputManager, options.LoggingGraphicsDebugLevel, options.AspectRatio, (bool)options.EnableMouse, (bool)options.ShowOsd);
             _emulationContext = InitializeEmulationContext(_window, options);
 
             SetupProgressHandler();

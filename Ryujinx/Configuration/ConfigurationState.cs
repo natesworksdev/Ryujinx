@@ -980,25 +980,6 @@ namespace Ryujinx.Configuration
             {
                 Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 34.");
 
-                configurationFileFormat.Hotkeys = new KeyboardHotkeys
-                {
-                    ToggleVsync = configurationFileFormat.Hotkeys.ToggleVsync,
-                    Screenshot = configurationFileFormat.Hotkeys.Screenshot,
-                    ShowUi = configurationFileFormat.Hotkeys.ShowUi,
-                    Pause = configurationFileFormat.Hotkeys.Pause,
-                    ToggleMute = configurationFileFormat.Hotkeys.ToggleMute,
-                    ToggleOsd = Key.F1
-                };
-
-                configurationFileFormat.ShowOsd = false;
-
-                configurationFileUpdated = true;
-            }
-
-            if (configurationFileFormat.Version < 34)
-            {
-                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 34.");
-
                 configurationFileFormat.EnableInternetAccess = false;
 
                 configurationFileUpdated = true;
@@ -1019,7 +1000,26 @@ namespace Ryujinx.Configuration
                 
                 configurationFileUpdated = true;
             }
-            
+
+            if (configurationFileFormat.Version < 36)
+            {
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 36.");
+
+                configurationFileFormat.Hotkeys = new KeyboardHotkeys
+                {
+                    ToggleVsync = configurationFileFormat.Hotkeys.ToggleVsync,
+                    Screenshot = configurationFileFormat.Hotkeys.Screenshot,
+                    ShowUi = configurationFileFormat.Hotkeys.ShowUi,
+                    Pause = configurationFileFormat.Hotkeys.Pause,
+                    ToggleMute = configurationFileFormat.Hotkeys.ToggleMute,
+                    ToggleOsd = Key.F1
+                };
+
+                configurationFileFormat.ShowOsd = false;
+
+                configurationFileUpdated = true;
+            }
+
             Logger.EnableFileLog.Value             = configurationFileFormat.EnableFileLog;
             Graphics.BackendThreading.Value        = configurationFileFormat.BackendThreading;
             Graphics.ResScale.Value                = configurationFileFormat.ResScale;

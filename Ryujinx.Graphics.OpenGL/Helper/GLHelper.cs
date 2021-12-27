@@ -33,19 +33,19 @@ namespace Ryujinx.Graphics.OpenGL.Helper
             return new RenderTarget(framebuffer, renderbuffer, texture);
         }
 
-        public static void BlitFramebuffer(int readFramebuffer, int drawFramebuffer, BlitStruct blitStruct)
+        public static void BlitFramebuffer(int readFramebuffer, int drawFramebuffer, BlitRegion source, BlitRegion destination)
         {
             GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, drawFramebuffer);
             GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, readFramebuffer);
 
-            GL.BlitFramebuffer(blitStruct.SrcX0,
-                               blitStruct.SrcY0,
-                               blitStruct.SrcX1,
-                               blitStruct.SrcY1,
-                               blitStruct.DstX0,
-                               blitStruct.DstY0,
-                               blitStruct.DstX1,
-                               blitStruct.DstY1,
+            GL.BlitFramebuffer(source.X0,
+                               source.Y0,
+                               source.X1,
+                               source.Y1,
+                               destination.X0,
+                               destination.Y0,
+                               destination.X1,
+                               destination.Y1,
                                ClearBufferMask.ColorBufferBit,
                                BlitFramebufferFilter.Linear);
 

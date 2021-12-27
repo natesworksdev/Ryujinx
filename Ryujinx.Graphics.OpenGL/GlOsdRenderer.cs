@@ -15,19 +15,51 @@ namespace Ryujinx.Graphics.OpenGL
 {
     public class GlOsdRenderer : IDisposable, IOsdRenderer
     {
-        private readonly float[] _vertices =
+        private static float[] _vertices =
         {
-             1f,  1f, 0.0f, 1.0f, 1.0f,
+             1f, 1f, 0.0f, 1.0f, 1.0f,
              1f, -1f, 0.0f, 1.0f, 0.0f,
             -1f, -1f, 0.0f, 0.0f, 0.0f,
             -1f, 1f, 0.0f, 0.0f, 1.0f
         };
 
-        private readonly ushort[] _indices =
-         {
+        private static ushort[] _indices =
+        {
             0, 1, 3,
             1, 2, 3
         };
+
+        private const string vertex_shader = @"
+            #version 330 core
+            layout (location = 0) in vec2 Position;
+            layout (location = 1) in vec2 UV;
+            layout (location = 2) in vec4 Color;
+
+            uniform mat4 ProjMtx;
+            out     vec2 Frag_UV;
+            out     vec4 Frag_Color;
+
+            void main()
+            {
+                Frag_UV = UV;
+                Frag_Color = Color;
+                gl_Position = ProjMtx * vec4(Position.xy, 0, 1);
+            }
+";
+
+        private const string fragment_shader = @"
+            #version 330 core
+            in vec2 Frag_UV;
+            in vec4 Frag_Color;
+
+            uniform sampler2D Texture;
+
+            layout (location = 0) out vec4 Out_Color;
+            void main()
+            {
+                Out_Color = Frag_Color * texture(Texture, Frag_UV.st);
+            }
+";
 
         private int _hudFragmentShader;
         private int _hudVertexShader;
@@ -71,7 +103,6 @@ namespace Ryujinx.Graphics.OpenGL
                 {
                     GL.DetachShader(_hudShaderProgram, _hudFragmentShader);
                 }
-
             }
 
             if (_hudVertexShader != 0)
@@ -118,7 +149,6 @@ namespace Ryujinx.Graphics.OpenGL
                 GL.DeleteBuffer(_elementBufferObject);
                 _elementBufferObject = 0;
             }
-
         }
 
         public void Initialize(ImGuiIOPtr io)
@@ -129,64 +159,49 @@ namespace Ryujinx.Graphics.OpenGL
             GL.GetInteger(GetPName.ArrayBufferBinding, out var lastArrayBuffer);
             GL.GetInteger(GetPName.VertexArrayBinding, out var lastVertexArray);
 
-            using (var fragmentShaderStream = LoadResource("Ryujinx.Graphics.OpenGL.Shaders.hudshader.frag"))
-            {
-                using (var vertexShaderStream = LoadResource("Ryujinx.Graphics.OpenGL.Shaders.hudshader.vert"))
-                {
-                    var buffer = new byte[fragmentShaderStream.Length];
-                    fragmentShaderStream.Read(buffer);
-                    string fragmentShaderSource = Encoding.ASCII.GetString(buffer);
+            _hudFragmentShader = GL.CreateShader(ShaderType.FragmentShader);
+            _hudVertexShader = GL.CreateShader(ShaderType.VertexShader);
 
-                    buffer = new byte[vertexShaderStream.Length];
-                    vertexShaderStream.Read(buffer);
-                    string vertexShaderSource = Encoding.ASCII.GetString(buffer);
+            GL.ShaderSource(_hudFragmentShader, fragment_shader);
+            GL.CompileShader(_hudFragmentShader);
+            CheckShader(_hudFragmentShader);
 
-                    _hudFragmentShader = GL.CreateShader(ShaderType.FragmentShader);
-                    _hudVertexShader = GL.CreateShader(ShaderType.VertexShader);
+            GL.ShaderSource(_hudVertexShader, vertex_shader);
+            GL.CompileShader(_hudVertexShader);
+            CheckShader(_hudVertexShader);
 
-                    GL.ShaderSource(_hudFragmentShader, fragmentShaderSource);
-                    GL.CompileShader(_hudFragmentShader);
-                    CheckShader(_hudFragmentShader);
+            _hudShaderProgram = GL.CreateProgram();
+            GL.AttachShader(_hudShaderProgram, _hudFragmentShader);
+            GL.AttachShader(_hudShaderProgram, _hudVertexShader);
+            GL.LinkProgram(_hudShaderProgram);
+            CheckProgram(_hudShaderProgram);
 
+            _attribLocationTex = GL.GetUniformLocation(_hudShaderProgram, "Texture");
+            _attribLocationProjMtx = GL.GetUniformLocation(_hudShaderProgram, "ProjMtx");
+            _attribLocationVtxPos = GL.GetAttribLocation(_hudShaderProgram, "Position");
+            _attribLocationVtxUv = GL.GetAttribLocation(_hudShaderProgram, "UV");
+            _attribLocationVtxColor = GL.GetAttribLocation(_hudShaderProgram, "Color");
 
-                    GL.ShaderSource(_hudVertexShader, vertexShaderSource);
-                    GL.CompileShader(_hudVertexShader);
-                    CheckShader(_hudVertexShader);
+            _elementsHandle = GL.GenBuffer();
+            _vboHandle = GL.GenBuffer();
 
-                    _hudShaderProgram = GL.CreateProgram();
-                    GL.AttachShader(_hudShaderProgram, _hudFragmentShader);
-                    GL.AttachShader(_hudShaderProgram, _hudVertexShader);
-                    GL.LinkProgram(_hudShaderProgram);
-                    CheckProgram(_hudShaderProgram);
+            // Create Font.
+            _io.Fonts.GetTexDataAsRGBA32(out IntPtr pixels, out var width, out var height);
 
-                    _attribLocationTex = GL.GetUniformLocation(_hudShaderProgram, "Texture");
-                    _attribLocationProjMtx = GL.GetUniformLocation(_hudShaderProgram, "ProjMtx");
-                    _attribLocationVtxPos = GL.GetAttribLocation(_hudShaderProgram, "Position");
-                    _attribLocationVtxUv = GL.GetAttribLocation(_hudShaderProgram, "UV");
-                    _attribLocationVtxColor = GL.GetAttribLocation(_hudShaderProgram, "Color");
+            _fontTexture = GL.GenTexture();
+            GL.BindTexture(TextureTarget.Texture2D, _fontTexture);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
 
-                    _elementsHandle = GL.GenBuffer();
-                    _vboHandle = GL.GenBuffer();
+            GL.PixelStore(PixelStoreParameter.UnpackRowLength, 0);
+            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, pixels);
+            _io.Fonts.SetTexID((IntPtr)_fontTexture);
 
-                    //Create Font
-                    _io.Fonts.GetTexDataAsRGBA32(out IntPtr pixels, out var width, out var height);
+            UpdateRenderTarget(100, 100);
 
-                    _fontTexture = GL.GenTexture();
-                    GL.BindTexture(TextureTarget.Texture2D, _fontTexture);
-                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
-                    GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-
-                    GL.PixelStore(PixelStoreParameter.UnpackRowLength, 0);
-                    GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, pixels);
-                    _io.Fonts.SetTexID((IntPtr)_fontTexture);
-
-                    UpdateRenderTarget(100, 100);
-
-                    GL.BindTexture(TextureTarget.Texture2D, lastTexture);
-                    GL.BindBuffer(BufferTarget.ArrayBuffer, lastArrayBuffer);
-                    GL.BindVertexArray(lastVertexArray);
-                }
-            }
+            GL.BindTexture(TextureTarget.Texture2D, lastTexture);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, lastArrayBuffer);
+            GL.BindVertexArray(lastVertexArray);
 
             GL.LinkProgram(0);
 
@@ -203,22 +218,22 @@ namespace Ryujinx.Graphics.OpenGL
         private void BindFramebuffer()
         {
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, _renderTarget.Framebuffer);
-            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, _renderTarget.Framebuffer);
             GL.ActiveTexture(TextureUnit.Texture0);
         }
 
         private void UnbindFramebuffer()
         {
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
-            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);
-            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, 0);
             GL.BindTexture(TextureTarget.Texture2D, 0);
         }
 
         private void CheckShader(int handle)
         {
             GL.GetShader(handle, ShaderParameter.CompileStatus, out var status);
-            if (status != 0) return;
+            if (status != 0)
+            {
+                return;
+            }
 
             GL.GetShader(handle, ShaderParameter.InfoLogLength, out var logLength);
             GL.GetShaderInfoLog(handle, logLength, out _, out var info);
@@ -262,6 +277,7 @@ namespace Ryujinx.Graphics.OpenGL
                 new(0.0f, 0.0f, -1.0f, 0.0f),
                 new((r + l) / (l - r), (t + b) / (b - t), 0.0f, 1.0f)
             );
+
             GL.UseProgram(_hudShaderProgram);
             GL.Uniform1(_attribLocationTex, 0);
             GL.UniformMatrix4(_attribLocationProjMtx, false, ref orthoProjection);
@@ -277,11 +293,11 @@ namespace Ryujinx.Graphics.OpenGL
             GL.EnableVertexAttribArray(_attribLocationVtxColor);
 
             GL.VertexAttribPointer(_attribLocationVtxPos, 2, VertexAttribPointerType.Float, false, Unsafe.SizeOf<ImDrawVert>(),
-                Marshal.OffsetOf<ImDrawVert>("pos"));
+                0);
             GL.VertexAttribPointer(_attribLocationVtxUv, 2, VertexAttribPointerType.Float, false, Unsafe.SizeOf<ImDrawVert>(),
-                Marshal.OffsetOf<ImDrawVert>("uv"));
+                8);
             GL.VertexAttribPointer(_attribLocationVtxColor, 4, VertexAttribPointerType.UnsignedByte, true, Unsafe.SizeOf<ImDrawVert>(),
-                Marshal.OffsetOf<ImDrawVert>("col"));
+                16);
         }
 
         public void Render(ImDrawDataPtr drawData, int texture)
@@ -289,11 +305,12 @@ namespace Ryujinx.Graphics.OpenGL
             if (drawData.CmdListsCount == 0)
                 return;
 
-
             var fbWidth = (int)(drawData.DisplaySize.X * drawData.FramebufferScale.X);
             var fbHeight = (int)(drawData.DisplaySize.Y * drawData.FramebufferScale.Y);
             if (fbWidth <= 0 || fbHeight <= 0)
+            {
                 return;
+            }
 
             var vertexArrayObject = GL.GenVertexArray();
             BindHudData(drawData, fbWidth, fbHeight, vertexArrayObject, texture);
@@ -313,8 +330,6 @@ namespace Ryujinx.Graphics.OpenGL
                 for (var cmdI = 0; cmdI < cmdList.CmdBuffer.Size; cmdI++)
                 {
                     var pcmd = cmdList.CmdBuffer[cmdI];
-                    if (pcmd.UserCallback != IntPtr.Zero)
-                        throw new NotImplementedException();
 
                     var clipRect = new Vector4
                     {
@@ -352,16 +367,10 @@ namespace Ryujinx.Graphics.OpenGL
             GL.Disable(EnableCap.DepthTest);
             GL.Disable(EnableCap.StencilTest);
             GL.Disable(EnableCap.ScissorTest);
-            GL.Enable(EnableCap.PrimitiveRestart);
             GL.Disable(EnableCap.PrimitiveRestart);
             GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
 
             UnbindFramebuffer();
-        }
-
-        public Stream LoadResource(string name)
-        {
-            return Assembly.GetExecutingAssembly().GetManifestResourceStream(name);
         }
     }
 }

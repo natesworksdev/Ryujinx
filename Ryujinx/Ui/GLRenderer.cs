@@ -128,19 +128,9 @@ namespace Ryujinx.Ui
                 SizeChanged = false;
             }
 
-            var blitStruct = new BlitStruct
-            {
-                SrcX0 = 0,
-                SrcY0 = 0,
-                SrcX1 = AllocatedWidth,
-                SrcY1 = AllocatedHeight,
-                DstX0 = 0,
-                DstY0 = 0,
-                DstX1 = AllocatedWidth,
-                DstY1 = AllocatedHeight
-            };
+            var blitRegion = new BlitRegion(0, 0, AllocatedWidth, AllocatedHeight);
 
-            GLHelper.BlitFramebuffer(boundFrameBuffer, ConfigurationState.Instance.ShowOsd ? _stagingRenderTarget.Framebuffer : 0, blitStruct);
+            GLHelper.BlitFramebuffer(boundFrameBuffer, ConfigurationState.Instance.ShowOsd ? _stagingRenderTarget.Framebuffer : 0, blitRegion, blitRegion);
 
             if (ConfigurationState.Instance.ShowOsd)
             {
@@ -152,7 +142,7 @@ namespace Ryujinx.Ui
                 _renderContext.MakeCurrent(null);
                 _gameContext.MakeCurrent(_nativeWindow);
 
-                GLHelper.BlitFramebuffer(_stagingRenderTarget.Framebuffer, 0, blitStruct);
+                GLHelper.BlitFramebuffer(_stagingRenderTarget.Framebuffer, 0, blitRegion, blitRegion);
             }
 
             _nativeWindow.SwapBuffers();

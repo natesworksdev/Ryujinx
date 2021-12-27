@@ -47,6 +47,7 @@ namespace Ryujinx.Headless.SDL2
         public int Height { get; private set; }
 
         protected bool SizeChanged { get; set; }
+        protected bool ShowOsd { get; }
 
         private StatusUpdatedEventArgs _performanceStatus;
 
@@ -68,8 +69,7 @@ namespace Ryujinx.Headless.SDL2
         private AspectRatio _aspectRatio;
         private bool _enableMouse;
 
-        public WindowBase(InputManager inputManager, GraphicsDebugLevel glLogLevel, AspectRatio aspectRatio,
-            bool enableMouse)
+        public WindowBase(InputManager inputManager, GraphicsDebugLevel glLogLevel, AspectRatio aspectRatio, bool enableMouse, bool showOsd)
         {
             MouseDriver = new SDL2MouseDriver();
             _inputManager = inputManager;
@@ -83,6 +83,8 @@ namespace Ryujinx.Headless.SDL2
             _exitEvent = new ManualResetEvent(false);
             _aspectRatio = aspectRatio;
             _enableMouse = enableMouse;
+
+            ShowOsd = showOsd;
             HostUiTheme = new HeadlessHostUiTheme();
 
             SDL2Driver.Instance.Initialize();

@@ -5,9 +5,9 @@ namespace Ryujinx.Graphics.OpenGL.Helper
 {
     public struct RenderTarget : IDisposable
     {
-        public int Framebuffer { get; set; }
-        public int Renderbuffer { get; set; }
-        public int Texture { get; set; }
+        public int Framebuffer { get; private set; }
+        public int Renderbuffer { get; private set; }
+        public int Texture { get; private set; }
 
         public RenderTarget(int framebuffer, int renderbuffer, int texture)
         {

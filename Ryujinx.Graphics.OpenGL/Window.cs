@@ -54,14 +54,13 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void SetSize(int width, int height)
         {
-            _width  = width;
+            _width = width;
             _height = height;
             _sizeChanged = true;
         }
 
         private void CopyTextureToFrameBufferRGB(int drawFramebuffer, int readFramebuffer, TextureView view, ImageCrop crop)
         {
-
             GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, drawFramebuffer);
             GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, readFramebuffer);
 
@@ -203,7 +202,7 @@ namespace Ryujinx.Graphics.OpenGL
                 _copyFramebufferHandle = 0;
             }
 
-            if(_drawRenderTarget.Framebuffer != 0)
+            if (_drawRenderTarget.Framebuffer != 0)
             {
                 _drawRenderTarget.Dispose();
             }

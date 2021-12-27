@@ -107,7 +107,7 @@ namespace Ryujinx.Headless.SDL2.OpenGL
         private RenderTarget _stagingRenderTarget;
         private IntPtr _hudWindowHandle;
 
-        public OpenGLWindow(InputManager inputManager, GraphicsDebugLevel glLogLevel, AspectRatio aspectRatio, bool enableMouse) : base(inputManager, glLogLevel, aspectRatio, enableMouse)
+        public OpenGLWindow(InputManager inputManager, GraphicsDebugLevel glLogLevel, AspectRatio aspectRatio, bool enableMouse, bool showOsd) : base(inputManager, glLogLevel, aspectRatio, enableMouse, showOsd)
         {
             _glLogLevel = glLogLevel;
         }
@@ -140,7 +140,7 @@ namespace Ryujinx.Headless.SDL2.OpenGL
             _openGLContext.MakeCurrent();
 
             SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
-            _hudWindowHandle = SDL_CreateWindow("Ryujinx osd context window", 0, 0, DefaultWidth, DefaultHeight, SDL_WindowFlags.SDL_WINDOW_OPENGL | SDL_WindowFlags.SDL_WINDOW_HIDDEN);
+            _hudWindowHandle = SDL_CreateWindow("Ryujinx OSD Context Window", 0, 0, DefaultWidth, DefaultHeight, SDL_WindowFlags.SDL_WINDOW_OPENGL | SDL_WindowFlags.SDL_WINDOW_HIDDEN);
             context = SDL_GL_CreateContext(_hudWindowHandle);
             _hudContext = new SDL2OpenGLContext(context, _hudWindowHandle, true);
             
@@ -193,21 +193,11 @@ namespace Ryujinx.Headless.SDL2.OpenGL
                 SizeChanged = false;
             }
 
-            var blitStruct = new BlitStruct
-            {
-                SrcX0 = 0,
-                SrcY0 = 0,
-                SrcX1 = Width,
-                SrcY1 = Height,
-                DstX0 = 0,
-                DstY0 = 0,
-                DstX1 = Width,
-                DstY1 = Height
-            };
+            var blitRegion = new BlitRegion(0, 0, Width, Height);
 
-            GLHelper.BlitFramebuffer(boundFrameBuffer, (bool)Program.Options.ShowOsd ? _stagingRenderTarget.Framebuffer : 0, blitStruct);
+            GLHelper.BlitFramebuffer(boundFrameBuffer, ShowOsd ? _stagingRenderTarget.Framebuffer : 0, blitRegion, blitRegion);
 
-            if ((bool)Program.Options.ShowOsd)
+            if ((bool)ShowOsd)
             {
                 SDL_GL_MakeCurrent(WindowHandle, IntPtr.Zero);
                 _hudContext.MakeCurrent();
@@ -217,7 +207,7 @@ namespace Ryujinx.Headless.SDL2.OpenGL
                 SDL_GL_MakeCurrent(_hudWindowHandle, IntPtr.Zero);
                 _openGLContext.MakeCurrent();
                 
-                GLHelper.BlitFramebuffer(_stagingRenderTarget.Framebuffer, 0, blitStruct);
+                GLHelper.BlitFramebuffer(_stagingRenderTarget.Framebuffer, 0, blitRegion, blitRegion);
             }
             
             SDL_GL_SwapWindow(WindowHandle);
