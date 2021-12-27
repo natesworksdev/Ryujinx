@@ -90,7 +90,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void Initialize(Renderer renderer)
         {
-            _supportBuffer = new GAL.SupportBufferUpdater(renderer);
+            _supportBuffer = new SupportBufferUpdater(renderer);
             GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 0, Unsafe.As<BufferHandle, int>(ref _supportBuffer.Handle));
 
             _supportBuffer.UpdateFragmentIsBgra(_fpIsBgra, 0, SupportBuffer.FragmentIsBgraCount);

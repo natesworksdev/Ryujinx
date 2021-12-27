@@ -248,7 +248,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                             {
                                 Texture activeTarget = _channel.TextureManager.GetAnyRenderTarget();
 
-                                if (activeTarget != null && activeTarget.Info.Width / (float)texture.Info.Width == activeTarget.Info.Height / (float)texture.Info.Height)
+                                if (activeTarget != null && (activeTarget.Info.Width / (float)texture.Info.Width) == (activeTarget.Info.Height / (float)texture.Info.Height))
                                 {
                                     // If the texture's size is a multiple of the sampler size, enable interpolation using gl_FragCoord. (helps "invent" new integer values between scaled pixels)
                                     result = -scale;

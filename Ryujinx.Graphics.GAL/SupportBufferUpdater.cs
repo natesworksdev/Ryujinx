@@ -11,8 +11,8 @@ namespace Ryujinx.Graphics.GAL
         public BufferHandle Handle;
 
         private IRenderer _renderer;
-        private int _startOffset;
-        private int _endOffset;
+        private int _startOffset = -1;
+        private int _endOffset = -1;
 
         public SupportBufferUpdater(IRenderer renderer)
         {

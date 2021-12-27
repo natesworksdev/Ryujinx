@@ -1,6 +1,5 @@
 using Ryujinx.Common.Memory;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Shader
 {
@@ -27,15 +26,22 @@ namespace Ryujinx.Graphics.Shader
         // One for the render target, 32 for the textures, and 8 for the images.
         public const int RenderScaleMaxCount = 1 + 32 + 8;
 
+        private static int OffsetOf<T>(ref SupportBuffer storage, ref T target)
+        {
+            return (int)Unsafe.ByteOffset(ref Unsafe.As<SupportBuffer, T>(ref storage), ref target);
+        }
+
         static SupportBuffer()
         {
             FieldSize = Unsafe.SizeOf<Vector4<float>>();
             RequiredSize = Unsafe.SizeOf<SupportBuffer>();
 
-            FragmentAlphaTestOffset = (int)Marshal.OffsetOf<SupportBuffer>(nameof(FragmentAlphaTest));
-            FragmentIsBgraOffset = (int)Marshal.OffsetOf<SupportBuffer>(nameof(FragmentIsBgra));
-            FragmentRenderScaleCountOffset = (int)Marshal.OffsetOf<SupportBuffer>(nameof(FragmentRenderScaleCount));
-            GraphicsRenderScaleOffset = (int)Marshal.OffsetOf<SupportBuffer>(nameof(RenderScale));
+            SupportBuffer instance = new SupportBuffer();
+
+            FragmentAlphaTestOffset = OffsetOf(ref instance, ref instance.FragmentAlphaTest);
+            FragmentIsBgraOffset = OffsetOf(ref instance, ref instance.FragmentIsBgra);
+            FragmentRenderScaleCountOffset = OffsetOf(ref instance, ref instance.FragmentRenderScaleCount);
+            GraphicsRenderScaleOffset = OffsetOf(ref instance, ref instance.RenderScale);
             ComputeRenderScaleOffset = GraphicsRenderScaleOffset + FieldSize;
         }
 
