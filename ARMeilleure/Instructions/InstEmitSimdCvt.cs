@@ -225,7 +225,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitFcvt(context, (op1) => EmitFloorMathCall(context, op1), signed: true, scalar: false);
+                EmitFcvt(context, (op1) => EmitUnaryMathCall(context, nameof(Math.Floor), op1), signed: true, scalar: false);
             }
         }
 
