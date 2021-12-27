@@ -35,7 +35,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
         private bool _prevDrawIndexed;
         private bool _prevTfEnable;
-        private bool _prevYNegate;
 
         /// <summary>
         /// Creates a new instance of the state updater.
@@ -65,7 +64,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     nameof(ThreedClassState.ShaderState)),
 
                 new StateUpdateCallbackEntry(UpdateRasterizerState, nameof(ThreedClassState.RasterizeEnable)),
-                new StateUpdateCallbackEntry(UpdateScissorState, nameof(ThreedClassState.ScissorState)),
+
+                new StateUpdateCallbackEntry(UpdateScissorState,
+                    nameof(ThreedClassState.ScissorState),
+                    nameof(ThreedClassState.ScreenScissorState)),
 
                 new StateUpdateCallbackEntry(UpdateVertexBufferState,
                     nameof(ThreedClassState.VertexBufferDrawState),
@@ -429,9 +431,14 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
                     if (_state.State.YControl.HasFlag(YControl.NegateY))
                     {
-                        ref var transform = ref _state.State.ViewportTransform[index];
-                        int vpHeight = (int)MathF.Abs(transform.ScaleY * 2);
-                        y = vpHeight - height - y;
+                        ref var screenScissor = ref _state.State.ScreenScissorState;
+                        y = screenScissor.Height - height - y;
+
+                        if (y < 0)
+                        {
+                            height -= Math.Abs(y);
+                            y = 0;
+                        }
                     }
 
                     float scale = _channel.TextureManager.RenderTargetScale;
@@ -496,16 +503,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             UpdateDepthMode();
 
             bool flipY = yControl.HasFlag(YControl.NegateY);
-
-            // YNegate also flips the scissor region, so if this register changed,
-            // we may need to update scissor too.
-            // In addition to that, it should also be updated if YNegate is enabled
-            // and the viewport changed, as flipping depends on the viewport dimensions.
-            if (flipY || flipY != _prevYNegate)
-            {
-                UpdateScissorState();
-                _prevYNegate = flipY;
-            }
 
             Span<Viewport> viewports = stackalloc Viewport[Constants.TotalViewports];
 
