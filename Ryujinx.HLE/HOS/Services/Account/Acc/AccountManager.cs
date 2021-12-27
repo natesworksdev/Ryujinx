@@ -43,7 +43,28 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             }
             else
             {
-                OpenUser(_accountSaveDataManager.LastOpened);
+                UserId commandLineUserProfileOverride = default; 
+                var args = Environment.GetCommandLineArgs();
+                for (int i = 0; i < args.Length; ++i)
+                {
+                    string arg = args[i];
+
+                    if (arg == "-p" || arg == "--profile")
+                    {
+                        if (i + 1 >= args.Length)
+                        {
+                            Common.Logging.Logger.Error?.Print(Common.Logging.LogClass.Application, $"Invalid option '{arg}'");
+
+                            continue;
+                        }
+
+                        string profileName = args[++i];
+                        commandLineUserProfileOverride = _profiles.FirstOrDefault(x => x.Value.Name == profileName).Value?.UserId ?? default;
+                        if(commandLineUserProfileOverride.IsNull)
+                            Common.Logging.Logger.Warning?.Print(Common.Logging.LogClass.Application, $"The command line specified profile named '{profileName}' was not found");
+                    }
+                }
+                OpenUser(commandLineUserProfileOverride.IsNull ? _accountSaveDataManager.LastOpened : commandLineUserProfileOverride);
             }
         }
 

@@ -51,6 +51,16 @@ namespace Ryujinx
 
                     baseDirPathArg = args[++i];
                 }
+                else if (arg == "-p" || arg == "--profile")
+                {
+                    if (i + 1 >= args.Length)
+                    {
+                        Logger.Error?.Print(LogClass.Application, $"Invalid option '{arg}'");
+
+                        continue;
+                    }
+                    i++;
+                }
                 else if (arg == "-f" || arg == "--fullscreen")
                 {
                     startFullscreenArg = true;
