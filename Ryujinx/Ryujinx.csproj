@@ -66,7 +66,6 @@
 
   <ItemGroup>
     <None Remove="Ui\MainWindow.glade" />
-    <None Remove="Ui\Resources\blit.comp" />
     <None Remove="Ui\Resources\Controller_JoyConLeft.svg" />
     <None Remove="Ui\Resources\Controller_JoyConPair.svg" />
     <None Remove="Ui\Resources\Controller_JoyConRight.svg" />
