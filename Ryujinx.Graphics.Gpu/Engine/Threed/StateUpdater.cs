@@ -436,7 +436,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
                         if (y < 0)
                         {
-                            height -= Math.Abs(y);
+                            height += y;
                             y = 0;
                         }
                     }
