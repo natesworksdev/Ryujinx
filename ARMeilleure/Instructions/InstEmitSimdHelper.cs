@@ -348,6 +348,19 @@ namespace ARMeilleure.Instructions
             return context.Call(info, n);
         }
 
+        public static Operand EmitFloorMathCall(ArmEmitterContext context, MidpointRounding roundMode, Operand n)
+        {
+            IOpCodeSimd op = (IOpCodeSimd)context.CurrOp;
+
+            string name = nameof(Math.Floor);
+
+            MethodInfo info = (op.Size & 1) == 0
+                ? typeof(MathF).GetMethod(name, new Type[] { typeof(float), typeof(MidpointRounding) })
+                : typeof(Math). GetMethod(name, new Type[] { typeof(double), typeof(MidpointRounding) });
+
+            return context.Call(info, n, Const((int)roundMode));
+        }
+
         public static Operand EmitRoundMathCall(ArmEmitterContext context, MidpointRounding roundMode, Operand n)
         {
             IOpCodeSimd op = (IOpCodeSimd)context.CurrOp;

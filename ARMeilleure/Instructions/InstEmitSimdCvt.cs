@@ -225,7 +225,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitFcvt(context, (op1) => EmitRoundMathCall(context, MidpointRounding.ToNegativeInfinity, op1), signed: true, scalar: false);
+                EmitFcvt(context, (op1) => EmitFloorMathCall(context, MidpointRounding.ToNegativeInfinity, op1), signed: true, scalar: false);
             }
         }
 
