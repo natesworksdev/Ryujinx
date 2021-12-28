@@ -944,6 +944,8 @@ namespace Ryujinx.Configuration
                     ShowUi = configurationFileFormat.Hotkeys.ShowUi,
                     Pause = Key.F5
                 };
+
+                configurationFileUpdated = true;
             }
 
             if (configurationFileFormat.Version < 33)
