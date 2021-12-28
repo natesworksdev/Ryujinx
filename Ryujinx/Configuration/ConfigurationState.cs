@@ -950,22 +950,6 @@ namespace Ryujinx.Configuration
             {
                 Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 33.");
 
-                foreach (InputConfig config in configurationFileFormat.InputConfig)
-                {
-                    if (config is StandardControllerInputConfig controllerConfig)
-                    {
-                        controllerConfig.RangeLeft  = 1.0f;
-                        controllerConfig.RangeRight = 1.0f;
-                    }
-                }
-                
-                configurationFileUpdated = true;
-            }
-
-            if (configurationFileFormat.Version < 33)
-            {
-                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 33.");
-
                 configurationFileFormat.Hotkeys = new KeyboardHotkeys
                 {
                     ToggleVsync = configurationFileFormat.Hotkeys.ToggleVsync,
@@ -989,6 +973,21 @@ namespace Ryujinx.Configuration
                 configurationFileUpdated = true;
             }
 
+            if (configurationFileFormat.Version < 35)
+            {
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 35.");
+
+                foreach (InputConfig config in configurationFileFormat.InputConfig)
+                {
+                    if (config is StandardControllerInputConfig controllerConfig)
+                    {
+                        controllerConfig.RangeLeft  = 1.0f;
+                        controllerConfig.RangeRight = 1.0f;
+                    }
+                }
+                
+                configurationFileUpdated = true;
+            }
             Logger.EnableFileLog.Value             = configurationFileFormat.EnableFileLog;
             Graphics.BackendThreading.Value        = configurationFileFormat.BackendThreading;
             Graphics.ResScale.Value                = configurationFileFormat.ResScale;
