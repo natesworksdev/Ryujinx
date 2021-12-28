@@ -324,14 +324,14 @@ namespace Ryujinx.Cpu
         /// <inheritdoc/>
         public WritableRegion GetWritableRegion(ulong va, int size, bool tracked = false)
         {
-            if (tracked)
-            {
-                SignalMemoryTracking(va, (ulong)size, true);
-            }
-
             if (size == 0)
             {
                 return new WritableRegion(null, va, Memory<byte>.Empty);
+            }
+
+            if (tracked)
+            {
+                SignalMemoryTracking(va, (ulong)size, true);
             }
 
             if (IsContiguousAndMapped(va, size))
@@ -342,7 +342,7 @@ namespace Ryujinx.Cpu
             {
                 Memory<byte> memory = new byte[size];
 
-                GetSpan(va, size).CopyTo(memory.Span);
+                ReadImpl(va, memory.Span);
 
                 return new WritableRegion(this, va, memory);
             }
@@ -849,17 +849,6 @@ namespace Ryujinx.Cpu
             }
         }
 
-        private ulong GetPhysicalAddress(ulong va)
-        {
-            // We return -1L if the virtual address is invalid or unmapped.
-            if (!ValidateAddress(va) || !IsMapped(va))
-            {
-                return ulong.MaxValue;
-            }
-
-            return GetPhysicalAddressInternal(va);
-        }
-
         private ulong GetPhysicalAddressInternal(ulong va)
         {
             return _pageTable.Read(va) + (va & PageMask);
@@ -874,6 +863,6 @@ namespace Ryujinx.Cpu
             _memoryEh.Dispose();
         }
 
-        private void ThrowInvalidMemoryRegionException(string message) => throw new InvalidMemoryRegionException(message);
+        private static void ThrowInvalidMemoryRegionException(string message) => throw new InvalidMemoryRegionException(message);
     }
 }

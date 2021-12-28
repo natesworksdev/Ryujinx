@@ -1,6 +1,5 @@
 ﻿using Ryujinx.Memory.WindowsShared;
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
@@ -13,11 +12,6 @@ namespace Ryujinx.Memory
 
         private static readonly IntPtr InvalidHandleValue = new IntPtr(-1);
         private static readonly IntPtr CurrentProcessHandle = new IntPtr(-1);
-        private static bool UseWin10Placeholders;
-
-        private static object _emulatedHandleLock = new object();
-        private static EmulatedSharedMemoryWindows[] _emulatedShared = new EmulatedSharedMemoryWindows[64];
-        private static List<EmulatedSharedMemoryWindows> _emulatedSharedList = new List<EmulatedSharedMemoryWindows>();
 
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern IntPtr VirtualAlloc(
@@ -86,11 +80,6 @@ namespace Ryujinx.Memory
 
         [DllImport("kernel32.dll")]
         private static extern uint GetLastError();
-
-        static MemoryManagementWindows()
-        {
-            UseWin10Placeholders = OperatingSystem.IsWindowsVersionAtLeast(10, 0, 17134);
-        }
 
         public static IntPtr Allocate(IntPtr size)
         {
@@ -186,24 +175,21 @@ namespace Ryujinx.Memory
             }
         }
 
-        public static bool Reprotect(IntPtr address, IntPtr size, MemoryPermission permission)
+        public static bool Reprotect(IntPtr address, IntPtr size, MemoryPermission permission, bool forView)
         {
-            if (UseWin10Placeholders)
+            if (forView)
             {
                 ulong uaddress = (ulong)address;
                 ulong usize = (ulong)size;
                 while (usize > 0)
                 {
-                    ulong nextGranular = (uaddress & ~EmulatedSharedMemoryWindows.MappingMask) + EmulatedSharedMemoryWindows.MappingGranularity;
-                    ulong mapSize = Math.Min(usize, nextGranular - uaddress);
-
-                    if (!VirtualProtect((IntPtr)uaddress, (IntPtr)mapSize, GetProtection(permission), out _))
+                    if (!VirtualProtect((IntPtr)uaddress, (IntPtr)PageSize, GetProtection(permission), out _))
                     {
                         return false;
                     }
 
-                    uaddress = nextGranular;
-                    usize -= mapSize;
+                    uaddress += PageSize;
+                    usize -= PageSize;
                 }
 
                 return true;
@@ -231,27 +217,6 @@ namespace Ryujinx.Memory
         public static bool Free(IntPtr address)
         {
             return VirtualFree(address, IntPtr.Zero, AllocationType.Release);
-        }
-
-        private static int GetEmulatedHandle()
-        {
-            // Assumes we have the handle lock.
-
-            for (int i = 0; i < _emulatedShared.Length; i++)
-            {
-                if (_emulatedShared[i] == null)
-                {
-                    return i + 1;
-                }
-            }
-
-            throw new InvalidProgramException("Too many shared memory handles were created.");
-        }
-
-        public static bool EmulatedHandleValid(ref int handle)
-        {
-            handle--;
-            return handle >= 0 && handle < _emulatedShared.Length && _emulatedShared[handle] != null;
         }
 
         public static IntPtr CreateSharedMemory(IntPtr size, bool reserve)

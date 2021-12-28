@@ -108,7 +108,7 @@ namespace Ryujinx.Memory
             }
         }
 
-        public static void Reprotect(IntPtr address, ulong size, MemoryPermission permission, bool throwOnFail)
+        public static void Reprotect(IntPtr address, ulong size, MemoryPermission permission, bool forView, bool throwOnFail)
         {
             bool result;
 
@@ -116,7 +116,7 @@ namespace Ryujinx.Memory
             {
                 IntPtr sizeNint = new IntPtr((long)size);
 
-                result = MemoryManagementWindows.Reprotect(address, sizeNint, permission);
+                result = MemoryManagementWindows.Reprotect(address, sizeNint, permission, forView);
             }
             else if (OperatingSystem.IsLinux() ||
                      OperatingSystem.IsMacOS())
