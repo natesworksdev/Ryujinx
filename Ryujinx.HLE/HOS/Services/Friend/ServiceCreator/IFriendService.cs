@@ -133,7 +133,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 
             // TODO: Service mount the friends:/ system savedata and try to load friend.cache file, returns true if exists, false otherwise. 
             // NOTE: If no cache is available, guest then calls nn::friends::EnsureFriendListAvailable, we can avoid that by faking the cache check.
-            context.ResponseData.Write(1);
+            context.ResponseData.Write(true);
 
             // TODO: Since we don't support friend features, it's fine to stub it for now.
             Logger.Stub?.PrintStub(LogClass.ServiceFriend, new { UserId = userId.ToString() });
