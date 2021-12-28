@@ -21,6 +21,11 @@ namespace Ryujinx.HLE.HOS
         {
             MemoryManagerMode mode = context.Device.Configuration.MemoryManagerMode;
 
+            if (!MemoryBlock.SupportsFlags(MemoryAllocationFlags.ViewCompatible))
+            {
+                mode = MemoryManagerMode.SoftwarePageTable;
+            }
+
             switch (mode)
             {
                 case MemoryManagerMode.SoftwarePageTable:

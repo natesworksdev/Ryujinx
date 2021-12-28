@@ -11,6 +11,7 @@ namespace Ryujinx.Memory
     {
         private readonly bool _usesSharedMemory;
         private readonly bool _isMirror;
+        private readonly bool _viewCompatible;
         private IntPtr _sharedMemory;
         private IntPtr _pointer;
 
@@ -41,7 +42,8 @@ namespace Ryujinx.Memory
             }
             else if (flags.HasFlag(MemoryAllocationFlags.Reserve))
             {
-                _pointer = MemoryManagement.Reserve(size, flags.HasFlag(MemoryAllocationFlags.ViewCompatible));
+                _viewCompatible = flags.HasFlag(MemoryAllocationFlags.ViewCompatible);
+                _pointer = MemoryManagement.Reserve(size, _viewCompatible);
             }
             else
             {
@@ -154,7 +156,7 @@ namespace Ryujinx.Memory
         /// <exception cref="MemoryProtectionException">Throw when <paramref name="permission"/> is invalid</exception>
         public void Reprotect(ulong offset, ulong size, MemoryPermission permission, bool throwOnFail = true)
         {
-            MemoryManagement.Reprotect(GetPointerInternal(offset, size), size, permission, throwOnFail);
+            MemoryManagement.Reprotect(GetPointerInternal(offset, size), size, permission, _viewCompatible, throwOnFail);
         }
 
         /// <summary>
@@ -412,7 +414,27 @@ namespace Ryujinx.Memory
             }
         }
 
-        private void ThrowObjectDisposed() => throw new ObjectDisposedException(nameof(MemoryBlock));
-        private void ThrowInvalidMemoryRegionException() => throw new InvalidMemoryRegionException();
+        /// <summary>
+        /// Checks if the specified memory allocation flags are supported on the current platform.
+        /// </summary>
+        /// <param name="flags">Flags to be checked</param>
+        /// <returns>True if the platform supports all the flags, false otherwise</returns>
+        public static bool SupportsFlags(MemoryAllocationFlags flags)
+        {
+            if (flags.HasFlag(MemoryAllocationFlags.ViewCompatible))
+            {
+                if (OperatingSystem.IsWindows())
+                {
+                    return OperatingSystem.IsWindowsVersionAtLeast(10, 0, 17134);
+                }
+
+                return OperatingSystem.IsLinux() || OperatingSystem.IsMacOS();
+            }
+
+            return true;
+        }
+
+        private static void ThrowObjectDisposed() => throw new ObjectDisposedException(nameof(MemoryBlock));
+        private static void ThrowInvalidMemoryRegionException() => throw new InvalidMemoryRegionException();
     }
 }
