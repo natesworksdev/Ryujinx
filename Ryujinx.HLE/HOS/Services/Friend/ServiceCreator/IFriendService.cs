@@ -120,7 +120,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
             return ResultCode.Success;
         }
 
-        [CommandHipc(10120)]
+        [CommandHipc(10120)] // 10.0.0+
         // nn::friends::IsFriendListCacheAvailable(nn::account::Uid userId) -> bool
         public ResultCode IsFriendListCacheAvailable(ServiceCtx context)
         {
@@ -141,7 +141,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
             return ResultCode.Success;
         }
 
-        [CommandHipc(10121)]
+        [CommandHipc(10121)] // 10.0.0+
         // nn::friends::EnsureFriendListAvailable(nn::account::Uid userId)
         public ResultCode EnsureFriendListAvailable(ServiceCtx context)
         {
