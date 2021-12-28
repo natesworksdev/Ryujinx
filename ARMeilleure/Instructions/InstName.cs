@@ -190,6 +190,7 @@ namespace ARMeilleure.Instructions
         Fcvtms_Gp,
         Fcvtmu_Gp,
         Fcvtn_V,
+        Fcvtns_Gp,
         Fcvtns_S,
         Fcvtns_V,
         Fcvtnu_S,
