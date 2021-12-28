@@ -136,6 +136,11 @@ namespace Ryujinx.Memory
             return false;
         }
 
+        public static bool Unmap(IntPtr address, ulong size)
+        {
+            return munmap(address, size) == 0;
+        }
+
         public static IntPtr Remap(IntPtr target, IntPtr source, ulong size)
         {
             int flags = 1;
