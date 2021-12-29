@@ -526,7 +526,7 @@ namespace Ryujinx.Ui.Windows
                     _enableMotion.Active              = controllerConfig.Motion.EnableMotion;
                     _enableCemuHook.Active            = controllerConfig.Motion.MotionBackend == MotionInputBackendType.CemuHook;
 
-                    //If both stick ranges are 0 (usually indicative of an outdated profile load) then both sticks will be set to 1.0
+                    // If both stick ranges are 0 (usually indicative of an outdated profile load) then both sticks will be set to 1.0.
                     if (_controllerRangeLeft.Value <= 0.0 && _controllerRangeRight.Value <= 0.0)
                     {
                         _controllerRangeLeft.Value  = 1.0;

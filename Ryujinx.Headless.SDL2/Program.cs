@@ -301,7 +301,7 @@ namespace Ryujinx.Headless.SDL2
 
             Logger.Info?.Print(LogClass.Application, $"{config.PlayerIndex} configured with {inputTypeName} \"{config.Id}\"");
 
-            //If both stick ranges are 0 (usually indicative of an outdated profile load) then both sticks will be set to 1.0
+            // If both stick ranges are 0 (usually indicative of an outdated profile load) then both sticks will be set to 1.0.
             if (config is StandardControllerInputConfig controllerConfig)
             {
                 if (controllerConfig.RangeLeft <= 0.0f && controllerConfig.RangeRight <= 0.0f)
