@@ -34,23 +34,18 @@ namespace Ryujinx.Input.Avalonia
         {
             Scroll = new Vector2((float)args.Delta.X, (float)args.Delta.Y);
         }
-        
+
         private void Parent_PointerReleaseEvent(object o, PointerReleasedEventArgs args)
         {
-            if (args.InitialPressMouseButton != global::Avalonia.Input.MouseButton.None)
-            {
-                PressedButtons[(int) (args.InitialPressMouseButton - 1)] = false;
-            }
+            var pointerProperties = args.GetCurrentPoint(_widget).Properties;
+            PressedButtons[(int)args.InitialPressMouseButton -1] = false;
         }
-        
+
         private void Parent_PointerPressEvent(object o, PointerPressedEventArgs args)
         {
             var pointerProperties = args.GetCurrentPoint(_widget).Properties;
 
-            if (pointerProperties.PointerUpdateKind > PointerUpdateKind.XButton2Pressed)
-            {
-                PressedButtons[(int)(pointerProperties.PointerUpdateKind)] = true;
-            }
+            PressedButtons[(int)(pointerProperties.PointerUpdateKind)] = true;
         }
 
         private void Parent_PointerMovedEvent(object o, PointerEventArgs args)

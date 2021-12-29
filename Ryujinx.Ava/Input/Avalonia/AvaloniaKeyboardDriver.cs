@@ -67,22 +67,9 @@ namespace Ryujinx.Input.Avalonia
             return new AvaloniaKeyboard(this, _keyboardIdentifers[0], "All keyboards");
         }
 
-        public void AddControl(NativeEmbeddedWindow control)
-        {
-            control.KeyPressed += OnKeyPress;
-            control.KeyReleased += OnKeyRelease;
-            control.TextInput += OnTextInput;
-        }
-
         private void OnTextInput(object? sender, TextInputEventArgs e)
         {
             TextInput?.Invoke(this, e);
-        }
-
-        public void RemoveControl(NativeEmbeddedWindow control)
-        {
-            control.KeyPressed -= OnKeyPress;
-            control.KeyReleased -= OnKeyRelease;
         }
 
         protected virtual void Dispose(bool disposing)

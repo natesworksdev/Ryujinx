@@ -65,7 +65,7 @@ namespace Ryujinx.Ava.Ui.Windows
         public AppHost      AppHost      { get; private set; }
         public InputManager InputManager { get; private set; }
 
-        public NativeEmbeddedWindow GlRenderer      { get; private set; }
+        public RendererBase         GlRenderer      { get; private set; }
         public ContentControl       ContentFrame    { get; private set; }
         public TextBlock            LoadStatus      { get; private set; }
         public TextBlock            FirmwareStatus  { get; private set; }
@@ -256,11 +256,10 @@ namespace Ryujinx.Ava.Ui.Windows
 
             _mainViewContent = ContentFrame.Content as Control;
 
-            GlRenderer = new OpenGlEmbeddedWindow(3, 3, ConfigurationState.Instance.Logger.GraphicsDebugLevel, PlatformImpl.DesktopScaling);
+            GlRenderer = new OpenGlRenderer(3, 3, ConfigurationState.Instance.Logger.GraphicsDebugLevel);
             AppHost    = new AppHost(GlRenderer, InputManager, path, VirtualFileSystem, ContentManager, AccountManager, _userChannelPersistence, this);
 
-            GlRenderer.WindowCreated += GlRenderer_Created;
-            GlRenderer.Start();
+            GlRenderer.GlInitialized += GlRenderer_Created;
 
             ContentDialogHelper.UseModalOverlay = true;
 
@@ -300,7 +299,7 @@ namespace Ryujinx.Ava.Ui.Windows
             });
         }
 
-        private void GlRenderer_Created(object sender, IntPtr e)
+        private void GlRenderer_Created(object sender, EventArgs e)
         {
             ShowLoading();
             
@@ -325,8 +324,8 @@ namespace Ryujinx.Ava.Ui.Windows
 
                 ViewModel.ShowMenuAndStatusBar = true;
             });
-            GlRenderer.WindowCreated -= GlRenderer_Created;
-            GlRenderer.Destroy();
+            GlRenderer.GlInitialized -= GlRenderer_Created;
+            GlRenderer = null;
 
             AppHost = null;
 

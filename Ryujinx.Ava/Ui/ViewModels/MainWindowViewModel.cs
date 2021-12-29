@@ -853,8 +853,6 @@ namespace Ryujinx.Ava.Ui.ViewModels
         private void ApplicationLibrary_ApplicationAdded(object sender, ApplicationAddedEventArgs e)
         {
             AddApplication(e.AppData);
-            
-            //RefreshGrid();
         }
 
         private void ApplicationLibrary_ApplicationCountUpdated(object sender, ApplicationCountUpdatedEventArgs e)

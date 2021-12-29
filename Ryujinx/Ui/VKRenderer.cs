@@ -64,7 +64,7 @@ namespace Ryujinx.Ui
 
         public override void InitializeRenderer() { }
 
-        public override void SwapBuffers() { }
+        public override void SwapBuffers(int image) { }
 
         public override string GetGpuVendorName()
         {

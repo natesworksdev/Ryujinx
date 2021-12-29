@@ -97,7 +97,7 @@ namespace Ryujinx.Ava
         public event EventHandler AppExit;
         public event EventHandler<StatusUpdatedEventArgs> StatusUpdatedEvent;
 
-        public NativeEmbeddedWindow Window            { get; }
+        public RendererBase         Renderer            { get; }
         public VirtualFileSystem    VirtualFileSystem { get; }
         public ContentManager       ContentManager    { get; }
         public Switch               Device  { get; set; }
@@ -111,7 +111,7 @@ namespace Ryujinx.Ava
         public bool ScreenshotRequested { get; set; }
 
         public AppHost(
-            NativeEmbeddedWindow   window,
+            RendererBase           renderer,
             InputManager           inputManager,
             string                 path,
             VirtualFileSystem      virtualFileSystem,
@@ -131,21 +131,15 @@ namespace Ryujinx.Ava
             _ticksPerFrame          = Stopwatch.Frequency / TargetFps;
             _glLogLevel             = ConfigurationState.Instance.Logger.GraphicsDebugLevel;
 
-            _inputManager.SetMouseDriver(new AvaloniaMouseDriver(window));
+            _inputManager.SetMouseDriver(new AvaloniaMouseDriver(renderer));
             NpadManager = _inputManager.CreateNpadManager();
             _keyboardInterface = (IKeyboard)_inputManager.KeyboardDriver.GetGamepad("0");
             TouchScreenManager = _inputManager.CreateTouchScreenManager();
             
-            Window            = window;
+            Renderer            = renderer;
             Path              = path;
             VirtualFileSystem = virtualFileSystem;
             ContentManager    = contentManager;
-
-            ((AvaloniaKeyboardDriver)_inputManager.KeyboardDriver).AddControl(Window);
-
-            window.MouseDown += Window_MouseDown;
-            window.MouseUp   += Window_MouseUp;
-            window.MouseMove += Window_MouseMove;
 
             ConfigurationState.Instance.HideCursorOnIdle.Event += HideCursorState_Changed;
 
@@ -160,7 +154,7 @@ namespace Ryujinx.Ava
 
         private void Parent_PointerLeft(object sender, PointerEventArgs e)
         {
-            Window.Cursor = ConfigurationState.Instance.Hid.EnableMouse ? InvisibleCursor : Cursor.Default;
+            Renderer.Cursor = ConfigurationState.Instance.Hid.EnableMouse ? InvisibleCursor : Cursor.Default;
             
             _isMouseInClient = false;
         }
@@ -277,7 +271,7 @@ namespace Ryujinx.Ava
 
                 _parent.ViewModel.HandleShaderProgress(Device);
 
-                Window.SizeChanged += Window_SizeChanged;
+                Renderer.SizeChanged += Window_SizeChanged;
 
                 _isActive = true;
 
@@ -333,8 +327,6 @@ namespace Ryujinx.Ava
         {
             (_keyboardInterface as AvaloniaKeyboard)?.Clear();
 
-            ((AvaloniaKeyboardDriver)_inputManager.KeyboardDriver).RemoveControl(Window);
-
             if (!_isActive)
             {
                 return;
@@ -355,10 +347,10 @@ namespace Ryujinx.Ava
 
             _isActive = false;
             
-            ConfigurationState.Instance.System.IgnoreMissingServices.Event += UpdateIgnoreMissingServicesState;
-            ConfigurationState.Instance.Graphics.AspectRatio.Event         += UpdateAspectRatioState;
-            ConfigurationState.Instance.System.EnableDockedMode.Event      += UpdateDockedModeState;
-            ConfigurationState.Instance.System.EnableDockedMode.Event      += UpdateDockedModeState;
+            ConfigurationState.Instance.System.IgnoreMissingServices.Event -= UpdateIgnoreMissingServicesState;
+            ConfigurationState.Instance.Graphics.AspectRatio.Event         -= UpdateAspectRatioState;
+            ConfigurationState.Instance.System.EnableDockedMode.Event      -= UpdateDockedModeState;
+            ConfigurationState.Instance.System.EnableDockedMode.Event      -= UpdateDockedModeState;
 
             _mainThread.Join();
             _renderingThread.Join();
@@ -370,7 +362,12 @@ namespace Ryujinx.Ava
             TouchScreenManager.Dispose();
             Device.Dispose();
 
+            OpenGlRenderer glRenderer = _renderer as OpenGlRenderer;
+            glRenderer?.MakeCurrent();
+
             Device.DisposeGpu();
+
+            glRenderer?.MakeCurrent(null);
 
             AppExit?.Invoke(this, EventArgs.Empty);
         }
@@ -811,8 +808,6 @@ namespace Ryujinx.Ava
                 {
                     _parent.ViewModel.ShowMenuAndStatusBar = false;
                 }
-
-                Window.IsFullscreen = _parent.WindowState == WindowState.FullScreen;
             });
 
             IRenderer renderer = Device.Gpu.Renderer;
@@ -826,17 +821,17 @@ namespace Ryujinx.Ava
 
             _renderer.ScreenCaptured += Renderer_ScreenCaptured;
 
-            if (Window is OpenGlEmbeddedWindow openGlEmbeddedWindow)
+            if (Renderer is OpenGlRenderer openGlEmbeddedWindow)
             {
-                (_renderer as Renderer).InitializeBackgroundContext(AvaloniaOpenGLContextHelper.CreateBackgroundContext(Window.GlfwWindow.WindowPtr, _glLogLevel != GraphicsDebugLevel.None));
+                (_renderer as Renderer).InitializeBackgroundContext(SPBOpenGLContext.CreateBackgroundContext(openGlEmbeddedWindow.Context));
 
                 openGlEmbeddedWindow.MakeCurrent();
             }
 
             Device.Gpu.Renderer.Initialize(_glLogLevel);
 
-            Width  = (int)Window.Bounds.Width;
-            Height = (int)Window.Bounds.Height;
+            Width  = (int)Renderer.Bounds.Width;
+            Height = (int)Renderer.Bounds.Height;
 
             _renderer.Window.SetSize((int)(Width * Program.WindowScaleFactor), (int)(Height * Program.WindowScaleFactor));
 
@@ -865,7 +860,7 @@ namespace Ryujinx.Ava
                             _renderingStarted = true;
                             _parent.SwitchToGameControl();
                         }
-                        
+
                         Device.PresentFrame(Present);
                     }
 
@@ -881,6 +876,8 @@ namespace Ryujinx.Ava
 
                         string vendor = _renderer is Renderer renderer ? renderer.GpuVendor : "Vulkan Test";
 
+                        Program.RenderTimer.FrameRate = Device.EnableDeviceVsync ? 60 : 240;  // Set Window Framerate to very high value when vsync is not set
+
                         StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
                             Device.EnableDeviceVsync,
                             Device.GetVolume(),
@@ -895,14 +892,16 @@ namespace Ryujinx.Ava
                 }
             });
 
-            (Window as OpenGlEmbeddedWindow)?.MakeCurrent(null);
+            (Renderer as OpenGlRenderer)?.MakeCurrent(null);
 
-            Window.SizeChanged -= Window_SizeChanged;
+            Renderer.SizeChanged -= Window_SizeChanged;
+
+            Program.RenderTimer.FrameRate = 60;
         }
 
-        private void Present()
+        private void Present(int image)
         {
-            Window.Present();
+            Renderer.Present(image);
         }
 
         private async void HandleScreenState(KeyboardStateSnapshot keyboard)
@@ -950,7 +949,6 @@ namespace Ryujinx.Ava
                 }
             }
 
-            Window.IsFullscreen = fullScreenToggled;
             _toggleFullscreen   = toggleFullscreen;
 
             bool toggleDockedMode = keyboard.IsPressed(Key.F9);
@@ -971,8 +969,6 @@ namespace Ryujinx.Ava
                 Dispatcher.UIThread.Post(() =>
                 {
                     _parent.Cursor = cursorMoveDelta >= CursorHideIdleTime * Stopwatch.Frequency ? InvisibleCursor : Cursor.Default;
-
-                    Window.SetCursor(_parent.Cursor == InvisibleCursor);
                 });
             }
             
@@ -992,7 +988,7 @@ namespace Ryujinx.Ava
                 return false;
             }
 
-            if (_parent.IsActive || Window.RendererFocused)
+            if (_parent.IsActive)
             {
                 Dispatcher.UIThread.Post(() =>
                 {
@@ -1012,7 +1008,7 @@ namespace Ryujinx.Ava
 
             NpadManager.Update(ConfigurationState.Instance.Graphics.AspectRatio.Value.ToFloat());
 
-            if (_parent.IsActive || Window.RendererFocused)
+            if (_parent.IsActive)
             {
                 KeyboardHotkeyState currentHotkeyState = GetHotkeyState();
 
@@ -1075,7 +1071,7 @@ namespace Ryujinx.Ava
 
             // Get screen touch position from left mouse click
             // Get screen touch position
-            if ((_parent.IsActive || Window.RendererFocused) && !ConfigurationState.Instance.Hid.EnableMouse)
+            if (_parent.IsActive && !ConfigurationState.Instance.Hid.EnableMouse)
             {
                 hasTouch = TouchScreenManager.Update(true, (_inputManager.MouseDriver as AvaloniaMouseDriver).IsButtonPressed(MouseButton.Button1), ConfigurationState.Instance.Graphics.AspectRatio.Value.ToFloat());
             }

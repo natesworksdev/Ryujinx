@@ -141,7 +141,7 @@ namespace Ryujinx.Headless.SDL2.OpenGL
 
             GL.ClearColor(0, 0, 0, 1.0f);
             GL.Clear(ClearBufferMask.ColorBufferBit);
-            SwapBuffers();
+            SwapBuffers(0);
 
             Renderer?.Window.SetSize(DefaultWidth, DefaultHeight);
             MouseDriver.SetClientSize(DefaultWidth, DefaultHeight);
@@ -159,8 +159,12 @@ namespace Ryujinx.Headless.SDL2.OpenGL
             _openGLContext.Dispose();
         }
 
-        protected override void SwapBuffers()
+        protected override void SwapBuffers(int image)
         {
+            if (image != 0)
+            {
+                GL.CopyImageSubData(image, ImageTarget.Texture2D, 0, 0, 0, 0, 0, ImageTarget.Texture2D, 0, 0, 0, 0, Width, Height, 1);
+            }
             SDL_GL_SwapWindow(WindowHandle);
         }
     }

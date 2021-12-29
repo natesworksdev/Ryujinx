@@ -99,10 +99,10 @@ namespace Ryujinx.Ui
 
             GL.ClearColor(0, 0, 0, 1.0f);
             GL.Clear(ClearBufferMask.ColorBufferBit);
-            SwapBuffers();
+            SwapBuffers(0);
         }
 
-        public override void SwapBuffers()
+        public override void SwapBuffers(int image)
         {
             _nativeWindow.SwapBuffers();
         }
