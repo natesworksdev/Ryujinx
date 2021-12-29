@@ -159,6 +159,34 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
         }
 
+
+        /// <summary>
+        /// Flushes incompatible overlaps if the storage format requires it, and they have been modified.
+        /// This allows unsupported host formats to accept data written to format aliased textures.
+        /// </summary>
+        /// <returns>True if data was flushed, false otherwise</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool FlushIncompatibleOverlapsIfNeeded()
+        {
+            if (_flushIncompatibleOverlaps && _incompatibleOverlapsDirty)
+            {
+                bool flushed = false;
+
+                foreach (var overlap in _incompatibleOverlaps)
+                {
+                    flushed |= overlap.Group.Storage.FlushModified(true);
+                }
+
+                _incompatibleOverlapsDirty = false;
+
+                return flushed;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         /// <summary>
         /// Check and optionally consume the dirty flags for a given texture.
         /// The state is shared between views of the same layers and levels.
@@ -201,15 +229,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="texture">The texture being used</param>
         public void SynchronizeMemory(Texture texture)
         {
-            if (_flushIncompatibleOverlaps && _incompatibleOverlapsDirty)
-            {
-                foreach (var overlap in _incompatibleOverlaps)
-                {
-                    overlap.Group.Storage.FlushModified(true);
-                }
-
-                _incompatibleOverlapsDirty = false;
-            }
+            FlushIncompatibleOverlapsIfNeeded();
 
             EvaluateRelevantHandles(texture, (baseHandle, regionCount, split) =>
             {
@@ -366,9 +386,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="texture">The texture being used</param>
         /// <param name="tracked">True if the flush writes should be tracked, false otherwise</param>
-        public void FlushModified(Texture texture, bool tracked)
+        /// <returns>True if data was flushed, false otherwise</returns>
+        public bool FlushModified(Texture texture, bool tracked)
         {
             tracked = tracked || ShouldFlushTriggerTracking();
+            bool flushed = false;
 
             EvaluateRelevantHandles(texture, (baseHandle, regionCount, split) =>
             {
@@ -386,6 +408,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                             if (endOffset > offset)
                             {
                                 Storage.Flush(offset, endOffset - offset, tracked);
+                                flushed = true;
                             }
 
                             offset = group.Offset;
@@ -408,10 +431,13 @@ namespace Ryujinx.Graphics.Gpu.Image
                 if (endOffset > offset)
                 {
                     Storage.Flush(offset, endOffset - offset, tracked);
+                    flushed = true;
                 }
             });
 
             Storage.SignalModifiedDirty();
+
+            return flushed;
         }
 
         /// <summary>
@@ -905,7 +931,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                                 }
                             }
 
-                            group.Inherit(oldGroup);
+                            group.Inherit(oldGroup, group.Offset == oldGroup.Offset + relativeOffset);
                         }
                     }
 

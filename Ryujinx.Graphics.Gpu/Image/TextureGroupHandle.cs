@@ -432,21 +432,25 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Inherit modified flags and dependencies from another texture handle.
         /// </summary>
         /// <param name="old">The texture handle to inherit from</param>
-        public void Inherit(TextureGroupHandle old)
+        /// <param name="withCopies">Whether the handle should inherit copy dependencies or not</param>
+        public void Inherit(TextureGroupHandle old, bool withCopies)
         {
             Modified |= old.Modified;
 
-            foreach (TextureDependency dependency in old.Dependencies.ToArray())
+            if (withCopies)
             {
-                CreateCopyDependency(dependency.Other.Handle);
-
-                if (dependency.Other.Handle.DeferredCopy == old)
+                foreach (TextureDependency dependency in old.Dependencies.ToArray())
                 {
-                    dependency.Other.Handle.DeferredCopy = this;
-                }
-            }
+                    CreateCopyDependency(dependency.Other.Handle);
 
-            DeferredCopy = old.DeferredCopy;
+                    if (dependency.Other.Handle.DeferredCopy == old)
+                    {
+                        dependency.Other.Handle.DeferredCopy = this;
+                    }
+                }
+
+                DeferredCopy = old.DeferredCopy;
+            }
         }
 
         /// <summary>

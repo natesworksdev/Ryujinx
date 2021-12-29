@@ -682,15 +682,13 @@ namespace Ryujinx.Graphics.Gpu.Image
                             }
 
                             // The overlap texture is going to contain garbage data after we draw, or is generally incompatible.
-                            // If the texture cannot be entirely contained in the new address space, and one of its view children is compatible with us,
-                            // it must be flushed before removal, so that the data is not lost.
+                            // The texture group will obtain copy dependencies for any subresources that are compatible between the two textures,
+                            // but sometimes its data must be flushed regardless.
 
                             // If the texture was modified since its last use, then that data is probably meant to go into this texture.
                             // If the data has been modified by the CPU, then it also shouldn't be flushed.
 
-                            bool viewCompatibleChild = overlap.HasViewCompatibleChild(texture);
-
-                            bool flush = overlapInCache && !modified && (overlap.AlwaysFlushOnOverlap || (!texture.Range.Contains(overlap.Range) && viewCompatibleChild));
+                            bool flush = overlapInCache && !modified && overlap.AlwaysFlushOnOverlap;
 
                             setData |= modified || flush;
 
@@ -699,7 +697,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                                 _cache.Remove(overlap, flush);
                             }
 
-                            removeOverlap = modified && !viewCompatibleChild;
+                            removeOverlap = modified;
                         }
                         else
                         {

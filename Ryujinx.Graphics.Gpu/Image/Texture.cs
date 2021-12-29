@@ -244,6 +244,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="withData">True if the texture is to be initialized with data</param>
         public void InitializeData(bool isView, bool withData = false)
         {
+            withData |= Group != null && Group.FlushIncompatibleOverlapsIfNeeded();
+
             if (withData)
             {
                 Debug.Assert(!isView);
@@ -840,9 +842,10 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// This may cause data corruption if the memory is already being used for something else on the CPU side.
         /// </summary>
         /// <param name="tracked">Whether or not the flush triggers write tracking. If it doesn't, the texture will not be blacklisted for scaling either.</param>
-        public void FlushModified(bool tracked = true)
+        /// <returns>True if data was flushed, false otherwise</returns>
+        public bool FlushModified(bool tracked = true)
         {
-            Group.FlushModified(this, tracked);
+            return Group.FlushModified(this, tracked);
         }
 
         /// <summary>
