@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 {
     class KSharedMemory : KAutoObject
     {
-        private readonly SharedMemoryStorage _storage;
+        private readonly KPageList _pageList;
 
         private readonly ulong _ownerPid;
 
@@ -20,7 +20,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             KMemoryPermission ownerPermission,
             KMemoryPermission userPermission) : base(context)
         {
-            _storage = storage;
+            _pageList = storage.GetPageList();
             _ownerPid = ownerPid;
             _ownerPermission = ownerPermission;
             _userPermission = userPermission;
@@ -33,10 +33,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             KProcess process,
             KMemoryPermission permission)
         {
-            ulong pagesCountRounded = BitUtils.DivRoundUp(size, KPageTableBase.PageSize);
-
-            var pageList = _storage.GetPageList();
-            if (pageList.GetPagesCount() != pagesCountRounded)
+            if (_pageList.GetPagesCount() != BitUtils.DivRoundUp(size, KPageTableBase.PageSize))
             {
                 return KernelResult.InvalidSize;
             }
@@ -50,22 +47,17 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 return KernelResult.InvalidPermission;
             }
 
-            return memoryManager.MapPages(address, pageList, MemoryState.SharedMemory, permission);
+            return memoryManager.MapPages(address, _pageList, MemoryState.SharedMemory, permission);
         }
 
         public KernelResult UnmapFromProcess(KPageTableBase memoryManager, ulong address, ulong size, KProcess process)
         {
-            ulong pagesCountRounded = BitUtils.DivRoundUp(size, KPageTableBase.PageSize);
-
-            var pageList = _storage.GetPageList();
-            ulong pagesCount = pageList.GetPagesCount();
-
-            if (pagesCount != pagesCountRounded)
+            if (_pageList.GetPagesCount() != BitUtils.DivRoundUp(size, KPageTableBase.PageSize))
             {
                 return KernelResult.InvalidSize;
             }
 
-            return memoryManager.UnmapPages(address, pagesCount, pageList, MemoryState.SharedMemory);
+            return memoryManager.UnmapPages(address, _pageList, MemoryState.SharedMemory);
         }
     }
 }

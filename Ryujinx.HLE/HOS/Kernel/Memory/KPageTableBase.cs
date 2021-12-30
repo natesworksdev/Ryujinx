@@ -376,8 +376,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             }
         }
 
-        public KernelResult UnmapPages(ulong address, ulong pagesCount, KPageList pageList, MemoryState stateExpected)
+        public KernelResult UnmapPages(ulong address, KPageList pageList, MemoryState stateExpected)
         {
+            ulong pagesCount = pageList.GetPagesCount();
             ulong size = pagesCount * PageSize;
 
             ulong endAddr = address + size;
