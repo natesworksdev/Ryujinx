@@ -20,7 +20,7 @@ namespace Ryujinx.Graphics.Nvdec.FFmpeg
             _codec = ffmpeg.avcodec_find_decoder(codecId);
             if (_codec == null)
             {
-                Logger.Error?.PrintMsg(LogClass.FFmpeg, $"Codec wasn't found. Make sure you have the {codecId} present in your FFmpeg installation.");
+                Logger.Error?.PrintMsg(LogClass.FFmpeg, $"Codec wasn't found. Make sure you have the {codecId} codec present in your FFmpeg installation.");
 
                 return;
             }
