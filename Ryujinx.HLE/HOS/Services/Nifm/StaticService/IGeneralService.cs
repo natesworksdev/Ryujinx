@@ -15,7 +15,6 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
         private GeneralServiceDetail _generalServiceDetail;
 
         private IPInterfaceProperties _targetPropertiesCache = null;
-
         private UnicastIPAddressInformation _targetAddressInfoCache = null;
 
         public IGeneralService()
@@ -171,7 +170,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
                 return (null, null);
             }
 
-            if(_targetPropertiesCache != null && _targetAddressInfoCache != null)
+            if (_targetPropertiesCache != null && _targetAddressInfoCache != null)
             {
                 return (_targetPropertiesCache, _targetAddressInfoCache);
             }
