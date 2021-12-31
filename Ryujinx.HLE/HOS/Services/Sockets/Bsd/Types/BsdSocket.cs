@@ -7,7 +7,8 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
         public int Family;
         public int Type;
         public int Protocol;
+        public int Refcount;
 
-        public Socket Handle;
+        public ISocket Handle;
     }
 }
