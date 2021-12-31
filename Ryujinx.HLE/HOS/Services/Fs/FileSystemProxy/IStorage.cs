@@ -1,5 +1,5 @@
 using LibHac;
-using LibHac.FsSystem;
+using LibHac.Common;
 using LibHac.Sf;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.Pools;
@@ -11,11 +11,11 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
 {
     class IStorage : DisposableIpcService
     {
-        private ReferenceCountedDisposable<LibHac.FsSrv.Sf.IStorage> _baseStorage;
+        private SharedRef<LibHac.FsSrv.Sf.IStorage> _baseStorage;
 
-        public IStorage(ReferenceCountedDisposable<LibHac.FsSrv.Sf.IStorage> baseStorage)
+        public IStorage(ref SharedRef<LibHac.FsSrv.Sf.IStorage> baseStorage)
         {
-            _baseStorage = baseStorage;
+            _baseStorage = SharedRef<LibHac.FsSrv.Sf.IStorage>.CreateMove(ref baseStorage);
         }
 
         [CommandHipc(0)]
@@ -38,11 +38,11 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
                     while (bytesRead < size)
                     {
                         int thisReadSize = (int)Math.Min((long)actualSize, (long)(size - bytesRead));
-                        result = _baseStorage.Target.Read((long)(offset + bytesRead), new OutBuffer(scratch.AsSpan), (long)thisReadSize);
+                        result = _baseStorage.Get.Read((long)(offset + bytesRead), new OutBuffer(scratch.AsSpan), (long)thisReadSize);
                         context.Memory.Write(buffDesc.Position + bytesRead, scratch.AsSpan.Slice(0, thisReadSize));
                         bytesRead += (ulong)thisReadSize;
                     }
-
+                    
                     return (ResultCode)result.Value;
                 }
             }
@@ -54,7 +54,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
         // GetSize() -> u64 size
         public ResultCode GetSize(ServiceCtx context)
         {
-            Result result = _baseStorage.Target.GetSize(out long size);
+            Result result = _baseStorage.Get.GetSize(out long size);
 
             context.ResponseData.Write(size);
 
@@ -65,7 +65,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
         {
             if (isDisposing)
             {
-                _baseStorage?.Dispose();
+                _baseStorage.Destroy();
             }
         }
     }

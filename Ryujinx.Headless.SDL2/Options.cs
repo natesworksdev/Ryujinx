@@ -79,6 +79,9 @@ namespace Ryujinx.Headless.SDL2
         [Option("enable-ptc", Required = false, Default = true, HelpText = "Enables profiled translation cache persistency.")]
         public bool? EnablePtc { get; set; }
 
+        [Option("enable-internet-connection", Required = false, Default = false, HelpText = "Enables guest Internet connection.")]
+        public bool? EnableInternetAccess { get; set; }
+
         [Option("enable-fs-integrity-checks", Required = false, Default = true, HelpText = "Enables integrity checks on Game content files.")]
         public bool? EnableFsIntegrityChecks { get; set; }
 
@@ -108,6 +111,9 @@ namespace Ryujinx.Headless.SDL2
 
         [Option("memory-manager-mode", Required = false, Default = MemoryManagerMode.HostMappedUnsafe, HelpText = "The selected memory manager mode.")]
         public MemoryManagerMode MemoryManagerMode { get; set; }
+
+        [Option("audio-volume", Required = false, Default = 1.0f, HelpText ="The audio level (0 to 1).")]
+        public float AudioVolume { get; set; }
 
         // Logging
 

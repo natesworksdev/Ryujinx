@@ -49,7 +49,7 @@ namespace Ryujinx.HLE
                 throw new ArgumentNullException(nameof(configuration.AudioDeviceDriver));
             }
 
-            if (configuration.UserChannelPersistence== null)
+            if (configuration.UserChannelPersistence == null)
             {
                 throw new ArgumentNullException(nameof(configuration.UserChannelPersistence));
             }
@@ -144,6 +144,21 @@ namespace Ryujinx.HLE
         public void PresentFrame(Action swapBuffersCallback)
         {
             Gpu.Window.Present(swapBuffersCallback);
+        }
+
+        public void SetVolume(float volume)
+        {
+            System.SetVolume(volume);
+        }
+
+        public float GetVolume()
+        {
+            return System.GetVolume();
+        }
+
+        public bool IsAudioMuted()
+        {
+            return System.GetVolume() == 0;
         }
 
         public void DisposeGpu()

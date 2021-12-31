@@ -1,3 +1,4 @@
+using LibHac.Common;
 using LibHac.Common.Keys;
 using LibHac.Fs;
 using LibHac.Fs.Shim;
@@ -243,6 +244,7 @@ namespace Ryujinx.HLE.HOS
             AudioOutputManager = new AudioOutputManager();
             AudioInputManager = new AudioInputManager();
             AudioRendererManager = new AudioRendererManager();
+            AudioRendererManager.SetVolume(Device.Configuration.AudioVolume);
             AudioDeviceSessionRegistry = new VirtualDeviceSessionRegistry();
 
             IWritableEvent[] audioOutputRegisterBufferEvents = new IWritableEvent[Constants.AudioOutSessionCountMax];
@@ -255,6 +257,7 @@ namespace Ryujinx.HLE.HOS
             }
 
             AudioOutputManager.Initialize(Device.AudioDeviceDriver, audioOutputRegisterBufferEvents);
+            AudioOutputManager.SetVolume(Device.Configuration.AudioVolume);
 
             IWritableEvent[] audioInputRegisterBufferEvents = new IWritableEvent[Constants.AudioInSessionCountMax];
 
@@ -304,9 +307,9 @@ namespace Ryujinx.HLE.HOS
 
         public void LoadKip(string kipPath)
         {
-            using IStorage kipFile = new LocalStorage(kipPath, FileAccess.Read);
+            using var kipFile = new SharedRef<IStorage>(new LocalStorage(kipPath, FileAccess.Read));
 
-            ProgramLoader.LoadKip(KernelContext, new KipExecutable(kipFile));
+            ProgramLoader.LoadKip(KernelContext, new KipExecutable(in kipFile));
         }
 
         public void ChangeDockedModeState(bool newState)
@@ -324,6 +327,17 @@ namespace Ryujinx.HLE.HOS
 
                 Device.Configuration.RefreshInputConfig?.Invoke();
             }
+        }
+
+        public void SetVolume(float volume)
+        {
+            AudioOutputManager.SetVolume(volume);
+            AudioRendererManager.SetVolume(volume);
+        }
+
+        public float GetVolume()
+        {
+            return AudioOutputManager.GetVolume() == 0 ? AudioRendererManager.GetVolume() : AudioOutputManager.GetVolume();
         }
 
         public void ReturnFocus()
@@ -404,7 +418,7 @@ namespace Ryujinx.HLE.HOS
                     lock (KernelContext.Processes)
                     {
                         // Terminate application.
-                        foreach (KProcess process in KernelContext.Processes.Values.Where(x => x.Flags.HasFlag(ProcessCreationFlags.IsApplication)))
+                        foreach (KProcess process in KernelContext.Processes.Values.Where(x => x.IsApplication))
                         {
                             process.Terminate();
                             process.DecrementReferenceCount();
@@ -415,7 +429,7 @@ namespace Ryujinx.HLE.HOS
 
                         // Terminate HLE services (must be done after the application is already terminated,
                         // otherwise the application will receive errors due to service termination).
-                        foreach (KProcess process in KernelContext.Processes.Values.Where(x => !x.Flags.HasFlag(ProcessCreationFlags.IsApplication)))
+                        foreach (KProcess process in KernelContext.Processes.Values.Where(x => !x.IsApplication))
                         {
                             process.Terminate();
                             process.DecrementReferenceCount();
@@ -461,7 +475,7 @@ namespace Ryujinx.HLE.HOS
             {
                 foreach (KProcess process in KernelContext.Processes.Values)
                 {
-                    if (process.Flags.HasFlag(ProcessCreationFlags.IsApplication))
+                    if (process.IsApplication)
                     {
                         // Only game process should be paused.
                         process.SetActivity(pause);

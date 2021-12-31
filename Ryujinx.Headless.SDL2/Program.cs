@@ -28,7 +28,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Threading;
 
@@ -460,20 +459,22 @@ namespace Ryujinx.Headless.SDL2
                                                                   (bool)options.EnableVsync,
                                                                   (bool)options.EnableDockedMode,
                                                                   (bool)options.EnablePtc,
+                                                                  (bool)options.EnableInternetAccess,
                                                                   (bool)options.EnableFsIntegrityChecks ? LibHac.FsSystem.IntegrityCheckLevel.ErrorOnInvalid : LibHac.FsSystem.IntegrityCheckLevel.None,
                                                                   options.FsGlobalAccessLogMode,
                                                                   options.SystemTimeOffset,
                                                                   options.SystemTimeZone,
                                                                   options.MemoryManagerMode,
                                                                   (bool)options.IgnoreMissingServices,
-                                                                  options.AspectRatio);
+                                                                  options.AspectRatio,
+                                                                  options.AudioVolume);
 
             return new Switch(configuration);
         }
 
         private static void ExecutionEntrypoint()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (OperatingSystem.IsWindows())
             {
                 _windowsMultimediaTimerResolution = new WindowsMultimediaTimerResolution(1);
             }
@@ -490,8 +491,11 @@ namespace Ryujinx.Headless.SDL2
             _emulationContext.Dispose();
             _window.Dispose();
 
-            _windowsMultimediaTimerResolution?.Dispose();
-            _windowsMultimediaTimerResolution = null;
+            if (OperatingSystem.IsWindows())
+            {
+                _windowsMultimediaTimerResolution?.Dispose();
+                _windowsMultimediaTimerResolution = null;
+            }
         }
 
         private static bool LoadApplication(Options options)

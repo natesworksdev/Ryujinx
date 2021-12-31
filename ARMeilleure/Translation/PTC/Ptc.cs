@@ -27,7 +27,7 @@ namespace ARMeilleure.Translation.PTC
         private const string OuterHeaderMagicString = "PTCohd\0\0";
         private const string InnerHeaderMagicString = "PTCihd\0\0";
 
-        private const uint InternalVersion = 2721; //! To be incremented manually for each change to the ARMeilleure project.
+        private const uint InternalVersion = 2908; //! To be incremented manually for each change to the ARMeilleure project.
 
         private const string ActualDir = "0";
         private const string BackupDir = "1";
@@ -960,10 +960,10 @@ namespace ARMeilleure.Translation.PTC
         {
             uint osPlatform = 0u;
 
-            osPlatform |= (RuntimeInformation.IsOSPlatform(OSPlatform.FreeBSD) ? 1u : 0u) << 0;
-            osPlatform |= (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)   ? 1u : 0u) << 1;
-            osPlatform |= (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)     ? 1u : 0u) << 2;
-            osPlatform |= (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? 1u : 0u) << 3;
+            osPlatform |= (OperatingSystem.IsFreeBSD() ? 1u : 0u) << 0;
+            osPlatform |= (OperatingSystem.IsLinux()   ? 1u : 0u) << 1;
+            osPlatform |= (OperatingSystem.IsMacOS()   ? 1u : 0u) << 2;
+            osPlatform |= (OperatingSystem.IsWindows() ? 1u : 0u) << 3;
 
             return osPlatform;
         }

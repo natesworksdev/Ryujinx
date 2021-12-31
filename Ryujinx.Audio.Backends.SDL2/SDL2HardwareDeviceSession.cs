@@ -26,7 +26,7 @@ namespace Ryujinx.Audio.Backends.SDL2
         private float _volume;
         private ushort _nativeSampleFormat;
 
-        public SDL2HardwareDeviceSession(SDL2HardwareDeviceDriver driver, IVirtualMemoryManager memoryManager, SampleFormat requestedSampleFormat, uint requestedSampleRate, uint requestedChannelCount) : base(memoryManager, requestedSampleFormat, requestedSampleRate, requestedChannelCount)
+        public SDL2HardwareDeviceSession(SDL2HardwareDeviceDriver driver, IVirtualMemoryManager memoryManager, SampleFormat requestedSampleFormat, uint requestedSampleRate, uint requestedChannelCount, float requestedVolume) : base(memoryManager, requestedSampleFormat, requestedSampleRate, requestedChannelCount)
         {
             _driver = driver;
             _updateRequiredEvent = _driver.GetUpdateRequiredEvent();
@@ -37,16 +37,18 @@ namespace Ryujinx.Audio.Backends.SDL2
             _nativeSampleFormat = SDL2HardwareDeviceDriver.GetSDL2Format(RequestedSampleFormat);
             _sampleCount = uint.MaxValue;
             _started = false;
-            _volume = 1.0f;
+            _volume = requestedVolume;
         }
 
         private void EnsureAudioStreamSetup(AudioBuffer buffer)
         {
-            bool needAudioSetup = _outputStream == 0 || ((uint)GetSampleCount(buffer) % _sampleCount) != 0;
+            uint bufferSampleCount = (uint)GetSampleCount(buffer);
+            bool needAudioSetup = _outputStream == 0 ||
+                (bufferSampleCount >= Constants.TargetSampleCount && bufferSampleCount < _sampleCount);
 
             if (needAudioSetup)
             {
-                _sampleCount = Math.Max(Constants.TargetSampleCount, (uint)GetSampleCount(buffer));
+                _sampleCount = Math.Max(Constants.TargetSampleCount, bufferSampleCount);
 
                 uint newOutputStream = SDL2HardwareDeviceDriver.OpenStream(RequestedSampleFormat, RequestedSampleRate, RequestedChannelCount, _sampleCount, _callbackDelegate);
 
@@ -82,7 +84,7 @@ namespace Ryujinx.Audio.Backends.SDL2
 
             if (frameCount == 0)
             {
-                // SDL2 left the responsability to the user to clear the buffer.
+                // SDL2 left the responsibility to the user to clear the buffer.
                 streamSpan.Fill(0);
 
                 return;
@@ -92,11 +94,16 @@ namespace Ryujinx.Audio.Backends.SDL2
 
             _ringBuffer.Read(samples, 0, samples.Length);
 
-            samples.AsSpan().CopyTo(streamSpan);
-            streamSpan.Slice(samples.Length).Fill(0);
+            fixed (byte* p = samples)
+            {
+                IntPtr pStreamSrc = (IntPtr)p;
 
-            // Apply volume to written data
-            SDL_MixAudioFormat(stream, stream, _nativeSampleFormat, (uint)samples.Length, (int)(_volume * SDL_MIX_MAXVOLUME));
+                // Zero the dest buffer
+                streamSpan.Fill(0);
+
+                // Apply volume to written data
+                SDL_MixAudioFormat(stream, pStreamSrc, _nativeSampleFormat, (uint)samples.Length, (int)(_volume * SDL_MIX_MAXVOLUME));
+            }
 
             ulong sampleCount = GetSampleCount(samples.Length);
 
