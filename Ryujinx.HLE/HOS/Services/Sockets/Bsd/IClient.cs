@@ -122,7 +122,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                 Family   = (int)domain,
                 Type     = (int)type,
                 Protocol = (int)protocol,
-                Handle   = new DefaultSocket(domain, type, protocol),
+                Handle   = new ManagedSocket(domain, type, protocol),
                 Refcount = 1
             };
 
@@ -267,9 +267,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
             foreach (PollEvent Event in events)
             {
-                if (Event.Socket.Handle is not DefaultSocket socket)
+                if (Event.Socket.Handle is not ManagedSocket socket)
                 {
-                    Logger.Error?.Print(LogClass.ServiceBsd, $"Poll operation is only supported on {typeof(DefaultSocket).Name} at present, skipping");
+                    Logger.Error?.Print(LogClass.ServiceBsd, $"Poll operation is only supported on {typeof(ManagedSocket).Name} at present, skipping");
 
                     continue;
                 }
@@ -343,13 +343,13 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
                 PollEvent.EventTypeMask outputEvents = 0;
 
-                if (Event.Socket.Handle is not DefaultSocket defaultSocket)
+                if (Event.Socket.Handle is not ManagedSocket managedSocket)
                 {
                     // Should be impossible atm
                     continue;
                 }
 
-                Socket socket = defaultSocket.Socket;
+                Socket socket = managedSocket.Socket;
 
                 if (errorEvents.Contains(socket))
                 {

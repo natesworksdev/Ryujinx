@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 {
-    class DefaultSocket : ISocket
+    class ManagedSocket : ISocket
     {
         public AddressFamily AddressFamily => Socket.AddressFamily;
 
@@ -69,12 +69,12 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             { BsdSocketOption.TcpKeepCnt,   SocketOptionName.TcpKeepAliveRetryCount }
         };
 
-        public DefaultSocket(AddressFamily addressFamily, SocketType socketType, ProtocolType protocolType)
+        public ManagedSocket(AddressFamily addressFamily, SocketType socketType, ProtocolType protocolType)
         {
             Socket = new Socket(addressFamily, socketType, protocolType);
         }
 
-        private DefaultSocket(Socket socket)
+        private ManagedSocket(Socket socket)
         {
             Socket = socket;
         }
@@ -146,7 +146,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
         {
             try
             {
-                newSocket = new DefaultSocket(Socket.Accept());
+                newSocket = new ManagedSocket(Socket.Accept());
 
                 return LinuxError.SUCCESS;
             }
