@@ -4,11 +4,10 @@ using System;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
-using System.Security.Cryptography.X509Certificates;
 
 namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
 {
-    class SslDefaultSocketConnection : ISslConnectionBase
+    class SslManagedSocketConnection : ISslConnectionBase
     {
         public int SocketFd { get; }
 
@@ -20,7 +19,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
         private bool _isBlockingSocket;
         private int _previousReadTimeout;
 
-        public SslDefaultSocketConnection(BsdContext bsdContext, SslVersion sslVersion, int socketFd, ISocket socket)
+        public SslManagedSocketConnection(BsdContext bsdContext, SslVersion sslVersion, int socketFd, ISocket socket)
         {
             _bsdContext = bsdContext;
             _sslVersion = sslVersion;

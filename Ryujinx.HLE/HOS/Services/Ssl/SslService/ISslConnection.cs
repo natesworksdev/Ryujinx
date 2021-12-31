@@ -80,7 +80,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
         {
             ISocket bsdSocket = _bsdContext.RetrieveSocket(socketFd);
 
-            _connection = new SslDefaultSocketConnection(_bsdContext, _sslVersion, socketFd, bsdSocket);
+            _connection = new SslManagedSocketConnection(_bsdContext, _sslVersion, socketFd, bsdSocket);
         }
 
         [CommandHipc(1)]
