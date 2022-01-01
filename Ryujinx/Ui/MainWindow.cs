@@ -1555,7 +1555,7 @@ namespace Ryujinx.Ui
 
         private void ManageCheats_Pressed(object sender, EventArgs args)
         {
-           var window = new CheatWindow(_virtualFileSystem, _emulationContext.Application.TitleIdText.ToUpper(), _emulationContext.Application.TitleName);
+           var window = new CheatWindow(_virtualFileSystem, _emulationContext.Application.TitleId, _emulationContext.Application.TitleName);
 
             window.Destroyed += CheatWindow_Destroyed;
             window.Show();

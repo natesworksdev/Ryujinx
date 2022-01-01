@@ -1,17 +1,10 @@
 using Gtk;
-using LibHac.Common;
-using LibHac.Fs;
-using LibHac.Fs.Fsa;
-using LibHac.FsSystem;
-using LibHac.FsSystem.NcaUtils;
-using Ryujinx.Common.Configuration;
 using Ryujinx.HLE.FileSystem;
-using Ryujinx.Ui.Widgets;
+using Ryujinx.HLE.HOS;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 using GUI        = Gtk.Builder.ObjectAttribute;
 using JsonHelper = Ryujinx.Common.Utilities.JsonHelper;
@@ -21,26 +14,27 @@ namespace Ryujinx.Ui.Windows
     public class CheatWindow : Window
     {
         private readonly string _enabledCheatsPath;
+        private readonly bool _noCheatsFound;
 
 #pragma warning disable CS0649, IDE0044
         [GUI] Label    _baseTitleInfoLabel;
         [GUI] TreeView _cheatTreeView;
+        [GUI] Button   _saveButton;
 #pragma warning restore CS0649, IDE0044
 
-        public CheatWindow(VirtualFileSystem virtualFileSystem, string titleId, string titleName) : this(new Builder("Ryujinx.Ui.Windows.CheatWindow.glade"), virtualFileSystem, titleId, titleName) { }
+        public CheatWindow(VirtualFileSystem virtualFileSystem, ulong titleId, string titleName) : this(new Builder("Ryujinx.Ui.Windows.CheatWindow.glade"), virtualFileSystem, titleId, titleName) { }
 
-        private CheatWindow(Builder builder, VirtualFileSystem virtualFileSystem, string titleId, string titleName) : base(builder.GetObject("_cheatWindow").Handle)
+        private CheatWindow(Builder builder, VirtualFileSystem virtualFileSystem, ulong titleId, string titleName) : base(builder.GetObject("_cheatWindow").Handle)
         {
             builder.Autoconnect(this);
-            _baseTitleInfoLabel.Text = $"Cheats Available for {titleName} [{titleId.ToUpper()}]";
+            _baseTitleInfoLabel.Text = $"Cheats Available for {titleName} [{titleId:X16}]";
 
             string modsBasePath  = virtualFileSystem.ModLoader.GetModsBasePath();
-            string titleModsPath = virtualFileSystem.ModLoader.GetTitleDir(modsBasePath, titleId);
+            string titleModsPath = virtualFileSystem.ModLoader.GetTitleDir(modsBasePath, titleId.ToString("X16"));
 
-            var cheatsPath     = System.IO.Path.Combine(titleModsPath, "cheats");
-            _enabledCheatsPath = System.IO.Path.Combine(cheatsPath, "enabled.txt");
+            _enabledCheatsPath = System.IO.Path.Combine(titleModsPath, "cheats", "enabled.txt");
 
-            _cheatTreeView.Model = new TreeStore(typeof(bool), typeof(string), typeof(string));
+            _cheatTreeView.Model = new TreeStore(typeof(bool), typeof(string), typeof(string), typeof(string));
 
             CellRendererToggle enableToggle = new CellRendererToggle();
             enableToggle.Toggled += (sender, args) =>
@@ -61,8 +55,9 @@ namespace Ryujinx.Ui.Windows
 
             _cheatTreeView.AppendColumn("Enabled", enableToggle, "active", 0);
             _cheatTreeView.AppendColumn("Name", new CellRendererText(), "text", 1);
+            _cheatTreeView.AppendColumn("Path", new CellRendererText(), "text", 2);
 
-            var buildIdColumn = _cheatTreeView.AppendColumn("Build Id", new CellRendererText(), "text", 2);
+            var buildIdColumn = _cheatTreeView.AppendColumn("Build Id", new CellRendererText(), "text", 3);
             buildIdColumn.Visible = false;
 
             string[] enabled = { };
@@ -72,26 +67,41 @@ namespace Ryujinx.Ui.Windows
                 enabled = File.ReadAllLines(_enabledCheatsPath);
             }
 
-            foreach (var cheatFile in Directory.EnumerateFiles(cheatsPath, "*.txt"))
+            int cheatAdded = 0;
+
+            var mods = new ModLoader.ModCache();
+
+            ModLoader.QueryContentsDir(mods, new DirectoryInfo(System.IO.Path.Combine(modsBasePath, "contents")), titleId);
+
+            string currentCheatFile = string.Empty;
+            string buildId = string.Empty;
+            TreeIter parentIter = default;
+
+            foreach (var cheat in mods.Cheats)
             {
-                if (cheatFile == _enabledCheatsPath)
+                if(cheat.Path.FullName != currentCheatFile)
                 {
-                    continue;
+                    currentCheatFile = cheat.Path.FullName;
+                    string parentPath = currentCheatFile.Replace(titleModsPath, "");
+
+                    buildId = System.IO.Path.GetFileNameWithoutExtension(currentCheatFile);
+                    parentIter = ((TreeStore)_cheatTreeView.Model).AppendValues(false, buildId, parentPath, "");
                 }
 
-                IEnumerable<string> cheatNames = File.ReadAllLines(cheatFile).Where(x => x.StartsWith("[") && x.EndsWith("]"));
-                string buildId = System.IO.Path.GetFileNameWithoutExtension(cheatFile);
+                string cleanName = cheat.Name.Substring(1, cheat.Name.Length - 8);
+                ((TreeStore)_cheatTreeView.Model).AppendValues(parentIter, enabled.Contains($"{buildId}-{cheat.Name}"), cleanName, "", buildId);
 
-                bool allEnabled = cheatNames.ToList().TrueForAll(x => enabled.Contains($"{buildId}-<{x.Substring(1, x.Length - 2)} Cheat>"));
-                bool anyEnabled = cheatNames.Any(x => enabled.Contains($"{buildId}-<{x.Substring(1, x.Length - 2)} Cheat>"));
+                cheatAdded++;
+            }
 
-                TreeIter parentIter = ((TreeStore)_cheatTreeView.Model).AppendValues(allEnabled, buildId, "");
+            if(cheatAdded == 0)
+            {
+                ((TreeStore)_cheatTreeView.Model).AppendValues(false, "No Cheats Found", "", "");
+                _cheatTreeView.GetColumn(0).Visible = false;
 
-                foreach (var cheat in cheatNames)
-                {
-                    string cleanName = $"{cheat.Substring(1, cheat.Length - 2)}";
-                    ((TreeStore)_cheatTreeView.Model).AppendValues(parentIter, enabled.Contains($"{buildId}-<{cleanName} Cheat>"), cleanName, buildId);
-                }
+                _noCheatsFound = true;
+
+                _saveButton.Visible = false;
             }
 
             _cheatTreeView.ExpandAll();
@@ -99,6 +109,11 @@ namespace Ryujinx.Ui.Windows
 
         private void SaveButton_Clicked(object sender, EventArgs args)
         {
+            if(_noCheatsFound)
+            {
+                return;
+            }
+
             List<string> enabledCheats = new List<string>();
 
             if (_cheatTreeView.Model.GetIterFirst(out TreeIter parentIter))
@@ -114,7 +129,7 @@ namespace Ryujinx.Ui.Windows
                             if (enabled)
                             {
                                 var name = _cheatTreeView.Model.GetValue(childIter, 1).ToString();
-                                var buildId = _cheatTreeView.Model.GetValue(childIter, 2).ToString();
+                                var buildId = _cheatTreeView.Model.GetValue(childIter, 3).ToString();
 
                                 enabledCheats.Add($"{buildId}-<{name} Cheat>");
                             }
@@ -124,6 +139,8 @@ namespace Ryujinx.Ui.Windows
                 }
                 while (_cheatTreeView.Model.IterNext(ref parentIter));
             }
+
+            Directory.CreateDirectory(System.IO.Path.GetDirectoryName(_enabledCheatsPath));
 
             File.WriteAllLines(_enabledCheatsPath, enabledCheats);
 

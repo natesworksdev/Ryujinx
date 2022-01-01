@@ -677,8 +677,7 @@ namespace Ryujinx.HLE.HOS
 
             if (File.Exists(enabledCheatsPath))
             {
-                var enabledCheats = File.ReadAllLines(enabledCheatsPath);
-                tamperMachine.EnableCheats(enabledCheats);
+                tamperMachine.EnableCheats(File.ReadAllLines(enabledCheatsPath));
             }
         }
 
