@@ -371,8 +371,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
         // SetOption(b8 value, nn::ssl::sf::OptionType option)
         public ResultCode SetOption(ServiceCtx context)
         {
-            bool       value  = context.RequestData.ReadBoolean();
-            context.RequestData.BaseStream.Position += 3;
+            bool       value  = context.RequestData.ReadUInt32() != 0;
             OptionType option = (OptionType)context.RequestData.ReadUInt32();
 
             Logger.Stub?.PrintStub(LogClass.ServiceSsl, new { option, value });
