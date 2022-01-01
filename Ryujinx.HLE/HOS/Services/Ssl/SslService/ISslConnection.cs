@@ -372,6 +372,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
         public ResultCode SetOption(ServiceCtx context)
         {
             bool       value  = context.RequestData.ReadBoolean();
+            context.RequestData.BaseStream.Position += 3;
             OptionType option = (OptionType)context.RequestData.ReadUInt32();
 
             Logger.Stub?.PrintStub(LogClass.ServiceSsl, new { option, value });
@@ -461,10 +462,6 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
 
                 case OptionType.EnableAlpn:
                     _enableAlpn = value;
-                    break;
-
-                case OptionType.UnknownFlag2000000:
-                case OptionType.UnknownFlag3000000:
                     break;
 
                 default:
