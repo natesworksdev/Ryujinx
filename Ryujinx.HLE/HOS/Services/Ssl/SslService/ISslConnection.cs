@@ -368,11 +368,11 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
         }
 
         [CommandHipc(22)]
-        // SetOption(nn::ssl::sf::OptionType option, b8 value)
+        // SetOption(b8 value, nn::ssl::sf::OptionType option)
         public ResultCode SetOption(ServiceCtx context)
         {
+            bool       value  = context.RequestData.ReadBoolean();
             OptionType option = (OptionType)context.RequestData.ReadUInt32();
-            bool value = context.RequestData.ReadBoolean();
 
             Logger.Stub?.PrintStub(LogClass.ServiceSsl, new { option, value });
 
@@ -445,11 +445,6 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
 
         private ResultCode SetOption(OptionType option, bool value)
         {
-            if (_connection != null)
-            {
-                return ResultCode.AlreadyInUse;
-            }
-
             switch (option)
             {
                 case OptionType.DoNotCloseSocket:
@@ -466,6 +461,10 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
 
                 case OptionType.EnableAlpn:
                     _enableAlpn = value;
+                    break;
+
+                case OptionType.UnknownFlag2000000:
+                case OptionType.UnknownFlag3000000:
                     break;
 
                 default:

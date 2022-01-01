@@ -11,5 +11,6 @@
         InvalidOption = (126  << ErrorCodeShift) | OsModuleId,
         AlreadyInUse  = (203  << ErrorCodeShift) | OsModuleId,
         WouldBlock    = (204  << ErrorCodeShift) | OsModuleId,
+        Timeout       = (205  << ErrorCodeShift) | OsModuleId,
     }
 }

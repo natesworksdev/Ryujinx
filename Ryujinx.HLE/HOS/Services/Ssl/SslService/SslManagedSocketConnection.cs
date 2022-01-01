@@ -1,6 +1,7 @@
 ﻿using Ryujinx.HLE.HOS.Services.Sockets.Bsd;
 using Ryujinx.HLE.HOS.Services.Ssl.Types;
 using System;
+using System.IO;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
@@ -47,14 +48,20 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
         {
             StartSslOperation();
 
-            _previousReadTimeout = _stream.ReadTimeout;
+            if (!_isBlockingSocket)
+            {
+                _previousReadTimeout = _stream.ReadTimeout;
 
-            _stream.ReadTimeout = 1;
+                _stream.ReadTimeout = 1;
+            }
         }
 
         private void EndSslReadOperation()
         {
-            _stream.ReadTimeout = _previousReadTimeout;
+            if (!_isBlockingSocket)
+            {
+                _stream.ReadTimeout = _previousReadTimeout;
+            }
 
             EndSslOperation();
         }
@@ -115,9 +122,34 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
 
             StartSslReadOperation();
 
-            readCount = _stream.Read(buffer.Span);
+            try
+            {
+                readCount = _stream.Read(buffer.Span);
+            }
+            catch (IOException exception)
+            {
+                readCount = -1;
 
-            EndSslReadOperation();
+                if (exception.InnerException is SocketException socketException)
+                {
+                    if ((WsaError)socketException.SocketErrorCode == WsaError.WSAETIMEDOUT)
+                    {
+                        return _isBlockingSocket ? ResultCode.Timeout : ResultCode.WouldBlock;
+                    }
+                    else
+                    {
+                        throw socketException;
+                    }
+                }
+                else
+                {
+                    throw exception;
+                }
+            }
+            finally
+            {
+                EndSslReadOperation();
+            }
 
             return ResultCode.Success;
         }
@@ -132,8 +164,35 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
             }
 
             StartSslOperation();
-            _stream.Write(buffer.Span);
-            EndSslOperation();
+
+            try
+            {
+                _stream.Write(buffer.Span);
+            }
+            catch (IOException exception)
+            {
+                writtenCount = -1;
+
+                if (exception.InnerException is SocketException socketException)
+                {
+                    if ((WsaError)socketException.SocketErrorCode == WsaError.WSAETIMEDOUT)
+                    {
+                        return _isBlockingSocket ? ResultCode.Timeout : ResultCode.WouldBlock;
+                    }
+                    else
+                    {
+                        throw socketException;
+                    }
+                }
+                else
+                {
+                    throw exception;
+                }
+            }
+            finally
+            {
+                EndSslOperation();
+            }
 
             // .NET API doesn't provide the size written, assume all written.
             writtenCount = buffer.Length;
