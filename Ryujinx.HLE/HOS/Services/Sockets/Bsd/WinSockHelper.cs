@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Net.Sockets;
 
 namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 {
@@ -88,6 +89,50 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             {0, 0}
         };
 
+        private static readonly Dictionary<BsdSocketOption, SocketOptionName> _soSocketOptionMap = new()
+        {
+            { BsdSocketOption.SoDebug,       SocketOptionName.Debug },
+            { BsdSocketOption.SoReuseAddr,   SocketOptionName.ReuseAddress },
+            { BsdSocketOption.SoKeepAlive,   SocketOptionName.KeepAlive },
+            { BsdSocketOption.SoDontRoute,   SocketOptionName.DontRoute },
+            { BsdSocketOption.SoBroadcast,   SocketOptionName.Broadcast },
+            { BsdSocketOption.SoUseLoopBack, SocketOptionName.UseLoopback },
+            { BsdSocketOption.SoLinger,      SocketOptionName.Linger },
+            { BsdSocketOption.SoOobInline,   SocketOptionName.OutOfBandInline },
+            { BsdSocketOption.SoReusePort,   SocketOptionName.ReuseAddress },
+            { BsdSocketOption.SoSndBuf,      SocketOptionName.SendBuffer },
+            { BsdSocketOption.SoRcvBuf,      SocketOptionName.ReceiveBuffer },
+            { BsdSocketOption.SoSndLoWat,    SocketOptionName.SendLowWater },
+            { BsdSocketOption.SoRcvLoWat,    SocketOptionName.ReceiveLowWater },
+            { BsdSocketOption.SoSndTimeo,    SocketOptionName.SendTimeout },
+            { BsdSocketOption.SoRcvTimeo,    SocketOptionName.ReceiveTimeout },
+            { BsdSocketOption.SoError,       SocketOptionName.Error },
+            { BsdSocketOption.SoType,        SocketOptionName.Type }
+        };
+
+        private static readonly Dictionary<BsdSocketOption, SocketOptionName> _ipSocketOptionMap = new()
+        {
+            { BsdSocketOption.IpOptions,              SocketOptionName.IPOptions },
+            { BsdSocketOption.IpHdrIncl,              SocketOptionName.HeaderIncluded },
+            { BsdSocketOption.IpTtl,                  SocketOptionName.IpTimeToLive },
+            { BsdSocketOption.IpMulticastIf,          SocketOptionName.MulticastInterface },
+            { BsdSocketOption.IpMulticastTtl,         SocketOptionName.MulticastTimeToLive },
+            { BsdSocketOption.IpMulticastLoop,        SocketOptionName.MulticastLoopback },
+            { BsdSocketOption.IpAddMembership,        SocketOptionName.AddMembership },
+            { BsdSocketOption.IpDropMembership,       SocketOptionName.DropMembership },
+            { BsdSocketOption.IpDontFrag,             SocketOptionName.DontFragment },
+            { BsdSocketOption.IpAddSourceMembership,  SocketOptionName.AddSourceMembership },
+            { BsdSocketOption.IpDropSourceMembership, SocketOptionName.DropSourceMembership }
+        };
+
+        private static readonly Dictionary<BsdSocketOption, SocketOptionName> _tcpSocketOptionMap = new()
+        {
+            { BsdSocketOption.TcpNoDelay,   SocketOptionName.NoDelay },
+            { BsdSocketOption.TcpKeepIdle,  SocketOptionName.TcpKeepAliveTime },
+            { BsdSocketOption.TcpKeepIntvl, SocketOptionName.TcpKeepAliveInterval },
+            { BsdSocketOption.TcpKeepCnt,   SocketOptionName.TcpKeepAliveRetryCount }
+        };
+
         public static LinuxError ConvertError(WsaError errorCode)
         {
             if (!_errorMap.TryGetValue(errorCode, out LinuxError errno))
@@ -96,6 +141,25 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             }
 
             return errno;
+        }
+
+        public static bool TryConvertSocketOption(BsdSocketOption option, SocketOptionLevel level, out SocketOptionName name)
+        {
+            var table = level switch
+            {
+                SocketOptionLevel.Socket => _soSocketOptionMap,
+                SocketOptionLevel.IP => _ipSocketOptionMap,
+                SocketOptionLevel.Tcp => _tcpSocketOptionMap,
+                _ => null
+            };
+
+            if (table == null)
+            {
+                name = default;
+                return false;
+            }
+
+            return table.TryGetValue(option, out name);
         }
     }
 }
