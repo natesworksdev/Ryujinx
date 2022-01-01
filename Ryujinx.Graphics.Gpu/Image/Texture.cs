@@ -1381,29 +1381,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Determine if any of our child textures are compaible as views of the given texture.
-        /// </summary>
-        /// <param name="texture">The texture to check against</param>
-        /// <returns>True if any child is view compatible, false otherwise</returns>
-        public bool HasViewCompatibleChild(Texture texture)
-        {
-            if (_viewStorage != this || _views.Count == 0)
-            {
-                return false;
-            }
-
-            foreach (Texture view in _views)
-            {
-                if (texture.IsViewCompatible(view.Info, view.Range, view.LayerSize, _context.Capabilities, out _, out _) > TextureViewCompatibility.LayoutIncompatible)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        /// <summary>
         /// Determine if any of this texture's data overlaps with another.
         /// </summary>
         /// <param name="texture">The texture to check against</param>
