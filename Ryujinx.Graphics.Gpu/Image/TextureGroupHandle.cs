@@ -53,6 +53,16 @@ namespace Ryujinx.Graphics.Gpu.Image
         public int Size { get; }
 
         /// <summary>
+        /// The base slice index for this handle.
+        /// </summary>
+        public int BaseSlice { get; }
+
+        /// <summary>
+        /// The number of slices covered by this handle.
+        /// </summary>
+        public int SliceCount { get; }
+
+        /// <summary>
         /// The textures which this handle overlaps with.
         /// </summary>
         public List<Texture> Overlaps { get; }
@@ -91,8 +101,18 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="views">All views of the storage texture, used to calculate overlaps</param>
         /// <param name="firstLayer">The first layer of this handle in the storage texture</param>
         /// <param name="firstLevel">The first level of this handle in the storage texture</param>
+        /// <param name="baseSlice">The base slice index of this handle</param>
+        /// <param name="sliceCount">The number of slices this handle covers</param>
         /// <param name="handles">The memory tracking handles that cover this handle</param>
-        public TextureGroupHandle(TextureGroup group, int offset, ulong size, List<Texture> views, int firstLayer, int firstLevel, CpuRegionHandle[] handles)
+        public TextureGroupHandle(TextureGroup group,
+                                  int offset,
+                                  ulong size,
+                                  List<Texture> views,
+                                  int firstLayer,
+                                  int firstLevel,
+                                  int baseSlice,
+                                  int sliceCount,
+                                  CpuRegionHandle[] handles)
         {
             _group = group;
             _firstLayer = firstLayer;
@@ -102,6 +122,9 @@ namespace Ryujinx.Graphics.Gpu.Image
             Size = (int)size;
             Overlaps = new List<Texture>();
             Dependencies = new List<TextureDependency>();
+
+            BaseSlice = baseSlice;
+            SliceCount = sliceCount;
 
             if (views != null)
             {

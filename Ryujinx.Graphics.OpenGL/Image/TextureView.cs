@@ -154,6 +154,24 @@ namespace Ryujinx.Graphics.OpenGL.Image
             }
         }
 
+        public unsafe ReadOnlySpan<byte> GetData(int layer, int level)
+        {
+            int size = Info.GetMipSize(level);
+
+            if (HwCapabilities.UsePersistentBufferForFlush)
+            {
+                return _renderer.PersistentBuffers.Default.GetTextureData(this, size, layer, level);
+            }
+            else
+            {
+                IntPtr target = _renderer.PersistentBuffers.Default.GetHostArray(size);
+
+                WriteTo2D(target, layer, level);
+
+                return new ReadOnlySpan<byte>(target.ToPointer(), size);
+            }
+        }
+
         public void WriteToPbo(int offset, bool forceBgra)
         {
             WriteTo(IntPtr.Zero + offset, forceBgra);
@@ -194,6 +212,12 @@ namespace Ryujinx.Graphics.OpenGL.Image
             if (format.IsCompressed)
             {
                 GL.GetCompressedTexImage(target, level, data);
+            }
+            else if (format.PixelFormat != PixelFormat.DepthStencil)
+            {
+                GL.GetTextureSubImage(Handle, level, 0, 0, layer, Math.Max(1, Info.Width >> level), Math.Max(1, Info.Height >> level), 1, pixelFormat, pixelType, mipSize, data);
+
+                return 0;
             }
             else
             {

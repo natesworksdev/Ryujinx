@@ -232,6 +232,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                             data = LayoutConverter.ConvertBlockLinearToLinear(
                                 src.Width,
                                 src.Height,
+                                src.Depth,
                                 1,
                                 target.Info.Levels,
                                 1,

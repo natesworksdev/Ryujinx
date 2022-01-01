@@ -2,6 +2,7 @@
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.Graphics.Texture;
+using Ryujinx.Memory;
 using Ryujinx.Memory.Range;
 using System;
 using System.Collections.Generic;
@@ -330,7 +331,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                         for (int level = 0; level < info.Levels; level++)
                         {
                             int offset = _allOffsets[offsetIndex];
-                            int endOffset = (offsetIndex + 1 == _allOffsets.Length) ? (int)Storage.Size : _allOffsets[offsetIndex + 1];
+                            int endOffset = Math.Min(offset + _sliceSizes[info.BaseLevel + level], (int)Storage.Size);
                             int size = endOffset - offset;
 
                             ReadOnlySpan<byte> data = _physicalMemory.GetSpan(Storage.Range.GetSlice((ulong)offset, (ulong)size));
@@ -382,6 +383,38 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Gets data from the host GPU, and flushes it all to guest memory.
+        /// </summary>
+        /// <remarks>
+        /// This method should be used to retrieve data that was modified by the host GPU.
+        /// This is not cheap, avoid doing that unless strictly needed.
+        /// When possible, the data is written directly into guest memory, rather than copied.
+        /// </remarks>
+        /// <param name="tracked">True if writing the texture data is tracked, false otherwise</param>
+        /// <param name="sliceIndex">The index of the slice to flush</param>
+        /// <param name="texture">The specific host texture to flush. Defaults to the storage texture</param>
+        private void FlushTextureDataSliceToGuest(bool tracked, int sliceIndex, ITexture texture = null)
+        {
+            (int layer, int level) = GetLayerLevelForView(sliceIndex);
+
+            int offset = _allOffsets[sliceIndex];
+            int endOffset = Math.Min(offset + _sliceSizes[level], (int)Storage.Size);
+            int size = endOffset - offset;
+
+            using WritableRegion region = _physicalMemory.GetWritableRegion(Storage.Range.GetSlice((ulong)offset, (ulong)size), tracked);
+
+            Storage.GetTextureDataSliceFromGpu(region.Memory.Span, layer, level, tracked, texture);
+        }
+
+        private void FlushSliceRange(bool tracked, int sliceStart, int sliceEnd, ITexture texture = null)
+        {
+            for (int i = sliceStart; i < sliceEnd; i++)
+            {
+                FlushTextureDataSliceToGuest(tracked, i, texture);
+            }
+        }
+
+        /// <summary>
         /// Flush modified ranges for a given texture.
         /// </summary>
         /// <param name="texture">The texture being used</param>
@@ -394,8 +427,9 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             EvaluateRelevantHandles(texture, (baseHandle, regionCount, split) =>
             {
-                int offset = 0;
-                int endOffset = 0;
+                int startSlice = 0;
+                int endSlice = 0;
+                bool allModified = true;
 
                 for (int i = 0; i < regionCount; i++)
                 {
@@ -403,18 +437,18 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                     if (group.Modified)
                     {
-                        if (endOffset < group.Offset)
+                        if (endSlice < group.BaseSlice)
                         {
-                            if (endOffset > offset)
+                            if (endSlice > startSlice)
                             {
-                                Storage.Flush(offset, endOffset - offset, tracked);
+                                FlushSliceRange(tracked, startSlice, endSlice);
                                 flushed = true;
                             }
 
-                            offset = group.Offset;
+                            startSlice = group.BaseSlice;
                         }
 
-                        endOffset = group.Offset + group.Size;
+                        endSlice = group.BaseSlice + group.SliceCount;
 
                         if (tracked)
                         {
@@ -426,11 +460,23 @@ namespace Ryujinx.Graphics.Gpu.Image
                             }
                         }
                     }
+                    else
+                    {
+                        allModified = false;
+                    }
                 }
 
-                if (endOffset > offset)
+                if (endSlice > startSlice)
                 {
-                    Storage.Flush(offset, endOffset - offset, tracked);
+                    if (allModified && !split)
+                    {
+                        texture.Flush(tracked);
+                    }
+                    else
+                    {
+                        FlushSliceRange(tracked, startSlice, endSlice);
+                    }
+
                     flushed = true;
                 }
             });
@@ -838,7 +884,16 @@ namespace Ryujinx.Graphics.Gpu.Image
             offset = _allOffsets[viewStart];
             ulong maxSize = Storage.Size - (ulong)offset;
 
-            var groupHandle = new TextureGroupHandle(this, offset, Math.Min(maxSize, (ulong)size), _views, firstLayer, firstLevel, result.ToArray());
+            var groupHandle = new TextureGroupHandle(
+                this,
+                offset,
+                Math.Min(maxSize, (ulong)size),
+                _views,
+                firstLayer,
+                firstLevel,
+                viewStart,
+                views,
+                result.ToArray());
 
             foreach (CpuRegionHandle handle in result)
             {
@@ -1034,7 +1089,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     cpuRegionHandles[i] = GenerateHandle(currentRange.Address, currentRange.Size);
                 }
 
-                var groupHandle = new TextureGroupHandle(this, 0, Storage.Size, _views, 0, 0, cpuRegionHandles);
+                var groupHandle = new TextureGroupHandle(this, 0, Storage.Size, _views, 0, 0, 0, _allOffsets.Length, cpuRegionHandles);
 
                 foreach (CpuRegionHandle handle in cpuRegionHandles)
                 {
@@ -1332,7 +1387,10 @@ namespace Ryujinx.Graphics.Gpu.Image
                     }
                 }
 
-                Storage.ExternalFlush(handle.Offset, handle.Size);
+                if (TextureCompatibility.CanTextureFlush(Storage.Info, _context.Capabilities))
+                {
+                    FlushSliceRange(false, handle.BaseSlice, handle.BaseSlice + handle.SliceCount, Storage.GetFlushTexture());
+                }
             });
         }
 

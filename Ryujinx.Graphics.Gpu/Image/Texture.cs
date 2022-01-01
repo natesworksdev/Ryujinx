@@ -750,15 +750,17 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Converts texture data to a format and layout that is supported by the host GPU.
         /// </summary>
         /// <param name="data">Data to be converted</param>
+        /// <param name="level">Mip level to convert</param>
+        /// <param name="single">True to convert a single slice</param>
         /// <returns>Converted data</returns>
         public ReadOnlySpan<byte> ConvertToHostCompatibleFormat(ReadOnlySpan<byte> data, int level = 0, bool single = false)
         {
             int width = Info.Width;
             int height = Info.Height;
 
-            int depth = single ? 1 : _depth;
+            int depth = _depth;
             int layers = single ? 1 : _layers;
-            int levels = single ? 1 : Info.Levels;
+            int levels = single ? 1 : (Info.Levels - level);
 
             width = Math.Max(width >> level, 1);
             height = Math.Max(height >> level, 1);
@@ -782,6 +784,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     width,
                     height,
                     depth,
+                    single ? 1 : depth,
                     levels,
                     layers,
                     Info.FormatInfo.BlockWidth,
@@ -834,6 +837,65 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Converts texture data from a format and layout that is supported by the host GPU, back into the intended format on the guest GPU.
+        /// </summary>
+        /// <param name="output">Optional output span to convert into</param>
+        /// <param name="data">Data to be converted</param>
+        /// <param name="level">Mip level to convert</param>
+        /// <param name="single">True to convert a single slice</param>
+        /// <returns>Converted data</returns>
+        public ReadOnlySpan<byte> ConvertFromHostCompatibleFormat(Span<byte> output, ReadOnlySpan<byte> data, int level = 0, bool single = false)
+        {
+            if (Target != Target.TextureBuffer)
+            {
+                int width = Info.Width;
+                int height = Info.Height;
+
+                int depth = _depth;
+                int layers = single ? 1 : _layers;
+                int levels = single ? 1 : (Info.Levels - level);
+
+                width = Math.Max(width >> level, 1);
+                height = Math.Max(height >> level, 1);
+                depth = Math.Max(depth >> level, 1);
+
+                if (Info.IsLinear)
+                {
+                    data = LayoutConverter.ConvertLinearToLinearStrided(
+                        output,
+                        Info.Width,
+                        Info.Height,
+                        Info.FormatInfo.BlockWidth,
+                        Info.FormatInfo.BlockHeight,
+                        Info.Stride,
+                        Info.FormatInfo.BytesPerPixel,
+                        data);
+                }
+                else
+                {
+                    data = LayoutConverter.ConvertLinearToBlockLinear(
+                        output,
+                        width,
+                        height,
+                        depth,
+                        single ? 1 : depth,
+                        levels,
+                        layers,
+                        Info.FormatInfo.BlockWidth,
+                        Info.FormatInfo.BlockHeight,
+                        Info.FormatInfo.BytesPerPixel,
+                        Info.GobBlocksInY,
+                        Info.GobBlocksInZ,
+                        Info.GobBlocksInTileX,
+                        _sizeInfo,
+                        data);
+                }
+            }
+
+            return data;
+        }
+
+        /// <summary>
         /// Flushes the texture data.
         /// This causes the texture data to be written back to guest memory.
         /// If the texture was written by the GPU, this includes all modification made by the GPU
@@ -845,7 +907,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>True if data was flushed, false otherwise</returns>
         public bool FlushModified(bool tracked = true)
         {
-            return Group.FlushModified(this, tracked);
+            return TextureCompatibility.CanTextureFlush(Info, _context.Capabilities) && Group.FlushModified(this, tracked);
         }
 
         /// <summary>
@@ -856,45 +918,22 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Be aware that this is an expensive operation, avoid calling it unless strictly needed.
         /// This may cause data corruption if the memory is already being used for something else on the CPU side.
         /// </summary>
-        /// <param name="offset">The start offset of the range to flush data in bytes</param>
-        /// <param name="size">The size of the range to flush in bytes</param>
         /// <param name="tracked">Whether or not the flush triggers write tracking. If it doesn't, the texture will not be blacklisted for scaling either.</param>
-        public void Flush(int offset, int size, bool tracked)
+        public void Flush(bool tracked)
         {
-            if (TextureCompatibility.IsFormatHostIncompatible(Info, _context.Capabilities))
+            if (TextureCompatibility.CanTextureFlush(Info, _context.Capabilities))
             {
-                return; // Flushing this format is not supported, as it may have been converted to another host format.
+                FlushTextureDataToGuest(tracked);
             }
-
-            if (Info.Target == Target.Texture2DMultisample ||
-                Info.Target == Target.Texture2DMultisampleArray)
-            {
-                return; // Flushing multisample textures is not supported, the host does not allow getting their data.
-            }
-
-            FlushTextureDataRangeToGuest(tracked, offset, size);
         }
-
+        
         /// <summary>
-        /// Flushes the texture data, to be called from an external thread.
-        /// The host backend must ensure that we have shared access to the resource from this thread.
-        /// This is used when flushing from memory access handlers.
+        /// Gets a host texture to use for flushing the texture, at 1x resolution.
+        /// If the HostTexture is already at 1x resolution, it is returned directly.
         /// </summary>
-        /// <param name="offset">The start offset of the range to flush data in bytes</param>
-        /// <param name="size">The size of the range to flush in bytes</param>
-        public void ExternalFlush(int offset, int size)
+        /// <returns>The host texture to flush</returns>
+        public ITexture GetFlushTexture()
         {
-            if (TextureCompatibility.IsFormatHostIncompatible(Info, _context.Capabilities))
-            {
-                return; // Flushing this format is not supported, as it may have been converted to another host format.
-            }
-
-            if (Info.Target == Target.Texture2DMultisample ||
-                Info.Target == Target.Texture2DMultisampleArray)
-            {
-                return; // Flushing multisample textures is not supported, the host does not allow getting their data.
-            }
-
             ITexture texture = HostTexture;
             if (ScaleFactor != 1f)
             {
@@ -902,7 +941,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 texture = _flushHostTexture = GetScaledHostTexture(1f, _flushHostTexture);
             }
 
-            FlushTextureDataRangeToGuest(false, offset, size, texture);
+            return texture;
         }
 
         /// <summary>
@@ -915,65 +954,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </remarks>
         /// <param name="tracked">True if writing the texture data is tracked, false otherwise</param>
         /// <param name="texture">The specific host texture to flush. Defaults to this texture</param>
-        private void FlushTextureDataToGuest(bool tracked, ITexture texture = null)
+        public void FlushTextureDataToGuest(bool tracked, ITexture texture = null)
         {
-            if (Range.Count == 1)
-            {
-                MemoryRange subrange = Range.GetSubRange(0);
+            using WritableRegion region = _physicalMemory.GetWritableRegion(Range, tracked);
 
-                using (WritableRegion region = _physicalMemory.GetWritableRegion(subrange.Address, (int)subrange.Size, tracked))
-                {
-                    GetTextureDataFromGpu(region.Memory.Span, tracked, texture);
-                }
-            }
-            else
-            {
-                if (tracked)
-                {
-                    _physicalMemory.Write(Range, GetTextureDataFromGpu(Span<byte>.Empty, true, texture));
-                }
-                else
-                {
-                    _physicalMemory.WriteUntracked(Range, GetTextureDataFromGpu(Span<byte>.Empty, false, texture));
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets data from the host GPU, and flushes it to a range of guest memory.
-        /// </summary>
-        /// <remarks>
-        /// This method should be used to retrieve data that was modified by the host GPU.
-        /// This is not cheap, avoid doing that unless strictly needed.
-        /// When possible, the data is written directly into guest memory, rather than copied.
-        /// </remarks>
-        /// <param name="tracked">True if writing the texture data is tracked, false otherwise</param>
-        /// <param name="offset">The start offset of the range to flush data in bytes</param>
-        /// <param name="size">The size of the range to flush in bytes</param>
-        /// <param name="texture">The specific host texture to flush. Defaults to this texture</param>
-        private void FlushTextureDataRangeToGuest(bool tracked, int offset, int size, ITexture texture = null)
-        {
-            if (offset == 0 && (ulong)size == Size)
-            {
-                FlushTextureDataToGuest(tracked, texture);
-            }
-            else
-            {
-                MultiRange subrange = Range.GetSlice((ulong)offset, (ulong)size);
-
-                // TODO: Cache storage data, if possible?
-
-                ReadOnlySpan<byte> data = GetTextureDataFromGpu(Span<byte>.Empty, tracked, texture);
-
-                if (tracked)
-                {
-                    _physicalMemory.Write(subrange, data.Slice((int)offset, (int)size));
-                }
-                else
-                {
-                    _physicalMemory.WriteUntracked(subrange, data.Slice((int)offset, (int)size));
-                }
-            }
+            GetTextureDataFromGpu(region.Memory.Span, tracked, texture);
         }
 
         /// <summary>
@@ -1015,39 +1000,55 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
             }
 
-            if (Target != Target.TextureBuffer)
+            data = ConvertFromHostCompatibleFormat(output, data);
+
+            return data;
+        }
+
+        /// <summary>
+        /// Gets data from the host GPU.
+        /// </summary>
+        /// <remarks>
+        /// This method should be used to retrieve data that was modified by the host GPU.
+        /// This is not cheap, avoid doing that unless strictly needed.
+        /// </remarks>
+        /// <param name="output">An output span to place the texture data into. If empty, one is generated</param>
+        /// <param name="layer">The layer of the texture to flush</param>
+        /// <param name="level">The level of the texture to flush</param>
+        /// <param name="blacklist">True if the texture should be blacklisted, false otherwise</param>
+        /// <param name="texture">The specific host texture to flush. Defaults to this texture</param>
+        /// <returns>The span containing the texture data</returns>
+        public ReadOnlySpan<byte> GetTextureDataSliceFromGpu(Span<byte> output, int layer, int level, bool blacklist, ITexture texture = null)
+        {
+            ReadOnlySpan<byte> data;
+
+            //Logger.Error?.Print(LogClass.Gpu, $"{Info.Target} {Info.FormatInfo.Format} {Info.Width}x{Info.Height}x{Info.DepthOrLayers} {layer} {level}");
+
+            if (texture != null)
             {
-                if (Info.IsLinear)
+                data = texture.GetData(layer, level);
+            }
+            else
+            {
+                if (blacklist)
                 {
-                    data = LayoutConverter.ConvertLinearToLinearStrided(
-                        output,
-                        Info.Width,
-                        Info.Height,
-                        Info.FormatInfo.BlockWidth,
-                        Info.FormatInfo.BlockHeight,
-                        Info.Stride,
-                        Info.FormatInfo.BytesPerPixel,
-                        data);
+                    BlacklistScale();
+                    data = HostTexture.GetData(layer, level);
+                }
+                else if (ScaleFactor != 1f)
+                {
+                    float scale = ScaleFactor;
+                    SetScale(1f);
+                    data = HostTexture.GetData(layer, level);
+                    SetScale(scale);
                 }
                 else
                 {
-                    data = LayoutConverter.ConvertLinearToBlockLinear(
-                        output,
-                        Info.Width,
-                        Info.Height,
-                        _depth,
-                        Info.Levels,
-                        _layers,
-                        Info.FormatInfo.BlockWidth,
-                        Info.FormatInfo.BlockHeight,
-                        Info.FormatInfo.BytesPerPixel,
-                        Info.GobBlocksInY,
-                        Info.GobBlocksInZ,
-                        Info.GobBlocksInTileX,
-                        _sizeInfo,
-                        data);
+                    data = HostTexture.GetData(layer, level);
                 }
             }
+
+            data = ConvertFromHostCompatibleFormat(output, data, level, true);
 
             return data;
         }

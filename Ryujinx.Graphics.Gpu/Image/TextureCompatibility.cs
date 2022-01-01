@@ -94,6 +94,28 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Determines whether a texture can flush its data back to guest memory.
+        /// </summary>
+        /// <param name="info">Texture information</param>
+        /// <param name="caps">Host GPU Capabilities</param>
+        /// <returns>True if the texture can flush, false otherwise</returns>
+        public static bool CanTextureFlush(TextureInfo info, Capabilities caps)
+        {
+            if (IsFormatHostIncompatible(info, caps))
+            {
+                return false; // Flushing this format is not supported, as it may have been converted to another host format.
+            }
+
+            if (info.Target == Target.Texture2DMultisample ||
+                info.Target == Target.Texture2DMultisampleArray)
+            {
+                return false; // Flushing multisample textures is not supported, the host does not allow getting their data.
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Checks if two formats are compatible, according to the host API copy format compatibility rules.
         /// </summary>
         /// <param name="lhsFormat">First comparand</param>
