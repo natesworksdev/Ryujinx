@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Pm
 
         [CommandHipc(65000)]
         // AtmosphereGetProcessInfo(os::ProcessId process_id) -> sf::OutCopyHandle out_process_handle, sf::Out<ncm::ProgramLocation> out_loc, sf::Out<cfg::OverrideStatus> out_status
-        public ResultCode GetApplicationPid(ServiceCtx context)
+        public ResultCode GetProcessInfo(ServiceCtx context)
         {
             long pid = context.RequestData.ReadInt64();
 
