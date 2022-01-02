@@ -1539,6 +1539,8 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return result;
             }
 
+            srcProcess.Context.InvalidateCacheRegion(src, size);
+
             return KernelResult.Success;
         }
 
