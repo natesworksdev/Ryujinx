@@ -79,7 +79,7 @@ namespace Ryujinx.Ui.Windows
 
             foreach (var cheat in mods.Cheats)
             {
-                if(cheat.Path.FullName != currentCheatFile)
+                if (cheat.Path.FullName != currentCheatFile)
                 {
                     currentCheatFile = cheat.Path.FullName;
                     string parentPath = currentCheatFile.Replace(titleModsPath, "");
@@ -94,7 +94,7 @@ namespace Ryujinx.Ui.Windows
                 cheatAdded++;
             }
 
-            if(cheatAdded == 0)
+            if (cheatAdded == 0)
             {
                 ((TreeStore)_cheatTreeView.Model).AppendValues(false, "No Cheats Found", "", "");
                 _cheatTreeView.GetColumn(0).Visible = false;
@@ -109,7 +109,7 @@ namespace Ryujinx.Ui.Windows
 
         private void SaveButton_Clicked(object sender, EventArgs args)
         {
-            if(_noCheatsFound)
+            if (_noCheatsFound)
             {
                 return;
             }
