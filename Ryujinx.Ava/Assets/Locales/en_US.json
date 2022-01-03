@@ -491,5 +491,7 @@
   "SettingsTabSystemAudioVolume": "Volume: ",
   "AudioVolumeTooltip": "Change Audio Volume",
   "SettingsTabSystemEnableInternetAccess": "Enable Guest Internet Access",
-  "EnableInternetAccessTooltip": "Enables guest Internet access. If enabled, the application will behave as if the emulated Switch console was connected to the Internet. Note that in some cases, applications may still access the Internet even with this option disabled"
+  "EnableInternetAccessTooltip": "Enables guest Internet access. If enabled, the application will behave as if the emulated Switch console was connected to the Internet. Note that in some cases, applications may still access the Internet even with this option disabled",
+  "GameListContextMenuManageCheatToolTip" : "Manage Cheats",
+  "GameListContextMenuManageCheat" : "Manage Cheats"
 }

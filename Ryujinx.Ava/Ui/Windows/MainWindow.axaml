@@ -60,6 +60,10 @@
                 Header="{locale:Locale GameListContextMenuManageDlc}"
                 ToolTip.Tip="{locale:Locale GameListContextMenuManageDlcToolTip}" />
             <MenuItem
+                Command="{Binding OpenCheatManager}"
+                Header="{locale:Locale GameListContextMenuManageCheat}"
+                ToolTip.Tip="{locale:Locale GameListContextMenuManageCheatToolTip}" />
+            <MenuItem
                 Command="{Binding OpenModsDirectory}"
                 Header="{locale:Locale GameListContextMenuOpenModsDirectory}"
                 ToolTip.Tip="{locale:Locale GameListContextMenuOpenModsDirectoryToolTip}" />
@@ -226,6 +230,9 @@
                                       IsEnabled="{Binding IsGameRunning}"
                                       Header="{locale:Locale MenuBarFileToolsHideUi}"
                                       InputGesture="{Binding ShowUiKey}" />
+                            <MenuItem Command="{Binding  OpenCheatManagerForCurrentApp}"
+                                      IsEnabled="{Binding IsGameRunning}"
+                                      Header="{locale:Locale GameListContextMenuManageCheat}" />
                         </MenuItem>
                         <MenuItem
                             VerticalAlignment="Center"
@@ -640,14 +647,13 @@
                         Margin="0,0,5,0"
                         Text="VSync"
                         TextAlignment="Left" />
-					<Border
-						Width="2"
-						Margin="2,0"
-						IsVisible="{Binding !ShowLoadProgress}"
-						BorderThickness="1"
-						Height="12"
-						BorderBrush="Gray"
-						/>
+                    <Border
+                        Width="2"
+                        Margin="2,0"
+                        IsVisible="{Binding !ShowLoadProgress}"
+                        BorderThickness="1"
+                        Height="12"
+                        BorderBrush="Gray" />
                     <TextBlock
                         Margin="5,0,5,0"
                         Name="DockedStatus"
@@ -656,14 +662,13 @@
                         PointerReleased="DockedStatus_PointerReleased"
                         Text="{Binding DockedStatusText}"
                         TextAlignment="Left" />
-					<Border
-						Width="2"
-						Margin="2,0"
-						IsVisible="{Binding !ShowLoadProgress}"
-						BorderThickness="1"
-						Height="12"
-						BorderBrush="Gray"
-						/>
+                    <Border
+                        Width="2"
+                        Margin="2,0"
+                        IsVisible="{Binding !ShowLoadProgress}"
+                        BorderThickness="1"
+                        Height="12"
+                        BorderBrush="Gray" />
                     <TextBlock
                         Margin="5,0,5,0"
                         Name="AspectRatioStatus"
@@ -672,59 +677,55 @@
                         PointerReleased="AspectRatioStatus_PointerReleased"
                         Text="{Binding AspectRatioStatusText}"
                         TextAlignment="Left" />
-					<Border
-						Width="2"
-						Margin="2,0"
-						IsVisible="{Binding !ShowLoadProgress}"
-						BorderThickness="1"
-						Height="12"
-						BorderBrush="Gray"
-						/>
+                    <Border
+                        Width="2"
+                        Margin="2,0"
+                        IsVisible="{Binding !ShowLoadProgress}"
+                        BorderThickness="1"
+                        Height="12"
+                        BorderBrush="Gray" />
                     <TextBlock
                         Margin="5,0,5,0"
                         Name="VolumeStatus"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
-						IsVisible="{Binding !ShowLoadProgress}"
+                        IsVisible="{Binding !ShowLoadProgress}"
                         PointerReleased="VolumeStatus_PointerReleased"
                         Text="{Binding VolumeStatusText}"
                         TextAlignment="Left" />
-					<Border
-						Width="2"
-						Margin="2,0"
-						IsVisible="{Binding !ShowLoadProgress}"
-						BorderThickness="1"
-						Height="12"
-						BorderBrush="Gray"
-						/>
+                    <Border
+                        Width="2"
+                        Margin="2,0"
+                        IsVisible="{Binding !ShowLoadProgress}"
+                        BorderThickness="1"
+                        Height="12"
+                        BorderBrush="Gray" />
                     <TextBlock
                         Margin="5,0,5,0"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
                         Text="{Binding GameStatusText}"
                         TextAlignment="Left" />
-					<Border
-						Width="2"
-						IsVisible="{Binding !ShowLoadProgress}"
-						Margin="2,0"
-						BorderThickness="1"
-						Height="12"
-						BorderBrush="Gray"
-						/>
+                    <Border
+                        Width="2"
+                        IsVisible="{Binding !ShowLoadProgress}"
+                        Margin="2,0"
+                        BorderThickness="1"
+                        Height="12"
+                        BorderBrush="Gray" />
                     <TextBlock
                         Margin="5,0,5,0"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
                         Text="{Binding FifoStatusText}"
                         TextAlignment="Left" />
-					<Border
-						Width="2"
-						Margin="2,0"
-						IsVisible="{Binding !ShowLoadProgress}"
-						BorderThickness="1"
-						Height="12"
-						BorderBrush="Gray"
-						/>
+                    <Border
+                        Width="2"
+                        Margin="2,0"
+                        IsVisible="{Binding !ShowLoadProgress}"
+                        BorderThickness="1"
+                        Height="12"
+                        BorderBrush="Gray" />
                     <TextBlock
                         Margin="5,0,5,0"
                         HorizontalAlignment="Left"

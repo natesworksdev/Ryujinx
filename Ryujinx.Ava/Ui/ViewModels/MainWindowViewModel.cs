@@ -21,6 +21,7 @@ using Ryujinx.Configuration;
 using Ryujinx.HLE;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.FileSystem.Content;
+using Ryujinx.HLE.HOS;
 using Ryujinx.Modules;
 using System;
 using System.Collections;
@@ -49,7 +50,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
         private string _fifoStatusText;
         private string _gameStatusText;
         private string _gpuStatusText;
-        private ViewMode _viewMode = Controls.ViewMode.Grid;
+        private ViewMode _viewMode;
         private bool _isAmiiboRequested;
         private bool _isGameRunning;
         private bool _isLoading;
@@ -83,6 +84,8 @@ namespace Ryujinx.Ava.Ui.ViewModels
         public MainWindowViewModel()
         {
             Applications = new ObservableCollection<ApplicationData>();
+
+            ViewMode = ViewMode.Grid;
             
             Applications.ToObservableChangeSet()
                 .Filter(Filter)
@@ -106,9 +109,9 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 ShowUiKey     = KeyGesture.Parse(ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUi.ToString());
                 ScreenshotKey = KeyGesture.Parse(ConfigurationState.Instance.Hid.Hotkeys.Value.Screenshot.ToString());
                 PauseKey      = KeyGesture.Parse(ConfigurationState.Instance.Hid.Hotkeys.Value.Pause.ToString());
-            }
 
-            Volume = ConfigurationState.Instance.System.AudioVolume;
+                Volume = ConfigurationState.Instance.System.AudioVolume;
+            }
         }
 
         public string SearchText
@@ -1298,6 +1301,36 @@ namespace Ryujinx.Ava.Ui.ViewModels
             }
         }
 
+        public async void OpenCheatManager()
+        {
+            var selection = SelectedApplication;
+
+            if (selection != null)
+            {
+                CheatWindow cheatManager = new(_owner.VirtualFileSystem, selection.TitleId, selection.TitleName);
+
+                await cheatManager.ShowDialog(_owner);
+            }
+        }
+
+        public async void OpenCheatManagerForCurrentApp()
+        {
+            if (!IsGameRunning)
+            {
+                return;
+            }
+            
+            var application = _owner.AppHost.Device.Application;
+
+            if (application != null)
+            {
+                CheatWindow cheatManager = new(_owner.VirtualFileSystem, application.TitleIdText, application.TitleName);
+
+                await cheatManager.ShowDialog(_owner);
+                
+                _owner.AppHost.Device.EnableCheats();
+            }
+        }
 
         public void OpenDeviceSaveDirectory()
         {

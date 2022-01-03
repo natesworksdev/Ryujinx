@@ -7,14 +7,9 @@
     xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
     xmlns:window="clr-namespace:Ryujinx.Ava.Ui.Windows"
     Title="Ryujinx - DLC Manager"
-    Width="550"
-    Height="250"
     MinWidth="550"
     MinHeight="250"
-    d:DesignHeight="250"
-    d:DesignWidth="550"
     CanResize="False"
-    SizeToContent="WidthAndHeight"
     WindowStartupLocation="CenterOwner"
     mc:Ignorable="d">
     <Grid Name="DlcGrid" Margin="15">
