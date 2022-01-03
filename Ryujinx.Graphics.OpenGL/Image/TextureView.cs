@@ -200,31 +200,31 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
             int mipSize = Info.GetMipSize2D(level);
 
-            // The GL function returns all layers. Must return the offset of the layer we're interested in.
-            int resultOffset = target switch
-            {
-                TextureTarget.TextureCubeMapArray => (layer / 6) * mipSize,
-                TextureTarget.Texture1DArray => layer * mipSize,
-                TextureTarget.Texture2DArray => layer * mipSize,
-                _ => 0
-            };
-
             if (format.IsCompressed)
             {
-                GL.GetCompressedTexImage(target, level, data);
+                GL.GetCompressedTextureSubImage(Handle, level, 0, 0, layer, Math.Max(1, Info.Width >> level), Math.Max(1, Info.Height >> level), 1, mipSize, data);
             }
             else if (format.PixelFormat != PixelFormat.DepthStencil)
             {
                 GL.GetTextureSubImage(Handle, level, 0, 0, layer, Math.Max(1, Info.Width >> level), Math.Max(1, Info.Height >> level), 1, pixelFormat, pixelType, mipSize, data);
-
-                return 0;
             }
             else
             {
+                // The GL function returns all layers. Must return the offset of the layer we're interested in.
+                int resultOffset = target switch
+                {
+                    TextureTarget.TextureCubeMapArray => (layer / 6) * mipSize,
+                    TextureTarget.Texture1DArray => layer * mipSize,
+                    TextureTarget.Texture2DArray => layer * mipSize,
+                    _ => 0
+                };
+
                 GL.GetTexImage(target, level, pixelFormat, pixelType, data);
+
+                return resultOffset;
             }
 
-            return resultOffset;
+            return 0;
         }
 
         private void WriteTo(IntPtr data, bool forceBgra = false)
