@@ -112,6 +112,10 @@ namespace Ryujinx.Graphics.Gpu.Image
             RecalculateHandleRegions();
         }
 
+        /// <summary>
+        /// Initialize all incompatible overlaps in the list, registering them with the other texture groups
+        /// and creating copy dependencies when partially compatible.
+        /// </summary>
         public void InitializeOverlaps()
         {
             foreach (TextureIncompatibleOverlap overlap in _incompatibleOverlaps)
@@ -383,7 +387,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Gets data from the host GPU, and flushes it all to guest memory.
+        /// Gets data from the host GPU, and flushes a slice to guest memory.
         /// </summary>
         /// <remarks>
         /// This method should be used to retrieve data that was modified by the host GPU.
@@ -406,6 +410,13 @@ namespace Ryujinx.Graphics.Gpu.Image
             Storage.GetTextureDataSliceFromGpu(region.Memory.Span, layer, level, tracked, texture);
         }
 
+        /// <summary>
+        /// Gets and flushes a number of slices of the storage texture to guest memory.
+        /// </summary>
+        /// <param name="tracked">True if writing the texture data is tracked, false otherwise</param>
+        /// <param name="sliceStart">The first slice to flush</param>
+        /// <param name="sliceEnd">The slice to finish flushing on (exclusive)</param>
+        /// <param name="texture">The specific host texture to flush. Defaults to the storage texture</param>
         private void FlushSliceRange(bool tracked, int sliceStart, int sliceEnd, ITexture texture = null)
         {
             for (int i = sliceStart; i < sliceEnd; i++)

@@ -59,7 +59,7 @@ namespace Ryujinx.Graphics.Gpu
         internal List<Action> SyncActions { get; }
 
         /// <summary>
-        /// Actions to be performed when a CPU waiting sync point is triggered.
+        /// Actions to be performed when a CPU waiting syncpoint is triggered.
         /// If there are more than 0 items when this happens, a host sync object will be generated for the given <see cref="SyncNumber"/>,
         /// and the SyncNumber will be incremented.
         /// </summary>
@@ -193,6 +193,9 @@ namespace Ryujinx.Graphics.Gpu
             }
         }
 
+        /// <summary>
+        /// Sets the current thread as the main GPU thread.
+        /// </summary>
         public void SetGpuThread()
         {
             _gpuThread = Thread.CurrentThread;
@@ -249,6 +252,7 @@ namespace Ryujinx.Graphics.Gpu
         /// Creates a host sync object if there are any pending sync actions. The actions will then be called.
         /// If no actions are present, a host sync object is not created.
         /// </summary>
+        /// <param name="syncpoint">True if host sync is being created by a syncpoint</param>
         public void CreateHostSyncIfNeeded(bool syncpoint)
         {
             if (SyncActions.Count > 0 || (syncpoint && SyncpointActions.Count > 0))

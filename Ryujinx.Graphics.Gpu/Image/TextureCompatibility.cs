@@ -312,15 +312,6 @@ namespace Ryujinx.Graphics.Gpu.Image
                     {
                         result = TextureViewCompatibility.CopyOnly;
                     }
-                    else
-                    {
-                        int levels = Math.Max(32 - BitOperations.LeadingZeroCount((uint)mip0SizeLhs.Width), 32 - BitOperations.LeadingZeroCount((uint)mip0SizeLhs.Height));
-                        int newLevels = Math.Max(32 - BitOperations.LeadingZeroCount((uint)mip0SizeRhs.Width), 32 - BitOperations.LeadingZeroCount((uint)mip0SizeRhs.Height));
-                        if (newLevels != levels)
-                        {
-
-                        }
-                    }
                 }
 
                 return result;
@@ -406,18 +397,9 @@ namespace Ryujinx.Graphics.Gpu.Image
                 Size size0 = GetLargestAlignedSize(lhs, lhsLevel);
                 Size size1 = GetLargestAlignedSize(rhs, lhsLevel);
 
-                bool test = size0.Width  == size1.Width &&
+                return size0.Width  == size1.Width &&
                        size0.Height == size1.Height &&
                        size0.Depth  == size1.Depth;
-
-                int levels = Math.Max(32 - BitOperations.LeadingZeroCount((uint)size0.Width), 32 - BitOperations.LeadingZeroCount((uint)size0.Height));
-                int newLevels = Math.Max(32 - BitOperations.LeadingZeroCount((uint)size1.Width), 32 - BitOperations.LeadingZeroCount((uint)size1.Height));
-                if (newLevels != levels && levels == lhs.Levels)
-                {
-
-                }
-
-                return test;
             }
             else
             {

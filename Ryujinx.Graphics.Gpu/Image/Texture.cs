@@ -1006,7 +1006,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Gets data from the host GPU.
+        /// Gets data from the host GPU for a single slice.
         /// </summary>
         /// <remarks>
         /// This method should be used to retrieve data that was modified by the host GPU.
@@ -1021,8 +1021,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         public ReadOnlySpan<byte> GetTextureDataSliceFromGpu(Span<byte> output, int layer, int level, bool blacklist, ITexture texture = null)
         {
             ReadOnlySpan<byte> data;
-
-            //Logger.Error?.Print(LogClass.Gpu, $"{Info.Target} {Info.FormatInfo.Format} {Info.Width}x{Info.Height}x{Info.DepthOrLayers} {layer} {level}");
 
             if (texture != null)
             {

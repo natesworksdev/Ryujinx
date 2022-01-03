@@ -41,7 +41,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 Texture oldestTexture = _textures.First.Value;
 
-                if (!oldestTexture.CheckModified(false)) //todo: check modified before sync dependents?
+                if (!oldestTexture.CheckModified(false))
                 {
                     // The texture must be flushed if it falls out of the auto delete cache.
                     // Flushes out of the auto delete cache do not trigger write tracking,
