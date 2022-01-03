@@ -159,34 +159,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
             context.Config.GpuAccessor.Log("Shader instruction ImadspRc is not implemented.");
         }
 
-        public static void ImulR(EmitterContext context)
-        {
-            InstImulR op = context.GetOp<InstImulR>();
-
-            context.Config.GpuAccessor.Log("Shader instruction ImulR is not implemented.");
-        }
-
-        public static void ImulI(EmitterContext context)
-        {
-            InstImulI op = context.GetOp<InstImulI>();
-
-            context.Config.GpuAccessor.Log("Shader instruction ImulI is not implemented.");
-        }
-
-        public static void ImulC(EmitterContext context)
-        {
-            InstImulC op = context.GetOp<InstImulC>();
-
-            context.Config.GpuAccessor.Log("Shader instruction ImulC is not implemented.");
-        }
-
-        public static void Imul32i(EmitterContext context)
-        {
-            InstImul32i op = context.GetOp<InstImul32i>();
-
-            context.Config.GpuAccessor.Log("Shader instruction Imul32i is not implemented.");
-        }
-
         public static void Jcal(EmitterContext context)
         {
             InstJcal op = context.GetOp<InstJcal>();
