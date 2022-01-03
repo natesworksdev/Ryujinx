@@ -51,6 +51,26 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             return null;
         }
 
+        public static int RegisterSocket(BsdSocket socket)
+        {
+            lock (Lock)
+            {
+                for (int fd = 0; fd < _sockets.Count; fd++)
+                {
+                    if (_sockets[fd] == null)
+                    {
+                        _sockets[fd] = socket;
+
+                        return fd;
+                    }
+                }
+
+                _sockets.Add(socket);
+
+                return _sockets.Count - 1;
+            }
+        }
+
         public static int DuplicateSocket(int socketFd)
         {
             BsdSocket oldSocket = RetrieveSocket(socketFd);
@@ -61,8 +81,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                 {
                     oldSocket.Refcount++;
 
-                    _sockets.Add(oldSocket);
-                    return _sockets.Count - 1;
+                    return RegisterSocket(oldSocket);
                 }
             }
 
@@ -126,14 +145,21 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                 Refcount = 1
             };
 
-            _sockets.Add(newBsdSocket);
+            LinuxError errno = LinuxError.SUCCESS;
+
+            int newSockFd = RegisterSocket(newBsdSocket);
+
+            if (newSockFd == -1)
+            {
+                errno = LinuxError.EBADF;
+            }
 
             if (exempt)
             {
                 newBsdSocket.Handle.Disconnect();
             }
 
-            return WriteBsdResult(context, _sockets.Count - 1);
+            return WriteBsdResult(context, newSockFd, errno);
         }
 
         private void WriteSockAddr(ServiceCtx context, ulong bufferPosition, BsdSocket socket, bool isRemote)
@@ -818,15 +844,18 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             {
                 errno = LinuxError.SUCCESS;
 
-                foreach (BsdSocket socket in _sockets)
+                lock (Lock)
                 {
-                    if (socket != null)
+                    foreach (BsdSocket socket in _sockets)
                     {
-                        errno = socket.Handle.Shutdown((BsdSocketShutdownFlags)how);
-
-                        if (errno != LinuxError.SUCCESS)
+                        if (socket != null)
                         {
-                            break;
+                            errno = socket.Handle.Shutdown((BsdSocketShutdownFlags)how);
+
+                            if (errno != LinuxError.SUCCESS)
+                            {
+                                break;
+                            }
                         }
                     }
                 }
