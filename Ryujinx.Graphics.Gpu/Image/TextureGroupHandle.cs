@@ -1,5 +1,4 @@
-﻿using Ryujinx.Common.Logging;
-using Ryujinx.Cpu.Tracking;
+﻿using Ryujinx.Cpu.Tracking;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -227,9 +226,10 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// 
+        /// Wait for the latest sync number that the texture handle was written to,
+        /// removing the modified flag if it was reached, or leaving it set if it has not yet been created.
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="context">The GPU context used to wait for sync</param>
         public void Sync(GpuContext context)
         {
             _actionRegistered = false;
@@ -262,6 +262,10 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
         }
 
+        /// <summary>
+        /// Action to perform when a sync number is registered after modification.
+        /// This action will register a read tracking action on the memory tracking handle so that a flush from CPU can happen.
+        /// </summary>
         private void SyncAction()
         {
             // Register region tracking for CPU? (again)
@@ -369,6 +373,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <summary>
         /// Perform a copy from the provided handle to this one, or perform a deferred copy if none is provided.
         /// </summary>
+        /// <param name="context">GPU context to register sync for modified handles</param>
         /// <param name="fromHandle">The handle to copy from. If not provided, this method will copy from and clear the deferred copy instead</param>
         /// <returns>True if the copy was performed, false otherwise</returns>
         public bool Copy(GpuContext context, TextureGroupHandle fromHandle = null)
@@ -487,6 +492,9 @@ namespace Ryujinx.Graphics.Gpu.Image
             return Offset < offset + size && offset < Offset + Size;
         }
 
+        /// <summary>
+        /// Dispose this texture group handle, removing all its dependencies and disposing its memory tracking handles.
+        /// </summary>
         public void Dispose()
         {
             foreach (CpuRegionHandle handle in Handles)

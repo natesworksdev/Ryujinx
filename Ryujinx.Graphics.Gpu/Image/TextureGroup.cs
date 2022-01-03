@@ -964,10 +964,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="relativeOffset">The offset of the old handles in relation to the new ones</param>
         private void InheritHandles(TextureGroupHandle[] oldHandles, TextureGroupHandle[] handles, int relativeOffset)
         {
-            if (relativeOffset == -1)
-            {
-                throw new Exception("oops!!");
-            }
             foreach (var group in handles)
             {
                 foreach (var handle in group.Handles)
