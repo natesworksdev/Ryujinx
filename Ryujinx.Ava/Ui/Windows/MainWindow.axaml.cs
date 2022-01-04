@@ -282,6 +282,8 @@ namespace Ryujinx.Ava.Ui.Windows
                 {
                     ViewModel.ToggleFullscreen();
                 }
+
+                GlRenderer.Focus();
             });
         }
 

@@ -34,6 +34,8 @@ namespace Ryujinx.Ava.Ui.Controls
 
             resizeObservable.Subscribe(Resized);
             _waitEvent = new ManualResetEventSlim(false);
+
+            Focusable = true;
         }
 
         private void Resized(Rect rect)
