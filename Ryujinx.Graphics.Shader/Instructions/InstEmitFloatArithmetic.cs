@@ -333,7 +333,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
             EmitHfma2(context, op.OFmt, srcA, srcB, srcC, op.Dest, op.Sat);
         }
 
-        public static void Hfma232iI(EmitterContext context)
+        public static void Hfma232i(EmitterContext context)
         {
             InstHfma232i op = context.GetOp<InstHfma232i>();
 

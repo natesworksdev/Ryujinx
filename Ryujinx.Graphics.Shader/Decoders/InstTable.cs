@@ -129,6 +129,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
             Add("01110xxx0xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Hfma2,       InstEmit.Hfma2I,      InstProps.Rd  | InstProps.Ra  | InstProps.Ib  | InstProps.Rc);
             Add("01110xxx1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Hfma2,       InstEmit.Hfma2C,      InstProps.Rd  | InstProps.Ra  | InstProps.Rc);
             Add("01100xxx1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Hfma2,       InstEmit.Hfma2Rc,     InstProps.Rd  | InstProps.Ra  | InstProps.Rc);
+            Add("0010100xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Hfma2,       InstEmit.Hfma232i,    InstProps.Rd  | InstProps.Ra);
             Add("0101110100001xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Hmul2,       InstEmit.Hmul2R,      InstProps.Rd  | InstProps.Ra  | InstProps.Rb);
             Add("0111100x0xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Hmul2,       InstEmit.Hmul2I,      InstProps.Rd  | InstProps.Ra  | InstProps.Ib);
             Add("0111100x1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Hmul2,       InstEmit.Hmul2C,      InstProps.Rd  | InstProps.Ra);
