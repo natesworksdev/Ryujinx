@@ -204,7 +204,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             var srcA = GetSrcReg(context, op.SrcA);
             var srcB = GetSrcImm(context, op.Imm32);
-            var srcC = GetSrcReg(context, op.SrcC);
+            var srcC = GetSrcReg(context, op.Dest);
 
             EmitFfma(context, Instruction.FP32, srcA, srcB, srcC, op.Dest, op.NegA, op.NegC, op.Sat, op.WriteCC);
         }
@@ -339,7 +339,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             var srcA = GetHalfSrc(context, op.ASwizzle, op.SrcA, false, false);
             var srcB = GetHalfSrc(context, op.Imm);
-            var srcC = GetHalfSrc(context, HalfSwizzle.F16, op.SrcC, op.NegC, false);
+            var srcC = GetHalfSrc(context, HalfSwizzle.F16, op.Dest, op.NegC, false);
 
             EmitHfma2(context, OFmt.F16, srcA, srcB, srcC, op.Dest, saturate: false);
         }

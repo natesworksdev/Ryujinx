@@ -55,7 +55,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
             Add("1110111110000xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Cctll,       InstEmit.Cctll,       InstProps.Ra);
             Add("1110101111110xx0000000000000xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Cctlt,       InstEmit.Cctlt);
             Add("1110101111101xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Cctlt,       InstEmit.Cctlt,       InstProps.Rc);
-            Add("111000110101xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Cont,        InstEmit.Cont);
+            Add("111000110101xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Cont,        InstEmit.Cont,        InstProps.Bra);
             Add("0101000010011xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Cset,        InstEmit.Cset,        InstProps.Rd  | InstProps.Ps);
             Add("0101000010100xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Csetp,       InstEmit.Csetp,       InstProps.Pd  | InstProps.Pdn | InstProps.Ps);
             Add("0101000011001xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Cs2r,        InstEmit.Cs2r,        InstProps.Rd);

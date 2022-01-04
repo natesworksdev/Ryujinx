@@ -54,18 +54,11 @@ namespace Ryujinx.Graphics.Shader.Instructions
             context.Config.GpuAccessor.Log("Shader instruction Cctlt is not implemented.");
         }
 
-        public static void Cont(EmitterContext context)
-        {
-            InstCont op = context.GetOp<InstCont>();
-
-            context.Config.GpuAccessor.Log("Shader instruction ContUnsup is not implemented.");
-        }
-
         public static void Cset(EmitterContext context)
         {
             InstCset op = context.GetOp<InstCset>();
 
-            context.Config.GpuAccessor.Log("Shader instruction CsetUnsup is not implemented.");
+            context.Config.GpuAccessor.Log("Shader instruction Cset is not implemented.");
         }
 
         public static void Cs2r(EmitterContext context)
@@ -220,13 +213,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
             InstP2rC op = context.GetOp<InstP2rC>();
 
             context.Config.GpuAccessor.Log("Shader instruction P2rC is not implemented.");
-        }
-
-        public static void Pcnt(EmitterContext context)
-        {
-            InstPcnt op = context.GetOp<InstPcnt>();
-
-            context.Config.GpuAccessor.Log("Shader instruction Pcnt is not implemented.");
         }
 
         public static void Pexit(EmitterContext context)
