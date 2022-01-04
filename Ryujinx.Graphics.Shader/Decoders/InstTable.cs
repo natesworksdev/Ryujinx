@@ -101,7 +101,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
             Add("0011001x1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Ffma,        InstEmit.FfmaI,       InstProps.Rd  | InstProps.Ra  | InstProps.Ib  | InstProps.Rc);
             Add("010010011xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Ffma,        InstEmit.FfmaC,       InstProps.Rd  | InstProps.Ra  | InstProps.Rc);
             Add("010100011xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Ffma,        InstEmit.FfmaRc,      InstProps.Rd  | InstProps.Ra  | InstProps.Rc);
-            Add("000011xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Ffma32i,     InstEmit.Ffma32i,     InstProps.Rd  | InstProps.Ra  | InstProps.Rc);
+            Add("000011xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Ffma32i,     InstEmit.Ffma32i,     InstProps.Rd  | InstProps.Ra);
             Add("0101110000110xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Flo,         InstEmit.FloR,        InstProps.Rd  | InstProps.Rb);
             Add("0011100x00110xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Flo,         InstEmit.FloI,        InstProps.Rd  | InstProps.Ib);
             Add("0100110000110xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Flo,         InstEmit.FloC,        InstProps.Rd);
