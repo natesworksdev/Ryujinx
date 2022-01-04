@@ -60,7 +60,7 @@ namespace Ryujinx.Ava
                 {
                     EnableMultiTouch = true,
                     EnableIme        = true,
-                    UseEGL           = true,
+                    UseEGL           = false,
                     UseGpu           = true,
                     GlProfiles = new[]
                     {
@@ -71,7 +71,7 @@ namespace Ryujinx.Ava
                 {
                     EnableMultitouch       = true,
                     UseWgl                 = true,
-                    AllowEglInitialization = true,
+                    AllowEglInitialization = false,
                     WglProfiles = new[]
                     {
                         new GlVersion(GlProfileType.OpenGL, 4, 3)

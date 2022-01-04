@@ -53,8 +53,9 @@ namespace Ryujinx.Ava.Ui.Controls
             }
             else if (OperatingSystem.IsLinux())
             {
-                var window = (IPlatformHandle)(this.VisualRoot as TopLevel).PlatformImpl.GetType().GetProperty("Handle").GetValue((this.VisualRoot as TopLevel).PlatformImpl);
-                var display = (this.VisualRoot as TopLevel).PlatformImpl.GetType().GetField("_x11", System.Reflection.BindingFlags.NonPublic).GetValue((this.VisualRoot as TopLevel).PlatformImpl);
+                var platform = (this.VisualRoot as TopLevel).PlatformImpl;
+                var window = (IPlatformHandle)platform.GetType().GetProperty("Handle").GetValue(platform);
+                var display = platform.GetType().GetField("_x11", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(platform);
                 var displayHandle = (IntPtr)display.GetType().GetProperty("Display").GetValue(display);
 
                 Window = new SPB.Platform.GLX.GLXWindow(new NativeHandle(displayHandle), new NativeHandle(window.Handle));
