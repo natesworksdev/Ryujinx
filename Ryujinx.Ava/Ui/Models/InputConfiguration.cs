@@ -17,6 +17,8 @@ namespace Ryujinx.Ava.Ui.Models
         private bool enableMotion;
         private float weakRumble;
         private float strongRumble;
+        private float _rangeLeft;
+        private float _rangeRight;
 
         public InputBackendType Backend { get; set; }
 
@@ -56,6 +58,17 @@ namespace Ryujinx.Ava.Ui.Models
             }
         }
 
+        public float RangeLeft
+        {
+            get => _rangeLeft;
+            set
+            {
+                _rangeLeft = MathF.Round(value, 3);
+
+                OnPropertyChanged();
+            }
+        }
+
         public float DeadzoneRight
         {
             get => _deadzoneRight;
@@ -67,6 +80,17 @@ namespace Ryujinx.Ava.Ui.Models
             }
         }
 
+        public float RangeRight
+        {
+            get => _rangeRight;
+            set
+            {
+                _rangeRight = MathF.Round(value, 3);
+
+                OnPropertyChanged();
+            }
+        }
+        
         public float TriggerThreshold
         {
             get => _triggerThreshold;
@@ -249,6 +273,8 @@ namespace Ryujinx.Ava.Ui.Models
 
                     DeadzoneLeft = controllerConfig.DeadzoneLeft;
                     DeadzoneRight = controllerConfig.DeadzoneRight;
+                    RangeLeft = controllerConfig.RangeLeft;
+                    RangeRight = controllerConfig.RangeRight;
                     TriggerThreshold = controllerConfig.TriggerThreshold;
 
                     if (controllerConfig.Motion != null)
@@ -392,6 +418,8 @@ namespace Ryujinx.Ava.Ui.Models
                     Version = InputConfig.CurrentVersion,
                     DeadzoneLeft = DeadzoneLeft,
                     DeadzoneRight = DeadzoneRight,
+                    RangeLeft = RangeLeft,
+                    RangeRight = RangeRight,
                     TriggerThreshold = TriggerThreshold,
                     Motion = EnableCemuHookMotion
                            ? new CemuHookMotionConfigController()

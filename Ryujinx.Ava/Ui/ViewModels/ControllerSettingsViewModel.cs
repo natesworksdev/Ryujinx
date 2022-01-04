@@ -593,6 +593,8 @@ namespace Ryujinx.Ava.Ui.ViewModels
                     ControllerType = ControllerType.ProController,
                     DeadzoneLeft = 0.1f,
                     DeadzoneRight = 0.1f,
+                    RangeLeft = 1.0f,
+                    RangeRight = 1.0f,
                     TriggerThreshold = 0.5f,
                     LeftJoycon =
                         new LeftJoyconCommonConfig<ConfigGamepadInputId>

@@ -442,6 +442,22 @@
                                         Margin="5, 0"
                                         Text="{Binding Configuration.DeadzoneLeft, StringFormat=\{0:0.000\}}" />
                                 </StackPanel>
+                                <TextBlock Margin="2" Text="{locale:Locale ControllerSettingsStickRange}" />
+                                <StackPanel
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Orientation="Horizontal">
+                                    <Slider
+                                        Margin="0,-10,0,-5"
+                                        Width="200"
+                                        Maximum="1"
+                                        Minimum="0"
+                                        Value="{Binding Configuration.RangeLeft, Mode=TwoWay}" />
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        Margin="5, 0"
+                                        Text="{Binding Configuration.RangeLeft, StringFormat=\{0:0.000\}}" />
+                                </StackPanel>
                             </StackPanel>
                         </StackPanel>
                     </StackPanel>
@@ -1329,6 +1345,22 @@
                                         VerticalAlignment="Center"
                                         Margin="5, 0"
                                         Text="{Binding Configuration.DeadzoneRight, StringFormat=\{0:0.000\}}" />
+                                </StackPanel>
+                                <TextBlock Margin="2" Text="{locale:Locale ControllerSettingsStickRange}" />
+                                <StackPanel
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Orientation="Horizontal">
+                                    <Slider
+                                        Margin="0,-10,0,-5"
+                                        Width="200"
+                                        Maximum="1"
+                                        Minimum="0"
+                                        Value="{Binding Configuration.RangeRight, Mode=TwoWay}" />
+                                    <TextBlock
+                                        VerticalAlignment="Center"
+                                        Margin="5, 0"
+                                        Text="{Binding Configuration.RangeRight, StringFormat=\{0:0.000\}}" />
                                 </StackPanel>
                             </StackPanel>
                         </StackPanel>
