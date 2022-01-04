@@ -28,6 +28,9 @@ namespace Ryujinx.Ava.Ui.Controls
 
         private ManualResetEventSlim _waitEvent;
 
+        private CancellationToken _token;
+        private CancellationTokenSource _tokenSource;
+
         public RendererBase()
         {
             IObservable<Rect> resizeObservable = this.GetObservable(BoundsProperty);
@@ -36,6 +39,9 @@ namespace Ryujinx.Ava.Ui.Controls
             _waitEvent = new ManualResetEventSlim(false);
 
             Focusable = true;
+
+            _tokenSource = new CancellationTokenSource();
+            _token = _tokenSource.Token;
         }
 
         private void Resized(Rect rect)
@@ -102,13 +108,22 @@ namespace Ryujinx.Ava.Ui.Controls
             Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Render);
         }
 
+        public void Continue()
+        {
+            _tokenSource.Cancel();
+        }
+
         internal void Present(int image)
         {
             Image = image;
             _waitFence = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags.None);
             _waitEvent.Reset();
             QueueRender();
-            _waitEvent.Wait();
+            try
+            {
+                _waitEvent.Wait(_token);
+            }
+            catch(OperationCanceledException){}
         }
     }
 }

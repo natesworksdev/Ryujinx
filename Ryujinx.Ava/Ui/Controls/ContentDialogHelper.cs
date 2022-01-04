@@ -18,70 +18,14 @@ namespace Ryujinx.Ava.Ui.Controls
     {
         private static bool _isChoiceDialogOpen;
 
-        public static bool UseModalOverlay { get; set; }
-
         private async static Task<UserResult> ShowContentDialog(StyleableWindow window, string title, string primaryText, string secondaryText, string primaryButton,
             string secondaryButton, string closeButton, int iconSymbol, UserResult primaryButtonResult = UserResult.Ok)
         {
             UserResult result = UserResult.None;
 
-            ContentDialogOverlay overlay = null;
-
             ContentDialog contentDialog = window.ContentDialog;
 
-            if (UseModalOverlay)
-            {
-                overlay = new ContentDialogOverlay()
-                {
-                    ExtendClientAreaToDecorationsHint = true,
-                    TransparencyLevelHint = WindowTransparencyLevel.Transparent,
-                    WindowStartupLocation = WindowStartupLocation.Manual,
-                    SystemDecorations = SystemDecorations.None,
-                    ExtendClientAreaTitleBarHeightHint = 0,
-                    Background = new SolidColorBrush(Colors.Transparent, 0),
-                    Height = window.Bounds.Height,
-                    Width = window.Bounds.Width,
-                    CanResize = false,
-                    Position = window.PointToScreen(new Point())
-                };
-                
-                window.PositionChanged += OverlayOnPositionChanged;
-                
-                void OverlayOnPositionChanged(object? sender, PixelPointEventArgs e)
-                {
-                    overlay.Position = window.PointToScreen(new Point());;
-                }
-                
-                overlay.LoadDialog();
-
-                contentDialog = overlay.ContentDialog;
-
-                bool opened = false;
-
-                overlay.Activated += OverlayOnActivated;
-                
-                async void OverlayOnActivated(object? sender, EventArgs e)
-                {
-                    if(opened)
-                    {
-                        return;
-                    }
-
-                    opened = true;
-
-                    await Task.Delay(100);
-
-                    overlay.Position = window.PointToScreen(new Point());
-                    
-                    await ShowDialog();
-                }
-                
-                await overlay.ShowDialog(window);
-            }
-            else
-            {
-                await ShowDialog();
-            }
+            await ShowDialog();
 
             async Task ShowDialog()
             {
@@ -107,15 +51,7 @@ namespace Ryujinx.Ava.Ui.Controls
                     });
                     
                     await contentDialog.ShowAsync(ContentDialogPlacement.Popup);
-
-                    overlay?.Close();
                 };   
-            }
-
-            if(UseModalOverlay)
-            {
-                overlay.Content = null;
-                overlay.Close();
             }
 
             return result;
@@ -131,30 +67,6 @@ namespace Ryujinx.Ava.Ui.Controls
             ContentDialog contentDialog = window.ContentDialog;
 
             Window overlay = window;
-
-            if (UseModalOverlay)
-            {
-                var windowClientLocation = window.PointToScreen(new Point());
-
-                contentDialog = new ContentDialog();
-
-                overlay = new Window
-                {
-                    Content = contentDialog,
-                    ExtendClientAreaToDecorationsHint = true,
-                    TransparencyLevelHint = WindowTransparencyLevel.Transparent,
-                    WindowStartupLocation = WindowStartupLocation.Manual,
-                    SystemDecorations = SystemDecorations.None,
-                    ExtendClientAreaTitleBarHeightHint = 0,
-                    Background = new SolidColorBrush(Colors.Transparent, 0),
-                    Height = window.Bounds.Height,
-                    Width = window.Bounds.Width,
-                    CanResize = false,
-                    Position = windowClientLocation
-                };
-
-                overlay.ShowDialog(window);
-            }
 
             if (contentDialog != null)
             {
@@ -179,12 +91,6 @@ namespace Ryujinx.Ava.Ui.Controls
                 });
                 await contentDialog.ShowAsync(ContentDialogPlacement.Popup);
             };
-
-            if (UseModalOverlay)
-            {
-                overlay.Content = null;
-                overlay.Close();
-            }
 
             return result;
 
@@ -308,6 +214,11 @@ namespace Ryujinx.Ava.Ui.Controls
         internal static async Task<bool> CreateExitDialog(StyleableWindow owner)
         {
             return await CreateChoiceDialog(owner, LocaleManager.Instance["DialogExitTitle"], LocaleManager.Instance["DialogExitMessage"],
+                LocaleManager.Instance["DialogExitSubMessage"]);
+        }
+        internal static async Task<bool> CreateStopEmulationDialog(StyleableWindow owner)
+        {
+            return await CreateChoiceDialog(owner, LocaleManager.Instance["DialogStopEmulationTitle"], LocaleManager.Instance["DialogStopEmulationMessage"],
                 LocaleManager.Instance["DialogExitSubMessage"]);
         }
 

@@ -93,6 +93,8 @@ namespace Ryujinx.Ava
         private bool _isMouseInClient;
         private bool _renderingStarted;
         private WindowsMultimediaTimerResolution _windowsMultimediaTimerResolution;
+        private bool _dialogShown;
+        private KeyboardStateSnapshot _lastKeyboardSnapshot;
 
         public event EventHandler AppExit;
         public event EventHandler<StatusUpdatedEventArgs> StatusUpdatedEvent;
@@ -135,7 +137,8 @@ namespace Ryujinx.Ava
             NpadManager = _inputManager.CreateNpadManager();
             _keyboardInterface = (IKeyboard)_inputManager.KeyboardDriver.GetGamepad("0");
             TouchScreenManager = _inputManager.CreateTouchScreenManager();
-            
+            _lastKeyboardSnapshot = _keyboardInterface.GetKeyboardStateSnapshot();
+
             Renderer            = renderer;
             Path              = path;
             VirtualFileSystem = virtualFileSystem;
@@ -353,6 +356,7 @@ namespace Ryujinx.Ava
             ConfigurationState.Instance.System.EnableDockedMode.Event      -= UpdateDockedModeState;
 
             _mainThread.Join();
+            Renderer.Continue();
             _renderingThread.Join();
             _nvStutterWorkaround?.Join();
 
@@ -904,11 +908,11 @@ namespace Ryujinx.Ava
             Renderer.Present(image);
         }
 
-        private async void HandleScreenState(KeyboardStateSnapshot keyboard)
+        private async Task HandleScreenState(KeyboardStateSnapshot keyboard, KeyboardStateSnapshot lastKeyboard)
         {
             bool toggleFullscreen = keyboard.IsPressed(Key.F11)
                 || ((keyboard.IsPressed(Key.AltLeft) || keyboard.IsPressed(Key.AltRight)) && keyboard.IsPressed(Key.Enter))
-                || keyboard.IsPressed(Key.Escape);
+                || (!keyboard.IsPressed(Key.Escape) && lastKeyboard.IsPressed(Key.Escape));
 
             bool fullScreenToggled = _parent.WindowState == WindowState.FullScreen;
 
@@ -918,33 +922,39 @@ namespace Ryujinx.Ava
                 {
                     if (fullScreenToggled)
                     {
-                        _parent.WindowState                    = WindowState.Normal;
+                        _parent.WindowState = WindowState.Normal;
                         _parent.ViewModel.ShowMenuAndStatusBar = true;
                     }
-                    else
+                    else if (!keyboard.IsPressed(Key.Escape) && lastKeyboard.IsPressed(Key.Escape))
                     {
-                        if (keyboard.IsPressed(Key.Escape))
+                        if (!ConfigurationState.Instance.ShowConfirmExit)
                         {
-                            if (!ConfigurationState.Instance.ShowConfirmExit)
-                            {
-                                Dispose();
-                            }
-                            else
-                            {
-                                bool shouldExit = await ContentDialogHelper.CreateExitDialog(_parent);
-                                if (shouldExit)
-                                {
-                                    Dispose();
-                                }
-                            }
-
-                            (_keyboardInterface as AvaloniaKeyboard).Clear();
+                            Dispose();
                         }
                         else
                         {
-                            _parent.WindowState                    = WindowState.FullScreen;
-                            _parent.ViewModel.ShowMenuAndStatusBar = false;
+                            if (_dialogShown)
+                            {
+                                return;
+                            }
+                            _dialogShown = true;
+                            await Task.Delay(100);
+                            bool shouldExit = await ContentDialogHelper.CreateStopEmulationDialog(_parent);
+
+                            _dialogShown = false;
+
+                            if (shouldExit)
+                            {
+                                Dispose();
+                            }
                         }
+
+                            (_keyboardInterface as AvaloniaKeyboard).Clear();
+                    }
+                    else
+                    {
+                        _parent.WindowState = WindowState.FullScreen;
+                        _parent.ViewModel.ShowMenuAndStatusBar = false;
                     }
                 }
             }
@@ -990,11 +1000,11 @@ namespace Ryujinx.Ava
 
             if (_parent.IsActive)
             {
-                Dispatcher.UIThread.Post(() =>
+                Dispatcher.UIThread.Post(async () =>
                 {
                     KeyboardStateSnapshot keyboard = _keyboardInterface.GetKeyboardStateSnapshot();
 
-                    HandleScreenState(keyboard);
+                    await HandleScreenState(keyboard, _lastKeyboardSnapshot);
 
                     if (keyboard.IsPressed(Key.Delete))
                     {
@@ -1003,6 +1013,8 @@ namespace Ryujinx.Ava
                             Ptc.Continue();
                         }
                     }
+
+                    _lastKeyboardSnapshot = keyboard;
                 });
             }
 

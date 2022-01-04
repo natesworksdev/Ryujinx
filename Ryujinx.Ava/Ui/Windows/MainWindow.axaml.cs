@@ -261,8 +261,6 @@ namespace Ryujinx.Ava.Ui.Windows
 
             GlRenderer.GlInitialized += GlRenderer_Created;
 
-            ContentDialogHelper.UseModalOverlay = true;
-
             SwitchToGameControl(startFullscreen);
 
             AppHost.StatusUpdatedEvent += Update_StatusBar;
@@ -332,8 +330,6 @@ namespace Ryujinx.Ava.Ui.Windows
             AppHost = null;
 
             ViewModel.SelectedIcon = null;
-
-            ContentDialogHelper.UseModalOverlay = false;
 
             Dispatcher.UIThread.InvokeAsync(() =>
             {
