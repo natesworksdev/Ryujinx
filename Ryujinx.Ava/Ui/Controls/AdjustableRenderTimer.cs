@@ -100,7 +100,6 @@ namespace Ryujinx.Ava.Ui.Controls
         {
             _timer.Stop();
             _isRunning = false;
-            _timingThread.Join();
         }
 
         public void Dispose()

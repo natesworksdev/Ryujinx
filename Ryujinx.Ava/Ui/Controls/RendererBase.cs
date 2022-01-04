@@ -121,7 +121,7 @@ namespace Ryujinx.Ava.Ui.Controls
             QueueRender();
             try
             {
-                _waitEvent.Wait(_token);
+                _waitEvent.Wait(16, _token);
             }
             catch(OperationCanceledException){}
         }
