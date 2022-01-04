@@ -222,6 +222,8 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
         {
             if (isDisposing)
             {
+                NetworkChange.NetworkAddressChanged -= LocalInterfaceCacheHandler;
+
                 GeneralServiceManager.Remove(_generalServiceDetail.ClientId);
             }
         }
