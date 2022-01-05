@@ -1363,7 +1363,10 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             KCodeMemory codeMemory = currentProcess.HandleTable.GetObject<KCodeMemory>(handle);
 
-            if (codeMemory == null || codeMemory.Owner == currentProcess)
+            // Newer versions of the return also returns an error here if the owner and process
+            // where the operation will happen are the same. We do not return an error here
+            // because some homebrew requires this to be patched out to work (for JIT).
+            if (codeMemory == null /* || codeMemory.Owner == currentProcess */)
             {
                 return KernelResult.InvalidHandle;
             }
