@@ -1320,14 +1320,13 @@ namespace Ryujinx.Ui
 
         private void StopEmulation_Pressed(object sender, EventArgs args)
         {
-            if (_emulationContext != null)
+            if (!_gameLoaded || !ConfigurationState.Instance.ShowConfirmExit || GtkDialog.CreateEndDialog())
             {
                 UpdateGameMetadata(_emulationContext.Application.TitleIdText);
+                _pauseEmulation.Sensitive = false;
+                _resumeEmulation.Sensitive = false;
+                RendererWidget?.Exit();
             }
-
-            _pauseEmulation.Sensitive = false;
-            _resumeEmulation.Sensitive = false;
-            RendererWidget?.Exit();
         }
 
         private void PauseEmulation_Pressed(object sender, EventArgs args)

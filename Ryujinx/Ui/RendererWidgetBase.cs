@@ -250,7 +250,7 @@ namespace Ryujinx.Ui
                     {
                         if (keyboard.IsPressed(Key.Escape))
                         {
-                            if (!ConfigurationState.Instance.ShowConfirmExit || GtkDialog.CreateExitDialog())
+                            if (!ConfigurationState.Instance.ShowConfirmExit || GtkDialog.CreateEndDialog())
                             {
                                 Exit();
                             }

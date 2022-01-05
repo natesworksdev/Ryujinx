@@ -109,5 +109,10 @@ namespace Ryujinx.Ui.Widgets
         {
             return CreateChoiceDialog("Ryujinx - Exit", "Are you sure you want to close Ryujinx?", "All unsaved data will be lost!");
         }
+
+        internal static bool CreateEndDialog()
+        {
+            return CreateChoiceDialog("Ryujinx - End Emulation", "Are you sure you want to end emulation?", "All unsaved data will be lost!");
+        }
     }
 }
