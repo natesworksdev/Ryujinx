@@ -925,7 +925,7 @@ namespace Ryujinx.Ava
 
             if (shouldExit)
             {
-                Dispose();
+                Task.Run(Dispose);
             }
         }
 
