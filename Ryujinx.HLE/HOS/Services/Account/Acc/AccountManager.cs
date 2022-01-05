@@ -25,7 +25,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
         public UserProfile LastOpenedUser { get; private set; }
 
-        public AccountManager(HorizonClient horizonClient)
+        public AccountManager(HorizonClient horizonClient, string CommandLineProfile = null)
         {
             _horizonClient = horizonClient;
 
@@ -44,25 +44,11 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             else
             {
                 UserId commandLineUserProfileOverride = default; 
-                var args = Environment.GetCommandLineArgs();
-                for (int i = 0; i < args.Length; ++i)
-                {
-                    string arg = args[i];
-
-                    if (arg == "-p" || arg == "--profile")
-                    {
-                        if (i + 1 >= args.Length)
-                        {
-                            Common.Logging.Logger.Error?.Print(Common.Logging.LogClass.Application, $"Invalid option '{arg}'");
-
-                            continue;
-                        }
-
-                        string profileName = args[++i];
-                        commandLineUserProfileOverride = _profiles.FirstOrDefault(x => x.Value.Name == profileName).Value?.UserId ?? default;
-                        if(commandLineUserProfileOverride.IsNull)
-                            Common.Logging.Logger.Warning?.Print(Common.Logging.LogClass.Application, $"The command line specified profile named '{profileName}' was not found");
-                    }
+                if(!string.IsNullOrEmpty(CommandLineProfile))
+                { 
+                    commandLineUserProfileOverride = _profiles.FirstOrDefault(x => x.Value.Name == CommandLineProfile).Value?.UserId ?? default;
+                    if(commandLineUserProfileOverride.IsNull)
+                        Common.Logging.Logger.Warning?.Print(Common.Logging.LogClass.Application, $"The command line specified profile named '{CommandLineProfile}' was not found");
                 }
                 OpenUser(commandLineUserProfileOverride.IsNull ? _accountSaveDataManager.LastOpened : commandLineUserProfileOverride);
             }

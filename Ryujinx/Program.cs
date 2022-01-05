@@ -26,6 +26,8 @@ namespace Ryujinx
 
         public static string ConfigurationPath { get; set; }
 
+        public static string CommandLineProfile { get; set; }
+
         [DllImport("libX11")]
         private extern static int XInitThreads();
 
@@ -59,7 +61,8 @@ namespace Ryujinx
 
                         continue;
                     }
-                    i++;
+
+                    CommandLineProfile = args[++i];
                 }
                 else if (arg == "-f" || arg == "--fullscreen")
                 {
