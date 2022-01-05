@@ -89,7 +89,6 @@ namespace Ryujinx.Ava
         private long _ticks;
 
         private bool _toggleDockedMode;
-        private bool _toggleFullscreen;
         private bool _isMouseInClient;
         private bool _renderingStarted;
         private WindowsMultimediaTimerResolution _windowsMultimediaTimerResolution;
@@ -908,71 +907,30 @@ namespace Ryujinx.Ava
             Renderer.Present(image);
         }
 
+        public async Task ShowExitPrompt()
+        {
+            bool shouldExit = !ConfigurationState.Instance.ShowConfirmExit;
+
+            if (!shouldExit)
+            {
+                if (_dialogShown)
+                {
+                    return;
+                }
+                _dialogShown = true;
+                shouldExit = await ContentDialogHelper.CreateStopEmulationDialog(_parent);
+
+                _dialogShown = false;
+            }
+
+            if (shouldExit)
+            {
+                Dispose();
+            }
+        }
+
         private async Task HandleScreenState(KeyboardStateSnapshot keyboard, KeyboardStateSnapshot lastKeyboard)
         {
-            bool toggleFullscreen = keyboard.IsPressed(Key.F11)
-                || ((keyboard.IsPressed(Key.AltLeft) || keyboard.IsPressed(Key.AltRight)) && keyboard.IsPressed(Key.Enter))
-                || (!keyboard.IsPressed(Key.Escape) && lastKeyboard.IsPressed(Key.Escape));
-
-            bool fullScreenToggled = _parent.WindowState == WindowState.FullScreen;
-
-            if (toggleFullscreen != _toggleFullscreen)
-            {
-                if (toggleFullscreen)
-                {
-                    if (fullScreenToggled)
-                    {
-                        _parent.WindowState = WindowState.Normal;
-                        _parent.ViewModel.ShowMenuAndStatusBar = true;
-                    }
-                    else if (!keyboard.IsPressed(Key.Escape) && lastKeyboard.IsPressed(Key.Escape))
-                    {
-                        if (!ConfigurationState.Instance.ShowConfirmExit)
-                        {
-                            Dispose();
-                        }
-                        else
-                        {
-                            if (_dialogShown)
-                            {
-                                return;
-                            }
-                            _dialogShown = true;
-                            await Task.Delay(100);
-                            bool shouldExit = await ContentDialogHelper.CreateStopEmulationDialog(_parent);
-
-                            _dialogShown = false;
-
-                            if (shouldExit)
-                            {
-                                Dispose();
-                            }
-                        }
-
-                            (_keyboardInterface as AvaloniaKeyboard).Clear();
-                    }
-                    else
-                    {
-                        _parent.WindowState = WindowState.FullScreen;
-                        _parent.ViewModel.ShowMenuAndStatusBar = false;
-                    }
-                }
-            }
-
-            _toggleFullscreen   = toggleFullscreen;
-
-            bool toggleDockedMode = keyboard.IsPressed(Key.F9);
-
-            if (toggleDockedMode != _toggleDockedMode)
-            {
-                if (toggleDockedMode)
-                {
-                    ConfigurationState.Instance.System.EnableDockedMode.Value = !ConfigurationState.Instance.System.EnableDockedMode.Value;
-                }
-            }
-
-            _toggleDockedMode = toggleDockedMode;
-
             if (_hideCursorOnIdle && !ConfigurationState.Instance.Hid.EnableMouse)
             {
                 long cursorMoveDelta = Stopwatch.GetTimestamp() - _lastCursorMoveTime;

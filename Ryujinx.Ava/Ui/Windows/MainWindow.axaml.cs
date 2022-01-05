@@ -65,18 +65,21 @@ namespace Ryujinx.Ava.Ui.Windows
         public AppHost      AppHost      { get; private set; }
         public InputManager InputManager { get; private set; }
 
-        public RendererBase         GlRenderer      { get; private set; }
-        public ContentControl       ContentFrame    { get; private set; }
-        public TextBlock            LoadStatus      { get; private set; }
-        public TextBlock            FirmwareStatus  { get; private set; }
-        public TextBox              SearchBox       { get; private set; }
-        public ProgressBar          LoadProgressBar { get; private set; }
-        public Menu                 Menu            { get; private set; }
-        public MenuItem             UpdateMenuItem  { get; private set; }
-        public GameGridView         GameGrid        { get; private set; }
-        public DataGrid             GameList        { get; private set; }
-        public OffscreenTextBox     HiddenTextBox   { get; private set; }
-
+        public RendererBase     GlRenderer        { get; private set; }
+        public ContentControl   ContentFrame      { get; private set; }
+        public TextBlock        LoadStatus        { get; private set; }
+        public TextBlock        FirmwareStatus    { get; private set; }
+        public TextBox          SearchBox         { get; private set; }
+        public ProgressBar      LoadProgressBar   { get; private set; }
+        public Menu             Menu              { get; private set; }
+        public MenuItem         UpdateMenuItem    { get; private set; }
+        public GameGridView     GameGrid          { get; private set; }
+        public DataGrid         GameList          { get; private set; }
+        public OffscreenTextBox HiddenTextBox     { get; private set; }
+        public HotKeyControl    FullscreenHotKey  { get; private set; }
+        public HotKeyControl    FullscreenHotKey2 { get; private set; }
+        public HotKeyControl    DockToggleHotKey  { get; private set; }
+        public HotKeyControl    ExitHotKey        { get; private set; }
         public MainWindowViewModel ViewModel { get; private set; }
 
         public bool CanUpdate
@@ -439,20 +442,26 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             AvaloniaXamlLoader.Load(this);
 
-            ContentFrame    = this.FindControl<ContentControl>("Content");
-            GameList        = this.FindControl<DataGrid>("GameList");
-            LoadStatus      = this.FindControl<TextBlock>("LoadStatus");
-            FirmwareStatus  = this.FindControl<TextBlock>("FirmwareStatus");
-            LoadProgressBar = this.FindControl<ProgressBar>("LoadProgressBar");
-            SearchBox       = this.FindControl<TextBox>("SearchBox");
-            Menu            = this.FindControl<Menu>("Menu");
-            UpdateMenuItem  = this.FindControl<MenuItem>("UpdateMenuItem");
-            GameGrid        = this.FindControl<GameGridView>("GameGrid");
-            HiddenTextBox   = this.FindControl<OffscreenTextBox>("HiddenTextBox");
+            ContentFrame      = this.FindControl<ContentControl>("Content");
+            GameList          = this.FindControl<DataGrid>("GameList");
+            LoadStatus        = this.FindControl<TextBlock>("LoadStatus");
+            FirmwareStatus    = this.FindControl<TextBlock>("FirmwareStatus");
+            LoadProgressBar   = this.FindControl<ProgressBar>("LoadProgressBar");
+            SearchBox         = this.FindControl<TextBox>("SearchBox");
+            Menu              = this.FindControl<Menu>("Menu");
+            UpdateMenuItem    = this.FindControl<MenuItem>("UpdateMenuItem");
+            GameGrid          = this.FindControl<GameGridView>("GameGrid");
+            HiddenTextBox     = this.FindControl<OffscreenTextBox>("HiddenTextBox");
+            FullscreenHotKey  = this.FindControl<HotKeyControl>("FullscreenHotKey");
+            FullscreenHotKey2 = this.FindControl<HotKeyControl>("FullscreenHotKey2");
+            DockToggleHotKey  = this.FindControl<HotKeyControl>("DockToggleHotKey");
+            ExitHotKey  = this.FindControl<HotKeyControl>("ExitHotKey");
 
             GameGrid.ApplicationOpened += Application_Opened;
 
             GameGrid.DataContext = ViewModel;
+
+            LoadHotKeys();
         }
 
         public static void UpdateGraphicsConfig()
@@ -464,6 +473,14 @@ namespace Ryujinx.Ava.Ui.Windows
             GraphicsConfig.MaxAnisotropy     = ConfigurationState.Instance.Graphics.MaxAnisotropy;
             GraphicsConfig.ShadersDumpPath   = ConfigurationState.Instance.Graphics.ShadersDumpPath;
             GraphicsConfig.EnableShaderCache = ConfigurationState.Instance.Graphics.EnableShaderCache;
+        }
+
+        public void LoadHotKeys()
+        {
+            HotKeyManager.SetHotKey(FullscreenHotKey,  new KeyGesture(Key.Enter, KeyModifiers.Alt));
+            HotKeyManager.SetHotKey(FullscreenHotKey2, new KeyGesture(Key.F11));
+            HotKeyManager.SetHotKey(DockToggleHotKey,  new KeyGesture(Key.F9));
+            HotKeyManager.SetHotKey(ExitHotKey,        new KeyGesture(Key.Escape));
         }
 
         public static void SaveConfig()
@@ -560,9 +577,9 @@ namespace Ryujinx.Ava.Ui.Windows
 
         private async void StopEmulation_Click(object sender, RoutedEventArgs e)
         {
-            await Task.Run(() =>
+            await Task.Run(async () =>
             {
-                AppHost?.Dispose();
+                AppHost?.ShowExitPrompt();
             });
         }
 

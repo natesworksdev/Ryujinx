@@ -94,11 +94,6 @@ namespace Ryujinx.Input.Avalonia
         {
             _pressedKeys.Remove(args.Key);
 
-            if (args.Key == AvaKey.Escape && sender is MainWindow window && window.WindowState == WindowState.FullScreen)
-            {
-                window.ViewModel.ToggleFullscreen();
-            }
-
             KeyRelease?.Invoke(this, args);
         }
 

@@ -114,6 +114,12 @@
                               IsSecondaryButtonEnabled="True"
                               IsVisible="True" />
         </ContentControl>
+        <StackPanel IsVisible="False">
+            <controls:HotKeyControl Name="FullscreenHotKey" Command="{Binding ToggleFullscreen}"/>
+            <controls:HotKeyControl Name="FullscreenHotKey2" Command="{Binding ToggleFullscreen}"/>
+            <controls:HotKeyControl Name="DockToggleHotKey" Command="{Binding ToggleDockMode}"/>
+            <controls:HotKeyControl Name="ExitHotKey" Command="{Binding ExitCurrentState}"/>
+        </StackPanel>
         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />

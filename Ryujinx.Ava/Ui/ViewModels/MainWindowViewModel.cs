@@ -1019,6 +1019,11 @@ namespace Ryujinx.Ava.Ui.ViewModels
             if (state == WindowState.FullScreen)
             {
                 _owner.WindowState = WindowState.Normal;
+
+                if (IsGameRunning)
+                {
+                    ShowMenuAndStatusBar = true;
+                }
             }
             else
             {
@@ -1028,6 +1033,28 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 {
                     ShowMenuAndStatusBar = false;
                 }
+            }
+        }
+
+        public void ToggleDockMode()
+        {
+            if (IsGameRunning)
+            {
+                ConfigurationState.Instance.System.EnableDockedMode.Value =
+                    !ConfigurationState.Instance.System.EnableDockedMode.Value;
+            }
+        }
+
+        public async void ExitCurrentState()
+        {
+            if (_owner.WindowState == WindowState.FullScreen)
+            {
+                ToggleFullscreen();
+            }
+            else if(IsGameRunning)
+            {
+                await Task.Delay(100);
+                _owner.AppHost?.ShowExitPrompt();
             }
         }
 
