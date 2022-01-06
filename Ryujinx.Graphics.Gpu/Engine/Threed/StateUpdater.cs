@@ -113,7 +113,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     nameof(ThreedClassState.DepthMode),
                     nameof(ThreedClassState.ViewportTransform),
                     nameof(ThreedClassState.ViewportExtents),
-                    nameof(ThreedClassState.YControl)),
+                    nameof(ThreedClassState.YControl),
+                    nameof(ThreedClassState.ViewportTransformEnable)),
 
                 new StateUpdateCallbackEntry(UpdatePolygonMode,
                     nameof(ThreedClassState.PolygonModeFront),
@@ -568,6 +569,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             var yControl = _state.State.YControl;
             var face = _state.State.FaceState;
 
+            bool disableTransform = _state.State.ViewportTransformEnable == 0;
+
             UpdateFrontFace(yControl, face.FrontFace);
             UpdateDepthMode();
 
@@ -577,6 +580,13 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
             for (int index = 0; index < Constants.TotalViewports; index++)
             {
+                if (disableTransform)
+                {
+                    var scissor = _state.State.ScreenScissorState;
+                    viewports[index] = new Viewport(new RectangleF(scissor.X, scissor.Y, scissor.Width, scissor.Height), ViewportSwizzle.PositiveX, ViewportSwizzle.PositiveY, ViewportSwizzle.PositiveZ, ViewportSwizzle.PositiveW, 0, 1);
+                    break;
+                }
+
                 ref var transform = ref _state.State.ViewportTransform[index];
                 ref var extents = ref _state.State.ViewportExtents[index];
 
@@ -628,7 +638,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 viewports[index] = new Viewport(region, swizzleX, swizzleY, swizzleZ, swizzleW, depthNear, depthFar);
             }
 
-            _context.Renderer.Pipeline.SetViewports(0, viewports);
+            _context.Renderer.Pipeline.SetViewports(0, viewports, disableTransform);
         }
 
         /// <summary>

@@ -185,6 +185,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     case Instruction.Negate:
                         return Negate(context, operation, info);
 
+                    case Instruction.Return:
+                        return Return(context, operation);
+
                     case Instruction.PackDouble2x32:
                         return PackDouble2x32(context, operation);
 
