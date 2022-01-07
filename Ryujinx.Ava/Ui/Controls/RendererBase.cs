@@ -31,6 +31,8 @@ namespace Ryujinx.Ava.Ui.Controls
         private CancellationToken _token;
         private CancellationTokenSource _tokenSource;
 
+        protected Size RenderSize { get;private set; }
+
         public RendererBase()
         {
             IObservable<Rect> resizeObservable = this.GetObservable(BoundsProperty);
@@ -47,6 +49,8 @@ namespace Ryujinx.Ava.Ui.Controls
         private void Resized(Rect rect)
         {
             SizeChanged?.Invoke(this, rect.Size);
+
+            RenderSize = rect.Size * Program.WindowScaleFactor;
         }
 
         protected override void OnOpenGlInit(GlInterface gl, int fb)

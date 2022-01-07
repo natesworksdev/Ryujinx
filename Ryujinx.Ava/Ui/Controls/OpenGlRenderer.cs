@@ -78,11 +78,11 @@ namespace Ryujinx.Ava.Ui.Controls
             GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, fb);
             GL.BlitFramebuffer(0,
                                0,
-                               (int)Bounds.Width,
-                               (int)Bounds.Height,
+                               (int)RenderSize.Width,
+                               (int)RenderSize.Height,
                                0,
-                               (int)Bounds.Height,
-                               (int)Bounds.Width,
+                               (int)RenderSize.Height,
+                               (int)RenderSize.Width,
                                0,
                                ClearBufferMask.ColorBufferBit,
                                BlitFramebufferFilter.Linear);
