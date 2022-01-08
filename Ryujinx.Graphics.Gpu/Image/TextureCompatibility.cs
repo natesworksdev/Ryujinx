@@ -23,7 +23,23 @@ namespace Ryujinx.Graphics.Gpu.Image
             Bc4,
             Bc5,
             Bc6,
-            Bc7
+            Bc7,
+            Etc2Rgb,
+            Etc2Rgba,
+            Astc4x4,
+            Astc5x4,
+            Astc5x5,
+            Astc6x5,
+            Astc6x6,
+            Astc8x5,
+            Astc8x6,
+            Astc8x8,
+            Astc10x5,
+            Astc10x6,
+            Astc10x8,
+            Astc10x10,
+            Astc12x10,
+            Astc12x12
         }
 
         /// <summary>
@@ -497,7 +513,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             if (rhs.IsLinear)
             {
                 int stride = Math.Max(1, lhs.Stride >> level);
-                stride = BitUtils.AlignUp(stride, 32);
+                stride = BitUtils.AlignUp(stride, Constants.StrideAlignment);
 
                 return stride == rhs.Stride;
             }
@@ -540,10 +556,10 @@ namespace Ryujinx.Graphics.Gpu.Image
             if (rhs.IsLinear)
             {
                 int lhsStride = Math.Max(1, lhs.Stride >> lhsLevel);
-                lhsStride = BitUtils.AlignUp(lhsStride, 32);
+                lhsStride = BitUtils.AlignUp(lhsStride, Constants.StrideAlignment);
 
                 int rhsStride = Math.Max(1, rhs.Stride >> rhsLevel);
-                rhsStride = BitUtils.AlignUp(rhsStride, 32);
+                rhsStride = BitUtils.AlignUp(rhsStride, Constants.StrideAlignment);
 
                 return lhsStride == rhsStride;
             }
@@ -757,6 +773,54 @@ namespace Ryujinx.Graphics.Gpu.Image
                 case Format.Bc7Srgb:
                 case Format.Bc7Unorm:
                     return FormatClass.Bc7;
+                case Format.Etc2RgbSrgb:
+                case Format.Etc2RgbUnorm:
+                    return FormatClass.Etc2Rgb;
+                case Format.Etc2RgbaSrgb:
+                case Format.Etc2RgbaUnorm:
+                    return FormatClass.Etc2Rgba;
+                case Format.Astc4x4Srgb:
+                case Format.Astc4x4Unorm:
+                    return FormatClass.Astc4x4;
+                case Format.Astc5x4Srgb:
+                case Format.Astc5x4Unorm:
+                    return FormatClass.Astc5x4;
+                case Format.Astc5x5Srgb:
+                case Format.Astc5x5Unorm:
+                    return FormatClass.Astc5x5;
+                case Format.Astc6x5Srgb:
+                case Format.Astc6x5Unorm:
+                    return FormatClass.Astc6x5;
+                case Format.Astc6x6Srgb:
+                case Format.Astc6x6Unorm:
+                    return FormatClass.Astc6x6;
+                case Format.Astc8x5Srgb:
+                case Format.Astc8x5Unorm:
+                    return FormatClass.Astc8x5;
+                case Format.Astc8x6Srgb:
+                case Format.Astc8x6Unorm:
+                    return FormatClass.Astc8x6;
+                case Format.Astc8x8Srgb:
+                case Format.Astc8x8Unorm:
+                    return FormatClass.Astc8x8;
+                case Format.Astc10x5Srgb:
+                case Format.Astc10x5Unorm:
+                    return FormatClass.Astc10x5;
+                case Format.Astc10x6Srgb:
+                case Format.Astc10x6Unorm:
+                    return FormatClass.Astc10x6;
+                case Format.Astc10x8Srgb:
+                case Format.Astc10x8Unorm:
+                    return FormatClass.Astc10x8;
+                case Format.Astc10x10Srgb:
+                case Format.Astc10x10Unorm:
+                    return FormatClass.Astc10x10;
+                case Format.Astc12x10Srgb:
+                case Format.Astc12x10Unorm:
+                    return FormatClass.Astc12x10;
+                case Format.Astc12x12Srgb:
+                case Format.Astc12x12Unorm:
+                    return FormatClass.Astc12x12;
             }
 
             return FormatClass.Unclassified;

@@ -166,9 +166,9 @@ namespace Ryujinx.Graphics.OpenGL.Image
             {
                 IntPtr target = _renderer.PersistentBuffers.Default.GetHostArray(size);
 
-                WriteTo2D(target, layer, level);
+                int offset = WriteTo2D(target, layer, level);
 
-                return new ReadOnlySpan<byte>(target.ToPointer(), size);
+                return new ReadOnlySpan<byte>(IntPtr.Add(target, offset).ToPointer(), size - offset);
             }
         }
 
@@ -210,18 +210,16 @@ namespace Ryujinx.Graphics.OpenGL.Image
             }
             else
             {
+                GL.GetTexImage(target, level, pixelFormat, pixelType, data);
+
                 // The GL function returns all layers. Must return the offset of the layer we're interested in.
-                int resultOffset = target switch
+                return target switch
                 {
                     TextureTarget.TextureCubeMapArray => (layer / 6) * mipSize,
                     TextureTarget.Texture1DArray => layer * mipSize,
                     TextureTarget.Texture2DArray => layer * mipSize,
                     _ => 0
                 };
-
-                GL.GetTexImage(target, level, pixelFormat, pixelType, data);
-
-                return resultOffset;
             }
 
             return 0;

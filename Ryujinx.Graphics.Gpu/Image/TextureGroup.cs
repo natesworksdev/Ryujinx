@@ -10,11 +10,19 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Graphics.Gpu.Image
 {
+    /// <summary>
+    /// An overlapping texture group with a given view compatibility.
+    /// </summary>
     struct TextureIncompatibleOverlap
     {
-        public TextureGroup Group;
-        public TextureViewCompatibility Compatibility;
+        public readonly TextureGroup Group;
+        public readonly TextureViewCompatibility Compatibility;
 
+        /// <summary>
+        /// Create a new texture incompatible overlap.
+        /// </summary>
+        /// <param name="group">The group that is incompatible</param>
+        /// <param name="compatibility">The view compatibility for the group</param>
         public TextureIncompatibleOverlap(TextureGroup group, TextureViewCompatibility compatibility)
         {
             Group = group;
@@ -1303,9 +1311,10 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Registers another texture group as an incompatible overlap, if not already registered.
         /// </summary>
         /// <param name="other">The texture group to add to the incompatible overlaps list</param>
+        /// <param name="copy">True if the overlap should register copy dependencies</param>
         public void RegisterIncompatibleOverlap(TextureIncompatibleOverlap other, bool copy)
         {
-            if (_incompatibleOverlaps.FindIndex(overlap => overlap.Group == other.Group) == -1)
+            if (!_incompatibleOverlaps.Exists(overlap => overlap.Group == other.Group))
             {
                 if (copy && other.Compatibility == TextureViewCompatibility.LayoutIncompatible)
                 {

@@ -201,6 +201,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Signal that this handle has either started or ended being modified.
         /// </summary>
         /// <param name="bound">True if this handle is being bound, false if unbound</param>
+        /// <param name="context">The GPU context to register a sync action on</param>
         public void SignalModifying(bool bound, GpuContext context)
         {
             SignalModified(context);
@@ -388,7 +389,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 if (fromHandle != null)
                 {
                     // Only copy if the copy texture is still modified.
-                    // It will be set as unmodified if new data is written from cpu, as the data previously in the texture will flush.
+                    // It will be set as unmodified if new data is written from CPU, as the data previously in the texture will flush.
                     // It will also set as unmodified if a copy is deferred to it.
 
                     shouldCopy = fromHandle.Modified;

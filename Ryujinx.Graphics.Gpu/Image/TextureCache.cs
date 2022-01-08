@@ -658,7 +658,8 @@ namespace Ryujinx.Graphics.Gpu.Image
                     else
                     {
                         bool dataOverlaps = texture.DataOverlaps(overlap);
-                        if (!overlap.IsView && dataOverlaps && incompatibleOverlaps.FindIndex(incompatible => incompatible.Group == overlap.Group) == -1)
+                        
+                        if (!overlap.IsView && dataOverlaps && !incompatibleOverlaps.Exists(incompatible => incompatible.Group == overlap.Group))
                         {
                             incompatibleOverlaps.Add(new TextureIncompatibleOverlap(overlap.Group, compatibility));
                         }

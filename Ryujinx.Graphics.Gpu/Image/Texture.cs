@@ -1535,6 +1535,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Called when the memory for this texture has been unmapped.
         /// Calls are from non-gpu threads.
         /// </summary>
+        /// <param name="unmapRange">The range of memory being unmapped</param>
         public void Unmapped(MultiRange unmapRange)
         {
             ChangedMapping = true;

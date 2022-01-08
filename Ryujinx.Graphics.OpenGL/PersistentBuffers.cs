@@ -100,13 +100,13 @@ namespace Ryujinx.Graphics.OpenGL
 
             GL.BindBuffer(BufferTarget.PixelPackBuffer, _copyBufferHandle);
 
-            view.WriteToPbo2D(0, layer, level);
+            int offset = view.WriteToPbo2D(0, layer, level);
 
             GL.BindBuffer(BufferTarget.PixelPackBuffer, 0);
 
             Sync();
 
-            return new ReadOnlySpan<byte>(_bufferMap.ToPointer(), size);
+            return new ReadOnlySpan<byte>(IntPtr.Add(_bufferMap, offset).ToPointer(), size - offset);
         }
 
         public unsafe ReadOnlySpan<byte> GetBufferData(BufferHandle buffer, int offset, int size)
