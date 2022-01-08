@@ -12,10 +12,11 @@
 <p align="center">
        Ryujinx is an open-source Nintendo Switch emulator created by gdkchan and is written in C#.
        This emulator aims at providing excellent accuracy and performance, while also providing a user-friendly interface, and consistent builds.
-       Ryujinx is available on GitHub under the <a href="https://github.com/Ryujinx/Ryujinx/blob/master/LICENSE.txt" target="_blank">MIT license</a></i><br /> 
+       It was written from scratch, and development started around September of 2017. Ryujinx is available on GitHub under the <a href="https://github.com/Ryujinx/Ryujinx/blob/master/LICENSE.txt" target="_blank">MIT license</a></i><br /> 
+
 </p>
 <p align="center">
-    <a href=""https://ci.appveyor.com/project/gdkchan/ryujinx?branch=master">
+    <a href="https://ci.appveyor.com/project/gdkchan/ryujinx?branch=master">
         <img src="https://ci.appveyor.com/api/projects/status/ssg4jwu6ve3k594s/branch/master?svg=true"
             alt="">
     </a>
@@ -24,13 +25,21 @@
             alt="Discord">
     </a>
     <br>
+    <br>
     <img src="https://raw.githubusercontent.com/Ryujinx/Ryujinx-Website/master/static/public/shell_fullsize.png">
 </p>
 
 <h5 align="center">
-    As of September 2021, Ryujinx has been tested on nearly 3,400 titles: ~3,000 boot past menus and into gameplay, with approximately 2,400 of those being considered playable. See the compatibility list <a href="https://github.com/Ryujinx/Ryujinx-Games-List/issues" target="_blank">here</a>.
+  
 </h5>
 
+## Compatibility
+
+As of September 2021, Ryujinx has been tested on nearly 3,400 titles: ~3,000 boot past menus and into gameplay, with approximately 2,400 of those being considered playable.
+You can check out the compatibility list [here](https://github.com/Ryujinx/Ryujinx-Games-List/issues). Anyone is free to submit an updated test on an existing game entry; simply follow the new issue template and testing guidelines, and post as a reply to the applicable game issue.
+
+Don't hesitate to open a new issue if a game isn't already on there!
+                  
 ## Usage
 
 To run this emulator, we recommend that your PC has at least 8GB of RAM; less than this amount can result in unpredictable behavior, crashes or unacceptable performance.
@@ -94,11 +103,6 @@ Ryujinx system files are stored in the `Ryujinx` folder. This folder is located 
 
    The emulator has settings for enabling or disabling some logging, remapping controllers, and more. You can configure all of them through the graphical interface or manually through the config file, `Config.json`, found in the user folder which can be accessed by clicking `Open Ryujinx Folder` under the File menu in the GUI.
 
-## Compatibility
-
-You can check out the compatibility list [here](https://github.com/Ryujinx/Ryujinx-Games-List/issues). Anyone is free to submit an updated test on an existing game entry; simply follow the new issue template and testing guidelines, and post as a reply to the applicable game issue.
-
-Don't hesitate to open a new issue if a game isn't already on there!
 
 ## Help
 
@@ -110,7 +114,21 @@ If you need help with setting up Ryujinx, you can ask questions in the #support 
 
 If you have contributions, need support, have suggestions, or just want to get in touch with the team, join our [Discord server](https://discord.gg/Ryujinx)!
 
-If you'd like to donate, please take a look at our [Patreon](https://www.patreon.com/ryujinx).
+## Donations
+                  
+If you'd like to support us financially, please take a look at our Patreon
+
+<a href="https://www.patreon.com/ryujinx">
+    <img src="https://images.squarespace-cdn.com/content/v1/560c1d39e4b0b4fae0c9cf2a/1567548955044-WVD994WZP76EWF15T0L3/Patreon+Button.png?format=500w" width="150">
+</a>
+
+All the developers working on the project do so on their free time, but the project has several expenses:
+* Hackable Nintendo Switch consoles to reverse-engineer the hardware and its components
+* Hardware to test and fix any bugs certain hardware may have
+* Software licenses to help developers use whatever they are comfortable with
+* Web hosting and infrastructure 
+ 
+All the funds acquired through our Patreon is considered a donation to support our work, and we will not do patron only releases. We may post exclusive progress reports, or early access to tools that can be used with the emulator.
 
 ## License
 
