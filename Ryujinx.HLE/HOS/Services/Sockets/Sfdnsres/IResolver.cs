@@ -243,6 +243,13 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             ulong optionsBufferPosition,
             ulong optionsBufferSize)
         {
+            if (!context.Device.Configuration.EnableInternetAccess)
+            {
+                WriteResponse(context, withOptions, 0, GaiError.NoData, NetDbError.HostNotFound);
+
+                return ResultCode.Success;
+            }
+
             string host = MemoryHelper.ReadAsciiString(context.Memory, inputBufferPosition, (int)inputBufferSize);
 
             // TODO: Use params.
@@ -331,6 +338,13 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             ulong optionsBufferPosition,
             ulong optionsBufferSize)
         {
+            if (!context.Device.Configuration.EnableInternetAccess)
+            {
+                WriteResponse(context, withOptions, 0, GaiError.NoData, NetDbError.HostNotFound);
+
+                return ResultCode.Success;
+            }
+
             byte[] rawIp = new byte[inputBufferSize];
 
             context.Memory.Read(inputBufferPosition, rawIp);
@@ -436,6 +450,13 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             ulong optionsBufferPosition,
             ulong optionsBufferSize)
         {
+            if (!context.Device.Configuration.EnableInternetAccess)
+            {
+                WriteResponse(context, withOptions, 0, GaiError.NoData, NetDbError.HostNotFound);
+
+                return ResultCode.Success;
+            }
+
             bool enableNsdResolve = (context.RequestData.ReadInt32() & 1) != 0;
             uint cancelHandle     = context.RequestData.ReadUInt32();
 
