@@ -243,14 +243,16 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             ulong optionsBufferPosition,
             ulong optionsBufferSize)
         {
+            string host = MemoryHelper.ReadAsciiString(context.Memory, inputBufferPosition, (int)inputBufferSize);
+
             if (!context.Device.Configuration.EnableInternetAccess)
             {
+                Logger.Info?.Print(LogClass.ServiceSfdnsres, $"Guest network access disabled, DNS Blocked: {host}");
+
                 WriteResponse(context, withOptions, 0, GaiError.NoData, NetDbError.HostNotFound);
 
                 return ResultCode.Success;
             }
-
-            string host = MemoryHelper.ReadAsciiString(context.Memory, inputBufferPosition, (int)inputBufferSize);
 
             // TODO: Use params.
             bool  enableNsdResolve = (context.RequestData.ReadInt32() & 1) != 0;
@@ -340,6 +342,8 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
         {
             if (!context.Device.Configuration.EnableInternetAccess)
             {
+                Logger.Info?.Print(LogClass.ServiceSfdnsres, $"Guest network access disabled, DNS Blocked.");
+
                 WriteResponse(context, withOptions, 0, GaiError.NoData, NetDbError.HostNotFound);
 
                 return ResultCode.Success;
@@ -450,18 +454,20 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             ulong optionsBufferPosition,
             ulong optionsBufferSize)
         {
-            if (!context.Device.Configuration.EnableInternetAccess)
-            {
-                WriteResponse(context, withOptions, 0, GaiError.NoData, NetDbError.HostNotFound);
-
-                return ResultCode.Success;
-            }
-
             bool enableNsdResolve = (context.RequestData.ReadInt32() & 1) != 0;
             uint cancelHandle     = context.RequestData.ReadUInt32();
 
             string host    = MemoryHelper.ReadAsciiString(context.Memory, context.Request.SendBuff[0].Position, (long)context.Request.SendBuff[0].Size);
             string service = MemoryHelper.ReadAsciiString(context.Memory, context.Request.SendBuff[1].Position, (long)context.Request.SendBuff[1].Size);
+
+            if (!context.Device.Configuration.EnableInternetAccess)
+            {
+                Logger.Info?.Print(LogClass.ServiceSfdnsres, $"Guest network access disabled, DNS Blocked: {host}");
+
+                WriteResponse(context, withOptions, 0, GaiError.NoData, NetDbError.HostNotFound);
+
+                return ResultCode.Success;
+            }
 
             // NOTE: We ignore hints for now.
             DeserializeAddrInfos(context.Memory, (ulong)context.Request.SendBuff[2].Position, (ulong)context.Request.SendBuff[2].Size);
