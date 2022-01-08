@@ -1,16 +1,18 @@
 
-<h1>
-    <img src="https://i.imgur.com/G6Mleco.png"> Ryujinx
-    <a href="https://ci.appveyor.com/project/gdkchan/ryujinx?branch=master" target="_blank">
-        <img src="https://ci.appveyor.com/api/projects/status/ssg4jwu6ve3k594s/branch/master?svg=true">
-    </a>
-    <a href="https://discord.gg/Ryujinx">
-        <img src="https://img.shields.io/discord/410208534861447168.svg">
-    </a>
+<h1 align="center">
+  <br>
+  <a href="https://ryujinx.org/"><img src="https://i.imgur.com/WcCj6Rt.png" alt="Ryujinx" width="150"></a>
+  <br>
+  <b>Ryujinx</b>
+  <br>
+  <b>(REE-YOU-JI-NX)</b>
+  <br>
 </h1>
 
 <p align="center">
-    <i>An experimental Switch emulator written in C#</i><br />
+       Ryujinx is an open-source Nintendo Switch emulator created by gdkchan and written in C#.
+       This emulator aims at providing excellent accuracy and performance, a user-friendly interface, and consistent builds.
+       Ryujinx is available on GitHub under the MIT license.</i><br />
     <br />
     <img src="https://raw.githubusercontent.com/Ryujinx/Ryujinx-Website/master/static/public/shell_fullsize.png">
 </p>
@@ -21,7 +23,7 @@
 
 ## Usage
 
-To run this emulator, we recommend that your PC have at least 8GB of RAM; less than this amount can result in unpredictable behavior and may cause crashes or unacceptable performance.
+To run this emulator, we recommend that your PC has at least 8GB of RAM; less than this amount can result in unpredictable behavior, crashes or unacceptable performance.
 
 See our [Setup & Configuration Guide](https://github.com/Ryujinx/Ryujinx/wiki/Ryujinx-Setup-&-Configuration-Guide) on how to set up the emulator.
 
