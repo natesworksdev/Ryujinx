@@ -1,3 +1,5 @@
+using Ryujinx.Ava.Common;
+using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
@@ -93,6 +95,31 @@ namespace Ryujinx.Configuration
             /// </summary>
             public ReactiveObject<bool> StartFullscreen { get; private set; }
 
+            /// <summary>
+            /// View Mode of the Game list
+            /// </summary>
+            public ReactiveObject<ViewMode> GameListViewMode { get; private set; }
+
+            /// <summary>
+            /// Show application name in Grid Mode
+            /// </summary>
+            public ReactiveObject<bool> ShowNames { get; private set; }
+
+            /// <summary>
+            /// Sets App Icon Size in Grid Mode
+            /// </summary>
+            public ReactiveObject<int> GridSize { get; private set; }
+
+            /// <summary>
+            /// Sorts Apps in Grid Mode
+            /// </summary>
+            public ReactiveObject<ApplicationSort> ApplicationSort { get; private set; }
+
+            /// <summary>
+            /// Sets if Grid is ordered in Ascending Order
+            /// </summary>
+            public ReactiveObject<bool> IsAscendingOrder { get; private set; }
+
             public UiSection()
             {
                 GuiColumns        = new Columns();
@@ -102,6 +129,11 @@ namespace Ryujinx.Configuration
                 CustomThemePath   = new ReactiveObject<string>();
                 BaseStyle         = new ReactiveObject<string>();
                 StartFullscreen   = new ReactiveObject<bool>();
+                GameListViewMode  = new ReactiveObject<ViewMode>();
+                ShowNames         = new ReactiveObject<bool>();
+                GridSize          = new ReactiveObject<int>();
+                ApplicationSort   = new ReactiveObject<ApplicationSort>();
+                IsAscendingOrder  = new ReactiveObject<bool>();
             }
         }
 
@@ -507,6 +539,11 @@ namespace Ryujinx.Configuration
                 EnableCustomTheme         = Ui.EnableCustomTheme,
                 CustomThemePath           = Ui.CustomThemePath,
                 BaseStyle                 = Ui.BaseStyle,
+                GameListViewMode          = Ui.GameListViewMode,
+                ShowNames                 = Ui.ShowNames,
+                GridSize                  = Ui.GridSize,
+                ApplicationSort           = Ui.ApplicationSort,
+                IsAscendingOrder          = Ui.IsAscendingOrder,
                 StartFullscreen           = Ui.StartFullscreen,
                 EnableKeyboard            = Hid.EnableKeyboard,
                 EnableMouse               = Hid.EnableMouse,
@@ -573,6 +610,11 @@ namespace Ryujinx.Configuration
             Ui.EnableCustomTheme.Value             = false;
             Ui.CustomThemePath.Value               = "";
             Ui.BaseStyle.Value                     = "Dark";
+            Ui.GameListViewMode.Value              = ViewMode.List;
+            Ui.ShowNames.Value                     = true;
+            Ui.GridSize.Value                      = 2;
+            Ui.ApplicationSort.Value               = ApplicationSort.Favorite;
+            Ui.IsAscendingOrder.Value              = true;
             Ui.StartFullscreen.Value               = false;
             Hid.EnableKeyboard.Value               = false;
             Hid.EnableMouse.Value                  = false;
@@ -1002,7 +1044,10 @@ namespace Ryujinx.Configuration
             {
                 Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 36.");
 
-                configurationFileFormat.BaseStyle = "Dark";
+                configurationFileFormat.BaseStyle        = "Dark";
+                configurationFileFormat.GameListViewMode = ViewMode.List;
+                configurationFileFormat.ShowNames        = true;
+                configurationFileFormat.GridSize         = 2;
 
                 configurationFileUpdated = true;
             }
@@ -1059,6 +1104,11 @@ namespace Ryujinx.Configuration
             Ui.EnableCustomTheme.Value             = configurationFileFormat.EnableCustomTheme;
             Ui.CustomThemePath.Value               = configurationFileFormat.CustomThemePath;
             Ui.BaseStyle.Value                     = configurationFileFormat.BaseStyle;
+            Ui.GameListViewMode.Value              = configurationFileFormat.GameListViewMode;
+            Ui.ShowNames.Value                     = configurationFileFormat.ShowNames;
+            Ui.IsAscendingOrder.Value              = configurationFileFormat.IsAscendingOrder;
+            Ui.GridSize.Value                      = configurationFileFormat.GridSize;
+            Ui.ApplicationSort.Value               = configurationFileFormat.ApplicationSort;
             Ui.StartFullscreen.Value               = configurationFileFormat.StartFullscreen;
             Hid.EnableKeyboard.Value               = configurationFileFormat.EnableKeyboard;
             Hid.EnableMouse.Value                  = configurationFileFormat.EnableMouse;

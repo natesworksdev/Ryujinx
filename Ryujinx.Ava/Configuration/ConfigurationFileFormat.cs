@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
+using Ryujinx.Ava.Common;
+using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Logging;
@@ -231,6 +233,32 @@ namespace Ryujinx.Configuration
         /// Chooses the base style
         /// </summary>
         public string BaseStyle { get; set; }
+
+        /// <summary>
+        /// Chooses the base style
+        /// </summary>
+        public ViewMode GameListViewMode { get; set; }
+
+        /// <summary>
+        /// Show application name in Grid Mode
+        /// </summary>
+        public bool ShowNames { get; set; }
+
+
+        /// <summary>
+        /// Sets App Icon Size in Grid Mode
+        /// </summary>
+        public int GridSize { get; set; }
+
+        /// <summary>
+        /// Sorts Apps in Grid Mode
+        /// </summary>
+        public ApplicationSort ApplicationSort { get; set; }
+
+        /// <summary>
+        /// Sets if Grid is ordered in Ascending Order
+        /// </summary>
+        public bool IsAscendingOrder { get; set; }
 
         /// <summary>
         /// Start games in fullscreen mode

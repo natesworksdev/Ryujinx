@@ -50,14 +50,12 @@ namespace Ryujinx.Ava.Ui.ViewModels
         private string _fifoStatusText;
         private string _gameStatusText;
         private string _gpuStatusText;
-        private ViewMode _viewMode;
         private bool _isAmiiboRequested;
         private bool _isGameRunning;
         private bool _isLoading;
         private string _lastScannedAmiiboId;
         private int _progressMaximum;
         private int _progressValue;
-        private int _gridSizeScale = 2;
         private bool _showAll;
         private bool _showLoadProgress;
         private bool _showMenuAndStatusBar = true;
@@ -70,11 +68,9 @@ namespace Ryujinx.Ava.Ui.ViewModels
         private int _statusBarProgressMaximum;
         private int _statusBarProgressValue;
         private bool _isPaused;
-        private bool _showNames;
         private bool _showContent = true;
         private bool _isLoadingIndeterminate = true;
         private ReadOnlyObservableCollection<ApplicationData> _appsObservableList;
-        private ApplicationSort _sortMode = ApplicationSort.Favorite;
 
         public MainWindowViewModel(MainWindow owner) : this()
         {
@@ -84,8 +80,6 @@ namespace Ryujinx.Ava.Ui.ViewModels
         public MainWindowViewModel()
         {
             Applications = new ObservableCollection<ApplicationData>();
-
-            ViewMode = ViewMode.Grid;
             
             Applications.ToObservableChangeSet()
                 .Filter(Filter)
@@ -248,7 +242,6 @@ namespace Ryujinx.Ava.Ui.ViewModels
         private string _pauseKey      = "F5";
         private string _screenshotkey = "F8";
         private float _volume;
-        private bool _isAscending = true;
 
         public ApplicationData SelectedApplication
         {
@@ -702,32 +695,44 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public ViewMode ViewMode
         {
-            get => _viewMode; set
+            get => ConfigurationState.Instance.Ui.GameListViewMode;
+            set
             {
-                _viewMode = value;
+                ConfigurationState.Instance.Ui.GameListViewMode.Value = value;
+
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(IsGrid));
                 OnPropertyChanged(nameof(IsList));
+
+                ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
             }
         }
 
         public bool ShowNames
         {
-            get => _showNames && _gridSizeScale > 1; set
+            get => ConfigurationState.Instance.Ui.ShowNames && ConfigurationState.Instance.Ui.GridSize > 1; set
             {
-                _showNames = value;
+                ConfigurationState.Instance.Ui.ShowNames.Value = value;
+
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(GridItemPadding));
+                OnPropertyChanged(nameof(GridSizeScale));
+
+                ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
             }
         }
 
         public ApplicationSort SortMode
         {
-            get => _sortMode; private set
+            get => ConfigurationState.Instance.Ui.ApplicationSort;
+            private set
             {
-                _sortMode = value;
+                ConfigurationState.Instance.Ui.ApplicationSort.Value = value;
+
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(SortName));
+
+                ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
             }
         }
 
@@ -761,8 +766,17 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public bool IsAscending
         {
-            get => _isAscending;
-            private set => _isAscending = value;
+            get => ConfigurationState.Instance.Ui.IsAscendingOrder;
+            private set
+            {
+                ConfigurationState.Instance.Ui.IsAscendingOrder.Value = value;
+
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(SortMode));
+                OnPropertyChanged(nameof(SortName));
+
+                ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+            }
         }
 
         public KeyGesture ShowUiKey
@@ -792,17 +806,22 @@ namespace Ryujinx.Ava.Ui.ViewModels
             }
         }
 
-        public bool IsGridSmall => _gridSizeScale == 1;
-        public bool IsGridNormal => _gridSizeScale == 2;
-        public bool IsGridLarge => _gridSizeScale == 3;
-        public bool IsGridHuge => _gridSizeScale == 4;
+        public bool IsGridSmall => ConfigurationState.Instance.Ui.GridSize == 1;
+        public bool IsGridNormal => ConfigurationState.Instance.Ui.GridSize == 2;
+        public bool IsGridLarge => ConfigurationState.Instance.Ui.GridSize == 3;
+        public bool IsGridHuge => ConfigurationState.Instance.Ui.GridSize == 4;
 
         public int GridSizeScale
         {
-            get => _gridSizeScale;
+            get => ConfigurationState.Instance.Ui.GridSize;
             set
             {
-                _gridSizeScale = value;
+                ConfigurationState.Instance.Ui.GridSize.Value = value;
+
+                if (value < 2)
+                {
+                    ShowNames = false;
+                }
                 
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(IsGridSmall));
@@ -810,6 +829,9 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 OnPropertyChanged(nameof(IsGridLarge));
                 OnPropertyChanged(nameof(IsGridHuge));
                 OnPropertyChanged(nameof(ShowNames));
+                OnPropertyChanged(nameof(GridItemPadding));
+
+                ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
             }
         }
 

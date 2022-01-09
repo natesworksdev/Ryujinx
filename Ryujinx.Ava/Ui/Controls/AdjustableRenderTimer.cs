@@ -10,9 +10,9 @@ using System.Timers;
 
 namespace Ryujinx.Ava.Ui.Controls
 {
-    internal class AdjustableRenderTimer : IRenderTimer, IDisposable
+    internal class AdjustableRenderTimer : IRenderTimer
     {
-        public int FrameRate
+        public int TargetFramePerSecond
         {
             get => _frameRate; set
             {
@@ -91,18 +91,12 @@ namespace Ryujinx.Ava.Ui.Controls
                 }
                 else
                 {
-                    Thread.Yield();
+                    Thread.Sleep(0);
                 }
             }
         }
 
         public void Stop()
-        {
-            _timer.Stop();
-            _isRunning = false;
-        }
-
-        public void Dispose()
         {
             _timer.Stop();
             _isRunning = false;

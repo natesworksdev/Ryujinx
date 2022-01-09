@@ -47,8 +47,6 @@ namespace Ryujinx.Ava
             RenderTimer = new AdjustableRenderTimer(60);
 
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
-
-            RenderTimer.Dispose();
         }
 
         // Avalonia configuration, don't remove; also used by visual designer.
