@@ -10,14 +10,14 @@ using System.Timers;
 
 namespace Ryujinx.Ava.Ui.Controls
 {
-    internal class AdjustableRenderTimer : IRenderTimer
+    internal class AdjustableRenderTimer : IRenderTimer, IDisposable
     {
         public int TargetFramePerSecond
         {
-            get => _frameRate; set
+            get => _targetFramePerSecond; set
             {
-                _frameRate = value;
-                _intervalTicks = Stopwatch.Frequency / _frameRate;
+                _targetFramePerSecond = value;
+                _intervalTicks = Stopwatch.Frequency / _targetFramePerSecond;
             }
         }
 
@@ -49,14 +49,15 @@ namespace Ryujinx.Ava.Ui.Controls
 
         private Action<TimeSpan> _tick;
         private int _subscriberCount;
-        private int _frameRate;
+        private int _targetFramePerSecond;
 
         private long _intervalTicks;
         private bool _isRunning;
+        private bool _isSuspended;
 
         public AdjustableRenderTimer(int framerate)
         {
-            _frameRate = framerate;
+            _targetFramePerSecond = framerate;
             _timer = new Stopwatch();
             _intervalTicks = Stopwatch.Frequency / framerate;
         }
@@ -69,11 +70,16 @@ namespace Ryujinx.Ava.Ui.Controls
         public void Start()
         {
             _timer.Start();
-            _timingThread = new Thread(Run);
-            _timingThread.Name = "RenderTimerThread";
-            _timingThread.IsBackground = true;
-            _isRunning = true;
-            _timingThread.Start();
+            if (_timingThread == null)
+            {
+                _timingThread = new Thread(Run);
+                _timingThread.Name = "RenderTimerThread";
+                _timingThread.IsBackground = true;
+                _isRunning = true;
+                _timingThread.Start();
+            }
+
+            _isSuspended = false;
         }
 
         private void Run()
@@ -82,8 +88,9 @@ namespace Ryujinx.Ava.Ui.Controls
             while (_isRunning)
             {
                 var elapsed = _timer.ElapsedTicks;
+                var nextElapsed = lastElapsed + _intervalTicks;
 
-                if (elapsed > lastElapsed + _intervalTicks)
+                if ((elapsed > nextElapsed) && !_isSuspended)
                 {
                     _tick?.Invoke(TimeSpan.FromMilliseconds(Environment.TickCount));
 
@@ -91,7 +98,12 @@ namespace Ryujinx.Ava.Ui.Controls
                 }
                 else
                 {
-                    Thread.Sleep(0);
+                    var ticksTillNext = nextElapsed - elapsed;
+                    var msTillNext = ticksTillNext * 1000f / Stopwatch.Frequency;
+                    if((int)(msTillNext / 2) > 0)
+                    {
+                        Thread.Sleep((int)(msTillNext / 2));
+                    }
                 }
             }
         }
@@ -99,7 +111,14 @@ namespace Ryujinx.Ava.Ui.Controls
         public void Stop()
         {
             _timer.Stop();
+            _isSuspended = true;
+        }
+
+        public void Dispose()
+        {
+            _timer.Stop();
             _isRunning = false;
+            _timingThread.Join();
         }
     }
 }

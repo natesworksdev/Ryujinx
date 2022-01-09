@@ -55,11 +55,11 @@ namespace Ryujinx.Ava.Ui.Controls
                 mainContext = new AvaloniaGlxContext(_handle);
             }
 
-            CreateWindow(mainContext); 
+            CreateWindow(mainContext);
+
+            Window.SwapInterval = 1;
 
             OnInitialized(gl);
-
-            Window.SwapInterval = 0;
 
             _framebuffer = GL.GenFramebuffer();
         }
@@ -95,8 +95,6 @@ namespace Ryujinx.Ava.Ui.Controls
             base.OnOpenGlDeinit(gl, fb);
             Context.Dispose();
             _window.Dispose();
-
-            Window.SwapInterval = 1;
         }
 
         internal void MakeCurrent()
