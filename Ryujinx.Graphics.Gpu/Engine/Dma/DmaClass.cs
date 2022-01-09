@@ -234,7 +234,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                                 src.Height,
                                 src.Depth,
                                 1,
-                                target.Info.Levels,
+                                1,
                                 1,
                                 1,
                                 1,
