@@ -50,6 +50,8 @@ See our [Setup & Configuration Guide](https://github.com/Ryujinx/Ryujinx/wiki/Ry
 
 These builds are compiled automatically for each commit on the master branch. While we strive to ensure optimal stability and performance prior to pushing an update, our automated builds **may be unstable or completely broken.**
 
+If you want to see what's changed in an update you can visit our [Changelog](https://github.com/Ryujinx/Ryujinx/wiki/Changelog).
+
 The latest automatic build for Windows, macOS, and Linux can be found on the [Official Website](https://ryujinx.org/download).
 
 ## Building
@@ -104,15 +106,10 @@ Ryujinx system files are stored in the `Ryujinx` folder. This folder is located 
    The emulator has settings for enabling or disabling some logging, remapping controllers, and more. You can configure all of them through the graphical interface or manually through the config file, `Config.json`, found in the user folder which can be accessed by clicking `Open Ryujinx Folder` under the File menu in the GUI.
 
 
-## Help
-
-If you are having problems launching homebrew or a particular game marked status-playable or status-ingame in our compatibility list, you can contact us through our [Discord server](https://discord.gg/Ryujinx). We'll take note of whatever is causing the app/game to not work, put it on the watch list and fix it at a later date.
-
-If you need help with setting up Ryujinx, you can ask questions in the #support channel of our [Discord server](https://discord.gg/Ryujinx).
-
 ## Contact
 
-If you have contributions, need support, have suggestions, or just want to get in touch with the team, join our [Discord server](https://discord.gg/Ryujinx)!
+If you are having problems launching homebrew or a particular game marked status-playable or status-ingame in our compatibility list, or if you need help with setting up Ryujinx we recommend you ask questions in the #support channel of our [Discord server](https://discord.gg/Ryujinx) or take a look at our <a href="https://github.com/Ryujinx/Ryujinx/wiki/Frequently-Asked-Questions" target="_blank">FAQ.</a></i><br />  If you have contributions, have suggestions, or just want to get in touch with the team join our [Discord server](https://discord.gg/Ryujinx).
+
 
 ## Donations
                   
@@ -132,11 +129,12 @@ All the funds acquired through our Patreon is considered a donation to support o
 
 ## License
 
-This software is licensed under the terms of the MIT license.
-The Ryujinx.Audio project is licensed under the terms of the LGPLv3 license.
+This software is licensed under the terms of the <a href="https://github.com/Ryujinx/Ryujinx/blob/master/LICENSE.txt" target="_blank">MIT license.</a></i><br /> 
+The Ryujinx.Audio project is licensed under the terms of the <a href="https://github.com/Ryujinx/Ryujinx/blob/master/Ryujinx.Audio/LICENSE.txt
+" target="_blank">LGPLv3 license.</a></i><br />
 This project makes use of code authored by the libvpx project, licensed under BSD and the ffmpeg project, licensed under LGPLv3.
 See [LICENSE.txt](LICENSE.txt) and [THIRDPARTY.md](Ryujinx/THIRDPARTY.md) for more details.
- 
 ## Credits
 
+- [LibHac](https://github.com/Thealexbarney/LibHac) is used for our file-system 
 - [AmiiboAPI](https://www.amiiboapi.com) is used in our Amiibo emulation.
