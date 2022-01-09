@@ -1,5 +1,6 @@
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
+using Ryujinx.Common.Pools;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.Graphics.Texture;
@@ -97,7 +98,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         private bool _hasData;
         private bool _dirty = true;
         private int _updateCount;
-        private byte[] _currentData;
+        private PooledBuffer<byte> _currentData;
 
         private ITexture _arrayViewTexture;
         private Target   _arrayViewTarget;
@@ -684,8 +685,11 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
                 else
                 {
-                    bool dataMatches = _currentData != null && data.SequenceEqual(_currentData);
-                    _currentData = data.ToArray();
+                    bool dataMatches = _currentData != null && data.SequenceEqual(_currentData.AsSpan);
+                    _currentData?.Dispose();
+                    _currentData = BufferPool<byte>.Rent(data.Length);
+                    data.CopyTo(_currentData.AsSpan);
+
                     if (dataMatches)
                     {
                         return;
@@ -693,9 +697,9 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
             }
 
-            data = ConvertToHostCompatibleFormat(data);
+            PooledBuffer<byte> convertedData = ConvertToHostCompatibleFormat(data);
 
-            HostTexture.SetData(data);
+            HostTexture.SetData(convertedData.AsReadOnlySpan);
 
             _hasData = true;
         }
@@ -729,6 +733,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             HostTexture.SetData(data, layer, level);
 
+            _currentData?.Dispose();
             _currentData = null;
 
             _hasData = true;
@@ -739,7 +744,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="data">Data to be converted</param>
         /// <returns>Converted data</returns>
-        public ReadOnlySpan<byte> ConvertToHostCompatibleFormat(ReadOnlySpan<byte> data, int level = 0, bool single = false)
+        public PooledBuffer<byte> ConvertToHostCompatibleFormat(ReadOnlySpan<byte> data, int level = 0, bool single = false)
         {
             int width = Info.Width;
             int height = Info.Height;
@@ -752,9 +757,11 @@ namespace Ryujinx.Graphics.Gpu.Image
             height = Math.Max(height >> level, 1);
             depth = Math.Max(depth >> level, 1);
 
+            PooledBuffer<byte> returnVal;
+
             if (Info.IsLinear)
             {
-                data = LayoutConverter.ConvertLinearStridedToLinear(
+                returnVal = LayoutConverter.ConvertLinearStridedToLinear(
                     width,
                     height,
                     Info.FormatInfo.BlockWidth,
@@ -766,7 +773,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
             else
             {
-                data = LayoutConverter.ConvertBlockLinearToLinear(
+                returnVal = LayoutConverter.ConvertBlockLinearToLinear(
                     width,
                     height,
                     depth,
@@ -782,13 +789,17 @@ namespace Ryujinx.Graphics.Gpu.Image
                     data);
             }
 
+            // If this tex data is compressed, we need to make sure we dispose
+            // of this buffer containing the encoded data after decoding
+            PooledBuffer<byte> encodedTextureBuf = returnVal;
+
             // Handle compressed cases not supported by the host:
             // - ASTC is usually not supported on desktop cards.
             // - BC4/BC5 is not supported on 3D textures.
             if (!_context.Capabilities.SupportsAstcCompression && Format.IsAstc())
             {
                 if (!AstcDecoder.TryDecodeToRgba8P(
-                    data.ToArray(),
+                    encodedTextureBuf,
                     Info.FormatInfo.BlockWidth,
                     Info.FormatInfo.BlockHeight,
                     width,
@@ -796,14 +807,14 @@ namespace Ryujinx.Graphics.Gpu.Image
                     depth,
                     levels,
                     layers,
-                    out Span<byte> decoded))
+                    out PooledBuffer<byte> decoded))
                 {
                     string texInfo = $"{Info.Target} {Info.FormatInfo.Format} {Info.Width}x{Info.Height}x{Info.DepthOrLayers} levels {Info.Levels}";
-
                     Logger.Debug?.Print(LogClass.Gpu, $"Invalid ASTC texture at 0x{Info.GpuAddress:X} ({texInfo}).");
                 }
 
-                data = decoded;
+                encodedTextureBuf.Dispose();
+                returnVal = decoded;
             }
             else if (!_context.Capabilities.SupportsR4G4Format && Format == Format.R4G4Unorm)
             {
@@ -811,14 +822,16 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
             else if (Target == Target.Texture3D && Format.IsBc4())
             {
-                data = BCnDecoder.DecodeBC4(data, width, height, depth, levels, layers, Info.FormatInfo.Format == Format.Bc4Snorm);
+                returnVal = BCnDecoder.DecodeBC4(encodedTextureBuf.AsSpan, width, height, depth, levels, layers, Info.FormatInfo.Format == Format.Bc4Snorm);
+                encodedTextureBuf.Dispose();
             }
             else if (Target == Target.Texture3D && Format.IsBc5())
             {
-                data = BCnDecoder.DecodeBC5(data, width, height, depth, levels, layers, Info.FormatInfo.Format == Format.Bc5Snorm);
+                returnVal = BCnDecoder.DecodeBC5(encodedTextureBuf.AsSpan, width, height, depth, levels, layers, Info.FormatInfo.Format == Format.Bc5Snorm);
+                encodedTextureBuf.Dispose();
             }
 
-            return data;
+            return returnVal;
         }
 
         /// <summary>
@@ -1475,6 +1488,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         private void DisposeTextures()
         {
+            _currentData?.Dispose();
             _currentData = null;
             HostTexture.Release();
 

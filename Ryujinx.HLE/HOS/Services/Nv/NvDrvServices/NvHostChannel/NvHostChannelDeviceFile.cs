@@ -1,4 +1,5 @@
 ﻿using Ryujinx.Common.Logging;
+using Ryujinx.Common.Pools;
 using Ryujinx.Graphics.Gpu;
 using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel.Types;
@@ -485,55 +486,59 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
             return DeviceSyncpoints[index];
         }
 
-        private static int[] CreateWaitCommandBuffer(NvFence fence)
+        private static PooledBuffer<int> CreateWaitCommandBuffer(NvFence fence)
         {
-            int[] commandBuffer = new int[4];
+            PooledBuffer<int> commandBuffer = BufferPool<int>.Rent(4);
+            Span<int> buf = commandBuffer.AsSpan;
 
             // SyncpointValue = fence.Value;
-            commandBuffer[0] = 0x2001001C;
-            commandBuffer[1] = (int)fence.Value;
+            buf[0] = 0x2001001C;
+            buf[1] = (int)fence.Value;
 
             // SyncpointAction(fence.id, increment: false, switch_en: true);
-            commandBuffer[2] = 0x2001001D;
-            commandBuffer[3] = (((int)fence.Id << 8) | (0 << 0) | (1 << 4));
+            buf[2] = 0x2001001D;
+            buf[3] = (((int)fence.Id << 8) | (0 << 0) | (1 << 4));
 
             return commandBuffer;
         }
 
-        private int[] CreateIncrementCommandBuffer(ref NvFence fence, SubmitGpfifoFlags flags)
+        private PooledBuffer<int> CreateIncrementCommandBuffer(ref NvFence fence, SubmitGpfifoFlags flags)
         {
             bool hasWfi = !flags.HasFlag(SubmitGpfifoFlags.SuppressWfi);
 
-            int[] commandBuffer;
+            PooledBuffer<int> commandBuffer;
+            Span<int> buf;
 
             int offset = 0;
 
             if (hasWfi)
             {
-                commandBuffer = new int[8];
+                commandBuffer = BufferPool<int>.Rent(8);
+                buf = commandBuffer.AsSpan;
 
                 // WaitForInterrupt(handle)
-                commandBuffer[offset++] = 0x2001001E;
-                commandBuffer[offset++] = 0x0;
+                buf[offset++] = 0x2001001E;
+                buf[offset++] = 0x0;
             }
             else
             {
-                commandBuffer = new int[6];
+                commandBuffer = BufferPool<int>.Rent(6);
+                buf = commandBuffer.AsSpan;
             }
 
             // SyncpointValue = 0x0;
-            commandBuffer[offset++] = 0x2001001C;
-            commandBuffer[offset++] = 0x0;
+            buf[offset++] = 0x2001001C;
+            buf[offset++] = 0x0;
 
             // Increment the syncpoint 2 times. (mitigate a hardware bug)
 
             // SyncpointAction(fence.id, increment: true, switch_en: false);
-            commandBuffer[offset++] = 0x2001001D;
-            commandBuffer[offset++] = (((int)fence.Id << 8) | (1 << 0) | (0 << 4));
+            buf[offset++] = 0x2001001D;
+            buf[offset++] = (((int)fence.Id << 8) | (1 << 0) | (0 << 4));
 
             // SyncpointAction(fence.id, increment: true, switch_en: false);
-            commandBuffer[offset++] = 0x2001001D;
-            commandBuffer[offset++] = (((int)fence.Id << 8) | (1 << 0) | (0 << 4));
+            buf[offset++] = 0x2001001D;
+            buf[offset++] = (((int)fence.Id << 8) | (1 << 0) | (0 << 4));
 
             return commandBuffer;
         }

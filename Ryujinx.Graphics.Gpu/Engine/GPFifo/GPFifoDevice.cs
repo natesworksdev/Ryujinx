@@ -1,4 +1,5 @@
-﻿using Ryujinx.Graphics.Gpu.Memory;
+﻿using Ryujinx.Common.Pools;
+using Ryujinx.Graphics.Gpu.Memory;
 using System;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
@@ -39,7 +40,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
             /// <summary>
             /// Fetched data.
             /// </summary>
-            public int[] Words;
+            public PooledBuffer<int> Words;
 
             /// <summary>
             /// The GPFIFO entry address (used in <see cref="CommandBufferType.NoPrefetch"/> mode).
@@ -59,7 +60,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
             {
                 if (Words == null)
                 {
-                    Words = MemoryMarshal.Cast<byte, int>(memoryManager.GetSpan(EntryAddress, (int)EntryCount * 4, flush)).ToArray();
+                    Words = BufferPool<int>.Rent((int)EntryCount);
+                    MemoryMarshal.Cast<byte, int>(memoryManager.GetSpan(EntryAddress, (int)EntryCount * 4, flush)).CopyTo(Words.AsSpan);
                 }
             }
         }
@@ -102,7 +104,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
         /// </summary>
         /// <param name="processor">Processor used to process <paramref name="commandBuffer"/></param>
         /// <param name="commandBuffer">The command buffer containing the prefetched commands</param>
-        internal void PushHostCommandBuffer(GPFifoProcessor processor, int[] commandBuffer)
+        internal void PushHostCommandBuffer(GPFifoProcessor processor, PooledBuffer<int> commandBuffer)
         {
             _commandBufferQueue.Enqueue(new CommandBuffer
             {
@@ -209,7 +211,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
                     entry.Processor.ForceAllDirty();
                 }
 
-                entry.Processor.Process(entry.EntryAddress, _currentCommandBuffer.Words);
+                entry.Processor.Process(entry.EntryAddress, _currentCommandBuffer.Words.AsSpan);
+                _currentCommandBuffer.Words.Dispose();
             }
 
             _interrupt = false;

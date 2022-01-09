@@ -1,4 +1,5 @@
-﻿using Ryujinx.Common.Utilities;
+﻿using Ryujinx.Common.Pools;
+using Ryujinx.Common.Utilities;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -10,8 +11,8 @@ namespace Ryujinx.Graphics.Texture.Astc
     // https://github.com/GammaUNC/FasTC/blob/master/ASTCEncoder/src/Decompressor.cpp
     public class AstcDecoder
     {
-        private ReadOnlyMemory<byte> InputBuffer { get; }
-        private Memory<byte> OutputBuffer { get; }
+        private PooledBuffer<byte> InputBuffer { get; }
+        private PooledBuffer<byte> OutputBuffer { get; }
 
         private int BlockSizeX { get; }
         private int BlockSizeY { get; }
@@ -23,8 +24,8 @@ namespace Ryujinx.Graphics.Texture.Astc
         public int TotalBlockCount { get; }
 
         public AstcDecoder(
-            ReadOnlyMemory<byte> inputBuffer,
-            Memory<byte> outputBuffer,
+            PooledBuffer<byte> inputBuffer,
+            PooledBuffer<byte> outputBuffer,
             int blockWidth,
             int blockHeight,
             int width,
@@ -116,7 +117,7 @@ namespace Ryujinx.Graphics.Texture.Astc
 
         public void ProcessBlock(int index)
         {
-            Buffer16 inputBlock = MemoryMarshal.Cast<byte, Buffer16>(InputBuffer.Span)[index];
+            Buffer16 inputBlock = MemoryMarshal.Cast<byte, Buffer16>(InputBuffer.AsSpan)[index];
 
             Span<int> decompressedData = stackalloc int[144];
 
@@ -133,7 +134,7 @@ namespace Ryujinx.Graphics.Texture.Astc
 
             AstcLevel levelInfo = GetLevelInfo(index);
 
-            WriteDecompressedBlock(decompressedBytes, OutputBuffer.Span.Slice(levelInfo.OutputByteOffset),
+            WriteDecompressedBlock(decompressedBytes, OutputBuffer.AsSpan.Slice(levelInfo.OutputByteOffset),
                 index - levelInfo.StartBlock, levelInfo);
         }
 
@@ -218,7 +219,7 @@ namespace Ryujinx.Graphics.Texture.Astc
         }
 
         public static bool TryDecodeToRgba8(
-            ReadOnlyMemory<byte> data,
+            PooledBuffer<byte> data,
             int blockWidth,
             int blockHeight,
             int width,
@@ -226,9 +227,9 @@ namespace Ryujinx.Graphics.Texture.Astc
             int depth,
             int levels,
             int layers,
-            out Span<byte> decoded)
+            out PooledBuffer<byte> decoded)
         {
-            byte[] output = new byte[QueryDecompressedSize(width, height, depth, levels, layers)];
+            PooledBuffer<byte> output = BufferPool<byte>.Rent(QueryDecompressedSize(width, height, depth, levels, layers));
 
             AstcDecoder decoder = new AstcDecoder(data, output, blockWidth, blockHeight, width, height, depth, levels, layers);
 
@@ -243,8 +244,8 @@ namespace Ryujinx.Graphics.Texture.Astc
         }
 
         public static bool TryDecodeToRgba8(
-            ReadOnlyMemory<byte> data,
-            Memory<byte> outputBuffer,
+            PooledBuffer<byte> data,
+            PooledBuffer<byte> outputBuffer,
             int blockWidth,
             int blockHeight,
             int width,
@@ -264,8 +265,8 @@ namespace Ryujinx.Graphics.Texture.Astc
         }
 
         public static bool TryDecodeToRgba8P(
-            ReadOnlyMemory<byte> data,
-            Memory<byte> outputBuffer,
+            PooledBuffer<byte> data,
+            PooledBuffer<byte> outputBuffer,
             int blockWidth,
             int blockHeight,
             int width,
@@ -283,7 +284,7 @@ namespace Ryujinx.Graphics.Texture.Astc
         }
 
         public static bool TryDecodeToRgba8P(
-            ReadOnlyMemory<byte> data,
+            PooledBuffer<byte> data,
             int blockWidth,
             int blockHeight,
             int width,
@@ -291,9 +292,9 @@ namespace Ryujinx.Graphics.Texture.Astc
             int depth,
             int levels,
             int layers,
-            out Span<byte> decoded)
+            out PooledBuffer<byte> decoded)
         {
-            byte[] output = new byte[QueryDecompressedSize(width, height, depth, levels, layers)];
+            PooledBuffer<byte> output = BufferPool<byte>.Rent(QueryDecompressedSize(width, height, depth, levels, layers));
 
             AstcDecoder decoder = new AstcDecoder(data, output, blockWidth, blockHeight, width, height, depth, levels, layers);
 

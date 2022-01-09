@@ -1,4 +1,5 @@
 using OpenTK.Graphics.OpenGL;
+using Ryujinx.Common.Pools;
 using Ryujinx.Graphics.GAL;
 using System;
 

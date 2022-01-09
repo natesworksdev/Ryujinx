@@ -1,3 +1,4 @@
+using Ryujinx.Common.Pools;
 using System;
 
 namespace Ryujinx.Graphics.GAL

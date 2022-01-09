@@ -1,4 +1,5 @@
 using Ryujinx.Common;
+using Ryujinx.Common.Pools;
 using System;
 using System.Runtime.Intrinsics;
 using static Ryujinx.Graphics.Texture.BlockLinearConstants;
@@ -93,7 +94,7 @@ namespace Ryujinx.Graphics.Texture
             };
         }
 
-        public static Span<byte> ConvertBlockLinearToLinear(
+        public static PooledBuffer<byte> ConvertBlockLinearToLinear(
             int width,
             int height,
             int depth,
@@ -118,7 +119,8 @@ namespace Ryujinx.Graphics.Texture
                 blockHeight,
                 bytesPerPixel);
 
-            Span<byte> output = new byte[outSize];
+            PooledBuffer<byte> outputBuffer = BufferPool<byte>.Rent(outSize);
+            Span<byte> output = outputBuffer.AsSpan;
 
             int outOffs = 0;
 
@@ -240,10 +242,10 @@ namespace Ryujinx.Graphics.Texture
                     _ => throw new NotSupportedException($"Unable to convert ${bytesPerPixel} bpp pixel format.")
                 };
             }
-            return output;
+            return outputBuffer;
         }
 
-        public static Span<byte> ConvertLinearStridedToLinear(
+        public static PooledBuffer<byte> ConvertLinearStridedToLinear(
             int width,
             int height,
             int blockWidth,
@@ -259,7 +261,8 @@ namespace Ryujinx.Graphics.Texture
             int outStride = BitUtils.AlignUp(w * bytesPerPixel, HostStrideAlignment);
             lineSize = Math.Min(lineSize, outStride);
 
-            Span<byte> output = new byte[h * outStride];
+            PooledBuffer<byte> outputBuffer = BufferPool<byte>.Rent(h * outStride);
+            Span<byte> output = outputBuffer.AsSpan;
 
             int outOffs = 0;
             int inOffs = 0;
@@ -272,7 +275,7 @@ namespace Ryujinx.Graphics.Texture
                 outOffs += outStride;
             }
 
-            return output;
+            return outputBuffer;
         }
 
         public static void ConvertLinearToBlockLinear(

@@ -1,4 +1,5 @@
 using Ryujinx.Common;
+using Ryujinx.Common.Pools;
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -10,7 +11,7 @@ namespace Ryujinx.Graphics.Texture
         private const int BlockWidth = 4;
         private const int BlockHeight = 4;
 
-        public static byte[] DecodeBC4(ReadOnlySpan<byte> data, int width, int height, int depth, int levels, int layers, bool signed)
+        public static PooledBuffer<byte> DecodeBC4(ReadOnlySpan<byte> data, int width, int height, int depth, int levels, int layers, bool signed)
         {
             int size = 0;
 
@@ -19,8 +20,8 @@ namespace Ryujinx.Graphics.Texture
                 size += Math.Max(1, width >> l) * Math.Max(1, height >> l) * Math.Max(1, depth >> l) * layers;
             }
 
-            byte[] output = new byte[size];
-
+            PooledBuffer<byte> output = BufferPool<byte>.Rent(size);
+            Span<byte> outputData = output.AsSpan;
             ReadOnlySpan<ulong> data64 = MemoryMarshal.Cast<byte, ulong>(data);
 
             Span<byte> rPal = stackalloc byte[8];
@@ -77,7 +78,7 @@ namespace Ryujinx.Graphics.Texture
 
                                     int oOffs = lineBaseOOffs + tY * width + tX;
 
-                                    output[oOffs] = r;
+                                    outputData[oOffs] = r;
                                 }
 
                                 data64 = data64.Slice(1);
@@ -96,7 +97,7 @@ namespace Ryujinx.Graphics.Texture
             return output;
         }
 
-        public static byte[] DecodeBC5(ReadOnlySpan<byte> data, int width, int height, int depth, int levels, int layers, bool signed)
+        public static PooledBuffer<byte> DecodeBC5(ReadOnlySpan<byte> data, int width, int height, int depth, int levels, int layers, bool signed)
         {
             int size = 0;
 
@@ -105,7 +106,8 @@ namespace Ryujinx.Graphics.Texture
                 size += Math.Max(1, width >> l) * Math.Max(1, height >> l) * Math.Max(1, depth >> l) * layers * 2;
             }
 
-            byte[] output = new byte[size];
+            PooledBuffer<byte> output = BufferPool<byte>.Rent(size);
+            Span<byte> outputData = output.AsSpan;
 
             ReadOnlySpan<ulong> data64 = MemoryMarshal.Cast<byte, ulong>(data);
 
@@ -171,8 +173,8 @@ namespace Ryujinx.Graphics.Texture
 
                                     int oOffs = (lineBaseOOffs + tY * width + tX) * 2;
 
-                                    output[oOffs + 0] = r;
-                                    output[oOffs + 1] = g;
+                                    outputData[oOffs + 0] = r;
+                                    outputData[oOffs + 1] = g;
                                 }
 
                                 data64 = data64.Slice(2);
