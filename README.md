@@ -46,6 +46,9 @@ To run this emulator, we recommend that your PC has at least 8GB of RAM; less th
 
 See our [Setup & Configuration Guide](https://github.com/Ryujinx/Ryujinx/wiki/Ryujinx-Setup-&-Configuration-Guide) on how to set up the emulator.
 
+For our Local Wireless and LAN builds See our [Multiplayer: Local Play/Local Wireless Guide
+](https://github.com/Ryujinx/Ryujinx/wiki/Multiplayer-(LDN-Local-Wireless)-Guide)
+
 ## Latest build
 
 These builds are compiled automatically for each commit on the master branch. While we strive to ensure optimal stability and performance prior to pushing an update, our automated builds **may be unstable or completely broken.**
