@@ -168,7 +168,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
                 int offset = WriteTo2D(target, layer, level);
 
-                return new ReadOnlySpan<byte>(IntPtr.Add(target, offset).ToPointer(), size - offset);
+                return new ReadOnlySpan<byte>(target.ToPointer(), size).Slice(offset);
             }
         }
 

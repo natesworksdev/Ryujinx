@@ -106,7 +106,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             Sync();
 
-            return new ReadOnlySpan<byte>(IntPtr.Add(_bufferMap, offset).ToPointer(), size - offset);
+            return new ReadOnlySpan<byte>(_bufferMap.ToPointer(), size).Slice(offset);
         }
 
         public unsafe ReadOnlySpan<byte> GetBufferData(BufferHandle buffer, int offset, int size)
