@@ -1026,6 +1026,8 @@ namespace Ryujinx.Ava
                     {
                         Device.SetVolume(0);
                     }
+
+                    _parent.ViewModel.Volume = Device.GetVolume();
                 }
 
                 if (currentHotkeyState != KeyboardHotkeyState.None)
