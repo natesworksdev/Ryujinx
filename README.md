@@ -58,27 +58,25 @@ If you want to see what's changed in an update you can visit our [Changelog](htt
 
 The latest automatic build for Windows, macOS, and Linux can be found on the [Official Website](https://ryujinx.org/download).
 
+
 ## Building
 
-If you wish to build the emulator yourself  you will need to:
+If you wish to build the emulator yourself follow these steps:
 
-**Step one:** Install the X64 version of [.NET 6.0 (or higher) SDK](https://dotnet.microsoft.com/download/dotnet/6.0).
+### Step 1
+Install the X64 version of [.NET 6.0 (or higher) SDK](https://dotnet.microsoft.com/download/dotnet/6.0).
 
-**Step two (choose one):**  
-**(Variant one)**
+###Step 2
+Either use `git clone https://github.com/Ryujinx/Ryujinx` to clone the repository or use the `Code>Download zip` button to get the files
 
-After the installation of the .NET SDK is done; go ahead and copy the Clone link from GitHub from here (via Clone or Download --> Copy HTTPS Link. You can Git Clone the repo by using Git Bash or Git CMD.
+### Step 3
 
-**(Variant two):**
-
-Download the ZIP Tarball. Then extract it to a directory of your choice.
-
-**Step three:**
-
-Build the App using a Command prompt in the project directory. You can quickly access it by holding shift in explorer (in the Ryujinx directory) then right clicking, and typing the following command:  
-Run `dotnet build -c Release` inside the Ryujinx project folder to build Ryujinx binaries.
+To build Ryujinx open the Command prompt in the project directory. You can quickly access it by holding shift in the file explorer(while inside the Ryujinx directory) then right clicking and selecting ``, then type the following command:
+`dotnet build -c Release -o build`
+the built files will be found in the newly created build directory.
 
 Ryujinx system files are stored in the `Ryujinx` folder. This folder is located in the user folder, which can be accessed by clicking `Open Ryujinx Folder` under the File menu in the GUI.
+
 
 ## Features
 
