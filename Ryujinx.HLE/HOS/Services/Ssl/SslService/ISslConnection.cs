@@ -1,49 +1,86 @@
 using Ryujinx.Common.Logging;
+using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Services.Sockets.Bsd;
 using Ryujinx.HLE.HOS.Services.Ssl.Types;
+using Ryujinx.Memory;
 using System;
-using System.Collections.Generic;
-using System.Net.Security;
-using System.Net.Sockets;
 using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
 {
-    class ISslConnection : IpcService
+    class ISslConnection : IpcService, IDisposable
     {
-        public ISslConnection() { }
+        private bool _doNotClockSocket;
+        private bool _getServerCertChain;
+        private bool _skipDefaultVerify;
+        private bool _enableAlpn;
 
-        private uint socketFd;
-        private IoMode ioMode;
-        private VerifyOption verifyOption;
-        private string HostName;
-        private BsdSocket Socket;
-        private SslStream Stream;
-        private byte[] NextAplnProto;
-        // I don't think the implementation is entirely correct here...
-        private Dictionary<OptionType, bool> Options = new();
+        private SslVersion _sslVersion;
+        private IoMode _ioMode;
+        private VerifyOption _verifyOption;
+        private SessionCacheMode _sessionCacheMode;
+        private string _hostName;
+
+        private ISslConnectionBase _connection;
+        private BsdContext _bsdContext;
+        private readonly long _processId;
+
+        private byte[] _nextAplnProto;
+
+        public ISslConnection(long processId, SslVersion sslVersion)
+        {
+            _processId = processId;
+            _sslVersion = sslVersion;
+            _ioMode = IoMode.Blocking;
+            _sessionCacheMode = SessionCacheMode.None;
+            _verifyOption = VerifyOption.PeerCa | VerifyOption.HostName;
+        }
+
 
         [CommandHipc(0)]
         // SetSocketDescriptor(u32) -> u32
         public ResultCode SetSocketDescriptor(ServiceCtx context)
         {
-            socketFd = context.RequestData.ReadUInt32();
-            uint duplicateSocketFd = 0; // TODO: properly DuplicateSocket?
-
-            if (Options.ContainsKey(OptionType.DoNotCloseSocket) && Options[OptionType.DoNotCloseSocket] == true)
+            if (_connection != null)
             {
-                context.ResponseData.Write(-1);
-            }
-            else
-            {
-                context.ResponseData.Write(duplicateSocketFd);
+                return ResultCode.AlreadyInUse;
             }
 
-            Logger.Info?.Print(LogClass.ServiceSsl, $"Creating SSL connection for {socketFd}");
+            _bsdContext = BsdContext.GetContext(_processId);
 
-            Socket = IClient.RetrieveSocket((int)socketFd);
+            if (_bsdContext == null)
+            {
+                return ResultCode.InvalidSocket;
+            }
+
+            int inputFd = context.RequestData.ReadInt32();
+
+            int internalFd = _bsdContext.DuplicateFileDescriptor(inputFd);
+
+            if (internalFd == -1)
+            {
+                return ResultCode.InvalidSocket;
+            }
+
+            InitializeConnection(internalFd);
+
+            int outputFd = inputFd;
+
+            if (_doNotClockSocket)
+            {
+                outputFd = -1;
+            }
+
+            context.ResponseData.Write(outputFd);
 
             return ResultCode.Success;
+        }
+
+        private void InitializeConnection(int socketFd)
+        {
+            ISocket bsdSocket = _bsdContext.RetrieveSocket(socketFd);
+
+            _connection = new SslDefaultSocketConnection(_bsdContext, _sslVersion, socketFd, bsdSocket);
         }
 
         [CommandHipc(1)]
@@ -57,9 +94,9 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
 
             context.Memory.Read(hostNameDataPosition, hostNameData);
 
-            HostName = Encoding.ASCII.GetString(hostNameData).Trim('\0');
+            _hostName = Encoding.ASCII.GetString(hostNameData).Trim('\0');
 
-            Logger.Info?.Print(LogClass.ServiceSsl, HostName);
+            Logger.Info?.Print(LogClass.ServiceSsl, _hostName);
 
             return ResultCode.Success;
         }
@@ -68,9 +105,9 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
         // SetVerifyOption(nn::ssl::sf::VerifyOption)
         public ResultCode SetVerifyOption(ServiceCtx context)
         {
-            verifyOption = (VerifyOption)context.RequestData.ReadUInt32();
+            _verifyOption = (VerifyOption)context.RequestData.ReadUInt32();
 
-            Logger.Stub?.PrintStub(LogClass.ServiceSsl, new { verifyOption });
+            Logger.Stub?.PrintStub(LogClass.ServiceSsl, new { _verifyOption });
 
             return ResultCode.Success;
         }
@@ -79,9 +116,16 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
         // SetIoMode(nn::ssl::sf::IoMode)
         public ResultCode SetIoMode(ServiceCtx context)
         {
-            ioMode = (IoMode)context.RequestData.ReadUInt32();
+            if (_connection == null)
+            {
+                return ResultCode.NoSocket;
+            }
 
-            Logger.Stub?.PrintStub(LogClass.ServiceSsl, new { ioMode });
+            _ioMode = (IoMode)context.RequestData.ReadUInt32();
+
+            _connection.Socket.Blocking = _ioMode == IoMode.Blocking;
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSsl, new { _ioMode });
 
             return ResultCode.Success;
         }
@@ -90,7 +134,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
         // GetSocketDescriptor() -> u32
         public ResultCode GetSocketDescriptor(ServiceCtx context)
         {
-            context.ResponseData.Write(socketFd);
+            context.ResponseData.Write(_connection.SocketFd);
 
             return ResultCode.Success;
         }
@@ -104,13 +148,13 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
 
             byte[] hostNameData = new byte[hostNameDataSize];
 
-            Encoding.ASCII.GetBytes(HostName, hostNameData);
+            Encoding.ASCII.GetBytes(_hostName, hostNameData);
 
             context.Memory.Write(hostNameDataPosition, hostNameData);
 
-            context.ResponseData.Write((uint)HostName.Length);
+            context.ResponseData.Write((uint)_hostName.Length);
 
-            Logger.Info?.Print(LogClass.ServiceSsl, HostName);
+            Logger.Info?.Print(LogClass.ServiceSsl, _hostName);
 
             return ResultCode.Success;
         }
@@ -119,9 +163,9 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
         // GetVerifyOption() -> nn::ssl::sf::VerifyOption
         public ResultCode GetVerifyOption(ServiceCtx context)
         {
-            context.ResponseData.Write((uint)verifyOption);
+            context.ResponseData.Write((uint)_verifyOption);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceSsl, new { verifyOption });
+            Logger.Stub?.PrintStub(LogClass.ServiceSsl, new { _verifyOption });
 
             return ResultCode.Success;
         }
@@ -130,9 +174,9 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
         // GetIoMode() -> nn::ssl::sf::IoMode
         public ResultCode GetIoMode(ServiceCtx context)
         {
-            context.ResponseData.Write((uint)ioMode);
+            context.ResponseData.Write((uint)_ioMode);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceSsl, new { ioMode });
+            Logger.Stub?.PrintStub(LogClass.ServiceSsl, new { _ioMode });
 
             return ResultCode.Success;
         }
@@ -141,97 +185,145 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
         // DoHandshake()
         public ResultCode DoHandshake(ServiceCtx context)
         {
-            Logger.Info?.Print(LogClass.ServiceSsl, $"Handshaking as {HostName}");
-            try
+            if (_connection == null)
             {
-                Stream = new SslStream(new NetworkStream(((DefaultSocket)Socket.Handle).Socket, false), false, null, null);
-                Stream.AuthenticateAsClient(HostName);
-            }
-            catch (Exception ex)
-            {
-                Logger.Error?.Print(LogClass.ServiceSsl, $"Failed to handshake SSL connection: {ex}");
-                // return error to guest?
+                return ResultCode.NoSocket;
             }
 
-            return ResultCode.Success;
+            return _connection.Handshake(_hostName);
         }
 
         [CommandHipc(9)]
-        // DoHandshakeGetServerCert(buffer<bytes, 6>) -> u32, u32
+        // DoHandshakeGetServerCert() -> (u32, u32, buffer<bytes, 6>)
         public ResultCode DoHandshakeGetServerCert(ServiceCtx context)
         {
-            // Call DoHandshake
-            ResultCode HandshakeResult = DoHandshake(context);
-            if (HandshakeResult == ResultCode.Success)
+            if (_connection == null)
             {
-                // TODO: is this actually correct?
-                byte[] CertData = Stream.RemoteCertificate.GetRawCertData();
-                ulong outputDataPosition = context.Request.ReceiveBuff[0].Position;
-                ulong outputDataSize = context.Request.ReceiveBuff[0].Size;
-
-                context.Memory.Write(outputDataPosition, CertData);
-
-                Logger.Stub?.Print(LogClass.ServiceSsl, $"Got cert of {CertData.Length} length");
-
-                context.ResponseData.Write(CertData.Length);
-                context.ResponseData.Write(1);
+                return ResultCode.NoSocket;
             }
 
-            return ResultCode.Success;
+            ResultCode result = _connection.Handshake(_hostName);
+
+            if (result == ResultCode.Success)
+            {
+                using (WritableRegion region = context.Memory.GetWritableRegion((ulong)context.Request.ReceiveBuff[0].Position, (int)context.Request.ReceiveBuff[0].Size))
+                {
+                    result = _connection.GetServerCertificate(_hostName, region.Memory.Span, out uint bufferSize, out uint certificateCount);
+
+                    context.ResponseData.Write(bufferSize);
+                    context.ResponseData.Write(certificateCount);
+                }
+            }
+
+            return result;
         }
 
         [CommandHipc(10)]
-        // Read(buffer<bytes, 6>) -> u32
+        // Read() -> (u32, buffer<bytes, 6>)
         public ResultCode Read(ServiceCtx context)
         {
-            ulong outputDataPosition = context.Request.ReceiveBuff[0].Position;
-            ulong outputDataSize = context.Request.ReceiveBuff[0].Size;
+            if (_connection == null)
+            {
+                return ResultCode.NoSocket;
+            }
 
-            byte[] data = new byte[outputDataSize];
+            ResultCode result;
 
-            // TODO: catch exceptions and report the error to the guest
-            int transferredSize = Stream.Read(data, 0, (int)outputDataSize);
+            using (WritableRegion region = context.Memory.GetWritableRegion(context.Request.ReceiveBuff[0].Position, (int)context.Request.ReceiveBuff[0].Size))
+            {
+                // TODO: better error management
+                result = _connection.Read(out int readCount, region.Memory);
 
-            context.Memory.Write(outputDataPosition, data);
+                if (result == ResultCode.Success)
+                {
+                    context.ResponseData.Write(readCount);
+                }
+            }
 
-            context.ResponseData.Write(transferredSize);
-
-            return ResultCode.Success;
+            return result;
         }
 
         [CommandHipc(11)]
-        // Write(buffer<bytes, 5>) -> u32
+        // Write(buffer<bytes, 5>) -> s32
         public ResultCode Write(ServiceCtx context)
         {
-            ulong inputDataPosition = context.Request.SendBuff[0].Position;
-            ulong inputDataSize = context.Request.SendBuff[0].Size;
+            if (_connection == null)
+            {
+                return ResultCode.NoSocket;
+            }
 
-            byte[] data = new byte[inputDataSize];
+            // We don't dispose as this isn't supposed to be modified
+            WritableRegion region = context.Memory.GetWritableRegion(context.Request.SendBuff[0].Position, (int)context.Request.SendBuff[0].Size);
 
-            context.Memory.Read(inputDataPosition, data);
+            // TODO: better error management
+            ResultCode result = _connection.Write(out int writtenCount, region.Memory);
 
-            Logger.Info?.Print(LogClass.ServiceSsl, $"Writing {inputDataSize} bytes to server");
+            if (result == ResultCode.Success)
+            {
+                context.ResponseData.Write(writtenCount);
+            }
 
-            // TODO: catch exceptions and report the error to the guest
-            Stream.Write(data);
+            return result;
+        }
 
-            // NOTE: Tell the guest everything is transferred, since SslStream doesn't give us this info
-            uint transferredSize = (uint)inputDataSize;
+        [CommandHipc(12)]
+        // Pending() -> s32
+        public ResultCode Pending(ServiceCtx context)
+        {
+            if (_connection == null)
+            {
+                return ResultCode.NoSocket;
+            }
 
-            context.ResponseData.Write(transferredSize);
+            context.ResponseData.Write(_connection.Pending());
 
             return ResultCode.Success;
         }
 
-        [CommandHipc(12)]
-        // Pending() -> u32
-        public ResultCode Pending(ServiceCtx context)
+        [CommandHipc(13)]
+        // Peek() -> (s32, buffer<bytes, 6>)
+        public ResultCode Peek(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceSsl);
+            if (_connection == null)
+            {
+                return ResultCode.NoSocket;
+            }
 
-            context.ResponseData.Write(0);
+            ResultCode result;
 
-            return ResultCode.Success;
+            using (WritableRegion region = context.Memory.GetWritableRegion(context.Request.ReceiveBuff[0].Position, (int)context.Request.ReceiveBuff[0].Size))
+            {
+                // TODO: better error management
+                result = _connection.Peek(out int peekCount, region.Memory);
+
+                if (result == ResultCode.Success)
+                {
+                    context.ResponseData.Write(peekCount);
+                }
+            }
+
+            return result;
+        }
+
+        [CommandHipc(14)]
+        // Poll(nn::ssl::sf::PollEvent poll_event, u32 timeout) -> nn::ssl::sf::PollEvent
+        public ResultCode Poll(ServiceCtx context)
+        {
+            throw new ServiceNotImplementedException(this, context);
+        }
+
+        [CommandHipc(15)]
+        // GetVerifyCertError()
+        public ResultCode GetVerifyCertError(ServiceCtx context)
+        {
+            throw new ServiceNotImplementedException(this, context);
+        }
+
+        [CommandHipc(16)]
+        // GetNeededServerCertBufferSize() -> u32
+        public ResultCode GetNeededServerCertBufferSize(ServiceCtx context)
+        {
+            throw new ServiceNotImplementedException(this, context);
         }
 
         [CommandHipc(17)]
@@ -242,36 +334,81 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
 
             Logger.Stub?.PrintStub(LogClass.ServiceSsl, new { sessionCacheMode });
 
+            _sessionCacheMode = sessionCacheMode;
+
             return ResultCode.Success;
         }
 
+        [CommandHipc(18)]
+        // GetSessionCacheMode() -> nn::ssl::sf::SessionCacheMode
+        public ResultCode GetSessionCacheMode(ServiceCtx context)
+        {
+            throw new ServiceNotImplementedException(this, context);
+        }
+
+        [CommandHipc(19)]
+        // FlushSessionCache()
+        public ResultCode FlushSessionCache(ServiceCtx context)
+        {
+            throw new ServiceNotImplementedException(this, context);
+        }
+
+        [CommandHipc(20)]
+        // SetRenegotiationMode(nn::ssl::sf::RenegotiationMode)
+        public ResultCode SetRenegotiationMode(ServiceCtx context)
+        {
+            throw new ServiceNotImplementedException(this, context);
+        }
+
+        [CommandHipc(21)]
+        // GetRenegotiationMode() -> nn::ssl::sf::RenegotiationMode
+        public ResultCode GetRenegotiationMode(ServiceCtx context)
+        {
+            throw new ServiceNotImplementedException(this, context);
+        }
+
         [CommandHipc(22)]
-        // SetOption(b8, nn::ssl::sf::OptionType)
+        // SetOption(nn::ssl::sf::OptionType option, b8 value)
         public ResultCode SetOption(ServiceCtx context)
         {
-            bool optionEnabled = context.RequestData.ReadBoolean();
-            OptionType optionType = (OptionType)context.RequestData.ReadUInt32();
+            OptionType option = (OptionType)context.RequestData.ReadUInt32();
+            bool value = context.RequestData.ReadBoolean();
 
-            Options[optionType] = optionEnabled;
+            Logger.Stub?.PrintStub(LogClass.ServiceSsl, new { option, value });
 
-            Logger.Info?.Print(LogClass.ServiceSsl, $"{optionType} = {optionEnabled}");
-
-            return ResultCode.Success;
+            return SetOption(option, value);
         }
 
         [CommandHipc(23)]
         // GetOption(nn::ssl::sf::OptionType) -> b8
         public ResultCode GetOption(ServiceCtx context)
         {
-            OptionType optionType = (OptionType)context.RequestData.ReadUInt32();
+            OptionType option = (OptionType)context.RequestData.ReadUInt32();
 
-            bool optionEnabled = Options.ContainsKey(optionType) ? Options[optionType] : false; // default is false?
+            Logger.Stub?.PrintStub(LogClass.ServiceSsl, new { option });
 
-            Logger.Info?.Print(LogClass.ServiceSsl, $"{optionType} = {optionEnabled}");
+            ResultCode result = GetOption(option, out bool value);
 
-            context.ResponseData.Write(optionEnabled);
+            if (result == ResultCode.Success)
+            {
+                context.ResponseData.Write(value);
+            }
 
-            return ResultCode.Success;
+            return result;
+        }
+
+        [CommandHipc(24)]
+        // GetVerifyCertErrors() -> (u32, u32, buffer<bytes, 6>)
+        public ResultCode GetVerifyCertErrors(ServiceCtx context)
+        {
+            throw new ServiceNotImplementedException(this, context);
+        }
+
+        [CommandHipc(25)] // 4.0.0+
+        // GetCipherInfo(u32) -> buffer<bytes, 6>
+        public ResultCode GetCipherInfo(ServiceCtx context)
+        {
+            throw new ServiceNotImplementedException(this, context);
         }
 
         [CommandHipc(26)]
@@ -281,9 +418,9 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
             ulong inputDataPosition = context.Request.SendBuff[0].Position;
             ulong inputDataSize = context.Request.SendBuff[0].Size;
 
-            NextAplnProto = new byte[inputDataSize];
+            _nextAplnProto = new byte[inputDataSize];
 
-            context.Memory.Read(inputDataPosition, NextAplnProto);
+            context.Memory.Read(inputDataPosition, _nextAplnProto);
 
             Logger.Stub?.PrintStub(LogClass.ServiceSsl, new { inputDataSize });
 
@@ -297,13 +434,81 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
             ulong outputDataPosition = context.Request.ReceiveBuff[0].Position;
             ulong outputDataSize = context.Request.ReceiveBuff[0].Size;
 
-            context.Memory.Write(outputDataPosition, NextAplnProto);
+            context.Memory.Write(outputDataPosition, _nextAplnProto);
 
-            context.ResponseData.Write(NextAplnProto.Length);
+            context.ResponseData.Write(_nextAplnProto.Length);
 
             Logger.Stub?.PrintStub(LogClass.ServiceSsl, new { outputDataSize });
 
             return ResultCode.Success;
+        }
+
+        private ResultCode SetOption(OptionType option, bool value)
+        {
+            if (_connection != null)
+            {
+                return ResultCode.AlreadyInUse;
+            }
+
+            switch (option)
+            {
+                case OptionType.DoNotCloseSocket:
+                    _doNotClockSocket = value;
+                    break;
+
+                case OptionType.GetServerCertChain:
+                    _getServerCertChain = value;
+                    break;
+
+                case OptionType.SkipDefaultVerify:
+                    _skipDefaultVerify = value;
+                    break;
+
+                case OptionType.EnableAlpn:
+                    _enableAlpn = value;
+                    break;
+
+                default:
+                    Logger.Warning?.Print(LogClass.ServiceSsl, $"Unsupported option {option}");
+                    return ResultCode.InvalidOption;
+            }
+
+            return ResultCode.Success;
+        }
+
+        private ResultCode GetOption(OptionType option, out bool value)
+        {
+            switch (option)
+            {
+                case OptionType.DoNotCloseSocket:
+                    value = _doNotClockSocket;
+                    break;
+
+                case OptionType.GetServerCertChain:
+                    value = _getServerCertChain;
+                    break;
+
+                case OptionType.SkipDefaultVerify:
+                    value = _skipDefaultVerify;
+                    break;
+
+                case OptionType.EnableAlpn:
+                    value = _enableAlpn;
+                    break;
+
+                default:
+                    Logger.Warning?.Print(LogClass.ServiceSsl, $"Unsupported option {option}");
+
+                    value = false;
+                    return ResultCode.InvalidOption;
+            }
+
+            return ResultCode.Success;
+        }
+
+        public void Dispose()
+        {
+            _connection?.Dispose();
         }
     }
 }

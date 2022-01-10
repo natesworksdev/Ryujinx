@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl
             SslVersion sslVersion     = (SslVersion)context.RequestData.ReadUInt32();
             ulong      pidPlaceholder = context.RequestData.ReadUInt64();
 
-            MakeObject(context, new ISslContext(context));
+            MakeObject(context, new ISslContext(context.Request.HandleDesc.PId, sslVersion));
 
             Logger.Stub?.PrintStub(LogClass.ServiceSsl, new { sslVersion });
 
