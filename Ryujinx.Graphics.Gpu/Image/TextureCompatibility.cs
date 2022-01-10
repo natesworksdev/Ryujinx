@@ -90,11 +90,19 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (info.Target == Target.Texture3D)
             {
-                // The host API does not support 3D BC4/BC5 compressed formats.
+                // The host API does not support 3D compressed formats.
                 // We assume software decompression will be done for those textures,
                 // and so we adjust the format here to match the decompressor output.
                 switch (info.FormatInfo.Format)
                 {
+                    case Format.Bc1RgbaSrgb:
+                    case Format.Bc2Srgb:
+                    case Format.Bc3Srgb:
+                        return new FormatInfo(Format.R8G8B8A8Srgb, 1, 1, 4, 4);
+                    case Format.Bc1RgbaUnorm:
+                    case Format.Bc2Unorm:
+                    case Format.Bc3Unorm:
+                        return new FormatInfo(Format.R8G8B8A8Unorm, 1, 1, 4, 4);
                     case Format.Bc4Unorm:
                         return new FormatInfo(Format.R8Unorm, 1, 1, 1, 1);
                     case Format.Bc4Snorm:

@@ -1,5 +1,7 @@
 using Ryujinx.Common;
 using System;
+using System.Buffers.Binary;
+using System.Drawing;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -9,6 +11,237 @@ namespace Ryujinx.Graphics.Texture
     {
         private const int BlockWidth = 4;
         private const int BlockHeight = 4;
+
+        public static byte[] DecodeBC1(ReadOnlySpan<byte> data, int width, int height, int depth, int levels, int layers)
+        {
+            int size = 0;
+
+            for (int l = 0; l < levels; l++)
+            {
+                size += Math.Max(1, width >> l) * Math.Max(1, height >> l) * Math.Max(1, depth >> l) * layers * 4;
+            }
+
+            byte[] output = new byte[size];
+
+            Span<byte> tile = stackalloc byte[BlockWidth * BlockHeight * 4];
+
+            int baseOOffs = 0;
+
+            for (int l = 0; l < levels; l++)
+            {
+                int w = BitUtils.DivRoundUp(width, BlockWidth);
+                int h = BitUtils.DivRoundUp(height, BlockHeight);
+
+                for (int l2 = 0; l2 < layers; l2++)
+                {
+                    for (int z = 0; z < depth; z++)
+                    {
+                        for (int y = 0; y < h; y++)
+                        {
+                            int baseY = y * BlockHeight;
+
+                            for (int x = 0; x < w; x++)
+                            {
+                                int baseX = x * BlockWidth;
+                                int lineBaseOOffs = baseOOffs + baseX;
+
+                                BCnDecodeTile(tile, data, 0, bc1: true);
+
+                                for (int texel = 0; texel < BlockWidth * BlockHeight; texel++)
+                                {
+                                    int tX = texel & 3;
+                                    int tY = texel >> 2;
+
+                                    if (baseX + tX >= width || baseY + tY >= height)
+                                    {
+                                        continue;
+                                    }
+
+                                    int oOffs = (lineBaseOOffs + tY * width + tX) * 4;
+
+                                    output[oOffs + 0] = tile[texel * 4];
+                                    output[oOffs + 1] = tile[texel * 4 + 1];
+                                    output[oOffs + 2] = tile[texel * 4 + 2];
+                                    output[oOffs + 3] = tile[texel * 4 + 3];
+                                }
+
+                                data = data.Slice(8);
+                            }
+
+                            baseOOffs += width * (baseY + BlockHeight > height ? (height & (BlockHeight - 1)) : BlockHeight);
+                        }
+                    }
+                }
+
+                width  = Math.Max(1, width  >> 1);
+                height = Math.Max(1, height >> 1);
+                depth  = Math.Max(1, depth  >> 1);
+            }
+
+            return output;
+        }
+
+        public static byte[] DecodeBC2(ReadOnlySpan<byte> data, int width, int height, int depth, int levels, int layers)
+        {
+            int size = 0;
+
+            for (int l = 0; l < levels; l++)
+            {
+                size += Math.Max(1, width >> l) * Math.Max(1, height >> l) * Math.Max(1, depth >> l) * layers * 4;
+            }
+
+            byte[] output = new byte[size];
+
+            Span<byte> tile = stackalloc byte[BlockWidth * BlockHeight * 4];
+            Span<byte> rPal = stackalloc byte[8];
+
+            int baseOOffs = 0;
+
+            for (int l = 0; l < levels; l++)
+            {
+                int w = BitUtils.DivRoundUp(width, BlockWidth);
+                int h = BitUtils.DivRoundUp(height, BlockHeight);
+
+                for (int l2 = 0; l2 < layers; l2++)
+                {
+                    for (int z = 0; z < depth; z++)
+                    {
+                        for (int y = 0; y < h; y++)
+                        {
+                            int baseY = y * BlockHeight;
+
+                            for (int x = 0; x < w; x++)
+                            {
+                                int baseX = x * BlockWidth;
+                                int lineBaseOOffs = baseOOffs + baseX;
+
+                                BCnDecodeTile(tile, data.Slice(8), 0, bc1: false);
+
+                                ulong block = BinaryPrimitives.ReadUInt64LittleEndian(data);
+
+                                rPal[0] = (byte)block;
+                                rPal[1] = (byte)(block >> 8);
+
+                                CalculateBC3Alpha(rPal);
+
+                                ulong rI = block >> 16;
+
+                                for (int texel = 0; texel < BlockWidth * BlockHeight; texel++)
+                                {
+                                    int tX = texel & 3;
+                                    int tY = texel >> 2;
+
+                                    if (baseX + tX >= width || baseY + tY >= height)
+                                    {
+                                        continue;
+                                    }
+
+                                    int shift = texel * 4;
+
+                                    int oOffs = (lineBaseOOffs + tY * width + tX) * 4;
+
+                                    output[oOffs + 0] = tile[texel * 4];
+                                    output[oOffs + 1] = tile[texel * 4 + 1];
+                                    output[oOffs + 2] = tile[texel * 4 + 2];
+                                    output[oOffs + 3] = (byte)(((rI >> shift) & 0xf) * 0x11);
+                                }
+
+                                data = data.Slice(16);
+                            }
+
+                            baseOOffs += width * (baseY + BlockHeight > height ? (height & (BlockHeight - 1)) : BlockHeight);
+                        }
+                    }
+                }
+
+                width  = Math.Max(1, width  >> 1);
+                height = Math.Max(1, height >> 1);
+                depth  = Math.Max(1, depth  >> 1);
+            }
+
+            return output;
+        }
+
+        public static byte[] DecodeBC3(ReadOnlySpan<byte> data, int width, int height, int depth, int levels, int layers)
+        {
+            int size = 0;
+
+            for (int l = 0; l < levels; l++)
+            {
+                size += Math.Max(1, width >> l) * Math.Max(1, height >> l) * Math.Max(1, depth >> l) * layers * 4;
+            }
+
+            byte[] output = new byte[size];
+
+            Span<byte> tile = stackalloc byte[BlockWidth * BlockHeight * 4];
+            Span<byte> rPal = stackalloc byte[8];
+
+            int baseOOffs = 0;
+
+            for (int l = 0; l < levels; l++)
+            {
+                int w = BitUtils.DivRoundUp(width, BlockWidth);
+                int h = BitUtils.DivRoundUp(height, BlockHeight);
+
+                for (int l2 = 0; l2 < layers; l2++)
+                {
+                    for (int z = 0; z < depth; z++)
+                    {
+                        for (int y = 0; y < h; y++)
+                        {
+                            int baseY = y * BlockHeight;
+
+                            for (int x = 0; x < w; x++)
+                            {
+                                int baseX = x * BlockWidth;
+                                int lineBaseOOffs = baseOOffs + baseX;
+
+                                BCnDecodeTile(tile, data.Slice(8), 0, bc1: false);
+
+                                ulong block = BinaryPrimitives.ReadUInt64LittleEndian(data);
+
+                                rPal[0] = (byte)block;
+                                rPal[1] = (byte)(block >> 8);
+
+                                CalculateBC3Alpha(rPal);
+
+                                ulong rI = block >> 16;
+
+                                for (int texel = 0; texel < BlockWidth * BlockHeight; texel++)
+                                {
+                                    int tX = texel & 3;
+                                    int tY = texel >> 2;
+
+                                    if (baseX + tX >= width || baseY + tY >= height)
+                                    {
+                                        continue;
+                                    }
+
+                                    int shift = texel * 3;
+
+                                    int oOffs = (lineBaseOOffs + tY * width + tX) * 4;
+
+                                    output[oOffs + 0] = tile[texel * 4];
+                                    output[oOffs + 1] = tile[texel * 4 + 1];
+                                    output[oOffs + 2] = tile[texel * 4 + 2];
+                                    output[oOffs + 3] = rPal[(int)((rI >> shift) & 7)];
+                                }
+
+                                data = data.Slice(16);
+                            }
+
+                            baseOOffs += width * (baseY + BlockHeight > height ? (height & (BlockHeight - 1)) : BlockHeight);
+                        }
+                    }
+                }
+
+                width  = Math.Max(1, width  >> 1);
+                height = Math.Max(1, height >> 1);
+                depth  = Math.Max(1, depth  >> 1);
+            }
+
+            return output;
+        }
 
         public static byte[] DecodeBC4(ReadOnlySpan<byte> data, int width, int height, int depth, int levels, int layers, bool signed)
         {
@@ -237,6 +470,84 @@ namespace Ryujinx.Graphics.Texture
                     alpha[i] = 0x7f;
                 }
             }
+        }
+
+        private static void BCnDecodeTile(Span<byte> output, ReadOnlySpan<byte> input, int offset, bool bc1)
+        {
+            Color[] clut = new Color[4];
+
+            int c0 = BinaryPrimitives.ReadUInt16LittleEndian(input.Slice(offset));
+            int c1 = BinaryPrimitives.ReadUInt16LittleEndian(input.Slice(offset + 2));
+
+            clut[0] = DecodeRGB565(c0);
+            clut[1] = DecodeRGB565(c1);
+            clut[2] = CalculateCLUT2(clut[0], clut[1], c0, c1, bc1);
+            clut[3] = CalculateCLUT3(clut[0], clut[1], c0, c1, bc1);
+
+            uint indices = BinaryPrimitives.ReadUInt32LittleEndian(input.Slice(offset + 4));
+
+            int idxShift = 0;
+
+            int oOffset = 0;
+
+            for (int tY = 0; tY < BlockHeight; tY++)
+            {
+                for (int tX = 0; tX < BlockWidth; tX++)
+                {
+                    uint clutIndex = (indices >> idxShift) & 3;
+
+                    idxShift += 2;
+
+                    Color pixel = clut[clutIndex];
+
+                    output[oOffset + 0] = pixel.R;
+                    output[oOffset + 1] = pixel.G;
+                    output[oOffset + 2] = pixel.B;
+                    output[oOffset + 3] = pixel.A;
+
+                    oOffset += 4;
+                }
+            }
+        }
+
+        private static Color CalculateCLUT2(Color color0, Color color1, int c0, int c1, bool bc1)
+        {
+            if (c0 > c1 || !bc1)
+            {
+                return Color.FromArgb(
+                    (2 * color0.R + color1.R) / 3,
+                    (2 * color0.G + color1.G) / 3,
+                    (2 * color0.B + color1.B) / 3);
+            }
+            else
+            {
+                return Color.FromArgb(
+                    (color0.R + color1.R) / 2,
+                    (color0.G + color1.G) / 2,
+                    (color0.B + color1.B) / 2);
+            }
+        }
+
+        private static Color CalculateCLUT3(Color color0, Color color1, int c0, int c1, bool bc1)
+        {
+            if (c0 > c1 || !bc1)
+            {
+                return Color.FromArgb(
+                    (2 * color1.R + color0.R) / 3,
+                    (2 * color1.G + color0.G) / 3,
+                    (2 * color1.B + color0.B) / 3);
+            }
+
+            return Color.Transparent;
+        }
+
+        private static Color DecodeRGB565(int value)
+        {
+            int b = ((value >> 0) & 0x1f) << 3;
+            int g = ((value >> 5) & 0x3f) << 2;
+            int r = ((value >> 11) & 0x1f) << 3;
+
+            return Color.FromArgb(r | (r >> 5), g | (g >> 6), b | (b >> 5));
         }
     }
 }
