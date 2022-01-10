@@ -68,10 +68,9 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
 
         private static SslProtocols TranslateSslVersion(SslVersion version)
         {
-            switch (version)
+            switch (version & SslVersion.VersionMask)
             {
                 case SslVersion.Auto:
-                case SslVersion.Auto2:
                     return SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12 | SslProtocols.Tls13;
                 case SslVersion.TlsV10:
                     return SslProtocols.Tls;
@@ -111,6 +110,25 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
             return 0;
         }
 
+        private static bool TryTranslateWinSockError(bool isBlocking, WsaError error, out ResultCode resultCode)
+        {
+            switch (error)
+            {
+                case WsaError.WSAETIMEDOUT:
+                    resultCode = isBlocking ? ResultCode.Timeout : ResultCode.WouldBlock;
+                    return true;
+                case WsaError.WSAECONNABORTED:
+                    resultCode = ResultCode.ConnectionAbort;
+                    return true;
+                case WsaError.WSAECONNRESET:
+                    resultCode = ResultCode.ConnectionReset;
+                    return true;
+                default:
+                    resultCode = ResultCode.Success;
+                    return false;
+            }
+        }
+
         public ResultCode Read(out int readCount, Memory<byte> buffer)
         {
             if (!Socket.Poll(0, SelectMode.SelectRead))
@@ -132,9 +150,11 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
 
                 if (exception.InnerException is SocketException socketException)
                 {
-                    if ((WsaError)socketException.SocketErrorCode == WsaError.WSAETIMEDOUT)
+                    WsaError socketErrorCode = (WsaError)socketException.SocketErrorCode;
+
+                    if (TryTranslateWinSockError(_isBlockingSocket, socketErrorCode, out ResultCode result))
                     {
-                        return _isBlockingSocket ? ResultCode.Timeout : ResultCode.WouldBlock;
+                        return result;
                     }
                     else
                     {
@@ -175,9 +195,11 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
 
                 if (exception.InnerException is SocketException socketException)
                 {
-                    if ((WsaError)socketException.SocketErrorCode == WsaError.WSAETIMEDOUT)
+                    WsaError socketErrorCode = (WsaError)socketException.SocketErrorCode;
+
+                    if (TryTranslateWinSockError(_isBlockingSocket, socketErrorCode, out ResultCode result))
                     {
-                        return _isBlockingSocket ? ResultCode.Timeout : ResultCode.WouldBlock;
+                        return result;
                     }
                     else
                     {
@@ -204,10 +226,15 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
         {
             byte[] rawCertData = _stream.RemoteCertificate.GetRawCertData();
 
-            rawCertData.CopyTo(certificates);
-
             storageSize = (uint)rawCertData.Length;
             certificateCount = 1;
+
+            if (rawCertData.Length > certificates.Length)
+            {
+                return ResultCode.CertBufferTooSmall;
+            }
+
+            rawCertData.CopyTo(certificates);
 
             return ResultCode.Success;
         }

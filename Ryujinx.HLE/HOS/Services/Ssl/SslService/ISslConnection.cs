@@ -206,12 +206,20 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
 
             if (result == ResultCode.Success)
             {
-                using (WritableRegion region = context.Memory.GetWritableRegion((ulong)context.Request.ReceiveBuff[0].Position, (int)context.Request.ReceiveBuff[0].Size))
+                if (_getServerCertChain)
                 {
-                    result = _connection.GetServerCertificate(_hostName, region.Memory.Span, out uint bufferSize, out uint certificateCount);
+                    using (WritableRegion region = context.Memory.GetWritableRegion(context.Request.ReceiveBuff[0].Position, (int)context.Request.ReceiveBuff[0].Size))
+                    {
+                        result = _connection.GetServerCertificate(_hostName, region.Memory.Span, out uint bufferSize, out uint certificateCount);
 
-                    context.ResponseData.Write(bufferSize);
-                    context.ResponseData.Write(certificateCount);
+                        context.ResponseData.Write(bufferSize);
+                        context.ResponseData.Write(certificateCount);
+                    }
+                }
+                else
+                {
+                    context.ResponseData.Write(0);
+                    context.ResponseData.Write(0);
                 }
             }
 
