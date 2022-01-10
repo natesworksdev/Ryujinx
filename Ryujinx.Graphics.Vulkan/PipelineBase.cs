@@ -41,16 +41,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         private ShaderCollection _program;
 
-        private struct Vector4<T>
-        {
-            public T X;
-            public T Y;
-            public T Z;
-            public T W;
-        }
-
         private Vector4<float>[] _renderScale = new Vector4<float>[65];
-        private Vector4<float>[] _cpRenderScale = new Vector4<float>[64];
+        private int _fragmentScaleCount;
 
         protected FramebufferParams FramebufferParams;
         private Auto<DisposableFramebuffer> _framebuffer;
@@ -63,7 +55,7 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly BufferState[] _transformFeedbackBuffers;
         private readonly BufferState[] _vertexBuffers;
 
-        public BufferHolder RenderScaleBuffer { get; }
+        public SupportBufferUpdater SupportBufferUpdater;
 
         private bool _needsIndexBufferRebind;
         private bool _needsTransformFeedbackBuffersRebind;
@@ -100,9 +92,8 @@ namespace Ryujinx.Graphics.Vulkan
             var defaultScale = new Vector4<float> { X = 1f, Y = 0f, Z = 0f, W = 0f };
             new Span<Vector4<float>>(_renderScale).Fill(defaultScale);
 
-            RenderScaleBuffer = gd.BufferManager.Create(gd, SupportBuffer.RequiredSize);
-
-            SetSupportBufferDataCpu<Vector4<float>>(SupportBuffer.FragmentRenderScaleOffset, _renderScale, SupportBuffer.RenderScaleMaxCount);
+            SupportBufferUpdater = new SupportBufferUpdater(gd);
+            SupportBufferUpdater.UpdateRenderScale(_renderScale, 0, SupportBuffer.RenderScaleMaxCount);
 
             _newState.Initialize();
             _newState.LineWidth = 1f;
@@ -295,6 +286,8 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (texture is TextureView srcTexture)
             {
+                SupportBufferUpdater.Commit();
+
                 var oldCullMode = _newState.CullMode;
                 var oldStencilTestEnable = _newState.StencilTestEnable;
                 var oldDepthTestEnable = _newState.DepthTestEnable;
@@ -622,7 +615,7 @@ namespace Ryujinx.Graphics.Vulkan
         public void SetRenderTargetScale(float scale)
         {
             _renderScale[0].X = scale;
-            SetSupportBufferData<Vector4<float>>(SupportBuffer.FragmentRenderScaleOffset, _renderScale, 1); // Just the first element.
+            SupportBufferUpdater.UpdateRenderScale(_renderScale, 0, 1); // Just the first element.
         }
 
         public void SetScissors(ReadOnlySpan<Rectangle<int>> regions)
@@ -875,16 +868,11 @@ namespace Ryujinx.Graphics.Vulkan
             TextureBarrier();
         }
 
-        public void UpdateRenderScale(ShaderStage stage, ReadOnlySpan<float> scales, int textureCount, int imageCount)
+        public void UpdateRenderScale(ReadOnlySpan<float> scales, int totalCount, int fragmentCount)
         {
-            if (stage != ShaderStage.Compute && stage != ShaderStage.Fragment)
-            {
-                return;
-            }
-
             bool changed = false;
 
-            for (int index = 0; index < textureCount + imageCount; index++)
+            for (int index = 0; index < totalCount; index++)
             {
                 if (_renderScale[1 + index].X != scales[index])
                 {
@@ -893,20 +881,17 @@ namespace Ryujinx.Graphics.Vulkan
                 }
             }
 
+            // Only update fragment count if there are scales after it for the vertex stage.
+            if (fragmentCount != totalCount && fragmentCount != _fragmentScaleCount)
+            {
+                _fragmentScaleCount = fragmentCount;
+                SupportBufferUpdater.UpdateFragmentRenderScaleCount(_fragmentScaleCount);
+            }
+
             if (changed)
             {
-                SetSupportBufferData<Vector4<float>>(SupportBuffer.FragmentRenderScaleOffset, _renderScale, 1 + textureCount + imageCount);
+                SupportBufferUpdater.UpdateRenderScale(_renderScale, 0, 1 + totalCount);
             }
-        }
-
-        private void SetSupportBufferData<T>(int offset, ReadOnlySpan<T> data, int count) where T : unmanaged
-        {
-            RenderScaleBuffer.SetDataInline(Cbs, EndRenderPass, offset, MemoryMarshal.Cast<T, byte>(data.Slice(0, count)));
-        }
-
-        private void SetSupportBufferDataCpu<T>(int offset, ReadOnlySpan<T> data, int count) where T : unmanaged
-        {
-            RenderScaleBuffer.SetDataUnchecked(offset, MemoryMarshal.Cast<T, byte>(data.Slice(0, count)));
         }
 
         protected void SignalCommandBufferChange()
@@ -1056,6 +1041,9 @@ namespace Ryujinx.Graphics.Vulkan
         {
             // Take the opportunity to process any pending work requested by other threads.
             _dynamicState.ReplayIfDirty(Gd.Api, CommandBuffer);
+
+            // Commit changes to the support buffer before drawing.
+            SupportBufferUpdater.Commit();
 
             if (_stateDirty || Pbp != pbp)
             {
@@ -1208,7 +1196,7 @@ namespace Ryujinx.Graphics.Vulkan
                     Gd.Api.DestroyPipelineCache(Device, _pipelineCache, null);
                 }
 
-                RenderScaleBuffer.Dispose();
+                SupportBufferUpdater.Dispose();
             }
         }
 

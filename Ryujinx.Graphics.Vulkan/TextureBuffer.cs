@@ -59,6 +59,11 @@ namespace Ryujinx.Graphics.Vulkan
             return _gd.GetBufferData(_bufferHandle, _offset, _size);
         }
 
+        public ReadOnlySpan<byte> GetData(int layer, int level)
+        {
+            return GetData();
+        }
+
         public void Release()
         {
             if (_gd.Textures.Remove(this))

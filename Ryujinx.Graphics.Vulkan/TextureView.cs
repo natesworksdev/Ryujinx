@@ -677,6 +677,22 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
+        public ReadOnlySpan<byte> GetData(int layer, int level)
+        {
+            BackgroundResource resources = _gd.BackgroundResources.Get();
+
+            if (_gd.CommandBufferPool.OwnedByCurrentThread)
+            {
+                _gd.FlushAllCommands();
+
+                return GetData(_gd.CommandBufferPool, resources.GetFlushBuffer(), layer, level);
+            }
+            else
+            {
+                return GetData(resources.GetPool(), resources.GetFlushBuffer(), layer, level);
+            }
+        }
+
         private ReadOnlySpan<byte> GetData(CommandBufferPool cbp, PersistentFlushBuffer flushBuffer)
         {
             int size = 0;
@@ -689,6 +705,14 @@ namespace Ryujinx.Graphics.Vulkan
             size = GetBufferDataLength(size);
 
             Span<byte> result = flushBuffer.GetTextureData(cbp, this, size);
+            return GetDataFromBuffer(result, size, result);
+        }
+
+        private ReadOnlySpan<byte> GetData(CommandBufferPool cbp, PersistentFlushBuffer flushBuffer, int layer, int level)
+        {
+            int size = GetBufferDataLength(Info.GetMipSize(level));
+
+            Span<byte> result = flushBuffer.GetTextureData(cbp, this, size, layer, level);
             return GetDataFromBuffer(result, size, result);
         }
 
@@ -794,9 +818,9 @@ namespace Ryujinx.Graphics.Vulkan
             bool singleSlice)
         {
             bool is3D = Info.Target == Target.Texture3D;
-            int width = Info.Width;
-            int height = Info.Height;
-            int depth = is3D && !singleSlice ? Info.Depth : 1;
+            int width = Math.Max(1, Info.Width >> dstLevel);
+            int height = Math.Max(1, Info.Height >> dstLevel);
+            int depth = is3D && !singleSlice ? Math.Max(1, Info.Depth >> dstLevel) : 1;
             int layer = is3D ? 0 : dstLayer;
             int layers = dstLayers;
             int levels = dstLevels;
@@ -805,7 +829,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             for (int level = 0; level < levels; level++)
             {
-                int mipSize = GetBufferDataLength(Info.GetMipSize(level));
+                int mipSize = GetBufferDataLength(Info.GetMipSize(dstLevel + level));
 
                 int endOffset = offset + mipSize;
 
@@ -814,7 +838,7 @@ namespace Ryujinx.Graphics.Vulkan
                     break;
                 }
 
-                int rowLength = (Info.GetMipStride(level) / Info.BytesPerPixel) * Info.BlockWidth;
+                int rowLength = (Info.GetMipStride(dstLevel + level) / Info.BytesPerPixel) * Info.BlockWidth;
 
                 var aspectFlags = Info.Format.ConvertAspectFlags();
 
