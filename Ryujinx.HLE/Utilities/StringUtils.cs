@@ -60,6 +60,24 @@ namespace Ryujinx.HLE.Utilities
             return output;
         }
 
+        public static string ReadUtf8String(ReadOnlySpan<byte> data, out int dataRead)
+        {
+            dataRead = 0;
+            int size = data.Length;
+
+            while (size-- > 0)
+            {
+                byte value = data[dataRead++];
+
+                if (value == 0)
+                {
+                    break;
+                }
+            }
+
+            return Encoding.UTF8.GetString(data[..dataRead]);
+        }
+
         public static string ReadUtf8String(ServiceCtx context, int index = 0)
         {
             ulong position = context.Request.PtrBuff[index].Position;
