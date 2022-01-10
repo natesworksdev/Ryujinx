@@ -320,7 +320,7 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     Offset = 0,
                     Range = (ulong)SupportBuffer.RequiredSize,
-                    Buffer = _pipeline.RenderScaleBuffer.GetBuffer().Get(cbs, 0, SupportBuffer.RequiredSize).Value
+                    Buffer = _gd.BufferManager.GetBuffer(cbs.CommandBuffer, _pipeline.SupportBufferUpdater.Handle, false).Get(cbs, 0, SupportBuffer.RequiredSize).Value
                 };
 
                 dsc.UpdateBuffers(0, 0, uniformBuffer, DescriptorType.UniformBuffer);
