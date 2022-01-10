@@ -2,27 +2,13 @@
 {
     class PollEvent
     {
-        public enum EventTypeMask
-        {
-            Input        = 1,
-            UrgentInput  = 2,
-            Output       = 4,
-            Error        = 8,
-            Disconnected = 0x10,
-            Invalid      = 0x20
-        }
+        public PollEventData Data;
+        public IBsdSocket Socket { get; }
 
-        public int           SocketFd     { get; private set; }
-        public BsdSocket     Socket       { get; private set; }
-        public EventTypeMask InputEvents  { get; private set; }
-        public EventTypeMask OutputEvents { get; private set; }
-
-        public PollEvent(int socketFd, BsdSocket socket, EventTypeMask inputEvents, EventTypeMask outputEvents)
+        public PollEvent(PollEventData data, IBsdSocket socket)
         {
-            SocketFd     = socketFd;
-            Socket       = socket;
-            InputEvents  = inputEvents;
-            OutputEvents = outputEvents;
+            Data = data;
+            Socket = socket;
         }
     }
 }

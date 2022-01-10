@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Common.Logging;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
@@ -318,6 +319,106 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             {
                 return WinSockHelper.ConvertError((WsaError)exception.ErrorCode);
             }
+        }
+
+        public static LinuxError Poll(List<PollEvent> events, int timeoutMilliseconds, out int updatedCount)
+        {
+            List<Socket> readEvents = new List<Socket>();
+            List<Socket> writeEvents = new List<Socket>();
+            List<Socket> errorEvents = new List<Socket>();
+
+            updatedCount = 0;
+
+            foreach (PollEvent evnt in events)
+            {
+                ManagedSocket socket = (ManagedSocket)((BsdSocket)evnt.Socket).Handle;
+
+                bool isValidEvent = false;
+
+                if ((evnt.Data.InputEvents & PollEventData.EventTypeMask.Input) != 0)
+                {
+                    readEvents.Add(socket.Socket);
+                    errorEvents.Add(socket.Socket);
+
+                    isValidEvent = true;
+                }
+
+                if ((evnt.Data.InputEvents & PollEventData.EventTypeMask.UrgentInput) != 0)
+                {
+                    readEvents.Add(socket.Socket);
+                    errorEvents.Add(socket.Socket);
+
+                    isValidEvent = true;
+                }
+
+                if ((evnt.Data.InputEvents & PollEventData.EventTypeMask.Output) != 0)
+                {
+                    writeEvents.Add(socket.Socket);
+                    errorEvents.Add(socket.Socket);
+
+                    isValidEvent = true;
+                }
+
+                if ((evnt.Data.InputEvents & PollEventData.EventTypeMask.Error) != 0)
+                {
+                    errorEvents.Add(socket.Socket);
+
+                    isValidEvent = true;
+                }
+
+                if (!isValidEvent)
+                {
+                    Logger.Warning?.Print(LogClass.ServiceBsd, $"Unsupported Poll input event type: {evnt.Data.InputEvents}");
+                    return LinuxError.EINVAL;
+                }
+            }
+
+            try
+            {
+                int actualTimeoutMicroseconds = timeoutMilliseconds == -1 ? -1 : timeoutMilliseconds * 1000;
+
+                Socket.Select(readEvents, writeEvents, errorEvents, actualTimeoutMicroseconds);
+            }
+            catch (SocketException exception)
+            {
+                return WinSockHelper.ConvertError((WsaError)exception.ErrorCode);
+            }
+
+            foreach (PollEvent evnt in events)
+            {
+                Socket socket = ((ManagedSocket)((BsdSocket)evnt.Socket).Handle).Socket;
+
+                PollEventData.EventTypeMask outputEvents = 0;
+
+                if (errorEvents.Contains(socket))
+                {
+                    outputEvents |= PollEventData.EventTypeMask.Error;
+
+                    if (!socket.Connected || !socket.IsBound)
+                    {
+                        outputEvents |= PollEventData.EventTypeMask.Disconnected;
+                    }
+                }
+
+                if (readEvents.Contains(socket))
+                {
+                    if ((evnt.Data.InputEvents & PollEventData.EventTypeMask.Input) != 0)
+                    {
+                        outputEvents |= PollEventData.EventTypeMask.Input;
+                    }
+                }
+
+                if (writeEvents.Contains(socket))
+                {
+                    outputEvents |= PollEventData.EventTypeMask.Output;
+                }
+
+                evnt.Data.OutputEvents = outputEvents;
+            }
+
+            updatedCount = readEvents.Count + writeEvents.Count + errorEvents.Count;
+
+            return LinuxError.SUCCESS;
         }
     }
 }
