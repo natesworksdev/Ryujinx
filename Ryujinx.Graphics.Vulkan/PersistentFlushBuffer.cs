@@ -65,6 +65,22 @@ namespace Ryujinx.Graphics.Vulkan
             return flushStorage.GetDataStorage(0, size);
         }
 
+        public Span<byte> GetTextureData(CommandBufferPool cbp, TextureView view, int size, int layer, int level)
+        {
+            var flushStorage = ResizeIfNeeded(size);
+
+            using (var cbs = cbp.Rent())
+            {
+                var buffer = flushStorage.GetBuffer(cbs.CommandBuffer).Get(cbs).Value;
+                var image = view.GetImage().Get(cbs).Value;
+
+                view.CopyFromOrToBuffer(cbs.CommandBuffer, buffer, image, size, true, layer, level, 1, 1, singleSlice: true);
+            }
+
+            flushStorage.WaitForFences();
+            return flushStorage.GetDataStorage(0, size);
+        }
+
         public void Dispose()
         {
             _flushStorage.Dispose();

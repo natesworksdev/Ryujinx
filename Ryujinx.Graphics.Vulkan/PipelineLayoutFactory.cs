@@ -27,7 +27,7 @@ namespace Ryujinx.Graphics.Vulkan
                 Binding = 0,
                 DescriptorType = DescriptorType.UniformBuffer,
                 DescriptorCount = 1,
-                StageFlags = ShaderStageFlags.ShaderStageFragmentBit | ShaderStageFlags.ShaderStageComputeBit
+                StageFlags = ShaderStageFlags.ShaderStageVertexBit | ShaderStageFlags.ShaderStageFragmentBit | ShaderStageFlags.ShaderStageComputeBit
             };
 
             int iter = 0;
