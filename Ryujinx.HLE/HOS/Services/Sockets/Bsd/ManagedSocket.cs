@@ -335,7 +335,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
                 bool isValidEvent = false;
 
-                if ((evnt.Data.InputEvents & PollEventData.EventTypeMask.Input) != 0)
+                if ((evnt.Data.InputEvents & PollEventTypeMask.Input) != 0)
                 {
                     readEvents.Add(socket.Socket);
                     errorEvents.Add(socket.Socket);
@@ -343,7 +343,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                     isValidEvent = true;
                 }
 
-                if ((evnt.Data.InputEvents & PollEventData.EventTypeMask.UrgentInput) != 0)
+                if ((evnt.Data.InputEvents & PollEventTypeMask.UrgentInput) != 0)
                 {
                     readEvents.Add(socket.Socket);
                     errorEvents.Add(socket.Socket);
@@ -351,7 +351,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                     isValidEvent = true;
                 }
 
-                if ((evnt.Data.InputEvents & PollEventData.EventTypeMask.Output) != 0)
+                if ((evnt.Data.InputEvents & PollEventTypeMask.Output) != 0)
                 {
                     writeEvents.Add(socket.Socket);
                     errorEvents.Add(socket.Socket);
@@ -359,7 +359,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                     isValidEvent = true;
                 }
 
-                if ((evnt.Data.InputEvents & PollEventData.EventTypeMask.Error) != 0)
+                if ((evnt.Data.InputEvents & PollEventTypeMask.Error) != 0)
                 {
                     errorEvents.Add(socket.Socket);
 
@@ -388,29 +388,29 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             {
                 Socket socket = ((ManagedSocket)((BsdSocket)evnt.Socket).Handle).Socket;
 
-                PollEventData.EventTypeMask outputEvents = 0;
+                PollEventTypeMask outputEvents = 0;
 
                 if (errorEvents.Contains(socket))
                 {
-                    outputEvents |= PollEventData.EventTypeMask.Error;
+                    outputEvents |= PollEventTypeMask.Error;
 
                     if (!socket.Connected || !socket.IsBound)
                     {
-                        outputEvents |= PollEventData.EventTypeMask.Disconnected;
+                        outputEvents |= PollEventTypeMask.Disconnected;
                     }
                 }
 
                 if (readEvents.Contains(socket))
                 {
-                    if ((evnt.Data.InputEvents & PollEventData.EventTypeMask.Input) != 0)
+                    if ((evnt.Data.InputEvents & PollEventTypeMask.Input) != 0)
                     {
-                        outputEvents |= PollEventData.EventTypeMask.Input;
+                        outputEvents |= PollEventTypeMask.Input;
                     }
                 }
 
                 if (writeEvents.Contains(socket))
                 {
-                    outputEvents |= PollEventData.EventTypeMask.Output;
+                    outputEvents |= PollEventTypeMask.Output;
                 }
 
                 evnt.Data.OutputEvents = outputEvents;

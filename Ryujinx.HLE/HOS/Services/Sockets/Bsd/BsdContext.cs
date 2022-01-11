@@ -4,10 +4,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 {
     class BsdContext
     {
-        private static object RegistryLock = new object();
-        private static Dictionary<long, BsdContext> Registry = new Dictionary<long, BsdContext>();
+        private static Dictionary<long, BsdContext> _registry = new Dictionary<long, BsdContext>();
 
-        private object Lock = new object();
+        private readonly object _lock = new object();
 
         private List<IBsdSocket> _sockets;
 
@@ -20,7 +19,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
         {
             IBsdSocket socket = RetrieveSocket(socketFd);
 
-            if (socket != null && socket is BsdSocket bsdSocket)
+            if (socket is BsdSocket bsdSocket)
             {
                 return bsdSocket;
             }
@@ -30,7 +29,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
         public IBsdSocket RetrieveSocket(int socketFd)
         {
-            lock (Lock)
+            lock (_lock)
             {
                 if (socketFd >= 0 && _sockets.Count > socketFd)
                 {
@@ -43,7 +42,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
         public int RegisterSocket(IBsdSocket socket)
         {
-            lock (Lock)
+            lock (_lock)
             {
                 for (int fd = 0; fd < _sockets.Count; fd++)
                 {
@@ -67,7 +66,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
             if (oldSocket != null)
             {
-                lock (Lock)
+                lock (_lock)
                 {
                     oldSocket.Refcount++;
 
@@ -91,7 +90,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                     socket.Dispose();
                 }
 
-                lock (Lock)
+                lock (_lock)
                 {
                     _sockets[socketFd] = null;
                 }
@@ -104,7 +103,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
         public LinuxError ShutdownAll(BsdSocketShutdownFlags how)
         {
-            lock (Lock)
+            lock (_lock)
             {
                 foreach (BsdSocket socket in _sockets)
                 {
@@ -123,21 +122,28 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             return LinuxError.SUCCESS;
         }
 
-        public static bool TryRegister(long processId, out BsdContext processContext)
+        public static BsdContext GetOrRegister(long processId)
         {
-            processContext = new BsdContext();
+            BsdContext context = GetContext(processId);
 
-            lock (RegistryLock)
+            if (context == null)
             {
-                return Registry.TryAdd(processId, processContext);
+                context = new BsdContext();
+
+                lock (_registry)
+                {
+                    _registry.TryAdd(processId, context);
+                }
             }
+
+            return context;
         }
 
         public static BsdContext GetContext(long processId)
         {
-            lock (RegistryLock)
+            lock (_registry)
             {
-                if (!Registry.TryGetValue(processId, out BsdContext processContext))
+                if (!_registry.TryGetValue(processId, out BsdContext processContext))
                 {
                     return null;
                 }

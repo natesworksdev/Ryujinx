@@ -143,14 +143,14 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
                 bool isValidEvent = false;
 
-                if (evnt.Data.InputEvents.HasFlag(PollEventData.EventTypeMask.Input) ||
-                    evnt.Data.InputEvents.HasFlag(PollEventData.EventTypeMask.UrgentInput))
+                if (evnt.Data.InputEvents.HasFlag(PollEventTypeMask.Input) ||
+                    evnt.Data.InputEvents.HasFlag(PollEventTypeMask.UrgentInput))
                 {
                     waiters.Add(socket.ReadEvent);
 
                     isValidEvent = true;
                 }
-                if (evnt.Data.InputEvents.HasFlag(PollEventData.EventTypeMask.Output))
+                if (evnt.Data.InputEvents.HasFlag(PollEventTypeMask.Output))
                 {
                     waiters.Add(socket.WriteEvent);
 
@@ -169,20 +169,19 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
             if (index != WaitHandle.WaitTimeout)
             {
-
                 for (int i = 0; i < events.Count; i++)
                 {
                     PollEvent evnt = events[i];
 
                     EventSocket socket = (EventSocket)evnt.Socket;
 
-                    if ((evnt.Data.InputEvents.HasFlag(PollEventData.EventTypeMask.Input) ||
-                        evnt.Data.InputEvents.HasFlag(PollEventData.EventTypeMask.UrgentInput))
+                    if ((evnt.Data.InputEvents.HasFlag(PollEventTypeMask.Input) ||
+                        evnt.Data.InputEvents.HasFlag(PollEventTypeMask.UrgentInput))
                         && socket.ReadEvent.WaitOne(0))
                     {
                         waiters.Add(socket.ReadEvent);
                     }
-                    if ((evnt.Data.InputEvents.HasFlag(PollEventData.EventTypeMask.Output))
+                    if ((evnt.Data.InputEvents.HasFlag(PollEventTypeMask.Output))
                         && socket.WriteEvent.WaitOne(0))
                     {
                         waiters.Add(socket.WriteEvent);

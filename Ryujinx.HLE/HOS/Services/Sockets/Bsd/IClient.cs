@@ -2,13 +2,11 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.Memory;
 using System;
-using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 {
@@ -37,6 +35,23 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             return ResultCode.Success;
         }
 
+        private static AddressFamily ConvertBsdAddressFamily(BsdAddressFamily family)
+        {
+            switch (family)
+            {
+                case BsdAddressFamily.Unspecified:
+                    return AddressFamily.Unspecified;
+                case BsdAddressFamily.InterNetwork:
+                    return AddressFamily.InterNetwork;
+                case BsdAddressFamily.InterNetworkV6:
+                    return AddressFamily.InterNetworkV6;
+                case BsdAddressFamily.Unknown:
+                    return AddressFamily.Unknown;
+                default:
+                    throw new NotImplementedException(family.ToString());
+            }
+        }
+
         private LinuxError SetResultErrno(IBsdSocket socket, int result)
         {
             return result == 0 && !socket.Blocking ? LinuxError.EWOULDBLOCK : LinuxError.SUCCESS;
@@ -60,12 +75,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                 }
             }
 
-            AddressFamily netDomain = (AddressFamily)domain;
-
-            if (domain == BsdAddressFamily.InterNetworkV6)
-            {
-                netDomain = AddressFamily.InterNetworkV6;
-            }
+            AddressFamily netDomain = ConvertBsdAddressFamily(domain);
 
             if (protocol == ProtocolType.IP)
             {
@@ -116,10 +126,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
         // Initialize(nn::socket::BsdBufferConfig config, u64 pid, u64 transferMemorySize, KObject<copy, transfer_memory>, pid) -> u32 bsd_errno
         public ResultCode RegisterClient(ServiceCtx context)
         {
-            if (!BsdContext.TryRegister(context.Request.HandleDesc.PId, out _context))
-            {
-                _context = BsdContext.GetContext(context.Request.HandleDesc.PId);
-            }
+            _context = BsdContext.GetOrRegister(context.Request.HandleDesc.PId);
 
             /*
             typedef struct  {
@@ -344,8 +351,6 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             }
             else
             {
-                // FIXME: We should make the KThread sleep but we can't do much about it yet.
-                //Thread.Sleep(timeout);
                 context.Device.System.KernelContext.Syscall.SleepThread(timeout);
             }
 
