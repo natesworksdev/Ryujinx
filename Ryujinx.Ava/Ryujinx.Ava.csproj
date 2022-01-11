@@ -54,7 +54,6 @@
         <PackageReference Include="DiscordRichPresence" Version="1.0.175" />
         <PackageReference Include="DynamicData" Version="7.4.3" />
         <PackageReference Include="FluentAvaloniaUI" Version="1.1.8" />
-        <PackageReference Include="IX.Observable" Version="0.7.3" />
         <PackageReference Include="Crc32.NET" Version="1.2.0" />
         <PackageReference Include="jp2masa.Avalonia.Flexbox" Version="0.2.0" />
         <PackageReference Include="Ryujinx.Audio.OpenAL.Dependencies" Version="1.21.0.1" Condition="'$(RuntimeIdentifier)' != 'linux-x64' AND '$(RuntimeIdentifier)' != 'osx-x64'" />

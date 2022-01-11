@@ -3,7 +3,6 @@ using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using FluentAvalonia.Core;
-using IX.StandardExtensions.Extensions;
 using Ryujinx.Ava.Ui.Models;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;

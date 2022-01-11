@@ -4,12 +4,12 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Media;
 using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
-using IX.System.Threading;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Models;
 using Ryujinx.Ava.Ui.Windows;
 using Ryujinx.Common.Logging;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.Ui.Controls

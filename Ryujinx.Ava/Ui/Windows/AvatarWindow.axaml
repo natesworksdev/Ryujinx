@@ -31,7 +31,7 @@
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <Image Margin="5" Height="96" Width="96"
-                           Source="{Binding Value, Converter={StaticResource ByteImage}}" />
+                           Source="{Binding Data, Converter={StaticResource ByteImage}}" />
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>

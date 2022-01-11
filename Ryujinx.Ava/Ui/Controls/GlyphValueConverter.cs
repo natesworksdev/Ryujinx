@@ -4,7 +4,6 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using FluentAvalonia.UI.Controls;
-using IX.StandardExtensions.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Globalization;

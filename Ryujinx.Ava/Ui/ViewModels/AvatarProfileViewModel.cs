@@ -1,11 +1,10 @@
 using Avalonia.Media;
-using IX.Observable;
-using IX.System.Threading;
 using LibHac.Common;
 using LibHac.Fs;
 using LibHac.Fs.Fsa;
 using LibHac.FsSystem;
 using LibHac.FsSystem.NcaUtils;
+using Ryujinx.Ava.Ui.Models;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.FileSystem.Content;
 using SixLabors.ImageSharp;
@@ -15,8 +14,10 @@ using SixLabors.ImageSharp.Processing;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using Color = Avalonia.Media.Color;
 
 namespace Ryujinx.Ava.Ui.ViewModels
@@ -26,13 +27,13 @@ namespace Ryujinx.Ava.Ui.ViewModels
         private static readonly Dictionary<string, byte[]> AvatarDict = new();
         private static readonly ManualResetEvent PreloadResetEvent = new(false);
 
-        private ObservableDictionary<string, byte[]> _images;
+        private ObservableCollection<ProfileImageModel> _images;
 
         private int _selectedIndex;
 
         public AvatarProfileViewModel()
         {
-            _images = new ObservableDictionary<string, byte[]>();
+            _images = new ObservableCollection<ProfileImageModel>();
 
             PreloadResetEvent.WaitOne();
 
@@ -41,7 +42,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public Color BackgroundColor { get; set; } = Colors.White;
 
-        public ObservableDictionary<string, byte[]> Images
+        public ObservableCollection<ProfileImageModel> Images
         {
             get => _images;
             set
@@ -64,7 +65,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 }
                 else
                 {
-                    SelectedImage = _images.Values.ToArray()[_selectedIndex];
+                    SelectedImage = _images[_selectedIndex].Data;
                 }
 
                 OnPropertyChanged();
@@ -83,7 +84,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             foreach (var image in AvatarDict)
             {
                 var data = ProcessImage(image.Value);
-                _images.Add(image.Key, data);
+                _images.Add(new ProfileImageModel(image.Key, data));
                 if (index++ == selectedIndex)
                 {
                     SelectedImage = data;
