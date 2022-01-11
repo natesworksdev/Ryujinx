@@ -29,17 +29,17 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres.Types
         {
             Port = IPAddress.HostToNetworkOrder(Port);
 
-            RawIpv4AddressToSwapEndianess(ref Address);
+            RawIpv4AddressNetworkEndianSwap(ref Address);
         }
 
         public void ToHostOrder()
         {
             Port = IPAddress.NetworkToHostOrder(Port);
 
-            RawIpv4AddressToSwapEndianess(ref Address);
+            RawIpv4AddressNetworkEndianSwap(ref Address);
         }
 
-        public static void RawIpv4AddressToSwapEndianess(ref Array4<byte> address)
+        public static void RawIpv4AddressNetworkEndianSwap(ref Array4<byte> address)
         {
             if (BitConverter.IsLittleEndian)
             {

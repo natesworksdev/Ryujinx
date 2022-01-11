@@ -22,7 +22,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres.Types
             Flags      = 0;
             Family     = (int)address.AddressFamily;
             SocketType = (int)socketType;
-            Protocol   = 0; // Big Endian
+            Protocol   = 0;
 
             if (address.AddressFamily == AddressFamily.InterNetwork)
             {
@@ -37,7 +37,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres.Types
         public void ToNetworkOrder()
         {
             Magic         = (uint)IPAddress.HostToNetworkOrder((int)Magic);
-            Flags         = IPAddress.HostToNetworkOrder(Flags); // Big Endian
+            Flags         = IPAddress.HostToNetworkOrder(Flags);
             Family        = IPAddress.HostToNetworkOrder(Family);
             SocketType    = IPAddress.HostToNetworkOrder(SocketType);
             Protocol      = IPAddress.HostToNetworkOrder(Protocol);
