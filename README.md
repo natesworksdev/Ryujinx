@@ -122,12 +122,12 @@ If you'd like to support us financially, please take a look at our Patreon
 </a>
 
 All the developers working on the project do so on their free time, but the project has several expenses:
-* Hackable Nintendo Switch consoles to reverse-engineer the hardware and its components
-* Hardware to test and fix any bugs certain hardware may have
-* Software licenses to help developers use whatever they are comfortable with
+* Hackable Nintendo Switch consoles to reverse-engineer the hardware
+* Additional hardware to test and fix any bugs certain vendors (AMD, Nvidia, and Intel) may have 
+* Software licenses to allow developers use whatever they are comfortable with
 * Web hosting and infrastructure 
  
-All the funds acquired through our Patreon is considered a donation to support our work, and we will not do patron only releases. We may post exclusive progress reports, or early access to tools that can be used with the emulator.
+All the funds acquired through our Patreon are considered a donation to support our work. Patrons get 1 week of exclusive early access to our progress reports and access to developer interviews.
 
 ## License
 
@@ -138,5 +138,5 @@ This project makes use of code authored by the libvpx project, licensed under BS
 See [LICENSE.txt](LICENSE.txt) and [THIRDPARTY.md](Ryujinx/THIRDPARTY.md) for more details.
 ## Credits
 
-- [LibHac](https://github.com/Thealexbarney/LibHac) is used for our file-system 
+- [LibHac](https://github.com/Thealexbarney/LibHac) is used for our file-system. 
 - [AmiiboAPI](https://www.amiiboapi.com) is used in our Amiibo emulation.
