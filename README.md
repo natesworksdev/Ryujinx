@@ -54,7 +54,7 @@ For our Local Wireless and LAN builds, see our [Multiplayer: Local Play/Local Wi
 
 These builds are compiled automatically for each commit on the master branch. While we strive to ensure optimal stability and performance prior to pushing an update, our automated builds **may be unstable or completely broken.**
 
-If you want to see what's changed in an update you can visit our [Changelog](https://github.com/Ryujinx/Ryujinx/wiki/Changelog).
+If you want to see what's changed in an update, you can visit our [Changelog](https://github.com/Ryujinx/Ryujinx/wiki/Changelog).
 
 The latest automatic build for Windows, macOS, and Linux can be found on the [Official Website](https://ryujinx.org/download).
 
