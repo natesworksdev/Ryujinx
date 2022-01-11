@@ -14,6 +14,12 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
     [Service("bsd:u", false)]
     class IClient : IpcService
     {
+        private static readonly List<IBsdSocketPollManager> _pollManagers = new List<IBsdSocketPollManager>
+        {
+            EventSocketPollManager.Instance,
+            BsdSocketPollManager.Instance
+        };
+
         private BsdContext _context;
         private bool _isPrivileged;
 
@@ -240,33 +246,19 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                 events[i] = new PollEvent(pollEventData, socket);
             }
 
-            List<PollEvent> managedSockets = new List<PollEvent>();
-            List<PollEvent> eventFdSockets = new List<PollEvent>();
+            List<PollEvent>[] eventsByPollManager = new List<PollEvent>[_pollManagers.Count];
 
-            foreach (PollEvent evnt in events)
+
+            for (int i = 0; i < eventsByPollManager.Length; i++)
             {
-                IBsdSocket sock = evnt.Socket;
+                eventsByPollManager[i] = new List<PollEvent>();
 
-                if (sock is BsdSocket bsdSocket)
+                foreach (PollEvent evnt in events)
                 {
-                    if (bsdSocket.Handle is not ManagedSocket)
+                    if (_pollManagers[i].IsCompatible(evnt))
                     {
-                        Logger.Error?.Print(LogClass.ServiceBsd, $"Poll operation is only supported on {typeof(ManagedSocket).Name} at present, skipping");
-
-                        continue;
+                        eventsByPollManager[i].Add(evnt);
                     }
-
-                    managedSockets.Add(evnt);
-                }
-                else if (sock is EventSocket)
-                {
-                    eventFdSockets.Add(evnt);
-                }
-                else
-                {
-                    Logger.Error?.Print(LogClass.ServiceBsd, $"Poll operation is only supported on {sock.GetType().Name}, returning");
-
-                    return WriteBsdResult(context, -1, LinuxError.EBADF);
                 }
             }
 
@@ -276,72 +268,42 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
             if (fdsCount != 0)
             {
-                if (managedSockets.Count != 0)
+                bool IsUnexpectedLinuxError(LinuxError error)
                 {
-                    if (eventFdSockets.Count == 0)
-                    {
-                        errno = ManagedSocket.Poll(managedSockets, timeout, out updateCount);
-                    }
-                    else
-                    {
-                        bool IsUnexpectedLinuxError(LinuxError error)
-                        {
-                            return errno != LinuxError.SUCCESS && errno != LinuxError.ETIMEDOUT;
-                        }
-
-                        // Hybrid approach
-                        long budgetLeftMilliseconds;
-
-                        if (timeout == -1)
-                        {
-                            budgetLeftMilliseconds = PerformanceCounter.ElapsedMilliseconds + uint.MaxValue;
-                        }
-                        else
-                        {
-                            budgetLeftMilliseconds = PerformanceCounter.ElapsedMilliseconds + timeout;
-                        }
-
-                        while (PerformanceCounter.ElapsedMilliseconds < budgetLeftMilliseconds)
-                        {
-                            // First try to poll event sockets
-                            errno = EventSocket.Poll(eventFdSockets, 0, out updateCount);
-
-                            if (IsUnexpectedLinuxError(errno))
-                            {
-                                break;
-                            }
-
-                            if (updateCount > 0)
-                            {
-                                break;
-                            }
-
-                            // Then try managed sockets
-                            errno = ManagedSocket.Poll(managedSockets, timeout, out updateCount);
-
-                            if (IsUnexpectedLinuxError(errno))
-                            {
-                                break;
-                            }
-
-                            if (updateCount > 0)
-                            {
-                                break;
-                            }
-
-                            // If we are here, that mean nothing was availaible, sleep for 50ms
-                            context.Device.System.KernelContext.Syscall.SleepThread(50 * 1000000);
-                        }
-                    }
+                    return errno != LinuxError.SUCCESS && errno != LinuxError.ETIMEDOUT;
                 }
-                else if (eventFdSockets.Count != 0)
+
+                // Hybrid approach
+                long budgetLeftMilliseconds;
+
+                if (timeout == -1)
                 {
-                    // Only poll event fds
-                    errno = EventSocket.Poll(eventFdSockets, timeout, out updateCount);
+                    budgetLeftMilliseconds = PerformanceCounter.ElapsedMilliseconds + uint.MaxValue;
                 }
                 else
                 {
-                    throw new InvalidOperationException();
+                    budgetLeftMilliseconds = PerformanceCounter.ElapsedMilliseconds + timeout;
+                }
+
+                while (PerformanceCounter.ElapsedMilliseconds < budgetLeftMilliseconds)
+                {
+                    for (int i = 0; i < eventsByPollManager.Length; i++)
+                    {
+                        errno = _pollManagers[i].Poll(eventsByPollManager[i], 0, out updateCount);
+
+                        if (IsUnexpectedLinuxError(errno))
+                        {
+                            break;
+                        }
+
+                        if (updateCount > 0)
+                        {
+                            break;
+                        }
+                    }
+
+                    // If we are here, that mean nothing was availaible, sleep for 50ms
+                    context.Device.System.KernelContext.Syscall.SleepThread(50 * 1000000);
                 }
             }
             else if (timeout == -1)
