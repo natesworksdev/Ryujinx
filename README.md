@@ -61,7 +61,7 @@ The latest automatic build for Windows, macOS, and Linux can be found on the [Of
 
 ## Building
 
-If you wish to build the emulator yourself follow these steps:
+If you wish to build the emulator yourself, follow these steps:
 
 ### Step 1
 Install the X64 version of [.NET 6.0 (or higher) SDK](https://dotnet.microsoft.com/download/dotnet/6.0).
