@@ -63,11 +63,10 @@ namespace Ryujinx.HLE.Utilities
         public static string ReadUtf8String(ReadOnlySpan<byte> data, out int dataRead)
         {
             dataRead = data.IndexOf((byte)0) + 1;
-            int size = data.Length;
 
             if (dataRead <= 1)
             {
-                return null;
+                return string.Empty;
             }
 
             return Encoding.UTF8.GetString(data[..dataRead]);
