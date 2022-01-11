@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
         public LinuxError Read(out int readSize, Span<byte> buffer)
         {
-            return Handle.Send(out readSize, buffer, BsdSocketFlags.None);
+            return Handle.Receive(out readSize, buffer, BsdSocketFlags.None);
         }
 
         public LinuxError Write(out int writeSize, ReadOnlySpan<byte> buffer)
