@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 {
     class BsdContext
     {
-        private static Dictionary<long, BsdContext> _registry = new Dictionary<long, BsdContext>();
+        private static ConcurrentDictionary<long, BsdContext> _registry = new ConcurrentDictionary<long, BsdContext>();
 
         private readonly object _lock = new object();
 
@@ -130,10 +131,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             {
                 context = new BsdContext();
 
-                lock (_registry)
-                {
-                    _registry.TryAdd(processId, context);
-                }
+                _registry.TryAdd(processId, context);
             }
 
             return context;
@@ -141,15 +139,12 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
         public static BsdContext GetContext(long processId)
         {
-            lock (_registry)
+            if (!_registry.TryGetValue(processId, out BsdContext processContext))
             {
-                if (!_registry.TryGetValue(processId, out BsdContext processContext))
-                {
-                    return null;
-                }
-
-                return processContext;
+                return null;
             }
+
+            return processContext;
         }
     }
 }
