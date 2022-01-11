@@ -52,6 +52,7 @@ namespace Ryujinx.Ava.Ui.Windows
         private static bool _deferLoad;
         private static string _launchPath;
         private static bool _startFullscreen;
+        private string _currentEmulatedGamePath;
         internal readonly AvaHostUiHandler UiHandler;
         
         public SettingsWindow SettingsWindow { get; set; }
@@ -268,6 +269,28 @@ namespace Ryujinx.Ava.Ui.Windows
 
             AppHost.StatusUpdatedEvent += Update_StatusBar;
             AppHost.AppExit            += AppHost_AppExit;
+
+            _currentEmulatedGamePath = path;
+        }
+
+
+        private async void HandleRelaunch()
+        {
+            if (_userChannelPersistence.PreviousIndex != -1 && _userChannelPersistence.ShouldRestart)
+            {
+                _userChannelPersistence.ShouldRestart = false;
+
+                Dispatcher.UIThread.Post(() =>
+                {
+                    LoadApplication(_currentEmulatedGamePath);
+                });
+            }
+            else
+            {
+                // otherwise, clear state.
+                _userChannelPersistence = new UserChannelPersistence();
+                _currentEmulatedGamePath = null;
+            }
         }
 
         public void SwitchToGameControl(bool startFullscreen = false)
@@ -338,6 +361,8 @@ namespace Ryujinx.Ava.Ui.Windows
             {
                 Title = $"Ryujinx {Program.Version}";
             });
+
+            HandleRelaunch();
         }
 
         public void Sort_Checked(object sender, RoutedEventArgs args)
