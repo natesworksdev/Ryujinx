@@ -4,7 +4,7 @@ using System.Net.Sockets;
 
 namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 {
-    interface ISocket : IDisposable
+    interface ISocket : IDisposable, IFileDescriptor
     {
         IPEndPoint RemoteEndPoint { get; }
         IPEndPoint LocalEndPoint { get; }
@@ -14,8 +14,6 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
         SocketType SocketType { get; }
 
         ProtocolType ProtocolType { get; }
-
-        bool Blocking { get; set; }
 
         IntPtr Handle { get; }
 

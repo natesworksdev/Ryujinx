@@ -2,9 +2,9 @@
 
 namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 {
-    interface IBsdSocket : IDisposable
+    interface IFileDescriptor : IDisposable
     {
-        bool Blocking { get; }
+        bool Blocking { get; set; }
         int Refcount { get; set; }
 
         LinuxError Read(out int readSize, Span<byte> buffer);

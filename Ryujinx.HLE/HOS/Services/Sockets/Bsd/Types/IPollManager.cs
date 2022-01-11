@@ -2,7 +2,7 @@
 
 namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 {
-    interface IBsdSocketPollManager
+    interface IPollManager
     {
         bool IsCompatible(PollEvent evnt);
 

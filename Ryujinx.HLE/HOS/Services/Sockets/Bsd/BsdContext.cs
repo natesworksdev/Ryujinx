@@ -8,91 +8,91 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
         private readonly object _lock = new object();
 
-        private List<IBsdSocket> _sockets;
+        private List<IFileDescriptor> _fds;
 
         private BsdContext()
         {
-            _sockets = new List<IBsdSocket>();
+            _fds = new List<IFileDescriptor>();
         }
 
-        public BsdSocket RetrieveBsdSocket(int socketFd)
+        public ISocket RetrieveSocket(int socketFd)
         {
-            IBsdSocket socket = RetrieveSocket(socketFd);
+            IFileDescriptor file = RetrieveFileDescriptor(socketFd);
 
-            if (socket is BsdSocket bsdSocket)
+            if (file is ISocket socket)
             {
-                return bsdSocket;
+                return socket;
             }
 
             return null;
         }
 
-        public IBsdSocket RetrieveSocket(int socketFd)
+        public IFileDescriptor RetrieveFileDescriptor(int fd)
         {
             lock (_lock)
             {
-                if (socketFd >= 0 && _sockets.Count > socketFd)
+                if (fd >= 0 && _fds.Count > fd)
                 {
-                    return _sockets[socketFd];
+                    return _fds[fd];
                 }
             }
 
             return null;
         }
 
-        public int RegisterSocket(IBsdSocket socket)
+        public int RegisterFileDescriptor(IFileDescriptor file)
         {
             lock (_lock)
             {
-                for (int fd = 0; fd < _sockets.Count; fd++)
+                for (int fd = 0; fd < _fds.Count; fd++)
                 {
-                    if (_sockets[fd] == null)
+                    if (_fds[fd] == null)
                     {
-                        _sockets[fd] = socket;
+                        _fds[fd] = file;
 
                         return fd;
                     }
                 }
 
-                _sockets.Add(socket);
+                _fds.Add(file);
 
-                return _sockets.Count - 1;
+                return _fds.Count - 1;
             }
         }
 
-        public int DuplicateSocket(int socketFd)
+        public int DuplicateFileDescriptor(int fd)
         {
-            IBsdSocket oldSocket = RetrieveSocket(socketFd);
+            IFileDescriptor oldFile = RetrieveFileDescriptor(fd);
 
-            if (oldSocket != null)
+            if (oldFile != null)
             {
                 lock (_lock)
                 {
-                    oldSocket.Refcount++;
+                    oldFile.Refcount++;
 
-                    return RegisterSocket(oldSocket);
+                    return RegisterFileDescriptor(oldFile);
                 }
             }
 
             return -1;
         }
 
-        public bool Close(int socketFd)
+        public bool CloseFileDescriptor(int fd)
         {
-            IBsdSocket socket = RetrieveSocket(socketFd);
+            IFileDescriptor file = RetrieveFileDescriptor(fd);
 
-            if (socket != null)
+            if (file != null)
             {
-                socket.Refcount--;
+                file.Refcount--;
 
-                if (socket.Refcount <= 0)
+                if (file.Refcount <= 0)
                 {
-                    socket.Dispose();
+                    file.Dispose();
                 }
 
                 lock (_lock)
                 {
-                    _sockets[socketFd] = null;
+                    _fds[fd] = null;
                 }
 
                 return true;
@@ -101,15 +101,15 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             return false;
         }
 
-        public LinuxError ShutdownAll(BsdSocketShutdownFlags how)
+        public LinuxError ShutdownAllSockets(BsdSocketShutdownFlags how)
         {
             lock (_lock)
             {
-                foreach (BsdSocket socket in _sockets)
+                foreach (IFileDescriptor file in _fds)
                 {
-                    if (socket != null)
+                    if (file is ISocket socket)
                     {
-                        LinuxError errno = socket.Handle.Shutdown(how);
+                        LinuxError errno = socket.Shutdown(how);
 
                         if (errno != LinuxError.SUCCESS)
                         {

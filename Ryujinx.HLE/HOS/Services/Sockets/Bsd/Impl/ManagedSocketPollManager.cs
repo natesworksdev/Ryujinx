@@ -4,17 +4,17 @@ using System.Net.Sockets;
 
 namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 {
-    class BsdSocketPollManager : IBsdSocketPollManager
+    class ManagedSocketPollManager : IBsdSocketPollManager
     {
-        private static BsdSocketPollManager _instance;
+        private static ManagedSocketPollManager _instance;
 
-        public static BsdSocketPollManager Instance
+        public static ManagedSocketPollManager Instance
         {
             get
             {
                 if (_instance == null)
                 {
-                    _instance = new BsdSocketPollManager();
+                    _instance = new ManagedSocketPollManager();
                 }
 
                 return _instance;
@@ -23,7 +23,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
         public bool IsCompatible(PollEvent evnt)
         {
-            return evnt.Socket is BsdSocket bsdSocket && bsdSocket.Handle is ManagedSocket;
+            return evnt.FileDescriptor is ManagedSocket;
         }
 
         public LinuxError Poll(List<PollEvent> events, int timeoutMilliseconds, out int updatedCount)
@@ -36,7 +36,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
             foreach (PollEvent evnt in events)
             {
-                ManagedSocket socket = (ManagedSocket)((BsdSocket)evnt.Socket).Handle;
+                ManagedSocket socket = (ManagedSocket)evnt.FileDescriptor;
 
                 bool isValidEvent = false;
 
@@ -91,7 +91,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
             foreach (PollEvent evnt in events)
             {
-                Socket socket = ((ManagedSocket)((BsdSocket)evnt.Socket).Handle).Socket;
+                Socket socket = ((ManagedSocket)evnt.FileDescriptor).Socket;
 
                 PollEventTypeMask outputEvents = 0;
 

@@ -1,6 +1,5 @@
 ﻿using Ryujinx.Common.Logging;
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
@@ -9,6 +8,8 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 {
     class ManagedSocket : ISocket
     {
+        public int Refcount { get; set; }
+
         public AddressFamily AddressFamily => Socket.AddressFamily;
 
         public SocketType SocketType => Socket.SocketType;
@@ -28,11 +29,13 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
         public ManagedSocket(AddressFamily addressFamily, SocketType socketType, ProtocolType protocolType)
         {
             Socket = new Socket(addressFamily, socketType, protocolType);
+            Refcount = 1;
         }
 
         private ManagedSocket(Socket socket)
         {
             Socket = socket;
+            Refcount = 1;
         }
 
         private static SocketFlags ConvertBsdSocketFlags(BsdSocketFlags bsdSocketFlags)
@@ -142,6 +145,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
         public void Dispose()
         {
+            Socket.Close();
             Socket.Dispose();
         }
 
@@ -319,6 +323,16 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             {
                 return WinSockHelper.ConvertError((WsaError)exception.ErrorCode);
             }
+        }
+
+        public LinuxError Read(out int readSize, Span<byte> buffer)
+        {
+            return Receive(out readSize, buffer, BsdSocketFlags.None);
+        }
+
+        public LinuxError Write(out int writeSize, ReadOnlySpan<byte> buffer)
+        {
+            return Send(out writeSize, buffer, BsdSocketFlags.None);
         }
     }
 }

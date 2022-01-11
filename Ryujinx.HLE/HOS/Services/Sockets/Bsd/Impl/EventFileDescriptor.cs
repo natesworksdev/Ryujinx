@@ -1,12 +1,10 @@
-﻿using Ryujinx.Common.Logging;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 {
-    class EventSocket : IBsdSocket
+    class EventFileDescriptor : IFileDescriptor
     {
         private ulong _value;
         private readonly EventFdFlags _flags;
@@ -14,12 +12,12 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
         private object _lock = new object();
 
-        public bool Blocking => !_flags.HasFlag(EventFdFlags.NonBlocking);
+        public bool Blocking { get => !_flags.HasFlag(EventFdFlags.NonBlocking); set => throw new NotSupportedException(); }
 
         public ManualResetEvent WriteEvent { get; }
         public ManualResetEvent ReadEvent { get; }
 
-        public EventSocket(ulong value, EventFdFlags flags)
+        public EventFileDescriptor(ulong value, EventFdFlags flags)
         {
             _value = value;
             _flags = flags;

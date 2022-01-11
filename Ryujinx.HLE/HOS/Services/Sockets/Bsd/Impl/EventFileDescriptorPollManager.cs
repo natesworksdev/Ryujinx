@@ -4,17 +4,17 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 {
-    class EventSocketPollManager : IBsdSocketPollManager
+    class EventFileDescriptorPollManager : IBsdSocketPollManager
     {
-        private static EventSocketPollManager _instance;
+        private static EventFileDescriptorPollManager _instance;
 
-        public static EventSocketPollManager Instance
+        public static EventFileDescriptorPollManager Instance
         {
             get
             {
                 if (_instance == null)
                 {
-                    _instance = new EventSocketPollManager();
+                    _instance = new EventFileDescriptorPollManager();
                 }
 
                 return _instance;
@@ -23,7 +23,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
         public bool IsCompatible(PollEvent evnt)
         {
-            return evnt.Socket is EventSocket;
+            return evnt.FileDescriptor is EventFileDescriptor;
         }
 
         public LinuxError Poll(List<PollEvent> events, int timeoutMilliseconds, out int updatedCount)
@@ -36,7 +36,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             {
                 PollEvent evnt = events[i];
 
-                EventSocket socket = (EventSocket)evnt.Socket;
+                EventFileDescriptor socket = (EventFileDescriptor)evnt.FileDescriptor;
 
                 bool isValidEvent = false;
 
@@ -70,7 +70,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                 {
                     PollEvent evnt = events[i];
 
-                    EventSocket socket = (EventSocket)evnt.Socket;
+                    EventFileDescriptor socket = (EventFileDescriptor)evnt.FileDescriptor;
 
                     if ((evnt.Data.InputEvents.HasFlag(PollEventTypeMask.Input) ||
                         evnt.Data.InputEvents.HasFlag(PollEventTypeMask.UrgentInput))

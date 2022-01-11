@@ -3,12 +3,12 @@
     class PollEvent
     {
         public PollEventData Data;
-        public IBsdSocket Socket { get; }
+        public IFileDescriptor FileDescriptor { get; }
 
-        public PollEvent(PollEventData data, IBsdSocket socket)
+        public PollEvent(PollEventData data, IFileDescriptor fileDescriptor)
         {
             Data = data;
-            Socket = socket;
+            FileDescriptor = fileDescriptor;
         }
     }
 }
