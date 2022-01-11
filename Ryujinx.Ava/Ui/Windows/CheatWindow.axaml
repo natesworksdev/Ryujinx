@@ -1,20 +1,17 @@
-﻿<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
-        xmlns:model="clr-namespace:Ryujinx.Ava.Ui.Models"
-        mc:Ignorable="d"
-        x:Class="Ryujinx.Ava.Ui.Windows.CheatWindow"
-        Width="550"
-        Height="640"
-        MinWidth="550"
-        MinHeight="250"
-        d:DesignHeight="640"
-        d:DesignWidth="550"
-        CanResize="False"
-        WindowStartupLocation="CenterOwner"
-        Title="CheatWindow">
+﻿<window:StyleableWindow x:Class="Ryujinx.Ava.Ui.Windows.CheatWindow"
+                        xmlns="https://github.com/avaloniaui"
+                        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                        xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
+                        xmlns:model="clr-namespace:Ryujinx.Ava.Ui.Models"
+                        xmlns:window="clr-namespace:Ryujinx.Ava.Ui.Windows"
+                        mc:Ignorable="d"
+                        SizeToContent="Height"
+                        Width="500" MinHeight="500" Height="500"
+                        WindowStartupLocation="CenterOwner"
+                        MinWidth="500"
+                        Title="CheatWindow">
     <Window.Styles>
         <Style Selector="TreeViewItem">
             <Setter Property="IsExpanded" Value="True" />
@@ -31,6 +28,9 @@
             Margin="20,15,20,20"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
+            MaxWidth="500"
+            LineHeight="18"
+            TextWrapping="Wrap"
             Text="{Binding Heading}"
             TextAlignment="Center" />
         <Border
@@ -87,4 +87,4 @@
             </DockPanel>
         </DockPanel>
     </Grid>
-</Window>
+</window:StyleableWindow>

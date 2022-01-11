@@ -7,15 +7,10 @@
     xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
     xmlns:window="clr-namespace:Ryujinx.Ava.Ui.Windows"
     Title="Ryujinx - Title Update Manager"
-    Width="550"
-    Height="250"
-    MinWidth="550"
-    MinHeight="250"
-    d:DesignHeight="250"
-    d:DesignWidth="550"
-    CanResize="False"
-    SizeToContent="WidthAndHeight"
+    SizeToContent="Height"
+    Width="600" MinHeight="500" Height="500"
     WindowStartupLocation="CenterOwner"
+    MinWidth="600"
     mc:Ignorable="d">
     <Grid Margin="15">
         <Grid.RowDefinitions>
@@ -28,6 +23,9 @@
             Margin="20,15,20,20"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
+            MaxWidth="500"
+            LineHeight="18"
+            TextWrapping="Wrap"
             Text="{Binding Heading}"
             TextAlignment="Center" />
         <Border

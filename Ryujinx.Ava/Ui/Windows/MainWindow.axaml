@@ -115,10 +115,10 @@
                               IsVisible="True" />
         </ContentControl>
         <StackPanel IsVisible="False">
-            <controls:HotKeyControl Name="FullscreenHotKey" Command="{Binding ToggleFullscreen}"/>
-            <controls:HotKeyControl Name="FullscreenHotKey2" Command="{Binding ToggleFullscreen}"/>
-            <controls:HotKeyControl Name="DockToggleHotKey" Command="{Binding ToggleDockMode}"/>
-            <controls:HotKeyControl Name="ExitHotKey" Command="{Binding ExitCurrentState}"/>
+            <controls:HotKeyControl Name="FullscreenHotKey" Command="{Binding ToggleFullscreen}" />
+            <controls:HotKeyControl Name="FullscreenHotKey2" Command="{Binding ToggleFullscreen}" />
+            <controls:HotKeyControl Name="DockToggleHotKey" Command="{Binding ToggleDockMode}" />
+            <controls:HotKeyControl Name="ExitHotKey" Command="{Binding ExitCurrentState}" />
         </StackPanel>
         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <Grid.ColumnDefinitions>
@@ -373,28 +373,37 @@
                                 <Flyout Placement="Bottom">
                                     <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" Margin="0">
                                         <StackPanel>
-                                            <RadioButton Tag="Favorite" IsChecked="True" GroupName="Sort"
+                                            <RadioButton Tag="Favorite"
+                                                         IsChecked="{Binding IsSortedByFavorite, Mode=OneTime}"
+                                                         GroupName="Sort"
                                                          Content="{locale:Locale CommonFavorite}"
                                                          Checked="Sort_Checked" />
                                             <RadioButton Tag="Title" GroupName="Sort"
+                                                         IsChecked="{Binding  IsSortedByTitle, Mode=OneTime}"
                                                          Content="{locale:Locale GameListHeaderApplication}"
                                                          Checked="Sort_Checked" />
                                             <RadioButton Tag="Developer" GroupName="Sort"
+                                                         IsChecked="{Binding  IsSortedByDeveloper, Mode=OneTime}"
                                                          Content="{locale:Locale GameListHeaderDeveloper}"
                                                          Checked="Sort_Checked" />
                                             <RadioButton Tag="TotalTimePlayed" GroupName="Sort"
+                                                         IsChecked="{Binding  IsSortedByTimePlayed, Mode=OneTime}"
                                                          Content="{locale:Locale GameListHeaderTimePlayed}"
                                                          Checked="Sort_Checked" />
                                             <RadioButton Tag="LastPlayed" GroupName="Sort"
+                                                         IsChecked="{Binding IsSortedByLastPlayed, Mode=OneTime}"
                                                          Content="{locale:Locale GameListHeaderLastPlayed}"
                                                          Checked="Sort_Checked" />
                                             <RadioButton Tag="FileType" GroupName="Sort"
+                                                         IsChecked="{Binding  IsSortedByType, Mode=OneTime}"
                                                          Content="{locale:Locale GameListHeaderFileExtension}"
                                                          Checked="Sort_Checked" />
                                             <RadioButton Tag="FileSize" GroupName="Sort"
+                                                         IsChecked="{Binding IsSortedBySize, Mode=OneTime}"
                                                          Content="{locale:Locale GameListHeaderFileSize}"
                                                          Checked="Sort_Checked" />
                                             <RadioButton Tag="Path" GroupName="Sort"
+                                                         IsChecked="{Binding IsSortedByPath, Mode=OneTime}"
                                                          Content="{locale:Locale GameListHeaderPath}"
                                                          Checked="Sort_Checked" />
                                         </StackPanel>
@@ -402,9 +411,9 @@
                                                 Width="60" BorderThickness="0,1,0,0">
                                             <Separator HorizontalAlignment="Stretch" Height="0" />
                                         </Border>
-                                        <RadioButton Tag="Ascending" IsChecked="True" GroupName="Order"
+                                        <RadioButton Tag="Ascending" IsChecked="{Binding IsAscending, Mode=OneTime}" GroupName="Order"
                                                      Content="{locale:Locale OrderAscending}" Checked="Order_Checked" />
-                                        <RadioButton Tag="Descending" GroupName="Order"
+                                        <RadioButton Tag="Descending" GroupName="Order" IsChecked="{Binding !IsAscending, Mode=OneTime}" 
                                                      Content="{locale:Locale OrderDescending}" Checked="Order_Checked" />
                                     </StackPanel>
                                 </Flyout>

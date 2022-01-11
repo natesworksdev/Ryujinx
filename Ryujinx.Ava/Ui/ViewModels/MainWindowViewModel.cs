@@ -736,6 +736,15 @@ namespace Ryujinx.Ava.Ui.ViewModels
             }
         }
 
+        public bool IsSortedByFavorite => SortMode == ApplicationSort.Favorite;
+        public bool IsSortedByTitle => SortMode == ApplicationSort.Title;
+        public bool IsSortedByDeveloper => SortMode == ApplicationSort.Developer;
+        public bool IsSortedByLastPlayed => SortMode == ApplicationSort.LastPlayed;
+        public bool IsSortedByTimePlayed => SortMode == ApplicationSort.TotalTimePlayed;
+        public bool IsSortedByType => SortMode == ApplicationSort.FileType;
+        public bool IsSortedBySize => SortMode == ApplicationSort.FileSize;
+        public bool IsSortedByPath => SortMode == ApplicationSort.Path;
+
         public string SortName
         {
             get

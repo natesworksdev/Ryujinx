@@ -35,7 +35,7 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             LoadedCheats = new AvaloniaList<CheatsList>();
 
-            Heading = $"DLC Available for {titleName} [{titleId.ToUpper()}]";
+            Heading = $"Cheats Available for {titleName} [{titleId.ToUpper()}]";
 
             InitializeComponent();
 #if DEBUG
