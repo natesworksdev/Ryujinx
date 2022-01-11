@@ -43,7 +43,7 @@ Don't hesitate to open a new issue if a game isn't already on there!
                   
 ## Usage
 
-To run this emulator, we recommend that your PC has at least 8GB of RAM; less than this amount can result in unpredictable behavior, crashes or unacceptable performance.
+To run this emulator, we recommend that your PC has at least 8GB of RAM; less than this amount can result in unpredictable behavior, crashes, or unacceptable performance.
 
 See our [Setup & Configuration Guide](https://github.com/Ryujinx/Ryujinx/wiki/Ryujinx-Setup-&-Configuration-Guide) on how to set up the emulator.
 
