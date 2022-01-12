@@ -5,10 +5,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
     [Flags]
     enum BsdSocketCreationFlags
     {
-        None,
-        CloseOnExecution,
-        NonBlocking,
-
+        None = 0,
+        CloseOnExecution = 1,
+        NonBlocking = 2,
 
         FlagsShift = 28
     }
