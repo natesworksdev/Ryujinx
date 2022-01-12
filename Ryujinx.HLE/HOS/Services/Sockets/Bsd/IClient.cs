@@ -66,16 +66,19 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
         private ResultCode SocketInternal(ServiceCtx context, bool exempt)
         {
             BsdAddressFamily domain   = (BsdAddressFamily)context.RequestData.ReadInt32();
-            SocketType       type     = (SocketType)context.RequestData.ReadInt32();
+            BsdSocketType    type     = (BsdSocketType)context.RequestData.ReadInt32();
             ProtocolType     protocol = (ProtocolType)context.RequestData.ReadInt32();
+
+            BsdSocketCreationFlags creationFlags = (BsdSocketCreationFlags)((int)type >> (int)BsdSocketCreationFlags.FlagsShift);
+            type &= BsdSocketType.TypeMask;
 
             if (domain == BsdAddressFamily.Unknown)
             {
                 return WriteBsdResult(context, -1, LinuxError.EPROTONOSUPPORT);
             }
-            else if ((type == SocketType.Seqpacket || type == SocketType.Raw) && !_isPrivileged)
+            else if ((type == BsdSocketType.Seqpacket || type == BsdSocketType.Raw) && !_isPrivileged)
             {
-                if (domain != BsdAddressFamily.InterNetwork || type != SocketType.Raw || protocol != ProtocolType.Icmp)
+                if (domain != BsdAddressFamily.InterNetwork || type != BsdSocketType.Raw || protocol != ProtocolType.Icmp)
                 {
                     return WriteBsdResult(context, -1, LinuxError.ENOENT);
                 }
@@ -85,17 +88,18 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
             if (protocol == ProtocolType.IP)
             {
-                if (type == SocketType.Stream)
+                if (type == BsdSocketType.Stream)
                 {
                     protocol = ProtocolType.Tcp;
                 }
-                else if (type == SocketType.Dgram)
+                else if (type == BsdSocketType.Dgram)
                 {
                     protocol = ProtocolType.Udp;
                 }
             }
 
-            ISocket newBsdSocket = new ManagedSocket(netDomain, type, protocol);
+            ISocket newBsdSocket = new ManagedSocket(netDomain, (SocketType)type, protocol);
+            newBsdSocket.Blocking = !creationFlags.HasFlag(BsdSocketCreationFlags.NonBlocking);
 
             LinuxError errno = LinuxError.SUCCESS;
 
