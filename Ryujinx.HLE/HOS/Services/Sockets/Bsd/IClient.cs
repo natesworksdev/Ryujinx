@@ -292,10 +292,15 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                     budgetLeftMilliseconds = PerformanceCounter.ElapsedMilliseconds + timeout;
                 }
 
-                while (PerformanceCounter.ElapsedMilliseconds < budgetLeftMilliseconds)
+                do
                 {
                     for (int i = 0; i < eventsByPollManager.Length; i++)
                     {
+                        if (eventsByPollManager[i].Count == 0)
+                        {
+                            continue;
+                        }
+
                         errno = _pollManagers[i].Poll(eventsByPollManager[i], 0, out updateCount);
 
                         if (IsUnexpectedLinuxError(errno))
@@ -312,6 +317,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                     // If we are here, that mean nothing was availaible, sleep for 50ms
                     context.Device.System.KernelContext.Syscall.SleepThread(50 * 1000000);
                 }
+                while (PerformanceCounter.ElapsedMilliseconds < budgetLeftMilliseconds);
             }
             else if (timeout == -1)
             {
@@ -326,7 +332,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
             // TODO: Spanify
             for (int i = 0; i < fdsCount; i++)
             {
-                context.Memory.Write(bufferPosition + (ulong)i * 8, events[i].Data);
+                context.Memory.Write(bufferPosition + (ulong)(i * Unsafe.SizeOf<PollEventData>()), events[i].Data);
             }
 
             return WriteBsdResult(context, updateCount, errno);
