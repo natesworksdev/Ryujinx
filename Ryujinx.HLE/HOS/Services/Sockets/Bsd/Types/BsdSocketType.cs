@@ -9,7 +9,5 @@
         Seqpacket,
 
         TypeMask = 0xFFFFFFF,
-
-        NonBlocking = 0x20000000
     }
 }
