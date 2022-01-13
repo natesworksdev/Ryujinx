@@ -3,6 +3,14 @@
     public enum ViewMode : int
     {
         List,
-        Grid
+        Grid,
+        Ui,
+        Input,
+        Settings,
+        Chip,
+        Image,
+        Speaker,
+        Network,
+        Page
     }
 }

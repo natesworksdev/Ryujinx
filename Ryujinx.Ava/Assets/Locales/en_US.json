@@ -70,7 +70,7 @@
   "StatusBarGamesLoaded": "{0}/{1} Games Loaded",
   "StatusBarSystemVersion": "System Version: {0}",
   "Settings": "Settings",
-  "SettingsTabGeneral": "General",
+  "SettingsTabGeneral": "User Interface",
   "SettingsTabGeneralGeneral": "General",
   "SettingsTabGeneralEnableDiscordRichPresence": "Enable Discord Rich Presence",
   "SettingsTabGeneralCheckUpdatesOnLaunch": "Check for Updates on Launch",
@@ -496,5 +496,8 @@
   "GameListContextMenuManageCheat" : "Manage Cheats",
   "ControllerSettingsStickRange" : "Range",
   "DialogStopEmulationTitle" : "Ryujinx - Stop Emulation",
-  "DialogStopEmulationMessage": "Are you sure you want to stop emulation?"
+  "DialogStopEmulationMessage": "Are you sure you want to stop emulation?",
+  "SettingsTabCpu": "CPU",
+  "SettingsTabAudio": "Audio",
+  "SettingsTabNetwork": "Network"
 }

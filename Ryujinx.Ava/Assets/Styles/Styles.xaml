@@ -176,7 +176,7 @@
         <Setter Property="FontSize" Value="14" />
         <Setter Property="BorderThickness" Value="0,0,1,0" />
         <Setter Property="BorderBrush" Value="{DynamicResource ThemeButtonForegroundColor}" />
-        <Setter Property="Background" Value="{DynamicResource ThemeControlBorderColor}" />
+        <Setter Property="Background" Value="{DynamicResource HighlightColor}" />
     </Style>
     <Style Selector="TabItem:pointerover">
         <Setter Property="Foreground" Value="{DynamicResource ThemeButtonForegroundColor}" />
