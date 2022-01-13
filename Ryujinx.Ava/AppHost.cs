@@ -374,7 +374,7 @@ namespace Ryujinx.Ava
             glRenderer?.MakeCurrent(null);
 
             // TODO fix this on wgl
-            //glRenderer?.DestroyBackgroundContext();
+            glRenderer?.DestroyBackgroundContext();
 
             AppExit?.Invoke(this, EventArgs.Empty);
         }

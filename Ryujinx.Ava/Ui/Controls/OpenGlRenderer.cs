@@ -98,9 +98,9 @@ namespace Ryujinx.Ava.Ui.Controls
         public async Task DestroyBackgroundContext()
         {
             await Task.Delay(1000);
-            _window?.Dispose();
             // WGL hangs here when disposing context
-            Context?.Dispose();
+            //Context?.Dispose();
+            _window?.Dispose();
         }
 
         internal void MakeCurrent()
