@@ -125,7 +125,7 @@ All the developers working on the project do so on their free time, but the proj
 * Hackable Nintendo Switch consoles to reverse-engineer the hardware
 * Additional hardware to test and fix any bugs certain vendors (AMD, Nvidia, and Intel) may have 
 * Software licenses to allow developers use whatever they are comfortable with
-* Web hosting and infrastructure 
+* Web hosting and infrastructure maintaining
  
 All the funds acquired through our Patreon are considered a donation to support our work. Patrons get 1 week of exclusive early access to our progress reports and access to developer interviews.
 
