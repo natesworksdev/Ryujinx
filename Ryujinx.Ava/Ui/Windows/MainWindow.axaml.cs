@@ -374,6 +374,16 @@ namespace Ryujinx.Ava.Ui.Windows
             }
         }
 
+        protected override void HandleWindowStateChanged(WindowState state)
+        {
+            WindowState = state;
+
+            if (state != WindowState.Minimized)
+            {
+                Renderer.Start();
+            }
+        }
+
         public void Order_Checked(object sender, RoutedEventArgs args)
         {
             if (sender is RadioButton button)
