@@ -38,9 +38,8 @@
 			<TabItem>
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
-						<ui:FontIcon FontFamily="avares://FluentAvalonia/Fonts#Symbols"
-                            Margin="0,4,4,0"
-							Glyph="{controls:GlyphValueConverter Ui}" />
+						<ui:SymbolIcon
+                            Margin="0,4,4,0"  Symbol="New"/>
 						<TextBlock Text="{locale:Locale SettingsTabGeneral}"/>
 					</StackPanel>
 				</TabItem.Header>
@@ -182,9 +181,9 @@
             <TabItem>
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
-						<ui:FontIcon FontFamily="avares://FluentAvalonia/Fonts#Symbols"
+						<ui:SymbolIcon
                             Margin="0,4,4,0"
-							Glyph="{controls:GlyphValueConverter Input}" />
+							Symbol="Games" />
 						<TextBlock Text="{locale:Locale SettingsTabInput}"/>
 					</StackPanel>
 				</TabItem.Header>
@@ -229,9 +228,9 @@
             <TabItem>
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
-						<ui:FontIcon FontFamily="avares://FluentAvalonia/Fonts#Symbols"
+						<ui:SymbolIcon
                             Margin="0,4,4,0"
-							Glyph="{controls:GlyphValueConverter Settings}" />
+							Symbol="Settings"/>
 						<TextBlock Text="{locale:Locale SettingsTabSystem}"/>
 					</StackPanel>
 				</TabItem.Header>
@@ -418,9 +417,9 @@
 			<TabItem>
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
-						<ui:FontIcon FontFamily="avares://FluentAvalonia/Fonts#Symbols"
+						<ui:SymbolIcon
                             Margin="0,4,4,0"
-							Glyph="{controls:GlyphValueConverter Chip}" />
+							Symbol="CodeFilled"/>
 						<TextBlock Text="{locale:Locale SettingsTabCpu}"/>
 					</StackPanel>
 				</TabItem.Header>
@@ -475,9 +474,9 @@
             <TabItem>
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
-						<ui:FontIcon FontFamily="avares://FluentAvalonia/Fonts#Symbols"
+						<ui:SymbolIcon
                             Margin="0,4,4,0"
-							Glyph="{controls:GlyphValueConverter Image}" />
+							Symbol="Image" />
 						<TextBlock Text="{locale:Locale SettingsTabGraphics}"/>
 					</StackPanel>
 				</TabItem.Header>
@@ -713,9 +712,9 @@
 			<TabItem>
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
-						<ui:FontIcon FontFamily="avares://FluentAvalonia/Fonts#Symbols"
+						<ui:SymbolIcon
                             Margin="0,4,4,0"
-							Glyph="{controls:GlyphValueConverter Network}" />
+							Symbol="Globe" />
 						<TextBlock Text="{locale:Locale SettingsTabNetwork}"/>
 					</StackPanel>
 				</TabItem.Header>
@@ -743,9 +742,9 @@
 			<TabItem>
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">
-						<ui:FontIcon FontFamily="avares://FluentAvalonia/Fonts#Symbols"
+						<ui:SymbolIcon
                             Margin="0,4,4,0"
-							Glyph="{controls:GlyphValueConverter Page}" />
+							Symbol="Document" />
 						<TextBlock Text="{locale:Locale SettingsTabLogging}"/>
 					</StackPanel>
 				</TabItem.Header>
