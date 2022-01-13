@@ -7,7 +7,7 @@ using LibHac.Fs;
 using LibHac.Fs.Fsa;
 using LibHac.Fs.Shim;
 using LibHac.FsSystem;
-using LibHac.FsSystem.NcaUtils;
+using LibHac.Tools.FsSystem.NcaUtils;
 using LibHac.Ncm;
 using LibHac.Ns;
 using Ryujinx.Ava.Common.Locale;
@@ -23,6 +23,8 @@ using System.Threading;
 using static LibHac.Fs.ApplicationSaveDataManagement;
 using ApplicationId = LibHac.Ncm.ApplicationId;
 using Path = System.IO.Path;
+using LibHac.Tools.Fs;
+using LibHac.Tools.FsSystem;
 
 namespace Ryujinx.Ava.Common
 {

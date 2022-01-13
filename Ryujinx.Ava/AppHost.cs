@@ -3,6 +3,7 @@ using ARMeilleure.Translation.PTC;
 using Avalonia.Input;
 using Avalonia.Threading;
 using LibHac.FsSystem;
+using LibHac.Tools.FsSystem;
 using OpenTK.Windowing.Common;
 using Ryujinx.Audio.Backends.Dummy;
 using Ryujinx.Audio.Backends.OpenAL;
@@ -840,6 +841,7 @@ namespace Ryujinx.Ava
 
             Device.Gpu.Renderer.RunLoop(() =>
             {
+                Device.Gpu.SetGpuThread();
                 Device.Gpu.InitializeShaderCache();
                 Translator.IsReadyForTranslation.Set();
 

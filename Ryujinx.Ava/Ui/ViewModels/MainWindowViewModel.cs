@@ -9,7 +9,8 @@ using DynamicData;
 using DynamicData.Binding;
 using LibHac;
 using LibHac.Fs;
-using LibHac.FsSystem.NcaUtils;
+using LibHac.FsSystem;
+using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Controls;
@@ -1553,7 +1554,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                     thread.Start();
                 }
             }
-            catch (LibHac.MissingKeyException ex)
+            catch (LibHac.Common.Keys.MissingKeyException ex)
             {
                 Logger.Error?.Print(LogClass.Application, ex.ToString());
                 UserErrorDialog.ShowUserErrorDialog(UserError.NoKeys, _owner);

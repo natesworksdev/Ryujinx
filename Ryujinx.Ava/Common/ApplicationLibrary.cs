@@ -3,7 +3,7 @@ using LibHac.Common;
 using LibHac.Fs;
 using LibHac.Fs.Fsa;
 using LibHac.FsSystem;
-using LibHac.FsSystem.NcaUtils;
+using LibHac.Tools.FsSystem.NcaUtils;
 using LibHac.Ns;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
@@ -21,6 +21,9 @@ using System.Text;
 using System.Text.Json;
 using Path = System.IO.Path;
 using SpanHelpers = LibHac.Common.SpanHelpers;
+using LibHac.Tools.Fs;
+using LibHac.Tools.FsSystem;
+using LibHac.Common.Keys;
 
 namespace Ryujinx.Ava.Common
 {

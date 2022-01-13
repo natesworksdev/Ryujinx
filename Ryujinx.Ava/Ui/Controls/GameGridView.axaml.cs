@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using LibHac;
+using LibHac.Common;
 using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Ui.ViewModels;
 using System;

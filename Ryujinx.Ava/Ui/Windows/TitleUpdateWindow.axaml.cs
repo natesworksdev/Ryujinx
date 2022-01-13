@@ -6,7 +6,7 @@ using LibHac.Common;
 using LibHac.Fs;
 using LibHac.Fs.Fsa;
 using LibHac.FsSystem;
-using LibHac.FsSystem.NcaUtils;
+using LibHac.Tools.FsSystem.NcaUtils;
 using LibHac.Ns;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Controls;
@@ -23,6 +23,7 @@ using System.Linq;
 using System.Text;
 using Path = System.IO.Path;
 using SpanHelpers = LibHac.Common.SpanHelpers;
+using LibHac.Tools.FsSystem;
 
 namespace Ryujinx.Ava.Ui.Windows
 {
