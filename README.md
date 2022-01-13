@@ -115,7 +115,7 @@ If you are having problems launching homebrew or a particular game marked status
 
 ## Donations
                   
-If you'd like to support us financially, please take a look at our Patreon
+If you'd like to support us financially, don't hesitate to take a look at our Patreon!
 
 <a href="https://www.patreon.com/ryujinx">
     <img src="https://images.squarespace-cdn.com/content/v1/560c1d39e4b0b4fae0c9cf2a/1567548955044-WVD994WZP76EWF15T0L3/Patreon+Button.png?format=500w" width="150">
