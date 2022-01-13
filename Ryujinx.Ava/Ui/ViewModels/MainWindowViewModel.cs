@@ -44,6 +44,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
         private ObservableCollection<ApplicationData> _applications;
         private DataGridCollectionView _appsCollection;
         private string _aspectStatusText;
+
         private string _loadHeading;
         private string _cacheLoadStatus;
         private string _searchText;
@@ -72,6 +73,8 @@ namespace Ryujinx.Ava.Ui.ViewModels
         private bool _showContent = true;
         private bool _isLoadingIndeterminate = true;
         private ReadOnlyObservableCollection<ApplicationData> _appsObservableList;
+
+        public string TitleName { get; internal set; }
 
         public MainWindowViewModel(MainWindow owner) : this()
         {
@@ -1135,7 +1138,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                                 IsLoadingIndeterminate = false;
                                 break;
                             case PtcLoadingState.Loaded:
-                                LoadHeading = $"Loading {SelectedApplication.TitleName}";
+                                LoadHeading = $"Loading {TitleName}";
                                 IsLoadingIndeterminate = true;
                                 CacheLoadStatus = "";
                                 break;
@@ -1151,7 +1154,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                                 IsLoadingIndeterminate = false;
                                 break;
                             case ShaderCacheLoadingState.Loaded:
-                                LoadHeading = $"Loading {SelectedApplication.TitleName}";
+                                LoadHeading = $"Loading {TitleName}";
                                 IsLoadingIndeterminate = true;
                                 CacheLoadStatus = "";
                                 break;

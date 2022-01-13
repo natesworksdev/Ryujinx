@@ -366,12 +366,14 @@ namespace Ryujinx.Ava
             TouchScreenManager.Dispose();
             Device.Dispose();
 
-            OpenGlRenderer glRenderer = _renderer as OpenGlRenderer;
+            OpenGlRenderer glRenderer = Renderer as OpenGlRenderer;
             glRenderer?.MakeCurrent();
 
             Device.DisposeGpu();
 
             glRenderer?.MakeCurrent(null);
+
+            glRenderer?.DestroyBackgroundContext();
 
             AppExit?.Invoke(this, EventArgs.Empty);
         }

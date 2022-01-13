@@ -258,6 +258,7 @@ namespace Ryujinx.Ava.Ui.Windows
             PrepareLoadScreen();
 
             ViewModel.LoadHeading = string.IsNullOrWhiteSpace(titleName) ? $"Loading {ViewModel.SelectedApplication.TitleName}" : titleName;
+            ViewModel.TitleName = string.IsNullOrWhiteSpace(titleName) ? ViewModel.SelectedApplication.TitleName : titleName;
 
             _mainViewContent = ContentFrame.Content as Control;
 

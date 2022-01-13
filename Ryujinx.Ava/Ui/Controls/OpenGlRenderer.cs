@@ -93,8 +93,12 @@ namespace Ryujinx.Ava.Ui.Controls
         protected override void OnOpenGlDeinit(GlInterface gl, int fb)
         {
             base.OnOpenGlDeinit(gl, fb);
-            Context.Dispose();
-            _window.Dispose();
+        }
+
+        public void DestroyBackgroundContext()
+        {
+            Context?.Dispose();
+            _window?.Dispose();
         }
 
         internal void MakeCurrent()
