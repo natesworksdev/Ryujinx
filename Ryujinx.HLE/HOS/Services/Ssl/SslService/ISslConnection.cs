@@ -36,7 +36,6 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
             _verifyOption = VerifyOption.PeerCa | VerifyOption.HostName;
         }
 
-
         [CommandHipc(0)]
         // SetSocketDescriptor(u32) -> u32
         public ResultCode SetSocketDescriptor(ServiceCtx context)

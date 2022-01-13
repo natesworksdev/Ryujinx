@@ -135,7 +135,6 @@ namespace Ryujinx.HLE.HOS.Services.Ssl
 
                     Result result = romfs.OpenFile(ref trustedCertsFileRef.Ref(), "/ssl_TrustedCerts.bdf".ToU8Span(), OpenMode.Read);
 
-
                     if (!result.IsSuccess())
                     {
                         // [1.0.0 - 2.3.0]
