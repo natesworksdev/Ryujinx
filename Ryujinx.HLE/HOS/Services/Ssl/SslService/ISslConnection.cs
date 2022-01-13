@@ -239,7 +239,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
 
             using (WritableRegion region = context.Memory.GetWritableRegion(context.Request.ReceiveBuff[0].Position, (int)context.Request.ReceiveBuff[0].Size))
             {
-                // TODO: better error management
+                // TODO: Better error management.
                 result = _connection.Read(out int readCount, region.Memory);
 
                 if (result == ResultCode.Success)
@@ -263,7 +263,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
             // We don't dispose as this isn't supposed to be modified
             WritableRegion region = context.Memory.GetWritableRegion(context.Request.SendBuff[0].Position, (int)context.Request.SendBuff[0].Size);
 
-            // TODO: better error management
+            // TODO: Better error management.
             ResultCode result = _connection.Write(out int writtenCount, region.Memory);
 
             if (result == ResultCode.Success)
@@ -301,7 +301,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
 
             using (WritableRegion region = context.Memory.GetWritableRegion(context.Request.ReceiveBuff[0].Position, (int)context.Request.ReceiveBuff[0].Size))
             {
-                // TODO: better error management
+                // TODO: Better error management.
                 result = _connection.Peek(out int peekCount, region.Memory);
 
                 if (result == ResultCode.Success)
