@@ -29,6 +29,8 @@
         <AvaloniaResource Include="Ui\**\*.xaml">
             <SubType>Designer</SubType>
         </AvaloniaResource>
+        <None Remove="Assets\Fonts\Segoe Fluent Icons.ttf" />
+        <AvaloniaResource Include="Assets\Fonts\Segoe Fluent Icons.ttf" />
     </ItemGroup>
     <ItemGroup>
         <None Remove="Assets\Images\star.png" />
