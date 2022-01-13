@@ -127,7 +127,7 @@ All the developers working on the project do so on their free time, but the proj
 * Software licenses to allow developers use whatever they are comfortable with
 * Web hosting and infrastructure maintaining
  
-All the funds acquired through our Patreon are considered a donation to support our work. Patrons get 1 week of exclusive early access to our progress reports and access to developer interviews.
+All the funds acquired through our Patreon are considered a donation to support our work. Patrons will get 1 week of exclusive early access to our progress reports and access to developer interviews.
 
 ## License
 
