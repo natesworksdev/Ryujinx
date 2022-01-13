@@ -373,8 +373,6 @@ namespace Ryujinx.Ava
 
             glRenderer?.MakeCurrent(null);
 
-            glRenderer?.DestroyBackgroundContext();
-
             AppExit?.Invoke(this, EventArgs.Empty);
         }
 

@@ -351,6 +351,8 @@ namespace Ryujinx.Ava.Ui.Windows
                 }
 
                 ViewModel.ShowMenuAndStatusBar = true;
+                ViewModel.ShowContent = true;
+                ViewModel.ShowLoadProgress = false;
             });
             GlRenderer.GlInitialized -= GlRenderer_Created;
             GlRenderer = null;
