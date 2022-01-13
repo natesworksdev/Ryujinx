@@ -4,6 +4,8 @@ using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using FluentAvalonia.Core;
+using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.ViewModels;
 using Ryujinx.HLE.FileSystem;
@@ -18,11 +20,21 @@ namespace Ryujinx.Ava.Ui.Windows
 {
     public class SettingsWindow : StyleableWindow
     {
-        private TabControl              _tabs;
         private ListBox                 _gameList;
         private TextBox                 _pathBox;
         private AutoCompleteBox          _timeZoneBox;
         private ControllerSettingsWindow _controllerSettings;
+        
+        // Pages
+        private Control _uiPage;
+        private Control _inputPage;
+        private Control _systemPage;
+        private Control _cpuPage;
+        private Control _graphicsPage;
+        private Control _audioPage;
+        private Control _networkPage;
+        private Control _loggingPage;
+        private NavigationView _navPanel;
 
         public SettingsViewModel ViewModel { get; set; }
 
@@ -64,20 +76,67 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             AvaloniaXamlLoader.Load(this);
 
-            _tabs        = this.FindControl<TabControl>("Tabs");
             _pathBox     = this.FindControl<TextBox>("PathBox");
             _gameList    = this.FindControl<ListBox>("GameList");
             _timeZoneBox = this.FindControl<AutoCompleteBox>("TimeZoneBox");
             _controllerSettings = this.FindControl<ControllerSettingsWindow>("ControllerSettings");
 
-            _tabs.SelectionChanged += Tabs_SelectionChanged;
+            _uiPage = this.FindControl<Control>("UiPage");
+            _inputPage = this.FindControl<Control>("InputPage");
+            _systemPage = this.FindControl<Control>("SystemPage");
+            _cpuPage = this.FindControl<Control>("CpuPage");
+            _graphicsPage = this.FindControl<Control>("GraphicsPage");
+            _audioPage = this.FindControl<Control>("AudioPage");
+            _networkPage = this.FindControl<Control>("NetworkPage");
+            _loggingPage = this.FindControl<Control>("LoggingPage");
+
+            var pageGrid = this.FindControl<Grid>("Pages");
+            pageGrid.Children.Clear();
+
+            _navPanel = this.FindControl<NavigationView>("NavPanel");
+            _navPanel.SelectionChanged += NavPanelOnSelectionChanged;
+            _navPanel.SelectedItem = _navPanel.MenuItems.ElementAt(0);
+        }
+
+        private void NavPanelOnSelectionChanged(object sender, NavigationViewSelectionChangedEventArgs e)
+        {
+            if (e.SelectedItem is NavigationViewItem navitem)
+            {
+                switch(navitem.Tag.ToString())
+                {
+                    case "UiPage":
+                        _navPanel.Content = _uiPage;
+                        break;
+                    case "InputPage":
+                        _navPanel.Content = _inputPage;
+                        break;
+                    case "SystemPage":
+                        _navPanel.Content = _systemPage;
+                        break;
+                    case "CpuPage":
+                        _navPanel.Content = _cpuPage;
+                        break;
+                    case "GraphicsPage":
+                        _navPanel.Content = _graphicsPage;
+                        break;
+                    case "AudioPage":
+                        _navPanel.Content = _audioPage;
+                        break;
+                    case "NetworkPage":
+                        _navPanel.Content = _networkPage;
+                        break;
+                    case "LoggingPage":
+                        _navPanel.Content = _loggingPage;
+                        break;
+                }
+            }
         }
 
         private void Tabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             // TODO: Remove hardcoded size maybe?
 
-            if (_tabs.SelectedIndex == 4)
+           /* if (_tabs.SelectedIndex == 4)
             {
                 if (Width == 800)
                 {
@@ -104,7 +163,7 @@ namespace Ryujinx.Ava.Ui.Windows
                     Height   = 650;
                     Position = new PixelPoint(Position.X, Position.Y + 65);
                 }
-            }
+            }*/
         }
 
         private async void AddButton_OnClick(object sender, RoutedEventArgs e)

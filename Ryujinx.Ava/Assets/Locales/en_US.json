@@ -499,5 +499,8 @@
   "DialogStopEmulationMessage": "Are you sure you want to stop emulation?",
   "SettingsTabCpu": "CPU",
   "SettingsTabAudio": "Audio",
-  "SettingsTabNetwork": "Network"
+  "SettingsTabNetwork": "Network",
+  "SettingsTabAudioBackend" : "Audio Backend",
+  "SettingsTabAudioVolume" : "Audio Volume",
+  "SettingsTabNetworkConnection" : "Network Connection"
 }
