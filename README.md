@@ -123,7 +123,7 @@ If you'd like to support us financially, please take a look at our Patreon
 
 All the developers working on the project do so on their free time, but the project has several expenses:
 * Hackable Nintendo Switch consoles to reverse-engineer the hardware
-* Additional hardware to test and fix any bugs certain vendors (AMD, Nvidia, and Intel) may have 
+* Additional hardware to test (eg. GPUS to fix graphical bugs, other accessories to add support for, etc.) 
 * Software licenses to allow developers use whatever they are comfortable with
 * Web hosting and infrastructure maintaining
  
