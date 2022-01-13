@@ -110,7 +110,7 @@ Ryujinx system files are stored in the `Ryujinx` folder. This folder is located 
 
 ## Contact
 
-If you are having problems launching homebrew or a particular game marked status-playable or status-ingame in our compatibility list, or if you need help with setting up Ryujinx we recommend you ask questions in the #support channel of our [Discord server](https://discord.gg/Ryujinx) or take a look at our <a href="https://github.com/Ryujinx/Ryujinx/wiki/Frequently-Asked-Questions" target="_blank">FAQ.</a></i><br />  If you have contributions, have suggestions, or just want to get in touch with the team join our [Discord server](https://discord.gg/Ryujinx).
+If you are having problems launching homebrew or a particular game marked status-playable or status-ingame in our compatibility list, or if you need help with setting up Ryujinx we recommend you ask questions in the #support channel of our [Discord server](https://discord.gg/Ryujinx) or take a look at our <a href="https://github.com/Ryujinx/Ryujinx/wiki/Frequently-Asked-Questions" target="_blank">FAQ.</a></i><br />  If you have contributions, have suggestions, or just want to get in touch with the team, join our [Discord server](https://discord.gg/Ryujinx).
 
 
 ## Donations
