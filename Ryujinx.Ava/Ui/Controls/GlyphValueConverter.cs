@@ -16,18 +16,11 @@ namespace Ryujinx.Ava.Ui.Controls
     {
         private string _key;
 
-        private static Dictionary<ViewMode, string> _glyphs = new Dictionary<ViewMode, string>
+        private static Dictionary<Glyph, string> _glyphs = new Dictionary<Glyph, string>
         {
-            {ViewMode.List, char.ConvertFromUtf32((int)Symbol.List).ToString()},
-            {ViewMode.Grid, char.ConvertFromUtf32((int)Symbol.ViewAll).ToString()},
-            {ViewMode.Ui, char.ConvertFromUtf32((int)Symbol.FolderFilled).ToString()},
-            {ViewMode.Input, char.ConvertFromUtf32((int)Symbol.GamesFilled).ToString()},
-            {ViewMode.Settings, char.ConvertFromUtf32((int)Symbol.Settings).ToString()},
-            {ViewMode.Chip, char.ConvertFromUtf32((int)Symbol.CodeFilled).ToString()},
-            {ViewMode.Image, char.ConvertFromUtf32((int)Symbol.Image).ToString()},
-            {ViewMode.Speaker, char.ConvertFromUtf32((int)Symbol.Audio).ToString()},
-            {ViewMode.Network, char.ConvertFromUtf32((int)Symbol.World).ToString()},
-            {ViewMode.Page, char.ConvertFromUtf32((int)Symbol.DocumentFilled).ToString()},
+            {Glyph.List, char.ConvertFromUtf32((int)Symbol.List).ToString()},
+            {Glyph.Grid, char.ConvertFromUtf32((int)Symbol.ViewAll).ToString()},
+            {Glyph.Chip, char.ConvertFromUtf32(59748).ToString()}
         };
 
         public GlyphValueConverter(string key)
@@ -39,7 +32,7 @@ namespace Ryujinx.Ava.Ui.Controls
         {
             get
             {
-                if(_glyphs.TryGetValue(Enum.Parse<ViewMode>(key), out var val))
+                if(_glyphs.TryGetValue(Enum.Parse<Glyph>(key), out var val))
                 {
                     return val;
                 }

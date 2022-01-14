@@ -237,7 +237,7 @@ namespace Ryujinx.Configuration
         /// <summary>
         /// Chooses the base style
         /// </summary>
-        public ViewMode GameListViewMode { get; set; }
+        public Glyph GameListGlyph { get; set; }
 
         /// <summary>
         /// Show application name in Grid Mode

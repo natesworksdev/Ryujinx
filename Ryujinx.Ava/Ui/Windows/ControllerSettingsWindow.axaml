@@ -450,7 +450,7 @@
                                     <Slider
                                         Margin="0,-10,0,-5"
                                         Width="200"
-                                        Maximum="1"
+                                        Maximum="2"
                                         Minimum="0"
                                         Value="{Binding Configuration.RangeLeft, Mode=TwoWay}" />
                                     <TextBlock
@@ -1354,7 +1354,7 @@
                                     <Slider
                                         Margin="0,-10,0,-5"
                                         Width="200"
-                                        Maximum="1"
+                                        Maximum="2"
                                         Minimum="0"
                                         Value="{Binding Configuration.RangeRight, Mode=TwoWay}" />
                                     <TextBlock

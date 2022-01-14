@@ -16,6 +16,8 @@ using System.Linq;
 using System.Diagnostics;
 using Ryujinx.Common.Logging;
 using Avalonia.Rendering;
+using Avalonia.Media;
+
 
 namespace Ryujinx.Ava
 {

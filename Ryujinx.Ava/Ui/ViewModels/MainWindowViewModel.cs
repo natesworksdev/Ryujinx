@@ -251,12 +251,12 @@ namespace Ryujinx.Ava.Ui.ViewModels
         {
             get
             {
-                switch (ViewMode)
+                switch (Glyph)
                 {
-                    case ViewMode.List:
+                    case Glyph.List:
                         return _owner.GameList.SelectedItem as ApplicationData;
                         break;
-                    case ViewMode.Grid:
+                    case Glyph.Grid:
                         return _owner.GameGrid.SelectedApplication;
                         break;
                     default:
@@ -496,8 +496,8 @@ namespace Ryujinx.Ava.Ui.ViewModels
             }
         }
 
-        public bool IsGrid => ViewMode == ViewMode.Grid;
-        public bool IsList => ViewMode == ViewMode.List;
+        public bool IsGrid => Glyph == Glyph.Grid;
+        public bool IsList => Glyph == Glyph.List;
 
         public bool ShowTitleColumn
         {
@@ -697,7 +697,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             }
         }
 
-        public ViewMode ViewMode
+        public Glyph Glyph
         {
             get => ConfigurationState.Instance.Ui.GameListViewMode;
             set
@@ -1015,12 +1015,12 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public async void SetListMode()
         {
-            ViewMode = ViewMode.List;
+            Glyph = Glyph.List;
         }
 
         public async void SetGridMode()
         {
-            ViewMode = ViewMode.Grid;
+            Glyph = Glyph.Grid;
         }
 
         public async void OpenMiiApplet()

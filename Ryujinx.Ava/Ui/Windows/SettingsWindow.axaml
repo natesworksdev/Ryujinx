@@ -778,21 +778,20 @@
                     Icon="Settings" />
                 <ui:NavigationViewItem
                     Content="{locale:Locale SettingsTabCpu}"
-                    Tag="CpuPage"
-                    Icon="CodeFilled" />
+                    Tag="CpuPage">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:FontIcon FontFamily="avares://Ryujinx.Ava/Assets/Fonts#Segoe Fluent Icons"
+                                     Glyph="{controls:GlyphValueConverter Chip}" />
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
                 <ui:NavigationViewItem
                     Content="{locale:Locale SettingsTabGraphics}"
                     Tag="GraphicsPage"
-                    Icon="Image" />
+                    Icon="Image"/>
                 <ui:NavigationViewItem
                     Content="{locale:Locale SettingsTabAudio}"
-                    Tag="AudioPage">
-                    <ui:NavigationViewItem.Icon>
-                        <ui:FontIcon FontFamily="avares://FluentAvalonia/Fonts#Symbols"
-                                     Margin="0,4,4,0"
-                                     Glyph="{controls:GlyphValueConverter Speaker}" />
-                    </ui:NavigationViewItem.Icon>
-                </ui:NavigationViewItem>
+                    Icon="Audio"
+                    Tag="AudioPage"/>
                 <ui:NavigationViewItem
                     Content="{locale:Locale SettingsTabNetwork}"
                     Tag="NetworkPage"
