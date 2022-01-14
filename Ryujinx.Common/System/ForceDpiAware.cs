@@ -12,7 +12,6 @@ namespace Ryujinx.Common.System
         private static extern bool SetProcessDPIAware();
 
         private static readonly double _standardDpiScale = 96.0;
-        private static readonly double _maxScaleFactor   = 1.25;
 
         /// <summary>
         /// Marks the application as DPI-Aware when running on the Windows operating system.

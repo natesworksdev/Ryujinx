@@ -30,7 +30,7 @@ namespace Ryujinx.Ava
 {
     internal class Program
     {
-        public static double WindowScaleFactor { get; private set; }
+        public static double WindowScaleFactor { get; set; }
         public static string Version           { get; private set; }
         public static string ConfigurationPath { get; private set; }
         public static bool   PreviewerDetached { get; private set; }

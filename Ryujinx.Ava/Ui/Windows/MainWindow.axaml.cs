@@ -116,6 +116,11 @@ namespace Ryujinx.Ava.Ui.Windows
 
                 LoadGameList();
             }
+
+            if (OperatingSystem.IsLinux())
+            {
+                Program.WindowScaleFactor = this.PlatformImpl.RenderScaling;
+            }
         }
 
         [Conditional("DEBUG")]
