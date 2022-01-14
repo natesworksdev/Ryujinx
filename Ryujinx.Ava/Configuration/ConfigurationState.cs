@@ -539,7 +539,7 @@ namespace Ryujinx.Configuration
                 EnableCustomTheme         = Ui.EnableCustomTheme,
                 CustomThemePath           = Ui.CustomThemePath,
                 BaseStyle                 = Ui.BaseStyle,
-                GameListGlyph          = Ui.GameListViewMode,
+                GameListViewMode          = Ui.GameListViewMode,
                 ShowNames                 = Ui.ShowNames,
                 GridSize                  = Ui.GridSize,
                 ApplicationSort           = Ui.ApplicationSort,
@@ -1045,7 +1045,7 @@ namespace Ryujinx.Configuration
                 Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 36.");
 
                 configurationFileFormat.BaseStyle        = "Dark";
-                configurationFileFormat.GameListGlyph = Glyph.List;
+                configurationFileFormat.GameListViewMode = Glyph.List;
                 configurationFileFormat.ShowNames        = true;
                 configurationFileFormat.GridSize         = 2;
 
@@ -1104,7 +1104,7 @@ namespace Ryujinx.Configuration
             Ui.EnableCustomTheme.Value             = configurationFileFormat.EnableCustomTheme;
             Ui.CustomThemePath.Value               = configurationFileFormat.CustomThemePath;
             Ui.BaseStyle.Value                     = configurationFileFormat.BaseStyle;
-            Ui.GameListViewMode.Value              = configurationFileFormat.GameListGlyph;
+            Ui.GameListViewMode.Value              = configurationFileFormat.GameListViewMode;
             Ui.ShowNames.Value                     = configurationFileFormat.ShowNames;
             Ui.IsAscendingOrder.Value              = configurationFileFormat.IsAscendingOrder;
             Ui.GridSize.Value                      = configurationFileFormat.GridSize;
