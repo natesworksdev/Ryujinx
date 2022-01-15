@@ -116,7 +116,8 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
                 uiThemeFontFamily,
                 "Liberation Sans",
                 "FreeSans",
-                "DejaVu Sans"
+                "DejaVu Sans",
+                "Microsoft Sans Serif"
             };
 
             foreach (string fontFamily in availableFonts)
