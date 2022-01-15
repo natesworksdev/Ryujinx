@@ -160,6 +160,11 @@ namespace Ryujinx.Configuration
         public bool EnableShaderCache { get; set; }
 
         /// <summary>
+        /// Sets maximum host frame rate. Set to 0 to remove limit. 
+        /// </summary>
+        public uint HostFrameRate { get; set; }
+
+        /// <summary>
         /// Enables or disables profiled translation cache persistency
         /// </summary>
         public bool EnablePtc { get; set; }

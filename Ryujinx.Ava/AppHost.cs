@@ -89,12 +89,14 @@ namespace Ryujinx.Ava
 
         private long _ticks;
 
-        private bool _toggleDockedMode;
         private bool _isMouseInClient;
         private bool _renderingStarted;
-        private WindowsMultimediaTimerResolution _windowsMultimediaTimerResolution;
         private bool _dialogShown;
+
+        private WindowsMultimediaTimerResolution _windowsMultimediaTimerResolution;
         private KeyboardStateSnapshot _lastKeyboardSnapshot;
+        private ManualResetEventSlim _vsyncResetEvent;
+        private AdjustableRenderTimer _renderTimer;
 
         public event EventHandler AppExit;
         public event EventHandler<StatusUpdatedEventArgs> StatusUpdatedEvent;
@@ -153,6 +155,17 @@ namespace Ryujinx.Ava
             ConfigurationState.Instance.Graphics.AspectRatio.Event         += UpdateAspectRatioState;
             ConfigurationState.Instance.System.EnableDockedMode.Event      += UpdateDockedModeState;
             ConfigurationState.Instance.System.AudioVolume.Event           += UpdateAudioVolumeState;
+            ConfigurationState.Instance.Graphics.HostFrameRate.Event       += UpdateRenderTimerFrameRate;
+        }
+
+        private void UpdateRenderTimerFrameRate(object sender, ReactiveEventArgs<uint> e)
+        {
+            if(_renderTimer != null)
+            {
+                uint newFrameRate = e.NewValue == 0 ? 1000 : e.NewValue;
+
+                _renderTimer.TargetFrameRate = newFrameRate;
+            }
         }
 
         private void Parent_PointerLeft(object sender, PointerEventArgs e)
@@ -349,11 +362,12 @@ namespace Ryujinx.Ava
             DisplaySleep.Restore();
 
             _isActive = false;
-            
+            _vsyncResetEvent.Set();
+
             ConfigurationState.Instance.System.IgnoreMissingServices.Event -= UpdateIgnoreMissingServicesState;
             ConfigurationState.Instance.Graphics.AspectRatio.Event         -= UpdateAspectRatioState;
             ConfigurationState.Instance.System.EnableDockedMode.Event      -= UpdateDockedModeState;
-            ConfigurationState.Instance.System.EnableDockedMode.Event      -= UpdateDockedModeState;
+            ConfigurationState.Instance.Graphics.HostFrameRate.Event       -= UpdateRenderTimerFrameRate;
 
             _mainThread.Join();
             Renderer.Continue();
@@ -848,6 +862,12 @@ namespace Ryujinx.Ava
                 Device.Gpu.InitializeShaderCache();
                 Translator.IsReadyForTranslation.Set();
 
+                _vsyncResetEvent = new ManualResetEventSlim(false);
+
+                _renderTimer = new AdjustableRenderTimer(ConfigurationState.Instance.Graphics.HostFrameRate.Value == 0 ?
+                    1000 : ConfigurationState.Instance.Graphics.HostFrameRate.Value);
+                _renderTimer.Tick += RenderTimer_Tick;
+
                 while (_isActive)
                 {
                     _ticks += _chrono.ElapsedTicks;
@@ -884,7 +904,7 @@ namespace Ryujinx.Ava
 
                         string vendor = _renderer is Renderer renderer ? renderer.GpuVendor : "Vulkan Test";
 
-                        Program.RenderTimer.TargetFramePerSecond = Device.EnableDeviceVsync ? 60 : 240;  // Set Window Framerate to very high value when vsync is not set
+                        Program.RenderTimer.TargetFrameRate = ConfigurationState.Instance.Graphics.HostFrameRate.Value == 0 ? 1000 : ConfigurationState.Instance.Graphics.HostFrameRate.Value;
 
                         StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
                             Device.EnableDeviceVsync,
@@ -898,18 +918,35 @@ namespace Ryujinx.Ava
                         _ticks = Math.Min(_ticks - _ticksPerFrame, _ticksPerFrame);
                     }
                 }
+
+                _renderTimer.Tick -= RenderTimer_Tick;
+                _renderTimer.Dispose();
+                _vsyncResetEvent.Set();
+                _vsyncResetEvent.Dispose();
             });
 
             (Renderer as OpenGlRenderer)?.MakeCurrent(null);
 
             Renderer.SizeChanged -= Window_SizeChanged;
 
-            Program.RenderTimer.TargetFramePerSecond = 60;
+            Program.RenderTimer.TargetFrameRate = 60;
+        }
+
+        private void RenderTimer_Tick(TimeSpan obj)
+        {
+            _vsyncResetEvent.Set();
         }
 
         private void Present(int image)
         {
             Renderer.Present(image);
+
+            if (_isActive)
+            {
+                _vsyncResetEvent.Wait();
+            }
+
+            _vsyncResetEvent.Reset();
         }
 
         public async Task ShowExitPrompt()

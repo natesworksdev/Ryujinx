@@ -12,12 +12,12 @@ namespace Ryujinx.Ava.Ui.Controls
 {
     internal class AdjustableRenderTimer : IRenderTimer, IDisposable
     {
-        public int TargetFramePerSecond
+        public uint TargetFrameRate
         {
-            get => _targetFramePerSecond; set
+            get => _targetFrameRate; set
             {
-                _targetFramePerSecond = value;
-                _intervalTicks = Stopwatch.Frequency / _targetFramePerSecond;
+                _targetFrameRate = value;
+                _intervalTicks = Stopwatch.Frequency / _targetFrameRate;
             }
         }
 
@@ -49,15 +49,15 @@ namespace Ryujinx.Ava.Ui.Controls
 
         private Action<TimeSpan> _tick;
         private int _subscriberCount;
-        private int _targetFramePerSecond;
+        private uint _targetFrameRate;
 
         private long _intervalTicks;
         private bool _isRunning;
         private bool _isSuspended;
 
-        public AdjustableRenderTimer(int framerate)
+        public AdjustableRenderTimer(uint framerate)
         {
-            _targetFramePerSecond = framerate;
+            _targetFrameRate = framerate;
             _timer = new Stopwatch();
             _intervalTicks = Stopwatch.Frequency / framerate;
         }

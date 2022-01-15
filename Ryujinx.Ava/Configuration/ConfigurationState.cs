@@ -393,6 +393,11 @@ namespace Ryujinx.Configuration
             /// </summary>
             public ReactiveObject<bool> EnableShaderCache { get; private set; }
 
+            /// <summary>
+            /// Sets maximum host frame rate. Set to 0 to remove limit. 
+            /// </summary>
+            public ReactiveObject<uint> HostFrameRate { get; private set; }
+
             public GraphicsSection()
             {
                 BackendThreading        = new ReactiveObject<BackendThreading>();
@@ -410,6 +415,8 @@ namespace Ryujinx.Configuration
                 EnableVsync.Event       += static (sender, e) => LogValueChange(sender, e, nameof(EnableVsync));
                 EnableShaderCache       = new ReactiveObject<bool>();
                 EnableShaderCache.Event += static (sender, e) => LogValueChange(sender, e, nameof(EnableShaderCache));
+                HostFrameRate           = new ReactiveObject<uint>();
+                HostFrameRate.Event     += static (sender, e) => LogValueChange(sender, e, nameof(HostFrameRate));
             }
         }
 
@@ -508,6 +515,7 @@ namespace Ryujinx.Configuration
                 HideCursorOnIdle          = HideCursorOnIdle,
                 EnableVsync               = Graphics.EnableVsync,
                 EnableShaderCache         = Graphics.EnableShaderCache,
+                HostFrameRate             = Graphics.HostFrameRate,
                 EnablePtc                 = System.EnablePtc,
                 EnableInternetAccess      = System.EnableInternetAccess,
                 EnableFsIntegrityChecks   = System.EnableFsIntegrityChecks,
@@ -584,6 +592,7 @@ namespace Ryujinx.Configuration
             ShowConfirmExit.Value                  = true;
             HideCursorOnIdle.Value                 = false;
             Graphics.EnableVsync.Value             = true;
+            Graphics.HostFrameRate.Value           = 60;
             Graphics.EnableShaderCache.Value       = true;
             System.EnablePtc.Value                 = true;
             System.EnableInternetAccess.Value      = false;
@@ -1048,6 +1057,7 @@ namespace Ryujinx.Configuration
                 configurationFileFormat.GameListViewMode = Glyph.List;
                 configurationFileFormat.ShowNames        = true;
                 configurationFileFormat.GridSize         = 2;
+                configurationFileFormat.HostFrameRate    = 60;
 
                 configurationFileUpdated = true;
             }
@@ -1079,6 +1089,7 @@ namespace Ryujinx.Configuration
             HideCursorOnIdle.Value                 = configurationFileFormat.HideCursorOnIdle;
             Graphics.EnableVsync.Value             = configurationFileFormat.EnableVsync;
             Graphics.EnableShaderCache.Value       = configurationFileFormat.EnableShaderCache;
+            Graphics.HostFrameRate.Value           = configurationFileFormat.HostFrameRate;
             System.EnablePtc.Value                 = configurationFileFormat.EnablePtc;
             System.EnableInternetAccess.Value      = configurationFileFormat.EnableInternetAccess;
             System.EnableFsIntegrityChecks.Value   = configurationFileFormat.EnableFsIntegrityChecks;

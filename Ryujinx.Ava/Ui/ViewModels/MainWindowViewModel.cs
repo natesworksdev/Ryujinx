@@ -84,7 +84,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
         public MainWindowViewModel()
         {
             Applications = new ObservableCollection<ApplicationData>();
-            
+
             Applications.ToObservableChangeSet()
                 .Filter(Filter)
                 .Sort(GetComparer())
@@ -104,9 +104,9 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
             if (Program.PreviewerDetached)
             {
-                ShowUiKey     = KeyGesture.Parse(ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUi.ToString());
+                ShowUiKey = KeyGesture.Parse(ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUi.ToString());
                 ScreenshotKey = KeyGesture.Parse(ConfigurationState.Instance.Hid.Hotkeys.Value.Screenshot.ToString());
-                PauseKey      = KeyGesture.Parse(ConfigurationState.Instance.Hid.Hotkeys.Value.Pause.ToString());
+                PauseKey = KeyGesture.Parse(ConfigurationState.Instance.Hid.Hotkeys.Value.Pause.ToString());
 
                 Volume = ConfigurationState.Instance.System.AudioVolume;
             }
@@ -242,8 +242,8 @@ namespace Ryujinx.Ava.Ui.ViewModels
             }
         }
 
-        private string _showUikey     = "F4";
-        private string _pauseKey      = "F5";
+        private string _showUikey = "F4";
+        private string _pauseKey = "F5";
         private string _screenshotkey = "F8";
         private float _volume;
 
@@ -317,6 +317,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 _vsyncColor = value;
 
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(FrameRateLimitText));
             }
         }
 
@@ -386,6 +387,8 @@ namespace Ryujinx.Ava.Ui.ViewModels
             }
         }
 
+        public string FrameRateLimitText => $"Vsync ({(ConfigurationState.Instance.Graphics.HostFrameRate == 0 ? "∞" : ConfigurationState.Instance.Graphics.HostFrameRate.Value.ToString())} Hz)";
+
         public string GpuStatusText
         {
             get => _gpuStatusText;
@@ -418,10 +421,10 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 OnPropertyChanged();
             }
         }
-        
+
         public string VolumeStatusText
         {
-            get 
+            get
             {
                 string icon = Volume == 0 ? "🔇" : "🔊";
 
@@ -462,7 +465,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 OnPropertyChanged();
             }
         }
-        
+
         public bool IsLoadingIndeterminate
         {
             get => _isLoadingIndeterminate;
@@ -484,7 +487,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 OnPropertyChanged();
             }
         }
-        
+
         public bool IsAppletMenuActive
         {
             get => _isAppletMenuActive && EnableNonGameRunningControls;
@@ -554,7 +557,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
         private void RefreshView()
         {
             AppsCollection.Refresh();
-            
+
             RefreshGrid();
         }
 
@@ -835,7 +838,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 {
                     ShowNames = false;
                 }
-                
+
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(IsGridSmall));
                 OnPropertyChanged(nameof(IsGridNormal));
@@ -982,7 +985,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             {
                 string name = new FileInfo(files[0]).Name;
 
-                _owner.LoadApplication(files[0], titleName:name);
+                _owner.LoadApplication(files[0], titleName: name);
             }
         }
 
@@ -999,7 +1002,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             {
                 string name = new DirectoryInfo(folder).Name;
 
-                _owner.LoadApplication(folder, titleName:name);
+                _owner.LoadApplication(folder, titleName: name);
             }
         }
 
@@ -1086,7 +1089,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             {
                 ToggleFullscreen();
             }
-            else if(IsGameRunning)
+            else if (IsGameRunning)
             {
                 await Task.Delay(100);
                 _owner.AppHost?.ShowExitPrompt();
@@ -1166,7 +1169,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             }
             catch (Exception ex)
             {
-                
+
             }
         }
 
@@ -1381,7 +1384,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             {
                 return;
             }
-            
+
             var application = _owner.AppHost.Device.Application;
 
             if (application != null)
@@ -1389,7 +1392,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 CheatWindow cheatManager = new(_owner.VirtualFileSystem, application.TitleIdText, application.TitleName);
 
                 await cheatManager.ShowDialog(_owner);
-                
+
                 _owner.AppHost.Device.EnableCheats();
             }
         }

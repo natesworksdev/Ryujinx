@@ -24,10 +24,6 @@ namespace Ryujinx.Ava.Ui.Controls
         public event EventHandler<EventArgs> GlInitialized;
         public event EventHandler<Size> SizeChanged;
 
-        private IntPtr _waitFence = IntPtr.Zero;
-
-        private ManualResetEventSlim _waitEvent;
-
         private CancellationToken _token;
         private CancellationTokenSource _tokenSource;
 
@@ -38,7 +34,6 @@ namespace Ryujinx.Ava.Ui.Controls
             IObservable<Rect> resizeObservable = this.GetObservable(BoundsProperty);
 
             resizeObservable.Subscribe(Resized);
-            _waitEvent = new ManualResetEventSlim(false);
 
             Focusable = true;
 
@@ -76,16 +71,8 @@ namespace Ryujinx.Ava.Ui.Controls
 
         protected override void OnOpenGlRender(GlInterface gl, int fb)
         {
-            if (_waitFence != IntPtr.Zero)
-            {
-                GL.WaitSync(_waitFence, WaitSyncFlags.None, ulong.MaxValue);
-                GL.DeleteSync(_waitFence);
-                _waitFence = IntPtr.Zero;
-            }
 
             OnRender(gl, fb);
-
-            _waitEvent.Set();
         }
 
         protected abstract void OnRender(GlInterface gl, int fb);
@@ -93,12 +80,6 @@ namespace Ryujinx.Ava.Ui.Controls
         protected override void OnOpenGlDeinit(GlInterface gl, int fb)
         {
             base.OnOpenGlDeinit(gl, fb);
-
-            if (_waitFence != IntPtr.Zero)
-            {
-                GL.DeleteSync(_waitFence);
-                _waitFence = IntPtr.Zero;
-            }
         }
 
         protected void OnInitialized(GlInterface gl)
@@ -120,16 +101,7 @@ namespace Ryujinx.Ava.Ui.Controls
         internal void Present(int image)
         {
             Image = image;
-            _waitFence = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags.None);
-            _waitEvent.Reset();
             QueueRender();
-            try
-            {
-                _waitEvent.Wait(_token);
-            }
-            catch(OperationCanceledException){
-            
-            }
         }
     }
 }

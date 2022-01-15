@@ -534,6 +534,24 @@
                                     </ComboBoxItem>
                                 </ComboBox>
                             </StackPanel>
+                            <StackPanel
+                                Margin="0,5"
+                                Orientation="Horizontal"
+                                Spacing="20">
+                                <TextBlock VerticalAlignment="Center"
+                                           Text="{locale:Locale SettingsTabGraphicsFrameRate}"
+                                           ToolTip.Tip="{locale:Locale SettingsTabGraphicsFrameRateTooltip}" />
+                                <Slider Value="{Binding HostFrameRate}"
+                                        ToolTip.Tip="{locale:Locale AudioVolumeTooltip}"
+                                        Minimum="0"
+                                        Maximum="240"
+                                        SmallChange="5"
+										TickFrequency="5"
+										IsSnapToTickEnabled="True"
+                                        LargeChange="10"
+                                        Width="200" />
+                                <TextBlock VerticalAlignment="Center" Text="{Binding HostFrameRateDisplay}" />
+                            </StackPanel>
                         </StackPanel>
                         <Separator Height="1" Margin="0,5" />
                         <TextBlock FontWeight="Bold" Text="{locale:Locale SettingsTabGraphicsFeatures}" />
