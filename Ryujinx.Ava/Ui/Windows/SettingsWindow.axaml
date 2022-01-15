@@ -542,7 +542,7 @@
                                            Text="{locale:Locale SettingsTabGraphicsFrameRate}"
                                            ToolTip.Tip="{locale:Locale SettingsTabGraphicsFrameRateTooltip}" />
                                 <Slider Value="{Binding HostFrameRate}"
-                                        ToolTip.Tip="{locale:Locale AudioVolumeTooltip}"
+                                        ToolTip.Tip="{locale:Locale SettingsTabGraphicsFrameRateTooltip}"
                                         Minimum="0"
                                         Maximum="240"
                                         SmallChange="5"
