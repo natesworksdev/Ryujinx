@@ -15,7 +15,8 @@ namespace Ryujinx.Graphics.OpenGL
         private bool _sizeChanged;
         private int _copyFramebufferHandle;
         private int _stagingFrameBuffer;
-        private int _stagingTexture;
+        private int[] _stagingTextures;
+        private int _currentTexture;
 
         internal BackgroundContextWorker BackgroundContext { get; private set; }
 
@@ -24,9 +25,10 @@ namespace Ryujinx.Graphics.OpenGL
         public Window(Renderer renderer)
         {
             _renderer = renderer;
+            _stagingTextures = new int[2];
         }
 
-        public void Present(ITexture texture, ImageCrop crop, Action<int> swapBuffersCallback)
+        public void Present(ITexture texture, ImageCrop crop, Func<int, bool> swapBuffersCallback)
         {
             GL.Disable(EnableCap.FramebufferSrgb);
 
@@ -34,7 +36,7 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 if (_stagingFrameBuffer != 0)
                 {
-                    GL.DeleteTexture(_stagingTexture);
+                    GL.DeleteTextures(_stagingTextures.Length, _stagingTextures);
                     GL.DeleteFramebuffer(_stagingFrameBuffer);
                 }
 
@@ -48,7 +50,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
 
-            swapBuffersCallback(_stagingTexture);
+            _currentTexture = swapBuffersCallback(_stagingTextures[_currentTexture]) ? ++_currentTexture % _stagingTextures.Length : _currentTexture;
 
             GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, oldReadFramebufferHandle);
             GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, oldDrawFramebufferHandle);
@@ -64,16 +66,19 @@ namespace Ryujinx.Graphics.OpenGL
         private void CreateStagingFramebuffer()
         {
             _stagingFrameBuffer = GL.GenFramebuffer();
-            _stagingTexture = GL.GenTexture();
+            GL.GenTextures(_stagingTextures.Length, _stagingTextures);
 
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, _stagingFrameBuffer);
 
-            GL.BindTexture(TextureTarget.Texture2D, _stagingTexture);
-            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba8, _width, _height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, IntPtr.Zero);
+            foreach (var stagingTexture in _stagingTextures)
+            {
+                GL.BindTexture(TextureTarget.Texture2D, stagingTexture);
+                GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba8, _width, _height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, IntPtr.Zero);
 
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
-            GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, _stagingTexture, 0);
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+                GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, stagingTexture, 0);
+            }
 
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
             GL.BindTexture(TextureTarget.Texture2D, 0);
@@ -90,6 +95,9 @@ namespace Ryujinx.Graphics.OpenGL
         {
             GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, drawFramebuffer);
             GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, readFramebuffer);
+
+
+            GL.FramebufferTexture2D(FramebufferTarget.DrawFramebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, _stagingTextures[_currentTexture], 0);
 
             TextureView viewConverted = view.Format.IsBgr() ? _renderer.TextureCopy.BgraSwap(view) : view;
 
@@ -178,6 +186,9 @@ namespace Ryujinx.Graphics.OpenGL
             GL.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             GL.Clear(ClearBufferMask.ColorBufferBit);
 
+
+            GL.FramebufferTexture2D(FramebufferTarget.DrawFramebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, 0, 0);
+
             for (int i = 0; i < Constants.MaxRenderTargets; i++)
             {
                 ((Pipeline)_renderer.Pipeline).RestoreComponentMask(i);
@@ -243,10 +254,10 @@ namespace Ryujinx.Graphics.OpenGL
 
             if (_stagingFrameBuffer != 0)
             {
-                GL.DeleteTexture(_stagingTexture);
+                GL.DeleteTextures(_stagingTextures.Length, _stagingTextures);
                 GL.DeleteFramebuffer(_stagingFrameBuffer);
                 _stagingFrameBuffer = 0;
-                _stagingTexture = 0;
+                _stagingTextures = null;
             }
         }
     }

@@ -27,6 +27,9 @@ namespace Ryujinx.Ava.Ui.Controls
         private CancellationToken _token;
         private CancellationTokenSource _tokenSource;
 
+        private bool _presented;
+        private IntPtr _fence;
+
         protected Size RenderSize { get;private set; }
 
         public RendererBase()
@@ -39,6 +42,8 @@ namespace Ryujinx.Ava.Ui.Controls
 
             _tokenSource = new CancellationTokenSource();
             _token = _tokenSource.Token;
+
+            _fence = IntPtr.Zero;
         }
 
         private void Resized(Rect rect)
@@ -71,8 +76,19 @@ namespace Ryujinx.Ava.Ui.Controls
 
         protected override void OnOpenGlRender(GlInterface gl, int fb)
         {
+            lock (this)
+            {
+                OnRender(gl, fb);
 
-            OnRender(gl, fb);
+                if (_fence != IntPtr.Zero)
+                {
+                    GL.DeleteSync(_fence);
+                }
+
+                _fence = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags.None);
+
+                _presented = true;
+            }
         }
 
         protected abstract void OnRender(GlInterface gl, int fb);
@@ -98,10 +114,27 @@ namespace Ryujinx.Ava.Ui.Controls
             _tokenSource.Cancel();
         }
 
-        internal void Present(int image)
+        internal bool Present(int image)
         {
-            Image = image;
+            bool returnValue = _presented;
+
+            if (_presented)
+            {
+                lock (this)
+                {
+                    Image = image;
+                    _presented = false;
+
+                    if (_fence != IntPtr.Zero)
+                    {
+                        GL.WaitSync(_fence, WaitSyncFlags.None, long.MaxValue);
+                    }
+                }
+            }
+
             QueueRender();
+
+            return returnValue;
         }
     }
 }

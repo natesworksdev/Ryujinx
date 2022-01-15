@@ -189,7 +189,7 @@ namespace Ryujinx.Graphics.Gpu
         /// If the queue is empty, then no texture is presented.
         /// </summary>
         /// <param name="swapBuffersCallback">Callback method to call when a new texture should be presented on the screen</param>
-        public void Present(Action<int> swapBuffersCallback)
+        public void Present(Func<int, bool> swapBuffersCallback)
         {
             _context.AdvanceSequence();
 

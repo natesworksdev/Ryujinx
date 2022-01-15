@@ -110,7 +110,7 @@ namespace Ryujinx.HLE
             return Gpu.Window.ConsumeFrameAvailable();
         }
 
-        public void PresentFrame(Action<int> swapBuffersCallback)
+        public void PresentFrame(Func<int, bool> swapBuffersCallback)
         {
             Gpu.Window.Present(swapBuffersCallback);
         }

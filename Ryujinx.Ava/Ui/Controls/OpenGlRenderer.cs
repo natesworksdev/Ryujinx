@@ -57,7 +57,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
             CreateWindow(mainContext);
 
-            Window.SwapInterval = 1;
+            Window.SwapInterval = 0;
 
             OnInitialized(gl);
 
@@ -71,10 +71,11 @@ namespace Ryujinx.Ava.Ui.Controls
                 return;
             }
 
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, _framebuffer);
-            GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, Image, 0);
+            GL.Clear(ClearBufferMask.ColorBufferBit);
+            GL.ClearColor(0,0, 0, 0);
 
             GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, _framebuffer);
+            GL.FramebufferTexture2D(FramebufferTarget.ReadFramebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, Image, 0);
             GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, fb);
             GL.BlitFramebuffer(0,
                                0,
@@ -87,12 +88,16 @@ namespace Ryujinx.Ava.Ui.Controls
                                ClearBufferMask.ColorBufferBit,
                                BlitFramebufferFilter.Linear);
 
+            GL.FramebufferTexture2D(FramebufferTarget.ReadFramebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, 0, 0);
+
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, fb);
         }
 
         protected override void OnOpenGlDeinit(GlInterface gl, int fb)
         {
             base.OnOpenGlDeinit(gl, fb);
+
+            Window.SwapInterval = 1;
         }
 
         public async Task DestroyBackgroundContext()

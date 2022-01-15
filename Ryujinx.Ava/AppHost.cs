@@ -937,9 +937,9 @@ namespace Ryujinx.Ava
             _vsyncResetEvent.Set();
         }
 
-        private void Present(int image)
+        private bool Present(int image)
         {
-            Renderer.Present(image);
+            bool presented = Renderer.Present(image);
 
             if (_isActive)
             {
@@ -947,6 +947,8 @@ namespace Ryujinx.Ava
             }
 
             _vsyncResetEvent.Reset();
+
+            return presented;
         }
 
         public async Task ShowExitPrompt()
