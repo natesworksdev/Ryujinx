@@ -14,6 +14,8 @@ namespace Ryujinx.Graphics.Gpu.Image
     {
         private readonly GpuChannel _channel;
         private readonly ConcurrentQueue<Texture> _dereferenceQueue = new ConcurrentQueue<Texture>();
+        private readonly List<(int, Texture)> _bindlessList = new List<(int, Texture)>();
+        private bool _bindlessDisable;
 
         /// <summary>
         /// Intrusive linked list node used on the texture pool cache.
@@ -109,7 +111,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="activeSamplerPool">The currently active sampler pool</param>
         public void LoadAll(IRenderer renderer, SamplerPool activeSamplerPool)
         {
-            if (activeSamplerPool == null)
+            if (activeSamplerPool == null || _bindlessDisable)
             {
                 return;
             }
@@ -123,6 +125,8 @@ namespace Ryujinx.Graphics.Gpu.Image
                 SynchronizeMemory();
             }
 
+            var list = _bindlessList;
+
             ModifiedEntries.BeginIterating();
 
             int id;
@@ -133,15 +137,32 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 if (texture != null)
                 {
-                    foreach (var kv in activeSamplerPool.Samplers)
-                    {
-                        Sampler sampler = kv.Key;
-                        int samplerId = kv.Value;
-
-                        renderer.Pipeline.SetBindlessTexture(id, texture.HostTexture, samplerId, sampler.GetHostSampler(texture));
-                    }
+                    list.Add((id, texture));
                 }
             }
+
+            if (activeSamplerPool.Samplers.Count * list.Count > 0x40000)
+            {
+                _bindlessDisable = true;
+                list.Clear();
+                Logger.Warning?.Print(LogClass.Gpu, "Too many textures, full bindless texture emulation has been disabled.");
+                return;
+            }
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                (id, Texture texture) = list[i];
+
+                foreach (var kv in activeSamplerPool.Samplers)
+                {
+                    Sampler sampler = kv.Key;
+                    int samplerId = kv.Value;
+
+                    renderer.Pipeline.SetBindlessTexture(id, texture.HostTexture, samplerId, sampler.GetHostSampler(texture));
+                }
+            }
+
+            list.Clear();
         }
 
         /// <summary>

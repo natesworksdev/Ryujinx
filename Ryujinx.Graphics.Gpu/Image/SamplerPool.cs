@@ -120,7 +120,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             return Get(id);
         }
 
-
         /// <summary>
         /// Implementation of the sampler pool range invalidation.
         /// </summary>
