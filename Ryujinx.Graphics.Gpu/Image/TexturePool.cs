@@ -141,7 +141,9 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
             }
 
-            if (activeSamplerPool.Samplers.Count * list.Count > 0x40000)
+            // If the total amount of textures and samplers combination would be higher
+            // than the maximum number of handles we can create, then disable bindless emulation.
+            if (activeSamplerPool.Samplers.Count * list.Count > 0x80000)
             {
                 _bindlessDisable = true;
                 list.Clear();
@@ -175,6 +177,12 @@ namespace Ryujinx.Graphics.Gpu.Image
         private Texture GetValidated(int id, bool forBindless = false)
         {
             TextureDescriptor descriptor = GetDescriptor(id);
+
+            if (!FormatTable.TryGetTextureFormat(descriptor.UnpackFormat(), descriptor.UnpackSrgb(), out _))
+            {
+                return null;
+            }
+
             TextureInfo info = GetInfo(descriptor, out int layerSize);
 
             // For bindless, we exclude 3D textures due to the current method used for 2D to 3D
