@@ -395,7 +395,7 @@ namespace Ryujinx.Graphics.Texture
             return output;
         }
 
-        public unsafe static byte[] DecodeBC5(ReadOnlySpan<byte> data, int width, int height, int depth, int levels, int layers, bool signed)
+        public static byte[] DecodeBC5(ReadOnlySpan<byte> data, int width, int height, int depth, int levels, int layers, bool signed)
         {
             int size = 0;
 
