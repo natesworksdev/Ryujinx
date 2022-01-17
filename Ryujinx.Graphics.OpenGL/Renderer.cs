@@ -116,6 +116,12 @@ namespace Ryujinx.Graphics.OpenGL
                 supportsIndirectParameters: HwCapabilities.SupportsIndirectParameters,
                 maximumComputeSharedMemorySize: HwCapabilities.MaximumComputeSharedMemorySize,
                 maximumSupportedAnisotropy: HwCapabilities.MaximumSupportedAnisotropy,
+                maximumSupportedComputeUniforms: HwCapabilities.MaxComputeUniformBlocks,
+                maximumSupportedVertexUniforms: HwCapabilities.MaxVertexUniformBlocks,
+                maximumSupportedTessControlUniforms: HwCapabilities.MaxTessControlUniformBlocks,
+                maximumSupportedTessEvaluationUniforms: HwCapabilities.MaxTessEvaluationUniformBlocks,
+                maximumSupportedGeometryUniforms: HwCapabilities.MaxGeometryUniformBlocks,
+                maximumSupportedFragmentUniforms: HwCapabilities.MaxFragmentUniformBlocks,
                 storageBufferOffsetAlignment: HwCapabilities.StorageBufferOffsetAlignment);
         }
 

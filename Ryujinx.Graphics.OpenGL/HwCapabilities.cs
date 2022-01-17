@@ -21,6 +21,12 @@ namespace Ryujinx.Graphics.OpenGL
 
         private static readonly Lazy<int> _maximumComputeSharedMemorySize = new Lazy<int>(() => GetLimit(All.MaxComputeSharedMemorySize));
         private static readonly Lazy<int> _storageBufferOffsetAlignment   = new Lazy<int>(() => GetLimit(All.ShaderStorageBufferOffsetAlignment));
+        private static readonly Lazy<int> _maxComputeUniformBlocks        = new Lazy<int>(() => GetLimit(All.MaxComputeUniformBlocks));
+        private static readonly Lazy<int> _maxVertexUniformBlocks         = new Lazy<int>(() => GetLimit(All.MaxVertexUniformBlocks));
+        private static readonly Lazy<int> _maxTessControlUniformBlocks    = new Lazy<int>(() => GetLimit(All.MaxTessControlUniformBlocks));
+        private static readonly Lazy<int> _maxTessEvaluationUniformBlocks = new Lazy<int>(() => GetLimit(All.MaxTessEvaluationUniformBlocks));
+        private static readonly Lazy<int> _maxGeometryUniformBlocks       = new Lazy<int>(() => GetLimit(All.MaxGeometryUniformBlocks));
+        private static readonly Lazy<int> _maxFragmentUniformBlocks       = new Lazy<int>(() => GetLimit(All.MaxFragmentUniformBlocks));
 
         public enum GpuVendor
         {
@@ -63,6 +69,12 @@ namespace Ryujinx.Graphics.OpenGL
 
         public static int MaximumComputeSharedMemorySize => _maximumComputeSharedMemorySize.Value;
         public static int StorageBufferOffsetAlignment   => _storageBufferOffsetAlignment.Value;
+        public static int MaxComputeUniformBlocks        => _maxComputeUniformBlocks.Value;
+        public static int MaxVertexUniformBlocks         => _maxVertexUniformBlocks.Value;
+        public static int MaxTessControlUniformBlocks    => _maxTessControlUniformBlocks.Value;
+        public static int MaxTessEvaluationUniformBlocks => _maxTessEvaluationUniformBlocks.Value;
+        public static int MaxGeometryUniformBlocks       => _maxGeometryUniformBlocks.Value;
+        public static int MaxFragmentUniformBlocks       => _maxFragmentUniformBlocks.Value;
 
         public static float MaximumSupportedAnisotropy => _maxSupportedAnisotropy.Value;
 

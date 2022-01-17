@@ -91,6 +91,7 @@ namespace Ryujinx.Graphics.OpenGL
         {
             _supportBuffer = new SupportBufferUpdater(renderer);
             GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 0, Unsafe.As<BufferHandle, int>(ref _supportBuffer.Handle));
+            GL.BindBufferBase(BufferRangeTarget.ShaderStorageBuffer, 0, Unsafe.As<BufferHandle, int>(ref _supportBuffer.Handle));
 
             _supportBuffer.UpdateFragmentIsBgra(_fpIsBgra, 0, SupportBuffer.FragmentIsBgraCount);
             _supportBuffer.UpdateRenderScale(_renderScale, 0, SupportBuffer.RenderScaleMaxCount);

@@ -61,6 +61,11 @@ namespace Ryujinx.Graphics.Shader
             return 16;
         }
 
+        int QueryHostMaximumUniforms(ShaderStage stage)
+        {
+            return 18;
+        }
+
         bool QueryHostSupportsFragmentShaderInterlock()
         {
             return true;

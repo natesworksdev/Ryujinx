@@ -19,7 +19,14 @@ namespace Ryujinx.Graphics.GAL
 
         public int MaximumComputeSharedMemorySize { get; }
         public float MaximumSupportedAnisotropy { get; }
+        public int MaximumSupportedComputeUniforms { get; }
+        public int MaximumSupportedVertexUniforms { get; }
+        public int MaximumSupportedTessControlUniforms { get; }
+        public int MaximumSupportedTessEvaluationUniforms { get; }
+        public int MaximumSupportedGeometryUniforms { get; }
+        public int MaximumSupportedFragmentUniforms { get; }
         public int StorageBufferOffsetAlignment { get; }
+
 
         public Capabilities(
             bool hasFrontFacingBug,
@@ -37,6 +44,12 @@ namespace Ryujinx.Graphics.GAL
             bool supportsIndirectParameters,
             int maximumComputeSharedMemorySize,
             float maximumSupportedAnisotropy,
+            int maximumSupportedComputeUniforms,
+            int maximumSupportedVertexUniforms,
+            int maximumSupportedTessControlUniforms,
+            int maximumSupportedTessEvaluationUniforms,
+            int maximumSupportedGeometryUniforms,
+            int maximumSupportedFragmentUniforms,
             int storageBufferOffsetAlignment)
         {
             HasFrontFacingBug = hasFrontFacingBug;
@@ -54,6 +67,12 @@ namespace Ryujinx.Graphics.GAL
             SupportsIndirectParameters = supportsIndirectParameters;
             MaximumComputeSharedMemorySize = maximumComputeSharedMemorySize;
             MaximumSupportedAnisotropy = maximumSupportedAnisotropy;
+            MaximumSupportedComputeUniforms = maximumSupportedComputeUniforms;
+            MaximumSupportedVertexUniforms = maximumSupportedVertexUniforms;
+            MaximumSupportedTessControlUniforms = maximumSupportedTessControlUniforms;
+            MaximumSupportedTessEvaluationUniforms = maximumSupportedTessEvaluationUniforms;
+            MaximumSupportedGeometryUniforms = maximumSupportedGeometryUniforms;
+            MaximumSupportedFragmentUniforms = maximumSupportedFragmentUniforms;
             StorageBufferOffsetAlignment = storageBufferOffsetAlignment;
         }
     }
