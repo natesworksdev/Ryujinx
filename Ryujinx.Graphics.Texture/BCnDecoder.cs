@@ -544,10 +544,10 @@ namespace Ryujinx.Graphics.Texture
             }
             else
             {
-                alpha[2] = (byte)((4 * a0 + 1 * a1) / 7);
-                alpha[3] = (byte)((3 * a0 + 2 * a1) / 7);
-                alpha[4] = (byte)((2 * a0 + 3 * a1) / 7);
-                alpha[5] = (byte)((1 * a0 + 4 * a1) / 7);
+                alpha[2] = (byte)((4 * a0 + 1 * a1) / 5);
+                alpha[3] = (byte)((3 * a0 + 2 * a1) / 5);
+                alpha[4] = (byte)((2 * a0 + 3 * a1) / 5);
+                alpha[5] = (byte)((1 * a0 + 4 * a1) / 5);
                 alpha[6] = 0;
                 alpha[7] = 0xff;
             }
@@ -569,10 +569,10 @@ namespace Ryujinx.Graphics.Texture
             }
             else
             {
-                alpha[2] = (byte)((4 * a0 + 1 * a1) / 7);
-                alpha[3] = (byte)((3 * a0 + 2 * a1) / 7);
-                alpha[4] = (byte)((2 * a0 + 3 * a1) / 7);
-                alpha[5] = (byte)((1 * a0 + 4 * a1) / 7);
+                alpha[2] = (byte)((4 * a0 + 1 * a1) / 5);
+                alpha[3] = (byte)((3 * a0 + 2 * a1) / 5);
+                alpha[4] = (byte)((2 * a0 + 3 * a1) / 5);
+                alpha[5] = (byte)((1 * a0 + 4 * a1) / 5);
                 alpha[6] = 0x80;
                 alpha[7] = 0x7f;
             }
