@@ -11,6 +11,19 @@ namespace Ryujinx.Common.System
         [DllImport("user32.dll")]
         private static extern bool SetProcessDPIAware();
 
+        [DllImport("SDL2")]
+        public static extern int SDL_GetDisplayDPI(
+            int displayIndex,
+            out float ddpi,
+            out float hdpi,
+            out float vdpi
+        );
+
+        [DllImport("SDL2")]
+        public static extern int SDL_Init(uint flags);
+
+        [DllImport("SDL2")]
+        public static extern void SDL_Quit();
         private static readonly double _standardDpiScale = 96.0;
 
         /// <summary>
@@ -29,26 +42,13 @@ namespace Ryujinx.Common.System
         {
             double userDpiScale = 96.0;
 
-            if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+            if (SDL_Init(32) == 0)
             {
-                try
+                if (SDL_GetDisplayDPI(0, out var _, out var hdpi, out var _) == 0)
                 {
-                    if (OperatingSystem.IsWindows())
-                    {
-                        userDpiScale = Graphics.FromHwnd(IntPtr.Zero).DpiX;
-                    }
-                    else
-                    {
-                        // TODO: Linux support
-                    }
+                    userDpiScale = hdpi;
                 }
-                catch (Exception e)
-                {
-                    Logger.Warning?.Print(LogClass.Application, $"Couldn't determine monitor DPI: {e.Message}");
-                }
-            }
-            else
-            {
+                SDL_Quit();
             }
 
             return userDpiScale / _standardDpiScale;
