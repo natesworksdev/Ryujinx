@@ -14,9 +14,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         private enum FormatClass
         {
             Unclassified,
-            BCn64,
-            BCn128,
-            Bc1Rgb,
             Bc1Rgba,
             Bc2,
             Bc3,
@@ -88,7 +85,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 return new FormatInfo(Format.R4G4B4A4Unorm, 1, 1, 2, 4);
             }
 
-            if (info.Target == Target.Texture3D)
+            if (!caps.Supports3DTextureCompression && info.Target == Target.Texture3D)
             {
                 // The host API does not support 3D compressed formats.
                 // We assume software decompression will be done for those textures,
@@ -757,9 +754,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             switch (format)
             {
-                case Format.Bc1RgbSrgb:
-                case Format.Bc1RgbUnorm:
-                    return FormatClass.Bc1Rgb;
                 case Format.Bc1RgbaSrgb:
                 case Format.Bc1RgbaUnorm:
                     return FormatClass.Bc1Rgba;

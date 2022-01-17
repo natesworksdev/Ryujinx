@@ -834,7 +834,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 data = PixelConverter.ConvertR4G4ToR4G4B4A4(data);
             }
-            else if (Target == Target.Texture3D)
+            else if (!_context.Capabilities.Supports3DTextureCompression && Target == Target.Texture3D)
             {
                 switch (Format)
                 {
