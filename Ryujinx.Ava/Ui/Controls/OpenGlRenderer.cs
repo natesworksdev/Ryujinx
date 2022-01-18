@@ -29,6 +29,9 @@ namespace Ryujinx.Ava.Ui.Controls
         public GraphicsDebugLevel DebugLevel { get; }
         public OpenGLContextBase Context { get; set; }
 
+        public OpenGLContextBase PrimaryContext => 
+                AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>().PrimaryContext.AsOpenGLContextBase();
+
         public OpenGlRenderer(int major, int minor, GraphicsDebugLevel graphicsDebugLevel)
         {
             Major = major;
@@ -40,20 +43,7 @@ namespace Ryujinx.Ava.Ui.Controls
         {
             base.OnOpenGlInit(gl, fb);
 
-            var glInterface = AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>();
-            var context = glInterface.PrimaryContext;
-            _handle = (IntPtr)context.GetType().GetProperty("Handle").GetValue(context);
-
-            OpenGLContextBase mainContext = null;
-
-            if (OperatingSystem.IsWindows())
-            {
-                mainContext = new AvaloniaWglContext(_handle);
-            }
-            else if(OperatingSystem.IsLinux())
-            {
-                mainContext = new AvaloniaGlxContext(_handle);
-            }
+            OpenGLContextBase mainContext = PrimaryContext;
 
             CreateWindow(mainContext);
 

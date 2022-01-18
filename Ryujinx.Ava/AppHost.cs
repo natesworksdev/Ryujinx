@@ -844,7 +844,7 @@ namespace Ryujinx.Ava
 
             if (Renderer is OpenGlRenderer openGlEmbeddedWindow)
             {
-                (_renderer as Renderer).InitializeBackgroundContext(SPBOpenGLContext.CreateBackgroundContext(openGlEmbeddedWindow.Context));
+                (_renderer as Renderer).InitializeBackgroundContext(SPBOpenGLContext.CreateBackgroundContext(openGlEmbeddedWindow.PrimaryContext));
 
                 openGlEmbeddedWindow.MakeCurrent();
             }
@@ -941,12 +941,17 @@ namespace Ryujinx.Ava
         {
             bool presented = Renderer.Present(image);
 
-            if (_isActive)
+            try
             {
-                _vsyncResetEvent.Wait();
-            }
+                if (_isActive)
+                {
+                    _vsyncResetEvent.Wait();
 
-            _vsyncResetEvent.Reset();
+                }
+
+                _vsyncResetEvent.Reset();
+            }
+            catch (Exception) { }
 
             return presented;
         }
