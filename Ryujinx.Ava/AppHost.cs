@@ -384,6 +384,7 @@ namespace Ryujinx.Ava
             glRenderer?.MakeCurrent();
 
             Device.DisposeGpu();
+            _vsyncResetEvent?.Dispose();
 
             glRenderer?.MakeCurrent(null);
 
@@ -922,7 +923,6 @@ namespace Ryujinx.Ava
                 _renderTimer.Tick -= RenderTimer_Tick;
                 _renderTimer.Dispose();
                 _vsyncResetEvent.Set();
-                _vsyncResetEvent.Dispose();
             });
 
             (Renderer as OpenGlRenderer)?.MakeCurrent(null);
