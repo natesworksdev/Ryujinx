@@ -67,7 +67,7 @@ namespace Ryujinx.Ava.Ui.Windows
         public AppHost      AppHost      { get; private set; }
         public InputManager InputManager { get; private set; }
 
-        public RendererBase     GlRenderer        { get; private set; }
+        public RendererControl  GlRenderer        { get; private set; }
         public ContentControl   ContentFrame      { get; private set; }
         public TextBlock        LoadStatus        { get; private set; }
         public TextBlock        FirmwareStatus    { get; private set; }

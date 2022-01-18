@@ -101,7 +101,7 @@ namespace Ryujinx.Ava
         public event EventHandler AppExit;
         public event EventHandler<StatusUpdatedEventArgs> StatusUpdatedEvent;
 
-        public RendererBase         Renderer            { get; }
+        public RendererControl      Renderer            { get; }
         public VirtualFileSystem    VirtualFileSystem { get; }
         public ContentManager       ContentManager    { get; }
         public Switch               Device  { get; set; }
@@ -115,7 +115,7 @@ namespace Ryujinx.Ava
         public bool ScreenshotRequested { get; set; }
 
         public AppHost(
-            RendererBase           renderer,
+            RendererControl        renderer,
             InputManager           inputManager,
             string                 path,
             VirtualFileSystem      virtualFileSystem,

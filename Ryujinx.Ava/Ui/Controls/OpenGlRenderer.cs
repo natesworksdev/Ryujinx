@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.Ui.Controls
 {
-    internal class OpenGlRenderer : RendererBase
+    internal class OpenGlRenderer : RendererControl
     {
         private IntPtr _handle;
         private SwappableNativeWindowBase _window;

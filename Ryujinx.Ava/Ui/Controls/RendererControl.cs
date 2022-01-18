@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.Ui.Controls
 {
-    public abstract class RendererBase : OpenGlControlBase
+    public abstract class RendererControl : OpenGlControlBase
     {
         protected int Image { get; private set; }
         public SwappableNativeWindowBase Window { get; private set; }
@@ -28,11 +28,10 @@ namespace Ryujinx.Ava.Ui.Controls
         private CancellationTokenSource _tokenSource;
 
         private bool _presented;
-        private IntPtr _fence;
 
         protected Size RenderSize { get;private set; }
 
-        public RendererBase()
+        public RendererControl()
         {
             IObservable<Rect> resizeObservable = this.GetObservable(BoundsProperty);
 
@@ -42,8 +41,6 @@ namespace Ryujinx.Ava.Ui.Controls
 
             _tokenSource = new CancellationTokenSource();
             _token = _tokenSource.Token;
-
-            _fence = IntPtr.Zero;
         }
 
         private void Resized(Rect rect)
@@ -79,13 +76,6 @@ namespace Ryujinx.Ava.Ui.Controls
             lock (this)
             {
                 OnRender(gl, fb);
-
-                if (_fence != IntPtr.Zero)
-                {
-                    GL.DeleteSync(_fence);
-                }
-
-                _fence = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags.None);
 
                 _presented = true;
             }
@@ -124,13 +114,10 @@ namespace Ryujinx.Ava.Ui.Controls
                 {
                     Image = image;
                     _presented = false;
-
-                    if (_fence != IntPtr.Zero)
-                    {
-                        GL.WaitSync(_fence, WaitSyncFlags.None, long.MaxValue);
-                    }
                 }
             }
+
+            GL.Finish();
 
             QueueRender();
 
