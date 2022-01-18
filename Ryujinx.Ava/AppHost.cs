@@ -845,7 +845,7 @@ namespace Ryujinx.Ava
 
             if (Renderer is OpenGlRenderer openGlEmbeddedWindow)
             {
-                (_renderer as Renderer).InitializeBackgroundContext(SPBOpenGLContext.CreateBackgroundContext(openGlEmbeddedWindow.PrimaryContext));
+                (_renderer as Renderer).InitializeBackgroundContext(SPBOpenGLContext.CreateBackgroundContext(openGlEmbeddedWindow.Context));
 
                 openGlEmbeddedWindow.MakeCurrent();
             }
