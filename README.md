@@ -11,9 +11,9 @@
 </h1>
 
 <p align="center">
-       Ryujinx is an open-source Nintendo Switch emulator created by gdkchan and is written in C#.
-       This emulator aims at providing excellent accuracy and performance, while also providing a user-friendly interface, and consistent builds.
-       It was written from scratch and development started around September of 2017. Ryujinx is available on GitHub under the <a href="https://github.com/Ryujinx/Ryujinx/blob/master/LICENSE.txt" target="_blank">MIT license</a>. <br /> 
+       Ryujinx is an open-source Nintendo Switch emulator, created by gdkchan, written in C#.
+       This emulator aims at providing excellent accuracy and performance, a user-friendly interface and consistent builds.
+    It was written from scratch and development on the project began in September 2017. Ryujinx is available on Github under the <a href="https://github.com/Ryujinx/Ryujinx/blob/master/LICENSE.txt" target="_blank">MIT license</a>. <br /> 
 
 </p>
 <p align="center">
@@ -36,14 +36,12 @@
 
 ## Compatibility
 
-As of September 2021, Ryujinx has been tested on nearly 3,400 titles: ~3,000 boot past menus and into gameplay, with approximately 2,400 of those being considered playable.
-You can check out the compatibility list [here](https://github.com/Ryujinx/Ryujinx-Games-List/issues). Anyone is free to submit an updated test on an existing game entry; simply follow the new issue template and testing guidelines, and post as a reply to the applicable game issue.
-
-Don't hesitate to open a new issue if a game isn't already on there!
+As of January 2022, Ryujinx has been tested on approximately 3,500 titles; over 3,200 boot past menus and into gameplay, with roughly 2,500 of those being considered playable.
+You can check out the compatibility list [here](https://github.com/Ryujinx/Ryujinx-Games-List/issues). Anyone is free to submit an updated test on an existing game entry; simply follow the new issue template and testing guidelines, or post as a reply to the applicable game issue. Use the search function to see if a game has been tested already!
                   
 ## Usage
 
-To run this emulator, we recommend that your PC has at least 8GB of RAM; less than this amount can result in unpredictable behavior, crashes, or unacceptable performance.
+To run this emulator, your PC must be equipped with at least 8GB of RAM; failing to meet this requirement may result in a poor gameplay experience or unexpected crashes.
 
 See our [Setup & Configuration Guide](https://github.com/Ryujinx/Ryujinx/wiki/Ryujinx-Setup-&-Configuration-Guide) on how to set up the emulator.
 
@@ -54,7 +52,7 @@ For our Local Wireless and LAN builds, see our [Multiplayer: Local Play/Local Wi
 
 These builds are compiled automatically for each commit on the master branch. While we strive to ensure optimal stability and performance prior to pushing an update, our automated builds **may be unstable or completely broken.**
 
-If you want to see what's changed in an update, you can visit our [Changelog](https://github.com/Ryujinx/Ryujinx/wiki/Changelog).
+If you want to see details on updates to the emulator, you can visit our [Changelog](https://github.com/Ryujinx/Ryujinx/wiki/Changelog).
 
 The latest automatic build for Windows, macOS, and Linux can be found on the [Official Website](https://ryujinx.org/download).
 
@@ -110,12 +108,11 @@ Ryujinx system files are stored in the `Ryujinx` folder. This folder is located 
 
 ## Contact
 
-If you are having problems launching homebrew or a particular game marked status-playable or status-ingame in our compatibility list, or if you need help with setting up Ryujinx we recommend you ask questions in the #support channel of our [Discord server](https://discord.gg/Ryujinx) or take a look at our <a href="https://github.com/Ryujinx/Ryujinx/wiki/Frequently-Asked-Questions" target="_blank">FAQ.</a></i><br />  If you have contributions, have suggestions, or just want to get in touch with the team, join our [Discord server](https://discord.gg/Ryujinx).
-
+If you have contributions, suggestions, need emulator support or just want to get in touch with the team, join our [Discord server](https://discord.com/invite/Ryujinx). You may also review our [FAQ](https://github.com/Ryujinx/Ryujinx/wiki/Frequently-Asked-Questions).
 
 ## Donations
                   
-If you'd like to support us financially, don't hesitate to take a look at our Patreon!
+If you'd like to support the project financially, Ryujinx has an active Patreon campaign.
 
 <a href="https://www.patreon.com/ryujinx">
     <img src="https://images.squarespace-cdn.com/content/v1/560c1d39e4b0b4fae0c9cf2a/1567548955044-WVD994WZP76EWF15T0L3/Patreon+Button.png?format=500w" width="150">
@@ -123,11 +120,11 @@ If you'd like to support us financially, don't hesitate to take a look at our Pa
 
 All the developers working on the project do so on their free time, but the project has several expenses:
 * Hackable Nintendo Switch consoles to reverse-engineer the hardware
-* Additional hardware to test (eg. GPUS to fix graphical bugs, other accessories to add support for, etc.) 
-* Software licenses to allow developers use whatever they are comfortable with
-* Web hosting and infrastructure maintaining
+* Additional computer hardware for testing purposes (e.g. GPUs to diagnose graphical bugs, etc.) 
+* Licenses for various software development tools (e.g. Jetbrains, LDN servers, IDA)
+* Web hosting and infrastructure maintinance
  
-All the funds acquired through our Patreon are considered a donation to support our work. Patrons will get 1 week of exclusive early access to our progress reports and access to developer interviews.
+All funds received through Patreon are considered a donation to support the project. Patrons receive early access to progress reports and exclusive access to developer interviews.
 
 ## License
 
