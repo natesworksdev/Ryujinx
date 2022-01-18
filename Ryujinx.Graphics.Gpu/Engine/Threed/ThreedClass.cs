@@ -138,6 +138,14 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         }
 
         /// <summary>
+        /// Updates scissor based on current render target state.
+        /// </summary>
+        public void UpdateScissorState()
+        {
+            _stateUpdater.UpdateScissorState();
+        }
+
+        /// <summary>
         /// Marks the entire state as dirty, forcing a full host state update before the next draw.
         /// </summary>
         public void ForceStateDirty()
@@ -224,7 +232,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             uint syncpointId = (uint)argument & 0xFFFF;
 
             _context.AdvanceSequence();
-            _context.CreateHostSyncIfNeeded();
+            _context.CreateHostSyncIfNeeded(true);
             _context.Renderer.UpdateCounters(); // Poll the query counters, the game may want an updated result.
             _context.Synchronization.IncrementSyncpoint(syncpointId);
         }
