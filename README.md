@@ -122,7 +122,7 @@ All the developers working on the project do so on their free time, but the proj
 * Hackable Nintendo Switch consoles to reverse-engineer the hardware
 * Additional computer hardware for testing purposes (e.g. GPUs to diagnose graphical bugs, etc.) 
 * Licenses for various software development tools (e.g. Jetbrains, LDN servers, IDA)
-* Web hosting and infrastructure maintinance
+* Web hosting and infrastructure maintenance
  
 All funds received through Patreon are considered a donation to support the project. Patrons receive early access to progress reports and exclusive access to developer interviews.
 
