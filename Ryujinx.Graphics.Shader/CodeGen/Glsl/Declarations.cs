@@ -202,7 +202,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                         context.AppendLine($"layout (xfb_buffer = {tfOutput.Buffer}, xfb_offset = {tfOutput.Offset}, xfb_stride = {tfOutput.Stride}) out gl_PerVertex");
                         context.EnterScope();
                         context.AppendLine("vec4 gl_Position;");
-                        context.LeaveScope(";");
+                        context.LeaveScope(context.Config.Stage == ShaderStage.TessellationControl ? " gl_out[];" : ";");
                     }
                 }
             }
