@@ -52,11 +52,6 @@ namespace ARMeilleure.Instructions
             bool ordered   = (accType & AccessType.Ordered)   != 0;
             bool exclusive = (accType & AccessType.Exclusive) != 0;
 
-            if (ordered)
-            {
-                EmitBarrier(context);
-            }
-
             Operand address = context.Copy(GetIntOrSP(context, op.Rn));
 
             if (pair)
@@ -100,6 +95,12 @@ namespace ARMeilleure.Instructions
 
                 SetIntOrZR(context, op.Rt, value);
             }
+
+            if (ordered)
+            {
+                // Memory operations after this load may be only executed after the load completes.
+                EmitBarrier(context);
+            }
         }
 
         public static void Prfm(ArmEmitterContext context)
@@ -132,6 +133,7 @@ namespace ARMeilleure.Instructions
 
             if (ordered)
             {
+                // Memory operations before this store must have completed before the store is executed.
                 EmitBarrier(context);
             }
 
@@ -167,9 +169,7 @@ namespace ARMeilleure.Instructions
 
         private static void EmitBarrier(ArmEmitterContext context)
         {
-            // Note: This barrier is most likely not necessary, and probably
-            // doesn't make any difference since we need to do a ton of stuff
-            // (software MMU emulation) to read or write anything anyway.
+            context.MemoryBarrier();
         }
     }
 }
