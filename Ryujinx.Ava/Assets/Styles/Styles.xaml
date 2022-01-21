@@ -233,6 +233,10 @@
         <SolidColorBrush x:Key="ListBoxBackground" Color="{DynamicResource ThemeContentBackgroundColor}" />
         <SolidColorBrush x:Key="ThemeForegroundBrush" Color="{DynamicResource ThemeForegroundColor}" />
         <SolidColorBrush x:Key="ThemeAccentBrush4" Color="{DynamicResource ThemeAccentColor4}" />
+        <SolidColorBrush x:Key="SplitButtonBackgroundChecked" Color="#00E81123" />
+        <SolidColorBrush x:Key="SplitButtonBackgroundCheckedPointerOver" Color="#00E81123" />
+        <SolidColorBrush x:Key="SplitButtonBackgroundCheckedPressed" Color="#00E81123" />
+        <SolidColorBrush x:Key="SplitButtonBackgroundCheckedDisabled" Color="#00E81123" />
         <Thickness x:Key="PageMargin">40 0 40 0</Thickness>
         <Thickness x:Key="Margin">0 5 0 5</Thickness>
         <Thickness x:Key="TextMargin">0 4 0 0</Thickness>

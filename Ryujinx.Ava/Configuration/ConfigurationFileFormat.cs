@@ -162,7 +162,7 @@ namespace Ryujinx.Configuration
         /// <summary>
         /// Sets maximum host frame rate. Set to 0 to remove limit. 
         /// </summary>
-        public uint HostFrameRate { get; set; }
+        public uint HostRefreshRate { get; set; }
 
         /// <summary>
         /// Enables or disables profiled translation cache persistency

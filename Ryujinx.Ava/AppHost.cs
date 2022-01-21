@@ -97,6 +97,7 @@ namespace Ryujinx.Ava
         private KeyboardStateSnapshot _lastKeyboardSnapshot;
         private ManualResetEventSlim _vsyncResetEvent;
         private AdjustableRenderTimer _renderTimer;
+        private bool _frameRateUnlocked;
 
         public event EventHandler AppExit;
         public event EventHandler<StatusUpdatedEventArgs> StatusUpdatedEvent;
@@ -155,16 +156,30 @@ namespace Ryujinx.Ava
             ConfigurationState.Instance.Graphics.AspectRatio.Event         += UpdateAspectRatioState;
             ConfigurationState.Instance.System.EnableDockedMode.Event      += UpdateDockedModeState;
             ConfigurationState.Instance.System.AudioVolume.Event           += UpdateAudioVolumeState;
-            ConfigurationState.Instance.Graphics.HostFrameRate.Event       += UpdateRenderTimerFrameRate;
+            ConfigurationState.Instance.Graphics.HostRefreshRate.Event       += UpdateRenderTimerFrameRate;
         }
 
         private void UpdateRenderTimerFrameRate(object sender, ReactiveEventArgs<uint> e)
         {
-            if(_renderTimer != null)
-            {
-                uint newFrameRate = e.NewValue == 0 ? 1000 : e.NewValue;
+            UpdateTimer(e.NewValue);
+        }
 
-                _renderTimer.TargetFrameRate = newFrameRate;
+        public void UpdateTimer(uint newFrameRate)
+        {
+            if (_renderTimer != null)
+            {
+                if (newFrameRate == 0)
+                {
+                    _renderTimer.Stop();
+                    _frameRateUnlocked = true;
+                    _vsyncResetEvent?.Set();
+                }
+                else
+                {
+                    _renderTimer.Start();
+                    _renderTimer.TargetFrameRate = newFrameRate;
+                    _frameRateUnlocked = false;
+                }
             }
         }
 
@@ -336,8 +351,12 @@ namespace Ryujinx.Ava
         private void UpdateAudioVolumeState(object sender, ReactiveEventArgs<float> e)
         {
             Device?.SetVolume(e.NewValue);
-            _parent.ViewModel.Volume = e.NewValue;
-        }
+            Dispatcher.UIThread.Post(() =>
+            {
+                var value = e.NewValue;
+                _parent.ViewModel.Volume = e.NewValue;
+            });
+    }
 
         public void Dispose()
         {
@@ -367,7 +386,7 @@ namespace Ryujinx.Ava
             ConfigurationState.Instance.System.IgnoreMissingServices.Event -= UpdateIgnoreMissingServicesState;
             ConfigurationState.Instance.Graphics.AspectRatio.Event         -= UpdateAspectRatioState;
             ConfigurationState.Instance.System.EnableDockedMode.Event      -= UpdateDockedModeState;
-            ConfigurationState.Instance.Graphics.HostFrameRate.Event       -= UpdateRenderTimerFrameRate;
+            ConfigurationState.Instance.Graphics.HostRefreshRate.Event       -= UpdateRenderTimerFrameRate;
 
             _mainThread.Join();
             Renderer.Continue();
@@ -865,9 +884,9 @@ namespace Ryujinx.Ava
 
                 _vsyncResetEvent = new ManualResetEventSlim(false);
 
-                _renderTimer = new AdjustableRenderTimer(ConfigurationState.Instance.Graphics.HostFrameRate.Value == 0 ?
-                    1000 : ConfigurationState.Instance.Graphics.HostFrameRate.Value);
+                _renderTimer = new AdjustableRenderTimer(60);
                 _renderTimer.Tick += RenderTimer_Tick;
+                UpdateTimer(ConfigurationState.Instance.Graphics.HostRefreshRate.Value);
 
                 while (_isActive)
                 {
@@ -905,7 +924,7 @@ namespace Ryujinx.Ava
 
                         string vendor = _renderer is Renderer renderer ? renderer.GpuVendor : "Vulkan Test";
 
-                        Program.RenderTimer.TargetFrameRate = ConfigurationState.Instance.Graphics.HostFrameRate.Value == 0 ? 1000 : ConfigurationState.Instance.Graphics.HostFrameRate.Value;
+                        Program.RenderTimer.TargetFrameRate = ConfigurationState.Instance.Graphics.HostRefreshRate.Value == 0 ? 1000 : ConfigurationState.Instance.Graphics.HostRefreshRate.Value;
 
                         StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
                             Device.EnableDeviceVsync,
@@ -943,7 +962,7 @@ namespace Ryujinx.Ava
 
             try
             {
-                if (_isActive)
+                if (_isActive && !_frameRateUnlocked)
                 {
                     _vsyncResetEvent.Wait();
 

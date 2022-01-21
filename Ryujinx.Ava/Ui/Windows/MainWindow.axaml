@@ -638,7 +638,7 @@
                         <ProgressBar
                             Name="LoadProgressBar"
                             Grid.Column="2"
-                            Height="10"
+                            Height="6"
                             Maximum="{Binding StatusBarProgressMaximum}"
                             Value="{Binding StatusBarProgressValue}"
                             VerticalAlignment="Center"
@@ -659,7 +659,23 @@
                         VerticalAlignment="Center"
                         Foreground="{Binding VsyncColor}"
                         PointerReleased="VsyncStatus_PointerReleased"
+                        IsVisible="{Binding !ShowLoadProgress}"
                         Margin="0,0,5,0"
+                        Text="VSync"
+                        TextAlignment="Left" />
+                    <Border
+                        Width="2"
+                        Margin="2,0"
+                        IsVisible="{Binding !ShowLoadProgress}"
+                        BorderThickness="1"
+                        Height="12"
+                        BorderBrush="Gray" />
+                    <TextBlock
+                        Name="RefreshRateStatus"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        IsVisible="{Binding !ShowLoadProgress}"
+                        Margin="5,0,5,0"
                         Text="{Binding FrameRateLimitText}"
                         TextAlignment="Left" />
                     <Border
@@ -699,15 +715,31 @@
                         BorderThickness="1"
                         Height="12"
                         BorderBrush="Gray" />
-                    <TextBlock
+                    <ui:ToggleSplitButton
                         Margin="5,0,5,0"
+                        Padding="5,0,5,0"
                         Name="VolumeStatus"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
                         IsVisible="{Binding !ShowLoadProgress}"
-                        PointerReleased="VolumeStatus_PointerReleased"
-                        Text="{Binding VolumeStatusText}"
-                        TextAlignment="Left" />
+                        IsChecked="{Binding VolumeMuted}"
+                        Content="{Binding VolumeStatusText}">
+                        <ui:ToggleSplitButton.Flyout>
+                            <Flyout Placement="Bottom" ShowMode="TransientWithDismissOnPointerMoveAway">
+                                <Grid Margin="0">
+                                    <Slider Value="{Binding Volume}"
+                                            ToolTip.Tip="{locale:Locale AudioVolumeTooltip}"
+                                            Minimum="0"
+                                            Maximum="1"
+                                            Padding="0"
+                                            Margin="0"
+                                            SmallChange="0.01"
+                                            LargeChange="0.05"
+                                            Width="80" />
+                                </Grid>
+                            </Flyout>
+                        </ui:ToggleSplitButton.Flyout>
+                    </ui:ToggleSplitButton>
                     <Border
                         Width="2"
                         Margin="2,0"

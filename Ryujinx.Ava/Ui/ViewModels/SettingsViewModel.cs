@@ -37,7 +37,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
         private int _graphicsBackendMultithreadingIndex;
         private float _previousVolumeLevel;
         private float _volume;
-        private uint _hostFrameRate;
+        private uint _hostRefreshRate;
 
         public int ResolutionScale
         {
@@ -119,7 +119,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
         public string TimeZone { get; set; }
         public string ShaderDumpPath { get; set; }
         public string CustomThemePath { get; set; }
-        public string HostFrameRateDisplay => HostFrameRate == 0 ? "‡" : HostFrameRate.ToString();
+        public string HostRefreshRateDisplay => HostRefreshRate == 0 ? "âˆž" : HostRefreshRate.ToString();
 
         public int Language { get; set; }
         public int Region { get; set; }
@@ -130,13 +130,13 @@ namespace Ryujinx.Ava.Ui.ViewModels
         public int OpenglDebugLevel { get; set; }
         public int MemoryMode { get; set; }
         public int BaseStyleIndex { get; set; }
-        public uint HostFrameRate
+        public uint HostRefreshRate
         {
-            get => _hostFrameRate; set
+            get => _hostRefreshRate; set
             {
-                _hostFrameRate = value;
+                _hostRefreshRate = value;
                 OnPropertyChanged();
-                OnPropertyChanged(nameof(HostFrameRateDisplay));
+                OnPropertyChanged(nameof(HostRefreshRateDisplay));
             }
         }
 
@@ -260,7 +260,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             IgnoreMissingServices = config.System.IgnoreMissingServices;
             ExpandDramSize = config.System.ExpandRam;
             EnableShaderCache = config.Graphics.EnableShaderCache;
-            HostFrameRate = config.Graphics.HostFrameRate;
+            HostRefreshRate = config.Graphics.HostRefreshRate;
             EnableFileLog = config.Logger.EnableFileLog;
             EnableStub = config.Logger.EnableStub;
             EnableInfo = config.Logger.EnableInfo;
@@ -332,7 +332,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             config.HideCursorOnIdle.Value = HideCursorOnIdle;
             config.Graphics.EnableVsync.Value = EnableVsync;
             config.Graphics.EnableShaderCache.Value = EnableShaderCache;
-            config.Graphics.HostFrameRate.Value = HostFrameRate;
+            config.Graphics.HostRefreshRate.Value = HostRefreshRate;
             config.System.EnablePtc.Value = EnablePptc;
             config.System.EnableInternetAccess.Value = EnableInternetAccess;
             config.System.EnableFsIntegrityChecks.Value = EnableFsIntegrityChecks;

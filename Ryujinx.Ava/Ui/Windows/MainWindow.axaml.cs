@@ -8,6 +8,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using FluentAvalonia.UI.Controls;
 using LibHac;
 using LibHac.Common;
 using Ryujinx.Ava.Common;
@@ -67,21 +68,22 @@ namespace Ryujinx.Ava.Ui.Windows
         public AppHost      AppHost      { get; private set; }
         public InputManager InputManager { get; private set; }
 
-        public RendererControl  GlRenderer        { get; private set; }
-        public ContentControl   ContentFrame      { get; private set; }
-        public TextBlock        LoadStatus        { get; private set; }
-        public TextBlock        FirmwareStatus    { get; private set; }
-        public TextBox          SearchBox         { get; private set; }
-        public ProgressBar      LoadProgressBar   { get; private set; }
-        public Menu             Menu              { get; private set; }
-        public MenuItem         UpdateMenuItem    { get; private set; }
-        public GameGridView     GameGrid          { get; private set; }
-        public DataGrid         GameList          { get; private set; }
-        public OffscreenTextBox HiddenTextBox     { get; private set; }
-        public HotKeyControl    FullscreenHotKey  { get; private set; }
-        public HotKeyControl    FullscreenHotKey2 { get; private set; }
-        public HotKeyControl    DockToggleHotKey  { get; private set; }
-        public HotKeyControl    ExitHotKey        { get; private set; }
+        public RendererControl   GlRenderer        { get; private set; }
+        public ContentControl    ContentFrame      { get; private set; }
+        public TextBlock         LoadStatus        { get; private set; }
+        public TextBlock         FirmwareStatus    { get; private set; }
+        public TextBox           SearchBox         { get; private set; }
+        public ProgressBar       LoadProgressBar   { get; private set; }
+        public Menu              Menu              { get; private set; }
+        public MenuItem          UpdateMenuItem    { get; private set; }
+        public GameGridView      GameGrid          { get; private set; }
+        public DataGrid          GameList          { get; private set; }
+        public OffscreenTextBox  HiddenTextBox     { get; private set; }
+        public HotKeyControl     FullscreenHotKey  { get; private set; }
+        public HotKeyControl     FullscreenHotKey2 { get; private set; }
+        public HotKeyControl     DockToggleHotKey  { get; private set; }
+        public HotKeyControl     ExitHotKey        { get; private set; }
+        public ToggleSplitButton VolumeStatus     { get; set; }
         public MainWindowViewModel ViewModel { get; private set; }
 
         public bool CanUpdate
@@ -499,7 +501,10 @@ namespace Ryujinx.Ava.Ui.Windows
             FullscreenHotKey  = this.FindControl<HotKeyControl>("FullscreenHotKey");
             FullscreenHotKey2 = this.FindControl<HotKeyControl>("FullscreenHotKey2");
             DockToggleHotKey  = this.FindControl<HotKeyControl>("DockToggleHotKey");
-            ExitHotKey  = this.FindControl<HotKeyControl>("ExitHotKey");
+            ExitHotKey        = this.FindControl<HotKeyControl>("ExitHotKey");
+            VolumeStatus      = this.FindControl<ToggleSplitButton>("VolumeStatus");
+
+            VolumeStatus.Click += VolumeStatus_CheckedChanged;
 
             GameGrid.ApplicationOpened += Application_Opened;
 
@@ -666,12 +671,13 @@ namespace Ryujinx.Ava.Ui.Windows
 
             ConfigurationState.Instance.Graphics.AspectRatio.Value = (int)aspectRatio + 1 > Enum.GetNames(typeof(AspectRatio)).Length - 1 ? AspectRatio.Fixed4x3 : aspectRatio + 1;
         }
-        
-        private void VolumeStatus_PointerReleased(object sender, PointerReleasedEventArgs e)
+
+        private void VolumeStatus_CheckedChanged(object sender, SplitButtonClickEventArgs e)
         {
-            if (AppHost.Device != null)
+            var volumeSplitButton = sender as ToggleSplitButton;
+            if (ViewModel.IsGameRunning)
             {
-                if (AppHost.Device.IsAudioMuted())
+                if (!volumeSplitButton.IsChecked)
                 {
                     AppHost.Device.SetVolume(ConfigurationState.Instance.System.AudioVolume);
                 }

@@ -541,7 +541,7 @@
                                 <TextBlock VerticalAlignment="Center"
                                            Text="{locale:Locale SettingsTabGraphicsFrameRate}"
                                            ToolTip.Tip="{locale:Locale SettingsTabGraphicsFrameRateTooltip}" />
-                                <Slider Value="{Binding HostFrameRate}"
+                                <Slider Value="{Binding HostRefreshRate}"
                                         ToolTip.Tip="{locale:Locale SettingsTabGraphicsFrameRateTooltip}"
                                         Minimum="0"
                                         Maximum="240"
@@ -550,7 +550,7 @@
 										IsSnapToTickEnabled="True"
                                         LargeChange="10"
                                         Width="200" />
-                                <TextBlock VerticalAlignment="Center" Text="{Binding HostFrameRateDisplay}" />
+                                <TextBlock VerticalAlignment="Center" Text="{Binding HostRefreshRateDisplay}" />
                             </StackPanel>
                         </StackPanel>
                         <Separator Height="1" Margin="0,5" />

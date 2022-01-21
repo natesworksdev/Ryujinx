@@ -387,7 +387,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             }
         }
 
-        public string FrameRateLimitText => $"Vsync ({(ConfigurationState.Instance.Graphics.HostFrameRate == 0 ? "∞" : ConfigurationState.Instance.Graphics.HostFrameRate.Value.ToString())} Hz)";
+        public string FrameRateLimitText => $"{(ConfigurationState.Instance.Graphics.HostRefreshRate == 0 ? "∞" : ConfigurationState.Instance.Graphics.HostRefreshRate.Value.ToString())} Hz";
 
         public string GpuStatusText
         {
@@ -432,13 +432,21 @@ namespace Ryujinx.Ava.Ui.ViewModels
             }
         }
 
+        public bool VolumeMuted => _volume == 0;
+
         public float Volume
         {
             get => _volume;
             set
             {
                 _volume = value;
+
+                if (_isGameRunning)
+                {
+                    _owner.AppHost.Device.SetVolume(_volume);
+                }
                 OnPropertyChanged(nameof(VolumeStatusText));
+                OnPropertyChanged(nameof(VolumeMuted));
             }
         }
 

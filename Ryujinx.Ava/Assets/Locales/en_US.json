@@ -503,8 +503,8 @@
   "SettingsTabAudioBackend" : "Audio Backend",
   "SettingsTabAudioVolume" : "Audio Volume",
   "SettingsTabNetworkConnection" : "Network Connection",
-  "SettingsTabGraphicsFrameRate" : "Host Frame Rate",
-  "SettingsTabGraphicsFrameRateTooltip" : "Sets maximum host frame rate. Set to 0 to remove limit.",
+  "SettingsTabGraphicsFrameRate" : "Host Refresh Rate",
+  "SettingsTabGraphicsFrameRateTooltip" : "Sets host refresh rate. Set to 0 to remove limit.",
   "SettingsTabCpuCache" : "CPU Cache",
   "SettingsTabCpuMemory" : "CPU Memory"
 }
