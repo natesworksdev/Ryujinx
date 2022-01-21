@@ -12,9 +12,9 @@ build_script:
 - ps: >-
     dotnet --version
 
-    dotnet publish -c $env:config -r win-x64 /p:Version=$env:APPVEYOR_BUILD_VERSION /p:DebugType=embedded --self-contained
+    dotnet publish -c $env:config -r win-x64 /p:Version=$env:APPVEYOR_BUILD_VERSION /p:DebugType=embedded /p:PublishReadyToRun=true --self-contained
 
-    dotnet publish -c $env:config -r linux-x64 /p:Version=$env:APPVEYOR_BUILD_VERSION /p:DebugType=embedded --self-contained
+    dotnet publish -c $env:config -r linux-x64 /p:Version=$env:APPVEYOR_BUILD_VERSION /p:DebugType=embedded /p:PublishReadyToRun=true --self-contained
 
     7z a ryujinx$env:config_name$env:APPVEYOR_BUILD_VERSION-win_x64.zip $env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\$env:appveyor_dotnet_runtime\win-x64\publish\
 
