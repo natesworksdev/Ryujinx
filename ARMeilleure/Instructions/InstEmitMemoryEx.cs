@@ -52,6 +52,12 @@ namespace ARMeilleure.Instructions
             bool ordered   = (accType & AccessType.Ordered)   != 0;
             bool exclusive = (accType & AccessType.Exclusive) != 0;
 
+            if (ordered)
+            {
+                // Memory operations after this load may be only executed after the load completes.
+                EmitBarrier(context);
+            }
+
             Operand address = context.Copy(GetIntOrSP(context, op.Rn));
 
             if (pair)
@@ -94,12 +100,6 @@ namespace ARMeilleure.Instructions
                 Operand value = EmitLoadExclusive(context, address, exclusive, op.Size);
 
                 SetIntOrZR(context, op.Rt, value);
-            }
-
-            if (ordered)
-            {
-                // Memory operations after this load may be only executed after the load completes.
-                EmitBarrier(context);
             }
         }
 
