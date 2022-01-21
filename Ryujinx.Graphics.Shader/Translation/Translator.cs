@@ -103,6 +103,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 config.GetStorageBufferDescriptors(),
                 config.GetTextureDescriptors(),
                 config.GetImageDescriptors(),
+                config.BindlessTextureFlags,
                 config.UsedFeatures.HasFlag(FeatureFlags.InstanceId),
                 config.UsedFeatures.HasFlag(FeatureFlags.RtLayer),
                 config.ClipDistancesWritten);

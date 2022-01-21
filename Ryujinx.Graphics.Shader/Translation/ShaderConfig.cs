@@ -8,9 +8,6 @@ namespace Ryujinx.Graphics.Shader.Translation
 {
     class ShaderConfig
     {
-        // TODO: Non-hardcoded array size.
-        public const int SamplerArraySize = 4;
-
         public ShaderStage Stage { get; }
 
         public bool GpPassthrough { get; }
@@ -41,6 +38,8 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public FeatureFlags UsedFeatures { get; private set; }
 
+        public BindlessTextureFlags BindlessTextureFlags { get; set; }
+
         public HashSet<int> TextureHandlesForCache { get; }
 
         private readonly TranslationCounts _counts;
@@ -62,14 +61,12 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             public int CbufSlot { get; }
             public int Handle { get; }
-            public bool Indexed { get; }
             public TextureFormat Format { get; }
 
-            public TextureInfo(int cbufSlot, int handle, bool indexed, TextureFormat format)
+            public TextureInfo(int cbufSlot, int handle, TextureFormat format)
             {
                 CbufSlot = cbufSlot;
                 Handle = handle;
-                Indexed = indexed;
                 Format = format;
             }
 
@@ -80,12 +77,12 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             public bool Equals(TextureInfo other)
             {
-                return CbufSlot == other.CbufSlot && Handle == other.Handle && Indexed == other.Indexed && Format == other.Format;
+                return CbufSlot == other.CbufSlot && Handle == other.Handle && Format == other.Format;
             }
 
             public override int GetHashCode()
             {
-                return HashCode.Combine(CbufSlot, Handle, Indexed, Format);
+                return HashCode.Combine(CbufSlot, Handle, Format);
             }
         }
 
@@ -204,6 +201,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             ClipDistancesWritten |= other.ClipDistancesWritten;
             UsedFeatures |= other.UsedFeatures;
+            BindlessTextureFlags |= other.BindlessTextureFlags;
 
             TextureHandlesForCache.UnionWith(other.TextureHandlesForCache);
 
@@ -408,7 +406,6 @@ namespace Ryujinx.Graphics.Shader.Translation
             bool coherent)
         {
             var dimensions = type.GetDimensions();
-            var isIndexed = type.HasFlag(SamplerType.Indexed);
 
             var usageFlags = TextureUsageFlags.None;
 
@@ -416,7 +413,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             {
                 usageFlags |= TextureUsageFlags.NeedsScaleValue;
 
-                var canScale = Stage.SupportsRenderScale() && !isIndexed && !write && dimensions == 2;
+                var canScale = Stage.SupportsRenderScale() && !write && dimensions == 2;
 
                 if (!canScale)
                 {
@@ -436,26 +433,21 @@ namespace Ryujinx.Graphics.Shader.Translation
                 usageFlags |= TextureUsageFlags.ImageCoherent;
             }
 
-            int arraySize = isIndexed ? SamplerArraySize : 1;
-
-            for (int layer = 0; layer < arraySize; layer++)
+            var info = new TextureInfo(cbufSlot, handle, format);
+            var meta = new TextureMeta()
             {
-                var info = new TextureInfo(cbufSlot, handle + layer * 2, isIndexed, format);
-                var meta = new TextureMeta()
-                {
-                    AccurateType = accurateType,
-                    Type = type,
-                    UsageFlags = usageFlags
-                };
+                AccurateType = accurateType,
+                Type = type,
+                UsageFlags = usageFlags
+            };
 
-                if (dict.TryGetValue(info, out var existingMeta))
-                {
-                    dict[info] = MergeTextureMeta(meta, existingMeta);
-                }
-                else
-                {
-                    dict.Add(info, meta);
-                }
+            if (dict.TryGetValue(info, out var existingMeta))
+            {
+                dict[info] = MergeTextureMeta(meta, existingMeta);
+            }
+            else
+            {
+                dict.Add(info, meta);
             }
         }
 
@@ -566,7 +558,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             var descriptors = new TextureDescriptor[dict.Count];
 
             int i = 0;
-            foreach (var kv in dict.OrderBy(x => x.Key.Indexed).OrderBy(x => x.Key.Handle))
+            foreach (var kv in dict.OrderBy(x => x.Key.Handle))
             {
                 var info = kv.Key;
                 var meta = kv.Value;

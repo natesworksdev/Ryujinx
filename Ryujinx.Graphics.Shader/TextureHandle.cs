@@ -11,6 +11,10 @@ namespace Ryujinx.Graphics.Shader
 
     public static class TextureHandle
     {
+        public const int MaxTexturesPerStage = 30;
+        public const int DefaultCbufSlot = -1;
+        public const int NvnTextureBufferIndex = 2;
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int PackSlots(int cbufSlot0, int cbufSlot1)
         {

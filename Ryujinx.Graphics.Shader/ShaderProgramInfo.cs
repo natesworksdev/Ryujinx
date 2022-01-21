@@ -5,29 +5,32 @@ namespace Ryujinx.Graphics.Shader
 {
     public class ShaderProgramInfo
     {
-        public ReadOnlyCollection<BufferDescriptor>  CBuffers { get; }
-        public ReadOnlyCollection<BufferDescriptor>  SBuffers { get; }
+        public ReadOnlyCollection<BufferDescriptor> CBuffers { get; }
+        public ReadOnlyCollection<BufferDescriptor> SBuffers { get; }
         public ReadOnlyCollection<TextureDescriptor> Textures { get; }
-        public ReadOnlyCollection<TextureDescriptor> Images   { get; }
+        public ReadOnlyCollection<TextureDescriptor> Images { get; }
 
+        public BindlessTextureFlags BindlessTextureFlags { get; }
         public bool UsesInstanceId { get; }
         public bool UsesRtLayer { get; }
         public byte ClipDistancesWritten { get; }
 
         public ShaderProgramInfo(
-            BufferDescriptor[]  cBuffers,
-            BufferDescriptor[]  sBuffers,
+            BufferDescriptor[] cBuffers,
+            BufferDescriptor[] sBuffers,
             TextureDescriptor[] textures,
             TextureDescriptor[] images,
-            bool                usesInstanceId,
-            bool                usesRtLayer,
-            byte                clipDistancesWritten)
+            BindlessTextureFlags bindlessTextureFlags,
+            bool usesInstanceId,
+            bool usesRtLayer,
+            byte clipDistancesWritten)
         {
             CBuffers = Array.AsReadOnly(cBuffers);
             SBuffers = Array.AsReadOnly(sBuffers);
             Textures = Array.AsReadOnly(textures);
-            Images   = Array.AsReadOnly(images);
+            Images = Array.AsReadOnly(images);
 
+            BindlessTextureFlags = bindlessTextureFlags;
             UsesInstanceId = usesInstanceId;
             UsesRtLayer = usesRtLayer;
             ClipDistancesWritten = clipDistancesWritten;

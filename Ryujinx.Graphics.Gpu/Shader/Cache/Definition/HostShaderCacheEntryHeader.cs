@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using Ryujinx.Graphics.Shader;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Gpu.Shader.Cache.Definition
 {
@@ -66,9 +67,9 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache.Definition
         public byte ClipDistancesWritten;
 
         /// <summary>
-        /// Reserved / unused.
+        /// Flags indicating if the shader uses bindless textures, and their type.
         /// </summary>
-        public byte Reserved;
+        public BindlessTextureFlags BindlessTextureFlags;
 
         /// <summary>
         /// Create a new host shader cache entry header.
@@ -85,13 +86,15 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache.Definition
             int imagesCount,
             bool usesInstanceId,
             bool usesRtLayer,
-            byte clipDistancesWritten) : this()
+            byte clipDistancesWritten,
+            BindlessTextureFlags bindlessTextureFlags) : this()
         {
             CBuffersCount        = cBuffersCount;
             SBuffersCount        = sBuffersCount;
             TexturesCount        = texturesCount;
             ImagesCount          = imagesCount;
             ClipDistancesWritten = clipDistancesWritten;
+            BindlessTextureFlags = bindlessTextureFlags;
             InUse                = true;
 
             UseFlags = usesInstanceId ? UseFlags.InstanceId : UseFlags.None;

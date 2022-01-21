@@ -119,6 +119,12 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             _renderer.QueueCommand();
         }
 
+        public void SetBindlessTexture(int textureId, ITexture texture, int samplerId, ISampler sampler)
+        {
+            _renderer.New<SetBindlessTextureCommand>().Set(textureId, Ref(texture), samplerId, Ref(sampler));
+            _renderer.QueueCommand();
+        }
+
         public void SetBlendState(int index, BlendDescriptor blend)
         {
             _renderer.New<SetBlendStateCommand>().Set(index, blend);
@@ -245,12 +251,6 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             _renderer.QueueCommand();
         }
 
-        public void SetSampler(int binding, ISampler sampler)
-        {
-            _renderer.New<SetSamplerCommand>().Set(binding, Ref(sampler));
-            _renderer.QueueCommand();
-        }
-
         public void SetScissor(int index, bool enable, int x, int y, int width, int height)
         {
             _renderer.New<SetScissorCommand>().Set(index, enable, x, y, width, height);
@@ -269,9 +269,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             _renderer.QueueCommand();
         }
 
-        public void SetTexture(int binding, ITexture texture)
+        public void SetTextureAndSampler(int binding, ITexture texture, ISampler sampler)
         {
-            _renderer.New<SetTextureCommand>().Set(binding, Ref(texture));
+            _renderer.New<SetTextureAndSamplerCommand>().Set(binding, Ref(texture), Ref(sampler));
             _renderer.QueueCommand();
         }
 

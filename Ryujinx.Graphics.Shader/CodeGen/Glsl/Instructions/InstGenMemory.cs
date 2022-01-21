@@ -15,23 +15,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             bool isBindless = (texOp.Flags & TextureFlags.Bindless) != 0;
 
-            // TODO: Bindless texture support. For now we just return 0/do nothing.
-            if (isBindless)
-            {
-                switch (texOp.Inst)
-                {
-                    case Instruction.ImageStore:
-                        return "// imageStore(bindless)";
-                    case Instruction.ImageLoad:
-                        NumberFormatter.TryFormat(0, texOp.Format.GetComponentType(), out string imageConst);
-                        return imageConst;
-                    default:
-                        return NumberFormatter.FormatInt(0);
-                }
-            }
-
-            bool isArray   = (texOp.Type & SamplerType.Array)   != 0;
-            bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
+            bool isArray = (texOp.Type & SamplerType.Array) != 0;
 
             string texCall;
 
@@ -56,23 +40,26 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 texCall = texOp.Inst == Instruction.ImageLoad ? "imageLoad" : "imageStore";
             }
 
-            int srcIndex = isBindless ? 1 : 0;
+            int srcIndex = 0;
 
             string Src(VariableType type)
             {
                 return GetSoureExpr(context, texOp.GetSource(srcIndex++), type);
             }
 
-            string indexExpr = null;
+            VariableType type = texOp.Format.GetComponentType();
 
-            if (isIndexed)
+            string bindlessHandle = null;
+
+            if (isBindless)
             {
-                indexExpr = Src(VariableType.S32);
+                bindlessHandle = Src(VariableType.S32);
+                texCall += "(" + texOp.Type.ToGlslImageType(type) + "(" + HelperFunctionNames.GetBindlessHandle + "(" + bindlessHandle + "))";
             }
-
-            string imageName = OperandManager.GetImageName(context.Config.Stage, texOp, indexExpr);
-
-            texCall += "(" + imageName;
+            else
+            {
+                texCall += "(" + OperandManager.GetImageName(context.Config.Stage, texOp);
+            }
 
             int coordsCount = texOp.Type.GetDimensions();
 
@@ -87,20 +74,32 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             {
                 if ((context.Config.Stage.SupportsRenderScale()) &&
                     texOp.Inst == Instruction.ImageLoad &&
-                    !isBindless &&
-                    !isIndexed)
+                    !isBindless)
                 {
                     // Image scales start after texture ones.
                     int scaleIndex = context.Config.GetTextureDescriptors().Length + context.FindImageDescriptorIndex(texOp);
 
+                    string scaleFunc;
+
+                    if (isBindless)
+                    {
+                        scaleFunc = "Helper_TexelFetchScaleBindless";
+                        bindlessHandle = ", " + bindlessHandle;
+                    }
+                    else
+                    {
+                        scaleFunc = "Helper_TexelFetchScale";
+                        bindlessHandle = string.Empty;
+                    }
+
                     if (pCount == 3 && isArray)
                     {
                         // The array index is not scaled, just x and y.
-                        vector = "ivec3(Helper_TexelFetchScale((" + vector + ").xy, " + scaleIndex + "), (" + vector + ").z)";
+                        vector = $"ivec3({scaleFunc}(({vector}).xy{bindlessHandle}, {scaleIndex}), ({vector}).z)";
                     }
                     else if (pCount == 2 && !isArray)
                     {
-                        vector = "Helper_TexelFetchScale(" + vector + ", " + scaleIndex + ")";
+                        vector = $"{scaleFunc}({vector}{bindlessHandle}, {scaleIndex})";
                     }
                 }
 
@@ -125,8 +124,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             if (texOp.Inst == Instruction.ImageStore)
             {
-                VariableType type = texOp.Format.GetComponentType();
-
                 string[] cElems = new string[4];
 
                 for (int index = 0; index < 4; index++)
@@ -158,8 +155,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             if (texOp.Inst == Instruction.ImageAtomic)
             {
-                VariableType type = texOp.Format.GetComponentType();
-
                 if ((texOp.Flags & TextureFlags.AtomicMask) == TextureFlags.CAS)
                 {
                     Append(Src(type)); // Compare value.
@@ -282,18 +277,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 return NumberFormatter.FormatFloat(0);
             }
 
-            bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
+            string samplerName = OperandManager.GetSamplerName(context.Config.Stage, texOp);
 
-            string indexExpr = null;
-
-            if (isIndexed)
-            {
-                indexExpr = GetSoureExpr(context, texOp.GetSource(0), VariableType.S32);
-            }
-
-            string samplerName = OperandManager.GetSamplerName(context.Config.Stage, texOp, indexExpr);
-
-            int coordsIndex = isBindless || isIndexed ? 1 : 0;
+            int coordsIndex = isBindless ? 1 : 0;
 
             string coordsExpr;
 
@@ -465,7 +451,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             bool hasOffsets     = (texOp.Flags & TextureFlags.Offsets)     != 0;
 
             bool isArray       = (texOp.Type & SamplerType.Array)       != 0;
-            bool isIndexed     = (texOp.Type & SamplerType.Indexed)     != 0;
             bool isMultisample = (texOp.Type & SamplerType.Multisample) != 0;
             bool isShadow      = (texOp.Type & SamplerType.Shadow)      != 0;
 
@@ -487,12 +472,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             if (isShadow && isCube && !context.Config.GpuAccessor.QueryHostSupportsTextureShadowLod())
             {
                 hasLodLevel = false;
-            }
-
-            // TODO: Bindless texture support. For now we just return 0.
-            if (isBindless)
-            {
-                return NumberFormatter.FormatFloat(0);
             }
 
             string texCall = intCoords ? "texelFetch" : "texture";
@@ -519,23 +498,24 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 texCall += "Offsets";
             }
 
-            int srcIndex = isBindless ? 1 : 0;
+            int srcIndex = 0;
 
             string Src(VariableType type)
             {
                 return GetSoureExpr(context, texOp.GetSource(srcIndex++), type);
             }
 
-            string indexExpr = null;
+            string bindlessHandle = null;
 
-            if (isIndexed)
+            if (isBindless)
             {
-                indexExpr = Src(VariableType.S32);
+                bindlessHandle = Src(VariableType.S32);
+                texCall += "(" + texOp.Type.ToGlslSamplerType() + "(" + HelperFunctionNames.GetBindlessHandle + "(" + bindlessHandle + "))";
             }
-
-            string samplerName = OperandManager.GetSamplerName(context.Config.Stage, texOp, indexExpr);
-
-            texCall += "(" + samplerName;
+            else
+            {
+                texCall += "(" + OperandManager.GetSamplerName(context.Config.Stage, texOp);
+            }
 
             int coordsCount = texOp.Type.GetDimensions();
 
@@ -621,20 +601,31 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             {
                 if (intCoords)
                 {
-                    if ((context.Config.Stage.SupportsRenderScale()) &&
-                        !isBindless &&
-                        !isIndexed)
+                    if (context.Config.Stage.SupportsRenderScale() && !isBindless)
                     {
                         int index = context.FindTextureDescriptorIndex(texOp);
+
+                        string scaleFunc;
+
+                        if (isBindless)
+                        {
+                            scaleFunc = "Helper_TexelFetchScaleBindless";
+                            bindlessHandle = ", " + bindlessHandle;
+                        }
+                        else
+                        {
+                            scaleFunc = "Helper_TexelFetchScale";
+                            bindlessHandle = string.Empty;
+                        }
 
                         if (pCount == 3 && isArray)
                         {
                             // The array index is not scaled, just x and y.
-                            vector = "ivec3(Helper_TexelFetchScale((" + vector + ").xy, " + index + "), (" + vector + ").z)";
+                            vector = $"ivec3({scaleFunc}(({vector}).xy{bindlessHandle}, {index}), ({vector}).z)";
                         }
                         else if (pCount == 2 && !isArray)
                         {
-                            vector = "Helper_TexelFetchScale(" + vector + ", " + index + ")";
+                            vector = $"{scaleFunc}({vector}{bindlessHandle}, {index})";
                         }
                     }
                 }
@@ -745,18 +736,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 return NumberFormatter.FormatInt(0);
             }
 
-            bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
+            string samplerName = OperandManager.GetSamplerName(context.Config.Stage, texOp);
 
-            string indexExpr = null;
-
-            if (isIndexed)
-            {
-                indexExpr = GetSoureExpr(context, texOp.GetSource(0), VariableType.S32);
-            }
-
-            string samplerName = OperandManager.GetSamplerName(context.Config.Stage, texOp, indexExpr);
-
-            int lodSrcIndex = isBindless || isIndexed ? 1 : 0;
+            int lodSrcIndex = isBindless ? 1 : 0;
 
             IAstNode lod = operation.GetSource(lodSrcIndex);
 
@@ -770,9 +752,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             {
                 string texCall = $"textureSize({samplerName}, {lodExpr}){GetMask(texOp.Index)}";
 
-                if (context.Config.Stage.SupportsRenderScale() &&
-                    !isBindless &&
-                    !isIndexed)
+                if (context.Config.Stage.SupportsRenderScale() && !isBindless)
                 {
                     int index = context.FindTextureDescriptorIndex(texOp);
 

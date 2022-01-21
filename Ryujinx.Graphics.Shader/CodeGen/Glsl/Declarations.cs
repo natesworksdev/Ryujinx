@@ -12,6 +12,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
         public static void Declare(CodeGenContext context, StructuredProgramInfo info)
         {
             context.AppendLine("#version 450 core");
+            context.AppendLine("#extension GL_ARB_bindless_texture : enable");
             context.AppendLine("#extension GL_ARB_gpu_shader_int64 : enable");
 
             if (context.Config.GpuAccessor.QueryHostSupportsShaderBallot())
@@ -255,6 +256,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 }
             }
 
+            if (context.Config.BindlessTextureFlags != BindlessTextureFlags.None)
+            {
+                AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/GetBindlessHandle.glsl");
+            }
+
             if ((info.HelperFunctionsMask & HelperFunctionsMask.AtomicMinMaxS32Shared) != 0)
             {
                 AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/AtomicMinMaxS32Shared.glsl");
@@ -387,32 +393,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private static void DeclareSamplers(CodeGenContext context, TextureDescriptor[] descriptors)
         {
-            int arraySize = 0;
-            foreach (var descriptor in descriptors)
+            int count = Math.Min(descriptors.Length, TextureHandle.MaxTexturesPerStage);
+
+            for (int index = 0; index < count; index++)
             {
-                if (descriptor.Type.HasFlag(SamplerType.Indexed))
-                {
-                    if (arraySize == 0)
-                    {
-                        arraySize = ShaderConfig.SamplerArraySize;
-                    }
-                    else if (--arraySize != 0)
-                    {
-                        continue;
-                    }
-                }
+                TextureDescriptor descriptor = descriptors[index];
 
-                string indexExpr = NumberFormatter.FormatInt(arraySize);
-
-                string samplerName = OperandManager.GetSamplerName(
-                    context.Config.Stage,
-                    descriptor.CbufSlot,
-                    descriptor.HandleIndex,
-                    descriptor.Type.HasFlag(SamplerType.Indexed),
-                    indexExpr);
-
+                string samplerName = OperandManager.GetSamplerName(context.Config.Stage, descriptor.CbufSlot, descriptor.HandleIndex);
                 string samplerTypeName = descriptor.Type.ToGlslSamplerType();
-
                 string layout = string.Empty;
 
                 if (context.Config.Options.TargetApi == TargetApi.Vulkan)
@@ -429,30 +417,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private static void DeclareImages(CodeGenContext context, TextureDescriptor[] descriptors)
         {
-            int arraySize = 0;
             foreach (var descriptor in descriptors)
             {
-                if (descriptor.Type.HasFlag(SamplerType.Indexed))
-                {
-                    if (arraySize == 0)
-                    {
-                        arraySize = ShaderConfig.SamplerArraySize;
-                    }
-                    else if (--arraySize != 0)
-                    {
-                        continue;
-                    }
-                }
-
-                string indexExpr = NumberFormatter.FormatInt(arraySize);
-
                 string imageName = OperandManager.GetImageName(
                     context.Config.Stage,
                     descriptor.CbufSlot,
                     descriptor.HandleIndex,
-                    descriptor.Format,
-                    descriptor.Type.HasFlag(SamplerType.Indexed),
-                    indexExpr);
+                    descriptor.Format);
 
                 string imageTypeName = descriptor.Type.ToGlslImageType(descriptor.Format.GetComponentType());
 

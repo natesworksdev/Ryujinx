@@ -4,7 +4,7 @@ namespace Ryujinx.Graphics.Shader.Translation
     {
         public int UniformBuffersCount { get; private set; }
         public int StorageBuffersCount { get; private set; }
-        public int TexturesCount { get; private set; }
+        public int TexturesCount { get; private set; } = 2; // Reserved for bindless tables.
         public int ImagesCount { get; private set; }
 
         public TranslationCounts()
