@@ -55,6 +55,8 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             // TODO: signal event at right place
             _xpadIdEvent.ReadableEvent.Signal();
+
+            _vibrationPermitted = true;
         }
 
         [CommandHipc(0)]
@@ -1140,9 +1142,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         public ResultCode IsVibrationPermitted(ServiceCtx context)
         {
             context.ResponseData.Write(_vibrationPermitted);
-
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { _vibrationPermitted });
-
+                     
             return ResultCode.Success;
         }
 
