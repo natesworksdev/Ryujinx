@@ -11,6 +11,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             // The first binding is reserved for the support buffer.
             UniformBuffersCount = 1;
+            StorageBuffersCount = 1;
         }
 
         internal int IncrementUniformBuffersCount()

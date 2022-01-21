@@ -621,7 +621,15 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 return;
             }
 
-            context.AppendLine($"layout (binding = 0, std140) uniform {DefaultNames.SupportBlockName}");
+            // Check if the total amount of uniform buffers we use (also including the support buffer)
+            // would be past the host limit. If so, use a storage buffer for the support buffer instead.
+            // This may allow the shader to be within the host limit.
+            int usedUniformBuffers = context.Config.GetConstantBufferDescriptors().Length + 1;
+            int maxUniformBuffers = context.Config.GpuAccessor.QueryHostMaximumUniforms(context.Config.Stage);
+            bool isPastUniformsLimit = usedUniformBuffers > maxUniformBuffers;
+            string bufferType = isPastUniformsLimit ? "buffer" : "uniform";
+
+            context.AppendLine($"layout (binding = 0, std140) {bufferType} {DefaultNames.SupportBlockName}");
             context.EnterScope();
 
             switch (stage)

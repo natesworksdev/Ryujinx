@@ -43,6 +43,25 @@ namespace Ryujinx.Graphics.Gpu.Shader
         public bool QueryHostSupportsBgraFormat() => _context.Capabilities.SupportsBgraFormat;
 
         /// <summary>
+        /// Queries host maximum number of uniform buffers for a given shader stage.
+        /// </summary>
+        /// <param name="stage">Shader stage</param>
+        /// <returns>The maximum number of uniform buffers the specified stage can use</returns>
+        public int QueryHostMaximumUniforms(ShaderStage stage)
+        {
+            return stage switch
+            {
+                ShaderStage.Compute => _context.Capabilities.MaximumSupportedComputeUniforms,
+                ShaderStage.Vertex => _context.Capabilities.MaximumSupportedVertexUniforms,
+                ShaderStage.TessellationControl => _context.Capabilities.MaximumSupportedTessControlUniforms,
+                ShaderStage.TessellationEvaluation => _context.Capabilities.MaximumSupportedTessEvaluationUniforms,
+                ShaderStage.Geometry => _context.Capabilities.MaximumSupportedGeometryUniforms,
+                ShaderStage.Fragment => _context.Capabilities.MaximumSupportedFragmentUniforms,
+                _ => throw new ArgumentException($"Invalid shader stage \"{stage}\".")
+            };
+        }
+
+        /// <summary>
         /// Queries host support for fragment shader ordering critical sections on the shader code.
         /// </summary>
         /// <returns>True if fragment shader interlock is supported, false otherwise</returns>
