@@ -465,7 +465,7 @@ namespace Ryujinx.HLE.HOS
                 AudioRendererManager.Dispose();
 
                 LibHacHorizonManager.AmClient.Fs.UnregisterProgram(LibHacHorizonManager.ApplicationClient.Os.GetCurrentProcessId().Value);
-                
+
                 KernelContext.Dispose();
             }
         }

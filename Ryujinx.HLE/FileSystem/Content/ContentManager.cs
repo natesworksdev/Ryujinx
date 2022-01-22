@@ -293,7 +293,7 @@ namespace Ryujinx.HLE.FileSystem.Content
                 }
 
                 aocStorage = new Nca(_virtualFileSystem.KeySet, ncaFile.Get.AsStorage()).OpenStorage(NcaSectionType.Data, integrityCheckLevel);
-                
+
                 return true;
             }
 
@@ -408,7 +408,7 @@ namespace Ryujinx.HLE.FileSystem.Content
             {
                 return false;
             }
-            
+
             string installedPath = _virtualFileSystem.SwitchPathToSystemPath(locationEntry.ContentPath);
 
             if (!string.IsNullOrWhiteSpace(installedPath))

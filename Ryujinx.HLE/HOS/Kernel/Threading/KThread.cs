@@ -1287,7 +1287,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
             PreferredCore = _originalPreferredCore;
             AffinityMask = _originalAffinityMask;
-            
+
             if (AffinityMask != affinityMask)
             {
                 if ((AffinityMask & 1 << ActiveCore) != 0)
