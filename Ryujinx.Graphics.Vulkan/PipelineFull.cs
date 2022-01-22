@@ -11,6 +11,7 @@ namespace Ryujinx.Graphics.Vulkan
         private bool _hasPendingQuery;
 
         private readonly List<QueryPool> _activeQueries;
+        private CounterQueueEvent _activeConditionalRender;
 
         public PipelineFull(VulkanGraphicsDevice gd, Device device) : base(gd, device)
         {
@@ -167,6 +168,9 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 // throw new NotSupportedException();
             }
+
+            _activeConditionalRender?.ReleaseHostAccess();
+            _activeConditionalRender = null;
         }
 
         public bool TryHostConditionalRendering(ICounterEvent value, ulong compare, bool isEqual)
@@ -180,26 +184,31 @@ namespace Ryujinx.Graphics.Vulkan
                 //  - Comparing against 0.
                 //  - Event has not already been flushed.
 
-                if (evt.Disposed)
+                if (compare == 0 && evt.Type == CounterType.SamplesPassed && evt.ClearCounter)
                 {
-                    // If the event has been flushed, then just use the values on the CPU.
-                    // The query object may already be repurposed for another draw (eg. begin + end).
-                    return false;
-                }
-
-                if (Gd.Capabilities.SupportsConditionalRendering && compare == 0 && evt.Type == CounterType.SamplesPassed && evt.ClearCounter)
-                {
-                    var buffer = evt.GetBuffer().Get(Cbs, 0, sizeof(long)).Value;
-                    var flags = isEqual ? ConditionalRenderingFlagsEXT.ConditionalRenderingInvertedBitExt : 0;
-
-                    var conditionalRenderingBeginInfo = new ConditionalRenderingBeginInfoEXT()
+                    if (!value.ReserveForHostAccess())
                     {
-                        SType = StructureType.ConditionalRenderingBeginInfoExt,
-                        Buffer = buffer,
-                        Flags = flags
-                    };
+                        // If the event has been flushed, then just use the values on the CPU.
+                        // The query object may already be repurposed for another draw (eg. begin + end).
+                        return false;
+                    }
 
-                    // Gd.ConditionalRenderingApi.CmdBeginConditionalRendering(CommandBuffer, conditionalRenderingBeginInfo);
+                    if (Gd.Capabilities.SupportsConditionalRendering)
+                    {
+                        var buffer = evt.GetBuffer().Get(Cbs, 0, sizeof(long)).Value;
+                        var flags = isEqual ? ConditionalRenderingFlagsEXT.ConditionalRenderingInvertedBitExt : 0;
+
+                        var conditionalRenderingBeginInfo = new ConditionalRenderingBeginInfoEXT()
+                        {
+                            SType = StructureType.ConditionalRenderingBeginInfoExt,
+                            Buffer = buffer,
+                            Flags = flags
+                        };
+
+                        // Gd.ConditionalRenderingApi.CmdBeginConditionalRendering(CommandBuffer, conditionalRenderingBeginInfo);
+                    }
+
+                    _activeConditionalRender = evt;
                     return true;
                 }
             }
