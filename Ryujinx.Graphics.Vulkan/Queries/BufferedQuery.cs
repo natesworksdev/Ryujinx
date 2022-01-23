@@ -84,7 +84,11 @@ namespace Ryujinx.Graphics.Vulkan.Queries
             {
                 Marshal.WriteInt64(_bufferMap, DefaultValue);
                 _pipeline.CopyQueryResults(_queryPool, _buffer);
-                // _pipeline.FlushCommandsImpl();
+            }
+            else
+            {
+                // Dummy result, just return 0.
+                Marshal.WriteInt64(_bufferMap, 0);
             }
         }
 
