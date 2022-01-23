@@ -104,8 +104,8 @@ void main()
             var fragmentShaderColorBlit = gd.CompileShader(ShaderStage.Fragment, fragmentBindings, ColorBlitFragmentShaderSource);
             var fragmentShaderClearAlpha = gd.CompileShader(ShaderStage.Fragment, fragmentBindings, ClearAlphaFragmentShaderSource);
 
-            _programColorBlit = gd.CreateProgram(new[] { vertexShader, fragmentShaderColorBlit }, null);
-            _programClearAlpha = gd.CreateProgram(new[] { vertexShader, fragmentShaderClearAlpha }, null);
+            _programColorBlit = gd.CreateProgram(new[] { vertexShader, fragmentShaderColorBlit });
+            _programClearAlpha = gd.CreateProgram(new[] { vertexShader, fragmentShaderClearAlpha });
         }
 
         public void Blit(

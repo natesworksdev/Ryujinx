@@ -202,9 +202,9 @@ namespace Ryujinx.Graphics.Vulkan
             return BufferManager.CreateWithHandle(this, size, false);
         }
 
-        public IProgram CreateProgram(IShader[] shaders, TransformFeedbackDescriptor[] transformFeedbackDescriptors)
+        public IProgram CreateProgram(IShader[] shaders)
         {
-            return new ShaderCollection(this, _device, shaders, transformFeedbackDescriptors);
+            return new ShaderCollection(this, _device, shaders);
         }
 
         public ISampler CreateSampler(GAL.SamplerCreateInfo info)
@@ -253,23 +253,25 @@ namespace Ryujinx.Graphics.Vulkan
             var limits = properties.Limits;
 
             return new Capabilities(
-                TargetApi.Vulkan,
-                IsIntelWindows,
-                false,
-                features.TextureCompressionAstcLdr,
-                false,
-                SupportsFragmentShaderInterlock,
-                false,
-                features.ShaderStorageImageReadWithoutFormat,
-                true,
-                false,
-                false,
-                false,
-                false,
-                SupportsIndirectParameters,
-                (int)limits.MaxComputeSharedMemorySize,
-                (int)limits.MaxSamplerAnisotropy,
-                (int)limits.MinStorageBufferOffsetAlignment);
+                api: TargetApi.Vulkan,
+                hasFrontFacingBug: IsIntelWindows,
+                hasVectorIndexingBug: false,
+                supportsAstcCompression: features.TextureCompressionAstcLdr,
+                supports3DTextureCompression: true,
+                supportsBgraFormat: true,
+                supportsR4G4Format: false,
+                supportsFragmentShaderInterlock: SupportsFragmentShaderInterlock,
+                supportsFragmentShaderOrderingIntel: false,
+                supportsImageLoadFormatted: features.ShaderStorageImageReadWithoutFormat,
+                supportsMismatchingViewFormat: true,
+                supportsNonConstantTextureOffset: false,
+                supportsShaderBallot: false,
+                supportsTextureShadowLod: false,
+                supportsViewportSwizzle: false,
+                supportsIndirectParameters: SupportsIndirectParameters,
+                maximumComputeSharedMemorySize: (int)limits.MaxComputeSharedMemorySize,
+                maximumSupportedAnisotropy: (int)limits.MaxSamplerAnisotropy,
+                storageBufferOffsetAlignment: (int)limits.MinStorageBufferOffsetAlignment);
         }
 
         public HardwareInfo GetHardwareInfo()

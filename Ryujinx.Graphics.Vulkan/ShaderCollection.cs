@@ -44,8 +44,7 @@ namespace Ryujinx.Graphics.Vulkan
         public ShaderCollection(
             VulkanGraphicsDevice gd,
             Device device,
-            IShader[] shaders,
-            TransformFeedbackDescriptor[] transformFeedbackDescriptors)
+            IShader[] shaders)
         {
             _gd = gd;
             _device = device;

@@ -1,6 +1,7 @@
 ﻿using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Engine.Types;
 using System;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Ryujinx.Graphics.Gpu.Engine.Threed
@@ -544,7 +545,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     scissorH = (int)MathF.Ceiling(scissorH * scale);
                 }
 
-                _context.Renderer.Pipeline.SetScissor(0, true, scissorX, scissorY, scissorW, scissorH);
+                Rectangle<int> scissor = new Rectangle<int>(scissorX, scissorY, scissorW, scissorH);
+
+                _context.Renderer.Pipeline.SetScissors(MemoryMarshal.CreateSpan(ref scissor, 1));
             }
 
             if (clipMismatch)
