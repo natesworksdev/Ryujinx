@@ -10,6 +10,9 @@ namespace Ryujinx.Graphics.Vulkan
 {
     class TextureStorage : IDisposable
     {
+        private const MemoryPropertyFlags DefaultImageMemoryFlags =
+            MemoryPropertyFlags.MemoryPropertyDeviceLocalBit;
+
         private const ImageUsageFlags DefaultUsageFlags =
             ImageUsageFlags.ImageUsageSampledBit |
             ImageUsageFlags.ImageUsageTransferSrcBit |
@@ -127,7 +130,7 @@ namespace Ryujinx.Graphics.Vulkan
             if (foreignAllocation == null)
             {
                 gd.Api.GetImageMemoryRequirements(device, _image, out var requirements);
-                var allocation = gd.MemoryAllocator.AllocateDeviceMemory(physicalDevice, requirements);
+                var allocation = gd.MemoryAllocator.AllocateDeviceMemory(physicalDevice, requirements, DefaultImageMemoryFlags);
 
                 if (allocation.Memory.Handle == 0UL)
                 {
