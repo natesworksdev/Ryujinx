@@ -796,6 +796,8 @@ namespace ARMeilleure.CodeGen.X86
                 }
             }
 
+            node.SetSources(sources.ToArray());
+
             if (dest != default)
             {
                 if (dest.Type == OperandType.V128)
@@ -822,9 +824,7 @@ namespace ARMeilleure.CodeGen.X86
 
                     node.Destination = retReg;
                 }
-            }
-
-            node.SetSources(sources.ToArray());
+            }            
         }
 
         private static void HandleTailcallSystemVAbi(IntrusiveList<Operation> nodes, StackAllocator stackAlloc, Operation node)
