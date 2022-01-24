@@ -1142,7 +1142,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         public ResultCode IsVibrationPermitted(ServiceCtx context)
         {
             context.ResponseData.Write(_vibrationPermitted);
-                     
+
             return ResultCode.Success;
         }
 

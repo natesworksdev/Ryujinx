@@ -19,15 +19,9 @@ namespace Ryujinx.Graphics.GAL
         public readonly bool SupportsViewportSwizzle;
         public readonly bool SupportsIndirectParameters;
 
-        public int MaximumComputeSharedMemorySize { get; }
-        public float MaximumSupportedAnisotropy { get; }
-        public int MaximumSupportedComputeUniforms { get; }
-        public int MaximumSupportedVertexUniforms { get; }
-        public int MaximumSupportedTessControlUniforms { get; }
-        public int MaximumSupportedTessEvaluationUniforms { get; }
-        public int MaximumSupportedGeometryUniforms { get; }
-        public int MaximumSupportedFragmentUniforms { get; }
-        public int StorageBufferOffsetAlignment { get; }
+        public readonly int MaximumComputeSharedMemorySize;
+        public readonly float MaximumSupportedAnisotropy;
+        public readonly int StorageBufferOffsetAlignment;
 
         public Capabilities(
             bool hasFrontFacingBug,
