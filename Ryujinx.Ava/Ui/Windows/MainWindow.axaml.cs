@@ -459,10 +459,10 @@ namespace Ryujinx.Ava.Ui.Windows
 
             if (ConfigurationState.Instance.CheckUpdatesOnStart.Value && Updater.CanUpdate(false, this))
             {
-                await Updater.BeginParse(this, false).ContinueWith(task =>
+                /*await Updater.BeginParse(this, false).ContinueWith(task =>
                 {
                     Logger.Error?.Print(LogClass.Application, $"Updater Error: {task.Exception}");
-                }, TaskContinuationOptions.OnlyOnFaulted);
+                }, TaskContinuationOptions.OnlyOnFaulted);*/
             }
         }
 
