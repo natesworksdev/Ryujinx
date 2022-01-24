@@ -952,7 +952,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
             Thread thread = new(() =>
             {
-                ApplicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs, _owner.VirtualFileSystem, ConfigurationState.Instance.System.Language);
+                ApplicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs, ConfigurationState.Instance.System.Language);
 
                 _isLoading = false;
             })
@@ -1571,7 +1571,8 @@ namespace Ryujinx.Ava.Ui.ViewModels
             catch (LibHac.Common.Keys.MissingKeyException ex)
             {
                 Logger.Error?.Print(LogClass.Application, ex.ToString());
-                UserErrorDialog.ShowUserErrorDialog(UserError.NoKeys, _owner);
+                Dispatcher.UIThread.Post(async () => await
+                    UserErrorDialog.ShowUserErrorDialog(UserError.NoKeys, _owner));
             }
             catch (Exception ex)
             {

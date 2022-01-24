@@ -480,7 +480,8 @@ namespace Ryujinx.Ava
 
                         if (result != UserResult.Yes)
                         {
-                            UserErrorDialog.ShowUserErrorDialog(userError, _parent);
+                            Dispatcher.UIThread.Post(async () => await
+                                UserErrorDialog.ShowUserErrorDialog(userError, _parent));
 
                             Device.Dispose();
 
@@ -490,7 +491,8 @@ namespace Ryujinx.Ava
 
                     if (!SetupValidator.TryFixStartApplication(ContentManager, Path, userError, out _))
                     {
-                        UserErrorDialog.ShowUserErrorDialog(userError, _parent);
+                        Dispatcher.UIThread.Post(async () => await
+                            UserErrorDialog.ShowUserErrorDialog(userError, _parent));
 
                         Device.Dispose();
 
@@ -511,7 +513,8 @@ namespace Ryujinx.Ava
                 }
                 else
                 {
-                    UserErrorDialog.ShowUserErrorDialog(userError, _parent);
+                    Dispatcher.UIThread.Post(async () => await
+                        UserErrorDialog.ShowUserErrorDialog(userError, _parent));
 
                     Device.Dispose();
 

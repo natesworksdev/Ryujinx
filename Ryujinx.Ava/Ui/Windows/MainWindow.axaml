@@ -532,6 +532,7 @@
                   HorizontalAlignment="Stretch">
                 <Grid
                     HorizontalAlignment="Center"
+                    Margin="40"
                     VerticalAlignment="Center">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -566,6 +567,7 @@
                             Margin="10"
                             FontSize="30"
                             FontWeight="Bold"
+                            TextWrapping="Wrap"
                             Text="{Binding LoadHeading}"
                             TextAlignment="Left" />
                         <Border

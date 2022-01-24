@@ -117,6 +117,8 @@ namespace Ryujinx.Ava.Ui.Windows
                 InputManager = new InputManager(new AvaloniaKeyboardDriver(this), new SDL2GamepadDriver());
 
                 LoadGameList();
+
+                CheckLaunchState();
             }
 
             if (OperatingSystem.IsLinux())
@@ -417,6 +419,8 @@ namespace Ryujinx.Ava.Ui.Windows
             LibHacHorizonManager.InitializeArpServer();
             LibHacHorizonManager.InitializeBcatServer();
             LibHacHorizonManager.InitializeSystemClients();
+
+            ApplicationLibrary.VirtualFileSystem = VirtualFileSystem;
             
             // Save data created before we supported extra data in directory save data will not work properly if
             // given empty extra data. Luckily some of that extra data can be created using the data from the
@@ -434,15 +438,14 @@ namespace Ryujinx.Ava.Ui.Windows
             RefreshFirmwareStatus();
         }
 
-        protected async override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+        protected async void CheckLaunchState()
         {
-            base.OnAttachedToLogicalTree(e);
-
-            if(ShowKeyErrorOnLoad)
+            if (ShowKeyErrorOnLoad)
             {
                 ShowKeyErrorOnLoad = false;
 
-                UserErrorDialog.ShowUserErrorDialog(UserError.NoKeys, this);
+                Dispatcher.UIThread.Post(async () => await
+                    UserErrorDialog.ShowUserErrorDialog(UserError.NoKeys, this));
             }
 
             if(_deferLoad)

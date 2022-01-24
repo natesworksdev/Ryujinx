@@ -34,9 +34,10 @@ namespace Ryujinx.Ava.Common
         private static readonly byte[] _ncaIcon = GetResourceBytes("Ryujinx.Ava.Assets.Images.Icon_NCA.png");
         private static readonly byte[] _nroIcon = GetResourceBytes("Ryujinx.Ava.Assets.Images.Icon_NRO.png");
         private static readonly byte[] _nsoIcon = GetResourceBytes("Ryujinx.Ava.Assets.Images.Icon_NSO.png");
-
-        private static VirtualFileSystem _virtualFileSystem;
         private static Language _desiredTitleLanguage;
+
+        public static VirtualFileSystem VirtualFileSystem { get; set; }
+
         public static event EventHandler<ApplicationAddedEventArgs> ApplicationAdded;
         public static event EventHandler<ApplicationCountUpdatedEventArgs> ApplicationCountUpdated;
 
@@ -93,13 +94,11 @@ namespace Ryujinx.Ava.Common
             controlFile.Get.Read(out _, 0, outProperty, ReadOption.None).ThrowIfFailure();
         }
 
-        public static void LoadApplications(List<string> appDirs, VirtualFileSystem virtualFileSystem,
+        public static void LoadApplications(List<string> appDirs,
             Language desiredTitleLanguage)
         {
             int numApplicationsFound = 0;
             int numApplicationsLoaded = 0;
-
-            _virtualFileSystem = virtualFileSystem;
             _desiredTitleLanguage = desiredTitleLanguage;
 
             // Builds the applications list with paths to found applications
@@ -156,7 +155,7 @@ namespace Ryujinx.Ava.Common
 
                                 if (Path.GetExtension(applicationPath).ToLower() == ".xci")
                                 {
-                                    Xci xci = new Xci(_virtualFileSystem.KeySet, file.AsStorage());
+                                    Xci xci = new Xci(VirtualFileSystem.KeySet, file.AsStorage());
 
                                     pfs = xci.OpenPartition(XciPartitionType.Secure);
                                 }
@@ -175,7 +174,7 @@ namespace Ryujinx.Ava.Common
 
                                             pfs.OpenFile(ref ncaFile.Ref(), fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
-                                            Nca nca       = new Nca(_virtualFileSystem.KeySet, ncaFile.Get.AsStorage());
+                                            Nca nca       = new Nca(VirtualFileSystem.KeySet, ncaFile.Get.AsStorage());
                                             int dataIndex = Nca.GetSectionIndexFromType(NcaSectionType.Data, NcaContentType.Program);
 
                                             // Some main NCAs don't have a data partition, so check if the partition exists before opening it
@@ -361,7 +360,7 @@ namespace Ryujinx.Ava.Common
                         {
                             try
                             {
-                                Nca nca = new(_virtualFileSystem.KeySet,
+                                Nca nca = new(VirtualFileSystem.KeySet,
                                     new FileStream(applicationPath, FileMode.Open, FileAccess.Read).AsStorage());
                                 int dataIndex =
                                     Nca.GetSectionIndexFromType(NcaSectionType.Data, NcaContentType.Program);
@@ -471,7 +470,7 @@ namespace Ryujinx.Ava.Common
 
                                 if (Path.GetExtension(applicationPath).ToLower() == ".xci")
                                 {
-                                    Xci xci = new(_virtualFileSystem.KeySet, file.AsStorage());
+                                    Xci xci = new(VirtualFileSystem.KeySet, file.AsStorage());
 
                                     pfs = xci.OpenPartition(XciPartitionType.Secure);
                                 }
@@ -660,7 +659,7 @@ namespace Ryujinx.Ava.Common
         private static void GetControlFsAndTitleId(PartitionFileSystem pfs, out IFileSystem controlFs,
             out string titleId)
         {
-            (_, _, Nca controlNca) = ApplicationLoader.GetGameData(_virtualFileSystem, pfs, 0);
+            (_, _, Nca controlNca) = ApplicationLoader.GetGameData(VirtualFileSystem, pfs, 0);
 
             // Return the ControlFS
             controlFs = controlNca?.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.None);
@@ -804,7 +803,7 @@ namespace Ryujinx.Ava.Common
 
             try
             {
-                (Nca patchNca, Nca controlNca) = ApplicationLoader.GetGameUpdateData(_virtualFileSystem, titleId, 0, out updatePath);
+                (Nca patchNca, Nca controlNca) = ApplicationLoader.GetGameUpdateData(VirtualFileSystem, titleId, 0, out updatePath);
 
                 if (patchNca != null && controlNca != null)
                 {

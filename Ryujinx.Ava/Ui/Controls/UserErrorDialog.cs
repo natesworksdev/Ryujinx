@@ -1,6 +1,7 @@
 ﻿using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Windows;
+using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.Ui.Controls
 {
@@ -67,7 +68,7 @@ namespace Ryujinx.Ava.Ui.Controls
             };
         }
 
-        public static async void ShowUserErrorDialog(UserError error, StyleableWindow owner)
+        public static async Task ShowUserErrorDialog(UserError error, StyleableWindow owner)
         {
             string errorCode = GetErrorCode(error);
 
