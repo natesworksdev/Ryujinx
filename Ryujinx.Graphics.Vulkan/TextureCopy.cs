@@ -55,6 +55,20 @@ namespace Ryujinx.Graphics.Vulkan
 
             var filter = linearFilter && !dstInfo.Format.IsDepthOrStencil() ? Filter.Linear : Filter.Nearest;
 
+            TextureView.InsertImageBarrier(
+                api,
+                commandBuffer,
+                srcImage,
+                TextureStorage.DefaultAccessMask,
+                AccessFlags.AccessTransferReadBit,
+                PipelineStageFlags.PipelineStageAllCommandsBit,
+                PipelineStageFlags.PipelineStageTransferBit,
+                srcAspectFlags,
+                srcLayer,
+                srcLevel,
+                layers,
+                levels);
+
             for (int level = 0; level < levels; level++)
             {
                 var srcSl = new ImageSubresourceLayers(srcAspectFlags, (uint)srcLevel, (uint)srcLayer, (uint)layers);
@@ -81,6 +95,20 @@ namespace Ryujinx.Graphics.Vulkan
                     layers = Math.Max(1, layers >> 1);
                 }
             }
+
+            TextureView.InsertImageBarrier(
+                api,
+                commandBuffer,
+                dstImage,
+                AccessFlags.AccessTransferWriteBit,
+                TextureStorage.DefaultAccessMask,
+                PipelineStageFlags.PipelineStageTransferBit,
+                PipelineStageFlags.PipelineStageAllCommandsBit,
+                dstAspectFlags,
+                dstLayer,
+                dstLevel,
+                layers,
+                levels);
         }
 
         public static void Copy(
