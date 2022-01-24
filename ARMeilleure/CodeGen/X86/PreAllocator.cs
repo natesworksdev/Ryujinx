@@ -824,7 +824,7 @@ namespace ARMeilleure.CodeGen.X86
 
                     node.Destination = retReg;
                 }
-            }            
+            }
         }
 
         private static void HandleTailcallSystemVAbi(IntrusiveList<Operation> nodes, StackAllocator stackAlloc, Operation node)
