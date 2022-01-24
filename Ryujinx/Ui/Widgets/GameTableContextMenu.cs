@@ -6,9 +6,11 @@ using LibHac.Fs;
 using LibHac.Fs.Fsa;
 using LibHac.Fs.Shim;
 using LibHac.FsSystem;
-using LibHac.FsSystem.NcaUtils;
 using LibHac.Ncm;
 using LibHac.Ns;
+using LibHac.Tools.Fs;
+using LibHac.Tools.FsSystem;
+using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
@@ -467,6 +469,11 @@ namespace Ryujinx.Ui.Widgets
         private void ManageDlc_Clicked(object sender, EventArgs args)
         {
             new DlcWindow(_virtualFileSystem, _titleIdText, _titleName).Show();
+        }
+
+        private void ManageCheats_Clicked(object sender, EventArgs args)
+        {
+            new CheatWindow(_virtualFileSystem, _titleId, _titleName).Show();
         }
 
         private void OpenTitleModDir_Clicked(object sender, EventArgs args)

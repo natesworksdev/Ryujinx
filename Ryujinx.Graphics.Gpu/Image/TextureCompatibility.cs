@@ -2,6 +2,7 @@ using Ryujinx.Common;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Texture;
 using System;
+using System.Numerics;
 
 namespace Ryujinx.Graphics.Gpu.Image
 {
@@ -13,16 +14,29 @@ namespace Ryujinx.Graphics.Gpu.Image
         private enum FormatClass
         {
             Unclassified,
-            BCn64,
-            BCn128,
-            Bc1Rgb,
             Bc1Rgba,
             Bc2,
             Bc3,
             Bc4,
             Bc5,
             Bc6,
-            Bc7
+            Bc7,
+            Etc2Rgb,
+            Etc2Rgba,
+            Astc4x4,
+            Astc5x4,
+            Astc5x5,
+            Astc6x5,
+            Astc6x6,
+            Astc8x5,
+            Astc8x6,
+            Astc8x8,
+            Astc10x5,
+            Astc10x6,
+            Astc10x8,
+            Astc10x10,
+            Astc12x10,
+            Astc12x12
         }
 
         /// <summary>
@@ -71,13 +85,21 @@ namespace Ryujinx.Graphics.Gpu.Image
                 return new FormatInfo(Format.R4G4B4A4Unorm, 1, 1, 2, 4);
             }
 
-            if (info.Target == Target.Texture3D)
+            if (!caps.Supports3DTextureCompression && info.Target == Target.Texture3D)
             {
-                // The host API does not support 3D BC4/BC5 compressed formats.
+                // The host API does not support 3D compressed formats.
                 // We assume software decompression will be done for those textures,
                 // and so we adjust the format here to match the decompressor output.
                 switch (info.FormatInfo.Format)
                 {
+                    case Format.Bc1RgbaSrgb:
+                    case Format.Bc2Srgb:
+                    case Format.Bc3Srgb:
+                        return new FormatInfo(Format.R8G8B8A8Srgb, 1, 1, 4, 4);
+                    case Format.Bc1RgbaUnorm:
+                    case Format.Bc2Unorm:
+                    case Format.Bc3Unorm:
+                        return new FormatInfo(Format.R8G8B8A8Unorm, 1, 1, 4, 4);
                     case Format.Bc4Unorm:
                         return new FormatInfo(Format.R8Unorm, 1, 1, 1, 1);
                     case Format.Bc4Snorm:
@@ -93,33 +115,59 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Determines whether a texture can flush its data back to guest memory.
+        /// </summary>
+        /// <param name="info">Texture information</param>
+        /// <param name="caps">Host GPU Capabilities</param>
+        /// <returns>True if the texture can flush, false otherwise</returns>
+        public static bool CanTextureFlush(TextureInfo info, Capabilities caps)
+        {
+            if (IsFormatHostIncompatible(info, caps))
+            {
+                return false; // Flushing this format is not supported, as it may have been converted to another host format.
+            }
+
+            if (info.Target == Target.Texture2DMultisample ||
+                info.Target == Target.Texture2DMultisampleArray)
+            {
+                return false; // Flushing multisample textures is not supported, the host does not allow getting their data.
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Checks if two formats are compatible, according to the host API copy format compatibility rules.
         /// </summary>
-        /// <param name="lhs">First comparand</param>
-        /// <param name="rhs">Second comparand</param>
+        /// <param name="lhsFormat">First comparand</param>
+        /// <param name="rhsFormat">Second comparand</param>
+        /// <param name="caps">Host GPU capabilities</param>
         /// <returns>True if the formats are compatible, false otherwise</returns>
-        public static bool FormatCompatible(FormatInfo lhs, FormatInfo rhs)
+        public static bool FormatCompatible(TextureInfo lhs, TextureInfo rhs, Capabilities caps)
         {
-            if (lhs.Format.IsDepthOrStencil() || rhs.Format.IsDepthOrStencil())
+            FormatInfo lhsFormat = lhs.FormatInfo;
+            FormatInfo rhsFormat = rhs.FormatInfo;
+
+            if (lhsFormat.Format.IsDepthOrStencil() || rhsFormat.Format.IsDepthOrStencil())
             {
-                return lhs.Format == rhs.Format;
+                return lhsFormat.Format == rhsFormat.Format;
             }
 
-            if (lhs.Format.IsAstc() || rhs.Format.IsAstc())
+            if (IsFormatHostIncompatible(lhs, caps) || IsFormatHostIncompatible(rhs, caps))
             {
-                return lhs.Format == rhs.Format;
+                return lhsFormat.Format == rhsFormat.Format;
             }
 
-            if (lhs.IsCompressed && rhs.IsCompressed)
+            if (lhsFormat.IsCompressed && rhsFormat.IsCompressed)
             {
-                FormatClass lhsClass = GetFormatClass(lhs.Format);
-                FormatClass rhsClass = GetFormatClass(rhs.Format);
+                FormatClass lhsClass = GetFormatClass(lhsFormat.Format);
+                FormatClass rhsClass = GetFormatClass(rhsFormat.Format);
 
                 return lhsClass == rhsClass;
             }
             else
             {
-                return lhs.BytesPerPixel == rhs.BytesPerPixel;
+                return lhsFormat.BytesPerPixel == rhsFormat.BytesPerPixel;
             }
         }
 
@@ -204,6 +252,10 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 return TextureViewCompatibility.Incompatible;
             }
+            else if (first == TextureViewCompatibility.LayoutIncompatible || second == TextureViewCompatibility.LayoutIncompatible)
+            {
+                return TextureViewCompatibility.LayoutIncompatible;
+            }
             else if (first == TextureViewCompatibility.CopyOnly || second == TextureViewCompatibility.CopyOnly)
             {
                 return TextureViewCompatibility.CopyOnly;
@@ -211,6 +263,37 @@ namespace Ryujinx.Graphics.Gpu.Image
             else
             {
                 return TextureViewCompatibility.Full;
+            }
+        }
+
+        /// <summary>
+        /// Checks if the sizes of two texture levels are copy compatible.
+        /// </summary>
+        /// <param name="lhs">Texture information of the texture view</param>
+        /// <param name="rhs">Texture information of the texture view to match against</param>
+        /// <param name="lhsLevel">Mipmap level of the texture view in relation to this texture</param>
+        /// <param name="rhsLevel">Mipmap level of the texture view in relation to the second texture</param>
+        /// <returns>True if both levels are view compatible</returns>
+        public static bool CopySizeMatches(TextureInfo lhs, TextureInfo rhs, int lhsLevel, int rhsLevel)
+        {
+            Size size = GetAlignedSize(lhs, lhsLevel);
+
+            Size otherSize = GetAlignedSize(rhs, rhsLevel);
+
+            if (size.Width == otherSize.Width && size.Height == otherSize.Height)
+            {
+                return true;
+            }
+            else if (lhs.IsLinear && rhs.IsLinear)
+            {
+                // Copy between linear textures with matching stride.
+                int stride = BitUtils.AlignUp(Math.Max(1, lhs.Stride >> lhsLevel), Constants.StrideAlignment);
+
+                return stride == rhs.Stride;
+            }
+            else
+            {
+                return false;
             }
         }
 
@@ -259,11 +342,11 @@ namespace Ryujinx.Graphics.Gpu.Image
                 // Copy between linear textures with matching stride.
                 int stride = BitUtils.AlignUp(Math.Max(1, lhs.Stride >> level), Constants.StrideAlignment);
 
-                return stride == rhs.Stride ? TextureViewCompatibility.CopyOnly : TextureViewCompatibility.Incompatible;
+                return stride == rhs.Stride ? TextureViewCompatibility.CopyOnly : TextureViewCompatibility.LayoutIncompatible;
             }
             else
             {
-                return TextureViewCompatibility.Incompatible;
+                return TextureViewCompatibility.LayoutIncompatible;
             }
         }
 
@@ -284,7 +367,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
             else
             {
-                return TextureViewCompatibility.Incompatible;
+                return TextureViewCompatibility.LayoutIncompatible;
             }
         }
 
@@ -435,7 +518,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             if (rhs.IsLinear)
             {
                 int stride = Math.Max(1, lhs.Stride >> level);
-                stride = BitUtils.AlignUp(stride, 32);
+                stride = BitUtils.AlignUp(stride, Constants.StrideAlignment);
 
                 return stride == rhs.Stride;
             }
@@ -457,6 +540,62 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Check if it's possible to create a view with the layout of the second texture information from the first.
+        /// The layout information is composed of the Stride for linear textures, or GOB block size
+        /// for block linear textures.
+        /// </summary>
+        /// <param name="lhs">Texture information of the texture view</param>
+        /// <param name="rhs">Texture information of the texture view to compare against</param>
+        /// <param name="lhsLevel">Start level of the texture view, in relation with the first texture</param>
+        /// <param name="rhsLevel">Start level of the texture view, in relation with the second texture</param>
+        /// <returns>True if the layout is compatible, false otherwise</returns>
+        public static bool ViewLayoutCompatible(TextureInfo lhs, TextureInfo rhs, int lhsLevel, int rhsLevel)
+        {
+            if (lhs.IsLinear != rhs.IsLinear)
+            {
+                return false;
+            }
+
+            // For linear textures, gob block sizes are ignored.
+            // For block linear textures, the stride is ignored.
+            if (rhs.IsLinear)
+            {
+                int lhsStride = Math.Max(1, lhs.Stride >> lhsLevel);
+                lhsStride = BitUtils.AlignUp(lhsStride, Constants.StrideAlignment);
+
+                int rhsStride = Math.Max(1, rhs.Stride >> rhsLevel);
+                rhsStride = BitUtils.AlignUp(rhsStride, Constants.StrideAlignment);
+
+                return lhsStride == rhsStride;
+            }
+            else
+            {
+                int lhsHeight = Math.Max(1, lhs.Height >> lhsLevel);
+                int lhsDepth = Math.Max(1, lhs.GetDepth() >> lhsLevel);
+
+                (int lhsGobBlocksInY, int lhsGobBlocksInZ) = SizeCalculator.GetMipGobBlockSizes(
+                    lhsHeight,
+                    lhsDepth,
+                    lhs.FormatInfo.BlockHeight,
+                    lhs.GobBlocksInY,
+                    lhs.GobBlocksInZ);
+
+                int rhsHeight = Math.Max(1, rhs.Height >> rhsLevel);
+                int rhsDepth = Math.Max(1, rhs.GetDepth() >> rhsLevel);
+
+                (int rhsGobBlocksInY, int rhsGobBlocksInZ) = SizeCalculator.GetMipGobBlockSizes(
+                    rhsHeight,
+                    rhsDepth,
+                    rhs.FormatInfo.BlockHeight,
+                    rhs.GobBlocksInY,
+                    rhs.GobBlocksInZ);
+
+                return lhsGobBlocksInY == rhsGobBlocksInY &&
+                       lhsGobBlocksInZ == rhsGobBlocksInZ;
+            }
+        }
+
+        /// <summary>
         /// Checks if the view format of the first texture format is compatible with the format of the second.
         /// In general, the formats are considered compatible if the bytes per pixel values are equal,
         /// but there are more complex rules for some formats, like compressed or depth-stencil formats.
@@ -464,10 +603,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="lhs">Texture information of the texture view</param>
         /// <param name="rhs">Texture information of the texture view</param>
+        /// <param name="caps">Host GPU capabilities</param>
         /// <returns>The view compatibility level of the texture formats</returns>
-        public static TextureViewCompatibility ViewFormatCompatible(TextureInfo lhs, TextureInfo rhs)
+        public static TextureViewCompatibility ViewFormatCompatible(TextureInfo lhs, TextureInfo rhs, Capabilities caps)
         {
-            if (FormatCompatible(lhs.FormatInfo, rhs.FormatInfo))
+            if (FormatCompatible(lhs, rhs, caps))
             {
                 if (lhs.FormatInfo.IsCompressed != rhs.FormatInfo.IsCompressed)
                 {
@@ -614,9 +754,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             switch (format)
             {
-                case Format.Bc1RgbSrgb:
-                case Format.Bc1RgbUnorm:
-                    return FormatClass.Bc1Rgb;
                 case Format.Bc1RgbaSrgb:
                 case Format.Bc1RgbaUnorm:
                     return FormatClass.Bc1Rgba;
@@ -638,6 +775,54 @@ namespace Ryujinx.Graphics.Gpu.Image
                 case Format.Bc7Srgb:
                 case Format.Bc7Unorm:
                     return FormatClass.Bc7;
+                case Format.Etc2RgbSrgb:
+                case Format.Etc2RgbUnorm:
+                    return FormatClass.Etc2Rgb;
+                case Format.Etc2RgbaSrgb:
+                case Format.Etc2RgbaUnorm:
+                    return FormatClass.Etc2Rgba;
+                case Format.Astc4x4Srgb:
+                case Format.Astc4x4Unorm:
+                    return FormatClass.Astc4x4;
+                case Format.Astc5x4Srgb:
+                case Format.Astc5x4Unorm:
+                    return FormatClass.Astc5x4;
+                case Format.Astc5x5Srgb:
+                case Format.Astc5x5Unorm:
+                    return FormatClass.Astc5x5;
+                case Format.Astc6x5Srgb:
+                case Format.Astc6x5Unorm:
+                    return FormatClass.Astc6x5;
+                case Format.Astc6x6Srgb:
+                case Format.Astc6x6Unorm:
+                    return FormatClass.Astc6x6;
+                case Format.Astc8x5Srgb:
+                case Format.Astc8x5Unorm:
+                    return FormatClass.Astc8x5;
+                case Format.Astc8x6Srgb:
+                case Format.Astc8x6Unorm:
+                    return FormatClass.Astc8x6;
+                case Format.Astc8x8Srgb:
+                case Format.Astc8x8Unorm:
+                    return FormatClass.Astc8x8;
+                case Format.Astc10x5Srgb:
+                case Format.Astc10x5Unorm:
+                    return FormatClass.Astc10x5;
+                case Format.Astc10x6Srgb:
+                case Format.Astc10x6Unorm:
+                    return FormatClass.Astc10x6;
+                case Format.Astc10x8Srgb:
+                case Format.Astc10x8Unorm:
+                    return FormatClass.Astc10x8;
+                case Format.Astc10x10Srgb:
+                case Format.Astc10x10Unorm:
+                    return FormatClass.Astc10x10;
+                case Format.Astc12x10Srgb:
+                case Format.Astc12x10Unorm:
+                    return FormatClass.Astc12x10;
+                case Format.Astc12x12Srgb:
+                case Format.Astc12x12Unorm:
+                    return FormatClass.Astc12x12;
             }
 
             return FormatClass.Unclassified;

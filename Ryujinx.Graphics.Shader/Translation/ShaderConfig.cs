@@ -33,6 +33,8 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public TranslationOptions Options { get; }
 
+        public bool TransformFeedbackEnabled { get; }
+
         public int Size { get; private set; }
 
         public byte ClipDistancesWritten { get; private set; }
@@ -128,6 +130,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             OmapTargets              = header.OmapTargets;
             OmapSampleMask           = header.OmapSampleMask;
             OmapDepth                = header.OmapDepth;
+            TransformFeedbackEnabled = gpuAccessor.QueryTransformFeedbackEnabled();
         }
 
         public int GetDepthRegister()
@@ -413,7 +416,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             {
                 usageFlags |= TextureUsageFlags.NeedsScaleValue;
 
-                var canScale = (Stage == ShaderStage.Fragment || Stage == ShaderStage.Compute) && !isIndexed && !write && dimensions == 2;
+                var canScale = Stage.SupportsRenderScale() && !isIndexed && !write && dimensions == 2;
 
                 if (!canScale)
                 {

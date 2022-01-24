@@ -66,9 +66,9 @@ namespace Ryujinx.Graphics.OpenGL
             return Buffer.Create(size);
         }
 
-        public IProgram CreateProgram(IShader[] shaders, TransformFeedbackDescriptor[] transformFeedbackDescriptors)
+        public IProgram CreateProgram(IShader[] shaders)
         {
-            return new Program(shaders, transformFeedbackDescriptors);
+            return new Program(shaders);
         }
 
         public ISampler CreateSampler(SamplerCreateInfo info)
@@ -104,6 +104,8 @@ namespace Ryujinx.Graphics.OpenGL
                 hasFrontFacingBug: HwCapabilities.Vendor == HwCapabilities.GpuVendor.IntelWindows,
                 hasVectorIndexingBug: HwCapabilities.Vendor == HwCapabilities.GpuVendor.AmdWindows,
                 supportsAstcCompression: HwCapabilities.SupportsAstcCompression,
+                supports3DTextureCompression: false,
+                supportsBgraFormat: false,
                 supportsR4G4Format: false,
                 supportsFragmentShaderInterlock: HwCapabilities.SupportsFragmentShaderInterlock,
                 supportsFragmentShaderOrderingIntel: HwCapabilities.SupportsFragmentShaderOrdering,
@@ -151,7 +153,7 @@ namespace Ryujinx.Graphics.OpenGL
                 GL.Arb.MaxShaderCompilerThreads(Math.Min(Environment.ProcessorCount, 8));
             }
 
-            _pipeline.Initialize();
+            _pipeline.Initialize(this);
             _counters.Initialize();
         }
 

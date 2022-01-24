@@ -1,4 +1,3 @@
-using Ryujinx.Graphics.Shader;
 using System;
 
 namespace Ryujinx.Graphics.GAL
@@ -15,9 +14,9 @@ namespace Ryujinx.Graphics.GAL
 
         void ClearRenderTargetDepthStencil(
             float depthValue,
-            bool  depthMask,
-            int   stencilValue,
-            int   stencilMask);
+            bool depthMask,
+            int stencilValue,
+            int stencilMask);
 
         void CommandBufferBarrier();
 
@@ -104,6 +103,6 @@ namespace Ryujinx.Graphics.GAL
         bool TryHostConditionalRendering(ICounterEvent value, ICounterEvent compare, bool isEqual);
         void EndHostConditionalRendering();
 
-        void UpdateRenderScale(ShaderStage stage, ReadOnlySpan<float> scales, int textureCount, int imageCount);
+        void UpdateRenderScale(ReadOnlySpan<float> scales, int totalCount, int fragmentCount);
     }
 }
