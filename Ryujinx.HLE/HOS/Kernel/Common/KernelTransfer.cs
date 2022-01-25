@@ -1,6 +1,7 @@
 using Ryujinx.Cpu;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Ryujinx.HLE.HOS.Kernel.Common
 {
@@ -60,27 +61,15 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
             return false;
         }
 
-        public static bool KernelToUserInt32(KernelContext context, ulong address, int value)
+        public static bool KernelToUserInt32(ulong address, int value) => KernelToUser(address, value);
+        public static bool KernelToUserInt64(ulong address, long value) => KernelToUser(address, value);
+
+        public static bool KernelToUser<T>(ulong address, T value) where T: unmanaged
         {
             KProcess currentProcess = KernelStatic.GetCurrentProcess();
 
             if (currentProcess.CpuMemory.IsMapped(address) &&
-                currentProcess.CpuMemory.IsMapped(address + 3))
-            {
-                currentProcess.CpuMemory.Write(address, value);
-
-                return true;
-            }
-
-            return false;
-        }
-
-        public static bool KernelToUserInt64(KernelContext context, ulong address, long value)
-        {
-            KProcess currentProcess = KernelStatic.GetCurrentProcess();
-
-            if (currentProcess.CpuMemory.IsMapped(address) &&
-                currentProcess.CpuMemory.IsMapped(address + 7))
+                currentProcess.CpuMemory.IsMapped(address + (ulong)Unsafe.SizeOf<T>() - 1))
             {
                 currentProcess.CpuMemory.Write(address, value);
 

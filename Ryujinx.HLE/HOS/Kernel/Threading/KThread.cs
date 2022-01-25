@@ -27,7 +27,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
         public KThreadContext ThreadContext { get; private set; }
 
         public int DynamicPriority { get; set; }
-        public long AffinityMask { get; set; }
+        public ulong AffinityMask { get; set; }
 
         public long ThreadUid { get; private set; }
 
@@ -88,7 +88,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
         public bool IsPinned { get; private set; }
 
-        private long _originalAffinityMask;
+        private ulong _originalAffinityMask;
         private int _originalPreferredCore;
         private int _originalBasePriority;
         private int _coreMigrationDisableCount;
@@ -147,7 +147,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             ThreadContext = new KThreadContext();
 
             PreferredCore = cpuCore;
-            AffinityMask |= 1L << cpuCore;
+            AffinityMask |= 1UL << cpuCore;
 
             SchedFlags = type == ThreadType.Dummy
                 ? ThreadSchedState.Running
@@ -660,7 +660,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             KernelContext.CriticalSection.Leave();
         }
 
-        public KernelResult SetCoreAndAffinityMask(int newCore, long newAffinityMask)
+        public KernelResult SetCoreAndAffinityMask(int newCore, ulong newAffinityMask)
         {
             lock (ActivityOperationLock)
             {
@@ -673,7 +673,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                 {
                     newCore = isCoreMigrationDisabled ? _originalPreferredCore : PreferredCore;
 
-                    if ((newAffinityMask & (1 << newCore)) == 0)
+                    if ((newAffinityMask & (1UL << newCore)) == 0)
                     {
                         KernelContext.CriticalSection.Leave();
 
@@ -688,7 +688,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                 }
                 else
                 {
-                    long oldAffinityMask = AffinityMask;
+                    ulong oldAffinityMask = AffinityMask;
 
                     PreferredCore = newCore;
                     AffinityMask = newAffinityMask;
@@ -701,7 +701,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                         {
                             if (PreferredCore < 0)
                             {
-                                ActiveCore = sizeof(ulong) * 8 - 1 - BitOperations.LeadingZeroCount((ulong)AffinityMask);
+                                ActiveCore = sizeof(ulong) * 8 - 1 - BitOperations.LeadingZeroCount(AffinityMask);
                             }
                             else
                             {
@@ -733,7 +733,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                     int coreNumber = GetEffectiveRunningCore();
                     bool isPinnedThreadCurrentlyRunning = coreNumber >= 0;
 
-                    if (isPinnedThreadCurrentlyRunning && ((1 << coreNumber) & AffinityMask) == 0)
+                    if (isPinnedThreadCurrentlyRunning && ((1UL << coreNumber) & AffinityMask) == 0)
                     {
                         if (IsPinned)
                         {
@@ -1077,7 +1077,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             KernelContext.ThreadReselectionRequested = true;
         }
 
-        private void AdjustSchedulingForNewAffinity(long oldAffinityMask, int oldCore)
+        private void AdjustSchedulingForNewAffinity(ulong oldAffinityMask, int oldCore)
         {
             if (SchedFlags != ThreadSchedState.Running || DynamicPriority >= KScheduler.PrioritiesCount || !IsSchedulable)
             {
@@ -1259,7 +1259,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
             ActiveCore = CurrentCore;
             PreferredCore = CurrentCore;
-            AffinityMask = 1 << CurrentCore;
+            AffinityMask = 1UL << CurrentCore;
 
             if (activeCore != CurrentCore || _originalAffinityMask != AffinityMask)
             {
@@ -1282,7 +1282,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             IsPinned = false;
             _coreMigrationDisableCount--;
 
-            long affinityMask = AffinityMask;
+            ulong affinityMask = AffinityMask;
             int activeCore = ActiveCore;
 
             PreferredCore = _originalPreferredCore;
@@ -1290,7 +1290,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             
             if (AffinityMask != affinityMask)
             {
-                if ((AffinityMask & 1 << ActiveCore) != 0)
+                if ((AffinityMask & 1UL << ActiveCore) != 0)
                 {
                     if (PreferredCore >= 0)
                     {

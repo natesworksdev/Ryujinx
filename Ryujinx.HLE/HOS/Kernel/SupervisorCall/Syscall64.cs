@@ -104,26 +104,26 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         // Memory
 
-        public KernelResult SetHeapSize64([R(1)] ulong size, [R(1)] out ulong position)
+        public KernelResult SetHeapSize64([R(1)] ulong size, [R(1)] out ulong address)
         {
-            return _syscall.SetHeapSize(size, out position);
+            return _syscall.SetHeapSize(size, out address);
         }
 
         public KernelResult SetMemoryPermission64(
-            [R(0)] ulong position,
+            [R(0)] ulong address,
             [R(1)] ulong size,
             [R(2)] KMemoryPermission permission)
         {
-            return _syscall.SetMemoryPermission(position, size, permission);
+            return _syscall.SetMemoryPermission(address, size, permission);
         }
 
         public KernelResult SetMemoryAttribute64(
-            [R(0)] ulong position,
+            [R(0)] ulong address,
             [R(1)] ulong size,
             [R(2)] MemoryAttribute attributeMask,
             [R(3)] MemoryAttribute attributeValue)
         {
-            return _syscall.SetMemoryAttribute(position, size, attributeMask, attributeValue);
+            return _syscall.SetMemoryAttribute(address, size, attributeMask, attributeValue);
         }
 
         public KernelResult MapMemory64([R(0)] ulong dst, [R(1)] ulong src, [R(2)] ulong size)
@@ -136,9 +136,9 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return _syscall.UnmapMemory(dst, src, size);
         }
 
-        public KernelResult QueryMemory64([R(0)] ulong infoPtr, [R(2)] ulong position, [R(1)] out ulong pageInfo)
+        public KernelResult QueryMemory64([R(0)] ulong infoPtr, [R(2)] ulong address, [R(1)] out ulong pageInfo)
         {
-            return _syscall.QueryMemory(infoPtr, position, out pageInfo);
+            return _syscall.QueryMemory(infoPtr, address, out pageInfo);
         }
 
         public KernelResult MapSharedMemory64([R(0)] int handle, [R(1)] ulong address, [R(2)] ulong size, [R(3)] KMemoryPermission permission)
@@ -247,7 +247,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             _syscall.OutputDebugString(strPtr, size);
         }
 
-        public KernelResult GetInfo64([R(1)] InfoType id, [R(2)] int handle, [R(3)] long subId, [R(1)] out long value)
+        public KernelResult GetInfo64([R(1)] InfoType id, [R(2)] int handle, [R(3)] long subId, [R(1)] out ulong value)
         {
             return _syscall.GetInfo(id, handle, subId, out value);
         }
@@ -330,12 +330,12 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return _syscall.SetThreadPriority(handle, priority);
         }
 
-        public KernelResult GetThreadCoreMask64([R(2)] int handle, [R(1)] out int preferredCore, [R(2)] out long affinityMask)
+        public KernelResult GetThreadCoreMask64([R(2)] int handle, [R(1)] out int preferredCore, [R(2)] out ulong affinityMask)
         {
             return _syscall.GetThreadCoreMask(handle, out preferredCore, out affinityMask);
         }
 
-        public KernelResult SetThreadCoreMask64([R(0)] int handle, [R(1)] int preferredCore, [R(2)] long affinityMask)
+        public KernelResult SetThreadCoreMask64([R(0)] int handle, [R(1)] int preferredCore, [R(2)] ulong affinityMask)
         {
             return _syscall.SetThreadCoreMask(handle, preferredCore, affinityMask);
         }

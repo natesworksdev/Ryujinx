@@ -88,7 +88,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
             KernelResult result = KernelResult.Success;
 
-            if (!KernelTransfer.KernelToUserInt32(_context, mutexAddress, mutexValue))
+            if (!KernelTransfer.KernelToUserInt32(mutexAddress, mutexValue))
             {
                 result = KernelResult.InvalidMemState;
             }
@@ -123,9 +123,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
             (int mutexValue, _) = MutexUnlock(currentThread, mutexAddress);
 
-            KernelTransfer.KernelToUserInt32(_context, condVarAddress, 1);
+            KernelTransfer.KernelToUserInt32(condVarAddress, 1);
 
-            if (!KernelTransfer.KernelToUserInt32(_context, mutexAddress, mutexValue))
+            if (!KernelTransfer.KernelToUserInt32(mutexAddress, mutexValue))
             {
                 _context.CriticalSection.Leave();
 
@@ -201,7 +201,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
             if (!_condVarThreads.Any(x => x.CondVarAddress == address))
             {
-                KernelTransfer.KernelToUserInt32(_context, address, 0);
+                KernelTransfer.KernelToUserInt32(address, 0);
             }
 
             _context.CriticalSection.Leave();

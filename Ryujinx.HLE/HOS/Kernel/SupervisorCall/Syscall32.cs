@@ -46,7 +46,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         public KernelResult ReplyAndReceive32(
             [R(0)] uint timeoutLow,
-            [R(1)] ulong handlesPtr,
+            [R(1)] uint handlesPtr,
             [R(2)] int handlesCount,
             [R(3)] int replyTargetHandle,
             [R(4)] uint timeoutHigh,
@@ -79,30 +79,30 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         // Memory
 
-        public KernelResult SetHeapSize32([R(1)] uint size, [R(1)] out uint position)
+        public KernelResult SetHeapSize32([R(1)] uint size, [R(1)] out uint address)
         {
-            KernelResult result = _syscall.SetHeapSize(size, out ulong temporaryPosition);
+            KernelResult result = _syscall.SetHeapSize(size, out ulong address64);
 
-            position = (uint)temporaryPosition;
+            address = (uint)address64;
 
             return result;
         }
 
         public KernelResult SetMemoryPermission32(
-            [R(0)] ulong position,
-            [R(1)] ulong size,
+            [R(0)] uint address,
+            [R(1)] uint size,
             [R(2)] KMemoryPermission permission)
         {
-            return _syscall.SetMemoryPermission(position, size, permission);
+            return _syscall.SetMemoryPermission(address, size, permission);
         }
 
         public KernelResult SetMemoryAttribute32(
-            [R(0)] uint position,
+            [R(0)] uint address,
             [R(1)] uint size,
             [R(2)] MemoryAttribute attributeMask,
             [R(3)] MemoryAttribute attributeValue)
         {
-            return _syscall.SetMemoryAttribute(position, size, attributeMask, attributeValue);
+            return _syscall.SetMemoryAttribute(address, size, attributeMask, attributeValue);
         }
 
         public KernelResult MapMemory32([R(0)] uint dst, [R(1)] uint src, [R(2)] uint size)
@@ -115,9 +115,9 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return _syscall.UnmapMemory(dst, src, size);
         }
 
-        public KernelResult QueryMemory32([R(0)] uint infoPtr, [R(1)] uint r1, [R(2)] uint position, [R(1)] out uint pageInfo)
+        public KernelResult QueryMemory32([R(0)] uint infoPtr, [R(1)] uint r1, [R(2)] uint address, [R(1)] out uint pageInfo)
         {
-            KernelResult result = _syscall.QueryMemory(infoPtr, position, out ulong pageInfo64);
+            KernelResult result = _syscall.QueryMemory(infoPtr, address, out ulong pageInfo64);
 
             pageInfo = (uint)pageInfo64;
 
@@ -265,7 +265,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         {
             long subId = (long)(subIdLow | ((ulong)subIdHigh << 32));
 
-            KernelResult result = _syscall.GetInfo(id, handle, subId, out long value);
+            KernelResult result = _syscall.GetInfo(id, handle, subId, out ulong value);
 
             valueHigh = (uint)(value >> 32);
             valueLow = (uint)(value & uint.MaxValue);
@@ -389,19 +389,19 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return _syscall.SetThreadPriority(handle, priority);
         }
 
-        public KernelResult GetThreadCoreMask32([R(2)] int handle, [R(1)] out int preferredCore, [R(2)] out int affinityMaskLow, [R(3)] out int affinityMaskHigh)
+        public KernelResult GetThreadCoreMask32([R(2)] int handle, [R(1)] out int preferredCore, [R(2)] out uint affinityMaskLow, [R(3)] out uint affinityMaskHigh)
         {
-            KernelResult result = _syscall.GetThreadCoreMask(handle, out preferredCore, out long affinityMask);
+            KernelResult result = _syscall.GetThreadCoreMask(handle, out preferredCore, out ulong affinityMask);
 
-            affinityMaskLow = (int)(affinityMask & uint.MaxValue);
-            affinityMaskHigh = (int)(affinityMask >> 32);
+            affinityMaskLow = (uint)(affinityMask & uint.MaxValue);
+            affinityMaskHigh = (uint)(affinityMask >> 32);
 
             return result;
         }
 
         public KernelResult SetThreadCoreMask32([R(0)] int handle, [R(1)] int preferredCore, [R(2)] uint affinityMaskLow, [R(3)] uint affinityMaskHigh)
         {
-            long affinityMask = (long)(affinityMaskLow | ((ulong)affinityMaskHigh << 32));
+            ulong affinityMask = affinityMaskLow | ((ulong)affinityMaskHigh << 32);
 
             return _syscall.SetThreadCoreMask(handle, preferredCore, affinityMask);
         }
