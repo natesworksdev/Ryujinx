@@ -44,7 +44,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
             return true;
         }
 
-        public static bool UserToKernelString(KernelContext context, ulong address, int size, out string value)
+        public static bool UserToKernelString(out string value, ulong address, int size)
         {
             KProcess currentProcess = KernelStatic.GetCurrentProcess();
 
