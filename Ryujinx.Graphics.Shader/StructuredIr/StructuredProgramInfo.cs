@@ -36,7 +36,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             Inputs = new HashSet<int>();
             Outputs = new HashSet<int>();
 
-            TransformFeedbackOutputs = new TransformFeedbackOutput[0x80];
+            TransformFeedbackOutputs = new TransformFeedbackOutput[0xc0];
         }
     }
 }
