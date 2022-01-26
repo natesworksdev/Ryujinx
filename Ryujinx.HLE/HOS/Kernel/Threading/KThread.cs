@@ -2,6 +2,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Process;
+using Ryujinx.HLE.HOS.Kernel.SupervisorCall;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -627,6 +628,92 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
                 return result;
             }
+        }
+
+        public KernelResult GetThreadContext3(out ThreadContext context)
+        {
+            context = default;
+
+            lock (ActivityOperationLock)
+            {
+                KernelContext.CriticalSection.Enter();
+
+                ThreadSchedState lowNibble = SchedFlags & ThreadSchedState.LowMask;
+
+                if (lowNibble != ThreadSchedState.Paused)
+                {
+                    KernelContext.CriticalSection.Leave();
+
+                    return KernelResult.InvalidState;
+                }
+
+                if (!TerminationRequested)
+                {
+                    context = GetCurrentContext();
+                }
+
+                KernelContext.CriticalSection.Leave();
+            }
+
+
+            return KernelResult.Success;
+        }
+
+        private static uint GetPsr(ARMeilleure.State.ExecutionContext context)
+        {
+            return (context.GetPstateFlag(ARMeilleure.State.PState.NFlag) ? (1U << (int)ARMeilleure.State.PState.NFlag) : 0U) |
+                   (context.GetPstateFlag(ARMeilleure.State.PState.ZFlag) ? (1U << (int)ARMeilleure.State.PState.ZFlag) : 0U) |
+                   (context.GetPstateFlag(ARMeilleure.State.PState.CFlag) ? (1U << (int)ARMeilleure.State.PState.CFlag) : 0U) |
+                   (context.GetPstateFlag(ARMeilleure.State.PState.VFlag) ? (1U << (int)ARMeilleure.State.PState.VFlag) : 0U);
+        }
+
+        private ThreadContext GetCurrentContext()
+        {
+            const int MaxRegistersAArch32 = 15;
+            const int MaxFpuRegistersAArch32 = 16;
+
+            ThreadContext context = new ThreadContext();
+
+            if (Owner.Flags.HasFlag(ProcessCreationFlags.Is64Bit))
+            {
+                for (int i = 0; i < context.Registers.Length; i++)
+                {
+                    context.Registers[i] = Context.GetX(i);
+                }
+
+                for (int i = 0; i < context.FpuRegisters.Length; i++)
+                {
+                    context.FpuRegisters[i] = Context.GetV(i);
+                }
+
+                context.Fp = Context.GetX(29);
+                context.Lr = Context.GetX(30);
+                context.Sp = Context.GetX(31);
+                context.Pc = (ulong)LastPc;
+                context.Pstate = GetPsr(Context);
+                context.Tpidr = (ulong)Context.Tpidr;
+            }
+            else
+            {
+                for (int i = 0; i < MaxRegistersAArch32; i++)
+                {
+                    context.Registers[i] = (uint)Context.GetX(i);
+                }
+
+                for (int i = 0; i < MaxFpuRegistersAArch32; i++)
+                {
+                    context.FpuRegisters[i] = Context.GetV(i);
+                }
+
+                context.Pc = (uint)LastPc;
+                context.Pstate = GetPsr(Context);
+                context.Tpidr = (uint)Context.Tpidr;
+            }
+
+            context.Fpcr = (uint)Context.Fpcr;
+            context.Fpsr = (uint)Context.Fpsr;
+
+            return context;
         }
 
         public void CancelSynchronization()
