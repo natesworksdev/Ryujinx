@@ -364,8 +364,6 @@ namespace Ryujinx.Graphics.Vulkan
                 (ulong)parameterBuffer.Offset,
                 (uint)maxDrawCount,
                 (uint)stride);
-
-            PauseTransformFeedbackInternal();
         }
 
         public void MultiDrawIndexedIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride)
@@ -396,8 +394,6 @@ namespace Ryujinx.Graphics.Vulkan
                 (ulong)parameterBuffer.Offset,
                 (uint)maxDrawCount,
                 (uint)stride);
-
-            PauseTransformFeedbackInternal();
         }
 
         public void SetAlphaTest(bool enable, float reference, GAL.CompareOp op)
