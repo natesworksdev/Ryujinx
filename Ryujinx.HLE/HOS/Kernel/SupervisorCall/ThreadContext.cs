@@ -3,7 +3,7 @@ using Ryujinx.Common.Memory;
 
 namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 {
-    public struct ThreadContext
+    struct ThreadContext
     {
         public Array29<ulong> Registers;
         public ulong Fp;
@@ -11,7 +11,9 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         public ulong Sp;
         public ulong Pc;
         public uint Pstate;
+#pragma warning disable CS0169
         private uint _padding;
+#pragma warning restore CS0169
         public Array32<V128> FpuRegisters;
         public uint Fpcr;
         public uint Fpsr;

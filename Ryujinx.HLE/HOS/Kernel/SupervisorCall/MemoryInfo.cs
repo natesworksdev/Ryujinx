@@ -4,13 +4,13 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 {
     struct MemoryInfo
     {
-        public ulong Address { get; }
-        public ulong Size { get; }
-        public MemoryState State { get; }
-        public MemoryAttribute Attribute { get; }
-        public KMemoryPermission Permission { get; }
-        public int IpcRefCount { get; }
-        public int DeviceRefCount { get; }
+        public ulong Address;
+        public ulong Size;
+        public MemoryState State;
+        public MemoryAttribute Attribute;
+        public KMemoryPermission Permission;
+        public int IpcRefCount;
+        public int DeviceRefCount;
 #pragma warning disable CS0414
         private int _padding;
 #pragma warning restore CS0414
