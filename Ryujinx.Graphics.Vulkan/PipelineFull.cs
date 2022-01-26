@@ -249,7 +249,6 @@ namespace Ryujinx.Graphics.Vulkan
             // System.Console.WriteLine("flush by " + caller);
 
             EndRenderPass();
-            PauseTransformFeedbackInternal();
 
             foreach (var queryPool in _activeQueries)
             {
@@ -277,7 +276,6 @@ namespace Ryujinx.Graphics.Vulkan
                 Gd.Api.CmdBeginQuery(CommandBuffer, queryPool, 0, 0);
             }
 
-            ResumeTransformFeedbackInternal();
             SignalCommandBufferChange();
         }
 

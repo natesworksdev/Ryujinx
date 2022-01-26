@@ -2,7 +2,6 @@
 using Ryujinx.Graphics.Shader;
 using Silk.NET.Vulkan;
 using System;
-using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Vulkan
 {
@@ -62,6 +61,7 @@ namespace Ryujinx.Graphics.Vulkan
         private bool _needsVertexBuffersRebind;
 
         private bool _tfEnabled;
+        private bool _tfActive;
 
         public ulong DrawCount { get; private set; }
 
@@ -128,11 +128,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void BeginTransformFeedback(GAL.PrimitiveTopology topology)
         {
-            if (!_tfEnabled)
-            {
-                BeginTransformFeedbackInternal();
-                _tfEnabled = true;
-            }
+            _tfEnabled = true;
         }
 
         public void ClearBuffer(BufferHandle destination, int offset, int size, uint value)
@@ -171,7 +167,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             // TODO: Use stencilMask (fully)
 
-            if (_framebuffer == null)
+            if (_framebuffer == null || !FramebufferParams.HasDepthStencil)
             {
                 return;
             }
@@ -237,6 +233,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             BeginRenderPass();
             RecreatePipelineIfNeeded(PipelineBindPoint.Graphics);
+            ResumeTransformFeedbackInternal();
             DrawCount++;
 
             if (_topology == GAL.PrimitiveTopology.Quads)
@@ -265,6 +262,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             BeginRenderPass();
             RecreatePipelineIfNeeded(PipelineBindPoint.Graphics);
+            ResumeTransformFeedbackInternal();
             DrawCount++;
 
             if (_topology == GAL.PrimitiveTopology.Quads)
@@ -334,11 +332,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void EndTransformFeedback()
         {
-            if (_tfEnabled)
-            {
-                EndTransformFeedbackInternal();
-                _tfEnabled = false;
-            }
+            PauseTransformFeedbackInternal();
+            _tfEnabled = false;
         }
 
         public void MultiDrawIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride)
@@ -355,6 +350,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             BeginRenderPass();
             RecreatePipelineIfNeeded(PipelineBindPoint.Graphics);
+            ResumeTransformFeedbackInternal();
             DrawCount++;
 
             var buffer = Gd.BufferManager.GetBuffer(CommandBuffer, indirectBuffer.Handle, true).Get(Cbs, indirectBuffer.Offset, indirectBuffer.Size).Value;
@@ -368,6 +364,8 @@ namespace Ryujinx.Graphics.Vulkan
                 (ulong)parameterBuffer.Offset,
                 (uint)maxDrawCount,
                 (uint)stride);
+
+            PauseTransformFeedbackInternal();
         }
 
         public void MultiDrawIndexedIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride)
@@ -384,6 +382,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             BeginRenderPass();
             RecreatePipelineIfNeeded(PipelineBindPoint.Graphics);
+            ResumeTransformFeedbackInternal();
             DrawCount++;
 
             var buffer = Gd.BufferManager.GetBuffer(CommandBuffer, indirectBuffer.Handle, true).Get(Cbs, indirectBuffer.Offset, indirectBuffer.Size).Value;
@@ -397,6 +396,8 @@ namespace Ryujinx.Graphics.Vulkan
                 (ulong)parameterBuffer.Offset,
                 (uint)maxDrawCount,
                 (uint)stride);
+
+            PauseTransformFeedbackInternal();
         }
 
         public void SetAlphaTest(bool enable, float reference, GAL.CompareOp op)
@@ -720,8 +721,6 @@ namespace Ryujinx.Graphics.Vulkan
                     _transformFeedbackBuffers[i] = BufferState.Null;
                 }
             }
-
-            ResumeTransformFeedbackInternal();
         }
 
         public void SetUniformBuffers(int first, ReadOnlySpan<BufferRange> buffers)
@@ -751,7 +750,6 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             _newState.VertexAttributeDescriptionsCount = (uint)count;
-
             SignalStateChange();
         }
 
@@ -796,7 +794,6 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             _newState.VertexBindingDescriptionsCount = (uint)validCount;
-
             SignalStateChange();
         }
 
@@ -1074,7 +1071,6 @@ namespace Ryujinx.Graphics.Vulkan
                     _transformFeedbackBuffers[i].BindTransformFeedbackBuffer(Gd, Cbs, (uint)i);
                 }
 
-                ResumeTransformFeedbackInternal();
                 _needsTransformFeedbackBuffersRebind = false;
             }
 
@@ -1113,6 +1109,7 @@ namespace Ryujinx.Graphics.Vulkan
                     // _pipeline?.Dispose();
                     Pipeline = pipeline;
 
+                    PauseTransformFeedbackInternal();
                     Gd.Api.CmdBindPipeline(CommandBuffer, pbp, Pipeline.Get(Cbs).Value);
                 }
             }
@@ -1144,25 +1141,28 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (_renderPassActive)
             {
+                PauseTransformFeedbackInternal();
                 // System.Console.WriteLine("render pass ended " + caller);
                 Gd.Api.CmdEndRenderPass(CommandBuffer);
                 _renderPassActive = false;
             }
         }
 
-        protected void PauseTransformFeedbackInternal()
+        private void PauseTransformFeedbackInternal()
         {
-            if (_tfEnabled)
+            if (_tfEnabled && _tfActive)
             {
                 EndTransformFeedbackInternal();
+                _tfActive = false;
             }
         }
 
-        protected void ResumeTransformFeedbackInternal()
+        private void ResumeTransformFeedbackInternal()
         {
-            if (_tfEnabled)
+            if (_tfEnabled && !_tfActive)
             {
                 BeginTransformFeedbackInternal();
+                _tfActive = true;
             }
         }
 
