@@ -501,7 +501,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             int[] handles = new int[handlesCount];
 
-            if (!KernelTransfer.UserToKernelInt32Array(_context, handlesPtr, handles))
+            if (!KernelTransfer.UserToKernelArray<int>(handlesPtr, handles))
             {
                 return KernelResult.UserCopyFailed;
             }
@@ -615,7 +615,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             int[] handles = new int[handlesCount];
 
-            if (!KernelTransfer.UserToKernelInt32Array(_context, handlesPtr, handles))
+            if (!KernelTransfer.UserToKernelArray<int>(handlesPtr, handles))
             {
                 currentProcess.MemoryManager.UnborrowIpcBuffer(messagePtr, messageSize);
 
@@ -1893,7 +1893,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 {
                     if (copyCount < maxCount)
                     {
-                        if (!KernelTransfer.KernelToUserInt64(address + (ulong)copyCount * 8, process.Pid))
+                        if (!KernelTransfer.KernelToUser(address + (ulong)copyCount * 8, process.Pid))
                         {
                             return KernelResult.UserCopyFailed;
                         }
@@ -2396,7 +2396,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
                 Span<int> handles = new Span<int>(currentThread.WaitSyncHandles).Slice(0, handlesCount);
 
-                if (!KernelTransfer.UserToKernelInt32Array(_context, handlesPtr, handles))
+                if (!KernelTransfer.UserToKernelArray(handlesPtr, handles))
                 {
                     return KernelResult.UserCopyFailed;
                 }
