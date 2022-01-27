@@ -546,8 +546,8 @@
                                         Minimum="0"
                                         Maximum="240"
                                         SmallChange="5"
-										TickFrequency="5"
-										IsSnapToTickEnabled="True"
+                                        TickFrequency="5"
+                                        IsSnapToTickEnabled="True"
                                         LargeChange="10"
                                         Width="200" />
                                 <TextBlock VerticalAlignment="Center" Text="{Binding HostRefreshRateDisplay}" />
@@ -805,11 +805,11 @@
                 <ui:NavigationViewItem
                     Content="{locale:Locale SettingsTabGraphics}"
                     Tag="GraphicsPage"
-                    Icon="Image"/>
+                    Icon="Image" />
                 <ui:NavigationViewItem
                     Content="{locale:Locale SettingsTabAudio}"
                     Icon="Audio"
-                    Tag="AudioPage"/>
+                    Tag="AudioPage" />
                 <ui:NavigationViewItem
                     Content="{locale:Locale SettingsTabNetwork}"
                     Tag="NetworkPage"
