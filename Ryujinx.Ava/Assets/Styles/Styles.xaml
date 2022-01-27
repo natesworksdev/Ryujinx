@@ -69,9 +69,6 @@
         <Setter Property="Width" Value="26" />
         <Setter Property="Height" Value="26" />
     </Style>
-    <Style Selector="PopupRoot">
-        <Setter Property="TransparencyLevelHint" Value="None"/>
-    </Style>
     <Style Selector="DataGridColumnHeader">
         <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
