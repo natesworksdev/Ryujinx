@@ -316,7 +316,7 @@
   "DialogUpdaterCancelUpdateMessage": "Cancelando atualização!",
   "DialogUpdaterAlreadyOnLatestVersionMessage": "Você já está usando a versão mais recente do Ryujinx!",
   "DialogUpdaterFailedToGetVersionMessage": "Ocorreu um erro ao tentar obter informações de atualização do AppVeyor.",
-  "DialogUpdaterConvertFailedAppveyorMessage": "Falha ao converter a versão do Ryujinx recebida do AppVeyor.",
+  "DialogUpdaterConvertFailedGithubMessage": "Falha ao converter a versão do Ryujinx recebida do AppVeyor.",
   "DialogUpdaterDownloadingMessage": "Baixando atualização...",
   "DialogUpdaterExtractionMessage": "Extraindo atualização...",
   "DialogUpdaterRenamingMessage": "Renomeando atualização...",
