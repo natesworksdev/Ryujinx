@@ -101,6 +101,7 @@ namespace Ryujinx.Ui
         [GUI] MenuItem        _pauseEmulation;
         [GUI] MenuItem        _resumeEmulation;
         [GUI] MenuItem        _stopEmulation;
+        [GUI] MenuItem        _restartEmulation;
         [GUI] MenuItem        _simulateWakeUpMessage;
         [GUI] MenuItem        _scanAmiibo;
         [GUI] MenuItem        _takeScreenshot;
@@ -1318,6 +1319,15 @@ namespace Ryujinx.Ui
             }
         }
 
+        private void RestartEmulation_Pressed(object sender, EventArgs args)
+        {
+            if (_emulationContext != null)
+            {
+                _userChannelPersistence.ExecuteProgram(HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.ApplicationProxy.Types.ProgramSpecifyKind.RestartProgram, 0);
+                StopEmulation_Pressed(sender, args);
+            }
+        }
+
         private void StopEmulation_Pressed(object sender, EventArgs args)
         {
             if (_emulationContext != null)
@@ -1327,6 +1337,7 @@ namespace Ryujinx.Ui
 
             _pauseEmulation.Sensitive = false;
             _resumeEmulation.Sensitive = false;
+
             RendererWidget?.Exit();
         }
 
