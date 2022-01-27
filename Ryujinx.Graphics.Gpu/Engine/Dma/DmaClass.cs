@@ -115,8 +115,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                 }
                 else /* if (type == LaunchDmaSemaphoreType.ReleaseFourWordSemaphore) */
                 {
-                    _channel.MemoryManager.Write(address, (ulong)_state.State.SetSemaphorePayload);
                     _channel.MemoryManager.Write(address + 8, _context.GetTimestamp());
+                    _channel.MemoryManager.Write(address, (ulong)_state.State.SetSemaphorePayload);
                 }
             }
         }
