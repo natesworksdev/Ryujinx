@@ -655,7 +655,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                 KernelContext.CriticalSection.Leave();
             }
 
-
             return KernelResult.Success;
         }
 
