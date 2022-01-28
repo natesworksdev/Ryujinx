@@ -231,8 +231,8 @@ namespace Ryujinx.Graphics.Vulkan
                 return;
             }
 
-            BeginRenderPass();
             RecreatePipelineIfNeeded(PipelineBindPoint.Graphics);
+            BeginRenderPass();
             ResumeTransformFeedbackInternal();
             DrawCount++;
 
@@ -260,8 +260,8 @@ namespace Ryujinx.Graphics.Vulkan
                 return;
             }
 
-            BeginRenderPass();
             RecreatePipelineIfNeeded(PipelineBindPoint.Graphics);
+            BeginRenderPass();
             ResumeTransformFeedbackInternal();
             DrawCount++;
 
@@ -348,8 +348,8 @@ namespace Ryujinx.Graphics.Vulkan
                 return;
             }
 
-            BeginRenderPass();
             RecreatePipelineIfNeeded(PipelineBindPoint.Graphics);
+            BeginRenderPass();
             ResumeTransformFeedbackInternal();
             DrawCount++;
 
@@ -378,8 +378,8 @@ namespace Ryujinx.Graphics.Vulkan
                 return;
             }
 
-            BeginRenderPass();
             RecreatePipelineIfNeeded(PipelineBindPoint.Graphics);
+            BeginRenderPass();
             ResumeTransformFeedbackInternal();
             DrawCount++;
 

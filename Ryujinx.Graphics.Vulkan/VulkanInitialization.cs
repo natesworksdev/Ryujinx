@@ -374,10 +374,17 @@ namespace Ryujinx.Graphics.Vulkan
                 ExtendedDynamicState = supportedExtensions.Contains(ExtExtendedDynamicState.ExtensionName)
             };
 
+            var featuresVk11 = new PhysicalDeviceVulkan11Features()
+            {
+                SType = StructureType.PhysicalDeviceVulkan11Features,
+                PNext = &featuresExtendedDynamicState,
+                ShaderDrawParameters = true
+            };
+
             var featuresVk12 = new PhysicalDeviceVulkan12Features()
             {
                 SType = StructureType.PhysicalDeviceVulkan12Features,
-                PNext = &featuresExtendedDynamicState,
+                PNext = &featuresVk11,
                 DrawIndirectCount = supportedExtensions.Contains(KhrDrawIndirectCount.ExtensionName)
             };
 
