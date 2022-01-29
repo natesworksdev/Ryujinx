@@ -125,6 +125,18 @@ namespace Ryujinx.Graphics.Vulkan
             return null;
         }
 
+        public Auto<DisposableBuffer> GetBufferWithSize(CommandBuffer commandBuffer, BufferHandle handle, bool isWrite, out int size)
+        {
+            if (TryGetBuffer(handle, out var holder))
+            {
+                size = holder.Size;
+                return holder.GetBuffer(commandBuffer, isWrite);
+            }
+
+            size = 0;
+            return null;
+        }
+
         public Auto<DisposableBuffer> GetBufferI8ToI16(CommandBufferScoped cbs, BufferHandle handle, int offset, int size)
         {
             if (TryGetBuffer(handle, out var holder))
