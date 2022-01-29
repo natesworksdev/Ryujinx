@@ -32,15 +32,8 @@ namespace Ryujinx.Ava.Ui.Windows
                 {
                     if (!x)
                     {
+                        TransparencyLevelHint = WindowTransparencyLevel.None;
                         SystemDecorations     = SystemDecorations.Full;
-                        if (OperatingSystem.IsWindowsVersionAtLeast(22000))
-                        {
-                            TransparencyLevelHint = WindowTransparencyLevel.Mica;
-                        }
-                        else
-                        {
-                            TransparencyLevelHint = WindowTransparencyLevel.AcrylicBlur;
-                        }
                     }
                 });
 
