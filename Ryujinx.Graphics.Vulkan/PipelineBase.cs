@@ -766,7 +766,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (vertexBuffer.Buffer.Handle != BufferHandle.Null)
                 {
-                    var vb = Gd.BufferManager.GetBuffer(CommandBuffer, vertexBuffer.Buffer.Handle, false);
+                    var vb = Gd.BufferManager.GetBuffer(CommandBuffer, vertexBuffer.Buffer.Handle, false, out int totalBufferSize);
                     if (vb != null)
                     {
                         int binding = i + 1;
@@ -777,11 +777,18 @@ namespace Ryujinx.Graphics.Vulkan
                             (uint)vertexBuffer.Stride,
                             inputRate);
 
+                        int vbSize = vertexBuffer.Buffer.Size;
+
+                        if (Gd.Vendor == Vendor.Amd)
+                        {
+                            vbSize = totalBufferSize;
+                        }
+
                         _vertexBuffers[binding].Dispose();
                         _vertexBuffers[binding] = new BufferState(
                             vb,
                             vertexBuffer.Buffer.Offset,
-                            vertexBuffer.Buffer.Size,
+                            vbSize,
                             (ulong)vertexBuffer.Stride);
 
                         _vertexBuffers[binding].BindVertexBuffer(Gd, Cbs, (uint)binding);
