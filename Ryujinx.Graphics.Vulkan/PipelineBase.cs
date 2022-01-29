@@ -759,7 +759,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (vertexBuffer.Buffer.Handle != BufferHandle.Null)
                 {
-                    var vb = Gd.BufferManager.GetBuffer(CommandBuffer, vertexBuffer.Buffer.Handle, false, out int totalBufferSize);
+                    var vb = Gd.BufferManager.GetBuffer(CommandBuffer, vertexBuffer.Buffer.Handle, false);
                     if (vb != null)
                     {
                         int binding = i + 1;
@@ -772,9 +772,16 @@ namespace Ryujinx.Graphics.Vulkan
 
                         int vbSize = vertexBuffer.Buffer.Size;
 
-                        if (Gd.Vendor == Vendor.Amd)
+                        if (Gd.Vendor == Vendor.Amd && vertexBuffer.Stride > 0)
                         {
-                            vbSize = totalBufferSize;
+                            // AMD has a bug where if offset + stride * count is greater than
+                            // the size, then the last attribute will have the wrong value.
+                            // As a workaround, simply use the full buffer size.
+                            int remainder = vbSize % vertexBuffer.Stride;
+                            if (remainder != 0)
+                            {
+                                vbSize += vertexBuffer.Stride - remainder;
+                            }
                         }
 
                         _vertexBuffers[binding].Dispose();
