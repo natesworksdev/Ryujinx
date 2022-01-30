@@ -53,6 +53,7 @@ namespace Ryujinx.Graphics.OpenGL
         private ClipOrigin _clipOrigin;
         private ClipDepthMode _clipDepthMode;
 
+        private int _fragmentOutputMap;
         private readonly uint[] _componentMasks;
 
         private uint _scissorEnables;
@@ -73,6 +74,7 @@ namespace Ryujinx.Graphics.OpenGL
             _clipOrigin = ClipOrigin.LowerLeft;
             _clipDepthMode = ClipDepthMode.NegativeOneToOne;
 
+            _fragmentOutputMap = -1;
             _componentMasks = new uint[Constants.MaxRenderTargets];
 
             for (int index = 0; index < Constants.MaxRenderTargets; index++)
@@ -1001,18 +1003,30 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void SetProgram(IProgram program)
         {
-            _program = (Program)program;
+            Program prg = (Program)program;
 
             if (_tfEnabled)
             {
                 GL.EndTransformFeedback();
-                _program.Bind();
+                prg.Bind();
                 GL.BeginTransformFeedback(_tfTopology);
             }
             else
             {
-                _program.Bind();
+                prg.Bind();
             }
+
+            if (prg.HasFragmentShader)
+            {
+                _fragmentOutputMap = prg.FragmentOutputMap;
+
+                for (int index = 0; index < Constants.MaxRenderTargets; index++)
+                {
+                    RestoreComponentMask(index);
+                }
+            }
+
+            _program = prg;
         }
 
         public void SetRasterizerDiscard(bool discard)
@@ -1442,12 +1456,14 @@ namespace Ryujinx.Graphics.OpenGL
             uint redMask = _fpIsBgra[index].X == 0 ? 1u : 4u;
             uint blueMask = _fpIsBgra[index].X == 0 ? 4u : 1u;
 
+            uint componentMask = _componentMasks[index] & ((uint)_fragmentOutputMap >> (index * 4));
+
             GL.ColorMask(
                 index,
-                (_componentMasks[index] & redMask) != 0,
-                (_componentMasks[index] & 2u) != 0,
-                (_componentMasks[index] & blueMask) != 0,
-                (_componentMasks[index] & 8u) != 0);
+                (componentMask & redMask) != 0,
+                (componentMask & 2u) != 0,
+                (componentMask & blueMask) != 0,
+                (componentMask & 8u) != 0);
         }
 
         public void RestoreScissor0Enable()
