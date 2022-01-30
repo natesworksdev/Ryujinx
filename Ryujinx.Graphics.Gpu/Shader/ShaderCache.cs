@@ -756,8 +756,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
                     shaders[stageIndex] = TranslateShader(_dumper, channel.MemoryManager, shaderContexts, stageIndex + 1);
                 }
 
-
-
                 List<IShader> hostShaders = new List<IShader>();
 
                 for (int stage = 0; stage < Constants.ShaderStages; stage++)
