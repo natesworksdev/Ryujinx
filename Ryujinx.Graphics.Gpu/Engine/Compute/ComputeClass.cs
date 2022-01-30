@@ -129,6 +129,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
                 _state.State.SetTexHeaderPoolCMaximumIndex,
                 _state.State.SetBindlessTextureConstantBufferSlotSelect,
                 false,
+                CompareOp.Always,
+                0f,
+                false,
+                false,
+                false,
+                0f,
                 PrimitiveTopology.Points,
                 default);
 

@@ -184,6 +184,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
             Write(va, MemoryMarshal.Cast<T, byte>(MemoryMarshal.CreateSpan(ref value, 1)));
         }
 
+        public void WriteUntracked<T>(ulong va, T value) where T : unmanaged
+        {
+            WriteUntracked(va, MemoryMarshal.Cast<T, byte>(MemoryMarshal.CreateSpan(ref value, 1)));
+        }
+
         /// <summary>
         /// Writes data to GPU mapped memory.
         /// </summary>

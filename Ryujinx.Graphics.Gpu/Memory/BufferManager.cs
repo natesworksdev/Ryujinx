@@ -416,7 +416,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     }
                     else
                     {
-                        _context.Renderer.Pipeline.SetTexture(binding.BindingInfo.Binding, binding.Texture);
+                        _context.Renderer.Pipeline.SetTextureAndSampler(binding.BindingInfo.Binding, binding.Texture, null);
                     }
                 }
 

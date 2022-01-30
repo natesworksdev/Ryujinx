@@ -60,8 +60,6 @@ namespace Ryujinx.Graphics.OpenGL
             GL.Disable(EnableCap.RasterizerDiscard);
             GL.Disable(IndexedEnableCap.ScissorTest, 0);
 
-            GL.Clear(ClearBufferMask.ColorBufferBit);
-
             int srcX0, srcX1, srcY0, srcY1;
             float scale = view.ScaleFactor;
 
@@ -95,13 +93,13 @@ namespace Ryujinx.Graphics.OpenGL
                 srcY1 = (int)Math.Ceiling(srcY1 * scale);
             }
 
-            float ratioX = crop.IsStretched ? 1.0f : MathF.Min(1.0f, _height * crop.AspectRatioX / (_width  * crop.AspectRatioY));
-            float ratioY = crop.IsStretched ? 1.0f : MathF.Min(1.0f, _width  * crop.AspectRatioY / (_height * crop.AspectRatioX));
+            float ratioX = crop.IsStretched ? 1.0f : MathF.Min(1.0f, _height * crop.AspectRatioX / (_width * crop.AspectRatioY));
+            float ratioY = crop.IsStretched ? 1.0f : MathF.Min(1.0f, _width * crop.AspectRatioY / (_height * crop.AspectRatioX));
 
-            int dstWidth  = (int)(_width  * ratioX);
+            int dstWidth = (int)(_width * ratioX);
             int dstHeight = (int)(_height * ratioY);
 
-            int dstPaddingX = (_width  - dstWidth)  / 2;
+            int dstPaddingX = (_width - dstWidth) / 2;
             int dstPaddingY = (_height - dstHeight) / 2;
 
             int dstX0 = crop.FlipX ? _width - dstPaddingX : dstPaddingX;
