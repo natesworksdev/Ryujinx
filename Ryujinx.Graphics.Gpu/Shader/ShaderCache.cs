@@ -308,7 +308,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                                 int fragmentOutputMap = -1;
                                 int fragmentIndex = (int)ShaderStage.Fragment - 1;
 
-                                if (hostShaderEntries[fragmentIndex].Header.InUse)
+                                if (hostShaderEntries[fragmentIndex] != null && hostShaderEntries[fragmentIndex].Header.InUse)
                                 {
                                     hasFragmentShader = true;
                                     fragmentOutputMap = hostShaderEntries[fragmentIndex].Header.FragmentOutputMap;
