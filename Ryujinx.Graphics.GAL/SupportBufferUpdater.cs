@@ -43,6 +43,16 @@ namespace Ryujinx.Graphics.GAL
             }
         }
 
+        public void UpdateFragmentAlphaToCoverageDither(bool enable)
+        {
+            if ((Data.FragmentAlphaToCoverageDither.X != 0) != enable)
+            {
+                Data.FragmentAlphaToCoverageDither.X = (enable ? 1 : 0);
+
+                MarkDirty(SupportBuffer.FragmentAlphaToCoverageDitherOffset, sizeof(int));
+            }
+        }
+
         public void UpdateFragmentRenderScaleCount(int count)
         {
             if (Data.FragmentRenderScaleCount.X != count)

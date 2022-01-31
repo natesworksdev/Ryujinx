@@ -77,6 +77,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             { AttributeConsts.LtMask,              new BuiltInAttribute(null,                     VariableType.U32)  },
 
             // Support uniforms.
+            { AttributeConsts.FragmentAlphaToCoverageDither, new BuiltInAttribute(DefaultNames.SupportBlockAlphaToCoverageDitherName, VariableType.U32) },
+
             { AttributeConsts.FragmentOutputIsBgraBase + 0,  new BuiltInAttribute($"{DefaultNames.SupportBlockIsBgraName}[0]",  VariableType.Bool) },
             { AttributeConsts.FragmentOutputIsBgraBase + 4,  new BuiltInAttribute($"{DefaultNames.SupportBlockIsBgraName}[1]",  VariableType.Bool) },
             { AttributeConsts.FragmentOutputIsBgraBase + 8,  new BuiltInAttribute($"{DefaultNames.SupportBlockIsBgraName}[2]",  VariableType.Bool) },

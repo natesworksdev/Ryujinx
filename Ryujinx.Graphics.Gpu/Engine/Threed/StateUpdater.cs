@@ -166,7 +166,11 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     nameof(ThreedClassState.BlendEnable),
                     nameof(ThreedClassState.BlendState)),
 
-                new StateUpdateCallbackEntry(UpdateLogicOpState, nameof(ThreedClassState.LogicOpState))
+                new StateUpdateCallbackEntry(UpdateLogicOpState, nameof(ThreedClassState.LogicOpState)),
+
+                new StateUpdateCallbackEntry(UpdateMultisampleState,
+                    nameof(ThreedClassState.AlphaToCoverageDitherEnable),
+                    nameof(ThreedClassState.MultisampleControl))
             });
         }
 
@@ -1090,6 +1094,20 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             LogicalOpState logicOpState = _state.State.LogicOpState;
 
             _context.Renderer.Pipeline.SetLogicOpState(logicOpState.Enable, logicOpState.LogicalOp);
+        }
+
+        /// <summary>
+        /// Updates multisample state, based on guest state.
+        /// </summary>
+        private void UpdateMultisampleState()
+        {
+            bool alphaToCoverageEnable = (_state.State.MultisampleControl & 1) != 0;
+            bool alphaToOneEnable = (_state.State.MultisampleControl & 0x10) != 0;
+
+            _context.Renderer.Pipeline.SetMultisampleState(new MultisampleDescriptor(
+                alphaToCoverageEnable,
+                _state.State.AlphaToCoverageDitherEnable,
+                alphaToOneEnable));
         }
 
         /// <summary>
