@@ -389,7 +389,6 @@ namespace Ryujinx.Ava
             ConfigurationState.Instance.Graphics.HostRefreshRate.Event       -= UpdateRenderTimerFrameRate;
 
             _mainThread.Join();
-            Renderer.Continue();
             _renderingThread.Join();
             _nvStutterWorkaround?.Join();
 

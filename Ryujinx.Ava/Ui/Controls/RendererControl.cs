@@ -24,10 +24,9 @@ namespace Ryujinx.Ava.Ui.Controls
         public event EventHandler<EventArgs> GlInitialized;
         public event EventHandler<Size> SizeChanged;
 
-        private CancellationToken _token;
-        private CancellationTokenSource _tokenSource;
-
         private bool _presented;
+        private IntPtr _guiFence = IntPtr.Zero;
+        private IntPtr _gameFence = IntPtr.Zero;
 
         protected Size RenderSize { get;private set; }
 
@@ -38,9 +37,6 @@ namespace Ryujinx.Ava.Ui.Controls
             resizeObservable.Subscribe(Resized);
 
             Focusable = true;
-
-            _tokenSource = new CancellationTokenSource();
-            _token = _tokenSource.Token;
         }
 
         private void Resized(Rect rect)
@@ -75,7 +71,15 @@ namespace Ryujinx.Ava.Ui.Controls
         {
             lock (this)
             {
+                if (_gameFence != IntPtr.Zero)
+                {
+                    GL.ClientWaitSync(_gameFence, ClientWaitSyncFlags.SyncFlushCommandsBit, Int64.MaxValue);
+                    GL.DeleteSync(_gameFence);
+                    _gameFence = IntPtr.Zero;
+                }
                 OnRender(gl, fb);
+
+                _guiFence = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags.None);
 
                 _presented = true;
             }
@@ -86,6 +90,16 @@ namespace Ryujinx.Ava.Ui.Controls
         protected override void OnOpenGlDeinit(GlInterface gl, int fb)
         {
             base.OnOpenGlDeinit(gl, fb);
+
+            if (_guiFence != IntPtr.Zero)
+            {
+                GL.DeleteSync(_guiFence);
+            }
+
+            if (_gameFence != IntPtr.Zero)
+            {
+                GL.DeleteSync(_gameFence);
+            }
         }
 
         protected void OnInitialized(GlInterface gl)
@@ -99,13 +113,15 @@ namespace Ryujinx.Ava.Ui.Controls
             Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Render);
         }
 
-        public void Continue()
-        {
-            _tokenSource.Cancel();
-        }
-
         internal bool Present(int image)
         {
+            if (_guiFence != IntPtr.Zero)
+            {
+                GL.ClientWaitSync(_guiFence, ClientWaitSyncFlags.SyncFlushCommandsBit, Int64.MaxValue);
+                GL.DeleteSync(_guiFence);
+                _guiFence = IntPtr.Zero;
+            }
+            
             bool returnValue = _presented;
 
             if (_presented)
@@ -117,7 +133,11 @@ namespace Ryujinx.Ava.Ui.Controls
                 }
             }
 
-            GL.Finish();
+            if (_gameFence != IntPtr.Zero)
+            {
+                GL.DeleteSync(_gameFence);
+            }
+            _gameFence = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags.None);
 
             QueueRender();
 
