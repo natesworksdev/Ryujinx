@@ -391,10 +391,15 @@ namespace Ryujinx.Input.HLE
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static JoystickPosition ApplyDeadzone(float x, float y, float deadzone)
         {
-            return new JoystickPosition
+            float magnitudeClamped = Math.Clamp(MathF.Sqrt(x * x + y * y), -1f, 1f);
+            if (magnitudeClamped < deadzone) return new JoystickPosition()
             {
-                Dx = ClampAxis(MathF.Abs(x) > deadzone ? x : 0.0f),
-                Dy = ClampAxis(MathF.Abs(y) > deadzone ? y : 0.0f)
+                Dx = 0, Dy = 0
+            };
+            return new JoystickPosition()
+            {
+                Dx = ClampAxis((x / (magnitudeClamped)) * ((magnitudeClamped - deadzone) / (1 - deadzone))),
+                Dy = ClampAxis((y / (magnitudeClamped)) * ((magnitudeClamped - deadzone) / (1 - deadzone)))
             };
         }
 
