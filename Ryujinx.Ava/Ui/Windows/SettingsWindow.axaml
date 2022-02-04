@@ -511,7 +511,7 @@
                                 <ui:NumberBox
                                     ToolTip.Tip="{locale:Locale ResolutionScaleEntryTooltip}"
                                     MinWidth="150"
-                                    Margin="-50,0,0,0"
+                                    Margin="-100,0,0,0"
                                     SmallChange="0.1"
                                     LargeChange="1"
                                     SimpleNumberFormat="F2"
