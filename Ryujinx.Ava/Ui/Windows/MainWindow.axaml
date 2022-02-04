@@ -179,7 +179,7 @@
                                       Header="{locale:Locale MenuBarOptionsToggleFullscreen}" InputGesture="F11" />
                             <MenuItem Header="{locale:Locale MenuBarOptionsStartGamesInFullscreen}">
                                 <MenuItem.Icon>
-                                    <CheckBox Margin="0" IsChecked="{Binding StartGamesInFullscreen, Mode=TwoWay}" />
+                                    <CheckBox IsChecked="{Binding StartGamesInFullscreen, Mode=TwoWay}" />
                                 </MenuItem.Icon>
                             </MenuItem>
                             <Separator />
@@ -452,7 +452,7 @@
                                                 Height="80"
                                                 Margin="15"
                                                 Source="{Binding Icon, Converter={StaticResource ByteImage}}" />
-                                            <ui:SymbolIcon Symbol="Star" UseFilled="True" Foreground="Yellow"
+                                            <ui:SymbolIcon Symbol="StarFilled" Foreground="Yellow"
                                                            IsVisible="{Binding Favorite}" Margin="10"
                                                            VerticalAlignment="Top" HorizontalAlignment="Left" />
                                         </Grid>

@@ -20,6 +20,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Color = Avalonia.Media.Color;
 
 namespace Ryujinx.Ava.Ui.ViewModels
@@ -32,6 +33,8 @@ namespace Ryujinx.Ava.Ui.ViewModels
         private ObservableCollection<ProfileImageModel> _images;
 
         private int _selectedIndex;
+        private Color _backgroundColor = Colors.White;
+        public bool IsActive { get; set; }
 
         public AvatarProfileViewModel()
         {
@@ -39,10 +42,21 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
             PreloadResetEvent.WaitOne();
 
+            IsActive = true;
+
             ReloadImages();
         }
 
-        public Color BackgroundColor { get; set; } = Colors.White;
+        public Color BackgroundColor
+        {
+            get => _backgroundColor;
+            set
+            {
+                _backgroundColor = value;
+                
+                ReloadImages();
+            }
+        }
 
         public ObservableCollection<ProfileImageModel> Images
         {
@@ -78,20 +92,28 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public void ReloadImages()
         {
-            Images.Clear();
-
-            int index = 0;
-            int selectedIndex = _selectedIndex;
-
-            foreach (var image in AvatarDict)
+            Task.Run(() =>
             {
-                var data = ProcessImage(image.Value);
-                _images.Add(new ProfileImageModel(image.Key, data));
-                if (index++ == selectedIndex)
+                Images.Clear();
+
+                int index = 0;
+                int selectedIndex = _selectedIndex;
+
+                foreach (var image in AvatarDict)
                 {
-                    SelectedImage = data;
+                    if (!IsActive)
+                    {
+                        return;
+                    }
+                    
+                    var data = ProcessImage(image.Value);
+                    _images.Add(new ProfileImageModel(image.Key, data));
+                    if (index++ == selectedIndex)
+                    {
+                        SelectedImage = data;
+                    }
                 }
-            }
+            });
         }
 
         private byte[] ProcessImage(byte[] data)

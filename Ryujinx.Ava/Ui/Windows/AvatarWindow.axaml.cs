@@ -3,7 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
-using AvaloniaColorPicker;
+using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Ui.ViewModels;
 using Ryujinx.HLE.FileSystem.Content;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
@@ -50,6 +50,12 @@ namespace Ryujinx.Ava.Ui.Windows
             AvaloniaXamlLoader.Load(this);
         }
 
+        protected override void OnClosed(EventArgs e)
+        {
+            ViewModel.IsActive = false;
+            base.OnClosed(e);
+        }
+
         private void CloseButton_OnClick(object sender, RoutedEventArgs e)
         {
             Close();
@@ -62,27 +68,6 @@ namespace Ryujinx.Ava.Ui.Windows
                 SelectedImage = ViewModel.SelectedImage;
 
                 Close();
-            }
-        }
-
-        private async void ColorButton_OnClick(object sender, RoutedEventArgs e)
-        {
-            ColorPickerWindow dialog = new()
-            {
-                Color = Colors.White,
-                Title = "Choose Background Color"
-            };
-
-            Color? res = await dialog.ShowDialog(this);
-
-            if (res != default)
-            {
-                Color backgroundColor =
-                    new Color(Byte.MaxValue, dialog.Color.R, dialog.Color.G, dialog.Color.B);
-
-                ViewModel.BackgroundColor = backgroundColor;
-
-                ViewModel.ReloadImages();
             }
         }
     }
