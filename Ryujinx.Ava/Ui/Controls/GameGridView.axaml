@@ -9,7 +9,7 @@
              x:Class="Ryujinx.Ava.Ui.Controls.GameGridView">
     <UserControl.Resources>
         <controls:BitmapArrayValueConverter x:Key="ByteImage" />
-        <ContextMenu x:Key="GameContextMenu" MenuOpened="MenuBase_OnMenuOpened">
+        <MenuFlyout x:Key="GameContextMenu" Opened="MenuBase_OnMenuOpened">
             <MenuItem
                 Command="{Binding ToggleFavorite}"
                 Header="{locale:Locale GameListContextMenuToggleFavorite}"
@@ -77,7 +77,7 @@
                     Header="{locale:Locale GameListContextMenuExtractDataLogo}"
                     ToolTip.Tip="{locale:Locale GameListContextMenuExtractDataLogoToolTip}" />
             </MenuItem>
-        </ContextMenu>
+        </MenuFlyout>
     </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
@@ -88,7 +88,7 @@
                  HorizontalAlignment="Stretch"
                  DoubleTapped="GameList_DoubleTapped"
                  SelectionChanged="GameList_SelectionChanged"
-                 ContextMenu="{StaticResource GameContextMenu}"
+                 ContextFlyout="{StaticResource GameContextMenu}"
                  VerticalAlignment="Stretch"
                  Items="{Binding AppsObservableList}">
             <ListBox.ItemsPanel>

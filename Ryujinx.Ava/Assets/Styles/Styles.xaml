@@ -191,7 +191,6 @@
         <Setter Property="Background" Value="{DynamicResource ThemeControlBorderColor}" />
         <Setter Property="Foreground" Value="{DynamicResource ThemeControlBorderColor}" />
         <Setter Property="MinHeight" Value="1" />
-        <Setter Property="Margin" Value="5,5,5,5" />
     </Style>
     <Style Selector=":is(Button).DateTimeFlyoutButtonStyle">
         <Setter Property="Background" Value="{DynamicResource HighlightColor}" />

@@ -65,7 +65,7 @@ namespace Ryujinx.Ava.Ui.Controls
             (DataContext as MainWindowViewModel).SearchText = (sender as TextBox).Text;
         }
 
-        private void MenuBase_OnMenuOpened(object sender, RoutedEventArgs e)
+        private void MenuBase_OnMenuOpened(object sender, EventArgs e)
         {
             var selection = SelectedApplication;
 

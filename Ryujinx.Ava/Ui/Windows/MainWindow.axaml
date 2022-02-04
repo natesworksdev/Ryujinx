@@ -32,75 +32,6 @@
         <models:TimePlayedSortComparer x:Key="TimePlayedComparer" />
         <models:LastPlayedSortComparer x:Key="LastPlayedComparer" />
         <models:FileSizeSortComparer x:Key="FileSizeComparer" />
-        <ContextMenu x:Key="GameContextMenu" MenuOpened="MenuBase_OnMenuOpened">
-            <MenuItem
-                Command="{Binding ToggleFavorite}"
-                Header="{locale:Locale GameListContextMenuToggleFavorite}"
-                ToolTip.Tip="{locale:Locale GameListContextMenuToggleFavoriteToolTip}" />
-            <Separator />
-            <MenuItem
-                Command="{Binding OpenUserSaveDirectory}"
-                Header="{locale:Locale GameListContextMenuOpenUserSaveDirectory}"
-                ToolTip.Tip="{locale:Locale GameListContextMenuOpenUserSaveDirectoryToolTip}" />
-            <MenuItem
-                Command="{Binding OpenDeviceSaveDirectory}"
-                Header="{locale:Locale GameListContextMenuOpenUserDeviceDirectory}"
-                ToolTip.Tip="{locale:Locale GameListContextMenuOpenUserDeviceDirectoryToolTip}" />
-            <MenuItem
-                Command="{Binding OpenBcatSaveDirectory}"
-                Header="{locale:Locale GameListContextMenuOpenUserBcatDirectory}"
-                ToolTip.Tip="{locale:Locale GameListContextMenuOpenUserBcatDirectoryToolTip}" />
-            <Separator />
-            <MenuItem
-                Command="{Binding OpenTitleUpdateManager}"
-                Header="{locale:Locale GameListContextMenuManageTitleUpdates}"
-                ToolTip.Tip="{locale:Locale GameListContextMenuManageTitleUpdatesToolTip}" />
-            <MenuItem
-                Command="{Binding OpenDlcManager}"
-                Header="{locale:Locale GameListContextMenuManageDlc}"
-                ToolTip.Tip="{locale:Locale GameListContextMenuManageDlcToolTip}" />
-            <MenuItem
-                Command="{Binding OpenCheatManager}"
-                Header="{locale:Locale GameListContextMenuManageCheat}"
-                ToolTip.Tip="{locale:Locale GameListContextMenuManageCheatToolTip}" />
-            <MenuItem
-                Command="{Binding OpenModsDirectory}"
-                Header="{locale:Locale GameListContextMenuOpenModsDirectory}"
-                ToolTip.Tip="{locale:Locale GameListContextMenuOpenModsDirectoryToolTip}" />
-            <Separator />
-            <MenuItem Header="{locale:Locale GameListContextMenuCacheManagement}">
-                <MenuItem
-                    Command="{Binding PurgePtcCache}"
-                    Header="{locale:Locale GameListContextMenuCacheManagementPurgePptc}"
-                    ToolTip.Tip="{locale:Locale GameListContextMenuCacheManagementPurgePptcToolTip}" />
-                <MenuItem
-                    Command="{Binding PurgeShaderCache}"
-                    Header="{locale:Locale GameListContextMenuCacheManagementPurgeShaderCache}"
-                    ToolTip.Tip="{locale:Locale GameListContextMenuCacheManagementPurgeShaderCacheToolTip}" />
-                <MenuItem
-                    Command="{Binding OpenPtcDirectory}"
-                    Header="{locale:Locale GameListContextMenuCacheManagementOpenPptcDirectory}"
-                    ToolTip.Tip="{locale:Locale GameListContextMenuCacheManagementOpenPptcDirectoryToolTip}" />
-                <MenuItem
-                    Command="{Binding OpenShaderCacheDirectory}"
-                    Header="{locale:Locale GameListContextMenuCacheManagementOpenShaderCacheDirectory}"
-                    ToolTip.Tip="{locale:Locale GameListContextMenuCacheManagementOpenShaderCacheDirectoryToolTip}" />
-            </MenuItem>
-            <MenuItem Header="{locale:Locale GameListContextMenuExtractData}">
-                <MenuItem
-                    Command="{Binding ExtractExeFs}"
-                    Header="{locale:Locale GameListContextMenuExtractDataExeFS}"
-                    ToolTip.Tip="{locale:Locale GameListContextMenuExtractDataExeFSToolTip}" />
-                <MenuItem
-                    Command="{Binding ExtractRomFs}"
-                    Header="{locale:Locale GameListContextMenuExtractDataRomFS}"
-                    ToolTip.Tip="{locale:Locale GameListContextMenuExtractDataRomFSToolTip}" />
-                <MenuItem
-                    Command="{Binding ExtractLogo}"
-                    Header="{locale:Locale GameListContextMenuExtractDataLogo}"
-                    ToolTip.Tip="{locale:Locale GameListContextMenuExtractDataLogoToolTip}" />
-            </MenuItem>
-        </ContextMenu>
     </Window.Resources>
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <controls:OffscreenTextBox Name="HiddenTextBox" />
@@ -437,8 +368,78 @@
                         PointerPressed="GameList_OnPointerPressed"
                         RowBackground="{DynamicResource ThemeBackgroundColor}"
                         SelectionMode="Single"
-                        Tapped="GameList_OnTapped"
-                        ContextMenu="{StaticResource GameContextMenu}">
+                        Tapped="GameList_OnTapped">
+                        <DataGrid.ContextFlyout>
+                            <MenuFlyout Opened="MenuBase_OnMenuOpened">
+                                <MenuItem
+                                    Command="{Binding ToggleFavorite}"
+                                    Header="{locale:Locale GameListContextMenuToggleFavorite}"
+                                    ToolTip.Tip="{locale:Locale GameListContextMenuToggleFavoriteToolTip}" />
+                                <Separator />
+                                <MenuItem
+                                    Command="{Binding OpenUserSaveDirectory}"
+                                    Header="{locale:Locale GameListContextMenuOpenUserSaveDirectory}"
+                                    ToolTip.Tip="{locale:Locale GameListContextMenuOpenUserSaveDirectoryToolTip}" />
+                                <MenuItem
+                                    Command="{Binding OpenDeviceSaveDirectory}"
+                                    Header="{locale:Locale GameListContextMenuOpenUserDeviceDirectory}"
+                                    ToolTip.Tip="{locale:Locale GameListContextMenuOpenUserDeviceDirectoryToolTip}" />
+                                <MenuItem
+                                    Command="{Binding OpenBcatSaveDirectory}"
+                                    Header="{locale:Locale GameListContextMenuOpenUserBcatDirectory}"
+                                    ToolTip.Tip="{locale:Locale GameListContextMenuOpenUserBcatDirectoryToolTip}" />
+                                <Separator />
+                                <MenuItem
+                                    Command="{Binding OpenTitleUpdateManager}"
+                                    Header="{locale:Locale GameListContextMenuManageTitleUpdates}"
+                                    ToolTip.Tip="{locale:Locale GameListContextMenuManageTitleUpdatesToolTip}" />
+                                <MenuItem
+                                    Command="{Binding OpenDlcManager}"
+                                    Header="{locale:Locale GameListContextMenuManageDlc}"
+                                    ToolTip.Tip="{locale:Locale GameListContextMenuManageDlcToolTip}" />
+                                <MenuItem
+                                    Command="{Binding OpenCheatManager}"
+                                    Header="{locale:Locale GameListContextMenuManageCheat}"
+                                    ToolTip.Tip="{locale:Locale GameListContextMenuManageCheatToolTip}" />
+                                <MenuItem
+                                    Command="{Binding OpenModsDirectory}"
+                                    Header="{locale:Locale GameListContextMenuOpenModsDirectory}"
+                                    ToolTip.Tip="{locale:Locale GameListContextMenuOpenModsDirectoryToolTip}" />
+                                <Separator />
+                                <MenuItem Header="{locale:Locale GameListContextMenuCacheManagement}">
+                                    <MenuItem
+                                        Command="{Binding PurgePtcCache}"
+                                        Header="{locale:Locale GameListContextMenuCacheManagementPurgePptc}"
+                                        ToolTip.Tip="{locale:Locale GameListContextMenuCacheManagementPurgePptcToolTip}" />
+                                    <MenuItem
+                                        Command="{Binding PurgeShaderCache}"
+                                        Header="{locale:Locale GameListContextMenuCacheManagementPurgeShaderCache}"
+                                        ToolTip.Tip="{locale:Locale GameListContextMenuCacheManagementPurgeShaderCacheToolTip}" />
+                                    <MenuItem
+                                        Command="{Binding OpenPtcDirectory}"
+                                        Header="{locale:Locale GameListContextMenuCacheManagementOpenPptcDirectory}"
+                                        ToolTip.Tip="{locale:Locale GameListContextMenuCacheManagementOpenPptcDirectoryToolTip}" />
+                                    <MenuItem
+                                        Command="{Binding OpenShaderCacheDirectory}"
+                                        Header="{locale:Locale GameListContextMenuCacheManagementOpenShaderCacheDirectory}"
+                                        ToolTip.Tip="{locale:Locale GameListContextMenuCacheManagementOpenShaderCacheDirectoryToolTip}" />
+                                </MenuItem>
+                                <MenuItem Header="{locale:Locale GameListContextMenuExtractData}">
+                                    <MenuItem
+                                        Command="{Binding ExtractExeFs}"
+                                        Header="{locale:Locale GameListContextMenuExtractDataExeFS}"
+                                        ToolTip.Tip="{locale:Locale GameListContextMenuExtractDataExeFSToolTip}" />
+                                    <MenuItem
+                                        Command="{Binding ExtractRomFs}"
+                                        Header="{locale:Locale GameListContextMenuExtractDataRomFS}"
+                                        ToolTip.Tip="{locale:Locale GameListContextMenuExtractDataRomFSToolTip}" />
+                                    <MenuItem
+                                        Command="{Binding ExtractLogo}"
+                                        Header="{locale:Locale GameListContextMenuExtractDataLogo}"
+                                        ToolTip.Tip="{locale:Locale GameListContextMenuExtractDataLogoToolTip}" />
+                                </MenuItem>
+                            </MenuFlyout>
+                        </DataGrid.ContextFlyout>
                         <DataGrid.Columns>
                             <DataGridTemplateColumn SortMemberPath="Favorite">
                                 <DataGridTemplateColumn.Header>

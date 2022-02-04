@@ -551,7 +551,7 @@ namespace Ryujinx.Ava.Ui.Windows
             });
         }
 
-        private void MenuBase_OnMenuOpened(object sender, RoutedEventArgs e)
+        private void MenuBase_OnMenuOpened(object sender, EventArgs e)
         {
             object selection = GameList.SelectedItem;
 
