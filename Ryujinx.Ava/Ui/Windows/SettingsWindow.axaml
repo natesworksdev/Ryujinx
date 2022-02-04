@@ -748,62 +748,67 @@
                                       ToolTip.Tip="{locale:Locale GuestLogTooltip}">
                                 <TextBlock Text="{locale:Locale SettingsTabLoggingEnableGuestLogs}" />
                             </CheckBox>
-                            <CheckBox IsChecked="{Binding EnableFsAccessLog}"
-                                      ToolTip.Tip="{locale:Locale FileAccessLogTooltip}">
-                                <TextBlock Text="{locale:Locale SettingsTabLoggingEnableFsAccessLogs}" />
-                            </CheckBox>
-                            <StackPanel
-                                Margin="0,5"
-                                Orientation="Horizontal"
-                                VerticalAlignment="Stretch"
-                                Spacing="20">
-                                <TextBlock VerticalAlignment="Center" Margin="0,5"
-                                           ToolTip.Tip="{locale:Locale FSAccessLogModeTooltip}"
-                                           Text="{locale:Locale SettingsTabLoggingFsGlobalAccessLogMode}" />
-                                <ui:NumberBox
-                                    Maximum="3"
-                                    Minimum="0"
-                                    SpinButtonPlacementMode="Inline"
-                                    SmallChange="1"
-                                    LargeChange="1"
-                                    Value="{Binding FsGlobalAccessLogMode}" />
-                            </StackPanel>
                         </StackPanel>
                         <Separator Height="1" />
                         <TextBlock FontWeight="Bold" Text="{locale:Locale SettingsTabLoggingDeveloperOptions}" />
                         <StackPanel
-                            Margin="10,0,10,0"
+                            Margin="0,0,10,0"
                             HorizontalAlignment="Stretch"
                             Orientation="Vertical"
                             Spacing="10">
-                            <StackPanel
-                                Margin="0,5"
-                                Orientation="Horizontal"
-                                Spacing="20">
-                                <TextBlock VerticalAlignment="Center"
-                                           Text="{locale:Locale SettingsTabLoggingOpenglLogLevel}"
-                                           ToolTip.Tip="{locale:Locale OpenGlLogLevel}" />
-                                <ComboBox SelectedIndex="{Binding OpenglDebugLevel}"
-                                          ToolTip.Tip="{locale:Locale OpenGlLogLevel}">
-                                    <ComboBoxItem>
-                                        <TextBlock Text="{locale:Locale SettingsTabLoggingOpenglLogLevelNone}" />
-                                    </ComboBoxItem>
-                                    <ComboBoxItem>
-                                        <TextBlock Text="{locale:Locale SettingsTabLoggingOpenglLogLevelError}" />
-                                    </ComboBoxItem>
-                                    <ComboBoxItem>
-                                        <TextBlock
-                                            Text="{locale:Locale SettingsTabLoggingOpenglLogLevelPerformance}" />
-                                    </ComboBoxItem>
-                                    <ComboBoxItem>
-                                        <TextBlock Text="{locale:Locale SettingsTabLoggingOpenglLogLevelAll}" />
-                                    </ComboBoxItem>
-                                </ComboBox>
-                            </StackPanel>
-                            <CheckBox IsChecked="{Binding EnableDebug}"
-                                      ToolTip.Tip="{locale:Locale DebugLogTooltip}">
+                            <StackPanel Margin="10,0,10,0" Orientation="Vertical">
+                                <CheckBox IsChecked="{Binding EnableDebug}"
+                                        ToolTip.Tip="{locale:Locale DebugLogTooltip}">
                                 <TextBlock Text="{locale:Locale SettingsTabLoggingEnableDebugLogs}" />
-                            </CheckBox>
+                                </CheckBox>
+                                <CheckBox IsChecked="{Binding EnableFsAccessLog}"
+                                        ToolTip.Tip="{locale:Locale FileAccessLogTooltip}">
+                                <TextBlock Text="{locale:Locale SettingsTabLoggingEnableFsAccessLogs}" />
+                                </CheckBox>
+                                <StackPanel
+                                    Margin="0,5"
+                                    Orientation="Horizontal"
+                                    VerticalAlignment="Stretch"
+                                    Spacing="20">
+                                    <TextBlock VerticalAlignment="Center" Margin="0,5"
+                                            ToolTip.Tip="{locale:Locale FSAccessLogModeTooltip}"
+                                            Text="{locale:Locale SettingsTabLoggingFsGlobalAccessLogMode}" />
+                                    <ui:NumberBox
+                                        Maximum="3"
+                                        Minimum="0"
+                                        Width="150"
+                                        SpinButtonPlacementMode="Inline"
+                                        SmallChange="1"
+                                        LargeChange="1"
+                                        Value="{Binding FsGlobalAccessLogMode}" />
+                                </StackPanel>
+                                 <StackPanel
+                                    Margin="0,5"
+                                    Orientation="Horizontal"
+                                    Spacing="68">
+                                    <TextBlock VerticalAlignment="Center"
+                                            Text="{locale:Locale SettingsTabLoggingOpenglLogLevel}"
+                                            ToolTip.Tip="{locale:Locale OpenGlLogLevel}" />
+                                    <ComboBox SelectedIndex="{Binding OpenglDebugLevel}"
+                                            Width="150"
+                                            HorizontalContentAlignment="Left"
+                                            ToolTip.Tip="{locale:Locale OpenGlLogLevel}">
+                                        <ComboBoxItem>
+                                            <TextBlock Text="{locale:Locale SettingsTabLoggingOpenglLogLevelNone}" />
+                                        </ComboBoxItem>
+                                        <ComboBoxItem>
+                                            <TextBlock Text="{locale:Locale SettingsTabLoggingOpenglLogLevelError}" />
+                                        </ComboBoxItem>
+                                        <ComboBoxItem>
+                                            <TextBlock
+                                                Text="{locale:Locale SettingsTabLoggingOpenglLogLevelPerformance}" />
+                                        </ComboBoxItem>
+                                        <ComboBoxItem>
+                                            <TextBlock Text="{locale:Locale SettingsTabLoggingOpenglLogLevelAll}" />
+                                        </ComboBoxItem>
+                                    </ComboBox>
+                                </StackPanel>
+                            </StackPanel>
                         </StackPanel>
                     </StackPanel>
                 </Border>
