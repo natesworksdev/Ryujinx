@@ -43,7 +43,7 @@
                           VerticalScrollBarVisibility="Auto">
                 <Border>
                     <StackPanel
-                        Margin="10,10,0,0"
+                        Margin="10, 5"
                         HorizontalAlignment="Stretch"
                         Orientation="Vertical"
                         Spacing="10">
@@ -204,7 +204,7 @@
                           VerticalScrollBarVisibility="Auto">
                 <Border>
                     <StackPanel
-                        Margin="10"
+                        Margin="10, 5"
                         HorizontalAlignment="Stretch"
                         Orientation="Vertical">
                         <TextBlock FontWeight="Bold" Text="{locale:Locale SettingsTabSystemCore}" />
@@ -686,7 +686,7 @@
                 VerticalScrollBarVisibility="Auto">
                 <Border>
                     <StackPanel
-                        Margin="10"
+                        Margin="10, 5"
                         HorizontalAlignment="Stretch"
                         Orientation="Vertical"
                         Spacing="10">
