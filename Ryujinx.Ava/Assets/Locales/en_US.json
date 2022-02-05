@@ -500,7 +500,6 @@
   "SettingsTabCpu": "CPU",
   "SettingsTabAudio": "Audio",
   "SettingsTabNetwork": "Network",
-  "SettingsTabAudio" : "Audio",
   "SettingsTabNetworkConnection" : "Network Connection",
   "SettingsTabGraphicsFrameRate" : "Host Refresh Rate:",
   "SettingsTabGraphicsFrameRateTooltip" : "Sets host refresh rate. Set to 0 to remove limit.",
