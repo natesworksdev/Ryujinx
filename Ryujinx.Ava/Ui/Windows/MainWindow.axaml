@@ -117,6 +117,8 @@
                             <MenuItem Header="{locale:Locale MenuBarOptionsChangeLanguage}">
                                 <MenuItem Command="{Binding ChangeLanguage}" CommandParameter="en_US"
                                           Header="American English" />
+                                <MenuItem Command="{Binding ChangeLanguage}" CommandParameter="es_ES"
+	                                      Header="Castilian Spanish" />
                                 <MenuItem Command="{Binding ChangeLanguage}" CommandParameter="fr_FR" Header="French" />
                                 <MenuItem Command="{Binding ChangeLanguage}" CommandParameter="pt_BR"
                                           Header="Brazilian Portuguese" />
