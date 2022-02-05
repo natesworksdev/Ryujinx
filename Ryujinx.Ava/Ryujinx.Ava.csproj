@@ -87,6 +87,7 @@
         <EmbeddedResource Include="Assets\Images\Logo_Ryujinx.png" />
         <EmbeddedResource Include="Assets\Images\Logo_Twitter.png" />
         <EmbeddedResource Include="Assets\Locales\en_US.json" />
+        <EmbeddedResource Include="Assets\Locales\es_ES.json" />
         <EmbeddedResource Include="Assets\Locales\fr_FR.json" />
         <EmbeddedResource Include="Assets\Locales\pt_BR.json" />
         <EmbeddedResource Include="Assets\Styles\Styles.xaml" />
