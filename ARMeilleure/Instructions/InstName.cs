@@ -80,6 +80,7 @@ namespace ARMeilleure.Instructions
         Sbcs,
         Sbfm,
         Sdiv,
+        Shsub8,
         Smaddl,
         Smsubl,
         Smulh,
