@@ -17,6 +17,7 @@ namespace Ryujinx.Graphics.GAL
 
         PinnedSpan<byte> GetData();
         PinnedSpan<byte> GetData(int layer, int level);
+        void GetData(BufferRange range, int layer, int level, int stride);
 
         void SetData(SpanOrArray<byte> data);
         void SetData(SpanOrArray<byte> data, int layer, int level);

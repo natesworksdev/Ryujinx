@@ -10,7 +10,7 @@ namespace Ryujinx.Graphics.Vulkan
 {
     class BufferManager : IDisposable
     {
-        private const MemoryPropertyFlags DefaultBufferMemoryFlags =
+        public const MemoryPropertyFlags DefaultBufferMemoryFlags =
             MemoryPropertyFlags.HostVisibleBit |
             MemoryPropertyFlags.HostCoherentBit |
             MemoryPropertyFlags.HostCachedBit;
@@ -55,6 +55,38 @@ namespace Ryujinx.Graphics.Vulkan
             StagingBuffer = new StagingBuffer(gd, this);
         }
 
+        public unsafe BufferHandle CreateHostImported(VulkanRenderer gd, nint pointer, int size)
+        {
+            var usage = DefaultBufferUsageFlags;
+
+            if (gd.Capabilities.SupportsIndirectParameters)
+            {
+                usage |= BufferUsageFlags.IndirectBufferBit;
+            }
+
+            var bufferCreateInfo = new BufferCreateInfo()
+            {
+                SType = StructureType.BufferCreateInfo,
+                Size = (ulong)size,
+                Usage = usage,
+                SharingMode = SharingMode.Exclusive
+            };
+
+            gd.Api.CreateBuffer(_device, in bufferCreateInfo, null, out var buffer).ThrowOnError();
+
+            var allocation = gd.HostMemoryAllocator.GetExistingAllocation(pointer, (ulong)size);
+
+            gd.Api.BindBufferMemory(_device, buffer, allocation.Memory, allocation.Offset);
+
+            var holder = new BufferHolder(gd, _device, buffer, allocation, size, BufferAllocationType.HostMapped, BufferAllocationType.HostMapped);
+
+            BufferCount++;
+
+            ulong handle64 = (uint)_buffers.Add(holder);
+
+            return Unsafe.As<ulong, BufferHandle>(ref handle64);
+        }
+
         public BufferHandle CreateWithHandle(VulkanRenderer gd, int size, BufferAllocationType baseType = BufferAllocationType.HostMapped, BufferHandle storageHint = default)
         {
             return CreateWithHandle(gd, size, out _, baseType, storageHint);
@@ -74,6 +106,8 @@ namespace Ryujinx.Graphics.Vulkan
 
             return Unsafe.As<ulong, BufferHandle>(ref handle64);
         }
+
+        public static MemoryRequirements GlobalRequirementsTest;
 
         public unsafe (VkBuffer buffer, MemoryAllocation allocation, BufferAllocationType resultType) CreateBacking(
             VulkanRenderer gd,
@@ -105,6 +139,8 @@ namespace Ryujinx.Graphics.Vulkan
             gd.Api.GetBufferMemoryRequirements(_device, buffer, out var requirements);
 
             MemoryAllocation allocation;
+
+            GlobalRequirementsTest = requirements;
 
             do
             {

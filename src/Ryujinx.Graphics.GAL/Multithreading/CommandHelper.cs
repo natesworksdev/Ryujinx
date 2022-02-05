@@ -43,6 +43,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
 
             Register<ActionCommand>(CommandType.Action);
             Register<CreateBufferCommand>(CommandType.CreateBuffer);
+            Register<CreateHostBufferCommand>(CommandType.CreateHostBuffer);
             Register<CreateProgramCommand>(CommandType.CreateProgram);
             Register<CreateSamplerCommand>(CommandType.CreateSampler);
             Register<CreateSyncCommand>(CommandType.CreateSync);
@@ -69,6 +70,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             Register<TextureCopyToCommand>(CommandType.TextureCopyTo);
             Register<TextureCopyToScaledCommand>(CommandType.TextureCopyToScaled);
             Register<TextureCopyToSliceCommand>(CommandType.TextureCopyToSlice);
+            Register<TextureGetDataToBufferCommand>(CommandType.TextureGetDataToBuffer);
             Register<TextureCreateViewCommand>(CommandType.TextureCreateView);
             Register<TextureGetDataCommand>(CommandType.TextureGetData);
             Register<TextureGetDataSliceCommand>(CommandType.TextureGetDataSlice);

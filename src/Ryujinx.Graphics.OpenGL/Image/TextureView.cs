@@ -287,6 +287,23 @@ namespace Ryujinx.Graphics.OpenGL.Image
             }
         }
 
+        public void GetData(BufferRange range, int layer, int level, int stride)
+        {
+            if (stride != 0)
+            {
+                throw new NotSupportedException("Stride conversion for texture copy to buffer not supported.");
+            }
+
+            GL.BindBuffer(BufferTarget.PixelPackBuffer, range.Handle.ToInt32());
+
+            int offset = WriteToPbo2D(range.Offset, layer, level);
+
+            if (offset != 0)
+            {
+                throw new InvalidOperationException("DepthStencil copy to PBO is not supported for layer/level > 0.");
+            }
+        }
+
         public void WriteToPbo(int offset, bool forceBgra)
         {
             WriteTo(IntPtr.Zero + offset, forceBgra);
