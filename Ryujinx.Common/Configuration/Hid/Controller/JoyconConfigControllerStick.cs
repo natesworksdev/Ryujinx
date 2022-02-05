@@ -5,6 +5,7 @@
         public Stick Joystick { get; set; }
         public bool InvertStickX { get; set; }
         public bool InvertStickY { get; set; }
+        public bool SwapSticks { get; set; }
         public Button StickButton { get; set; }
     }
 }

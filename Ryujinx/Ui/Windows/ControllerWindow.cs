@@ -73,6 +73,7 @@ namespace Ryujinx.Ui.Windows
         [GUI] ToggleButton _lStick;
         [GUI] CheckButton  _invertLStickX;
         [GUI] CheckButton  _invertLStickY;
+        [GUI] CheckButton  _swapLSticks;
         [GUI] ToggleButton _lStickUp;
         [GUI] ToggleButton _lStickDown;
         [GUI] ToggleButton _lStickLeft;
@@ -88,6 +89,7 @@ namespace Ryujinx.Ui.Windows
         [GUI] ToggleButton _rStick;
         [GUI] CheckButton  _invertRStickX;
         [GUI] CheckButton  _invertRStickY;
+        [GUI] CheckButton  _swapRSticks;
         [GUI] ToggleButton _rStickUp;
         [GUI] ToggleButton _rStickDown;
         [GUI] ToggleButton _rStickLeft;
@@ -490,6 +492,7 @@ namespace Ryujinx.Ui.Windows
                     _lStick.Label                     = controllerConfig.LeftJoyconStick.Joystick.ToString();
                     _invertLStickX.Active             = controllerConfig.LeftJoyconStick.InvertStickX;
                     _invertLStickY.Active             = controllerConfig.LeftJoyconStick.InvertStickY;
+                    _swapLSticks.Active               = controllerConfig.LeftJoyconStick.SwapSticks;
                     _lStickButton.Label               = controllerConfig.LeftJoyconStick.StickButton.ToString();
                     _dpadUp.Label                     = controllerConfig.LeftJoycon.DpadUp.ToString();
                     _dpadDown.Label                   = controllerConfig.LeftJoycon.DpadDown.ToString();
@@ -503,6 +506,7 @@ namespace Ryujinx.Ui.Windows
                     _rStick.Label                     = controllerConfig.RightJoyconStick.Joystick.ToString();
                     _invertRStickX.Active             = controllerConfig.RightJoyconStick.InvertStickX;
                     _invertRStickY.Active             = controllerConfig.RightJoyconStick.InvertStickY;
+                    _swapRSticks.Active               = controllerConfig.RightJoyconStick.SwapSticks;
                     _rStickButton.Label               = controllerConfig.RightJoyconStick.StickButton.ToString();
                     _a.Label                          = controllerConfig.RightJoycon.ButtonA.ToString();
                     _b.Label                          = controllerConfig.RightJoycon.ButtonB.ToString();
@@ -718,6 +722,7 @@ namespace Ryujinx.Ui.Windows
                         Joystick     = lStick,
                         InvertStickY = _invertLStickY.Active,
                         StickButton  = lStickButton,
+                        SwapSticks   = _swapLSticks.Active,
                     },
                     RightJoycon      = new RightJoyconCommonConfig<ConfigGamepadInputId>
                     {
@@ -737,6 +742,7 @@ namespace Ryujinx.Ui.Windows
                         Joystick     = rStick,
                         InvertStickY = _invertRStickY.Active,
                         StickButton  = rStickButton,
+                        SwapSticks   = _swapRSticks.Active,
                     },
                     Motion           = motionConfig,
                     Rumble           = new RumbleConfigController
@@ -1056,6 +1062,7 @@ namespace Ryujinx.Ui.Windows
                             StickButton  = ConfigGamepadInputId.LeftStick,
                             InvertStickX = false,
                             InvertStickY = false,
+                            SwapSticks   = false,
                         },
 
                         RightJoycon = new RightJoyconCommonConfig<ConfigGamepadInputId>
@@ -1077,6 +1084,7 @@ namespace Ryujinx.Ui.Windows
                             StickButton  = ConfigGamepadInputId.RightStick,
                             InvertStickX = false,
                             InvertStickY = false,
+                            SwapSticks   = false,
                         },
 
                         Motion = new StandardMotionConfigController

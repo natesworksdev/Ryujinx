@@ -220,6 +220,7 @@ namespace Ryujinx.Headless.SDL2
                             StickButton  = ConfigGamepadInputId.LeftStick,
                             InvertStickX = false,
                             InvertStickY = false,
+                            SwapSticks   = false,
                         },
 
                         RightJoycon = new RightJoyconCommonConfig<ConfigGamepadInputId>
@@ -241,6 +242,7 @@ namespace Ryujinx.Headless.SDL2
                             StickButton  = ConfigGamepadInputId.RightStick,
                             InvertStickX = false,
                             InvertStickY = false,
+                            SwapSticks   = false,
                         },
 
                         Motion = new StandardMotionConfigController
