@@ -500,7 +500,6 @@
   "SettingsTabCpu": "ЦП",
   "SettingsTabAudio": "Аудио",
   "SettingsTabNetwork": "Сеть",
-  "SettingsTabAudio" : "Аудио",
   "SettingsTabNetworkConnection" : "Подключение к сети",
   "SettingsTabGraphicsFrameRate" : "Частота обновления хоста",
   "SettingsTabGraphicsFrameRateTooltip" : "Устанавливает частоту обновления хоста. Установите на 0, чтобы снять ограничение.",
