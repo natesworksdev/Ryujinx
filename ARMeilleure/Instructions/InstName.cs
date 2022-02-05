@@ -546,6 +546,7 @@ namespace ARMeilleure.Instructions
         Tst,
         Ubfx,
         Uhadd8,
+        Uhsub8,
         Umaal,
         Umlal,
         Umull,

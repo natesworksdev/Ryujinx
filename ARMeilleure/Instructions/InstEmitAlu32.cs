@@ -482,6 +482,35 @@ namespace ARMeilleure.Instructions
             EmitHadd8(context, true);
         }
 
+        public static void Uhsub8(ArmEmitterContext context)
+        {
+            OpCode32AluReg op = (OpCode32AluReg)context.CurrOp;
+
+            Operand m = GetIntA32(context, op.Rm);
+            Operand n = GetIntA32(context, op.Rn);
+
+            Operand left, right, res;
+
+            // This relies on the equality x-y == (x^y) - (((x^y)&y) << 1).
+            // Note that x^y always contains the LSB of the result.
+            // Since we want to calculate (x+y)/2, we can instead calculate ((x^y)>>1) - ((x^y)&y).
+
+            left = context.BitwiseExclusiveOr(m, n);
+            right = context.BitwiseAnd(left, m);
+            left = context.ShiftRightUI(left, Const(1));
+
+            // We must now perform a partitioned subtraction.
+            // We can do this because minuend contains 7 bit fields.
+            // We use the extra bit in minuend as a bit to borrow from; we set this bit.
+            // We invert this bit at the end as this tells us if that bit was borrowed from.
+
+            res = context.BitwiseOr(left, Const(0x80808080));
+            res = context.Subtract(res, right);
+            res = context.BitwiseExclusiveOr(res, Const(0x80808080));
+
+            SetIntA32(context, op.Rd, res);
+        }
+
         public static void Usat(ArmEmitterContext context)
         {
             OpCode32Sat op = (OpCode32Sat)context.CurrOp;
