@@ -18,7 +18,7 @@ namespace ARMeilleure.Decoders
         // For lower code quality translation, we set a lower limit since we're blocking execution.
         private const int MaxInstsPerFunctionLowCq = 500;
 
-        public static Block[] Decode(IMemoryManager memory, ulong address, ExecutionMode mode, bool highCq, bool singleBlock)
+        public static Block[] Decode(IMemoryManager memory, ulong address, ExecutionMode mode, bool highCq, DecoderMode dMode)
         {
             List<Block> blocks = new List<Block>();
 
@@ -38,7 +38,7 @@ namespace ARMeilleure.Decoders
                 {
                     block = new Block(blkAddress);
 
-                    if ((singleBlock && visited.Count >= 1) || opsCount > instructionLimit || !memory.IsMapped(blkAddress))
+                    if ((dMode != DecoderMode.Normal && visited.Count >= 1) || opsCount > instructionLimit || !memory.IsMapped(blkAddress))
                     {
                         block.Exit = true;
                         block.EndAddress = blkAddress;
@@ -96,7 +96,18 @@ namespace ARMeilleure.Decoders
                         }
                     }
 
-                    FillBlock(memory, mode, currBlock, limitAddress);
+                    if (dMode == DecoderMode.SingleInstruction)
+                    {
+                        OpCode opCode = DecodeOpCode(memory, currBlock.Address, mode);
+
+                        currBlock.OpCodes.Add(opCode);
+
+                        currBlock.EndAddress = currBlock.Address + (ulong)opCode.OpCodeSizeInBytes;
+                    }
+                    else
+                    {
+                        FillBlock(memory, mode, currBlock, limitAddress);
+                    }
 
                     opsCount += currBlock.OpCodes.Count;
 
@@ -135,6 +146,11 @@ namespace ARMeilleure.Decoders
                 }
             }
 
+            if (dMode == DecoderMode.SingleInstruction)
+            {
+                Debug.Assert(opsCount == 1);
+            }
+
             if (blocks.Count == 1 && blocks[0].OpCodes.Count == 0)
             {
                 Debug.Assert(blocks[0].Exit);
@@ -143,7 +159,7 @@ namespace ARMeilleure.Decoders
                 throw new InvalidOperationException($"Decoded a single empty exit block. Entry point = 0x{address:X}.");
             }
 
-            if (!singleBlock)
+            if (dMode == DecoderMode.Normal)
             {
                 return TailCallRemover.RunPass(address, blocks);
             }
