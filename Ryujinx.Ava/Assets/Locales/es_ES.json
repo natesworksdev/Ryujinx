@@ -500,8 +500,6 @@
   "SettingsTabCpu": "CPU",
   "SettingsTabAudio": "Audio",
   "SettingsTabNetwork": "Red",
-  "SettingsTabAudioBackend" : "Motor de audio",
-  "SettingsTabAudioVolume" : "Volumen",
   "SettingsTabNetworkConnection" : "Conexión de red",
   "SettingsTabGraphicsFrameRate" : "Velocidad máxima de fotogramas:",
   "SettingsTabGraphicsFrameRateTooltip" : "Fija el límite de fotogramas del host. Elige 0 para deshabilitar el límite.",
