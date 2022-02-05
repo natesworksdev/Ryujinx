@@ -40,7 +40,7 @@
                        Source="resm:Ryujinx.Ava.Assets.Images.Logo_Ryujinx.png" Height="110" MinWidth="50" />
                 <TextBlock FontSize="35" TextAlignment="Left" Grid.Row="0" Grid.Column="1" Text="Ryujinx"
                            Margin="0,20,0,0" />
-                <TextBlock FontSize="16" TextAlignment="Left" Grid.Row="1" Grid.Column="1" Text="(REE-YOU-JI-NX)"
+                <TextBlock FontSize="16" TextAlignment="Left" Grid.Row="1" Grid.Column="1" Text="(REE-YOU-JINX)"
                            Margin="0,0,0,0" />
                 <Button Grid.Column="1" Background="Transparent" HorizontalAlignment="Center" Margin="0" Grid.Row="2"
                         Tag="https://www.ryujinx.org/"
