@@ -86,7 +86,7 @@ namespace Ryujinx.Memory
             }
             else if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
             {
-                MemoryManagementUnix.Remap(address, (IntPtr)((ulong)sharedMemory + srcOffset), size);
+                MemoryManagementUnix.MapView(sharedMemory, srcOffset, address, size);
             }
             else
             {
@@ -104,7 +104,7 @@ namespace Ryujinx.Memory
             }
             else if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
             {
-                MemoryManagementUnix.Unmap(address, size);
+                MemoryManagementUnix.UnmapView(address, size);
             }
             else
             {
@@ -187,7 +187,7 @@ namespace Ryujinx.Memory
             }
         }
 
-        public static IntPtr MapSharedMemory(IntPtr handle)
+        public static IntPtr MapSharedMemory(IntPtr handle, ulong size)
         {
             if (OperatingSystem.IsWindows())
             {
@@ -195,7 +195,7 @@ namespace Ryujinx.Memory
             }
             else if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
             {
-                return MemoryManagementUnix.MapSharedMemory(handle);
+                return MemoryManagementUnix.MapSharedMemory(handle, size);
             }
             else
             {
@@ -203,7 +203,7 @@ namespace Ryujinx.Memory
             }
         }
 
-        public static void UnmapSharedMemory(IntPtr address)
+        public static void UnmapSharedMemory(IntPtr address, ulong size)
         {
             if (OperatingSystem.IsWindows())
             {
@@ -211,19 +211,7 @@ namespace Ryujinx.Memory
             }
             else if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
             {
-                MemoryManagementUnix.UnmapSharedMemory(address);
-            }
-            else
-            {
-                throw new PlatformNotSupportedException();
-            }
-        }
-
-        public static IntPtr Remap(IntPtr target, IntPtr source, ulong size)
-        {
-            if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
-            {
-                return MemoryManagementUnix.Remap(target, source, size);
+                MemoryManagementUnix.UnmapSharedMemory(address, size);
             }
             else
             {

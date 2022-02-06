@@ -37,7 +37,7 @@ namespace Ryujinx.Memory
             if (flags.HasFlag(MemoryAllocationFlags.Mirrorable))
             {
                 _sharedMemory = MemoryManagement.CreateSharedMemory(size, flags.HasFlag(MemoryAllocationFlags.Reserve));
-                _pointer = MemoryManagement.MapSharedMemory(_sharedMemory);
+                _pointer = MemoryManagement.MapSharedMemory(_sharedMemory, size);
                 _usesSharedMemory = true;
             }
             else if (flags.HasFlag(MemoryAllocationFlags.Reserve))
@@ -62,7 +62,7 @@ namespace Ryujinx.Memory
         /// <exception cref="PlatformNotSupportedException">Throw when the current platform is not supported</exception>
         private MemoryBlock(ulong size, IntPtr sharedMemory)
         {
-            _pointer = MemoryManagement.MapSharedMemory(sharedMemory);
+            _pointer = MemoryManagement.MapSharedMemory(sharedMemory, size);
             Size = size;
             _usesSharedMemory = true;
             _isMirror = true;
@@ -158,20 +158,6 @@ namespace Ryujinx.Memory
         public void Reprotect(ulong offset, ulong size, MemoryPermission permission, bool throwOnFail = true)
         {
             MemoryManagement.Reprotect(GetPointerInternal(offset, size), size, permission, _viewCompatible, throwOnFail);
-        }
-
-        /// <summary>
-        /// Remaps a region of memory into this memory block.
-        /// </summary>
-        /// <param name="offset">Starting offset of the range to be remapped into</param>
-        /// <param name="sourceAddress">Starting offset of the range to be remapped from</param>
-        /// <param name="size">Size of the range to be remapped</param>
-        /// <exception cref="ObjectDisposedException">Throw when the memory block has already been disposed</exception>
-        /// <exception cref="InvalidMemoryRegionException">Throw when either <paramref name="offset"/> or <paramref name="size"/> are out of range</exception>
-        /// <exception cref="MemoryProtectionException">Throw when <paramref name="permission"/> is invalid</exception>
-        public void Remap(ulong offset, IntPtr sourceAddress, ulong size)
-        {
-            MemoryManagement.Remap(GetPointerInternal(offset, size), sourceAddress, size);
         }
 
         /// <summary>
@@ -400,7 +386,7 @@ namespace Ryujinx.Memory
             {
                 if (_usesSharedMemory)
                 {
-                    MemoryManagement.UnmapSharedMemory(ptr);
+                    MemoryManagement.UnmapSharedMemory(ptr, Size);
 
                     if (_sharedMemory != IntPtr.Zero && !_isMirror)
                     {
