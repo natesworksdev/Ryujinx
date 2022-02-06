@@ -1,6 +1,8 @@
 using ARMeilleure.Memory;
 using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Threading;
 
 namespace ARMeilleure.State
 {
@@ -77,6 +79,10 @@ namespace ARMeilleure.State
         public event EventHandler<InstExceptionEventArgs> SupervisorCall;
         public event EventHandler<InstUndefinedEventArgs> Undefined;
 
+        public delegate DebugAction DebugCallback(ExecutionContext ctx);
+        internal ConcurrentQueue<DebugCallback> _messages = new ConcurrentQueue<DebugCallback>();
+        internal SemaphoreSlim _messagesAvailable = new SemaphoreSlim(0);
+
         static ExecutionContext()
         {
             _hostTickFreq = 1.0 / Stopwatch.Frequency;
@@ -121,6 +127,14 @@ namespace ARMeilleure.State
         public void RequestInterrupt()
         {
             _interrupted = true;
+        }
+
+        public void RequestDebugCallback(DebugCallback cb)
+        {
+            Debug.Assert(Optimizations.EnableDebugging);
+
+            _messages.Enqueue(cb);
+            _messagesAvailable.Release(1);
         }
 
         internal void OnBreak(ulong address, int imm)

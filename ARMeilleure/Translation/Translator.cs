@@ -169,7 +169,16 @@ namespace ARMeilleure.Translation
 
             NativeInterface.RegisterThread(context, Memory, this);
 
-            if (Optimizations.UseUnmanagedDispatchLoop)
+            if (Optimizations.EnableDebugging)
+            {
+                do
+                {
+                    address = ExecuteSingle(context, address);
+                    address = TryDebugCallback(context, address);
+                }
+                while (context.Running && address != 0);
+            }
+            else if (Optimizations.UseUnmanagedDispatchLoop)
             {
                 Stubs.DispatchLoop(context.NativeContextPtr, address);
             }
@@ -214,6 +223,38 @@ namespace ARMeilleure.Translation
             TranslatedFunction func = Translate(address, context.ExecutionMode, highCq: false, singleStep: true);
 
             return func.Execute(context);
+        }
+
+        private ulong TryDebugCallback(State.ExecutionContext context, ulong address)
+        {
+            State.ExecutionContext.DebugCallback cb;
+            while (context._messages.TryDequeue(out cb))
+            {
+                bool paused = false;
+
+                switch (cb(context))
+                {
+                    case DebugAction.Continue:
+                        break;
+                    case DebugAction.Step:
+                        address = Step(context, address);
+                        paused = true;
+                        break;
+                    case DebugAction.Pause:
+                        paused = true;
+                        break;
+                }
+
+                if (paused)
+                {
+                    do
+                    {
+                        context._messagesAvailable.Wait();
+                    } while (context._messages.IsEmpty);
+                }
+            }
+
+            return address;
         }
 
         internal TranslatedFunction GetOrTranslate(ulong address, ExecutionMode mode)
