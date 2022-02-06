@@ -392,7 +392,7 @@
   "MenuBarOptionsResumeEmulation": "Продолжить",
   "AboutUrlTooltipMessage": "Нажмите, чтобы открыть веб-сайт Ryujinx в браузере по умолчанию.",
   "AboutDisclaimerMessage": "Ryujinx никоим образом не связан ни с Nintendo™, ни с кем-либо из ее партнеров.",
-  "AboutAmiiboDisclaimerMessage": "Amiibo API (www.amiibo api.com) используется\в нашей эмуляции Amiibo.",
+  "AboutAmiiboDisclaimerMessage": "Amiibo API (www.amiibo api.com) используется\n нашей эмуляции Amiibo.",
   "AboutPatreonUrlTooltipMessage": "Нажмите, чтобы открыть страницу Ryujinx Patreon в браузере по умолчанию.",
   "AboutGithubUrlTooltipMessage": "Нажмите, чтобы открыть страницу Ryujinx GitHub в браузере по умолчанию.",
   "AboutDiscordUrlTooltipMessage": "Нажмите, чтобы открыть приглашение на сервер Ryujinx Discord в браузере по умолчанию.",
