@@ -209,6 +209,13 @@ namespace ARMeilleure.Translation
             return nextAddr;
         }
 
+        public ulong Step(State.ExecutionContext context, ulong address)
+        {
+            TranslatedFunction func = Translate(address, context.ExecutionMode, highCq: false, singleStep: true);
+
+            return func.Execute(context);
+        }
+
         internal TranslatedFunction GetOrTranslate(ulong address, ExecutionMode mode)
         {
             if (!Functions.TryGetValue(address, out TranslatedFunction func))
@@ -242,7 +249,7 @@ namespace ARMeilleure.Translation
             }
         }
 
-        internal TranslatedFunction Translate(ulong address, ExecutionMode mode, bool highCq)
+        internal TranslatedFunction Translate(ulong address, ExecutionMode mode, bool highCq, bool singleStep = false)
         {
             var context = new ArmEmitterContext(
                 Memory,
@@ -255,7 +262,7 @@ namespace ARMeilleure.Translation
 
             Logger.StartPass(PassName.Decoding);
 
-            Block[] blocks = Decoder.Decode(Memory, address, mode, highCq, DecoderMode.Normal);
+            Block[] blocks = Decoder.Decode(Memory, address, mode, highCq, singleStep ? DecoderMode.SingleInstruction : DecoderMode.Normal);
 
             Logger.EndPass(PassName.Decoding);
 
@@ -285,14 +292,14 @@ namespace ARMeilleure.Translation
 
             var options = highCq ? CompilerOptions.HighCq : CompilerOptions.None;
 
-            if (context.HasPtc)
+            if (context.HasPtc && !singleStep)
             {
                 options |= CompilerOptions.Relocatable;
             }
 
             CompiledFunction compiledFunc = Compiler.Compile(cfg, argTypes, retType, options);
 
-            if (context.HasPtc)
+            if (context.HasPtc && !singleStep)
             {
                 Hash128 hash = Ptc.ComputeHash(Memory, address, funcSize);
 
