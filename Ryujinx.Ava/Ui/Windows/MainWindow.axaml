@@ -698,6 +698,7 @@
                     <TextBlock
                         Margin="5,0,5,0"
                         Name="DockedStatus"
+                        IsVisible="{Binding !ShowLoadProgress}"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
                         PointerReleased="DockedStatus_PointerReleased"
@@ -713,6 +714,7 @@
                     <TextBlock
                         Margin="5,0,5,0"
                         Name="AspectRatioStatus"
+                        IsVisible="{Binding !ShowLoadProgress}"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
                         PointerReleased="AspectRatioStatus_PointerReleased"
@@ -759,6 +761,7 @@
                         BorderBrush="Gray" />
                     <TextBlock
                         Margin="5,0,5,0"
+                        IsVisible="{Binding !ShowLoadProgress}"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
                         Text="{Binding GameStatusText}"
@@ -772,6 +775,7 @@
                         BorderBrush="Gray" />
                     <TextBlock
                         Margin="5,0,5,0"
+                        IsVisible="{Binding !ShowLoadProgress}"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
                         Text="{Binding FifoStatusText}"
@@ -785,6 +789,7 @@
                         BorderBrush="Gray" />
                     <TextBlock
                         Margin="5,0,5,0"
+                        IsVisible="{Binding !ShowLoadProgress}"
                         HorizontalAlignment="Left"
                         VerticalAlignment="Center"
                         Text="{Binding GpuStatusText}"
