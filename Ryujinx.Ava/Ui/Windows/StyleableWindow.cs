@@ -1,14 +1,20 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
 using FluentAvalonia.Core.ApplicationModel;
 using FluentAvalonia.UI.Controls;
+using FluentAvalonia.UI.Controls.Primitives;
 using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.Ui.Windows
 {
@@ -16,21 +22,16 @@ namespace Ryujinx.Ava.Ui.Windows
     {
         public ContentDialog ContentDialog { get; private set; }
         public IBitmap IconImage { get; set; }
+        public Control           WindowButtons     { get; set; }
 
         public StyleableWindow()
         {
             ExtendClientAreaToDecorationsHint = true;
-            TransparencyLevelHint = WindowTransparencyLevel.AcrylicBlur;
-            this.GetObservable(WindowStateProperty)
-                .Subscribe(x =>
-                {
-                    PseudoClasses.Set(":maximized",  x == WindowState.Maximized);
-                    PseudoClasses.Set(":fullscreen", x == WindowState.FullScreen);
-                });
+            TransparencyLevelHint = WindowTransparencyLevel.Blur;
 
             WindowStartupLocation = WindowStartupLocation.CenterOwner;
 
-            Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.Ava.Assets.Images.Logo_Ryujinx.png");
+            using Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.Ava.Assets.Images.Logo_Ryujinx.png");
 
             Icon = new WindowIcon(stream);
             stream.Position = 0;
@@ -47,6 +48,12 @@ namespace Ryujinx.Ava.Ui.Windows
             base.OnOpened(e);
             SetTitleBar(this);
             ContentDialog = this.FindControl<ContentDialog>("ContentDialog");
+
+            foreach(var control in this.GetVisualDescendants().OfType<MinMaxCloseControl>())
+            {
+                WindowButtons = control;
+                break;
+            }
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)

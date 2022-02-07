@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
@@ -84,7 +85,7 @@ namespace Ryujinx.Ava.Ui.Windows
         public HotKeyControl     FullscreenHotKey2 { get; private set; }
         public HotKeyControl     DockToggleHotKey  { get; private set; }
         public HotKeyControl     ExitHotKey        { get; private set; }
-        public ToggleSplitButton VolumeStatus     { get; set; }
+        public ToggleSplitButton VolumeStatus      { get; set; }
         public MainWindowViewModel ViewModel { get; private set; }
 
         public bool CanUpdate
@@ -185,6 +186,13 @@ namespace Ryujinx.Ava.Ui.Windows
             GameList.Columns[6].IsVisible = ViewModel.ShowFileExtColumn;
             GameList.Columns[7].IsVisible = ViewModel.ShowFileSizeColumn;
             GameList.Columns[8].IsVisible = ViewModel.ShowFilePathColumn;
+        }
+
+        protected override void OnOpened(EventArgs e)
+        {
+            base.OnOpened(e);
+
+            WindowButtons.Bind(Control.IsVisibleProperty, new Binding("!IsFullScreen"));
         }
 
         public void Application_Opened(object sender, ApplicationOpenedEventArgs args)
