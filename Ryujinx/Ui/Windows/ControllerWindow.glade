@@ -741,8 +741,8 @@
                                           </packing>
                                         </child>
                                         <child>
-                                          <object class="GtkCheckButton" id="_swapLSticks">
-                                            <property name="label" translatable="yes">Swap Sticks</property>
+                                          <object class="GtkCheckButton" id="_rotateL90CW">
+                                            <property name="label" translatable="yes">Rotate 90° Clockwise</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">True</property>
                                             <property name="receives_default">False</property>
@@ -1711,8 +1711,8 @@
                                           </packing>
                                         </child>
                                         <child>
-                                          <object class="GtkCheckButton" id="_swapRSticks">
-                                            <property name="label" translatable="yes">Swap Sticks</property>
+                                          <object class="GtkCheckButton" id="_rotateR90CW">
+                                            <property name="label" translatable="yes">Rotate 90° Clockwise</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">True</property>
                                             <property name="receives_default">False</property>
