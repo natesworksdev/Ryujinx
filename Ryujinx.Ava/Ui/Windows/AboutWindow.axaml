@@ -13,12 +13,26 @@
                         MinWidth="500"
                         Title="Ryujinx - About">
     <Grid Margin="15" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <Grid Margin="20" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.Column="0">
+        <Grid Background="Transparent" Grid.Row="0" Margin="5" Grid.ColumnSpan="3"
+              IsVisible="{Binding IsExtendedIntoWindowDecorations, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+              Name="TitleBarHost">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Image Width="16" Height="16" Margin="5" Source="{Binding IconImage, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type window:StyleableWindow}}}"/>
+            <Label Grid.Column="1" IsHitTestVisible="False" Content="{Binding Title, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
+        </Grid>
+        <Grid Grid.Row="1" Margin="20" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.Column="0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
                 <RowDefinition Height="*" />
@@ -118,11 +132,11 @@
                 </StackPanel>
             </StackPanel>
         </Grid>
-        <Border Grid.Column="1" VerticalAlignment="Stretch" Margin="5" Width="2" BorderBrush="White"
+        <Border Grid.Row="1" Grid.Column="1" VerticalAlignment="Stretch" Margin="5" Width="2" BorderBrush="White"
                 BorderThickness="1,0,0,0">
             <Separator Width="0" />
         </Border>
-        <Grid Margin="20" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.Column="2">
+        <Grid Grid.Row="1" Margin="20" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.Column="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />

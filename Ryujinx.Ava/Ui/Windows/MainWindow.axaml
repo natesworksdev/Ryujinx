@@ -34,24 +34,38 @@
         <models:FileSizeSortComparer x:Key="FileSizeComparer" />
     </Window.Resources>
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <controls:OffscreenTextBox Name="HiddenTextBox" />
-        <ContentControl
-            Focusable="False"
-            IsVisible="False"
-            KeyboardNavigation.IsTabStop="False">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid Background="Transparent" Grid.Row="0" Margin="5"
+              IsVisible="{Binding IsExtendedIntoWindowDecorations, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+              Name="TitleBarHost">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Image Width="16" Height="16" Margin="5" Source="{Binding IconImage, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type window:StyleableWindow}}}"/>
+            <Label Grid.Column="1" IsHitTestVisible="False" Content="{Binding Title, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
+        </Grid>
+        <controls:OffscreenTextBox Name="HiddenTextBox"  Grid.Row="0" />
+        <ContentControl Grid.Row="1"
+                        Focusable="False"
+                        IsVisible="False"
+                        KeyboardNavigation.IsTabStop="False">
             <ui:ContentDialog Name="ContentDialog"
                               KeyboardNavigation.IsTabStop="False"
                               IsPrimaryButtonEnabled="True"
                               IsSecondaryButtonEnabled="True"
                               IsVisible="True" />
         </ContentControl>
-        <StackPanel IsVisible="False">
+        <StackPanel IsVisible="False" Grid.Row="0">
             <controls:HotKeyControl Name="FullscreenHotKey" Command="{Binding ToggleFullscreen}" />
             <controls:HotKeyControl Name="FullscreenHotKey2" Command="{Binding ToggleFullscreen}" />
             <controls:HotKeyControl Name="DockToggleHotKey" Command="{Binding ToggleDockMode}" />
             <controls:HotKeyControl Name="ExitHotKey" Command="{Binding ExitCurrentState}" />
         </StackPanel>
-        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>

@@ -23,10 +23,21 @@
     <Grid Margin="15" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Grid>
+        <Grid Background="Transparent" Grid.Row="0" Margin="5"
+              IsVisible="{Binding IsExtendedIntoWindowDecorations, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+              Name="TitleBarHost">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Image Width="16" Height="16" Margin="5" Source="{Binding IconImage, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type window:StyleableWindow}}}"/>
+            <Label Grid.Column="1" IsHitTestVisible="False" Content="{Binding Title, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
+        </Grid>
+        <Grid Grid.Row="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition />
@@ -64,7 +75,7 @@
                 </StackPanel>
             </Grid>
         </Grid>
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition />
@@ -95,7 +106,7 @@
                 </ListBox.ItemTemplate>
             </ListBox>
         </Grid>
-        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="10,0" Spacing="10" HorizontalAlignment="Stretch">
+        <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="10,0" Spacing="10" HorizontalAlignment="Stretch">
             <Button Content="{Locale:Locale UserProfilesAddNewProfile}" Command="{Binding AddUser}" />
             <Button IsEnabled="{Binding IsSelectedProfileDeletable}"
                     Content="{Locale:Locale UserProfilesDeleteSelectedProfile}" Command="{Binding DeleteUser}" />

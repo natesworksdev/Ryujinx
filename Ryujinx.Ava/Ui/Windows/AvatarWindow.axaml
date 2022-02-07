@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="350"
         x:Class="Ryujinx.Ava.Ui.Windows.AvatarWindow"
+        xmlns:window="clr-namespace:Ryujinx.Ava.Ui.Windows"
         CanResize="False"
         xmlns:Locale="clr-namespace:Ryujinx.Ava.Common.Locale"
         xmlns:viewModels="clr-namespace:Ryujinx.Ava.Ui.ViewModels"
@@ -19,10 +20,21 @@
     </Window.Resources>
     <Grid Margin="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <ListBox BorderThickness="0" SelectedIndex="{Binding SelectedIndex}" Width="600" Height="500"
+        <Grid Background="Transparent" Grid.Row="0" Margin="5"
+              IsVisible="{Binding IsExtendedIntoWindowDecorations, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+              Name="TitleBarHost">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Image Width="16" Height="16" Margin="5" Source="{Binding IconImage, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type window:StyleableWindow}}}"/>
+            <Label Grid.Column="1" IsHitTestVisible="False" Content="{Binding Title, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
+        </Grid>
+        <ListBox Grid.Row="1" BorderThickness="0" SelectedIndex="{Binding SelectedIndex}" Width="600" Height="500"
                  Items="{Binding Images}" HorizontalAlignment="Stretch" VerticalAlignment="Center">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
@@ -36,7 +48,7 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="10" Margin="10" HorizontalAlignment="Center">
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="10" Margin="10" HorizontalAlignment="Center">
             <Button Content="{Locale:Locale AvatarChoose}" Width="200" Name="ChooseButton" Click="ChooseButton_OnClick" />
             <ui:ColorPickerButton Color="{Binding BackgroundColor, Mode=TwoWay}" Name="ColorButton"/>
             <Button HorizontalAlignment="Right" Content="{Locale:Locale AvatarClose}" Click="CloseButton_OnClick"

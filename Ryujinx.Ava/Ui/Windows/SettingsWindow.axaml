@@ -22,10 +22,22 @@
     </Design.DataContext>
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" MinWidth="600">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
+        <Grid Background="Transparent" Grid.Row="0" Margin="5"
+              IsVisible="{Binding IsExtendedIntoWindowDecorations, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+              Name="TitleBarHost">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Image Width="16" Height="16" Margin="5" Source="{Binding IconImage, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type window:StyleableWindow}}}"/>
+            <Label Grid.Column="1" IsHitTestVisible="False" Content="{Binding Title, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
+        </Grid>
         <ContentControl
+            Grid.Row="1"
             Focusable="False"
             IsVisible="False"
             KeyboardNavigation.IsTabStop="False">
@@ -34,7 +46,7 @@
                               IsSecondaryButtonEnabled="True"
                               IsVisible="False" />
         </ContentControl>
-        <Grid Name="Pages" IsVisible="False">
+        <Grid Name="Pages" IsVisible="False" Grid.Row="2">
             <ScrollViewer Name="UiPage"
                           Margin="0,0,10,0"
                           HorizontalAlignment="Stretch"
@@ -814,7 +826,7 @@
                 </Border>
             </ScrollViewer>
         </Grid>
-        <ui:NavigationView Grid.Row="0" IsSettingsVisible="False" Name="NavPanel" IsBackEnabled="False"
+        <ui:NavigationView Grid.Row="1" IsSettingsVisible="False" Name="NavPanel" IsBackEnabled="False"
                            PaneDisplayMode="LeftCompact"
                            Margin="2,10,10,0"
                            VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
@@ -858,7 +870,7 @@
             </ui:NavigationView.MenuItems>
         </ui:NavigationView>
         <StackPanel
-            Grid.Row="1"
+            Grid.Row="2"
             Margin="10"
             Spacing="10"
             Orientation="Horizontal"

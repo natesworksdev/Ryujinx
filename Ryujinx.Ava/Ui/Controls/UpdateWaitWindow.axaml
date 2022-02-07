@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:window="clr-namespace:Ryujinx.Ava.Ui.Windows"
         mc:Ignorable="d"
         x:Class="Ryujinx.Ava.Ui.Controls.UpdateWaitWindow"
         WindowStartupLocation="CenterOwner"
@@ -10,15 +11,26 @@
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <Image Grid.Row="0" Margin="5, 10, 20 , 10" Source="resm:Ryujinx.Ava.Assets.Images.Logo_Ryujinx.png"
+        <Grid Background="Transparent" Grid.Row="0" Margin="5" Grid.ColumnSpan="2"
+              IsVisible="{Binding IsExtendedIntoWindowDecorations, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+              Name="TitleBarHost">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Image Width="16" Height="16" Margin="5" Source="{Binding IconImage, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type window:StyleableWindow}}}"/>
+            <Label Grid.Column="1" IsHitTestVisible="False" Content="{Binding Title, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
+        </Grid>
+        <Image Grid.Row="1" Margin="5, 10, 20 , 10" Source="resm:Ryujinx.Ava.Assets.Images.Logo_Ryujinx.png"
                Height="70"
                MinWidth="50" />
-        <StackPanel Grid.Column="1" VerticalAlignment="Center" Orientation="Vertical">
+        <StackPanel Grid.Row="1"  Grid.Column="1" VerticalAlignment="Center" Orientation="Vertical">
             <TextBlock Margin="5" Name="PrimaryText" />
             <TextBlock VerticalAlignment="Center" Name="SecondaryText" Margin="5" />
         </StackPanel>
