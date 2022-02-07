@@ -500,12 +500,9 @@
     "SettingsTabCpu": "CPU",
     "SettingsTabAudio": "Audio",
     "SettingsTabNetwork": "Rete",
-    "SettingsTabAudioBackend" : "Backend audio",
-    "SettingsTabAudioVolume" : "Volume audio",
     "SettingsTabNetworkConnection" : "Connessione di rete",
     "SettingsTabGraphicsFrameRate" : "Frequenza di aggiornamento dell'host",
     "SettingsTabGraphicsFrameRateTooltip" : "Imposta la frequenza di aggiornamento dell'host. Imposta a 0 per rimuovere il limite.",
     "SettingsTabCpuCache" : "Cache CPU",
     "SettingsTabCpuMemory" : "Memoria CPU"
-  }
-  
+}
