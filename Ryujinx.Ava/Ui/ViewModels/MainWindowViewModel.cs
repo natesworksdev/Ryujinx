@@ -1081,7 +1081,11 @@ namespace Ryujinx.Ava.Ui.ViewModels
                     ShowMenuAndStatusBar = false;
                 }
             }
+            
+            OnPropertyChanged(nameof(IsFullScreen));
         }
+
+        public bool IsFullScreen => _owner.WindowState == WindowState.FullScreen;
 
         public void ToggleDockMode()
         {

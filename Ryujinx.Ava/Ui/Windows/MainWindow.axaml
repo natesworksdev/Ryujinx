@@ -39,8 +39,13 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Grid Background="Transparent" Grid.Row="0" Margin="5"
-              IsVisible="{Binding IsExtendedIntoWindowDecorations, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
               Name="TitleBarHost">
+           <Grid.IsVisible>
+               <MultiBinding Converter="{x:Static BoolConverters.And}">
+                   <Binding Path="IsExtendedIntoWindowDecorations" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type Window}}"/>
+                   <Binding Path="IsFullScreen" Converter="{x:Static BoolConverters.Not}"/>
+               </MultiBinding>
+           </Grid.IsVisible> 
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
