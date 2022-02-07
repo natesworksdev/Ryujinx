@@ -20,6 +20,7 @@ namespace Ryujinx.Ava.Ui.Windows
         public StyleableWindow()
         {
             ExtendClientAreaToDecorationsHint = true;
+            TransparencyLevelHint = WindowTransparencyLevel.AcrylicBlur;
             this.GetObservable(WindowStateProperty)
                 .Subscribe(x =>
                 {

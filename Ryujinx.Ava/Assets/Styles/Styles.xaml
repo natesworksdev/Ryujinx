@@ -50,6 +50,13 @@
     <Style Selector="RadioButton">
         <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
+    <Style Selector="#TitleBarHost > Image">
+        <Setter Property="Margin" Value="10"/>
+    </Style>
+    <Style Selector="#TitleBarHost > Label">
+        <Setter Property="Margin" Value="5"/>
+        <Setter Property="FontSize" Value="14"/>
+    </Style>
     <Style Selector="Border.huge">
         <Setter Property="Width" Value="200" />
     </Style>

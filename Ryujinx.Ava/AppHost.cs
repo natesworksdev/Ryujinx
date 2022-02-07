@@ -276,8 +276,11 @@ namespace Ryujinx.Ava
 
                 NpadManager.Initialize(Device, ConfigurationState.Instance.Hid.InputConfig, ConfigurationState.Instance.Hid.EnableKeyboard, ConfigurationState.Instance.Hid.EnableMouse);
                 TouchScreenManager.Initialize(Device);
-                
-                _parent.ViewModel.IsGameRunning = true;
+
+                Task.Run(() =>
+                {
+                    _parent.ViewModel.IsGameRunning = true;
+                });
 
                 string titleNameSection = string.IsNullOrWhiteSpace(Device.Application.TitleName)
                     ? string.Empty
