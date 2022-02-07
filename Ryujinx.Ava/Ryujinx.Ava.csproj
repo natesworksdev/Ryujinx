@@ -90,6 +90,7 @@
         <EmbeddedResource Include="Assets\Locales\en_US.json" />
         <EmbeddedResource Include="Assets\Locales\es_ES.json" />
         <EmbeddedResource Include="Assets\Locales\fr_FR.json" />
+        <EmbeddedResource Include="Assets\Locales\it_IT.json" />
         <EmbeddedResource Include="Assets\Locales\pt_BR.json" />
         <EmbeddedResource Include="Assets\Locales\ru_RU.json" />
         <EmbeddedResource Include="Assets\Styles\Styles.xaml" />

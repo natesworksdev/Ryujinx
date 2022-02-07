@@ -136,6 +136,8 @@
                                 <MenuItem Command="{Binding ChangeLanguage}" CommandParameter="es_ES"
                                           Header="Castilian Spanish" />
                                 <MenuItem Command="{Binding ChangeLanguage}" CommandParameter="fr_FR" Header="French" />
+                                <MenuItem Command="{Binding ChangeLanguage}" CommandParameter="it_IT"
+                                          Header="Italian" />
                                 <MenuItem Command="{Binding ChangeLanguage}" CommandParameter="ru_RU" Header="Russian" />
                             </MenuItem>
                             <Separator />
