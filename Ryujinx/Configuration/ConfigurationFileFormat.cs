@@ -82,6 +82,11 @@ namespace Ryujinx.Configuration
         public bool LoggingEnableError { get; set; }
 
         /// <summary>
+        /// Enables printing trace log messages
+        /// </summary>
+        public bool LoggingEnableTrace { get; set; }
+
+        /// <summary>
         /// Enables printing guest log messages
         /// </summary>
         public bool LoggingEnableGuest { get; set; }

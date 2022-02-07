@@ -130,6 +130,11 @@ namespace Ryujinx.Configuration
             public ReactiveObject<bool> EnableError { get; private set; }
 
             /// <summary>
+            /// Enables printing trace log messages
+            /// </summary>
+            public ReactiveObject<bool> EnableTrace { get; private set; }
+
+            /// <summary>
             /// Enables printing guest log messages
             /// </summary>
             public ReactiveObject<bool> EnableGuest { get; private set; }
@@ -161,6 +166,7 @@ namespace Ryujinx.Configuration
                 EnableInfo          = new ReactiveObject<bool>();
                 EnableWarn          = new ReactiveObject<bool>();
                 EnableError         = new ReactiveObject<bool>();
+                EnableTrace         = new ReactiveObject<bool>();
                 EnableGuest         = new ReactiveObject<bool>();
                 EnableFsAccessLog   = new ReactiveObject<bool>();
                 FilteredClasses     = new ReactiveObject<LogClass[]>();
@@ -455,6 +461,7 @@ namespace Ryujinx.Configuration
                 LoggingEnableInfo         = Logger.EnableInfo,
                 LoggingEnableWarn         = Logger.EnableWarn,
                 LoggingEnableError        = Logger.EnableError,
+                LoggingEnableTrace        = Logger.EnableTrace,
                 LoggingEnableGuest        = Logger.EnableGuest,
                 LoggingEnableFsAccessLog  = Logger.EnableFsAccessLog,
                 LoggingFilteredClasses    = Logger.FilteredClasses,
@@ -526,6 +533,7 @@ namespace Ryujinx.Configuration
             Logger.EnableInfo.Value                = true;
             Logger.EnableWarn.Value                = true;
             Logger.EnableError.Value               = true;
+            Logger.EnableTrace.Value               = false;
             Logger.EnableGuest.Value               = true;
             Logger.EnableFsAccessLog.Value         = false;
             Logger.FilteredClasses.Value           = Array.Empty<LogClass>();
@@ -1003,6 +1011,7 @@ namespace Ryujinx.Configuration
             Logger.EnableInfo.Value                = configurationFileFormat.LoggingEnableInfo;
             Logger.EnableWarn.Value                = configurationFileFormat.LoggingEnableWarn;
             Logger.EnableError.Value               = configurationFileFormat.LoggingEnableError;
+            Logger.EnableTrace.Value               = configurationFileFormat.LoggingEnableTrace;
             Logger.EnableGuest.Value               = configurationFileFormat.LoggingEnableGuest;
             Logger.EnableFsAccessLog.Value         = configurationFileFormat.LoggingEnableFsAccessLog;
             Logger.FilteredClasses.Value           = configurationFileFormat.LoggingFilteredClasses;
