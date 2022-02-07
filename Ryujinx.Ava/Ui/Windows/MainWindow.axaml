@@ -151,6 +151,7 @@
                         <MenuItem
                             VerticalAlignment="Center"
                             Header="{locale:Locale MenuBarActions}"
+                            Name="ActionsMenuItem"
                             IsEnabled="{Binding IsGameRunning}">
                             <MenuItem
                                 Click="PauseEmulation_Click"
@@ -700,21 +701,6 @@
                         Height="12"
                         BorderBrush="Gray" />
                     <TextBlock
-                        Name="RefreshRateStatus"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Center"
-                        IsVisible="{Binding !ShowLoadProgress}"
-                        Margin="5,0,5,0"
-                        Text="{Binding FrameRateLimitText}"
-                        TextAlignment="Left" />
-                    <Border
-                        Width="2"
-                        Margin="2,0"
-                        IsVisible="{Binding !ShowLoadProgress}"
-                        BorderThickness="1"
-                        Height="12"
-                        BorderBrush="Gray" />
-                    <TextBlock
                         Margin="5,0,5,0"
                         Name="DockedStatus"
                         IsVisible="{Binding !ShowLoadProgress}"
@@ -764,11 +750,13 @@
                                             ToolTip.Tip="{locale:Locale AudioVolumeTooltip}"
                                             Minimum="0"
                                             Maximum="1"
+                                            TickFrequency="0.05"
+                                            IsSnapToTickEnabled="True"
                                             Padding="0"
                                             Margin="0"
                                             SmallChange="0.01"
                                             LargeChange="0.05"
-                                            Width="80" />
+                                            Width="100" />
                                 </Grid>
                             </Flyout>
                         </ui:ToggleSplitButton.Flyout>

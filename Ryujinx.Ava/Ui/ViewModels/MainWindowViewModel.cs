@@ -447,6 +447,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 }
                 OnPropertyChanged(nameof(VolumeStatusText));
                 OnPropertyChanged(nameof(VolumeMuted));
+                OnPropertyChanged();
             }
         }
 

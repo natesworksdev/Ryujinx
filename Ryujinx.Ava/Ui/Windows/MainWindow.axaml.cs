@@ -76,6 +76,7 @@ namespace Ryujinx.Ava.Ui.Windows
         public ProgressBar       LoadProgressBar   { get; private set; }
         public Menu              Menu              { get; private set; }
         public MenuItem          UpdateMenuItem    { get; private set; }
+        public MenuItem          ActionsMenuItem   { get; private set; }
         public GameGridView      GameGrid          { get; private set; }
         public DataGrid          GameList          { get; private set; }
         public OffscreenTextBox  HiddenTextBox     { get; private set; }
@@ -506,6 +507,7 @@ namespace Ryujinx.Ava.Ui.Windows
             DockToggleHotKey  = this.FindControl<HotKeyControl>("DockToggleHotKey");
             ExitHotKey        = this.FindControl<HotKeyControl>("ExitHotKey");
             VolumeStatus      = this.FindControl<ToggleSplitButton>("VolumeStatus");
+            ActionsMenuItem   = this.FindControl<MenuItem>("ActionsMenuItem");
 
             VolumeStatus.Click += VolumeStatus_CheckedChanged;
 

@@ -324,6 +324,8 @@ namespace Ryujinx.Ava
                     };
                     _nvStutterWorkaround.Start();
                 }
+                
+                _parent.ViewModel.Volume = ConfigurationState.Instance.System.AudioVolume.Value;
             }
         }
         

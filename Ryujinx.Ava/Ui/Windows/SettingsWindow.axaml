@@ -694,9 +694,12 @@
                                     ToolTip.Tip="{locale:Locale AudioVolumeTooltip}"
                                     Minimum="0"
                                     Maximum="100"
-                                    SmallChange="1"
-                                    LargeChange="5"
+                                    SmallChange="5"
+                                    TickFrequency="5"
+                                    IsSnapToTickEnabled="True"
+                                    LargeChange="10"
                                     Width="300" />
+                            <TextBlock VerticalAlignment="Center" Text="{Binding Volume}"/>
                         </StackPanel>
                         <Separator Height="1" Margin="0,5" />
                     </StackPanel>
