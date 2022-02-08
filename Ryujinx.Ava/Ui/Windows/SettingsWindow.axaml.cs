@@ -108,6 +108,7 @@ namespace Ryujinx.Ava.Ui.Windows
                         _navPanel.Content = _uiPage;
                         break;
                     case "InputPage":
+                        _controllerSettings.LoadBindings();
                         _navPanel.Content = _inputPage;
                         break;
                     case "SystemPage":
