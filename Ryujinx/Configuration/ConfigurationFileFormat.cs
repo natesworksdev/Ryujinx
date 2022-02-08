@@ -14,7 +14,7 @@ namespace Ryujinx.Configuration
         /// <summary>
         /// The current version of the file format
         /// </summary>
-        public const int CurrentVersion = 37;
+        public const int CurrentVersion = 38;
 
         /// <summary>
         /// Version of the configuration file format
@@ -274,6 +274,16 @@ namespace Ryujinx.Configuration
         /// Input configurations
         /// </summary>
         public List<InputConfig> InputConfig { get; set; }
+
+        /// <summary>
+        /// Enables or disables the GDB stub
+        /// </summary>
+        public bool EnableGdbStub { get; set; }
+
+        /// <summary>
+        /// Which TCP port should the GDB stub listen on
+        /// </summary>
+        public ushort GdbStubPort { get; set; }
 
         /// <summary>
         /// Loads a configuration file from disk

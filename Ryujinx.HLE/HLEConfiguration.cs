@@ -153,6 +153,16 @@ namespace Ryujinx.HLE
         /// </summary>
         public Action RefreshInputConfig { internal get; set; }
 
+        /// <summary>
+        /// Enables gdbstub to allow for debugging of the guest .
+        /// </summary>
+        public bool EnableGdbStub { get; internal set; }
+
+        /// <summary>
+        /// A TCP port to use to expose a gdbstub for a debugger to connect to.
+        /// </summary>
+        public ushort GdbStubPort { get; internal set; }
+
         public HLEConfiguration(VirtualFileSystem      virtualFileSystem,
                                 LibHacHorizonManager   libHacHorizonManager,
                                 ContentManager         contentManager,
@@ -175,7 +185,9 @@ namespace Ryujinx.HLE
                                 MemoryManagerMode      memoryManagerMode,
                                 bool                   ignoreMissingServices,
                                 AspectRatio            aspectRatio,
-                                float                  audioVolume)
+                                float                  audioVolume,
+                                bool                   enableGdbStub,
+                                ushort                 gdbStubPort)
         {
             VirtualFileSystem      = virtualFileSystem;
             LibHacHorizonManager   = libHacHorizonManager;
@@ -200,6 +212,8 @@ namespace Ryujinx.HLE
             IgnoreMissingServices  = ignoreMissingServices;
             AspectRatio            = aspectRatio;
             AudioVolume            = audioVolume;
+            EnableGdbStub          = enableGdbStub;
+            GdbStubPort            = gdbStubPort;
         }
     }
 }

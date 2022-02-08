@@ -390,6 +390,30 @@ namespace Ryujinx.Configuration
         }
 
         /// <summary>
+        /// Debug configuration section
+        /// </summary>
+        public class DebugSection
+        {
+            /// <summary>
+            /// Enables or disables the GDB stub
+            /// </summary>
+            public ReactiveObject<bool> EnableGdbStub { get; private set; }
+
+            /// <summary>
+            /// Which TCP port should the GDB stub listen on
+            /// </summary>
+            public ReactiveObject<ushort> GdbStubPort { get; private set; }
+
+            public DebugSection()
+            {
+                EnableGdbStub = new ReactiveObject<bool>();
+                EnableGdbStub.Event += static (sender, e) => LogValueChange(sender, e, nameof(EnableGdbStub));
+                GdbStubPort = new ReactiveObject<ushort>();
+                GdbStubPort.Event += static (sender, e) => LogValueChange(sender, e, nameof(GdbStubPort));
+            }
+        }
+
+        /// <summary>
         /// The default configuration instance
         /// </summary>
         public static ConfigurationState Instance { get; private set; }
@@ -420,6 +444,11 @@ namespace Ryujinx.Configuration
         public HidSection Hid { get; private set; }
 
         /// <summary>
+        /// The Debug
+        /// </summary>
+        public DebugSection Debug { get; private set; }
+
+        /// <summary>
         /// Enables or disables Discord Rich Presence
         /// </summary>
         public ReactiveObject<bool> EnableDiscordIntegration { get; private set; }
@@ -446,6 +475,7 @@ namespace Ryujinx.Configuration
             System                   = new SystemSection();
             Graphics                 = new GraphicsSection();
             Hid                      = new HidSection();
+            Debug                    = new DebugSection();
             EnableDiscordIntegration = new ReactiveObject<bool>();
             CheckUpdatesOnStart      = new ReactiveObject<bool>();
             ShowConfirmExit          = new ReactiveObject<bool>();
@@ -523,6 +553,8 @@ namespace Ryujinx.Configuration
                 KeyboardConfig            = new List<object>(),
                 ControllerConfig          = new List<object>(),
                 InputConfig               = Hid.InputConfig,
+                EnableGdbStub             = Debug.EnableGdbStub,
+                GdbStubPort               = Debug.GdbStubPort,
             };
 
             return configurationFile;
@@ -648,6 +680,8 @@ namespace Ryujinx.Configuration
                         }
                  }
             };
+            Debug.EnableGdbStub.Value              = false;
+            Debug.GdbStubPort.Value                = 55555;
         }
 
         public void Load(ConfigurationFileFormat configurationFileFormat, string configurationFilePath)
@@ -1027,6 +1061,16 @@ namespace Ryujinx.Configuration
                 configurationFileUpdated = true;
             }
 
+            if (configurationFileFormat.Version < 38)
+            {
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 38.");
+
+                configurationFileFormat.EnableGdbStub = false;
+                configurationFileFormat.GdbStubPort   = 55555;
+
+                configurationFileUpdated = true;
+            }
+
             Logger.EnableFileLog.Value             = configurationFileFormat.EnableFileLog;
             Graphics.BackendThreading.Value        = configurationFileFormat.BackendThreading;
             Graphics.ResScale.Value                = configurationFileFormat.ResScale;
@@ -1085,6 +1129,8 @@ namespace Ryujinx.Configuration
             Hid.EnableMouse.Value                  = configurationFileFormat.EnableMouse;
             Hid.Hotkeys.Value                      = configurationFileFormat.Hotkeys;
             Hid.InputConfig.Value                  = configurationFileFormat.InputConfig;
+            Debug.EnableGdbStub.Value              = configurationFileFormat.EnableGdbStub;
+            Debug.GdbStubPort.Value                = configurationFileFormat.GdbStubPort;
 
             if (Hid.InputConfig.Value == null)
             {
