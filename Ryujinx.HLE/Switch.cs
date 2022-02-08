@@ -23,6 +23,7 @@ namespace Ryujinx.HLE
         public PerformanceStatistics Statistics        { get; }
         public Hid                   Hid               { get; }
         public TamperMachine         TamperMachine     { get; }
+        public Debugger.Debugger     Debugger          { get; }
         public IHostUiHandler        UiHandler         { get; }
 
         public bool EnableDeviceVsync { get; set; } = true;
@@ -55,6 +56,7 @@ namespace Ryujinx.HLE
             Statistics        = new PerformanceStatistics();
             Hid               = new Hid(this, System.HidStorage);
             Application       = new ApplicationLoader(this);
+            Debugger          = Configuration.EnableGdbStub ? new Debugger.Debugger(this, configuration.GdbStubPort) : null;
             TamperMachine     = new TamperMachine();
 
             System.State.SetLanguage(Configuration.SystemLanguage);
@@ -153,6 +155,7 @@ namespace Ryujinx.HLE
                 AudioDeviceDriver.Dispose();
                 FileSystem.Dispose();
                 Memory.Dispose();
+                Debugger.Dispose();
             }
         }
     }
