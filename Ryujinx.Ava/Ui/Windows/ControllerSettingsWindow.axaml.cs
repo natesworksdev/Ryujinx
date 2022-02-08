@@ -32,7 +32,6 @@ namespace Ryujinx.Ava.Ui.Windows
         private bool _mousePressed;
         private bool _middleMousePressed;
         private bool _dialogOpen;
-        private bool _loaded;
 
         public Grid SettingButtons { get; set; }
         public ToggleButton CurrentToggledButton { get; set; }
@@ -40,7 +39,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
         public ControllerSettingsWindow()
         {
-            ViewModel = new ControllerSettingsViewModel(this);
+            DataContext = ViewModel = new ControllerSettingsViewModel(this);
 
             InitializeComponent();
 
@@ -59,15 +58,6 @@ namespace Ryujinx.Ava.Ui.Windows
             AvaloniaXamlLoader.Load(this);
 
             SettingButtons = this.FindControl<Grid>("SettingButtons");
-        }
-
-        public void LoadBindings()
-        {
-            if (!_loaded)
-            {
-                _loaded = true;
-                DataContext = ViewModel;
-            }
         }
 
         protected override void OnPointerReleased(PointerReleasedEventArgs e)

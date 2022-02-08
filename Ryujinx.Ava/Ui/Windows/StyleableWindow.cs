@@ -26,7 +26,7 @@ namespace Ryujinx.Ava.Ui.Windows
         public StyleableWindow()
         {
             WindowStartupLocation = WindowStartupLocation.CenterOwner;
-            TransparencyLevelHint = WindowTransparencyLevel.Mica;
+            TransparencyLevelHint = WindowTransparencyLevel.None;
 
             using Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.Ava.Assets.Images.Logo_Ryujinx.png");
 
