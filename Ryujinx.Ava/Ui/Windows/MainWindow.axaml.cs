@@ -191,8 +191,6 @@ namespace Ryujinx.Ava.Ui.Windows
         protected override void OnOpened(EventArgs e)
         {
             base.OnOpened(e);
-
-            WindowButtons.Bind(Control.IsVisibleProperty, new Binding("!IsFullScreen"));
         }
 
         public void Application_Opened(object sender, ApplicationOpenedEventArgs args)

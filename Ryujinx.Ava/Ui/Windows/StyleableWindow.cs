@@ -18,18 +18,15 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.Ui.Windows
 {
-    public class StyleableWindow : CoreWindow
+    public class StyleableWindow : Window
     {
         public ContentDialog ContentDialog { get; private set; }
         public IBitmap IconImage { get; set; }
-        public Control           WindowButtons     { get; set; }
 
         public StyleableWindow()
         {
-            ExtendClientAreaToDecorationsHint = true;
-            TransparencyLevelHint = WindowTransparencyLevel.Blur;
-
             WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            TransparencyLevelHint = WindowTransparencyLevel.Mica;
 
             using Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.Ava.Assets.Images.Logo_Ryujinx.png");
 
@@ -46,14 +43,7 @@ namespace Ryujinx.Ava.Ui.Windows
         protected override void OnOpened(EventArgs e)
         {
             base.OnOpened(e);
-            SetTitleBar(this);
             ContentDialog = this.FindControl<ContentDialog>("ContentDialog");
-
-            foreach(var control in this.GetVisualDescendants().OfType<MinMaxCloseControl>())
-            {
-                WindowButtons = control;
-                break;
-            }
         }
 
         protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -61,20 +51,6 @@ namespace Ryujinx.Ava.Ui.Windows
             base.OnApplyTemplate(e);
 
             ExtendClientAreaChromeHints = ExtendClientAreaChromeHints.PreferSystemChrome | ExtendClientAreaChromeHints.OSXThickTitleBar;
-        }
-        
-        private void SetTitleBar(CoreWindow cw)
-        {
-            var titleBar = cw.TitleBar;
-            if (titleBar != null)
-            {
-                titleBar.ExtendViewIntoTitleBar = true;
-                if (this.FindControl<Grid>("TitleBarHost") is Grid g)
-                {
-                    cw.SetTitleBar(g);
-                    g.Margin = new Thickness(0, 0, titleBar.SystemOverlayRightInset, 0);
-                }
-            }
         }
     }
 }

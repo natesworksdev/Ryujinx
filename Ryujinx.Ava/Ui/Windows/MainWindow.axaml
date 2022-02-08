@@ -38,21 +38,6 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Grid Background="Transparent" Grid.Row="0" Margin="5"
-              Name="TitleBarHost">
-           <Grid.IsVisible>
-               <MultiBinding Converter="{x:Static BoolConverters.And}">
-                   <Binding Path="IsExtendedIntoWindowDecorations" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type Window}}"/>
-                   <Binding Path="IsFullScreen" Converter="{x:Static BoolConverters.Not}"/>
-               </MultiBinding>
-           </Grid.IsVisible> 
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <Image Width="16" Height="16" Margin="5" Source="{Binding IconImage, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type window:StyleableWindow}}}"/>
-            <Label Grid.Column="1" IsHitTestVisible="False" Content="{Binding Title, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
-        </Grid>
         <controls:OffscreenTextBox Name="HiddenTextBox"  Grid.Row="0" />
         <ContentControl Grid.Row="1"
                         Focusable="False"

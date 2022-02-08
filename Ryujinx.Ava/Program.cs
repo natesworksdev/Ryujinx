@@ -60,23 +60,19 @@ namespace Ryujinx.Ava
                 .With(new X11PlatformOptions
                 {
                     EnableMultiTouch = true,
-                    EnableIme        = true,
-                    UseEGL           = false,
-                    UseGpu           = true,
-                    GlProfiles = new[]
-                    {
-                        new GlVersion(GlProfileType.OpenGL, 4, 3)
-                    }
+                    EnableIme = true,
+                    UseEGL = false,
+                    UseGpu = true,
+                    GlProfiles = new[] { new GlVersion(GlProfileType.OpenGL, 4, 3) }
                 })
                 .With(new Win32PlatformOptions
                 {
-                    EnableMultitouch       = true,
-                    UseWgl                 = true,
+                    EnableMultitouch = true,
+                    UseWindowsUIComposition = true,
+                    UseWgl = true,
                     AllowEglInitialization = false,
-                    WglProfiles = new[]
-                    {
-                        new GlVersion(GlProfileType.OpenGL, 4, 3)
-                    }
+                    CompositionBackdropCornerRadius = 8f,
+                    WglProfiles = new[] { new GlVersion(GlProfileType.OpenGL, 4, 3) }
                 })
                 .UseSkia()
                 .AfterSetup(_ =>
