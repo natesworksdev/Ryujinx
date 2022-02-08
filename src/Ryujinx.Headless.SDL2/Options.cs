@@ -225,17 +225,17 @@ namespace Ryujinx.Headless.SDL2
         [Option("ignore-missing-services", Required = false, Default = false, HelpText = "Enable ignoring missing services.")]
         public bool IgnoreMissingServices { get; set; }
 
+        // Debug
+
+        [Option("enable-gdb-stub", Required = false, Default = false, HelpText = "Enables the GDB stub so that a developer can attach a debugger to the emulated process.")]
+        public bool EnableGdbStub { get; set; }
+
+        [Option("gdb-stub-port", Required = false, Default = 55555, HelpText = "Specifies which TCP port the GDB stub listens on.")]
+        public ushort GdbStubPort { get; set; }
+
         // Values
 
         [Value(0, MetaName = "input", HelpText = "Input to load.", Required = true)]
         public string InputPath { get; set; }
-
-        // Debugging
-
-        [Option("enable-gdb-stub", Required = false, Default = false, HelpText = "Enable the GDB stub.")]
-        public bool EnableGdbStub { get; set; }
-
-        [Option("gdb-stub-port", Required = false, Default = 55555, HelpText = "GDB stub port.")]
-        public ushort GdbStubPort { get; set; }
     }
 }
