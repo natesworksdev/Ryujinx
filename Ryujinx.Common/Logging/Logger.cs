@@ -198,7 +198,7 @@ namespace Ryujinx.Common.Logging
                 case LogLevel.Guest     : Guest     = enabled ? new Log(LogLevel.Guest)    : new Log?(); break;
                 case LogLevel.AccessLog : AccessLog = enabled ? new Log(LogLevel.AccessLog): new Log?(); break;
                 case LogLevel.Stub      : Stub      = enabled ? new Log(LogLevel.Stub)     : new Log?(); break;
-                case LogLevel.Trace     : Trace     = enabled ? new Log(LogLevel.Trace) :    new Log?(); break;
+                case LogLevel.Trace     : Trace     = enabled ? new Log(LogLevel.Trace)    : new Log?(); break;
                 default: throw new ArgumentException("Unknown Log Level");
             }
         }
