@@ -499,5 +499,13 @@ namespace Ryujinx.HLE.HOS
             }
             IsPaused = pause;
         }
+
+        public Debugger.IDebuggableProcess DebugGetApplicationProcess()
+        {
+            lock (KernelContext.Processes)
+            {
+                return KernelContext.Processes.Values.Where(x => x.IsApplication).First();
+            }
+        }
     }
 }
