@@ -31,6 +31,19 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         {
         }
 
+        public void DebugStop()
+        {
+        }
+
+        public bool DebugStep()
+        {
+            return false;
+        }
+
+        public void DebugContinue()
+        {
+        }
+
         public void StopRunning()
         {
             Running = false;

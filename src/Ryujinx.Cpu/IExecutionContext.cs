@@ -108,5 +108,10 @@ namespace Ryujinx.Cpu
         /// If you only need to pause the thread temporarily, use <see cref="RequestInterrupt"/> instead.
         /// </remarks>
         void StopRunning();
+
+        // TODO: comments
+        void DebugStop();
+        bool DebugStep();
+        void DebugContinue();
     }
 }

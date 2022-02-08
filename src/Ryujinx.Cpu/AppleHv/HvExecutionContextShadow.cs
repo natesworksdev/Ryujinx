@@ -46,5 +46,27 @@ namespace Ryujinx.Cpu.AppleHv
         {
             _v[index] = value;
         }
+
+        public void RequestInterrupt()
+        {
+        }
+
+        public void DebugStop()
+        {
+        }
+
+        public bool DebugStep()
+        {
+            return false;
+        }
+
+        public void DebugContinue()
+        {
+        }
+
+        public bool GetAndClearInterruptRequested()
+        {
+            return false;
+        }
     }
 }

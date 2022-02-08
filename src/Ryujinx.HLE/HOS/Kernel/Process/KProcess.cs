@@ -14,7 +14,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel.Process
 {
-    class KProcess : KSynchronizationObject
+    class KProcess : KSynchronizationObject, Debugger.IDebuggableProcess
     {
         public const uint KernelVersionMajor = 10;
         public const uint KernelVersionMinor = 4;
@@ -1174,6 +1174,33 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         public bool IsSvcPermitted(int svcId)
         {
             return Capabilities.IsSvcPermitted(svcId);
+        }
+
+        public void DebugStopAllThreads()
+        {
+            lock (_threadingLock)
+            {
+                foreach (KThread thread in _threads)
+                {
+                    thread.Context.DebugStop();
+                }
+            }
+        }
+
+        public ulong[] DebugGetThreadUids()
+        {
+            lock (_threadingLock)
+            {
+                return _threads.Select(x => x.ThreadUid).ToArray();
+            }
+        }
+
+        public Ryujinx.Cpu.IExecutionContext DebugGetThreadContext(ulong threadUid)
+        {
+            lock (_threadingLock)
+            {
+                return _threads.Where(x => x.ThreadUid == threadUid).FirstOrDefault()?.Context;
+            }
         }
     }
 }

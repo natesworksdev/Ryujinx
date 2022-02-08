@@ -2,17 +2,24 @@ using ARMeilleure.State;
 using Ryujinx.Memory;
 using System;
 using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
+using System.Threading;
 
 namespace Ryujinx.Cpu.AppleHv
 {
-    [SupportedOSPlatform("macos")]
     class HvExecutionContextVcpu : IHvExecutionContext
     {
         private static readonly MemoryBlock _setSimdFpRegFuncMem;
         private delegate HvResult SetSimdFpReg(ulong vcpu, HvSimdFPReg reg, in V128 value, IntPtr funcPtr);
         private static readonly SetSimdFpReg _setSimdFpReg;
         private static readonly IntPtr _setSimdFpRegNativePtr;
+
+        internal int _debugState = (int)DebugState.Running;
+        internal int _shouldStep = 0;
+        internal ManualResetEvent _debugHalt = new ManualResetEvent(true);
+        internal Barrier _stepBarrier = new Barrier(2);
+
+        // This is only valid while debugging is enabled.
+        public ulong DebugPc;
 
         static HvExecutionContextVcpu()
         {
@@ -136,6 +143,7 @@ namespace Ryujinx.Cpu.AppleHv
         }
 
         private readonly ulong _vcpu;
+        private int _interruptRequested;
 
         public HvExecutionContextVcpu(ulong vcpu)
         {
@@ -181,8 +189,46 @@ namespace Ryujinx.Cpu.AppleHv
 
         public void RequestInterrupt()
         {
+            if (Interlocked.Exchange(ref _interruptRequested, 1) == 0)
+            {
+                ulong vcpu = _vcpu;
+                HvApi.hv_vcpus_exit(ref vcpu, 1);
+            }
+        }
+
+        public void DebugStop()
+        {
+            _debugHalt.Reset();
+            Interlocked.CompareExchange(ref _debugState, (int)DebugState.Stopping, (int)DebugState.Running);
             ulong vcpu = _vcpu;
             HvApi.hv_vcpus_exit(ref vcpu, 1);
+        }
+
+        public bool DebugStep()
+        {
+            if (_debugState != (int)DebugState.Stopped)
+            {
+                return false;
+            }
+
+            _shouldStep = 1;
+            _debugHalt.Set();
+            _stepBarrier.SignalAndWait();
+            _debugHalt.Reset();
+            _stepBarrier.SignalAndWait();
+
+            return true;
+        }
+
+        public void DebugContinue()
+        {
+            _debugHalt.Set();
+            HvApi.hv_vcpu_run(_vcpu);
+        }
+
+        public bool GetAndClearInterruptRequested()
+        {
+            return Interlocked.Exchange(ref _interruptRequested, 0) != 0;
         }
     }
 }

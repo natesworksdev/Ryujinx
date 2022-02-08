@@ -110,6 +110,15 @@ namespace Ryujinx.Cpu.Jit
         }
 
         /// <inheritdoc/>
+        public void DebugStop() => _impl.DebugStop();
+
+        /// <inheritdoc/>
+        public bool DebugStep() => _impl.DebugStep();
+
+        /// <inheritdoc/>
+        public void DebugContinue() => _impl.DebugContinue();
+
+        /// <inheritdoc/>
         public void StopRunning()
         {
             _impl.StopRunning();

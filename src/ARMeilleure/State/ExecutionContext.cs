@@ -1,5 +1,8 @@
 using ARMeilleure.Memory;
 using System;
+using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Threading;
 
 namespace ARMeilleure.State
 {
@@ -96,6 +99,14 @@ namespace ARMeilleure.State
         private readonly ExceptionCallback _supervisorCallback;
         private readonly ExceptionCallback _undefinedCallback;
 
+        internal int _debugState = (int)DebugState.Running;
+        internal int _shouldStep = 0;
+        internal ManualResetEvent _debugHalt = new ManualResetEvent(true);
+        internal Barrier _stepBarrier = new Barrier(2);
+
+        // This is only valid while debugging is enabled.
+        public ulong DebugPc;
+
         public ExecutionContext(
             IJitMemoryAllocator allocator,
             ICounter counter,
@@ -143,6 +154,33 @@ namespace ARMeilleure.State
         public void RequestInterrupt()
         {
             _interrupted = true;
+        }
+
+        public void DebugStop()
+        {
+            _debugHalt.Reset();
+            Interlocked.CompareExchange(ref _debugState, (int)DebugState.Stopping, (int)DebugState.Running);
+        }
+
+        public bool DebugStep()
+        {
+            if (_debugState != (int)DebugState.Stopped)
+            {
+                return false;
+            }
+
+            _shouldStep = 1;
+            _debugHalt.Set();
+            _stepBarrier.SignalAndWait();
+            _debugHalt.Reset();
+            _stepBarrier.SignalAndWait();
+
+            return true;
+        }
+
+        public void DebugContinue()
+        {
+            _debugHalt.Set();
         }
 
         internal void OnBreak(ulong address, int imm)
