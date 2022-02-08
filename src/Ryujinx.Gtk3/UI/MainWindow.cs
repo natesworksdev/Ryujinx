@@ -677,7 +677,9 @@ namespace Ryujinx.UI
                 ConfigurationState.Instance.System.AudioVolume,
                 ConfigurationState.Instance.System.UseHypervisor,
                 ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value,
-                ConfigurationState.Instance.Multiplayer.Mode);
+                ConfigurationState.Instance.Multiplayer.Mode,
+                ConfigurationState.Instance.Debug.EnableGdbStub,
+                ConfigurationState.Instance.Debug.GdbStubPort);
 
             _emulationContext = new HLE.Switch(configuration);
         }
@@ -789,6 +791,24 @@ namespace Ryujinx.UI
                 }
 
                 shadersDumpWarningDialog.Dispose();
+            }
+
+            if (ConfigurationState.Instance.Debug.EnableGdbStub.Value)
+            {
+                MessageDialog gdbStubWarningDialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Warning, ButtonsType.YesNo, null)
+                {
+                    Title = "Ryujinx - Warning",
+                    Text = "You have the GDB stub enabled, which is designed to be used by developers only.",
+                    SecondaryText = "For optimal performance, it's recommended to disable the GDB stub. Would you like to disable the GDB stub now?"
+                };
+
+                if (gdbStubWarningDialog.Run() == (int)ResponseType.Yes)
+                {
+                    ConfigurationState.Instance.Debug.EnableGdbStub.Value = false;
+                    SaveConfig();
+                }
+
+                gdbStubWarningDialog.Dispose();
             }
         }
 
