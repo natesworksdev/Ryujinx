@@ -137,6 +137,13 @@ namespace Ryujinx.Cpu.AppleHv
         public void DebugContinue() => _impl.DebugContinue();
 
         /// <inheritdoc/>
+        public ulong DebugPc
+        {
+            get => _impl.DebugPc;
+            set => _impl.DebugPc = value;
+        }
+
+        /// <inheritdoc/>
         public void StopRunning()
         {
             Running = false;

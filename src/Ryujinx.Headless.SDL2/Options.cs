@@ -229,5 +229,13 @@ namespace Ryujinx.Headless.SDL2
 
         [Value(0, MetaName = "input", HelpText = "Input to load.", Required = true)]
         public string InputPath { get; set; }
+
+        // Debugging
+
+        [Option("enable-gdb-stub", Required = false, Default = false, HelpText = "Enable the GDB stub.")]
+        public bool EnableGdbStub { get; set; }
+
+        [Option("gdb-stub-port", Required = false, Default = 55555, HelpText = "GDB stub port.")]
+        public ushort GdbStubPort { get; set; }
     }
 }

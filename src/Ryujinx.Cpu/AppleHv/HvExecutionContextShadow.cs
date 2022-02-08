@@ -21,6 +21,8 @@ namespace Ryujinx.Cpu.AppleHv
         private readonly ulong[] _x;
         private readonly V128[] _v;
 
+        public ulong DebugPc { get; set; }
+
         public HvExecutionContextShadow()
         {
             _x = new ulong[32];

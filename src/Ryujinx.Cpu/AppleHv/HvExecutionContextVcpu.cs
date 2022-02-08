@@ -19,7 +19,7 @@ namespace Ryujinx.Cpu.AppleHv
         internal Barrier _stepBarrier = new Barrier(2);
 
         // This is only valid while debugging is enabled.
-        public ulong DebugPc;
+        public ulong DebugPc { get; set; }
 
         static HvExecutionContextVcpu()
         {

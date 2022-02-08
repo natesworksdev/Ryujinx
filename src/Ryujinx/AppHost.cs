@@ -872,7 +872,9 @@ namespace Ryujinx.Ava
                                                  ConfigurationState.Instance.System.AudioVolume,
                                                  ConfigurationState.Instance.System.UseHypervisor,
                                                  ConfigurationState.Instance.Multiplayer.LanInterfaceId.Value,
-                                                 ConfigurationState.Instance.Multiplayer.Mode);
+                                                 ConfigurationState.Instance.Multiplayer.Mode,
+                                                 ConfigurationState.Instance.Debug.EnableGdbStub.Value,
+                                                 ConfigurationState.Instance.Debug.GdbStubPort.Value);
 
             Device = new Switch(configuration);
         }
