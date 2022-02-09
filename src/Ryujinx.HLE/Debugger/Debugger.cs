@@ -1,4 +1,5 @@
-﻿using Ryujinx.Common.Logging;
+﻿using Ryujinx.Common;
+using Ryujinx.Common.Logging;
 using Ryujinx.Memory;
 using System;
 using System.Collections.Concurrent;
@@ -133,7 +134,7 @@ namespace Ryujinx.HLE.Debugger
                 case '!':
                     if (!ss.IsEmpty())
                     {
-                        goto default;
+                        goto unknownCommand;
                     }
                     // Enable extended mode
                     Reply("OK");
@@ -141,7 +142,7 @@ namespace Ryujinx.HLE.Debugger
                 case '?':
                     if (!ss.IsEmpty())
                     {
-                        goto default;
+                        goto unknownCommand;
                     }
                     CommandQuery();
                     break;
@@ -151,14 +152,14 @@ namespace Ryujinx.HLE.Debugger
                 case 'D':
                     if (!ss.IsEmpty())
                     {
-                        goto default;
+                        goto unknownCommand;
                     }
                     CommandDetach();
                     break;
                 case 'g':
                     if (!ss.IsEmpty())
                     {
-                        goto default;
+                        goto unknownCommand;
                     }
                     CommandReadGeneralRegisters();
                     break;
@@ -203,6 +204,28 @@ namespace Ryujinx.HLE.Debugger
                         CommandWriteGeneralRegister((int)gdbRegId, value);
                         break;
                     }
+                case 'q':
+                    switch (ss.ReadUntil(':'))
+                    {
+                        case "GDBServerVersion":
+                            Reply($"name:Ryujinx;version:{ReleaseInformations.GetVersion()};");
+                            break;
+                        case "HostInfo":
+                            Reply($"triple:{ToHex("aarch64-none-elf")};endian:little;ptrsize:8;hostname:{ToHex("Ryujinx")};");
+                            break;
+                        case "ProcessInfo":
+                            Reply("pid:1;cputype:100000c;cpusubtype:0;ostype:unknown;vendor:none;endian:little;ptrsize:8;");
+                            break;
+                        case "fThreadInfo":
+                            Reply($"m {string.Join(",", GetThreadIds().Select(x => $"{x:x}"))}");
+                            break;
+                        case "sThreadInfo":
+                            Reply("l");
+                            break;
+                        default:
+                            goto unknownCommand;
+                    }
+                    break;
                 default:
                     Logger.Notice.Print(LogClass.GdbStub, $"Unknown command: {cmd}");
                     Reply("");
@@ -280,7 +303,7 @@ namespace Ryujinx.HLE.Debugger
         {
             var data = new byte[len];
             GetMemory().Read(addr, data);
-            Reply(string.Join("", data.Select(x => $"{x:x2}")));
+            Reply(ToHex(data));
         }
 
         void CommandWriteMemory(ulong addr, ulong len, StringStream ss)
@@ -382,6 +405,16 @@ namespace Ryujinx.HLE.Debugger
                 }
             }
             return checksum;
+        }
+
+        private string ToHex(byte[] bytes)
+        {
+            return string.Join("", bytes.Select(x => $"{x:x2}"));
+        }
+
+        private string ToHex(string str)
+        {
+            return ToHex(Encoding.ASCII.GetBytes(str));
         }
 
         public void Dispose()
