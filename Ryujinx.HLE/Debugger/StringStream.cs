@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics;
+using System.Globalization;
 
 namespace Ryujinx.HLE.Debugger
 {
@@ -58,6 +59,39 @@ namespace Ryujinx.HLE.Debugger
         public ulong ReadLengthAsHex(int len)
         {
             return ulong.Parse(ReadLength(len), NumberStyles.HexNumber);
+        }
+
+        public ulong ReadLengthAsLEHex(int len)
+        {
+            Debug.Assert(len % 2 == 0);
+
+            ulong result = 0;
+            int pos = 0;
+            while (pos < len)
+            {
+                result += ReadLengthAsHex(2) << (4 * pos);
+                pos += 2;
+            }
+            return result;
+        }
+        public bool ConsumePrefix(string prefix)
+        {
+            if (Data.Substring(Position).StartsWith(prefix))
+            {
+                Position += prefix.Length;
+                return true;
+            }
+            return false;
+        }
+
+        public bool ConsumeRemaining(string match)
+        {
+            if (Data.Substring(Position) == match)
+            {
+                Position += match.Length;
+                return true;
+            }
+            return false;
         }
 
         public bool IsEmpty()
