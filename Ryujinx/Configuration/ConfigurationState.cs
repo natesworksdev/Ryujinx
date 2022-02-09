@@ -998,6 +998,15 @@ namespace Ryujinx.Configuration
                 
                 configurationFileUpdated = true;
             }
+
+            if (configurationFileFormat.Version < 36)
+            {
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 36.");
+
+                configurationFileFormat.LoggingEnableTrace = false;
+
+                configurationFileUpdated = true;
+            }
             
             Logger.EnableFileLog.Value             = configurationFileFormat.EnableFileLog;
             Graphics.BackendThreading.Value        = configurationFileFormat.BackendThreading;
