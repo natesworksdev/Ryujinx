@@ -73,6 +73,7 @@ namespace Ryujinx.Ui
         private bool _ending;
 
         private string _currentEmulatedGamePath = null;
+        private string _mostRecentlyLaunchedGamePath = null;
 
         private string _lastScannedAmiiboId = "";
         private bool   _lastScannedAmiiboShowAll = false;
@@ -676,7 +677,7 @@ namespace Ryujinx.Ui
             }
         }
 
-        public void LoadApplication(string path, bool startFullscreen = false)
+        public void LoadApplication(string path, bool startFullscreen = false, bool isUserSpecifiedPath = false)
         {
             if (_gameLoaded)
             {
@@ -837,6 +838,11 @@ namespace Ryujinx.Ui
 
                 _currentEmulatedGamePath = path;
 
+                if (isUserSpecifiedPath)
+                {
+                    _mostRecentlyLaunchedGamePath = path;
+                }
+
                 _deviceExitStatus.Reset();
 
                 Translator.IsReadyForTranslation.Reset();
@@ -855,12 +861,14 @@ namespace Ryujinx.Ui
 #endif
 
                 _gameLoaded           = true;
-                _actionMenu.Sensitive = true;
+                _lastScannedAmiiboId  = "";
 
-                _lastScannedAmiiboId = "";
-
-                _firmwareInstallFile.Sensitive      = false;
-                _firmwareInstallDirectory.Sensitive = false;
+                Application.Invoke(delegate
+                {
+                    _actionMenu.Sensitive               = true;
+                    _firmwareInstallFile.Sensitive      = false;
+                    _firmwareInstallDirectory.Sensitive = false;
+                });
 
                 DiscordIntegrationModule.SwitchToPlayingState(_emulationContext.Application.TitleIdText, _emulationContext.Application.TitleName);
 
@@ -945,9 +953,11 @@ namespace Ryujinx.Ui
             UpdateGameTable();
 
             Task.Run(RefreshFirmwareLabel);
-            Task.Run(HandleRelaunch);
 
             _actionMenu.Sensitive = false;
+
+            Task.Run(HandleRelaunch);
+
             _firmwareInstallFile.Sensitive = true;
             _firmwareInstallDirectory.Sensitive = true;
         }
@@ -1169,7 +1179,7 @@ namespace Ryujinx.Ui
 
             string path = (string)_tableStore.GetValue(treeIter, 9);
 
-            LoadApplication(path);
+            LoadApplication(path, /*startFullscreen=*/false, /*isUserSelectedPath=*/true);
         }
 
         private void VSyncStatus_Clicked(object sender, ButtonReleaseEventArgs args)
@@ -1255,7 +1265,7 @@ namespace Ryujinx.Ui
 
                 if (fileChooser.Run() == (int)ResponseType.Accept)
                 {
-                    LoadApplication(fileChooser.Filename);
+                    LoadApplication(fileChooser.Filename, /*startFullscreen=*/false, /*isUserSpecifiedPath=*/true);
                 }
             }
         }
@@ -1266,7 +1276,7 @@ namespace Ryujinx.Ui
             {
                 if (fileChooser.Run() == (int)ResponseType.Accept)
                 {
-                    LoadApplication(fileChooser.Filename);
+                    LoadApplication(fileChooser.Filename, /*startFullscreen=*/false, /*isUserSpecifiedPath=*/true);
                 }
             }
         }
@@ -1513,7 +1523,7 @@ namespace Ryujinx.Ui
             {
                 _userChannelPersistence.ShouldRestart = false;
 
-                LoadApplication(_currentEmulatedGamePath);
+                LoadApplication(_mostRecentlyLaunchedGamePath);
             }
             else
             {
