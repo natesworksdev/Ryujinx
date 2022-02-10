@@ -976,12 +976,12 @@ namespace ARMeilleure.Decoders
             // T16
 #endregion
 
-            FillFastLookupTable(InstA32FastLookup, AllInstA32);
-            FillFastLookupTable(InstT32FastLookup, AllInstT32);
-            FillFastLookupTable(InstA64FastLookup, AllInstA64);
+            FillFastLookupTable(InstA32FastLookup, AllInstA32, ToFastLookupIndexA);
+            FillFastLookupTable(InstT32FastLookup, AllInstT32, ToFastLookupIndexT);
+            FillFastLookupTable(InstA64FastLookup, AllInstA64, ToFastLookupIndexA);
         }
 
-        private static void FillFastLookupTable(InstInfo[][] table, List<InstInfo> allInsts)
+        private static void FillFastLookupTable(InstInfo[][] table, List<InstInfo> allInsts, Func<int, int> ToFastLookupIndex)
         {
             List<InstInfo>[] temp = new List<InstInfo>[FastLookupSize];
 
@@ -1104,17 +1104,17 @@ namespace ARMeilleure.Decoders
 
         public static (InstDescriptor inst, MakeOp makeOp) GetInstA32(int opCode)
         {
-            return GetInstFromList(InstA32FastLookup[ToFastLookupIndex(opCode)], opCode);
+            return GetInstFromList(InstA32FastLookup[ToFastLookupIndexA(opCode)], opCode);
         }
 
         public static (InstDescriptor inst, MakeOp makeOp) GetInstT32(int opCode)
         {
-            return GetInstFromList(InstT32FastLookup[ToFastLookupIndex(opCode)], opCode);
+            return GetInstFromList(InstT32FastLookup[ToFastLookupIndexT(opCode)], opCode);
         }
 
         public static (InstDescriptor inst, MakeOp makeOp) GetInstA64(int opCode)
         {
-            return GetInstFromList(InstA64FastLookup[ToFastLookupIndex(opCode)], opCode);
+            return GetInstFromList(InstA64FastLookup[ToFastLookupIndexA(opCode)], opCode);
         }
 
         private static (InstDescriptor inst, MakeOp makeOp) GetInstFromList(InstInfo[] insts, int opCode)
@@ -1130,9 +1130,14 @@ namespace ARMeilleure.Decoders
             return (new InstDescriptor(InstName.Und, InstEmit.Und), null);
         }
 
-        private static int ToFastLookupIndex(int value)
+        private static int ToFastLookupIndexA(int value)
         {
             return ((value >> 10) & 0x00F) | ((value >> 18) & 0xFF0);
+        }
+
+        private static int ToFastLookupIndexT(int value)
+        {
+            return (value >> 4) & 0xFFF;
         }
     }
 }
