@@ -1457,8 +1457,9 @@ namespace Ryujinx.Graphics.OpenGL
             int shift = index * 4;
             uint componentMask = _componentMasks & _fragmentOutputMap;
             uint checkMask = 0xfu << shift;
+            uint componentMaskAtIndex = componentMask & checkMask;
 
-            if (!force && (componentMask & checkMask) == (_currentComponentMasks & checkMask))
+            if (!force && componentMaskAtIndex == (_currentComponentMasks & checkMask))
             {
                 return;
             }
@@ -1474,7 +1475,7 @@ namespace Ryujinx.Graphics.OpenGL
                 (componentMask & 8u) != 0);
 
             _currentComponentMasks &= ~checkMask;
-            _currentComponentMasks |= componentMask << shift;
+            _currentComponentMasks |= componentMaskAtIndex;
         }
 
         public void RestoreScissor0Enable()
