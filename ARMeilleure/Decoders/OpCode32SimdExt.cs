@@ -4,9 +4,9 @@
     {
         public int Immediate { get; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdExt(inst, address, opCode);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCode32SimdExt(inst, address, opCode, inITBlock);
 
-        public OpCode32SimdExt(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
+        public OpCode32SimdExt(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
         {
             Immediate = (opCode >> 8) & 0xf;
             Size = 0;

@@ -4,9 +4,9 @@ namespace ARMeilleure.Decoders
     {
         public Condition Cond { get; protected set; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32(inst, address, opCode);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCode32(inst, address, opCode, inITBlock);
 
-        public OpCode32(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
+        public OpCode32(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
         {
             RegisterSize = RegisterSize.Int32;
 

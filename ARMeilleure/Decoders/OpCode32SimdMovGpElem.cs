@@ -11,9 +11,9 @@
 
         public int Index { get; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdMovGpElem(inst, address, opCode);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCode32SimdMovGpElem(inst, address, opCode, inITBlock);
 
-        public OpCode32SimdMovGpElem(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
+        public OpCode32SimdMovGpElem(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
         {
             Op = (opCode >> 20) & 0x1;
             U = ((opCode >> 23) & 1) != 0;

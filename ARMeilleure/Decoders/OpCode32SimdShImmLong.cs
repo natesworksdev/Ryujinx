@@ -4,9 +4,9 @@
     {
         public int Shift { get; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdShImmLong(inst, address, opCode);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCode32SimdShImmLong(inst, address, opCode, inITBlock);
 
-        public OpCode32SimdShImmLong(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
+        public OpCode32SimdShImmLong(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
         {
             Q = false;
             RegisterSize = RegisterSize.Simd64;

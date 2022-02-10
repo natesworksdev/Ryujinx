@@ -2,9 +2,9 @@
 {
     class OpCode32SimdSqrte : OpCode32Simd
     {
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdSqrte(inst, address, opCode);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCode32SimdSqrte(inst, address, opCode, inITBlock);
 
-        public OpCode32SimdSqrte(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
+        public OpCode32SimdSqrte(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
         {
             Size = (opCode >> 18) & 0x1;
             F = ((opCode >> 8) & 0x1) != 0;

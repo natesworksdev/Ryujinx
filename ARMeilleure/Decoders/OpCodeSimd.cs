@@ -7,9 +7,9 @@ namespace ARMeilleure.Decoders
         public int Opc  { get; }
         public int Size { get; protected set; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeSimd(inst, address, opCode);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCodeSimd(inst, address, opCode, inITBlock);
 
-        public OpCodeSimd(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
+        public OpCodeSimd(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
         {
             Rd   = (opCode >>  0) & 0x1f;
             Rn   = (opCode >>  5) & 0x1f;

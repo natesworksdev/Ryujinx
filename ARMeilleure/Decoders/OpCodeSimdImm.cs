@@ -6,9 +6,9 @@ namespace ARMeilleure.Decoders
         public long Immediate { get; }
         public int  Size      { get; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeSimdImm(inst, address, opCode);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCodeSimdImm(inst, address, opCode, inITBlock);
 
-        public OpCodeSimdImm(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
+        public OpCodeSimdImm(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
         {
             Rd = opCode & 0x1f;
 

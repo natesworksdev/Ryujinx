@@ -7,9 +7,9 @@
         public int Rt { get; }
         public bool Q { get; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdDupGP(inst, address, opCode);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCode32SimdDupGP(inst, address, opCode, inITBlock);
 
-        public OpCode32SimdDupGP(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
+        public OpCode32SimdDupGP(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
         {
             Size = 2 - (((opCode >> 21) & 0x2) | ((opCode >> 5) & 0x1)); // B:E - 0 for 32, 16 then 8.
             if (Size == -1)

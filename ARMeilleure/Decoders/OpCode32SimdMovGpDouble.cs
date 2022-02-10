@@ -9,9 +9,9 @@
         public int Rt2 { get; }
         public int Op { get; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdMovGpDouble(inst, address, opCode);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCode32SimdMovGpDouble(inst, address, opCode, inITBlock);
 
-        public OpCode32SimdMovGpDouble(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
+        public OpCode32SimdMovGpDouble(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
         {
             // Which one is used is instruction dependant.
             Op = (opCode >> 20) & 0x1;

@@ -8,9 +8,9 @@
         public int Opc2 { get; } // opc2 or RM (opc2<1:0>) [Vcvt, Vrint].
         public int Size { get; protected set; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdS(inst, address, opCode);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCode32SimdS(inst, address, opCode, inITBlock);
 
-        public OpCode32SimdS(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
+        public OpCode32SimdS(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
         {
             Opc = (opCode >> 15) & 0x3;
             Opc2 = (opCode >> 16) & 0x7;

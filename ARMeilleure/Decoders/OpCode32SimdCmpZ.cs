@@ -2,9 +2,9 @@
 {
     class OpCode32SimdCmpZ : OpCode32Simd
     {
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdCmpZ(inst, address, opCode);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCode32SimdCmpZ(inst, address, opCode, inITBlock);
 
-        public OpCode32SimdCmpZ(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
+        public OpCode32SimdCmpZ(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
         {
             Size = (opCode >> 18) & 0x3;
 

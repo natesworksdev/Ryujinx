@@ -6,9 +6,9 @@
         public long Immediate { get; }
         public int Elems => GetBytesCount() >> Size;
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdImm(inst, address, opCode);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCode32SimdImm(inst, address, opCode, inITBlock);
 
-        public OpCode32SimdImm(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
+        public OpCode32SimdImm(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
         {
             Vd = (opCode >> 12) & 0xf;
             Vd |= (opCode >> 18) & 0x10;

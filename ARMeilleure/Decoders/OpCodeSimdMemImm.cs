@@ -2,9 +2,9 @@ namespace ARMeilleure.Decoders
 {
     class OpCodeSimdMemImm : OpCodeMemImm, IOpCodeSimd
     {
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeSimdMemImm(inst, address, opCode);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCodeSimdMemImm(inst, address, opCode, inITBlock);
 
-        public OpCodeSimdMemImm(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
+        public OpCodeSimdMemImm(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
         {
             Size |= (opCode >> 21) & 4;
 

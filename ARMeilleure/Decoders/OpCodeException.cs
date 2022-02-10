@@ -4,9 +4,9 @@ namespace ARMeilleure.Decoders
     {
         public int Id { get; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeException(inst, address, opCode);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCodeException(inst, address, opCode, inITBlock);
 
-        public OpCodeException(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
+        public OpCodeException(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
         {
             Id = (opCode >> 5) & 0xffff;
         }

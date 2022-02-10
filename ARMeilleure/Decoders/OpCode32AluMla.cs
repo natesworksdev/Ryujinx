@@ -12,9 +12,9 @@
         public bool R { get; }
         public bool SetFlags { get; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32AluMla(inst, address, opCode);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCode32AluMla(inst, address, opCode, inITBlock);
 
-        public OpCode32AluMla(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
+        public OpCode32AluMla(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
         {
             Rn = (opCode >> 0) & 0xf;
             Rm = (opCode >> 8) & 0xf;

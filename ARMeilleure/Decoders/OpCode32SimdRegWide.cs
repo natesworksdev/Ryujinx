@@ -2,9 +2,9 @@
 {
     class OpCode32SimdRegWide : OpCode32SimdReg
     {
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdRegWide(inst, address, opCode);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCode32SimdRegWide(inst, address, opCode, inITBlock);
 
-        public OpCode32SimdRegWide(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
+        public OpCode32SimdRegWide(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
         {
             Q = false;
             RegisterSize = RegisterSize.Simd64;

@@ -4,9 +4,9 @@ namespace ARMeilleure.Decoders
     {
         public int Rt { get; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeBImmCmp(inst, address, opCode);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCodeBImmCmp(inst, address, opCode, inITBlock);
 
-        public OpCodeBImmCmp(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
+        public OpCodeBImmCmp(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
         {
             Rt = opCode & 0x1f;
 

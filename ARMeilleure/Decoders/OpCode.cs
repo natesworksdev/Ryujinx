@@ -14,14 +14,16 @@ namespace ARMeilleure.Decoders
 
         public RegisterSize RegisterSize { get; protected set; }
 
-        public static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode(inst, address, opCode);
+        public bool InITBlock { get; }
 
-        public OpCode(InstDescriptor inst, ulong address, int opCode)
+        public static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCode(inst, address, opCode, inITBlock);
+
+        public OpCode(InstDescriptor inst, ulong address, int opCode, bool inITBlock)
         {
-            Address   = address;
-            RawOpCode = opCode;
-
             Instruction = inst;
+            Address     = address;
+            RawOpCode   = opCode;
+            InITBlock   = inITBlock;
 
             RegisterSize = RegisterSize.Int64;
         }

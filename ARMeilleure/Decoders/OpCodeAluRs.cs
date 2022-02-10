@@ -7,9 +7,9 @@ namespace ARMeilleure.Decoders
 
         public ShiftType ShiftType { get; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeAluRs(inst, address, opCode);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCodeAluRs(inst, address, opCode, inITBlock);
 
-        public OpCodeAluRs(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
+        public OpCodeAluRs(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
         {
             int shift = (opCode >> 10) & 0x3f;
 

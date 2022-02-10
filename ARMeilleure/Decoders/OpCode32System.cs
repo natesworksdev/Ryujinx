@@ -11,9 +11,9 @@
 
         public int Coproc { get; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32System(inst, address, opCode);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCode32System(inst, address, opCode, inITBlock);
 
-        public OpCode32System(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
+        public OpCode32System(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
         {
             Opc1 = (opCode >> 21) & 0x7;
             CRn = (opCode >> 16) & 0xf;

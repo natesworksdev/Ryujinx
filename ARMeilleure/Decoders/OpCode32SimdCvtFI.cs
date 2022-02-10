@@ -2,9 +2,9 @@
 {
     class OpCode32SimdCvtFI : OpCode32SimdS
     {
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdCvtFI(inst, address, opCode);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCode32SimdCvtFI(inst, address, opCode, inITBlock);
 
-        public OpCode32SimdCvtFI(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
+        public OpCode32SimdCvtFI(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
         {
             Opc = (opCode >> 7) & 0x1;
 

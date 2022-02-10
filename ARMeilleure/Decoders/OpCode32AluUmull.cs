@@ -13,9 +13,9 @@
         public bool SetFlags { get; }
         public DataOp DataOp { get; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32AluUmull(inst, address, opCode);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCode32AluUmull(inst, address, opCode, inITBlock);
 
-        public OpCode32AluUmull(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
+        public OpCode32AluUmull(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
         {
             RdLo = (opCode >> 12) & 0xf;
             RdHi = (opCode >> 16) & 0xf;

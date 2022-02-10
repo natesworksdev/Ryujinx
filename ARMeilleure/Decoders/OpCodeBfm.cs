@@ -7,9 +7,9 @@ namespace ARMeilleure.Decoders
         public int  Pos   { get; }
         public int  Shift { get; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeBfm(inst, address, opCode);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCodeBfm(inst, address, opCode, inITBlock);
 
-        public OpCodeBfm(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
+        public OpCodeBfm(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
         {
             var bm = DecoderHelper.DecodeBitMask(opCode, false);
 

@@ -11,9 +11,9 @@
         public int Opc1 { get; }
         public int Opc2 { get; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdMovGp(inst, address, opCode);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCode32SimdMovGp(inst, address, opCode, inITBlock);
 
-        public OpCode32SimdMovGp(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
+        public OpCode32SimdMovGp(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
         {
             // Which one is used is instruction dependant.
             Op = (opCode >> 20) & 0x1;

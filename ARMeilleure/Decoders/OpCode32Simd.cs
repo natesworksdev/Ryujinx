@@ -7,9 +7,9 @@
         public bool F { get; protected set; }
         public bool U { get; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32Simd(inst, address, opCode);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCode32Simd(inst, address, opCode, inITBlock);
 
-        public OpCode32Simd(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
+        public OpCode32Simd(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
         {
             Size = (opCode >> 20) & 0x3;
             Q = ((opCode >> 6) & 0x1) != 0;

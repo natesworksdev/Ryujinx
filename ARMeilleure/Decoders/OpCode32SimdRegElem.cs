@@ -2,9 +2,9 @@
 {
     class OpCode32SimdRegElem : OpCode32SimdReg
     {
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdRegElem(inst, address, opCode);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCode32SimdRegElem(inst, address, opCode, inITBlock);
 
-        public OpCode32SimdRegElem(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
+        public OpCode32SimdRegElem(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
         {
             Q = ((opCode >> 24) & 0x1) != 0;
             F = ((opCode >> 8) & 0x1) != 0;

@@ -315,7 +315,7 @@ namespace ARMeilleure.Decoders
                    opCode.Instruction.Name == InstName.Und;
         }
 
-        public static OpCode DecodeOpCode(IMemoryManager memory, ulong address, ExecutionMode mode)
+        public static OpCode DecodeOpCode(IMemoryManager memory, ulong address, ExecutionMode mode, bool inITBlock = false)
         {
             int opCode = memory.Read<int>(address);
 
@@ -341,11 +341,11 @@ namespace ARMeilleure.Decoders
 
             if (makeOp != null)
             {
-                return makeOp(inst, address, opCode);
+                return makeOp(inst, address, opCode, inITBlock);
             }
             else
             {
-                return new OpCode(inst, address, opCode);
+                return new OpCode(inst, address, opCode, inITBlock);
             }
         }
     }
