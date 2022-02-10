@@ -972,6 +972,10 @@ namespace ARMeilleure.Decoders
             SetA32("111100111x11<<10xxxx00011xx0xxxx", InstName.Vzip,     InstEmit32.Vzip,     OpCode32SimdCmpZ.Create);
 #endregion
 
+#region "OpCode Table (AArch32, T16/T32)"
+            // T16
+#endregion
+
             FillFastLookupTable(InstA32FastLookup, AllInstA32);
             FillFastLookupTable(InstT32FastLookup, AllInstT32);
             FillFastLookupTable(InstA64FastLookup, AllInstA64);
@@ -1011,8 +1015,15 @@ namespace ARMeilleure.Decoders
             Set(encoding, AllInstA32, new InstDescriptor(name, emitter), makeOp);
         }
 
+        private static void SetT16(string encoding, InstName name, InstEmitter emitter, MakeOp makeOp)
+        {
+            encoding = "xxxxxxxxxxxxxxxx" + encoding;
+            Set(encoding, AllInstT32, new InstDescriptor(name, emitter), makeOp);
+        }
+
         private static void SetT32(string encoding, InstName name, InstEmitter emitter, MakeOp makeOp)
         {
+            encoding = encoding.Substring(16) + encoding.Substring(0, 16);
             Set(encoding, AllInstT32, new InstDescriptor(name, emitter), makeOp);
         }
 

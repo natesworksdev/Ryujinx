@@ -345,7 +345,14 @@ namespace ARMeilleure.Decoders
             }
             else
             {
-                return new OpCode(inst, address, opCode, inITBlock);
+                if (mode == ExecutionMode.Aarch32Thumb)
+                {
+                    return new OpCodeT16(inst, address, opCode, inITBlock);
+                }
+                else
+                {
+                    return new OpCode(inst, address, opCode, inITBlock);
+                }
             }
         }
     }
