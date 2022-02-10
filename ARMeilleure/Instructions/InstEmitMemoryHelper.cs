@@ -549,7 +549,7 @@ namespace ARMeilleure.Instructions
             {
                 case OpCode32MemRsImm op: return GetMShiftedByImmediate(context, op, setCarry);
 
-                case OpCode32MemReg op: return GetIntA32(context, op.Rm);
+                case IOpCode32MemReg op: return GetIntA32(context, op.Rm);
 
                 case IOpCode32Mem op: return Const(op.Immediate);
 
