@@ -1,5 +1,4 @@
 using ARMeilleure.Instructions;
-using ARMeilleure.State;
 using System;
 using System.Collections.Generic;
 
@@ -29,9 +28,9 @@ namespace ARMeilleure.Decoders
             }
         }
 
-        private static List<InstInfo> AllInstA32 = new List<InstInfo>();
-        private static List<InstInfo> AllInstT32 = new List<InstInfo>();
-        private static List<InstInfo> AllInstA64 = new List<InstInfo>();
+        private static List<InstInfo> AllInstA32 = new();
+        private static List<InstInfo> AllInstT32 = new();
+        private static List<InstInfo> AllInstA64 = new();
 
         private static InstInfo[][] InstA32FastLookup = new InstInfo[FastLookupSize][];
         private static InstInfo[][] InstT32FastLookup = new InstInfo[FastLookupSize][];
@@ -1011,20 +1010,20 @@ namespace ARMeilleure.Decoders
 
         private static void SetA32(string encoding, InstName name, InstEmitter emitter, MakeOp makeOp)
         {
-            Set(encoding, ExecutionMode.Aarch32Arm, new InstDescriptor(name, emitter), makeOp);
+            Set(encoding, AllInstA32, new InstDescriptor(name, emitter), makeOp);
         }
 
         private static void SetT32(string encoding, InstName name, InstEmitter emitter, MakeOp makeOp)
         {
-            Set(encoding, ExecutionMode.Aarch32Thumb, new InstDescriptor(name, emitter), makeOp);
+            Set(encoding, AllInstT32, new InstDescriptor(name, emitter), makeOp);
         }
 
         private static void SetA64(string encoding, InstName name, InstEmitter emitter, MakeOp makeOp)
         {
-            Set(encoding, ExecutionMode.Aarch64, new InstDescriptor(name, emitter), makeOp);
+            Set(encoding, AllInstA64, new InstDescriptor(name, emitter), makeOp);
         }
 
-        private static void Set(string encoding, ExecutionMode mode, InstDescriptor inst, MakeOp makeOp)
+        private static void Set(string encoding, List<InstInfo> list, InstDescriptor inst, MakeOp makeOp)
         {
             int bit   = encoding.Length - 1;
             int value = 0;
@@ -1073,7 +1072,7 @@ namespace ARMeilleure.Decoders
 
             if (xBits == 0)
             {
-                InsertInst(new InstInfo(xMask, value, inst, makeOp), mode);
+                list.Add(new InstInfo(xMask, value, inst, makeOp));
 
                 return;
             }
@@ -1089,18 +1088,8 @@ namespace ARMeilleure.Decoders
 
                 if (mask != blacklisted)
                 {
-                    InsertInst(new InstInfo(xMask, value | mask, inst, makeOp), mode);
+                    list.Add(new InstInfo(xMask, value | mask, inst, makeOp));
                 }
-            }
-        }
-
-        private static void InsertInst(InstInfo info, ExecutionMode mode)
-        {
-            switch (mode)
-            {
-                case ExecutionMode.Aarch32Arm:   AllInstA32.Add(info); break;
-                case ExecutionMode.Aarch32Thumb: AllInstT32.Add(info); break;
-                case ExecutionMode.Aarch64:      AllInstA64.Add(info); break;
             }
         }
 
