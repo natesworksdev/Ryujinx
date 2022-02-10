@@ -196,7 +196,7 @@ namespace ARMeilleure.Instructions
                 case OpCode32AluImm16 op: return Const(op.Immediate);
 
                 case IOpCode32AluRsImm op: return GetMShiftedByImmediate(context, op, setCarry);
-                case OpCode32AluRsReg op: return GetMShiftedByReg(context, op, setCarry);
+                case IOpCode32AluRsReg op: return GetMShiftedByReg(context, op, setCarry);
 
                 case IOpCode32AluReg op: return GetIntA32(context, op.Rm);
 
@@ -303,7 +303,7 @@ namespace ARMeilleure.Instructions
             return shift;
         }
 
-        public static Operand GetMShiftedByReg(ArmEmitterContext context, OpCode32AluRsReg op, bool setCarry)
+        public static Operand GetMShiftedByReg(ArmEmitterContext context, IOpCode32AluRsReg op, bool setCarry)
         {
             Operand m = GetIntA32(context, op.Rm);
             Operand s = context.ZeroExtend8(OperandType.I32, GetIntA32(context, op.Rs));

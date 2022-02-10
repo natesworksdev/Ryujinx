@@ -983,6 +983,22 @@ namespace ARMeilleure.Decoders
             SetT16("00101xxxxxxxxxxx", InstName.Cmp,    InstEmit32.Cmp,     OpCodeT16AluImm8.Create);
             SetT16("00110xxxxxxxxxxx", InstName.Add,    InstEmit32.Add,     OpCodeT16AluImm8.Create);
             SetT16("00111xxxxxxxxxxx", InstName.Sub,    InstEmit32.Sub,     OpCodeT16AluImm8.Create);
+            SetT16("0100000000xxxxxx", InstName.And,    InstEmit32.And,     OpCodeT16AluRegLow.Create);
+            SetT16("0100000001xxxxxx", InstName.Eor,    InstEmit32.Eor,     OpCodeT16AluRegLow.Create);
+            SetT16("0100000010xxxxxx", InstName.Mov,    InstEmit32.Mov,     OpCodeT16ShiftReg.Create);
+            SetT16("0100000011xxxxxx", InstName.Mov,    InstEmit32.Mov,     OpCodeT16ShiftReg.Create);
+            SetT16("0100000100xxxxxx", InstName.Mov,    InstEmit32.Mov,     OpCodeT16ShiftReg.Create);
+            SetT16("0100000101xxxxxx", InstName.Adc,    InstEmit32.Adc,     OpCodeT16AluRegLow.Create);
+            SetT16("0100000110xxxxxx", InstName.Sbc,    InstEmit32.Sbc,     OpCodeT16AluRegLow.Create);
+            SetT16("0100000111xxxxxx", InstName.Mov,    InstEmit32.Mov,     OpCodeT16ShiftReg.Create);
+            SetT16("0100001000xxxxxx", InstName.Tst,    InstEmit32.Tst,     OpCodeT16AluRegLow.Create);
+            SetT16("0100001001xxxxxx", InstName.Rsb,    InstEmit32.Rsb,     OpCodeT16AluImmZero.Create);
+            SetT16("0100001010xxxxxx", InstName.Cmp,    InstEmit32.Cmp,     OpCodeT16AluRegLow.Create);
+            SetT16("0100001011xxxxxx", InstName.Cmn,    InstEmit32.Cmn,     OpCodeT16AluRegLow.Create);
+            SetT16("0100001100xxxxxx", InstName.Orr,    InstEmit32.Orr,     OpCodeT16AluRegLow.Create);
+            SetT16("0100001101xxxxxx", InstName.Mul,    InstEmit32.Mul,     OpCodeT16AluRegLow.Create);
+            SetT16("0100001110xxxxxx", InstName.Bic,    InstEmit32.Bic,     OpCodeT16AluRegLow.Create);
+            SetT16("0100001111xxxxxx", InstName.Mvn,    InstEmit32.Mvn,     OpCodeT16AluRegLow.Create);
             SetT16("010001110xxxx000", InstName.Bx,     InstEmit32.Bx,      OpCodeT16BReg.Create);
 #endregion
 
