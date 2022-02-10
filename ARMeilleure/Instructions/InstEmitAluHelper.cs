@@ -195,7 +195,7 @@ namespace ARMeilleure.Instructions
 
                 case OpCode32AluImm16 op: return Const(op.Immediate);
 
-                case OpCode32AluRsImm op: return GetMShiftedByImmediate(context, op, setCarry);
+                case IOpCode32AluRsImm op: return GetMShiftedByImmediate(context, op, setCarry);
                 case OpCode32AluRsReg op: return GetMShiftedByReg(context, op, setCarry);
 
                 case IOpCode32AluReg op: return GetIntA32(context, op.Rm);
@@ -247,7 +247,7 @@ namespace ARMeilleure.Instructions
         }
 
         // ARM32 helpers.
-        public static Operand GetMShiftedByImmediate(ArmEmitterContext context, OpCode32AluRsImm op, bool setCarry)
+        public static Operand GetMShiftedByImmediate(ArmEmitterContext context, IOpCode32AluRsImm op, bool setCarry)
         {
             Operand m = GetIntA32(context, op.Rm);
 

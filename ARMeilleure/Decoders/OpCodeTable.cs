@@ -974,6 +974,7 @@ namespace ARMeilleure.Decoders
 
 #region "OpCode Table (AArch32, T16/T32)"
             // T16
+            SetT16("000<<xxxxxxxxxxx", InstName.Mov,    InstEmit32.Mov,     OpCodeT16ShiftImm.Create);
             SetT16("010001110xxxx000", InstName.Bx,     InstEmit32.Bx,      OpCodeT16BReg.Create);
 #endregion
 
