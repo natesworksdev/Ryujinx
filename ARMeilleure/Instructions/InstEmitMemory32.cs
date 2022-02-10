@@ -151,7 +151,7 @@ namespace ARMeilleure.Instructions
 
         private static void EmitLoadOrStore(ArmEmitterContext context, int size, AccessType accType)
         {
-            OpCode32Mem op = (OpCode32Mem)context.CurrOp;
+            IOpCode32Mem op = (IOpCode32Mem)context.CurrOp;
 
             Operand n = context.Copy(GetIntA32AlignedPC(context, op.Rn));
             Operand m = GetMemM(context, setCarry: false);
