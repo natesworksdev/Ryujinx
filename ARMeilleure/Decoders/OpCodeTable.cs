@@ -974,6 +974,7 @@ namespace ARMeilleure.Decoders
 
 #region "OpCode Table (AArch32, T16/T32)"
             // T16
+            SetT16("010001110xxxx000", InstName.Bx,     InstEmit32.Bx,      OpCodeT16BReg.Create);
 #endregion
 
             FillFastLookupTable(InstA32FastLookup, AllInstA32, ToFastLookupIndexA);
