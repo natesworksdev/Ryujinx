@@ -55,5 +55,27 @@ namespace Ryujinx.Tests.Cpu
                     break;
             }
         }
+
+        [Test, Pairwise]
+        public void AddSubImm3([Range(0u, 1u)] uint op, [Range(0u, 7u)] uint imm, [Random(RndCnt)] uint w1)
+        {
+            uint opcode = 0x1c00; // ADDS <Rd>, <Rn>, #<imm3>
+
+            uint rd = 0;
+            uint rn = 1;
+            opcode |= ((rd & 7) << 0) | ((rn & 7) << 3) | ((imm & 7) << 6) | ((op & 1) << 9);
+
+            SingleThumbOpcode((ushort)opcode, r1: w1, runUnicorn: false);
+
+            switch (op)
+            {
+                case 0:
+                    Assert.That(GetContext().GetX(0), Is.EqualTo((w1 + imm) & 0xffffffffu));
+                    break;
+                case 1:
+                    Assert.That(GetContext().GetX(0), Is.EqualTo((w1 - imm) & 0xffffffffu));
+                    break;
+            }
+        }
     }
 }

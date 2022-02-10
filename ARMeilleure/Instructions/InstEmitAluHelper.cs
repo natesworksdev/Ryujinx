@@ -183,7 +183,7 @@ namespace ARMeilleure.Instructions
             switch (context.CurrOp)
             {
                 // ARM32.
-                case OpCode32AluImm op:
+                case IOpCode32AluImm op:
                 {
                     if (op.SetFlags && op.IsRotated)
                     {
