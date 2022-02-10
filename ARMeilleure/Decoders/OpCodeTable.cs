@@ -1003,6 +1003,7 @@ namespace ARMeilleure.Decoders
             SetT16("01000101xxxxxxxx", InstName.Cmp,    InstEmit32.Cmp,     OpCodeT16AluRegHigh.Create);
             SetT16("01000110xxxxxxxx", InstName.Mov,    InstEmit32.Mov,     OpCodeT16AluRegHigh.Create);
             SetT16("010001110xxxx000", InstName.Bx,     InstEmit32.Bx,      OpCodeT16BReg.Create);
+            SetT16("010001111xxxx000", InstName.Blx,    InstEmit32.Blx,     OpCodeT16BReg.Create);
 #endregion
 
             FillFastLookupTable(InstA32FastLookup, AllInstA32, ToFastLookupIndexA);

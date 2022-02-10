@@ -64,7 +64,7 @@ namespace ARMeilleure.Instructions
             bool isThumb = IsThumb(context.CurrOp);
 
             uint currentPc = isThumb
-                ? pc | 1
+                ? (pc - 2) | 1
                 : pc - 4;
 
             SetIntA32(context, GetBankedRegisterAlias(context.Mode, RegisterAlias.Aarch32Lr), Const(currentPc));
