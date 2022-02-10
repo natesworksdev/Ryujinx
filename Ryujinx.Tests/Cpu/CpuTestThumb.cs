@@ -207,5 +207,49 @@ namespace Ryujinx.Tests.Cpu
                     break;
             }
         }
+
+        [Test, Pairwise]
+        public void AluRegHigh([Range(0u, 2u)] uint op, [Range(0u, 13u)] uint rd, [Range(0u, 13u)] uint rm, [Random(RndCnt)] uint w1, [Random(RndCnt)] uint w2)
+        {
+            if (rd == rm)
+            {
+                return;
+            }
+
+            uint opcode = 0x4400; // ADDS <Rdn>, <Rm>
+
+            opcode |= ((rd & 7) << 0) | ((rm & 0xf) << 3) | ((rd & 8) << 4) | ((op & 3) << 8);
+
+            ThumbOpcode((ushort)opcode);
+            ThumbOpcode(0x4770); // BX LR
+
+            GetContext().SetX((int)rd, w1);
+            GetContext().SetX((int)rm, w2);
+            GetContext().SetPstateFlag(PState.TFlag, true);
+
+            ExecuteOpcodes(runUnicorn: false);
+
+            switch (op)
+            {
+                case 0:
+                    Assert.That(GetContext().GetX((int)rd), Is.EqualTo(w1 + w2));
+                    break;
+                case 1:
+                    Assert.That(GetContext().GetX((int)rd), Is.EqualTo(w1));
+                    Assert.That(GetContext().GetX((int)rm), Is.EqualTo(w2));
+                    {
+                        uint result = w1 - w2;
+                        uint overflow = (result ^ w1) & (w1 ^ w2);
+                        Assert.That(GetContext().GetPstateFlag(PState.NFlag), Is.EqualTo((result >> 31) != 0));
+                        Assert.That(GetContext().GetPstateFlag(PState.ZFlag), Is.EqualTo(result == 0));
+                        Assert.That(GetContext().GetPstateFlag(PState.CFlag), Is.EqualTo(w1 >= w2));
+                        Assert.That(GetContext().GetPstateFlag(PState.VFlag), Is.EqualTo((overflow >> 31) != 0));
+                    }
+                    break;
+                case 2:
+                    Assert.That(GetContext().GetX((int)rd), Is.EqualTo(w2));
+                    break;
+            }
+        }
     }
 }
