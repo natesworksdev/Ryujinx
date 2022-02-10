@@ -627,7 +627,7 @@ namespace ARMeilleure.Decoders
             SetA64("0>001110<<0xxxxx011110xxxxxxxxxx", InstName.Zip2_V,          InstEmit.Zip2_V,          OpCodeSimdReg.Create);
 #endregion
 
-#region "OpCode Table (AArch32)"
+#region "OpCode Table (AArch32, A32)"
             // Base
             SetA32("<<<<0010101xxxxxxxxxxxxxxxxxxxxx", InstName.Adc,     InstEmit32.Adc,     OpCode32AluImm.Create);
             SetA32("<<<<0000101xxxxxxxxxxxxxxxx0xxxx", InstName.Adc,     InstEmit32.Adc,     OpCode32AluRsImm.Create);
@@ -648,7 +648,6 @@ namespace ARMeilleure.Decoders
             SetA32("1111101xxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Blx,     InstEmit32.Blx,     OpCode32BImm.Create);
             SetA32("<<<<000100101111111111110011xxxx", InstName.Blx,     InstEmit32.Blxr,    OpCode32BReg.Create);
             SetA32("<<<<000100101111111111110001xxxx", InstName.Bx,      InstEmit32.Bx,      OpCode32BReg.Create);
-            SetT32("xxxxxxxxxxxxxxxx010001110xxxx000", InstName.Bx,      InstEmit32.Bx,      OpCodeT16BReg.Create);
             SetA32("11110101011111111111000000011111", InstName.Clrex,   InstEmit32.Clrex,   OpCode32.Create);
             SetA32("<<<<000101101111xxxx11110001xxxx", InstName.Clz,     InstEmit32.Clz,     OpCode32AluReg.Create);
             SetA32("<<<<00110111xxxx0000xxxxxxxxxxxx", InstName.Cmn,     InstEmit32.Cmn,     OpCode32AluImm.Create);
@@ -701,7 +700,6 @@ namespace ARMeilleure.Decoders
             SetA32("<<<<0001101x0000xxxxxxxxxxx0xxxx", InstName.Mov,     InstEmit32.Mov,     OpCode32AluRsImm.Create);
             SetA32("<<<<0001101x0000xxxxxxxx0xx1xxxx", InstName.Mov,     InstEmit32.Mov,     OpCode32AluRsReg.Create);
             SetA32("<<<<00110000xxxxxxxxxxxxxxxxxxxx", InstName.Mov,     InstEmit32.Mov,     OpCode32AluImm16.Create);
-            SetT32("xxxxxxxxxxxxxxxx00100xxxxxxxxxxx", InstName.Mov,     InstEmit32.Mov,     OpCodeT16AluImm8.Create);
             SetA32("<<<<00110100xxxxxxxxxxxxxxxxxxxx", InstName.Movt,    InstEmit32.Movt,    OpCode32AluImm16.Create);
             SetA32("<<<<1110xxx1xxxxxxxx111xxxx1xxxx", InstName.Mrc,     InstEmit32.Mrc,     OpCode32System.Create);
             SetA32("<<<<11000101xxxxxxxx111xxxxxxxxx", InstName.Mrrc,    InstEmit32.Mrrc,    OpCode32System.Create);

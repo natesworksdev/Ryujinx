@@ -198,8 +198,6 @@ namespace ARMeilleure.Instructions
                 case OpCode32AluRsImm op: return GetMShiftedByImmediate(context, op, setCarry);
                 case OpCode32AluRsReg op: return GetMShiftedByReg(context, op, setCarry);
 
-                case OpCodeT16AluImm8 op: return Const(op.Immediate);
-
                 case IOpCode32AluReg op: return GetIntA32(context, op.Rm);
 
                 // ARM64.
