@@ -54,8 +54,8 @@ namespace Ryujinx.Graphics.OpenGL
         private ClipDepthMode _clipDepthMode;
 
         private uint _fragmentOutputMap;
-        private uint _componentMask;
-        private uint _currentComponentMask;
+        private uint _componentMasks;
+        private uint _currentComponentMasks;
 
         private uint _scissorEnables;
 
@@ -76,7 +76,7 @@ namespace Ryujinx.Graphics.OpenGL
             _clipDepthMode = ClipDepthMode.NegativeOneToOne;
 
             _fragmentOutputMap = uint.MaxValue;
-            _componentMask = uint.MaxValue;
+            _componentMasks = uint.MaxValue;
 
             var defaultScale = new Vector4<float> { X = 1f, Y = 0f, Z = 0f, W = 0f };
             new Span<Vector4<float>>(_renderScale).Fill(defaultScale);
@@ -1047,11 +1047,11 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void SetRenderTargetColorMasks(ReadOnlySpan<uint> componentMasks)
         {
-            _componentMask = 0;
+            _componentMasks = 0;
 
             for (int index = 0; index < componentMasks.Length; index++)
             {
-                _componentMask |= componentMasks[index] << (index * 4);
+                _componentMasks |= componentMasks[index] << (index * 4);
 
                 RestoreComponentMask(index, force: false);
             }
@@ -1455,10 +1455,10 @@ namespace Ryujinx.Graphics.OpenGL
             uint blueMask = _fpIsBgra[index].X == 0 ? 4u : 1u;
 
             int shift = index * 4;
-            uint componentMask = _componentMask & _fragmentOutputMap;
+            uint componentMask = _componentMasks & _fragmentOutputMap;
             uint checkMask = 0xfu << shift;
 
-            if (!force && (componentMask & checkMask) == (_currentComponentMask & checkMask))
+            if (!force && (componentMask & checkMask) == (_currentComponentMasks & checkMask))
             {
                 return;
             }
@@ -1473,8 +1473,8 @@ namespace Ryujinx.Graphics.OpenGL
                 (componentMask & blueMask) != 0,
                 (componentMask & 8u) != 0);
 
-            _currentComponentMask &= ~checkMask;
-            _currentComponentMask |= componentMask;
+            _currentComponentMasks &= ~checkMask;
+            _currentComponentMasks |= componentMask;
         }
 
         public void RestoreScissor0Enable()
