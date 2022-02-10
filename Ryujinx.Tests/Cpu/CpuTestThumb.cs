@@ -32,5 +32,28 @@ namespace Ryujinx.Tests.Cpu
                     break;
             }
         }
+
+        [Test, Pairwise]
+        public void AddSubReg([Range(0u, 1u)] uint op, [Random(RndCnt)] uint w1, [Random(RndCnt)] uint w2)
+        {
+            uint opcode = 0x1800; // ADDS <Rd>, <Rn>, <Rm>
+
+            uint rd = 0;
+            uint rn = 1;
+            uint rm = 2;
+            opcode |= ((rd & 7) << 0) | ((rn & 7) << 3) | ((rm & 7) << 6) | ((op & 1) << 9);
+
+            SingleThumbOpcode((ushort)opcode, r1: w1, r2: w2, runUnicorn: false);
+
+            switch (op)
+            {
+                case 0:
+                    Assert.That(GetContext().GetX(0), Is.EqualTo((w1 + w2) & 0xffffffffu));
+                    break;
+                case 1:
+                    Assert.That(GetContext().GetX(0), Is.EqualTo((w1 - w2) & 0xffffffffu));
+                    break;
+            }
+        }
     }
 }
