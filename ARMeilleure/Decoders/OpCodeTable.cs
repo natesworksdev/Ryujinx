@@ -979,6 +979,10 @@ namespace ARMeilleure.Decoders
             SetT16("0001101xxxxxxxxx", InstName.Sub,    InstEmit32.Sub,     OpCodeT16AddSubReg.Create);
             SetT16("0001110xxxxxxxxx", InstName.Add,    InstEmit32.Add,     OpCodeT16AddSubImm3.Create);
             SetT16("0001111xxxxxxxxx", InstName.Sub,    InstEmit32.Sub,     OpCodeT16AddSubImm3.Create);
+            SetT16("00100xxxxxxxxxxx", InstName.Mov,    InstEmit32.Mov,     OpCodeT16AluImm8.Create);
+            SetT16("00101xxxxxxxxxxx", InstName.Cmp,    InstEmit32.Cmp,     OpCodeT16AluImm8.Create);
+            SetT16("00110xxxxxxxxxxx", InstName.Add,    InstEmit32.Add,     OpCodeT16AluImm8.Create);
+            SetT16("00111xxxxxxxxxxx", InstName.Sub,    InstEmit32.Sub,     OpCodeT16AluImm8.Create);
             SetT16("010001110xxxx000", InstName.Bx,     InstEmit32.Bx,      OpCodeT16BReg.Create);
 #endregion
 

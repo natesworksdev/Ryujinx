@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using ARMeilleure.State;
+using NUnit.Framework;
 using System;
 
 namespace Ryujinx.Tests.Cpu
@@ -75,6 +76,44 @@ namespace Ryujinx.Tests.Cpu
                 case 1:
                     Assert.That(GetContext().GetX(0), Is.EqualTo((w1 - imm) & 0xffffffffu));
                     break;
+            }
+        }
+
+        [Test, Pairwise]
+        public void AluImm8([Range(0u, 3u)] uint op, [Random(RndCnt)] uint imm, [Random(RndCnt)] uint w1)
+        {
+            imm &= 0xff;
+
+            uint opcode = 0x2000; // MOVS <Rdn>, #<imm8>
+
+            uint rdn = 1;
+            opcode |= ((imm & 0xff) << 0) | ((rdn & 7) << 8) | ((op & 3) << 11);
+
+            SingleThumbOpcode((ushort)opcode, r1: w1, runUnicorn: false);
+
+            switch (op)
+            {
+                case 0:
+                    Assert.That(GetContext().GetX(1), Is.EqualTo(imm));
+                    break;
+                case 1:
+                    Assert.That(GetContext().GetX(1), Is.EqualTo(w1));
+                cmpFlags:
+                    {
+                        uint result = w1 - imm;
+                        uint overflow = (result ^ w1) & (w1 ^ imm);
+                        Assert.That(GetContext().GetPstateFlag(PState.NFlag), Is.EqualTo((result >> 31) != 0));
+                        Assert.That(GetContext().GetPstateFlag(PState.ZFlag), Is.EqualTo(result == 0));
+                        Assert.That(GetContext().GetPstateFlag(PState.CFlag), Is.EqualTo(w1 >= imm));
+                        Assert.That(GetContext().GetPstateFlag(PState.VFlag), Is.EqualTo((overflow >> 31) != 0));
+                    }
+                    break;
+                case 2:
+                    Assert.That(GetContext().GetX(1), Is.EqualTo((w1 + imm) & 0xffffffffu));
+                    break;
+                case 3:
+                    Assert.That(GetContext().GetX(1), Is.EqualTo((w1 - imm) & 0xffffffffu));
+                    goto cmpFlags;
             }
         }
     }
