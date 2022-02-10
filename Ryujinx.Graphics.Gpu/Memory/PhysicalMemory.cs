@@ -156,11 +156,13 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 int offset = 0;
                 for (int i = 0; i < range.Count; i++)
                 {
-                    MemoryRange subrange = range.GetSubRange(i);
-
-                    GetSpan(subrange.Address, (int)subrange.Size).CopyTo(memory.Span.Slice(offset, (int)subrange.Size));
-
-                    offset += (int)subrange.Size;
+                    var currentRange = range.GetSubRange(i);
+                    int size = (int)currentRange.Size;
+                    if (currentRange.Address != MemoryManager.PteUnmapped)
+                    {
+                        GetSpan(currentRange.Address, size).CopyTo(memory.Span.Slice(offset, size));
+                    }
+                    offset += size;
                 }
 
                 return new WritableRegion(new MultiRangeWritableBlock(range, this), 0, memory, tracked);
