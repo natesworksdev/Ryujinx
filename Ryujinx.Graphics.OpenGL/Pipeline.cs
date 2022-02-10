@@ -1474,7 +1474,7 @@ namespace Ryujinx.Graphics.OpenGL
                 (componentMask & 8u) != 0);
 
             _currentComponentMasks &= ~checkMask;
-            _currentComponentMasks |= componentMask;
+            _currentComponentMasks |= componentMask << shift;
         }
 
         public void RestoreScissor0Enable()
