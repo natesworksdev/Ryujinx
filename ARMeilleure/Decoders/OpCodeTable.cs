@@ -1041,6 +1041,7 @@ namespace ARMeilleure.Decoders
             SetT16("11001xxxxxxxxxxx", InstName.Ldm,    InstEmit32.Ldm,     OpCodeT16MemMult.Create);
             SetT16("1101<<<xxxxxxxxx", InstName.B,      InstEmit32.B,       OpCodeT16BImm8.Create);
             SetT16("11011111xxxxxxxx", InstName.Svc,    InstEmit32.Svc,     OpCodeT16Exception.Create);
+            SetT16("11100xxxxxxxxxxx", InstName.B,      InstEmit32.B,       OpCodeT16BImm11.Create);
             #endregion
 
             FillFastLookupTable(InstA32FastLookup, AllInstA32, ToFastLookupIndexA);
