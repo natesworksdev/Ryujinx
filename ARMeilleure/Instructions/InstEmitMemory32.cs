@@ -255,5 +255,11 @@ namespace ARMeilleure.Instructions
                 }
             }
         }
+
+        public static void Adr(ArmEmitterContext context)
+        {
+            IOpCode32Adr op = (IOpCode32Adr)context.CurrOp;
+            SetIntA32(context, op.Rd, Const(op.Immediate));
+        }
     }
 }
