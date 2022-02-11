@@ -32,7 +32,7 @@ namespace ARMeilleure.Instructions
 
         public static void Ldm(ArmEmitterContext context)
         {
-            OpCode32MemMult op = (OpCode32MemMult)context.CurrOp;
+            IOpCode32MemMult op = (IOpCode32MemMult)context.CurrOp;
 
             Operand n = GetIntA32(context, op.Rn);
 
@@ -95,7 +95,7 @@ namespace ARMeilleure.Instructions
 
         public static void Stm(ArmEmitterContext context)
         {
-            OpCode32MemMult op = (OpCode32MemMult)context.CurrOp;
+            IOpCode32MemMult op = (IOpCode32MemMult)context.CurrOp;
 
             Operand n = context.Copy(GetIntA32(context, op.Rn));
 

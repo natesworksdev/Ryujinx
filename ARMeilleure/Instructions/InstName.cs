@@ -512,6 +512,8 @@ namespace ARMeilleure.Instructions
         Mvn,
         Pkh,
         Pld,
+        Pop,
+        Push,
         Rev,
         Revsh,
         Rsb,
