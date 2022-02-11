@@ -1023,6 +1023,8 @@ namespace ARMeilleure.Decoders
             SetT16("10011xxxxxxxxxxx", InstName.Ldr,    InstEmit32.Ldr,     OpCodeT16MemSp.Create);
             SetT16("10100xxxxxxxxxxx", InstName.Adr,    InstEmit32.Adr,     OpCodeT16Adr.Create);
             SetT16("10101xxxxxxxxxxx", InstName.Add,    InstEmit32.Add,     OpCodeT16SpRel.Create);
+            SetT16("101100000xxxxxxx", InstName.Add,    InstEmit32.Add,     OpCodeT16AddSubSp.Create);
+            SetT16("101100001xxxxxxx", InstName.Sub,    InstEmit32.Sub,     OpCodeT16AddSubSp.Create);
 #endregion
 
             FillFastLookupTable(InstA32FastLookup, AllInstA32, ToFastLookupIndexA);
