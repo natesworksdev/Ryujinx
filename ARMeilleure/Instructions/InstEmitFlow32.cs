@@ -80,5 +80,25 @@ namespace ARMeilleure.Instructions
 
             EmitBxWritePc(context, GetIntA32(context, op.Rm), op.Rm);
         }
+
+        public static void Cbnz(ArmEmitterContext context) => EmitCb(context, onNotZero: true);
+        public static void Cbz(ArmEmitterContext context)  => EmitCb(context, onNotZero: false);
+
+        private static void EmitCb(ArmEmitterContext context, bool onNotZero)
+        {
+            OpCodeT16BImmCmp op = (OpCodeT16BImmCmp)context.CurrOp;
+
+            Operand value = GetIntOrZR(context, op.Rn);
+            Operand lblTarget = context.GetLabel((ulong)op.Immediate);
+
+            if (onNotZero)
+            {
+                context.BranchIfTrue(lblTarget, value);
+            }
+            else
+            {
+                context.BranchIfFalse(lblTarget, value);
+            }
+        }
     }
 }
