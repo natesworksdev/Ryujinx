@@ -48,6 +48,7 @@ namespace ARMeilleure.Instructions
         Extr,
         Hint,
         Isb,
+        It,
         Ldar,
         Ldaxp,
         Ldaxr,

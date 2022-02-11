@@ -100,5 +100,12 @@ namespace ARMeilleure.Instructions
                 context.BranchIfFalse(lblTarget, value);
             }
         }
+
+        public static void It(ArmEmitterContext context)
+        {
+            OpCodeT16IfThen op = (OpCodeT16IfThen)context.CurrOp;
+
+            context.IfThenBlockState = op.IfThenBlockConds;
+        }
     }
 }

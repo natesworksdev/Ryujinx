@@ -195,21 +195,31 @@ namespace ARMeilleure.Decoders
             ulong          limitAddress)
         {
             ulong address = block.Address;
+            int inITBlock = 0;
 
             OpCode opCode;
 
             do
             {
-                if (address >= limitAddress)
+                if (address >= limitAddress && inITBlock == 0)
                 {
                     break;
                 }
 
-                opCode = DecodeOpCode(memory, address, mode);
+                opCode = DecodeOpCode(memory, address, mode, inITBlock > 0);
 
                 block.OpCodes.Add(opCode);
 
                 address += (ulong)opCode.OpCodeSizeInBytes;
+
+                if (opCode is OpCodeT16IfThen it)
+                {
+                    inITBlock = it.IfThenBlockSize;
+                }
+                else if (inITBlock > 0)
+                {
+                    inITBlock--;
+                }
             }
             while (!(IsBranch(opCode) || IsException(opCode)));
 
@@ -315,7 +325,7 @@ namespace ARMeilleure.Decoders
                    opCode.Instruction.Name == InstName.Und;
         }
 
-        public static OpCode DecodeOpCode(IMemoryManager memory, ulong address, ExecutionMode mode, bool inITBlock = false)
+        public static OpCode DecodeOpCode(IMemoryManager memory, ulong address, ExecutionMode mode, bool inITBlock)
         {
             int opCode = memory.Read<int>(address);
 

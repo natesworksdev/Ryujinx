@@ -9,6 +9,7 @@ using ARMeilleure.State;
 using ARMeilleure.Translation.PTC;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
 
@@ -53,6 +54,10 @@ namespace ARMeilleure.Translation
         public ulong EntryAddress { get; }
         public bool HighCq { get; }
         public Aarch32Mode Mode { get; }
+
+        public bool IsInIfThenBlock { get { return IfThenBlockState.Length > 0; } }
+        public Condition CurrentIfThenBlockCond { get { return IfThenBlockState[0]; } }
+        public Condition[] IfThenBlockState { get; set; }
 
         public ArmEmitterContext(
             IMemoryManager memory,
@@ -195,6 +200,14 @@ namespace ARMeilleure.Translation
             }
 
             return default;
+        }
+
+        public void AdvanceIfThenBlockState()
+        {
+            if (IsInIfThenBlock)
+            {
+                IfThenBlockState = IfThenBlockState.Skip(1).ToArray();
+            }
         }
     }
 }

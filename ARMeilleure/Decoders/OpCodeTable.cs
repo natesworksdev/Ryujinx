@@ -1037,12 +1037,13 @@ namespace ARMeilleure.Decoders
             SetT16("101110x1xxxxxxxx", InstName.Cbnz,   InstEmit32.Cbnz,    OpCodeT16BImmCmp.Create);
             SetT16("1011110xxxxxxxxx", InstName.Pop,    InstEmit32.Ldm,     OpCodeT16MemStack.Create);
             SetT16("10111111xxxx0000", InstName.Nop,    InstEmit32.Nop,     OpCodeT16.Create);
+            SetT16("10111111xxxx>>>>", InstName.It,     InstEmit32.It,      OpCodeT16IfThen.Create);
             SetT16("11000xxxxxxxxxxx", InstName.Stm,    InstEmit32.Stm,     OpCodeT16MemMult.Create);
             SetT16("11001xxxxxxxxxxx", InstName.Ldm,    InstEmit32.Ldm,     OpCodeT16MemMult.Create);
             SetT16("1101<<<xxxxxxxxx", InstName.B,      InstEmit32.B,       OpCodeT16BImm8.Create);
             SetT16("11011111xxxxxxxx", InstName.Svc,    InstEmit32.Svc,     OpCodeT16Exception.Create);
             SetT16("11100xxxxxxxxxxx", InstName.B,      InstEmit32.B,       OpCodeT16BImm11.Create);
-            #endregion
+#endregion
 
             FillFastLookupTable(InstA32FastLookup, AllInstA32, ToFastLookupIndexA);
             FillFastLookupTable(InstT32FastLookup, AllInstT32, ToFastLookupIndexT);

@@ -380,6 +380,15 @@ namespace ARMeilleure.Translation
 
                         Operand lblPredicateSkip = default;
 
+                        if (context.IsInIfThenBlock)
+                        {
+                            lblPredicateSkip = Label();
+
+                            InstEmitFlowHelper.EmitCondBranch(context, lblPredicateSkip, context.CurrentIfThenBlockCond.Invert());
+
+                            context.AdvanceIfThenBlockState();
+                        }
+
                         if (opCode is OpCode32 op && op.Cond < Condition.Al)
                         {
                             lblPredicateSkip = Label();
