@@ -224,7 +224,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, v0: v0, v1: v1);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise, Description("VCNT.8 D0, D0 | VCNT.8 Q0, Q0")]
@@ -252,7 +252,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, v0: v0);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 #endif
     }

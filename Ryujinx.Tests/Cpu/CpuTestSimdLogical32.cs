@@ -80,7 +80,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, v0: v0, v1: v1, v2: v2);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise]
@@ -113,7 +113,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, v0: v0);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise, Description("VTST.<dt> <Vd>, <Vn>, <Vm>")]
@@ -149,7 +149,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, v0: v0, v1: v1, v2: v2);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 #endif
     }

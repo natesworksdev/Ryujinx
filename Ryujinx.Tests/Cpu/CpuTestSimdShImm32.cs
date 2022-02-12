@@ -166,7 +166,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, v0: v0, v1: v1);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise, Description("VSHL.<size> {<Vd>}, <Vm>, #<imm>")]
@@ -200,7 +200,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, v0: v0, v1: v1, v2: v2);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise, Description("VSHRN.<size> <Vd>, <Vm>, #<imm>")]
@@ -227,7 +227,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, v0: v0, v1: v1, v2: v2);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise, Description("VQRSHRN.<type><size> <Vd>, <Vm>, #<imm>")]
@@ -262,7 +262,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, v0: v0, v1: v1, v2: v2, fpscr: fpscr);
 
-            CompareAgainstUnicorn(fpsrMask: Fpsr.Qc);
+            CompareAgainstDynarmic(fpsrMask: Fpsr.Qc);
         }
 
         [Test, Pairwise, Description("VQRSHRUN.<type><size> <Vd>, <Vm>, #<imm>")]
@@ -291,7 +291,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, v0: v0, v1: v1, v2: v2, fpscr: fpscr);
 
-            CompareAgainstUnicorn(fpsrMask: Fpsr.Qc);
+            CompareAgainstDynarmic(fpsrMask: Fpsr.Qc);
         }
 #endif
     }

@@ -279,7 +279,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, v0: v0, v1: v1, v2: v2);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise]
@@ -313,7 +313,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, v0: v0, v1: v1, v2: v2);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise, Description("VCMP.f<size> Vd, Vm")]
@@ -350,7 +350,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, v1: v1, v2: v2, fpscr: fpscr);
 
-            CompareAgainstUnicorn(fpsrMask: Fpsr.Nzcv);
+            CompareAgainstDynarmic(fpsrMask: Fpsr.Nzcv);
         }
 
         [Test, Pairwise] [Explicit] // Fused.
@@ -371,7 +371,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, v0: v0);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise] [Explicit] // Fused.
@@ -390,7 +390,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, v0: v0);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise] [Explicit] // Fused.
@@ -422,7 +422,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, v0: v0, v1: v1);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise] [Explicit]
@@ -443,7 +443,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, v0: v0);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise] [Explicit]
@@ -462,7 +462,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, v0: v0);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise, Description("VMLSL.<type><size> <Vd>, <Vn>, <Vm>")]
@@ -494,7 +494,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, v0: v0, v1: v1, v2: v2);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise, Description("VMULL.<size> <Vd>, <Vn>, <Vm>")]
@@ -534,7 +534,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, v0: v0, v1: v1, v2: v2);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise, Description("VMULL.<P8, P64> <Qd>, <Dn>, <Dm>")]
@@ -564,7 +564,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, v0: v0);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise, Description("VSHL.<size> {<Vd>}, <Vm>, <Vn>")]
@@ -604,7 +604,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, v0: v0, v1: v1, v2: v2);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Explicit]
@@ -631,7 +631,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, v0: v0, v1: v1, v2: v2);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise]
@@ -662,7 +662,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, v0: v0, v1: v1, v2: v2);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 #endif
     }

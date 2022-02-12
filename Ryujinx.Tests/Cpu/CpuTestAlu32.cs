@@ -58,7 +58,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, r1: wn, sp: w31);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise]
@@ -74,7 +74,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, r1: shiftValue, r2: (uint)shiftAmount);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise]
@@ -93,7 +93,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, r0: w0, r1: w1, r2: w2, sp: sp);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise]
@@ -112,7 +112,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, r0: w0, r1: w1, r2: w2, sp: sp);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise]
@@ -130,7 +130,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, r1: wn, sp: w31);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise]
@@ -147,7 +147,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, r1: wn, sp: w31);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise]
@@ -166,7 +166,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, r0: w0, r1: w1, r2: w2, sp: sp);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise]
@@ -185,7 +185,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, r0: w0, r1: w1, r2: w2, sp: sp);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 #endif
     }

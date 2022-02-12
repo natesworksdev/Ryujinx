@@ -106,7 +106,7 @@ namespace Ryujinx.Tests.Cpu
 
             ExecuteOpcodes();
 
-            CompareAgainstUnicorn(fpsrMask: Fpsr.Nzcv);
+            CompareAgainstDynarmic(fpsrMask: Fpsr.Nzcv);
         }
 #endif
     }

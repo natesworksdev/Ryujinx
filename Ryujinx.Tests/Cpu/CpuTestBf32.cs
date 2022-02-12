@@ -29,7 +29,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, r0: wd, sp: sp);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise, Description("BFI <Rd>, <Rn>, #<lsb>, #<width>")]
@@ -51,7 +51,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, r0: wd, r1: wn, sp: sp);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise, Description("UBFX <Rd>, <Rn>, #<lsb>, #<width>")]
@@ -76,7 +76,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, r0: wd, r1: wn, sp: sp);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise, Description("SBFX <Rd>, <Rn>, #<lsb>, #<width>")]
@@ -101,7 +101,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, r0: wd, r1: wn, sp: sp);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 #endif
     }

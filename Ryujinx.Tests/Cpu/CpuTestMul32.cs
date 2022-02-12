@@ -73,7 +73,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, r0: wn, r1: wm, r2: wa, sp: w31);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise, Description("SMLAW<x> <Rd>, <Rn>, <Rm>, <Ra>")]
@@ -95,7 +95,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, r0: wn, r1: wm, r2: wa, sp: w31);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise, Description("SMUL<x><y> <Rd>, <Rn>, <Rm>")]
@@ -114,7 +114,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, r0: wn, r1: wm, sp: w31);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise, Description("SMULW<x> <Rd>, <Rn>, <Rm>")]
@@ -133,7 +133,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, r0: wn, r1: wm, sp: w31);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 #endif
     }

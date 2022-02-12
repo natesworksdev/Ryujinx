@@ -38,8 +38,7 @@ namespace Ryujinx.Tests.Cpu
                 Assert.That(GetVectorE1(context.GetV(1)), Is.EqualTo(roundKeyH));
             });
 
-            // Unicorn does not yet support crypto instructions in A32.
-            // CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Description("AESE.8 <Qd>, <Qm>")]
@@ -72,8 +71,7 @@ namespace Ryujinx.Tests.Cpu
                 Assert.That(GetVectorE1(context.GetV(1)), Is.EqualTo(roundKeyH));
             });
 
-            // Unicorn does not yet support crypto instructions in A32.
-            // CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Description("AESIMC.8 <Qd>, <Qm>")]
@@ -110,8 +108,7 @@ namespace Ryujinx.Tests.Cpu
                 });
             }
 
-            // Unicorn does not yet support crypto instructions in A32.
-            // CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Description("AESMC.8 <Qd>, <Qm>")]
@@ -148,8 +145,7 @@ namespace Ryujinx.Tests.Cpu
                 });
             }
 
-            // Unicorn does not yet support crypto instructions in A32.
-            // CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
     }
 }

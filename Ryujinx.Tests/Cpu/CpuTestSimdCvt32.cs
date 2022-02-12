@@ -136,7 +136,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, v0: v0);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Explicit]
@@ -161,7 +161,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, v0: v0);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Explicit]
@@ -191,7 +191,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, v0: v0, fpscr: fpscr);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Explicit]
@@ -221,7 +221,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, v0: v0, fpscr: fpscr);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise, Description("VRINTX.F<size> <Sd>, <Sm>")]
@@ -257,7 +257,7 @@ namespace Ryujinx.Tests.Cpu
             int fpscr = (int)rMode << (int)Fpcr.RMode;
             SingleOpcode(opcode, v0: v0, v1: v1, v2: v2, fpscr: fpscr);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 #endif
     }

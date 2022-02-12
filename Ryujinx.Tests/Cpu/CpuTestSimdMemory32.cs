@@ -61,7 +61,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, r0: 0x2500, r1: offset, sp: 0x2500);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise, Description("VLDn.<size> <list>, [<Rn> {:<align>}]{ /!/, <Rm>} (all lanes)")]
@@ -88,7 +88,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, r0: 0x2500, r1: offset, sp: 0x2500);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise, Description("VLDn.<size> <list>, [<Rn> {:<align>}]{ /!/, <Rm>} (multiple n element structures)")]
@@ -111,7 +111,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, r0: 0x2500, r1: offset, sp: 0x2500);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise, Description("VSTn.<size> <list>, [<Rn> {:<align>}]{ /!/, <Rm>} (single n element structure)")]
@@ -143,7 +143,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, r0: 0x2500, r1: offset, v1: vec1, v2: vec2, v3: vec3, v4: vec4, sp: 0x2500);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise, Description("VSTn.<size> <list>, [<Rn> {:<align>}]{ /!/, <Rm>} (multiple n element structures)")]
@@ -168,7 +168,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, r0: 0x2500, r1: offset, v1: vec1, v2: vec2, v3: vec3, v4: vec4, sp: 0x2500);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise, Description("VLDM.<size> <Rn>{!}, <d/sreglist>")]
@@ -215,7 +215,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, r0: 0x2500, sp: 0x2500);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise, Description("VLDR.<size> <Sd>, [<Rn> {, #{+/-}<imm>}]")]
@@ -250,7 +250,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, r0: 0x2500);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise, Description("VSTR.<size> <Sd>, [<Rn> {, #{+/-}<imm>}]")]
@@ -287,7 +287,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, r0: 0x2500, v0: vec1, v1: vec2);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         private (V128, V128, V128, V128) GenerateTestVectors()

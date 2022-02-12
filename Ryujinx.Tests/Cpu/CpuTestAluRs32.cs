@@ -55,7 +55,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, r1: wn, r2: wm, sp: sp, carry: carryIn);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise]
@@ -77,7 +77,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, r1: wn, r2: wm, sp: sp);
 
-            CompareAgainstUnicorn();
+            CompareAgainstDynarmic();
         }
 #endif
     }
