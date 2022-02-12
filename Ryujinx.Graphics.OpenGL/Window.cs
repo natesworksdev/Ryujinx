@@ -48,7 +48,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             CopyTextureToFrameBufferRGB(0, GetCopyFramebufferHandleLazy(), (TextureView)texture, crop, swapBuffersCallback);
 
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, _stagingFrameBuffer);
 
             _currentTexture = swapBuffersCallback(_stagingTextures[_currentTexture]) ? ++_currentTexture % _stagingTextures.Length : _currentTexture;
 
@@ -185,9 +185,6 @@ namespace Ryujinx.Graphics.OpenGL
             GL.ColorMask(false, false, false, true);
             GL.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             GL.Clear(ClearBufferMask.ColorBufferBit);
-
-
-            GL.FramebufferTexture2D(FramebufferTarget.DrawFramebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, 0, 0);
 
             for (int i = 0; i < Constants.MaxRenderTargets; i++)
             {

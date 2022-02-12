@@ -163,8 +163,23 @@ namespace Ryujinx.Headless.SDL2.OpenGL
         {
             if (image != 0)
             {
-                GL.CopyImageSubData(image, ImageTarget.Texture2D, 0, 0, 0, 0, 0, ImageTarget.Texture2D, 0, 0, 0, 0, Width, Height, 1);
+                GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);
+
+                GL.Clear(ClearBufferMask.ColorBufferBit);
+                GL.ClearColor(0, 0, 0, 1);
+
+                GL.BlitFramebuffer(0,
+                    0,
+                    Width,
+                    Height,
+                    0,
+                    0,
+                    Width,
+                    Height,
+                    ClearBufferMask.ColorBufferBit,
+                    BlitFramebufferFilter.Linear);
             }
+
             SDL_GL_SwapWindow(WindowHandle);
         }
     }
