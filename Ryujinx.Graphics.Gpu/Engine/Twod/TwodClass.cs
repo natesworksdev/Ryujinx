@@ -8,6 +8,8 @@ using Ryujinx.Memory;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 
 namespace Ryujinx.Graphics.Gpu.Engine.Twod
 {
@@ -111,7 +113,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         }
 
         /// <summary>
-        /// Performs a full data copy between two textures, reading and writing directly from guest memory.
+        /// Performs a full data copy between two textures, reading and writing guest memory directly.
         /// The textures must have a matching layout, size, and bytes per pixel.
         /// </summary>
         /// <param name="src">The source texture</param>
@@ -176,10 +178,43 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
                 }
                 else
                 {
-                    // Copy as many blocks as possible, then individual pixels near the edges.
+                    // Copy with the block linear layout in mind.
+                    // Recreate the offset calculate with bpp 1 for copy.
 
-                    // TODO
-                    srcSpan.CopyTo(dstSpan);
+                    int stride = w * bpp;
+
+                    srcCalculator = new OffsetCalculator(
+                        stride,
+                        h,
+                        0,
+                        false,
+                        src.MemoryLayout.UnpackGobBlocksInY(),
+                        src.MemoryLayout.UnpackGobBlocksInZ(),
+                        1);
+
+                    int strideTrunc = BitUtils.AlignDown(stride, 16);
+
+                    ReadOnlySpan<Vector128<byte>> srcVec = MemoryMarshal.Cast<byte, Vector128<byte>>(srcSpan);
+                    Span<Vector128<byte>> dstVec = MemoryMarshal.Cast<byte, Vector128<byte>>(dstSpan);
+
+                    for (int y = 0; y < h; y++)
+                    {
+                        int x = 0;
+
+                        for (; x < strideTrunc; x += 16)
+                        {
+                            int offset = srcCalculator.GetOffset(x, y) >> 4;
+
+                            dstVec[offset] = srcVec[offset];
+                        }
+
+                        for (; x < stride; x++)
+                        {
+                            int offset = srcCalculator.GetOffset(x, y);
+
+                            dstSpan[offset] = srcSpan[offset];
+                        }
+                    }
                 }
             }
         }
@@ -277,15 +312,14 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
                 if (canDirectCopy)
                 {
                     // Directly copy the data on CPU.
-                    Common.Logging.Logger.Warning?.Print(Common.Logging.LogClass.Gpu, $"Fast Copy {srcX2} {srcY2} {srcCopyTexture.Format}");
+                    //Common.Logging.Logger.Warning?.Print(Common.Logging.LogClass.Gpu, $"Fast Copy {srcX2} {srcY2} {srcCopyTexture.Format}");
                     UnscaledFullCopy(srcCopyTexture, dstCopyTexture, srcX2, srcY2, srcCopyTextureFormat.BytesPerPixel);
                 }
 
                 return;
             }
 
-            if (srcCopyTexture.Format == ColorFormat.R16G16B16A16Float) { }
-            Common.Logging.Logger.Error?.Print(Common.Logging.LogClass.Gpu, $"Slow Copy {srcX2} {srcY2} {srcCopyTexture.Format}");
+            //Common.Logging.Logger.Error?.Print(Common.Logging.LogClass.Gpu, $"Slow Copy {srcX2} {srcY2} {srcCopyTexture.Format}");
             memoryManager.Physical.TextureCache.Lift(srcTexture);
 
             // When the source texture that was found has a depth format,
