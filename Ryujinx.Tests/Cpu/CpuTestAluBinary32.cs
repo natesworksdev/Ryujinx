@@ -85,7 +85,7 @@ namespace Ryujinx.Tests.Cpu
 
             uint sp = TestContext.CurrentContext.Random.NextUInt();
 
-            SingleOpcode(opcode, r1: test.Crc, r2: test.Value, sp: sp, runUnicorn: false);
+            SingleOpcode(opcode, r1: test.Crc, r2: test.Value, sp: sp);
 
             ExecutionContext context = GetContext();
             ulong result = context.GetX((int)rd);

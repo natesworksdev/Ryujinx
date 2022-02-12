@@ -25,7 +25,7 @@ namespace Ryujinx.Tests.Cpu
             V128 v0 = MakeVectorE0E1(roundKeyL ^ valueL, roundKeyH ^ valueH);
             V128 v1 = MakeVectorE0E1(roundKeyL, roundKeyH);
 
-            ExecutionContext context = SingleOpcode(opcode, v0: v0, v1: v1, runUnicorn: false);
+            ExecutionContext context = SingleOpcode(opcode, v0: v0, v1: v1);
 
             Assert.Multiple(() =>
             {
@@ -58,7 +58,7 @@ namespace Ryujinx.Tests.Cpu
             V128 v0 = MakeVectorE0E1(roundKeyL ^ valueL, roundKeyH ^ valueH);
             V128 v1 = MakeVectorE0E1(roundKeyL, roundKeyH);
 
-            ExecutionContext context = SingleOpcode(opcode, v0: v0, v1: v1, runUnicorn: false);
+            ExecutionContext context = SingleOpcode(opcode, v0: v0, v1: v1);
 
             Assert.Multiple(() =>
             {
@@ -91,8 +91,7 @@ namespace Ryujinx.Tests.Cpu
             ExecutionContext context = SingleOpcode(
                 opcode,
                 v0: rm == 0u ? v : default(V128),
-                v1: rm == 2u ? v : default(V128),
-                runUnicorn: false);
+                v1: rm == 2u ? v : default(V128));
 
             Assert.Multiple(() =>
             {
@@ -128,8 +127,7 @@ namespace Ryujinx.Tests.Cpu
             ExecutionContext context = SingleOpcode(
                 opcode,
                 v0: rm == 0u ? v : default(V128),
-                v1: rm == 2u ? v : default(V128),
-                runUnicorn: false);
+                v1: rm == 2u ? v : default(V128));
 
             Assert.Multiple(() =>
             {

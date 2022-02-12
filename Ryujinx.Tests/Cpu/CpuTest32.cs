@@ -185,7 +185,7 @@ namespace Ryujinx.Tests.Cpu
             _dynarmic.Fpscr = (uint)fpscr;
         }
 
-        protected void ExecuteOpcodes(bool runUnicorn = true)
+        protected void ExecuteOpcodes()
         {
             _cpuContext.Execute(_context, CodeBaseAddress);
 
@@ -213,13 +213,12 @@ namespace Ryujinx.Tests.Cpu
                                                 bool carry = false,
                                                 bool zero = false,
                                                 bool negative = false,
-                                                int fpscr = 0,
-                                                bool runUnicorn = true)
+                                                int fpscr = 0)
         {
             Opcode(opcode);
             Opcode(0xE12FFF1E); // BX LR
             SetContext(r0, r1, r2, r3, sp, v0, v1, v2, v3, v4, v5, v14, v15, saturation, overflow, carry, zero, negative, fpscr);
-            ExecuteOpcodes(runUnicorn);
+            ExecuteOpcodes();
 
             return GetContext();
         }
@@ -392,9 +391,9 @@ namespace Ryujinx.Tests.Cpu
             if (_usingMemory)
             {
                 byte[] mem = _memory.GetSpan(DataBaseAddress, (int)Size).ToArray();
-                byte[] unicornMem = new Span<byte>(_dynarmicMemory, (int)DataBaseAddress, (int)Size).ToArray();
+                byte[] dynarmicMem = new Span<byte>(_dynarmicMemory, (int)DataBaseAddress, (int)Size).ToArray();
 
-                Assert.That(mem, Is.EqualTo(unicornMem), "Data");
+                Assert.That(mem, Is.EqualTo(dynarmicMem), "Data");
             }
         }
 
