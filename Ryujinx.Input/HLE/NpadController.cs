@@ -391,7 +391,7 @@ namespace Ryujinx.Input.HLE
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static JoystickPosition ApplyDeadzone(float x, float y, float deadzone)
         {
-            float magnitudeClamped = Math.Clamp(MathF.Sqrt(x * x + y * y), -1f, 1f);
+            float magnitudeClamped = Math.Min(MathF.Sqrt(x * x + y * y), 1f);
             
             if (magnitudeClamped <= deadzone)
             {
@@ -408,14 +408,12 @@ namespace Ryujinx.Input.HLE
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static short ClampAxis(float value)
         {
-            if (value <= -short.MaxValue)
+            if (Math.Sign(value) < 0)
             {
-                return -short.MaxValue;
+                return (short) Math.Max(value * -short.MinValue, short.MinValue);
             }
-            else
-            {
-                return (short)(value * short.MaxValue);
-            }
+
+            return (short) Math.Min(value * short.MaxValue, short.MaxValue);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
