@@ -81,12 +81,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
         /// <summary>
         /// Determine if the given region covers the full texture, also considering width alignment.
         /// </summary>
-        /// <param name="texture"></param>
+        /// <param name="texture">The texture to check</param>
         /// <param name="formatInfo"></param>
-        /// <param name="x1"></param>
-        /// <param name="y1"></param>
-        /// <param name="x2"></param>
-        /// <param name="y2"></param>
+        /// <param name="x1">Region start x</param>
+        /// <param name="y1">Region start y</param>
+        /// <param name="x2">Region end x</param>
+        /// <param name="y2">Region end y</param>
         /// <returns>True if the region covers the full texture, false otherwise</returns>
         private bool IsCopyRegionComplete(TwodTexture texture, FormatInfo formatInfo, int x1, int y1, int x2, int y2)
         {
@@ -154,6 +154,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
 
             // If the copy is not equal to the width and height of the texture, we will need to copy partially.
             // It's worth noting that it has already been established that the src and dst are the same size.
+
             if (w == width && h == height)
             {
                 memoryManager.Write(dstGpuVa, srcSpan);
@@ -201,16 +202,18 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
                     {
                         int x = 0;
 
+                        srcCalculator.SetY(y);
+
                         for (; x < strideTrunc; x += 16)
                         {
-                            int offset = srcCalculator.GetOffset(x, y) >> 4;
+                            int offset = srcCalculator.GetOffset(x) >> 4;
 
                             dstVec[offset] = srcVec[offset];
                         }
 
                         for (; x < stride; x++)
                         {
-                            int offset = srcCalculator.GetOffset(x, y);
+                            int offset = srcCalculator.GetOffset(x);
 
                             dstSpan[offset] = srcSpan[offset];
                         }
@@ -297,7 +300,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
                 IsCopyRegionComplete(srcCopyTexture, srcCopyTextureFormat, srcX1, srcY1, srcX2, srcY2) &&
                 IsCopyRegionComplete(dstCopyTexture, dstCopyTextureFormat, dstX1, dstY1, dstX2, dstY2);
 
-
             var srcTexture = memoryManager.Physical.TextureCache.FindOrCreateTexture(
                 memoryManager,
                 srcCopyTexture,
@@ -312,14 +314,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
                 if (canDirectCopy)
                 {
                     // Directly copy the data on CPU.
-                    //Common.Logging.Logger.Warning?.Print(Common.Logging.LogClass.Gpu, $"Fast Copy {srcX2} {srcY2} {srcCopyTexture.Format}");
                     UnscaledFullCopy(srcCopyTexture, dstCopyTexture, srcX2, srcY2, srcCopyTextureFormat.BytesPerPixel);
                 }
 
                 return;
             }
 
-            //Common.Logging.Logger.Error?.Print(Common.Logging.LogClass.Gpu, $"Slow Copy {srcX2} {srcY2} {srcCopyTexture.Format}");
             memoryManager.Physical.TextureCache.Lift(srcTexture);
 
             // When the source texture that was found has a depth format,
