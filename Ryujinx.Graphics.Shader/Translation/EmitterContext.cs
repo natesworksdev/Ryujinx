@@ -234,7 +234,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
             else if (Config.Stage == ShaderStage.Fragment)
             {
-                bool supportsBgra = Config.GpuAccessor.QueryHostSupportsBgraFormat();
+                bool supportsBgra = true; // Config.GpuAccessor.QueryHostSupportsBgraFormat();
 
                 if (Config.OmapDepth)
                 {
