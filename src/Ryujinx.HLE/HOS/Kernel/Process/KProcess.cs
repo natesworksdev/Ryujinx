@@ -730,9 +730,16 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
         public IExecutionContext CreateExecutionContext()
         {
+            ExceptionCallback breakCallback = null;
+
+            if (KernelContext.Device.Configuration.EnableGdbStub)
+            {
+                breakCallback = KernelContext.Device.Debugger.ThreadBreak;
+            }
+
             return Context?.CreateExecutionContext(new ExceptionCallbacks(
                 InterruptHandler,
-                null,
+                breakCallback,
                 KernelContext.SyscallHandler.SvcCall,
                 UndefinedInstructionHandler));
         }

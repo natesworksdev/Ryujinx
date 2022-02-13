@@ -1,4 +1,4 @@
-﻿using Ryujinx.Common;
+using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.Memory;
 using System;
@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using IExecutionContext = Ryujinx.Cpu.IExecutionContext;
 
 namespace Ryujinx.HLE.Debugger
 {
@@ -133,6 +134,11 @@ namespace Ryujinx.HLE.Debugger
                         Logger.Notice.Print(LogClass.GdbStub, $"Received Command: {cmd}");
                         WriteStream.WriteByte((byte)'+');
                         ProcessCommand(cmd);
+                        break;
+
+                    case ThreadBreakMessage msg:
+                        HaltApplication();
+                        Reply($"T05thread:{msg.Context.ThreadUid:x};");
                         break;
                 }
             }
@@ -640,6 +646,15 @@ namespace Ryujinx.HLE.Debugger
                 SocketThread.Join();
                 HandlerThread.Join();
             }
+        }
+
+        public void ThreadBreak(IExecutionContext ctx, ulong address, int imm)
+        {
+            ctx.DebugStop();
+
+            Logger.Notice.Print(LogClass.GdbStub, $"Break hit on thread {ctx.ThreadUid} at pc {address:x016}");
+
+            Messages.Add(new ThreadBreakMessage(ctx, address, imm));
         }
     }
 }
