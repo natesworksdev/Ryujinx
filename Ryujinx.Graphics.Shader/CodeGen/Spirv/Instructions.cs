@@ -59,11 +59,15 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             Add(Instruction.CompareNotEqual,          GenerateCompareNotEqual);
             Add(Instruction.ConditionalSelect,        GenerateConditionalSelect);
             Add(Instruction.ConvertFP32ToFP64,        GenerateConvertFP32ToFP64);
-            Add(Instruction.ConvertFP64ToFP32,        GenerateConvertFP64ToFP32);
             Add(Instruction.ConvertFP32ToS32,         GenerateConvertFP32ToS32);
             Add(Instruction.ConvertFP32ToU32,         GenerateConvertFP32ToU32);
+            Add(Instruction.ConvertFP64ToFP32,        GenerateConvertFP64ToFP32);
+            Add(Instruction.ConvertFP64ToS32,         GenerateConvertFP64ToS32);
+            Add(Instruction.ConvertFP64ToU32,         GenerateConvertFP64ToU32);
             Add(Instruction.ConvertS32ToFP32,         GenerateConvertS32ToFP32);
+            Add(Instruction.ConvertS32ToFP64,         GenerateConvertS32ToFP64);
             Add(Instruction.ConvertU32ToFP32,         GenerateConvertU32ToFP32);
+            Add(Instruction.ConvertU32ToFP64,         GenerateConvertU32ToFP64);
             Add(Instruction.Cosine,                   GenerateCosine);
             Add(Instruction.Ddx,                      GenerateDdx);
             Add(Instruction.Ddy,                      GenerateDdy);
@@ -76,6 +80,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             Add(Instruction.Floor,                    GenerateFloor);
             Add(Instruction.FusedMultiplyAdd,         GenerateFusedMultiplyAdd);
             Add(Instruction.GroupMemoryBarrier,       GenerateGroupMemoryBarrier);
+            Add(Instruction.ImageAtomic,              GenerateImageAtomic);
             Add(Instruction.ImageLoad,                GenerateImageLoad);
             Add(Instruction.ImageStore,               GenerateImageStore);
             Add(Instruction.IsNan,                    GenerateIsNan);
@@ -97,6 +102,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             Add(Instruction.MinimumU32,               GenerateMinimumU32);
             Add(Instruction.Multiply,                 GenerateMultiply);
             Add(Instruction.Negate,                   GenerateNegate);
+            Add(Instruction.PackDouble2x32,           GeneratePackDouble2x32);
             Add(Instruction.PackHalf2x16,             GeneratePackHalf2x16);
             Add(Instruction.ReciprocalSquareRoot,     GenerateReciprocalSquareRoot);
             Add(Instruction.Return,                   GenerateReturn);
@@ -117,6 +123,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             Add(Instruction.TextureSample,            GenerateTextureSample);
             Add(Instruction.TextureSize,              GenerateTextureSize);
             Add(Instruction.Truncate,                 GenerateTruncate);
+            Add(Instruction.UnpackDouble2x32,         GenerateUnpackDouble2x32);
             Add(Instruction.UnpackHalf2x16,           GenerateUnpackHalf2x16);
             Add(Instruction.VoteAll,                  GenerateVoteAll);
             Add(Instruction.VoteAllEqual,             GenerateVoteAllEqual);
@@ -403,6 +410,20 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             return new OperationResult(AggregateType.FP64, context.FConvert(context.TypeFP64(), context.GetFP32(source)));
         }
 
+        private static OperationResult GenerateConvertFP32ToS32(CodeGenContext context, AstOperation operation)
+        {
+            var source = operation.GetSource(0);
+
+            return new OperationResult(AggregateType.S32, context.ConvertFToS(context.TypeS32(), context.GetFP32(source)));
+        }
+
+        private static OperationResult GenerateConvertFP32ToU32(CodeGenContext context, AstOperation operation)
+        {
+            var source = operation.GetSource(0);
+
+            return new OperationResult(AggregateType.U32, context.ConvertFToU(context.TypeU32(), context.GetFP32(source)));
+        }
+
         private static OperationResult GenerateConvertFP64ToFP32(CodeGenContext context, AstOperation operation)
         {
             var source = operation.GetSource(0);
@@ -410,60 +431,46 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             return new OperationResult(AggregateType.FP32, context.FConvert(context.TypeFP32(), context.GetFP64(source)));
         }
 
-        private static OperationResult GenerateConvertFP32ToS32(CodeGenContext context, AstOperation operation)
+        private static OperationResult GenerateConvertFP64ToS32(CodeGenContext context, AstOperation operation)
         {
             var source = operation.GetSource(0);
 
-            if (operation.Inst.HasFlag(Instruction.FP64))
-            {
-                return new OperationResult(AggregateType.S32, context.ConvertFToS(context.TypeS32(), context.GetFP64(source)));
-            }
-            else
-            {
-                return new OperationResult(AggregateType.S32, context.ConvertFToS(context.TypeS32(), context.GetFP32(source)));
-            }
+            return new OperationResult(AggregateType.S32, context.ConvertFToS(context.TypeS32(), context.GetFP64(source)));
         }
 
-        private static OperationResult GenerateConvertFP32ToU32(CodeGenContext context, AstOperation operation)
+        private static OperationResult GenerateConvertFP64ToU32(CodeGenContext context, AstOperation operation)
         {
             var source = operation.GetSource(0);
 
-            if (operation.Inst.HasFlag(Instruction.FP64))
-            {
-                return new OperationResult(AggregateType.U32, context.ConvertFToU(context.TypeU32(), context.GetFP64(source)));
-            }
-            else
-            {
-                return new OperationResult(AggregateType.U32, context.ConvertFToU(context.TypeU32(), context.GetFP32(source)));
-            }
+            return new OperationResult(AggregateType.U32, context.ConvertFToU(context.TypeU32(), context.GetFP64(source)));
         }
 
         private static OperationResult GenerateConvertS32ToFP32(CodeGenContext context, AstOperation operation)
         {
             var source = operation.GetSource(0);
 
-            if (operation.Inst.HasFlag(Instruction.FP64))
-            {
-                return new OperationResult(AggregateType.FP64, context.ConvertSToF(context.TypeFP64(), context.GetS32(source)));
-            }
-            else
-            {
-                return new OperationResult(AggregateType.FP32, context.ConvertSToF(context.TypeFP32(), context.GetS32(source)));
-            }
+            return new OperationResult(AggregateType.FP32, context.ConvertSToF(context.TypeFP32(), context.GetS32(source)));
+        }
+
+        private static OperationResult GenerateConvertS32ToFP64(CodeGenContext context, AstOperation operation)
+        {
+            var source = operation.GetSource(0);
+
+            return new OperationResult(AggregateType.FP64, context.ConvertSToF(context.TypeFP64(), context.GetS32(source)));
         }
 
         private static OperationResult GenerateConvertU32ToFP32(CodeGenContext context, AstOperation operation)
         {
             var source = operation.GetSource(0);
 
-            if (operation.Inst.HasFlag(Instruction.FP64))
-            {
-                return new OperationResult(AggregateType.FP64, context.ConvertUToF(context.TypeFP64(), context.GetU32(source)));
-            }
-            else
-            {
-                return new OperationResult(AggregateType.FP32, context.ConvertUToF(context.TypeFP32(), context.GetU32(source)));
-            }
+            return new OperationResult(AggregateType.FP32, context.ConvertUToF(context.TypeFP32(), context.GetU32(source)));
+        }
+
+        private static OperationResult GenerateConvertU32ToFP64(CodeGenContext context, AstOperation operation)
+        {
+            var source = operation.GetSource(0);
+
+            return new OperationResult(AggregateType.FP64, context.ConvertUToF(context.TypeFP64(), context.GetU32(source)));
         }
 
         private static OperationResult GenerateCosine(CodeGenContext context, AstOperation operation)
@@ -529,6 +536,100 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         {
             context.MemoryBarrier(context.Constant(context.TypeU32(), 2), context.Constant(context.TypeU32(), 3400));
             return OperationResult.Invalid;
+        }
+
+        private static OperationResult GenerateImageAtomic(CodeGenContext context, AstOperation operation)
+        {
+            AstTextureOperation texOp = (AstTextureOperation)operation;
+
+            bool isBindless = (texOp.Flags & TextureFlags.Bindless) != 0;
+
+            var componentType = texOp.Format.GetComponentType();
+
+            // TODO: Bindless texture support. For now we just return 0/do nothing.
+            if (isBindless)
+            {
+                return new OperationResult(componentType.Convert(), componentType switch
+                {
+                    VariableType.S32 => context.Constant(context.TypeS32(), 0),
+                    VariableType.U32 => context.Constant(context.TypeU32(), 0u),
+                    _ => context.Constant(context.TypeFP32(), 0f),
+                });
+            }
+
+            bool isArray   = (texOp.Type & SamplerType.Array) != 0;
+            bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
+
+            int srcIndex = isBindless ? 1 : 0;
+
+            SpvInstruction Src(AggregateType type)
+            {
+                return context.Get(type, texOp.GetSource(srcIndex++));
+            }
+
+            SpvInstruction index = null;
+
+            if (isIndexed)
+            {
+                index = Src(AggregateType.S32);
+            }
+
+            int coordsCount = texOp.Type.GetDimensions();
+
+            int pCount = coordsCount + (isArray ? 1 : 0);
+
+            SpvInstruction pCoords;
+
+            if (pCount > 1)
+            {
+                SpvInstruction[] elems = new SpvInstruction[pCount];
+
+                for (int i = 0; i < pCount; i++)
+                {
+                    elems[i] = Src(AggregateType.S32);
+                }
+
+                var vectorType = context.TypeVector(context.TypeS32(), pCount);
+                pCoords = context.CompositeConstruct(vectorType, elems);
+            }
+            else
+            {
+                pCoords = Src(AggregateType.S32);
+            }
+
+            SpvInstruction value = Src(componentType.Convert());
+
+            (var imageType, var imageVariable) = context.Images[new TextureMeta(texOp.CbufSlot, texOp.Handle, texOp.Format, texOp.Type)];
+
+            var image = context.Load(imageType, imageVariable);
+
+            SpvInstruction resultType = context.GetType(componentType.Convert());
+            SpvInstruction imagePointerType = context.TypePointer(StorageClass.Image, resultType);
+
+            var pointer = context.ImageTexelPointer(imagePointerType, imageVariable, pCoords, context.Constant(context.TypeU32(), 0));
+            var one = context.Constant(context.TypeU32(), 1);
+            var zero = context.Constant(context.TypeU32(), 0);
+
+            var result = (texOp.Flags & TextureFlags.AtomicMask) switch
+            {
+                TextureFlags.Add        => context.AtomicIAdd(resultType, pointer, one, zero, value),
+                TextureFlags.Minimum    => componentType == VariableType.S32
+                    ? context.AtomicSMin(resultType, pointer, one, zero, value)
+                    : context.AtomicUMin(resultType, pointer, one, zero, value),
+                TextureFlags.Maximum    => componentType == VariableType.S32
+                    ? context.AtomicSMax(resultType, pointer, one, zero, value)
+                    : context.AtomicUMax(resultType, pointer, one, zero, value),
+                TextureFlags.Increment  => context.AtomicIIncrement(resultType, pointer, one, zero),
+                TextureFlags.Decrement  => context.AtomicIDecrement(resultType, pointer, one, zero),
+                TextureFlags.BitwiseAnd => context.AtomicAnd(resultType, pointer, one, zero, value),
+                TextureFlags.BitwiseOr  => context.AtomicOr(resultType, pointer, one, zero, value),
+                TextureFlags.BitwiseXor => context.AtomicXor(resultType, pointer, one, zero, value),
+                TextureFlags.Swap       => context.AtomicExchange(resultType, pointer, one, zero, value),
+                TextureFlags.CAS        => context.AtomicCompareExchange(resultType, pointer, one, zero, zero, Src(componentType.Convert()), value),
+                _                       => context.AtomicIAdd(resultType, pointer, one, zero, value),
+            };
+
+            return new OperationResult(componentType.Convert(), result);
         }
 
         private static OperationResult GenerateImageLoad(CodeGenContext context, AstOperation operation)
@@ -898,6 +999,16 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             return GenerateUnary(context, operation, context.FNegate, context.SNegate);
         }
 
+        private static OperationResult GeneratePackDouble2x32(CodeGenContext context, AstOperation operation)
+        {
+            var value0 = context.GetU32(operation.GetSource(0));
+            var value1 = context.GetU32(operation.GetSource(1));
+            var vector = context.CompositeConstruct(context.TypeVector(context.TypeU32(), 2), value0, value1);
+            var result = context.GlslPackDouble2x32(context.TypeFP64(), vector);
+
+            return new OperationResult(AggregateType.FP64, result);
+        }
+
         private static OperationResult GeneratePackHalf2x16(CodeGenContext context, AstOperation operation)
         {
             var value0 = context.GetFP32(operation.GetSource(0));
@@ -983,7 +1094,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             var segMask = context.BitwiseAnd(context.TypeU32(), context.ShiftRightLogical(context.TypeU32(), mask, const8), const31);
             var notSegMask = context.Not(context.TypeU32(), segMask);
             var clampNotSegMask = context.BitwiseAnd(context.TypeU32(), clamp, notSegMask);
-            var indexNotSegMask = context.BitwiseAnd(context.TypeU32(), index, notSegMask);
 
             var threadId = context.GetAttribute(AggregateType.U32, new AstOperand(OperandType.Attribute, AttributeConsts.LaneId), false);
 
@@ -1010,17 +1120,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             var const31 = context.Constant(context.TypeU32(), 31);
             var const8 = context.Constant(context.TypeU32(), 8);
 
-            var clamp = context.BitwiseAnd(context.TypeU32(), mask, const31);
             var segMask = context.BitwiseAnd(context.TypeU32(), context.ShiftRightLogical(context.TypeU32(), mask, const8), const31);
-            var notSegMask = context.Not(context.TypeU32(), segMask);
-            var clampNotSegMask = context.BitwiseAnd(context.TypeU32(), clamp, notSegMask);
-            var indexNotSegMask = context.BitwiseAnd(context.TypeU32(), index, notSegMask);
 
             var threadId = context.GetAttribute(AggregateType.U32, new AstOperand(OperandType.Attribute, AttributeConsts.LaneId), false);
 
             var minThreadId = context.BitwiseAnd(context.TypeU32(), threadId, segMask);
             var srcThreadId = context.ISub(context.TypeU32(), threadId, index);
-            var valid = context.UGreaterThanEqual(context.TypeBool(), srcThreadId, minThreadId);
+            var valid = context.SGreaterThanEqual(context.TypeBool(), srcThreadId, minThreadId);
             var value = context.SubgroupReadInvocationKHR(context.TypeFP32(), x, srcThreadId);
             var result = context.Select(context.TypeFP32(), valid, value, x);
 
@@ -1044,7 +1150,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             var segMask = context.BitwiseAnd(context.TypeU32(), context.ShiftRightLogical(context.TypeU32(), mask, const8), const31);
             var notSegMask = context.Not(context.TypeU32(), segMask);
             var clampNotSegMask = context.BitwiseAnd(context.TypeU32(), clamp, notSegMask);
-            var indexNotSegMask = context.BitwiseAnd(context.TypeU32(), index, notSegMask);
 
             var threadId = context.GetAttribute(AggregateType.U32, new AstOperand(OperandType.Attribute, AttributeConsts.LaneId), false);
 
@@ -1336,10 +1441,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             else if (hasOffsets)
             {
                 operandsMask |= ImageOperandsMask.ConstOffsets;
-                operandsList.Add(offsets[0]);
-                operandsList.Add(offsets[1]);
-                operandsList.Add(offsets[2]);
-                operandsList.Add(offsets[3]);
+                SpvInstruction arrayv2 = context.TypeArray(context.TypeVector(context.TypeS32(), 2), context.Constant(context.TypeU32(), 4));
+                operandsList.Add(context.CompositeConstruct(arrayv2, offsets[0], offsets[1], offsets[2], offsets[3]));
             }
 
             if (isMultisample)
@@ -1462,6 +1565,15 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         private static OperationResult GenerateTruncate(CodeGenContext context, AstOperation operation)
         {
             return GenerateUnary(context, operation, context.GlslTrunc, null);
+        }
+
+        private static OperationResult GenerateUnpackDouble2x32(CodeGenContext context, AstOperation operation)
+        {
+            var value = context.GetFP64(operation.GetSource(0));
+            var vector = context.GlslUnpackDouble2x32(context.TypeVector(context.TypeU32(), 2), value);
+            var result = context.CompositeExtract(context.TypeU32(), vector, operation.Index);
+
+            return new OperationResult(AggregateType.U32, result);
         }
 
         private static OperationResult GenerateUnpackHalf2x16(CodeGenContext context, AstOperation operation)
