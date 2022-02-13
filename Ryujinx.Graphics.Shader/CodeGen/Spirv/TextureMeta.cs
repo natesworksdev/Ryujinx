@@ -24,12 +24,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         public bool Equals(TextureMeta other)
         {
-            return Handle == other.Handle && Type == other.Type;
+            return CbufSlot == other.CbufSlot && Handle == other.Handle && Format == other.Format && Type == other.Type;
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Handle, Type);
+            return HashCode.Combine(CbufSlot, Handle, Format, Type);
         }
     }
 }
