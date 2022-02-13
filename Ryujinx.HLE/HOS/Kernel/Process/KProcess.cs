@@ -1213,7 +1213,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                 }
             }
 
-            public long[] DebugGetThreadUids()
+            public ulong[] DebugGetThreadUids()
             {
                 lock (_parent._threadingLock)
                 {
@@ -1221,7 +1221,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                 }
             }
 
-            public ARMeilleure.State.ExecutionContext DebugGetThreadContext(long threadUid)
+            public ARMeilleure.State.ExecutionContext DebugGetThreadContext(ulong threadUid)
             {
                 lock (_parent._threadingLock)
                 {

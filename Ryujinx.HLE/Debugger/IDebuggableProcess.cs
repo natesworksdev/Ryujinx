@@ -5,8 +5,8 @@ namespace Ryujinx.HLE.Debugger
     public interface IDebuggableProcess
     {
         void DebugStopAllThreads();
-        long[] DebugGetThreadUids();
-        ARMeilleure.State.ExecutionContext DebugGetThreadContext(long threadUid);
+        ulong[] DebugGetThreadUids();
+        ARMeilleure.State.ExecutionContext DebugGetThreadContext(ulong threadUid);
         IVirtualMemoryManager CpuMemory { get; }
         void InvalidateCacheRegion(ulong address, ulong size);
     }

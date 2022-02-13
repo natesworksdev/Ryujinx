@@ -75,10 +75,10 @@ namespace Ryujinx.HLE.Debugger
             return result;
         }
 
-        public long? ReadRemainingAsThreadUid()
+        public ulong? ReadRemainingAsThreadUid()
         {
             string s = ReadRemaining();
-            return s == "-1" ? null : long.Parse(s, NumberStyles.HexNumber);
+            return s == "-1" ? null : ulong.Parse(s, NumberStyles.HexNumber);
         }
 
         public bool ConsumePrefix(string prefix)

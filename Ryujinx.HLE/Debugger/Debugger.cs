@@ -25,8 +25,8 @@ namespace Ryujinx.HLE.Debugger
         private Thread SocketThread;
         private Thread HandlerThread;
 
-        private long? cThread;
-        private long? gThread;
+        private ulong? cThread;
+        private ulong? gThread;
 
         public Debugger(Switch device, ushort port)
         {
@@ -42,9 +42,9 @@ namespace Ryujinx.HLE.Debugger
         }
 
         private void HaltApplication() => Device.System.DebugGetApplicationProcess().DebugStopAllThreads();
-        private long[] GetThreadIds() => Device.System.DebugGetApplicationProcess().DebugGetThreadUids();
+        private ulong[] GetThreadIds() => Device.System.DebugGetApplicationProcess().DebugGetThreadUids();
 
-        private ARMeilleure.State.ExecutionContext GetThread(long threadUid) =>
+        private ARMeilleure.State.ExecutionContext GetThread(ulong threadUid) =>
             Device.System.DebugGetApplicationProcess().DebugGetThreadContext(threadUid);
         private ARMeilleure.State.ExecutionContext[] GetThreads() => GetThreadIds().Select(GetThread).ToArray();
         private IVirtualMemoryManager GetMemory() => Device.System.DebugGetApplicationProcess().CpuMemory;
@@ -188,7 +188,7 @@ namespace Ryujinx.HLE.Debugger
                 case 'H':
                     {
                         char op = ss.ReadChar();
-                        long? threadId = ss.ReadRemainingAsThreadUid();
+                        ulong? threadId = ss.ReadRemainingAsThreadUid();
                         CommandSetThread(op, threadId);
                         break;
                     }
@@ -303,7 +303,7 @@ namespace Ryujinx.HLE.Debugger
                     break;
                 case 'T':
                     {
-                        long? threadId = ss.ReadRemainingAsThreadUid();
+                        ulong? threadId = ss.ReadRemainingAsThreadUid();
                         CommandIsAlive(threadId);
                         break;
                     }
@@ -391,7 +391,7 @@ namespace Ryujinx.HLE.Debugger
             }
         }
 
-        void CommandSetThread(char op, long? threadId)
+        void CommandSetThread(char op, ulong? threadId)
         {
             if (threadId == 0)
             {
@@ -506,7 +506,7 @@ namespace Ryujinx.HLE.Debugger
             Reply($"T00thread:{ctx.ThreadUid:x};");
         }
 
-        private void CommandIsAlive(long? threadId)
+        private void CommandIsAlive(ulong? threadId)
         {
             if (GetThreads().Any(x => x.ThreadUid == threadId))
             {
