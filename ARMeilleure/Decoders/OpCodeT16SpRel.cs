@@ -16,7 +16,7 @@ namespace ARMeilleure.Decoders
         public OpCodeT16SpRel(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
         {
             Rd = (opCode >> 8) & 0x7;
-            Immediate = (opCode >> 0) & 0xff;
+            Immediate = ((opCode >> 0) & 0xff) << 2;
         }
     }
 }
