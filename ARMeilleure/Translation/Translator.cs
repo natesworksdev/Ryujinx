@@ -380,7 +380,7 @@ namespace ARMeilleure.Translation
 
                         Operand lblPredicateSkip = default;
 
-                        if (context.IsInIfThenBlock)
+                        if (context.IsInIfThenBlock && context.CurrentIfThenBlockCond != Condition.Al)
                         {
                             lblPredicateSkip = Label();
 

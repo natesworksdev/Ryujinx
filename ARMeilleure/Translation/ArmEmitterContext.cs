@@ -55,7 +55,7 @@ namespace ARMeilleure.Translation
         public bool HighCq { get; }
         public Aarch32Mode Mode { get; }
 
-        public bool IsInIfThenBlock { get { return IfThenBlockState.Length > 0; } }
+        public bool IsInIfThenBlock { get { return IfThenBlockState != null && IfThenBlockState.Length > 0; } }
         public Condition CurrentIfThenBlockCond { get { return IfThenBlockState[0]; } }
         public Condition[] IfThenBlockState { get; set; }
 
