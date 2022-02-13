@@ -2,6 +2,7 @@ using ARMeilleure.State;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
+using Ryujinx.HLE.Debugger;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Memory;
@@ -14,7 +15,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel.Process
 {
-    class KProcess : KSynchronizationObject, Debugger.IDebuggableProcess
+    class KProcess : KSynchronizationObject
     {
         public const int KernelVersionMajor = 10;
         public const int KernelVersionMinor = 4;
@@ -89,6 +90,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         public IVirtualMemoryManager CpuMemory => Context.AddressSpace;
 
         public HleProcessDebugger Debugger { get; private set; }
+        public IDebuggableProcess GdbStubInterface { get { return new DebuggerInterface(this); } }
 
         public KProcess(KernelContext context) : base(context)
         {
@@ -1191,30 +1193,47 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             return false;
         }
 
-        public void DebugStopAllThreads()
+        private class DebuggerInterface : IDebuggableProcess
         {
-            lock (_threadingLock)
+            private readonly KProcess _parent;
+
+            public DebuggerInterface(KProcess p)
             {
-                foreach (KThread thread in _threads)
+                _parent = p;
+            }
+
+            public void DebugStopAllThreads()
+            {
+                lock (_parent._threadingLock)
                 {
-                    thread.Context.DebugStop();
+                    foreach (KThread thread in _parent._threads)
+                    {
+                        thread.Context.DebugStop();
+                    }
                 }
             }
-        }
 
-        public long[] DebugGetThreadUids()
-        {
-            lock (_threadingLock)
+            public long[] DebugGetThreadUids()
             {
-                return _threads.Select(x => x.ThreadUid).ToArray();
+                lock (_parent._threadingLock)
+                {
+                    return _parent._threads.Select(x => x.ThreadUid).ToArray();
+                }
             }
-        }
 
-        public ARMeilleure.State.ExecutionContext DebugGetThreadContext(long threadUid)
-        {
-            lock (_threadingLock)
+            public ARMeilleure.State.ExecutionContext DebugGetThreadContext(long threadUid)
             {
-                return _threads.Where(x => x.ThreadUid == threadUid).FirstOrDefault()?.Context;
+                lock (_parent._threadingLock)
+                {
+                    return _parent._threads.FirstOrDefault(x => x.ThreadUid == threadUid)?.Context;
+                }
+            }
+
+            public IVirtualMemoryManager CpuMemory { get { return _parent.CpuMemory; } }
+
+            public void InvalidateCacheRegion(ulong address, ulong size)
+            {
+                _parent.Context.InvalidateCacheRegion(address, size);
             }
         }
     }
