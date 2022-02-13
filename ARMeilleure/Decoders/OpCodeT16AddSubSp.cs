@@ -15,7 +15,7 @@ namespace ARMeilleure.Decoders
 
         public OpCodeT16AddSubSp(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
         {
-            Immediate = (opCode >> 0) & 0x7f;
+            Immediate = ((opCode >> 0) & 0x7f) << 2;
         }
     }
 }
