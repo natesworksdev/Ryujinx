@@ -84,6 +84,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             Generate(context, function.MainBlock);
 
+            // Functions must always end with a return.
+            if (!(function.MainBlock.Last is AstOperation operation) || operation.Inst != Instruction.Return)
+            {
+                context.Return();
+            }
+
             context.FunctionEnd();
 
             if (funcIndex == 0)
