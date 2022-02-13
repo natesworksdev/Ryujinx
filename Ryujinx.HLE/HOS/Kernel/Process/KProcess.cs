@@ -747,6 +747,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             context.Interrupt += InterruptHandler;
             context.SupervisorCall += KernelContext.SyscallHandler.SvcCall;
             context.Undefined += UndefinedInstructionHandler;
+
+            if (KernelContext.Device.Configuration.EnableGdbStub)
+            {
+                context.Break += KernelContext.Device.Debugger.ThreadBreak;
+            }
         }
 
         private void InterruptHandler(object sender, EventArgs e)

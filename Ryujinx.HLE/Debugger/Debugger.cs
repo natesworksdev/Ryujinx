@@ -1,4 +1,5 @@
-﻿using Ryujinx.Common;
+﻿using ARMeilleure.State;
+using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.Memory;
 using System;
@@ -8,6 +9,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using ExecutionContext = ARMeilleure.State.ExecutionContext;
 
 namespace Ryujinx.HLE.Debugger
 {
@@ -44,9 +46,9 @@ namespace Ryujinx.HLE.Debugger
         private void HaltApplication() => Device.System.DebugGetApplicationProcess().DebugStopAllThreads();
         private ulong[] GetThreadIds() => Device.System.DebugGetApplicationProcess().DebugGetThreadUids();
 
-        private ARMeilleure.State.ExecutionContext GetThread(ulong threadUid) =>
+        private ExecutionContext GetThread(ulong threadUid) =>
             Device.System.DebugGetApplicationProcess().DebugGetThreadContext(threadUid);
-        private ARMeilleure.State.ExecutionContext[] GetThreads() => GetThreadIds().Select(GetThread).ToArray();
+        private ExecutionContext[] GetThreads() => GetThreadIds().Select(GetThread).ToArray();
         private IVirtualMemoryManager GetMemory() => Device.System.DebugGetApplicationProcess().CpuMemory;
         private void InvalidateCacheRegion(ulong address, ulong size) =>
             Device.System.DebugGetApplicationProcess().InvalidateCacheRegion(address, size);
@@ -74,7 +76,7 @@ namespace Ryujinx.HLE.Debugger
             }
         }
 
-        private string GdbReadRegister(ARMeilleure.State.ExecutionContext state, int gdbRegId)
+        private string GdbReadRegister(ExecutionContext state, int gdbRegId)
         {
             switch (gdbRegId)
             {
@@ -95,7 +97,7 @@ namespace Ryujinx.HLE.Debugger
             }
         }
 
-        private bool GdbWriteRegister(ARMeilleure.State.ExecutionContext state, int gdbRegId, ulong value)
+        private bool GdbWriteRegister(ExecutionContext state, int gdbRegId, ulong value)
         {
             switch (gdbRegId)
             {
@@ -135,6 +137,11 @@ namespace Ryujinx.HLE.Debugger
                         Logger.Notice.Print(LogClass.GdbStub, $"Received Command: {cmd}");
                         WriteStream.WriteByte((byte)'+');
                         ProcessCommand(cmd);
+                        break;
+
+                    case ThreadBreakMessage msg:
+                        HaltApplication();
+                        Reply($"T05thread:{msg.ThreadUid:x};");
                         break;
                 }
             }
@@ -641,6 +648,17 @@ namespace Ryujinx.HLE.Debugger
                 SocketThread.Join();
                 HandlerThread.Join();
             }
+        }
+
+        public void ThreadBreak(object sender, InstExceptionEventArgs e)
+        {
+            ExecutionContext ctx = (ExecutionContext)sender;
+
+            ctx.DebugStop();
+
+            Logger.Notice.Print(LogClass.GdbStub, $"Break hit on thread {ctx.ThreadUid} at pc {e.Address:x016}");
+
+            Messages.Add(new ThreadBreakMessage(e, ctx.ThreadUid));
         }
     }
 }
