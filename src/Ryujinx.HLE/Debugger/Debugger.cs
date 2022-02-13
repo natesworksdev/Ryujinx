@@ -25,8 +25,8 @@ namespace Ryujinx.HLE.Debugger
         private Thread SocketThread;
         private Thread HandlerThread;
 
-        private ulong cThread;
-        private ulong gThread;
+        private ulong? cThread;
+        private ulong? gThread;
 
         public Debugger(Switch device, ushort port)
         {
@@ -45,9 +45,10 @@ namespace Ryujinx.HLE.Debugger
         private ulong[] GetThreadIds() => Device.System.DebugGetApplicationProcess().DebugGetThreadUids();
         private Ryujinx.Cpu.IExecutionContext GetThread(ulong threadUid) => Device.System.DebugGetApplicationProcess().DebugGetThreadContext(threadUid);
         private Ryujinx.Cpu.IExecutionContext[] GetThreads() => GetThreadIds().Select(x => GetThread(x)).ToArray();
+        private ulong? GetThreadUid(Ryujinx.Cpu.IExecutionContext thread) => GetThreadIds().Where(x => GetThread(x) == thread).First();
         private IVirtualMemoryManager GetMemory() => Device.System.DebugGetApplicationProcess().CpuMemory;
 
-        const int GdbRegisterCount = 34;
+        const int GdbRegisterCount = 68;
 
         private int GdbRegisterHexSize(int gdbRegId)
         {
@@ -58,6 +59,12 @@ namespace Ryujinx.HLE.Debugger
                 case 32:
                     return 16;
                 case 33:
+                    return 8;
+                case >= 34 and <= 65:
+                    return 32;
+                case 66:
+                    return 8;
+                case 67:
                     return 8;
                 default:
                     throw new ArgumentException();
@@ -74,6 +81,12 @@ namespace Ryujinx.HLE.Debugger
                     return ToHex(BitConverter.GetBytes(state.DebugPc));
                 case 33:
                     return ToHex(BitConverter.GetBytes(state.Pstate));
+                case >= 34 and <= 65:
+                    return ToHex(state.GetV(gdbRegId - 34).ToArray());
+                case 66:
+                    return ToHex(BitConverter.GetBytes((uint)state.Fpsr));
+                case 67:
+                    return ToHex(BitConverter.GetBytes((uint)state.Fpcr));
                 default:
                     return null;
             }
@@ -108,15 +121,15 @@ namespace Ryujinx.HLE.Debugger
 
                     case BreakInMessage _:
                         Logger.Notice.Print(LogClass.GdbStub, "Break-in requested");
-                        // TODO
+                        CommandQuery();
                         break;
 
                     case SendNackMessage _:
                         WriteStream.WriteByte((byte)'-');
                         break;
 
-                    case CommandMessage { Command: var cmd }:
-                        Logger.Debug?.Print(LogClass.GdbStub, $"Received Command: {cmd}");
+                    case CommandMessage {Command: var cmd}:
+                        Logger.Notice.Print(LogClass.GdbStub, $"Received Command: {cmd}");
                         WriteStream.WriteByte((byte)'+');
                         ProcessCommand(cmd);
                         break;
@@ -135,6 +148,7 @@ namespace Ryujinx.HLE.Debugger
                     {
                         goto unknownCommand;
                     }
+
                     // Enable extended mode
                     ReplyOK();
                     break;
@@ -143,6 +157,7 @@ namespace Ryujinx.HLE.Debugger
                     {
                         goto unknownCommand;
                     }
+
                     CommandQuery();
                     break;
                 case 'c':
@@ -153,6 +168,7 @@ namespace Ryujinx.HLE.Debugger
                     {
                         goto unknownCommand;
                     }
+
                     CommandDetach();
                     break;
                 case 'g':
@@ -160,6 +176,7 @@ namespace Ryujinx.HLE.Debugger
                     {
                         goto unknownCommand;
                     }
+
                     CommandReadGeneralRegisters();
                     break;
                 case 'G':
@@ -168,7 +185,7 @@ namespace Ryujinx.HLE.Debugger
                 case 'H':
                     {
                         char op = ss.ReadChar();
-                        ulong threadId = ss.ReadRemainingAsHex();
+                        ulong? threadId = ss.ReadRemainingAsThreadUid();
                         CommandSetThread(op, threadId);
                         break;
                     }
@@ -209,31 +226,39 @@ namespace Ryujinx.HLE.Debugger
                         Reply($"name:Ryujinx;version:{ReleaseInformation.GetVersion()};");
                         break;
                     }
+
                     if (ss.ConsumeRemaining("HostInfo"))
                     {
-                        Reply($"triple:{ToHex("aarch64-unknown-linux-android")};endian:little;ptrsize:8;hostname:{ToHex("Ryujinx")};");
+                        Reply(
+                            $"triple:{ToHex("aarch64-unknown-linux-android")};endian:little;ptrsize:8;hostname:{ToHex("Ryujinx")};");
                         break;
                     }
+
                     if (ss.ConsumeRemaining("ProcessInfo"))
                     {
-                        Reply($"pid:1;cputype:100000c;cpusubtype:0;triple:{ToHex("aarch64-unknown-linux-android")};ostype:unknown;vendor:none;endian:little;ptrsize:8;");
+                        Reply(
+                            $"pid:1;cputype:100000c;cpusubtype:0;triple:{ToHex("aarch64-unknown-linux-android")};ostype:unknown;vendor:none;endian:little;ptrsize:8;");
                         break;
                     }
+
                     if (ss.ConsumePrefix("Supported:") || ss.ConsumeRemaining("Supported"))
                     {
-                        Reply("PacketSize=10000,qXfer:features:read+");
+                        Reply("PacketSize=10000;qXfer:features:read+");
                         break;
                     }
+
                     if (ss.ConsumeRemaining("fThreadInfo"))
                     {
                         Reply($"m{string.Join(",", GetThreadIds().Select(x => $"{x:x}"))}");
                         break;
                     }
+
                     if (ss.ConsumeRemaining("sThreadInfo"))
                     {
                         Reply("l");
                         break;
                     }
+
                     if (ss.ConsumePrefix("Xfer:features:read:"))
                     {
                         string feature = ss.ReadUntil(':');
@@ -266,11 +291,21 @@ namespace Ryujinx.HLE.Debugger
                             break;
                         }
                     }
+
                     goto unknownCommand;
                 case 'Q':
                     goto unknownCommand;
+                case 's':
+                    CommandStep(ss.IsEmpty() ? null : ss.ReadRemainingAsHex());
+                    break;
+                case 'T':
+                    {
+                        ulong? threadId = ss.ReadRemainingAsThreadUid();
+                        CommandIsAlive(threadId);
+                        break;
+                    }
                 default:
-                unknownCommand:
+                    unknownCommand:
                     // Logger.Notice.Print(LogClass.GdbStub, $"Unknown command: {cmd}");
                     Reply("");
                     break;
@@ -282,14 +317,21 @@ namespace Ryujinx.HLE.Debugger
             // GDB is performing initial contact. Stop everything.
             HaltApplication();
             gThread = cThread = GetThreadIds().First();
-            Reply($"T05thread:{cThread:x}");
+            Reply($"T05thread:{cThread:x};");
+            //Reply("S05");
         }
 
         void CommandContinue(ulong? newPc)
         {
             if (newPc.HasValue)
             {
-                GetThread(cThread).DebugPc = newPc.Value;
+                if (cThread == null)
+                {
+                    ReplyError();
+                    return;
+                }
+
+                GetThread(cThread.Value).DebugPc = newPc.Value;
             }
 
             foreach (var thread in GetThreads())
@@ -306,22 +348,36 @@ namespace Ryujinx.HLE.Debugger
 
         void CommandReadGeneralRegisters()
         {
-            var ctx = GetThread(gThread);
+            if (gThread == null)
+            {
+                ReplyError();
+                return;
+            }
+
+            var ctx = GetThread(gThread.Value);
             string registers = "";
             for (int i = 0; i < GdbRegisterCount; i++)
             {
                 registers += GdbReadRegister(ctx, i);
             }
+
             Reply(registers);
         }
 
         void CommandWriteGeneralRegisters(StringStream ss)
         {
-            var ctx = GetThread(gThread);
+            if (gThread == null)
+            {
+                ReplyError();
+                return;
+            }
+
+            var ctx = GetThread(gThread.Value);
             for (int i = 0; i < GdbRegisterCount; i++)
             {
                 GdbWriteRegister(ctx, i, ss.ReadLengthAsLEHex(GdbRegisterHexSize(i)));
             }
+
             if (ss.IsEmpty())
             {
                 ReplyOK();
@@ -332,8 +388,13 @@ namespace Ryujinx.HLE.Debugger
             }
         }
 
-        void CommandSetThread(char op, ulong threadId)
+        void CommandSetThread(char op, ulong? threadId)
         {
+            if (threadId == 0)
+            {
+                threadId = GetThreadUid(GetThreads().First());
+            }
+
             switch (op)
             {
                 case 'c':
@@ -373,6 +434,7 @@ namespace Ryujinx.HLE.Debugger
                 {
                     data[i] = (byte)ss.ReadLengthAsHex(2);
                 }
+
                 GetMemory().Write(addr, data);
                 ReplyOK();
             }
@@ -384,7 +446,13 @@ namespace Ryujinx.HLE.Debugger
 
         void CommandReadGeneralRegister(int gdbRegId)
         {
-            var ctx = GetThread(gThread);
+            if (gThread == null)
+            {
+                ReplyError();
+                return;
+            }
+
+            var ctx = GetThread(gThread.Value);
             string result = GdbReadRegister(ctx, gdbRegId);
             if (result != null)
             {
@@ -398,7 +466,13 @@ namespace Ryujinx.HLE.Debugger
 
         void CommandWriteGeneralRegister(int gdbRegId, ulong value)
         {
-            var ctx = GetThread(gThread);
+            if (gThread == null)
+            {
+                ReplyError();
+                return;
+            }
+
+            var ctx = GetThread(gThread.Value);
             if (GdbWriteRegister(ctx, gdbRegId, value))
             {
                 ReplyOK();
@@ -406,6 +480,37 @@ namespace Ryujinx.HLE.Debugger
             else
             {
                 ReplyError();
+            }
+        }
+
+        private void CommandStep(ulong? newPc)
+        {
+            if (cThread == null)
+            {
+                ReplyError();
+                return;
+            }
+
+            var ctx = GetThread(cThread.Value);
+
+            if (newPc.HasValue)
+            {
+                ctx.DebugPc = newPc.Value;
+            }
+
+            ctx.DebugStep();
+            Reply($"T00thread:{GetThreadUid(ctx):x};");
+        }
+
+        private void CommandIsAlive(ulong? threadId)
+        {
+            if (GetThreads().Any(x => GetThreadUid(x) == threadId))
+            {
+                ReplyOK();
+            }
+            else
+            {
+                Reply("E00");
             }
         }
 
@@ -427,7 +532,7 @@ namespace Ryujinx.HLE.Debugger
 
         private void SocketReaderThreadMain()
         {
-        restartListen:
+            restartListen:
             try
             {
                 var endpoint = new IPEndPoint(IPAddress.Any, GdbStubPort);
@@ -475,7 +580,7 @@ namespace Ryujinx.HLE.Debugger
                     }
                 }
 
-            eof:
+                eof:
                 Logger.Notice.Print(LogClass.GdbStub, "GDB client lost connection");
                 goto restartListen;
             }
@@ -496,6 +601,7 @@ namespace Ryujinx.HLE.Debugger
                     checksum += (byte)x;
                 }
             }
+
             return checksum;
         }
 
@@ -522,6 +628,7 @@ namespace Ryujinx.HLE.Debugger
                 {
                     Messages.Add(new AbortMessage());
                 }
+
                 ListenerSocket.Stop();
                 ClientSocket?.Shutdown(SocketShutdown.Both);
                 ClientSocket?.Close();
