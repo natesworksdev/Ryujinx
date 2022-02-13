@@ -293,8 +293,8 @@ namespace Ryujinx.Graphics.Vulkan
                 ScreenCaptureRequested = false;
             }
 
-            float ratioX = MathF.Min(1f, (_height * (float)SurfaceWidth)  / ((float)SurfaceHeight * _width));
-            float ratioY = MathF.Min(1f, (_width  * (float)SurfaceHeight) / ((float)SurfaceWidth  * _height));
+            float ratioX = crop.IsStretched ? 1.0f : MathF.Min(1.0f, _height * crop.AspectRatioX / (_width * crop.AspectRatioY));
+            float ratioY = crop.IsStretched ? 1.0f : MathF.Min(1.0f, _width * crop.AspectRatioY / (_height * crop.AspectRatioX));
 
             int dstWidth  = (int)(_width  * ratioX);
             int dstHeight = (int)(_height * ratioY);
