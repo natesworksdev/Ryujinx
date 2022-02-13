@@ -74,6 +74,13 @@ namespace Ryujinx.HLE.Debugger
             }
             return result;
         }
+
+        public long? ReadRemainingAsThreadUid()
+        {
+            string s = ReadRemaining();
+            return s == "-1" ? null : long.Parse(s, NumberStyles.HexNumber);
+        }
+
         public bool ConsumePrefix(string prefix)
         {
             if (Data.Substring(Position).StartsWith(prefix))
