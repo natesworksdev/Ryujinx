@@ -1539,9 +1539,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             var meta = new TextureMeta(texOp.CbufSlot, texOp.Handle, texOp.Format, texOp.Type);
 
-            (_, var sampledImageType, var sampledImageVariable) = context.Samplers[meta];
+            (var imageType, var sampledImageType, var sampledImageVariable) = context.Samplers[meta];
 
             var image = context.Load(sampledImageType, sampledImageVariable);
+            image = context.Image(imageType, image);
 
             if (texOp.Index == 3)
             {
