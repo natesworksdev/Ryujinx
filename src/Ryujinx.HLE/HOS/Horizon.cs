@@ -5,6 +5,7 @@ using LibHac.Fs.Shim;
 using LibHac.FsSystem;
 using LibHac.Tools.FsSystem;
 using Ryujinx.Cpu;
+using Ryujinx.HLE.Debugger;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Memory;
@@ -474,11 +475,11 @@ namespace Ryujinx.HLE.HOS
             IsPaused = pause;
         }
 
-        public Debugger.IDebuggableProcess DebugGetApplicationProcess()
+        public IDebuggableProcess DebugGetApplicationProcess()
         {
             lock (KernelContext.Processes)
             {
-                return KernelContext.Processes.Values.Where(x => x.IsApplication).First();
+                return KernelContext.Processes.Values.FirstOrDefault(x => x.IsApplication)?.GdbStubInterface;
             }
         }
     }

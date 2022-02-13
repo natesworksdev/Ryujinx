@@ -47,6 +47,8 @@ namespace Ryujinx.HLE.Debugger
         private Ryujinx.Cpu.IExecutionContext[] GetThreads() => GetThreadIds().Select(x => GetThread(x)).ToArray();
         private ulong? GetThreadUid(Ryujinx.Cpu.IExecutionContext thread) => GetThreadIds().Where(x => GetThread(x) == thread).First();
         private IVirtualMemoryManager GetMemory() => Device.System.DebugGetApplicationProcess().CpuMemory;
+        private void InvalidateCacheRegion(ulong address, ulong size) =>
+            Device.System.DebugGetApplicationProcess().InvalidateCacheRegion(address, size);
 
         const int GdbRegisterCount = 68;
 
@@ -436,6 +438,7 @@ namespace Ryujinx.HLE.Debugger
                 }
 
                 GetMemory().Write(addr, data);
+                InvalidateCacheRegion(addr, len);
                 ReplyOK();
             }
             catch (InvalidMemoryRegionException)
