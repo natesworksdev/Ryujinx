@@ -214,13 +214,14 @@
                             <StackPanel
                                 Orientation="Horizontal"
                                 Margin="0,5"
-                                Spacing="55">
+                                Spacing="20">
                                 <TextBlock VerticalAlignment="Center"
-                                           Text="{locale:Locale SettingsTabSystemSystemRegion}" />
+                                           Text="{locale:Locale SettingsTabSystemSystemRegion}"
+                                           Width="230" />
                                 <ComboBox SelectedIndex="{Binding Region}"
                                           ToolTip.Tip="{locale:Locale RegionTooltip}"
                                           HorizontalContentAlignment="Left"
-                                          Width="300">
+                                          Width="350">
                                     <ComboBoxItem>
                                         <TextBlock Text="{locale:Locale SettingsTabSystemSystemRegionJapan}" />
                                     </ComboBoxItem>
@@ -247,14 +248,15 @@
                             <StackPanel
                                 Margin="0,5"
                                 Orientation="Horizontal"
-                                Spacing="40">
+                                Spacing="20">
                                 <TextBlock VerticalAlignment="Center"
                                            Text="{locale:Locale SettingsTabSystemSystemLanguage}"
-                                           ToolTip.Tip="{locale:Locale LanguageTooltip}" />
+                                           ToolTip.Tip="{locale:Locale LanguageTooltip}"
+                                           Width="230" />
                                 <ComboBox SelectedIndex="{Binding Language}"
                                           ToolTip.Tip="{locale:Locale LanguageTooltip}"
                                           HorizontalContentAlignment="Left"
-                                          Width="300">
+                                          Width="350">
                                     <ComboBoxItem>
                                         <TextBlock Text="{locale:Locale SettingsTabSystemSystemLanguageJapanese}" />
                                     </ComboBoxItem>
@@ -321,13 +323,14 @@
                             <StackPanel
                                 Margin="0,5"
                                 Orientation="Horizontal"
-                                Spacing="39">
+                                Spacing="20">
                                 <TextBlock VerticalAlignment="Center"
                                            Text="{locale:Locale SettingsTabSystemSystemTimeZone}"
-                                           ToolTip.Tip="{locale:Locale TimezoneTooltip}" />
+                                           ToolTip.Tip="{locale:Locale TimezoneTooltip}"
+                                           Width="230" />
                                 <AutoCompleteBox
                                     Name="TimeZoneBox"
-                                    Width="300"
+                                    Width="350"
                                     FilterMode="Contains"
                                     Items="{Binding TimeZones}"
                                     SelectionChanged="TimeZoneBox_OnSelectionChanged"
@@ -339,21 +342,23 @@
                             <StackPanel
                                 Margin="0,20,0,2"
                                 Orientation="Horizontal"
-                                Spacing="66">
+                                Spacing="20">
                                 <TextBlock VerticalAlignment="Center"
                                            Text="{locale:Locale SettingsTabSystemSystemTime}"
-                                           ToolTip.Tip="{locale:Locale TimeTooltip}" />
+                                           ToolTip.Tip="{locale:Locale TimeTooltip}" 
+                                           Width="230"/>
                                 <DatePicker VerticalAlignment="Center" SelectedDate="{Binding DateOffset}"
-                                            ToolTip.Tip="{locale:Locale TimeTooltip}" />
+                                            ToolTip.Tip="{locale:Locale TimeTooltip}"
+                                            Width="350" />
                             </StackPanel>
                             <StackPanel
-                                Margin="135,5,0,20"
+                                Margin="250,5,0,20"
                                 Orientation="Horizontal">
                                 <TimePicker
                                     VerticalAlignment="Center"
                                     ClockIdentifier="24HourClock"
                                     SelectedTime="{Binding TimeOffset}"
-                                    Width="296"
+                                    Width="350"
                                     ToolTip.Tip="{locale:Locale TimeTooltip}" />
                             </StackPanel>
                             <CheckBox IsChecked="{Binding EnableVsync}">
@@ -396,8 +401,7 @@
                     <StackPanel
                         Margin="10, 5"
                         HorizontalAlignment="Stretch"
-                        Orientation="Vertical"
-                        Spacing="5">
+                        Orientation="Vertical">
                         <TextBlock FontWeight="Bold" Text="{locale:Locale SettingsTabCpuCache}" />
                         <CheckBox IsChecked="{Binding EnablePptc}">
                             <TextBlock Text="{locale:Locale SettingsTabSystemEnablePptc}"
@@ -411,11 +415,12 @@
                             Spacing="20">
                             <TextBlock VerticalAlignment="Center"
                                        Text="{locale:Locale SettingsTabSystemMemoryManagerMode}"
-                                       ToolTip.Tip="{locale:Locale MemoryManagerTooltip}" />
+                                       ToolTip.Tip="{locale:Locale MemoryManagerTooltip}"
+                                       Width="240" />
                             <ComboBox SelectedIndex="{Binding MemoryMode}"
                                       ToolTip.Tip="{locale:Locale MemoryManagerTooltip}"
                                       HorizontalContentAlignment="Left"
-                                      Width="300">
+                                      Width="350">
                                 <ComboBoxItem
                                     ToolTip.Tip="{locale:Locale MemoryManagerSoftwareTooltip}">
                                     <TextBlock
@@ -456,12 +461,13 @@
                             <StackPanel
                                 Margin="0,5"
                                 Orientation="Horizontal"
-                                Spacing="89">
+                                Spacing="20">
                                 <TextBlock VerticalAlignment="Center"
                                            ToolTip.Tip="{locale:Locale AnisotropyTooltip}"
-                                           Text="{locale:Locale SettingsTabGraphicsAnisotropicFiltering}" />
+                                           Text="{locale:Locale SettingsTabGraphicsAnisotropicFiltering}"
+                                           Width="230" />
                                 <ComboBox SelectedIndex="{Binding MaxAnisotropy}"
-                                          Width="300"
+                                          Width="350"
                                           HorizontalContentAlignment="Left"
                                           ToolTip.Tip="{locale:Locale AnisotropyTooltip}">
                                     <ComboBoxItem>
@@ -486,12 +492,13 @@
                             <StackPanel
                                 Margin="0,5"
                                 Orientation="Horizontal"
-                                Spacing="109">
+                                Spacing="20">
                                 <TextBlock VerticalAlignment="Center"
                                            ToolTip.Tip="{locale:Locale ResolutionScaleTooltip}"
-                                           Text="{locale:Locale SettingsTabGraphicsResolutionScale}" />
+                                           Text="{locale:Locale SettingsTabGraphicsResolutionScale}"
+                                           Width="230" />
                                 <ComboBox SelectedIndex="{Binding ResolutionScale}"
-                                          Width="300"
+                                          Width="350"
                                           HorizontalContentAlignment="Left"
                                           ToolTip.Tip="{locale:Locale ResolutionScaleTooltip}">
                                     <ComboBoxItem>
@@ -513,7 +520,6 @@
                                 <ui:NumberBox
                                     ToolTip.Tip="{locale:Locale ResolutionScaleEntryTooltip}"
                                     MinWidth="150"
-                                    Margin="-100,0,0,0"
                                     SmallChange="0.1"
                                     LargeChange="1"
                                     SimpleNumberFormat="F2"
@@ -526,12 +532,13 @@
                             <StackPanel
                                 Margin="0,5"
                                 Orientation="Horizontal"
-                                Spacing="129">
+                                Spacing="20">
                                 <TextBlock VerticalAlignment="Center"
                                            ToolTip.Tip="{locale:Locale AspectRatioTooltip}"
-                                           Text="{locale:Locale SettingsTabGraphicsAspectRatio}" />
+                                           Text="{locale:Locale SettingsTabGraphicsAspectRatio}"
+                                           Width="230" />
                                 <ComboBox SelectedIndex="{Binding AspectRatio}"
-                                          Width="300"
+                                          Width="350"
                                           HorizontalContentAlignment="Left"
                                           ToolTip.Tip="{locale:Locale AspectRatioTooltip}">
                                     <ComboBoxItem>
@@ -557,13 +564,14 @@
                             <StackPanel
                                 Margin="0,5,0,0"
                                 Orientation="Horizontal"
-                                Spacing="101">
+                                Spacing="20">
                                 <TextBlock VerticalAlignment="Center"
                                            Text="{locale:Locale SettingsTabGraphicsFrameRate}"
-                                           ToolTip.Tip="{locale:Locale SettingsTabGraphicsFrameRateTooltip}" />
+                                           ToolTip.Tip="{locale:Locale SettingsTabGraphicsFrameRateTooltip}"
+                                           Width="230" />
                                 <ui:NumberBox Value="{Binding HostRefreshRate}"
                                     ToolTip.Tip="{locale:Locale SettingsTabGraphicsFrameRateTooltip}"
-                                    Width="300"
+                                    Width="350"
                                     SmallChange="1"
                                     LargeChange="10"
                                     SimpleNumberFormat="F0"
@@ -572,7 +580,7 @@
                                     Maximum="240" />
                             </StackPanel>
                             <StackPanel
-                                Margin="197,0,0,0"
+                                Margin="250,0,0,0"
                                 Orientation="Horizontal">
                                 <Slider Value="{Binding HostRefreshRate}"
                                         ToolTip.Tip="{locale:Locale SettingsTabGraphicsFrameRateTooltip}"
@@ -582,7 +590,7 @@
                                         TickFrequency="5"
                                         IsSnapToTickEnabled="True"
                                         LargeChange="10"
-                                        Width="300" />
+                                        Width="350" />
                             </StackPanel>
                         </StackPanel>
                         <Separator Height="1" Margin="0,5" />
@@ -598,8 +606,9 @@
                                 Spacing="20">
                                 <TextBlock VerticalAlignment="Center"
                                            ToolTip.Tip="{locale:Locale GraphicsBackendThreadingTooltip}"
-                                           Text="{locale:Locale SettingsTabGraphicsBackendMultithreading}" />
-                                <ComboBox Width="300"
+                                           Text="{locale:Locale SettingsTabGraphicsBackendMultithreading}"
+                                           Width="230" />
+                                <ComboBox Width="350"
                                           HorizontalContentAlignment="Left"
                                           ToolTip.Tip="{locale:Locale GalThreadingTooltip}"
                                           SelectedIndex="{Binding GraphicsBackendMultithreadingIndex}">
@@ -625,12 +634,13 @@
                             <StackPanel
                                 Margin="0,5"
                                 Orientation="Horizontal"
-                                Spacing="48">
+                                Spacing="20">
                                 <TextBlock VerticalAlignment="Center"
                                            ToolTip.Tip="{locale:Locale ShaderDumpPathTooltip}"
-                                           Text="{locale:Locale SettingsTabGraphicsShaderDumpPath}" />
+                                           Text="{locale:Locale SettingsTabGraphicsShaderDumpPath}"
+                                           Width="230" />
                                 <TextBox Text="{Binding ShaderDumpPath}"
-                                         Width="300"
+                                         Width="350"
                                          ToolTip.Tip="{locale:Locale ShaderDumpPathTooltip}" />
                             </StackPanel>
                         </StackPanel>
@@ -651,14 +661,15 @@
                         Spacing="5">
                         <TextBlock FontWeight="Bold" Text="{locale:Locale SettingsTabAudio}" />
                         <StackPanel
-                            Margin="0,5,0,2"
+                            Margin="0,5"
                             Orientation="Horizontal"
                             Spacing="20">
                             <TextBlock VerticalAlignment="Center"
                                        Text="{locale:Locale SettingsTabSystemAudioBackend}"
-                                       ToolTip.Tip="{locale:Locale AudioBackendTooltip}" />
+                                       ToolTip.Tip="{locale:Locale AudioBackendTooltip}"
+                                       Width="240" />
                             <ComboBox SelectedIndex="{Binding AudioBackend}"
-                                      Width="300"
+                                      Width="350"
                                       HorizontalContentAlignment="Left">
                                 <ComboBoxItem>
                                     <TextBlock Text="{locale:Locale SettingsTabSystemAudioBackendDummy}" />
@@ -676,20 +687,34 @@
                         </StackPanel>
                         <StackPanel
                             Orientation="Horizontal"
-                            Spacing="56">
+                            Spacing="20">
                             <TextBlock VerticalAlignment="Center"
                                        Text="{locale:Locale SettingsTabSystemAudioVolume}"
-                                       ToolTip.Tip="{locale:Locale AudioVolumeTooltip}" />
-                            <Slider Value="{Binding Volume}"
-                                    ToolTip.Tip="{locale:Locale AudioVolumeTooltip}"
-                                    Minimum="0"
-                                    Maximum="100"
-                                    SmallChange="5"
-                                    TickFrequency="5"
-                                    IsSnapToTickEnabled="True"
+                                       ToolTip.Tip="{locale:Locale AudioVolumeTooltip}"
+                                       Width="240" />
+                            <ui:NumberBox Value="{Binding Volume}"
+                                    ToolTip.Tip="{locale:Locale AudioVolumeToolTip}"
+                                    Width="350"
+                                    SmallChange="1"
                                     LargeChange="10"
-                                    Width="300" />
-                            <TextBlock VerticalAlignment="Center" Text="{Binding Volume}"/>
+                                    SimpleNumberFormat="F0"
+                                    SpinButtonPlacementMode="Inline"
+                                    Minimum="0"
+                                    Maximum="100" />
+                        </StackPanel>
+                        <StackPanel
+                            Orientation="Horizontal"
+                            Spacing="20">
+                            <Slider Value="{Binding Volume}"
+                                        Margin="260,0,0,0"
+                                        ToolTip.Tip="{locale:Locale AudioVolumeTooltip}"
+                                        Minimum="0"
+                                        Maximum="100"
+                                        SmallChange="5"
+                                        TickFrequency="5"
+                                        IsSnapToTickEnabled="True"
+                                        LargeChange="10"
+                                        Width="350" />
                         </StackPanel>
                         <Separator Height="1" Margin="0,5" />
                     </StackPanel>
@@ -777,7 +802,8 @@
                                     Spacing="20">
                                     <TextBlock VerticalAlignment="Center" Margin="0,5"
                                             ToolTip.Tip="{locale:Locale FSAccessLogModeTooltip}"
-                                            Text="{locale:Locale SettingsTabLoggingFsGlobalAccessLogMode}" />
+                                            Text="{locale:Locale SettingsTabLoggingFsGlobalAccessLogMode}"
+                                            Width="285" />
                                     <ui:NumberBox
                                         Maximum="3"
                                         Minimum="0"
@@ -790,10 +816,11 @@
                                  <StackPanel
                                     Margin="0,5"
                                     Orientation="Horizontal"
-                                    Spacing="68">
+                                    Spacing="20">
                                     <TextBlock VerticalAlignment="Center"
                                             Text="{locale:Locale SettingsTabLoggingOpenglLogLevel}"
-                                            ToolTip.Tip="{locale:Locale OpenGlLogLevel}" />
+                                            ToolTip.Tip="{locale:Locale OpenGlLogLevel}"
+                                            Width="285" />
                                     <ComboBox SelectedIndex="{Binding OpenglDebugLevel}"
                                             Width="150"
                                             HorizontalContentAlignment="Left"

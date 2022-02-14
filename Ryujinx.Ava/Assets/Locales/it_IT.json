@@ -2,7 +2,7 @@
     "MenuBarFileOpenApplet": "Apri applet",
     "MenuBarFileOpenAppletOpenMiiAppletToolTip": "Apri l'editor Mii in modalità standalone",
     "SettingsTabInputDirectMouseAccess": "Accesso diretto al mouse",
-    "SettingsTabSystemMemoryManagerMode": "Modalità di gestione della memoria",
+    "SettingsTabSystemMemoryManagerMode": "Modalità di gestione della memoria:",
     "SettingsTabSystemMemoryManagerModeSoftware": "Software",
     "SettingsTabSystemMemoryManagerModeHost": "Host (veloce)",
     "SettingsTabSystemMemoryManagerModeHostUnchecked": "Host Unchecked (più veloce, non sicura)",
@@ -501,7 +501,7 @@
     "SettingsTabAudio": "Audio",
     "SettingsTabNetwork": "Rete",
     "SettingsTabNetworkConnection" : "Connessione di rete",
-    "SettingsTabGraphicsFrameRate" : "Frequenza di aggiornamento dell'host",
+    "SettingsTabGraphicsFrameRate" : "Frequenza di aggiornamento dell'host:",
     "SettingsTabGraphicsFrameRateTooltip" : "Imposta la frequenza di aggiornamento dell'host. Imposta a 0 per rimuovere il limite.",
     "SettingsTabCpuCache" : "Cache CPU",
     "SettingsTabCpuMemory" : "Memoria CPU"
