@@ -110,6 +110,10 @@ Ryujinx system files are stored in the `Ryujinx` folder. This folder is located 
 
 If you have contributions, suggestions, need emulator support or just want to get in touch with the team, join our [Discord server](https://discord.com/invite/Ryujinx). You may also review our [FAQ](https://github.com/Ryujinx/Ryujinx/wiki/Frequently-Asked-Questions).
 
+## Contribute
+
+If you have experience in C#, Switch Homebrew, graphic/website design, software quality assurance or beta testing, Discord management, or any other skills you think may be useful in helping the Ryujinx project, please contact us at our [Discord server](https://discord.com/invite/Ryujinx).
+
 ## Donations
                   
 If you'd like to support the project financially, Ryujinx has an active Patreon campaign.
