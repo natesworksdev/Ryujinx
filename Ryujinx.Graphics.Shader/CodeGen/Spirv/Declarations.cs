@@ -166,7 +166,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             context.Name(sbVariable, $"{GetStagePrefix(context.Config.Stage)}_s");
             context.Decorate(sbVariable, Decoration.DescriptorSet, (LiteralInteger)setIndex);
-            context.Decorate(sbVariable, Decoration.Binding, (LiteralInteger)descriptors[0].Binding);
+            context.Decorate(sbVariable, Decoration.Binding, (LiteralInteger)context.Config.FirstStorageBufferBinding);
             context.AddGlobalVariable(sbVariable);
 
             context.StorageBuffersArray = sbVariable;
