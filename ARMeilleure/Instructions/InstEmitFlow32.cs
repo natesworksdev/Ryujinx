@@ -105,7 +105,7 @@ namespace ARMeilleure.Instructions
         {
             OpCodeT16IfThen op = (OpCodeT16IfThen)context.CurrOp;
 
-            context.IfThenBlockState = op.IfThenBlockConds;
+            context.SetIfThenBlockState(op.IfThenBlockConds);
         }
     }
 }
