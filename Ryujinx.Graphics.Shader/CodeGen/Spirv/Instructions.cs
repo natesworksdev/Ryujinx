@@ -95,6 +95,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             Add(Instruction.LogicalNot,               GenerateLogicalNot);
             Add(Instruction.LogicalOr,                GenerateLogicalOr);
             Add(Instruction.LoopBreak,                GenerateLoopBreak);
+            Add(Instruction.LoopContinue,             GenerateLoopContinue);
             Add(Instruction.Maximum,                  GenerateMaximum);
             Add(Instruction.MaximumU32,               GenerateMaximumU32);
             Add(Instruction.MemoryBarrier,            GenerateMemoryBarrier);
@@ -959,6 +960,21 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             }
 
             context.Branch(context.GetNextLabel(loopBlock.Parent));
+
+            return OperationResult.Invalid;
+        }
+
+        private static OperationResult GenerateLoopContinue(CodeGenContext context, AstOperation operation)
+        {
+            AstBlock loopBlock = context.CurrentBlock;
+            while (loopBlock.Type != AstBlockType.DoWhile)
+            {
+                loopBlock = loopBlock.Parent;
+            }
+
+            (var loopTarget, var continueTarget) = context.LoopTargets[loopBlock];
+
+            context.Branch(continueTarget);
 
             return OperationResult.Invalid;
         }
