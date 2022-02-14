@@ -225,6 +225,11 @@ namespace Ryujinx.Configuration
         public List<string> GameDirs { get; set; }
 
         /// <summary>
+        /// Language Code for the UI
+        /// </summary>
+        public string LanguageCode { get; set; }
+
+        /// <summary>
         /// Enable or disable custom themes in the GUI
         /// </summary>
         public bool EnableCustomTheme { get; set; }

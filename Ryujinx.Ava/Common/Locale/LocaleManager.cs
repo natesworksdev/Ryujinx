@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Ava.Ui.ViewModels;
 using Ryujinx.Common;
+using Ryujinx.Configuration;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.Json;
@@ -28,6 +29,11 @@ namespace Ryujinx.Ava.Common.Locale
         public void Load()
         {
             string localeLanguageCode = CultureInfo.CurrentCulture.Name.Replace('-', '_');
+
+            if (!string.IsNullOrEmpty(ConfigurationState.Instance.Ui.LanguageCode.Value))
+            {
+                localeLanguageCode = ConfigurationState.Instance.Ui.LanguageCode.Value;
+            }
 
             // Load english first, if the target language translation is incomplete, we default to english.
             LoadLanguage(DefaultLanguageCode);
@@ -94,6 +100,9 @@ namespace Ryujinx.Ava.Common.Locale
             {
                 this[item.Key] = item.Value;
             }
+
+            ConfigurationState.Instance.Ui.LanguageCode.Value = languageCode;
+            ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
         }
     }
 }

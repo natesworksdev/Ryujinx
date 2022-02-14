@@ -76,6 +76,11 @@ namespace Ryujinx.Configuration
             public ReactiveObject<List<string>> GameDirs { get; private set; }
 
             /// <summary>
+            /// Language Code for the UI
+            /// </summary>
+            public ReactiveObject<string> LanguageCode { get; private set; }
+
+            /// <summary>
             /// Enable or disable custom themes in the GUI
             /// </summary>
             public ReactiveObject<bool> EnableCustomTheme { get; private set; }
@@ -134,6 +139,7 @@ namespace Ryujinx.Configuration
                 GridSize          = new ReactiveObject<int>();
                 ApplicationSort   = new ReactiveObject<ApplicationSort>();
                 IsAscendingOrder  = new ReactiveObject<bool>();
+                LanguageCode      = new ReactiveObject<string>();
             }
         }
 
@@ -544,6 +550,7 @@ namespace Ryujinx.Configuration
                     SortAscending = Ui.ColumnSort.SortAscending
                 },
                 GameDirs                  = Ui.GameDirs,
+                LanguageCode              = Ui.LanguageCode,
                 EnableCustomTheme         = Ui.EnableCustomTheme,
                 CustomThemePath           = Ui.CustomThemePath,
                 BaseStyle                 = Ui.BaseStyle,
@@ -617,6 +624,7 @@ namespace Ryujinx.Configuration
             Ui.ColumnSort.SortAscending.Value      = false;
             Ui.GameDirs.Value                      = new List<string>();
             Ui.EnableCustomTheme.Value             = false;
+            Ui.LanguageCode.Value                  = "en_US";
             Ui.CustomThemePath.Value               = "";
             Ui.BaseStyle.Value                     = "Dark";
             Ui.GameListViewMode.Value              = Glyph.List;
@@ -1057,7 +1065,8 @@ namespace Ryujinx.Configuration
                 configurationFileFormat.GameListViewMode = Glyph.List;
                 configurationFileFormat.ShowNames        = true;
                 configurationFileFormat.GridSize         = 2;
-                configurationFileFormat.HostRefreshRate    = 60;
+                configurationFileFormat.HostRefreshRate  = 60;
+                configurationFileFormat.LanguageCode     = "en_US";
 
                 configurationFileUpdated = true;
             }
@@ -1113,6 +1122,7 @@ namespace Ryujinx.Configuration
             Ui.ColumnSort.SortAscending.Value      = configurationFileFormat.ColumnSort.SortAscending;
             Ui.GameDirs.Value                      = configurationFileFormat.GameDirs;
             Ui.EnableCustomTheme.Value             = configurationFileFormat.EnableCustomTheme;
+            Ui.LanguageCode.Value                  = configurationFileFormat.LanguageCode;
             Ui.CustomThemePath.Value               = configurationFileFormat.CustomThemePath;
             Ui.BaseStyle.Value                     = configurationFileFormat.BaseStyle;
             Ui.GameListViewMode.Value              = configurationFileFormat.GameListViewMode;
