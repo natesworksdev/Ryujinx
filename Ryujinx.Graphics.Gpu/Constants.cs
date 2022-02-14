@@ -69,7 +69,7 @@ namespace Ryujinx.Graphics.Gpu
         /// <summary>
         /// Maximum number of vertex attributes.
         /// </summary>
-        public const int TotalVertexAttribs = 16;
+        public const int TotalVertexAttribs = 16; // FIXME: Should be 32, but OpenGL only supports 16.
 
         /// <summary>
         /// Maximum number of vertex buffers.

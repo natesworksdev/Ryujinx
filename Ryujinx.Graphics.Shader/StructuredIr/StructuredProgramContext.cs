@@ -279,7 +279,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
         {
             if (operand.Type == OperandType.Attribute)
             {
-                Info.Outputs.Add(operand.Value);
+                Info.Outputs.Add(operand.Value & AttributeConsts.Mask);
             }
 
             return GetOperand(operand);

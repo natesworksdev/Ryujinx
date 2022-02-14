@@ -29,6 +29,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             context.AddCapability(Capability.SampledBuffer);
             context.AddCapability(Capability.SubgroupBallotKHR);
             context.AddCapability(Capability.SubgroupVoteKHR);
+
+            if (config.Stage == ShaderStage.Geometry)
+            {
+                context.AddCapability(Capability.Geometry);
+            }
+
             context.AddExtension("SPV_KHR_shader_ballot");
             context.AddExtension("SPV_KHR_subgroup_vote");
 
@@ -97,7 +103,39 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             {
                 context.AddEntryPoint(context.Config.Stage.Convert(), spvFunc, "main", context.GetMainInterface());
 
-                if (context.Config.Stage == ShaderStage.Fragment)
+                if (context.Config.Stage == ShaderStage.Geometry)
+                {
+                    InputTopology inPrimitive = context.Config.GpuAccessor.QueryPrimitiveTopology();
+
+                    switch (inPrimitive)
+                    {
+                        case InputTopology.Points:
+                            context.AddExecutionMode(spvFunc, ExecutionMode.InputPoints);
+                            break;
+                        case InputTopology.Lines:
+                            context.AddExecutionMode(spvFunc, ExecutionMode.InputLines);
+                            break;
+                        case InputTopology.LinesAdjacency:
+                            context.AddExecutionMode(spvFunc, ExecutionMode.InputLinesAdjacency);
+                            break;
+                        case InputTopology.TrianglesAdjacency:
+                            context.AddExecutionMode(spvFunc, ExecutionMode.InputTrianglesAdjacency);
+                            break;
+                    }
+
+                    context.AddExecutionMode(spvFunc, ExecutionMode.Invocations, (SpvLiteralInteger)context.InputVertices);
+
+                    context.AddExecutionMode(spvFunc, context.Config.OutputTopology switch
+                    {
+                        OutputTopology.PointList => ExecutionMode.OutputPoints,
+                        OutputTopology.LineStrip => ExecutionMode.OutputLineStrip,
+                        OutputTopology.TriangleStrip => ExecutionMode.OutputTriangleStrip,
+                        _ => throw new InvalidOperationException($"Invalid output topology \"{context.Config.OutputTopology}\".")
+                    });
+
+                    context.AddExecutionMode(spvFunc, ExecutionMode.OutputVertices, (SpvLiteralInteger)context.Config.MaxOutputVertices);
+                }
+                else if (context.Config.Stage == ShaderStage.Fragment)
                 {
                     context.AddExecutionMode(spvFunc, context.Config.Options.TargetApi == TargetApi.Vulkan
                         ? ExecutionMode.OriginUpperLeft
@@ -228,7 +266,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                     }
                     else if (dest.Type == OperandType.Attribute)
                     {
-                        var elemPointer = context.GetAttributeElemPointer(dest, true, out var elemType);
+                        var elemPointer = context.GetAttributeElemPointer(dest.Value, true, null, out var elemType);
                         context.Store(elemPointer, context.Get(elemType, assignment.Source));
                     }
                     else if (dest.Type == OperandType.Argument)

@@ -391,19 +391,20 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             var dict = isOutAttr ? context.Outputs : context.Inputs;
             var attrInfo = AttributeInfo.From(context.Config, attr);
 
-            if (attrInfo.BaseValue == AttributeConsts.PositionX && context.Config.Stage != ShaderStage.Fragment)
-            {
-                isOutAttr = true;
-                dict = context.Outputs;
-            }
-
             if (dict.ContainsKey(attrInfo.BaseValue))
             {
                 return;
             }
 
             var storageClass = isOutAttr ? StorageClass.Output : StorageClass.Input;
-            var spvType = context.TypePointer(storageClass, context.GetType(attrInfo.Type, attrInfo.Length));
+            var attrType = context.GetType(attrInfo.Type, attrInfo.Length);
+
+            if (context.Config.Stage == ShaderStage.Geometry && !isOutAttr && (!attrInfo.IsBuiltin || AttributeInfo.IsArrayBuiltIn(attr)))
+            {
+                attrType = context.TypeArray(attrType, context.Constant(context.TypeU32(), (LiteralInteger)context.InputVertices));
+            }
+
+            var spvType = context.TypePointer(storageClass, attrType);
             var spvVar = context.Variable(spvType, storageClass);
 
             if (attrInfo.IsBuiltin)
