@@ -102,6 +102,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                     context.AddExecutionMode(spvFunc, context.Config.Options.TargetApi == TargetApi.Vulkan
                         ? ExecutionMode.OriginUpperLeft
                         : ExecutionMode.OriginLowerLeft);
+
+                    if (context.Outputs.ContainsKey(AttributeConsts.FragmentOutputDepth))
+                    {
+                        context.AddExecutionMode(spvFunc, ExecutionMode.DepthReplacing);
+                    }
                 }
                 else if (context.Config.Stage == ShaderStage.Compute)
                 {
