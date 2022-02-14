@@ -14,9 +14,9 @@ namespace ARMeilleure.Decoders
 
         public int Immediate { get; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCodeT16MemImm5(inst, address, opCode, inITBlock);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeT16MemImm5(inst, address, opCode);
 
-        public OpCodeT16MemImm5(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
+        public OpCodeT16MemImm5(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Rt = (opCode >> 0) & 7;
             Rn = (opCode >> 3) & 7;

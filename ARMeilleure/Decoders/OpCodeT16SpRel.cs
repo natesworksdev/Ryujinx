@@ -5,15 +5,15 @@ namespace ARMeilleure.Decoders
         public int Rd { get; }
         public int Rn => 13;
 
-        public bool SetFlags => false;
+        public bool? SetFlags => false;
 
         public int Immediate { get; }
 
         public bool IsRotated => false;
 
-        public static new OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCodeT16SpRel(inst, address, opCode, inITBlock);
+        public static new OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeT16SpRel(inst, address, opCode);
 
-        public OpCodeT16SpRel(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
+        public OpCodeT16SpRel(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Rd = (opCode >> 8) & 0x7;
             Immediate = ((opCode >> 0) & 0xff) << 2;

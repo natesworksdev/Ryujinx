@@ -4,9 +4,9 @@
     {
         public int Rm { get; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCodeT16BReg(inst, address, opCode, inITBlock);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeT16BReg(inst, address, opCode);
 
-        public OpCodeT16BReg(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
+        public OpCodeT16BReg(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Rm = (opCode >> 3) & 0xf;
         }

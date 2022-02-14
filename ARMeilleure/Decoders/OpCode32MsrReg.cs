@@ -10,9 +10,9 @@ namespace ARMeilleure.Decoders
         public bool Banked { get; }
         public int  Rn     { get; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCode32MsrReg(inst, address, opCode, inITBlock);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32MsrReg(inst, address, opCode);
 
-        public OpCode32MsrReg(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
+        public OpCode32MsrReg(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             R = ((opCode >> 22) & 1) != 0;
             Mask = (opCode >> 16) & 0xf;

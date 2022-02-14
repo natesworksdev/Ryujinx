@@ -4,9 +4,9 @@ namespace ARMeilleure.Decoders
     {
         public long Immediate { get; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCode32BImm(inst, address, opCode, inITBlock);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32BImm(inst, address, opCode);
 
-        public OpCode32BImm(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
+        public OpCode32BImm(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             uint pc = GetPc();
 

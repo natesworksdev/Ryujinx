@@ -2,9 +2,9 @@
 {
     class OpCode32SimdRegElemLong : OpCode32SimdRegElem
     {
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCode32SimdRegElemLong(inst, address, opCode, inITBlock);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdRegElemLong(inst, address, opCode);
 
-        public OpCode32SimdRegElemLong(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
+        public OpCode32SimdRegElemLong(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Q = false;
             F = false;

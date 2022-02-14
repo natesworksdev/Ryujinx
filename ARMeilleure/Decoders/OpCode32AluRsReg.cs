@@ -7,9 +7,9 @@
 
         public ShiftType ShiftType { get; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCode32AluRsReg(inst, address, opCode, inITBlock);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32AluRsReg(inst, address, opCode);
 
-        public OpCode32AluRsReg(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
+        public OpCode32AluRsReg(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Rm = (opCode >> 0) & 0xf;
             Rs = (opCode >> 8) & 0xf;

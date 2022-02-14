@@ -9,9 +9,9 @@ namespace ARMeilleure.Decoders
 
         public int IfThenBlockSize { get { return IfThenBlockConds.Length; } }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCodeT16IfThen(inst, address, opCode, inITBlock);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeT16IfThen(inst, address, opCode);
 
-        public OpCodeT16IfThen(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
+        public OpCodeT16IfThen(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             List<Condition> conds = new();
 

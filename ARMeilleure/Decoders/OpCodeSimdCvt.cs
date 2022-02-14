@@ -4,9 +4,9 @@ namespace ARMeilleure.Decoders
     {
         public int FBits { get; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCodeSimdCvt(inst, address, opCode, inITBlock);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeSimdCvt(inst, address, opCode);
 
-        public OpCodeSimdCvt(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
+        public OpCodeSimdCvt(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             int scale = (opCode >> 10) & 0x3f;
             int sf    = (opCode >> 31) & 0x1;

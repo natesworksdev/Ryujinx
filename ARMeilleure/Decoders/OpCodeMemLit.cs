@@ -8,9 +8,9 @@ namespace ARMeilleure.Decoders
         public bool Signed    { get; }
         public bool Prefetch  { get; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCodeMemLit(inst, address, opCode, inITBlock);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeMemLit(inst, address, opCode);
 
-        public OpCodeMemLit(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
+        public OpCodeMemLit(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Rt = opCode & 0x1f;
 

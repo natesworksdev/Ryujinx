@@ -4,9 +4,9 @@ namespace ARMeilleure.Decoders
     {
         public int Rt2 { get; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCodeMemPair(inst, address, opCode, inITBlock);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeMemPair(inst, address, opCode);
 
-        public OpCodeMemPair(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
+        public OpCodeMemPair(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Rt2      =  (opCode >> 10) & 0x1f;
             WBack    = ((opCode >> 23) & 0x1) != 0;

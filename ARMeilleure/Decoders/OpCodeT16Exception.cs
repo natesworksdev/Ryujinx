@@ -4,9 +4,9 @@
     {
         public int Id { get; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCodeT16Exception(inst, address, opCode, inITBlock);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeT16Exception(inst, address, opCode);
 
-        public OpCodeT16Exception(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
+        public OpCodeT16Exception(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Id = opCode & 0xFF;
         }

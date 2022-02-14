@@ -6,9 +6,9 @@ namespace ARMeilleure.Decoders
 
         public Condition Cond { get; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCodeSimdFcond(inst, address, opCode, inITBlock);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeSimdFcond(inst, address, opCode);
 
-        public OpCodeSimdFcond(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
+        public OpCodeSimdFcond(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Nzcv =             (opCode >>  0) & 0xf;
             Cond = (Condition)((opCode >> 12) & 0xf);

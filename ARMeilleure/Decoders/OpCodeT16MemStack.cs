@@ -12,9 +12,9 @@ namespace ARMeilleure.Decoders
         public bool IsLoad { get; }
         public int Offset { get; }
         
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCodeT16MemStack(inst, address, opCode, inITBlock);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeT16MemStack(inst, address, opCode);
 
-        public OpCodeT16MemStack(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
+        public OpCodeT16MemStack(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             int extra = (opCode >> 8) & 1;
             int regCount = BitOperations.PopCount((uint)opCode & 0x1ff);

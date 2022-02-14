@@ -4,9 +4,9 @@ namespace ARMeilleure.Decoders
     {
         public Condition Cond { get; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCodeBImmCond(inst, address, opCode, inITBlock);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeBImmCond(inst, address, opCode);
 
-        public OpCodeBImmCond(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
+        public OpCodeBImmCond(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             int o0 = (opCode >> 4) & 1;
 

@@ -2,9 +2,9 @@
 {
     class OpCode32SimdRev : OpCode32SimdCmpZ
     {
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCode32SimdRev(inst, address, opCode, inITBlock);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdRev(inst, address, opCode);
 
-        public OpCode32SimdRev(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
+        public OpCode32SimdRev(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             if (Opc + Size >= 3)
             {

@@ -4,8 +4,8 @@ namespace ARMeilleure.Decoders
     {
         public long Immediate => RmImm;
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCodeCcmpImm(inst, address, opCode, inITBlock);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeCcmpImm(inst, address, opCode);
 
-        public OpCodeCcmpImm(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock) { }
+        public OpCodeCcmpImm(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode) { }
     }
 }

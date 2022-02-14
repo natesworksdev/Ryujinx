@@ -8,8 +8,8 @@ namespace ARMeilleure.Decoders
 
         public ShiftType ShiftType => ShiftType.Lsl;
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCodeCcmpReg(inst, address, opCode, inITBlock);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeCcmpReg(inst, address, opCode);
 
-        public OpCodeCcmpReg(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock) { }
+        public OpCodeCcmpReg(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode) { }
     }
 }

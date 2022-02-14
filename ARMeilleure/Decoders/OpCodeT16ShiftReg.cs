@@ -10,11 +10,11 @@
 
         public ShiftType ShiftType { get; }
 
-        public bool SetFlags { get; }
+        public bool? SetFlags => null;
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCodeT16ShiftReg(inst, address, opCode, inITBlock);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeT16ShiftReg(inst, address, opCode);
 
-        public OpCodeT16ShiftReg(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
+        public OpCodeT16ShiftReg(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Rd = (opCode >> 0) & 7;
             Rm = (opCode >> 0) & 7;
@@ -22,8 +22,6 @@
             Rs = (opCode >> 3) & 7;
 
             ShiftType = (ShiftType)(((opCode >> 6) & 1) | ((opCode >> 7) & 2));
-
-            SetFlags = !inITBlock;
         }
     }
 }

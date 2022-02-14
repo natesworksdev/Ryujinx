@@ -6,9 +6,9 @@ namespace ARMeilleure.Decoders
 
         public int Immediate { get; }
 
-        public static new OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCodeT16BImmCmp(inst, address, opCode, inITBlock);
+        public static new OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeT16BImmCmp(inst, address, opCode);
 
-        public OpCodeT16BImmCmp(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
+        public OpCodeT16BImmCmp(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Rn = (opCode >> 0) & 0x7;
 

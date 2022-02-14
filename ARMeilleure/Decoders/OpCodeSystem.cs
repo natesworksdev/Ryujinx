@@ -9,9 +9,9 @@ namespace ARMeilleure.Decoders
         public int Op1 { get; }
         public int Op0 { get; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCodeSystem(inst, address, opCode, inITBlock);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeSystem(inst, address, opCode);
 
-        public OpCodeSystem(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
+        public OpCodeSystem(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Rt  =  (opCode >>  0) & 0x1f;
             Op2 =  (opCode >>  5) & 0x7;

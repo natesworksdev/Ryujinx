@@ -7,9 +7,9 @@ namespace ARMeilleure.Decoders
         public bool Add => true;
         public int Immediate { get; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCodeT16Adr(inst, address, opCode, inITBlock);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeT16Adr(inst, address, opCode);
 
-        public OpCodeT16Adr(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
+        public OpCodeT16Adr(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Rd  = (opCode >> 8) & 7;
 

@@ -195,18 +195,18 @@ namespace ARMeilleure.Decoders
             ulong          limitAddress)
         {
             ulong address = block.Address;
-            int inITBlock = 0;
+            int itBlockSize = 0;
 
             OpCode opCode;
 
             do
             {
-                if (address >= limitAddress && inITBlock == 0)
+                if (address >= limitAddress && itBlockSize == 0)
                 {
                     break;
                 }
 
-                opCode = DecodeOpCode(memory, address, mode, inITBlock > 0);
+                opCode = DecodeOpCode(memory, address, mode);
 
                 block.OpCodes.Add(opCode);
 
@@ -214,11 +214,11 @@ namespace ARMeilleure.Decoders
 
                 if (opCode is OpCodeT16IfThen it)
                 {
-                    inITBlock = it.IfThenBlockSize;
+                    itBlockSize = it.IfThenBlockSize;
                 }
-                else if (inITBlock > 0)
+                else if (itBlockSize > 0)
                 {
-                    inITBlock--;
+                    itBlockSize--;
                 }
             }
             while (!(IsBranch(opCode) || IsException(opCode)));
@@ -325,7 +325,7 @@ namespace ARMeilleure.Decoders
                    opCode.Instruction.Name == InstName.Und;
         }
 
-        public static OpCode DecodeOpCode(IMemoryManager memory, ulong address, ExecutionMode mode, bool inITBlock)
+        public static OpCode DecodeOpCode(IMemoryManager memory, ulong address, ExecutionMode mode)
         {
             int opCode = memory.Read<int>(address);
 
@@ -351,17 +351,17 @@ namespace ARMeilleure.Decoders
 
             if (makeOp != null)
             {
-                return makeOp(inst, address, opCode, inITBlock);
+                return makeOp(inst, address, opCode);
             }
             else
             {
                 if (mode == ExecutionMode.Aarch32Thumb)
                 {
-                    return new OpCodeT16(inst, address, opCode, inITBlock);
+                    return new OpCodeT16(inst, address, opCode);
                 }
                 else
                 {
-                    return new OpCode(inst, address, opCode, inITBlock);
+                    return new OpCode(inst, address, opCode);
                 }
             }
         }

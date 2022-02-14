@@ -385,8 +385,6 @@ namespace ARMeilleure.Translation
                             lblPredicateSkip = Label();
 
                             InstEmitFlowHelper.EmitCondBranch(context, lblPredicateSkip, context.CurrentIfThenBlockCond.Invert());
-
-                            context.AdvanceIfThenBlockState();
                         }
 
                         if (opCode is OpCode32 op && op.Cond < Condition.Al)
@@ -408,6 +406,11 @@ namespace ARMeilleure.Translation
                         if (lblPredicateSkip != default)
                         {
                             context.MarkLabel(lblPredicateSkip);
+                        }
+
+                        if (context.IsInIfThenBlock && opCode.Instruction.Name != InstName.It)
+                        {
+                            context.AdvanceIfThenBlockState();
                         }
                     }
                 }

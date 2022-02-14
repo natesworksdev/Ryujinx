@@ -16,9 +16,9 @@ namespace ARMeilleure.Decoders
             Unsigned
         }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCodeMemImm(inst, address, opCode, inITBlock);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeMemImm(inst, address, opCode);
 
-        public OpCodeMemImm(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
+        public OpCodeMemImm(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Extend64 = ((opCode >> 22) & 3) == 2;
             WBack    = ((opCode >> 24) & 1) == 0;

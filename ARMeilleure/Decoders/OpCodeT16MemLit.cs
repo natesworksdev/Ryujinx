@@ -12,8 +12,8 @@
 
         public int Immediate { get; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCodeT16MemLit(inst, address, opCode, inITBlock);
-        public OpCodeT16MemLit(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeT16MemLit(inst, address, opCode);
+        public OpCodeT16MemLit(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Rt = (opCode >> 8) & 7;
 

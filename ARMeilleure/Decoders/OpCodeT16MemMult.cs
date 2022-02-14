@@ -12,9 +12,9 @@ namespace ARMeilleure.Decoders
         public bool IsLoad { get; }
         public int Offset { get; }
         
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCodeT16MemMult(inst, address, opCode, inITBlock);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeT16MemMult(inst, address, opCode);
 
-        public OpCodeT16MemMult(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
+        public OpCodeT16MemMult(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             RegisterMask = opCode & 0xff;
             Rn = (opCode >> 8) & 7;

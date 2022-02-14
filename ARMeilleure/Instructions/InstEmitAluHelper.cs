@@ -12,6 +12,18 @@ namespace ARMeilleure.Instructions
 {
     static class InstEmitAluHelper
     {
+        public static bool ShouldSetFlags(ArmEmitterContext context)
+        {
+            IOpCode32Alu op = (IOpCode32Alu)context.CurrOp;
+
+            if (op.SetFlags == null)
+            {
+                return !context.IsInIfThenBlock;
+            }
+
+            return op.SetFlags.Value;
+        }
+
         public static void EmitNZFlagsCheck(ArmEmitterContext context, Operand d)
         {
             SetFlag(context, PState.NFlag, context.ICompareLess (d, Const(d.Type, 0)));
@@ -185,7 +197,7 @@ namespace ARMeilleure.Instructions
                 // ARM32.
                 case IOpCode32AluImm op:
                 {
-                    if (op.SetFlags && op.IsRotated)
+                    if (ShouldSetFlags(context) && op.IsRotated)
                     {
                         SetFlag(context, PState.CFlag, Const((uint)op.Immediate >> 31));
                     }
@@ -265,7 +277,7 @@ namespace ARMeilleure.Instructions
 
             if (shift != 0)
             {
-                setCarry &= op.SetFlags;
+                setCarry &= ShouldSetFlags(context);
 
                 switch (op.ShiftType)
                 {
@@ -312,7 +324,7 @@ namespace ARMeilleure.Instructions
             Operand zeroResult = m;
             Operand shiftResult = m;
 
-            setCarry &= op.SetFlags;
+            setCarry &= ShouldSetFlags(context);
 
             switch (op.ShiftType)
             {

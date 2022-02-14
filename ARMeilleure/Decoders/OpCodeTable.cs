@@ -6,7 +6,7 @@ namespace ARMeilleure.Decoders
 {
     static class OpCodeTable
     {
-        public delegate OpCode MakeOp(InstDescriptor inst, ulong address, int opCode, bool inITBlock);
+        public delegate OpCode MakeOp(InstDescriptor inst, ulong address, int opCode);
 
         private const int FastLookupSize = 0x1000;
 

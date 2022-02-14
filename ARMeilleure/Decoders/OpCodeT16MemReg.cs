@@ -13,9 +13,9 @@
 
         public int Immediate => throw new System.InvalidOperationException();
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCodeT16MemReg(inst, address, opCode, inITBlock);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeT16MemReg(inst, address, opCode);
 
-        public OpCodeT16MemReg(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
+        public OpCodeT16MemReg(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Rt = (opCode >> 0) & 7;
             Rn = (opCode >> 3) & 7;

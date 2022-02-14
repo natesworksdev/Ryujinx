@@ -4,9 +4,9 @@
     {
         public long Immediate { get; }
 
-        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode, bool inITBlock) => new OpCodeT16BImm11(inst, address, opCode, inITBlock);
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeT16BImm11(inst, address, opCode);
 
-        public OpCodeT16BImm11(InstDescriptor inst, ulong address, int opCode, bool inITBlock) : base(inst, address, opCode, inITBlock)
+        public OpCodeT16BImm11(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             int imm = (opCode << 21) >> 20; 
             Immediate = GetPc() + imm;
