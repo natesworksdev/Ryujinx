@@ -1,5 +1,4 @@
-﻿using Ryujinx.Common;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Shader.Translation
 {
@@ -97,6 +96,18 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
 
             return new AttributeInfo(value, 0, 0, AggregateType.Invalid);
+        }
+
+        public static bool IsArrayBuiltIn(int attr)
+        {
+            if (attr <= AttributeConsts.TessLevelInner1 ||
+                attr == AttributeConsts.TessCoordX ||
+                attr == AttributeConsts.TessCoordY)
+            {
+                return false;
+            }
+
+            return (attr & AttributeConsts.SpecialMask) == 0;
         }
     }
 }

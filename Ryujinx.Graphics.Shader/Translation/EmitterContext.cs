@@ -180,8 +180,8 @@ namespace Ryujinx.Graphics.Shader.Translation
             {
                 if (Config.GpuAccessor.QueryTransformDepthMinusOneToOne())
                 {
-                    Operand z = Attribute(AttributeConsts.PositionZ);
-                    Operand w = Attribute(AttributeConsts.PositionW);
+                    Operand z = Attribute(AttributeConsts.PositionZ | AttributeConsts.LoadOutputMask);
+                    Operand w = Attribute(AttributeConsts.PositionW | AttributeConsts.LoadOutputMask);
                     Operand halfW = this.FPMultiply(w, ConstF(0.5f));
 
                     this.Copy(Attribute(AttributeConsts.PositionZ), this.FPFusedMultiplyAdd(z, ConstF(0.5f), halfW));

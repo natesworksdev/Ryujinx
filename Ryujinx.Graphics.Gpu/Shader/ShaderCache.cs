@@ -697,7 +697,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             TranslatorContext[] shaderContexts = new TranslatorContext[Constants.ShaderStages + 1];
 
-            AttributeType[] attributeTypes = new AttributeType[Constants.TotalVertexAttribs];
+            AttributeType[] attributeTypes = new AttributeType[32];
 
             for (int location = 0; location < attributeTypes.Length; location++)
             {
