@@ -1,9 +1,11 @@
-﻿namespace ARMeilleure.Decoders
+﻿using ARMeilleure.State;
+
+namespace ARMeilleure.Decoders
 {
     class OpCodeT16MemLit : OpCodeT16, IOpCode32Mem
     {
         public int Rt { get; }
-        public int Rn => 15;
+        public int Rn => RegisterAlias.Aarch32Pc;
 
         public bool WBack => false;
         public bool IsLoad => true;
@@ -13,6 +15,7 @@
         public int Immediate { get; }
 
         public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeT16MemLit(inst, address, opCode);
+
         public OpCodeT16MemLit(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Rt = (opCode >> 8) & 7;

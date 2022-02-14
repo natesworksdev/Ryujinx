@@ -11,31 +11,23 @@ namespace ARMeilleure.Decoders
         public int PostOffset { get; }
         public bool IsLoad { get; }
         public int Offset { get; }
-        
+
         public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeT16MemMult(inst, address, opCode);
 
         public OpCodeT16MemMult(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
+            int regCount = BitOperations.PopCount((uint)RegisterMask);
+
             RegisterMask = opCode & 0xff;
             Rn = (opCode >> 8) & 7;
-            
-            int regCount = BitOperations.PopCount((uint)RegisterMask);
-            
-            switch (inst.Name)
+            Offset = 0;
+            PostOffset = 4 * regCount;
+            IsLoad = inst.Name switch
             {
-                case InstName.Stm:
-                    IsLoad = false;
-                    Offset = 0;
-                    PostOffset = 4 * regCount;
-                    break;
-                case InstName.Ldm:
-                    IsLoad = true;
-                    Offset = 0;
-                    PostOffset = 4 * regCount;
-                    break;
-                default:
-                    throw new InvalidOperationException();
-            }
+                InstName.Ldm => true,
+                InstName.Stm => false,
+                _ => throw new InvalidOperationException()
+            };
         }
     }
 }

@@ -1,9 +1,11 @@
+using ARMeilleure.State;
+
 namespace ARMeilleure.Decoders
 {
     class OpCodeT16SpRel : OpCodeT16, IOpCode32AluImm
     {
         public int Rd { get; }
-        public int Rn => 13;
+        public int Rn => RegisterAlias.Aarch32Sp;
 
         public bool? SetFlags => false;
 

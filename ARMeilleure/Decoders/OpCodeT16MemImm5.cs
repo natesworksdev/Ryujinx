@@ -1,4 +1,5 @@
 ﻿using ARMeilleure.Instructions;
+using System;
 
 namespace ARMeilleure.Decoders
 {
@@ -50,7 +51,7 @@ namespace ARMeilleure.Decoders
                     Immediate = ((opCode >> 6) & 0x1f) << 1;
                     break;
                 default:
-                    throw new System.InvalidOperationException();
+                    throw new InvalidOperationException();
             }
         }
     }

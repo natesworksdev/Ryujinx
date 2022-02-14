@@ -1,9 +1,11 @@
-﻿namespace ARMeilleure.Decoders
+﻿using ARMeilleure.State;
+
+namespace ARMeilleure.Decoders
 {
     class OpCodeT16MemSp : OpCodeT16, IOpCode32Mem
     {
         public int Rt { get; }
-        public int Rn => 13;
+        public int Rn => RegisterAlias.Aarch32Sp;
 
         public bool WBack => false;
         public bool IsLoad { get; }
