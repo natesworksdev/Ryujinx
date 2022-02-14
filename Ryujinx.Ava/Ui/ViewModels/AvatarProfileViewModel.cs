@@ -1,4 +1,5 @@
 using Avalonia.Media;
+using DynamicData;
 using LibHac.Common;
 using LibHac.Fs;
 using LibHac.Fs.Fsa;
@@ -34,7 +35,15 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         private int _selectedIndex;
         private Color _backgroundColor = Colors.White;
-        public bool IsActive { get; set; }
+        private bool _isActive;
+        private int _imagesLoaded;
+        private byte[] _selectedImage;
+
+        public bool IsActive
+        {
+            get => _isActive;
+            set => _isActive = value;
+        }
 
         public AvatarProfileViewModel()
         {
@@ -53,6 +62,8 @@ namespace Ryujinx.Ava.Ui.ViewModels
             set
             {
                 _backgroundColor = value;
+
+                IsActive = false;
                 
                 ReloadImages();
             }
@@ -64,6 +75,18 @@ namespace Ryujinx.Ava.Ui.ViewModels
             set
             {
                 _images = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public int ImageCount => AvatarDict.Count;
+
+        public int ImagesLoaded
+        {
+            get => _imagesLoaded;
+            set
+            {
+                _imagesLoaded = value;
                 OnPropertyChanged();
             }
         }
@@ -88,30 +111,48 @@ namespace Ryujinx.Ava.Ui.ViewModels
             }
         }
 
-        public byte[] SelectedImage { get; private set; }
+        public byte[] SelectedImage
+        {
+            get => _selectedImage;
+            private set => _selectedImage = value;
+        }
 
         public void ReloadImages()
         {
             Task.Run(() =>
             {
-                Images.Clear();
-
-                int index = 0;
-                int selectedIndex = _selectedIndex;
-
-                foreach (var image in AvatarDict)
+                lock (this)
                 {
-                    if (!IsActive)
-                    {
-                        return;
-                    }
+                    IsActive = true;
                     
-                    var data = ProcessImage(image.Value);
-                    _images.Add(new ProfileImageModel(image.Key, data));
-                    if (index++ == selectedIndex)
+                    Images.Clear();
+
+                    int index = 0;
+                    int selectedIndex = _selectedIndex;
+
+                    var newImages = new List<ProfileImageModel>();
+
+                    ImagesLoaded = 0;
+
+                    foreach (var image in AvatarDict)
                     {
-                        SelectedImage = data;
+                        if (!IsActive)
+                        {
+                            return;
+                        }
+
+                        var data = ProcessImage(image.Value);
+                        newImages.Add(new ProfileImageModel(image.Key, data));
+                        if (index++ == selectedIndex)
+                        {
+                            SelectedImage = data;
+                        }
+
+                        ImagesLoaded++;
                     }
+
+                    ImagesLoaded = 0;
+                    Images.AddRange(newImages);
                 }
             });
         }

@@ -23,6 +23,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <ListBox Grid.Row="1" BorderThickness="0" SelectedIndex="{Binding SelectedIndex}" Width="600" Height="500"
                  Items="{Binding Images}" HorizontalAlignment="Stretch" VerticalAlignment="Center">
@@ -38,7 +39,8 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="10" Margin="10" HorizontalAlignment="Center">
+        <ProgressBar Grid.Row="2" Value="{Binding ImagesLoaded}" HorizontalAlignment="Stretch"  Margin="5" Maximum="{Binding ImageCount}" Minimum="0"/>
+        <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="10" Margin="10" HorizontalAlignment="Center">
             <Button Content="{Locale:Locale AvatarChoose}" Width="200" Name="ChooseButton" Click="ChooseButton_OnClick" />
             <ui:ColorPickerButton Color="{Binding BackgroundColor, Mode=TwoWay}" Name="ColorButton"/>
             <Button HorizontalAlignment="Right" Content="{Locale:Locale AvatarClose}" Click="CloseButton_OnClick"
