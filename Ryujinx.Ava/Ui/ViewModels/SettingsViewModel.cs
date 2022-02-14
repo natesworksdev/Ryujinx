@@ -232,7 +232,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
             var file = await dialog.ShowAsync(_owner);
 
-            if (file.Length > 0)
+            if (file != null && file.Length > 0)
             {
                 CustomThemePath = file[0];
                 OnPropertyChanged(nameof(CustomThemePath));
