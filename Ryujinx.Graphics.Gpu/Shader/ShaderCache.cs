@@ -261,7 +261,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 return gpShaders;
             }
 
-            AttributeType[] attributeTypes = new AttributeType[Constants.TotalVertexAttribs];
+            AttributeType[] attributeTypes = new AttributeType[32];
 
             for (int location = 0; location < attributeTypes.Length; location++)
             {

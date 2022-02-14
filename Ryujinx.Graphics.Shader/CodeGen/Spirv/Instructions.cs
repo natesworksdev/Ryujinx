@@ -73,6 +73,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             Add(Instruction.Ddy,                      GenerateDdy);
             Add(Instruction.Discard,                  GenerateDiscard);
             Add(Instruction.Divide,                   GenerateDivide);
+            Add(Instruction.EmitVertex,               GenerateEmitVertex);
+            Add(Instruction.EndPrimitive,             GenerateEndPrimitive);
             Add(Instruction.ExponentB2,               GenerateExponentB2);
             Add(Instruction.FindLSB,                  GenerateFindLSB);
             Add(Instruction.FindMSBS32,               GenerateFindMSBS32);
@@ -500,6 +502,20 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             return GenerateBinary(context, operation, context.FDiv, context.SDiv);
         }
 
+        private static OperationResult GenerateEmitVertex(CodeGenContext context, AstOperation operation)
+        {
+            context.EmitVertex();
+
+            return OperationResult.Invalid;
+        }
+
+        private static OperationResult GenerateEndPrimitive(CodeGenContext context, AstOperation operation)
+        {
+            context.EndPrimitive();
+
+            return OperationResult.Invalid;
+        }
+
         private static OperationResult GenerateExponentB2(CodeGenContext context, AstOperation operation)
         {
             return GenerateUnary(context, operation, context.GlslExp2, null);
@@ -812,13 +828,25 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         {
             var src1 = operation.GetSource(0);
             var src2 = operation.GetSource(1);
+            var src3 = operation.GetSource(2);
 
-            if (src1 is not AstOperand oper || oper.Type != OperandType.Attribute)
+            if (!(src1 is AstOperand baseAttr) || baseAttr.Type != OperandType.Constant)
             {
-                throw new InvalidOperationException("First source of LoadAttribute must be a attribute.");
+                throw new InvalidOperationException($"First input of {nameof(Instruction.LoadAttribute)} must be a constant operand.");
             }
 
-            return new OperationResult(AggregateType.FP32, context.GetAttribute(AggregateType.FP32, oper, false));
+            var index = context.Get(AggregateType.S32, src3);
+            var resultType = AggregateType.FP32;
+
+            if (src2 is AstOperand operand && operand.Type == OperandType.Constant)
+            {
+                int attrOffset = baseAttr.Value + (operand.Value << 2);
+                return new OperationResult(resultType, context.GetAttribute(resultType, attrOffset, false, index));
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private static OperationResult GenerateLoadConstant(CodeGenContext context, AstOperation operation)
@@ -1081,7 +1109,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             var clampNotSegMask = context.BitwiseAnd(context.TypeU32(), clamp, notSegMask);
             var indexNotSegMask = context.BitwiseAnd(context.TypeU32(), index, notSegMask);
 
-            var threadId = context.GetAttribute(AggregateType.U32, new AstOperand(OperandType.Attribute, AttributeConsts.LaneId), false);
+            var threadId = context.GetAttribute(AggregateType.U32, AttributeConsts.LaneId, false);
 
             var minThreadId = context.BitwiseAnd(context.TypeU32(), threadId, segMask);
             var maxThreadId = context.BitwiseOr(context.TypeU32(), minThreadId, clampNotSegMask);
@@ -1111,7 +1139,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             var notSegMask = context.Not(context.TypeU32(), segMask);
             var clampNotSegMask = context.BitwiseAnd(context.TypeU32(), clamp, notSegMask);
 
-            var threadId = context.GetAttribute(AggregateType.U32, new AstOperand(OperandType.Attribute, AttributeConsts.LaneId), false);
+            var threadId = context.GetAttribute(AggregateType.U32, AttributeConsts.LaneId, false);
 
             var minThreadId = context.BitwiseAnd(context.TypeU32(), threadId, segMask);
             var maxThreadId = context.BitwiseOr(context.TypeU32(), minThreadId, clampNotSegMask);
@@ -1138,7 +1166,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             var segMask = context.BitwiseAnd(context.TypeU32(), context.ShiftRightLogical(context.TypeU32(), mask, const8), const31);
 
-            var threadId = context.GetAttribute(AggregateType.U32, new AstOperand(OperandType.Attribute, AttributeConsts.LaneId), false);
+            var threadId = context.GetAttribute(AggregateType.U32, AttributeConsts.LaneId, false);
 
             var minThreadId = context.BitwiseAnd(context.TypeU32(), threadId, segMask);
             var srcThreadId = context.ISub(context.TypeU32(), threadId, index);
@@ -1167,7 +1195,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             var notSegMask = context.Not(context.TypeU32(), segMask);
             var clampNotSegMask = context.BitwiseAnd(context.TypeU32(), clamp, notSegMask);
 
-            var threadId = context.GetAttribute(AggregateType.U32, new AstOperand(OperandType.Attribute, AttributeConsts.LaneId), false);
+            var threadId = context.GetAttribute(AggregateType.U32, AttributeConsts.LaneId, false);
 
             var minThreadId = context.BitwiseAnd(context.TypeU32(), threadId, segMask);
             var maxThreadId = context.BitwiseOr(context.TypeU32(), minThreadId, clampNotSegMask);

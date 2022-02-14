@@ -89,6 +89,18 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
         {
             Instruction inst = operation.Inst;
 
+            if (inst == Instruction.LoadAttribute)
+            {
+                Operand src1 = operation.GetSource(0);
+                Operand src2 = operation.GetSource(1);
+
+                if (src1.Type == OperandType.Constant && src2.Type == OperandType.Constant)
+                {
+                    int attrOffset = src1.Value + (src2.Value << 2);
+                    context.Info.Inputs.Add(attrOffset);
+                }
+            }
+
             int sourcesCount = operation.SourcesCount;
             int outDestsCount = operation.DestsCount != 0 ? operation.DestsCount - 1 : 0;
 

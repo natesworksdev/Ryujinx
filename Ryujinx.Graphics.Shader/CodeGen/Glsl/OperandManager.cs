@@ -275,7 +275,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                     string name = builtInAttr.Name;
 
-                    if (!perPatch && IsArrayAttribute(config.Stage, isOutAttr) && IsArrayBuiltIn(value))
+                    if (!perPatch && IsArrayAttribute(config.Stage, isOutAttr) && AttributeInfo.IsArrayBuiltIn(value))
                     {
                         name = isOutAttr ? $"gl_out[gl_InvocationID].{name}" : $"gl_in[{indexExpr}].{name}";
                     }
@@ -315,18 +315,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                        stage == ShaderStage.TessellationEvaluation ||
                        stage == ShaderStage.Geometry;
             }
-        }
-
-        private static bool IsArrayBuiltIn(int attr)
-        {
-            if (attr <= AttributeConsts.TessLevelInner1 ||
-                attr == AttributeConsts.TessCoordX ||
-                attr == AttributeConsts.TessCoordY)
-            {
-                return false;
-            }
-
-            return (attr & AttributeConsts.SpecialMask) == 0;
         }
 
         public static string GetUbName(ShaderStage stage, int slot, bool cbIndexable)
