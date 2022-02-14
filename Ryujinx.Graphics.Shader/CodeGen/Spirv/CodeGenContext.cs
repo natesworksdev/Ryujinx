@@ -57,6 +57,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private readonly Dictionary<AstBlock, BlockState> _labels = new Dictionary<AstBlock, BlockState>();
 
+        public Dictionary<AstBlock, (Instruction, Instruction)> LoopTargets { get; set; }
+
         public AstBlock CurrentBlock { get; private set; }
 
         public CodeGenContext(ShaderConfig config) : base(0x00010300)

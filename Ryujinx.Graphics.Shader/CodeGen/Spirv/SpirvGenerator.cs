@@ -130,6 +130,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             var loopTargets = new Dictionary<AstBlock, (SpvInstruction, SpvInstruction)>();
 
+            context.LoopTargets = loopTargets;
+
             visitor.BlockEntered += (sender, e) =>
             {
                 AstBlock mergeBlock = e.Block.Parent;
@@ -192,6 +194,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                         bool lastIsCf = e.Block.Last is AstOperation lastOp &&
                             (lastOp.Inst == Instruction.Discard ||
                              lastOp.Inst == Instruction.LoopBreak ||
+                             lastOp.Inst == Instruction.LoopContinue ||
                              lastOp.Inst == Instruction.Return);
 
                         if (!lastIsCf)
