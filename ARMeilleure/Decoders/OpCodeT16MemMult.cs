@@ -16,10 +16,11 @@ namespace ARMeilleure.Decoders
 
         public OpCodeT16MemMult(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
-            int regCount = BitOperations.PopCount((uint)RegisterMask);
-
             RegisterMask = opCode & 0xff;
             Rn = (opCode >> 8) & 7;
+
+            int regCount = BitOperations.PopCount((uint)RegisterMask);
+
             Offset = 0;
             PostOffset = 4 * regCount;
             IsLoad = inst.Name switch
