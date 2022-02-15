@@ -111,15 +111,13 @@ namespace Spv.Generator
             AddOperand(LiteralInteger.CreateForEnum(value));
         }
 
-        public void Write(Stream stream)
+        public void Write(BinaryWriter writer)
         {
-            BinaryWriter writer = new BinaryWriter(stream);
-
             // Word 0
             writer.Write((ushort)Opcode);
             writer.Write(GetTotalWordCount());
 
-            _resultType?.WriteOperand(stream);
+            _resultType?.WriteOperand(writer);
 
             if (Id != InvalidId)
             {
@@ -128,11 +126,11 @@ namespace Spv.Generator
 
             foreach (Operand operand in _operands)
             {
-                operand.WriteOperand(stream);
+                operand.WriteOperand(writer);
             }
         }
 
-        public void WriteOperand(Stream stream)
+        public void WriteOperand(BinaryWriter writer)
         {
             Debug.Assert(Id != InvalidId);
 
@@ -156,7 +154,7 @@ namespace Spv.Generator
                 throw new InvalidOperationException($"Id wasn't bound to the module, please make sure to call {methodToCall}");
             }
 
-            stream.Write(BitConverter.GetBytes(Id));
+            writer.Write(Id);
         }
 
         public override bool Equals(object obj)

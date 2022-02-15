@@ -53,9 +53,9 @@ namespace Spv.Generator
 
         public ushort WordCount => (ushort)(_data.Length / 4);
 
-        public void WriteOperand(Stream stream)
+        public void WriteOperand(BinaryWriter writer)
         {
-            stream.Write(_data);
+            writer.Write(_data);
         }
 
         public override bool Equals(object obj)
