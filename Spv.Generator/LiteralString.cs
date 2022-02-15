@@ -17,15 +17,15 @@ namespace Spv.Generator
 
         public ushort WordCount => (ushort)(_value.Length / 4 + 1);
 
-        public void WriteOperand(Stream stream)
+        public void WriteOperand(BinaryWriter writer)
         {
-            byte[] rawValue = Encoding.ASCII.GetBytes(_value);
+            writer.Write(_value.AsSpan());
 
-            stream.Write(rawValue);
+            int paddingSize = 4 - (Encoding.ASCII.GetByteCount(_value) % 4);
 
-            int paddingSize = 4 - (rawValue.Length % 4);
+            Span<byte> padding = stackalloc byte[paddingSize];
 
-            stream.Write(new byte[paddingSize]);
+            writer.Write(padding);
         }
 
         public override bool Equals(object obj)

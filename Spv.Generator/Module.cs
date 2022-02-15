@@ -247,7 +247,7 @@ namespace Spv.Generator
         {
             using (MemoryStream stream = new MemoryStream())
             {
-                BinaryWriter writer = new BinaryWriter(stream);
+                BinaryWriter writer = new BinaryWriter(stream, System.Text.Encoding.ASCII);
 
                 // Header
                 writer.Write(MagicNumber);
@@ -262,7 +262,7 @@ namespace Spv.Generator
                     Instruction capabilityInstruction = new Instruction(Op.OpCapability);
 
                     capabilityInstruction.AddOperand(capability);
-                    capabilityInstruction.Write(stream);
+                    capabilityInstruction.Write(writer);
                 }
 
                 // 2.
@@ -271,44 +271,44 @@ namespace Spv.Generator
                     Instruction extensionInstruction = new Instruction(Op.OpExtension);
 
                     extensionInstruction.AddOperand(extension);
-                    extensionInstruction.Write(stream);
+                    extensionInstruction.Write(writer);
                 }
 
                 // 3.
                 foreach (Instruction extInstImport in _extInstImports)
                 {
-                    extInstImport.Write(stream);
+                    extInstImport.Write(writer);
                 }
 
                 // 4.
                 Instruction memoryModelInstruction = new Instruction(Op.OpMemoryModel);
                 memoryModelInstruction.AddOperand(_addressingModel);
                 memoryModelInstruction.AddOperand(_memoryModel);
-                memoryModelInstruction.Write(stream);
+                memoryModelInstruction.Write(writer);
 
                 // 5.
                 foreach (Instruction entrypoint in _entrypoints)
                 {
-                    entrypoint.Write(stream);
+                    entrypoint.Write(writer);
                 }
 
                 // 6.
                 foreach (Instruction executionMode in _executionModes)
                 {
-                    executionMode.Write(stream);
+                    executionMode.Write(writer);
                 }
 
                 // 7.
                 // TODO: order debug information correclty.
                 foreach (Instruction debug in _debug)
                 {
-                    debug.Write(stream);
+                    debug.Write(writer);
                 }
 
                 // 8.
                 foreach (Instruction annotation in _annotations)
                 {
-                    annotation.Write(stream);
+                    annotation.Write(writer);
                 }
 
                 // Ensure that everything is in the right order in the declarations section
@@ -320,19 +320,19 @@ namespace Spv.Generator
                 // 9.
                 foreach (Instruction declaration in declarations)
                 {
-                    declaration.Write(stream);
+                    declaration.Write(writer);
                 }
 
                 // 10.
                 foreach (Instruction functionDeclaration in _functionsDeclarations)
                 {
-                    functionDeclaration.Write(stream);
+                    functionDeclaration.Write(writer);
                 }
 
                 // 11.
                 foreach (Instruction functionDefinition in _functionsDefinitions)
                 {
-                    functionDefinition.Write(stream);
+                    functionDefinition.Write(writer);
                 }
 
                 return stream.ToArray();
