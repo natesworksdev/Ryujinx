@@ -30,9 +30,12 @@ namespace Ryujinx.Ava.Common.Locale
         {
             string localeLanguageCode = CultureInfo.CurrentCulture.Name.Replace('-', '_');
 
-            if (!string.IsNullOrEmpty(ConfigurationState.Instance.Ui.LanguageCode.Value))
+            if (Program.PreviewerDetached)
             {
-                localeLanguageCode = ConfigurationState.Instance.Ui.LanguageCode.Value;
+                if (!string.IsNullOrEmpty(ConfigurationState.Instance.Ui.LanguageCode.Value))
+                {
+                    localeLanguageCode = ConfigurationState.Instance.Ui.LanguageCode.Value;
+                }
             }
 
             // Load english first, if the target language translation is incomplete, we default to english.
@@ -101,8 +104,11 @@ namespace Ryujinx.Ava.Common.Locale
                 this[item.Key] = item.Value;
             }
 
-            ConfigurationState.Instance.Ui.LanguageCode.Value = languageCode;
-            ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+            if (Program.PreviewerDetached)
+            {
+                ConfigurationState.Instance.Ui.LanguageCode.Value = languageCode;
+                ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+            }
         }
     }
 }
