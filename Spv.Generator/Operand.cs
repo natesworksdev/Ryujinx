@@ -9,6 +9,6 @@ namespace Spv.Generator
 
         ushort WordCount { get; }
 
-        void WriteOperand(Stream stream);
+        void WriteOperand(BinaryWriter writer);
     }
 }
