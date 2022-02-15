@@ -124,12 +124,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
         /// <summary>
         /// Performs a buffer to buffer, or buffer to texture copy.
         /// </summary>
-        /// <param name="argument">The LaunchDma call argument</param>
-        private void DmaCopy(int argument)
+        /// <param name="copyFlags">Flags passed on the DMA launch method</param>
+        private void DmaCopy(CopyFlags copyFlags)
         {
             var memoryManager = _channel.MemoryManager;
-
-            CopyFlags copyFlags = (CopyFlags)argument;
 
             bool srcLinear = copyFlags.HasFlag(CopyFlags.SrcLinear);
             bool dstLinear = copyFlags.HasFlag(CopyFlags.DstLinear);
@@ -329,8 +327,17 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
         /// <param name="argument">Method call argument</param>
         private void LaunchDma(int argument)
         {
-            DmaCopy(argument);
+            CopyFlags copyFlags = (CopyFlags)argument;
+
+            DmaCopy(copyFlags);
             ReleaseSemaphore(argument);
+
+            if (copyFlags.HasFlag(CopyFlags.MultiLineEnable))
+            {
+                // Some applications are not initializing the state and expects it to be zero.
+                _state.State.SetSrcOrigin = 0;
+                _state.State.SetDstOrigin = 0;
+            }
         }
     }
 }
