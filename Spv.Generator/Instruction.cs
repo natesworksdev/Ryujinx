@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 
 namespace Spv.Generator
 {
@@ -12,7 +10,7 @@ namespace Spv.Generator
 
         public Specification.Op Opcode { get; private set; }
         private Instruction _resultType;
-        public List<Operand> _operands;
+        private InstructionOperands _operands;
 
         public uint Id { get; set; }
 
@@ -22,7 +20,7 @@ namespace Spv.Generator
             Id = id;
             _resultType = resultType;
 
-            _operands = new List<Operand>();
+            _operands = new InstructionOperands();
         }
 
         public void SetId(uint id)
@@ -46,9 +44,10 @@ namespace Spv.Generator
                 result += _resultType.WordCount;
             }
 
-            foreach (Operand operand in _operands)
+            Span<Operand> operands = _operands.ToSpan();
+            for (int i = 0; i < operands.Length; i++)
             {
-                result += operand.WordCount;
+                result += operands[i].WordCount;
             }
 
             return result;
@@ -101,7 +100,7 @@ namespace Spv.Generator
             AddOperand(new LiteralString(value));
         }
 
-        public void AddOperand<T>(T value) where T: struct
+        public void AddOperand<T>(T value) where T: Enum
         {
             if (!typeof(T).IsPrimitive && !typeof(T).IsEnum)
             {
@@ -124,9 +123,10 @@ namespace Spv.Generator
                 writer.Write(Id);
             }
 
-            foreach (Operand operand in _operands)
+            Span<Operand> operands = _operands.ToSpan();
+            for (int i = 0; i < operands.Length; i++)
             {
-                operand.WriteOperand(writer);
+                operands[i].WriteOperand(writer);
             }
         }
 
@@ -188,7 +188,23 @@ namespace Spv.Generator
 
         public bool EqualsContent(Instruction cmpObj)
         {
-            return _operands.SequenceEqual(cmpObj._operands);
+            Span<Operand> thisOperands = _operands.ToSpan();
+            Span<Operand> cmpOperands = cmpObj._operands.ToSpan();
+
+            if (thisOperands.Length != cmpOperands.Length)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < thisOperands.Length; i++)
+            {
+                if (!thisOperands[i].Equals(cmpOperands[i]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public bool EqualsResultType(Instruction cmpObj)
@@ -196,9 +212,19 @@ namespace Spv.Generator
             return _resultType.Opcode == cmpObj._resultType.Opcode && _resultType.EqualsContent(cmpObj._resultType);
         }
 
+        public int GetHashCodeContent()
+        {
+            return DeterministicHashCode.Combine<Operand>(_operands.ToSpan());
+        }
+
+        public int GetHashCodeResultType()
+        {
+            return DeterministicHashCode.Combine(_resultType.Opcode, _resultType.GetHashCodeContent());
+        }
+
         public override int GetHashCode()
         {
-            return HashCode.Combine(Opcode, Id, _resultType, _operands);
+            return DeterministicHashCode.Combine(Opcode, Id, _resultType, DeterministicHashCode.Combine<Operand>(_operands.ToSpan()));
         }
 
         public bool Equals(Operand obj)
