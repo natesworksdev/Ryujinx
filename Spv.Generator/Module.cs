@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using static Spv.Specification;
 
 namespace Spv.Generator
@@ -19,7 +17,7 @@ namespace Spv.Generator
         // Follow spec order here why keeping it as dumb as possible.
         private List<Capability> _capabilities;
         private List<string> _extensions;
-        private List<Instruction> _extInstImports;
+        private Dictionary<DeterministicStringKey, Instruction> _extInstImports;
         private AddressingModel _addressingModel;
         private MemoryModel _memoryModel;
 
@@ -29,9 +27,11 @@ namespace Spv.Generator
         private List<Instruction> _annotations;
 
         // In the declaration block.
-        private List<Instruction> _typeDeclarations;
+        private Dictionary<TypeDeclarationKey, Instruction> _typeDeclarations;
         // In the declaration block.
         private List<Instruction> _globals;
+        // In the declaration block.
+        private Dictionary<ConstantKey, Instruction> _constants;
         // In the declaration block, for function that aren't defined in the module.
         private List<Instruction> _functionsDeclarations;
 
@@ -43,14 +43,15 @@ namespace Spv.Generator
             _bound = 1;
             _capabilities = new List<Capability>();
             _extensions = new List<string>();
-            _extInstImports = new List<Instruction>();
+            _extInstImports = new Dictionary<DeterministicStringKey, Instruction>();
             _addressingModel = AddressingModel.Logical;
             _memoryModel = MemoryModel.Simple;
             _entrypoints = new List<Instruction>();
             _executionModes = new List<Instruction>();
             _debug = new List<Instruction>();
             _annotations = new List<Instruction>();
-            _typeDeclarations = new List<Instruction>();
+            _typeDeclarations = new Dictionary<TypeDeclarationKey, Instruction>();
+            _constants = new Dictionary<ConstantKey, Instruction>();
             _globals = new List<Instruction>();
             _functionsDeclarations = new List<Instruction>();
             _functionsDefinitions = new List<Instruction>();
@@ -73,44 +74,43 @@ namespace Spv.Generator
 
         public Instruction AddExtInstImport(string import)
         {
+            var key = new DeterministicStringKey(import);
+
+            if (_extInstImports.TryGetValue(key, out Instruction extInstImport))
+            {
+                // update the duplicate instance to use the good id so it ends up being encoded right.
+                return extInstImport;
+            }
+
             Instruction instruction = new Instruction(Op.OpExtInstImport);
             instruction.AddOperand(import);
 
-            foreach (Instruction extInstImport in _extInstImports)
-            {
-                if (extInstImport.Opcode == Op.OpExtInstImport && extInstImport.EqualsContent(instruction))
-                {
-                    // update the duplicate instance to use the good id so it ends up being encoded right.
-                    return extInstImport;
-                }
-            }
-
             instruction.SetId(GetNewId());
 
-            _extInstImports.Add(instruction);
+            _extInstImports.Add(key, instruction);
 
             return instruction;
         }
 
         private void AddTypeDeclaration(Instruction instruction, bool forceIdAllocation)
         {
+            var key = new TypeDeclarationKey(instruction);
+
             if (!forceIdAllocation)
             {
-                foreach (Instruction typeDeclaration in _typeDeclarations)
+                if (_typeDeclarations.TryGetValue(key, out Instruction typeDeclaration))
                 {
-                    if (typeDeclaration.Opcode == instruction.Opcode && typeDeclaration.EqualsContent(instruction))
-                    {
-                        // update the duplicate instance to use the good id so it ends up being encoded right.
-                        instruction.SetId(typeDeclaration.Id);
+                    // update the duplicate instance to use the good id so it ends up being encoded right.
 
-                        return;
-                    }
+                    instruction.SetId(typeDeclaration.Id);
+
+                    return;
                 }
             }
 
             instruction.SetId(GetNewId());
 
-            _typeDeclarations.Add(instruction);
+            _typeDeclarations.Add(key, instruction);
         }
 
         public void AddEntryPoint(ExecutionModel executionModel, Instruction function, string name, params Instruction[] interfaces)
@@ -195,20 +195,19 @@ namespace Spv.Generator
                          constant.Opcode == Op.OpConstantNull ||
                          constant.Opcode == Op.OpConstantComposite);
 
-            foreach (Instruction global in _globals)
-            {
-                if (global.Opcode == constant.Opcode && global.EqualsContent(constant) && global.EqualsResultType(constant))
-                {
-                    // update the duplicate instance to use the good id so it ends up being encoded right.
-                    constant.SetId(global.Id);
+            var key = new ConstantKey(constant);
 
-                    return;
-                }
+            if (_constants.TryGetValue(key, out Instruction global))
+            {
+                // update the duplicate instance to use the good id so it ends up being encoded right.
+                constant.SetId(global.Id);
+
+                return;
             }
 
             constant.SetId(GetNewId());
 
-            _globals.Add(constant);
+            _constants.Add(key, constant);
         }
 
         public Instruction ExtInst(Instruction resultType, Instruction set, LiteralInteger instruction, params Operand[] parameters)
@@ -275,7 +274,7 @@ namespace Spv.Generator
                 }
 
                 // 3.
-                foreach (Instruction extInstImport in _extInstImports)
+                foreach (Instruction extInstImport in _extInstImports.Values)
                 {
                     extInstImport.Write(writer);
                 }
@@ -313,8 +312,9 @@ namespace Spv.Generator
 
                 // Ensure that everything is in the right order in the declarations section
                 List<Instruction> declarations = new List<Instruction>();
-                declarations.AddRange(_typeDeclarations);
+                declarations.AddRange(_typeDeclarations.Values);
                 declarations.AddRange(_globals);
+                declarations.AddRange(_constants.Values);
                 declarations.Sort((Instruction x, Instruction y) => x.Id.CompareTo(y.Id));
 
                 // 9.

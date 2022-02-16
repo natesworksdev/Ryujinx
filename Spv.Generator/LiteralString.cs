@@ -40,7 +40,7 @@ namespace Spv.Generator
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Type, _value);
+            return DeterministicHashCode.Combine(Type, DeterministicHashCode.GetHashCode(_value));
         }
 
         public bool Equals(Operand obj)
