@@ -76,7 +76,7 @@ namespace Ryujinx.Common.Configuration
             SetupBasePaths();
         }
 
-        private static void SetupBasePaths()
+        private static void SetupBasePaths() //create directories for combined paths
         {
             Directory.CreateDirectory(BaseDirPath);
             Directory.CreateDirectory(GamesDirPath = Path.Combine(BaseDirPath, GamesDir));

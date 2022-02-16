@@ -990,7 +990,7 @@ namespace Ryujinx.Configuration
                 
                 configurationFileUpdated = true;
             }
-            
+            //Output to console if log value changes
             Logger.EnableFileLog.Value             = configurationFileFormat.EnableFileLog;
             Graphics.BackendThreading.Value        = configurationFileFormat.BackendThreading;
             Graphics.ResScale.Value                = configurationFileFormat.ResScale;

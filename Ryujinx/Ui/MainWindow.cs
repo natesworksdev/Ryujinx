@@ -1593,7 +1593,7 @@ namespace Ryujinx.Ui
         {
             if (_emulationContext.System.SearchingForAmiibo(out int deviceId))
             {
-                AmiiboWindow amiiboWindow = new AmiiboWindow
+                AmiiboWindow amiiboWindow = new AmiiboWindow //display amiibo data
                 {
                     LastScannedAmiiboShowAll = _lastScannedAmiiboShowAll,
                     LastScannedAmiiboId      = _lastScannedAmiiboId,
