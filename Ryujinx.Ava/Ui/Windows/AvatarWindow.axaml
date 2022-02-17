@@ -11,6 +11,8 @@
         xmlns:viewModels="clr-namespace:Ryujinx.Ava.Ui.ViewModels"
         xmlns:controls="clr-namespace:Ryujinx.Ava.Ui.Controls"
         WindowStartupLocation="CenterOwner"
+        x:CompileBindings="True"
+        x:DataType="viewModels:AvatarProfileViewModel"
         SizeToContent="WidthAndHeight">
     <Design.DataContext>
         <viewModels:AvatarProfileViewModel />
