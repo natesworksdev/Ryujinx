@@ -9,7 +9,6 @@ using ARMeilleure.State;
 using ARMeilleure.Translation.PTC;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using static ARMeilleure.IntermediateRepresentation.Operand.Factory;
 
