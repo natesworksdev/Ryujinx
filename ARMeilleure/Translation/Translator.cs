@@ -255,7 +255,7 @@ namespace ARMeilleure.Translation
 
             Logger.StartPass(PassName.Decoding);
 
-            Block[] blocks = Decoder.Decode(Memory, address, mode, highCq, singleBlock: false);
+            Block[] blocks = Decoder.Decode(Memory, address, mode, highCq, DecoderMode.Normal);
 
             Logger.EndPass(PassName.Decoding);
 
