@@ -1,7 +1,7 @@
 ﻿using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
-using Ryujinx.HLE.Utilities;
+using Ryujinx.HLE.HOS.Services.Account.Acc;
 
 namespace Ryujinx.HLE.HOS.Services.Mnpp
 {
@@ -28,13 +28,13 @@ namespace Ryujinx.HLE.HOS.Services.Mnpp
         }
 
         [CommandHipc(1)]
-        // SendRawTelemetryData(u128 user_id, buffer<bytes, 5> title_id)
+        // SendRawTelemetryData(nn::account::Uid user_id, buffer<bytes, 5> title_id)
         public ResultCode SendRawTelemetryData(ServiceCtx context)
         {
             ulong titleIdInputPosition = context.Request.SendBuff[0].Position;
             ulong titleIdInputSize     = context.Request.SendBuff[0].Size;
 
-            UInt128 userId  = context.RequestData.ReadStruct<UInt128>();
+            UserId userId = context.RequestData.ReadStruct<UserId>();
 
             // TODO: Service calls set:sys GetPlatformRegion.
             //       If the result != 1 (China) it returns ResultCode.Success.
