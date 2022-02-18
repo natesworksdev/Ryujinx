@@ -55,10 +55,19 @@ namespace Ryujinx.Ava.Ui.Applet
                 {
                     ManualResetEvent deferEvent = new(false);
 
+                    bool opened = false;
+
                     UserResult response = await ContentDialogHelper.ShowDeferredContentDialog(_parent, title, message, "", 
                         LocaleManager.Instance["DialogOpenSettingsWindow"], "", "Close", 0xF4A3, deferEvent,
                        async  (window) =>
                         {
+                            if (opened)
+                            {
+                                return;
+                            }
+
+                            opened = true;
+                            
                             _parent.SettingsWindow = new SettingsWindow(_parent.VirtualFileSystem, _parent.ContentManager);
 
                             await _parent.SettingsWindow.ShowDialog(window);
