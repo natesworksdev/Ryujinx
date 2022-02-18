@@ -52,15 +52,15 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <CheckBox Margin="10" Grid.Column="0" IsChecked="{Binding ShowAllAmiibo}"
+            <CheckBox Margin="10" Grid.Column="0" VerticalContentAlignment="Center" IsChecked="{Binding ShowAllAmiibo}"
                       Content="{locale:Locale AmiiboOptionsShowAllLabel}" />
-            <CheckBox Margin="10" Grid.Column="1" IsChecked="{Binding UseRandomUuid}"
+            <CheckBox Margin="10" Grid.Column="1" VerticalContentAlignment="Center"  IsChecked="{Binding UseRandomUuid}"
                       Content="{locale:Locale AmiiboOptionsUsRandomTagLabel}" />
 
             <Button Grid.Column="3" IsEnabled="{Binding EnableScanning}" Width="80"
                     Content="{locale:Locale AmiiboScanButtonLabel}" Name="ScanButton"
                     Click="ScanButton_Click" />
-            <Button Grid.Column="4" Width="80" Content="{locale:Locale InputDialogCancel}" Name="CancelButton"
+            <Button Grid.Column="4" Margin="10,0" Width="80" Content="{locale:Locale InputDialogCancel}" Name="CancelButton"
                     Click="CancelButton_Click" />
         </Grid>
     </Grid>

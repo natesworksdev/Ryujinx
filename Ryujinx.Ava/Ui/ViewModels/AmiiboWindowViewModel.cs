@@ -11,6 +11,7 @@ using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -33,7 +34,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
         private AvaloniaList<Amiibo.AmiiboApi> _amiibos;
 
         private int _amiiboSelectedIndex;
-        private AvaloniaList<string> _amiiboSeries;
+        private ObservableCollection<string> _amiiboSeries;
         private bool _enableScanning;
 
         private int _seriesSelectedIndex;
@@ -52,7 +53,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
             _amiiboJsonPath = Path.Join(AppDataManager.BaseDirPath, "system", "amiibo", "Amiibo.json");
             _amiiboList = new List<Amiibo.AmiiboApi>();
-            _amiiboSeries = new AvaloniaList<string>();
+            _amiiboSeries = new ObservableCollection<string>();
             _amiibos = new AvaloniaList<Amiibo.AmiiboApi>();
 
             _amiiboLogoBytes = EmbeddedResources.Read("Ryujinx.Ava/Assets/Images/Logo_Amiibo.png");
@@ -85,8 +86,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             {
                 _showAllAmiibo = value;
 
-
-                new Task(() => ParseAmiiboData()).Start();
+                ParseAmiiboData();
 
                 OnPropertyChanged();
             }
@@ -103,7 +103,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             }
         }
 
-        public AvaloniaList<string> AmiiboSeries
+        public ObservableCollection<string> AmiiboSeries
         {
             get => _amiiboSeries;
             set
@@ -207,10 +207,10 @@ namespace Ryujinx.Ava.Ui.ViewModels
             _amiiboList = JsonSerializer.Deserialize<Amiibo.AmiiboJson>(amiiboJsonString).Amiibo;
             _amiiboList = _amiiboList.OrderBy(amiibo => amiibo.AmiiboSeries).ToList();
 
-            ParseAmiiboData();
+            await ParseAmiiboData();
         }
 
-        private void ParseAmiiboData()
+        private async Task ParseAmiiboData()
         {
             _amiiboSeries.Clear();
             _amiibos.Clear();
