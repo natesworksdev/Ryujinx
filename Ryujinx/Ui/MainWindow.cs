@@ -32,6 +32,7 @@ using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.FileSystem.Content;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
+using Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.ApplicationProxy.Types;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.Input.GTK3;
 using Ryujinx.Input.HLE;
@@ -47,6 +48,7 @@ using GUI = Gtk.Builder.ObjectAttribute;
 
 using PtcLoadingState = ARMeilleure.Translation.PTC.PtcLoadingState;
 using ShaderCacheLoadingState = Ryujinx.Graphics.Gpu.Shader.ShaderCacheState;
+using ProgramSpecifyKind = Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.ApplicationProxy.Types.ProgramSpecifyKind;
 
 namespace Ryujinx.Ui
 {
@@ -1179,7 +1181,7 @@ namespace Ryujinx.Ui
 
             string path = (string)_tableStore.GetValue(treeIter, 9);
 
-            LoadApplication(path, /*startFullscreen=*/false, /*isUserSelectedPath=*/true);
+            LoadApplication(path, startFullscreen: false, isUserSpecifiedPath: true);
         }
 
         private void VSyncStatus_Clicked(object sender, ButtonReleaseEventArgs args)
@@ -1265,7 +1267,7 @@ namespace Ryujinx.Ui
 
                 if (fileChooser.Run() == (int)ResponseType.Accept)
                 {
-                    LoadApplication(fileChooser.Filename, /*startFullscreen=*/false, /*isUserSpecifiedPath=*/true);
+                    LoadApplication(fileChooser.Filename, startFullscreen: false, isUserSpecifiedPath: true);
                 }
             }
         }
@@ -1276,7 +1278,7 @@ namespace Ryujinx.Ui
             {
                 if (fileChooser.Run() == (int)ResponseType.Accept)
                 {
-                    LoadApplication(fileChooser.Filename, /*startFullscreen=*/false, /*isUserSpecifiedPath=*/true);
+                    LoadApplication(fileChooser.Filename, startFullscreen: false, isUserSpecifiedPath: true);
                 }
             }
         }
@@ -1333,7 +1335,7 @@ namespace Ryujinx.Ui
         {
             if (_emulationContext != null)
             {
-                _userChannelPersistence.ExecuteProgram(HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.ApplicationProxy.Types.ProgramSpecifyKind.RestartProgram, 0);
+                _userChannelPersistence.ExecuteProgram(ProgramSpecifyKind.RestartProgram, 0);
                 StopEmulation_Pressed(sender, args);
             }
         }
