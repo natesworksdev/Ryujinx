@@ -71,6 +71,8 @@ namespace Ryujinx.Ava.Ui.Applet
                             _parent.SettingsWindow = new SettingsWindow(_parent.VirtualFileSystem, _parent.ContentManager);
 
                             await _parent.SettingsWindow.ShowDialog(window);
+
+                            opened = false;
                         });
 
                     if (response == UserResult.Ok)
