@@ -1,3 +1,4 @@
+using ARMeilleure.State;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.Memory;
@@ -94,19 +95,47 @@ namespace Ryujinx.HLE.Debugger
             }
         }
 
-        private bool GdbWriteRegister(Ryujinx.Cpu.IExecutionContext state, int gdbRegId, ulong value)
+        private bool GdbWriteRegister(IExecutionContext state, int gdbRegId, StringStream ss)
         {
             switch (gdbRegId)
             {
                 case >= 0 and <= 31:
-                    state.SetX(gdbRegId, value);
-                    return true;
+                    {
+                        ulong value = ss.ReadLengthAsHex(16);
+                        state.SetX(gdbRegId, value);
+                        return true;
+                    }
                 case 32:
-                    state.DebugPc = value;
-                    return true;
+                    {
+                        ulong value = ss.ReadLengthAsHex(8);
+                        state.DebugPc = value;
+                        return true;
+                    }
                 case 33:
-                    state.Pstate = (uint)value;
-                    return true;
+                    {
+                        ulong value = ss.ReadLengthAsHex(8);
+                        state.Pstate = (uint)value;
+                        return true;
+                    }
+                case >= 34 and <= 65:
+                    {
+                        ulong value0 = ss.ReadLengthAsHex(16);
+                        ulong value1 = ss.ReadLengthAsHex(16);
+                        state.SetV(gdbRegId - 34, new V128(value0, value1));
+                        return true;
+                    }
+                case 66:
+                    {
+                        ulong value = ss.ReadLengthAsHex(8);
+                        state.Fpsr = (uint)value;
+                        return true;
+                    }
+                case 67:
+                    {
+                        ulong value = ss.ReadLengthAsHex(8);
+                        state.Fpcr = (uint)value;
+                        return true;
+                    }
                 default:
                     return false;
             }
@@ -184,10 +213,10 @@ namespace Ryujinx.HLE.Debugger
                         goto unknownCommand;
                     }
 
-                    CommandReadGeneralRegisters();
+                    CommandReadRegisters();
                     break;
                 case 'G':
-                    CommandWriteGeneralRegisters(ss);
+                    CommandWriteRegisters(ss);
                     break;
                 case 'H':
                     {
@@ -217,14 +246,13 @@ namespace Ryujinx.HLE.Debugger
                 case 'p':
                     {
                         ulong gdbRegId = ss.ReadRemainingAsHex();
-                        CommandReadGeneralRegister((int)gdbRegId);
+                        CommandReadRegister((int)gdbRegId);
                         break;
                     }
                 case 'P':
                     {
                         ulong gdbRegId = ss.ReadUntilAsHex('=');
-                        ulong value = ss.ReadRemainingAsHex();
-                        CommandWriteGeneralRegister((int)gdbRegId, value);
+                        CommandWriteRegister((int)gdbRegId, ss);
                         break;
                     }
                 case 'q':
@@ -352,7 +380,7 @@ namespace Ryujinx.HLE.Debugger
             CommandContinue(null);
         }
 
-        void CommandReadGeneralRegisters()
+        void CommandReadRegisters()
         {
             if (gThread == null)
             {
@@ -370,7 +398,7 @@ namespace Ryujinx.HLE.Debugger
             Reply(registers);
         }
 
-        void CommandWriteGeneralRegisters(StringStream ss)
+        void CommandWriteRegisters(StringStream ss)
         {
             if (gThread == null)
             {
@@ -381,7 +409,11 @@ namespace Ryujinx.HLE.Debugger
             var ctx = GetThread(gThread.Value);
             for (int i = 0; i < GdbRegisterCount; i++)
             {
-                GdbWriteRegister(ctx, i, ss.ReadLengthAsLEHex(GdbRegisterHexSize(i)));
+                if (!GdbWriteRegister(ctx, i, ss))
+                {
+                    ReplyError();
+                    return;
+                }
             }
 
             if (ss.IsEmpty())
@@ -451,7 +483,7 @@ namespace Ryujinx.HLE.Debugger
             }
         }
 
-        void CommandReadGeneralRegister(int gdbRegId)
+        void CommandReadRegister(int gdbRegId)
         {
             if (gThread == null)
             {
@@ -471,7 +503,7 @@ namespace Ryujinx.HLE.Debugger
             }
         }
 
-        void CommandWriteGeneralRegister(int gdbRegId, ulong value)
+        void CommandWriteRegister(int gdbRegId, StringStream ss)
         {
             if (gThread == null)
             {
@@ -480,7 +512,7 @@ namespace Ryujinx.HLE.Debugger
             }
 
             var ctx = GetThread(gThread.Value);
-            if (GdbWriteRegister(ctx, gdbRegId, value))
+            if (GdbWriteRegister(ctx, gdbRegId, ss) && ss.IsEmpty())
             {
                 ReplyOK();
             }
