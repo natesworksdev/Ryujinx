@@ -163,6 +163,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                         case InputTopology.LinesAdjacency:
                             context.AddExecutionMode(spvFunc, ExecutionMode.InputLinesAdjacency);
                             break;
+                        case InputTopology.Triangles:
+                            context.AddExecutionMode(spvFunc, ExecutionMode.Triangles);
+                            break;
                         case InputTopology.TrianglesAdjacency:
                             context.AddExecutionMode(spvFunc, ExecutionMode.InputTrianglesAdjacency);
                             break;

@@ -125,6 +125,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             Add(Instruction.StoreShared,              GenerateStoreShared);
             Add(Instruction.StoreStorage,             GenerateStoreStorage);
             Add(Instruction.Subtract,                 GenerateSubtract);
+            Add(Instruction.SwizzleAdd,               GenerateSwizzleAdd);
             Add(Instruction.TextureSample,            GenerateTextureSample);
             Add(Instruction.TextureSize,              GenerateTextureSize);
             Add(Instruction.Truncate,                 GenerateTruncate);
@@ -638,7 +639,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             SpvInstruction value = Src(componentType.Convert());
 
-            (var imageType, var imageVariable) = context.Images[new TextureMeta(texOp.CbufSlot, texOp.Handle, texOp.Format, texOp.Type)];
+            (var imageType, var imageVariable) = context.Images[new TextureMeta(texOp.CbufSlot, texOp.Handle, texOp.Format)];
 
             var image = context.Load(imageType, imageVariable);
 
@@ -732,7 +733,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 pCoords = Src(AggregateType.S32);
             }
 
-            (var imageType, var imageVariable) = context.Images[new TextureMeta(texOp.CbufSlot, texOp.Handle, texOp.Format, texOp.Type)];
+            (var imageType, var imageVariable) = context.Images[new TextureMeta(texOp.CbufSlot, texOp.Handle, texOp.Format)];
 
             var image = context.Load(imageType, imageVariable);
 
@@ -819,7 +820,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             var texel = context.CompositeConstruct(context.TypeVector(context.GetType(componentType.Convert()), ComponentsCount), cElems);
 
-            (var imageType, var imageVariable) = context.Images[new TextureMeta(texOp.CbufSlot, texOp.Handle, texOp.Format, texOp.Type)];
+            (var imageType, var imageVariable) = context.Images[new TextureMeta(texOp.CbufSlot, texOp.Handle, texOp.Format)];
 
             var image = context.Load(imageType, imageVariable);
 
@@ -968,7 +969,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 pCoords = Src(AggregateType.FP32);
             }
 
-            var meta = new TextureMeta(texOp.CbufSlot, texOp.Handle, texOp.Format, texOp.Type);
+            var meta = new TextureMeta(texOp.CbufSlot, texOp.Handle, texOp.Format);
 
             (_, var sampledImageType, var sampledImageVariable) = context.Samplers[meta];
 
@@ -1281,6 +1282,34 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             return GenerateBinary(context, operation, context.Delegates.FSub, context.Delegates.ISub);
         }
 
+        private static OperationResult GenerateSwizzleAdd(CodeGenContext context, AstOperation operation)
+        {
+            var x = context.Get(AggregateType.FP32, operation.GetSource(0));
+            var y = context.Get(AggregateType.FP32, operation.GetSource(1));
+            var mask = context.Get(AggregateType.U32, operation.GetSource(2));
+
+            var v4float = context.TypeVector(context.TypeFP32(), (SpvLiteralInteger)4);
+            var one = context.Constant(context.TypeFP32(), (SpvLiteralInteger)1.0f);
+            var minusOne = context.Constant(context.TypeFP32(), (SpvLiteralInteger)(-1.0f));
+            var zero = context.Constant(context.TypeFP32(), (SpvLiteralInteger)0.0f);
+            var xLut = context.ConstantComposite(v4float, one, minusOne, one, zero);
+            var yLut = context.ConstantComposite(v4float, one, one, minusOne, one);
+
+            var threadId = context.GetAttribute(AggregateType.U32, AttributeConsts.LaneId, false);
+            var shift = context.BitwiseAnd(context.TypeU32(), threadId, context.Constant(context.TypeU32(), (SpvLiteralInteger)3));
+            shift = context.ShiftLeftLogical(context.TypeU32(), shift, context.Constant(context.TypeU32(), (SpvLiteralInteger)1));
+            var lutIdx = context.ShiftRightLogical(context.TypeU32(), mask, shift);
+
+            var xLutValue = context.AccessChain(context.TypeFP32(), xLut, lutIdx);
+            var yLutValue = context.AccessChain(context.TypeFP32(), yLut, lutIdx);
+
+            var xResult = context.FMul(context.TypeFP32(), x, xLutValue);
+            var yResult = context.FMul(context.TypeFP32(), y, yLutValue);
+            var result = context.FAdd(context.TypeFP32(), xResult, yResult);
+
+            return new OperationResult(AggregateType.FP32, result);
+        }
+
         private static OperationResult GenerateTextureSample(CodeGenContext context, AstOperation operation)
         {
             AstTextureOperation texOp = (AstTextureOperation)operation;
@@ -1520,7 +1549,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             bool colorIsVector = isGather || !isShadow;
             var resultType = colorIsVector ? context.TypeVector(context.TypeFP32(), 4) : context.TypeFP32();
 
-            var meta = new TextureMeta(texOp.CbufSlot, texOp.Handle, texOp.Format, texOp.Type);
+            var meta = new TextureMeta(texOp.CbufSlot, texOp.Handle, texOp.Format);
 
             (var imageType, var sampledImageType, var sampledImageVariable) = context.Samplers[meta];
 
@@ -1603,7 +1632,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             var lod = context.GetS32(operation.GetSource(lodSrcIndex));
 
-            var meta = new TextureMeta(texOp.CbufSlot, texOp.Handle, texOp.Format, texOp.Type);
+            var meta = new TextureMeta(texOp.CbufSlot, texOp.Handle, texOp.Format);
 
             (var imageType, var sampledImageType, var sampledImageVariable) = context.Samplers[meta];
 
