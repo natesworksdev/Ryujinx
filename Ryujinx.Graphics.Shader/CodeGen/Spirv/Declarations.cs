@@ -243,7 +243,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                     meta.Type.HasFlag(SamplerType.Shadow),
                     meta.Type.HasFlag(SamplerType.Array),
                     meta.Type.HasFlag(SamplerType.Multisample),
-                    2,
+                    AccessQualifier.ReadWrite,
                     GetImageFormat(meta.Format));
 
                 var nameSuffix = meta.CbufSlot < 0 ?
@@ -258,6 +258,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 context.Name(imageVariable, $"{GetStagePrefix(context.Config.Stage)}_img{nameSuffix}");
                 context.Decorate(imageVariable, Decoration.DescriptorSet, (LiteralInteger)setIndex);
                 context.Decorate(imageVariable, Decoration.Binding, (LiteralInteger)descriptor.Binding);
+
+                if (descriptor.Flags.HasFlag(TextureUsageFlags.ImageCoherent))
+                {
+                    context.Decorate(imageVariable, Decoration.Coherent);
+                }
+
                 context.AddGlobalVariable(imageVariable);
             }
         }
