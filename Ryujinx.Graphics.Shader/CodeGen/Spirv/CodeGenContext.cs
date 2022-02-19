@@ -13,6 +13,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
     partial class CodeGenContext : Module
     {
+        private readonly StructuredProgramInfo _info;
+
         public ShaderConfig Config { get; }
 
         public int InputVertices { get; }
@@ -65,8 +67,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         public SpirvDelegates Delegates { get; }
 
-        public CodeGenContext(ShaderConfig config, GeneratorPool<Instruction> instPool, GeneratorPool<LiteralInteger> integerPool) : base(0x00010300, instPool, integerPool)
+        public CodeGenContext(
+            StructuredProgramInfo info,
+            ShaderConfig config,
+            GeneratorPool<Instruction> instPool,
+            GeneratorPool<LiteralInteger> integerPool) : base(0x00010300, instPool, integerPool)
         {
+            _info = info;
             Config = config;
 
             if (config.Stage == ShaderStage.Geometry)
@@ -217,16 +224,27 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             elemType = attrInfo.Type & AggregateType.ElementTypeMask;
 
-            var storageClass = isOutAttr ? StorageClass.Output : StorageClass.Input;
+            int attrOffset = attrInfo.BaseValue;
+            AggregateType type = attrInfo.Type;
 
-            var elemIndex = Constant(TypeU32(), attrInfo.GetInnermostIndex());
+            bool isUserAttr = attr >= AttributeConsts.UserAttributeBase && attr < AttributeConsts.UserAttributeEnd;
+            if (isUserAttr && Config.TransformFeedbackEnabled &&
+                ((isOutAttr && Config.Stage != ShaderStage.Fragment) ||
+                (!isOutAttr && Config.Stage != ShaderStage.Vertex)))
+            {
+                attrOffset = attr;
+                type = elemType;
+            }
 
-            var ioVariable = isOutAttr ? Outputs[attrInfo.BaseValue] : Inputs[attrInfo.BaseValue];
+            var ioVariable = isOutAttr ? Outputs[attrOffset] : Inputs[attrOffset];
 
-            if ((attrInfo.Type & (AggregateType.Array | AggregateType.Vector)) == 0)
+            if ((type & (AggregateType.Array | AggregateType.Vector)) == 0)
             {
                 return ioVariable;
             }
+
+            var storageClass = isOutAttr ? StorageClass.Output : StorageClass.Input;
+            var elemIndex = Constant(TypeU32(), attrInfo.GetInnermostIndex());
 
             if (Config.Stage == ShaderStage.Geometry && !isOutAttr && (!attrInfo.IsBuiltin || AttributeInfo.IsArrayBuiltIn(attr)))
             {
@@ -298,6 +316,18 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         public (StructuredFunction, Instruction) GetFunction(int funcIndex)
         {
             return _functions[funcIndex];
+        }
+
+        public TransformFeedbackOutput GetTransformFeedbackOutput(int location, int component)
+        {
+            int index = (AttributeConsts.UserAttributeBase / 4) + location * 4 + component;
+            return _info.TransformFeedbackOutputs[index];
+        }
+
+        public TransformFeedbackOutput GetTransformFeedbackOutput(int location)
+        {
+            int index = location / 4;
+            return _info.TransformFeedbackOutputs[index];
         }
 
         public Instruction GetType(AggregateType type, int length = 1)
