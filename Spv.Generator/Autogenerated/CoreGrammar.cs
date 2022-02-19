@@ -36,7 +36,7 @@ namespace Spv.Generator
 
         public Instruction Nop()
         {
-            Instruction result = new Instruction(Op.OpNop);
+            Instruction result = NewInstruction(Op.OpNop);
 
             AddToFunctionDefinitions(result);
 
@@ -45,7 +45,7 @@ namespace Spv.Generator
 
         public Instruction Undef(Instruction resultType)
         {
-            Instruction result = new Instruction(Op.OpUndef, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpUndef, GetNewId(), resultType);
 
             AddToFunctionDefinitions(result);
 
@@ -54,7 +54,7 @@ namespace Spv.Generator
 
         public Instruction SizeOf(Instruction resultType, Instruction pointer)
         {
-            Instruction result = new Instruction(Op.OpSizeOf, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSizeOf, GetNewId(), resultType);
 
             result.AddOperand(pointer);
             AddToFunctionDefinitions(result);
@@ -66,7 +66,7 @@ namespace Spv.Generator
 
         public Instruction SourceContinued(string continuedSource)
         {
-            Instruction result = new Instruction(Op.OpSourceContinued);
+            Instruction result = NewInstruction(Op.OpSourceContinued);
 
             result.AddOperand(continuedSource);
             AddDebug(result);
@@ -76,7 +76,7 @@ namespace Spv.Generator
 
         public Instruction Source(SourceLanguage sourceLanguage, LiteralInteger version, Instruction file = null, string source = null)
         {
-            Instruction result = new Instruction(Op.OpSource);
+            Instruction result = NewInstruction(Op.OpSource);
 
             result.AddOperand(sourceLanguage);
             result.AddOperand(version);
@@ -95,7 +95,7 @@ namespace Spv.Generator
 
         public Instruction SourceExtension(string extension)
         {
-            Instruction result = new Instruction(Op.OpSourceExtension);
+            Instruction result = NewInstruction(Op.OpSourceExtension);
 
             result.AddOperand(extension);
             AddDebug(result);
@@ -105,7 +105,7 @@ namespace Spv.Generator
 
         public Instruction Name(Instruction target, string name)
         {
-            Instruction result = new Instruction(Op.OpName);
+            Instruction result = NewInstruction(Op.OpName);
 
             result.AddOperand(target);
             result.AddOperand(name);
@@ -116,7 +116,7 @@ namespace Spv.Generator
 
         public Instruction MemberName(Instruction type, LiteralInteger member, string name)
         {
-            Instruction result = new Instruction(Op.OpMemberName);
+            Instruction result = NewInstruction(Op.OpMemberName);
 
             result.AddOperand(type);
             result.AddOperand(member);
@@ -128,7 +128,7 @@ namespace Spv.Generator
 
         public Instruction String(string str)
         {
-            Instruction result = new Instruction(Op.OpString, GetNewId());
+            Instruction result = NewInstruction(Op.OpString, GetNewId());
 
             result.AddOperand(str);
             AddDebug(result);
@@ -138,7 +138,7 @@ namespace Spv.Generator
 
         public Instruction Line(Instruction file, LiteralInteger line, LiteralInteger column)
         {
-            Instruction result = new Instruction(Op.OpLine);
+            Instruction result = NewInstruction(Op.OpLine);
 
             result.AddOperand(file);
             result.AddOperand(line);
@@ -150,7 +150,7 @@ namespace Spv.Generator
 
         public Instruction NoLine()
         {
-            Instruction result = new Instruction(Op.OpNoLine);
+            Instruction result = NewInstruction(Op.OpNoLine);
 
             AddDebug(result);
 
@@ -159,7 +159,7 @@ namespace Spv.Generator
 
         public Instruction ModuleProcessed(string process)
         {
-            Instruction result = new Instruction(Op.OpModuleProcessed);
+            Instruction result = NewInstruction(Op.OpModuleProcessed);
 
             result.AddOperand(process);
             AddDebug(result);
@@ -169,9 +169,32 @@ namespace Spv.Generator
 
         // Annotation
 
+        public Instruction Decorate(Instruction target, Decoration decoration)
+        {
+            Instruction result = NewInstruction(Op.OpDecorate);
+
+            result.AddOperand(target);
+            result.AddOperand(decoration);
+            AddAnnotation(result);
+
+            return result;
+        }
+
+        public Instruction Decorate(Instruction target, Decoration decoration, Operand parameter)
+        {
+            Instruction result = NewInstruction(Op.OpDecorate);
+
+            result.AddOperand(target);
+            result.AddOperand(decoration);
+            result.AddOperand(parameter);
+            AddAnnotation(result);
+
+            return result;
+        }
+
         public Instruction Decorate(Instruction target, Decoration decoration, params Operand[] parameters)
         {
-            Instruction result = new Instruction(Op.OpDecorate);
+            Instruction result = NewInstruction(Op.OpDecorate);
 
             result.AddOperand(target);
             result.AddOperand(decoration);
@@ -181,9 +204,34 @@ namespace Spv.Generator
             return result;
         }
 
+        public Instruction MemberDecorate(Instruction structureType, LiteralInteger member, Decoration decoration)
+        {
+            Instruction result = NewInstruction(Op.OpMemberDecorate);
+
+            result.AddOperand(structureType);
+            result.AddOperand(member);
+            result.AddOperand(decoration);
+            AddAnnotation(result);
+
+            return result;
+        }
+
+        public Instruction MemberDecorate(Instruction structureType, LiteralInteger member, Decoration decoration, Operand parameter)
+        {
+            Instruction result = NewInstruction(Op.OpMemberDecorate);
+
+            result.AddOperand(structureType);
+            result.AddOperand(member);
+            result.AddOperand(decoration);
+            result.AddOperand(parameter);
+            AddAnnotation(result);
+
+            return result;
+        }
+
         public Instruction MemberDecorate(Instruction structureType, LiteralInteger member, Decoration decoration, params Operand[] parameters)
         {
-            Instruction result = new Instruction(Op.OpMemberDecorate);
+            Instruction result = NewInstruction(Op.OpMemberDecorate);
 
             result.AddOperand(structureType);
             result.AddOperand(member);
@@ -196,7 +244,7 @@ namespace Spv.Generator
 
         public Instruction DecorationGroup()
         {
-            Instruction result = new Instruction(Op.OpDecorationGroup, GetNewId());
+            Instruction result = NewInstruction(Op.OpDecorationGroup, GetNewId());
 
             AddAnnotation(result);
 
@@ -205,7 +253,7 @@ namespace Spv.Generator
 
         public Instruction GroupDecorate(Instruction decorationGroup, params Instruction[] targets)
         {
-            Instruction result = new Instruction(Op.OpGroupDecorate);
+            Instruction result = NewInstruction(Op.OpGroupDecorate);
 
             result.AddOperand(decorationGroup);
             result.AddOperand(targets);
@@ -216,7 +264,7 @@ namespace Spv.Generator
 
         public Instruction GroupMemberDecorate(Instruction decorationGroup, params Operand[] targets)
         {
-            Instruction result = new Instruction(Op.OpGroupMemberDecorate);
+            Instruction result = NewInstruction(Op.OpGroupMemberDecorate);
 
             result.AddOperand(decorationGroup);
             result.AddOperand(targets);
@@ -227,7 +275,7 @@ namespace Spv.Generator
 
         public Instruction DecorateId(Instruction target, Decoration decoration, params Operand[] parameters)
         {
-            Instruction result = new Instruction(Op.OpDecorateId);
+            Instruction result = NewInstruction(Op.OpDecorateId);
 
             result.AddOperand(target);
             result.AddOperand(decoration);
@@ -239,7 +287,7 @@ namespace Spv.Generator
 
         public Instruction DecorateString(Instruction target, Decoration decoration, params Operand[] parameters)
         {
-            Instruction result = new Instruction(Op.OpDecorateString);
+            Instruction result = NewInstruction(Op.OpDecorateString);
 
             result.AddOperand(target);
             result.AddOperand(decoration);
@@ -251,7 +299,7 @@ namespace Spv.Generator
 
         public Instruction DecorateStringGOOGLE(Instruction target, Decoration decoration, params Operand[] parameters)
         {
-            Instruction result = new Instruction(Op.OpDecorateStringGOOGLE);
+            Instruction result = NewInstruction(Op.OpDecorateStringGOOGLE);
 
             result.AddOperand(target);
             result.AddOperand(decoration);
@@ -263,7 +311,7 @@ namespace Spv.Generator
 
         public Instruction MemberDecorateString(Instruction structType, LiteralInteger member, Decoration decoration, params Operand[] parameters)
         {
-            Instruction result = new Instruction(Op.OpMemberDecorateString);
+            Instruction result = NewInstruction(Op.OpMemberDecorateString);
 
             result.AddOperand(structType);
             result.AddOperand(member);
@@ -276,7 +324,7 @@ namespace Spv.Generator
 
         public Instruction MemberDecorateStringGOOGLE(Instruction structType, LiteralInteger member, Decoration decoration, params Operand[] parameters)
         {
-            Instruction result = new Instruction(Op.OpMemberDecorateStringGOOGLE);
+            Instruction result = NewInstruction(Op.OpMemberDecorateStringGOOGLE);
 
             result.AddOperand(structType);
             result.AddOperand(member);
@@ -291,7 +339,7 @@ namespace Spv.Generator
 
         public Instruction TypeVoid(bool forceIdAllocation = false)
         {
-            Instruction result = new Instruction(Op.OpTypeVoid);
+            Instruction result = NewInstruction(Op.OpTypeVoid);
 
             AddTypeDeclaration(result, forceIdAllocation);
 
@@ -300,7 +348,7 @@ namespace Spv.Generator
 
         public Instruction TypeBool(bool forceIdAllocation = false)
         {
-            Instruction result = new Instruction(Op.OpTypeBool);
+            Instruction result = NewInstruction(Op.OpTypeBool);
 
             AddTypeDeclaration(result, forceIdAllocation);
 
@@ -309,7 +357,7 @@ namespace Spv.Generator
 
         public Instruction TypeInt(LiteralInteger width, LiteralInteger signedness, bool forceIdAllocation = false)
         {
-            Instruction result = new Instruction(Op.OpTypeInt);
+            Instruction result = NewInstruction(Op.OpTypeInt);
 
             result.AddOperand(width);
             result.AddOperand(signedness);
@@ -320,7 +368,7 @@ namespace Spv.Generator
 
         public Instruction TypeFloat(LiteralInteger width, bool forceIdAllocation = false)
         {
-            Instruction result = new Instruction(Op.OpTypeFloat);
+            Instruction result = NewInstruction(Op.OpTypeFloat);
 
             result.AddOperand(width);
             AddTypeDeclaration(result, forceIdAllocation);
@@ -330,7 +378,7 @@ namespace Spv.Generator
 
         public Instruction TypeVector(Instruction componentType, LiteralInteger componentCount, bool forceIdAllocation = false)
         {
-            Instruction result = new Instruction(Op.OpTypeVector);
+            Instruction result = NewInstruction(Op.OpTypeVector);
 
             result.AddOperand(componentType);
             result.AddOperand(componentCount);
@@ -341,7 +389,7 @@ namespace Spv.Generator
 
         public Instruction TypeMatrix(Instruction columnType, LiteralInteger columnCount, bool forceIdAllocation = false)
         {
-            Instruction result = new Instruction(Op.OpTypeMatrix);
+            Instruction result = NewInstruction(Op.OpTypeMatrix);
 
             result.AddOperand(columnType);
             result.AddOperand(columnCount);
@@ -352,7 +400,7 @@ namespace Spv.Generator
 
         public Instruction TypeImage(Instruction sampledType, Dim dim, LiteralInteger depth, LiteralInteger arrayed, LiteralInteger mS, LiteralInteger sampled, ImageFormat imageFormat, AccessQualifier accessQualifier = (AccessQualifier)int.MaxValue, bool forceIdAllocation = false)
         {
-            Instruction result = new Instruction(Op.OpTypeImage);
+            Instruction result = NewInstruction(Op.OpTypeImage);
 
             result.AddOperand(sampledType);
             result.AddOperand(dim);
@@ -372,7 +420,7 @@ namespace Spv.Generator
 
         public Instruction TypeSampler(bool forceIdAllocation = false)
         {
-            Instruction result = new Instruction(Op.OpTypeSampler);
+            Instruction result = NewInstruction(Op.OpTypeSampler);
 
             AddTypeDeclaration(result, forceIdAllocation);
 
@@ -381,7 +429,7 @@ namespace Spv.Generator
 
         public Instruction TypeSampledImage(Instruction imageType, bool forceIdAllocation = false)
         {
-            Instruction result = new Instruction(Op.OpTypeSampledImage);
+            Instruction result = NewInstruction(Op.OpTypeSampledImage);
 
             result.AddOperand(imageType);
             AddTypeDeclaration(result, forceIdAllocation);
@@ -391,7 +439,7 @@ namespace Spv.Generator
 
         public Instruction TypeArray(Instruction elementType, Instruction length, bool forceIdAllocation = false)
         {
-            Instruction result = new Instruction(Op.OpTypeArray);
+            Instruction result = NewInstruction(Op.OpTypeArray);
 
             result.AddOperand(elementType);
             result.AddOperand(length);
@@ -402,7 +450,7 @@ namespace Spv.Generator
 
         public Instruction TypeRuntimeArray(Instruction elementType, bool forceIdAllocation = false)
         {
-            Instruction result = new Instruction(Op.OpTypeRuntimeArray);
+            Instruction result = NewInstruction(Op.OpTypeRuntimeArray);
 
             result.AddOperand(elementType);
             AddTypeDeclaration(result, forceIdAllocation);
@@ -412,7 +460,7 @@ namespace Spv.Generator
 
         public Instruction TypeStruct(bool forceIdAllocation, params Instruction[] parameters)
         {
-            Instruction result = new Instruction(Op.OpTypeStruct);
+            Instruction result = NewInstruction(Op.OpTypeStruct);
 
             result.AddOperand(parameters);
             AddTypeDeclaration(result, forceIdAllocation);
@@ -422,7 +470,7 @@ namespace Spv.Generator
 
         public Instruction TypeOpaque(string thenameoftheopaquetype, bool forceIdAllocation = false)
         {
-            Instruction result = new Instruction(Op.OpTypeOpaque);
+            Instruction result = NewInstruction(Op.OpTypeOpaque);
 
             result.AddOperand(thenameoftheopaquetype);
             AddTypeDeclaration(result, forceIdAllocation);
@@ -432,7 +480,7 @@ namespace Spv.Generator
 
         public Instruction TypePointer(StorageClass storageClass, Instruction type, bool forceIdAllocation = false)
         {
-            Instruction result = new Instruction(Op.OpTypePointer);
+            Instruction result = NewInstruction(Op.OpTypePointer);
 
             result.AddOperand(storageClass);
             result.AddOperand(type);
@@ -443,7 +491,7 @@ namespace Spv.Generator
 
         public Instruction TypeFunction(Instruction returnType, bool forceIdAllocation, params Instruction[] parameters)
         {
-            Instruction result = new Instruction(Op.OpTypeFunction);
+            Instruction result = NewInstruction(Op.OpTypeFunction);
 
             result.AddOperand(returnType);
             result.AddOperand(parameters);
@@ -454,7 +502,7 @@ namespace Spv.Generator
 
         public Instruction TypeEvent(bool forceIdAllocation = false)
         {
-            Instruction result = new Instruction(Op.OpTypeEvent);
+            Instruction result = NewInstruction(Op.OpTypeEvent);
 
             AddTypeDeclaration(result, forceIdAllocation);
 
@@ -463,7 +511,7 @@ namespace Spv.Generator
 
         public Instruction TypeDeviceEvent(bool forceIdAllocation = false)
         {
-            Instruction result = new Instruction(Op.OpTypeDeviceEvent);
+            Instruction result = NewInstruction(Op.OpTypeDeviceEvent);
 
             AddTypeDeclaration(result, forceIdAllocation);
 
@@ -472,7 +520,7 @@ namespace Spv.Generator
 
         public Instruction TypeReserveId(bool forceIdAllocation = false)
         {
-            Instruction result = new Instruction(Op.OpTypeReserveId);
+            Instruction result = NewInstruction(Op.OpTypeReserveId);
 
             AddTypeDeclaration(result, forceIdAllocation);
 
@@ -481,7 +529,7 @@ namespace Spv.Generator
 
         public Instruction TypeQueue(bool forceIdAllocation = false)
         {
-            Instruction result = new Instruction(Op.OpTypeQueue);
+            Instruction result = NewInstruction(Op.OpTypeQueue);
 
             AddTypeDeclaration(result, forceIdAllocation);
 
@@ -490,7 +538,7 @@ namespace Spv.Generator
 
         public Instruction TypePipe(AccessQualifier qualifier, bool forceIdAllocation = false)
         {
-            Instruction result = new Instruction(Op.OpTypePipe);
+            Instruction result = NewInstruction(Op.OpTypePipe);
 
             result.AddOperand(qualifier);
             AddTypeDeclaration(result, forceIdAllocation);
@@ -500,7 +548,7 @@ namespace Spv.Generator
 
         public Instruction TypeForwardPointer(Instruction pointerType, StorageClass storageClass, bool forceIdAllocation = false)
         {
-            Instruction result = new Instruction(Op.OpTypeForwardPointer);
+            Instruction result = NewInstruction(Op.OpTypeForwardPointer);
 
             result.AddOperand(pointerType);
             result.AddOperand(storageClass);
@@ -511,7 +559,7 @@ namespace Spv.Generator
 
         public Instruction TypePipeStorage(bool forceIdAllocation = false)
         {
-            Instruction result = new Instruction(Op.OpTypePipeStorage);
+            Instruction result = NewInstruction(Op.OpTypePipeStorage);
 
             AddTypeDeclaration(result, forceIdAllocation);
 
@@ -520,7 +568,7 @@ namespace Spv.Generator
 
         public Instruction TypeNamedBarrier(bool forceIdAllocation = false)
         {
-            Instruction result = new Instruction(Op.OpTypeNamedBarrier);
+            Instruction result = NewInstruction(Op.OpTypeNamedBarrier);
 
             AddTypeDeclaration(result, forceIdAllocation);
 
@@ -531,7 +579,7 @@ namespace Spv.Generator
 
         public Instruction ConstantTrue(Instruction resultType)
         {
-            Instruction result = new Instruction(Op.OpConstantTrue, Instruction.InvalidId, resultType);
+            Instruction result = NewInstruction(Op.OpConstantTrue, Instruction.InvalidId, resultType);
 
             AddConstant(result);
 
@@ -540,7 +588,7 @@ namespace Spv.Generator
 
         public Instruction ConstantFalse(Instruction resultType)
         {
-            Instruction result = new Instruction(Op.OpConstantFalse, Instruction.InvalidId, resultType);
+            Instruction result = NewInstruction(Op.OpConstantFalse, Instruction.InvalidId, resultType);
 
             AddConstant(result);
 
@@ -549,7 +597,7 @@ namespace Spv.Generator
 
         public Instruction Constant(Instruction resultType, LiteralInteger value)
         {
-            Instruction result = new Instruction(Op.OpConstant, Instruction.InvalidId, resultType);
+            Instruction result = NewInstruction(Op.OpConstant, Instruction.InvalidId, resultType);
 
             result.AddOperand(value);
             AddConstant(result);
@@ -559,7 +607,7 @@ namespace Spv.Generator
 
         public Instruction ConstantComposite(Instruction resultType, params Instruction[] constituents)
         {
-            Instruction result = new Instruction(Op.OpConstantComposite, Instruction.InvalidId, resultType);
+            Instruction result = NewInstruction(Op.OpConstantComposite, Instruction.InvalidId, resultType);
 
             result.AddOperand(constituents);
             AddConstant(result);
@@ -569,7 +617,7 @@ namespace Spv.Generator
 
         public Instruction ConstantSampler(Instruction resultType, SamplerAddressingMode samplerAddressingMode, LiteralInteger param, SamplerFilterMode samplerFilterMode)
         {
-            Instruction result = new Instruction(Op.OpConstantSampler, Instruction.InvalidId, resultType);
+            Instruction result = NewInstruction(Op.OpConstantSampler, Instruction.InvalidId, resultType);
 
             result.AddOperand(samplerAddressingMode);
             result.AddOperand(param);
@@ -581,7 +629,7 @@ namespace Spv.Generator
 
         public Instruction ConstantNull(Instruction resultType)
         {
-            Instruction result = new Instruction(Op.OpConstantNull, Instruction.InvalidId, resultType);
+            Instruction result = NewInstruction(Op.OpConstantNull, Instruction.InvalidId, resultType);
 
             AddConstant(result);
 
@@ -590,7 +638,7 @@ namespace Spv.Generator
 
         public Instruction SpecConstantTrue(Instruction resultType)
         {
-            Instruction result = new Instruction(Op.OpSpecConstantTrue, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSpecConstantTrue, GetNewId(), resultType);
 
             AddToFunctionDefinitions(result);
 
@@ -599,7 +647,7 @@ namespace Spv.Generator
 
         public Instruction SpecConstantFalse(Instruction resultType)
         {
-            Instruction result = new Instruction(Op.OpSpecConstantFalse, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSpecConstantFalse, GetNewId(), resultType);
 
             AddToFunctionDefinitions(result);
 
@@ -608,7 +656,7 @@ namespace Spv.Generator
 
         public Instruction SpecConstant(Instruction resultType, LiteralInteger value)
         {
-            Instruction result = new Instruction(Op.OpSpecConstant, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSpecConstant, GetNewId(), resultType);
 
             result.AddOperand(value);
             AddToFunctionDefinitions(result);
@@ -618,7 +666,7 @@ namespace Spv.Generator
 
         public Instruction SpecConstantComposite(Instruction resultType, params Instruction[] constituents)
         {
-            Instruction result = new Instruction(Op.OpSpecConstantComposite, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSpecConstantComposite, GetNewId(), resultType);
 
             result.AddOperand(constituents);
             AddToFunctionDefinitions(result);
@@ -628,7 +676,7 @@ namespace Spv.Generator
 
         public Instruction SpecConstantOp(Instruction resultType, LiteralInteger opcode)
         {
-            Instruction result = new Instruction(Op.OpSpecConstantOp, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSpecConstantOp, GetNewId(), resultType);
 
             result.AddOperand(opcode);
             AddToFunctionDefinitions(result);
@@ -640,7 +688,7 @@ namespace Spv.Generator
 
         public Instruction Variable(Instruction resultType, StorageClass storageClass, Instruction initializer = null)
         {
-            Instruction result = new Instruction(Op.OpVariable, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpVariable, GetNewId(), resultType);
 
             result.AddOperand(storageClass);
             if (initializer != null)
@@ -652,7 +700,7 @@ namespace Spv.Generator
 
         public Instruction ImageTexelPointer(Instruction resultType, Instruction image, Instruction coordinate, Instruction sample)
         {
-            Instruction result = new Instruction(Op.OpImageTexelPointer, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageTexelPointer, GetNewId(), resultType);
 
             result.AddOperand(image);
             result.AddOperand(coordinate);
@@ -664,7 +712,7 @@ namespace Spv.Generator
 
         public Instruction Load(Instruction resultType, Instruction pointer, MemoryAccessMask memoryAccess = (MemoryAccessMask)int.MaxValue)
         {
-            Instruction result = new Instruction(Op.OpLoad, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpLoad, GetNewId(), resultType);
 
             result.AddOperand(pointer);
             if (memoryAccess != (MemoryAccessMask)int.MaxValue)
@@ -678,7 +726,7 @@ namespace Spv.Generator
 
         public Instruction Store(Instruction pointer, Instruction obj, MemoryAccessMask memoryAccess = (MemoryAccessMask)int.MaxValue)
         {
-            Instruction result = new Instruction(Op.OpStore);
+            Instruction result = NewInstruction(Op.OpStore);
 
             result.AddOperand(pointer);
             result.AddOperand(obj);
@@ -693,7 +741,7 @@ namespace Spv.Generator
 
         public Instruction CopyMemory(Instruction target, Instruction source, MemoryAccessMask memoryAccess0 = (MemoryAccessMask)int.MaxValue, MemoryAccessMask memoryAccess1 = (MemoryAccessMask)int.MaxValue)
         {
-            Instruction result = new Instruction(Op.OpCopyMemory);
+            Instruction result = NewInstruction(Op.OpCopyMemory);
 
             result.AddOperand(target);
             result.AddOperand(source);
@@ -712,7 +760,7 @@ namespace Spv.Generator
 
         public Instruction CopyMemorySized(Instruction target, Instruction source, Instruction size, MemoryAccessMask memoryAccess0 = (MemoryAccessMask)int.MaxValue, MemoryAccessMask memoryAccess1 = (MemoryAccessMask)int.MaxValue)
         {
-            Instruction result = new Instruction(Op.OpCopyMemorySized);
+            Instruction result = NewInstruction(Op.OpCopyMemorySized);
 
             result.AddOperand(target);
             result.AddOperand(source);
@@ -730,9 +778,45 @@ namespace Spv.Generator
             return result;
         }
 
+        public Instruction AccessChain(Instruction resultType, Instruction baseObj, Instruction index)
+        {
+            Instruction result = NewInstruction(Op.OpAccessChain, GetNewId(), resultType);
+
+            result.AddOperand(baseObj);
+            result.AddOperand(index);
+            AddToFunctionDefinitions(result);
+
+            return result;
+        }
+
+        public Instruction AccessChain(Instruction resultType, Instruction baseObj, Instruction index0, Instruction index1)
+        {
+            Instruction result = NewInstruction(Op.OpAccessChain, GetNewId(), resultType);
+
+            result.AddOperand(baseObj);
+            result.AddOperand(index0);
+            result.AddOperand(index1);
+            AddToFunctionDefinitions(result);
+
+            return result;
+        }
+
+        public Instruction AccessChain(Instruction resultType, Instruction baseObj, Instruction index0, Instruction index1, Instruction index2)
+        {
+            Instruction result = NewInstruction(Op.OpAccessChain, GetNewId(), resultType);
+
+            result.AddOperand(baseObj);
+            result.AddOperand(index0);
+            result.AddOperand(index1);
+            result.AddOperand(index2);
+            AddToFunctionDefinitions(result);
+
+            return result;
+        }
+
         public Instruction AccessChain(Instruction resultType, Instruction baseObj, params Instruction[] indexes)
         {
-            Instruction result = new Instruction(Op.OpAccessChain, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpAccessChain, GetNewId(), resultType);
 
             result.AddOperand(baseObj);
             result.AddOperand(indexes);
@@ -743,7 +827,7 @@ namespace Spv.Generator
 
         public Instruction InBoundsAccessChain(Instruction resultType, Instruction baseObj, params Instruction[] indexes)
         {
-            Instruction result = new Instruction(Op.OpInBoundsAccessChain, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpInBoundsAccessChain, GetNewId(), resultType);
 
             result.AddOperand(baseObj);
             result.AddOperand(indexes);
@@ -754,7 +838,7 @@ namespace Spv.Generator
 
         public Instruction PtrAccessChain(Instruction resultType, Instruction baseObj, Instruction element, params Instruction[] indexes)
         {
-            Instruction result = new Instruction(Op.OpPtrAccessChain, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpPtrAccessChain, GetNewId(), resultType);
 
             result.AddOperand(baseObj);
             result.AddOperand(element);
@@ -766,7 +850,7 @@ namespace Spv.Generator
 
         public Instruction ArrayLength(Instruction resultType, Instruction structure, LiteralInteger arraymember)
         {
-            Instruction result = new Instruction(Op.OpArrayLength, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpArrayLength, GetNewId(), resultType);
 
             result.AddOperand(structure);
             result.AddOperand(arraymember);
@@ -777,7 +861,7 @@ namespace Spv.Generator
 
         public Instruction GenericPtrMemSemantics(Instruction resultType, Instruction pointer)
         {
-            Instruction result = new Instruction(Op.OpGenericPtrMemSemantics, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGenericPtrMemSemantics, GetNewId(), resultType);
 
             result.AddOperand(pointer);
             AddToFunctionDefinitions(result);
@@ -787,7 +871,7 @@ namespace Spv.Generator
 
         public Instruction InBoundsPtrAccessChain(Instruction resultType, Instruction baseObj, Instruction element, params Instruction[] indexes)
         {
-            Instruction result = new Instruction(Op.OpInBoundsPtrAccessChain, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpInBoundsPtrAccessChain, GetNewId(), resultType);
 
             result.AddOperand(baseObj);
             result.AddOperand(element);
@@ -799,7 +883,7 @@ namespace Spv.Generator
 
         public Instruction PtrEqual(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpPtrEqual, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpPtrEqual, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -810,7 +894,7 @@ namespace Spv.Generator
 
         public Instruction PtrNotEqual(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpPtrNotEqual, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpPtrNotEqual, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -821,7 +905,7 @@ namespace Spv.Generator
 
         public Instruction PtrDiff(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpPtrDiff, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpPtrDiff, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -834,7 +918,7 @@ namespace Spv.Generator
 
         public Instruction Function(Instruction resultType, FunctionControlMask functionControl, Instruction functionType)
         {
-            Instruction result = new Instruction(Op.OpFunction, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpFunction, GetNewId(), resultType);
 
             result.AddOperand(functionControl);
             result.AddOperand(functionType);
@@ -849,7 +933,7 @@ namespace Spv.Generator
 
         public Instruction FunctionParameter(Instruction resultType)
         {
-            Instruction result = new Instruction(Op.OpFunctionParameter, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpFunctionParameter, GetNewId(), resultType);
 
             AddToFunctionDefinitions(result);
 
@@ -858,7 +942,7 @@ namespace Spv.Generator
 
         public Instruction FunctionEnd()
         {
-            Instruction result = new Instruction(Op.OpFunctionEnd);
+            Instruction result = NewInstruction(Op.OpFunctionEnd);
 
             AddToFunctionDefinitions(result);
 
@@ -867,7 +951,7 @@ namespace Spv.Generator
 
         public Instruction FunctionCall(Instruction resultType, Instruction function, params Instruction[] parameters)
         {
-            Instruction result = new Instruction(Op.OpFunctionCall, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpFunctionCall, GetNewId(), resultType);
 
             result.AddOperand(function);
             result.AddOperand(parameters);
@@ -880,7 +964,7 @@ namespace Spv.Generator
 
         public Instruction SampledImage(Instruction resultType, Instruction image, Instruction sampler)
         {
-            Instruction result = new Instruction(Op.OpSampledImage, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSampledImage, GetNewId(), resultType);
 
             result.AddOperand(image);
             result.AddOperand(sampler);
@@ -891,7 +975,7 @@ namespace Spv.Generator
 
         public Instruction ImageSampleImplicitLod(Instruction resultType, Instruction sampledImage, Instruction coordinate, ImageOperandsMask imageOperands, params Instruction[] imageOperandIds)
         {
-            Instruction result = new Instruction(Op.OpImageSampleImplicitLod, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageSampleImplicitLod, GetNewId(), resultType);
 
             result.AddOperand(sampledImage);
             result.AddOperand(coordinate);
@@ -910,7 +994,7 @@ namespace Spv.Generator
 
         public Instruction ImageSampleExplicitLod(Instruction resultType, Instruction sampledImage, Instruction coordinate, ImageOperandsMask imageOperands, params Instruction[] imageOperandIds)
         {
-            Instruction result = new Instruction(Op.OpImageSampleExplicitLod, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageSampleExplicitLod, GetNewId(), resultType);
 
             result.AddOperand(sampledImage);
             result.AddOperand(coordinate);
@@ -926,7 +1010,7 @@ namespace Spv.Generator
 
         public Instruction ImageSampleDrefImplicitLod(Instruction resultType, Instruction sampledImage, Instruction coordinate, Instruction dRef, ImageOperandsMask imageOperands, params Instruction[] imageOperandIds)
         {
-            Instruction result = new Instruction(Op.OpImageSampleDrefImplicitLod, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageSampleDrefImplicitLod, GetNewId(), resultType);
 
             result.AddOperand(sampledImage);
             result.AddOperand(coordinate);
@@ -946,7 +1030,7 @@ namespace Spv.Generator
 
         public Instruction ImageSampleDrefExplicitLod(Instruction resultType, Instruction sampledImage, Instruction coordinate, Instruction dRef, ImageOperandsMask imageOperands, params Instruction[] imageOperandIds)
         {
-            Instruction result = new Instruction(Op.OpImageSampleDrefExplicitLod, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageSampleDrefExplicitLod, GetNewId(), resultType);
 
             result.AddOperand(sampledImage);
             result.AddOperand(coordinate);
@@ -963,7 +1047,7 @@ namespace Spv.Generator
 
         public Instruction ImageSampleProjImplicitLod(Instruction resultType, Instruction sampledImage, Instruction coordinate, ImageOperandsMask imageOperands, params Instruction[] imageOperandIds)
         {
-            Instruction result = new Instruction(Op.OpImageSampleProjImplicitLod, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageSampleProjImplicitLod, GetNewId(), resultType);
 
             result.AddOperand(sampledImage);
             result.AddOperand(coordinate);
@@ -982,7 +1066,7 @@ namespace Spv.Generator
 
         public Instruction ImageSampleProjExplicitLod(Instruction resultType, Instruction sampledImage, Instruction coordinate, ImageOperandsMask imageOperands, params Instruction[] imageOperandIds)
         {
-            Instruction result = new Instruction(Op.OpImageSampleProjExplicitLod, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageSampleProjExplicitLod, GetNewId(), resultType);
 
             result.AddOperand(sampledImage);
             result.AddOperand(coordinate);
@@ -998,7 +1082,7 @@ namespace Spv.Generator
 
         public Instruction ImageSampleProjDrefImplicitLod(Instruction resultType, Instruction sampledImage, Instruction coordinate, Instruction dRef, ImageOperandsMask imageOperands, params Instruction[] imageOperandIds)
         {
-            Instruction result = new Instruction(Op.OpImageSampleProjDrefImplicitLod, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageSampleProjDrefImplicitLod, GetNewId(), resultType);
 
             result.AddOperand(sampledImage);
             result.AddOperand(coordinate);
@@ -1018,7 +1102,7 @@ namespace Spv.Generator
 
         public Instruction ImageSampleProjDrefExplicitLod(Instruction resultType, Instruction sampledImage, Instruction coordinate, Instruction dRef, ImageOperandsMask imageOperands, params Instruction[] imageOperandIds)
         {
-            Instruction result = new Instruction(Op.OpImageSampleProjDrefExplicitLod, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageSampleProjDrefExplicitLod, GetNewId(), resultType);
 
             result.AddOperand(sampledImage);
             result.AddOperand(coordinate);
@@ -1035,7 +1119,7 @@ namespace Spv.Generator
 
         public Instruction ImageFetch(Instruction resultType, Instruction image, Instruction coordinate, ImageOperandsMask imageOperands, params Instruction[] imageOperandIds)
         {
-            Instruction result = new Instruction(Op.OpImageFetch, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageFetch, GetNewId(), resultType);
 
             result.AddOperand(image);
             result.AddOperand(coordinate);
@@ -1054,7 +1138,7 @@ namespace Spv.Generator
 
         public Instruction ImageGather(Instruction resultType, Instruction sampledImage, Instruction coordinate, Instruction component, ImageOperandsMask imageOperands, params Instruction[] imageOperandIds)
         {
-            Instruction result = new Instruction(Op.OpImageGather, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageGather, GetNewId(), resultType);
 
             result.AddOperand(sampledImage);
             result.AddOperand(coordinate);
@@ -1074,7 +1158,7 @@ namespace Spv.Generator
 
         public Instruction ImageDrefGather(Instruction resultType, Instruction sampledImage, Instruction coordinate, Instruction dRef, ImageOperandsMask imageOperands, params Instruction[] imageOperandIds)
         {
-            Instruction result = new Instruction(Op.OpImageDrefGather, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageDrefGather, GetNewId(), resultType);
 
             result.AddOperand(sampledImage);
             result.AddOperand(coordinate);
@@ -1094,7 +1178,7 @@ namespace Spv.Generator
 
         public Instruction ImageRead(Instruction resultType, Instruction image, Instruction coordinate, ImageOperandsMask imageOperands, params Instruction[] imageOperandIds)
         {
-            Instruction result = new Instruction(Op.OpImageRead, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageRead, GetNewId(), resultType);
 
             result.AddOperand(image);
             result.AddOperand(coordinate);
@@ -1113,7 +1197,7 @@ namespace Spv.Generator
 
         public Instruction ImageWrite(Instruction image, Instruction coordinate, Instruction texel, ImageOperandsMask imageOperands, params Instruction[] imageOperandIds)
         {
-            Instruction result = new Instruction(Op.OpImageWrite);
+            Instruction result = NewInstruction(Op.OpImageWrite);
 
             result.AddOperand(image);
             result.AddOperand(coordinate);
@@ -1133,7 +1217,7 @@ namespace Spv.Generator
 
         public Instruction Image(Instruction resultType, Instruction sampledImage)
         {
-            Instruction result = new Instruction(Op.OpImage, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImage, GetNewId(), resultType);
 
             result.AddOperand(sampledImage);
             AddToFunctionDefinitions(result);
@@ -1143,7 +1227,7 @@ namespace Spv.Generator
 
         public Instruction ImageQueryFormat(Instruction resultType, Instruction image)
         {
-            Instruction result = new Instruction(Op.OpImageQueryFormat, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageQueryFormat, GetNewId(), resultType);
 
             result.AddOperand(image);
             AddToFunctionDefinitions(result);
@@ -1153,7 +1237,7 @@ namespace Spv.Generator
 
         public Instruction ImageQueryOrder(Instruction resultType, Instruction image)
         {
-            Instruction result = new Instruction(Op.OpImageQueryOrder, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageQueryOrder, GetNewId(), resultType);
 
             result.AddOperand(image);
             AddToFunctionDefinitions(result);
@@ -1163,7 +1247,7 @@ namespace Spv.Generator
 
         public Instruction ImageQuerySizeLod(Instruction resultType, Instruction image, Instruction levelofDetail)
         {
-            Instruction result = new Instruction(Op.OpImageQuerySizeLod, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageQuerySizeLod, GetNewId(), resultType);
 
             result.AddOperand(image);
             result.AddOperand(levelofDetail);
@@ -1174,7 +1258,7 @@ namespace Spv.Generator
 
         public Instruction ImageQuerySize(Instruction resultType, Instruction image)
         {
-            Instruction result = new Instruction(Op.OpImageQuerySize, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageQuerySize, GetNewId(), resultType);
 
             result.AddOperand(image);
             AddToFunctionDefinitions(result);
@@ -1184,7 +1268,7 @@ namespace Spv.Generator
 
         public Instruction ImageQueryLod(Instruction resultType, Instruction sampledImage, Instruction coordinate)
         {
-            Instruction result = new Instruction(Op.OpImageQueryLod, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageQueryLod, GetNewId(), resultType);
 
             result.AddOperand(sampledImage);
             result.AddOperand(coordinate);
@@ -1195,7 +1279,7 @@ namespace Spv.Generator
 
         public Instruction ImageQueryLevels(Instruction resultType, Instruction image)
         {
-            Instruction result = new Instruction(Op.OpImageQueryLevels, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageQueryLevels, GetNewId(), resultType);
 
             result.AddOperand(image);
             AddToFunctionDefinitions(result);
@@ -1205,7 +1289,7 @@ namespace Spv.Generator
 
         public Instruction ImageQuerySamples(Instruction resultType, Instruction image)
         {
-            Instruction result = new Instruction(Op.OpImageQuerySamples, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageQuerySamples, GetNewId(), resultType);
 
             result.AddOperand(image);
             AddToFunctionDefinitions(result);
@@ -1215,7 +1299,7 @@ namespace Spv.Generator
 
         public Instruction ImageSparseSampleImplicitLod(Instruction resultType, Instruction sampledImage, Instruction coordinate, ImageOperandsMask imageOperands, params Instruction[] imageOperandIds)
         {
-            Instruction result = new Instruction(Op.OpImageSparseSampleImplicitLod, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageSparseSampleImplicitLod, GetNewId(), resultType);
 
             result.AddOperand(sampledImage);
             result.AddOperand(coordinate);
@@ -1234,7 +1318,7 @@ namespace Spv.Generator
 
         public Instruction ImageSparseSampleExplicitLod(Instruction resultType, Instruction sampledImage, Instruction coordinate, ImageOperandsMask imageOperands, params Instruction[] imageOperandIds)
         {
-            Instruction result = new Instruction(Op.OpImageSparseSampleExplicitLod, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageSparseSampleExplicitLod, GetNewId(), resultType);
 
             result.AddOperand(sampledImage);
             result.AddOperand(coordinate);
@@ -1250,7 +1334,7 @@ namespace Spv.Generator
 
         public Instruction ImageSparseSampleDrefImplicitLod(Instruction resultType, Instruction sampledImage, Instruction coordinate, Instruction dRef, ImageOperandsMask imageOperands, params Instruction[] imageOperandIds)
         {
-            Instruction result = new Instruction(Op.OpImageSparseSampleDrefImplicitLod, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageSparseSampleDrefImplicitLod, GetNewId(), resultType);
 
             result.AddOperand(sampledImage);
             result.AddOperand(coordinate);
@@ -1270,7 +1354,7 @@ namespace Spv.Generator
 
         public Instruction ImageSparseSampleDrefExplicitLod(Instruction resultType, Instruction sampledImage, Instruction coordinate, Instruction dRef, ImageOperandsMask imageOperands, params Instruction[] imageOperandIds)
         {
-            Instruction result = new Instruction(Op.OpImageSparseSampleDrefExplicitLod, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageSparseSampleDrefExplicitLod, GetNewId(), resultType);
 
             result.AddOperand(sampledImage);
             result.AddOperand(coordinate);
@@ -1287,7 +1371,7 @@ namespace Spv.Generator
 
         public Instruction ImageSparseSampleProjImplicitLod(Instruction resultType, Instruction sampledImage, Instruction coordinate, ImageOperandsMask imageOperands, params Instruction[] imageOperandIds)
         {
-            Instruction result = new Instruction(Op.OpImageSparseSampleProjImplicitLod, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageSparseSampleProjImplicitLod, GetNewId(), resultType);
 
             result.AddOperand(sampledImage);
             result.AddOperand(coordinate);
@@ -1306,7 +1390,7 @@ namespace Spv.Generator
 
         public Instruction ImageSparseSampleProjExplicitLod(Instruction resultType, Instruction sampledImage, Instruction coordinate, ImageOperandsMask imageOperands, params Instruction[] imageOperandIds)
         {
-            Instruction result = new Instruction(Op.OpImageSparseSampleProjExplicitLod, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageSparseSampleProjExplicitLod, GetNewId(), resultType);
 
             result.AddOperand(sampledImage);
             result.AddOperand(coordinate);
@@ -1322,7 +1406,7 @@ namespace Spv.Generator
 
         public Instruction ImageSparseSampleProjDrefImplicitLod(Instruction resultType, Instruction sampledImage, Instruction coordinate, Instruction dRef, ImageOperandsMask imageOperands, params Instruction[] imageOperandIds)
         {
-            Instruction result = new Instruction(Op.OpImageSparseSampleProjDrefImplicitLod, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageSparseSampleProjDrefImplicitLod, GetNewId(), resultType);
 
             result.AddOperand(sampledImage);
             result.AddOperand(coordinate);
@@ -1342,7 +1426,7 @@ namespace Spv.Generator
 
         public Instruction ImageSparseSampleProjDrefExplicitLod(Instruction resultType, Instruction sampledImage, Instruction coordinate, Instruction dRef, ImageOperandsMask imageOperands, params Instruction[] imageOperandIds)
         {
-            Instruction result = new Instruction(Op.OpImageSparseSampleProjDrefExplicitLod, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageSparseSampleProjDrefExplicitLod, GetNewId(), resultType);
 
             result.AddOperand(sampledImage);
             result.AddOperand(coordinate);
@@ -1359,7 +1443,7 @@ namespace Spv.Generator
 
         public Instruction ImageSparseFetch(Instruction resultType, Instruction image, Instruction coordinate, ImageOperandsMask imageOperands, params Instruction[] imageOperandIds)
         {
-            Instruction result = new Instruction(Op.OpImageSparseFetch, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageSparseFetch, GetNewId(), resultType);
 
             result.AddOperand(image);
             result.AddOperand(coordinate);
@@ -1378,7 +1462,7 @@ namespace Spv.Generator
 
         public Instruction ImageSparseGather(Instruction resultType, Instruction sampledImage, Instruction coordinate, Instruction component, ImageOperandsMask imageOperands, params Instruction[] imageOperandIds)
         {
-            Instruction result = new Instruction(Op.OpImageSparseGather, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageSparseGather, GetNewId(), resultType);
 
             result.AddOperand(sampledImage);
             result.AddOperand(coordinate);
@@ -1398,7 +1482,7 @@ namespace Spv.Generator
 
         public Instruction ImageSparseDrefGather(Instruction resultType, Instruction sampledImage, Instruction coordinate, Instruction dRef, ImageOperandsMask imageOperands, params Instruction[] imageOperandIds)
         {
-            Instruction result = new Instruction(Op.OpImageSparseDrefGather, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageSparseDrefGather, GetNewId(), resultType);
 
             result.AddOperand(sampledImage);
             result.AddOperand(coordinate);
@@ -1418,7 +1502,7 @@ namespace Spv.Generator
 
         public Instruction ImageSparseTexelsResident(Instruction resultType, Instruction residentCode)
         {
-            Instruction result = new Instruction(Op.OpImageSparseTexelsResident, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageSparseTexelsResident, GetNewId(), resultType);
 
             result.AddOperand(residentCode);
             AddToFunctionDefinitions(result);
@@ -1428,7 +1512,7 @@ namespace Spv.Generator
 
         public Instruction ImageSparseRead(Instruction resultType, Instruction image, Instruction coordinate, ImageOperandsMask imageOperands, params Instruction[] imageOperandIds)
         {
-            Instruction result = new Instruction(Op.OpImageSparseRead, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageSparseRead, GetNewId(), resultType);
 
             result.AddOperand(image);
             result.AddOperand(coordinate);
@@ -1447,7 +1531,7 @@ namespace Spv.Generator
 
         public Instruction ImageSampleFootprintNV(Instruction resultType, Instruction sampledImage, Instruction coordinate, Instruction granularity, Instruction coarse, ImageOperandsMask imageOperands, params Instruction[] imageOperandIds)
         {
-            Instruction result = new Instruction(Op.OpImageSampleFootprintNV, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpImageSampleFootprintNV, GetNewId(), resultType);
 
             result.AddOperand(sampledImage);
             result.AddOperand(coordinate);
@@ -1470,7 +1554,7 @@ namespace Spv.Generator
 
         public Instruction ConvertFToU(Instruction resultType, Instruction floatValue)
         {
-            Instruction result = new Instruction(Op.OpConvertFToU, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpConvertFToU, GetNewId(), resultType);
 
             result.AddOperand(floatValue);
             AddToFunctionDefinitions(result);
@@ -1480,7 +1564,7 @@ namespace Spv.Generator
 
         public Instruction ConvertFToS(Instruction resultType, Instruction floatValue)
         {
-            Instruction result = new Instruction(Op.OpConvertFToS, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpConvertFToS, GetNewId(), resultType);
 
             result.AddOperand(floatValue);
             AddToFunctionDefinitions(result);
@@ -1490,7 +1574,7 @@ namespace Spv.Generator
 
         public Instruction ConvertSToF(Instruction resultType, Instruction signedValue)
         {
-            Instruction result = new Instruction(Op.OpConvertSToF, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpConvertSToF, GetNewId(), resultType);
 
             result.AddOperand(signedValue);
             AddToFunctionDefinitions(result);
@@ -1500,7 +1584,7 @@ namespace Spv.Generator
 
         public Instruction ConvertUToF(Instruction resultType, Instruction unsignedValue)
         {
-            Instruction result = new Instruction(Op.OpConvertUToF, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpConvertUToF, GetNewId(), resultType);
 
             result.AddOperand(unsignedValue);
             AddToFunctionDefinitions(result);
@@ -1510,7 +1594,7 @@ namespace Spv.Generator
 
         public Instruction UConvert(Instruction resultType, Instruction unsignedValue)
         {
-            Instruction result = new Instruction(Op.OpUConvert, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpUConvert, GetNewId(), resultType);
 
             result.AddOperand(unsignedValue);
             AddToFunctionDefinitions(result);
@@ -1520,7 +1604,7 @@ namespace Spv.Generator
 
         public Instruction SConvert(Instruction resultType, Instruction signedValue)
         {
-            Instruction result = new Instruction(Op.OpSConvert, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSConvert, GetNewId(), resultType);
 
             result.AddOperand(signedValue);
             AddToFunctionDefinitions(result);
@@ -1530,7 +1614,7 @@ namespace Spv.Generator
 
         public Instruction FConvert(Instruction resultType, Instruction floatValue)
         {
-            Instruction result = new Instruction(Op.OpFConvert, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpFConvert, GetNewId(), resultType);
 
             result.AddOperand(floatValue);
             AddToFunctionDefinitions(result);
@@ -1540,7 +1624,7 @@ namespace Spv.Generator
 
         public Instruction QuantizeToF16(Instruction resultType, Instruction value)
         {
-            Instruction result = new Instruction(Op.OpQuantizeToF16, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpQuantizeToF16, GetNewId(), resultType);
 
             result.AddOperand(value);
             AddToFunctionDefinitions(result);
@@ -1550,7 +1634,7 @@ namespace Spv.Generator
 
         public Instruction ConvertPtrToU(Instruction resultType, Instruction pointer)
         {
-            Instruction result = new Instruction(Op.OpConvertPtrToU, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpConvertPtrToU, GetNewId(), resultType);
 
             result.AddOperand(pointer);
             AddToFunctionDefinitions(result);
@@ -1560,7 +1644,7 @@ namespace Spv.Generator
 
         public Instruction SatConvertSToU(Instruction resultType, Instruction signedValue)
         {
-            Instruction result = new Instruction(Op.OpSatConvertSToU, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSatConvertSToU, GetNewId(), resultType);
 
             result.AddOperand(signedValue);
             AddToFunctionDefinitions(result);
@@ -1570,7 +1654,7 @@ namespace Spv.Generator
 
         public Instruction SatConvertUToS(Instruction resultType, Instruction unsignedValue)
         {
-            Instruction result = new Instruction(Op.OpSatConvertUToS, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSatConvertUToS, GetNewId(), resultType);
 
             result.AddOperand(unsignedValue);
             AddToFunctionDefinitions(result);
@@ -1580,7 +1664,7 @@ namespace Spv.Generator
 
         public Instruction ConvertUToPtr(Instruction resultType, Instruction integerValue)
         {
-            Instruction result = new Instruction(Op.OpConvertUToPtr, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpConvertUToPtr, GetNewId(), resultType);
 
             result.AddOperand(integerValue);
             AddToFunctionDefinitions(result);
@@ -1590,7 +1674,7 @@ namespace Spv.Generator
 
         public Instruction PtrCastToGeneric(Instruction resultType, Instruction pointer)
         {
-            Instruction result = new Instruction(Op.OpPtrCastToGeneric, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpPtrCastToGeneric, GetNewId(), resultType);
 
             result.AddOperand(pointer);
             AddToFunctionDefinitions(result);
@@ -1600,7 +1684,7 @@ namespace Spv.Generator
 
         public Instruction GenericCastToPtr(Instruction resultType, Instruction pointer)
         {
-            Instruction result = new Instruction(Op.OpGenericCastToPtr, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGenericCastToPtr, GetNewId(), resultType);
 
             result.AddOperand(pointer);
             AddToFunctionDefinitions(result);
@@ -1610,7 +1694,7 @@ namespace Spv.Generator
 
         public Instruction GenericCastToPtrExplicit(Instruction resultType, Instruction pointer, StorageClass storage)
         {
-            Instruction result = new Instruction(Op.OpGenericCastToPtrExplicit, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGenericCastToPtrExplicit, GetNewId(), resultType);
 
             result.AddOperand(pointer);
             result.AddOperand(storage);
@@ -1621,7 +1705,7 @@ namespace Spv.Generator
 
         public Instruction Bitcast(Instruction resultType, Instruction operand)
         {
-            Instruction result = new Instruction(Op.OpBitcast, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpBitcast, GetNewId(), resultType);
 
             result.AddOperand(operand);
             AddToFunctionDefinitions(result);
@@ -1633,7 +1717,7 @@ namespace Spv.Generator
 
         public Instruction VectorExtractDynamic(Instruction resultType, Instruction vector, Instruction index)
         {
-            Instruction result = new Instruction(Op.OpVectorExtractDynamic, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpVectorExtractDynamic, GetNewId(), resultType);
 
             result.AddOperand(vector);
             result.AddOperand(index);
@@ -1644,7 +1728,7 @@ namespace Spv.Generator
 
         public Instruction VectorInsertDynamic(Instruction resultType, Instruction vector, Instruction component, Instruction index)
         {
-            Instruction result = new Instruction(Op.OpVectorInsertDynamic, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpVectorInsertDynamic, GetNewId(), resultType);
 
             result.AddOperand(vector);
             result.AddOperand(component);
@@ -1656,7 +1740,7 @@ namespace Spv.Generator
 
         public Instruction VectorShuffle(Instruction resultType, Instruction vector1, Instruction vector2, params LiteralInteger[] components)
         {
-            Instruction result = new Instruction(Op.OpVectorShuffle, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpVectorShuffle, GetNewId(), resultType);
 
             result.AddOperand(vector1);
             result.AddOperand(vector2);
@@ -1668,7 +1752,7 @@ namespace Spv.Generator
 
         public Instruction CompositeConstruct(Instruction resultType, params Instruction[] constituents)
         {
-            Instruction result = new Instruction(Op.OpCompositeConstruct, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpCompositeConstruct, GetNewId(), resultType);
 
             result.AddOperand(constituents);
             AddToFunctionDefinitions(result);
@@ -1678,7 +1762,7 @@ namespace Spv.Generator
 
         public Instruction CompositeExtract(Instruction resultType, Instruction composite, params LiteralInteger[] indexes)
         {
-            Instruction result = new Instruction(Op.OpCompositeExtract, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpCompositeExtract, GetNewId(), resultType);
 
             result.AddOperand(composite);
             result.AddOperand(indexes);
@@ -1689,7 +1773,7 @@ namespace Spv.Generator
 
         public Instruction CompositeInsert(Instruction resultType, Instruction obj, Instruction composite, params LiteralInteger[] indexes)
         {
-            Instruction result = new Instruction(Op.OpCompositeInsert, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpCompositeInsert, GetNewId(), resultType);
 
             result.AddOperand(obj);
             result.AddOperand(composite);
@@ -1701,7 +1785,7 @@ namespace Spv.Generator
 
         public Instruction CopyObject(Instruction resultType, Instruction operand)
         {
-            Instruction result = new Instruction(Op.OpCopyObject, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpCopyObject, GetNewId(), resultType);
 
             result.AddOperand(operand);
             AddToFunctionDefinitions(result);
@@ -1711,7 +1795,7 @@ namespace Spv.Generator
 
         public Instruction Transpose(Instruction resultType, Instruction matrix)
         {
-            Instruction result = new Instruction(Op.OpTranspose, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpTranspose, GetNewId(), resultType);
 
             result.AddOperand(matrix);
             AddToFunctionDefinitions(result);
@@ -1721,7 +1805,7 @@ namespace Spv.Generator
 
         public Instruction CopyLogical(Instruction resultType, Instruction operand)
         {
-            Instruction result = new Instruction(Op.OpCopyLogical, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpCopyLogical, GetNewId(), resultType);
 
             result.AddOperand(operand);
             AddToFunctionDefinitions(result);
@@ -1733,7 +1817,7 @@ namespace Spv.Generator
 
         public Instruction SNegate(Instruction resultType, Instruction operand)
         {
-            Instruction result = new Instruction(Op.OpSNegate, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSNegate, GetNewId(), resultType);
 
             result.AddOperand(operand);
             AddToFunctionDefinitions(result);
@@ -1743,7 +1827,7 @@ namespace Spv.Generator
 
         public Instruction FNegate(Instruction resultType, Instruction operand)
         {
-            Instruction result = new Instruction(Op.OpFNegate, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpFNegate, GetNewId(), resultType);
 
             result.AddOperand(operand);
             AddToFunctionDefinitions(result);
@@ -1753,7 +1837,7 @@ namespace Spv.Generator
 
         public Instruction IAdd(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpIAdd, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpIAdd, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -1764,7 +1848,7 @@ namespace Spv.Generator
 
         public Instruction FAdd(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpFAdd, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpFAdd, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -1775,7 +1859,7 @@ namespace Spv.Generator
 
         public Instruction ISub(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpISub, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpISub, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -1786,7 +1870,7 @@ namespace Spv.Generator
 
         public Instruction FSub(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpFSub, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpFSub, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -1797,7 +1881,7 @@ namespace Spv.Generator
 
         public Instruction IMul(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpIMul, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpIMul, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -1808,7 +1892,7 @@ namespace Spv.Generator
 
         public Instruction FMul(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpFMul, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpFMul, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -1819,7 +1903,7 @@ namespace Spv.Generator
 
         public Instruction UDiv(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpUDiv, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpUDiv, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -1830,7 +1914,7 @@ namespace Spv.Generator
 
         public Instruction SDiv(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpSDiv, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSDiv, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -1841,7 +1925,7 @@ namespace Spv.Generator
 
         public Instruction FDiv(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpFDiv, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpFDiv, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -1852,7 +1936,7 @@ namespace Spv.Generator
 
         public Instruction UMod(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpUMod, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpUMod, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -1863,7 +1947,7 @@ namespace Spv.Generator
 
         public Instruction SRem(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpSRem, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSRem, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -1874,7 +1958,7 @@ namespace Spv.Generator
 
         public Instruction SMod(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpSMod, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSMod, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -1885,7 +1969,7 @@ namespace Spv.Generator
 
         public Instruction FRem(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpFRem, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpFRem, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -1896,7 +1980,7 @@ namespace Spv.Generator
 
         public Instruction FMod(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpFMod, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpFMod, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -1907,7 +1991,7 @@ namespace Spv.Generator
 
         public Instruction VectorTimesScalar(Instruction resultType, Instruction vector, Instruction scalar)
         {
-            Instruction result = new Instruction(Op.OpVectorTimesScalar, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpVectorTimesScalar, GetNewId(), resultType);
 
             result.AddOperand(vector);
             result.AddOperand(scalar);
@@ -1918,7 +2002,7 @@ namespace Spv.Generator
 
         public Instruction MatrixTimesScalar(Instruction resultType, Instruction matrix, Instruction scalar)
         {
-            Instruction result = new Instruction(Op.OpMatrixTimesScalar, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpMatrixTimesScalar, GetNewId(), resultType);
 
             result.AddOperand(matrix);
             result.AddOperand(scalar);
@@ -1929,7 +2013,7 @@ namespace Spv.Generator
 
         public Instruction VectorTimesMatrix(Instruction resultType, Instruction vector, Instruction matrix)
         {
-            Instruction result = new Instruction(Op.OpVectorTimesMatrix, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpVectorTimesMatrix, GetNewId(), resultType);
 
             result.AddOperand(vector);
             result.AddOperand(matrix);
@@ -1940,7 +2024,7 @@ namespace Spv.Generator
 
         public Instruction MatrixTimesVector(Instruction resultType, Instruction matrix, Instruction vector)
         {
-            Instruction result = new Instruction(Op.OpMatrixTimesVector, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpMatrixTimesVector, GetNewId(), resultType);
 
             result.AddOperand(matrix);
             result.AddOperand(vector);
@@ -1951,7 +2035,7 @@ namespace Spv.Generator
 
         public Instruction MatrixTimesMatrix(Instruction resultType, Instruction leftMatrix, Instruction rightMatrix)
         {
-            Instruction result = new Instruction(Op.OpMatrixTimesMatrix, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpMatrixTimesMatrix, GetNewId(), resultType);
 
             result.AddOperand(leftMatrix);
             result.AddOperand(rightMatrix);
@@ -1962,7 +2046,7 @@ namespace Spv.Generator
 
         public Instruction OuterProduct(Instruction resultType, Instruction vector1, Instruction vector2)
         {
-            Instruction result = new Instruction(Op.OpOuterProduct, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpOuterProduct, GetNewId(), resultType);
 
             result.AddOperand(vector1);
             result.AddOperand(vector2);
@@ -1973,7 +2057,7 @@ namespace Spv.Generator
 
         public Instruction Dot(Instruction resultType, Instruction vector1, Instruction vector2)
         {
-            Instruction result = new Instruction(Op.OpDot, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpDot, GetNewId(), resultType);
 
             result.AddOperand(vector1);
             result.AddOperand(vector2);
@@ -1984,7 +2068,7 @@ namespace Spv.Generator
 
         public Instruction IAddCarry(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpIAddCarry, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpIAddCarry, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -1995,7 +2079,7 @@ namespace Spv.Generator
 
         public Instruction ISubBorrow(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpISubBorrow, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpISubBorrow, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -2006,7 +2090,7 @@ namespace Spv.Generator
 
         public Instruction UMulExtended(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpUMulExtended, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpUMulExtended, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -2017,7 +2101,7 @@ namespace Spv.Generator
 
         public Instruction SMulExtended(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpSMulExtended, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSMulExtended, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -2030,7 +2114,7 @@ namespace Spv.Generator
 
         public Instruction ShiftRightLogical(Instruction resultType, Instruction baseObj, Instruction shift)
         {
-            Instruction result = new Instruction(Op.OpShiftRightLogical, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpShiftRightLogical, GetNewId(), resultType);
 
             result.AddOperand(baseObj);
             result.AddOperand(shift);
@@ -2041,7 +2125,7 @@ namespace Spv.Generator
 
         public Instruction ShiftRightArithmetic(Instruction resultType, Instruction baseObj, Instruction shift)
         {
-            Instruction result = new Instruction(Op.OpShiftRightArithmetic, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpShiftRightArithmetic, GetNewId(), resultType);
 
             result.AddOperand(baseObj);
             result.AddOperand(shift);
@@ -2052,7 +2136,7 @@ namespace Spv.Generator
 
         public Instruction ShiftLeftLogical(Instruction resultType, Instruction baseObj, Instruction shift)
         {
-            Instruction result = new Instruction(Op.OpShiftLeftLogical, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpShiftLeftLogical, GetNewId(), resultType);
 
             result.AddOperand(baseObj);
             result.AddOperand(shift);
@@ -2063,7 +2147,7 @@ namespace Spv.Generator
 
         public Instruction BitwiseOr(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpBitwiseOr, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpBitwiseOr, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -2074,7 +2158,7 @@ namespace Spv.Generator
 
         public Instruction BitwiseXor(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpBitwiseXor, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpBitwiseXor, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -2085,7 +2169,7 @@ namespace Spv.Generator
 
         public Instruction BitwiseAnd(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpBitwiseAnd, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpBitwiseAnd, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -2096,7 +2180,7 @@ namespace Spv.Generator
 
         public Instruction Not(Instruction resultType, Instruction operand)
         {
-            Instruction result = new Instruction(Op.OpNot, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpNot, GetNewId(), resultType);
 
             result.AddOperand(operand);
             AddToFunctionDefinitions(result);
@@ -2106,7 +2190,7 @@ namespace Spv.Generator
 
         public Instruction BitFieldInsert(Instruction resultType, Instruction baseObj, Instruction insert, Instruction offset, Instruction count)
         {
-            Instruction result = new Instruction(Op.OpBitFieldInsert, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpBitFieldInsert, GetNewId(), resultType);
 
             result.AddOperand(baseObj);
             result.AddOperand(insert);
@@ -2119,7 +2203,7 @@ namespace Spv.Generator
 
         public Instruction BitFieldSExtract(Instruction resultType, Instruction baseObj, Instruction offset, Instruction count)
         {
-            Instruction result = new Instruction(Op.OpBitFieldSExtract, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpBitFieldSExtract, GetNewId(), resultType);
 
             result.AddOperand(baseObj);
             result.AddOperand(offset);
@@ -2131,7 +2215,7 @@ namespace Spv.Generator
 
         public Instruction BitFieldUExtract(Instruction resultType, Instruction baseObj, Instruction offset, Instruction count)
         {
-            Instruction result = new Instruction(Op.OpBitFieldUExtract, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpBitFieldUExtract, GetNewId(), resultType);
 
             result.AddOperand(baseObj);
             result.AddOperand(offset);
@@ -2143,7 +2227,7 @@ namespace Spv.Generator
 
         public Instruction BitReverse(Instruction resultType, Instruction baseObj)
         {
-            Instruction result = new Instruction(Op.OpBitReverse, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpBitReverse, GetNewId(), resultType);
 
             result.AddOperand(baseObj);
             AddToFunctionDefinitions(result);
@@ -2153,7 +2237,7 @@ namespace Spv.Generator
 
         public Instruction BitCount(Instruction resultType, Instruction baseObj)
         {
-            Instruction result = new Instruction(Op.OpBitCount, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpBitCount, GetNewId(), resultType);
 
             result.AddOperand(baseObj);
             AddToFunctionDefinitions(result);
@@ -2165,7 +2249,7 @@ namespace Spv.Generator
 
         public Instruction Any(Instruction resultType, Instruction vector)
         {
-            Instruction result = new Instruction(Op.OpAny, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpAny, GetNewId(), resultType);
 
             result.AddOperand(vector);
             AddToFunctionDefinitions(result);
@@ -2175,7 +2259,7 @@ namespace Spv.Generator
 
         public Instruction All(Instruction resultType, Instruction vector)
         {
-            Instruction result = new Instruction(Op.OpAll, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpAll, GetNewId(), resultType);
 
             result.AddOperand(vector);
             AddToFunctionDefinitions(result);
@@ -2185,7 +2269,7 @@ namespace Spv.Generator
 
         public Instruction IsNan(Instruction resultType, Instruction x)
         {
-            Instruction result = new Instruction(Op.OpIsNan, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpIsNan, GetNewId(), resultType);
 
             result.AddOperand(x);
             AddToFunctionDefinitions(result);
@@ -2195,7 +2279,7 @@ namespace Spv.Generator
 
         public Instruction IsInf(Instruction resultType, Instruction x)
         {
-            Instruction result = new Instruction(Op.OpIsInf, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpIsInf, GetNewId(), resultType);
 
             result.AddOperand(x);
             AddToFunctionDefinitions(result);
@@ -2205,7 +2289,7 @@ namespace Spv.Generator
 
         public Instruction IsFinite(Instruction resultType, Instruction x)
         {
-            Instruction result = new Instruction(Op.OpIsFinite, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpIsFinite, GetNewId(), resultType);
 
             result.AddOperand(x);
             AddToFunctionDefinitions(result);
@@ -2215,7 +2299,7 @@ namespace Spv.Generator
 
         public Instruction IsNormal(Instruction resultType, Instruction x)
         {
-            Instruction result = new Instruction(Op.OpIsNormal, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpIsNormal, GetNewId(), resultType);
 
             result.AddOperand(x);
             AddToFunctionDefinitions(result);
@@ -2225,7 +2309,7 @@ namespace Spv.Generator
 
         public Instruction SignBitSet(Instruction resultType, Instruction x)
         {
-            Instruction result = new Instruction(Op.OpSignBitSet, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSignBitSet, GetNewId(), resultType);
 
             result.AddOperand(x);
             AddToFunctionDefinitions(result);
@@ -2235,7 +2319,7 @@ namespace Spv.Generator
 
         public Instruction LessOrGreater(Instruction resultType, Instruction x, Instruction y)
         {
-            Instruction result = new Instruction(Op.OpLessOrGreater, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpLessOrGreater, GetNewId(), resultType);
 
             result.AddOperand(x);
             result.AddOperand(y);
@@ -2246,7 +2330,7 @@ namespace Spv.Generator
 
         public Instruction Ordered(Instruction resultType, Instruction x, Instruction y)
         {
-            Instruction result = new Instruction(Op.OpOrdered, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpOrdered, GetNewId(), resultType);
 
             result.AddOperand(x);
             result.AddOperand(y);
@@ -2257,7 +2341,7 @@ namespace Spv.Generator
 
         public Instruction Unordered(Instruction resultType, Instruction x, Instruction y)
         {
-            Instruction result = new Instruction(Op.OpUnordered, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpUnordered, GetNewId(), resultType);
 
             result.AddOperand(x);
             result.AddOperand(y);
@@ -2268,7 +2352,7 @@ namespace Spv.Generator
 
         public Instruction LogicalEqual(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpLogicalEqual, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpLogicalEqual, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -2279,7 +2363,7 @@ namespace Spv.Generator
 
         public Instruction LogicalNotEqual(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpLogicalNotEqual, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpLogicalNotEqual, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -2290,7 +2374,7 @@ namespace Spv.Generator
 
         public Instruction LogicalOr(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpLogicalOr, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpLogicalOr, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -2301,7 +2385,7 @@ namespace Spv.Generator
 
         public Instruction LogicalAnd(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpLogicalAnd, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpLogicalAnd, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -2312,7 +2396,7 @@ namespace Spv.Generator
 
         public Instruction LogicalNot(Instruction resultType, Instruction operand)
         {
-            Instruction result = new Instruction(Op.OpLogicalNot, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpLogicalNot, GetNewId(), resultType);
 
             result.AddOperand(operand);
             AddToFunctionDefinitions(result);
@@ -2322,7 +2406,7 @@ namespace Spv.Generator
 
         public Instruction Select(Instruction resultType, Instruction condition, Instruction object1, Instruction object2)
         {
-            Instruction result = new Instruction(Op.OpSelect, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSelect, GetNewId(), resultType);
 
             result.AddOperand(condition);
             result.AddOperand(object1);
@@ -2334,7 +2418,7 @@ namespace Spv.Generator
 
         public Instruction IEqual(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpIEqual, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpIEqual, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -2345,7 +2429,7 @@ namespace Spv.Generator
 
         public Instruction INotEqual(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpINotEqual, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpINotEqual, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -2356,7 +2440,7 @@ namespace Spv.Generator
 
         public Instruction UGreaterThan(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpUGreaterThan, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpUGreaterThan, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -2367,7 +2451,7 @@ namespace Spv.Generator
 
         public Instruction SGreaterThan(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpSGreaterThan, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSGreaterThan, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -2378,7 +2462,7 @@ namespace Spv.Generator
 
         public Instruction UGreaterThanEqual(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpUGreaterThanEqual, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpUGreaterThanEqual, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -2389,7 +2473,7 @@ namespace Spv.Generator
 
         public Instruction SGreaterThanEqual(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpSGreaterThanEqual, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSGreaterThanEqual, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -2400,7 +2484,7 @@ namespace Spv.Generator
 
         public Instruction ULessThan(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpULessThan, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpULessThan, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -2411,7 +2495,7 @@ namespace Spv.Generator
 
         public Instruction SLessThan(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpSLessThan, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSLessThan, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -2422,7 +2506,7 @@ namespace Spv.Generator
 
         public Instruction ULessThanEqual(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpULessThanEqual, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpULessThanEqual, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -2433,7 +2517,7 @@ namespace Spv.Generator
 
         public Instruction SLessThanEqual(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpSLessThanEqual, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSLessThanEqual, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -2444,7 +2528,7 @@ namespace Spv.Generator
 
         public Instruction FOrdEqual(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpFOrdEqual, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpFOrdEqual, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -2455,7 +2539,7 @@ namespace Spv.Generator
 
         public Instruction FUnordEqual(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpFUnordEqual, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpFUnordEqual, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -2466,7 +2550,7 @@ namespace Spv.Generator
 
         public Instruction FOrdNotEqual(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpFOrdNotEqual, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpFOrdNotEqual, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -2477,7 +2561,7 @@ namespace Spv.Generator
 
         public Instruction FUnordNotEqual(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpFUnordNotEqual, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpFUnordNotEqual, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -2488,7 +2572,7 @@ namespace Spv.Generator
 
         public Instruction FOrdLessThan(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpFOrdLessThan, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpFOrdLessThan, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -2499,7 +2583,7 @@ namespace Spv.Generator
 
         public Instruction FUnordLessThan(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpFUnordLessThan, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpFUnordLessThan, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -2510,7 +2594,7 @@ namespace Spv.Generator
 
         public Instruction FOrdGreaterThan(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpFOrdGreaterThan, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpFOrdGreaterThan, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -2521,7 +2605,7 @@ namespace Spv.Generator
 
         public Instruction FUnordGreaterThan(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpFUnordGreaterThan, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpFUnordGreaterThan, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -2532,7 +2616,7 @@ namespace Spv.Generator
 
         public Instruction FOrdLessThanEqual(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpFOrdLessThanEqual, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpFOrdLessThanEqual, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -2543,7 +2627,7 @@ namespace Spv.Generator
 
         public Instruction FUnordLessThanEqual(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpFUnordLessThanEqual, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpFUnordLessThanEqual, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -2554,7 +2638,7 @@ namespace Spv.Generator
 
         public Instruction FOrdGreaterThanEqual(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpFOrdGreaterThanEqual, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpFOrdGreaterThanEqual, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -2565,7 +2649,7 @@ namespace Spv.Generator
 
         public Instruction FUnordGreaterThanEqual(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpFUnordGreaterThanEqual, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpFUnordGreaterThanEqual, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -2578,7 +2662,7 @@ namespace Spv.Generator
 
         public Instruction DPdx(Instruction resultType, Instruction p)
         {
-            Instruction result = new Instruction(Op.OpDPdx, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpDPdx, GetNewId(), resultType);
 
             result.AddOperand(p);
             AddToFunctionDefinitions(result);
@@ -2588,7 +2672,7 @@ namespace Spv.Generator
 
         public Instruction DPdy(Instruction resultType, Instruction p)
         {
-            Instruction result = new Instruction(Op.OpDPdy, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpDPdy, GetNewId(), resultType);
 
             result.AddOperand(p);
             AddToFunctionDefinitions(result);
@@ -2598,7 +2682,7 @@ namespace Spv.Generator
 
         public Instruction Fwidth(Instruction resultType, Instruction p)
         {
-            Instruction result = new Instruction(Op.OpFwidth, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpFwidth, GetNewId(), resultType);
 
             result.AddOperand(p);
             AddToFunctionDefinitions(result);
@@ -2608,7 +2692,7 @@ namespace Spv.Generator
 
         public Instruction DPdxFine(Instruction resultType, Instruction p)
         {
-            Instruction result = new Instruction(Op.OpDPdxFine, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpDPdxFine, GetNewId(), resultType);
 
             result.AddOperand(p);
             AddToFunctionDefinitions(result);
@@ -2618,7 +2702,7 @@ namespace Spv.Generator
 
         public Instruction DPdyFine(Instruction resultType, Instruction p)
         {
-            Instruction result = new Instruction(Op.OpDPdyFine, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpDPdyFine, GetNewId(), resultType);
 
             result.AddOperand(p);
             AddToFunctionDefinitions(result);
@@ -2628,7 +2712,7 @@ namespace Spv.Generator
 
         public Instruction FwidthFine(Instruction resultType, Instruction p)
         {
-            Instruction result = new Instruction(Op.OpFwidthFine, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpFwidthFine, GetNewId(), resultType);
 
             result.AddOperand(p);
             AddToFunctionDefinitions(result);
@@ -2638,7 +2722,7 @@ namespace Spv.Generator
 
         public Instruction DPdxCoarse(Instruction resultType, Instruction p)
         {
-            Instruction result = new Instruction(Op.OpDPdxCoarse, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpDPdxCoarse, GetNewId(), resultType);
 
             result.AddOperand(p);
             AddToFunctionDefinitions(result);
@@ -2648,7 +2732,7 @@ namespace Spv.Generator
 
         public Instruction DPdyCoarse(Instruction resultType, Instruction p)
         {
-            Instruction result = new Instruction(Op.OpDPdyCoarse, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpDPdyCoarse, GetNewId(), resultType);
 
             result.AddOperand(p);
             AddToFunctionDefinitions(result);
@@ -2658,7 +2742,7 @@ namespace Spv.Generator
 
         public Instruction FwidthCoarse(Instruction resultType, Instruction p)
         {
-            Instruction result = new Instruction(Op.OpFwidthCoarse, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpFwidthCoarse, GetNewId(), resultType);
 
             result.AddOperand(p);
             AddToFunctionDefinitions(result);
@@ -2670,7 +2754,7 @@ namespace Spv.Generator
 
         public Instruction Phi(Instruction resultType, params Instruction[] parameters)
         {
-            Instruction result = new Instruction(Op.OpPhi, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpPhi, GetNewId(), resultType);
 
             result.AddOperand(parameters);
             AddToFunctionDefinitions(result);
@@ -2680,7 +2764,7 @@ namespace Spv.Generator
 
         public Instruction LoopMerge(Instruction mergeBlock, Instruction continueTarget, LoopControlMask loopControl)
         {
-            Instruction result = new Instruction(Op.OpLoopMerge);
+            Instruction result = NewInstruction(Op.OpLoopMerge);
 
             result.AddOperand(mergeBlock);
             result.AddOperand(continueTarget);
@@ -2692,7 +2776,7 @@ namespace Spv.Generator
 
         public Instruction SelectionMerge(Instruction mergeBlock, SelectionControlMask selectionControl)
         {
-            Instruction result = new Instruction(Op.OpSelectionMerge);
+            Instruction result = NewInstruction(Op.OpSelectionMerge);
 
             result.AddOperand(mergeBlock);
             result.AddOperand(selectionControl);
@@ -2703,14 +2787,14 @@ namespace Spv.Generator
 
         public Instruction Label()
         {
-            Instruction result = new Instruction(Op.OpLabel);
+            Instruction result = NewInstruction(Op.OpLabel);
 
             return result;
         }
 
         public Instruction Branch(Instruction targetLabel)
         {
-            Instruction result = new Instruction(Op.OpBranch);
+            Instruction result = NewInstruction(Op.OpBranch);
 
             result.AddOperand(targetLabel);
             AddToFunctionDefinitions(result);
@@ -2720,7 +2804,7 @@ namespace Spv.Generator
 
         public Instruction BranchConditional(Instruction condition, Instruction trueLabel, Instruction falseLabel, params LiteralInteger[] branchweights)
         {
-            Instruction result = new Instruction(Op.OpBranchConditional);
+            Instruction result = NewInstruction(Op.OpBranchConditional);
 
             result.AddOperand(condition);
             result.AddOperand(trueLabel);
@@ -2733,7 +2817,7 @@ namespace Spv.Generator
 
         public Instruction Switch(Instruction selector, Instruction defaultObj, params Operand[] target)
         {
-            Instruction result = new Instruction(Op.OpSwitch);
+            Instruction result = NewInstruction(Op.OpSwitch);
 
             result.AddOperand(selector);
             result.AddOperand(defaultObj);
@@ -2745,7 +2829,7 @@ namespace Spv.Generator
 
         public Instruction Kill()
         {
-            Instruction result = new Instruction(Op.OpKill);
+            Instruction result = NewInstruction(Op.OpKill);
 
             AddToFunctionDefinitions(result);
 
@@ -2754,7 +2838,7 @@ namespace Spv.Generator
 
         public Instruction Return()
         {
-            Instruction result = new Instruction(Op.OpReturn);
+            Instruction result = NewInstruction(Op.OpReturn);
 
             AddToFunctionDefinitions(result);
 
@@ -2763,7 +2847,7 @@ namespace Spv.Generator
 
         public Instruction ReturnValue(Instruction value)
         {
-            Instruction result = new Instruction(Op.OpReturnValue);
+            Instruction result = NewInstruction(Op.OpReturnValue);
 
             result.AddOperand(value);
             AddToFunctionDefinitions(result);
@@ -2773,7 +2857,7 @@ namespace Spv.Generator
 
         public Instruction Unreachable()
         {
-            Instruction result = new Instruction(Op.OpUnreachable);
+            Instruction result = NewInstruction(Op.OpUnreachable);
 
             AddToFunctionDefinitions(result);
 
@@ -2782,7 +2866,7 @@ namespace Spv.Generator
 
         public Instruction LifetimeStart(Instruction pointer, LiteralInteger size)
         {
-            Instruction result = new Instruction(Op.OpLifetimeStart);
+            Instruction result = NewInstruction(Op.OpLifetimeStart);
 
             result.AddOperand(pointer);
             result.AddOperand(size);
@@ -2793,7 +2877,7 @@ namespace Spv.Generator
 
         public Instruction LifetimeStop(Instruction pointer, LiteralInteger size)
         {
-            Instruction result = new Instruction(Op.OpLifetimeStop);
+            Instruction result = NewInstruction(Op.OpLifetimeStop);
 
             result.AddOperand(pointer);
             result.AddOperand(size);
@@ -2804,7 +2888,7 @@ namespace Spv.Generator
 
         public Instruction TerminateInvocation()
         {
-            Instruction result = new Instruction(Op.OpTerminateInvocation);
+            Instruction result = NewInstruction(Op.OpTerminateInvocation);
 
             AddToFunctionDefinitions(result);
 
@@ -2815,7 +2899,7 @@ namespace Spv.Generator
 
         public Instruction AtomicLoad(Instruction resultType, Instruction pointer, Instruction memory, Instruction semantics)
         {
-            Instruction result = new Instruction(Op.OpAtomicLoad, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpAtomicLoad, GetNewId(), resultType);
 
             result.AddOperand(pointer);
             result.AddOperand(memory);
@@ -2827,7 +2911,7 @@ namespace Spv.Generator
 
         public Instruction AtomicStore(Instruction pointer, Instruction memory, Instruction semantics, Instruction value)
         {
-            Instruction result = new Instruction(Op.OpAtomicStore);
+            Instruction result = NewInstruction(Op.OpAtomicStore);
 
             result.AddOperand(pointer);
             result.AddOperand(memory);
@@ -2840,7 +2924,7 @@ namespace Spv.Generator
 
         public Instruction AtomicExchange(Instruction resultType, Instruction pointer, Instruction memory, Instruction semantics, Instruction value)
         {
-            Instruction result = new Instruction(Op.OpAtomicExchange, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpAtomicExchange, GetNewId(), resultType);
 
             result.AddOperand(pointer);
             result.AddOperand(memory);
@@ -2853,7 +2937,7 @@ namespace Spv.Generator
 
         public Instruction AtomicCompareExchange(Instruction resultType, Instruction pointer, Instruction memory, Instruction equal, Instruction unequal, Instruction value, Instruction comparator)
         {
-            Instruction result = new Instruction(Op.OpAtomicCompareExchange, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpAtomicCompareExchange, GetNewId(), resultType);
 
             result.AddOperand(pointer);
             result.AddOperand(memory);
@@ -2868,7 +2952,7 @@ namespace Spv.Generator
 
         public Instruction AtomicCompareExchangeWeak(Instruction resultType, Instruction pointer, Instruction memory, Instruction equal, Instruction unequal, Instruction value, Instruction comparator)
         {
-            Instruction result = new Instruction(Op.OpAtomicCompareExchangeWeak, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpAtomicCompareExchangeWeak, GetNewId(), resultType);
 
             result.AddOperand(pointer);
             result.AddOperand(memory);
@@ -2883,7 +2967,7 @@ namespace Spv.Generator
 
         public Instruction AtomicIIncrement(Instruction resultType, Instruction pointer, Instruction memory, Instruction semantics)
         {
-            Instruction result = new Instruction(Op.OpAtomicIIncrement, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpAtomicIIncrement, GetNewId(), resultType);
 
             result.AddOperand(pointer);
             result.AddOperand(memory);
@@ -2895,7 +2979,7 @@ namespace Spv.Generator
 
         public Instruction AtomicIDecrement(Instruction resultType, Instruction pointer, Instruction memory, Instruction semantics)
         {
-            Instruction result = new Instruction(Op.OpAtomicIDecrement, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpAtomicIDecrement, GetNewId(), resultType);
 
             result.AddOperand(pointer);
             result.AddOperand(memory);
@@ -2907,7 +2991,7 @@ namespace Spv.Generator
 
         public Instruction AtomicIAdd(Instruction resultType, Instruction pointer, Instruction memory, Instruction semantics, Instruction value)
         {
-            Instruction result = new Instruction(Op.OpAtomicIAdd, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpAtomicIAdd, GetNewId(), resultType);
 
             result.AddOperand(pointer);
             result.AddOperand(memory);
@@ -2920,7 +3004,7 @@ namespace Spv.Generator
 
         public Instruction AtomicISub(Instruction resultType, Instruction pointer, Instruction memory, Instruction semantics, Instruction value)
         {
-            Instruction result = new Instruction(Op.OpAtomicISub, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpAtomicISub, GetNewId(), resultType);
 
             result.AddOperand(pointer);
             result.AddOperand(memory);
@@ -2933,7 +3017,7 @@ namespace Spv.Generator
 
         public Instruction AtomicSMin(Instruction resultType, Instruction pointer, Instruction memory, Instruction semantics, Instruction value)
         {
-            Instruction result = new Instruction(Op.OpAtomicSMin, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpAtomicSMin, GetNewId(), resultType);
 
             result.AddOperand(pointer);
             result.AddOperand(memory);
@@ -2946,7 +3030,7 @@ namespace Spv.Generator
 
         public Instruction AtomicUMin(Instruction resultType, Instruction pointer, Instruction memory, Instruction semantics, Instruction value)
         {
-            Instruction result = new Instruction(Op.OpAtomicUMin, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpAtomicUMin, GetNewId(), resultType);
 
             result.AddOperand(pointer);
             result.AddOperand(memory);
@@ -2959,7 +3043,7 @@ namespace Spv.Generator
 
         public Instruction AtomicSMax(Instruction resultType, Instruction pointer, Instruction memory, Instruction semantics, Instruction value)
         {
-            Instruction result = new Instruction(Op.OpAtomicSMax, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpAtomicSMax, GetNewId(), resultType);
 
             result.AddOperand(pointer);
             result.AddOperand(memory);
@@ -2972,7 +3056,7 @@ namespace Spv.Generator
 
         public Instruction AtomicUMax(Instruction resultType, Instruction pointer, Instruction memory, Instruction semantics, Instruction value)
         {
-            Instruction result = new Instruction(Op.OpAtomicUMax, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpAtomicUMax, GetNewId(), resultType);
 
             result.AddOperand(pointer);
             result.AddOperand(memory);
@@ -2985,7 +3069,7 @@ namespace Spv.Generator
 
         public Instruction AtomicAnd(Instruction resultType, Instruction pointer, Instruction memory, Instruction semantics, Instruction value)
         {
-            Instruction result = new Instruction(Op.OpAtomicAnd, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpAtomicAnd, GetNewId(), resultType);
 
             result.AddOperand(pointer);
             result.AddOperand(memory);
@@ -2998,7 +3082,7 @@ namespace Spv.Generator
 
         public Instruction AtomicOr(Instruction resultType, Instruction pointer, Instruction memory, Instruction semantics, Instruction value)
         {
-            Instruction result = new Instruction(Op.OpAtomicOr, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpAtomicOr, GetNewId(), resultType);
 
             result.AddOperand(pointer);
             result.AddOperand(memory);
@@ -3011,7 +3095,7 @@ namespace Spv.Generator
 
         public Instruction AtomicXor(Instruction resultType, Instruction pointer, Instruction memory, Instruction semantics, Instruction value)
         {
-            Instruction result = new Instruction(Op.OpAtomicXor, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpAtomicXor, GetNewId(), resultType);
 
             result.AddOperand(pointer);
             result.AddOperand(memory);
@@ -3024,7 +3108,7 @@ namespace Spv.Generator
 
         public Instruction AtomicFlagTestAndSet(Instruction resultType, Instruction pointer, Instruction memory, Instruction semantics)
         {
-            Instruction result = new Instruction(Op.OpAtomicFlagTestAndSet, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpAtomicFlagTestAndSet, GetNewId(), resultType);
 
             result.AddOperand(pointer);
             result.AddOperand(memory);
@@ -3036,7 +3120,7 @@ namespace Spv.Generator
 
         public Instruction AtomicFlagClear(Instruction pointer, Instruction memory, Instruction semantics)
         {
-            Instruction result = new Instruction(Op.OpAtomicFlagClear);
+            Instruction result = NewInstruction(Op.OpAtomicFlagClear);
 
             result.AddOperand(pointer);
             result.AddOperand(memory);
@@ -3048,7 +3132,7 @@ namespace Spv.Generator
 
         public Instruction AtomicFAddEXT(Instruction resultType, Instruction pointer, Instruction memory, Instruction semantics, Instruction value)
         {
-            Instruction result = new Instruction(Op.OpAtomicFAddEXT, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpAtomicFAddEXT, GetNewId(), resultType);
 
             result.AddOperand(pointer);
             result.AddOperand(memory);
@@ -3063,7 +3147,7 @@ namespace Spv.Generator
 
         public Instruction EmitVertex()
         {
-            Instruction result = new Instruction(Op.OpEmitVertex);
+            Instruction result = NewInstruction(Op.OpEmitVertex);
 
             AddToFunctionDefinitions(result);
 
@@ -3072,7 +3156,7 @@ namespace Spv.Generator
 
         public Instruction EndPrimitive()
         {
-            Instruction result = new Instruction(Op.OpEndPrimitive);
+            Instruction result = NewInstruction(Op.OpEndPrimitive);
 
             AddToFunctionDefinitions(result);
 
@@ -3081,7 +3165,7 @@ namespace Spv.Generator
 
         public Instruction EmitStreamVertex(Instruction stream)
         {
-            Instruction result = new Instruction(Op.OpEmitStreamVertex);
+            Instruction result = NewInstruction(Op.OpEmitStreamVertex);
 
             result.AddOperand(stream);
             AddToFunctionDefinitions(result);
@@ -3091,7 +3175,7 @@ namespace Spv.Generator
 
         public Instruction EndStreamPrimitive(Instruction stream)
         {
-            Instruction result = new Instruction(Op.OpEndStreamPrimitive);
+            Instruction result = NewInstruction(Op.OpEndStreamPrimitive);
 
             result.AddOperand(stream);
             AddToFunctionDefinitions(result);
@@ -3103,7 +3187,7 @@ namespace Spv.Generator
 
         public Instruction ControlBarrier(Instruction execution, Instruction memory, Instruction semantics)
         {
-            Instruction result = new Instruction(Op.OpControlBarrier);
+            Instruction result = NewInstruction(Op.OpControlBarrier);
 
             result.AddOperand(execution);
             result.AddOperand(memory);
@@ -3115,7 +3199,7 @@ namespace Spv.Generator
 
         public Instruction MemoryBarrier(Instruction memory, Instruction semantics)
         {
-            Instruction result = new Instruction(Op.OpMemoryBarrier);
+            Instruction result = NewInstruction(Op.OpMemoryBarrier);
 
             result.AddOperand(memory);
             result.AddOperand(semantics);
@@ -3126,7 +3210,7 @@ namespace Spv.Generator
 
         public Instruction NamedBarrierInitialize(Instruction resultType, Instruction subgroupCount)
         {
-            Instruction result = new Instruction(Op.OpNamedBarrierInitialize, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpNamedBarrierInitialize, GetNewId(), resultType);
 
             result.AddOperand(subgroupCount);
             AddToFunctionDefinitions(result);
@@ -3136,7 +3220,7 @@ namespace Spv.Generator
 
         public Instruction MemoryNamedBarrier(Instruction namedBarrier, Instruction memory, Instruction semantics)
         {
-            Instruction result = new Instruction(Op.OpMemoryNamedBarrier);
+            Instruction result = NewInstruction(Op.OpMemoryNamedBarrier);
 
             result.AddOperand(namedBarrier);
             result.AddOperand(memory);
@@ -3150,7 +3234,7 @@ namespace Spv.Generator
 
         public Instruction GroupAsyncCopy(Instruction resultType, Instruction execution, Instruction destination, Instruction source, Instruction numElements, Instruction stride, Instruction eventObj)
         {
-            Instruction result = new Instruction(Op.OpGroupAsyncCopy, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupAsyncCopy, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(destination);
@@ -3165,7 +3249,7 @@ namespace Spv.Generator
 
         public Instruction GroupWaitEvents(Instruction execution, Instruction numEvents, Instruction eventsList)
         {
-            Instruction result = new Instruction(Op.OpGroupWaitEvents);
+            Instruction result = NewInstruction(Op.OpGroupWaitEvents);
 
             result.AddOperand(execution);
             result.AddOperand(numEvents);
@@ -3177,7 +3261,7 @@ namespace Spv.Generator
 
         public Instruction GroupAll(Instruction resultType, Instruction execution, Instruction predicate)
         {
-            Instruction result = new Instruction(Op.OpGroupAll, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupAll, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(predicate);
@@ -3188,7 +3272,7 @@ namespace Spv.Generator
 
         public Instruction GroupAny(Instruction resultType, Instruction execution, Instruction predicate)
         {
-            Instruction result = new Instruction(Op.OpGroupAny, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupAny, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(predicate);
@@ -3199,7 +3283,7 @@ namespace Spv.Generator
 
         public Instruction GroupBroadcast(Instruction resultType, Instruction execution, Instruction value, Instruction localId)
         {
-            Instruction result = new Instruction(Op.OpGroupBroadcast, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupBroadcast, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(value);
@@ -3211,7 +3295,7 @@ namespace Spv.Generator
 
         public Instruction GroupIAdd(Instruction resultType, Instruction execution, GroupOperation operation, Instruction x)
         {
-            Instruction result = new Instruction(Op.OpGroupIAdd, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupIAdd, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(operation);
@@ -3223,7 +3307,7 @@ namespace Spv.Generator
 
         public Instruction GroupFAdd(Instruction resultType, Instruction execution, GroupOperation operation, Instruction x)
         {
-            Instruction result = new Instruction(Op.OpGroupFAdd, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupFAdd, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(operation);
@@ -3235,7 +3319,7 @@ namespace Spv.Generator
 
         public Instruction GroupFMin(Instruction resultType, Instruction execution, GroupOperation operation, Instruction x)
         {
-            Instruction result = new Instruction(Op.OpGroupFMin, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupFMin, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(operation);
@@ -3247,7 +3331,7 @@ namespace Spv.Generator
 
         public Instruction GroupUMin(Instruction resultType, Instruction execution, GroupOperation operation, Instruction x)
         {
-            Instruction result = new Instruction(Op.OpGroupUMin, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupUMin, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(operation);
@@ -3259,7 +3343,7 @@ namespace Spv.Generator
 
         public Instruction GroupSMin(Instruction resultType, Instruction execution, GroupOperation operation, Instruction x)
         {
-            Instruction result = new Instruction(Op.OpGroupSMin, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupSMin, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(operation);
@@ -3271,7 +3355,7 @@ namespace Spv.Generator
 
         public Instruction GroupFMax(Instruction resultType, Instruction execution, GroupOperation operation, Instruction x)
         {
-            Instruction result = new Instruction(Op.OpGroupFMax, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupFMax, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(operation);
@@ -3283,7 +3367,7 @@ namespace Spv.Generator
 
         public Instruction GroupUMax(Instruction resultType, Instruction execution, GroupOperation operation, Instruction x)
         {
-            Instruction result = new Instruction(Op.OpGroupUMax, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupUMax, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(operation);
@@ -3295,7 +3379,7 @@ namespace Spv.Generator
 
         public Instruction GroupSMax(Instruction resultType, Instruction execution, GroupOperation operation, Instruction x)
         {
-            Instruction result = new Instruction(Op.OpGroupSMax, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupSMax, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(operation);
@@ -3307,7 +3391,7 @@ namespace Spv.Generator
 
         public Instruction SubgroupBallotKHR(Instruction resultType, Instruction predicate)
         {
-            Instruction result = new Instruction(Op.OpSubgroupBallotKHR, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSubgroupBallotKHR, GetNewId(), resultType);
 
             result.AddOperand(predicate);
             AddToFunctionDefinitions(result);
@@ -3317,7 +3401,7 @@ namespace Spv.Generator
 
         public Instruction SubgroupFirstInvocationKHR(Instruction resultType, Instruction value)
         {
-            Instruction result = new Instruction(Op.OpSubgroupFirstInvocationKHR, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSubgroupFirstInvocationKHR, GetNewId(), resultType);
 
             result.AddOperand(value);
             AddToFunctionDefinitions(result);
@@ -3327,7 +3411,7 @@ namespace Spv.Generator
 
         public Instruction SubgroupAllKHR(Instruction resultType, Instruction predicate)
         {
-            Instruction result = new Instruction(Op.OpSubgroupAllKHR, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSubgroupAllKHR, GetNewId(), resultType);
 
             result.AddOperand(predicate);
             AddToFunctionDefinitions(result);
@@ -3337,7 +3421,7 @@ namespace Spv.Generator
 
         public Instruction SubgroupAnyKHR(Instruction resultType, Instruction predicate)
         {
-            Instruction result = new Instruction(Op.OpSubgroupAnyKHR, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSubgroupAnyKHR, GetNewId(), resultType);
 
             result.AddOperand(predicate);
             AddToFunctionDefinitions(result);
@@ -3347,7 +3431,7 @@ namespace Spv.Generator
 
         public Instruction SubgroupAllEqualKHR(Instruction resultType, Instruction predicate)
         {
-            Instruction result = new Instruction(Op.OpSubgroupAllEqualKHR, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSubgroupAllEqualKHR, GetNewId(), resultType);
 
             result.AddOperand(predicate);
             AddToFunctionDefinitions(result);
@@ -3357,7 +3441,7 @@ namespace Spv.Generator
 
         public Instruction SubgroupReadInvocationKHR(Instruction resultType, Instruction value, Instruction index)
         {
-            Instruction result = new Instruction(Op.OpSubgroupReadInvocationKHR, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSubgroupReadInvocationKHR, GetNewId(), resultType);
 
             result.AddOperand(value);
             result.AddOperand(index);
@@ -3368,7 +3452,7 @@ namespace Spv.Generator
 
         public Instruction GroupIAddNonUniformAMD(Instruction resultType, Instruction execution, GroupOperation operation, Instruction x)
         {
-            Instruction result = new Instruction(Op.OpGroupIAddNonUniformAMD, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupIAddNonUniformAMD, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(operation);
@@ -3380,7 +3464,7 @@ namespace Spv.Generator
 
         public Instruction GroupFAddNonUniformAMD(Instruction resultType, Instruction execution, GroupOperation operation, Instruction x)
         {
-            Instruction result = new Instruction(Op.OpGroupFAddNonUniformAMD, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupFAddNonUniformAMD, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(operation);
@@ -3392,7 +3476,7 @@ namespace Spv.Generator
 
         public Instruction GroupFMinNonUniformAMD(Instruction resultType, Instruction execution, GroupOperation operation, Instruction x)
         {
-            Instruction result = new Instruction(Op.OpGroupFMinNonUniformAMD, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupFMinNonUniformAMD, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(operation);
@@ -3404,7 +3488,7 @@ namespace Spv.Generator
 
         public Instruction GroupUMinNonUniformAMD(Instruction resultType, Instruction execution, GroupOperation operation, Instruction x)
         {
-            Instruction result = new Instruction(Op.OpGroupUMinNonUniformAMD, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupUMinNonUniformAMD, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(operation);
@@ -3416,7 +3500,7 @@ namespace Spv.Generator
 
         public Instruction GroupSMinNonUniformAMD(Instruction resultType, Instruction execution, GroupOperation operation, Instruction x)
         {
-            Instruction result = new Instruction(Op.OpGroupSMinNonUniformAMD, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupSMinNonUniformAMD, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(operation);
@@ -3428,7 +3512,7 @@ namespace Spv.Generator
 
         public Instruction GroupFMaxNonUniformAMD(Instruction resultType, Instruction execution, GroupOperation operation, Instruction x)
         {
-            Instruction result = new Instruction(Op.OpGroupFMaxNonUniformAMD, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupFMaxNonUniformAMD, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(operation);
@@ -3440,7 +3524,7 @@ namespace Spv.Generator
 
         public Instruction GroupUMaxNonUniformAMD(Instruction resultType, Instruction execution, GroupOperation operation, Instruction x)
         {
-            Instruction result = new Instruction(Op.OpGroupUMaxNonUniformAMD, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupUMaxNonUniformAMD, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(operation);
@@ -3452,7 +3536,7 @@ namespace Spv.Generator
 
         public Instruction GroupSMaxNonUniformAMD(Instruction resultType, Instruction execution, GroupOperation operation, Instruction x)
         {
-            Instruction result = new Instruction(Op.OpGroupSMaxNonUniformAMD, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupSMaxNonUniformAMD, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(operation);
@@ -3464,7 +3548,7 @@ namespace Spv.Generator
 
         public Instruction SubgroupShuffleINTEL(Instruction resultType, Instruction data, Instruction invocationId)
         {
-            Instruction result = new Instruction(Op.OpSubgroupShuffleINTEL, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSubgroupShuffleINTEL, GetNewId(), resultType);
 
             result.AddOperand(data);
             result.AddOperand(invocationId);
@@ -3475,7 +3559,7 @@ namespace Spv.Generator
 
         public Instruction SubgroupShuffleDownINTEL(Instruction resultType, Instruction current, Instruction next, Instruction delta)
         {
-            Instruction result = new Instruction(Op.OpSubgroupShuffleDownINTEL, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSubgroupShuffleDownINTEL, GetNewId(), resultType);
 
             result.AddOperand(current);
             result.AddOperand(next);
@@ -3487,7 +3571,7 @@ namespace Spv.Generator
 
         public Instruction SubgroupShuffleUpINTEL(Instruction resultType, Instruction previous, Instruction current, Instruction delta)
         {
-            Instruction result = new Instruction(Op.OpSubgroupShuffleUpINTEL, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSubgroupShuffleUpINTEL, GetNewId(), resultType);
 
             result.AddOperand(previous);
             result.AddOperand(current);
@@ -3499,7 +3583,7 @@ namespace Spv.Generator
 
         public Instruction SubgroupShuffleXorINTEL(Instruction resultType, Instruction data, Instruction value)
         {
-            Instruction result = new Instruction(Op.OpSubgroupShuffleXorINTEL, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSubgroupShuffleXorINTEL, GetNewId(), resultType);
 
             result.AddOperand(data);
             result.AddOperand(value);
@@ -3510,7 +3594,7 @@ namespace Spv.Generator
 
         public Instruction SubgroupBlockReadINTEL(Instruction resultType, Instruction ptr)
         {
-            Instruction result = new Instruction(Op.OpSubgroupBlockReadINTEL, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSubgroupBlockReadINTEL, GetNewId(), resultType);
 
             result.AddOperand(ptr);
             AddToFunctionDefinitions(result);
@@ -3520,7 +3604,7 @@ namespace Spv.Generator
 
         public Instruction SubgroupBlockWriteINTEL(Instruction ptr, Instruction data)
         {
-            Instruction result = new Instruction(Op.OpSubgroupBlockWriteINTEL);
+            Instruction result = NewInstruction(Op.OpSubgroupBlockWriteINTEL);
 
             result.AddOperand(ptr);
             result.AddOperand(data);
@@ -3531,7 +3615,7 @@ namespace Spv.Generator
 
         public Instruction SubgroupImageBlockReadINTEL(Instruction resultType, Instruction image, Instruction coordinate)
         {
-            Instruction result = new Instruction(Op.OpSubgroupImageBlockReadINTEL, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSubgroupImageBlockReadINTEL, GetNewId(), resultType);
 
             result.AddOperand(image);
             result.AddOperand(coordinate);
@@ -3542,7 +3626,7 @@ namespace Spv.Generator
 
         public Instruction SubgroupImageBlockWriteINTEL(Instruction image, Instruction coordinate, Instruction data)
         {
-            Instruction result = new Instruction(Op.OpSubgroupImageBlockWriteINTEL);
+            Instruction result = NewInstruction(Op.OpSubgroupImageBlockWriteINTEL);
 
             result.AddOperand(image);
             result.AddOperand(coordinate);
@@ -3554,7 +3638,7 @@ namespace Spv.Generator
 
         public Instruction SubgroupImageMediaBlockReadINTEL(Instruction resultType, Instruction image, Instruction coordinate, Instruction width, Instruction height)
         {
-            Instruction result = new Instruction(Op.OpSubgroupImageMediaBlockReadINTEL, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpSubgroupImageMediaBlockReadINTEL, GetNewId(), resultType);
 
             result.AddOperand(image);
             result.AddOperand(coordinate);
@@ -3567,7 +3651,7 @@ namespace Spv.Generator
 
         public Instruction SubgroupImageMediaBlockWriteINTEL(Instruction image, Instruction coordinate, Instruction width, Instruction height, Instruction data)
         {
-            Instruction result = new Instruction(Op.OpSubgroupImageMediaBlockWriteINTEL);
+            Instruction result = NewInstruction(Op.OpSubgroupImageMediaBlockWriteINTEL);
 
             result.AddOperand(image);
             result.AddOperand(coordinate);
@@ -3583,7 +3667,7 @@ namespace Spv.Generator
 
         public Instruction EnqueueMarker(Instruction resultType, Instruction queue, Instruction numEvents, Instruction waitEvents, Instruction retEvent)
         {
-            Instruction result = new Instruction(Op.OpEnqueueMarker, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpEnqueueMarker, GetNewId(), resultType);
 
             result.AddOperand(queue);
             result.AddOperand(numEvents);
@@ -3596,7 +3680,7 @@ namespace Spv.Generator
 
         public Instruction EnqueueKernel(Instruction resultType, Instruction queue, Instruction flags, Instruction nDRange, Instruction numEvents, Instruction waitEvents, Instruction retEvent, Instruction invoke, Instruction param, Instruction paramSize, Instruction paramAlign, params Instruction[] localSize)
         {
-            Instruction result = new Instruction(Op.OpEnqueueKernel, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpEnqueueKernel, GetNewId(), resultType);
 
             result.AddOperand(queue);
             result.AddOperand(flags);
@@ -3616,7 +3700,7 @@ namespace Spv.Generator
 
         public Instruction GetKernelNDrangeSubGroupCount(Instruction resultType, Instruction nDRange, Instruction invoke, Instruction param, Instruction paramSize, Instruction paramAlign)
         {
-            Instruction result = new Instruction(Op.OpGetKernelNDrangeSubGroupCount, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGetKernelNDrangeSubGroupCount, GetNewId(), resultType);
 
             result.AddOperand(nDRange);
             result.AddOperand(invoke);
@@ -3630,7 +3714,7 @@ namespace Spv.Generator
 
         public Instruction GetKernelNDrangeMaxSubGroupSize(Instruction resultType, Instruction nDRange, Instruction invoke, Instruction param, Instruction paramSize, Instruction paramAlign)
         {
-            Instruction result = new Instruction(Op.OpGetKernelNDrangeMaxSubGroupSize, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGetKernelNDrangeMaxSubGroupSize, GetNewId(), resultType);
 
             result.AddOperand(nDRange);
             result.AddOperand(invoke);
@@ -3644,7 +3728,7 @@ namespace Spv.Generator
 
         public Instruction GetKernelWorkGroupSize(Instruction resultType, Instruction invoke, Instruction param, Instruction paramSize, Instruction paramAlign)
         {
-            Instruction result = new Instruction(Op.OpGetKernelWorkGroupSize, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGetKernelWorkGroupSize, GetNewId(), resultType);
 
             result.AddOperand(invoke);
             result.AddOperand(param);
@@ -3657,7 +3741,7 @@ namespace Spv.Generator
 
         public Instruction GetKernelPreferredWorkGroupSizeMultiple(Instruction resultType, Instruction invoke, Instruction param, Instruction paramSize, Instruction paramAlign)
         {
-            Instruction result = new Instruction(Op.OpGetKernelPreferredWorkGroupSizeMultiple, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGetKernelPreferredWorkGroupSizeMultiple, GetNewId(), resultType);
 
             result.AddOperand(invoke);
             result.AddOperand(param);
@@ -3670,7 +3754,7 @@ namespace Spv.Generator
 
         public Instruction RetainEvent(Instruction eventObj)
         {
-            Instruction result = new Instruction(Op.OpRetainEvent);
+            Instruction result = NewInstruction(Op.OpRetainEvent);
 
             result.AddOperand(eventObj);
             AddToFunctionDefinitions(result);
@@ -3680,7 +3764,7 @@ namespace Spv.Generator
 
         public Instruction ReleaseEvent(Instruction eventObj)
         {
-            Instruction result = new Instruction(Op.OpReleaseEvent);
+            Instruction result = NewInstruction(Op.OpReleaseEvent);
 
             result.AddOperand(eventObj);
             AddToFunctionDefinitions(result);
@@ -3690,7 +3774,7 @@ namespace Spv.Generator
 
         public Instruction CreateUserEvent(Instruction resultType)
         {
-            Instruction result = new Instruction(Op.OpCreateUserEvent, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpCreateUserEvent, GetNewId(), resultType);
 
             AddToFunctionDefinitions(result);
 
@@ -3699,7 +3783,7 @@ namespace Spv.Generator
 
         public Instruction IsValidEvent(Instruction resultType, Instruction eventObj)
         {
-            Instruction result = new Instruction(Op.OpIsValidEvent, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpIsValidEvent, GetNewId(), resultType);
 
             result.AddOperand(eventObj);
             AddToFunctionDefinitions(result);
@@ -3709,7 +3793,7 @@ namespace Spv.Generator
 
         public Instruction SetUserEventStatus(Instruction eventObj, Instruction status)
         {
-            Instruction result = new Instruction(Op.OpSetUserEventStatus);
+            Instruction result = NewInstruction(Op.OpSetUserEventStatus);
 
             result.AddOperand(eventObj);
             result.AddOperand(status);
@@ -3720,7 +3804,7 @@ namespace Spv.Generator
 
         public Instruction CaptureEventProfilingInfo(Instruction eventObj, Instruction profilingInfo, Instruction value)
         {
-            Instruction result = new Instruction(Op.OpCaptureEventProfilingInfo);
+            Instruction result = NewInstruction(Op.OpCaptureEventProfilingInfo);
 
             result.AddOperand(eventObj);
             result.AddOperand(profilingInfo);
@@ -3732,7 +3816,7 @@ namespace Spv.Generator
 
         public Instruction GetDefaultQueue(Instruction resultType)
         {
-            Instruction result = new Instruction(Op.OpGetDefaultQueue, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGetDefaultQueue, GetNewId(), resultType);
 
             AddToFunctionDefinitions(result);
 
@@ -3741,7 +3825,7 @@ namespace Spv.Generator
 
         public Instruction BuildNDRange(Instruction resultType, Instruction globalWorkSize, Instruction localWorkSize, Instruction globalWorkOffset)
         {
-            Instruction result = new Instruction(Op.OpBuildNDRange, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpBuildNDRange, GetNewId(), resultType);
 
             result.AddOperand(globalWorkSize);
             result.AddOperand(localWorkSize);
@@ -3753,7 +3837,7 @@ namespace Spv.Generator
 
         public Instruction GetKernelLocalSizeForSubgroupCount(Instruction resultType, Instruction subgroupCount, Instruction invoke, Instruction param, Instruction paramSize, Instruction paramAlign)
         {
-            Instruction result = new Instruction(Op.OpGetKernelLocalSizeForSubgroupCount, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGetKernelLocalSizeForSubgroupCount, GetNewId(), resultType);
 
             result.AddOperand(subgroupCount);
             result.AddOperand(invoke);
@@ -3767,7 +3851,7 @@ namespace Spv.Generator
 
         public Instruction GetKernelMaxNumSubgroups(Instruction resultType, Instruction invoke, Instruction param, Instruction paramSize, Instruction paramAlign)
         {
-            Instruction result = new Instruction(Op.OpGetKernelMaxNumSubgroups, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGetKernelMaxNumSubgroups, GetNewId(), resultType);
 
             result.AddOperand(invoke);
             result.AddOperand(param);
@@ -3782,7 +3866,7 @@ namespace Spv.Generator
 
         public Instruction ReadPipe(Instruction resultType, Instruction pipe, Instruction pointer, Instruction packetSize, Instruction packetAlignment)
         {
-            Instruction result = new Instruction(Op.OpReadPipe, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpReadPipe, GetNewId(), resultType);
 
             result.AddOperand(pipe);
             result.AddOperand(pointer);
@@ -3795,7 +3879,7 @@ namespace Spv.Generator
 
         public Instruction WritePipe(Instruction resultType, Instruction pipe, Instruction pointer, Instruction packetSize, Instruction packetAlignment)
         {
-            Instruction result = new Instruction(Op.OpWritePipe, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpWritePipe, GetNewId(), resultType);
 
             result.AddOperand(pipe);
             result.AddOperand(pointer);
@@ -3808,7 +3892,7 @@ namespace Spv.Generator
 
         public Instruction ReservedReadPipe(Instruction resultType, Instruction pipe, Instruction reserveId, Instruction index, Instruction pointer, Instruction packetSize, Instruction packetAlignment)
         {
-            Instruction result = new Instruction(Op.OpReservedReadPipe, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpReservedReadPipe, GetNewId(), resultType);
 
             result.AddOperand(pipe);
             result.AddOperand(reserveId);
@@ -3823,7 +3907,7 @@ namespace Spv.Generator
 
         public Instruction ReservedWritePipe(Instruction resultType, Instruction pipe, Instruction reserveId, Instruction index, Instruction pointer, Instruction packetSize, Instruction packetAlignment)
         {
-            Instruction result = new Instruction(Op.OpReservedWritePipe, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpReservedWritePipe, GetNewId(), resultType);
 
             result.AddOperand(pipe);
             result.AddOperand(reserveId);
@@ -3838,7 +3922,7 @@ namespace Spv.Generator
 
         public Instruction ReserveReadPipePackets(Instruction resultType, Instruction pipe, Instruction numPackets, Instruction packetSize, Instruction packetAlignment)
         {
-            Instruction result = new Instruction(Op.OpReserveReadPipePackets, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpReserveReadPipePackets, GetNewId(), resultType);
 
             result.AddOperand(pipe);
             result.AddOperand(numPackets);
@@ -3851,7 +3935,7 @@ namespace Spv.Generator
 
         public Instruction ReserveWritePipePackets(Instruction resultType, Instruction pipe, Instruction numPackets, Instruction packetSize, Instruction packetAlignment)
         {
-            Instruction result = new Instruction(Op.OpReserveWritePipePackets, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpReserveWritePipePackets, GetNewId(), resultType);
 
             result.AddOperand(pipe);
             result.AddOperand(numPackets);
@@ -3864,7 +3948,7 @@ namespace Spv.Generator
 
         public Instruction CommitReadPipe(Instruction pipe, Instruction reserveId, Instruction packetSize, Instruction packetAlignment)
         {
-            Instruction result = new Instruction(Op.OpCommitReadPipe);
+            Instruction result = NewInstruction(Op.OpCommitReadPipe);
 
             result.AddOperand(pipe);
             result.AddOperand(reserveId);
@@ -3877,7 +3961,7 @@ namespace Spv.Generator
 
         public Instruction CommitWritePipe(Instruction pipe, Instruction reserveId, Instruction packetSize, Instruction packetAlignment)
         {
-            Instruction result = new Instruction(Op.OpCommitWritePipe);
+            Instruction result = NewInstruction(Op.OpCommitWritePipe);
 
             result.AddOperand(pipe);
             result.AddOperand(reserveId);
@@ -3890,7 +3974,7 @@ namespace Spv.Generator
 
         public Instruction IsValidReserveId(Instruction resultType, Instruction reserveId)
         {
-            Instruction result = new Instruction(Op.OpIsValidReserveId, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpIsValidReserveId, GetNewId(), resultType);
 
             result.AddOperand(reserveId);
             AddToFunctionDefinitions(result);
@@ -3900,7 +3984,7 @@ namespace Spv.Generator
 
         public Instruction GetNumPipePackets(Instruction resultType, Instruction pipe, Instruction packetSize, Instruction packetAlignment)
         {
-            Instruction result = new Instruction(Op.OpGetNumPipePackets, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGetNumPipePackets, GetNewId(), resultType);
 
             result.AddOperand(pipe);
             result.AddOperand(packetSize);
@@ -3912,7 +3996,7 @@ namespace Spv.Generator
 
         public Instruction GetMaxPipePackets(Instruction resultType, Instruction pipe, Instruction packetSize, Instruction packetAlignment)
         {
-            Instruction result = new Instruction(Op.OpGetMaxPipePackets, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGetMaxPipePackets, GetNewId(), resultType);
 
             result.AddOperand(pipe);
             result.AddOperand(packetSize);
@@ -3924,7 +4008,7 @@ namespace Spv.Generator
 
         public Instruction GroupReserveReadPipePackets(Instruction resultType, Instruction execution, Instruction pipe, Instruction numPackets, Instruction packetSize, Instruction packetAlignment)
         {
-            Instruction result = new Instruction(Op.OpGroupReserveReadPipePackets, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupReserveReadPipePackets, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(pipe);
@@ -3938,7 +4022,7 @@ namespace Spv.Generator
 
         public Instruction GroupReserveWritePipePackets(Instruction resultType, Instruction execution, Instruction pipe, Instruction numPackets, Instruction packetSize, Instruction packetAlignment)
         {
-            Instruction result = new Instruction(Op.OpGroupReserveWritePipePackets, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupReserveWritePipePackets, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(pipe);
@@ -3952,7 +4036,7 @@ namespace Spv.Generator
 
         public Instruction GroupCommitReadPipe(Instruction execution, Instruction pipe, Instruction reserveId, Instruction packetSize, Instruction packetAlignment)
         {
-            Instruction result = new Instruction(Op.OpGroupCommitReadPipe);
+            Instruction result = NewInstruction(Op.OpGroupCommitReadPipe);
 
             result.AddOperand(execution);
             result.AddOperand(pipe);
@@ -3966,7 +4050,7 @@ namespace Spv.Generator
 
         public Instruction GroupCommitWritePipe(Instruction execution, Instruction pipe, Instruction reserveId, Instruction packetSize, Instruction packetAlignment)
         {
-            Instruction result = new Instruction(Op.OpGroupCommitWritePipe);
+            Instruction result = NewInstruction(Op.OpGroupCommitWritePipe);
 
             result.AddOperand(execution);
             result.AddOperand(pipe);
@@ -3980,7 +4064,7 @@ namespace Spv.Generator
 
         public Instruction ConstantPipeStorage(Instruction resultType, LiteralInteger packetSize, LiteralInteger packetAlignment, LiteralInteger capacity)
         {
-            Instruction result = new Instruction(Op.OpConstantPipeStorage, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpConstantPipeStorage, GetNewId(), resultType);
 
             result.AddOperand(packetSize);
             result.AddOperand(packetAlignment);
@@ -3992,7 +4076,7 @@ namespace Spv.Generator
 
         public Instruction CreatePipeFromPipeStorage(Instruction resultType, Instruction pipeStorage)
         {
-            Instruction result = new Instruction(Op.OpCreatePipeFromPipeStorage, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpCreatePipeFromPipeStorage, GetNewId(), resultType);
 
             result.AddOperand(pipeStorage);
             AddToFunctionDefinitions(result);
@@ -4002,7 +4086,7 @@ namespace Spv.Generator
 
         public Instruction ReadPipeBlockingINTEL(Instruction resultType, Instruction packetSize, Instruction packetAlignment)
         {
-            Instruction result = new Instruction(Op.OpReadPipeBlockingINTEL, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpReadPipeBlockingINTEL, GetNewId(), resultType);
 
             result.AddOperand(packetSize);
             result.AddOperand(packetAlignment);
@@ -4013,7 +4097,7 @@ namespace Spv.Generator
 
         public Instruction WritePipeBlockingINTEL(Instruction resultType, Instruction packetSize, Instruction packetAlignment)
         {
-            Instruction result = new Instruction(Op.OpWritePipeBlockingINTEL, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpWritePipeBlockingINTEL, GetNewId(), resultType);
 
             result.AddOperand(packetSize);
             result.AddOperand(packetAlignment);
@@ -4026,7 +4110,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformElect(Instruction resultType, Instruction execution)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformElect, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformElect, GetNewId(), resultType);
 
             result.AddOperand(execution);
             AddToFunctionDefinitions(result);
@@ -4036,7 +4120,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformAll(Instruction resultType, Instruction execution, Instruction predicate)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformAll, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformAll, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(predicate);
@@ -4047,7 +4131,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformAny(Instruction resultType, Instruction execution, Instruction predicate)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformAny, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformAny, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(predicate);
@@ -4058,7 +4142,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformAllEqual(Instruction resultType, Instruction execution, Instruction value)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformAllEqual, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformAllEqual, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(value);
@@ -4069,7 +4153,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformBroadcast(Instruction resultType, Instruction execution, Instruction value, Instruction id)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformBroadcast, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformBroadcast, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(value);
@@ -4081,7 +4165,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformBroadcastFirst(Instruction resultType, Instruction execution, Instruction value)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformBroadcastFirst, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformBroadcastFirst, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(value);
@@ -4092,7 +4176,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformBallot(Instruction resultType, Instruction execution, Instruction predicate)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformBallot, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformBallot, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(predicate);
@@ -4103,7 +4187,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformInverseBallot(Instruction resultType, Instruction execution, Instruction value)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformInverseBallot, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformInverseBallot, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(value);
@@ -4114,7 +4198,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformBallotBitExtract(Instruction resultType, Instruction execution, Instruction value, Instruction index)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformBallotBitExtract, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformBallotBitExtract, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(value);
@@ -4126,7 +4210,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformBallotBitCount(Instruction resultType, Instruction execution, GroupOperation operation, Instruction value)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformBallotBitCount, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformBallotBitCount, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(operation);
@@ -4138,7 +4222,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformBallotFindLSB(Instruction resultType, Instruction execution, Instruction value)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformBallotFindLSB, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformBallotFindLSB, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(value);
@@ -4149,7 +4233,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformBallotFindMSB(Instruction resultType, Instruction execution, Instruction value)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformBallotFindMSB, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformBallotFindMSB, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(value);
@@ -4160,7 +4244,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformShuffle(Instruction resultType, Instruction execution, Instruction value, Instruction id)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformShuffle, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformShuffle, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(value);
@@ -4172,7 +4256,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformShuffleXor(Instruction resultType, Instruction execution, Instruction value, Instruction mask)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformShuffleXor, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformShuffleXor, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(value);
@@ -4184,7 +4268,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformShuffleUp(Instruction resultType, Instruction execution, Instruction value, Instruction delta)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformShuffleUp, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformShuffleUp, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(value);
@@ -4196,7 +4280,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformShuffleDown(Instruction resultType, Instruction execution, Instruction value, Instruction delta)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformShuffleDown, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformShuffleDown, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(value);
@@ -4208,7 +4292,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformIAdd(Instruction resultType, Instruction execution, GroupOperation operation, Instruction value, Instruction clusterSize = null)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformIAdd, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformIAdd, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(operation);
@@ -4224,7 +4308,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformFAdd(Instruction resultType, Instruction execution, GroupOperation operation, Instruction value, Instruction clusterSize = null)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformFAdd, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformFAdd, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(operation);
@@ -4240,7 +4324,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformIMul(Instruction resultType, Instruction execution, GroupOperation operation, Instruction value, Instruction clusterSize = null)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformIMul, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformIMul, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(operation);
@@ -4256,7 +4340,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformFMul(Instruction resultType, Instruction execution, GroupOperation operation, Instruction value, Instruction clusterSize = null)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformFMul, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformFMul, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(operation);
@@ -4272,7 +4356,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformSMin(Instruction resultType, Instruction execution, GroupOperation operation, Instruction value, Instruction clusterSize = null)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformSMin, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformSMin, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(operation);
@@ -4288,7 +4372,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformUMin(Instruction resultType, Instruction execution, GroupOperation operation, Instruction value, Instruction clusterSize = null)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformUMin, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformUMin, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(operation);
@@ -4304,7 +4388,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformFMin(Instruction resultType, Instruction execution, GroupOperation operation, Instruction value, Instruction clusterSize = null)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformFMin, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformFMin, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(operation);
@@ -4320,7 +4404,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformSMax(Instruction resultType, Instruction execution, GroupOperation operation, Instruction value, Instruction clusterSize = null)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformSMax, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformSMax, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(operation);
@@ -4336,7 +4420,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformUMax(Instruction resultType, Instruction execution, GroupOperation operation, Instruction value, Instruction clusterSize = null)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformUMax, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformUMax, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(operation);
@@ -4352,7 +4436,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformFMax(Instruction resultType, Instruction execution, GroupOperation operation, Instruction value, Instruction clusterSize = null)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformFMax, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformFMax, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(operation);
@@ -4368,7 +4452,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformBitwiseAnd(Instruction resultType, Instruction execution, GroupOperation operation, Instruction value, Instruction clusterSize = null)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformBitwiseAnd, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformBitwiseAnd, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(operation);
@@ -4384,7 +4468,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformBitwiseOr(Instruction resultType, Instruction execution, GroupOperation operation, Instruction value, Instruction clusterSize = null)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformBitwiseOr, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformBitwiseOr, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(operation);
@@ -4400,7 +4484,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformBitwiseXor(Instruction resultType, Instruction execution, GroupOperation operation, Instruction value, Instruction clusterSize = null)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformBitwiseXor, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformBitwiseXor, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(operation);
@@ -4416,7 +4500,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformLogicalAnd(Instruction resultType, Instruction execution, GroupOperation operation, Instruction value, Instruction clusterSize = null)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformLogicalAnd, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformLogicalAnd, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(operation);
@@ -4432,7 +4516,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformLogicalOr(Instruction resultType, Instruction execution, GroupOperation operation, Instruction value, Instruction clusterSize = null)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformLogicalOr, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformLogicalOr, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(operation);
@@ -4448,7 +4532,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformLogicalXor(Instruction resultType, Instruction execution, GroupOperation operation, Instruction value, Instruction clusterSize = null)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformLogicalXor, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformLogicalXor, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(operation);
@@ -4464,7 +4548,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformQuadBroadcast(Instruction resultType, Instruction execution, Instruction value, Instruction index)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformQuadBroadcast, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformQuadBroadcast, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(value);
@@ -4476,7 +4560,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformQuadSwap(Instruction resultType, Instruction execution, Instruction value, Instruction direction)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformQuadSwap, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformQuadSwap, GetNewId(), resultType);
 
             result.AddOperand(execution);
             result.AddOperand(value);
@@ -4488,7 +4572,7 @@ namespace Spv.Generator
 
         public Instruction GroupNonUniformPartitionNV(Instruction resultType, Instruction value)
         {
-            Instruction result = new Instruction(Op.OpGroupNonUniformPartitionNV, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpGroupNonUniformPartitionNV, GetNewId(), resultType);
 
             result.AddOperand(value);
             AddToFunctionDefinitions(result);
@@ -4500,7 +4584,7 @@ namespace Spv.Generator
 
         public Instruction TraceRayKHR(Instruction accel, Instruction rayFlags, Instruction cullMask, Instruction sBTOffset, Instruction sBTStride, Instruction missIndex, Instruction rayOrigin, Instruction rayTmin, Instruction rayDirection, Instruction rayTmax, Instruction payload)
         {
-            Instruction result = new Instruction(Op.OpTraceRayKHR);
+            Instruction result = NewInstruction(Op.OpTraceRayKHR);
 
             result.AddOperand(accel);
             result.AddOperand(rayFlags);
@@ -4520,7 +4604,7 @@ namespace Spv.Generator
 
         public Instruction ExecuteCallableKHR(Instruction sBTIndex, Instruction callableData)
         {
-            Instruction result = new Instruction(Op.OpExecuteCallableKHR);
+            Instruction result = NewInstruction(Op.OpExecuteCallableKHR);
 
             result.AddOperand(sBTIndex);
             result.AddOperand(callableData);
@@ -4531,7 +4615,7 @@ namespace Spv.Generator
 
         public Instruction ConvertUToAccelerationStructureKHR(Instruction resultType, Instruction accel)
         {
-            Instruction result = new Instruction(Op.OpConvertUToAccelerationStructureKHR, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpConvertUToAccelerationStructureKHR, GetNewId(), resultType);
 
             result.AddOperand(accel);
             AddToFunctionDefinitions(result);
@@ -4541,7 +4625,7 @@ namespace Spv.Generator
 
         public Instruction IgnoreIntersectionKHR()
         {
-            Instruction result = new Instruction(Op.OpIgnoreIntersectionKHR);
+            Instruction result = NewInstruction(Op.OpIgnoreIntersectionKHR);
 
             AddToFunctionDefinitions(result);
 
@@ -4550,7 +4634,7 @@ namespace Spv.Generator
 
         public Instruction TerminateRayKHR()
         {
-            Instruction result = new Instruction(Op.OpTerminateRayKHR);
+            Instruction result = NewInstruction(Op.OpTerminateRayKHR);
 
             AddToFunctionDefinitions(result);
 
@@ -4559,7 +4643,7 @@ namespace Spv.Generator
 
         public Instruction TypeRayQueryKHR()
         {
-            Instruction result = new Instruction(Op.OpTypeRayQueryKHR, GetNewId());
+            Instruction result = NewInstruction(Op.OpTypeRayQueryKHR, GetNewId());
 
             AddToFunctionDefinitions(result);
 
@@ -4568,7 +4652,7 @@ namespace Spv.Generator
 
         public Instruction RayQueryInitializeKHR(Instruction rayQuery, Instruction accel, Instruction rayFlags, Instruction cullMask, Instruction rayOrigin, Instruction rayTMin, Instruction rayDirection, Instruction rayTMax)
         {
-            Instruction result = new Instruction(Op.OpRayQueryInitializeKHR);
+            Instruction result = NewInstruction(Op.OpRayQueryInitializeKHR);
 
             result.AddOperand(rayQuery);
             result.AddOperand(accel);
@@ -4585,7 +4669,7 @@ namespace Spv.Generator
 
         public Instruction RayQueryTerminateKHR(Instruction rayQuery)
         {
-            Instruction result = new Instruction(Op.OpRayQueryTerminateKHR);
+            Instruction result = NewInstruction(Op.OpRayQueryTerminateKHR);
 
             result.AddOperand(rayQuery);
             AddToFunctionDefinitions(result);
@@ -4595,7 +4679,7 @@ namespace Spv.Generator
 
         public Instruction RayQueryGenerateIntersectionKHR(Instruction rayQuery, Instruction hitT)
         {
-            Instruction result = new Instruction(Op.OpRayQueryGenerateIntersectionKHR);
+            Instruction result = NewInstruction(Op.OpRayQueryGenerateIntersectionKHR);
 
             result.AddOperand(rayQuery);
             result.AddOperand(hitT);
@@ -4606,7 +4690,7 @@ namespace Spv.Generator
 
         public Instruction RayQueryConfirmIntersectionKHR(Instruction rayQuery)
         {
-            Instruction result = new Instruction(Op.OpRayQueryConfirmIntersectionKHR);
+            Instruction result = NewInstruction(Op.OpRayQueryConfirmIntersectionKHR);
 
             result.AddOperand(rayQuery);
             AddToFunctionDefinitions(result);
@@ -4616,7 +4700,7 @@ namespace Spv.Generator
 
         public Instruction RayQueryProceedKHR(Instruction resultType, Instruction rayQuery)
         {
-            Instruction result = new Instruction(Op.OpRayQueryProceedKHR, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpRayQueryProceedKHR, GetNewId(), resultType);
 
             result.AddOperand(rayQuery);
             AddToFunctionDefinitions(result);
@@ -4626,7 +4710,7 @@ namespace Spv.Generator
 
         public Instruction RayQueryGetIntersectionTypeKHR(Instruction resultType, Instruction rayQuery, Instruction intersection)
         {
-            Instruction result = new Instruction(Op.OpRayQueryGetIntersectionTypeKHR, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpRayQueryGetIntersectionTypeKHR, GetNewId(), resultType);
 
             result.AddOperand(rayQuery);
             result.AddOperand(intersection);
@@ -4637,7 +4721,7 @@ namespace Spv.Generator
 
         public Instruction FragmentMaskFetchAMD(Instruction resultType, Instruction image, Instruction coordinate)
         {
-            Instruction result = new Instruction(Op.OpFragmentMaskFetchAMD, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpFragmentMaskFetchAMD, GetNewId(), resultType);
 
             result.AddOperand(image);
             result.AddOperand(coordinate);
@@ -4648,7 +4732,7 @@ namespace Spv.Generator
 
         public Instruction FragmentFetchAMD(Instruction resultType, Instruction image, Instruction coordinate, Instruction fragmentIndex)
         {
-            Instruction result = new Instruction(Op.OpFragmentFetchAMD, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpFragmentFetchAMD, GetNewId(), resultType);
 
             result.AddOperand(image);
             result.AddOperand(coordinate);
@@ -4660,7 +4744,7 @@ namespace Spv.Generator
 
         public Instruction ReadClockKHR(Instruction resultType, Instruction execution)
         {
-            Instruction result = new Instruction(Op.OpReadClockKHR, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpReadClockKHR, GetNewId(), resultType);
 
             result.AddOperand(execution);
             AddToFunctionDefinitions(result);
@@ -4670,7 +4754,7 @@ namespace Spv.Generator
 
         public Instruction WritePackedPrimitiveIndices4x8NV(Instruction indexOffset, Instruction packedIndices)
         {
-            Instruction result = new Instruction(Op.OpWritePackedPrimitiveIndices4x8NV);
+            Instruction result = NewInstruction(Op.OpWritePackedPrimitiveIndices4x8NV);
 
             result.AddOperand(indexOffset);
             result.AddOperand(packedIndices);
@@ -4681,7 +4765,7 @@ namespace Spv.Generator
 
         public Instruction ReportIntersectionNV(Instruction resultType, Instruction hit, Instruction hitKind)
         {
-            Instruction result = new Instruction(Op.OpReportIntersectionNV, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpReportIntersectionNV, GetNewId(), resultType);
 
             result.AddOperand(hit);
             result.AddOperand(hitKind);
@@ -4692,7 +4776,7 @@ namespace Spv.Generator
 
         public Instruction ReportIntersectionKHR(Instruction resultType, Instruction hit, Instruction hitKind)
         {
-            Instruction result = new Instruction(Op.OpReportIntersectionKHR, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpReportIntersectionKHR, GetNewId(), resultType);
 
             result.AddOperand(hit);
             result.AddOperand(hitKind);
@@ -4703,7 +4787,7 @@ namespace Spv.Generator
 
         public Instruction IgnoreIntersectionNV()
         {
-            Instruction result = new Instruction(Op.OpIgnoreIntersectionNV);
+            Instruction result = NewInstruction(Op.OpIgnoreIntersectionNV);
 
             AddToFunctionDefinitions(result);
 
@@ -4712,7 +4796,7 @@ namespace Spv.Generator
 
         public Instruction TerminateRayNV()
         {
-            Instruction result = new Instruction(Op.OpTerminateRayNV);
+            Instruction result = NewInstruction(Op.OpTerminateRayNV);
 
             AddToFunctionDefinitions(result);
 
@@ -4721,7 +4805,7 @@ namespace Spv.Generator
 
         public Instruction TraceNV(Instruction accel, Instruction rayFlags, Instruction cullMask, Instruction sBTOffset, Instruction sBTStride, Instruction missIndex, Instruction rayOrigin, Instruction rayTmin, Instruction rayDirection, Instruction rayTmax, Instruction payloadId)
         {
-            Instruction result = new Instruction(Op.OpTraceNV);
+            Instruction result = NewInstruction(Op.OpTraceNV);
 
             result.AddOperand(accel);
             result.AddOperand(rayFlags);
@@ -4741,7 +4825,7 @@ namespace Spv.Generator
 
         public Instruction TypeAccelerationStructureNV()
         {
-            Instruction result = new Instruction(Op.OpTypeAccelerationStructureNV, GetNewId());
+            Instruction result = NewInstruction(Op.OpTypeAccelerationStructureNV, GetNewId());
 
             AddToFunctionDefinitions(result);
 
@@ -4750,7 +4834,7 @@ namespace Spv.Generator
 
         public Instruction TypeAccelerationStructureKHR()
         {
-            Instruction result = new Instruction(Op.OpTypeAccelerationStructureKHR, GetNewId());
+            Instruction result = NewInstruction(Op.OpTypeAccelerationStructureKHR, GetNewId());
 
             AddToFunctionDefinitions(result);
 
@@ -4759,7 +4843,7 @@ namespace Spv.Generator
 
         public Instruction ExecuteCallableNV(Instruction sBTIndex, Instruction callableDataId)
         {
-            Instruction result = new Instruction(Op.OpExecuteCallableNV);
+            Instruction result = NewInstruction(Op.OpExecuteCallableNV);
 
             result.AddOperand(sBTIndex);
             result.AddOperand(callableDataId);
@@ -4770,7 +4854,7 @@ namespace Spv.Generator
 
         public Instruction TypeCooperativeMatrixNV(Instruction componentType, Instruction execution, Instruction rows, Instruction columns)
         {
-            Instruction result = new Instruction(Op.OpTypeCooperativeMatrixNV, GetNewId());
+            Instruction result = NewInstruction(Op.OpTypeCooperativeMatrixNV, GetNewId());
 
             result.AddOperand(componentType);
             result.AddOperand(execution);
@@ -4783,7 +4867,7 @@ namespace Spv.Generator
 
         public Instruction CooperativeMatrixLoadNV(Instruction resultType, Instruction pointer, Instruction stride, Instruction columnMajor, MemoryAccessMask memoryAccess = (MemoryAccessMask)int.MaxValue)
         {
-            Instruction result = new Instruction(Op.OpCooperativeMatrixLoadNV, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpCooperativeMatrixLoadNV, GetNewId(), resultType);
 
             result.AddOperand(pointer);
             result.AddOperand(stride);
@@ -4799,7 +4883,7 @@ namespace Spv.Generator
 
         public Instruction CooperativeMatrixStoreNV(Instruction pointer, Instruction obj, Instruction stride, Instruction columnMajor, MemoryAccessMask memoryAccess = (MemoryAccessMask)int.MaxValue)
         {
-            Instruction result = new Instruction(Op.OpCooperativeMatrixStoreNV);
+            Instruction result = NewInstruction(Op.OpCooperativeMatrixStoreNV);
 
             result.AddOperand(pointer);
             result.AddOperand(obj);
@@ -4816,7 +4900,7 @@ namespace Spv.Generator
 
         public Instruction CooperativeMatrixMulAddNV(Instruction resultType, Instruction a, Instruction b, Instruction c)
         {
-            Instruction result = new Instruction(Op.OpCooperativeMatrixMulAddNV, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpCooperativeMatrixMulAddNV, GetNewId(), resultType);
 
             result.AddOperand(a);
             result.AddOperand(b);
@@ -4828,7 +4912,7 @@ namespace Spv.Generator
 
         public Instruction CooperativeMatrixLengthNV(Instruction resultType, Instruction type)
         {
-            Instruction result = new Instruction(Op.OpCooperativeMatrixLengthNV, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpCooperativeMatrixLengthNV, GetNewId(), resultType);
 
             result.AddOperand(type);
             AddToFunctionDefinitions(result);
@@ -4838,7 +4922,7 @@ namespace Spv.Generator
 
         public Instruction BeginInvocationInterlockEXT()
         {
-            Instruction result = new Instruction(Op.OpBeginInvocationInterlockEXT);
+            Instruction result = NewInstruction(Op.OpBeginInvocationInterlockEXT);
 
             AddToFunctionDefinitions(result);
 
@@ -4847,7 +4931,7 @@ namespace Spv.Generator
 
         public Instruction EndInvocationInterlockEXT()
         {
-            Instruction result = new Instruction(Op.OpEndInvocationInterlockEXT);
+            Instruction result = NewInstruction(Op.OpEndInvocationInterlockEXT);
 
             AddToFunctionDefinitions(result);
 
@@ -4856,7 +4940,7 @@ namespace Spv.Generator
 
         public Instruction DemoteToHelperInvocationEXT()
         {
-            Instruction result = new Instruction(Op.OpDemoteToHelperInvocationEXT);
+            Instruction result = NewInstruction(Op.OpDemoteToHelperInvocationEXT);
 
             AddToFunctionDefinitions(result);
 
@@ -4865,7 +4949,7 @@ namespace Spv.Generator
 
         public Instruction IsHelperInvocationEXT(Instruction resultType)
         {
-            Instruction result = new Instruction(Op.OpIsHelperInvocationEXT, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpIsHelperInvocationEXT, GetNewId(), resultType);
 
             AddToFunctionDefinitions(result);
 
@@ -4874,7 +4958,7 @@ namespace Spv.Generator
 
         public Instruction UCountLeadingZerosINTEL(Instruction resultType, Instruction operand)
         {
-            Instruction result = new Instruction(Op.OpUCountLeadingZerosINTEL, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpUCountLeadingZerosINTEL, GetNewId(), resultType);
 
             result.AddOperand(operand);
             AddToFunctionDefinitions(result);
@@ -4884,7 +4968,7 @@ namespace Spv.Generator
 
         public Instruction UCountTrailingZerosINTEL(Instruction resultType, Instruction operand)
         {
-            Instruction result = new Instruction(Op.OpUCountTrailingZerosINTEL, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpUCountTrailingZerosINTEL, GetNewId(), resultType);
 
             result.AddOperand(operand);
             AddToFunctionDefinitions(result);
@@ -4894,7 +4978,7 @@ namespace Spv.Generator
 
         public Instruction AbsISubINTEL(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpAbsISubINTEL, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpAbsISubINTEL, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -4905,7 +4989,7 @@ namespace Spv.Generator
 
         public Instruction AbsUSubINTEL(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpAbsUSubINTEL, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpAbsUSubINTEL, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -4916,7 +5000,7 @@ namespace Spv.Generator
 
         public Instruction IAddSatINTEL(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpIAddSatINTEL, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpIAddSatINTEL, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -4927,7 +5011,7 @@ namespace Spv.Generator
 
         public Instruction UAddSatINTEL(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpUAddSatINTEL, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpUAddSatINTEL, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -4938,7 +5022,7 @@ namespace Spv.Generator
 
         public Instruction IAverageINTEL(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpIAverageINTEL, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpIAverageINTEL, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -4949,7 +5033,7 @@ namespace Spv.Generator
 
         public Instruction UAverageINTEL(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpUAverageINTEL, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpUAverageINTEL, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -4960,7 +5044,7 @@ namespace Spv.Generator
 
         public Instruction IAverageRoundedINTEL(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpIAverageRoundedINTEL, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpIAverageRoundedINTEL, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -4971,7 +5055,7 @@ namespace Spv.Generator
 
         public Instruction UAverageRoundedINTEL(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpUAverageRoundedINTEL, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpUAverageRoundedINTEL, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -4982,7 +5066,7 @@ namespace Spv.Generator
 
         public Instruction ISubSatINTEL(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpISubSatINTEL, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpISubSatINTEL, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -4993,7 +5077,7 @@ namespace Spv.Generator
 
         public Instruction USubSatINTEL(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpUSubSatINTEL, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpUSubSatINTEL, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -5004,7 +5088,7 @@ namespace Spv.Generator
 
         public Instruction IMul32x16INTEL(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpIMul32x16INTEL, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpIMul32x16INTEL, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -5015,7 +5099,7 @@ namespace Spv.Generator
 
         public Instruction UMul32x16INTEL(Instruction resultType, Instruction operand1, Instruction operand2)
         {
-            Instruction result = new Instruction(Op.OpUMul32x16INTEL, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpUMul32x16INTEL, GetNewId(), resultType);
 
             result.AddOperand(operand1);
             result.AddOperand(operand2);
@@ -5026,7 +5110,7 @@ namespace Spv.Generator
 
         public Instruction LoopControlINTEL(params LiteralInteger[] loopControlParameters)
         {
-            Instruction result = new Instruction(Op.OpLoopControlINTEL);
+            Instruction result = NewInstruction(Op.OpLoopControlINTEL);
 
             result.AddOperand(loopControlParameters);
             AddToFunctionDefinitions(result);
@@ -5036,7 +5120,7 @@ namespace Spv.Generator
 
         public Instruction FPGARegINTEL(Instruction resultType, Instruction resultObj, Instruction input)
         {
-            Instruction result = new Instruction(Op.OpFPGARegINTEL, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpFPGARegINTEL, GetNewId(), resultType);
 
             result.AddOperand(resultObj);
             result.AddOperand(input);
@@ -5047,7 +5131,7 @@ namespace Spv.Generator
 
         public Instruction RayQueryGetRayTMinKHR(Instruction resultType, Instruction rayQuery)
         {
-            Instruction result = new Instruction(Op.OpRayQueryGetRayTMinKHR, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpRayQueryGetRayTMinKHR, GetNewId(), resultType);
 
             result.AddOperand(rayQuery);
             AddToFunctionDefinitions(result);
@@ -5057,7 +5141,7 @@ namespace Spv.Generator
 
         public Instruction RayQueryGetRayFlagsKHR(Instruction resultType, Instruction rayQuery)
         {
-            Instruction result = new Instruction(Op.OpRayQueryGetRayFlagsKHR, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpRayQueryGetRayFlagsKHR, GetNewId(), resultType);
 
             result.AddOperand(rayQuery);
             AddToFunctionDefinitions(result);
@@ -5067,7 +5151,7 @@ namespace Spv.Generator
 
         public Instruction RayQueryGetIntersectionTKHR(Instruction resultType, Instruction rayQuery, Instruction intersection)
         {
-            Instruction result = new Instruction(Op.OpRayQueryGetIntersectionTKHR, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpRayQueryGetIntersectionTKHR, GetNewId(), resultType);
 
             result.AddOperand(rayQuery);
             result.AddOperand(intersection);
@@ -5078,7 +5162,7 @@ namespace Spv.Generator
 
         public Instruction RayQueryGetIntersectionInstanceCustomIndexKHR(Instruction resultType, Instruction rayQuery, Instruction intersection)
         {
-            Instruction result = new Instruction(Op.OpRayQueryGetIntersectionInstanceCustomIndexKHR, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpRayQueryGetIntersectionInstanceCustomIndexKHR, GetNewId(), resultType);
 
             result.AddOperand(rayQuery);
             result.AddOperand(intersection);
@@ -5089,7 +5173,7 @@ namespace Spv.Generator
 
         public Instruction RayQueryGetIntersectionInstanceIdKHR(Instruction resultType, Instruction rayQuery, Instruction intersection)
         {
-            Instruction result = new Instruction(Op.OpRayQueryGetIntersectionInstanceIdKHR, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpRayQueryGetIntersectionInstanceIdKHR, GetNewId(), resultType);
 
             result.AddOperand(rayQuery);
             result.AddOperand(intersection);
@@ -5100,7 +5184,7 @@ namespace Spv.Generator
 
         public Instruction RayQueryGetIntersectionInstanceShaderBindingTableRecordOffsetKHR(Instruction resultType, Instruction rayQuery, Instruction intersection)
         {
-            Instruction result = new Instruction(Op.OpRayQueryGetIntersectionInstanceShaderBindingTableRecordOffsetKHR, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpRayQueryGetIntersectionInstanceShaderBindingTableRecordOffsetKHR, GetNewId(), resultType);
 
             result.AddOperand(rayQuery);
             result.AddOperand(intersection);
@@ -5111,7 +5195,7 @@ namespace Spv.Generator
 
         public Instruction RayQueryGetIntersectionGeometryIndexKHR(Instruction resultType, Instruction rayQuery, Instruction intersection)
         {
-            Instruction result = new Instruction(Op.OpRayQueryGetIntersectionGeometryIndexKHR, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpRayQueryGetIntersectionGeometryIndexKHR, GetNewId(), resultType);
 
             result.AddOperand(rayQuery);
             result.AddOperand(intersection);
@@ -5122,7 +5206,7 @@ namespace Spv.Generator
 
         public Instruction RayQueryGetIntersectionPrimitiveIndexKHR(Instruction resultType, Instruction rayQuery, Instruction intersection)
         {
-            Instruction result = new Instruction(Op.OpRayQueryGetIntersectionPrimitiveIndexKHR, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpRayQueryGetIntersectionPrimitiveIndexKHR, GetNewId(), resultType);
 
             result.AddOperand(rayQuery);
             result.AddOperand(intersection);
@@ -5133,7 +5217,7 @@ namespace Spv.Generator
 
         public Instruction RayQueryGetIntersectionBarycentricsKHR(Instruction resultType, Instruction rayQuery, Instruction intersection)
         {
-            Instruction result = new Instruction(Op.OpRayQueryGetIntersectionBarycentricsKHR, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpRayQueryGetIntersectionBarycentricsKHR, GetNewId(), resultType);
 
             result.AddOperand(rayQuery);
             result.AddOperand(intersection);
@@ -5144,7 +5228,7 @@ namespace Spv.Generator
 
         public Instruction RayQueryGetIntersectionFrontFaceKHR(Instruction resultType, Instruction rayQuery, Instruction intersection)
         {
-            Instruction result = new Instruction(Op.OpRayQueryGetIntersectionFrontFaceKHR, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpRayQueryGetIntersectionFrontFaceKHR, GetNewId(), resultType);
 
             result.AddOperand(rayQuery);
             result.AddOperand(intersection);
@@ -5155,7 +5239,7 @@ namespace Spv.Generator
 
         public Instruction RayQueryGetIntersectionCandidateAABBOpaqueKHR(Instruction resultType, Instruction rayQuery)
         {
-            Instruction result = new Instruction(Op.OpRayQueryGetIntersectionCandidateAABBOpaqueKHR, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpRayQueryGetIntersectionCandidateAABBOpaqueKHR, GetNewId(), resultType);
 
             result.AddOperand(rayQuery);
             AddToFunctionDefinitions(result);
@@ -5165,7 +5249,7 @@ namespace Spv.Generator
 
         public Instruction RayQueryGetIntersectionObjectRayDirectionKHR(Instruction resultType, Instruction rayQuery, Instruction intersection)
         {
-            Instruction result = new Instruction(Op.OpRayQueryGetIntersectionObjectRayDirectionKHR, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpRayQueryGetIntersectionObjectRayDirectionKHR, GetNewId(), resultType);
 
             result.AddOperand(rayQuery);
             result.AddOperand(intersection);
@@ -5176,7 +5260,7 @@ namespace Spv.Generator
 
         public Instruction RayQueryGetIntersectionObjectRayOriginKHR(Instruction resultType, Instruction rayQuery, Instruction intersection)
         {
-            Instruction result = new Instruction(Op.OpRayQueryGetIntersectionObjectRayOriginKHR, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpRayQueryGetIntersectionObjectRayOriginKHR, GetNewId(), resultType);
 
             result.AddOperand(rayQuery);
             result.AddOperand(intersection);
@@ -5187,7 +5271,7 @@ namespace Spv.Generator
 
         public Instruction RayQueryGetWorldRayDirectionKHR(Instruction resultType, Instruction rayQuery)
         {
-            Instruction result = new Instruction(Op.OpRayQueryGetWorldRayDirectionKHR, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpRayQueryGetWorldRayDirectionKHR, GetNewId(), resultType);
 
             result.AddOperand(rayQuery);
             AddToFunctionDefinitions(result);
@@ -5197,7 +5281,7 @@ namespace Spv.Generator
 
         public Instruction RayQueryGetWorldRayOriginKHR(Instruction resultType, Instruction rayQuery)
         {
-            Instruction result = new Instruction(Op.OpRayQueryGetWorldRayOriginKHR, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpRayQueryGetWorldRayOriginKHR, GetNewId(), resultType);
 
             result.AddOperand(rayQuery);
             AddToFunctionDefinitions(result);
@@ -5207,7 +5291,7 @@ namespace Spv.Generator
 
         public Instruction RayQueryGetIntersectionObjectToWorldKHR(Instruction resultType, Instruction rayQuery, Instruction intersection)
         {
-            Instruction result = new Instruction(Op.OpRayQueryGetIntersectionObjectToWorldKHR, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpRayQueryGetIntersectionObjectToWorldKHR, GetNewId(), resultType);
 
             result.AddOperand(rayQuery);
             result.AddOperand(intersection);
@@ -5218,7 +5302,7 @@ namespace Spv.Generator
 
         public Instruction RayQueryGetIntersectionWorldToObjectKHR(Instruction resultType, Instruction rayQuery, Instruction intersection)
         {
-            Instruction result = new Instruction(Op.OpRayQueryGetIntersectionWorldToObjectKHR, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpRayQueryGetIntersectionWorldToObjectKHR, GetNewId(), resultType);
 
             result.AddOperand(rayQuery);
             result.AddOperand(intersection);
