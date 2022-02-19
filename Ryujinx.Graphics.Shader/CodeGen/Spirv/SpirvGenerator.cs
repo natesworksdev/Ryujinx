@@ -1,4 +1,5 @@
-﻿using Ryujinx.Graphics.Shader.IntermediateRepresentation;
+﻿using Ryujinx.Common;
+using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.StructuredIr;
 using Ryujinx.Graphics.Shader.Translation;
 using System;
@@ -10,8 +11,24 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
     using SpvInstruction = Spv.Generator.Instruction;
     using SpvLiteralInteger = Spv.Generator.LiteralInteger;
 
+    using SpvInstructionPool = Spv.Generator.GeneratorPool<Spv.Generator.Instruction>;
+    using SpvLiteralIntegerPool = Spv.Generator.GeneratorPool<Spv.Generator.LiteralInteger>;
+
     static class SpirvGenerator
     {
+        // Resource pools for Spirv generation. Note: Increase count when more threads are being used.
+        private const int GeneratorPoolCount = 1;
+        private static ObjectPool<SpvInstructionPool> InstructionPool;
+        private static ObjectPool<SpvLiteralIntegerPool> IntegerPool;
+        private static object PoolLock;
+
+        static SpirvGenerator()
+        {
+            InstructionPool = new (() => new SpvInstructionPool(), GeneratorPoolCount);
+            IntegerPool = new (() => new SpvLiteralIntegerPool(), GeneratorPoolCount);
+            PoolLock = new object();
+        }
+
         private const HelperFunctionsMask NeedsInvocationIdMask =
             HelperFunctionsMask.Shuffle |
             HelperFunctionsMask.ShuffleDown |
@@ -21,7 +38,16 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         public static byte[] Generate(StructuredProgramInfo info, ShaderConfig config)
         {
-            CodeGenContext context = new CodeGenContext(config);
+            SpvInstructionPool instPool;
+            SpvLiteralIntegerPool integerPool;
+
+            lock (PoolLock)
+            {
+                instPool = InstructionPool.Allocate();
+                integerPool = IntegerPool.Allocate();
+            }
+
+            CodeGenContext context = new CodeGenContext(config, instPool, integerPool);
 
             context.AddCapability(Capability.GroupNonUniformBallot);
             context.AddCapability(Capability.ImageBuffer);
@@ -70,7 +96,15 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 Generate(context, info, funcIndex);
             }
 
-            return context.Generate();
+            byte[] result = context.Generate();
+
+            lock (PoolLock)
+            {
+                InstructionPool.Release(instPool);
+                IntegerPool.Release(integerPool);
+            }
+
+            return result;
         }
 
         private static void Generate(CodeGenContext context, StructuredProgramInfo info, int funcIndex)
