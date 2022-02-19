@@ -174,7 +174,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Twod
                     {
                         srcSpan.Slice(offset, lineSize).CopyTo(dstSpan.Slice(offset));
 
-                        offset += src.Stride;
+                        offset += stride;
                     }
                 }
                 else
