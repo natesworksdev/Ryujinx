@@ -7,14 +7,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         public int CbufSlot { get; }
         public int Handle { get; }
         public TextureFormat Format { get; }
-        public SamplerType Type { get; }
 
-        public TextureMeta(int cbufSlot, int handle, TextureFormat format, SamplerType type)
+        public TextureMeta(int cbufSlot, int handle, TextureFormat format)
         {
             CbufSlot = cbufSlot;
             Handle = handle;
             Format = format;
-            Type = type;
         }
 
         public override bool Equals(object obj)
@@ -24,12 +22,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         public bool Equals(TextureMeta other)
         {
-            return CbufSlot == other.CbufSlot && Handle == other.Handle && Format == other.Format && Type == other.Type;
+            return CbufSlot == other.CbufSlot && Handle == other.Handle && Format == other.Format;
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(CbufSlot, Handle, Format, Type);
+            return HashCode.Combine(CbufSlot, Handle, Format);
         }
     }
 }
