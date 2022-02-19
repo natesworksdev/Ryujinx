@@ -37,7 +37,10 @@ namespace Spv.Generator
 
         private List<Instruction> _functionsDefinitions;
 
-        public Module(uint version)
+        private GeneratorPool<Instruction> _instPool;
+        private GeneratorPool<LiteralInteger> _integerPool;
+
+        public Module(uint version, GeneratorPool<Instruction> instPool = null, GeneratorPool<LiteralInteger> integerPool = null)
         {
             _version = version;
             _bound = 1;
@@ -55,6 +58,11 @@ namespace Spv.Generator
             _globals = new List<Instruction>();
             _functionsDeclarations = new List<Instruction>();
             _functionsDefinitions = new List<Instruction>();
+
+            _instPool = instPool ?? new GeneratorPool<Instruction>();
+            _integerPool = integerPool ?? new GeneratorPool<LiteralInteger>();
+
+            LiteralInteger.RegisterPool(_integerPool);
         }
 
         private uint GetNewId()
@@ -72,6 +80,14 @@ namespace Spv.Generator
             _extensions.Add(extension);
         }
 
+        public Instruction NewInstruction(Op opcode, uint id = Instruction.InvalidId, Instruction resultType = null)
+        {
+            var result = _instPool.Allocate();
+            result.Set(opcode, id, resultType);
+
+            return result;
+        }
+
         public Instruction AddExtInstImport(string import)
         {
             var key = new DeterministicStringKey(import);
@@ -82,7 +98,7 @@ namespace Spv.Generator
                 return extInstImport;
             }
 
-            Instruction instruction = new Instruction(Op.OpExtInstImport);
+            Instruction instruction = NewInstruction(Op.OpExtInstImport);
             instruction.AddOperand(import);
 
             instruction.SetId(GetNewId());
@@ -117,7 +133,7 @@ namespace Spv.Generator
         {
             Debug.Assert(function.Opcode == Op.OpFunction);
 
-            Instruction entryPoint = new Instruction(Op.OpEntryPoint);
+            Instruction entryPoint = NewInstruction(Op.OpEntryPoint);
 
             entryPoint.AddOperand(executionModel);
             entryPoint.AddOperand(function);
@@ -131,7 +147,7 @@ namespace Spv.Generator
         {
             Debug.Assert(function.Opcode == Op.OpFunction);
 
-            Instruction executionModeInstruction = new Instruction(Op.OpExecutionMode);
+            Instruction executionModeInstruction = NewInstruction(Op.OpExecutionMode);
 
             executionModeInstruction.AddOperand(function);
             executionModeInstruction.AddOperand(mode);
@@ -212,7 +228,7 @@ namespace Spv.Generator
 
         public Instruction ExtInst(Instruction resultType, Instruction set, LiteralInteger instruction, params Operand[] parameters)
         {
-            Instruction result = new Instruction(Op.OpExtInst, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpExtInst, GetNewId(), resultType);
             
             result.AddOperand(set);
             result.AddOperand(instruction);
@@ -231,7 +247,7 @@ namespace Spv.Generator
         // TODO: Found a way to make the auto generate one used.
         public Instruction OpenClPrintf(Instruction resultType, Instruction format, params Instruction[] additionalarguments)
         {
-            Instruction result = new Instruction(Op.OpExtInst, GetNewId(), resultType);
+            Instruction result = NewInstruction(Op.OpExtInst, GetNewId(), resultType);
             
             result.AddOperand(AddExtInstImport("OpenCL.std"));
             result.AddOperand((LiteralInteger)184);
@@ -244,7 +260,10 @@ namespace Spv.Generator
 
         public byte[] Generate()
         {
-            using (MemoryStream stream = new MemoryStream())
+            // Estimate the size needed for the generated code, to avoid expanding the MemoryStream.
+            int sizeEstimate = 1024 + _functionsDefinitions.Count * 32;
+
+            using (MemoryStream stream = new MemoryStream(sizeEstimate))
             {
                 BinaryWriter writer = new BinaryWriter(stream, System.Text.Encoding.ASCII);
 
@@ -258,7 +277,7 @@ namespace Spv.Generator
                 // 1.
                 foreach (Capability capability in _capabilities)
                 {
-                    Instruction capabilityInstruction = new Instruction(Op.OpCapability);
+                    Instruction capabilityInstruction = NewInstruction(Op.OpCapability);
 
                     capabilityInstruction.AddOperand(capability);
                     capabilityInstruction.Write(writer);
@@ -267,7 +286,7 @@ namespace Spv.Generator
                 // 2.
                 foreach (string extension in _extensions)
                 {
-                    Instruction extensionInstruction = new Instruction(Op.OpExtension);
+                    Instruction extensionInstruction = NewInstruction(Op.OpExtension);
 
                     extensionInstruction.AddOperand(extension);
                     extensionInstruction.Write(writer);
@@ -280,7 +299,7 @@ namespace Spv.Generator
                 }
 
                 // 4.
-                Instruction memoryModelInstruction = new Instruction(Op.OpMemoryModel);
+                Instruction memoryModelInstruction = NewInstruction(Op.OpMemoryModel);
                 memoryModelInstruction.AddOperand(_addressingModel);
                 memoryModelInstruction.AddOperand(_memoryModel);
                 memoryModelInstruction.Write(writer);
@@ -334,6 +353,11 @@ namespace Spv.Generator
                 {
                     functionDefinition.Write(writer);
                 }
+
+                _instPool.Clear();
+                _integerPool.Clear();
+
+                LiteralInteger.UnregisterPool();
 
                 return stream.ToArray();
             }

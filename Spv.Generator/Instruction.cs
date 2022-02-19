@@ -14,7 +14,9 @@ namespace Spv.Generator
 
         public uint Id { get; set; }
 
-        public Instruction(Specification.Op opcode, uint id = InvalidId, Instruction resultType = null)
+        public Instruction() { }
+
+        public void Set(Specification.Op opcode, uint id = InvalidId, Instruction resultType = null)
         {
             Opcode = opcode;
             Id = id;
@@ -55,7 +57,7 @@ namespace Spv.Generator
 
         public ushort WordCount => 1;
 
-        private void AddOperand(Operand value)
+        public void AddOperand(Operand value)
         {
             Debug.Assert(value != null);
             _operands.Add(value);
@@ -102,11 +104,6 @@ namespace Spv.Generator
 
         public void AddOperand<T>(T value) where T: Enum
         {
-            if (!typeof(T).IsPrimitive && !typeof(T).IsEnum)
-            {
-                throw new InvalidOperationException();
-            }
-
             AddOperand(LiteralInteger.CreateForEnum(value));
         }
 
