@@ -47,7 +47,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 integerPool = IntegerPool.Allocate();
             }
 
-            CodeGenContext context = new CodeGenContext(config, instPool, integerPool);
+            CodeGenContext context = new CodeGenContext(info, config, instPool, integerPool);
 
             context.AddCapability(Capability.GroupNonUniformBallot);
             context.AddCapability(Capability.ImageBuffer);
@@ -55,6 +55,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             context.AddCapability(Capability.SampledBuffer);
             context.AddCapability(Capability.SubgroupBallotKHR);
             context.AddCapability(Capability.SubgroupVoteKHR);
+
+            if (config.TransformFeedbackEnabled && config.Stage != ShaderStage.Fragment)
+            {
+                context.AddCapability(Capability.TransformFeedback);
+            }
 
             if (config.Stage == ShaderStage.Geometry)
             {
@@ -192,6 +197,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                         localSizeX,
                         localSizeY,
                         localSizeZ);
+                }
+
+                if (context.Config.TransformFeedbackEnabled && context.Config.Stage != ShaderStage.Fragment)
+                {
+                    context.AddExecutionMode(spvFunc, ExecutionMode.Xfb);
                 }
             }
         }
