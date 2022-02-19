@@ -26,6 +26,7 @@ namespace Ryujinx.HLE.Debugger
         private BlockingCollection<IMessage> Messages = new BlockingCollection<IMessage>(1);
         private Thread SocketThread;
         private Thread HandlerThread;
+        private bool _shuttingDown = false;
 
         private ulong? cThread;
         private ulong? gThread;
@@ -634,7 +635,10 @@ namespace Ryujinx.HLE.Debugger
             catch (Exception)
             {
                 Logger.Notice.Print(LogClass.GdbStub, "GDB stub socket closed");
-                return;
+                if (!_shuttingDown)
+                {
+                    goto restartListen;
+                }
             }
         }
 
@@ -690,6 +694,8 @@ namespace Ryujinx.HLE.Debugger
         {
             if (disposing)
             {
+                _shuttingDown = true;
+
                 if (HandlerThread.IsAlive)
                 {
                     Messages.Add(new AbortMessage());
