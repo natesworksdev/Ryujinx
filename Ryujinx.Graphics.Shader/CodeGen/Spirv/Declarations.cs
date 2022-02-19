@@ -177,7 +177,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         {
             foreach (var descriptor in descriptors)
             {
-                var meta = new TextureMeta(descriptor.CbufSlot, descriptor.HandleIndex, descriptor.Format, descriptor.Type);
+                var meta = new TextureMeta(descriptor.CbufSlot, descriptor.HandleIndex, descriptor.Format);
 
                 if (context.Samplers.ContainsKey(meta))
                 {
@@ -187,22 +187,22 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 bool isBuffer = (descriptor.Type & SamplerType.Mask) == SamplerType.TextureBuffer;
                 int setIndex = context.Config.Options.TargetApi == TargetApi.Vulkan ? (isBuffer ? 4 : 2) : 0;
 
-                var dim = (meta.Type & SamplerType.Mask) switch
+                var dim = (descriptor.Type & SamplerType.Mask) switch
                 {
                     SamplerType.Texture1D => Dim.Dim1D,
                     SamplerType.Texture2D => Dim.Dim2D,
                     SamplerType.Texture3D => Dim.Dim3D,
                     SamplerType.TextureCube => Dim.Cube,
                     SamplerType.TextureBuffer => Dim.Buffer,
-                    _ => throw new InvalidOperationException($"Invalid sampler type \"{meta.Type & SamplerType.Mask}\".")
+                    _ => throw new InvalidOperationException($"Invalid sampler type \"{descriptor.Type & SamplerType.Mask}\".")
                 };
 
                 var imageType = context.TypeImage(
                     context.TypeFP32(),
                     dim,
-                    meta.Type.HasFlag(SamplerType.Shadow),
-                    meta.Type.HasFlag(SamplerType.Array),
-                    meta.Type.HasFlag(SamplerType.Multisample),
+                    descriptor.Type.HasFlag(SamplerType.Shadow),
+                    descriptor.Type.HasFlag(SamplerType.Array),
+                    descriptor.Type.HasFlag(SamplerType.Multisample),
                     1,
                     ImageFormat.Unknown);
 
@@ -225,7 +225,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         {
             foreach (var descriptor in descriptors)
             {
-                var meta = new TextureMeta(descriptor.CbufSlot, descriptor.HandleIndex, descriptor.Format, descriptor.Type);
+                var meta = new TextureMeta(descriptor.CbufSlot, descriptor.HandleIndex, descriptor.Format);
 
                 if (context.Images.ContainsKey(meta))
                 {
@@ -235,14 +235,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 bool isBuffer = (descriptor.Type & SamplerType.Mask) == SamplerType.TextureBuffer;
                 int setIndex = context.Config.Options.TargetApi == TargetApi.Vulkan ? (isBuffer ? 5 : 3) : 0;
 
-                var dim = GetDim(meta.Type);
+                var dim = GetDim(descriptor.Type);
 
                 var imageType = context.TypeImage(
                     context.GetType(meta.Format.GetComponentType().Convert()),
                     dim,
-                    meta.Type.HasFlag(SamplerType.Shadow),
-                    meta.Type.HasFlag(SamplerType.Array),
-                    meta.Type.HasFlag(SamplerType.Multisample),
+                    descriptor.Type.HasFlag(SamplerType.Shadow),
+                    descriptor.Type.HasFlag(SamplerType.Array),
+                    descriptor.Type.HasFlag(SamplerType.Multisample),
                     AccessQualifier.ReadWrite,
                     GetImageFormat(meta.Format));
 
