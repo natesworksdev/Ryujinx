@@ -297,6 +297,27 @@ namespace Ryujinx.HLE.Debugger
                         break;
                     }
 
+                    if (ss.ConsumePrefix("ThreadExtraInfo,"))
+                    {
+                        ulong? threadId = ss.ReadRemainingAsThreadUid();
+                        if (threadId == null)
+                        {
+                            ReplyError();
+                            break;
+                        }
+
+                        ExecutionContext ctx = GetThread(threadId.Value);
+                        if (ctx.GetDebugState() == DebugState.Stopped)
+                        {
+                            Reply(ToHex("Stopped"));
+                        }
+                        else
+                        {
+                            Reply(ToHex("Not stopped"));
+                        }
+                        break;
+                    }
+
                     if (ss.ConsumePrefix("Xfer:features:read:"))
                     {
                         string feature = ss.ReadUntil(':');

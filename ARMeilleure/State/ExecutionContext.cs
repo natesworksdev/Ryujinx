@@ -168,6 +168,11 @@ namespace ARMeilleure.State
             _debugHalt.Set();
         }
 
+        public DebugState GetDebugState()
+        {
+            return (DebugState)_debugState;
+        }
+
         internal void OnBreak(ulong address, int imm)
         {
             Break?.Invoke(this, new InstExceptionEventArgs(address, imm));

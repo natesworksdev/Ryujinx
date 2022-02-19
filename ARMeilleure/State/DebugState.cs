@@ -1,6 +1,6 @@
 ﻿namespace ARMeilleure.State
 {
-    enum DebugState
+    public enum DebugState
     {
         Running,
         Stopping,
