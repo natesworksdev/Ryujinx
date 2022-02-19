@@ -153,22 +153,22 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateAbsolute(CodeGenContext context, AstOperation operation)
         {
-            return GenerateUnary(context, operation, context.GlslFAbs, context.GlslSAbs);
+            return GenerateUnary(context, operation, context.Delegates.GlslFAbs, context.Delegates.GlslSAbs);
         }
 
         private static OperationResult GenerateAdd(CodeGenContext context, AstOperation operation)
         {
-            return GenerateBinary(context, operation, context.FAdd, context.IAdd);
+            return GenerateBinary(context, operation, context.Delegates.FAdd, context.Delegates.IAdd);
         }
 
         private static OperationResult GenerateAtomicAdd(CodeGenContext context, AstOperation operation)
         {
-            return GenerateAtomicMemoryBinary(context, operation, context.AtomicIAdd);
+            return GenerateAtomicMemoryBinary(context, operation, context.Delegates.AtomicIAdd);
         }
 
         private static OperationResult GenerateAtomicAnd(CodeGenContext context, AstOperation operation)
         {
-            return GenerateAtomicMemoryBinary(context, operation, context.AtomicAnd);
+            return GenerateAtomicMemoryBinary(context, operation, context.Delegates.AtomicAnd);
         }
 
         private static OperationResult GenerateAtomicCompareAndSwap(CodeGenContext context, AstOperation operation)
@@ -178,37 +178,37 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateAtomicMinS32(CodeGenContext context, AstOperation operation)
         {
-            return GenerateAtomicMemoryBinary(context, operation, context.AtomicSMin);
+            return GenerateAtomicMemoryBinary(context, operation, context.Delegates.AtomicSMin);
         }
 
         private static OperationResult GenerateAtomicMinU32(CodeGenContext context, AstOperation operation)
         {
-            return GenerateAtomicMemoryBinary(context, operation, context.AtomicUMin);
+            return GenerateAtomicMemoryBinary(context, operation, context.Delegates.AtomicUMin);
         }
 
         private static OperationResult GenerateAtomicMaxS32(CodeGenContext context, AstOperation operation)
         {
-            return GenerateAtomicMemoryBinary(context, operation, context.AtomicSMax);
+            return GenerateAtomicMemoryBinary(context, operation, context.Delegates.AtomicSMax);
         }
 
         private static OperationResult GenerateAtomicMaxU32(CodeGenContext context, AstOperation operation)
         {
-            return GenerateAtomicMemoryBinary(context, operation, context.AtomicUMax);
+            return GenerateAtomicMemoryBinary(context, operation, context.Delegates.AtomicUMax);
         }
 
         private static OperationResult GenerateAtomicOr(CodeGenContext context, AstOperation operation)
         {
-            return GenerateAtomicMemoryBinary(context, operation, context.AtomicOr);
+            return GenerateAtomicMemoryBinary(context, operation, context.Delegates.AtomicOr);
         }
 
         private static OperationResult GenerateAtomicSwap(CodeGenContext context, AstOperation operation)
         {
-            return GenerateAtomicMemoryBinary(context, operation, context.AtomicExchange);
+            return GenerateAtomicMemoryBinary(context, operation, context.Delegates.AtomicExchange);
         }
 
         private static OperationResult GenerateAtomicXor(CodeGenContext context, AstOperation operation)
         {
-            return GenerateAtomicMemoryBinary(context, operation, context.AtomicXor);
+            return GenerateAtomicMemoryBinary(context, operation, context.Delegates.AtomicXor);
         }
 
         private static OperationResult GenerateBallot(CodeGenContext context, AstOperation operation)
@@ -236,47 +236,47 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateBitCount(CodeGenContext context, AstOperation operation)
         {
-            return GenerateUnaryS32(context, operation, context.BitCount);
+            return GenerateUnaryS32(context, operation, context.Delegates.BitCount);
         }
 
         private static OperationResult GenerateBitfieldExtractS32(CodeGenContext context, AstOperation operation)
         {
-            return GenerateTernaryS32(context, operation, context.BitFieldSExtract);
+            return GenerateTernaryS32(context, operation, context.Delegates.BitFieldSExtract);
         }
 
         private static OperationResult GenerateBitfieldExtractU32(CodeGenContext context, AstOperation operation)
         {
-            return GenerateTernaryS32(context, operation, context.BitFieldUExtract);
+            return GenerateTernaryS32(context, operation, context.Delegates.BitFieldUExtract);
         }
 
         private static OperationResult GenerateBitfieldInsert(CodeGenContext context, AstOperation operation)
         {
-            return GenerateQuaternaryS32(context, operation, context.BitFieldInsert);
+            return GenerateQuaternaryS32(context, operation, context.Delegates.BitFieldInsert);
         }
 
         private static OperationResult GenerateBitfieldReverse(CodeGenContext context, AstOperation operation)
         {
-            return GenerateUnaryS32(context, operation, context.BitReverse);
+            return GenerateUnaryS32(context, operation, context.Delegates.BitReverse);
         }
 
         private static OperationResult GenerateBitwiseAnd(CodeGenContext context, AstOperation operation)
         {
-            return GenerateBinaryS32(context, operation, context.BitwiseAnd);
+            return GenerateBinaryS32(context, operation, context.Delegates.BitwiseAnd);
         }
 
         private static OperationResult GenerateBitwiseExclusiveOr(CodeGenContext context, AstOperation operation)
         {
-            return GenerateBinaryS32(context, operation, context.BitwiseXor);
+            return GenerateBinaryS32(context, operation, context.Delegates.BitwiseXor);
         }
 
         private static OperationResult GenerateBitwiseNot(CodeGenContext context, AstOperation operation)
         {
-            return GenerateUnaryS32(context, operation, context.Not);
+            return GenerateUnaryS32(context, operation, context.Delegates.Not);
         }
 
         private static OperationResult GenerateBitwiseOr(CodeGenContext context, AstOperation operation)
         {
-            return GenerateBinaryS32(context, operation, context.BitwiseOr);
+            return GenerateBinaryS32(context, operation, context.Delegates.BitwiseOr);
         }
 
         private static OperationResult GenerateCall(CodeGenContext context, AstOperation operation)
@@ -316,17 +316,17 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateCeiling(CodeGenContext context, AstOperation operation)
         {
-            return GenerateUnary(context, operation, context.GlslCeil, null);
+            return GenerateUnary(context, operation, context.Delegates.GlslCeil, null);
         }
 
         private static OperationResult GenerateClamp(CodeGenContext context, AstOperation operation)
         {
-            return GenerateTernary(context, operation, context.GlslFClamp, context.GlslSClamp);
+            return GenerateTernary(context, operation, context.Delegates.GlslFClamp, context.Delegates.GlslSClamp);
         }
 
         private static OperationResult GenerateClampU32(CodeGenContext context, AstOperation operation)
         {
-            return GenerateTernaryU32(context, operation, context.GlslUClamp);
+            return GenerateTernaryU32(context, operation, context.Delegates.GlslUClamp);
         }
 
         private static OperationResult GenerateComment(CodeGenContext context, AstOperation operation)
@@ -336,52 +336,52 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateCompareEqual(CodeGenContext context, AstOperation operation)
         {
-            return GenerateCompare(context, operation, context.FOrdEqual, context.IEqual);
+            return GenerateCompare(context, operation, context.Delegates.FOrdEqual, context.Delegates.IEqual);
         }
 
         private static OperationResult GenerateCompareGreater(CodeGenContext context, AstOperation operation)
         {
-            return GenerateCompare(context, operation, context.FOrdGreaterThan, context.SGreaterThan);
+            return GenerateCompare(context, operation, context.Delegates.FOrdGreaterThan, context.Delegates.SGreaterThan);
         }
 
         private static OperationResult GenerateCompareGreaterOrEqual(CodeGenContext context, AstOperation operation)
         {
-            return GenerateCompare(context, operation, context.FOrdGreaterThanEqual, context.SGreaterThanEqual);
+            return GenerateCompare(context, operation, context.Delegates.FOrdGreaterThanEqual, context.Delegates.SGreaterThanEqual);
         }
 
         private static OperationResult GenerateCompareGreaterOrEqualU32(CodeGenContext context, AstOperation operation)
         {
-            return GenerateCompareU32(context, operation, context.UGreaterThanEqual);
+            return GenerateCompareU32(context, operation, context.Delegates.UGreaterThanEqual);
         }
 
         private static OperationResult GenerateCompareGreaterU32(CodeGenContext context, AstOperation operation)
         {
-            return GenerateCompareU32(context, operation, context.UGreaterThan);
+            return GenerateCompareU32(context, operation, context.Delegates.UGreaterThan);
         }
 
         private static OperationResult GenerateCompareLess(CodeGenContext context, AstOperation operation)
         {
-            return GenerateCompare(context, operation, context.FOrdLessThan, context.SLessThan);
+            return GenerateCompare(context, operation, context.Delegates.FOrdLessThan, context.Delegates.SLessThan);
         }
 
         private static OperationResult GenerateCompareLessOrEqual(CodeGenContext context, AstOperation operation)
         {
-            return GenerateCompare(context, operation, context.FOrdLessThanEqual, context.SLessThanEqual);
+            return GenerateCompare(context, operation, context.Delegates.FOrdLessThanEqual, context.Delegates.SLessThanEqual);
         }
 
         private static OperationResult GenerateCompareLessOrEqualU32(CodeGenContext context, AstOperation operation)
         {
-            return GenerateCompareU32(context, operation, context.ULessThanEqual);
+            return GenerateCompareU32(context, operation, context.Delegates.ULessThanEqual);
         }
 
         private static OperationResult GenerateCompareLessU32(CodeGenContext context, AstOperation operation)
         {
-            return GenerateCompareU32(context, operation, context.ULessThan);
+            return GenerateCompareU32(context, operation, context.Delegates.ULessThan);
         }
 
         private static OperationResult GenerateCompareNotEqual(CodeGenContext context, AstOperation operation)
         {
-            return GenerateCompare(context, operation, context.FOrdNotEqual, context.INotEqual);
+            return GenerateCompare(context, operation, context.Delegates.FOrdNotEqual, context.Delegates.INotEqual);
         }
 
         private static OperationResult GenerateConditionalSelect(CodeGenContext context, AstOperation operation)
@@ -478,17 +478,17 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateCosine(CodeGenContext context, AstOperation operation)
         {
-            return GenerateUnary(context, operation, context.GlslCos, null);
+            return GenerateUnary(context, operation, context.Delegates.GlslCos, null);
         }
 
         private static OperationResult GenerateDdx(CodeGenContext context, AstOperation operation)
         {
-            return GenerateUnaryFP32(context, operation, context.DPdx);
+            return GenerateUnaryFP32(context, operation, context.Delegates.DPdx);
         }
 
         private static OperationResult GenerateDdy(CodeGenContext context, AstOperation operation)
         {
-            return GenerateUnaryFP32(context, operation, context.DPdy);
+            return GenerateUnaryFP32(context, operation, context.Delegates.DPdy);
         }
 
         private static OperationResult GenerateDiscard(CodeGenContext context, AstOperation operation)
@@ -499,7 +499,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateDivide(CodeGenContext context, AstOperation operation)
         {
-            return GenerateBinary(context, operation, context.FDiv, context.SDiv);
+            return GenerateBinary(context, operation, context.Delegates.FDiv, context.Delegates.SDiv);
         }
 
         private static OperationResult GenerateEmitVertex(CodeGenContext context, AstOperation operation)
@@ -518,7 +518,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateExponentB2(CodeGenContext context, AstOperation operation)
         {
-            return GenerateUnary(context, operation, context.GlslExp2, null);
+            return GenerateUnary(context, operation, context.Delegates.GlslExp2, null);
         }
 
         private static OperationResult GenerateFindLSB(CodeGenContext context, AstOperation operation)
@@ -541,12 +541,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateFloor(CodeGenContext context, AstOperation operation)
         {
-            return GenerateUnary(context, operation, context.GlslFloor, null);
+            return GenerateUnary(context, operation, context.Delegates.GlslFloor, null);
         }
 
         private static OperationResult GenerateFusedMultiplyAdd(CodeGenContext context, AstOperation operation)
         {
-            return GenerateTernary(context, operation, context.GlslFma, null);
+            return GenerateTernary(context, operation, context.Delegates.GlslFma, null);
         }
 
         private static OperationResult GenerateGroupMemoryBarrier(CodeGenContext context, AstOperation operation)
@@ -961,22 +961,22 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateLogarithmB2(CodeGenContext context, AstOperation operation)
         {
-            return GenerateUnary(context, operation, context.GlslLog2, null);
+            return GenerateUnary(context, operation, context.Delegates.GlslLog2, null);
         }
 
         private static OperationResult GenerateLogicalAnd(CodeGenContext context, AstOperation operation)
         {
-            return GenerateBinaryBool(context, operation, context.LogicalAnd);
+            return GenerateBinaryBool(context, operation, context.Delegates.LogicalAnd);
         }
 
         private static OperationResult GenerateLogicalNot(CodeGenContext context, AstOperation operation)
         {
-            return GenerateUnaryBool(context, operation, context.LogicalNot);
+            return GenerateUnaryBool(context, operation, context.Delegates.LogicalNot);
         }
 
         private static OperationResult GenerateLogicalOr(CodeGenContext context, AstOperation operation)
         {
-            return GenerateBinaryBool(context, operation, context.LogicalOr);
+            return GenerateBinaryBool(context, operation, context.Delegates.LogicalOr);
         }
 
         private static OperationResult GenerateLoopBreak(CodeGenContext context, AstOperation operation)
@@ -1009,12 +1009,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateMaximum(CodeGenContext context, AstOperation operation)
         {
-            return GenerateBinary(context, operation, context.GlslFMax, context.GlslSMax);
+            return GenerateBinary(context, operation, context.Delegates.GlslFMax, context.Delegates.GlslSMax);
         }
 
         private static OperationResult GenerateMaximumU32(CodeGenContext context, AstOperation operation)
         {
-            return GenerateBinaryU32(context, operation, context.GlslUMax);
+            return GenerateBinaryU32(context, operation, context.Delegates.GlslUMax);
         }
 
         private static OperationResult GenerateMemoryBarrier(CodeGenContext context, AstOperation operation)
@@ -1025,22 +1025,22 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateMinimum(CodeGenContext context, AstOperation operation)
         {
-            return GenerateBinary(context, operation, context.GlslFMin, context.GlslSMin);
+            return GenerateBinary(context, operation, context.Delegates.GlslFMin, context.Delegates.GlslSMin);
         }
 
         private static OperationResult GenerateMinimumU32(CodeGenContext context, AstOperation operation)
         {
-            return GenerateBinaryU32(context, operation, context.GlslUMin);
+            return GenerateBinaryU32(context, operation, context.Delegates.GlslUMin);
         }
 
         private static OperationResult GenerateMultiply(CodeGenContext context, AstOperation operation)
         {
-            return GenerateBinary(context, operation, context.FMul, context.IMul);
+            return GenerateBinary(context, operation, context.Delegates.FMul, context.Delegates.IMul);
         }
 
         private static OperationResult GenerateNegate(CodeGenContext context, AstOperation operation)
         {
-            return GenerateUnary(context, operation, context.FNegate, context.SNegate);
+            return GenerateUnary(context, operation, context.Delegates.FNegate, context.Delegates.SNegate);
         }
 
         private static OperationResult GeneratePackDouble2x32(CodeGenContext context, AstOperation operation)
@@ -1065,7 +1065,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateReciprocalSquareRoot(CodeGenContext context, AstOperation operation)
         {
-            return GenerateUnary(context, operation, context.GlslInverseSqrt, null);
+            return GenerateUnary(context, operation, context.Delegates.GlslInverseSqrt, null);
         }
 
         private static OperationResult GenerateReturn(CodeGenContext context, AstOperation operation)
@@ -1076,22 +1076,22 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateRound(CodeGenContext context, AstOperation operation)
         {
-            return GenerateUnary(context, operation, context.GlslRoundEven, null);
+            return GenerateUnary(context, operation, context.Delegates.GlslRoundEven, null);
         }
 
         private static OperationResult GenerateShiftLeft(CodeGenContext context, AstOperation operation)
         {
-            return GenerateBinaryS32(context, operation, context.ShiftLeftLogical);
+            return GenerateBinaryS32(context, operation, context.Delegates.ShiftLeftLogical);
         }
 
         private static OperationResult GenerateShiftRightS32(CodeGenContext context, AstOperation operation)
         {
-            return GenerateBinaryS32(context, operation, context.ShiftRightArithmetic);
+            return GenerateBinaryS32(context, operation, context.Delegates.ShiftRightArithmetic);
         }
 
         private static OperationResult GenerateShiftRightU32(CodeGenContext context, AstOperation operation)
         {
-            return GenerateBinaryS32(context, operation, context.ShiftRightLogical);
+            return GenerateBinaryS32(context, operation, context.Delegates.ShiftRightLogical);
         }
 
         private static OperationResult GenerateShuffle(CodeGenContext context, AstOperation operation)
@@ -1213,12 +1213,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateSine(CodeGenContext context, AstOperation operation)
         {
-            return GenerateUnary(context, operation, context.GlslSin, null);
+            return GenerateUnary(context, operation, context.Delegates.GlslSin, null);
         }
 
         private static OperationResult GenerateSquareRoot(CodeGenContext context, AstOperation operation)
         {
-            return GenerateUnary(context, operation, context.GlslSqrt, null);
+            return GenerateUnary(context, operation, context.Delegates.GlslSqrt, null);
         }
 
         private static OperationResult GenerateStoreLocal(CodeGenContext context, AstOperation operation)
@@ -1256,7 +1256,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateSubtract(CodeGenContext context, AstOperation operation)
         {
-            return GenerateBinary(context, operation, context.FSub, context.ISub);
+            return GenerateBinary(context, operation, context.Delegates.FSub, context.Delegates.ISub);
         }
 
         private static OperationResult GenerateTextureSample(CodeGenContext context, AstOperation operation)
@@ -1609,7 +1609,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateTruncate(CodeGenContext context, AstOperation operation)
         {
-            return GenerateUnary(context, operation, context.GlslTrunc, null);
+            return GenerateUnary(context, operation, context.Delegates.GlslTrunc, null);
         }
 
         private static OperationResult GenerateUnpackDouble2x32(CodeGenContext context, AstOperation operation)

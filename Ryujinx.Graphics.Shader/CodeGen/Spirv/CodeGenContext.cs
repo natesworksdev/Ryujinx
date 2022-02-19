@@ -63,7 +63,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         public AstBlock CurrentBlock { get; private set; }
 
-        public CodeGenContext(ShaderConfig config) : base(0x00010300)
+        public SpirvDelegates Delegates { get; }
+
+        public CodeGenContext(ShaderConfig config, GeneratorPool<Instruction> instPool, GeneratorPool<LiteralInteger> integerPool) : base(0x00010300, instPool, integerPool)
         {
             Config = config;
 
@@ -86,6 +88,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             AddCapability(Capability.Float64);
 
             SetMemoryModel(AddressingModel.Logical, MemoryModel.GLSL450);
+
+            Delegates = new SpirvDelegates(this);
         }
 
         public void StartFunction()
