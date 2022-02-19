@@ -61,6 +61,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 context.AddCapability(Capability.TransformFeedback);
             }
 
+            if (config.Stage == ShaderStage.Fragment && context.Config.GpuAccessor.QueryHostSupportsFragmentShaderInterlock())
+            {
+                context.AddCapability(Capability.FragmentShaderPixelInterlockEXT);
+                context.AddExtension("SPV_EXT_fragment_shader_interlock");
+            }
+
             if (config.Stage == ShaderStage.Geometry)
             {
                 context.AddCapability(Capability.Geometry);
@@ -183,6 +189,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                     if (context.Outputs.ContainsKey(AttributeConsts.FragmentOutputDepth))
                     {
                         context.AddExecutionMode(spvFunc, ExecutionMode.DepthReplacing);
+                    }
+
+                    if (context.Config.GpuAccessor.QueryHostSupportsFragmentShaderInterlock())
+                    {
+                        context.AddExecutionMode(spvFunc, ExecutionMode.PixelInterlockOrderedEXT);
                     }
                 }
                 else if (context.Config.Stage == ShaderStage.Compute)
