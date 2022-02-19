@@ -97,15 +97,13 @@ namespace Ryujinx.Tests.Cpu
         {
             _memory.Write(_currAddress, opcode);
 
-            if (_unicornAvailable)
-            {
-                _unicornEmu.MemoryWrite16(_currAddress, opcode);
-            }
+            _dynarmicEnv.MemoryWrite16(_currAddress, opcode);
 
             _currAddress += 2;
         }
 
         protected ExecutionContext GetContext() => _context;
+        protected Dynarmic.Net.A32Jit GetDynarmic() => _dynarmic;
 
         protected void SetContext(uint r0 = 0,
                                   uint r1 = 0,
@@ -234,13 +232,12 @@ namespace Ryujinx.Tests.Cpu
                                                      bool carry = false,
                                                      bool zero = false,
                                                      bool negative = false,
-                                                     int fpscr = 0,
-                                                     bool runUnicorn = true)
+                                                     int fpscr = 0)
         {
             ThumbOpcode(opcode);
             ThumbOpcode(0x4770); // BX LR
             SetContext(r0, r1, r2, r3, sp, default, default, default, default, default, default, default, default, saturation, overflow, carry, zero, negative, fpscr, thumb: true);
-            ExecuteOpcodes(runUnicorn);
+            ExecuteOpcodes();
 
             return GetContext();
         }

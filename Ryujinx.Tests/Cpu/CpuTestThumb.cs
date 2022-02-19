@@ -23,7 +23,7 @@ namespace Ryujinx.Tests.Cpu
             uint rm = 2;
             opcode |= ((rd & 7) << 0) | ((rm & 7) << 3) | ((shiftImm & 0x1f) << 6) | ((shiftType & 3) << 11);
 
-            SingleThumbOpcode((ushort)opcode, r1: w1, r2: w2, runUnicorn: false);
+            SingleThumbOpcode((ushort)opcode, r1: w1, r2: w2);
 
             switch (shiftType)
             {
@@ -37,6 +37,8 @@ namespace Ryujinx.Tests.Cpu
                     Assert.That(GetContext().GetX(1), Is.EqualTo(((int)w2 >> (int)shiftImm) & 0xffffffffu));
                     break;
             }
+
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise]
@@ -49,7 +51,7 @@ namespace Ryujinx.Tests.Cpu
             uint rm = 2;
             opcode |= ((rd & 7) << 0) | ((rn & 7) << 3) | ((rm & 7) << 6) | ((op & 1) << 9);
 
-            SingleThumbOpcode((ushort)opcode, r1: w1, r2: w2, runUnicorn: false);
+            SingleThumbOpcode((ushort)opcode, r1: w1, r2: w2);
 
             switch (op)
             {
@@ -60,6 +62,8 @@ namespace Ryujinx.Tests.Cpu
                     Assert.That(GetContext().GetX(0), Is.EqualTo((w1 - w2) & 0xffffffffu));
                     break;
             }
+
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise]
@@ -71,7 +75,7 @@ namespace Ryujinx.Tests.Cpu
             uint rn = 1;
             opcode |= ((rd & 7) << 0) | ((rn & 7) << 3) | ((imm & 7) << 6) | ((op & 1) << 9);
 
-            SingleThumbOpcode((ushort)opcode, r1: w1, runUnicorn: false);
+            SingleThumbOpcode((ushort)opcode, r1: w1);
 
             switch (op)
             {
@@ -82,6 +86,8 @@ namespace Ryujinx.Tests.Cpu
                     Assert.That(GetContext().GetX(0), Is.EqualTo((w1 - imm) & 0xffffffffu));
                     break;
             }
+
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise]
@@ -94,7 +100,7 @@ namespace Ryujinx.Tests.Cpu
             uint rdn = 1;
             opcode |= ((imm & 0xff) << 0) | ((rdn & 7) << 8) | ((op & 3) << 11);
 
-            SingleThumbOpcode((ushort)opcode, r1: w1, runUnicorn: false);
+            SingleThumbOpcode((ushort)opcode, r1: w1);
 
             switch (op)
             {
@@ -120,6 +126,8 @@ namespace Ryujinx.Tests.Cpu
                     Assert.That(GetContext().GetX(1), Is.EqualTo((w1 - imm) & 0xffffffffu));
                     goto cmpFlags;
             }
+
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise]
@@ -131,7 +139,7 @@ namespace Ryujinx.Tests.Cpu
             uint rm = 2;
             opcode |= ((rd & 7) << 0) | ((rm & 7) << 3) | ((op & 0xf) << 6);
 
-            SingleThumbOpcode((ushort)opcode, r1: w1, r2: w2, runUnicorn: false);
+            SingleThumbOpcode((ushort)opcode, r1: w1, r2: w2);
 
             uint shift = w2 & 0xff;
             switch (op)
@@ -206,14 +214,16 @@ namespace Ryujinx.Tests.Cpu
                     Assert.That(GetContext().GetX(1), Is.EqualTo(~w2));
                     break;
             }
+
+            CompareAgainstDynarmic();
         }
 
         [Test, Pairwise]
         public void AluRegHigh([Range(0u, 2u)] uint op, [Range(0u, 13u)] uint rd, [Range(0u, 13u)] uint rm, [Random(RndCnt)] uint w1, [Random(RndCnt)] uint w2)
         {
-            if (rd == rm)
+            if (rd == rm || (op == 1 && rm < 8 && rd < 8))
             {
-                return;
+                return; // unpredictable
             }
 
             uint opcode = 0x4400; // ADDS <Rdn>, <Rm>
@@ -227,7 +237,11 @@ namespace Ryujinx.Tests.Cpu
             GetContext().SetX((int)rm, w2);
             GetContext().SetPstateFlag(PState.TFlag, true);
 
-            ExecuteOpcodes(runUnicorn: false);
+            GetDynarmic().Reg[(int)rd] = w1;
+            GetDynarmic().Reg[(int)rm] = w2;
+            GetDynarmic().Cpsr |= 1 << (int)PState.TFlag;
+
+            ExecuteOpcodes();
 
             switch (op)
             {
@@ -250,6 +264,8 @@ namespace Ryujinx.Tests.Cpu
                     Assert.That(GetContext().GetX((int)rd), Is.EqualTo(w2));
                     break;
             }
+
+            CompareAgainstDynarmic();
         }
 
         [Test]
@@ -261,16 +277,19 @@ namespace Ryujinx.Tests.Cpu
             GetContext().SetX(13, 0x40079d98);
             GetContext().SetPstateFlag(PState.TFlag, true);
 
-            ExecuteOpcodes(runUnicorn: false);
+            GetDynarmic().Reg[13] = 0x40079d98;
+            GetDynarmic().Cpsr |= 1 << (int)PState.TFlag;
+
+            ExecuteOpcodes();
 
             Assert.That(GetContext().GetX(13), Is.EqualTo(0x40079ba4));
+
+            CompareAgainstDynarmic();
         }
 
         [Test]
         public void TestRandomTestCases([ValueSource(nameof(RandomTestCases))] RandomTestCase test)
         {
-            Console.WriteLine(test.Instructions[0]);
-
             foreach (ushort instruction in test.Instructions)
             {
                 ThumbOpcode(instruction);
@@ -279,6 +298,7 @@ namespace Ryujinx.Tests.Cpu
             for (int i = 0; i < 15; i++)
             {
                 GetContext().SetX(i, test.StartRegs[i]);
+                GetDynarmic().Reg[i] = test.StartRegs[i];
             }
 
             uint startCpsr = test.StartRegs[15];
@@ -286,8 +306,9 @@ namespace Ryujinx.Tests.Cpu
             {
                 GetContext().SetPstateFlag((PState)i, (startCpsr & (1u << i)) != 0);
             }
+            GetDynarmic().Cpsr = startCpsr;
 
-            ExecuteOpcodes(runUnicorn: false);
+            ExecuteOpcodes();
 
             for (int i = 0; i < 15; i++)
             {
