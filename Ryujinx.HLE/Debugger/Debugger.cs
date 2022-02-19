@@ -286,12 +286,12 @@ namespace Ryujinx.HLE.Debugger
 
                             if (len >= (ulong)data.Length - addr)
                             {
-                                Reply("l" + data.Substring((int)addr));
+                                Reply("l" + ToBinaryFormat(data.Substring((int)addr)));
                                 break;
                             }
                             else
                             {
-                                Reply("m" + data.Substring((int)addr, (int)len));
+                                Reply("m" + ToBinaryFormat(data.Substring((int)addr, (int)len)));
                                 break;
                             }
                         }
@@ -624,6 +624,25 @@ namespace Ryujinx.HLE.Debugger
         private string ToHex(string str)
         {
             return ToHex(Encoding.ASCII.GetBytes(str));
+        }
+
+        private string ToBinaryFormat(byte[] bytes)
+        {
+            return string.Join("", bytes.Select(x =>
+                x switch
+                {
+                    (byte)'#' => "}\x03",
+                    (byte)'$' => "}\x04",
+                    (byte)'*' => "}\x0a",
+                    (byte)'}' => "}\x5d",
+                    _ => Convert.ToChar(x).ToString(),
+                }
+            ));
+        }
+
+        private string ToBinaryFormat(string str)
+        {
+            return ToBinaryFormat(Encoding.ASCII.GetBytes(str));
         }
 
         public void Dispose()
