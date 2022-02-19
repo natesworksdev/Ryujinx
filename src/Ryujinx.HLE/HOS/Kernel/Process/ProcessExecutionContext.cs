@@ -48,6 +48,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         {
         }
 
+        public DebugState GetDebugState()
+        {
+            return DebugState.Stopped;
+        }
+
         public void StopRunning()
         {
             Running = false;

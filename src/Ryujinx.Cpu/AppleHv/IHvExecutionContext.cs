@@ -47,6 +47,7 @@ namespace Ryujinx.Cpu.AppleHv
         void DebugStop();
         bool DebugStep();
         void DebugContinue();
+        DebugState GetDebugState();
 
         ulong DebugPc { get; set; }
     }

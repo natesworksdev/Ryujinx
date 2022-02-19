@@ -228,6 +228,11 @@ namespace Ryujinx.Cpu.AppleHv
             HvApi.hv_vcpu_run(_vcpu);
         }
 
+        public DebugState GetDebugState()
+        {
+            return (DebugState)_debugState;
+        }
+
         public bool GetAndClearInterruptRequested()
         {
             return Interlocked.Exchange(ref _interruptRequested, 0) != 0;

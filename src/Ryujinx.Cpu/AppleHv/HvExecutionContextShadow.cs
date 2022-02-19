@@ -68,6 +68,11 @@ namespace Ryujinx.Cpu.AppleHv
         {
         }
 
+        public DebugState GetDebugState()
+        {
+            return DebugState.Stopped;
+        }
+
         public bool GetAndClearInterruptRequested()
         {
             return false;
