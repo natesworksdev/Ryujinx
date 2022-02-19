@@ -134,7 +134,7 @@ namespace Ryujinx.HLE.Debugger
                         break;
 
                     case CommandMessage {Command: var cmd}:
-                        Logger.Notice.Print(LogClass.GdbStub, $"Received Command: {cmd}");
+                        Logger.Debug?.Print(LogClass.GdbStub, $"Received Command: {cmd}");
                         WriteStream.WriteByte((byte)'+');
                         ProcessCommand(cmd);
                         break;
@@ -316,7 +316,7 @@ namespace Ryujinx.HLE.Debugger
                     }
                 default:
                     unknownCommand:
-                    // Logger.Notice.Print(LogClass.GdbStub, $"Unknown command: {cmd}");
+                    Logger.Notice.Print(LogClass.GdbStub, $"Unknown command: {cmd}");
                     Reply("");
                     break;
             }
@@ -328,7 +328,6 @@ namespace Ryujinx.HLE.Debugger
             HaltApplication();
             gThread = cThread = GetThreadIds().First();
             Reply($"T05thread:{cThread:x};");
-            //Reply("S05");
         }
 
         void CommandContinue(ulong? newPc)
@@ -527,7 +526,7 @@ namespace Ryujinx.HLE.Debugger
 
         private void Reply(string cmd)
         {
-            Logger.Notice.Print(LogClass.GdbStub, $"Reply: {cmd}");
+            Logger.Debug?.Print(LogClass.GdbStub, $"Reply: {cmd}");
             WriteStream.Write(Encoding.ASCII.GetBytes($"${cmd}#{CalculateChecksum(cmd):x2}"));
         }
 
@@ -584,9 +583,15 @@ namespace Ryujinx.HLE.Debugger
                             }
 
                             string checksum = $"{(char)ReadStream.ReadByte()}{(char)ReadStream.ReadByte()}";
-                            // Debug.Assert(checksum == $"{CalculateChecksum(cmd):x2}");
+                            if (checksum == $"{CalculateChecksum(cmd):x2}")
+                            {
+                                Messages.Add(new CommandMessage(cmd));
+                            }
+                            else
+                            {
+                                Messages.Add(new SendNackMessage());
+                            }
 
-                            Messages.Add(new CommandMessage(cmd));
                             break;
                     }
                 }
