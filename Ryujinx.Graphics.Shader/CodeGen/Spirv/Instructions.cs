@@ -76,6 +76,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             Add(Instruction.EmitVertex,               GenerateEmitVertex);
             Add(Instruction.EndPrimitive,             GenerateEndPrimitive);
             Add(Instruction.ExponentB2,               GenerateExponentB2);
+            Add(Instruction.FSIBegin,                 GenerateFSIBegin);
+            Add(Instruction.FSIEnd,                   GenerateFSIEnd);
             Add(Instruction.FindLSB,                  GenerateFindLSB);
             Add(Instruction.FindMSBS32,               GenerateFindMSBS32);
             Add(Instruction.FindMSBU32,               GenerateFindMSBU32);
@@ -519,6 +521,26 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         private static OperationResult GenerateExponentB2(CodeGenContext context, AstOperation operation)
         {
             return GenerateUnary(context, operation, context.Delegates.GlslExp2, null);
+        }
+
+        private static OperationResult GenerateFSIBegin(CodeGenContext context, AstOperation operation)
+        {
+            if (context.Config.GpuAccessor.QueryHostSupportsFragmentShaderInterlock())
+            {
+                context.BeginInvocationInterlockEXT();
+            }
+
+            return OperationResult.Invalid;
+        }
+
+        private static OperationResult GenerateFSIEnd(CodeGenContext context, AstOperation operation)
+        {
+            if (context.Config.GpuAccessor.QueryHostSupportsFragmentShaderInterlock())
+            {
+                context.EndInvocationInterlockEXT();
+            }
+
+            return OperationResult.Invalid;
         }
 
         private static OperationResult GenerateFindLSB(CodeGenContext context, AstOperation operation)
