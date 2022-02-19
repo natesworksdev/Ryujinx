@@ -4,6 +4,7 @@ using Ryujinx.Graphics.Shader.Translation;
 using Spv.Generator;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using static Spv.Specification;
 
@@ -335,14 +336,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                     iq = context.Config.ImapTypes[(attr - AttributeConsts.UserAttributeBase) / 16].GetFirstUsedType();
                 }
 
-                if (context.Config.TransformFeedbackEnabled)
-                {
-                    throw new NotImplementedException();
-                }
-                else
-                {
-                    DeclareInputOrOutput(context, attr, false, iq);
-                }
+                DeclareInputOrOutput(context, attr, false, iq);
             }
         }
 
@@ -371,14 +365,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static void DeclareOutputAttribute(CodeGenContext context, int attr)
         {
-            if (context.Config.TransformFeedbackEnabled)
-            {
-                throw new NotImplementedException();
-            }
-            else
-            {
-                DeclareInputOrOutput(context, attr, true);
-            }
+            DeclareInputOrOutput(context, attr, true);
         }
 
         public static void DeclareInvocationId(CodeGenContext context)
@@ -388,6 +375,15 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static void DeclareInputOrOutput(CodeGenContext context, int attr, bool isOutAttr, PixelImap iq = PixelImap.Unused)
         {
+            bool isUserAttr = attr >= AttributeConsts.UserAttributeBase && attr < AttributeConsts.UserAttributeEnd;
+            if (isUserAttr && context.Config.TransformFeedbackEnabled &&
+                ((isOutAttr && context.Config.Stage != ShaderStage.Fragment) ||
+                (!isOutAttr && context.Config.Stage != ShaderStage.Vertex)))
+            {
+                DeclareInputOrOutput(context, attr, (attr >> 2) & 3, isOutAttr, iq);
+                return;
+            }
+
             var dict = isOutAttr ? context.Outputs : context.Inputs;
             var attrInfo = AttributeInfo.From(context.Config, attr);
 
@@ -410,8 +406,19 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             if (attrInfo.IsBuiltin)
             {
                 context.Decorate(spvVar, Decoration.BuiltIn, (LiteralInteger)GetBuiltIn(context, attrInfo.BaseValue));
+
+                if (context.Config.TransformFeedbackEnabled && isOutAttr)
+                {
+                    var tfOutput = context.GetTransformFeedbackOutput(attrInfo.BaseValue);
+                    if (tfOutput.Valid)
+                    {
+                        context.Decorate(spvVar, Decoration.XfbBuffer, (LiteralInteger)tfOutput.Buffer);
+                        context.Decorate(spvVar, Decoration.XfbStride, (LiteralInteger)tfOutput.Stride);
+                        context.Decorate(spvVar, Decoration.Offset, (LiteralInteger)tfOutput.Offset);
+                    }
+                }
             }
-            else if (attr >= AttributeConsts.UserAttributeBase && attr < AttributeConsts.UserAttributeEnd)
+            else if (isUserAttr)
             {
                 int location = (attr - AttributeConsts.UserAttributeBase) / 16;
                 context.Decorate(spvVar, Decoration.Location, (LiteralInteger)location);
@@ -437,6 +444,60 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             context.AddGlobalVariable(spvVar);
             dict.Add(attrInfo.BaseValue, spvVar);
+        }
+
+        private static void DeclareInputOrOutput(CodeGenContext context, int attr, int component, bool isOutAttr, PixelImap iq = PixelImap.Unused)
+        {
+            var dict = isOutAttr ? context.Outputs : context.Inputs;
+            var attrInfo = AttributeInfo.From(context.Config, attr);
+
+            if (dict.ContainsKey(attr))
+            {
+                return;
+            }
+
+            var storageClass = isOutAttr ? StorageClass.Output : StorageClass.Input;
+            var attrType = context.GetType(attrInfo.Type & AggregateType.ElementTypeMask);
+
+            if (context.Config.Stage == ShaderStage.Geometry && !isOutAttr && (!attrInfo.IsBuiltin || AttributeInfo.IsArrayBuiltIn(attr)))
+            {
+                attrType = context.TypeArray(attrType, context.Constant(context.TypeU32(), (LiteralInteger)context.InputVertices));
+            }
+
+            var spvType = context.TypePointer(storageClass, attrType);
+            var spvVar = context.Variable(spvType, storageClass);
+
+            Debug.Assert(attr >= AttributeConsts.UserAttributeBase && attr < AttributeConsts.UserAttributeEnd);
+            int location = (attr - AttributeConsts.UserAttributeBase) / 16;
+
+            context.Decorate(spvVar, Decoration.Location, (LiteralInteger)location);
+            context.Decorate(spvVar, Decoration.Component, (LiteralInteger)component);
+
+            if (isOutAttr)
+            {
+                var tfOutput = context.GetTransformFeedbackOutput(location, component);
+                if (tfOutput.Valid)
+                {
+                    context.Decorate(spvVar, Decoration.XfbBuffer, (LiteralInteger)tfOutput.Buffer);
+                    context.Decorate(spvVar, Decoration.XfbStride, (LiteralInteger)tfOutput.Stride);
+                    context.Decorate(spvVar, Decoration.Offset, (LiteralInteger)tfOutput.Offset);
+                }
+            }
+            else
+            {
+                switch (iq)
+                {
+                    case PixelImap.Constant:
+                        context.Decorate(spvVar, Decoration.Flat);
+                        break;
+                    case PixelImap.ScreenLinear:
+                        context.Decorate(spvVar, Decoration.NoPerspective);
+                        break;
+                }
+            }
+
+            context.AddGlobalVariable(spvVar);
+            dict.Add(attr, spvVar);
         }
 
         private static BuiltIn GetBuiltIn(CodeGenContext context, int attr)
