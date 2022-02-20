@@ -378,12 +378,6 @@ namespace Ryujinx.Graphics.Vulkan
                     PatchControlPoints = PatchControlPoints
                 };
 
-                var depthClipState = new PipelineRasterizationDepthClipStateCreateInfoEXT()
-                {
-                    SType = StructureType.PipelineRasterizationDepthClipStateCreateInfoExt,
-                    DepthClipEnable = false
-                };
-
                 var rasterizationState = new PipelineRasterizationStateCreateInfo()
                 {
                     SType = StructureType.PipelineRasterizationStateCreateInfo,
@@ -396,8 +390,7 @@ namespace Ryujinx.Graphics.Vulkan
                     DepthBiasEnable = DepthBiasEnable,
                     DepthBiasClamp = DepthBiasClamp,
                     DepthBiasConstantFactor = DepthBiasConstantFactor,
-                    DepthBiasSlopeFactor = DepthBiasSlopeFactor,
-                    PNext = &depthClipState
+                    DepthBiasSlopeFactor = DepthBiasSlopeFactor
                 };
 
                 var viewportState = new PipelineViewportStateCreateInfo()
