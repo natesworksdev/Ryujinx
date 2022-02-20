@@ -15,6 +15,7 @@ namespace Ryujinx.Graphics.Vulkan
         public uint Height { get; }
         public uint Layers { get; }
 
+        public uint[]  AttachmentSamples { get; }
         public VkFormat[] AttachmentFormats { get; }
         public int[] AttachmentIndices { get; }
 
@@ -38,6 +39,7 @@ namespace Ryujinx.Graphics.Vulkan
             Height = height;
             Layers = 1;
 
+            AttachmentSamples = new[] { 1u };
             AttachmentFormats = new[] { format };
             AttachmentIndices = new[] { 0 };
 
@@ -56,6 +58,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             _attachments = new Auto<DisposableImageView>[count];
 
+            AttachmentSamples = new uint[count];
             AttachmentFormats = new VkFormat[count];
             AttachmentIndices = new int[count];
             MaxColorAttachmentIndex = colors.Length - 1;
@@ -75,6 +78,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                     _attachments[index] = texture.GetImageViewForAttachment();
 
+                    AttachmentSamples[index] = (uint)texture.Info.Samples;
                     AttachmentFormats[index] = texture.VkFormat;
                     AttachmentIndices[index] = bindIndex;
 
@@ -95,6 +99,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 _attachments[count - 1] = dsTexture.GetImageViewForAttachment();
 
+                AttachmentSamples[count - 1] = (uint)dsTexture.Info.Samples;
                 AttachmentFormats[count - 1] = dsTexture.VkFormat;
 
                 width = Math.Min(width, (uint)dsTexture.Width);

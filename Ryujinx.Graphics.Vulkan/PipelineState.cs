@@ -33,37 +33,37 @@ namespace Ryujinx.Graphics.Vulkan
 
         public uint StencilFrontCompareMask
         {
-            get => (UInt32)((Internal.Id2 >> 0) & 0xFFFFFFFF);
+            get => (uint)((Internal.Id2 >> 0) & 0xFFFFFFFF);
             set => Internal.Id2 = (Internal.Id2 & 0xFFFFFFFF00000000) | ((ulong)value << 0);
         }
 
         public uint StencilFrontWriteMask
         {
-            get => (UInt32)((Internal.Id2 >> 32) & 0xFFFFFFFF);
+            get => (uint)((Internal.Id2 >> 32) & 0xFFFFFFFF);
             set => Internal.Id2 = (Internal.Id2 & 0xFFFFFFFF) | ((ulong)value << 32);
         }
 
         public uint StencilFrontReference
         {
-            get => (UInt32)((Internal.Id3 >> 0) & 0xFFFFFFFF);
+            get => (uint)((Internal.Id3 >> 0) & 0xFFFFFFFF);
             set => Internal.Id3 = (Internal.Id3 & 0xFFFFFFFF00000000) | ((ulong)value << 0);
         }
 
         public uint StencilBackCompareMask
         {
-            get => (UInt32)((Internal.Id3 >> 32) & 0xFFFFFFFF);
+            get => (uint)((Internal.Id3 >> 32) & 0xFFFFFFFF);
             set => Internal.Id3 = (Internal.Id3 & 0xFFFFFFFF) | ((ulong)value << 32);
         }
 
         public uint StencilBackWriteMask
         {
-            get => (UInt32)((Internal.Id4 >> 0) & 0xFFFFFFFF);
+            get => (uint)((Internal.Id4 >> 0) & 0xFFFFFFFF);
             set => Internal.Id4 = (Internal.Id4 & 0xFFFFFFFF00000000) | ((ulong)value << 0);
         }
 
         public uint StencilBackReference
         {
-            get => (UInt32)((Internal.Id4 >> 32) & 0xFFFFFFFF);
+            get => (uint)((Internal.Id4 >> 32) & 0xFFFFFFFF);
             set => Internal.Id4 = (Internal.Id4 & 0xFFFFFFFF) | ((ulong)value << 32);
         }
 
@@ -285,8 +285,14 @@ namespace Ryujinx.Graphics.Vulkan
 
         public uint PatchControlPoints
         {
-            get => (UInt32)((Internal.Id10 >> 0) & 0xFFFFFFFF);
+            get => (uint)((Internal.Id10 >> 0) & 0xFFFFFFFF);
             set => Internal.Id10 = (Internal.Id10 & 0xFFFFFFFF00000000) | ((ulong)value << 0);
+        }
+
+        public uint SamplesCount
+        {
+            get => (uint)((Internal.Id10 >> 32) & 0xFFFFFFFF);
+            set => Internal.Id10 = (Internal.Id10 & 0xFFFFFFFF) | ((ulong)value << 32);
         }
 
         public bool AlphaToCoverageEnable
@@ -418,7 +424,7 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     SType = StructureType.PipelineMultisampleStateCreateInfo,
                     SampleShadingEnable = false,
-                    RasterizationSamples = SampleCountFlags.SampleCount1Bit,
+                    RasterizationSamples = TextureStorage.ConvertToSampleCountFlags(SamplesCount),
                     MinSampleShading = 1,
                     AlphaToCoverageEnable = AlphaToCoverageEnable,
                     AlphaToOneEnable = AlphaToOneEnable

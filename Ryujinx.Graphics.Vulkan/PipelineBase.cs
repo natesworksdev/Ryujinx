@@ -97,6 +97,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             _newState.Initialize();
             _newState.LineWidth = 1f;
+            _newState.SamplesCount = 1;
         }
 
         protected virtual DescriptorSetLayout[] CreateDescriptorSetLayouts(VulkanGraphicsDevice gd, Device device, out PipelineLayout layout)
@@ -923,6 +924,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             FramebufferParams = new FramebufferParams(Device, colors, depthStencil);
             UpdatePipelineAttachmentFormats();
+            _newState.SamplesCount = FramebufferParams.AttachmentSamples.Length != 0 ? FramebufferParams.AttachmentSamples[0] : 1;
         }
 
         protected void UpdatePipelineAttachmentFormats()
@@ -966,7 +968,7 @@ namespace Ryujinx.Graphics.Vulkan
                     attachmentDescs[i] = new AttachmentDescription(
                         0,
                         FramebufferParams.AttachmentFormats[i],
-                        SampleCountFlags.SampleCount1Bit,
+                        TextureStorage.ConvertToSampleCountFlags(FramebufferParams.AttachmentSamples[i]),
                         AttachmentLoadOp.Load,
                         AttachmentStoreOp.Store,
                         AttachmentLoadOp.Load,
