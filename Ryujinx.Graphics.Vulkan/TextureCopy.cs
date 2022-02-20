@@ -316,9 +316,18 @@ namespace Ryujinx.Graphics.Vulkan
 
                 var extent = new Extent3D((uint)copyWidth, (uint)copyHeight, (uint)srcDepth);
 
-                var region = new ImageCopy(srcSl, new Offset3D(0, 0, srcZ), dstSl, new Offset3D(0, 0, dstZ), extent);
+                if (srcInfo.Samples > 1 && srcInfo.Samples != dstInfo.Samples)
+                {
+                    var region = new ImageResolve(srcSl, new Offset3D(0, 0, srcZ), dstSl, new Offset3D(0, 0, dstZ), extent);
 
-                api.CmdCopyImage(commandBuffer, srcImage, ImageLayout.General, dstImage, ImageLayout.General, 1, region);
+                    api.CmdResolveImage(commandBuffer, srcImage, ImageLayout.General, dstImage, ImageLayout.General, 1, region);
+                }
+                else
+                {
+                    var region = new ImageCopy(srcSl, new Offset3D(0, 0, srcZ), dstSl, new Offset3D(0, 0, dstZ), extent);
+
+                    api.CmdCopyImage(commandBuffer, srcImage, ImageLayout.General, dstImage, ImageLayout.General, 1, region);
+                }
 
                 width = Math.Max(1, width >> 1);
                 height = Math.Max(1, height >> 1);
