@@ -245,9 +245,7 @@ namespace Ryujinx.Ui.App
                                     GetControlFsAndTitleId(pfs, out IFileSystem controlFs, out titleId);
 
                                     // Check if there is an update available.
-                                    IsUpdateApplied(titleId, out IFileSystem updatedControlFs);
-
-                                    if (updatedControlFs != null)
+                                    if (IsUpdateApplied(titleId, out IFileSystem updatedControlFs))
                                     {
                                         // Replace the original ControlFs by the updated one.
                                         controlFs = updatedControlFs;
