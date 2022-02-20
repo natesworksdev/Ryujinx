@@ -302,9 +302,8 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        private static SampleCountFlags ConvertToSampleCountFlags(uint samples)
+        public static SampleCountFlags ConvertToSampleCountFlags(uint samples)
         {
-            return SampleCountFlags.SampleCount1Bit;
             if (samples == 0 || samples > (uint)SampleCountFlags.SampleCount64Bit)
             {
                 return SampleCountFlags.SampleCount1Bit;
