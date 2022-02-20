@@ -266,8 +266,7 @@ namespace Ryujinx.Graphics.Vulkan
                     dstRegion.Y2 == dst.Height &&
                     src.Width == dst.Width &&
                     src.Height == dst.Height &&
-                    src.VkFormat == dst.VkFormat &&
-                    src.Info.Samples == 1)
+                    src.VkFormat == dst.VkFormat)
                 {
                     TextureCopy.Copy(
                         _gd.Api,
