@@ -74,7 +74,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                     for (int j = 0; j < locations.Length; j++)
                     {
                         byte location = locations[j];
-                        if (location < 0x80)
+                        if (location < 0xc0)
                         {
                             context.Info.TransformFeedbackOutputs[location] = new TransformFeedbackOutput(tfbIndex, j * 4, stride);
                         }
@@ -88,6 +88,18 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
         private static void AddOperation(StructuredProgramContext context, Operation operation)
         {
             Instruction inst = operation.Inst;
+
+            if (inst == Instruction.LoadAttribute)
+            {
+                Operand src1 = operation.GetSource(0);
+                Operand src2 = operation.GetSource(1);
+
+                if (src1.Type == OperandType.Constant && src2.Type == OperandType.Constant)
+                {
+                    int attrOffset = src1.Value + (src2.Value << 2);
+                    context.Info.Inputs.Add(attrOffset);
+                }
+            }
 
             int sourcesCount = operation.SourcesCount;
             int outDestsCount = operation.DestsCount != 0 ? operation.DestsCount - 1 : 0;
