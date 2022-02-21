@@ -433,7 +433,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             generator.Emit(OpCodes.Ret);
 
-            return (Action<T, ExecutionContext>)method.CreateDelegate(typeof(Action<T, ExecutionContext>));
+            return method.CreateDelegate<Action<T, ExecutionContext>>();
         }
 
         private static void CheckIfTypeIsSupported(Type type, string svcName)
@@ -459,11 +459,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         {
             if (argValues != null)
             {
-                Logger.Debug?.Print(LogClass.KernelSvc, string.Format(formatOrSvcName, argValues));
+                Logger.Trace?.Print(LogClass.KernelSvc, string.Format(formatOrSvcName, argValues));
             }
             else
             {
-                Logger.Debug?.Print(LogClass.KernelSvc, formatOrSvcName);
+                Logger.Trace?.Print(LogClass.KernelSvc, formatOrSvcName);
             }
         }
 
@@ -479,7 +479,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             }
             else
             {
-                Logger.Debug?.Print(LogClass.KernelSvc, $"{svcName} returned result {result}.");
+                Logger.Trace?.Print(LogClass.KernelSvc, $"{svcName} returned result {result}.");
             }
         }
     }

@@ -638,18 +638,18 @@ namespace Ryujinx.Ui
         [Conditional("RELEASE")]
         public void PerformanceCheck()
         {
-            if (ConfigurationState.Instance.Logger.EnableDebug.Value)
+            if (ConfigurationState.Instance.Logger.EnableTrace.Value)
             {
                 MessageDialog debugWarningDialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Warning, ButtonsType.YesNo, null)
                 {
                     Title         = "Ryujinx - Warning",
-                    Text          = "You have debug logging enabled, which is designed to be used by developers only.",
-                    SecondaryText = "For optimal performance, it's recommended to disable debug logging. Would you like to disable debug logging now?"
+                    Text          = "You have trace logging enabled, which is designed to be used by developers only.",
+                    SecondaryText = "For optimal performance, it's recommended to disable trace logging. Would you like to disable trace logging now?"
                 };
 
                 if (debugWarningDialog.Run() == (int)ResponseType.Yes)
                 {
-                    ConfigurationState.Instance.Logger.EnableDebug.Value = false;
+                    ConfigurationState.Instance.Logger.EnableTrace.Value = false;
                     SaveConfig();
                 }
 
@@ -1209,7 +1209,7 @@ namespace Ryujinx.Ui
         {
             AspectRatio aspectRatio = ConfigurationState.Instance.Graphics.AspectRatio.Value;
 
-            ConfigurationState.Instance.Graphics.AspectRatio.Value = ((int)aspectRatio + 1) > Enum.GetNames(typeof(AspectRatio)).Length - 1 ? AspectRatio.Fixed4x3 : aspectRatio + 1;
+            ConfigurationState.Instance.Graphics.AspectRatio.Value = ((int)aspectRatio + 1) > Enum.GetNames<AspectRatio>().Length - 1 ? AspectRatio.Fixed4x3 : aspectRatio + 1;
         }
 
         private void Row_Clicked(object sender, ButtonReleaseEventArgs args)
