@@ -1615,22 +1615,47 @@ namespace ARMeilleure.Instructions
 
         public static Operand EmitSaturateFloatToInt32(ArmEmitterContext context, Operand value, bool isF64, bool unsigned)
         {
-            MethodInfo info;
-
-            if (isF64)
+            if (Optimizations.UseSse2)
             {
-                info = unsigned
-                    ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF64ToU32))
-                    : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF64ToS32));
+                if (!isF64)
+                {
+                    value = context.AddIntrinsic(Intrinsic.X86Cvtss2sd, value);
+                }
+
+                if (unsigned)
+                {
+                    value = context.AddIntrinsic(Intrinsic.X86Minsd, value, X86GetScalar(context, 0x41efffffffe00000u));
+                    value = context.AddIntrinsic(Intrinsic.X86Maxsd, value, X86GetScalar(context, 0x0000000000000000u));
+                    value = context.AddIntrinsicLong(Intrinsic.X86Cvttsd2si, value);
+                }
+                else
+                {
+                    value = context.AddIntrinsic(Intrinsic.X86Minsd, value, X86GetScalar(context, 0x41dfffffffc00000u));
+                    // Out-of-range value for 32-bit conversion is is 0x80000000, no need for maxsd.
+                    value = context.AddIntrinsicInt(Intrinsic.X86Cvttsd2si, value);
+                }
+
+                return value;
             }
             else
             {
-                info = unsigned
-                    ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF32ToU32))
-                    : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF32ToS32));
-            }
+                MethodInfo info;
 
-            return context.Call(info, value);
+                if (isF64)
+                {
+                    info = unsigned
+                        ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF64ToU32))
+                        : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF64ToS32));
+                }
+                else
+                {
+                    info = unsigned
+                        ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF32ToU32))
+                        : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF32ToS32));
+                }
+
+                return context.Call(info, value);
+            }
         }
 
         public static Operand EmitSaturateFloatToInt64(ArmEmitterContext context, Operand value, bool isF64, bool unsigned)
