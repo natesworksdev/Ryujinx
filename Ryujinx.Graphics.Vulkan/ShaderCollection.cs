@@ -1,8 +1,10 @@
-﻿using Ryujinx.Graphics.GAL;
+﻿using Ryujinx.Common.Logging;
+using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Ryujinx.Graphics.Vulkan
 {
@@ -40,8 +42,17 @@ namespace Ryujinx.Graphics.Vulkan
         private VulkanGraphicsDevice _gd;
         private Device _device;
         private bool _initialized;
+        private bool _isCompute;
 
-        public ShaderCollection(VulkanGraphicsDevice gd, Device device, IShader[] shaders)
+        private ProgramPipelineState _state;
+        private DisposableRenderPass _dummyRenderPass;
+        private Task _compileTask;
+        private bool _firstBackgroundUse;
+
+        public ShaderCollection(
+            VulkanGraphicsDevice gd,
+            Device device,
+            IShader[] shaders)
         {
             _gd = gd;
             _device = device;
@@ -69,6 +80,11 @@ namespace Ryujinx.Graphics.Vulkan
                     ShaderStageFlags.ShaderStageTessellationEvaluationBit => 4,
                     _ => 0
                 };
+
+                if (shader.StageFlags == ShaderStageFlags.ShaderStageComputeBit)
+                {
+                    _isCompute = true;
+                }
 
                 internalShaders[i] = shader;
             }
@@ -101,6 +117,42 @@ namespace Ryujinx.Graphics.Vulkan
                 GrabAll(x => x.BufferTextureBindings),
                 GrabAll(x => x.BufferImageBindings)
             };
+
+            _compileTask = Task.CompletedTask;
+            _firstBackgroundUse = false;
+        }
+
+        public ShaderCollection(
+            VulkanGraphicsDevice gd,
+            Device device,
+            IShader[] shaders,
+            ProgramPipelineState state) : this(gd, device, shaders)
+        {
+            _state = state;
+
+            _compileTask = BackgroundCompilation();
+            _firstBackgroundUse = true;
+        }
+
+        private async Task BackgroundCompilation()
+        {
+            await Task.WhenAll(_shaders.Select(shader => ((Shader)shader).CompileTask));
+
+            try
+            {
+                if (_isCompute)
+                {
+                    CreateBackgroundComputePipeline();
+                }
+                else
+                {
+                    CreateBackgroundGraphicsPipeline();
+                }
+            }
+            catch (VulkanException e)
+            {
+                Common.Logging.Logger.Error?.PrintMsg(Common.Logging.LogClass.Gpu, $"Background Compilation failed: {e.Message}");
+            }
         }
 
         private void EnsureShadersReady()
@@ -136,6 +188,54 @@ namespace Ryujinx.Graphics.Vulkan
             return _infos;
         }
 
+        protected unsafe DisposableRenderPass CreateDummyRenderPass()
+        {
+            if (_dummyRenderPass.Value.Handle != 0)
+            {
+                return _dummyRenderPass;
+            }
+
+            return _dummyRenderPass = _state.ToRenderPass(_gd, _device);
+        }
+
+        public unsafe void CreateBackgroundComputePipeline()
+        {
+            PipelineState pipeline = new PipelineState();
+            pipeline.Initialize();
+
+            pipeline.Stages[0] = ((Shader)_shaders[0]).GetInfo();
+            pipeline.StagesCount = 1;
+
+            pipeline.CreateComputePipeline(_gd.Api, _device, this, (_gd.Pipeline as PipelineBase)._pipelineCache);
+        }
+
+        public unsafe void CreateBackgroundGraphicsPipeline()
+        {
+            // To compile shaders in the background in Vulkan, we need to create valid pipelines using the shader modules.
+            // The GPU provides pipeline state via the GAL that can be converted into our internal Vulkan pipeline state.
+            // This should match the pipeline state at the time of the first draw. If it doesn't, then it'll likely be
+            // close enough that the GPU driver will reuse the compiled shader for the different state.
+
+            // First, we need to create a render pass object compatible with the one that will be used at runtime.
+            // The active attachment formats have been provided by the abstraction layer.
+            var renderPass = CreateDummyRenderPass();
+
+            PipelineState pipeline = _state.ToVulkanPipelineState(_gd);
+
+            // Copy the shader stage info to the pipeline.
+            var stages = pipeline.Stages.ToSpan();
+
+            for (int i = 0; i < _shaders.Length; i++)
+            {
+                stages[i] = ((Shader)_shaders[i]).GetInfo();
+            }
+
+            pipeline.StagesCount = (uint)_shaders.Length;
+            pipeline.PipelineLayout = PipelineLayout;
+
+            pipeline.CreateGraphicsPipeline(_gd, _device, this, (_gd.Pipeline as PipelineBase)._pipelineCache, renderPass.Value);
+        }
+
         public ProgramLinkStatus CheckProgramLink(bool blocking)
         {
             if (LinkStatus == ProgramLinkStatus.Incomplete)
@@ -160,6 +260,18 @@ namespace Ryujinx.Graphics.Vulkan
                         {
                             return ProgramLinkStatus.Incomplete;
                         }
+                    }
+                }
+
+                if (!_compileTask.IsCompleted)
+                {
+                    if (blocking)
+                    {
+                        _compileTask.Wait();
+                    }
+                    else
+                    {
+                        return ProgramLinkStatus.Incomplete;
                     }
                 }
 
@@ -203,7 +315,20 @@ namespace Ryujinx.Graphics.Vulkan
                 return false;
             }
 
-            return _graphicsPipelineCache.TryGetValue(ref key, out pipeline);
+            if (!_graphicsPipelineCache.TryGetValue(ref key, out pipeline))
+            {
+                if (_firstBackgroundUse)
+                {
+                    Logger.Warning?.Print(LogClass.Gpu, "Background pipeline compile missed on draw - incorrect pipeline state?");
+                    _firstBackgroundUse = false;
+                }
+
+                return false;
+            }
+
+            _firstBackgroundUse = false;
+
+            return true;
         }
 
         public Auto<DescriptorSetCollection> GetNewDescriptorSetCollection(
@@ -238,6 +363,10 @@ namespace Ryujinx.Graphics.Vulkan
                 }
 
                 _computePipeline?.Dispose();
+                if (_dummyRenderPass.Value.Handle != 0)
+                {
+                    _dummyRenderPass.Dispose();
+                }
             }
         }
 

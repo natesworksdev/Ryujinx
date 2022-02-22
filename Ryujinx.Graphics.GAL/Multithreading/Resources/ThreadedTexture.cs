@@ -14,7 +14,6 @@ namespace Ryujinx.Graphics.GAL.Multithreading.Resources
         public ITexture Base;
 
         public int Width => _info.Width;
-
         public int Height => _info.Height;
 
         public float ScaleFactor { get; }
