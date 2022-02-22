@@ -32,13 +32,13 @@ namespace ARMeilleure.Decoders
 
             int instructionLimit = highCq ? MaxInstsPerFunction : MaxInstsPerFunctionLowCq;
 
-            Block GetBlock(ulong blkAddress)
+            Block GetBlock(ulong blkAddress, bool mustExit = false)
             {
                 if (!visited.TryGetValue(blkAddress, out Block block))
                 {
                     block = new Block(blkAddress);
 
-                    if ((dMode != DecoderMode.MultipleBlocks && visited.Count >= 1) || opsCount > instructionLimit || !memory.IsMapped(blkAddress))
+                    if (mustExit || (dMode != DecoderMode.MultipleBlocks && visited.Count >= 1) || opsCount > instructionLimit || !memory.IsMapped(blkAddress))
                     {
                         block.Exit = true;
                         block.EndAddress = blkAddress;
@@ -121,7 +121,12 @@ namespace ARMeilleure.Decoders
                             currBlock.Branch = GetBlock((ulong)op.Immediate);
                         }
 
-                        if (!IsUnconditionalBranch(lastOp) || isCall)
+                        if (IsTrap(lastOp))
+                        {
+                            // On reentry, resume execution at the address of the trapping instruction.
+                            currBlock.Next = GetBlock(lastOp.Address, mustExit: true);
+                        }
+                        else if (!IsUnconditionalBranch(lastOp) || isCall)
                         {
                             currBlock.Next = GetBlock(currBlock.EndAddress);
                         }
@@ -325,8 +330,12 @@ namespace ARMeilleure.Decoders
 
         private static bool IsException(OpCode opCode)
         {
+            return IsTrap(opCode) || opCode.Instruction.Name == InstName.Svc;
+        }
+
+        private static bool IsTrap(OpCode opCode)
+        {
             return opCode.Instruction.Name == InstName.Brk ||
-                   opCode.Instruction.Name == InstName.Svc ||
                    opCode.Instruction.Name == InstName.Trap ||
                    opCode.Instruction.Name == InstName.Und;
         }
