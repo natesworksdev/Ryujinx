@@ -209,7 +209,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
         public async Task PerformanceCheck()
         {
-            if (ConfigurationState.Instance.Logger.EnableDebug.Value)
+            if (ConfigurationState.Instance.Logger.EnableTrace.Value)
             {
                 string mainMessage      = LocaleManager.Instance["DialogPerformanceCheckLoggingEnabledMessage"];
                 string secondaryMessage = LocaleManager.Instance["DialogPerformanceCheckLoggingEnabledConfirmMessage"];
@@ -218,7 +218,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
                 if (result != UserResult.Yes)
                 {
-                    ConfigurationState.Instance.Logger.EnableDebug.Value = false;
+                    ConfigurationState.Instance.Logger.EnableTrace.Value = false;
 
                     SaveConfig();
                 }

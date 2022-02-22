@@ -776,6 +776,10 @@
                                       ToolTip.Tip="{locale:Locale ErrorLogTooltip}">
                                 <TextBlock Text="{locale:Locale SettingsTabLoggingEnableErrorLogs}" />
                             </CheckBox>
+                            <CheckBox IsChecked="{Binding EnableTrace}"
+                                      ToolTip.Tip="{locale:Locale TraceLogTooltip}">
+                                <TextBlock Text="{locale:Locale SettingsTabLoggingEnableTraceLogs}" />
+                            </CheckBox>
                             <CheckBox IsChecked="{Binding EnableGuest}"
                                       ToolTip.Tip="{locale:Locale GuestLogTooltip}">
                                 <TextBlock Text="{locale:Locale SettingsTabLoggingEnableGuestLogs}" />

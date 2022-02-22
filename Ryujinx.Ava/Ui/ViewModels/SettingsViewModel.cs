@@ -107,6 +107,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
         public bool EnableInfo { get; set; }
         public bool EnableWarn { get; set; }
         public bool EnableError { get; set; }
+        public bool EnableTrace { get; set; }
         public bool EnableGuest { get; set; }
         public bool EnableFsAccessLog { get; set; }
         public bool EnableDebug { get; set; }
@@ -266,6 +267,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             EnableInfo = config.Logger.EnableInfo;
             EnableWarn = config.Logger.EnableWarn;
             EnableError = config.Logger.EnableError;
+            EnableTrace = config.Logger.EnableTrace;
             EnableGuest = config.Logger.EnableGuest;
             EnableDebug = config.Logger.EnableDebug;
             EnableFsAccessLog = config.Logger.EnableFsAccessLog;
@@ -317,6 +319,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             }
 
             config.Logger.EnableError.Value = EnableError;
+            config.Logger.EnableTrace.Value = EnableTrace;
             config.Logger.EnableWarn.Value = EnableWarn;
             config.Logger.EnableInfo.Value = EnableInfo;
             config.Logger.EnableStub.Value = EnableStub;
