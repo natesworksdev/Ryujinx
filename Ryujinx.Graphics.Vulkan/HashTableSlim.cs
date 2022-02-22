@@ -27,9 +27,12 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 foreach (Entry[] bucket in _hashTable)
                 {
-                    foreach (Entry entry in bucket)
+                    if (bucket != null)
                     {
-                        yield return entry.Key;
+                        foreach (Entry entry in bucket)
+                        {
+                            yield return entry.Key;
+                        }
                     }
                 }
             }

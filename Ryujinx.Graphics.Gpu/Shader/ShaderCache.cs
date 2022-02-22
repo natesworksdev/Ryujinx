@@ -1,6 +1,8 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Engine.Threed;
+using Ryujinx.Graphics.Gpu.Engine.Types;
+using Ryujinx.Graphics.Gpu.Image;
 using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.Graphics.Gpu.Shader.Cache;
 using Ryujinx.Graphics.Gpu.Shader.DiskCache;
@@ -230,6 +232,41 @@ namespace Ryujinx.Graphics.Gpu.Shader
             return cpShader;
         }
 
+        private void UpdatePipelineInfo(ref ThreedClassState state, ref ProgramPipelineState pipeline, GpuChannel channel)
+        {
+            channel.TextureManager.UpdateRenderTargets();
+
+            var rtControl = state.RtControl;
+            var msaaMode = state.RtMsaaMode;
+
+            pipeline.SamplesCount = msaaMode.SamplesInX() * msaaMode.SamplesInY();
+
+            int count = rtControl.UnpackCount();
+
+            for (int index = 0; index < Constants.TotalRenderTargets; index++)
+            {
+                int rtIndex = rtControl.UnpackPermutationIndex(index);
+
+                var colorState = state.RtColorState[rtIndex];
+
+                if (index >= count || colorState.Format == 0 || colorState.WidthOrStride == 0)
+                {
+                    pipeline.AttachmentEnable[index] = false;
+                    pipeline.AttachmentFormats[index] = Format.R8G8B8A8Unorm;
+                }
+                else
+                {
+                    pipeline.AttachmentEnable[index] = true;
+                    pipeline.AttachmentFormats[index] = colorState.Format.Convert().Format;
+                }
+            }
+
+            pipeline.DepthStencilEnable = state.RtDepthStencilEnable;
+            pipeline.DepthStencilFormat = pipeline.DepthStencilEnable ? state.RtDepthStencilState.Format.Convert().Format : Format.D24UnormS8Uint;
+
+            pipeline.VertexBufferCount = Constants.TotalVertexBuffers;
+        }
+
         /// <summary>
         /// Gets a graphics shader program from the shader cache.
         /// This includes all the specified shader stages.
@@ -238,6 +275,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// This automatically translates, compiles and adds the code to the cache if not present.
         /// </remarks>
         /// <param name="state">GPU state</param>
+        /// <param name="pipeline">Pipeline state</param>
         /// <param name="channel">GPU channel</param>
         /// <param name="poolState">Texture pool state</param>
         /// <param name="graphicsState">3D engine state</param>
@@ -245,6 +283,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <returns>Compiled graphics shader code</returns>
         public CachedShaderProgram GetGraphicsShader(
             ref ThreedClassState state,
+            ref ProgramPipelineState pipeline,
             GpuChannel channel,
             GpuChannelPoolState poolState,
             GpuChannelGraphicsState graphicsState,
@@ -351,8 +390,10 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 }
             }
 
+            UpdatePipelineInfo(ref state, ref pipeline, channel);
+
             int fragmentOutputMap = shaders[5]?.Info.FragmentOutputMap ?? -1;
-            IProgram hostProgram = _context.Renderer.CreateProgram(shaderSources.ToArray(), new ShaderInfo(fragmentOutputMap));
+            IProgram hostProgram = _context.Renderer.CreateProgram(shaderSources.ToArray(), new ShaderInfo(fragmentOutputMap, pipeline));
 
             gpShaders = new CachedShaderProgram(hostProgram, specState, shaders);
 
@@ -614,12 +655,12 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
         private static ShaderBindings GetBindings(ShaderProgramInfo info)
         {
-            static bool IsBuffer(TextureDescriptor descriptor)
+            static bool IsBuffer(Graphics.Shader.TextureDescriptor descriptor)
             {
                 return (descriptor.Type & SamplerType.Mask) == SamplerType.TextureBuffer;
             }
 
-            static bool IsNotBuffer(TextureDescriptor descriptor)
+            static bool IsNotBuffer(Graphics.Shader.TextureDescriptor descriptor)
             {
                 return !IsBuffer(descriptor);
             }

@@ -497,6 +497,7 @@ namespace Ryujinx.Graphics.Vulkan
                 var pipelineCreateInfo = new GraphicsPipelineCreateInfo()
                 {
                     SType = StructureType.GraphicsPipelineCreateInfo,
+                    Flags = 0,
                     StageCount = StagesCount,
                     PStages = Stages.Pointer,
                     PVertexInputState = &vertexInputState,
