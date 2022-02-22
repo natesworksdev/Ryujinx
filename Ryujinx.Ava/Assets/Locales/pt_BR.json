@@ -152,6 +152,7 @@
   "SettingsTabLoggingEnableInfoLogs": "Habilitar logs de informação",
   "SettingsTabLoggingEnableWarningLogs": "Habilitar logs de alerta",
   "SettingsTabLoggingEnableErrorLogs": "Habilitar logs de erro",
+  "SettingsTabLoggingEnableTraceLogs": "Habilitar logs de rastreamento",
   "SettingsTabLoggingEnableGuestLogs": "Habilitar logs do programa convidado",
   "SettingsTabLoggingEnableFsAccessLogs": "Habilitar logs de acesso ao sistema de arquivos",
   "SettingsTabLoggingFsGlobalAccessLogMode": "Modo global de logs do sistema de arquivos:",
