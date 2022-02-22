@@ -64,7 +64,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     nameof(ThreedClassState.ShaderState)),
 
                 new StateUpdateCallbackEntry(UpdateRasterizerState, nameof(ThreedClassState.RasterizeEnable)),
-                new StateUpdateCallbackEntry(UpdateScissorState, nameof(ThreedClassState.ScissorState)),
+
+                new StateUpdateCallbackEntry(UpdateScissorState,
+                    nameof(ThreedClassState.ScissorState),
+                    nameof(ThreedClassState.ScreenScissorState)),
 
                 new StateUpdateCallbackEntry(UpdateVertexBufferState,
                     nameof(ThreedClassState.VertexBufferDrawState),
@@ -336,6 +339,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             var scissor = _state.State.ScreenScissorState;
             Size sizeHint = new Size(scissor.X + scissor.Width, scissor.Y + scissor.Height, 1);
 
+            int clipRegionWidth = int.MaxValue;
+            int clipRegionHeight = int.MaxValue;
+
             bool changedScale = false;
 
             for (int index = 0; index < Constants.TotalRenderTargets; index++)
@@ -360,6 +366,19 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     sizeHint);
 
                 changedScale |= _channel.TextureManager.SetRenderTargetColor(index, color);
+
+                if (color != null)
+                {
+                    if (clipRegionWidth > color.Width / samplesInX)
+                    {
+                        clipRegionWidth = color.Width / samplesInX;
+                    }
+
+                    if (clipRegionHeight > color.Height / samplesInY)
+                    {
+                        clipRegionHeight = color.Height / samplesInY;
+                    }
+                }
             }
 
             bool dsEnable = _state.State.RtDepthStencilEnable;
@@ -378,6 +397,19 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     samplesInX,
                     samplesInY,
                     sizeHint);
+
+                if (depthStencil != null)
+                {
+                    if (clipRegionWidth > depthStencil.Width / samplesInX)
+                    {
+                        clipRegionWidth = depthStencil.Width / samplesInX;
+                    }
+
+                    if (clipRegionHeight > depthStencil.Height / samplesInY)
+                    {
+                        clipRegionHeight = depthStencil.Height / samplesInY;
+                    }
+                }
             }
 
             changedScale |= _channel.TextureManager.SetRenderTargetDepthStencil(depthStencil);
@@ -395,6 +427,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     UpdateScissorState();
                 }
             }
+
+            _channel.TextureManager.SetClipRegion(clipRegionWidth, clipRegionHeight);
         }
 
         /// <summary>
@@ -411,7 +445,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// <summary>
         /// Updates host scissor test state based on current GPU state.
         /// </summary>
-        private void UpdateScissorState()
+        public void UpdateScissorState()
         {
             for (int index = 0; index < Constants.TotalViewports; index++)
             {
@@ -426,13 +460,25 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     int width = scissor.X2 - x;
                     int height = scissor.Y2 - y;
 
+                    if (_state.State.YControl.HasFlag(YControl.NegateY))
+                    {
+                        ref var screenScissor = ref _state.State.ScreenScissorState;
+                        y = screenScissor.Height - height - y;
+
+                        if (y < 0)
+                        {
+                            height += y;
+                            y = 0;
+                        }
+                    }
+
                     float scale = _channel.TextureManager.RenderTargetScale;
                     if (scale != 1f)
                     {
                         x = (int)(x * scale);
                         y = (int)(y * scale);
-                        width = (int)Math.Ceiling(width * scale);
-                        height = (int)Math.Ceiling(height * scale);
+                        width = (int)MathF.Ceiling(width * scale);
+                        height = (int)MathF.Ceiling(height * scale);
                     }
 
                     _context.Renderer.Pipeline.SetScissor(index, true, x, y, width, height);

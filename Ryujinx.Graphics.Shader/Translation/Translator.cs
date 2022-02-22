@@ -105,7 +105,8 @@ namespace Ryujinx.Graphics.Shader.Translation
                 config.GetImageDescriptors(),
                 config.UsedFeatures.HasFlag(FeatureFlags.InstanceId),
                 config.UsedFeatures.HasFlag(FeatureFlags.RtLayer),
-                config.ClipDistancesWritten);
+                config.ClipDistancesWritten,
+                config.OmapTargets);
 
             return program;
         }
@@ -295,7 +296,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                 Operand predSkipLbl = null;
 
-                if (op.Name == InstName.Sync || op.Name == InstName.Brk)
+                if (Decoder.IsPopBranch(op.Name))
                 {
                     // If the instruction is a SYNC or BRK instruction with only one
                     // possible target address, then the instruction is basically

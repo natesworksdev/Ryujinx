@@ -3,6 +3,7 @@ using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using System;
+using System.Numerics;
 
 namespace Ryujinx.HLE.HOS.Kernel.Process
 {
@@ -11,8 +12,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         public byte[] SvcAccessMask { get; private set; }
         public byte[] IrqAccessMask { get; private set; }
 
-        public long AllowedCpuCoresMask    { get; private set; }
-        public long AllowedThreadPriosMask { get; private set; }
+        public ulong AllowedCpuCoresMask    { get; private set; }
+        public ulong AllowedThreadPriosMask { get; private set; }
 
         public int DebuggingFlags       { get; private set; }
         public int HandleTableSize      { get; private set; }
@@ -28,7 +29,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         public KernelResult InitializeForKernel(ReadOnlySpan<int> capabilities, KPageTableBase memoryManager)
         {
             AllowedCpuCoresMask    = 0xf;
-            AllowedThreadPriosMask = -1;
+            AllowedThreadPriosMask = ulong.MaxValue;
             DebuggingFlags        &= ~3;
             KernelReleaseVersion   = KProcess.KernelVersionPacked;
 
@@ -130,7 +131,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                 return KernelResult.Success;
             }
 
-            int codeMask = 1 << (32 - BitUtils.CountLeadingZeros32(code + 1));
+            int codeMask = 1 << (32 - BitOperations.LeadingZeroCount((uint)code + 1));
 
             // Check if the property was already set.
             if (((mask0 & codeMask) & 0x1e008) != 0)
@@ -303,16 +304,16 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             return KernelResult.Success;
         }
 
-        private static long GetMaskFromMinMax(int min, int max)
+        private static ulong GetMaskFromMinMax(int min, int max)
         {
             int range = max - min + 1;
 
             if (range == 64)
             {
-                return -1L;
+                return ulong.MaxValue;
             }
 
-            long mask = (1L << range) - 1;
+            ulong mask = (1UL << range) - 1;
 
             return mask << min;
         }

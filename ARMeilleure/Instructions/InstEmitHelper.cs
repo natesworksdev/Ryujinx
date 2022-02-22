@@ -47,6 +47,20 @@ namespace ARMeilleure.Instructions
             }
         }
 
+        public static Operand GetIntA32AlignedPC(ArmEmitterContext context, int regIndex)
+        {
+            if (regIndex == RegisterAlias.Aarch32Pc)
+            {
+                OpCode32 op = (OpCode32)context.CurrOp;
+
+                return Const((int)(op.GetPc() & 0xfffffffc));
+            }
+            else
+            {
+                return Register(GetRegisterAlias(context.Mode, regIndex), RegisterType.Integer, OperandType.I32);
+            }
+        }
+
         public static Operand GetVecA32(int regIndex)
         {
             return Register(regIndex, RegisterType.Vector, OperandType.V128);
@@ -172,7 +186,7 @@ namespace ARMeilleure.Instructions
 
             SetFlag(context, PState.TFlag, mode);
 
-            Operand addr = context.ConditionalSelect(mode, pc, context.BitwiseAnd(pc, Const(~3)));
+            Operand addr = context.ConditionalSelect(mode, context.BitwiseAnd(pc, Const(~1)), context.BitwiseAnd(pc, Const(~3)));
 
             InstEmitFlowHelper.EmitVirtualJump(context, addr, isReturn);
         }

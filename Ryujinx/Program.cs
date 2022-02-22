@@ -1,5 +1,6 @@
 using ARMeilleure.Translation.PTC;
 using Gtk;
+using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.GraphicsDriver;
 using Ryujinx.Common.Logging;
@@ -61,9 +62,6 @@ namespace Ryujinx
                 }
             }
 
-            // Enforce loading of Mono.Posix to avoid .NET runtime lazy loading it during an update.
-            Assembly.Load("Mono.Posix.NETStandard");
-
             // Make process DPI aware for proper window sizing on high-res screens.
             ForceDpiAware.Windows();
             WindowScaleFactor = ForceDpiAware.GetWindowScaleFactor();
@@ -71,7 +69,7 @@ namespace Ryujinx
             // Delete backup files after updating.
             Task.Run(Updater.CleanupUpdate);
 
-            Version = Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+            Version = ReleaseInformations.GetVersion();
 
             Console.Title = $"Ryujinx Console {Version}";
 

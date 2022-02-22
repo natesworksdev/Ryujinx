@@ -8,16 +8,22 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
     {
         private uint _connectionCount;
 
+        private readonly ulong _processId;
+        private readonly SslVersion _sslVersion;
         private ulong _serverCertificateId;
         private ulong _clientCertificateId;
 
-        public ISslContext(ServiceCtx context) { }
+        public ISslContext(ulong processId, SslVersion sslVersion)
+        {
+            _processId = processId;
+            _sslVersion = sslVersion;
+        }
 
         [CommandHipc(2)]
         // CreateConnection() -> object<nn::ssl::sf::ISslConnection>
         public ResultCode CreateConnection(ServiceCtx context)
         {
-            MakeObject(context, new ISslConnection());
+            MakeObject(context, new ISslConnection(_processId, _sslVersion));
 
             _connectionCount++;
 

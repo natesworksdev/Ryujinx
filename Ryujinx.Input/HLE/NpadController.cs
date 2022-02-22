@@ -381,8 +381,8 @@ namespace Ryujinx.Input.HLE
                 (float leftAxisX, float leftAxisY) = State.GetStick(StickInputId.Left);
                 (float rightAxisX, float rightAxisY) = State.GetStick(StickInputId.Right);
 
-                state.LStick = ClampToCircle(ApplyDeadzone(leftAxisX, leftAxisY, controllerConfig.DeadzoneLeft));
-                state.RStick = ClampToCircle(ApplyDeadzone(rightAxisX, rightAxisY, controllerConfig.DeadzoneRight));
+                state.LStick = ClampToCircle(ApplyDeadzone(leftAxisX, leftAxisY, controllerConfig.DeadzoneLeft), controllerConfig.RangeLeft);
+                state.RStick = ClampToCircle(ApplyDeadzone(rightAxisX, rightAxisY, controllerConfig.DeadzoneRight), controllerConfig.RangeRight);
             }
 
             return state;
@@ -391,30 +391,35 @@ namespace Ryujinx.Input.HLE
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static JoystickPosition ApplyDeadzone(float x, float y, float deadzone)
         {
-            return new JoystickPosition
+            float magnitudeClamped = Math.Min(MathF.Sqrt(x * x + y * y), 1f);
+            
+            if (magnitudeClamped <= deadzone)
             {
-                Dx = ClampAxis(MathF.Abs(x) > deadzone ? x : 0.0f),
-                Dy = ClampAxis(MathF.Abs(y) > deadzone ? y : 0.0f)
+                return new JoystickPosition() {Dx = 0, Dy = 0};
+            }
+            
+            return new JoystickPosition()
+            {
+                Dx = ClampAxis((x / magnitudeClamped) * ((magnitudeClamped - deadzone) / (1 - deadzone))),
+                Dy = ClampAxis((y / magnitudeClamped) * ((magnitudeClamped - deadzone) / (1 - deadzone)))
             };
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static short ClampAxis(float value)
         {
-            if (value <= -short.MaxValue)
+            if (Math.Sign(value) < 0)
             {
-                return -short.MaxValue;
+                return (short)Math.Max(value * -short.MinValue, short.MinValue);
             }
-            else
-            {
-                return (short)(value * short.MaxValue);
-            }
+
+            return (short)Math.Min(value * short.MaxValue, short.MaxValue);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static JoystickPosition ClampToCircle(JoystickPosition position)
+        private static JoystickPosition ClampToCircle(JoystickPosition position, float range)
         {
-            Vector2 point = new Vector2(position.Dx, position.Dy);
+            Vector2 point = new Vector2(position.Dx, position.Dy) * range;
 
             if (point.Length() > short.MaxValue)
             {

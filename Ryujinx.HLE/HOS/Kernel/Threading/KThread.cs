@@ -2,6 +2,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Process;
+using Ryujinx.HLE.HOS.Kernel.SupervisorCall;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -11,6 +12,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 {
     class KThread : KSynchronizationObject, IKFutureSchedulerObject
     {
+        private const int TlsUserDisableCountOffset = 0x100;
+        private const int TlsUserInterruptFlagOffset = 0x102;
+
         public const int MaxWaitSyncObjects = 64;
 
         private ManualResetEvent _schedulerWaitEvent;
@@ -24,9 +28,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
         public KThreadContext ThreadContext { get; private set; }
 
         public int DynamicPriority { get; set; }
-        public long AffinityMask { get; set; }
+        public ulong AffinityMask { get; set; }
 
-        public long ThreadUid { get; private set; }
+        public ulong ThreadUid { get; private set; }
 
         private long _totalTimeRunning;
 
@@ -43,6 +47,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
         public bool IsSchedulable => _customThreadStart == null && !_forcedUnschedulable;
 
         public ulong MutexAddress { get; set; }
+        public int KernelWaitersCount { get; private set; }
 
         public KProcess Owner { get; private set; }
 
@@ -65,11 +70,14 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
         private LinkedList<KThread> _mutexWaiters;
         private LinkedListNode<KThread> _mutexWaiterNode;
 
+        private LinkedList<KThread> _pinnedWaiters;
+
         public KThread MutexOwner { get; private set; }
 
         public int ThreadHandleForUserMutex { get; set; }
 
         private ThreadSchedState _forcePauseFlags;
+        private ThreadSchedState _forcePausePermissionFlags;
 
         public KernelResult ObjSyncResult { get; set; }
 
@@ -79,11 +87,12 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
         public int CurrentCore { get; set; }
         public int ActiveCore { get; set; }
 
-        private long _affinityMaskOverride;
-        private int _preferredCoreOverride;
-#pragma warning disable CS0649
-        private int _affinityOverrideCount;
-#pragma warning restore CS0649
+        public bool IsPinned { get; private set; }
+
+        private ulong _originalAffinityMask;
+        private int _originalPreferredCore;
+        private int _originalBasePriority;
+        private int _coreMigrationDisableCount;
 
         public ThreadSchedState SchedFlags { get; private set; }
 
@@ -108,6 +117,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
         public long LastPc { get; set; }
 
+        private object ActivityOperationLock = new object();
+
         public KThread(KernelContext context) : base(context)
         {
             WaitSyncObjects = new KSynchronizationObject[MaxWaitSyncObjects];
@@ -116,6 +127,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             SiblingsPerCore = new LinkedListNode<KThread>[KScheduler.CpuCoresCount];
 
             _mutexWaiters = new LinkedList<KThread>();
+            _pinnedWaiters = new LinkedList<KThread>();
         }
 
         public KernelResult Initialize(
@@ -136,7 +148,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             ThreadContext = new KThreadContext();
 
             PreferredCore = cpuCore;
-            AffinityMask |= 1L << cpuCore;
+            AffinityMask |= 1UL << cpuCore;
 
             SchedFlags = type == ThreadType.Dummy
                 ? ThreadSchedState.Running
@@ -147,6 +159,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             DynamicPriority = priority;
             BasePriority = priority;
             CurrentCore = cpuCore;
+            IsPinned = false;
 
             _entrypoint = entrypoint;
             _customThreadStart = customThreadStart;
@@ -203,6 +216,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             HostThread.Name = customThreadStart != null ? $"HLE.OsThread.{ThreadUid}" : $"HLE.GuestThread.{ThreadUid}";
 
             _hasBeenInitialized = true;
+
+            _forcePausePermissionFlags = ThreadSchedState.ForcePauseMask;
 
             if (owner != null)
             {
@@ -300,6 +315,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
         public ThreadSchedState PrepareForTermination()
         {
             KernelContext.CriticalSection.Enter();
+
+            if (Owner != null && Owner.PinnedThreads[KernelStatic.GetCurrentThread().CurrentCore] == this)
+            {
+                Owner.UnpinThread(this);
+            }
 
             ThreadSchedState result;
 
@@ -405,6 +425,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             KernelContext.CriticalSection.Enter();
 
             _forcePauseFlags &= ~ThreadSchedState.ForcePauseMask;
+            _forcePausePermissionFlags = 0;
 
             bool decRef = ExitImpl();
 
@@ -431,6 +452,19 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             KernelContext.CriticalSection.Leave();
 
             return decRef;
+        }
+
+        private int GetEffectiveRunningCore()
+        {
+            for (int coreNumber = 0; coreNumber < KScheduler.CpuCoresCount; coreNumber++)
+            {
+                if (KernelContext.Schedulers[coreNumber].CurrentThread == this)
+                {
+                    return coreNumber;
+                }
+            }
+
+            return -1;
         }
 
         public KernelResult Sleep(long timeout)
@@ -465,7 +499,14 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
         {
             KernelContext.CriticalSection.Enter();
 
-            BasePriority = priority;
+            if (IsPinned)
+            {
+                _originalBasePriority = priority;
+            }
+            else
+            {
+                BasePriority = priority;
+            }
 
             UpdatePriorityInheritance();
 
@@ -497,53 +538,179 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
         public KernelResult SetActivity(bool pause)
         {
-            KernelResult result = KernelResult.Success;
-
-            KernelContext.CriticalSection.Enter();
-
-            ThreadSchedState lowNibble = SchedFlags & ThreadSchedState.LowMask;
-
-            if (lowNibble != ThreadSchedState.Paused && lowNibble != ThreadSchedState.Running)
+            lock (ActivityOperationLock)
             {
+                KernelResult result = KernelResult.Success;
+
+                KernelContext.CriticalSection.Enter();
+
+                ThreadSchedState lowNibble = SchedFlags & ThreadSchedState.LowMask;
+
+                if (lowNibble != ThreadSchedState.Paused && lowNibble != ThreadSchedState.Running)
+                {
+                    KernelContext.CriticalSection.Leave();
+
+                    return KernelResult.InvalidState;
+                }
+
+                if (!ShallBeTerminated && SchedFlags != ThreadSchedState.TerminationPending)
+                {
+                    if (pause)
+                    {
+                        // Pause, the force pause flag should be clear (thread is NOT paused).
+                        if ((_forcePauseFlags & ThreadSchedState.ThreadPauseFlag) == 0)
+                        {
+                            Suspend(ThreadSchedState.ThreadPauseFlag);
+                        }
+                        else
+                        {
+                            result = KernelResult.InvalidState;
+                        }
+                    }
+                    else
+                    {
+                        // Unpause, the force pause flag should be set (thread is paused).
+                        if ((_forcePauseFlags & ThreadSchedState.ThreadPauseFlag) != 0)
+                        {
+                            Resume(ThreadSchedState.ThreadPauseFlag);
+                        }
+                        else
+                        {
+                            result = KernelResult.InvalidState;
+                        }
+                    }
+                }
+
                 KernelContext.CriticalSection.Leave();
 
-                return KernelResult.InvalidState;
+                if (result == KernelResult.Success && pause)
+                {
+                    bool isThreadRunning = true;
+
+                    while (isThreadRunning)
+                    {
+                        KernelContext.CriticalSection.Enter();
+
+                        if (TerminationRequested)
+                        {
+                            KernelContext.CriticalSection.Leave();
+
+                            break;
+                        }
+
+                        isThreadRunning = false;
+
+                        if (IsPinned)
+                        {
+                            KThread currentThread = KernelStatic.GetCurrentThread();
+
+                            if (currentThread.TerminationRequested)
+                            {
+                                KernelContext.CriticalSection.Leave();
+
+                                result = KernelResult.ThreadTerminating;
+
+                                break;
+                            }
+
+                            _pinnedWaiters.AddLast(currentThread);
+
+                            currentThread.Reschedule(ThreadSchedState.Paused);
+                        }
+                        else
+                        {
+                            isThreadRunning = GetEffectiveRunningCore() >= 0;
+                        }
+
+                        KernelContext.CriticalSection.Leave();
+                    }
+                }
+
+                return result;
             }
+        }
 
-            KernelContext.CriticalSection.Enter();
+        public KernelResult GetThreadContext3(out ThreadContext context)
+        {
+            context = default;
 
-            if (!ShallBeTerminated && SchedFlags != ThreadSchedState.TerminationPending)
+            lock (ActivityOperationLock)
             {
-                if (pause)
+                KernelContext.CriticalSection.Enter();
+
+                if ((_forcePauseFlags & ThreadSchedState.ThreadPauseFlag) == 0)
                 {
-                    // Pause, the force pause flag should be clear (thread is NOT paused).
-                    if ((_forcePauseFlags & ThreadSchedState.ThreadPauseFlag) == 0)
-                    {
-                        Suspend(ThreadSchedState.ThreadPauseFlag);
-                    }
-                    else
-                    {
-                        result = KernelResult.InvalidState;
-                    }
+                    KernelContext.CriticalSection.Leave();
+
+                    return KernelResult.InvalidState;
                 }
-                else
+
+                if (!TerminationRequested)
                 {
-                    // Unpause, the force pause flag should be set (thread is paused).
-                    if ((_forcePauseFlags & ThreadSchedState.ThreadPauseFlag) != 0)
-                    {
-                        Resume(ThreadSchedState.ThreadPauseFlag);
-                    }
-                    else
-                    {
-                        result = KernelResult.InvalidState;
-                    }
+                    context = GetCurrentContext();
                 }
+
+                KernelContext.CriticalSection.Leave();
             }
 
-            KernelContext.CriticalSection.Leave();
-            KernelContext.CriticalSection.Leave();
+            return KernelResult.Success;
+        }
 
-            return result;
+        private static uint GetPsr(ARMeilleure.State.ExecutionContext context)
+        {
+            return (context.GetPstateFlag(ARMeilleure.State.PState.NFlag) ? (1U << (int)ARMeilleure.State.PState.NFlag) : 0U) |
+                   (context.GetPstateFlag(ARMeilleure.State.PState.ZFlag) ? (1U << (int)ARMeilleure.State.PState.ZFlag) : 0U) |
+                   (context.GetPstateFlag(ARMeilleure.State.PState.CFlag) ? (1U << (int)ARMeilleure.State.PState.CFlag) : 0U) |
+                   (context.GetPstateFlag(ARMeilleure.State.PState.VFlag) ? (1U << (int)ARMeilleure.State.PState.VFlag) : 0U);
+        }
+
+        private ThreadContext GetCurrentContext()
+        {
+            const int MaxRegistersAArch32 = 15;
+            const int MaxFpuRegistersAArch32 = 16;
+
+            ThreadContext context = new ThreadContext();
+
+            if (Owner.Flags.HasFlag(ProcessCreationFlags.Is64Bit))
+            {
+                for (int i = 0; i < context.Registers.Length; i++)
+                {
+                    context.Registers[i] = Context.GetX(i);
+                }
+
+                for (int i = 0; i < context.FpuRegisters.Length; i++)
+                {
+                    context.FpuRegisters[i] = Context.GetV(i);
+                }
+
+                context.Fp = Context.GetX(29);
+                context.Lr = Context.GetX(30);
+                context.Sp = Context.GetX(31);
+                context.Pc = (ulong)LastPc;
+                context.Pstate = GetPsr(Context);
+                context.Tpidr = (ulong)Context.Tpidr;
+            }
+            else
+            {
+                for (int i = 0; i < MaxRegistersAArch32; i++)
+                {
+                    context.Registers[i] = (uint)Context.GetX(i);
+                }
+
+                for (int i = 0; i < MaxFpuRegistersAArch32; i++)
+                {
+                    context.FpuRegisters[i] = Context.GetV(i);
+                }
+
+                context.Pc = (uint)LastPc;
+                context.Pstate = GetPsr(Context);
+                context.Tpidr = (uint)Context.Tpidr;
+            }
+
+            context.Fpcr = (uint)Context.Fpcr;
+            context.Fpsr = (uint)Context.Fpsr;
+
+            return context;
         }
 
         public void CancelSynchronization()
@@ -577,60 +744,107 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             KernelContext.CriticalSection.Leave();
         }
 
-        public KernelResult SetCoreAndAffinityMask(int newCore, long newAffinityMask)
+        public KernelResult SetCoreAndAffinityMask(int newCore, ulong newAffinityMask)
         {
-            KernelContext.CriticalSection.Enter();
-
-            bool useOverride = _affinityOverrideCount != 0;
-
-            // The value -3 is "do not change the preferred core".
-            if (newCore == -3)
+            lock (ActivityOperationLock)
             {
-                newCore = useOverride ? _preferredCoreOverride : PreferredCore;
+                KernelContext.CriticalSection.Enter();
 
-                if ((newAffinityMask & (1 << newCore)) == 0)
+                bool isCoreMigrationDisabled = _coreMigrationDisableCount != 0;
+
+                // The value -3 is "do not change the preferred core".
+                if (newCore == -3)
                 {
-                    KernelContext.CriticalSection.Leave();
+                    newCore = isCoreMigrationDisabled ? _originalPreferredCore : PreferredCore;
 
-                    return KernelResult.InvalidCombination;
-                }
-            }
-
-            if (useOverride)
-            {
-                _preferredCoreOverride = newCore;
-                _affinityMaskOverride = newAffinityMask;
-            }
-            else
-            {
-                long oldAffinityMask = AffinityMask;
-
-                PreferredCore = newCore;
-                AffinityMask = newAffinityMask;
-
-                if (oldAffinityMask != newAffinityMask)
-                {
-                    int oldCore = ActiveCore;
-
-                    if (oldCore >= 0 && ((AffinityMask >> oldCore) & 1) == 0)
+                    if ((newAffinityMask & (1UL << newCore)) == 0)
                     {
-                        if (PreferredCore < 0)
+                        KernelContext.CriticalSection.Leave();
+
+                        return KernelResult.InvalidCombination;
+                    }
+                }
+
+                if (isCoreMigrationDisabled)
+                {
+                    _originalPreferredCore = newCore;
+                    _originalAffinityMask = newAffinityMask;
+                }
+                else
+                {
+                    ulong oldAffinityMask = AffinityMask;
+
+                    PreferredCore = newCore;
+                    AffinityMask = newAffinityMask;
+
+                    if (oldAffinityMask != newAffinityMask)
+                    {
+                        int oldCore = ActiveCore;
+
+                        if (oldCore >= 0 && ((AffinityMask >> oldCore) & 1) == 0)
                         {
-                            ActiveCore = sizeof(ulong) * 8 - 1 - BitOperations.LeadingZeroCount((ulong)AffinityMask);
+                            if (PreferredCore < 0)
+                            {
+                                ActiveCore = sizeof(ulong) * 8 - 1 - BitOperations.LeadingZeroCount(AffinityMask);
+                            }
+                            else
+                            {
+                                ActiveCore = PreferredCore;
+                            }
+                        }
+
+                        AdjustSchedulingForNewAffinity(oldAffinityMask, oldCore);
+                    }
+                }
+
+                KernelContext.CriticalSection.Leave();
+
+                bool targetThreadPinned = true;
+
+                while (targetThreadPinned)
+                {
+                    KernelContext.CriticalSection.Enter();
+
+                    if (TerminationRequested)
+                    {
+                        KernelContext.CriticalSection.Leave();
+
+                        break;
+                    }
+
+                    targetThreadPinned = false;
+
+                    int coreNumber = GetEffectiveRunningCore();
+                    bool isPinnedThreadCurrentlyRunning = coreNumber >= 0;
+
+                    if (isPinnedThreadCurrentlyRunning && ((1UL << coreNumber) & AffinityMask) == 0)
+                    {
+                        if (IsPinned)
+                        {
+                            KThread currentThread = KernelStatic.GetCurrentThread();
+
+                            if (currentThread.TerminationRequested)
+                            {
+                                KernelContext.CriticalSection.Leave();
+
+                                return KernelResult.ThreadTerminating;
+                            }
+
+                            _pinnedWaiters.AddLast(currentThread);
+
+                            currentThread.Reschedule(ThreadSchedState.Paused);
                         }
                         else
                         {
-                            ActiveCore = PreferredCore;
+                            targetThreadPinned = true;
                         }
                     }
 
-                    AdjustSchedulingForNewAffinity(oldAffinityMask, oldCore);
+                    KernelContext.CriticalSection.Leave();
                 }
+
+                return KernelResult.Success;
             }
-
-            KernelContext.CriticalSection.Leave();
-
-            return KernelResult.Success;
         }
 
         private void CombineForcePauseFlags()
@@ -638,7 +852,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             ThreadSchedState oldFlags = SchedFlags;
             ThreadSchedState lowNibble = SchedFlags & ThreadSchedState.LowMask;
 
-            SchedFlags = lowNibble | _forcePauseFlags;
+            SchedFlags = lowNibble | (_forcePauseFlags & _forcePausePermissionFlags);
 
             AdjustScheduling(oldFlags);
         }
@@ -947,7 +1161,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             KernelContext.ThreadReselectionRequested = true;
         }
 
-        private void AdjustSchedulingForNewAffinity(long oldAffinityMask, int oldCore)
+        private void AdjustSchedulingForNewAffinity(ulong oldAffinityMask, int oldCore)
         {
             if (SchedFlags != ThreadSchedState.Running || DynamicPriority >= KScheduler.PrioritiesCount || !IsSchedulable)
             {
@@ -1106,7 +1320,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             foreach (KThread thread in _mutexWaiters)
             {
                 thread.MutexOwner = null;
-                thread._preferredCoreOverride = 0;
+                thread._originalPreferredCore = 0;
                 thread.ObjSyncResult = KernelResult.InvalidState;
 
                 thread.ReleaseAndResume();
@@ -1115,6 +1329,114 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             KernelContext.CriticalSection.Leave();
 
             Owner?.DecrementThreadCountAndTerminateIfZero();
+        }
+
+        public void Pin()
+        {
+            IsPinned = true;
+            _coreMigrationDisableCount++;
+
+            int activeCore = ActiveCore;
+
+            _originalPreferredCore = PreferredCore;
+            _originalAffinityMask = AffinityMask;
+
+            ActiveCore = CurrentCore;
+            PreferredCore = CurrentCore;
+            AffinityMask = 1UL << CurrentCore;
+
+            if (activeCore != CurrentCore || _originalAffinityMask != AffinityMask)
+            {
+                AdjustSchedulingForNewAffinity(_originalAffinityMask, activeCore);
+            }
+
+            _originalBasePriority = BasePriority;
+            BasePriority = Math.Min(_originalBasePriority, BitOperations.TrailingZeroCount(Owner.Capabilities.AllowedThreadPriosMask) - 1);
+            UpdatePriorityInheritance();
+
+            // Disallows thread pausing
+            _forcePausePermissionFlags &= ~ThreadSchedState.ThreadPauseFlag;
+            CombineForcePauseFlags();
+
+            // TODO: Assign reduced SVC permissions
+        }
+
+        public void Unpin()
+        {
+            IsPinned = false;
+            _coreMigrationDisableCount--;
+
+            ulong affinityMask = AffinityMask;
+            int activeCore = ActiveCore;
+
+            PreferredCore = _originalPreferredCore;
+            AffinityMask = _originalAffinityMask;
+            
+            if (AffinityMask != affinityMask)
+            {
+                if ((AffinityMask & 1UL << ActiveCore) != 0)
+                {
+                    if (PreferredCore >= 0)
+                    {
+                        ActiveCore = PreferredCore;
+                    }
+                    else
+                    {
+                        ActiveCore = sizeof(ulong) * 8 - 1 - BitOperations.LeadingZeroCount((ulong)AffinityMask);
+                    }
+
+                    AdjustSchedulingForNewAffinity(affinityMask, activeCore);
+                }
+            }
+
+            BasePriority = _originalBasePriority;
+            UpdatePriorityInheritance();
+
+            if (!TerminationRequested)
+            {
+                // Allows thread pausing
+                _forcePausePermissionFlags |= ThreadSchedState.ThreadPauseFlag;
+                CombineForcePauseFlags();
+
+                // TODO: Restore SVC permissions
+            }
+
+            // Wake up waiters
+            foreach (KThread waiter in _pinnedWaiters)
+            {
+                waiter.ReleaseAndResume();
+            }
+
+            _pinnedWaiters.Clear();
+        }
+
+        public void SynchronizePreemptionState()
+        {
+            KernelContext.CriticalSection.Enter();
+
+            if (Owner != null && Owner.PinnedThreads[CurrentCore] == this)
+            {
+                ClearUserInterruptFlag();
+
+                Owner.UnpinThread(this);
+            }
+
+            KernelContext.CriticalSection.Leave();
+        }
+
+        public ushort GetUserDisableCount()
+        {
+            return Owner.CpuMemory.Read<ushort>(_tlsAddress + TlsUserDisableCountOffset);
+        }
+
+        public void SetUserInterruptFlag()
+        {
+            Owner.CpuMemory.Write<ushort>(_tlsAddress + TlsUserInterruptFlagOffset, 1);
+        }
+
+        public void ClearUserInterruptFlag()
+        {
+            Owner.CpuMemory.Write<ushort>(_tlsAddress + TlsUserInterruptFlagOffset, 0);
         }
     }
 }

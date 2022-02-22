@@ -71,6 +71,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 { 0x33, nameof(Syscall64.GetThreadContext364)              },
                 { 0x34, nameof(Syscall64.WaitForAddress64)                 },
                 { 0x35, nameof(Syscall64.SignalToAddress64)                },
+                { 0x36, nameof(Syscall64.SynchronizePreemptionState64)     },
                 { 0x37, nameof(Syscall64.GetResourceLimitPeakValue64)      },
                 { 0x40, nameof(Syscall64.CreateSession64)                  },
                 { 0x41, nameof(Syscall64.AcceptSession64)                  },
@@ -145,6 +146,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 { 0x33, nameof(Syscall32.GetThreadContext332)             },
                 { 0x34, nameof(Syscall32.WaitForAddress32)                },
                 { 0x35, nameof(Syscall32.SignalToAddress32)               },
+                { 0x36, nameof(Syscall32.SynchronizePreemptionState32)    },
                 { 0x37, nameof(Syscall32.GetResourceLimitPeakValue32)     },
                 { 0x40, nameof(Syscall32.CreateSession32)                 },
                 { 0x41, nameof(Syscall32.AcceptSession32)                 },
@@ -431,7 +433,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             generator.Emit(OpCodes.Ret);
 
-            return (Action<T, ExecutionContext>)method.CreateDelegate(typeof(Action<T, ExecutionContext>));
+            return method.CreateDelegate<Action<T, ExecutionContext>>();
         }
 
         private static void CheckIfTypeIsSupported(Type type, string svcName)
@@ -457,26 +459,27 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         {
             if (argValues != null)
             {
-                Logger.Debug?.Print(LogClass.KernelSvc, string.Format(formatOrSvcName, argValues));
+                Logger.Trace?.Print(LogClass.KernelSvc, string.Format(formatOrSvcName, argValues));
             }
             else
             {
-                Logger.Debug?.Print(LogClass.KernelSvc, formatOrSvcName);
+                Logger.Trace?.Print(LogClass.KernelSvc, formatOrSvcName);
             }
         }
 
         private static void PrintResult(KernelResult result, string svcName)
         {
-            if (result != KernelResult.Success   &&
-                result != KernelResult.TimedOut  &&
+            if (result != KernelResult.Success &&
+                result != KernelResult.TimedOut &&
                 result != KernelResult.Cancelled &&
+                result != KernelResult.PortRemoteClosed &&
                 result != KernelResult.InvalidState)
             {
                 Logger.Warning?.Print(LogClass.KernelSvc, $"{svcName} returned error {result}.");
             }
             else
             {
-                Logger.Debug?.Print(LogClass.KernelSvc, $"{svcName} returned result {result}.");
+                Logger.Trace?.Print(LogClass.KernelSvc, $"{svcName} returned result {result}.");
             }
         }
     }

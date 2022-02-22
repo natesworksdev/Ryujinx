@@ -116,7 +116,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
             ref ApplicationControlProperty control = ref controlHolder.Value;
 
-            if (LibHac.Utilities.IsZeros(controlHolder.ByteSpan))
+            if (LibHac.Common.Utilities.IsZeros(controlHolder.ByteSpan))
             {
                 // If the current application doesn't have a loaded control property, create a dummy one
                 // and set the savedata sizes so a user savedata will be created.
@@ -326,6 +326,19 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
             context.ResponseData.Write(0L);
 
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return ResultCode.Success;
+        }
+
+        [CommandHipc(60)] // 2.0.0+
+        // SetMediaPlaybackStateForApplication(bool enabled)
+        public ResultCode SetMediaPlaybackStateForApplication(ServiceCtx context)
+        {
+            bool enabled = context.RequestData.ReadBoolean();
+
+            // NOTE: Service stores the "enabled" value in a private field, when enabled is false, it stores nn::os::GetSystemTick() too.
+
+            Logger.Stub?.PrintStub(LogClass.ServiceAm, new { enabled });
 
             return ResultCode.Success;
         }

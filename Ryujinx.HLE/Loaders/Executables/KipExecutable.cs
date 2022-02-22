@@ -1,3 +1,4 @@
+using LibHac.Common;
 using LibHac.Fs;
 using LibHac.Kernel;
 using System;
@@ -7,9 +8,9 @@ namespace Ryujinx.HLE.Loaders.Executables
     class KipExecutable : IExecutable
     {
         public byte[] Program { get; }
-        public Span<byte> Text => Program.AsSpan().Slice((int)TextOffset, (int)TextSize);
-        public Span<byte> Ro   => Program.AsSpan().Slice((int)RoOffset,   (int)RoSize);
-        public Span<byte> Data => Program.AsSpan().Slice((int)DataOffset, (int)DataSize);
+        public Span<byte> Text => Program.AsSpan((int)TextOffset, (int)TextSize);
+        public Span<byte> Ro   => Program.AsSpan((int)RoOffset,   (int)RoSize);
+        public Span<byte> Data => Program.AsSpan((int)DataOffset, (int)DataSize);
 
         public uint TextOffset { get; }
         public uint RoOffset   { get; }
@@ -32,11 +33,11 @@ namespace Ryujinx.HLE.Loaders.Executables
         public int Version              { get; }
         public string Name              { get; }
 
-        public KipExecutable(IStorage inStorage)
+        public KipExecutable(in SharedRef<IStorage> inStorage)
         {
             KipReader reader = new KipReader();
 
-            reader.Initialize(inStorage).ThrowIfFailure();
+            reader.Initialize(in inStorage).ThrowIfFailure();
 
             TextOffset = (uint)reader.Segments[0].MemoryOffset;
             RoOffset   = (uint)reader.Segments[1].MemoryOffset;
@@ -75,7 +76,7 @@ namespace Ryujinx.HLE.Loaders.Executables
         {
             reader.GetSegmentSize(segmentType, out int uncompressedSize).ThrowIfFailure();
 
-            var span = program.AsSpan().Slice((int)offset, uncompressedSize);
+            var span = program.AsSpan((int)offset, uncompressedSize);
 
             reader.ReadSegment(segmentType, span).ThrowIfFailure();
 

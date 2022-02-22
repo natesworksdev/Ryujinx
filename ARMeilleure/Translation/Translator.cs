@@ -49,7 +49,7 @@ namespace ARMeilleure.Translation
         private readonly AutoResetEvent _backgroundTranslatorEvent;
         private readonly ReaderWriterLock _backgroundTranslatorLock;
 
-        internal ConcurrentDictionary<ulong, TranslatedFunction> Functions { get; }
+        internal TranslatorCache<TranslatedFunction> Functions { get; }
         internal AddressTable<ulong> FunctionTable { get; }
         internal EntryTable<uint> CountTable { get; }
         internal TranslatorStubs Stubs { get; }
@@ -75,7 +75,7 @@ namespace ARMeilleure.Translation
             JitCache.Initialize(allocator);
 
             CountTable = new EntryTable<uint>();
-            Functions = new ConcurrentDictionary<ulong, TranslatedFunction>();
+            Functions = new TranslatorCache<TranslatedFunction>();
             FunctionTable = new AddressTable<ulong>(for64Bits ? Levels64Bit : Levels32Bit);
             Stubs = new TranslatorStubs(this);
 
@@ -93,12 +93,12 @@ namespace ARMeilleure.Translation
             {
                 _backgroundTranslatorLock.AcquireReaderLock(Timeout.Infinite);
 
-                if (_backgroundStack.TryPop(out RejitRequest request) && 
+                if (_backgroundStack.TryPop(out RejitRequest request) &&
                     _backgroundSet.TryRemove(request.Address, out _))
                 {
                     TranslatedFunction func = Translate(request.Address, request.Mode, highCq: true);
 
-                    Functions.AddOrUpdate(request.Address, func, (key, oldFunc) =>
+                    Functions.AddOrUpdate(request.Address, func.GuestSize, func, (key, oldFunc) =>
                     {
                         EnqueueForDeletion(key, oldFunc);
                         return func;
@@ -196,7 +196,7 @@ namespace ARMeilleure.Translation
             }
         }
 
-        public ulong ExecuteSingle(State.ExecutionContext context, ulong address)
+        private ulong ExecuteSingle(State.ExecutionContext context, ulong address)
         {
             TranslatedFunction func = GetOrTranslate(address, context.ExecutionMode);
 
@@ -209,13 +209,24 @@ namespace ARMeilleure.Translation
             return nextAddr;
         }
 
+        public ulong Step(State.ExecutionContext context, ulong address)
+        {
+            TranslatedFunction func = Translate(address, context.ExecutionMode, highCq: false, singleStep: true);
+
+            address = func.Execute(context);
+
+            EnqueueForDeletion(address, func);
+
+            return address;
+        }
+
         internal TranslatedFunction GetOrTranslate(ulong address, ExecutionMode mode)
         {
             if (!Functions.TryGetValue(address, out TranslatedFunction func))
             {
                 func = Translate(address, mode, highCq: false);
 
-                TranslatedFunction oldFunc = Functions.GetOrAdd(address, func);
+                TranslatedFunction oldFunc = Functions.GetOrAdd(address, func.GuestSize, func);
 
                 if (oldFunc != func)
                 {
@@ -242,7 +253,7 @@ namespace ARMeilleure.Translation
             }
         }
 
-        internal TranslatedFunction Translate(ulong address, ExecutionMode mode, bool highCq)
+        internal TranslatedFunction Translate(ulong address, ExecutionMode mode, bool highCq, bool singleStep = false)
         {
             var context = new ArmEmitterContext(
                 Memory,
@@ -255,7 +266,7 @@ namespace ARMeilleure.Translation
 
             Logger.StartPass(PassName.Decoding);
 
-            Block[] blocks = Decoder.Decode(Memory, address, mode, highCq, singleBlock: false);
+            Block[] blocks = Decoder.Decode(Memory, address, mode, highCq, singleStep ? DecoderMode.SingleInstruction : DecoderMode.MultipleBlocks);
 
             Logger.EndPass(PassName.Decoding);
 
@@ -285,14 +296,14 @@ namespace ARMeilleure.Translation
 
             var options = highCq ? CompilerOptions.HighCq : CompilerOptions.None;
 
-            if (context.HasPtc)
+            if (context.HasPtc && !singleStep)
             {
                 options |= CompilerOptions.Relocatable;
             }
 
             CompiledFunction compiledFunc = Compiler.Compile(cfg, argTypes, retType, options);
 
-            if (context.HasPtc)
+            if (context.HasPtc && !singleStep)
             {
                 Hash128 hash = Ptc.ComputeHash(Memory, address, funcSize);
 
@@ -380,6 +391,13 @@ namespace ARMeilleure.Translation
 
                         Operand lblPredicateSkip = default;
 
+                        if (context.IsInIfThenBlock && context.CurrentIfThenBlockCond != Condition.Al)
+                        {
+                            lblPredicateSkip = Label();
+
+                            InstEmitFlowHelper.EmitCondBranch(context, lblPredicateSkip, context.CurrentIfThenBlockCond.Invert());
+                        }
+
                         if (opCode is OpCode32 op && op.Cond < Condition.Al)
                         {
                             lblPredicateSkip = Label();
@@ -399,6 +417,11 @@ namespace ARMeilleure.Translation
                         if (lblPredicateSkip != default)
                         {
                             context.MarkLabel(lblPredicateSkip);
+                        }
+
+                        if (context.IsInIfThenBlock && opCode.Instruction.Name != InstName.It)
+                        {
+                            context.AdvanceIfThenBlockState();
                         }
                     }
                 }
@@ -459,7 +482,24 @@ namespace ARMeilleure.Translation
             // If rejit is running, stop it as it may be trying to rejit a function on the invalidated region.
             ClearRejitQueue(allowRequeue: true);
 
-            // TODO: Completely remove functions overlapping the specified range from the cache.
+            ulong[] overlapAddresses = Array.Empty<ulong>();
+
+            int overlapsCount = Functions.GetOverlaps(address, size, ref overlapAddresses);
+
+            for (int index = 0; index < overlapsCount; index++)
+            {
+                ulong overlapAddress = overlapAddresses[index];
+
+                if (Functions.TryGetValue(overlapAddress, out TranslatedFunction overlap))
+                {
+                    Functions.Remove(overlapAddress);
+                    Volatile.Write(ref FunctionTable.GetValue(overlapAddress), FunctionTable.Fill);
+                    EnqueueForDeletion(overlapAddress, overlap);
+                }
+            }
+
+            // TODO: Remove overlapping functions from the JitCache aswell.
+            // This should be done safely, with a mechanism to ensure the function is not being executed.
         }
 
         internal void EnqueueForRejit(ulong guestAddress, ExecutionMode mode)
@@ -481,7 +521,9 @@ namespace ARMeilleure.Translation
             // Ensure no attempt will be made to compile new functions due to rejit.
             ClearRejitQueue(allowRequeue: false);
 
-            foreach (var func in Functions.Values)
+            List<TranslatedFunction> functions = Functions.AsList();
+
+            foreach (var func in functions)
             {
                 JitCache.Unmap(func.FuncPtr);
 

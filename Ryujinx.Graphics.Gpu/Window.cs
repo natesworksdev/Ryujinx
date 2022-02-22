@@ -122,7 +122,7 @@ namespace Ryujinx.Graphics.Gpu
         /// <param name="userObj">User defined object passed to the release callback</param>
         /// <exception cref="ArgumentException">Thrown when <paramref name="pid"/> is invalid</exception>
         public void EnqueueFrameThreadSafe(
-            long                       pid,
+            ulong                      pid,
             ulong                      address,
             int                        width,
             int                        height,
@@ -201,7 +201,29 @@ namespace Ryujinx.Graphics.Gpu
 
                 texture.SynchronizeMemory();
 
-                _context.Renderer.Window.Present(texture.HostTexture, pt.Crop, swapBuffersCallback);
+                ImageCrop crop = pt.Crop;
+
+                if (texture.Info.Width > pt.Info.Width || texture.Info.Height > pt.Info.Height)
+                {
+                    int top = crop.Top;
+                    int bottom = crop.Bottom;
+                    int left = crop.Left;
+                    int right = crop.Right;
+
+                    if (top == 0 && bottom == 0)
+                    {
+                        bottom = Math.Min(texture.Info.Height, pt.Info.Height);
+                    }
+
+                    if (left == 0 && right == 0)
+                    {
+                        right = Math.Min(texture.Info.Width, pt.Info.Width);
+                    }
+
+                    crop = new ImageCrop(left, right, top, bottom, crop.FlipX, crop.FlipY, crop.IsStretched, crop.AspectRatioX, crop.AspectRatioY);
+                }
+
+                _context.Renderer.Window.Present(texture.HostTexture, crop, swapBuffersCallback);
 
                 pt.ReleaseCallback(pt.UserObj);
             }

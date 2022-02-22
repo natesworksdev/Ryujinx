@@ -167,15 +167,15 @@ namespace Ryujinx.Graphics.Shader.Translation
                     this.Copy(dest, src);
                 }
 
+                bool supportsBgra = Config.GpuAccessor.QueryHostSupportsBgraFormat();
                 int regIndexBase = 0;
 
                 for (int rtIndex = 0; rtIndex < 8; rtIndex++)
                 {
-                    OmapTarget target = Config.OmapTargets[rtIndex];
-
                     for (int component = 0; component < 4; component++)
                     {
-                        if (!target.ComponentEnabled(component))
+                        bool componentEnabled = (Config.OmapTargets & (1 << (rtIndex * 4 + component))) != 0;
+                        if (!componentEnabled)
                         {
                             continue;
                         }
@@ -185,7 +185,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                         Operand src = Register(regIndexBase + component, RegisterType.Gpr);
 
                         // Perform B <-> R swap if needed, for BGRA formats (not supported on OpenGL).
-                        if (component == 0 || component == 2)
+                        if (!supportsBgra && (component == 0 || component == 2))
                         {
                             Operand isBgra = Attribute(AttributeConsts.FragmentOutputIsBgraBase + rtIndex * 4);
 
@@ -209,7 +209,8 @@ namespace Ryujinx.Graphics.Shader.Translation
                         }
                     }
 
-                    if (target.Enabled)
+                    bool targetEnabled = (Config.OmapTargets & (0xf << (rtIndex * 4))) != 0;
+                    if (targetEnabled)
                     {
                         Config.SetOutputUserAttribute(rtIndex, perPatch: false);
                         regIndexBase += 4;

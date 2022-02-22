@@ -14,8 +14,11 @@ namespace Ryujinx.Configuration
         /// <summary>
         /// The current version of the file format
         /// </summary>
-        public const int CurrentVersion = 32;
+        public const int CurrentVersion = 36;
 
+        /// <summary>
+        /// Version of the configuration file format
+        /// </summary>
         public int Version { get; set; }
 
         /// <summary>
@@ -79,6 +82,11 @@ namespace Ryujinx.Configuration
         public bool LoggingEnableError { get; set; }
 
         /// <summary>
+        /// Enables printing trace log messages
+        /// </summary>
+        public bool LoggingEnableTrace { get; set; }
+
+        /// <summary>
         /// Enables printing guest log messages
         /// </summary>
         public bool LoggingEnableGuest { get; set; }
@@ -97,7 +105,6 @@ namespace Ryujinx.Configuration
         /// Change Graphics API debug log level
         /// </summary>
         public GraphicsDebugLevel LoggingGraphicsDebugLevel { get; set; }
-
 
         /// <summary>
         /// Change System Language
@@ -155,14 +162,14 @@ namespace Ryujinx.Configuration
         public bool EnableShaderCache { get; set; }
 
         /// <summary>
-        /// Enables or disables multi-core scheduling of threads
-        /// </summary>
-        public bool EnableMulticoreScheduling { get; set; }
-
-        /// <summary>
         /// Enables or disables profiled translation cache persistency
         /// </summary>
         public bool EnablePtc { get; set; }
+
+        /// <summary>
+        /// Enables or disables guest Internet access
+        /// </summary>
+        public bool EnableInternetAccess { get; set; }
 
         /// <summary>
         /// Enables integrity checks on Game content files
@@ -178,6 +185,11 @@ namespace Ryujinx.Configuration
         /// The selected audio backend
         /// </summary>
         public AudioBackend AudioBackend { get; set; }
+
+        /// <summary>
+        /// The audio volume
+        /// </summary>
+        public float AudioVolume { get; set; }
 
         /// <summary>
         /// The selected memory manager mode

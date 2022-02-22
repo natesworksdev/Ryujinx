@@ -75,6 +75,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
 
             SemaphoredOperation operation = _state.State.SemaphoredOperation;
 
+            if (_state.State.SemaphoredReleaseSize == SemaphoredReleaseSize.SixteenBytes)
+            {
+                _parent.MemoryManager.Write(address + 4, 0);
+                _parent.MemoryManager.Write(address + 8, _context.GetTimestamp());
+            }
+
             // TODO: Acquire operations (Wait), interrupts for invalid combinations.
             if (operation == SemaphoredOperation.Release)
             {
@@ -136,7 +142,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
             }
             else if (operation == SyncpointbOperation.Incr)
             {
-                _context.CreateHostSyncIfNeeded();
+                _context.CreateHostSyncIfNeeded(true);
                 _context.Synchronization.IncrementSyncpoint(syncpointId);
             }
 
@@ -152,7 +158,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
             _parent.PerformDeferredDraws();
             _context.Renderer.Pipeline.Barrier();
 
-            _context.CreateHostSyncIfNeeded();
+            _context.CreateHostSyncIfNeeded(false);
         }
 
         /// <summary>
@@ -163,7 +169,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
         {
             _context.Renderer.Pipeline.CommandBufferBarrier();
 
-            _context.CreateHostSyncIfNeeded();
+            _context.CreateHostSyncIfNeeded(false);
         }
 
         /// <summary>

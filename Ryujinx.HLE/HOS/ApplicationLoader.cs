@@ -6,10 +6,12 @@ using LibHac.Fs;
 using LibHac.Fs.Fsa;
 using LibHac.Fs.Shim;
 using LibHac.FsSystem;
-using LibHac.FsSystem.NcaUtils;
 using LibHac.Loader;
 using LibHac.Ncm;
 using LibHac.Ns;
+using LibHac.Tools.Fs;
+using LibHac.Tools.FsSystem;
+using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
@@ -25,6 +27,7 @@ using System.Reflection;
 using static LibHac.Fs.ApplicationSaveDataManagement;
 using static Ryujinx.HLE.HOS.ModLoader;
 using ApplicationId = LibHac.Ncm.ApplicationId;
+using Path = System.IO.Path;
 
 namespace Ryujinx.HLE.HOS
 {
@@ -101,9 +104,11 @@ namespace Ryujinx.HLE.HOS
 
             foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*.nca"))
             {
-                pfs.OpenFile(out IFile ncaFile, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                using var ncaFile = new UniqueRef<IFile>();
 
-                Nca nca = new Nca(fileSystem.KeySet, ncaFile.AsStorage());
+                pfs.OpenFile(ref ncaFile.Ref(), fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+
+                Nca nca = new Nca(fileSystem.KeySet, ncaFile.Release().AsStorage());
 
                 int ncaProgramIndex = (int)(nca.Header.TitleId & 0xF);
 
@@ -116,7 +121,7 @@ namespace Ryujinx.HLE.HOS
                 {
                     int dataIndex = Nca.GetSectionIndexFromType(NcaSectionType.Data, NcaContentType.Program);
 
-                    if (nca.Header.GetFsHeader(dataIndex).IsPatchSection())
+                    if (nca.SectionExists(NcaSectionType.Data) && nca.Header.GetFsHeader(dataIndex).IsPatchSection())
                     {
                         patchNca = nca;
                     }
@@ -143,9 +148,11 @@ namespace Ryujinx.HLE.HOS
 
             foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*.nca"))
             {
-                pfs.OpenFile(out IFile ncaFile, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                using var ncaFile = new UniqueRef<IFile>();
 
-                Nca nca = new Nca(fileSystem.KeySet, ncaFile.AsStorage());
+                pfs.OpenFile(ref ncaFile.Ref(), fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+
+                Nca nca = new Nca(fileSystem.KeySet, ncaFile.Release().AsStorage());
 
                 int ncaProgramIndex = (int)(nca.Header.TitleId & 0xF);
 
@@ -429,7 +436,9 @@ namespace Ryujinx.HLE.HOS
         // Sets TitleId, so be sure to call before using it
         private MetaLoader ReadNpdm(IFileSystem fs)
         {
-            Result result = fs.OpenFile(out IFile npdmFile, "/main.npdm".ToU8Span(), OpenMode.Read);
+            using var npdmFile = new UniqueRef<IFile>();
+
+            Result result = fs.OpenFile(ref npdmFile.Ref(), "/main.npdm".ToU8Span(), OpenMode.Read);
 
             MetaLoader metaData;
 
@@ -441,10 +450,10 @@ namespace Ryujinx.HLE.HOS
             }
             else
             {
-                npdmFile.GetSize(out long fileSize).ThrowIfFailure();
+                npdmFile.Get.GetSize(out long fileSize).ThrowIfFailure();
 
                 var npdmBuffer = new byte[fileSize];
-                npdmFile.Read(out _, 0, npdmBuffer).ThrowIfFailure();
+                npdmFile.Get.Read(out _, 0, npdmBuffer).ThrowIfFailure();
 
                 metaData = new MetaLoader();
                 metaData.Load(npdmBuffer).ThrowIfFailure();
@@ -461,12 +470,14 @@ namespace Ryujinx.HLE.HOS
 
         private static void ReadControlData(Switch device, Nca controlNca, ref BlitStruct<ApplicationControlProperty> controlData, ref string titleName, ref string displayVersion)
         {
+            using var controlFile = new UniqueRef<IFile>();
+
             IFileSystem controlFs = controlNca.OpenFileSystem(NcaSectionType.Data, device.System.FsIntegrityCheckLevel);
-            Result result = controlFs.OpenFile(out IFile controlFile, "/control.nacp".ToU8Span(), OpenMode.Read);
+            Result result = controlFs.OpenFile(ref controlFile.Ref(), "/control.nacp".ToU8Span(), OpenMode.Read);
 
             if (result.IsSuccess())
             {
-                result = controlFile.Read(out long bytesRead, 0, controlData.ByteSpan, ReadOption.None);
+                result = controlFile.Get.Read(out long bytesRead, 0, controlData.ByteSpan, ReadOption.None);
 
                 if (result.IsSuccess() && bytesRead == controlData.ByteSpan.Length)
                 {
@@ -508,9 +519,11 @@ namespace Ryujinx.HLE.HOS
 
                 Logger.Info?.Print(LogClass.Loader, $"Loading {name}...");
 
-                codeFs.OpenFile(out IFile nsoFile, $"/{name}".ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                using var nsoFile = new UniqueRef<IFile>();
 
-                nsos[i] = new NsoExecutable(nsoFile.AsStorage(), name);
+                codeFs.OpenFile(ref nsoFile.Ref(), $"/{name}".ToU8Span(), OpenMode.Read).ThrowIfFailure();
+
+                nsos[i] = new NsoExecutable(nsoFile.Release().AsStorage(), name);
             }
 
             // ExeFs file replacements
@@ -680,9 +693,11 @@ namespace Ryujinx.HLE.HOS
 
             foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*.nca"))
             {
-                pfs.OpenFile(out IFile ncaFile, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                using var ncaFile = new UniqueRef<IFile>();
 
-                Nca nca = new Nca(fileSystem.KeySet, ncaFile.AsStorage());
+                pfs.OpenFile(ref ncaFile.Ref(), fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+
+                Nca nca = new Nca(fileSystem.KeySet, ncaFile.Release().AsStorage());
 
                 if (nca.Header.ContentType != NcaContentType.Program)
                 {
@@ -691,7 +706,7 @@ namespace Ryujinx.HLE.HOS
 
                 int dataIndex = Nca.GetSectionIndexFromType(NcaSectionType.Data, NcaContentType.Program);
 
-                if (nca.Header.GetFsHeader(dataIndex).IsPatchSection())
+                if (nca.SectionExists(NcaSectionType.Data) && nca.Header.GetFsHeader(dataIndex).IsPatchSection())
                 {
                     continue;
                 }
@@ -752,7 +767,7 @@ namespace Ryujinx.HLE.HOS
 
             ref ApplicationControlProperty control = ref ControlData.Value;
 
-            if (LibHac.Utilities.IsZeros(ControlData.ByteSpan))
+            if (LibHac.Common.Utilities.IsZeros(ControlData.ByteSpan))
             {
                 // If the current application doesn't have a loaded control property, create a dummy one
                 // and set the savedata sizes so a user savedata will be created.
@@ -761,6 +776,7 @@ namespace Ryujinx.HLE.HOS
                 // The set sizes don't actually matter as long as they're non-zero because we use directory savedata.
                 control.UserAccountSaveDataSize = 0x4000;
                 control.UserAccountSaveDataJournalSize = 0x4000;
+                control.SaveDataOwnerId = applicationId;
 
                 Logger.Warning?.Print(LogClass.Application,
                     "No control file was found for this game. Using a dummy one instead. This may cause inaccuracies in some games.");

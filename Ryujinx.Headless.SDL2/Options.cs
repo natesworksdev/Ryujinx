@@ -79,6 +79,9 @@ namespace Ryujinx.Headless.SDL2
         [Option("enable-ptc", Required = false, Default = true, HelpText = "Enables profiled translation cache persistency.")]
         public bool? EnablePtc { get; set; }
 
+        [Option("enable-internet-connection", Required = false, Default = false, HelpText = "Enables guest Internet connection.")]
+        public bool? EnableInternetAccess { get; set; }
+
         [Option("enable-fs-integrity-checks", Required = false, Default = true, HelpText = "Enables integrity checks on Game content files.")]
         public bool? EnableFsIntegrityChecks { get; set; }
 
@@ -97,7 +100,7 @@ namespace Ryujinx.Headless.SDL2
         [Option("system-language", Required = false, Default = SystemLanguage.AmericanEnglish, HelpText = "Change System Language.")]
         public SystemLanguage SystemLanguage { get; set; }
 
-        [Option("system-language", Required = false, Default = RegionCode.USA, HelpText = "Change System Region.")]
+        [Option("system-region", Required = false, Default = RegionCode.USA, HelpText = "Change System Region.")]
         public RegionCode SystemRegion { get; set; }
 
         [Option("system-timezone", Required = false, Default = "UTC", HelpText = "Change System TimeZone.")]
@@ -108,6 +111,9 @@ namespace Ryujinx.Headless.SDL2
 
         [Option("memory-manager-mode", Required = false, Default = MemoryManagerMode.HostMappedUnsafe, HelpText = "The selected memory manager mode.")]
         public MemoryManagerMode MemoryManagerMode { get; set; }
+
+        [Option("audio-volume", Required = false, Default = 1.0f, HelpText ="The audio level (0 to 1).")]
+        public float AudioVolume { get; set; }
 
         // Logging
 
@@ -126,8 +132,11 @@ namespace Ryujinx.Headless.SDL2
         [Option("enable-warning-logs", Required = false, Default = true, HelpText = "Enables printing warning log messages.")]
         public bool? LoggingEnableWarning { get; set; }
 
-        [Option("enable-warning-logs", Required = false, Default = true, HelpText = "Enables printing error log messages.")]
+        [Option("enable-error-logs", Required = false, Default = true, HelpText = "Enables printing error log messages.")]
         public bool? LoggingEnableError { get; set; }
+
+        [Option("enable-trace-logs", Required = false, Default = false, HelpText = "Enables printing trace log messages.")]
+        public bool? LoggingEnableTrace { get; set; }
 
         [Option("enable-guest-logs", Required = false, Default = true, HelpText = "Enables printing guest log messages.")]
         public bool? LoggingEnableGuest { get; set; }

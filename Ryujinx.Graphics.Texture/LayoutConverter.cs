@@ -97,6 +97,7 @@ namespace Ryujinx.Graphics.Texture
             int width,
             int height,
             int depth,
+            int sliceDepth,
             int levels,
             int layers,
             int blockWidth,
@@ -172,6 +173,8 @@ namespace Ryujinx.Graphics.Texture
                     mipGobBlocksInZ,
                     bytesPerPixel);
 
+                int sd = Math.Max(1, sliceDepth >> level);
+
                 unsafe bool Convert<T>(Span<byte> output, ReadOnlySpan<byte> data) where T : unmanaged
                 {
                     fixed (byte* outputPtr = output, dataPtr = data)
@@ -181,7 +184,7 @@ namespace Ryujinx.Graphics.Texture
                         {
                             byte* inBaseOffset = dataPtr + (layer * sizeInfo.LayerSize + sizeInfo.GetMipOffset(level));
 
-                            for (int z = 0; z < d; z++)
+                            for (int z = 0; z < sd; z++)
                             {
                                 layoutConverter.SetZ(z);
                                 for (int y = 0; y < h; y++)
@@ -248,6 +251,7 @@ namespace Ryujinx.Graphics.Texture
             int height,
             int blockWidth,
             int blockHeight,
+            int lineSize,
             int stride,
             int bytesPerPixel,
             ReadOnlySpan<byte> data)
@@ -256,7 +260,7 @@ namespace Ryujinx.Graphics.Texture
             int h = BitUtils.DivRoundUp(height, blockHeight);
 
             int outStride = BitUtils.AlignUp(w * bytesPerPixel, HostStrideAlignment);
-            int lineSize = Math.Min(stride, outStride);
+            lineSize = Math.Min(lineSize, outStride);
 
             Span<byte> output = new byte[h * outStride];
 
@@ -363,6 +367,7 @@ namespace Ryujinx.Graphics.Texture
             int width,
             int height,
             int depth,
+            int sliceDepth,
             int levels,
             int layers,
             int blockWidth,
@@ -431,6 +436,8 @@ namespace Ryujinx.Graphics.Texture
                     mipGobBlocksInZ,
                     bytesPerPixel);
 
+                int sd = Math.Max(1, sliceDepth >> level);
+
                 unsafe bool Convert<T>(Span<byte> output, ReadOnlySpan<byte> data) where T : unmanaged
                 {
                     fixed (byte* outputPtr = output, dataPtr = data)
@@ -440,7 +447,7 @@ namespace Ryujinx.Graphics.Texture
                         {
                             byte* outBaseOffset = outputPtr + (layer * sizeInfo.LayerSize + sizeInfo.GetMipOffset(level));
 
-                            for (int z = 0; z < d; z++)
+                            for (int z = 0; z < sd; z++)
                             {
                                 layoutConverter.SetZ(z);
                                 for (int y = 0; y < h; y++)

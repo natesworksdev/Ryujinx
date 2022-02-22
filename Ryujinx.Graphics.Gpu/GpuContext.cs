@@ -1,3 +1,4 @@
+using Ryujinx.Common;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Engine.GPFifo;
 using Ryujinx.Graphics.Gpu.Memory;
@@ -15,6 +16,9 @@ namespace Ryujinx.Graphics.Gpu
     /// </summary>
     public sealed class GpuContext : IDisposable
     {
+        private const int NsToTicksFractionNumerator = 384;
+        private const int NsToTicksFractionDenominator = 625;
+
         /// <summary>
         /// Event signaled when the host emulation context is ready to be used by the gpu context.
         /// </summary>
@@ -52,11 +56,18 @@ namespace Ryujinx.Graphics.Gpu
         internal ulong SyncNumber { get; private set; }
 
         /// <summary>
-        /// Actions to be performed when a CPU waiting sync point is triggered.
+        /// Actions to be performed when a CPU waiting syncpoint or barrier is triggered.
         /// If there are more than 0 items when this happens, a host sync object will be generated for the given <see cref="SyncNumber"/>,
         /// and the SyncNumber will be incremented.
         /// </summary>
         internal List<Action> SyncActions { get; }
+
+        /// <summary>
+        /// Actions to be performed when a CPU waiting syncpoint is triggered.
+        /// If there are more than 0 items when this happens, a host sync object will be generated for the given <see cref="SyncNumber"/>,
+        /// and the SyncNumber will be incremented.
+        /// </summary>
+        internal List<Action> SyncpointActions { get; }
 
         /// <summary>
         /// Queue with deferred actions that must run on the render thread.
@@ -66,19 +77,33 @@ namespace Ryujinx.Graphics.Gpu
         /// <summary>
         /// Registry with physical memories that can be used with this GPU context, keyed by owner process ID.
         /// </summary>
-        internal ConcurrentDictionary<long, PhysicalMemory> PhysicalMemoryRegistry { get; }
+        internal ConcurrentDictionary<ulong, PhysicalMemory> PhysicalMemoryRegistry { get; }
 
         /// <summary>
         /// Host hardware capabilities.
         /// </summary>
-        internal Capabilities Capabilities => _caps.Value;
+        internal ref Capabilities Capabilities
+        {
+            get
+            {
+                if (!_capsLoaded)
+                {
+                    _caps = Renderer.GetCapabilities();
+                    _capsLoaded = true;
+                }
+
+                return ref _caps;
+            }
+        }
 
         /// <summary>
         /// Event for signalling shader cache loading progress.
         /// </summary>
         public event Action<ShaderCacheState, int, int> ShaderCacheStateChanged;
 
-        private readonly Lazy<Capabilities> _caps;
+        private bool _capsLoaded;
+        private Capabilities _caps;
+        private Thread _gpuThread;
 
         /// <summary>
         /// Creates a new instance of the GPU emulation context.
@@ -97,12 +122,11 @@ namespace Ryujinx.Graphics.Gpu
             HostInitalized = new ManualResetEvent(false);
 
             SyncActions = new List<Action>();
+            SyncpointActions = new List<Action>();
 
             DeferredActions = new Queue<Action>();
 
-            PhysicalMemoryRegistry = new ConcurrentDictionary<long, PhysicalMemory>();
-
-            _caps = new Lazy<Capabilities>(Renderer.GetCapabilities);
+            PhysicalMemoryRegistry = new ConcurrentDictionary<ulong, PhysicalMemory>();
         }
 
         /// <summary>
@@ -120,7 +144,7 @@ namespace Ryujinx.Graphics.Gpu
         /// <param name="pid">ID of the process that owns the memory manager</param>
         /// <returns>The memory manager</returns>
         /// <exception cref="ArgumentException">Thrown when <paramref name="pid"/> is invalid</exception>
-        public MemoryManager CreateMemoryManager(long pid)
+        public MemoryManager CreateMemoryManager(ulong pid)
         {
             if (!PhysicalMemoryRegistry.TryGetValue(pid, out var physicalMemory))
             {
@@ -136,7 +160,7 @@ namespace Ryujinx.Graphics.Gpu
         /// <param name="pid">ID of the process that owns <paramref name="cpuMemory"/></param>
         /// <param name="cpuMemory">Virtual memory owned by the process</param>
         /// <exception cref="ArgumentException">Thrown if <paramref name="pid"/> was already registered</exception>
-        public void RegisterProcess(long pid, Cpu.IVirtualMemoryManagerTracked cpuMemory)
+        public void RegisterProcess(ulong pid, Cpu.IVirtualMemoryManagerTracked cpuMemory)
         {
             var physicalMemory = new PhysicalMemory(this, cpuMemory);
             if (!PhysicalMemoryRegistry.TryAdd(pid, physicalMemory))
@@ -151,13 +175,53 @@ namespace Ryujinx.Graphics.Gpu
         /// Unregisters a process, indicating that its memory will no longer be used, and that caches can be freed.
         /// </summary>
         /// <param name="pid">ID of the process</param>
-        public void UnregisterProcess(long pid)
+        public void UnregisterProcess(ulong pid)
         {
             if (PhysicalMemoryRegistry.TryRemove(pid, out var physicalMemory))
             {
                 physicalMemory.ShaderCache.ShaderCacheStateChanged -= ShaderCacheStateUpdate;
                 physicalMemory.Dispose();
             }
+        }
+
+        /// <summary>
+        /// Converts a nanoseconds timestamp value to Maxwell time ticks.
+        /// </summary>
+        /// <remarks>
+        /// The frequency is 614400000 Hz.
+        /// </remarks>
+        /// <param name="nanoseconds">Timestamp in nanoseconds</param>
+        /// <returns>Maxwell ticks</returns>
+        private static ulong ConvertNanosecondsToTicks(ulong nanoseconds)
+        {
+            // We need to divide first to avoid overflows.
+            // We fix up the result later by calculating the difference and adding
+            // that to the result.
+            ulong divided = nanoseconds / NsToTicksFractionDenominator;
+
+            ulong rounded = divided * NsToTicksFractionDenominator;
+
+            ulong errorBias = (nanoseconds - rounded) * NsToTicksFractionNumerator / NsToTicksFractionDenominator;
+
+            return divided * NsToTicksFractionNumerator + errorBias;
+        }
+
+        /// <summary>
+        /// Gets the value of the GPU timer.
+        /// </summary>
+        /// <returns>The current GPU timestamp</returns>
+        public ulong GetTimestamp()
+        {
+            ulong ticks = ConvertNanosecondsToTicks((ulong)PerformanceCounter.ElapsedNanoseconds);
+
+            if (GraphicsConfig.FastGpuTime)
+            {
+                // Divide by some amount to report time as if operations were performed faster than they really are.
+                // This can prevent some games from switching to a lower resolution because rendering is too slow.
+                ticks /= 256;
+            }
+
+            return ticks;
         }
 
         /// <summary>
@@ -185,6 +249,23 @@ namespace Ryujinx.Graphics.Gpu
         }
 
         /// <summary>
+        /// Sets the current thread as the main GPU thread.
+        /// </summary>
+        public void SetGpuThread()
+        {
+            _gpuThread = Thread.CurrentThread;
+        }
+
+        /// <summary>
+        /// Checks if the current thread is the GPU thread.
+        /// </summary>
+        /// <returns>True if the thread is the GPU thread, false otherwise</returns>
+        public bool IsGpuThread()
+        {
+            return _gpuThread == Thread.CurrentThread;
+        }
+
+        /// <summary>
         /// Processes the queue of shaders that must save their binaries to the disk cache.
         /// </summary>
         public void ProcessShaderCacheQueue()
@@ -209,18 +290,27 @@ namespace Ryujinx.Graphics.Gpu
         /// This will also ensure a host sync object is created, and <see cref="SyncNumber"/> is incremented.
         /// </summary>
         /// <param name="action">The action to be performed on sync object creation</param>
-        public void RegisterSyncAction(Action action)
+        /// <param name="syncpointOnly">True if the sync action should only run when syncpoints are incremented</param>
+        public void RegisterSyncAction(Action action, bool syncpointOnly = false)
         {
-            SyncActions.Add(action);
+            if (syncpointOnly)
+            {
+                SyncpointActions.Add(action);
+            }
+            else
+            {
+                SyncActions.Add(action);
+            }
         }
 
         /// <summary>
         /// Creates a host sync object if there are any pending sync actions. The actions will then be called.
         /// If no actions are present, a host sync object is not created.
         /// </summary>
-        public void CreateHostSyncIfNeeded()
+        /// <param name="syncpoint">True if host sync is being created by a syncpoint</param>
+        public void CreateHostSyncIfNeeded(bool syncpoint)
         {
-            if (SyncActions.Count > 0)
+            if (SyncActions.Count > 0 || (syncpoint && SyncpointActions.Count > 0))
             {
                 Renderer.CreateSync(SyncNumber);
 
@@ -231,7 +321,13 @@ namespace Ryujinx.Graphics.Gpu
                     action();
                 }
 
+                foreach (Action action in SyncpointActions)
+                {
+                    action();
+                }
+
                 SyncActions.Clear();
+                SyncpointActions.Clear();
             }
         }
 

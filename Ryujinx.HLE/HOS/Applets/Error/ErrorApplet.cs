@@ -2,7 +2,8 @@
 using LibHac.Fs;
 using LibHac.Fs.Fsa;
 using LibHac.FsSystem;
-using LibHac.FsSystem.NcaUtils;
+using LibHac.Tools.FsSystem;
+using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE;
@@ -116,8 +117,10 @@ namespace Ryujinx.HLE.HOS.Applets.Error
 
                 if (romfs.FileExists(filePath))
                 {
-                    romfs.OpenFile(out IFile binaryFile, filePath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
-                    StreamReader reader = new StreamReader(binaryFile.AsStream(), Encoding.Unicode);
+                    using var binaryFile = new UniqueRef<IFile>();
+
+                    romfs.OpenFile(ref binaryFile.Ref(), filePath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                    StreamReader reader = new StreamReader(binaryFile.Get.AsStream(), Encoding.Unicode);
 
                     return CleanText(reader.ReadToEnd());
                 }

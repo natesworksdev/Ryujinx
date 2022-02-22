@@ -2,7 +2,8 @@ using LibHac.Common;
 using LibHac.Fs;
 using LibHac.Fs.Fsa;
 using LibHac.FsSystem;
-using LibHac.FsSystem.NcaUtils;
+using LibHac.Tools.FsSystem;
+using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.FileSystem.Content;
@@ -74,9 +75,11 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
                                 Nca         nca   = new Nca(_device.System.KeySet, ncaFileStream);
                                 IFileSystem romfs = nca.OpenFileSystem(NcaSectionType.Data, _device.System.FsIntegrityCheckLevel);
 
-                                romfs.OpenFile(out IFile fontFile, ("/" + fontFilename).ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                                using var fontFile = new UniqueRef<IFile>();
 
-                                data = DecryptFont(fontFile.AsStream());
+                                romfs.OpenFile(ref fontFile.Ref(), ("/" + fontFilename).ToU8Span(), OpenMode.Read).ThrowIfFailure();
+
+                                data = DecryptFont(fontFile.Get.AsStream());
                             }
 
                             FontInfo info = new FontInfo((int)fontOffset, data.Length);

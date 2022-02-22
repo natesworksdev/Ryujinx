@@ -1,4 +1,5 @@
 using Gtk;
+using LibHac.Tools.FsSystem;
 using Ryujinx.Audio.Backends.OpenAL;
 using Ryujinx.Audio.Backends.SDL2;
 using Ryujinx.Audio.Backends.SoundIo;
@@ -30,9 +31,11 @@ namespace Ryujinx.Ui.Windows
         private readonly TimeZoneContentManager _timeZoneContentManager;
         private readonly HashSet<string>        _validTzRegions;
 
-        private long _systemTimeOffset;
+        private long  _systemTimeOffset;
+        private float _previousVolumeLevel;
 
 #pragma warning disable CS0649, IDE0044
+        [GUI] CheckButton     _traceLogToggle;
         [GUI] CheckButton     _errorLogToggle;
         [GUI] CheckButton     _warningLogToggle;
         [GUI] CheckButton     _infoLogToggle;
@@ -51,6 +54,7 @@ namespace Ryujinx.Ui.Windows
         [GUI] CheckButton     _vSyncToggle;
         [GUI] CheckButton     _shaderCacheToggle;
         [GUI] CheckButton     _ptcToggle;
+        [GUI] CheckButton     _internetToggle;
         [GUI] CheckButton     _fsicToggle;
         [GUI] RadioButton     _mmSoftware;
         [GUI] RadioButton     _mmHost;
@@ -65,6 +69,8 @@ namespace Ryujinx.Ui.Windows
         [GUI] EntryCompletion _systemTimeZoneCompletion;
         [GUI] Box             _audioBackendBox;
         [GUI] ComboBox        _audioBackendSelect;
+        [GUI] Label           _audioVolumeLabel;
+        [GUI] Scale           _audioVolumeSlider;
         [GUI] SpinButton      _systemTimeYearSpin;
         [GUI] SpinButton      _systemTimeMonthSpin;
         [GUI] SpinButton      _systemTimeDaySpin;
@@ -110,7 +116,7 @@ namespace Ryujinx.Ui.Windows
             builder.Autoconnect(this);
 
             _timeZoneContentManager = new TimeZoneContentManager();
-            _timeZoneContentManager.InitializeInstance(virtualFileSystem, contentManager, LibHac.FsSystem.IntegrityCheckLevel.None);
+            _timeZoneContentManager.InitializeInstance(virtualFileSystem, contentManager, IntegrityCheckLevel.None);
 
             _validTzRegions = new HashSet<string>(_timeZoneContentManager.LocationNameCache.Length, StringComparer.Ordinal); // Zone regions are identifiers. Must match exactly.
 
@@ -136,6 +142,11 @@ namespace Ryujinx.Ui.Windows
             };
 
             // Setup Currents.
+            if (ConfigurationState.Instance.Logger.EnableTrace)
+            {
+                _traceLogToggle.Click();
+            }
+
             if (ConfigurationState.Instance.Logger.EnableFileLog)
             {
                 _fileLogToggle.Click();
@@ -176,7 +187,7 @@ namespace Ryujinx.Ui.Windows
                 _fsAccessLogToggle.Click();
             }
 
-            foreach (GraphicsDebugLevel level in Enum.GetValues(typeof(GraphicsDebugLevel)))
+            foreach (GraphicsDebugLevel level in Enum.GetValues<GraphicsDebugLevel>())
             {
                 _graphicsDebugLevel.Append(level.ToString(), level.ToString());
             }
@@ -221,6 +232,11 @@ namespace Ryujinx.Ui.Windows
             if (ConfigurationState.Instance.System.EnablePtc)
             {
                 _ptcToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.System.EnableInternetAccess)
+            {
+                _internetToggle.Click();
             }
 
             if (ConfigurationState.Instance.System.EnableFsIntegrityChecks)
@@ -364,6 +380,20 @@ namespace Ryujinx.Ui.Windows
             _audioBackendBox.Add(_audioBackendSelect);
             _audioBackendSelect.Show();
 
+            _previousVolumeLevel            = ConfigurationState.Instance.System.AudioVolume;
+            _audioVolumeLabel               = new Label("Volume: ");
+            _audioVolumeSlider              = new Scale(Orientation.Horizontal, 0, 100, 1);
+            _audioVolumeLabel.MarginStart   = 10;
+            _audioVolumeSlider.ValuePos     = PositionType.Right;
+            _audioVolumeSlider.WidthRequest = 200;
+
+            _audioVolumeSlider.Value        =  _previousVolumeLevel * 100;
+            _audioVolumeSlider.ValueChanged += VolumeSlider_OnChange;
+            _audioBackendBox.Add(_audioVolumeLabel);
+            _audioBackendBox.Add(_audioVolumeSlider);
+            _audioVolumeLabel.Show();
+            _audioVolumeSlider.Show();
+
             bool openAlIsSupported  = false;
             bool soundIoIsSupported = false;
             bool sdl2IsSupported    = false;
@@ -463,6 +493,7 @@ namespace Ryujinx.Ui.Windows
             }
 
             ConfigurationState.Instance.Logger.EnableError.Value               = _errorLogToggle.Active;
+            ConfigurationState.Instance.Logger.EnableTrace.Value               = _traceLogToggle.Active;
             ConfigurationState.Instance.Logger.EnableWarn.Value                = _warningLogToggle.Active;
             ConfigurationState.Instance.Logger.EnableInfo.Value                = _infoLogToggle.Active;
             ConfigurationState.Instance.Logger.EnableStub.Value                = _stubLogToggle.Active;
@@ -479,6 +510,7 @@ namespace Ryujinx.Ui.Windows
             ConfigurationState.Instance.Graphics.EnableVsync.Value             = _vSyncToggle.Active;
             ConfigurationState.Instance.Graphics.EnableShaderCache.Value       = _shaderCacheToggle.Active;
             ConfigurationState.Instance.System.EnablePtc.Value                 = _ptcToggle.Active;
+            ConfigurationState.Instance.System.EnableInternetAccess.Value      = _internetToggle.Active;
             ConfigurationState.Instance.System.EnableFsIntegrityChecks.Value   = _fsicToggle.Active;
             ConfigurationState.Instance.System.MemoryManagerMode.Value         = memoryMode;
             ConfigurationState.Instance.System.ExpandRam.Value                 = _expandRamToggle.Active;
@@ -498,6 +530,9 @@ namespace Ryujinx.Ui.Windows
             ConfigurationState.Instance.Graphics.BackendThreading.Value        = backendThreading;
             ConfigurationState.Instance.Graphics.ResScale.Value                = int.Parse(_resScaleCombo.ActiveId);
             ConfigurationState.Instance.Graphics.ResScaleCustom.Value          = resScaleCustom;
+            ConfigurationState.Instance.System.AudioVolume.Value               = (float)_audioVolumeSlider.Value / 100.0f;
+
+            _previousVolumeLevel = ConfigurationState.Instance.System.AudioVolume.Value;
 
             if (_audioBackendSelect.GetActiveIter(out TreeIter activeIter))
             {
@@ -651,6 +686,11 @@ namespace Ryujinx.Ui.Windows
             controllerWindow.Show();
         }
 
+        private void VolumeSlider_OnChange(object sender, EventArgs args)
+        {
+            ConfigurationState.Instance.System.AudioVolume.Value = (float)(_audioVolumeSlider.Value / 100);
+        }
+
         private void SaveToggle_Activated(object sender, EventArgs args)
         {
             SaveSettings();
@@ -664,6 +704,7 @@ namespace Ryujinx.Ui.Windows
 
         private void CloseToggle_Activated(object sender, EventArgs args)
         {
+            ConfigurationState.Instance.System.AudioVolume.Value = _previousVolumeLevel;
             Dispose();
         }
     }

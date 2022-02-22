@@ -25,13 +25,15 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public ImapPixelType[] ImapTypes { get; }
 
-        public OmapTarget[] OmapTargets    { get; }
-        public bool         OmapSampleMask { get; }
-        public bool         OmapDepth      { get; }
+        public int OmapTargets { get; }
+        public bool OmapSampleMask { get; }
+        public bool OmapDepth { get; }
 
         public IGpuAccessor GpuAccessor { get; }
 
         public TranslationOptions Options { get; }
+
+        public bool TransformFeedbackEnabled { get; }
 
         public int Size { get; private set; }
 
@@ -128,25 +130,13 @@ namespace Ryujinx.Graphics.Shader.Translation
             OmapTargets              = header.OmapTargets;
             OmapSampleMask           = header.OmapSampleMask;
             OmapDepth                = header.OmapDepth;
+            TransformFeedbackEnabled = gpuAccessor.QueryTransformFeedbackEnabled();
         }
 
         public int GetDepthRegister()
         {
-            int count = 0;
-
-            for (int index = 0; index < OmapTargets.Length; index++)
-            {
-                for (int component = 0; component < 4; component++)
-                {
-                    if (OmapTargets[index].ComponentEnabled(component))
-                    {
-                        count++;
-                    }
-                }
-            }
-
             // The depth register is always two registers after the last color output.
-            return count + 1;
+            return BitOperations.PopCount((uint)OmapTargets) + 1;
         }
 
         public TextureFormat GetTextureFormat(int handle, int cbufSlot = -1)
@@ -379,7 +369,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             inst &= Instruction.Mask;
             bool isImage = inst == Instruction.ImageLoad || inst == Instruction.ImageStore || inst == Instruction.ImageAtomic;
             bool isWrite = inst == Instruction.ImageStore || inst == Instruction.ImageAtomic;
-            bool accurateType = inst != Instruction.Lod;
+            bool accurateType = inst != Instruction.Lod && inst != Instruction.TextureSize;
             bool coherent = flags.HasFlag(TextureFlags.Coherent);
 
             if (isImage)
@@ -413,7 +403,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             {
                 usageFlags |= TextureUsageFlags.NeedsScaleValue;
 
-                var canScale = (Stage == ShaderStage.Fragment || Stage == ShaderStage.Compute) && !isIndexed && !write && dimensions == 2;
+                var canScale = Stage.SupportsRenderScale() && !isIndexed && !write && dimensions == 2;
 
                 if (!canScale)
                 {

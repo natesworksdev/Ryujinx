@@ -66,9 +66,9 @@ namespace Ryujinx.Graphics.OpenGL
             return Buffer.Create(size);
         }
 
-        public IProgram CreateProgram(IShader[] shaders, TransformFeedbackDescriptor[] transformFeedbackDescriptors)
+        public IProgram CreateProgram(IShader[] shaders, ShaderInfo info)
         {
-            return new Program(shaders, transformFeedbackDescriptors);
+            return new Program(shaders, info.FragmentOutputMap);
         }
 
         public ISampler CreateSampler(SamplerCreateInfo info)
@@ -101,21 +101,24 @@ namespace Ryujinx.Graphics.OpenGL
         public Capabilities GetCapabilities()
         {
             return new Capabilities(
-                HwCapabilities.Vendor == HwCapabilities.GpuVendor.IntelWindows,
-                HwCapabilities.Vendor == HwCapabilities.GpuVendor.AmdWindows,
-                HwCapabilities.SupportsAstcCompression,
-                HwCapabilities.SupportsFragmentShaderInterlock,
-                HwCapabilities.SupportsFragmentShaderOrdering,
-                HwCapabilities.SupportsImageLoadFormatted,
-                HwCapabilities.SupportsMismatchingViewFormat,
-                HwCapabilities.SupportsNonConstantTextureOffset,
-                HwCapabilities.SupportsShaderBallot,
-                HwCapabilities.SupportsTextureShadowLod,
-                HwCapabilities.SupportsViewportSwizzle,
-                HwCapabilities.SupportsIndirectParameters,
-                HwCapabilities.MaximumComputeSharedMemorySize,
-                HwCapabilities.MaximumSupportedAnisotropy,
-                HwCapabilities.StorageBufferOffsetAlignment);
+                hasFrontFacingBug: HwCapabilities.Vendor == HwCapabilities.GpuVendor.IntelWindows,
+                hasVectorIndexingBug: HwCapabilities.Vendor == HwCapabilities.GpuVendor.AmdWindows,
+                supportsAstcCompression: HwCapabilities.SupportsAstcCompression,
+                supports3DTextureCompression: false,
+                supportsBgraFormat: false,
+                supportsR4G4Format: false,
+                supportsFragmentShaderInterlock: HwCapabilities.SupportsFragmentShaderInterlock,
+                supportsFragmentShaderOrderingIntel: HwCapabilities.SupportsFragmentShaderOrdering,
+                supportsImageLoadFormatted: HwCapabilities.SupportsImageLoadFormatted,
+                supportsMismatchingViewFormat: HwCapabilities.SupportsMismatchingViewFormat,
+                supportsNonConstantTextureOffset: HwCapabilities.SupportsNonConstantTextureOffset,
+                supportsShaderBallot: HwCapabilities.SupportsShaderBallot,
+                supportsTextureShadowLod: HwCapabilities.SupportsTextureShadowLod,
+                supportsViewportSwizzle: HwCapabilities.SupportsViewportSwizzle,
+                supportsIndirectParameters: HwCapabilities.SupportsIndirectParameters,
+                maximumComputeSharedMemorySize: HwCapabilities.MaximumComputeSharedMemorySize,
+                maximumSupportedAnisotropy: HwCapabilities.MaximumSupportedAnisotropy,
+                storageBufferOffsetAlignment: HwCapabilities.StorageBufferOffsetAlignment);
         }
 
         public void SetBufferData(BufferHandle buffer, int offset, ReadOnlySpan<byte> data)
@@ -150,7 +153,7 @@ namespace Ryujinx.Graphics.OpenGL
                 GL.Arb.MaxShaderCompilerThreads(Math.Min(Environment.ProcessorCount, 8));
             }
 
-            _pipeline.Initialize();
+            _pipeline.Initialize(this);
             _counters.Initialize();
         }
 
@@ -199,9 +202,9 @@ namespace Ryujinx.Graphics.OpenGL
             _sync.Dispose();
         }
 
-        public IProgram LoadProgramBinary(byte[] programBinary)
+        public IProgram LoadProgramBinary(byte[] programBinary, bool hasFragmentShader, ShaderInfo info)
         {
-            return new Program(programBinary);
+            return new Program(programBinary, hasFragmentShader, info.FragmentOutputMap);
         }
 
         public void CreateSync(ulong id)

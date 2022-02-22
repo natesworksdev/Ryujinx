@@ -3,7 +3,9 @@ using LibHac.Common;
 using LibHac.Fs;
 using LibHac.Fs.Fsa;
 using LibHac.FsSystem;
-using LibHac.FsSystem.NcaUtils;
+using LibHac.Tools.Fs;
+using LibHac.Tools.FsSystem;
+using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Common.Configuration;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.Ui.Widgets;
@@ -89,8 +91,10 @@ namespace Ryujinx.Ui.Windows
 
                     foreach (DlcNca dlcNca in dlcContainer.DlcNcaList)
                     {
-                        pfs.OpenFile(out IFile ncaFile, dlcNca.Path.ToU8Span(), OpenMode.Read).ThrowIfFailure();
-                        Nca nca = TryCreateNca(ncaFile.AsStorage(), dlcContainer.Path);
+                        using var ncaFile = new UniqueRef<IFile>();
+
+                        pfs.OpenFile(ref ncaFile.Ref(), dlcNca.Path.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                        Nca nca = TryCreateNca(ncaFile.Get.AsStorage(), dlcContainer.Path);
 
                         if (nca != null)
                         {
@@ -155,9 +159,11 @@ namespace Ryujinx.Ui.Windows
 
                         foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*.nca"))
                         {
-                            pfs.OpenFile(out IFile ncaFile, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                            using var ncaFile = new UniqueRef<IFile>();
 
-                            Nca nca = TryCreateNca(ncaFile.AsStorage(), containerPath);
+                            pfs.OpenFile(ref ncaFile.Ref(), fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+
+                            Nca nca = TryCreateNca(ncaFile.Get.AsStorage(), containerPath);
 
                             if (nca == null) continue;
 

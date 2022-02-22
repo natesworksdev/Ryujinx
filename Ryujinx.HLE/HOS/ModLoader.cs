@@ -2,8 +2,9 @@ using LibHac.Common;
 using LibHac.Fs;
 using LibHac.Fs.Fsa;
 using LibHac.FsSystem;
-using LibHac.FsSystem.RomFs;
 using LibHac.Loader;
+using LibHac.Tools.FsSystem;
+using LibHac.Tools.FsSystem.RomFs;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.Loaders.Mods;
@@ -15,6 +16,7 @@ using System.Linq;
 using System.IO;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using System.Globalization;
+using Path = System.IO.Path;
 
 namespace Ryujinx.HLE.HOS
 {
@@ -470,8 +472,10 @@ namespace Ryujinx.HLE.HOS
                                          .Where(f => f.Type == DirectoryEntryType.File && !fileSet.Contains(f.FullPath))
                                          .OrderBy(f => f.FullPath, StringComparer.Ordinal))
             {
-                baseRom.OpenFile(out IFile file, entry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
-                builder.AddFile(entry.FullPath, file);
+                using var file = new UniqueRef<IFile>();
+
+                baseRom.OpenFile(ref file.Ref(), entry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                builder.AddFile(entry.FullPath, file.Release());
             }
 
             Logger.Info?.Print(LogClass.ModLoader, "Building new RomFS...");
@@ -487,10 +491,12 @@ namespace Ryujinx.HLE.HOS
                                     .Where(f => f.Type == DirectoryEntryType.File)
                                     .OrderBy(f => f.FullPath, StringComparer.Ordinal))
             {
-                fs.OpenFile(out IFile file, entry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                using var file = new UniqueRef<IFile>();
+
+                fs.OpenFile(ref file.Ref(), entry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
                 if (fileSet.Add(entry.FullPath))
                 {
-                    builder.AddFile(entry.FullPath, file);
+                    builder.AddFile(entry.FullPath, file.Release());
                 }
                 else
                 {
@@ -659,7 +665,20 @@ namespace Ryujinx.HLE.HOS
 
                 Logger.Info?.Print(LogClass.ModLoader, $"Installing cheat '{cheat.Name}'");
 
-                tamperMachine.InstallAtmosphereCheat(cheat.Name, cheat.Instructions, tamperInfo, exeAddress);
+                tamperMachine.InstallAtmosphereCheat(cheat.Name, cheatId, cheat.Instructions, tamperInfo, exeAddress);
+            }
+
+            EnableCheats(titleId, tamperMachine);
+        }
+
+        internal void EnableCheats(ulong titleId, TamperMachine tamperMachine)
+        {
+            var contentDirectory = FindTitleDir(new DirectoryInfo(Path.Combine(GetModsBasePath(), AmsContentsDir)), $"{titleId:x16}");
+            string enabledCheatsPath = Path.Combine(contentDirectory.FullName, CheatDir, "enabled.txt");
+
+            if (File.Exists(enabledCheatsPath))
+            {
+                tamperMachine.EnableCheats(File.ReadAllLines(enabledCheatsPath));
             }
         }
 

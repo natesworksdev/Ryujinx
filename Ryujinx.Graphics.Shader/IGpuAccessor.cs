@@ -61,6 +61,11 @@ namespace Ryujinx.Graphics.Shader
             return 16;
         }
 
+        bool QueryHostSupportsBgraFormat()
+        {
+            return true;
+        }
+
         bool QueryHostSupportsFragmentShaderInterlock()
         {
             return true;
@@ -124,6 +129,21 @@ namespace Ryujinx.Graphics.Shader
         TextureFormat QueryTextureFormat(int handle, int cbufSlot = -1)
         {
             return TextureFormat.R8G8B8A8Unorm;
+        }
+
+        bool QueryTransformFeedbackEnabled()
+        {
+            return false;
+        }
+
+        ReadOnlySpan<byte> QueryTransformFeedbackVaryingLocations(int bufferIndex)
+        {
+            return ReadOnlySpan<byte>.Empty;
+        }
+
+        int QueryTransformFeedbackStride(int bufferIndex)
+        {
+            return 0;
         }
 
         bool QueryEarlyZForce()
