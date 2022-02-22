@@ -2,7 +2,7 @@
 {
     enum DecoderMode
     {
-        Normal,
+        MultipleBlocks,
         SingleBlock,
         SingleInstruction,
     }

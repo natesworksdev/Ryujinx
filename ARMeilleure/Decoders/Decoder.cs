@@ -38,7 +38,7 @@ namespace ARMeilleure.Decoders
                 {
                     block = new Block(blkAddress);
 
-                    if ((dMode != DecoderMode.Normal && visited.Count >= 1) || opsCount > instructionLimit || !memory.IsMapped(blkAddress))
+                    if ((dMode != DecoderMode.MultipleBlocks && visited.Count >= 1) || opsCount > instructionLimit || !memory.IsMapped(blkAddress))
                     {
                         block.Exit = true;
                         block.EndAddress = blkAddress;
@@ -149,7 +149,7 @@ namespace ARMeilleure.Decoders
                 throw new InvalidOperationException($"Decoded a single empty exit block. Entry point = 0x{address:X}.");
             }
 
-            if (dMode == DecoderMode.Normal)
+            if (dMode == DecoderMode.MultipleBlocks)
             {
                 return TailCallRemover.RunPass(address, blocks);
             }
