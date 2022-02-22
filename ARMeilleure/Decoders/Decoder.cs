@@ -32,13 +32,13 @@ namespace ARMeilleure.Decoders
 
             int instructionLimit = highCq ? MaxInstsPerFunction : MaxInstsPerFunctionLowCq;
 
-            Block GetBlock(ulong blkAddress, bool mustExit = false)
+            Block GetBlock(ulong blkAddress)
             {
                 if (!visited.TryGetValue(blkAddress, out Block block))
                 {
                     block = new Block(blkAddress);
 
-                    if (mustExit || (dMode != DecoderMode.MultipleBlocks && visited.Count >= 1) || opsCount > instructionLimit || !memory.IsMapped(blkAddress))
+                    if ((dMode != DecoderMode.MultipleBlocks && visited.Count >= 1) || opsCount > instructionLimit || !memory.IsMapped(blkAddress))
                     {
                         block.Exit = true;
                         block.EndAddress = blkAddress;
