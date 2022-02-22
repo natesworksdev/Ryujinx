@@ -562,7 +562,7 @@ namespace Ryujinx.HLE.Debugger
             }
 
             ctx.DebugStep();
-            Reply($"T00thread:{ctx.ThreadUid:x};");
+            Reply($"T05thread:{ctx.ThreadUid:x};");
         }
 
         private void CommandIsAlive(ulong? threadId)
