@@ -13,6 +13,11 @@ namespace ARMeilleure.Decoders
             Cond = (Condition)((uint)opCode >> 28);
         }
 
+        public bool IsThumb()
+        {
+            return this is OpCodeT16 || this is OpCodeT32;
+        }
+
         public uint GetPc()
         {
             // Due to backwards compatibility and legacy behavior of ARMv4 CPUs pipeline,
