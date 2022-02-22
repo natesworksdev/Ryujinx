@@ -43,6 +43,7 @@ namespace ARMeilleure.IntermediateRepresentation
         X86Cvtsi2ss,
         X86Cvtss2sd,
         X86Cvtss2si,
+        X86Cvttsd2si,
         X86Divpd,
         X86Divps,
         X86Divsd,

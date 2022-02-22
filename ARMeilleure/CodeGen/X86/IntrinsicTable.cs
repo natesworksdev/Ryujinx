@@ -54,6 +54,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(Intrinsic.X86Cvtsi2ss,     new IntrinsicInfo(X86Instruction.Cvtsi2ss,     IntrinsicType.BinaryGpr));
             Add(Intrinsic.X86Cvtss2sd,     new IntrinsicInfo(X86Instruction.Cvtss2sd,     IntrinsicType.Binary));
             Add(Intrinsic.X86Cvtss2si,     new IntrinsicInfo(X86Instruction.Cvtss2si,     IntrinsicType.UnaryToGpr));
+            Add(Intrinsic.X86Cvttsd2si,    new IntrinsicInfo(X86Instruction.Cvttsd2si,    IntrinsicType.UnaryToGpr));
             Add(Intrinsic.X86Divpd,        new IntrinsicInfo(X86Instruction.Divpd,        IntrinsicType.Binary));
             Add(Intrinsic.X86Divps,        new IntrinsicInfo(X86Instruction.Divps,        IntrinsicType.Binary));
             Add(Intrinsic.X86Divsd,        new IntrinsicInfo(X86Instruction.Divsd,        IntrinsicType.Binary));

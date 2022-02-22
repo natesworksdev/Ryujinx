@@ -103,6 +103,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(X86Instruction.Cvtsi2ss,     new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f2a, InstructionFlags.Vex | InstructionFlags.PrefixF3));
             Add(X86Instruction.Cvtss2sd,     new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5a, InstructionFlags.Vex | InstructionFlags.PrefixF3));
             Add(X86Instruction.Cvtss2si,     new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f2d, InstructionFlags.Vex | InstructionFlags.PrefixF3));
+            Add(X86Instruction.Cvttsd2si,    new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f2c, InstructionFlags.Vex | InstructionFlags.PrefixF2));
             Add(X86Instruction.Div,          new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x060000f7, InstructionFlags.None));
             Add(X86Instruction.Divpd,        new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5e, InstructionFlags.Vex | InstructionFlags.Prefix66));
             Add(X86Instruction.Divps,        new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5e, InstructionFlags.Vex));
