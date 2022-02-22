@@ -128,11 +128,16 @@
                                           Header="Brazilian Portuguese" />
                                 <MenuItem Command="{ReflectionBinding ChangeLanguage}" CommandParameter="es_ES"
                                           Header="Castilian Spanish" />
-                                <MenuItem Command="{ReflectionBinding ChangeLanguage}" CommandParameter="fr_FR" Header="French" />
+                                <MenuItem Command="{ReflectionBinding ChangeLanguage}" CommandParameter="fr_FR"
+                                          Header="French" />
+                                <MenuItem Command="{ReflectionBinding ChangeLanguage}" CommandParameter="de_DE"
+                                          Header="German" />
                                 <MenuItem Command="{ReflectionBinding ChangeLanguage}" CommandParameter="it_IT"
                                           Header="Italian" />
-                                <MenuItem Command="{ReflectionBinding ChangeLanguage}" CommandParameter="ko_KR" Header="Korean" />
-                                <MenuItem Command="{ReflectionBinding ChangeLanguage}" CommandParameter="ru_RU" Header="Russian" />
+                                <MenuItem Command="{ReflectionBinding ChangeLanguage}" CommandParameter="ko_KR"
+                                          Header="Korean" />
+                                <MenuItem Command="{ReflectionBinding ChangeLanguage}" CommandParameter="ru_RU"
+                                          Header="Russian" />
                             </MenuItem>
                             <Separator />
                             <MenuItem Command="{ReflectionBinding OpenSettings}" Header="{locale:Locale MenuBarOptionsSettings}"
