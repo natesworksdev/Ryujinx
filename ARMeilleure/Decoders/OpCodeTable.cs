@@ -1,6 +1,7 @@
 using ARMeilleure.Instructions;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace ARMeilleure.Decoders
 {
@@ -1114,7 +1115,7 @@ namespace ARMeilleure.Decoders
             string reversedEncoding = encoding.Substring(16) + encoding.Substring(0, 16);
             MakeOp reversedMakeOp =
                 (InstDescriptor inst, ulong address, int opCode)
-                    => makeOp(inst, address, (int)(((uint)opCode << 16) | ((uint)opCode >> 16)));
+                    => makeOp(inst, address, (int)BitOperations.RotateRight((uint)opCode, 16));
             Set(reversedEncoding, AllInstT32, new InstDescriptor(name, emitter), reversedMakeOp);
         }
 
