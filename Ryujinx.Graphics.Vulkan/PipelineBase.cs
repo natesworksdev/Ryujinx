@@ -30,7 +30,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         protected PipelineBindPoint Pbp;
 
-        private PipelineCache _pipelineCache;
+        public PipelineCache _pipelineCache;
 
         protected CommandBufferScoped Cbs;
         protected CommandBufferScoped? PreloadCbs;

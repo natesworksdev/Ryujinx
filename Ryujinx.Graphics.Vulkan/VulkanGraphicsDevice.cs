@@ -204,7 +204,14 @@ namespace Ryujinx.Graphics.Vulkan
 
         public IProgram CreateProgram(IShader[] shaders, ShaderInfo info)
         {
-            return new ShaderCollection(this, _device, shaders);
+            if (info.BackgroundCompile && info.State.HasValue && VulkanConfiguration.UseDynamicState)
+            {
+                return new ShaderCollection(this, _device, shaders, info.State.Value);
+            }
+            else
+            {
+                return new ShaderCollection(this, _device, shaders);
+            }
         }
 
         public IProgram CreateProgram(ShaderSource[] sources, ShaderInfo info)

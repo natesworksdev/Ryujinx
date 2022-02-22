@@ -19,7 +19,6 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly Vk _api;
         private readonly Device _device;
         private readonly ShaderStageFlags _stage;
-        private readonly Task _compileTask;
 
         private IntPtr _entryPointName;
         private ShaderModule _module;
@@ -30,6 +29,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         public ProgramLinkStatus CompileStatus { private set; get; }
 
+        public readonly Task CompileTask;
+
         public unsafe Shader(Vk api, Device device, ShaderStage stage, ShaderBindings bindings, string glsl)
         {
             _api = api;
@@ -39,7 +40,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             Bindings = bindings;
 
-            _compileTask = Task.Run(() =>
+            CompileTask = Task.Run(() =>
             {
                 glsl = glsl.Replace("gl_VertexID", "(gl_VertexIndex - gl_BaseVertex)");
                 glsl = glsl.Replace("gl_InstanceID", "(gl_InstanceIndex - gl_BaseInstance)");
@@ -103,22 +104,27 @@ namespace Ryujinx.Graphics.Vulkan
             _device = device;
             Bindings = bindings;
 
-            CompileStatus = ProgramLinkStatus.Success;
-
-            fixed (byte* pCode = spirv)
-            {
-                var shaderModuleCreateInfo = new ShaderModuleCreateInfo()
-                {
-                    SType = StructureType.ShaderModuleCreateInfo,
-                    CodeSize = (uint)spirv.Length,
-                    PCode = (uint*)pCode
-                };
-
-                api.CreateShaderModule(device, shaderModuleCreateInfo, null, out _module).ThrowOnError();
-            }
+            CompileStatus = ProgramLinkStatus.Incomplete;
 
             _stage = stage.Convert();
             _entryPointName = Marshal.StringToHGlobalAnsi("main");
+
+            CompileTask = Task.Run(() =>
+            {
+                fixed (byte* pCode = spirv)
+                {
+                    var shaderModuleCreateInfo = new ShaderModuleCreateInfo()
+                    {
+                        SType = StructureType.ShaderModuleCreateInfo,
+                        CodeSize = (uint)spirv.Length,
+                        PCode = (uint*)pCode
+                    };
+
+                    api.CreateShaderModule(device, shaderModuleCreateInfo, null, out _module).ThrowOnError();
+                }
+
+                CompileStatus = ProgramLinkStatus.Success;
+            });
         }
 
         private static uint[] LoadShaderData(string filePath, out int codeSize)
@@ -169,7 +175,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void WaitForCompile()
         {
-            _compileTask.Wait();
+            CompileTask.Wait();
         }
 
         public unsafe void Dispose()
