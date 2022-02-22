@@ -13,7 +13,8 @@ namespace Ryujinx.Tests.Cpu
             RunPrecomputedTestCase(test);
         }
 
-        public static readonly PrecomputedThumbTestCase[] RsImmTestCases = {
+        public static readonly PrecomputedThumbTestCase[] RsImmTestCases =
+        {
             // TST (reg)
             new PrecomputedThumbTestCase()
             {
