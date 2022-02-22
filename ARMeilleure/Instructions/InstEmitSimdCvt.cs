@@ -695,21 +695,13 @@ namespace ARMeilleure.Instructions
 
                 if (sizeF == 0)
                 {
-                    MethodInfo info = signed
-                        ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF32ToS32))
-                        : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF32ToU32));
-
-                    e = context.Call(info, e);
+                    e = EmitSaturateFloatToInt32(context, e, isF64: false, unsigned: !signed);
 
                     e = context.ZeroExtend32(OperandType.I64, e);
                 }
                 else /* if (sizeF == 1) */
                 {
-                    MethodInfo info = signed
-                        ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF64ToS64))
-                        : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF64ToU64));
-
-                    e = context.Call(info, e);
+                    e = EmitSaturateFloatToInt64(context, e, isF64: true, unsigned: !signed);
                 }
 
                 res = EmitVectorInsert(context, res, e, index, sizeI);
@@ -743,21 +735,13 @@ namespace ARMeilleure.Instructions
 
                 if (sizeF == 0)
                 {
-                    MethodInfo info = signed
-                        ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF32ToS32))
-                        : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF32ToU32));
-
-                    e = context.Call(info, e);
+                    e = EmitSaturateFloatToInt32(context, e, isF64: false, unsigned: !signed);
 
                     e = context.ZeroExtend32(OperandType.I64, e);
                 }
                 else /* if (sizeF == 1) */
                 {
-                    MethodInfo info = signed
-                        ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF64ToS64))
-                        : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF64ToU64));
-
-                    e = context.Call(info, e);
+                    e = EmitSaturateFloatToInt64(context, e, isF64: true, unsigned: !signed);
                 }
 
                 res = EmitVectorInsert(context, res, e, index, sizeI);
@@ -876,22 +860,14 @@ namespace ARMeilleure.Instructions
 
             value = EmitF2iFBitsMul(context, value, fBits);
 
-            MethodInfo info;
-
             if (context.CurrOp.RegisterSize == RegisterSize.Int32)
             {
-                info = value.Type == OperandType.FP32
-                    ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF32ToS32))
-                    : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF64ToS32));
+                return EmitSaturateFloatToInt32(context, value, value.Type == OperandType.FP64, unsigned: false);
             }
             else
             {
-                info = value.Type == OperandType.FP32
-                    ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF32ToS64))
-                    : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF64ToS64));
+                return EmitSaturateFloatToInt64(context, value, value.Type == OperandType.FP64, unsigned: false);
             }
-
-            return context.Call(info, value);
         }
 
         private static Operand EmitScalarFcvtu(ArmEmitterContext context, Operand value, int fBits)
@@ -900,22 +876,14 @@ namespace ARMeilleure.Instructions
 
             value = EmitF2iFBitsMul(context, value, fBits);
 
-            MethodInfo info;
-
             if (context.CurrOp.RegisterSize == RegisterSize.Int32)
             {
-                info = value.Type == OperandType.FP32
-                    ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF32ToU32))
-                    : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF64ToU32));
+                return EmitSaturateFloatToInt32(context, value, value.Type == OperandType.FP64, unsigned: true);
             }
             else
             {
-                info = value.Type == OperandType.FP32
-                    ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF32ToU64))
-                    : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF64ToU64));
+                return EmitSaturateFloatToInt64(context, value, value.Type == OperandType.FP64, unsigned: true);
             }
-
-            return context.Call(info, value);
         }
 
         private static Operand EmitF2iFBitsMul(ArmEmitterContext context, Operand value, int fBits)

@@ -29,26 +29,6 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        private static Operand EmitSaturateFloatToInt(ArmEmitterContext context, Operand op1, bool unsigned)
-        {
-            MethodInfo info;
-
-            if (op1.Type == OperandType.FP64)
-            {
-                info = unsigned
-                    ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF64ToU32))
-                    : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF64ToS32));
-            }
-            else
-            {
-                info = unsigned
-                    ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF32ToU32))
-                    : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF32ToS32));
-            }
-
-            return context.Call(info, op1);
-        }
-
         public static void Vcvt_V(ArmEmitterContext context)
         {
             OpCode32Simd op = (OpCode32Simd)context.CurrOp;
@@ -65,10 +45,7 @@ namespace ARMeilleure.Instructions
                 }
                 else
                 {
-                    EmitVectorUnaryOpF32(context, (op1) =>
-                    {
-                        return EmitSaturateFloatToInt(context, op1, unsigned);
-                    });
+                    EmitVectorUnaryOpF32(context, (op1) => EmitSaturateFloatToInt32(context, op1, op1.Type == OperandType.FP64, unsigned));
                 }
             }
             else
@@ -186,7 +163,7 @@ namespace ARMeilleure.Instructions
                     else
                     {
                         // Round towards zero.
-                        asInteger = EmitSaturateFloatToInt(context, toConvert, unsigned);
+                        asInteger = EmitSaturateFloatToInt32(context, toConvert, toConvert.Type == OperandType.FP64, unsigned);
                     }
 
                     InsertScalar(context, op.Vd, asInteger);
@@ -273,7 +250,7 @@ namespace ARMeilleure.Instructions
 
                 Operand asInteger;
 
-                asInteger = EmitSaturateFloatToInt(context, toConvert, unsigned);
+                asInteger = EmitSaturateFloatToInt32(context, toConvert, toConvert.Type == OperandType.FP64, unsigned);
 
                 InsertScalar(context, op.Vd, asInteger);
             }

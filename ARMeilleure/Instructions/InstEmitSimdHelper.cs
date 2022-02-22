@@ -1613,6 +1613,46 @@ namespace ARMeilleure.Instructions
             return context.AddIntrinsic(single ? Intrinsic.X86Andnps : Intrinsic.X86Andnpd, mask, value);
         }
 
+        public static Operand EmitSaturateFloatToInt32(ArmEmitterContext context, Operand value, bool isF64, bool unsigned)
+        {
+            MethodInfo info;
+
+            if (isF64)
+            {
+                info = unsigned
+                    ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF64ToU32))
+                    : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF64ToS32));
+            }
+            else
+            {
+                info = unsigned
+                    ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF32ToU32))
+                    : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF32ToS32));
+            }
+
+            return context.Call(info, value);
+        }
+
+        public static Operand EmitSaturateFloatToInt64(ArmEmitterContext context, Operand value, bool isF64, bool unsigned)
+        {
+            MethodInfo info;
+
+            if (value.Type == OperandType.FP64)
+            {
+                info = unsigned
+                    ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF64ToU64))
+                    : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF64ToS64));
+            }
+            else
+            {
+                info = unsigned
+                    ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF32ToU64))
+                    : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF32ToS64));
+            }
+
+            return context.Call(info, value);
+        }
+
         public static Operand EmitVectorExtractSx(ArmEmitterContext context, int reg, int index, int size)
         {
             return EmitVectorExtract(context, reg, index, size, true);
