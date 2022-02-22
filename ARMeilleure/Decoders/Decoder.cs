@@ -121,12 +121,7 @@ namespace ARMeilleure.Decoders
                             currBlock.Branch = GetBlock((ulong)op.Immediate);
                         }
 
-                        if (IsTrap(lastOp))
-                        {
-                            // On reentry, resume execution at the address of the trapping instruction.
-                            currBlock.Next = GetBlock(lastOp.Address, mustExit: true);
-                        }
-                        else if (!IsUnconditionalBranch(lastOp) || isCall)
+                        if (isCall || !(IsUnconditionalBranch(lastOp) || IsTrap(lastOp)))
                         {
                             currBlock.Next = GetBlock(currBlock.EndAddress);
                         }
