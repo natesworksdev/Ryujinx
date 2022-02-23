@@ -1,8 +1,5 @@
 ﻿using ARMeilleure.State;
 using NUnit.Framework;
-using Ryujinx.Tests.Unicorn;
-using System;
-using System.Reflection.Emit;
 
 namespace Ryujinx.Tests.Cpu
 {
