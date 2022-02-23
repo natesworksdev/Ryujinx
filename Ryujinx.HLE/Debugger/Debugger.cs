@@ -44,15 +44,15 @@ namespace Ryujinx.HLE.Debugger
             HandlerThread.Start();
         }
 
-        private void HaltApplication() => Device.System.DebugGetApplicationProcess().DebugStopAllThreads();
-        private ulong[] GetThreadIds() => Device.System.DebugGetApplicationProcess().DebugGetThreadUids();
+        private void HaltApplication() => Device.System.DebugGetApplicationProcess()?.DebugStopAllThreads();
+        private ulong[] GetThreadIds() => Device.System.DebugGetApplicationProcess()?.DebugGetThreadUids() ?? Array.Empty<ulong>();
 
         private ExecutionContext GetThread(ulong threadUid) =>
-            Device.System.DebugGetApplicationProcess().DebugGetThreadContext(threadUid);
+            Device.System.DebugGetApplicationProcess()?.DebugGetThreadContext(threadUid);
         private ExecutionContext[] GetThreads() => GetThreadIds().Select(GetThread).ToArray();
-        private IVirtualMemoryManager GetMemory() => Device.System.DebugGetApplicationProcess().CpuMemory;
+        private IVirtualMemoryManager GetMemory() => Device.System.DebugGetApplicationProcess()?.CpuMemory;
         private void InvalidateCacheRegion(ulong address, ulong size) =>
-            Device.System.DebugGetApplicationProcess().InvalidateCacheRegion(address, size);
+            Device.System.DebugGetApplicationProcess()?.InvalidateCacheRegion(address, size);
 
         const int GdbRegisterCount = 68;
 
