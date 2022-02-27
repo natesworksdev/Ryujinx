@@ -1192,9 +1192,21 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
             if (selection != null)
             {
-                SaveDataFilter filter = new();
-                filter.SetUserId(new UserId(1, 0));
-                OpenSaveDirectory(filter, selection);
+                Task.Run(() =>
+                {
+                    if (!ulong.TryParse(selection.TitleId, NumberStyles.HexNumber, CultureInfo.InvariantCulture,
+                    out ulong titleIdNumber))
+                    {
+                        ContentDialogHelper.CreateErrorDialog(_owner,
+                            LocaleManager.Instance["DialogRyujinxErrorMessage"], LocaleManager.Instance["DialogInvalidTitleIdErrorMessage"]);
+
+                        return;
+                    }
+
+                    var userId = new LibHac.Fs.UserId((ulong)_owner.AccountManager.LastOpenedUser.UserId.High, (ulong)_owner.AccountManager.LastOpenedUser.UserId.Low);
+                    var saveDataFilter = SaveDataFilter.Make(titleIdNumber, saveType: default, userId, saveDataId: default, index: default);
+                    OpenSaveDirectory(in saveDataFilter, selection, titleIdNumber);
+                });
             }
         }
 
@@ -1416,9 +1428,20 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
             if (selection != null)
             {
-                SaveDataFilter filter = new();
-                filter.SetSaveDataType(SaveDataType.Device);
-                OpenSaveDirectory(filter, selection);
+                Task.Run(() =>
+                {
+                    if (!ulong.TryParse(selection.TitleId, NumberStyles.HexNumber, CultureInfo.InvariantCulture,
+                       out ulong titleIdNumber))
+                    {
+                        ContentDialogHelper.CreateErrorDialog(_owner,
+                            LocaleManager.Instance["DialogRyujinxErrorMessage"], LocaleManager.Instance["DialogInvalidTitleIdErrorMessage"]);
+
+                        return;
+                    }
+
+                    var saveDataFilter = SaveDataFilter.Make(titleIdNumber, SaveDataType.Device, userId: default, saveDataId: default, index: default);
+                    OpenSaveDirectory(in saveDataFilter, selection, titleIdNumber);
+                });
             }
         }
 
@@ -1428,24 +1451,26 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
             if (selection != null)
             {
-                SaveDataFilter filter = new();
-                filter.SetSaveDataType(SaveDataType.Bcat);
-                OpenSaveDirectory(filter, selection);
+                Task.Run(() =>
+                {
+                    if (!ulong.TryParse(selection.TitleId, NumberStyles.HexNumber, CultureInfo.InvariantCulture,
+                       out ulong titleIdNumber))
+                    {
+                        ContentDialogHelper.CreateErrorDialog(_owner,
+                            LocaleManager.Instance["DialogRyujinxErrorMessage"], LocaleManager.Instance["DialogInvalidTitleIdErrorMessage"]);
+
+                        return;
+                    }
+
+                    var saveDataFilter = SaveDataFilter.Make(titleIdNumber, SaveDataType.Bcat, userId: default, saveDataId: default, index: default);
+                    OpenSaveDirectory(in saveDataFilter, selection, titleIdNumber);
+                });
             }
         }
 
-        private void OpenSaveDirectory(SaveDataFilter filter, ApplicationData data)
+        private void OpenSaveDirectory(in SaveDataFilter filter, ApplicationData data, ulong titleId)
         {
-            if (!ulong.TryParse(data.TitleId, NumberStyles.HexNumber, CultureInfo.InvariantCulture,
-                out ulong titleIdNumber))
-            {
-                ContentDialogHelper.CreateErrorDialog(_owner,
-                    LocaleManager.Instance["DialogRyujinxErrorMessage"], LocaleManager.Instance["DialogInvalidTitleIdErrorMessage"]);
-
-                return;
-            }
-
-            Task.Run(() => ApplicationHelper.OpenSaveDir(filter, titleIdNumber, data.ControlHolder, data.TitleName));
+            ApplicationHelper.OpenSaveDir(in filter, titleId, data.ControlHolder, data.TitleName);
         }
 
         private void ExtractLogo()

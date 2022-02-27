@@ -43,7 +43,7 @@ namespace Ryujinx.Ava.Common
         }
 
         private static bool TryFindSaveData(string titleName, ulong titleId,
-            BlitStruct<ApplicationControlProperty> controlHolder, SaveDataFilter filter, out ulong saveDataId)
+            BlitStruct<ApplicationControlProperty> controlHolder, in SaveDataFilter filter, out ulong saveDataId)
         {
             saveDataId = default;
 
@@ -85,8 +85,8 @@ namespace Ryujinx.Ava.Common
 
                 Uid user = new(1, 0); // TODO: Remove Hardcoded value.
 
-                result = EnsureApplicationSaveData(_horizonClient.Fs, out _, new ApplicationId(titleId),
-                    ref control, ref user);
+                result = _horizonClient.Fs.EnsureApplicationSaveData(out _, new LibHac.Ncm.ApplicationId(titleId), in control, in user);
+
 
                 if (result.IsFailure())
                 {
@@ -113,12 +113,10 @@ namespace Ryujinx.Ava.Common
             return false;
         }
 
-        public static void OpenSaveDir(SaveDataFilter saveDataFilter, ulong titleId,
+        public static void OpenSaveDir(in SaveDataFilter saveDataFilter, ulong titleId,
             BlitStruct<ApplicationControlProperty> controlData, string titleName)
         {
-            saveDataFilter.SetProgramId(new ProgramId(titleId));
-
-            if (!TryFindSaveData(titleName, titleId, controlData, saveDataFilter, out ulong saveDataId))
+            if (!TryFindSaveData(titleName, titleId, controlData, in saveDataFilter, out ulong saveDataId))
             {
                 return;
             }

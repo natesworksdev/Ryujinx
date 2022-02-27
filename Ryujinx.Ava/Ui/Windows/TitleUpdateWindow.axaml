@@ -49,8 +49,8 @@
                     Items="{Binding TitleUpdates}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <RadioButton GroupName="Update" IsChecked="{Binding IsEnabled, Mode=TwoWay}">
-                                <TextBlock Text="{Binding Label}" />
+                            <RadioButton Padding="8, 0" GroupName="Update" IsChecked="{Binding IsEnabled, Mode=TwoWay}">
+                                <Label Margin="0" VerticalAlignment="Center" Content="{Binding Label}" />
                             </RadioButton>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>

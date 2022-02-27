@@ -208,8 +208,8 @@ namespace Ryujinx.Ava.Ui.Windows
 
             list.Sort((x, y) =>
             {
-                var v = x.Control.DisplayVersion.ToString();
-                var u = y.Control.DisplayVersion.ToString();
+                var v = x.Control.DisplayVersionString.ToString();
+                var u = y.Control.DisplayVersionString.ToString();
 
                 if (string.IsNullOrEmpty(v))
                 {
@@ -220,8 +220,8 @@ namespace Ryujinx.Ava.Ui.Windows
                     return 1;
                 }
                 
-                return Version.Parse(x.Control.DisplayVersion.ToString())
-                    .CompareTo(Version.Parse(y.Control.DisplayVersion.ToString())) * -1;
+                return Version.Parse(x.Control.DisplayVersionString.ToString())
+                    .CompareTo(Version.Parse(y.Control.DisplayVersionString.ToString())) * -1;
             });
             
             TitleUpdates.Clear();
