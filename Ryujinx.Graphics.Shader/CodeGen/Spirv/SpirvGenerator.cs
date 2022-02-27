@@ -199,7 +199,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                         context.AddExecutionMode(spvFunc, ExecutionMode.EarlyFragmentTests);
                     }
 
-                    if (context.Config.GpuAccessor.QueryHostSupportsFragmentShaderInterlock())
+                    if ((info.HelperFunctionsMask & HelperFunctionsMask.FSI) != 0 && 
+                        context.Config.GpuAccessor.QueryHostSupportsFragmentShaderInterlock())
                     {
                         context.AddExecutionMode(spvFunc, ExecutionMode.PixelInterlockOrderedEXT);
                     }
