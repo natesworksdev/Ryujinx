@@ -244,6 +244,10 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                 case Instruction.SwizzleAdd:
                     context.Info.HelperFunctionsMask |= HelperFunctionsMask.SwizzleAdd;
                     break;
+                case Instruction.FSIBegin:
+                case Instruction.FSIEnd:
+                    context.Info.HelperFunctionsMask |= HelperFunctionsMask.FSI;
+                    break;
             }
         }
 
