@@ -41,6 +41,11 @@ jobs:
           OS_NAME: Windows x64
           DOTNET_RUNTIME_IDENTIFIER: win-x64
           RELEASE_ZIP_OS_NAME: win_x64
+          
+        - os: windows-latest
+          OS_NAME: Windows x86
+          DOTNET_RUNTIME_IDENTIFIER: win-x86
+          RELEASE_ZIP_OS_NAME: win_x86
 
       fail-fast: false
     env:
