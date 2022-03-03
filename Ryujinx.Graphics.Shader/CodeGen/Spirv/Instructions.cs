@@ -1465,7 +1465,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                     }
 
                     var vectorType = context.TypeVector(context.TypeS32(), count);
-                    return context.CompositeConstruct(vectorType, elems);
+                    
+                    return context.ConstantComposite(vectorType, elems);
                 }
                 else
                 {
