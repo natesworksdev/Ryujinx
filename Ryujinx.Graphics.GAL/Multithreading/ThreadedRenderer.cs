@@ -112,7 +112,7 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         {
             // Power through the render queue until the Gpu thread work is done.
 
-            while (_running && !_disposed)
+            while (_running)
             {
                 _galWorkAvailable.Wait();
                 _galWorkAvailable.Reset();
