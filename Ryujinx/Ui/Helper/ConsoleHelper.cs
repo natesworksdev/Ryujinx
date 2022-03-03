@@ -7,6 +7,8 @@ namespace Ryujinx.Ui.Helper
 {
     public class ConsoleHelper
     {
+        public static bool SetConsoleStateSupported => OperatingSystem.IsWindows();
+
         public static void SetConsoleWindowState(bool show)
         {
             if (OperatingSystem.IsWindows())

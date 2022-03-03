@@ -215,6 +215,7 @@ namespace Ryujinx.Ui
             }
 
             _showConsole.Active = ConfigurationState.Instance.Ui.ShowConsole.Value;
+            _showConsole.Visible = ConsoleHelper.SetConsoleStateSupported;
 
             _actionMenu.Sensitive = false;
             _pauseEmulation.Sensitive = false;
