@@ -5,7 +5,7 @@ using System.Runtime.Versioning;
 
 namespace Ryujinx.Ui.Helper
 {
-    public class ConsoleHelper
+    public static class ConsoleHelper
     {
         public static bool SetConsoleStateSupported => OperatingSystem.IsWindows();
 
@@ -31,7 +31,7 @@ namespace Ryujinx.Ui.Helper
 
             if (hWnd == IntPtr.Zero)
             {
-                Logger.Notice.Print(LogClass.Application, "Attempted to hide console window but console window does not exist");
+                Logger.Notice.Print(LogClass.Application, "Attempted to show/hide console window but console window does not exist");
                 return;
             }
 
