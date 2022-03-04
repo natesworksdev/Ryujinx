@@ -31,34 +31,12 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn.Proxy
             _protocol.Scan += HandleScan;
             _protocol.ScanResp += HandleScanResp;
 
-            // Linux wifi also shows up as type Ethernet
-            // Linux wifi does not receive udp broadcast if hosting a lobby
-            _protocol.localAddresses = GetLocalIpv4Addresses(new List<NetworkInterfaceType> { NetworkInterfaceType.Ethernet, NetworkInterfaceType.Wireless80211 });
+            // TODO: Figure out what's wrong with linux broadcast
+            // Linux> wifi adapter also shows up as type Ethernet
+            // Linux> wifi does not receive udp broadcast if hosting a lobby
 
             _buffer = new byte[LanProtocol.BufferSize];
             Start();
-        }
-
-        // Source: https://stackoverflow.com/a/24814027
-        private IPAddress[] GetLocalIpv4Addresses(List<NetworkInterfaceType> _types)
-        {
-            List<IPAddress> ipAddrList = new List<IPAddress>();
-            foreach (System.Net.NetworkInformation.NetworkInterface item in System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces())
-            {
-                LogMsg($"Found NetworkInterface: {item.Name} [type: {item.NetworkInterfaceType}]");
-                if (_types.Contains(item.NetworkInterfaceType) && item.OperationalStatus == OperationalStatus.Up)
-                {
-                    foreach (UnicastIPAddressInformation ip in item.GetIPProperties().UnicastAddresses)
-                    {
-                        if (ip.Address.AddressFamily == AddressFamily.InterNetwork)
-                        {
-                            ipAddrList.Add(ip.Address);
-                        }
-                    }
-                }
-            }
-
-            return ipAddrList.ToArray();
         }
 
         protected override Socket CreateSocket()

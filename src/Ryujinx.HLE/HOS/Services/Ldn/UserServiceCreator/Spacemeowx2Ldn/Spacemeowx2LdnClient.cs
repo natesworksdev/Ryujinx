@@ -6,6 +6,7 @@ using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.RyuLdn;
 using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.RyuLdn.Types;
 using System;
 using System.Net;
+using System.Net.NetworkInformation;
 
 namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 {
@@ -31,7 +32,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
             commService = parent;
             _config = config;
 
-            lanDiscovery = new LanDiscovery(this, NetworkHelpers.GetLocalInterface(_config.MultiplayerLanInterfaceId).Item2.Address);
+            UnicastIPAddressInformation localIpInterface = NetworkHelpers.GetLocalInterface(_config.MultiplayerLanInterfaceId).Item2;
+
+            lanDiscovery = new LanDiscovery(this, localIpInterface.Address, localIpInterface.IPv4Mask);
 
 
             //Config = new ProxyConfig()

@@ -27,7 +27,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
         private readonly LanDiscovery discovery;
 
-        public IPAddress[] localAddresses;
+        private readonly IPAddress localBroadcastAddr;
 
         public event Action<LdnProxyTcpSession> Accept;
         public event Action<EndPoint, LanPacketType, byte[]> Scan;
@@ -36,9 +36,21 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
         public event Action<NodeInfo, EndPoint> Connect;
         public event Action<LdnProxyTcpSession> DisconnectStation;
 
+
+        // Source: https://stackoverflow.com/a/39338188
+        private static IPAddress GetBroadcastAddress(IPAddress address, IPAddress mask)
+        {
+            uint ipAddress = BitConverter.ToUInt32(address.GetAddressBytes(), 0);
+            uint ipMaskV4 = BitConverter.ToUInt32(mask.GetAddressBytes(), 0);
+            uint broadCastIpAddress = ipAddress | ~ipMaskV4;
+
+            return new IPAddress(BitConverter.GetBytes(broadCastIpAddress));
+        }
+
         public LanProtocol(LanDiscovery parent)
         {
             discovery = parent;
+            localBroadcastAddr = GetBroadcastAddress(discovery.localAddr, discovery.localAddrMask);
         }
 
         private void LogMsg(string msg)
@@ -93,7 +105,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
         public void Read(ref byte[] _buffer, ref int _bufferEnd, byte[] data, int offset, int size, EndPoint endPoint = null)
         {
-            if (endPoint != null && localAddresses.Contains(((IPEndPoint)endPoint).Address))
+            if (endPoint != null && discovery.localAddr.Equals(((IPEndPoint)endPoint).Address))
             {
                 // LogMsg("LanProtocol: Dropping Packet of own origin...");
                 // FIXME: Drop the packet.
@@ -102,14 +114,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
             // TODO: Change this to debug
             LogMsg($"LanProtocol Reading data: EP: {endPoint} Offset: {offset} Size: {size}");
-            //string datastring = "";
-            //string datastringbytes = "";
-            //foreach (byte bytedata in data)
-            //{
-            //    datastringbytes += bytedata;
-            //    datastring += ((char)bytedata);
-            //}
-            //LogMsg($"LanProtocol data: {datastring}\n{datastringbytes}");
 
             // Scan packet
             if (size == 12)
@@ -188,7 +192,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
 
         public int SendBroadcast(ILdnSocket s, LanPacketType type, int port)
         {
-            return SendPacket(s, type, Array.Empty<byte>(), new IPEndPoint(IPAddress.Parse("192.168.178.255"), port));
+            return SendPacket(s, type, Array.Empty<byte>(), new IPEndPoint(localBroadcastAddr, port));
         }
 
         public int SendPacket(ILdnSocket s, LanPacketType type, byte[] data, EndPoint endPoint = null)

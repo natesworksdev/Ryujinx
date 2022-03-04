@@ -17,6 +17,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
         protected Spacemeowx2LdnClient parent;
         internal LanProtocol protocol;
         internal IPAddress localAddr;
+        internal IPAddress localAddrMask;
 
         private bool inited;
         public readonly Ssid FakeSsid;
@@ -32,12 +33,13 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
             Logger.Info?.PrintMsg(LogClass.ServiceLdn, msg);
         }
 
-        public LanDiscovery(Spacemeowx2LdnClient _parent, IPAddress ipAddr, bool listening = true)
+        public LanDiscovery(Spacemeowx2LdnClient _parent, IPAddress ipAddr, IPAddress ipv4mask, bool listening = true)
         {
-            LogMsg("Init LanDiscovery...");
+            LogMsg($"Init LanDiscovery using IP: {ipAddr}");
 
             parent = _parent;
             localAddr = ipAddr;
+            localAddrMask = ipv4mask;
 
             byte[] ssidName = new byte[33];
             Encoding.ASCII.GetBytes("12345678123456781234567812345678").CopyTo(ssidName, 0);
@@ -166,7 +168,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
                 Reserved2 = new byte[16]
             };
             stations.Remove(station);
-            
+
             UpdateNodes();
         }
 
@@ -385,8 +387,15 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Spacemeowx2Ldn
                     {
                         userstring += byte_char.ToString();
                     }
-                    Logger.Info?.PrintMsg(LogClass.ServiceLdn, $"LanDiscovery Scan: Adding new NetworkInfo to list: {userstring}");
-                    outNetworkInfo.Add(item.Value);
+                    if (userstring.CompareTo("000000000000000000000000000000000") != 0)
+                    {
+                        Logger.Info?.PrintMsg(LogClass.ServiceLdn, $"LanDiscovery Scan: Adding new NetworkInfo to list: {userstring}");
+                        outNetworkInfo.Add(item.Value);
+                    }
+                    else
+                    {
+                        Logger.Warning?.PrintMsg(LogClass.ServiceLdn, $"LanDiscovery Scan: Got empty userstring. There might be a timing issue somewhere...");
+                    }
                 }
             }
 
