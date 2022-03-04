@@ -311,7 +311,7 @@ namespace Ryujinx.Modules
                             catch (Exception e)
                             {
                                 Logger.Warning?.Print(LogClass.Application, e.Message);
-                                Logger.Warning?.Print(LogClass.Application, $"Multi-Threaded update failed, falling back to single-threaded updater.");
+                                Logger.Warning?.Print(LogClass.Application, "Multi-Threaded update failed, falling back to single-threaded updater.");
 
                                 DoUpdateWithSingleThread(updateDialog, downloadUrl, updateFile);
 
@@ -327,7 +327,7 @@ namespace Ryujinx.Modules
                     catch (WebException ex)
                     {
                         Logger.Warning?.Print(LogClass.Application, ex.Message);
-                        Logger.Warning?.Print(LogClass.Application, $"Multi-Threaded update failed, falling back to single-threaded updater.");
+                        Logger.Warning?.Print(LogClass.Application, "Multi-Threaded update failed, falling back to single-threaded updater.");
 
                         for (int j = 0; j < webClients.Count; j++)
                         {
