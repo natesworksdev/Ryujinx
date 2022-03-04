@@ -92,7 +92,7 @@ namespace Ryujinx.Ui.Widgets
             //
             // _openTitleSdModDirMenuItem
             //
-            _openTitleSdModDirMenuItem = new MenuItem("Open SD Atmosphere Mods Directory")
+            _openTitleSdModDirMenuItem = new MenuItem("Open Atmosphere Mods Directory")
             {
                 TooltipText = "Open the alternative SD card atmosphere directory which contains the Application's Mods."
             };
