@@ -581,7 +581,7 @@ namespace Ryujinx.Configuration
             Ui.EnableCustomTheme.Value             = false;
             Ui.CustomThemePath.Value               = "";
             Ui.StartFullscreen.Value               = false;
-            Ui.ShowConsole.Value                   = false;
+            Ui.ShowConsole.Value                   = true;
             Hid.EnableKeyboard.Value               = false;
             Hid.EnableMouse.Value                  = false;
             Hid.Hotkeys.Value = new KeyboardHotkeys

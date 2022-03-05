@@ -17,7 +17,7 @@ namespace Ryujinx.Ui.Helper
             }
             else if (show == false)
             {
-                Logger.Notice.Print(LogClass.Application, "OS doesn't support hiding console window");
+                Logger.Warning?.Print(LogClass.Application, "OS doesn't support hiding console window");
             }
         }
 
@@ -31,7 +31,7 @@ namespace Ryujinx.Ui.Helper
 
             if (hWnd == IntPtr.Zero)
             {
-                Logger.Notice.Print(LogClass.Application, "Attempted to show/hide console window but console window does not exist");
+                Logger.Warning?.Print(LogClass.Application, "Attempted to show/hide console window but console window does not exist");
                 return;
             }
 
