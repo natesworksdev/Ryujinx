@@ -215,7 +215,7 @@ namespace Ryujinx.Ui
             }
 
             _showConsole.Active = ConfigurationState.Instance.Ui.ShowConsole.Value;
-            _showConsole.Visible = ConsoleHelper.SetConsoleStateSupported;
+            _showConsole.Visible = ConsoleHelper.SetConsoleWindowStateSupported;
 
             _actionMenu.Sensitive = false;
             _pauseEmulation.Sensitive = false;
@@ -1542,7 +1542,6 @@ namespace Ryujinx.Ui
         private void ShowConsole_Toggled(object sender, EventArgs args)
         {
             ConfigurationState.Instance.Ui.ShowConsole.Value = _showConsole.Active;
-            ConsoleHelper.SetConsoleWindowState(_showConsole.Active);
 
             SaveConfig();
         }

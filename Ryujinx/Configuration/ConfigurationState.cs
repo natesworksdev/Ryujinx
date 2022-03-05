@@ -6,6 +6,7 @@ using Ryujinx.Common.Configuration.Hid.Keyboard;
 using Ryujinx.Common.Logging;
 using Ryujinx.Configuration.System;
 using Ryujinx.Configuration.Ui;
+using Ryujinx.Ui.Helper;
 using System;
 using System.Collections.Generic;
 
@@ -102,6 +103,7 @@ namespace Ryujinx.Configuration
                 CustomThemePath   = new ReactiveObject<string>();
                 StartFullscreen   = new ReactiveObject<bool>();
                 ShowConsole       = new ReactiveObject<bool>();
+                ShowConsole.Event += static (s, e) => { ConsoleHelper.SetConsoleWindowState(e.NewValue); };
             }
         }
 
