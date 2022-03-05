@@ -1,4 +1,5 @@
 ﻿using ARMeilleure.Common;
+using System.Runtime.Intrinsics;
 
 namespace ARMeilleure.Decoders
 {
@@ -10,6 +11,8 @@ namespace ARMeilleure.Decoders
 
         public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeT32AluImm(inst, address, opCode);
 
+        private static readonly Vector128<int> _factor = Vector128.Create(1, 0x00010001, 0x01000100, 0x01010101);
+
         public OpCodeT32AluImm(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             int imm8 = (opCode >> 0) & 0xff;
@@ -20,21 +23,7 @@ namespace ARMeilleure.Decoders
 
             if ((imm12 >> 10) == 0)
             {
-                switch ((imm12 >> 8) & 3)
-                {
-                    case 0:
-                        Immediate = imm8;
-                        break;
-                    case 1:
-                        Immediate = imm8 | (imm8 << 16);
-                        break;
-                    case 2:
-                        Immediate = (imm8 << 8) | (imm8 << 24);
-                        break;
-                    case 3:
-                        Immediate = imm8 | (imm8 << 8) | (imm8 << 16) | (imm8 << 24);
-                        break;
-                }
+                Immediate = imm8 * _factor.GetElement((imm12 >> 8) & 3);
                 IsRotated = false;
             }
             else
