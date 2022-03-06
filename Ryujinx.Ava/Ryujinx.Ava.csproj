@@ -30,6 +30,7 @@
             <SubType>Designer</SubType>
         </AvaloniaResource>
         <None Remove="Assets\Fonts\SegoeFluentIcons.ttf" />
+        <None Remove="Assets\Locales\el_GR.json" />
         <None Remove="Assets\Locales\ru_RU.json" />
         <AvaloniaResource Include="Assets\Fonts\SegoeFluentIcons.ttf" />
     </ItemGroup>
@@ -87,6 +88,7 @@
         <EmbeddedResource Include="Assets\Images\Logo_Patreon.png" />
         <EmbeddedResource Include="Assets\Images\Logo_Ryujinx.png" />
         <EmbeddedResource Include="Assets\Images\Logo_Twitter.png" />
+        <EmbeddedResource Include="Assets\Locales\el_GR.json" />
         <EmbeddedResource Include="Assets\Locales\en_US.json" />
         <EmbeddedResource Include="Assets\Locales\es_ES.json" />
         <EmbeddedResource Include="Assets\Locales\fr_FR.json" />

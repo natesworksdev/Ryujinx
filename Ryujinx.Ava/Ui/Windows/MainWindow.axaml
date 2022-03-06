@@ -132,6 +132,8 @@
                                           Header="French" />
                                 <MenuItem Command="{ReflectionBinding ChangeLanguage}" CommandParameter="de_DE"
                                           Header="German" />
+                                <MenuItem Command="{ReflectionBinding ChangeLanguage}" CommandParameter="el_GR"
+                                          Header="Greek" />
                                 <MenuItem Command="{ReflectionBinding ChangeLanguage}" CommandParameter="it_IT"
                                           Header="Italian" />
                                 <MenuItem Command="{ReflectionBinding ChangeLanguage}" CommandParameter="ko_KR"

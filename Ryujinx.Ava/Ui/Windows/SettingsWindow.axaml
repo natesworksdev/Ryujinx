@@ -695,7 +695,7 @@
                                        ToolTip.Tip="{locale:Locale AudioVolumeTooltip}"
                                        Width="240" />
                             <ui:NumberBox Value="{Binding Volume}"
-                                    ToolTip.Tip="{locale:Locale AudioVolumeToolTip}"
+                                    ToolTip.Tip="{locale:Locale AudioVolumeTooltip}"
                                     Width="350"
                                     SmallChange="1"
                                     LargeChange="10"
