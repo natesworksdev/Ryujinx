@@ -43,7 +43,11 @@ namespace ARMeilleure.State
         public long TpidrEl0 { get; set; }
         public long Tpidr    { get; set; }
 
-        public uint Pstate { get => _nativeContext.GetPstate(); set => _nativeContext.SetPstate(value); }
+        public uint Pstate
+        {
+            get => _nativeContext.GetPstate();
+            set => _nativeContext.SetPstate(value);
+        }
 
         public FPCR Fpcr { get; set; }
         public FPSR Fpsr { get; set; }
