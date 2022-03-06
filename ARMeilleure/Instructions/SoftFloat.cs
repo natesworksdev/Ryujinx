@@ -224,7 +224,7 @@ namespace ARMeilleure.Instructions
 
             if ((context.Fpcr & FPCR.Fz) != 0 && exponent < minimumExp)
             {
-                context.Fpsr |= FPSR.Ufc;
+                context.SetFPstateFlag(FPState.UfcFlag, true);
 
                 return FPZero(sign);
             }
@@ -327,7 +327,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                context.Fpsr |= (FPSR)(1 << (int)exc);
+                context.SetFPstateFlag((FPState)exc, true);
             }
         }
     }
@@ -614,7 +614,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                context.Fpsr |= (FPSR)(1 << (int)exc);
+                context.SetFPstateFlag((FPState)exc, true);
             }
         }
     }
@@ -665,7 +665,7 @@ namespace ARMeilleure.Instructions
 
                     if ((fpcr & FPCR.Fz) != 0 && float.IsSubnormal(result))
                     {
-                        context.Fpsr |= FPSR.Ufc;
+                        context.SetFPstateFlag(FPState.UfcFlag, true);
 
                         result = FPZero(result < 0f);
                     }
@@ -863,7 +863,7 @@ namespace ARMeilleure.Instructions
 
                     if ((fpcr & FPCR.Fz) != 0 && float.IsSubnormal(result))
                     {
-                        context.Fpsr |= FPSR.Ufc;
+                        context.SetFPstateFlag(FPState.UfcFlag, true);
 
                         result = FPZero(result < 0f);
                     }
@@ -906,7 +906,7 @@ namespace ARMeilleure.Instructions
 
                         if ((fpcr & FPCR.Fz) != 0 && float.IsSubnormal(result))
                         {
-                            context.Fpsr |= FPSR.Ufc;
+                            context.SetFPstateFlag(FPState.UfcFlag, true);
 
                             result = FPZero(result < 0f);
                         }
@@ -928,7 +928,7 @@ namespace ARMeilleure.Instructions
 
                         if ((fpcr & FPCR.Fz) != 0 && float.IsSubnormal(result))
                         {
-                            context.Fpsr |= FPSR.Ufc;
+                            context.SetFPstateFlag(FPState.UfcFlag, true);
 
                             result = FPZero(result < 0f);
                         }
@@ -997,7 +997,7 @@ namespace ARMeilleure.Instructions
 
                         if ((fpcr & FPCR.Fz) != 0 && float.IsSubnormal(result))
                         {
-                            context.Fpsr |= FPSR.Ufc;
+                            context.SetFPstateFlag(FPState.UfcFlag, true);
 
                             result = FPZero(result < 0f);
                         }
@@ -1019,7 +1019,7 @@ namespace ARMeilleure.Instructions
 
                         if ((fpcr & FPCR.Fz) != 0 && float.IsSubnormal(result))
                         {
-                            context.Fpsr |= FPSR.Ufc;
+                            context.SetFPstateFlag(FPState.UfcFlag, true);
 
                             result = FPZero(result < 0f);
                         }
@@ -1095,7 +1095,7 @@ namespace ARMeilleure.Instructions
 
                     if ((fpcr & FPCR.Fz) != 0 && float.IsSubnormal(result))
                     {
-                        context.Fpsr |= FPSR.Ufc;
+                        context.SetFPstateFlag(FPState.UfcFlag, true);
 
                         result = FPZero(result < 0f);
                     }
@@ -1163,7 +1163,7 @@ namespace ARMeilleure.Instructions
 
                     if ((fpcr & FPCR.Fz) != 0 && float.IsSubnormal(result))
                     {
-                        context.Fpsr |= FPSR.Ufc;
+                        context.SetFPstateFlag(FPState.UfcFlag, true);
 
                         result = FPZero(result < 0f);
                     }
@@ -1220,7 +1220,7 @@ namespace ARMeilleure.Instructions
 
                     if ((fpcr & FPCR.Fz) != 0 && float.IsSubnormal(result))
                     {
-                        context.Fpsr |= FPSR.Ufc;
+                        context.SetFPstateFlag(FPState.UfcFlag, true);
 
                         result = FPZero(result < 0f);
                     }
@@ -1295,7 +1295,7 @@ namespace ARMeilleure.Instructions
             {
                 result = FPZero(sign);
 
-                context.Fpsr |= FPSR.Ufc;
+                context.SetFPstateFlag(FPState.UfcFlag, true);
             }
             else
             {
@@ -1403,7 +1403,7 @@ namespace ARMeilleure.Instructions
 
                     if ((fpcr & FPCR.Fz) != 0 && float.IsSubnormal(result))
                     {
-                        context.Fpsr |= FPSR.Ufc;
+                        context.SetFPstateFlag(FPState.UfcFlag, true);
 
                         result = FPZero(result < 0f);
                     }
@@ -1545,7 +1545,7 @@ namespace ARMeilleure.Instructions
 
                     if ((fpcr & FPCR.Fz) != 0 && float.IsSubnormal(result))
                     {
-                        context.Fpsr |= FPSR.Ufc;
+                        context.SetFPstateFlag(FPState.UfcFlag, true);
 
                         result = FPZero(result < 0f);
                     }
@@ -1580,7 +1580,7 @@ namespace ARMeilleure.Instructions
                 {
                     product = FPMulFpscr(value1, value2, true);
                 }
-                
+
                 result = FPHalvedSub(FPThree(false), product, context, fpcr);
             }
 
@@ -1618,7 +1618,7 @@ namespace ARMeilleure.Instructions
 
                     if ((fpcr & FPCR.Fz) != 0 && float.IsSubnormal(result))
                     {
-                        context.Fpsr |= FPSR.Ufc;
+                        context.SetFPstateFlag(FPState.UfcFlag, true);
 
                         result = FPZero(result < 0f);
                     }
@@ -1661,7 +1661,7 @@ namespace ARMeilleure.Instructions
 
                 if ((fpcr & FPCR.Fz) != 0 && float.IsSubnormal(result))
                 {
-                    context.Fpsr |= FPSR.Ufc;
+                    context.SetFPstateFlag(FPState.UfcFlag, true);
 
                     result = FPZero(result < 0f);
                 }
@@ -1714,7 +1714,7 @@ namespace ARMeilleure.Instructions
 
                     if ((fpcr & FPCR.Fz) != 0 && float.IsSubnormal(result))
                     {
-                        context.Fpsr |= FPSR.Ufc;
+                        context.SetFPstateFlag(FPState.UfcFlag, true);
 
                         result = FPZero(result < 0f);
                     }
@@ -1921,7 +1921,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                context.Fpsr |= (FPSR)(1 << (int)exc);
+                context.SetFPstateFlag((FPState)exc, true);
             }
         }
     }
@@ -1972,7 +1972,7 @@ namespace ARMeilleure.Instructions
 
                     if ((fpcr & FPCR.Fz) != 0 && double.IsSubnormal(result))
                     {
-                        context.Fpsr |= FPSR.Ufc;
+                        context.SetFPstateFlag(FPState.UfcFlag, true);
 
                         result = FPZero(result < 0d);
                     }
@@ -2170,7 +2170,7 @@ namespace ARMeilleure.Instructions
 
                     if ((fpcr & FPCR.Fz) != 0 && double.IsSubnormal(result))
                     {
-                        context.Fpsr |= FPSR.Ufc;
+                        context.SetFPstateFlag(FPState.UfcFlag, true);
 
                         result = FPZero(result < 0d);
                     }
@@ -2213,7 +2213,7 @@ namespace ARMeilleure.Instructions
 
                         if ((fpcr & FPCR.Fz) != 0 && double.IsSubnormal(result))
                         {
-                            context.Fpsr |= FPSR.Ufc;
+                            context.SetFPstateFlag(FPState.UfcFlag, true);
 
                             result = FPZero(result < 0d);
                         }
@@ -2235,7 +2235,7 @@ namespace ARMeilleure.Instructions
 
                         if ((fpcr & FPCR.Fz) != 0 && double.IsSubnormal(result))
                         {
-                            context.Fpsr |= FPSR.Ufc;
+                            context.SetFPstateFlag(FPState.UfcFlag, true);
 
                             result = FPZero(result < 0d);
                         }
@@ -2304,7 +2304,7 @@ namespace ARMeilleure.Instructions
 
                         if ((fpcr & FPCR.Fz) != 0 && double.IsSubnormal(result))
                         {
-                            context.Fpsr |= FPSR.Ufc;
+                            context.SetFPstateFlag(FPState.UfcFlag, true);
 
                             result = FPZero(result < 0d);
                         }
@@ -2326,7 +2326,7 @@ namespace ARMeilleure.Instructions
 
                         if ((fpcr & FPCR.Fz) != 0 && double.IsSubnormal(result))
                         {
-                            context.Fpsr |= FPSR.Ufc;
+                            context.SetFPstateFlag(FPState.UfcFlag, true);
 
                             result = FPZero(result < 0d);
                         }
@@ -2402,7 +2402,7 @@ namespace ARMeilleure.Instructions
 
                     if ((fpcr & FPCR.Fz) != 0 && double.IsSubnormal(result))
                     {
-                        context.Fpsr |= FPSR.Ufc;
+                        context.SetFPstateFlag(FPState.UfcFlag, true);
 
                         result = FPZero(result < 0d);
                     }
@@ -2470,7 +2470,7 @@ namespace ARMeilleure.Instructions
 
                     if ((fpcr & FPCR.Fz) != 0 && double.IsSubnormal(result))
                     {
-                        context.Fpsr |= FPSR.Ufc;
+                        context.SetFPstateFlag(FPState.UfcFlag, true);
 
                         result = FPZero(result < 0d);
                     }
@@ -2527,7 +2527,7 @@ namespace ARMeilleure.Instructions
 
                     if ((fpcr & FPCR.Fz) != 0 && double.IsSubnormal(result))
                     {
-                        context.Fpsr |= FPSR.Ufc;
+                        context.SetFPstateFlag(FPState.UfcFlag, true);
 
                         result = FPZero(result < 0d);
                     }
@@ -2602,7 +2602,7 @@ namespace ARMeilleure.Instructions
             {
                 result = FPZero(sign);
 
-                context.Fpsr |= FPSR.Ufc;
+                context.SetFPstateFlag(FPState.UfcFlag, true);
             }
             else
             {
@@ -2710,7 +2710,7 @@ namespace ARMeilleure.Instructions
 
                     if ((fpcr & FPCR.Fz) != 0 && double.IsSubnormal(result))
                     {
-                        context.Fpsr |= FPSR.Ufc;
+                        context.SetFPstateFlag(FPState.UfcFlag, true);
 
                         result = FPZero(result < 0d);
                     }
@@ -2852,7 +2852,7 @@ namespace ARMeilleure.Instructions
 
                     if ((fpcr & FPCR.Fz) != 0 && double.IsSubnormal(result))
                     {
-                        context.Fpsr |= FPSR.Ufc;
+                        context.SetFPstateFlag(FPState.UfcFlag, true);
 
                         result = FPZero(result < 0d);
                     }
@@ -2925,7 +2925,7 @@ namespace ARMeilleure.Instructions
 
                     if ((fpcr & FPCR.Fz) != 0 && double.IsSubnormal(result))
                     {
-                        context.Fpsr |= FPSR.Ufc;
+                        context.SetFPstateFlag(FPState.UfcFlag, true);
 
                         result = FPZero(result < 0d);
                     }
@@ -2968,7 +2968,7 @@ namespace ARMeilleure.Instructions
 
                 if ((fpcr & FPCR.Fz) != 0 && double.IsSubnormal(result))
                 {
-                    context.Fpsr |= FPSR.Ufc;
+                    context.SetFPstateFlag(FPState.UfcFlag, true);
 
                     result = FPZero(result < 0d);
                 }
@@ -3021,7 +3021,7 @@ namespace ARMeilleure.Instructions
 
                     if ((fpcr & FPCR.Fz) != 0 && double.IsSubnormal(result))
                     {
-                        context.Fpsr |= FPSR.Ufc;
+                        context.SetFPstateFlag(FPState.UfcFlag, true);
 
                         result = FPZero(result < 0d);
                     }
@@ -3228,7 +3228,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                context.Fpsr |= (FPSR)(1 << (int)exc);
+                context.SetFPstateFlag((FPState)exc, true);
             }
         }
     }

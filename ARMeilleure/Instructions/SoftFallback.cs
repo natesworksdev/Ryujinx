@@ -253,13 +253,13 @@ namespace ARMeilleure.Instructions
 
             if (op > 0L)
             {
-                context.Fpsr |= FPSR.Qc;
+                context.SetFPstateFlag(FPState.QcFlag, true);
 
                 return tMaxValue;
             }
             else if (op < 0L)
             {
-                context.Fpsr |= FPSR.Qc;
+                context.SetFPstateFlag(FPState.QcFlag, true);
 
                 return tMinValue;
             }
@@ -275,7 +275,7 @@ namespace ARMeilleure.Instructions
 
             if (op > 0UL)
             {
-                context.Fpsr |= FPSR.Qc;
+                context.SetFPstateFlag(FPState.QcFlag, true);
 
                 return tMaxValue;
             }
@@ -520,13 +520,13 @@ namespace ARMeilleure.Instructions
 
             if (op > tMaxValue)
             {
-                context.Fpsr |= FPSR.Qc;
+                context.SetFPstateFlag(FPState.QcFlag, true);
 
                 return tMaxValue;
             }
             else if (op < tMinValue)
             {
-                context.Fpsr |= FPSR.Qc;
+                context.SetFPstateFlag(FPState.QcFlag, true);
 
                 return tMinValue;
             }
@@ -547,13 +547,13 @@ namespace ARMeilleure.Instructions
 
             if (op > (long)tMaxValue)
             {
-                context.Fpsr |= FPSR.Qc;
+                context.SetFPstateFlag(FPState.QcFlag, true);
 
                 return tMaxValue;
             }
             else if (op < (long)tMinValue)
             {
-                context.Fpsr |= FPSR.Qc;
+                context.SetFPstateFlag(FPState.QcFlag, true);
 
                 return tMinValue;
             }
@@ -573,7 +573,7 @@ namespace ARMeilleure.Instructions
 
             if (op > (ulong)tMaxValue)
             {
-                context.Fpsr |= FPSR.Qc;
+                context.SetFPstateFlag(FPState.QcFlag, true);
 
                 return tMaxValue;
             }
@@ -593,7 +593,7 @@ namespace ARMeilleure.Instructions
 
             if (op > tMaxValue)
             {
-                context.Fpsr |= FPSR.Qc;
+                context.SetFPstateFlag(FPState.QcFlag, true);
 
                 return tMaxValue;
             }
@@ -609,7 +609,7 @@ namespace ARMeilleure.Instructions
 
             if (op == long.MinValue)
             {
-                context.Fpsr |= FPSR.Qc;
+                context.SetFPstateFlag(FPState.QcFlag, true);
 
                 return long.MaxValue;
             }
@@ -627,7 +627,7 @@ namespace ARMeilleure.Instructions
 
             if ((~(op1 ^ op2) & (op1 ^ add)) < 0L)
             {
-                context.Fpsr |= FPSR.Qc;
+                context.SetFPstateFlag(FPState.QcFlag, true);
 
                 if (op1 < 0L)
                 {
@@ -652,7 +652,7 @@ namespace ARMeilleure.Instructions
 
             if ((add < op1) && (add < op2))
             {
-                context.Fpsr |= FPSR.Qc;
+                context.SetFPstateFlag(FPState.QcFlag, true);
 
                 return ulong.MaxValue;
             }
@@ -670,7 +670,7 @@ namespace ARMeilleure.Instructions
 
             if (((op1 ^ op2) & (op1 ^ sub)) < 0L)
             {
-                context.Fpsr |= FPSR.Qc;
+                context.SetFPstateFlag(FPState.QcFlag, true);
 
                 if (op1 < 0L)
                 {
@@ -695,7 +695,7 @@ namespace ARMeilleure.Instructions
 
             if (op1 < op2)
             {
-                context.Fpsr |= FPSR.Qc;
+                context.SetFPstateFlag(FPState.QcFlag, true);
 
                 return ulong.MinValue;
             }
@@ -718,7 +718,7 @@ namespace ARMeilleure.Instructions
 
                 if ((~op2 & add) < 0L)
                 {
-                    context.Fpsr |= FPSR.Qc;
+                    context.SetFPstateFlag(FPState.QcFlag, true);
 
                     return long.MaxValue;
                 }
@@ -732,7 +732,7 @@ namespace ARMeilleure.Instructions
                 // op1 from (ulong)long.MaxValue + 1UL to ulong.MaxValue
                 // op2 from (long)ulong.MinValue to long.MaxValue
 
-                context.Fpsr |= FPSR.Qc;
+                context.SetFPstateFlag(FPState.QcFlag, true);
 
                 return long.MaxValue;
             }
@@ -745,7 +745,7 @@ namespace ARMeilleure.Instructions
 
                 if (add > (ulong)long.MaxValue)
                 {
-                    context.Fpsr |= FPSR.Qc;
+                    context.SetFPstateFlag(FPState.QcFlag, true);
 
                     return long.MaxValue;
                 }
@@ -769,7 +769,7 @@ namespace ARMeilleure.Instructions
 
                 if ((add < (ulong)op1) && (add < op2))
                 {
-                    context.Fpsr |= FPSR.Qc;
+                    context.SetFPstateFlag(FPState.QcFlag, true);
 
                     return ulong.MaxValue;
                 }
@@ -794,7 +794,7 @@ namespace ARMeilleure.Instructions
 
                 if (add < (long)ulong.MinValue)
                 {
-                    context.Fpsr |= FPSR.Qc;
+                    context.SetFPstateFlag(FPState.QcFlag, true);
 
                     return ulong.MinValue;
                 }

@@ -623,25 +623,13 @@ namespace Ryujinx.Tests.Cpu
 
         private uint GetFpscr()
         {
-            uint fpscr = (uint)(_context.Fpsr & FPSR.A32Mask & ~FPSR.Nzcv) | (uint)(_context.Fpcr & FPCR.A32Mask);
-
-            fpscr |= _context.GetFPstateFlag(FPState.NFlag) ? (1u << (int)FPState.NFlag) : 0;
-            fpscr |= _context.GetFPstateFlag(FPState.ZFlag) ? (1u << (int)FPState.ZFlag) : 0;
-            fpscr |= _context.GetFPstateFlag(FPState.CFlag) ? (1u << (int)FPState.CFlag) : 0;
-            fpscr |= _context.GetFPstateFlag(FPState.VFlag) ? (1u << (int)FPState.VFlag) : 0;
-
-            return fpscr;
+            return (uint)(_context.Fpsr & FPSR.A32Mask) | (uint)(_context.Fpcr & FPCR.A32Mask);
         }
 
         private void SetFpscr(uint fpscr)
         {
             _context.Fpsr = FPSR.A32Mask & (FPSR)fpscr;
             _context.Fpcr = FPCR.A32Mask & (FPCR)fpscr;
-
-            _context.SetFPstateFlag(FPState.NFlag, (fpscr & (1u << (int)FPState.NFlag)) != 0);
-            _context.SetFPstateFlag(FPState.ZFlag, (fpscr & (1u << (int)FPState.ZFlag)) != 0);
-            _context.SetFPstateFlag(FPState.CFlag, (fpscr & (1u << (int)FPState.CFlag)) != 0);
-            _context.SetFPstateFlag(FPState.VFlag, (fpscr & (1u << (int)FPState.VFlag)) != 0);
         }
     }
 }

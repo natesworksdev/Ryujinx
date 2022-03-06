@@ -93,8 +93,7 @@ namespace ARMeilleure.Instructions
         {
             ExecutionContext context = GetContext();
 
-            return (uint)(context.Fpsr & FPSR.A32Mask & ~FPSR.Nzcv) |
-                   (uint)(context.Fpcr & FPCR.A32Mask);
+            return (uint)(context.Fpsr & FPSR.A32Mask) | (uint)(context.Fpcr & FPCR.A32Mask);
         }
 
         public static ulong GetTpidrEl0()
@@ -140,11 +139,6 @@ namespace ARMeilleure.Instructions
         public static void SetFpsr(ulong value)
         {
             GetContext().Fpsr = (FPSR)value;
-        }
-
-        public static void SetFpsrQc()
-        {
-            GetContext().Fpsr |= FPSR.Qc;
         }
 
         public static void SetFpscr(uint fpscr)
