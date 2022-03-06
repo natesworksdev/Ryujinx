@@ -283,7 +283,7 @@ namespace Ryujinx.Tests.Cpu
             }
 
             uint finalCpsr = test.FinalRegs[15];
-            Assert.That(GetContext().GetPstate(), Is.EqualTo(finalCpsr));
+            Assert.That(GetContext().Pstate, Is.EqualTo(finalCpsr));
         }
 
         protected void SetWorkingMemory(uint offset, byte[] data)

@@ -43,6 +43,8 @@ namespace ARMeilleure.State
         public long TpidrEl0 { get; set; }
         public long Tpidr    { get; set; }
 
+        public uint Pstate { get => _nativeContext.GetPstate(); set => _nativeContext.SetPstate(value); }
+
         public FPCR Fpcr { get; set; }
         public FPSR Fpsr { get; set; }
         public FPCR StandardFpcrValue => (Fpcr & (FPCR.Ahp)) | FPCR.Dn | FPCR.Fz;
@@ -102,9 +104,6 @@ namespace ARMeilleure.State
 
         public bool GetPstateFlag(PState flag)             => _nativeContext.GetPstateFlag(flag);
         public void SetPstateFlag(PState flag, bool value) => _nativeContext.SetPstateFlag(flag, value);
-
-        public uint GetPstate()           => _nativeContext.GetPstate();
-        public void SetPstate(uint value) => _nativeContext.SetPstate(value);
 
         public bool GetFPstateFlag(FPState flag) => _nativeContext.GetFPStateFlag(flag);
         public void SetFPstateFlag(FPState flag, bool value) => _nativeContext.SetFPStateFlag(flag, value);

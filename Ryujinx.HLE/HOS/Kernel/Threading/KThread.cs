@@ -658,7 +658,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
         private static uint GetPsr(ARMeilleure.State.ExecutionContext context)
         {
-            return context.GetPstate() & 0xFF0FFE20;
+            return context.Pstate & 0xFF0FFE20;
         }
 
         private ThreadContext GetCurrentContext()
