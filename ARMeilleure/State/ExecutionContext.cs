@@ -103,6 +103,24 @@ namespace ARMeilleure.State
         public bool GetPstateFlag(PState flag)             => _nativeContext.GetPstateFlag(flag);
         public void SetPstateFlag(PState flag, bool value) => _nativeContext.SetPstateFlag(flag, value);
 
+        public uint GetPstate()
+        {
+            uint value = 0;
+            for (int i = 0; i < RegisterConsts.FlagsCount; i++)
+            {
+                value |= GetPstateFlag((PState)i) ? 1u << i : 0u;
+            }
+            return value;
+        }
+        public void SetPstate(uint value)
+        {
+            for (int i = 0; i < RegisterConsts.FlagsCount; i++)
+            {
+                uint flag = 1u << i;
+                SetPstateFlag((PState)i, (value & flag) == flag);
+            }
+        }
+
         public bool GetFPstateFlag(FPState flag) => _nativeContext.GetFPStateFlag(flag);
         public void SetFPstateFlag(FPState flag, bool value) => _nativeContext.SetFPStateFlag(flag, value);
 
