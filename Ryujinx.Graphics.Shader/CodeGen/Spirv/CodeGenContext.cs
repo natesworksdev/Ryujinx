@@ -213,14 +213,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         public Instruction GetAttributeVectorPointer(AstOperand operand, bool isOutAttr)
         {
-            var attrInfo = AttributeInfo.From(Config, operand.Value);
+            var attrInfo = AttributeInfo.From(Config, operand.Value, isOutAttr);
 
             return isOutAttr ? Outputs[attrInfo.BaseValue] : Inputs[attrInfo.BaseValue];
         }
 
         public Instruction GetAttributeElemPointer(int attr, bool isOutAttr, Instruction index, out AggregateType elemType)
         {
-            var attrInfo = AttributeInfo.From(Config, attr);
+            var attrInfo = AttributeInfo.From(Config, attr, isOutAttr);
 
             elemType = attrInfo.Type & AggregateType.ElementTypeMask;
 
