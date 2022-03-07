@@ -391,7 +391,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             }
 
             var dict = isOutAttr ? context.Outputs : context.Inputs;
-            var attrInfo = AttributeInfo.From(context.Config, attr);
+            var attrInfo = AttributeInfo.From(context.Config, attr, isOutAttr);
 
             if (dict.ContainsKey(attrInfo.BaseValue))
             {
@@ -455,7 +455,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         private static void DeclareInputOrOutput(CodeGenContext context, int attr, int component, bool isOutAttr, PixelImap iq = PixelImap.Unused)
         {
             var dict = isOutAttr ? context.Outputs : context.Inputs;
-            var attrInfo = AttributeInfo.From(context.Config, attr);
+            var attrInfo = AttributeInfo.From(context.Config, attr, isOutAttr);
 
             if (dict.ContainsKey(attr))
             {
