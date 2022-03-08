@@ -582,7 +582,9 @@ namespace Ryujinx.Configuration
                 ToggleMute = Key.F2,
                 Screenshot = Key.F8,
                 ShowUi = Key.F4,
-                Pause = Key.F5
+                Pause = Key.F5,
+                ResScaleUp = Key.PageUp,
+                ResScaleDown = Key.PageDown
             };
             Hid.InputConfig.Value = new List<InputConfig>
             {
@@ -1006,6 +1008,22 @@ namespace Ryujinx.Configuration
                 configurationFileFormat.LoggingEnableTrace = false;
 
                 configurationFileUpdated = true;
+            }
+
+            if (configurationFileFormat.Version < 37)
+            {
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 37.");
+
+                configurationFileFormat.Hotkeys = new KeyboardHotkeys
+                {
+                    ToggleVsync = configurationFileFormat.Hotkeys.ToggleVsync,
+                    Screenshot = configurationFileFormat.Hotkeys.Screenshot,
+                    ShowUi = configurationFileFormat.Hotkeys.ShowUi,
+                    Pause = configurationFileFormat.Hotkeys.Pause,
+                    ToggleMute = configurationFileFormat.Hotkeys.ToggleMute,
+                    ResScaleUp = Key.PageUp,
+                    ResScaleDown = Key.PageDown
+                };
             }
             
             Logger.EnableFileLog.Value             = configurationFileFormat.EnableFileLog;
