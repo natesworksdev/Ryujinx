@@ -620,23 +620,13 @@ namespace Ryujinx.Ui
                 {
                     _currentScale = Graphics.Gpu.GraphicsConfig.ResScale;
 
-                    switch (_currentScale)
+                    // Cap this hotkey at 4x scaling.
+                    if (_currentScale < 4f)
                     {
-                        case 1:
-                        Graphics.Gpu.GraphicsConfig.ResScale = 2;
-                        break;
-
-                        case 2:
-                        Graphics.Gpu.GraphicsConfig.ResScale = 3;
-                        break;
-
-                        case 3:
-                        Graphics.Gpu.GraphicsConfig.ResScale = 4;
-                        break;
-
-                        // If custom scale used then do nothing
-                        default:
-                        break;
+                        // If custom scaling used then first round the float down then increase.
+                        float _scaleRound = (float)Math.Floor(_currentScale);
+                        _scaleRound += 1f;
+                        Graphics.Gpu.GraphicsConfig.ResScale = _scaleRound;
                     }
                 }
 
@@ -645,23 +635,13 @@ namespace Ryujinx.Ui
                 {
                     _currentScale = Graphics.Gpu.GraphicsConfig.ResScale;
 
-                    switch (_currentScale)
+                    // Cap this hotkey at 1x scaling.
+                    if(_currentScale > 1f)
                     {
-                        case 2:
-                        Graphics.Gpu.GraphicsConfig.ResScale = 1;
-                        break;
-
-                        case 3:
-                        Graphics.Gpu.GraphicsConfig.ResScale = 2;
-                        break;
-
-                        case 4:
-                        Graphics.Gpu.GraphicsConfig.ResScale = 3;
-                        break;
-
-                        // If custom scale used then do nothing
-                        default:
-                        break;
+                        // If custom scaling used then first round the float up then decrease.
+                        float _scaleRound = (float)Math.Ceiling(_currentScale);
+                        _scaleRound -= 1f;
+                        Graphics.Gpu.GraphicsConfig.ResScale = _scaleRound;
                     }
                 }
 
