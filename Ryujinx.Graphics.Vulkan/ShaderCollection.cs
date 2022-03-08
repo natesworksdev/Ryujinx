@@ -49,10 +49,7 @@ namespace Ryujinx.Graphics.Vulkan
         private Task _compileTask;
         private bool _firstBackgroundUse;
 
-        public ShaderCollection(
-            VulkanGraphicsDevice gd,
-            Device device,
-            IShader[] shaders)
+        public ShaderCollection(VulkanGraphicsDevice gd, Device device, IShader[] shaders)
         {
             _gd = gd;
             _device = device;
@@ -151,7 +148,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
             catch (VulkanException e)
             {
-                Common.Logging.Logger.Error?.PrintMsg(Common.Logging.LogClass.Gpu, $"Background Compilation failed: {e.Message}");
+                Logger.Error?.PrintMsg(LogClass.Gpu, $"Background Compilation failed: {e.Message}");
             }
         }
 
