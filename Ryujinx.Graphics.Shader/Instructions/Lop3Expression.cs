@@ -24,7 +24,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 if ((i & 0x01) != 0)
                 {
                     x = notSrcA;
-                    currImm = PermuteByte(currImm, 4, 3, 2, 1, 7, 6, 5, 4);
+                    currImm = PermuteByte(currImm, 3, 2, 1, 0, 7, 6, 5, 4);
                 }
 
                 if ((i & 0x02) != 0)
@@ -36,7 +36,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 if ((i & 0x04) != 0)
                 {
                     z = notSrcC;
-                    currImm = PermuteByte(currImm, 6, 7, 4, 5, 2, 3, 1, 0);
+                    currImm = PermuteByte(currImm, 6, 7, 4, 5, 2, 3, 0, 1);
                 }
 
                 if ((i & 0x08) != 0)
@@ -94,11 +94,11 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 // OrAnd
                 0xe0 => context.BitwiseAnd(x, context.BitwiseOr(y, z)),
                 // Onehot
-                0x16 => context.BitwiseExclusiveOr(context.BitwiseOr(x, y), context.BitwiseAnd(z, context.BitwiseOr(x, y))),
+                0x16 => context.BitwiseExclusiveOr(context.BitwiseOr(x, y), context.BitwiseOr(z, context.BitwiseAnd(x, y))),
                 // Majority
                 0xe8 => context.BitwiseAnd(context.BitwiseOr(x, y), context.BitwiseOr(z, context.BitwiseAnd(x, y))),
                 // Inverse Gamble
-                0x7e => context.BitwiseOr(context.BitwiseExclusiveOr(x, y), context.BitwiseExclusiveOr(x, y)),
+                0x7e => context.BitwiseOr(context.BitwiseExclusiveOr(x, y), context.BitwiseExclusiveOr(x, z)),
                 // Dot
                 0x1a => context.BitwiseAnd(context.BitwiseExclusiveOr(x, z), context.BitwiseOr(context.BitwiseNot(y), z)),
                 // Mux
