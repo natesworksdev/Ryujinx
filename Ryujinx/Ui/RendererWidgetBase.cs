@@ -634,6 +634,7 @@ namespace Ryujinx.Ui
                         Graphics.Gpu.GraphicsConfig.ResScale = 4;
                         break;
 
+                        // If custom scale used then do nothing
                         default:
                         break;
                     }
@@ -658,6 +659,7 @@ namespace Ryujinx.Ui
                         Graphics.Gpu.GraphicsConfig.ResScale = 3;
                         break;
 
+                        // If custom scale used then do nothing
                         default:
                         break;
                     }
