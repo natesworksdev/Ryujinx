@@ -97,8 +97,8 @@ namespace Ryujinx.Graphics.Shader.Instructions
         {
             return imm switch
             {
-                TruthTable.False         => Const(IrConsts.False),
-                TruthTable.True          => Const(IrConsts.True),
+                TruthTable.False         => Const(0),
+                TruthTable.True          => Const(-1),
                 TruthTable.In            => x,
                 TruthTable.And2          => context.BitwiseAnd(x, y),
                 TruthTable.Xor2          => context.BitwiseExclusiveOr(x, y),
