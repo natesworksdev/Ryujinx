@@ -630,7 +630,7 @@ namespace Ryujinx.Ui
                     }
                 }
 
-                if (currentHotkeyState.HasFlag(KeyboardHotkeyState.ResScaleDown )&&
+                if (currentHotkeyState.HasFlag(KeyboardHotkeyState.ResScaleDown) &&
                     !_prevHotkeyState.HasFlag(KeyboardHotkeyState.ResScaleDown))
                 {
                     _currentScale = Graphics.Gpu.GraphicsConfig.ResScale;
