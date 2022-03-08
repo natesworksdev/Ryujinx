@@ -232,7 +232,11 @@ namespace Ryujinx.Graphics.Gpu.Shader
             return cpShader;
         }
 
-        private void UpdatePipelineInfo(ref ThreedClassState state, ref ProgramPipelineState pipeline, GpuChannel channel)
+        private void UpdatePipelineInfo(
+            ref ThreedClassState state,
+            ref ProgramPipelineState pipeline,
+            GpuChannelGraphicsState graphicsState,
+            GpuChannel channel)
         {
             channel.TextureManager.UpdateRenderTargets();
 
@@ -265,6 +269,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             pipeline.DepthStencilFormat = pipeline.DepthStencilEnable ? state.RtDepthStencilState.Format.Convert().Format : Format.D24UnormS8Uint;
 
             pipeline.VertexBufferCount = Constants.TotalVertexBuffers;
+            pipeline.Topology = graphicsState.Topology;
         }
 
         /// <summary>
@@ -390,7 +395,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 }
             }
 
-            UpdatePipelineInfo(ref state, ref pipeline, channel);
+            UpdatePipelineInfo(ref state, ref pipeline, graphicsState, channel);
 
             int fragmentOutputMap = shaders[5]?.Info.FragmentOutputMap ?? -1;
             IProgram hostProgram = _context.Renderer.CreateProgram(shaderSources.ToArray(), new ShaderInfo(fragmentOutputMap, pipeline));

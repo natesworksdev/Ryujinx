@@ -193,15 +193,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         }
 
         /// <summary>
-        /// Sets topology for the current pipeline.
-        /// </summary>
-        /// <param name="topology">New topology value</param>
-        public void SetPipelineTopology(PrimitiveTopology topology)
-        {
-            _pipeline.Topology = topology;
-        }
-
-        /// <summary>
         /// Updates host state for any modified guest state, since the last time this function was called.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
