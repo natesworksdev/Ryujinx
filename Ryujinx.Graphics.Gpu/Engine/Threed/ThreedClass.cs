@@ -110,15 +110,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         }
 
         /// <summary>
-        /// Sets topology for the current pipeline.
-        /// </summary>
-        /// <param name="topology">New topology value</param>
-        public void SetPipelineTopology(PrimitiveTopology topology)
-        {
-            _stateUpdater.SetPipelineTopology(topology);
-        }
-
-        /// <summary>
         /// Updates current host state for all registers modified since the last call to this method.
         /// </summary>
         public void UpdateState()
@@ -352,7 +343,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// <param name="argument">Method call argument</param>
         private void DrawBegin(int argument)
         {
-            _drawManager.DrawBegin(this, argument);
+            _drawManager.DrawBegin(argument);
         }
 
         /// <summary>
