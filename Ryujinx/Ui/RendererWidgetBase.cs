@@ -44,6 +44,8 @@ namespace Ryujinx.Ui
         protected int WindowWidth { get; private set; }
         protected int WindowHeight { get; private set; }
 
+        private float _currentScale { get; set; }
+
         public static event EventHandler<StatusUpdatedEventArgs> StatusUpdatedEvent;
 
         private bool _isActive;
@@ -617,6 +619,54 @@ namespace Ryujinx.Ui
                         Device.SetVolume(0);
                     }
                 }
+                
+                if (currentHotkeyState.HasFlag(KeyboardHotkeyState.ResScaleUp) &&
+                    !_prevHotkeyState.HasFlag(KeyboardHotkeyState.ResScaleUp))
+                {
+                    _currentScale = Graphics.Gpu.GraphicsConfig.ResScale;
+
+                    switch (_currentScale)
+                    {
+                        case 1:
+                        Graphics.Gpu.GraphicsConfig.ResScale = 2;
+                        break;
+
+                        case 2:
+                        Graphics.Gpu.GraphicsConfig.ResScale = 3;
+                        break;
+
+                        case 3:
+                        Graphics.Gpu.GraphicsConfig.ResScale = 4;
+                        break;
+
+                        default:
+                        break;
+                    }
+                }
+
+                if (currentHotkeyState.HasFlag(KeyboardHotkeyState.ResScaleDown )&&
+                    !_prevHotkeyState.HasFlag(KeyboardHotkeyState.ResScaleDown))
+                {
+                    _currentScale = Graphics.Gpu.GraphicsConfig.ResScale;
+
+                    switch (_currentScale)
+                    {
+                        case 2:
+                        Graphics.Gpu.GraphicsConfig.ResScale = 1;
+                        break;
+
+                        case 3:
+                        Graphics.Gpu.GraphicsConfig.ResScale = 2;
+                        break;
+
+                        case 4:
+                        Graphics.Gpu.GraphicsConfig.ResScale = 3;
+                        break;
+
+                        default:
+                        break;
+                    }
+                }
 
                 _prevHotkeyState = currentHotkeyState;
             }
@@ -648,7 +698,9 @@ namespace Ryujinx.Ui
             Screenshot = 1 << 1,
             ShowUi = 1 << 2,
             Pause = 1 << 3,
-            ToggleMute = 1 << 4
+            ToggleMute = 1 << 4,
+            ResScaleUp = 1 << 5,
+            ResScaleDown = 1 << 6
         }
 
         private KeyboardHotkeyState GetHotkeyState()
@@ -678,6 +730,16 @@ namespace Ryujinx.Ui
             if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ToggleMute))
             {
                 state |= KeyboardHotkeyState.ToggleMute;
+            }
+
+            if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ResScaleUp))
+            {
+                state |= KeyboardHotkeyState.ResScaleUp;
+            }
+
+            if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ResScaleDown))
+            {
+                state |= KeyboardHotkeyState.ResScaleDown;
             }
 
             return state;
