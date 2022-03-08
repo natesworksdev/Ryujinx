@@ -9,136 +9,123 @@ namespace Ryujinx.Graphics.Shader.Instructions
     {
         public static Operand GetFromTruthTable(EmitterContext context, Operand srcA, Operand srcB, Operand srcC, int imm)
         {
-            Operand expr = null;
+            Operand notSrcA = context.BitwiseNot(srcA);
+            Operand notSrcB = context.BitwiseNot(srcB);
+            Operand notSrcC = context.BitwiseNot(srcC);
 
-            // Handle some simple cases, or cases where
-            // the KMap would yield poor results (like XORs).
-            if (imm == 0x96 || imm == 0x69)
+            for (int i = 0; i < 0x40; i++)
             {
-                // XOR (0x96) and XNOR (0x69).
-                if (imm == 0x69)
+                int currImm = imm;
+
+                Operand x = srcA;
+                Operand y = srcB;
+                Operand z = srcC;
+
+                if ((i & 0x01) != 0)
                 {
-                    srcA = context.BitwiseNot(srcA);
+                    x = notSrcA;
+                    currImm = PermuteByte(currImm, 4, 3, 2, 1, 7, 6, 5, 4);
                 }
 
-                expr = context.BitwiseExclusiveOr(srcA, srcB);
-                expr = context.BitwiseExclusiveOr(expr, srcC);
-
-                return expr;
-            }
-            else if (imm == 0)
-            {
-                // Always false.
-                return Const(IrConsts.False);
-            }
-            else if (imm == 0xff)
-            {
-                // Always true.
-                return Const(IrConsts.True);
-            }
-
-            int map;
-
-            // Encode into gray code.
-            map = ((imm >> 0) & 1) << 0;
-            map |= ((imm >> 1) & 1) << 4;
-            map |= ((imm >> 2) & 1) << 1;
-            map |= ((imm >> 3) & 1) << 5;
-            map |= ((imm >> 4) & 1) << 3;
-            map |= ((imm >> 5) & 1) << 7;
-            map |= ((imm >> 6) & 1) << 2;
-            map |= ((imm >> 7) & 1) << 6;
-
-            // Solve KMap, get sum of products.
-            int visited = 0;
-
-            for (int index = 0; index < 8 && visited != 0xff; index++)
-            {
-                if ((map & (1 << index)) == 0)
+                if ((i & 0x02) != 0)
                 {
-                    continue;
+                    y = notSrcB;
+                    currImm = PermuteByte(currImm, 5, 4, 7, 6, 1, 0, 3, 2);
                 }
 
-                int mask = 0;
-
-                for (int mSize = 4; mSize != 0; mSize >>= 1)
+                if ((i & 0x04) != 0)
                 {
-                    mask = RotateLeft4((1 << mSize) - 1, index & 3) << (index & 4);
-
-                    if ((map & mask) == mask)
-                    {
-                        break;
-                    }
+                    z = notSrcC;
+                    currImm = PermuteByte(currImm, 6, 7, 4, 5, 2, 3, 1, 0);
                 }
 
-                // The mask should wrap, if we are on the high row, shift to low etc.
-                int mask2 = (index & 4) != 0 ? mask >> 4 : mask << 4;
-
-                if ((map & mask2) == mask2)
+                if ((i & 0x08) != 0)
                 {
-                    mask |= mask2;
+                    (x, y) = (y, x);
+                    currImm = PermuteByte(currImm, 7, 6, 3, 2, 5, 4, 1, 0);
                 }
 
-                if ((mask & visited) == mask)
+                if ((i & 0x10) != 0)
                 {
-                    continue;
+                    (x, z) = (z, x);
+                    currImm = PermuteByte(currImm, 7, 3, 5, 1, 6, 2, 4, 0);
                 }
 
-                bool notA = (mask & 0x33) != 0;
-                bool notB = (mask & 0x99) != 0;
-                bool notC = (mask & 0x0f) != 0;
-
-                bool aChanges = (mask & 0xcc) != 0 && notA;
-                bool bChanges = (mask & 0x66) != 0 && notB;
-                bool cChanges = (mask & 0xf0) != 0 && notC;
-
-                Operand localExpr = null;
-
-                void And(Operand source)
+                if ((i & 0x20) != 0)
                 {
-                    if (localExpr != null)
-                    {
-                        localExpr = context.BitwiseAnd(localExpr, source);
-                    }
-                    else
-                    {
-                        localExpr = source;
-                    }
+                    (y, z) = (z, y);
+                    currImm = PermuteByte(currImm, 7, 5, 6, 4, 3, 1, 2, 0);
                 }
 
-                if (!aChanges)
+                Operand result = GetExpr(currImm, context, x, y, z);
+                if (result != null)
                 {
-                    And(context.BitwiseNot(srcA, notA));
+                    return result;
                 }
 
-                if (!bChanges)
+                Operand notResult = GetExpr((~currImm) & 0xff, context, x, y, z);
+                if (notResult != null)
                 {
-                    And(context.BitwiseNot(srcB, notB));
+                    return context.BitwiseNot(notResult);
                 }
-
-                if (!cChanges)
-                {
-                    And(context.BitwiseNot(srcC, notC));
-                }
-
-                if (expr != null)
-                {
-                    expr = context.BitwiseOr(expr, localExpr);
-                }
-                else
-                {
-                    expr = localExpr;
-                }
-
-                visited |= mask;
             }
 
-            return expr;
+            return null;
         }
 
-        private static int RotateLeft4(int value, int shift)
+        private static Operand GetExpr(int imm, EmitterContext context, Operand x, Operand y, Operand z)
         {
-            return ((value << shift) | (value >> (4 - shift))) & 0xf;
+            return imm switch
+            {
+                // False
+                0x00 => Const(IrConsts.False),
+                // True
+                0xff => Const(IrConsts.True),
+                // In
+                0xf0 => x,
+                // And2
+                0xc0 => context.BitwiseAnd(x, y),
+                // Xor2
+                0x3c => context.BitwiseExclusiveOr(x, y),
+                // And3
+                0x80 => context.BitwiseAnd(x, context.BitwiseAnd(y, z)),
+                // XorAnd
+                0x60 => context.BitwiseAnd(x, context.BitwiseExclusiveOr(y, z)),
+                // OrAnd
+                0xe0 => context.BitwiseAnd(x, context.BitwiseOr(y, z)),
+                // Onehot
+                0x16 => context.BitwiseExclusiveOr(context.BitwiseOr(x, y), context.BitwiseAnd(z, context.BitwiseOr(x, y))),
+                // Majority
+                0xe8 => context.BitwiseAnd(context.BitwiseOr(x, y), context.BitwiseOr(z, context.BitwiseAnd(x, y))),
+                // Inverse Gamble
+                0x7e => context.BitwiseOr(context.BitwiseExclusiveOr(x, y), context.BitwiseExclusiveOr(x, y)),
+                // Dot
+                0x1a => context.BitwiseAnd(context.BitwiseExclusiveOr(x, z), context.BitwiseOr(context.BitwiseNot(y), z)),
+                // Mux
+                0xca => context.BitwiseOr(context.BitwiseAnd(x, y), context.BitwiseAnd(context.BitwiseNot(x), z)),
+                // AndXor
+                0x78 => context.BitwiseExclusiveOr(x, context.BitwiseAnd(y, z)),
+                // Xor3
+                0x96 => context.BitwiseExclusiveOr(x, context.BitwiseExclusiveOr(y, z)),
+                // Not one of the base cases
+                _ => null
+            };
+        }
+
+        private static int PermuteByte(int imm, int bit7, int bit6, int bit5, int bit4, int bit3, int bit2, int bit1, int bit0)
+        {
+            int result = 0;
+
+            result |= ((imm >> 0) & 1) << bit0;
+            result |= ((imm >> 1) & 1) << bit1;
+            result |= ((imm >> 2) & 1) << bit2;
+            result |= ((imm >> 3) & 1) << bit3;
+            result |= ((imm >> 4) & 1) << bit4;
+            result |= ((imm >> 5) & 1) << bit5;
+            result |= ((imm >> 6) & 1) << bit6;
+            result |= ((imm >> 7) & 1) << bit7;
+
+            return result;
         }
     }
 }
