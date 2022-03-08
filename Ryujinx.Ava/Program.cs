@@ -34,6 +34,8 @@ namespace Ryujinx.Ava
         public static double WindowScaleFactor { get; set; }
         public static string Version           { get; private set; }
         public static string ConfigurationPath { get; private set; }
+
+        public static string CommandLineProfile { get; set; }
         public static bool   PreviewerDetached { get; private set; }
         public static AdjustableRenderTimer RenderTimer { get; private set; }
 
@@ -105,6 +107,17 @@ namespace Ryujinx.Ava
                     }
 
                     baseDirPathArg = args[++i];
+                }
+                else if (arg == "-p" || arg == "--profile")
+                {
+                    if (i + 1 >= args.Length)
+                    {
+                        Logger.Error?.Print(LogClass.Application, $"Invalid option '{arg}'");
+
+                        continue;
+                    }
+
+                    CommandLineProfile = args[++i];
                 }
                 else if (arg == "-f" || arg == "--fullscreen")
                 {

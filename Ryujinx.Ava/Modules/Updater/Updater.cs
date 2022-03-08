@@ -304,7 +304,7 @@ namespace Ryujinx.Modules
                             catch (Exception e)
                             {
                                 Logger.Warning?.Print(LogClass.Application, e.Message);
-                                Logger.Warning?.Print(LogClass.Application, $"Multi-Threaded update failed, falling back to single-threaded updater.");
+                                Logger.Warning?.Print(LogClass.Application, "Multi-Threaded update failed, falling back to single-threaded updater.");
 
                                 DoUpdateWithSingleThread(updateDialog, downloadUrl, updateFile);
 
@@ -320,7 +320,7 @@ namespace Ryujinx.Modules
                     catch (WebException ex)
                     {
                         Logger.Warning?.Print(LogClass.Application, ex.Message);
-                        Logger.Warning?.Print(LogClass.Application, $"Multi-Threaded update failed, falling back to single-threaded updater.");
+                        Logger.Warning?.Print(LogClass.Application, "Multi-Threaded update failed, falling back to single-threaded updater.");
                         
                         for (int j = 0; j < webClients.Count; j++)
                         {
@@ -523,6 +523,7 @@ namespace Ryujinx.Modules
         
         public static bool CanUpdate(bool showWarnings, StyleableWindow parent)
         {
+#if !DISABLE_UPDATER
             if (RuntimeInformation.OSArchitecture != Architecture.X64)
             {
                 if (showWarnings)
@@ -557,6 +558,25 @@ namespace Ryujinx.Modules
             }
 
             return true;
+#else
+            if (showWarnings)
+            {
+                if (ReleaseInformations.IsFlatHubBuild())
+                {
+                    ContentDialogHelper.CreateWarningDialog(parent,
+                        LocaleManager.Instance["UpdaterDisabledWarningTitle"],
+                        LocaleManager.Instance["DialogUpdaterFlatpakNotSupportedMessage"]);
+                }
+                else
+                {
+                    ContentDialogHelper.CreateWarningDialog(parent,
+                        LocaleManager.Instance["UpdaterDisabledWarningTitle"],
+                        LocaleManager.Instance["DialogUpdaterDirtyBuildSubMessage"]);
+                }
+            }
+#endif
+
+            return false;
         }
         
         // NOTE: This method should always reflect the latest build layout.s

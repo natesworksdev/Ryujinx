@@ -16,6 +16,7 @@ using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.Models;
 using Ryujinx.Ava.Ui.Windows;
+using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
@@ -1052,7 +1053,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public void OpenLogsFolder()
         {
-            string logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
+            string logPath = Path.Combine(ReleaseInformations.GetBaseApplicationDirectory(), "Logs");
 
             new DirectoryInfo(logPath).Create();
 
@@ -1230,6 +1231,19 @@ namespace Ryujinx.Ava.Ui.ViewModels
             {
                 string modsBasePath = _owner.VirtualFileSystem.ModLoader.GetModsBasePath();
                 string titleModsPath = _owner.VirtualFileSystem.ModLoader.GetTitleDir(modsBasePath, selection.TitleId);
+
+                OpenHelper.OpenFolder(titleModsPath);
+            }
+        }
+
+        public void OpenSdModsDirectory()
+        {
+            var selection = SelectedApplication;
+
+            if (selection != null)
+            {
+                string sdModsBasePath = _owner.VirtualFileSystem.ModLoader.GetSdModsBasePath();
+                string titleModsPath = _owner.VirtualFileSystem.ModLoader.GetTitleDir(sdModsBasePath, selection.TitleId);
 
                 OpenHelper.OpenFolder(titleModsPath);
             }

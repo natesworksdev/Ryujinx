@@ -426,6 +426,10 @@
                                     Command="{ReflectionBinding OpenModsDirectory}"
                                     Header="{locale:Locale GameListContextMenuOpenModsDirectory}"
                                     ToolTip.Tip="{locale:Locale GameListContextMenuOpenModsDirectoryToolTip}" />
+                                <MenuItem
+                                    Command="{ReflectionBinding OpenSdModsDirectory}"
+                                    Header="{locale:Locale GameListContextMenuOpenSdModsDirectory}"
+                                    ToolTip.Tip="{locale:Locale GameListContextMenuOpenSdModsDirectoryToolTip}" />
                                 <Separator />
                                 <MenuItem Header="{locale:Locale GameListContextMenuCacheManagement}">
                                     <MenuItem

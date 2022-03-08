@@ -436,7 +436,7 @@ namespace Ryujinx.Ava.Ui.Windows
             // Consider removing this at some point in the future when we don't need to worry about old saves.
             VirtualFileSystem.FixExtraData(LibHacHorizonManager.RyujinxClient);
             
-            AccountManager = new AccountManager(LibHacHorizonManager.RyujinxClient);
+            AccountManager = new AccountManager(LibHacHorizonManager.RyujinxClient, Program.CommandLineProfile);
 
             VirtualFileSystem.ReloadKeySet();
 

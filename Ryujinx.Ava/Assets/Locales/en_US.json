@@ -506,5 +506,9 @@
   "SettingsTabGraphicsFrameRate" : "Host Refresh Rate:",
   "SettingsTabGraphicsFrameRateTooltip" : "Sets host refresh rate. Set to 0 to remove limit.",
   "SettingsTabCpuCache" : "CPU Cache",
-  "SettingsTabCpuMemory" : "CPU Memory"
+  "SettingsTabCpuMemory" : "CPU Memory",
+  "DialogUpdaterFlatpakNotSupportedMessage" : "Please update Ryujinx via FlatHub.",
+  "UpdaterDisabledWarningTitle" : "Updater Disabled!",
+  "GameListContextMenuOpenSdModsDirectory": "Open Atmosphere Mods Directory",
+  "GameListContextMenuOpenSdModsDirectoryToolTip": "Opens the alternative SD card atmosphere directory which contains Application's Mods"
 }
