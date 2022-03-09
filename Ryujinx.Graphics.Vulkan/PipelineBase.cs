@@ -18,6 +18,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         protected readonly VulkanGraphicsDevice Gd;
         protected readonly Device Device;
+        public readonly PipelineCache PipelineCache;
 
         private PipelineDynamicState _dynamicState;
         private PipelineState _newState;
@@ -29,8 +30,6 @@ namespace Ryujinx.Graphics.Vulkan
         protected Auto<DisposablePipeline> Pipeline;
 
         protected PipelineBindPoint Pbp;
-
-        public PipelineCache _pipelineCache;
 
         protected CommandBufferScoped Cbs;
         protected CommandBufferScoped? PreloadCbs;
@@ -75,7 +74,7 @@ namespace Ryujinx.Graphics.Vulkan
                 SType = StructureType.PipelineCacheCreateInfo
             };
 
-            gd.Api.CreatePipelineCache(device, pipelineCacheCreateInfo, null, out _pipelineCache).ThrowOnError();
+            gd.Api.CreatePipelineCache(device, pipelineCacheCreateInfo, null, out PipelineCache).ThrowOnError();
 
             _descriptorSetUpdater = new DescriptorSetUpdater(gd, this);
 
@@ -1110,8 +1109,8 @@ namespace Ryujinx.Graphics.Vulkan
                 }
 
                 var pipeline = pbp == PipelineBindPoint.Compute
-                    ? _newState.CreateComputePipeline(Gd.Api, Device, _program, _pipelineCache)
-                    : _newState.CreateGraphicsPipeline(Gd, Device, _program, _pipelineCache, _renderPass.Get(Cbs).Value);
+                    ? _newState.CreateComputePipeline(Gd.Api, Device, _program, PipelineCache)
+                    : _newState.CreateGraphicsPipeline(Gd, Device, _program, PipelineCache, _renderPass.Get(Cbs).Value);
 
                 ulong pipelineHandle = pipeline.GetUnsafe().Value.Handle;
 
@@ -1212,7 +1211,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 unsafe
                 {
-                    Gd.Api.DestroyPipelineCache(Device, _pipelineCache, null);
+                    Gd.Api.DestroyPipelineCache(Device, PipelineCache, null);
                 }
 
                 SupportBufferUpdater.Dispose();
