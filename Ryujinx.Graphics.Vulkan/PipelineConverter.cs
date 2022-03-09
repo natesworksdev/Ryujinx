@@ -130,7 +130,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public static unsafe PipelineState ToVulkanPipelineState(this ProgramPipelineState state, VulkanGraphicsDevice gd)
+        public static PipelineState ToVulkanPipelineState(this ProgramPipelineState state, VulkanGraphicsDevice gd)
         {
             PipelineState pipeline = new PipelineState();
             pipeline.Initialize();
