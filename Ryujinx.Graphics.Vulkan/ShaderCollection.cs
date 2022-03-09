@@ -195,7 +195,7 @@ namespace Ryujinx.Graphics.Vulkan
             return _dummyRenderPass = _state.ToRenderPass(_gd, _device);
         }
 
-        public unsafe void CreateBackgroundComputePipeline()
+        public void CreateBackgroundComputePipeline()
         {
             PipelineState pipeline = new PipelineState();
             pipeline.Initialize();
@@ -203,10 +203,10 @@ namespace Ryujinx.Graphics.Vulkan
             pipeline.Stages[0] = ((Shader)_shaders[0]).GetInfo();
             pipeline.StagesCount = 1;
 
-            pipeline.CreateComputePipeline(_gd.Api, _device, this, (_gd.Pipeline as PipelineBase)._pipelineCache);
+            pipeline.CreateComputePipeline(_gd.Api, _device, this, (_gd.Pipeline as PipelineBase).PipelineCache);
         }
 
-        public unsafe void CreateBackgroundGraphicsPipeline()
+        public void CreateBackgroundGraphicsPipeline()
         {
             // To compile shaders in the background in Vulkan, we need to create valid pipelines using the shader modules.
             // The GPU provides pipeline state via the GAL that can be converted into our internal Vulkan pipeline state.
@@ -230,7 +230,7 @@ namespace Ryujinx.Graphics.Vulkan
             pipeline.StagesCount = (uint)_shaders.Length;
             pipeline.PipelineLayout = PipelineLayout;
 
-            pipeline.CreateGraphicsPipeline(_gd, _device, this, (_gd.Pipeline as PipelineBase)._pipelineCache, renderPass.Value);
+            pipeline.CreateGraphicsPipeline(_gd, _device, this, (_gd.Pipeline as PipelineBase).PipelineCache, renderPass.Value);
         }
 
         public ProgramLinkStatus CheckProgramLink(bool blocking)
