@@ -6,6 +6,8 @@ using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Ui.Common.Configuration;
+using Ryujinx.Configuration;
+using Ryujinx.Graphics.Gpu;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.GAL.Multithreading;
 using Ryujinx.Input;
@@ -619,34 +621,36 @@ namespace Ryujinx.Ui
                         Device.SetVolume(0);
                     }
                 }
-                
+
                 if (currentHotkeyState.HasFlag(KeyboardHotkeyState.ResScaleUp) &&
                     !_prevHotkeyState.HasFlag(KeyboardHotkeyState.ResScaleUp))
                 {
-                    _currentScale = Graphics.Gpu.GraphicsConfig.ResScale;
+                    _currentScale = GraphicsConfig.ResScale;
 
                     // Cap this hotkey at 4x scaling.
                     if (_currentScale < 4f)
                     {
                         // If custom scaling used then first round the float down then increase.
-                        float _scaleRound = (float)Math.Floor(_currentScale);
-                        _scaleRound += 1f;
-                        Graphics.Gpu.GraphicsConfig.ResScale = _scaleRound;
+                        float scaleRound = MathF.Floor(_currentScale);
+                        scaleRound += 1f;
+
+                        GraphicsConfig.ResScale = scaleRound;
                     }
                 }
 
                 if (currentHotkeyState.HasFlag(KeyboardHotkeyState.ResScaleDown) &&
                     !_prevHotkeyState.HasFlag(KeyboardHotkeyState.ResScaleDown))
                 {
-                    _currentScale = Graphics.Gpu.GraphicsConfig.ResScale;
+                    _currentScale = GraphicsConfig.ResScale;
 
                     // Cap this hotkey at 1x scaling.
-                    if(_currentScale > 1f)
+                    if (_currentScale > 1f)
                     {
                         // If custom scaling used then first round the float up then decrease.
-                        float _scaleRound = (float)Math.Ceiling(_currentScale);
-                        _scaleRound -= 1f;
-                        Graphics.Gpu.GraphicsConfig.ResScale = _scaleRound;
+                        float scaleRound = MathF.Ceiling(_currentScale);
+                        scaleRound -= 1f;
+
+                        GraphicsConfig.ResScale = scaleRound;
                     }
                 }
 
