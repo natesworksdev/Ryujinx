@@ -128,7 +128,7 @@ namespace ARMeilleure.Instructions
         {
             Debug.Assert(value.Type == OperandType.I32);
 
-            if (IsThumb(context.CurrOp))
+            if (((OpCode32)context.CurrOp).IsThumb())
             {
                 bool isReturn = IsA32Return(context);
                 if (!isReturn)
@@ -197,7 +197,7 @@ namespace ARMeilleure.Instructions
                 // ARM32.
                 case IOpCode32AluImm op:
                 {
-                    if (ShouldSetFlags(context) && op.IsRotated)
+                    if (ShouldSetFlags(context) && op.IsRotated && setCarry)
                     {
                         SetFlag(context, PState.CFlag, Const((uint)op.Immediate >> 31));
                     }

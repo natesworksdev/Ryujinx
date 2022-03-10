@@ -178,7 +178,7 @@ namespace Ryujinx.Ui
             VirtualFileSystem.FixExtraData(_libHacHorizonManager.RyujinxClient);
 
             _contentManager         = new ContentManager(_virtualFileSystem);
-            _accountManager         = new AccountManager(_libHacHorizonManager.RyujinxClient);
+            _accountManager         = new AccountManager(_libHacHorizonManager.RyujinxClient, Program.CommandLineProfile);
             _userChannelPersistence = new UserChannelPersistence();
 
             // Instantiate GUI objects.
@@ -1291,7 +1291,7 @@ namespace Ryujinx.Ui
 
         private void OpenLogsFolder_Pressed(object sender, EventArgs args)
         {
-            string logPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
+            string logPath = System.IO.Path.Combine(ReleaseInformations.GetBaseApplicationDirectory(), "Logs");
 
             new DirectoryInfo(logPath).Create();
 
