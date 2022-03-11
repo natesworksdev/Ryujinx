@@ -27,15 +27,15 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
         }
 
         private readonly List<DisplayInfo>               _displayInfo;
-        private readonly Dictionary<ulong, DisplayState> _openDisplayInfo;
+        private readonly Dictionary<ulong, DisplayState> _openDisplays;
 
         private int _vsyncEventHandle;
 
         public IApplicationDisplayService(ViServiceType serviceType)
         {
-            _serviceType     = serviceType;
-            _displayInfo     = new List<DisplayInfo>();
-            _openDisplayInfo = new Dictionary<ulong, DisplayState>();
+            _serviceType  = serviceType;
+            _displayInfo  = new List<DisplayInfo>();
+            _openDisplays = new Dictionary<ulong, DisplayState>();
 
             void AddDisplayInfo(string name, bool layerLimitEnabled, ulong layerLimitMax, ulong width, ulong height)
             {
@@ -178,7 +178,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
                 return ResultCode.InvalidValue;
             }
 
-            if (!_openDisplayInfo.TryAdd((ulong)displayId, new DisplayState()))
+            if (!_openDisplays.TryAdd((ulong)displayId, new DisplayState()))
             {
                 return ResultCode.AlreadyOpened;
             }
@@ -194,7 +194,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
         {
             ulong displayId = context.RequestData.ReadUInt64();
 
-            if (!_openDisplayInfo.Remove(displayId))
+            if (!_openDisplays.Remove(displayId))
             {
                 return ResultCode.InvalidValue;
             }
@@ -458,7 +458,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
         {
             ulong displayId = context.RequestData.ReadUInt64();
 
-            if (!_openDisplayInfo.TryGetValue(displayId, out DisplayState displayState))
+            if (!_openDisplays.TryGetValue(displayId, out DisplayState displayState))
             {
                 return ResultCode.InvalidValue;
             }
