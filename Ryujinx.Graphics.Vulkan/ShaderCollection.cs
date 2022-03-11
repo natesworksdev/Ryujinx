@@ -135,6 +135,13 @@ namespace Ryujinx.Graphics.Vulkan
         {
             await Task.WhenAll(_shaders.Select(shader => ((Shader)shader).CompileTask));
 
+            if (_shaders.Any(shader => ((Shader)shader).CompileStatus == ProgramLinkStatus.Failure))
+            {
+                LinkStatus = ProgramLinkStatus.Failure;
+
+                return;
+            }
+
             try
             {
                 if (_isCompute)
@@ -149,6 +156,8 @@ namespace Ryujinx.Graphics.Vulkan
             catch (VulkanException e)
             {
                 Logger.Error?.PrintMsg(LogClass.Gpu, $"Background Compilation failed: {e.Message}");
+
+                LinkStatus = ProgramLinkStatus.Failure;
             }
         }
 
@@ -172,7 +181,11 @@ namespace Ryujinx.Graphics.Vulkan
                     _infos[i] = shader.GetInfo();
                 }
 
-                LinkStatus = resultStatus;
+                // If the link status was already set as failure by background compilation, prefer that decision.
+                if (LinkStatus != ProgramLinkStatus.Failure)
+                {
+                    LinkStatus = resultStatus;
+                }
 
                 _initialized = true;
             }
@@ -265,6 +278,11 @@ namespace Ryujinx.Graphics.Vulkan
                     if (blocking)
                     {
                         _compileTask.Wait();
+
+                        if (LinkStatus == ProgramLinkStatus.Failure)
+                        {
+                            return ProgramLinkStatus.Failure;
+                        }
                     }
                     else
                     {
