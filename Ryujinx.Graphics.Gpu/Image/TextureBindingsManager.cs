@@ -298,6 +298,35 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Determines if the vertex stage requires a scale value.
+        /// </summary>
+        private bool VertexRequiresScale()
+        {
+            bool requiresScale = false;
+
+            for (int i = 0; i < _textureBindingsCount[0]; i++)
+            {
+                if ((_textureBindings[0][i].Flags & TextureUsageFlags.NeedsScaleValue) != 0)
+                {
+                    return true;
+                }
+            }
+
+            if (!requiresScale)
+            {
+                for (int i = 0; i < _imageBindingsCount[0]; i++)
+                {
+                    if ((_imageBindings[0][i].Flags & TextureUsageFlags.NeedsScaleValue) != 0)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Uploads texture and image scales to the backend when they are used.
         /// </summary>
         private void CommitRenderScale()
@@ -308,10 +337,10 @@ namespace Ryujinx.Graphics.Gpu.Image
             int fragmentIndex = (int)ShaderStage.Fragment - 1;
             int fragmentTotal = _isCompute ? 0 : (_textureBindingsCount[fragmentIndex] + _imageBindingsCount[fragmentIndex]);
 
-            if (total != 0 && fragmentTotal != _lastFragmentTotal)
+            if (total != 0 && fragmentTotal != _lastFragmentTotal && VertexRequiresScale())
             {
                 // Must update scales in the support buffer if:
-                // - Vertex stage has bindings.
+                // - Vertex stage has bindings that require scale.
                 // - Fragment stage binding count has been updated since last render scale update.
 
                 _scaleChanged = true;
