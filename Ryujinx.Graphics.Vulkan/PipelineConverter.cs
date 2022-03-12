@@ -57,7 +57,7 @@ namespace Ryujinx.Graphics.Vulkan
                     attachmentDescs[i] = new AttachmentDescription(
                         0,
                         attachmentFormats[i],
-                        SampleCountFlags.SampleCount1Bit,
+                        TextureStorage.ConvertToSampleCountFlags((uint)state.SamplesCount),
                         AttachmentLoadOp.Load,
                         AttachmentStoreOp.Store,
                         AttachmentLoadOp.Load,
