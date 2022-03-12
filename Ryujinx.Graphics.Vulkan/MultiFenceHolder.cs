@@ -10,8 +10,10 @@ namespace Ryujinx.Graphics.Vulkan
     /// </summary>
     class MultiFenceHolder
     {
+        private static int BufferUsageTrackingGranularity = 4096;
+
         private readonly Dictionary<FenceHolder, int> _fences;
-        private BufferRangeList _rangeList;
+        private BufferUsageBitmap _bufferUsageBitmap;
 
         /// <summary>
         /// Creates a new instance of the multiple fence holder.
@@ -19,15 +21,27 @@ namespace Ryujinx.Graphics.Vulkan
         public MultiFenceHolder()
         {
             _fences = new Dictionary<FenceHolder, int>();
-            _rangeList.Initialize();
         }
 
+        /// <summary>
+        /// Creates a new instance of the multiple fence holder, with a given buffer size in mind.
+        /// </summary>
+        /// <param name="size">Size of the buffer</param>
+        public MultiFenceHolder(int size)
+        {
+            _fences = new Dictionary<FenceHolder, int>();
+
+            if (VulkanConfiguration.UseGranularBufferTracking)
+            {
+                _bufferUsageBitmap = new BufferUsageBitmap(size, BufferUsageTrackingGranularity);
+            }
+        }
 
         public void AddBufferUse(int cbIndex, int offset, int size)
         {
             if (VulkanConfiguration.UseGranularBufferTracking)
             {
-                _rangeList.Add(cbIndex, offset, size);
+                _bufferUsageBitmap.Add(cbIndex, offset, size);
             }
         }
 
@@ -35,7 +49,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (VulkanConfiguration.UseGranularBufferTracking)
             {
-                _rangeList.Clear(cbIndex);
+                _bufferUsageBitmap?.Clear(cbIndex);
             }
         }
 
@@ -43,7 +57,19 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (VulkanConfiguration.UseGranularBufferTracking)
             {
-                return _rangeList.OverlapsWith(cbIndex, offset, size);
+                return _bufferUsageBitmap.OverlapsWith(cbIndex, offset, size);
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        public bool IsBufferRangeInUse(int offset, int size)
+        {
+            if (VulkanConfiguration.UseGranularBufferTracking)
+            {
+                return _bufferUsageBitmap.OverlapsWith(offset, size);
             }
             else
             {
@@ -167,7 +193,7 @@ namespace Ryujinx.Graphics.Vulkan
                         var fence = kv.Key;
                         var ownerCbIndex = kv.Value;
 
-                        if (_rangeList.OverlapsWith(ownerCbIndex, offset, size))
+                        if (_bufferUsageBitmap.OverlapsWith(ownerCbIndex, offset, size))
                         {
                             return true;
                         }
@@ -191,7 +217,7 @@ namespace Ryujinx.Graphics.Vulkan
                 var fence = kv.Key;
                 var ownerCbIndex = kv.Value;
 
-                if (_rangeList.OverlapsWith(ownerCbIndex, offset, size))
+                if (_bufferUsageBitmap.OverlapsWith(ownerCbIndex, offset, size))
                 {
                     overlapping.Add(fence);
                 }
