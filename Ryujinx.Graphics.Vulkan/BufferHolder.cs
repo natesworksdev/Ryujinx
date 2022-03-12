@@ -43,7 +43,7 @@ namespace Ryujinx.Graphics.Vulkan
             _device = device;
             _allocation = allocation;
             _allocationAuto = new Auto<MemoryAllocation>(allocation);
-            _waitable = new MultiFenceHolder();
+            _waitable = new MultiFenceHolder(size);
             _buffer = new Auto<DisposableBuffer>(new DisposableBuffer(gd.Api, device, buffer), _waitable, _allocationAuto);
             _bufferHandle = buffer.Handle;
             Size = size;
@@ -162,6 +162,8 @@ namespace Ryujinx.Graphics.Vulkan
             throw new InvalidOperationException("The buffer is not host mapped.");
         }
 
+        public static int SlowLoads = 0;
+
         public unsafe void SetData(int offset, ReadOnlySpan<byte> data, CommandBufferScoped? cbs = null, Action endRenderPass = null)
         {
             int dataSize = Math.Min(data.Length, Size - offset);
@@ -173,9 +175,11 @@ namespace Ryujinx.Graphics.Vulkan
             if (_map != IntPtr.Zero)
             {
                 // If persistently mapped, set the data directly if the buffer is not currently in use.
-                // TODO: Reintroduce waitable & granular use tracking.
                 // bool needsFlush = _gd.CommandBufferPool.HasWaitableOnRentedCommandBuffer(_waitable, offset, dataSize);
-                bool needsFlush = _buffer.HasRentedCommandBufferDependency(_gd.CommandBufferPool);
+                bool isRented = _buffer.HasRentedCommandBufferDependency(_gd.CommandBufferPool);
+
+                // If the buffer is rented, take a little more time and check if the use overlaps this handle.
+                bool needsFlush = isRented && _waitable.IsBufferRangeInUse(offset, dataSize);
 
                 if (!needsFlush)
                 {
@@ -187,7 +191,7 @@ namespace Ryujinx.Graphics.Vulkan
                 }
             }
 
-            if (cbs != null && !_buffer.HasCommandBufferDependency(cbs.Value))
+            if (cbs != null && !(_buffer.HasCommandBufferDependency(cbs.Value) && _waitable.IsBufferRangeInUse(cbs.Value.CommandBufferIndex, offset, dataSize)))
             {
                 // If the buffer hasn't been used on the command buffer yet, try to preload the data.
                 // This avoids ending and beginning render passes on each buffer data upload.
