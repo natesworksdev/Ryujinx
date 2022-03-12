@@ -1148,8 +1148,13 @@ namespace Ryujinx.Graphics.Vulkan
                 PauseTransformFeedbackInternal();
                 // System.Console.WriteLine("render pass ended " + caller);
                 Gd.Api.CmdEndRenderPass(CommandBuffer);
+                SignalRenderPassEnd();
                 _renderPassActive = false;
             }
+        }
+
+        protected virtual void SignalRenderPassEnd()
+        {
         }
 
         private void PauseTransformFeedbackInternal()

@@ -13,11 +13,34 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly List<QueryPool> _activeQueries;
         private CounterQueueEvent _activeConditionalRender;
 
+        private readonly List<(QueryPool Pool, BufferHolder Holder)> _pendingQueryCopies;
+
         public PipelineFull(VulkanGraphicsDevice gd, Device device) : base(gd, device)
         {
             _activeQueries = new List<QueryPool>();
+            _pendingQueryCopies = new();
 
             CommandBuffer = (Cbs = gd.CommandBufferPool.Rent()).CommandBuffer;
+        }
+
+        private void CopyPendingQuery()
+        {
+            foreach (var item in _pendingQueryCopies)
+            {
+                var buffer = item.Holder.GetBuffer(CommandBuffer, true).Get(Cbs, 0, sizeof(long)).Value;
+
+                Gd.Api.CmdCopyQueryPoolResults(
+                    CommandBuffer,
+                    item.Pool,
+                    0,
+                    1,
+                    buffer,
+                    0,
+                    sizeof(long),
+                    QueryResultFlags.QueryResult64Bit | QueryResultFlags.QueryResultWaitBit);
+            }
+
+            _pendingQueryCopies.Clear();
         }
 
         protected override unsafe DescriptorSetLayout[] CreateDescriptorSetLayouts(VulkanGraphicsDevice gd, Device device, out PipelineLayout layout)
@@ -298,19 +321,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void CopyQueryResults(QueryPool pool, BufferHolder holder)
         {
-            EndRenderPass();
-
-            var buffer = holder.GetBuffer(CommandBuffer, true).Get(Cbs, 0, sizeof(long)).Value;
-
-            Gd.Api.CmdCopyQueryPoolResults(
-                CommandBuffer,
-                pool,
-                0,
-                1,
-                buffer,
-                0,
-                sizeof(long),
-                QueryResultFlags.QueryResult64Bit | QueryResultFlags.QueryResultWaitBit);
+            _pendingQueryCopies.Add((pool, holder));
 
             _hasPendingQuery = true;
         }
@@ -318,6 +329,11 @@ namespace Ryujinx.Graphics.Vulkan
         protected override void SignalProgramChange()
         {
             FlushPendingQuery();
+        }
+
+        protected override void SignalRenderPassEnd()
+        {
+            CopyPendingQuery();
         }
     }
 }
