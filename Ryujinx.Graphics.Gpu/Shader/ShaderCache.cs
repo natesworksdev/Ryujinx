@@ -346,13 +346,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
             {
                 var tf = state.TfState[i];
 
-                var temp = System.Runtime.InteropServices.MemoryMarshal.Cast<uint, byte>(state.TfVaryingLocations[i].ToSpan());
-
-                for (int j = 0; j < tf.VaryingsCount; j++)
-                {
-                    System.Console.WriteLine(temp[j] + " " + (j * 4));
-                }
-
                 descs[i] = new TransformFeedbackDescriptor(
                     tf.BufferIndex,
                     tf.Stride,
