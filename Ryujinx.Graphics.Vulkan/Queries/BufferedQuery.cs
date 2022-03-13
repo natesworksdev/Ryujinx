@@ -17,6 +17,7 @@ namespace Ryujinx.Graphics.Vulkan.Queries
         private readonly PipelineFull _pipeline;
 
         private QueryPool _queryPool;
+        private bool _isReset;
 
         private readonly BufferHolder _buffer;
         private readonly IntPtr _bufferMap;
@@ -73,7 +74,8 @@ namespace Ryujinx.Graphics.Vulkan.Queries
 
         public void Begin()
         {
-            _pipeline.BeginQuery(_queryPool);
+            _pipeline.BeginQuery(this, _queryPool, !_isReset);
+            _isReset = false;
         }
 
         public unsafe void End(bool withResult)
@@ -83,7 +85,7 @@ namespace Ryujinx.Graphics.Vulkan.Queries
             if (withResult)
             {
                 Marshal.WriteInt64(_bufferMap, DefaultValue);
-                _pipeline.CopyQueryResults(_queryPool, _buffer);
+                _pipeline.CopyQueryResults(this);
             }
             else
             {
@@ -129,6 +131,27 @@ namespace Ryujinx.Graphics.Vulkan.Queries
             }
 
             return data;
+        }
+
+        public void PoolReset(CommandBuffer cmd)
+        {
+            _api.CmdResetQueryPool(cmd, _queryPool, 0, 1);
+            _isReset = true;
+        }
+
+        public void PoolCopy(CommandBufferScoped cbs)
+        {
+            var buffer = _buffer.GetBuffer(cbs.CommandBuffer, true).Get(cbs, 0, sizeof(long)).Value;
+
+            _api.CmdCopyQueryPoolResults(
+                cbs.CommandBuffer,
+                _queryPool,
+                0,
+                1,
+                buffer,
+                0,
+                sizeof(long),
+                QueryResultFlags.QueryResult64Bit | QueryResultFlags.QueryResultWaitBit);
         }
 
         public unsafe void Dispose()
