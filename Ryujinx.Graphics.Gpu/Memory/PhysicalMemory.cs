@@ -340,6 +340,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
             return _cpuMemory.BeginSmartGranularTracking(address, size, granularity);
         }
 
+        public bool IsMapped(ulong address)
+        {
+            return _cpuMemory.IsMapped(address);
+        }
+
         /// <summary>
         /// Checks if the page at a given address is mapped on CPU memory.
         /// </summary>

@@ -120,7 +120,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             bool isContiguous = true;
             int mappedSize = 0;
 
-            if (ValidateAddress(va) && GetPte(va) != PteUnmapped)
+            if (ValidateAddress(va) && GetPte(va) != PteUnmapped && Physical.IsMapped(Translate(va)))
             {
                 ulong endVa = va + (ulong)size;
                 ulong endVaAligned = (endVa + PageMask) & ~PageMask;
@@ -130,12 +130,15 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 for (int page = 0; page < pages - 1; page++)
                 {
-                    if (!ValidateAddress(currentVa + PageSize) || GetPte(currentVa + PageSize) == PteUnmapped)
+                    ulong nextVa = currentVa + PageSize;
+                    ulong nextPa = Translate(nextVa);
+
+                    if (!ValidateAddress(nextVa) || GetPte(nextVa) == PteUnmapped || !Physical.IsMapped(nextPa))
                     {
                         break;
                     }
 
-                    if (Translate(currentVa) + PageSize != Translate(currentVa + PageSize))
+                    if (Translate(currentVa) + PageSize != nextPa)
                     {
                         isContiguous = false;
                     }
