@@ -42,9 +42,13 @@ namespace Ryujinx.Graphics.Vulkan.Queries
             return _counter.GetBuffer();
         }
 
-        internal void Clear()
+        internal void Clear(bool counterReset)
         {
-            _counter.Reset();
+            if (counterReset)
+            {
+                _counter.Reset();
+            }
+
             ClearCounter = true;
         }
 
@@ -109,6 +113,10 @@ namespace Ryujinx.Graphics.Vulkan.Queries
             if (Interlocked.Decrement(ref _refCount) == 0)
             {
                 DisposeInternal();
+            }
+            else
+            {
+
             }
         }
 

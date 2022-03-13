@@ -13,31 +13,33 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly List<QueryPool> _activeQueries;
         private CounterQueueEvent _activeConditionalRender;
 
-        private readonly List<(QueryPool Pool, BufferHolder Holder)> _pendingQueryCopies;
+        private readonly List<BufferedQuery> _pendingQueryCopies;
+        private readonly List<BufferedQuery> _pendingQueryResets;
 
         public PipelineFull(VulkanGraphicsDevice gd, Device device) : base(gd, device)
         {
             _activeQueries = new List<QueryPool>();
             _pendingQueryCopies = new();
+            _pendingQueryResets = new List<BufferedQuery>();
 
             CommandBuffer = (Cbs = gd.CommandBufferPool.Rent()).CommandBuffer;
         }
 
         private void CopyPendingQuery()
         {
-            foreach (var item in _pendingQueryCopies)
+            foreach (var query in _pendingQueryCopies)
             {
-                var buffer = item.Holder.GetBuffer(CommandBuffer, true).Get(Cbs, 0, sizeof(long)).Value;
+                query.PoolCopy(Cbs);
+            }
 
-                Gd.Api.CmdCopyQueryPoolResults(
-                    CommandBuffer,
-                    item.Pool,
-                    0,
-                    1,
-                    buffer,
-                    0,
-                    sizeof(long),
-                    QueryResultFlags.QueryResult64Bit | QueryResultFlags.QueryResultWaitBit);
+            lock (_pendingQueryResets)
+            {
+                foreach (var query in _pendingQueryResets)
+                {
+                    query.PoolReset(CommandBuffer);
+                }
+
+                _pendingQueryResets.Clear();
             }
 
             _pendingQueryCopies.Clear();
@@ -295,18 +297,26 @@ namespace Ryujinx.Graphics.Vulkan
 
             foreach (var queryPool in _activeQueries)
             {
-                Gd.Api.CmdResetQueryPool(CommandBuffer, queryPool, 0, 1);
                 Gd.Api.CmdBeginQuery(CommandBuffer, queryPool, 0, 0);
             }
 
             SignalCommandBufferChange();
         }
 
-        public void BeginQuery(QueryPool pool)
+        public void BeginQuery(BufferedQuery query, QueryPool pool, bool needsReset)
         {
-            EndRenderPass();
+            if (needsReset)
+            {
+                EndRenderPass();
 
-            Gd.Api.CmdResetQueryPool(CommandBuffer, pool, 0, 1);
+                Gd.Api.CmdResetQueryPool(CommandBuffer, pool, 0, 1);
+
+                lock (_pendingQueryResets)
+                {
+                    _pendingQueryResets.Remove(query); // Might be present on here.
+                }
+            }
+
             Gd.Api.CmdBeginQuery(CommandBuffer, pool, 0, 0);
 
             _activeQueries.Add(pool);
@@ -319,9 +329,17 @@ namespace Ryujinx.Graphics.Vulkan
             _activeQueries.Remove(pool);
         }
 
-        public void CopyQueryResults(QueryPool pool, BufferHolder holder)
+        public void ResetQuery(BufferedQuery query)
         {
-            _pendingQueryCopies.Add((pool, holder));
+            lock (_pendingQueryResets)
+            {
+                _pendingQueryResets.Add(query);
+            }
+        }
+
+        public void CopyQueryResults(BufferedQuery query)
+        {
+            _pendingQueryCopies.Add(query);
 
             _hasPendingQuery = true;
         }

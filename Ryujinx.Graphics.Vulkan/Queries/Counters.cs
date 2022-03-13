@@ -31,7 +31,7 @@ namespace Ryujinx.Graphics.Vulkan.Queries
 
         public void QueueReset(CounterType type)
         {
-            _counterQueues[(int)type].QueueReset();
+            _counterQueues[(int)type].QueueReset(_pipeline.DrawCount);
         }
 
         public void Update()
