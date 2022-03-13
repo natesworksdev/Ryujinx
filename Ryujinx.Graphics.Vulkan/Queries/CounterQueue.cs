@@ -105,6 +105,7 @@ namespace Ryujinx.Graphics.Vulkan.Queries
         {
             lock (_lock)
             {
+                _pipeline.ResetQuery(query);
                 _queryPool.Enqueue(query);
             }
         }
@@ -140,11 +141,13 @@ namespace Ryujinx.Graphics.Vulkan.Queries
             return result;
         }
 
-        public void QueueReset()
+        public void QueueReset(ulong lastDrawIndex)
         {
+            ulong draws = lastDrawIndex - _current.DrawIndex;
+
             lock (_lock)
             {
-                _current.Clear();
+                _current.Clear(draws != 0);
             }
         }
 
