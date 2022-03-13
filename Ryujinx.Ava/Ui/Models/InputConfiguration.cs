@@ -40,11 +40,13 @@ namespace Ryujinx.Ava.Ui.Models
         public Stick LeftJoystick { get; set; }
         public bool LeftInvertStickX { get; set; }
         public bool LeftInvertStickY { get; set; }
+        public bool RightRotate90 { get; set; }
         public Key LeftControllerStickButton { get; set; }
 
         public Stick RightJoystick { get; set; }
         public bool RightInvertStickX { get; set; }
         public bool RightInvertStickY { get; set; }
+        public bool LeftRotate90 { get; set; }
         public Key RightControllerStickButton { get; set; }
 
         public float DeadzoneLeft
@@ -244,11 +246,13 @@ namespace Ryujinx.Ava.Ui.Models
                     LeftJoystick = (Stick)(object)controllerConfig.LeftJoyconStick.Joystick;
                     LeftInvertStickX = controllerConfig.LeftJoyconStick.InvertStickX;
                     LeftInvertStickY = controllerConfig.LeftJoyconStick.InvertStickY;
+                    LeftRotate90 = controllerConfig.LeftJoyconStick.Rotate90CW;
                     LeftControllerStickButton = (Key)(object)controllerConfig.LeftJoyconStick.StickButton;
 
                     RightJoystick = (Stick)(object)controllerConfig.RightJoyconStick.Joystick;
                     RightInvertStickX = controllerConfig.RightJoyconStick.InvertStickX;
                     RightInvertStickY = controllerConfig.RightJoyconStick.InvertStickY;
+                    RightRotate90 = controllerConfig.RightJoyconStick.Rotate90CW;
                     RightControllerStickButton = (Key)(object)controllerConfig.RightJoyconStick.StickButton;
 
                     ButtonA = (Key)(object)controllerConfig.RightJoycon.ButtonA;
@@ -400,6 +404,7 @@ namespace Ryujinx.Ava.Ui.Models
                         Joystick = (StickInputId)(object)LeftJoystick,
                         InvertStickX = LeftInvertStickX,
                         InvertStickY = LeftInvertStickY,
+                        Rotate90CW = LeftRotate90,
                         StickButton = (GamepadInputId)(object)LeftControllerStickButton,
                     },
                     RightJoyconStick = new JoyconConfigControllerStick<GamepadInputId, StickInputId>()
@@ -407,6 +412,7 @@ namespace Ryujinx.Ava.Ui.Models
                         Joystick = (StickInputId)(object)RightJoystick,
                         InvertStickX = RightInvertStickX,
                         InvertStickY = RightInvertStickY,
+                        Rotate90CW = RightRotate90,
                         StickButton = (GamepadInputId)(object)RightControllerStickButton,
                     },
                     Rumble = new RumbleConfigController()

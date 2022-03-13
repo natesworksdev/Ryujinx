@@ -425,6 +425,9 @@
                                     <TextBlock Margin="0" Text="{locale:Locale ControllerSettingsLStickInvertYAxis}" />
                                 </CheckBox>
                             </StackPanel>
+							<CheckBox IsChecked="{Binding Configuration.LeftRotate90}">
+								<TextBlock Margin="0" Text="{locale:Locale ControllerSettingsRotate90}" />
+							</CheckBox>
                             <Separator Height="1" Margin="0,5" />
                             <StackPanel Margin="0" Orientation="Vertical">
                                 <TextBlock Margin="2" Text="{locale:Locale ControllerSettingsLStickDeadzone}" />
@@ -1337,6 +1340,9 @@
                                     <TextBlock Margin="0" Text="{locale:Locale ControllerSettingsRStickInvertYAxis}" />
                                 </CheckBox>
                             </StackPanel>
+							<CheckBox IsChecked="{Binding Configuration.RightRotate90}">
+								<TextBlock Margin="0" Text="{locale:Locale ControllerSettingsRotate90}" />
+							</CheckBox>
                             <Separator Margin="-16,0" />
                             <StackPanel Margin="0" Orientation="Vertical">
                                 <TextBlock Margin="2" Text="{locale:Locale ControllerSettingsRStickDeadzone}" />
