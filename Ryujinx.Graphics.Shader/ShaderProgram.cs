@@ -4,22 +4,22 @@ namespace Ryujinx.Graphics.Shader
 {
     public class ShaderProgram
     {
-        public ShaderStage Stage { get; }
+        public ShaderProgramInfo Info { get; }
 
         public string Code { get; private set; }
         public byte[] BinaryCode { get; }
 
-        private ShaderProgram(ShaderStage stage)
+        private ShaderProgram(ShaderProgramInfo info)
         {
-            Stage = stage;
+            Info = info;
         }
 
-        public ShaderProgram(ShaderStage stage, string code) : this(stage)
+        public ShaderProgram(ShaderProgramInfo info, string code) : this(info)
         {
             Code = code;
         }
 
-        public ShaderProgram(ShaderStage stage, byte[] binaryCode) : this(stage)
+        public ShaderProgram(ShaderProgramInfo info, byte[] binaryCode) : this(info)
         {
             BinaryCode = binaryCode;
         }

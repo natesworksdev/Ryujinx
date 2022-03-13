@@ -11,17 +11,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public Shader(ShaderStage stage, string code)
         {
-            ShaderType type = stage switch
-            {
-                ShaderStage.Compute => ShaderType.ComputeShader,
-                ShaderStage.Vertex => ShaderType.VertexShader,
-                ShaderStage.TessellationControl => ShaderType.TessControlShader,
-                ShaderStage.TessellationEvaluation => ShaderType.TessEvaluationShader,
-                ShaderStage.Geometry => ShaderType.GeometryShader,
-                ShaderStage.Fragment => ShaderType.FragmentShader,
-                _ => ShaderType.VertexShader
-            };
-
+            ShaderType type = stage.Convert();
             Handle = GL.CreateShader(type);
             IsFragment = stage == ShaderStage.Fragment;
 

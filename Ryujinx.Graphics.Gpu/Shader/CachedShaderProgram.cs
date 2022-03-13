@@ -7,26 +7,29 @@ namespace Ryujinx.Graphics.Gpu.Shader
     /// Represents a program composed of one or more shader stages (for graphics shaders),
     /// or a single shader (for compute shaders).
     /// </summary>
-    class ShaderBundle : IDisposable
+    class CachedShaderProgram : IDisposable
     {
         /// <summary>
         /// Host shader program object.
         /// </summary>
         public IProgram HostProgram { get; }
 
+        public ShaderSpecializationState SpecializationState { get; }
+
         /// <summary>
         /// Compiled shader for each shader stage.
         /// </summary>
-        public ShaderCodeHolder[] Shaders { get; }
+        public CachedShaderStage[] Shaders { get; }
 
         /// <summary>
         /// Creates a new instance of the shader bundle.
         /// </summary>
         /// <param name="hostProgram">Host program with all the shader stages</param>
         /// <param name="shaders">Shaders</param>
-        public ShaderBundle(IProgram hostProgram, params ShaderCodeHolder[] shaders)
+        public CachedShaderProgram(IProgram hostProgram, ShaderSpecializationState specializationState, params CachedShaderStage[] shaders)
         {
             HostProgram = hostProgram;
+            SpecializationState = specializationState;
             Shaders = shaders;
         }
 
@@ -36,11 +39,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
         public void Dispose()
         {
             HostProgram.Dispose();
-
-            foreach (ShaderCodeHolder holder in Shaders)
-            {
-                holder?.HostShader?.Dispose();
-            }
         }
     }
 }

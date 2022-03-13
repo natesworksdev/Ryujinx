@@ -286,7 +286,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
                     foreach (TransformFeedbackDescriptor transform in tfd)
                     {
                         writer.WriteStruct(new GuestShaderCacheTransformFeedbackHeader(transform.BufferIndex, transform.Stride, transform.VaryingLocations.Length));
-                        writer.Write(transform.VaryingLocations);
+                        // writer.Write(transform.VaryingLocations);
                     }
                 }
 
@@ -321,7 +321,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
                 {
                     GuestShaderCacheTransformFeedbackHeader feedbackHeader = MemoryMarshal.Read<GuestShaderCacheTransformFeedbackHeader>(data);
 
-                    result[i] = new TransformFeedbackDescriptor(feedbackHeader.BufferIndex, feedbackHeader.Stride, data.Slice(Unsafe.SizeOf<GuestShaderCacheTransformFeedbackHeader>(), feedbackHeader.VaryingLocationsLength).ToArray());
+                    // result[i] = new TransformFeedbackDescriptor(feedbackHeader.BufferIndex, feedbackHeader.Stride, data.Slice(Unsafe.SizeOf<GuestShaderCacheTransformFeedbackHeader>(), feedbackHeader.VaryingLocationsLength).ToArray());
 
                     data = data.Slice(Unsafe.SizeOf<GuestShaderCacheTransformFeedbackHeader>() + feedbackHeader.VaryingLocationsLength);
                 }
@@ -475,11 +475,11 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
                 {
                     foreach (int textureHandle in context.TextureHandlesForCache)
                     {
-                        GuestTextureDescriptor textureDescriptor = ((Image.TextureDescriptor)gpuAccessor.GetTextureDescriptor(textureHandle, -1)).ToCache();
+                        /* GuestTextureDescriptor textureDescriptor = ((Image.TextureDescriptor)gpuAccessor.GetTextureDescriptor(textureHandle, -1)).ToCache();
 
                         textureDescriptor.Handle = (uint)textureHandle;
 
-                        entry.TextureDescriptors.Add(textureHandle, textureDescriptor);
+                        entry.TextureDescriptors.Add(textureHandle, textureDescriptor); */
                     }
                 }
 

@@ -1,19 +1,25 @@
+using Ryujinx.Common.Memory;
 using System;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Gpu.Shader
 {
     struct TransformFeedbackDescriptor
     {
-        public int BufferIndex { get; }
-        public int Stride      { get; }
+        public readonly int BufferIndex;
+        public readonly int Stride;
+        public readonly Array32<uint> VaryingLocations;
 
-        public byte[] VaryingLocations { get; }
-
-        public TransformFeedbackDescriptor(int bufferIndex, int stride, byte[] varyingLocations)
+        public TransformFeedbackDescriptor(int bufferIndex, int stride, ref Array32<uint> varyingLocations)
         {
-            BufferIndex      = bufferIndex;
-            Stride           = stride;
-            VaryingLocations = varyingLocations ?? throw new ArgumentNullException(nameof(varyingLocations));
+            BufferIndex = bufferIndex;
+            Stride = stride;
+            VaryingLocations = varyingLocations;
+        }
+
+        public ReadOnlySpan<byte> AsSpan()
+        {
+            return MemoryMarshal.Cast<uint, byte>(VaryingLocations.ToSpan());
         }
     }
 }

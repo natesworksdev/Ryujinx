@@ -1,11 +1,11 @@
-﻿using OpenTK.Graphics;
-using OpenTK.Graphics.OpenGL;
+﻿using OpenTK.Graphics.OpenGL;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL.Image;
 using Ryujinx.Graphics.OpenGL.Queries;
 using Ryujinx.Graphics.Shader;
+using Ryujinx.Graphics.Shader.Translation;
 using System;
 
 namespace Ryujinx.Graphics.OpenGL
@@ -71,6 +71,11 @@ namespace Ryujinx.Graphics.OpenGL
             return new Program(shaders, info.FragmentOutputMap);
         }
 
+        public IProgram CreateProgramSeparate(ShaderStage stage, string code)
+        {
+            return new ProgramSeparate(stage, code);
+        }
+
         public ISampler CreateSampler(SamplerCreateInfo info)
         {
             return new Sampler(info);
@@ -101,6 +106,8 @@ namespace Ryujinx.Graphics.OpenGL
         public Capabilities GetCapabilities()
         {
             return new Capabilities(
+                api: TargetApi.OpenGL,
+                vendorName: GpuVendor,
                 hasFrontFacingBug: HwCapabilities.Vendor == HwCapabilities.GpuVendor.IntelWindows,
                 hasVectorIndexingBug: HwCapabilities.Vendor == HwCapabilities.GpuVendor.AmdWindows,
                 supportsAstcCompression: HwCapabilities.SupportsAstcCompression,

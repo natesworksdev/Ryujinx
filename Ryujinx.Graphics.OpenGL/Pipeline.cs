@@ -16,6 +16,9 @@ namespace Ryujinx.Graphics.OpenGL
         internal ulong DrawCount { get; private set; }
 
         private Program _program;
+        private ProgramSeparate[] _programs;
+        private int _programPipeline;
+        private bool _useProgramSeparate;
 
         private bool _rasterizerDiscard;
 
@@ -83,6 +86,8 @@ namespace Ryujinx.Graphics.OpenGL
 
             _tfbs = new BufferHandle[Constants.MaxTransformFeedbackBuffers];
             _tfbTargets = new BufferRange[Constants.MaxTransformFeedbackBuffers];
+
+            _programs = new ProgramSeparate[6];
         }
 
         public void Initialize(Renderer renderer)
@@ -180,7 +185,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void DispatchCompute(int groupsX, int groupsY, int groupsZ)
         {
-            if (!_program.IsLinked)
+            if (!IsLinked())
             {
                 Logger.Debug?.Print(LogClass.Gpu, "Dispatch error, shader not linked.");
                 return;
@@ -193,7 +198,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void Draw(int vertexCount, int instanceCount, int firstVertex, int firstInstance)
         {
-            if (!_program.IsLinked)
+            if (!IsLinked())
             {
                 Logger.Debug?.Print(LogClass.Gpu, "Draw error, shader not linked.");
                 return;
@@ -311,7 +316,7 @@ namespace Ryujinx.Graphics.OpenGL
             int firstVertex,
             int firstInstance)
         {
-            if (!_program.IsLinked)
+            if (!IsLinked())
             {
                 Logger.Debug?.Print(LogClass.Gpu, "Draw error, shader not linked.");
                 return;
@@ -639,7 +644,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void MultiDrawIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride)
         {
-            if (!_program.IsLinked)
+            if (!IsLinked())
             {
                 Logger.Debug?.Print(LogClass.Gpu, "Draw error, shader not linked.");
                 return;
@@ -662,7 +667,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void MultiDrawIndexedIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride)
         {
-            if (!_program.IsLinked)
+            if (!IsLinked())
             {
                 Logger.Debug?.Print(LogClass.Gpu, "Draw error, shader not linked.");
                 return;
@@ -1383,6 +1388,36 @@ namespace Ryujinx.Graphics.OpenGL
             }
         }
 
+        private void EnsureProgramPipeline()
+        {
+            if (_programPipeline == 0)
+            {
+                _programPipeline = GL.GenProgramPipeline();
+                GL.BindProgramPipeline(_programPipeline);
+            }
+        }
+
+        private bool IsLinked()
+        {
+            if (_useProgramSeparate)
+            {
+                for (int i = 0; i < _programs.Length; i++)
+                {
+                    if (_programs[i] != null && !_programs[i].IsLinked)
+                    {
+                        // throw new Exception("huh?");
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+            else
+            {
+                return _program.IsLinked;
+            }
+        }
+
         internal (int drawHandle, int readHandle) GetBoundFramebuffers()
         {
             if (BackgroundContextWorker.InBackground)
@@ -1567,6 +1602,12 @@ namespace Ryujinx.Graphics.OpenGL
                     Buffer.Delete(_tfbs[i]);
                     _tfbs[i] = BufferHandle.Null;
                 }
+            }
+
+            if (_programPipeline != 0)
+            {
+                GL.DeleteProgramPipeline(_programPipeline);
+                _programPipeline = 0;
             }
 
             _activeConditionalRender?.ReleaseHostAccess();

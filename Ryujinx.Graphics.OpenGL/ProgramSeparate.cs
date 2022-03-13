@@ -1,14 +1,18 @@
 using OpenTK.Graphics.OpenGL;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
+using Ryujinx.Graphics.Shader;
+using Ryujinx.Graphics.Shader.CodeGen.Glsl;
 using System;
 using System.Buffers.Binary;
 
 namespace Ryujinx.Graphics.OpenGL
 {
-    class Program : IProgram
+    class ProgramSeparate : IProgram
     {
         public int Handle { get; private set; }
+
+        private string _code;
 
         public bool IsLinked
         {
@@ -24,51 +28,11 @@ namespace Ryujinx.Graphics.OpenGL
         }
 
         private ProgramLinkStatus _status = ProgramLinkStatus.Incomplete;
-        private IShader[] _shaders;
 
-        public bool HasFragmentShader;
-        public int FragmentOutputMap { get; }
-
-        public Program(IShader[] shaders, int fragmentOutputMap)
+        public ProgramSeparate(ShaderStage stage, string code)
         {
-            Handle = GL.CreateProgram();
-
-            GL.ProgramParameter(Handle, ProgramParameterName.ProgramBinaryRetrievableHint, 1);
-
-            for (int index = 0; index < shaders.Length; index++)
-            {
-                Shader shader = (Shader)shaders[index];
-
-                if (shader.IsFragment)
-                {
-                    HasFragmentShader = true;
-                }
-
-                GL.AttachShader(Handle, shader.Handle);
-            }
-
-            GL.LinkProgram(Handle);
-
-            _shaders = shaders;
-            FragmentOutputMap = fragmentOutputMap;
-        }
-
-        public Program(ReadOnlySpan<byte> code, bool hasFragmentShader, int fragmentOutputMap)
-        {
-            BinaryFormat binaryFormat = (BinaryFormat)BinaryPrimitives.ReadInt32LittleEndian(code.Slice(code.Length - 4, 4));
-
-            Handle = GL.CreateProgram();
-
-            unsafe
-            {
-                fixed (byte* ptr = code)
-                {
-                    GL.ProgramBinary(Handle, binaryFormat, (IntPtr)ptr, code.Length - 4);
-                }
-            }
-
-            HasFragmentShader = hasFragmentShader;
-            FragmentOutputMap = fragmentOutputMap;
+            _code = code;
+            Handle = GL.CreateShaderProgram(stage.Convert(), 1, new string[] { code });
         }
 
         public void Bind()
@@ -90,21 +54,10 @@ namespace Ryujinx.Graphics.OpenGL
 
             GL.GetProgram(Handle, GetProgramParameterName.LinkStatus, out int status);
 
-            if (_shaders != null)
-            {
-                for (int index = 0; index < _shaders.Length; index++)
-                {
-                    int shaderHandle = ((Shader)_shaders[index]).Handle;
-
-                    GL.DetachShader(Handle, shaderHandle);
-                }
-
-                _shaders = null;
-            }
-
             if (status == 0)
             {
-                throw new Exception(GL.GetProgramInfoLog(Handle));
+                Console.WriteLine(_code);
+                // throw new Exception(GL.GetProgramInfoLog(Handle));
                 // Use GL.GetProgramInfoLog(Handle), it may be too long to print on the log.
                 _status = ProgramLinkStatus.Failure;
                 Logger.Debug?.Print(LogClass.Gpu, "Shader linking failed.");
@@ -125,7 +78,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             GL.GetProgramBinary(Handle, size, out _, out BinaryFormat binFormat, data);
 
-            BinaryPrimitives.WriteInt32LittleEndian(data.AsSpan(size, 4), (int)binFormat);
+            BinaryPrimitives.WriteInt32LittleEndian(data.AsSpan().Slice(size, 4), (int)binFormat);
 
             return data;
         }

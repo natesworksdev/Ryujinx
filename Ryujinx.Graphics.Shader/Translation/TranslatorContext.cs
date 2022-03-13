@@ -16,8 +16,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public ShaderStage Stage => _config.Stage;
         public int Size => _config.Size;
-
-        public FeatureFlags UsedFeatures => _config.UsedFeatures;
+        public int Cb1DataSize => _config.Cb1DataSize;
 
         public HashSet<int> TextureHandlesForCache => _config.TextureHandlesForCache;
 
@@ -129,10 +128,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             return output;
         }
 
-        public ShaderProgram Translate(
-            out ShaderProgramInfo shaderProgramInfo,
-            TranslatorContext nextStage = null,
-            TranslatorContext other = null)
+        public ShaderProgram Translate(TranslatorContext nextStage = null, TranslatorContext other = null)
         {
             if (nextStage != null)
             {
@@ -152,7 +148,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 _config.InheritFrom(other._config);
             }
 
-            return Translator.Translate(code, _config, out shaderProgramInfo);
+            return Translator.Translate(code, _config);
         }
     }
 }
