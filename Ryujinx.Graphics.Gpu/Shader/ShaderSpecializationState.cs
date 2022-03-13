@@ -204,9 +204,19 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
         private bool Matches(GpuChannel channel, GpuChannelPoolState poolState, bool isCompute)
         {
+
             foreach (var kv in _textureSpecialization)
             {
                 TextureKey textureKey = kv.Key;
+
+                bool cbAccessible = isCompute
+                    ? channel.BufferManager.GetComputeUniformBufferAddress(poolState.TextureBufferIndex) != 0
+                    : channel.BufferManager.GetGraphicsUniformBufferAddress(textureKey.StageIndex, poolState.TextureBufferIndex) != 0;
+
+                if (!cbAccessible)
+                {
+                    continue;
+                }
 
                 Image.TextureDescriptor descriptor;
 
