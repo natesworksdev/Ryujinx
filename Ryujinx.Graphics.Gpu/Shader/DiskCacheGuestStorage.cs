@@ -78,12 +78,12 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
         public Stream OpenTocFileStream()
         {
-            return new FileStream(Path.Combine(_basePath, TocFileName), FileMode.Open, FileAccess.Read, FileShare.Read);
+            return DiskCacheCommon.OpenFile(_basePath, TocFileName, writable: false);
         }
 
         public Stream OpenDataFileStream()
         {
-            return new FileStream(Path.Combine(_basePath, DataFileName), FileMode.Open, FileAccess.Read, FileShare.Read);
+            return DiskCacheCommon.OpenFile(_basePath, DataFileName, writable: false);
         }
 
         public (byte[], byte[]) LoadShader(Stream tocFileStream, Stream dataFileStream, int index)
@@ -128,11 +128,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
         public int AddShader(ReadOnlySpan<byte> data, ReadOnlySpan<byte> cb1Data)
         {
-            string tocFilePath = Path.Combine(_basePath, TocFileName);
-            string dataFilePath = Path.Combine(_basePath, DataFileName);
-
-            using var tocFileStream = new FileStream(tocFilePath, FileMode.OpenOrCreate);
-            using var dataFileStream = new FileStream(dataFilePath, FileMode.OpenOrCreate);
+            using var tocFileStream = DiskCacheCommon.OpenFile(_basePath, TocFileName, writable: true);
+            using var dataFileStream = DiskCacheCommon.OpenFile(_basePath, DataFileName, writable: true);
 
             TocHeader header = new TocHeader();
 

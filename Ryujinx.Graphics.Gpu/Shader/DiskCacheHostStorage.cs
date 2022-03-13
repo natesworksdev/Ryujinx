@@ -134,8 +134,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
             Stream hostTocFileStream = null;
             Stream hostDataFileStream = null;
 
-            using var tocFileStream = new FileStream(tocFilePath, FileMode.Open);
-            using var dataFileStream = new FileStream(dataFilePath, FileMode.Open);
+            using var tocFileStream = DiskCacheCommon.OpenFile(_basePath, SharedTocFileName, writable: false);
+            using var dataFileStream = DiskCacheCommon.OpenFile(_basePath, SharedDataFileName, writable: false);
 
             using var guestTocFileStream = _guestStorage.OpenTocFileStream();
             using var guestDataFileStream = _guestStorage.OpenDataFileStream();
@@ -204,7 +204,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
                     if (hostCode != null)
                     {
-                        bool hasFragmentShader = shaders[5] != null;
+                        bool hasFragmentShader = shaders.Length > 5 && shaders[5] != null;
                         int fragmentOutputMap = hasFragmentShader ? shaders[5].Info.FragmentOutputMap : -1;
                         IProgram hostProgram = context.Renderer.LoadProgramBinary(hostCode, hasFragmentShader, new ShaderInfo(fragmentOutputMap));
 
@@ -245,8 +245,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
                     return null;
                 }
 
-                tocFileStream = new FileStream(tocFilePath, FileMode.Open);
-                dataFileStream = new FileStream(dataFilePath, FileMode.Open);
+                tocFileStream = DiskCacheCommon.OpenFile(_basePath, GetHostTocFileName(context), writable: false);
+                dataFileStream = DiskCacheCommon.OpenFile(_basePath, GetHostDataFileName(context), writable: false);
             }
 
             int offset = Unsafe.SizeOf<TocHeader>() + programIndex * Unsafe.SizeOf<OffsetAndSize>();
@@ -286,11 +286,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 stagesBitMask |= 1u << index;
             }
 
-            string tocFilePath = Path.Combine(_basePath, SharedTocFileName);
-            string dataFilePath = Path.Combine(_basePath, SharedDataFileName);
-
-            using var tocFileStream = new FileStream(tocFilePath, FileMode.OpenOrCreate);
-            using var dataFileStream = new FileStream(dataFilePath, FileMode.OpenOrCreate);
+            using var tocFileStream = DiskCacheCommon.OpenFile(_basePath, SharedTocFileName, writable: true);
+            using var dataFileStream = DiskCacheCommon.OpenFile(_basePath, SharedDataFileName, writable: true);
 
             if (tocFileStream.Length == 0)
             {
@@ -344,11 +341,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
         public void ClearHostCache(GpuContext context)
         {
-            string tocFilePath = Path.Combine(_basePath, GetHostTocFileName(context));
-            string dataFilePath = Path.Combine(_basePath, GetHostDataFileName(context));
-
-            using var tocFileStream = new FileStream(tocFilePath, FileMode.OpenOrCreate);
-            using var dataFileStream = new FileStream(dataFilePath, FileMode.OpenOrCreate);
+            using var tocFileStream = DiskCacheCommon.OpenFile(_basePath, GetHostTocFileName(context), writable: true);
+            using var dataFileStream = DiskCacheCommon.OpenFile(_basePath, GetHostDataFileName(context), writable: true);
 
             tocFileStream.SetLength(0);
             dataFileStream.SetLength(0);
@@ -361,11 +355,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
         private void WriteHostCode(GpuContext context, ReadOnlySpan<byte> hostCode, int programIndex = -1)
         {
-            string tocFilePath = Path.Combine(_basePath, GetHostTocFileName(context));
-            string dataFilePath = Path.Combine(_basePath, GetHostDataFileName(context));
-
-            using var tocFileStream = new FileStream(tocFilePath, FileMode.OpenOrCreate);
-            using var dataFileStream = new FileStream(dataFilePath, FileMode.OpenOrCreate);
+            using var tocFileStream = DiskCacheCommon.OpenFile(_basePath, GetHostTocFileName(context), writable: true);
+            using var dataFileStream = DiskCacheCommon.OpenFile(_basePath, GetHostDataFileName(context), writable: true);
 
             if (tocFileStream.Length == 0)
             {

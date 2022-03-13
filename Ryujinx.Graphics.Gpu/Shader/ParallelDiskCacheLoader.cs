@@ -276,13 +276,19 @@ namespace Ryujinx.Graphics.Gpu.Shader
             {
                 IShader[] hostShaders = new IShader[compilation.TranslatedStages.Length];
 
+                int fragmentOutputMap = -1;
+
                 for (int index = 0; index < compilation.TranslatedStages.Length; index++)
                 {
                     ShaderProgram shader = compilation.TranslatedStages[index];
                     hostShaders[index] = _context.Renderer.CompileShader(shader.Info.Stage, shader.Code);
+
+                    if (shader.Info.Stage == ShaderStage.Fragment)
+                    {
+                        fragmentOutputMap = shader.Info.FragmentOutputMap;
+                    }
                 }
 
-                int fragmentOutputMap = compilation.TranslatedStages[5]?.Info.FragmentOutputMap ?? -1;
                 IProgram hostProgram = _context.Renderer.CreateProgram(hostShaders, new ShaderInfo(fragmentOutputMap));
                 CachedShaderProgram program = new CachedShaderProgram(hostProgram, compilation.SpecializationState, compilation.Shaders);
 
