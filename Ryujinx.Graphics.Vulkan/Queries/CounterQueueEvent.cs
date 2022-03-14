@@ -114,10 +114,6 @@ namespace Ryujinx.Graphics.Vulkan.Queries
             {
                 DisposeInternal();
             }
-            else
-            {
-
-            }
         }
 
         public bool ReserveForHostAccess()

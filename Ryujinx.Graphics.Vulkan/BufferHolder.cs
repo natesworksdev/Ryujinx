@@ -162,8 +162,6 @@ namespace Ryujinx.Graphics.Vulkan
             throw new InvalidOperationException("The buffer is not host mapped.");
         }
 
-        public static int SlowLoads = 0;
-
         public unsafe void SetData(int offset, ReadOnlySpan<byte> data, CommandBufferScoped? cbs = null, Action endRenderPass = null)
         {
             int dataSize = Math.Min(data.Length, Size - offset);
