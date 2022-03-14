@@ -297,6 +297,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             foreach (var queryPool in _activeQueries)
             {
+                Gd.Api.CmdResetQueryPool(CommandBuffer, queryPool, 0, 1);
                 Gd.Api.CmdBeginQuery(CommandBuffer, queryPool, 0, 0);
             }
 
