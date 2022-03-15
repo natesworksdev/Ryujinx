@@ -69,18 +69,5 @@ namespace Ryujinx.Audio.Renderer.Utils.Math
 
             return m;
         }
-
-        public override readonly int GetHashCode()
-        {
-            HashCode hash = default;
-
-            hash.Add(M11);
-            hash.Add(M12);
-
-            hash.Add(M21);
-            hash.Add(M22);
-
-            return hash.ToHashCode();
-        }
     }
 }
