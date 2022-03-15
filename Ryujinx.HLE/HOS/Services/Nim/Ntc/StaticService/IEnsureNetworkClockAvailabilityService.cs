@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Nim.Ntc.StaticService
             _finishNotificationEvent = new KEvent(context.Device.System.KernelContext);
             _taskResultCode          = ResultCode.Success;
 
-            // NOTE: Service start a thread which poll Nintendo NTP server and sync the time with it.
+            // NOTE: The service starts a thread that polls Nintendo NTP server and syncs the time with it.
             //       Additionnally it gets and uses some settings too:
             //       autonomic_correction_interval_seconds, autonomic_correction_failed_retry_interval_seconds,
             //       autonomic_correction_immediate_try_count_max, autonomic_correction_immediate_try_interval_milliseconds
