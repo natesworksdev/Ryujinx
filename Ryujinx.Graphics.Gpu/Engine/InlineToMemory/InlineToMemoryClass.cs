@@ -1,6 +1,5 @@
 ﻿using Ryujinx.Common;
 using Ryujinx.Graphics.Device;
-using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.Graphics.Texture;
 using System;
 using System.Collections.Generic;
