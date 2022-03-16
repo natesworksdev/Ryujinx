@@ -470,9 +470,15 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 return PteUnmapped;
             }
 
-            return UnpackVaFromPte(pte) + (va & PageMask);
+            return UnpackPaFromPte(pte) + (va & PageMask);
         }
 
+        /// <summary>
+        /// Gets the kind of a given memory page.
+        /// This might indicate the type of resource that can be allocated on the page, and also texture tiling.
+        /// </summary>
+        /// <param name="va">GPU virtual address</param>
+        /// <returns>Kind of the memory page</returns>
         public PteKind GetKind(ulong va)
         {
             if (!ValidateAddress(va))
@@ -531,19 +537,35 @@ namespace Ryujinx.Graphics.Gpu.Memory
             _pageTable[l0][l1] = pte;
         }
 
-        private static ulong PackPte(ulong va, PteKind kind)
+        /// <summary>
+        /// Creates a page table entry from a physical address and kind.
+        /// </summary>
+        /// <param name="pa">Physical address</param>
+        /// <param name="kind">Kind</param>
+        /// <returns>Page table entry</returns>
+        private static ulong PackPte(ulong pa, PteKind kind)
         {
-            return va | ((ulong)kind << 48);
+            return pa | ((ulong)kind << 56);
         }
 
+        /// <summary>
+        /// Unpacks kind from a page table entry.
+        /// </summary>
+        /// <param name="pte">Page table entry</param>
+        /// <returns>Kind</returns>
         private static PteKind UnpackKindFromPte(ulong pte)
         {
-            return (PteKind)(pte >> 48);
+            return (PteKind)(pte >> 56);
         }
 
-        private static ulong UnpackVaFromPte(ulong pte)
+        /// <summary>
+        /// Unpacks physical address from a page table entry.
+        /// </summary>
+        /// <param name="pte">Page table entry</param>
+        /// <returns>Physical address</returns>
+        private static ulong UnpackPaFromPte(ulong pte)
         {
-            return pte & 0xffffffffffffUL;
+            return pte & 0xffffffffffffffUL;
         }
     }
 }

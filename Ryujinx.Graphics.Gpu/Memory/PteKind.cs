@@ -255,6 +255,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
     static class PteKindExtensions
     {
+        /// <summary>
+        /// Checks if the kind is pitch.
+        /// </summary>
+        /// <param name="kind">Kind to check</param>
+        /// <returns>True if pitch, false otherwise</returns>
         public static bool IsPitch(this PteKind kind)
         {
             return kind == PteKind.Pitch || kind == PteKind.PitchNoSwizzle;

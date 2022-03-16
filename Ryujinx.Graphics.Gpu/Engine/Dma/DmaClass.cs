@@ -350,6 +350,13 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
             }
         }
 
+        /// <summary>
+        /// Copies block linear data with block linear GOBs to a block linear destination with linear GOBs.
+        /// </summary>
+        /// <param name="memoryManager">GPU memory manager</param>
+        /// <param name="srcGpuVa">Source GPU virtual address</param>
+        /// <param name="dstGpuVa">Destination GPU virtual address</param>
+        /// <param name="size">Size in bytes of the copy</param>
         private static void CopyGobBlockLinearToLinear(MemoryManager memoryManager, ulong srcGpuVa, ulong dstGpuVa, ulong size)
         {
             if (((srcGpuVa | dstGpuVa | size) & 0xf) == 0)
@@ -370,6 +377,13 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
             }
         }
 
+        /// <summary>
+        /// Copies block linear data with linear GOBs to a block linear destination with block linear GOBs.
+        /// </summary>
+        /// <param name="memoryManager">GPU memory manager</param>
+        /// <param name="srcGpuVa">Source GPU virtual address</param>
+        /// <param name="dstGpuVa">Destination GPU virtual address</param>
+        /// <param name="size">Size in bytes of the copy</param>
         private static void CopyGobLinearToBlockLinear(MemoryManager memoryManager, ulong srcGpuVa, ulong dstGpuVa, ulong size)
         {
             if (((srcGpuVa | dstGpuVa | size) & 0xf) == 0)
@@ -390,6 +404,11 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
             }
         }
 
+        /// <summary>
+        /// Calculates the GOB block linear address from a linear address.
+        /// </summary>
+        /// <param name="address">Linear address</param>
+        /// <returns>Block linear address</returns>
         private static ulong ConvertGobLinearToBlockLinearAddress(ulong address)
         {
             // y2 y1 y0 x5 x4 x3 x2 x1 x0 -> x5 y2 y1 x4 y0 x3 x2 x1 x0
