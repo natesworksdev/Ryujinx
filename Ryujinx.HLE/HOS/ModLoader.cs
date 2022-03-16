@@ -136,7 +136,8 @@ namespace Ryujinx.HLE.HOS
 
         private static bool StrEquals(string s1, string s2) => string.Equals(s1, s2, StringComparison.OrdinalIgnoreCase);
 
-        public string GetModsBasePath() => EnsureBaseDirStructure(AppDataManager.GetModsPath());
+        public string GetModsBasePath()   => EnsureBaseDirStructure(AppDataManager.GetModsPath());
+        public string GetSdModsBasePath() => EnsureBaseDirStructure(AppDataManager.GetSdModsPath());
 
         private string EnsureBaseDirStructure(string modsBasePath)
         {
@@ -695,7 +696,7 @@ namespace Ryujinx.HLE.HOS
 
             var buildIds = programs.Select(p => p switch
             {
-                NsoExecutable nso => BitConverter.ToString(nso.BuildId.Bytes.ToArray()).Replace("-", "").TrimEnd('0'),
+                NsoExecutable nso => BitConverter.ToString(nso.BuildId.ItemsRo.ToArray()).Replace("-", "").TrimEnd('0'),
                 NroExecutable nro => BitConverter.ToString(nro.Header.BuildId).Replace("-", "").TrimEnd('0'),
                 _ => string.Empty
             }).ToList();

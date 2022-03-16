@@ -214,24 +214,31 @@ namespace Ryujinx.Graphics.Shader.Translation
                 InitializeOutput(context, AttributeConsts.PositionX, perPatch: false);
             }
 
-            int usedAttributes = context.Config.UsedOutputAttributes;
-            while (usedAttributes != 0)
+            UInt128 usedAttributes = context.Config.NextInputAttributesComponents;
+            while (usedAttributes != UInt128.Zero)
             {
-                int index = BitOperations.TrailingZeroCount(usedAttributes);
+                int index = usedAttributes.TrailingZeroCount();
+                int vecIndex = index / 4;
 
-                InitializeOutput(context, AttributeConsts.UserAttributeBase + index * 16, perPatch: false);
+                usedAttributes &= ~UInt128.Pow2(index);
 
-                usedAttributes &= ~(1 << index);
+                // We don't need to initialize passthrough attributes.
+                if ((context.Config.PassthroughAttributes & (1 << vecIndex)) != 0)
+                {
+                    continue;
+                }
+
+                InitializeOutputComponent(context, AttributeConsts.UserAttributeBase + index * 4, perPatch: false);
             }
 
-            int usedAttributesPerPatch = context.Config.UsedOutputAttributesPerPatch;
-            while (usedAttributesPerPatch != 0)
+            UInt128 usedAttributesPerPatch = context.Config.NextInputAttributesPerPatchComponents;
+            while (usedAttributesPerPatch != UInt128.Zero)
             {
-                int index = BitOperations.TrailingZeroCount(usedAttributesPerPatch);
+                int index = usedAttributesPerPatch.TrailingZeroCount();
 
-                InitializeOutput(context, AttributeConsts.UserAttributeBase + index * 16, perPatch: true);
+                InitializeOutputComponent(context, AttributeConsts.UserAttributeBase + index * 4, perPatch: true);
 
-                usedAttributesPerPatch &= ~(1 << index);
+                usedAttributesPerPatch &= ~UInt128.Pow2(index);
             }
 
             if (config.NextUsesFixedFuncAttributes)
@@ -258,6 +265,12 @@ namespace Ryujinx.Graphics.Shader.Translation
                 int attrOffset = baseAttr + c * 4;
                 context.Copy(perPatch ? AttributePerPatch(attrOffset) : Attribute(attrOffset), ConstF(c == 3 ? 1f : 0f));
             }
+        }
+
+        private static void InitializeOutputComponent(EmitterContext context, int attrOffset, bool perPatch)
+        {
+            int c = (attrOffset >> 2) & 3;
+            context.Copy(perPatch ? AttributePerPatch(attrOffset) : Attribute(attrOffset), ConstF(c == 3 ? 1f : 0f));
         }
 
         private static void EmitOps(EmitterContext context, Block block)

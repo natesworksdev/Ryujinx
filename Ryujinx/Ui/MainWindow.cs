@@ -107,6 +107,7 @@ namespace Ryujinx.Ui
         [GUI] MenuItem        _hideUi;
         [GUI] MenuItem        _fullScreen;
         [GUI] CheckMenuItem   _startFullScreen;
+        [GUI] CheckMenuItem   _showConsole;
         [GUI] CheckMenuItem   _favToggle;
         [GUI] MenuItem        _firmwareInstallDirectory;
         [GUI] MenuItem        _firmwareInstallFile;
@@ -178,7 +179,7 @@ namespace Ryujinx.Ui
             VirtualFileSystem.FixExtraData(_libHacHorizonManager.RyujinxClient);
 
             _contentManager         = new ContentManager(_virtualFileSystem);
-            _accountManager         = new AccountManager(_libHacHorizonManager.RyujinxClient);
+            _accountManager         = new AccountManager(_libHacHorizonManager.RyujinxClient, Program.CommandLineProfile);
             _userChannelPersistence = new UserChannelPersistence();
 
             // Instantiate GUI objects.
@@ -212,6 +213,9 @@ namespace Ryujinx.Ui
             {
                 _startFullScreen.Active = true;
             }
+
+            _showConsole.Active = ConfigurationState.Instance.Ui.ShowConsole.Value;
+            _showConsole.Visible = ConsoleHelper.SetConsoleWindowStateSupported;
 
             _actionMenu.Sensitive = false;
             _pauseEmulation.Sensitive = false;
@@ -1291,7 +1295,7 @@ namespace Ryujinx.Ui
 
         private void OpenLogsFolder_Pressed(object sender, EventArgs args)
         {
-            string logPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
+            string logPath = System.IO.Path.Combine(ReleaseInformations.GetBaseApplicationDirectory(), "Logs");
 
             new DirectoryInfo(logPath).Create();
 
@@ -1531,6 +1535,13 @@ namespace Ryujinx.Ui
         private void StartFullScreen_Toggled(object sender, EventArgs args)
         {
             ConfigurationState.Instance.Ui.StartFullscreen.Value = _startFullScreen.Active;
+
+            SaveConfig();
+        }
+
+        private void ShowConsole_Toggled(object sender, EventArgs args)
+        {
+            ConfigurationState.Instance.Ui.ShowConsole.Value = _showConsole.Active;
 
             SaveConfig();
         }

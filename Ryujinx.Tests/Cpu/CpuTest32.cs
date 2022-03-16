@@ -257,6 +257,35 @@ namespace Ryujinx.Tests.Cpu
             return GetContext();
         }
 
+        public void RunPrecomputedTestCase(PrecomputedThumbTestCase test)
+        {
+            foreach (ushort instruction in test.Instructions)
+            {
+                ThumbOpcode(instruction);
+            }
+
+            for (int i = 0; i < 15; i++)
+            {
+                GetContext().SetX(i, test.StartRegs[i]);
+            }
+
+            uint startCpsr = test.StartRegs[15];
+            for (int i = 0; i < 32; i++)
+            {
+                GetContext().SetPstateFlag((PState)i, (startCpsr & (1u << i)) != 0);
+            }
+
+            ExecuteOpcodes(runUnicorn: false);
+
+            for (int i = 0; i < 15; i++)
+            {
+                Assert.That(GetContext().GetX(i), Is.EqualTo(test.FinalRegs[i]));
+            }
+
+            uint finalCpsr = test.FinalRegs[15];
+            Assert.That(GetContext().Pstate, Is.EqualTo(finalCpsr));
+        }
+
         protected void SetWorkingMemory(uint offset, byte[] data)
         {
             _memory.Write(DataBaseAddress + offset, data);
