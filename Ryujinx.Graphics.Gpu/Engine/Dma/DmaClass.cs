@@ -1,7 +1,7 @@
 ﻿using Ryujinx.Common;
-using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Device;
 using Ryujinx.Graphics.Gpu.Engine.Threed;
+using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.Graphics.Texture;
 using System;
 using System.Collections.Generic;
@@ -330,9 +330,74 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
                 {
                     // TODO: Implement remap functionality.
                     // Buffer to buffer copy.
-                    memoryManager.Physical.BufferCache.CopyBuffer(memoryManager, srcGpuVa, dstGpuVa, size);
+
+                    bool srcIsPitchKind = memoryManager.GetKind(srcGpuVa).IsPitch();
+                    bool dstIsPitchKind = memoryManager.GetKind(dstGpuVa).IsPitch();
+
+                    if (!srcIsPitchKind && dstIsPitchKind)
+                    {
+                        CopyGobBlockLinearToLinear(memoryManager, srcGpuVa, dstGpuVa, size);
+                    }
+                    else if (srcIsPitchKind && !dstIsPitchKind)
+                    {
+                        CopyGobLinearToBlockLinear(memoryManager, srcGpuVa, dstGpuVa, size);
+                    }
+                    else
+                    {
+                        memoryManager.Physical.BufferCache.CopyBuffer(memoryManager, srcGpuVa, dstGpuVa, size);
+                    }
                 }
             }
+        }
+
+        private static void CopyGobBlockLinearToLinear(MemoryManager memoryManager, ulong srcGpuVa, ulong dstGpuVa, ulong size)
+        {
+            if (((srcGpuVa | dstGpuVa | size) & 0xf) == 0)
+            {
+                for (ulong offset = 0; offset < size; offset += 16)
+                {
+                    Vector128<byte> data = memoryManager.Read<Vector128<byte>>(ConvertGobLinearToBlockLinearAddress(srcGpuVa + offset), true);
+                    memoryManager.Write(dstGpuVa + offset, data);
+                }
+            }
+            else
+            {
+                for (ulong offset = 0; offset < size; offset++)
+                {
+                    byte data = memoryManager.Read<byte>(ConvertGobLinearToBlockLinearAddress(srcGpuVa + offset), true);
+                    memoryManager.Write(dstGpuVa + offset, data);
+                }
+            }
+        }
+
+        private static void CopyGobLinearToBlockLinear(MemoryManager memoryManager, ulong srcGpuVa, ulong dstGpuVa, ulong size)
+        {
+            if (((srcGpuVa | dstGpuVa | size) & 0xf) == 0)
+            {
+                for (ulong offset = 0; offset < size; offset += 16)
+                {
+                    Vector128<byte> data = memoryManager.Read<Vector128<byte>>(srcGpuVa + offset, true);
+                    memoryManager.Write(ConvertGobLinearToBlockLinearAddress(dstGpuVa + offset), data);
+                }
+            }
+            else
+            {
+                for (ulong offset = 0; offset < size; offset++)
+                {
+                    byte data = memoryManager.Read<byte>(srcGpuVa + offset, true);
+                    memoryManager.Write(ConvertGobLinearToBlockLinearAddress(dstGpuVa + offset), data);
+                }
+            }
+        }
+
+        private static ulong ConvertGobLinearToBlockLinearAddress(ulong address)
+        {
+            // y2 y1 y0 x5 x4 x3 x2 x1 x0 -> x5 y2 y1 x4 y0 x3 x2 x1 x0
+            return (address & ~0x1f0UL) |
+                ((address & 0x40) >> 2) |
+                ((address & 0x10) << 1) |
+                ((address & 0x180) >> 1) |
+                ((address & 0x20) << 3);
         }
 
         /// <summary>

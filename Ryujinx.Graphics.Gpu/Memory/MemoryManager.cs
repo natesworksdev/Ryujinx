@@ -264,7 +264,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="pa">CPU virtual address to map into</param>
         /// <param name="va">GPU virtual address to be mapped</param>
         /// <param name="size">Size in bytes of the mapping</param>
-        public void Map(ulong pa, ulong va, ulong size)
+        /// <param name="kind">Kind of the resource located at the mapping</param>
+        public void Map(ulong pa, ulong va, ulong size, PteKind kind)
         {
             lock (_pageTable)
             {
@@ -272,7 +273,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 for (ulong offset = 0; offset < size; offset += PageSize)
                 {
-                    SetPte(va + offset, pa + offset);
+                    SetPte(va + offset, PackPte(pa + offset, kind));
                 }
             }
         }
@@ -462,14 +463,31 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 return PteUnmapped;
             }
 
-            ulong baseAddress = GetPte(va);
+            ulong pte = GetPte(va);
 
-            if (baseAddress == PteUnmapped)
+            if (pte == PteUnmapped)
             {
                 return PteUnmapped;
             }
 
-            return baseAddress + (va & PageMask);
+            return UnpackVaFromPte(pte) + (va & PageMask);
+        }
+
+        public PteKind GetKind(ulong va)
+        {
+            if (!ValidateAddress(va))
+            {
+                return PteKind.Invalid;
+            }
+
+            ulong pte = GetPte(va);
+
+            if (pte == PteUnmapped)
+            {
+                return PteKind.Invalid;
+            }
+
+            return UnpackKindFromPte(pte);
         }
 
         /// <summary>
@@ -511,6 +529,21 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
 
             _pageTable[l0][l1] = pte;
+        }
+
+        private static ulong PackPte(ulong va, PteKind kind)
+        {
+            return va | ((ulong)kind << 48);
+        }
+
+        private static PteKind UnpackKindFromPte(ulong pte)
+        {
+            return (PteKind)(pte >> 48);
+        }
+
+        private static ulong UnpackVaFromPte(ulong pte)
+        {
+            return pte & 0xffffffffffffUL;
         }
     }
 }
