@@ -511,5 +511,7 @@
   "UpdaterDisabledWarningTitle": "Updater Disabled!",
   "GameListContextMenuOpenSdModsDirectory": "Open Atmosphere Mods Directory",
   "GameListContextMenuOpenSdModsDirectoryToolTip": "Opens the alternative SD card atmosphere directory which contains Application's Mods",
-  "ControllerSettingsRotate90": "Rotate 90° Clockwise"
+  "ControllerSettingsRotate90": "Rotate 90° Clockwise",
+  "IconSize": "Icon Size",
+  "IconSizeTooltip": "Change the size of game icon"
 }

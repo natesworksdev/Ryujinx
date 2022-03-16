@@ -47,6 +47,21 @@
     <Style Selector="Border.large">
         <Setter Property="Width" Value="160" />
     </Style>
+    <Style Selector="Border.huge">
+        <Setter Property="Width" Value="200" />
+    </Style>
+    <Style Selector="Image.small">
+        <Setter Property="Width" Value="50" />
+    </Style>
+    <Style Selector="Image.normal">
+        <Setter Property="Width" Value="80" />
+    </Style>
+    <Style Selector="Image.large">
+        <Setter Property="Width" Value="100" />
+    </Style>
+    <Style Selector="Image.huge">
+        <Setter Property="Width" Value="120" />
+    </Style>
     <Style Selector="RadioButton">
         <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
@@ -57,22 +72,19 @@
         <Setter Property="Margin" Value="5"/>
         <Setter Property="FontSize" Value="14"/>
     </Style>
-    <Style Selector="Border.huge">
-        <Setter Property="Width" Value="200" />
-    </Style>
-    <Style Selector="Image.small">
+    <Style Selector="Image.small.icon">
         <Setter Property="Width" Value="12" />
         <Setter Property="Height" Value="12" />
     </Style>
-    <Style Selector="Image.normal">
+    <Style Selector="Image.normal.icon">
         <Setter Property="Width" Value="15" />
         <Setter Property="Height" Value="15" />
     </Style>
-    <Style Selector="Image.large">
+    <Style Selector="Image.large.icon">
         <Setter Property="Width" Value="19" />
         <Setter Property="Height" Value="19" />
     </Style>
-    <Style Selector="Image.huge">
+    <Style Selector="Image.huge.icon">
         <Setter Property="Width" Value="26" />
         <Setter Property="Height" Value="26" />
     </Style>

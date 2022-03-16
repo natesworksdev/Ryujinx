@@ -79,7 +79,7 @@ namespace Ryujinx.Ava.Ui.Windows
         public MenuItem          UpdateMenuItem    { get; private set; }
         public MenuItem          ActionsMenuItem   { get; private set; }
         public GameGridView      GameGrid          { get; private set; }
-        public DataGrid          GameList          { get; private set; }
+        public GameListView      GameList          { get; private set; }
         public OffscreenTextBox  HiddenTextBox     { get; private set; }
         public HotKeyControl     FullscreenHotKey  { get; private set; }
         public HotKeyControl     FullscreenHotKey2 { get; private set; }
@@ -177,7 +177,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
         public void UpdateGridColumns()
         {
-            GameList.Columns[0].IsVisible = ViewModel.ShowIconColumn;
+            /*GameList.Columns[0].IsVisible = ViewModel.ShowIconColumn;
             GameList.Columns[1].IsVisible = ViewModel.ShowTitleColumn;
             GameList.Columns[2].IsVisible = ViewModel.ShowDeveloperColumn;
             GameList.Columns[3].IsVisible = ViewModel.ShowVersionColumn;
@@ -185,7 +185,7 @@ namespace Ryujinx.Ava.Ui.Windows
             GameList.Columns[5].IsVisible = ViewModel.ShowLastPlayedColumn;
             GameList.Columns[6].IsVisible = ViewModel.ShowFileExtColumn;
             GameList.Columns[7].IsVisible = ViewModel.ShowFileSizeColumn;
-            GameList.Columns[8].IsVisible = ViewModel.ShowFilePathColumn;
+            GameList.Columns[8].IsVisible = ViewModel.ShowFilePathColumn;*/
         }
 
         protected override void OnOpened(EventArgs e)
@@ -499,7 +499,7 @@ namespace Ryujinx.Ava.Ui.Windows
             AvaloniaXamlLoader.Load(this);
 
             ContentFrame      = this.FindControl<ContentControl>("Content");
-            GameList          = this.FindControl<DataGrid>("GameList");
+            GameList          = this.FindControl<GameListView>("GameList");
             LoadStatus        = this.FindControl<TextBlock>("LoadStatus");
             FirmwareStatus    = this.FindControl<TextBlock>("FirmwareStatus");
             LoadProgressBar   = this.FindControl<ProgressBar>("LoadProgressBar");
@@ -520,6 +520,10 @@ namespace Ryujinx.Ava.Ui.Windows
             GameGrid.ApplicationOpened += Application_Opened;
 
             GameGrid.DataContext = ViewModel;
+
+            GameList.ApplicationOpened += Application_Opened;
+
+            GameList.DataContext = ViewModel;
 
             LoadHotKeys();
         }
@@ -561,7 +565,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
         private void MenuBase_OnMenuOpened(object sender, EventArgs e)
         {
-            object selection = GameList.SelectedItem;
+            /*object selection = GameList.SelectedItem;
 
             if (selection != null && selection is ApplicationData data)
             {
@@ -575,12 +579,12 @@ namespace Ryujinx.Ava.Ui.Windows
                     ((menu.Items as AvaloniaList<object>)[3] as MenuItem).IsEnabled = canHaveDeviceSave;
                     ((menu.Items as AvaloniaList<object>)[4] as MenuItem).IsEnabled = canHaveBcatSave;
                 }
-            }
+            }*/
         }
 
         private void GameList_OnPointerPressed(object sender, PointerPressedEventArgs e)
         {
-            PointerPoint currentPoint = e.GetCurrentPoint(GameList);
+            /*PointerPoint currentPoint = e.GetCurrentPoint(GameList);
 
             if (currentPoint.Properties.IsRightButtonPressed)
             {
@@ -589,12 +593,12 @@ namespace Ryujinx.Ava.Ui.Windows
                 {
                     GameList.SelectedIndex = row.GetIndex();
                 }
-            }
+            }*/
         }
 
         private void GameList_OnDoubleTapped(object sender, RoutedEventArgs e)
         {
-            object selection = GameList.SelectedItem;
+            /*object selection = GameList.SelectedItem;
 
             if (selection != null && selection is ApplicationData data)
             {
@@ -603,7 +607,7 @@ namespace Ryujinx.Ava.Ui.Windows
                 string path = new FileInfo(data.Path).FullName;
 
                 LoadApplication(path);
-            }
+            }*/
         }
 
         private void PrepareLoadScreen()
@@ -627,7 +631,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
         private void GameList_OnTapped(object sender, RoutedEventArgs e)
         {
-            GameList.SelectedIndex = -1;
+            //GameList.SelectedIndex = -1;
         }
 
         private void SearchBox_OnKeyUp(object sender, KeyEventArgs e)

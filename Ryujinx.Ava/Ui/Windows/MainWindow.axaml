@@ -252,17 +252,18 @@
                                          Glyph="{controls:GlyphValueConverter Grid}"
                                          HorizontalAlignment="Stretch" />
                         </Button>
-                        <TextBlock IsVisible="{Binding IsGrid}" Text="{locale:Locale GridSize}"
+                        <TextBlock Text="{locale:Locale IconSize}"
                                    VerticalAlignment="Center" Margin="10,0"
-                                   ToolTip.Tip="{locale:Locale GridSizeTooltip}" />
-                        <Slider IsVisible="{Binding IsGrid}" Width="150" Margin="5,-10,5 ,0" Height="40"
+                                   ToolTip.Tip="{locale:Locale IconSizeTooltip}" />
+                        <Slider Width="150" Margin="5,-10,5 ,0" Height="40"
+                                ToolTip.Tip="{locale:Locale IconSizeTooltip}" 
                                 VerticalAlignment="Center" Minimum="1" Maximum="4" IsSnapToTickEnabled="True"
                                 TickFrequency="1" Value="{Binding GridSizeScale}" />
-                        <CheckBox IsChecked="{Binding ShowNames, Mode=TwoWay}" VerticalAlignment="Center"
+                        <CheckBox Margin="0" IsChecked="{Binding ShowNames, Mode=TwoWay}" VerticalAlignment="Center"
                                   IsVisible="{Binding IsGrid}">
                             <TextBlock Text="{locale:Locale CommonShowNames}" Margin="5,3,0,0" />
                         </CheckBox>
-                        <ui:DropDownButton IsVisible="{Binding IsList}"
+                        <!--<ui:DropDownButton IsVisible="{Binding IsList}"
                                            Content="{locale:Locale MenuBarOptionsEnableGuiColumns}"
                                            ToolTip.Tip="{locale:Locale EnableGuiColumnTooltip}">
                             <ui:DropDownButton.Flyout>
@@ -307,7 +308,7 @@
                                     </StackPanel>
                                 </Flyout>
                             </ui:DropDownButton.Flyout>
-                        </ui:DropDownButton>
+                        </ui:DropDownButton>-->
                         <TextBox
                             Name="SearchBox"
                             DockPanel.Dock="Right"
@@ -318,7 +319,7 @@
                             KeyUp="SearchBox_OnKeyUp"
                             Text="{Binding SearchText}"
                             Watermark="{locale:Locale MenuSearch}" />
-                        <ui:DropDownButton DockPanel.Dock="Right" IsVisible="{Binding IsGrid}"
+                        <ui:DropDownButton DockPanel.Dock="Right"
                                            HorizontalAlignment="Right" Width="150" VerticalAlignment="Center"
                                            Content="{Binding SortName}">
                             <ui:DropDownButton.Flyout>
@@ -373,10 +374,10 @@
                                 </Flyout>
                             </ui:DropDownButton.Flyout>
                         </ui:DropDownButton>
-                        <TextBlock DockPanel.Dock="Right" HorizontalAlignment="Right" IsVisible="{Binding IsGrid}"
+                        <TextBlock DockPanel.Dock="Right" HorizontalAlignment="Right"
                                    Text="{locale:Locale CommonSort}" VerticalAlignment="Center" Margin="10,0" />
                     </DockPanel>
-                    <DataGrid
+                    <!--<DataGrid
                         Grid.Row="1"
                         Name="GameList"
                         AlternatingRowBackground="{DynamicResource ThemeAlternatingRowColor}"
@@ -539,7 +540,15 @@
                                 </DataGridTextColumn.Header>
                             </DataGridTextColumn>
                         </DataGrid.Columns>
-                    </DataGrid>
+                    </DataGrid>-->
+                    <controls:GameListView
+                        x:Name="GameList"
+                        Grid.Row="1"
+                        HorizontalContentAlignment="Stretch"
+                        HorizontalAlignment="Stretch"
+                        VerticalContentAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        IsVisible="{Binding IsList}" />
                     <controls:GameGridView
                         x:Name="GameGrid"
                         Grid.Row="1"

@@ -178,6 +178,10 @@
         <Compile Update="Ui\Windows\ContentDialogOverlay.xaml.cs">
             <DependentUpon>ContentDialogOverlay.xaml</DependentUpon>
         </Compile>
+        <Compile Update="Ui\Controls\GameListView.axaml.cs">
+          <DependentUpon>GameListView.axaml</DependentUpon>
+          <SubType>Code</SubType>
+        </Compile>
     </ItemGroup>
     <ItemGroup>
         <None Update="THIRDPARTY.md">

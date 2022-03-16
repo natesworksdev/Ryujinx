@@ -6,7 +6,7 @@
              xmlns:locale="clr-namespace:Ryujinx.Ava.Common.Locale"
              xmlns:controls="clr-namespace:Ryujinx.Ava.Ui.Controls"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="Ryujinx.Ava.Ui.Controls.GameGridView">
+             x:Class="Ryujinx.Ava.Ui.Controls.GameListView">
     <UserControl.Resources>
         <controls:BitmapArrayValueConverter x:Key="ByteImage" />
         <MenuFlyout x:Key="GameContextMenu" Opened="MenuBase_OnMenuOpened">
@@ -94,31 +94,32 @@
                  SelectionChanged="GameList_SelectionChanged"
                  ContextFlyout="{StaticResource GameContextMenu}"
                  VerticalAlignment="Stretch"
+                 Name="GameListBox"
                  Items="{Binding AppsObservableList}">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <flex:FlexPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch" JustifyContent="Center"
-                                    AlignContent="FlexStart" />
+                    <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Orientation="Vertical" Spacing="2" />
                 </ItemsPanelTemplate>
             </ListBox.ItemsPanel>
             <ListBox.Styles>
                 <Style Selector="ListBoxItem">
                     <Setter Property="Padding" Value="0" />
-                    <Setter Property="Margin" Value="5" />
+                    <Setter Property="Margin" Value="0" />
                     <Setter Property="CornerRadius" Value="5" />
-                    <Setter Property="Background" Value="{DynamicResource SystemAccentColorDark3}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorDark3}" />
+                    <Setter Property="BorderThickness" Value="2" />
                     <Style.Animations>
                         <Animation Duration="0:0:0.7">
                             <KeyFrame Cue="0%">
-                                <Setter Property="MaxWidth" Value="0"/>
+                                <Setter Property="MaxHeight" Value="0"/>
                                 <Setter Property="Opacity" Value="0.0"/>
                             </KeyFrame>
                             <KeyFrame Cue="50%">
-                                <Setter Property="MaxWidth" Value="1000"/>
+                                <Setter Property="MaxHeight" Value="1000"/>
                                 <Setter Property="Opacity" Value="0.3"/>
                             </KeyFrame>
                             <KeyFrame Cue="100%">
-                                <Setter Property="MaxWidth" Value="1000"/>
+                                <Setter Property="MaxHeight" Value="1000"/>
                                 <Setter Property="Opacity" Value="1.0"/>
                             </KeyFrame>
                         </Animation>
@@ -128,36 +129,45 @@
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <Grid>
-                        <Border
-                            Classes.small="{Binding $parent[UserControl].DataContext.IsGridSmall}"
-                            Classes.normal="{Binding $parent[UserControl].DataContext.IsGridNormal}"
-                            Classes.large="{Binding $parent[UserControl].DataContext.IsGridLarge}"
-                            Classes.huge="{Binding $parent[UserControl].DataContext.IsGridHuge}"
-                            HorizontalAlignment="Stretch"
-                            Padding="{Binding $parent[UserControl].DataContext.GridItemPadding}" CornerRadius="5"
-                            VerticalAlignment="Stretch" Margin="0" ClipToBounds="True">
-                            <Grid Margin="0">
+                        <Border HorizontalAlignment="Stretch"
+                                Padding="10" CornerRadius="5"
+                                VerticalAlignment="Stretch" Margin="0" ClipToBounds="True">
+                            <Grid >
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition/>
+                                    <RowDefinition/>
+                                    <RowDefinition/>
                                 </Grid.RowDefinitions>
-                                <Image HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="0" Grid.Row="0"
+                                <Image 
+                                    Classes.small="{Binding $parent[UserControl].DataContext.IsGridSmall}"
+                                    Classes.normal="{Binding $parent[UserControl].DataContext.IsGridNormal}"
+                                    Classes.large="{Binding $parent[UserControl].DataContext.IsGridLarge}"
+                                    Classes.huge="{Binding $parent[UserControl].DataContext.IsGridHuge}"
+                                    Grid.RowSpan="3" Grid.Column="0" Margin="0" Grid.Row="0"
                                        Source="{Binding Icon, Converter={StaticResource ByteImage}}" />
-                                <StackPanel IsVisible="{Binding $parent[UserControl].DataContext.ShowNames}"
-                                            Height="50" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                            Margin="5" Grid.Row="1">
-                                    <TextBlock Text="{Binding TitleName}" TextAlignment="Center" TextWrapping="Wrap"
-                                               HorizontalAlignment="Stretch" />
-                                </StackPanel>
+                                <TextBlock Grid.Column="2" Grid.Row="0" Text="{Binding TitleName}" TextAlignment="Left" TextWrapping="Wrap"
+                                           HorizontalAlignment="Stretch" />
+                                <TextBlock Grid.Column="2" Grid.Row="1" Text="{Binding Developer}" TextAlignment="Left" TextWrapping="Wrap"
+                                           HorizontalAlignment="Stretch" />
+                                <TextBlock Grid.Column="2" Grid.Row="2" Text="{Binding Version}" TextAlignment="Left" TextWrapping="Wrap"
+                                           HorizontalAlignment="Stretch" />
+                                <TextBlock Grid.Column="3" Grid.Row="0" Text="{Binding TimePlayed}" TextAlignment="Right" TextWrapping="Wrap"
+                                           HorizontalAlignment="Stretch" />
+                                <TextBlock Grid.Column="3" Grid.Row="1" Text="{Binding LastPlayed}" TextAlignment="Right" TextWrapping="Wrap"
+                                           HorizontalAlignment="Stretch" />
+                                <TextBlock Grid.Column="3" Grid.Row="2" Text="{Binding FileSize}" TextAlignment="Right" TextWrapping="Wrap"
+                                           HorizontalAlignment="Stretch" />
+                                <Image Grid.Row="0" Grid.Column="0" Height="20" Width="20"  Source="resm:Ryujinx.Ava.Assets.Images.star.png"
+                                       IsVisible="{Binding Favorite}" Margin="-5, -5, 0, 0" VerticalAlignment="Top"
+                                       HorizontalAlignment="Left" />
                             </Grid>
                         </Border>
-                        <Image Classes.icon="true" Classes.small="{Binding $parent[UserControl].DataContext.IsGridSmall}"
-                               Classes.normal="{Binding $parent[UserControl].DataContext.IsGridNormal}"
-                               Classes.large="{Binding $parent[UserControl].DataContext.IsGridLarge}"
-                               Classes.huge="{Binding $parent[UserControl].DataContext.IsGridHuge}"
-                               Source="resm:Ryujinx.Ava.Assets.Images.star.png"
-                               IsVisible="{Binding Favorite}" Margin="5" VerticalAlignment="Bottom"
-                               HorizontalAlignment="Right" />
                     </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>

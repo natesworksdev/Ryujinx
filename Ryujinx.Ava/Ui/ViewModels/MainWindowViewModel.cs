@@ -43,7 +43,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
     {
         private readonly MainWindow _owner;
         private ObservableCollection<ApplicationData> _applications;
-        private DataGridCollectionView _appsCollection;
+        //private DataGridCollectionView _appsCollection;
         private string _aspectStatusText;
 
         private string _loadHeading;
@@ -90,12 +90,12 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 .Filter(Filter)
                 .Sort(GetComparer())
                 .Bind(out _appsObservableList).AsObservableList();
-            AppsCollection = new DataGridCollectionView(Applications)
+            /*AppsCollection = new DataGridCollectionView(Applications)
             {
                 Filter = Filter
             };
 
-            AppsCollection.SortDescriptions.Add(DataGridSortDescription.FromPath("Favorite", System.ComponentModel.ListSortDirection.Descending));
+            AppsCollection.SortDescriptions.Add(DataGridSortDescription.FromPath("Favorite", System.ComponentModel.ListSortDirection.Descending));*/
 
             ApplicationLibrary.ApplicationCountUpdated += ApplicationLibrary_ApplicationCountUpdated;
             ApplicationLibrary.ApplicationAdded += ApplicationLibrary_ApplicationAdded;
@@ -124,7 +124,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             }
         }
 
-        public DataGridCollectionView AppsCollection
+        /*public DataGridCollectionView AppsCollection
         {
             get => _appsCollection;
             set
@@ -133,7 +133,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
                 OnPropertyChanged();
             }
-        }
+        }*/
 
         public ReadOnlyObservableCollection<ApplicationData> AppsObservableList
         {
@@ -255,7 +255,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 switch (Glyph)
                 {
                     case Glyph.List:
-                        return _owner.GameList.SelectedItem as ApplicationData;
+                        return _owner.GameList.SelectedApplication;
                         break;
                     case Glyph.Grid:
                         return _owner.GameGrid.SelectedApplication;
@@ -566,7 +566,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         private void RefreshView()
         {
-            AppsCollection.Refresh();
+            //AppsCollection.Refresh();
 
             RefreshGrid();
         }
@@ -923,7 +923,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public void AddApplication(ApplicationData applicationData)
         {
-            Dispatcher.UIThread.Post(() =>
+            Dispatcher.UIThread.InvokeAsync(() =>
             {
                 Applications.Add(applicationData);
             });
