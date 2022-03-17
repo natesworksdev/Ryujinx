@@ -90,12 +90,6 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 .Filter(Filter)
                 .Sort(GetComparer())
                 .Bind(out _appsObservableList).AsObservableList();
-            /*AppsCollection = new DataGridCollectionView(Applications)
-            {
-                Filter = Filter
-            };
-
-            AppsCollection.SortDescriptions.Add(DataGridSortDescription.FromPath("Favorite", System.ComponentModel.ListSortDirection.Descending));*/
 
             ApplicationLibrary.ApplicationCountUpdated += ApplicationLibrary_ApplicationCountUpdated;
             ApplicationLibrary.ApplicationAdded += ApplicationLibrary_ApplicationAdded;
@@ -124,53 +118,12 @@ namespace Ryujinx.Ava.Ui.ViewModels
             }
         }
 
-        /*public DataGridCollectionView AppsCollection
-        {
-            get => _appsCollection;
-            set
-            {
-                _appsCollection = value;
-
-                OnPropertyChanged();
-            }
-        }*/
-
         public ReadOnlyObservableCollection<ApplicationData> AppsObservableList
         {
             get => _appsObservableList;
             set
             {
                 _appsObservableList = value;
-
-                OnPropertyChanged();
-            }
-        }
-
-        public bool ShowFavoriteColumn
-        {
-            get => ConfigurationState.Instance.Ui.GuiColumns.FavColumn;
-            set
-            {
-                ConfigurationState.Instance.Ui.GuiColumns.FavColumn.Value = value;
-
-                ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
-
-                _owner.UpdateGridColumns();
-
-                OnPropertyChanged();
-            }
-        }
-
-        public bool ShowIconColumn
-        {
-            get => ConfigurationState.Instance.Ui.GuiColumns.IconColumn;
-            set
-            {
-                ConfigurationState.Instance.Ui.GuiColumns.IconColumn.Value = value;
-
-                ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
-
-                _owner.UpdateGridColumns();
 
                 OnPropertyChanged();
             }
@@ -512,21 +465,6 @@ namespace Ryujinx.Ava.Ui.ViewModels
         public bool IsGrid => Glyph == Glyph.Grid;
         public bool IsList => Glyph == Glyph.List;
 
-        public bool ShowTitleColumn
-        {
-            get => ConfigurationState.Instance.Ui.GuiColumns.AppColumn;
-            set
-            {
-                ConfigurationState.Instance.Ui.GuiColumns.AppColumn.Value = value;
-
-                ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
-
-                _owner.UpdateGridColumns();
-
-                OnPropertyChanged();
-            }
-        }
-
         internal void Sort(bool isAscending)
         {
             IsAscending = isAscending;
@@ -566,8 +504,6 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         private void RefreshView()
         {
-            //AppsCollection.Refresh();
-
             RefreshGrid();
         }
 
@@ -579,111 +515,6 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 .Bind(out _appsObservableList).AsObservableList();
 
             OnPropertyChanged(nameof(AppsObservableList));
-        }
-
-        public bool ShowDeveloperColumn
-        {
-            get => ConfigurationState.Instance.Ui.GuiColumns.DevColumn;
-            set
-            {
-                ConfigurationState.Instance.Ui.GuiColumns.DevColumn.Value = value;
-
-                ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
-
-                _owner.UpdateGridColumns();
-
-                OnPropertyChanged();
-            }
-        }
-
-        public bool ShowVersionColumn
-        {
-            get => ConfigurationState.Instance.Ui.GuiColumns.VersionColumn;
-            set
-            {
-                ConfigurationState.Instance.Ui.GuiColumns.VersionColumn.Value = value;
-
-                ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
-
-                _owner.UpdateGridColumns();
-
-                OnPropertyChanged();
-            }
-        }
-
-        public bool ShowTimePlayedColumn
-        {
-            get => ConfigurationState.Instance.Ui.GuiColumns.TimePlayedColumn;
-            set
-            {
-                ConfigurationState.Instance.Ui.GuiColumns.TimePlayedColumn.Value = value;
-
-                ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
-
-                _owner.UpdateGridColumns();
-
-                OnPropertyChanged();
-            }
-        }
-
-        public bool ShowLastPlayedColumn
-        {
-            get => ConfigurationState.Instance.Ui.GuiColumns.LastPlayedColumn;
-            set
-            {
-                ConfigurationState.Instance.Ui.GuiColumns.LastPlayedColumn.Value = value;
-
-                ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
-
-                _owner.UpdateGridColumns();
-
-                OnPropertyChanged();
-            }
-        }
-
-        public bool ShowFileExtColumn
-        {
-            get => ConfigurationState.Instance.Ui.GuiColumns.FileExtColumn;
-            set
-            {
-                ConfigurationState.Instance.Ui.GuiColumns.FileExtColumn.Value = value;
-
-                ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
-
-                _owner.UpdateGridColumns();
-
-                OnPropertyChanged();
-            }
-        }
-
-        public bool ShowFileSizeColumn
-        {
-            get => ConfigurationState.Instance.Ui.GuiColumns.FileSizeColumn;
-            set
-            {
-                ConfigurationState.Instance.Ui.GuiColumns.FileSizeColumn.Value = value;
-
-                ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
-
-                _owner.UpdateGridColumns();
-
-                OnPropertyChanged();
-            }
-        }
-
-        public bool ShowFilePathColumn
-        {
-            get => ConfigurationState.Instance.Ui.GuiColumns.PathColumn;
-            set
-            {
-                ConfigurationState.Instance.Ui.GuiColumns.PathColumn.Value = value;
-
-                ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
-
-                _owner.UpdateGridColumns();
-
-                OnPropertyChanged();
-            }
         }
 
         public bool StartGamesInFullscreen

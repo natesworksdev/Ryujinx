@@ -174,25 +174,7 @@ namespace Ryujinx.Ava.Ui.Windows
                 });
             }
         }
-
-        public void UpdateGridColumns()
-        {
-            /*GameList.Columns[0].IsVisible = ViewModel.ShowIconColumn;
-            GameList.Columns[1].IsVisible = ViewModel.ShowTitleColumn;
-            GameList.Columns[2].IsVisible = ViewModel.ShowDeveloperColumn;
-            GameList.Columns[3].IsVisible = ViewModel.ShowVersionColumn;
-            GameList.Columns[4].IsVisible = ViewModel.ShowTimePlayedColumn;
-            GameList.Columns[5].IsVisible = ViewModel.ShowLastPlayedColumn;
-            GameList.Columns[6].IsVisible = ViewModel.ShowFileExtColumn;
-            GameList.Columns[7].IsVisible = ViewModel.ShowFileSizeColumn;
-            GameList.Columns[8].IsVisible = ViewModel.ShowFilePathColumn;*/
-        }
-
-        protected override void OnOpened(EventArgs e)
-        {
-            base.OnOpened(e);
-        }
-
+        
         public void Application_Opened(object sender, ApplicationOpenedEventArgs args)
         {
             if (args.Application != null)
@@ -415,8 +397,6 @@ namespace Ryujinx.Ava.Ui.Windows
 
         private void Initialize()
         {
-            UpdateGridColumns();
-
             _userChannelPersistence = new UserChannelPersistence();
             VirtualFileSystem       = VirtualFileSystem.CreateInstance();
             LibHacHorizonManager    = new LibHacHorizonManager();
@@ -561,53 +541,6 @@ namespace Ryujinx.Ava.Ui.Windows
 
                 appMetadata.TimePlayed += Math.Round(sessionTimePlayed, MidpointRounding.AwayFromZero);
             });
-        }
-
-        private void MenuBase_OnMenuOpened(object sender, EventArgs e)
-        {
-            /*object selection = GameList.SelectedItem;
-
-            if (selection != null && selection is ApplicationData data)
-            {
-                if (sender is ContextMenu menu)
-                {
-                    bool canHaveUserSave   = !Utilities.IsZeros(data.ControlHolder.ByteSpan) && data.ControlHolder.Value.UserAccountSaveDataSize > 0;
-                    bool canHaveDeviceSave = !Utilities.IsZeros(data.ControlHolder.ByteSpan) && data.ControlHolder.Value.DeviceSaveDataSize > 0;
-                    bool canHaveBcatSave   = !Utilities.IsZeros(data.ControlHolder.ByteSpan) && data.ControlHolder.Value.BcatDeliveryCacheStorageSize > 0;
-
-                    ((menu.Items as AvaloniaList<object>)[2] as MenuItem).IsEnabled = canHaveUserSave;
-                    ((menu.Items as AvaloniaList<object>)[3] as MenuItem).IsEnabled = canHaveDeviceSave;
-                    ((menu.Items as AvaloniaList<object>)[4] as MenuItem).IsEnabled = canHaveBcatSave;
-                }
-            }*/
-        }
-
-        private void GameList_OnPointerPressed(object sender, PointerPressedEventArgs e)
-        {
-            /*PointerPoint currentPoint = e.GetCurrentPoint(GameList);
-
-            if (currentPoint.Properties.IsRightButtonPressed)
-            {
-                DataGridRow row = ((IControl)e.Source).GetSelfAndVisualAncestors().OfType<DataGridRow>().FirstOrDefault();
-                if (row != null)
-                {
-                    GameList.SelectedIndex = row.GetIndex();
-                }
-            }*/
-        }
-
-        private void GameList_OnDoubleTapped(object sender, RoutedEventArgs e)
-        {
-            /*object selection = GameList.SelectedItem;
-
-            if (selection != null && selection is ApplicationData data)
-            {
-                ViewModel.SelectedIcon = data.Icon;
-
-                string path = new FileInfo(data.Path).FullName;
-
-                LoadApplication(path);
-            }*/
         }
 
         private void PrepareLoadScreen()
