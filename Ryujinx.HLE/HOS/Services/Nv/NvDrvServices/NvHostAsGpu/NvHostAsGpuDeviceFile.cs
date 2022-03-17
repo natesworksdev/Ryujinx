@@ -367,8 +367,8 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
             for (int index = 0; index < arguments.Length; index++)
             {
                 ref RemapArguments argument = ref arguments[index];
-                ulong gpuVa = argument.GpuOffset << 16;
-                ulong size = argument.Pages << 16;
+                ulong gpuVa = (ulong)argument.GpuOffset << 16;
+                ulong size = (ulong)argument.Pages << 16;
                 int nvmapHandle = argument.NvMapHandle;
 
                 if (nvmapHandle == 0)
@@ -377,7 +377,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                 }
                 else
                 {
-                    ulong mapOffs = argument.MapOffset << 16;
+                    ulong mapOffs = (ulong)argument.MapOffset << 16;
                     PteKind kind = (PteKind)argument.Kind;
 
                     NvMapHandle map = NvMapDeviceFile.GetMapFromHandle(Owner, nvmapHandle);
