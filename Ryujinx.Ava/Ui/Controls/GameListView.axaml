@@ -141,28 +141,32 @@
                                 </Grid.ColumnDefinitions>
                                 <Grid.RowDefinitions>
                                     <RowDefinition/>
-                                    <RowDefinition/>
-                                    <RowDefinition/>
                                 </Grid.RowDefinitions>
                                 <Image 
                                     Classes.small="{Binding $parent[UserControl].DataContext.IsGridSmall}"
                                     Classes.normal="{Binding $parent[UserControl].DataContext.IsGridNormal}"
                                     Classes.large="{Binding $parent[UserControl].DataContext.IsGridLarge}"
                                     Classes.huge="{Binding $parent[UserControl].DataContext.IsGridHuge}"
-                                    Grid.RowSpan="3" Grid.Column="0" Margin="0" Grid.Row="0"
+                                    Grid.RowSpan="3" Grid.Column="0" Margin="0"
                                        Source="{Binding Icon, Converter={StaticResource ByteImage}}" />
-                                <TextBlock Grid.Column="2" Grid.Row="0" Text="{Binding TitleName}" TextAlignment="Left" TextWrapping="Wrap"
+								<StackPanel Orientation="Vertical" Spacing="5"  VerticalAlignment="Top" HorizontalAlignment="Left"
+											Grid.Column="2">
+									<TextBlock Text="{Binding TitleName}" TextAlignment="Left" TextWrapping="Wrap"
                                            HorizontalAlignment="Stretch" />
-                                <TextBlock Grid.Column="2" Grid.Row="1" Text="{Binding Developer}" TextAlignment="Left" TextWrapping="Wrap"
-                                           HorizontalAlignment="Stretch" />
-                                <TextBlock Grid.Column="2" Grid.Row="2" Text="{Binding Version}" TextAlignment="Left" TextWrapping="Wrap"
-                                           HorizontalAlignment="Stretch" />
-                                <TextBlock Grid.Column="3" Grid.Row="0" Text="{Binding TimePlayed}" TextAlignment="Right" TextWrapping="Wrap"
-                                           HorizontalAlignment="Stretch" />
-                                <TextBlock Grid.Column="3" Grid.Row="1" Text="{Binding LastPlayed}" TextAlignment="Right" TextWrapping="Wrap"
-                                           HorizontalAlignment="Stretch" />
-                                <TextBlock Grid.Column="3" Grid.Row="2" Text="{Binding FileSize}" TextAlignment="Right" TextWrapping="Wrap"
-                                           HorizontalAlignment="Stretch" />
+									<TextBlock Text="{Binding Developer}" TextAlignment="Left" TextWrapping="Wrap"
+											   HorizontalAlignment="Stretch" />
+									<TextBlock Text="{Binding Version}" TextAlignment="Left" TextWrapping="Wrap"
+											   HorizontalAlignment="Stretch" />
+								</StackPanel>
+								<StackPanel Orientation="Vertical" Spacing="5"  VerticalAlignment="Top" HorizontalAlignment="Right"
+											Grid.Column="3">
+									<TextBlock Text="{Binding TimePlayed}" TextAlignment="Right" TextWrapping="Wrap"
+										  HorizontalAlignment="Stretch" />
+									<TextBlock Text="{Binding LastPlayed}" TextAlignment="Right" TextWrapping="Wrap"
+											   HorizontalAlignment="Stretch" />
+									<TextBlock Text="{Binding FileSize}" TextAlignment="Right" TextWrapping="Wrap"
+											   HorizontalAlignment="Stretch" />
+								</StackPanel>
                                 <Image Grid.Row="0" Grid.Column="0" Height="20" Width="20"  Source="resm:Ryujinx.Ava.Assets.Images.star.png"
                                        IsVisible="{Binding Favorite}" Margin="-5, -5, 0, 0" VerticalAlignment="Top"
                                        HorizontalAlignment="Left" />
