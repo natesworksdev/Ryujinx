@@ -34,10 +34,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
         public static Operand GetFromTruthTable(EmitterContext context, Operand srcA, Operand srcB, Operand srcC, int imm)
         {
-            Operand notSrcA = context.BitwiseNot(srcA);
-            Operand notSrcB = context.BitwiseNot(srcB);
-            Operand notSrcC = context.BitwiseNot(srcC);
-
             for (int i = 0; i < 0x40; i++)
             {
                 TruthTable currImm = (TruthTable)imm;
@@ -66,19 +62,19 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
                 if ((i & 0x08) != 0)
                 {
-                    x = notSrcA;
+                    x = context.BitwiseNot(x);
                     currImm = PermuteTable(currImm, 3, 2, 1, 0, 7, 6, 5, 4);
                 }
 
                 if ((i & 0x10) != 0)
                 {
-                    y = notSrcB;
+                    y = context.BitwiseNot(y);
                     currImm = PermuteTable(currImm, 5, 4, 7, 6, 1, 0, 3, 2);
                 }
 
                 if ((i & 0x20) != 0)
                 {
-                    z = notSrcC;
+                    z = context.BitwiseNot(z);
                     currImm = PermuteTable(currImm, 6, 7, 4, 5, 2, 3, 0, 1);
                 }
 
