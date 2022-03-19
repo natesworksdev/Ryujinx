@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Ryujinx.Common.Cache
+namespace Ryujinx.Graphics.Gpu.Shader.HashTable
 {
     public interface IDataAccessor
     {

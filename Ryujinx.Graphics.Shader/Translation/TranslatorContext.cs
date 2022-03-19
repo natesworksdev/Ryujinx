@@ -18,8 +18,6 @@ namespace Ryujinx.Graphics.Shader.Translation
         public int Size => _config.Size;
         public int Cb1DataSize => _config.Cb1DataSize;
 
-        public HashSet<int> TextureHandlesForCache => _config.TextureHandlesForCache;
-
         public IGpuAccessor GpuAccessor => _config.GpuAccessor;
 
         internal TranslatorContext(ulong address, DecodedProgram program, ShaderConfig config)

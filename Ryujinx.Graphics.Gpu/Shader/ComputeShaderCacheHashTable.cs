@@ -1,4 +1,4 @@
-using Ryujinx.Common.Cache;
+using Ryujinx.Graphics.Gpu.Shader.HashTable;
 
 namespace Ryujinx.Graphics.Gpu.Shader
 {

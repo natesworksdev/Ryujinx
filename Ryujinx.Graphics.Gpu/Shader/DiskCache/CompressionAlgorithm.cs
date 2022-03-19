@@ -1,4 +1,4 @@
-namespace Ryujinx.Graphics.Gpu.Shader
+namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
 {
     /// <summary>
     /// Algorithm used to compress the cache.

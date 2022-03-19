@@ -126,20 +126,6 @@ namespace Ryujinx.Graphics.Shader.Translation
                     {
                         maxEndAddress = block.EndAddress;
                     }
-
-                    if (!config.UsedFeatures.HasFlag(FeatureFlags.Bindless))
-                    {
-                        for (int index = 0; index < block.OpCodes.Count; index++)
-                        {
-                            InstOp op = block.OpCodes[index];
-
-                            if (op.Props.HasFlag(InstProps.Tex))
-                            {
-                                int tidB = (int)((op.RawOpCode >> 36) & 0x1fff);
-                                config.TextureHandlesForCache.Add(tidB);
-                            }
-                        }
-                    }
                 }
             }
 

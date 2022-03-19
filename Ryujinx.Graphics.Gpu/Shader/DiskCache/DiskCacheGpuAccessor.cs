@@ -4,7 +4,7 @@ using Ryujinx.Graphics.Shader;
 using System;
 using System.Runtime.InteropServices;
 
-namespace Ryujinx.Graphics.Gpu.Shader
+namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
 {
     /// <summary>
     /// Represents a GPU state and memory accessor.

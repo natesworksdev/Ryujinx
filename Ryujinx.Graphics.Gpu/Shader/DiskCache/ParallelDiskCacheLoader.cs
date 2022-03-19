@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Threading;
 using static Ryujinx.Graphics.Gpu.Shader.ShaderCache;
 
-namespace Ryujinx.Graphics.Gpu.Shader
+namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
 {
     class ParallelDiskCacheLoader
     {

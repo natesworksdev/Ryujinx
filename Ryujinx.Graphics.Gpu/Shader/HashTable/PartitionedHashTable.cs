@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Ryujinx.Common.Cache
+namespace Ryujinx.Graphics.Gpu.Shader.HashTable
 {
     public class PartitionedHashTable<T>
     {

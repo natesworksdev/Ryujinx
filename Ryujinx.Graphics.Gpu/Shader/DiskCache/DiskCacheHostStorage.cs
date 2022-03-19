@@ -5,7 +5,7 @@ using System.IO;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
-namespace Ryujinx.Graphics.Gpu.Shader
+namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
 {
     /// <summary>
     /// On-disk shader cache storage for host code.
@@ -140,8 +140,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
             using var guestTocFileStream = _guestStorage.OpenTocFileStream();
             using var guestDataFileStream = _guestStorage.OpenDataFileStream();
 
-            BinarySerialization tocReader = new BinarySerialization(tocFileStream);
-            BinarySerialization dataReader = new BinarySerialization(dataFileStream);
+            BinarySerializer tocReader = new BinarySerializer(tocFileStream);
+            BinarySerializer dataReader = new BinarySerializer(dataFileStream);
 
             TocHeader header = new TocHeader();
 
@@ -257,7 +257,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             tocFileStream.Seek(offset, SeekOrigin.Begin);
 
-            BinarySerialization tocReader = new BinarySerialization(tocFileStream);
+            BinarySerializer tocReader = new BinarySerializer(tocFileStream);
 
             OffsetAndSize offsetAndSize = new OffsetAndSize();
             tocReader.TryRead(ref offsetAndSize);
@@ -266,7 +266,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             byte[] hostCode = new byte[offsetAndSize.Size];
 
-            BinarySerialization.ReadCompressed(dataFileStream, hostCode);
+            BinarySerializer.ReadCompressed(dataFileStream, hostCode);
 
             return hostCode;
         }
@@ -298,8 +298,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
             tocFileStream.Seek(0, SeekOrigin.End);
             dataFileStream.Seek(0, SeekOrigin.End);
 
-            BinarySerialization tocWriter = new BinarySerialization(tocFileStream);
-            BinarySerialization dataWriter = new BinarySerialization(dataFileStream);
+            BinarySerializer tocWriter = new BinarySerializer(tocFileStream);
+            BinarySerializer dataWriter = new BinarySerializer(dataFileStream);
 
             ulong dataOffset = (ulong)dataFileStream.Position;
             tocWriter.Write(ref dataOffset);
@@ -375,19 +375,19 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             dataFileStream.Seek(0, SeekOrigin.End);
 
-            BinarySerialization tocWriter = new BinarySerialization(tocFileStream);
+            BinarySerializer tocWriter = new BinarySerializer(tocFileStream);
 
             OffsetAndSize offsetAndSize = new OffsetAndSize();
             offsetAndSize.Offset = (ulong)dataFileStream.Position;
             offsetAndSize.Size = (uint)hostCode.Length;
             tocWriter.Write(ref offsetAndSize);
 
-            BinarySerialization.WriteCompressed(dataFileStream, hostCode, DiskCacheCommon.GetCompressionAlgorithm());
+            BinarySerializer.WriteCompressed(dataFileStream, hostCode, DiskCacheCommon.GetCompressionAlgorithm());
         }
 
         private void CreateToc(Stream tocFileStream, ref TocHeader header, uint magic, uint codegenVersion)
         {
-            BinarySerialization writer = new BinarySerialization(tocFileStream);
+            BinarySerializer writer = new BinarySerializer(tocFileStream);
 
             header.Magic = magic;
             header.FormatVersion = FileFormatVersionPacked;
@@ -405,7 +405,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             writer.Write(ref header);
         }
 
-        private static ShaderProgramInfo ReadShaderProgramInfo(ref BinarySerialization dataReader)
+        private static ShaderProgramInfo ReadShaderProgramInfo(ref BinarySerializer dataReader)
         {
             DataShaderInfo dataInfo = new DataShaderInfo();
 
@@ -448,7 +448,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 dataInfo.FragmentOutputMap);
         }
 
-        private static void WriteShaderProgramInfo(ref BinarySerialization dataWriter, ShaderProgramInfo info)
+        private static void WriteShaderProgramInfo(ref BinarySerializer dataWriter, ShaderProgramInfo info)
         {
             if (info == null)
             {

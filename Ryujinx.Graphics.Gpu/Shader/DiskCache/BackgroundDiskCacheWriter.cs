@@ -1,7 +1,7 @@
 using Ryujinx.Common;
 using System;
 
-namespace Ryujinx.Graphics.Gpu.Shader
+namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
 {
     /// <summary>
     /// Represent a cache collection handling one shader cache.

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 
-namespace Ryujinx.Graphics.Gpu.Shader
+namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
 {
     /// <summary>
     /// On-disk shader cache storage for guest code.
@@ -97,7 +97,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             if (guestCode == null || cb1Data == null)
             {
-                BinarySerialization tocReader = new BinarySerialization(tocFileStream);
+                BinarySerializer tocReader = new BinarySerializer(tocFileStream);
                 tocFileStream.Seek(Unsafe.SizeOf<TocHeader>() + index * Unsafe.SizeOf<TocEntry>(), SeekOrigin.Begin);
 
                 TocEntry entry = new TocEntry();
@@ -108,7 +108,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
                 dataFileStream.Seek((long)entry.Offset, SeekOrigin.Begin);
                 dataFileStream.Read(cb1Data);
-                BinarySerialization.ReadCompressed(dataFileStream, guestCode);
+                BinarySerializer.ReadCompressed(dataFileStream, guestCode);
 
                 _cache[index] = (guestCode, cb1Data);
             }
@@ -150,7 +150,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                     byte[] cachedCode = new byte[entry.CodeSize];
                     byte[] cachedCb1Data = new byte[entry.Cb1DataSize];
                     dataFileStream.Read(cachedCb1Data);
-                    BinarySerialization.ReadCompressed(dataFileStream, cachedCode);
+                    BinarySerializer.ReadCompressed(dataFileStream, cachedCode);
 
                     if (data.SequenceEqual(cachedCode) && cb1Data.SequenceEqual(cachedCb1Data))
                     {
@@ -164,7 +164,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
         private void LoadOrCreateToc(Stream tocFileStream, ref TocHeader header)
         {
-            BinarySerialization reader = new BinarySerialization(tocFileStream);
+            BinarySerializer reader = new BinarySerializer(tocFileStream);
 
             if (!reader.TryRead(ref header) || header.Magic != TocMagic || header.Version != VersionPacked)
             {
@@ -184,7 +184,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
         private void CreateToc(Stream tocFileStream, ref TocHeader header)
         {
-            BinarySerialization writer = new BinarySerialization(tocFileStream);
+            BinarySerializer writer = new BinarySerializer(tocFileStream);
 
             header.Magic = TocMagic;
             header.Version = VersionPacked;
@@ -202,7 +202,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             writer.Write(ref header);
         }
 
-        private bool LoadTocEntries(Stream tocFileStream, ref BinarySerialization reader)
+        private bool LoadTocEntries(Stream tocFileStream, ref BinarySerializer reader)
         {
             _toc = new Dictionary<uint, List<TocMemoryEntry>>();
 
@@ -230,14 +230,14 @@ namespace Ryujinx.Graphics.Gpu.Shader
             ReadOnlySpan<byte> cb1Data,
             uint hash)
         {
-            BinarySerialization tocWriter = new BinarySerialization(tocFileStream);
+            BinarySerializer tocWriter = new BinarySerializer(tocFileStream);
 
             dataFileStream.Seek(0, SeekOrigin.End);
             uint dataOffset = checked((uint)dataFileStream.Position);
             uint codeSize = (uint)data.Length;
             uint cb1DataSize = (uint)cb1Data.Length;
             dataFileStream.Write(cb1Data);
-            BinarySerialization.WriteCompressed(dataFileStream, data, DiskCacheCommon.GetCompressionAlgorithm());
+            BinarySerializer.WriteCompressed(dataFileStream, data, DiskCacheCommon.GetCompressionAlgorithm());
 
             _tocModificationsCount = ++header.ModificationsCount;
             tocFileStream.Seek(0, SeekOrigin.Begin);

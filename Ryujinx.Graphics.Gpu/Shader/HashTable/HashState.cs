@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace Ryujinx.Common.Cache
+namespace Ryujinx.Graphics.Gpu.Shader.HashTable
 {
     struct HashState
     {

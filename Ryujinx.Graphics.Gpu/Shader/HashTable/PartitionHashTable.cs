@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
-namespace Ryujinx.Common.Cache
+namespace Ryujinx.Graphics.Gpu.Shader.HashTable
 {
     class PartitionHashTable<T>
     {

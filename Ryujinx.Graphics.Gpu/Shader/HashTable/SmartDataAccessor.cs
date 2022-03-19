@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Ryujinx.Common.Cache
+namespace Ryujinx.Graphics.Gpu.Shader.HashTable
 {
     ref struct SmartDataAccessor
     {

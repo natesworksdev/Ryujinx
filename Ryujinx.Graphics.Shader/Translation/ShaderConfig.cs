@@ -41,8 +41,6 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public FeatureFlags UsedFeatures { get; private set; }
 
-        public HashSet<int> TextureHandlesForCache { get; }
-
         public int Cb1DataSize { get; private set; }
 
         public bool NextUsesFixedFuncAttributes { get; private set; }
@@ -117,12 +115,11 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public ShaderConfig(IGpuAccessor gpuAccessor, TranslationOptions options)
         {
-            Stage                  = ShaderStage.Compute;
-            GpuAccessor            = gpuAccessor;
-            Options                = options;
-            TextureHandlesForCache = new HashSet<int>();
-            _usedTextures          = new Dictionary<TextureInfo, TextureMeta>();
-            _usedImages            = new Dictionary<TextureInfo, TextureMeta>();
+            Stage         = ShaderStage.Compute;
+            GpuAccessor   = gpuAccessor;
+            Options       = options;
+            _usedTextures = new Dictionary<TextureInfo, TextureMeta>();
+            _usedImages   = new Dictionary<TextureInfo, TextureMeta>();
         }
 
         public ShaderConfig(ShaderHeader header, IGpuAccessor gpuAccessor, TranslationOptions options) : this(gpuAccessor, options)
@@ -208,8 +205,6 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             ClipDistancesWritten |= other.ClipDistancesWritten;
             UsedFeatures |= other.UsedFeatures;
-
-            TextureHandlesForCache.UnionWith(other.TextureHandlesForCache);
 
             UsedInputAttributes |= other.UsedInputAttributes;
             UsedOutputAttributes |= other.UsedOutputAttributes;

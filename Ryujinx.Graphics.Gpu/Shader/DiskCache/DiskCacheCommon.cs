@@ -1,6 +1,6 @@
 using System.IO;
 
-namespace Ryujinx.Graphics.Gpu.Shader
+namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
 {
     static class DiskCacheCommon
     {

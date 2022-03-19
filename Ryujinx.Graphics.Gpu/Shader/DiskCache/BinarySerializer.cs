@@ -4,14 +4,14 @@ using System.IO.Compression;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace Ryujinx.Graphics.Gpu.Shader
+namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
 {
-    struct BinarySerialization
+    struct BinarySerializer
     {
         private readonly Stream _stream;
         private Stream _activeStream;
 
-        public BinarySerialization(Stream stream)
+        public BinarySerializer(Stream stream)
         {
             _stream = stream;
             _activeStream = stream;

@@ -1,3 +1,4 @@
+using Ryujinx.Graphics.Gpu.Shader.DiskCache;
 using System;
 using System.Collections.Generic;
 
@@ -252,7 +253,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             return true;
         }
 
-        public static ShaderSpecializationState Read(ref BinarySerialization dataReader)
+        public static ShaderSpecializationState Read(ref BinarySerializer dataReader)
         {
             ShaderSpecializationState specState = new ShaderSpecializationState();
 
@@ -302,7 +303,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             return specState;
         }
 
-        public void Write(ref BinarySerialization dataWriter)
+        public void Write(ref BinarySerializer dataWriter)
         {
             dataWriter.Write(ref _queriedState);
             dataWriter.Write(ref _compute);
