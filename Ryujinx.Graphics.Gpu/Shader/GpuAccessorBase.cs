@@ -5,10 +5,17 @@ using Ryujinx.Graphics.Shader;
 
 namespace Ryujinx.Graphics.Gpu.Shader
 {
+    /// <summary>
+    /// GPU accessor.
+    /// </summary>
     class GpuAccessorBase
     {
         private readonly GpuContext _context;
 
+        /// <summary>
+        /// Creates a new GPU accessor.
+        /// </summary>
+        /// <param name="context">GPU context</param>
         public GpuAccessorBase(GpuContext context)
         {
             _context = context;
@@ -74,6 +81,12 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <returns>True if the GPU and driver supports texture shadow LOD, false otherwise</returns>
         public bool QueryHostSupportsTextureShadowLod() => _context.Capabilities.SupportsTextureShadowLod;
 
+        /// <summary>
+        /// Converts a packed Maxwell texture format to the shader translator texture format.
+        /// </summary>
+        /// <param name="format">Packed maxwell format</param>
+        /// <param name="formatSrgb">Indicates if the format is sRGB</param>
+        /// <returns>Shader translator texture format</returns>
         protected static TextureFormat ConvertToTextureFormat(uint format, bool formatSrgb)
         {
             if (!FormatTable.TryGetTextureFormat(format, formatSrgb, out FormatInfo formatInfo))
@@ -127,6 +140,12 @@ namespace Ryujinx.Graphics.Gpu.Shader
             };
         }
 
+        /// <summary>
+        /// Converts the Maxwell primitive topology to the shader translator topology.
+        /// </summary>
+        /// <param name="topology">Maxwell primitive topology</param>
+        /// <param name="tessellationMode">Maxwell tessellation mode</param>
+        /// <returns>Shader translator topology</returns>
         protected static InputTopology ConvertToInputTopology(PrimitiveTopology topology, TessMode tessellationMode)
         {
             return topology switch

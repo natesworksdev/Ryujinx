@@ -22,31 +22,100 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
 
         private readonly string _basePath;
 
+        /// <summary>
+        /// TOC (Table of contents) file header.
+        /// </summary>
         private struct TocHeader
         {
+            /// <summary>
+            /// Magic value, for validation and identification purposes.
+            /// </summary>
             public uint Magic;
+
+            /// <summary>
+            /// File format version.
+            /// </summary>
             public uint Version;
+
+            /// <summary>
+            /// Header padding.
+            /// </summary>
             public uint Padding;
+
+            /// <summary>
+            /// Number of modifications to the file, also the shaders count.
+            /// </summary>
             public uint ModificationsCount;
+
+            /// <summary>
+            /// Reserved space, to be used in the future. Write as zero.
+            /// </summary>
             public ulong Reserved;
+
+            /// <summary>
+            /// Reserved space, to be used in the future. Write as zero.
+            /// </summary>
             public ulong Reversed2;
         }
 
+        /// <summary>
+        /// TOC (Table of contents) file entry.
+        /// </summary>
         private struct TocEntry
         {
+            /// <summary>
+            /// Offset of the data on the data file.
+            /// </summary>
             public uint Offset;
+
+            /// <summary>
+            /// Code size.
+            /// </summary>
             public uint CodeSize;
+
+            /// <summary>
+            /// Constant buffer 1 data size.
+            /// </summary>
             public uint Cb1DataSize;
+
+            /// <summary>
+            /// Hash of the code and constant buffer data.
+            /// </summary>
             public uint Hash;
         }
 
+        /// <summary>
+        /// TOC (Table of contents) memory cache entry.
+        /// </summary>
         private struct TocMemoryEntry
         {
-            public readonly uint Offset;
-            public readonly uint CodeSize;
-            public readonly uint Cb1DataSize;
+            /// <summary>
+            /// Offset of the data on the data file.
+            /// </summary>
+            public uint Offset;
+
+            /// <summary>
+            /// Code size.
+            /// </summary>
+            public uint CodeSize;
+
+            /// <summary>
+            /// Constant buffer 1 data size.
+            /// </summary>
+            public uint Cb1DataSize;
+
+            /// <summary>
+            /// Index of the shader on the cache.
+            /// </summary>
             public readonly int Index;
 
+            /// <summary>
+            /// Creates a new TOC memory entry.
+            /// </summary>
+            /// <param name="offset">Offset of the data on the data file</param>
+            /// <param name="codeSize">Code size</param>
+            /// <param name="cb1DataSize">Constant buffer 1 data size</param>
+            /// <param name="index">Index of the shader on the cache</param>
             public TocMemoryEntry(uint offset, uint codeSize, uint cb1DataSize, int index)
             {
                 Offset = offset;
@@ -61,31 +130,58 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
 
         private (byte[], byte[])[] _cache;
 
+        /// <summary>
+        /// Creates a new disk cache guest storage.
+        /// </summary>
+        /// <param name="basePath">Base path of the disk shader cache</param>
         public DiskCacheGuestStorage(string basePath)
         {
             _basePath = basePath;
         }
 
+        /// <summary>
+        /// Checks if the TOC (table of contents) file for the guest cache exists.
+        /// </summary>
+        /// <returns>True if the file exists, false otherwise</returns>
         public bool TocFileExists()
         {
             return File.Exists(Path.Combine(_basePath, TocFileName));
         }
 
+        /// <summary>
+        /// Checks if the data file for the guest cache exists.
+        /// </summary>
+        /// <returns>True if the file exists, false otherwise</returns>
         public bool DataFileExists()
         {
             return File.Exists(Path.Combine(_basePath, DataFileName));
         }
 
+        /// <summary>
+        /// Opens the guest cache TOC (table of contents) file.
+        /// </summary>
+        /// <returns>File stream</returns>
         public Stream OpenTocFileStream()
         {
             return DiskCacheCommon.OpenFile(_basePath, TocFileName, writable: false);
         }
 
+        /// <summary>
+        /// Opens the guest cache data file.
+        /// </summary>
+        /// <returns>File stream</returns>
         public Stream OpenDataFileStream()
         {
             return DiskCacheCommon.OpenFile(_basePath, DataFileName, writable: false);
         }
 
+        /// <summary>
+        /// Loads the guest cache from file or memory cache.
+        /// </summary>
+        /// <param name="tocFileStream">Guest TOC file stream</param>
+        /// <param name="dataFileStream">Guest data file stream</param>
+        /// <param name="index">Guest shader index</param>
+        /// <returns>Tuple with the guest code and constant buffer 1 data, respectively</returns>
         public (byte[], byte[]) LoadShader(Stream tocFileStream, Stream dataFileStream, int index)
         {
             if (_cache == null || index >= _cache.Length)
@@ -116,16 +212,33 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             return (guestCode, cb1Data);
         }
 
+        /// <summary>
+        /// Clears guest code memory cache, forcing future loads to be from file.
+        /// </summary>
         public void ClearMemoryCache()
         {
             _cache = null;
         }
 
+        /// <summary>
+        /// Calculates the guest shaders count from the TOC file length.
+        /// </summary>
+        /// <param name="length">TOC file length</param>
+        /// <returns>Shaders count</returns>
         private static int GetShadersCountFromLength(long length)
         {
             return (int)((length - Unsafe.SizeOf<TocHeader>()) / Unsafe.SizeOf<TocEntry>());
         }
 
+        /// <summary>
+        /// Adds a guest shader to the cache.
+        /// </summary>
+        /// <remarks>
+        /// If the shader is already on the cache, the existing index will be returned and nothing will be written.
+        /// </remarks>
+        /// <param name="data">Guest code</param>
+        /// <param name="cb1Data">Constant buffer 1 data accessed by the code</param>
+        /// <returns>Index of the shader on the cache</returns>
         public int AddShader(ReadOnlySpan<byte> data, ReadOnlySpan<byte> cb1Data)
         {
             using var tocFileStream = DiskCacheCommon.OpenFile(_basePath, TocFileName, writable: true);
@@ -162,6 +275,11 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             return WriteNewEntry(tocFileStream, dataFileStream, ref header, data, cb1Data, hash);
         }
 
+        /// <summary>
+        /// Loads the guest cache TOC file, or create a new one if not present.
+        /// </summary>
+        /// <param name="tocFileStream">Guest TOC file stream</param>
+        /// <param name="header">Set to the TOC file header</param>
         private void LoadOrCreateToc(Stream tocFileStream, ref TocHeader header)
         {
             BinarySerializer reader = new BinarySerializer(tocFileStream);
@@ -182,6 +300,11 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             }
         }
 
+        /// <summary>
+        /// Creates a new guest cache TOC file.
+        /// </summary>
+        /// <param name="tocFileStream">Guest TOC file stream</param>
+        /// <param name="header">Set to the TOC header</param>
         private void CreateToc(Stream tocFileStream, ref TocHeader header)
         {
             BinarySerializer writer = new BinarySerializer(tocFileStream);
@@ -202,6 +325,12 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             writer.Write(ref header);
         }
 
+        /// <summary>
+        /// Reads all the entries on the guest TOC file.
+        /// </summary>
+        /// <param name="tocFileStream">Guest TOC file stream</param>
+        /// <param name="reader">TOC file reader</param>
+        /// <returns>True if the operation was successful, false otherwise</returns>
         private bool LoadTocEntries(Stream tocFileStream, ref BinarySerializer reader)
         {
             _toc = new Dictionary<uint, List<TocMemoryEntry>>();
@@ -222,6 +351,16 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             return true;
         }
 
+        /// <summary>
+        /// Writes a new guest code entry into the file.
+        /// </summary>
+        /// <param name="tocFileStream">TOC file stream</param>
+        /// <param name="dataFileStream">Data file stream</param>
+        /// <param name="header">TOC header, to be updated with the new count</param>
+        /// <param name="data">Guest code</param>
+        /// <param name="cb1Data">Constant buffer 1 data accessed by the guest code</param>
+        /// <param name="hash">Code and constant buffer data hash</param>
+        /// <returns>Entry index</returns>
         private int WriteNewEntry(
             Stream tocFileStream,
             Stream dataFileStream,
@@ -261,6 +400,14 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             return index;
         }
 
+        /// <summary>
+        /// Adds an entry to the memory TOC cache. This can be used to avoid reading the TOC file all the time.
+        /// </summary>
+        /// <param name="dataOffset">Offset of the code and constant buffer data in the data file</param>
+        /// <param name="codeSize">Code size</param>
+        /// <param name="cb1DataSize">Constant buffer 1 data size</param>
+        /// <param name="hash">Code and constant buffer data hash</param>
+        /// <param name="index">Index of the data on the cache</param>
         private void AddTocMemoryEntry(uint dataOffset, uint codeSize, uint cb1DataSize, uint hash, int index)
         {
             if (!_toc.TryGetValue(hash, out var list))
@@ -271,11 +418,22 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             list.Add(new TocMemoryEntry(dataOffset, codeSize, cb1DataSize, index));
         }
 
+        /// <summary>
+        /// Calculates the hash for a data pair.
+        /// </summary>
+        /// <param name="data">Data 1</param>
+        /// <param name="data2">Data 2</param>
+        /// <returns>Hash of both data</returns>
         private static uint CalcHash(ReadOnlySpan<byte> data, ReadOnlySpan<byte> data2)
         {
             return CalcHash(data2) * 23 ^ CalcHash(data);
         }
 
+        /// <summary>
+        /// Calculates the hash for data.
+        /// </summary>
+        /// <param name="data">Data to be hashed</param>
+        /// <returns>Hash of the data</returns>
         private static uint CalcHash(ReadOnlySpan<byte> data)
         {
             return (uint)XXHash128.ComputeHash(data).Low;

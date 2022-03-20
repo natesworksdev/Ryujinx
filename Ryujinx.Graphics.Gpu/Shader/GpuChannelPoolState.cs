@@ -21,7 +21,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         public readonly int TextureBufferIndex;
 
         /// <summary>
-        /// Creates a new instance of the GPU accessor state.
+        /// Creates a new GPU texture pool state.
         /// </summary>
         /// <param name="texturePoolGpuVa">GPU virtual address of the texture pool</param>
         /// <param name="texturePoolMaximumId">Maximum ID of the texture pool</param>

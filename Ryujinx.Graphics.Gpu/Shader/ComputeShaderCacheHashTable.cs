@@ -2,21 +2,40 @@ using Ryujinx.Graphics.Gpu.Shader.HashTable;
 
 namespace Ryujinx.Graphics.Gpu.Shader
 {
+    /// <summary>
+    /// Compute shader cache hash table.
+    /// </summary>
     class ComputeShaderCacheHashTable
     {
         private readonly PartitionedHashTable<ShaderSpecializationList> _cache;
 
+        /// <summary>
+        /// Creates a new compute shader cache hash table.
+        /// </summary>
         public ComputeShaderCacheHashTable()
         {
             _cache = new PartitionedHashTable<ShaderSpecializationList>();
         }
 
+        /// <summary>
+        /// Adds a program to the cache.
+        /// </summary>
+        /// <param name="program">Program to be added</param>
         public void Add(CachedShaderProgram program)
         {
             var specList = _cache.GetOrAdd(program.Shaders[0].Code, new ShaderSpecializationList());
             specList.Add(program);
         }
 
+        /// <summary>
+        /// Tries to find a cached program.
+        /// </summary>
+        /// <param name="channel">GPU channel</param>
+        /// <param name="poolState">Texture pool state</param>
+        /// <param name="gpuVa">GPU virtual address of the compute shader</param>
+        /// <param name="program">Cached host program for the given state, if found</param>
+        /// <param name="cachedGuestCode">Cached guest code, if any found</param>
+        /// <returns>True if a cached host program was found, false otherwise</returns>
         public bool TryFind(
             GpuChannel channel,
             GpuChannelPoolState poolState,

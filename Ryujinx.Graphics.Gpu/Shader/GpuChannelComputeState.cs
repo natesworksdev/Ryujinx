@@ -1,6 +1,3 @@
-using Ryujinx.Graphics.GAL;
-using Ryujinx.Graphics.Gpu.Engine.Threed;
-
 namespace Ryujinx.Graphics.Gpu.Shader
 {
     /// <summary>
@@ -8,12 +5,39 @@ namespace Ryujinx.Graphics.Gpu.Shader
     /// </summary>
     struct GpuChannelComputeState
     {
+        /// <summary>
+        /// Local group size X of the computer shader.
+        /// </summary>
         public readonly int LocalSizeX;
+
+        /// <summary>
+        /// Local group size Y of the computer shader.
+        /// </summary>
         public readonly int LocalSizeY;
+
+        /// <summary>
+        /// Local group size Z of the computer shader.
+        /// </summary>
         public readonly int LocalSizeZ;
+
+        /// <summary>
+        /// Local memory size of the compute shader.
+        /// </summary>
         public readonly int LocalMemorySize;
+
+        /// <summary>
+        /// Shared memory size of the compute shader.
+        /// </summary>
         public readonly int SharedMemorySize;
 
+        /// <summary>
+        /// Creates a new GPU compute state.
+        /// </summary>
+        /// <param name="localSizeX">Local group size X of the computer shader</param>
+        /// <param name="localSizeY">Local group size Y of the computer shader</param>
+        /// <param name="localSizeZ">Local group size Z of the computer shader</param>
+        /// <param name="localMemorySize">Local memory size of the compute shader</param>
+        /// <param name="sharedMemorySize">Shared memory size of the compute shader</param>
         public GpuChannelComputeState(
             int localSizeX,
             int localSizeY,

@@ -5,17 +5,58 @@ using System.Numerics;
 
 namespace Ryujinx.Graphics.Gpu.Shader.HashTable
 {
+    /// <summary>
+    /// Partitioned hash table.
+    /// </summary>
+    /// <typeparam name="T">Hash table entry type</typeparam>
     class PartitionHashTable<T>
     {
+        /// <summary>
+        /// Hash table entry.
+        /// </summary>
         private struct Entry
         {
+            /// <summary>
+            /// Hash <see cref="OwnSize"/> bytes of <see cref="Data"/>.
+            /// </summary>
             public readonly uint Hash;
+
+            /// <summary>
+            /// If this entry is only a sub-region of <see cref="Data"/>, this indicates the size in bytes
+            /// of that region. Otherwise, it should be zero.
+            /// </summary>
             public readonly int OwnSize;
+
+            /// <summary>
+            /// Data used to compute the hash for this entry.
+            /// </summary>
+            /// <remarks>
+            /// To avoid additional allocations, this might be a instance of the full entry data,
+            /// and only a sub-region of it might be actually used by this entry. Such sub-region
+            /// has its size indicated by <see cref="OwnSize"/> in this case.
+            /// </remarks>
             public readonly byte[] Data;
+
+            /// <summary>
+            /// Item associated with this entry.
+            /// </summary>
             public T Item;
 
+            /// <summary>
+            /// Indicates if the entry is partial, which means that this entry is only for a sub-region of the data.
+            /// </summary>
+            /// <remarks>
+            /// Partial entries have no items associated with them. They just indicates that the data might be present on
+            /// the table, and one must keep looking for the full entry on other tables of larger data size.
+            /// </remarks>
             public bool IsPartial => OwnSize != 0;
 
+            /// <summary>
+            /// Creates a new partial hash table entry.
+            /// </summary>
+            /// <param name="hash">Hash of the data</param>
+            /// <param name="ownerData">Full data</param>
+            /// <param name="ownSize">Size of the sub-region of data that belongs to this entry</param>
             public Entry(uint hash, byte[] ownerData, int ownSize)
             {
                 Hash = hash;
@@ -24,6 +65,12 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
                 Item = default;
             }
 
+            /// <summary>
+            /// Creates a new full hash table entry.
+            /// </summary>
+            /// <param name="hash">Hash of the data</param>
+            /// <param name="data">Data</param>
+            /// <param name="item">Item associated with this entry</param>
             public Entry(uint hash, byte[] data, T item)
             {
                 Hash = hash;
@@ -32,6 +79,10 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
                 Item = item;
             }
 
+            /// <summary>
+            /// Gets the data for this entry, either full or partial.
+            /// </summary>
+            /// <returns>Data sub-region</returns>
             public ReadOnlySpan<byte> GetData()
             {
                 if (OwnSize != 0)
@@ -43,22 +94,45 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
             }
         }
 
+        /// <summary>
+        /// Hash table bucked.
+        /// </summary>
         private struct Bucket
         {
+            /// <summary>
+            /// Inline entry, to avoid allocations for the common single entry case.
+            /// </summary>
             public Entry InlineEntry;
+
+            /// <summary>
+            /// List of additional entries for the not-so-common multiple entries case.
+            /// </summary>
             public List<Entry> MoreEntries;
         }
 
         private Bucket[] _buckets;
         private int _count;
 
+        /// <summary>
+        /// Total amount of entries on the hash table.
+        /// </summary>
         public int Count => _count;
 
+        /// <summary>
+        /// Creates a new instance of the partitioned hash table.
+        /// </summary>
         public PartitionHashTable()
         {
             _buckets = Array.Empty<Bucket>();
         }
 
+        /// <summary>
+        /// Gets an item on the table, or adds a new one if not present.
+        /// </summary>
+        /// <param name="data">Data</param>
+        /// <param name="dataHash">Hash of the data</param>
+        /// <param name="item">Item to be added if not found</param>
+        /// <returns>Existing item if found, or <paramref name="item"/> if not found</returns>
         public T GetOrAdd(byte[] data, uint dataHash, T item)
         {
             if (TryFindItem(dataHash, data, out T existingItem))
@@ -73,6 +147,13 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
             return item;
         }
 
+        /// <summary>
+        /// Adds an item to the hash table
+        /// </summary>
+        /// <param name="data">Data</param>
+        /// <param name="dataHash">Hash of the data</param>
+        /// <param name="item">Item to be added</param>
+        /// <returns>True if the item was added, false due to an item associated with the data already being on the table</returns>
         public bool Add(byte[] data, uint dataHash, T item)
         {
             if (TryFindItem(dataHash, data, out _))
@@ -87,6 +168,12 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
             return true;
         }
 
+        /// <summary>
+        /// Adds a partial entry to the hash table.
+        /// </summary>
+        /// <param name="ownerData">Full data</param>
+        /// <param name="ownSize">Size of the sub-region of <paramref name="ownerData"/> used by the partial entry</param>
+        /// <returns>True if added, false otherwise</returns>
         public bool AddPartial(byte[] ownerData, int ownSize)
         {
             ReadOnlySpan<byte> data = new ReadOnlySpan<byte>(ownerData).Slice(0, ownSize);
@@ -94,6 +181,13 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
             return AddPartial(ownerData, HashState.CalcHash(data), ownSize);
         }
 
+        /// <summary>
+        /// Adds a partial entry to the hash table.
+        /// </summary>
+        /// <param name="ownerData">Full data</param>
+        /// <param name="dataHash">Hash of the data sub-region</param>
+        /// <param name="ownSize">Size of the sub-region of <paramref name="ownerData"/> used by the partial entry</param>
+        /// <returns>True if added, false otherwise</returns>
         public bool AddPartial(byte[] ownerData, uint dataHash, int ownSize)
         {
             ReadOnlySpan<byte> data = new ReadOnlySpan<byte>(ownerData).Slice(0, ownSize);
@@ -110,6 +204,11 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
             return true;
         }
 
+        /// <summary>
+        /// Adds entry with a given hash to the table.
+        /// </summary>
+        /// <param name="dataHash">Hash of the entry</param>
+        /// <param name="entry">Entry</param>
         private void AddToBucket(uint dataHash, ref Entry entry)
         {
             int pow2Count = GetPow2Count(++_count);
@@ -123,6 +222,11 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
             AddToBucket(ref bucket, ref entry);
         }
 
+        /// <summary>
+        /// Adds an entry to a bucket.
+        /// </summary>
+        /// <param name="bucket">Bucket to add the entry into</param>
+        /// <param name="entry">Entry to be added</param>
         private void AddToBucket(ref Bucket bucket, ref Entry entry)
         {
             if (bucket.InlineEntry.Data == null)
@@ -135,6 +239,17 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
             }
         }
 
+        /// <summary>
+        /// Creates partial entries on a new hash table for all existing full entries.
+        /// </summary>
+        /// <remarks>
+        /// This should be called every time a new hash table is created, and there are hash
+        /// tables with data sizes that are higher than that of the new table.
+        /// This will then fill the new hash table with "partial" entries of full entries
+        /// on the hash tables with higher size.
+        /// </remarks>
+        /// <param name="newTable">New hash table</param>
+        /// <param name="newEntrySize">Size of the data on the new hash table</param>
         public void FillPartials(PartitionHashTable<T> newTable, int newEntrySize)
         {
             for (int i = 0; i < _buckets.Length; i++)
@@ -165,6 +280,13 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
             }
         }
 
+        /// <summary>
+        /// Tries to find an item on the table.
+        /// </summary>
+        /// <param name="dataHash">Hash of <paramref name="data"/></param>
+        /// <param name="data">Data to find</param>
+        /// <param name="item">Item associated with the data</param>
+        /// <returns>True if an item was found, false otherwise</returns>
         private bool TryFindItem(uint dataHash, ReadOnlySpan<byte> data, out T item)
         {
             if (_count == 0)
@@ -200,13 +322,35 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
             return false;
         }
 
+        /// <summary>
+        /// Indicates the result of a hash table lookup.
+        /// </summary>
         public enum SearchResult
         {
+            /// <summary>
+            /// No entry was found, the search must continue on hash tables of lower size.
+            /// </summary>
             NotFound,
+
+            /// <summary>
+            /// A partial entry was found, the search must continue on hash tables of higher size.
+            /// </summary>
             FoundPartial,
+
+            /// <summary>
+            /// A full entry was found, the search was concluded and the item can be retrieved.
+            /// </summary>
             FoundFull
         }
 
+        /// <summary>
+        /// Tries to find an item on the table.
+        /// </summary>
+        /// <param name="dataAccessor">Data accessor</param>
+        /// <param name="size">Size of the hash table data</param>
+        /// <param name="item">The item on the table, if found, otherwise unmodified</param>
+        /// <param name="data">The data on the table, if found, otherwise unmodified</param>
+        /// <returns>Table lookup result</returns>
         public SearchResult TryFindItem(ref SmartDataAccessor dataAccessor, int size, ref T item, ref byte[] data)
         {
             if (_count == 0)
@@ -249,6 +393,10 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
             return SearchResult.NotFound;
         }
 
+        /// <summary>
+        /// Rebuilds the table for a new count.
+        /// </summary>
+        /// <param name="newPow2Count">New power of two count of the table</param>
         private void Rebuild(int newPow2Count)
         {
             Bucket[] newBuckets = new Bucket[newPow2Count];
@@ -277,6 +425,11 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
             _buckets = newBuckets;
         }
 
+        /// <summary>
+        /// Gets the bucked for a given hash.
+        /// </summary>
+        /// <param name="hash">Data hash</param>
+        /// <returns>Bucket for the hash</returns>
         private ref Bucket GetBucketForHash(uint hash)
         {
             int index = (int)(hash & (_buckets.Length - 1));
@@ -284,8 +437,15 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
             return ref _buckets[index];
         }
 
+        /// <summary>
+        /// Gets a power of two count from a regular count.
+        /// </summary>
+        /// <param name="count">Count</param>
+        /// <returns>Power of two count</returns>
         private static int GetPow2Count(int count)
         {
+            // This returns the nearest power of two that is lower than count.
+            // That was done to optimize memory usage rather than performance.
             return 1 << BitOperations.Log2((uint)count);
         }
     }

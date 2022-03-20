@@ -30,53 +30,147 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
 
         public bool CacheEnabled => !string.IsNullOrEmpty(_basePath);
 
+        /// <summary>
+        /// TOC (Table of contents) file header.
+        /// </summary>
         private struct TocHeader
         {
+            /// <summary>
+            /// Magic value, for validation and identification.
+            /// </summary>
             public uint Magic;
+
+            /// <summary>
+            /// File format version.
+            /// </summary>
             public uint FormatVersion;
+
+            /// <summary>
+            /// Generated shader code version.
+            /// </summary>
             public uint CodeGenVersion;
+
+            /// <summary>
+            /// Header padding.
+            /// </summary>
             public uint Padding;
+
+            /// <summary>
+            /// Reserved space, to be used in the future. Write as zero.
+            /// </summary>
             public ulong Reserved;
+
+            /// <summary>
+            /// Reserved space, to be used in the future. Write as zero.
+            /// </summary>
             public ulong Reversed2;
         }
 
+        /// <summary>
+        /// Offset and size pair.
+        /// </summary>
         private struct OffsetAndSize
         {
+            /// <summary>
+            /// Offset.
+            /// </summary>
             public ulong Offset;
+
+            /// <summary>
+            /// Size.
+            /// </summary>
             public uint Size;
         }
 
+        /// <summary>
+        /// Per-stage data entry.
+        /// </summary>
         private struct DataEntryPerStage
         {
+            /// <summary>
+            /// Index of the guest code on the guest code cache TOC file.
+            /// </summary>
             public int GuestCodeIndex;
         }
 
+        /// <summary>
+        /// Per-program data entry.
+        /// </summary>
         private struct DataEntry
         {
+            /// <summary>
+            /// Bit mask where each bit set is a used shader stage. Should be zero for compute shaders.
+            /// </summary>
             public uint StagesBitMask;
         }
 
+        /// <summary>
+        /// Per-stage shader information, returned by the translator.
+        /// </summary>
         private struct DataShaderInfo
         {
+            /// <summary>
+            /// Total constant buffers used.
+            /// </summary>
             public ushort CBuffersCount;
+
+            /// <summary>
+            /// Total storage buffers used.
+            /// </summary>
             public ushort SBuffersCount;
+
+            /// <summary>
+            /// Total textures used.
+            /// </summary>
             public ushort TexturesCount;
+
+            /// <summary>
+            /// Total images used.
+            /// </summary>
             public ushort ImagesCount;
+
+            /// <summary>
+            /// Shader stage.
+            /// </summary>
             public ShaderStage Stage;
+
+            /// <summary>
+            /// Indicates if the shader accesses the Instance ID built-in variable.
+            /// </summary>
             public bool UsesInstanceId;
+
+            /// <summary>
+            /// Indicates if the shader modifies the Layer built-in variable.
+            /// </summary>
             public bool UsesRtLayer;
+
+            /// <summary>
+            /// Bit mask with the clip distances written on the vertex stage.
+            /// </summary>
             public byte ClipDistancesWritten;
+
+            /// <summary>
+            /// Bit mask of the render target components written by the fragment stage.
+            /// </summary>
             public int FragmentOutputMap;
         }
 
         private readonly DiskCacheGuestStorage _guestStorage;
 
+        /// <summary>
+        /// Creates a disk cache host storage.
+        /// </summary>
+        /// <param name="basePath">Base path of the shader cache</param>
         public DiskCacheHostStorage(string basePath)
         {
             _basePath = basePath;
             _guestStorage = new DiskCacheGuestStorage(basePath);
         }
 
+        /// <summary>
+        /// Gets the total of host programs on the cache.
+        /// </summary>
+        /// <returns>Host programs count</returns>
         public int GetProgramCount()
         {
             string tocFilePath = Path.Combine(_basePath, SharedTocFileName);
@@ -89,6 +183,11 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             return (int)((new FileInfo(tocFilePath).Length - Unsafe.SizeOf<TocHeader>()) / sizeof(ulong));
         }
 
+        /// <summary>
+        /// Guest the name of the host program cache file, with extension.
+        /// </summary>
+        /// <param name="context">GPU context</param>
+        /// <returns>Name of the file, without extension</returns>
         private static string GetHostFileName(GpuContext context)
         {
             string apiName = context.Capabilities.Api.ToString().ToLowerInvariant();
@@ -96,6 +195,11 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             return $"{apiName}_{vendorName}";
         }
 
+        /// <summary>
+        /// Removes invalid path characters and spaces from a file name.
+        /// </summary>
+        /// <param name="fileName">File name</param>
+        /// <returns>Filtered file name</returns>
         private static string RemoveInvalidCharacters(string fileName)
         {
             int indexOfSpace = fileName.IndexOf(' ');
@@ -107,21 +211,32 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             return string.Concat(fileName.Split(Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries));
         }
 
+        /// <summary>
+        /// Gets the name of the TOC host file.
+        /// </summary>
+        /// <param name="context">GPU context</param>
+        /// <returns>File name</returns>
         private static string GetHostTocFileName(GpuContext context)
         {
             return GetHostFileName(context) + ".toc";
         }
 
+        /// <summary>
+        /// Gets the name of the data host file.
+        /// </summary>
+        /// <param name="context">GPU context</param>
+        /// <returns>File name</returns>
         private static string GetHostDataFileName(GpuContext context)
         {
             return GetHostFileName(context) + ".data";
         }
 
-        public void LoadShaders(
-            GpuContext context,
-            ShaderCacheHashTable graphicsCache,
-            ComputeShaderCacheHashTable computeCache,
-            ParallelDiskCacheLoader loader)
+        /// <summary>
+        /// Loads all shaders from the cache.
+        /// </summary>
+        /// <param name="context">GPU context</param>
+        /// <param name="loader">Parallel disk cache loader</param>
+        public void LoadShaders(GpuContext context, ParallelDiskCacheLoader loader)
         {
             string tocFilePath = Path.Combine(_basePath, SharedTocFileName);
             string dataFilePath = Path.Combine(_basePath, SharedDataFileName);
@@ -233,6 +348,14 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             hostDataFileStream?.Dispose();
         }
 
+        /// <summary>
+        /// Reads the host code for a given shader, if existent.
+        /// </summary>
+        /// <param name="context">GPU context</param>
+        /// <param name="tocFileStream">Host TOC file stream, intialized if needed</param>
+        /// <param name="dataFileStream">Host data file stream, initialized if needed</param>
+        /// <param name="programIndex">Index of the program on the cache</param>
+        /// <returns>Host binary code, or null if not found</returns>
         private byte[] ReadHostCode(GpuContext context, ref Stream tocFileStream, ref Stream dataFileStream, int programIndex)
         {
             if (tocFileStream == null && dataFileStream == null)
@@ -271,6 +394,12 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             return hostCode;
         }
 
+        /// <summary>
+        /// Adds a shader to the cache.
+        /// </summary>
+        /// <param name="context">GPU context</param>
+        /// <param name="program">Cached program</param>
+        /// <param name="hostCode">Optional host binary code</param>
         public void AddShader(GpuContext context, CachedShaderProgram program, ReadOnlySpan<byte> hostCode)
         {
             uint stagesBitMask = 0;
@@ -339,6 +468,10 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             WriteHostCode(context, hostCode);
         }
 
+        /// <summary>
+        /// Deletes all content from the host caches.
+        /// </summary>
+        /// <param name="context">GPU context</param>
         public void ClearHostCache(GpuContext context)
         {
             using var tocFileStream = DiskCacheCommon.OpenFile(_basePath, GetHostTocFileName(context), writable: true);
@@ -348,11 +481,27 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             dataFileStream.SetLength(0);
         }
 
+        /// <summary>
+        /// Adds a host binary shader to the host cache.
+        /// </summary>
+        /// <remarks>
+        /// This only modifies the host cache. The shader must already exist in the other caches.
+        /// This method should only be used for rebuilding the host cache after a clear.
+        /// </remarks>
+        /// <param name="context">GPU context</param>
+        /// <param name="hostCode">Host binary code</param>
+        /// <param name="programIndex">Index of the program in the cache</param>
         public void AddHostShader(GpuContext context, ReadOnlySpan<byte> hostCode, int programIndex)
         {
             WriteHostCode(context, hostCode, programIndex);
         }
 
+        /// <summary>
+        /// Writes the host binary code on the host cache.
+        /// </summary>
+        /// <param name="context">GPU context</param>
+        /// <param name="hostCode">Host binary code</param>
+        /// <param name="programIndex">Index of the program in the cache</param>
         private void WriteHostCode(GpuContext context, ReadOnlySpan<byte> hostCode, int programIndex = -1)
         {
             using var tocFileStream = DiskCacheCommon.OpenFile(_basePath, GetHostTocFileName(context), writable: true);
@@ -385,6 +534,13 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             BinarySerializer.WriteCompressed(dataFileStream, hostCode, DiskCacheCommon.GetCompressionAlgorithm());
         }
 
+        /// <summary>
+        /// Creates a TOC file for the host or shared cache.
+        /// </summary>
+        /// <param name="tocFileStream">TOC file stream</param>
+        /// <param name="header">Set to the TOC file header</param>
+        /// <param name="magic">Magic value to be written</param>
+        /// <param name="codegenVersion">Shader codegen version, only valid for the host file</param>
         private void CreateToc(Stream tocFileStream, ref TocHeader header, uint magic, uint codegenVersion)
         {
             BinarySerializer writer = new BinarySerializer(tocFileStream);
@@ -405,6 +561,11 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             writer.Write(ref header);
         }
 
+        /// <summary>
+        /// Reads the shader program info from the cache.
+        /// </summary>
+        /// <param name="dataReader">Cache data reader</param>
+        /// <returns>Shader program info</returns>
         private static ShaderProgramInfo ReadShaderProgramInfo(ref BinarySerializer dataReader)
         {
             DataShaderInfo dataInfo = new DataShaderInfo();
@@ -448,6 +609,11 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 dataInfo.FragmentOutputMap);
         }
 
+        /// <summary>
+        /// Writes the shader program info into the cache.
+        /// </summary>
+        /// <param name="dataWriter">Cache data writer</param>
+        /// <param name="info">Program info</param>
         private static void WriteShaderProgramInfo(ref BinarySerializer dataWriter, ShaderProgramInfo info)
         {
             if (info == null)

@@ -24,7 +24,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         public readonly TessMode TessellationMode;
 
         /// <summary>
-        /// Creates a new instance of the GPU accessor state.
+        /// Creates a new GPU graphics state.
         /// </summary>
         /// <param name="earlyZForce">Early Z force enable</param>
         /// <param name="topology">Primitive topology</param>

@@ -14,6 +14,9 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// </summary>
         public IProgram HostProgram { get; }
 
+        /// <summary>
+        /// GPU state used to create this version of the shader.
+        /// </summary>
         public ShaderSpecializationState SpecializationState { get; }
 
         /// <summary>
@@ -25,6 +28,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// Creates a new instance of the shader bundle.
         /// </summary>
         /// <param name="hostProgram">Host program with all the shader stages</param>
+        /// <param name="specializationState">GPU state used to create this version of the shader</param>
         /// <param name="shaders">Shaders</param>
         public CachedShaderProgram(IProgram hostProgram, ShaderSpecializationState specializationState, params CachedShaderStage[] shaders)
         {

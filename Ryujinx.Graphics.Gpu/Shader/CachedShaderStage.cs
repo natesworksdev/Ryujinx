@@ -17,6 +17,9 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// </summary>
         public byte[] Code { get; }
 
+        /// <summary>
+        /// Constant buffer 1 data accessed by the shader.
+        /// </summary>
         public byte[] Cb1Data { get; }
 
         /// <summary>
@@ -24,6 +27,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// </summary>
         /// <param name="info">Shader program information</param>
         /// <param name="code">Maxwell binary shader code</param>
+        /// <param name="cb1Data">Constant buffer 1 data accessed by the shader</param>
         public CachedShaderStage(ShaderProgramInfo info, byte[] code, byte[] cb1Data)
         {
             Info = info;

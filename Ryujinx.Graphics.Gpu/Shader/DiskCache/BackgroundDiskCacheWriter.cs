@@ -4,7 +4,7 @@ using System;
 namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
 {
     /// <summary>
-    /// Represent a cache collection handling one shader cache.
+    /// Represent a background disk cache writer.
     /// </summary>
     class BackgroundDiskCacheWriter : IDisposable
     {
@@ -13,6 +13,9 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         /// </summary>
         private enum CacheFileOperation
         {
+            /// <summary>
+            /// Operation to add a shader to the cache.
+            /// </summary>
             AddShader
         }
 
@@ -38,11 +41,26 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             }
         }
 
+        /// <summary>
+        /// Background shader cache write information.
+        /// </summary>
         private struct AddShaderData
         {
+            /// <summary>
+            /// Cached shader program.
+            /// </summary>
             public readonly CachedShaderProgram Program;
+
+            /// <summary>
+            /// Binary host code.
+            /// </summary>
             public readonly byte[] HostCode;
 
+            /// <summary>
+            /// Creates a new background shader cache write information.
+            /// </summary>
+            /// <param name="program">Cached shader program</param>
+            /// <param name="hostCode">Binary host code</param>
             public AddShaderData(CachedShaderProgram program, byte[] hostCode)
             {
                 Program = program;
@@ -54,6 +72,11 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         private readonly DiskCacheHostStorage _hostStorage;
         private readonly AsyncWorkQueue<CacheFileOperationTask> _fileWriterWorkerQueue;
 
+        /// <summary>
+        /// Creates an ew background disk cache writer.
+        /// </summary>
+        /// <param name="context">GPU context</param>
+        /// <param name="hostStorage">Disk cache host storage</param>
         public BackgroundDiskCacheWriter(GpuContext context, DiskCacheHostStorage hostStorage)
         {
             _context = context;
@@ -61,6 +84,10 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             _fileWriterWorkerQueue = new AsyncWorkQueue<CacheFileOperationTask>(ProcessTask, "Gpu.BackgroundDiskCacheWriter");
         }
 
+        /// <summary>
+        /// Processes a shader cache background operation.
+        /// </summary>
+        /// <param name="task">Task to process</param>
         private void ProcessTask(CacheFileOperationTask task)
         {
             switch (task.Type)
@@ -72,6 +99,11 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             }
         }
 
+        /// <summary>
+        /// Adds a shader program to be cached in the background.
+        /// </summary>
+        /// <param name="program">Shader program to cache</param>
+        /// <param name="hostCode">Host binary code of the program</param>
         public void AddShader(CachedShaderProgram program, byte[] hostCode)
         {
             _fileWriterWorkerQueue.Add(new CacheFileOperationTask(CacheFileOperation.AddShader, new AddShaderData(program, hostCode)));

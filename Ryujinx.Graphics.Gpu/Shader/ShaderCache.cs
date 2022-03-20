@@ -17,6 +17,9 @@ namespace Ryujinx.Graphics.Gpu.Shader
     /// </summary>
     class ShaderCache : IDisposable
     {
+        /// <summary>
+        /// Default flags used on the shader translation process.
+        /// </summary>
         public const TranslationFlags DefaultFlags = TranslationFlags.DebugMode;
 
         private struct TranslatedShader
@@ -131,6 +134,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <summary>
         /// Initialize the cache.
         /// </summary>
+        /// <param name="cancellationToken">Cancellation token to cancel the shader cache initialization process</param>
         internal void Initialize(CancellationToken cancellationToken)
         {
             if (_diskCacheHostStorage.CacheEnabled)
@@ -172,13 +176,9 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// This automatically translates, compiles and adds the code to the cache if not present.
         /// </remarks>
         /// <param name="channel">GPU channel</param>
-        /// <param name="gcs">GPU channel state</param>
+        /// <param name="poolState">Texture pool state</param>
+        /// <param name="computeState">Compute engine state</param>
         /// <param name="gpuVa">GPU virtual address of the binary shader code</param>
-        /// <param name="localSizeX">Local group size X of the computer shader</param>
-        /// <param name="localSizeY">Local group size Y of the computer shader</param>
-        /// <param name="localSizeZ">Local group size Z of the computer shader</param>
-        /// <param name="localMemorySize">Local memory size of the compute shader</param>
-        /// <param name="sharedMemorySize">Shared memory size of the compute shader</param>
         /// <returns>Compiled compute shader code</returns>
         public CachedShaderProgram GetComputeShader(
             GpuChannel channel,
@@ -227,7 +227,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// </remarks>
         /// <param name="state">GPU state</param>
         /// <param name="channel">GPU channel</param>
-        /// <param name="graphicsState">GPU channel state</param>
+        /// <param name="poolState">Texture pool state</param>
+        /// <param name="graphicsState">3D engine state</param>
         /// <param name="addresses">Addresses of the shaders for each stage</param>
         /// <returns>Compiled graphics shader code</returns>
         public CachedShaderProgram GetGraphicsShader(
@@ -320,6 +321,13 @@ namespace Ryujinx.Graphics.Gpu.Shader
             return gpShaders;
         }
 
+        /// <summary>
+        /// Puts a program on the queue of programs to be saved on the disk cache.
+        /// </summary>
+        /// <remarks>
+        /// This will not do anything if disk shader cache is disabled.
+        /// </remarks>
+        /// <param name="programToSave">Program to be saved on disk</param>
         private void EnqueueProgramToSave(ProgramToSave programToSave)
         {
             if (_diskCacheHostStorage.CacheEnabled)
@@ -432,14 +440,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <summary>
         /// Decode the binary Maxwell shader code to a translator context.
         /// </summary>
-        /// <param name="channel">GPU channel</param>
-        /// <param name="gas">GPU accessor state</param>
+        /// <param name="gpuAccessor">GPU state accessor</param>
         /// <param name="gpuVa">GPU virtual address of the binary shader code</param>
-        /// <param name="localSizeX">Local group size X of the computer shader</param>
-        /// <param name="localSizeY">Local group size Y of the computer shader</param>
-        /// <param name="localSizeZ">Local group size Z of the computer shader</param>
-        /// <param name="localMemorySize">Local memory size of the compute shader</param>
-        /// <param name="sharedMemorySize">Shared memory size of the compute shader</param>
         /// <returns>The generated translator context</returns>
         public static TranslatorContext DecodeComputeShader(IGpuAccessor gpuAccessor, ulong gpuVa)
         {
@@ -453,10 +455,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <remarks>
         /// This will combine the "Vertex A" and "Vertex B" shader stages, if specified, into one shader.
         /// </remarks>
-        /// <param name="channel">GPU channel</param>
-        /// <param name="gas">GPU accessor state</param>
+        /// <param name="gpuAccessor">GPU state accessor</param>
         /// <param name="flags">Flags that controls shader translation</param>
-        /// <param name="stage">Shader stage</param>
         /// <param name="gpuVa">GPU virtual address of the shader code</param>
         /// <returns>The generated translator context</returns>
         public static TranslatorContext DecodeGraphicsShader(IGpuAccessor gpuAccessor, TranslationFlags flags, ulong gpuVa)
@@ -469,10 +469,12 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// Translates a previously generated translator context to something that the host API accepts.
         /// </summary>
         /// <param name="dumper">Optional shader code dumper</param>
-        /// <param name="memoryManager">Memory manager used to access the GPU memory where the shader is located</param>
+        /// <param name="channel">GPU channel using the shader</param>
         /// <param name="currentStage">Translator context of the stage to be translated</param>
         /// <param name="nextStage">Translator context of the next active stage, if existent</param>
         /// <param name="vertexA">Optional translator context of the shader that should be combined</param>
+        /// <param name="codeA">Optional Maxwell binary code of the Vertex A shader, if present</param>
+        /// <param name="codeB">Optional Maxwell binary code of the Vertex B or current stage shader, if present on cache</param>
         /// <returns>Compiled graphics shader code</returns>
         private static TranslatedShaderVertexPair TranslateShader(
             ShaderDumper dumper,
@@ -516,10 +518,10 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// Translates a previously generated translator context to something that the host API accepts.
         /// </summary>
         /// <param name="dumper">Optional shader code dumper</param>
-        /// <param name="memoryManager">Memory manager used to access the GPU memory where the shader is located</param>
+        /// <param name="channel">GPU channel using the shader</param>
         /// <param name="currentStage">Translator context of the stage to be translated</param>
         /// <param name="nextStage">Translator context of the next active stage, if existent</param>
-        /// <param name="vertexA">Optional translator context of the shader that should be combined</param>
+        /// <param name="code">Optional Maxwell binary code of the current stage shader, if present on cache</param>
         /// <returns>Compiled graphics shader code</returns>
         private static TranslatedShader TranslateShader(
             ShaderDumper dumper,
@@ -550,6 +552,11 @@ namespace Ryujinx.Graphics.Gpu.Shader
             return new TranslatedShader(new CachedShaderStage(program.Info, code, cb1Data), program);
         }
 
+        /// <summary>
+        /// Gets the index of a stage from a <see cref="ShaderStage"/>.
+        /// </summary>
+        /// <param name="stage">Stage to get the index from</param>
+        /// <returns>Stage index</returns>
         private static int StageToStageIndex(ShaderStage stage)
         {
             return stage switch
@@ -559,18 +566,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 ShaderStage.Geometry => 3,
                 ShaderStage.Fragment => 4,
                 _ => 0
-            };
-        }
-
-        private static ShaderStage StageIndexToStage(int stageIndex)
-        {
-            return stageIndex switch
-            {
-                1 => ShaderStage.TessellationControl,
-                2 => ShaderStage.TessellationEvaluation,
-                3 => ShaderStage.Geometry,
-                4 => ShaderStage.Fragment,
-                _ => ShaderStage.Vertex
             };
         }
 
