@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.Audio.Renderer.Utils.Math
 {
-    public record struct Matrix6x6
+    record struct Matrix6x6
     {
         public float M11;
         public float M12;

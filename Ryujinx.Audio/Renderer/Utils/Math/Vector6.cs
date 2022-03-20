@@ -2,7 +2,7 @@
 
 namespace Ryujinx.Audio.Renderer.Utils.Math
 {
-    public struct Vector6
+    record struct Vector6
     {
         public float X;
         public float Y;
@@ -28,27 +28,23 @@ namespace Ryujinx.Audio.Renderer.Utils.Math
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector6 operator +(Vector6 left, Vector6 right)
         {
-            return new Vector6(
-                left.X + right.X,
-                left.Y + right.Y,
-                left.Z + right.Z,
-                left.W + right.W,
-                left.V + right.V,
-                left.U + right.U
-            );
+            return new Vector6(left.X + right.X,
+                               left.Y + right.Y,
+                               left.Z + right.Z,
+                               left.W + right.W,
+                               left.V + right.V,
+                               left.U + right.U);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector6 operator *(Vector6 left, Vector6 right)
         {
-            return new Vector6(
-                left.X * right.X,
-                left.Y * right.Y,
-                left.Z * right.Z,
-                left.W * right.W,
-                left.V * right.V,
-                left.U * right.U
-            );
+            return new Vector6(left.X * right.X,
+                               left.Y * right.Y,
+                               left.Z * right.Z,
+                               left.W * right.W,
+                               left.V * right.V,
+                               left.U * right.U);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

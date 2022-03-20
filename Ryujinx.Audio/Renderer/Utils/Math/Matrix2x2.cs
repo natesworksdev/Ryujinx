@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace Ryujinx.Audio.Renderer.Utils.Math
+﻿namespace Ryujinx.Audio.Renderer.Utils.Math
 {
-    public record struct Matrix2x2
+    record struct Matrix2x2
     {
         public float M11;
         public float M12;
@@ -55,7 +53,7 @@ namespace Ryujinx.Audio.Renderer.Utils.Math
             return m;
         }
 
-        public static unsafe Matrix2x2 operator *(Matrix2x2 value1, Matrix2x2 value2)
+        public static Matrix2x2 operator *(Matrix2x2 value1, Matrix2x2 value2)
         {
             Matrix2x2 m;
 
