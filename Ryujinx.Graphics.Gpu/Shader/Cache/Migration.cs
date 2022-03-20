@@ -73,7 +73,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
 
                         byte[] code = entry.Code.AsSpan(0, entry.Header.Size - entry.Header.Cb1DataSize).ToArray();
 
-                        Span<byte> codeSpan = code;
+                        Span<byte> codeSpan = entry.Code;
                         byte[] cb1Data = codeSpan.Slice(codeSpan.Length - entry.Header.Cb1DataSize).ToArray();
 
                         ShaderProgramInfo info = new ShaderProgramInfo(
@@ -203,7 +203,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
                             byte[] code = entry.Code.AsSpan(0, entry.Header.Size - entry.Header.Cb1DataSize).ToArray();
                             byte[] code2 = entry.Header.SizeA != 0 ? entry.Code.AsSpan(entry.Header.Size, entry.Header.SizeA).ToArray() : null;
 
-                            Span<byte> codeSpan = code;
+                            Span<byte> codeSpan = entry.Code;
                             byte[] cb1Data = codeSpan.Slice(codeSpan.Length - entry.Header.Cb1DataSize).ToArray();
 
                             shaders[i + 1] = new CachedShaderStage(info, code, cb1Data);

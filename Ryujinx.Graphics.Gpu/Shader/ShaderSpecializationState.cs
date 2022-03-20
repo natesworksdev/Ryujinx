@@ -378,7 +378,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <returns>True if the state matches, false otherwise</returns>
         private bool Matches(GpuChannel channel, GpuChannelPoolState poolState, bool isCompute)
         {
-
             foreach (var kv in _textureSpecialization)
             {
                 TextureKey textureKey = kv.Key;
