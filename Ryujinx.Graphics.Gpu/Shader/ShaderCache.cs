@@ -359,7 +359,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                     tf.BufferIndex,
                     tf.Stride,
                     tf.VaryingsCount,
-                    state.TfVaryingLocations[i]);
+                    ref state.TfVaryingLocations[i]);
             }
 
             return descs;

@@ -27,7 +27,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <summary>
         /// Location of varyings to be written into the buffer. Each byte is one location.
         /// </summary>
-        public readonly Array32<uint> VaryingLocations;
+        public Array32<uint> VaryingLocations; // Making this readonly breaks AsSpan
 
         /// <summary>
         /// Creates a new transform feedback descriptor.
@@ -36,7 +36,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <param name="stride">Amount of bytes consumed per vertex</param>
         /// <param name="varyingCount">Number of varyings written into the buffer. Indicates size in bytes of <paramref name="varyingLocations"/></param>
         /// <param name="varyingLocations">Location of varyings to be written into the buffer. Each byte is one location</param>
-        public TransformFeedbackDescriptor(int bufferIndex, int stride, int varyingCount, Array32<uint> varyingLocations)
+        public TransformFeedbackDescriptor(int bufferIndex, int stride, int varyingCount, ref Array32<uint> varyingLocations)
         {
             BufferIndex = bufferIndex;
             Stride = stride;
@@ -50,12 +50,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <returns>Span of varying locations</returns>
         public ReadOnlySpan<byte> AsSpan()
         {
-            byte[] temp = new byte[Math.Min(128, VaryingCount)];
-            MemoryMarshal.Cast<uint, byte>(VaryingLocations.ToSpan()).Slice(0, temp.Length).CopyTo(temp);
-            return temp;
-
-            // This doesn't work, it just reads garbage values. Might be a .NET bug.
-            // return MemoryMarshal.Cast<uint, byte>(VaryingLocations.ToSpan()).Slice(0, Math.Min(128, VaryingCount));
+            return MemoryMarshal.Cast<uint, byte>(VaryingLocations.ToSpan()).Slice(0, Math.Min(128, VaryingCount));
         }
     }
 }
