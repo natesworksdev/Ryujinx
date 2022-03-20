@@ -232,16 +232,30 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         }
 
         /// <summary>
+        /// Checks if a disk cache exists for the current application.
+        /// </summary>
+        /// <returns>True if a disk cache exists, false otherwise</returns>
+        public bool CacheExists()
+        {
+            string tocFilePath = Path.Combine(_basePath, SharedTocFileName);
+            string dataFilePath = Path.Combine(_basePath, SharedDataFileName);
+
+            if (!File.Exists(tocFilePath) || !File.Exists(dataFilePath) || !_guestStorage.TocFileExists() || !_guestStorage.DataFileExists())
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Loads all shaders from the cache.
         /// </summary>
         /// <param name="context">GPU context</param>
         /// <param name="loader">Parallel disk cache loader</param>
         public void LoadShaders(GpuContext context, ParallelDiskCacheLoader loader)
         {
-            string tocFilePath = Path.Combine(_basePath, SharedTocFileName);
-            string dataFilePath = Path.Combine(_basePath, SharedDataFileName);
-
-            if (!File.Exists(tocFilePath) || !File.Exists(dataFilePath) || !_guestStorage.TocFileExists() || !_guestStorage.DataFileExists())
+            if (!CacheExists())
             {
                 return;
             }
@@ -466,6 +480,19 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             }
 
             WriteHostCode(context, hostCode);
+        }
+
+        /// <summary>
+        /// Clears all content from the shared cache files.
+        /// </summary>
+        /// <param name="context">GPU context</param>
+        public void ClearSharedCache()
+        {
+            using var tocFileStream = DiskCacheCommon.OpenFile(_basePath, SharedTocFileName, writable: true);
+            using var dataFileStream = DiskCacheCommon.OpenFile(_basePath, SharedDataFileName, writable: true);
+
+            tocFileStream.SetLength(0);
+            dataFileStream.SetLength(0);
         }
 
         /// <summary>

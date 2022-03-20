@@ -139,6 +139,16 @@ namespace Ryujinx.Graphics.Gpu.Shader
         {
             if (_diskCacheHostStorage.CacheEnabled)
             {
+                if (!_diskCacheHostStorage.CacheExists())
+                {
+                    // If we don't have a shader cache on the new format, try to perform migration from the old shader cache.
+                    Logger.Info?.Print(LogClass.Gpu, "No shader cache found, trying to migrate from legacy shader cache...");
+
+                    int migrationCount = Migration.MigrateFromLegacyCache(_context, _diskCacheHostStorage);
+
+                    Logger.Info?.Print(LogClass.Gpu, $"Migrated {migrationCount} shaders.");
+                }
+
                 ParallelDiskCacheLoader loader = new ParallelDiskCacheLoader(
                     _context,
                     _graphicsShaderCache,

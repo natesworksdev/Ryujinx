@@ -185,7 +185,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         private readonly Queue<ProgramEntry> _validationQueue;
         private readonly ConcurrentQueue<ProgramCompilation> _compilationQueue;
         private readonly BlockingCollection<AsyncProgramTranslation> _asyncTranslationQueue;
-        private readonly SortedList<int, IProgram> _programList;
+        private readonly SortedList<int, CachedShaderProgram> _programList;
 
         private int _compiledCount;
         private int _totalCount;
@@ -218,7 +218,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             _validationQueue = new Queue<ProgramEntry>();
             _compilationQueue = new ConcurrentQueue<ProgramCompilation>();
             _asyncTranslationQueue = new BlockingCollection<AsyncProgramTranslation>();
-            _programList = new SortedList<int, IProgram>();
+            _programList = new SortedList<int, CachedShaderProgram>();
         }
 
         /// <summary>
@@ -260,6 +260,10 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
 
             if (_needsHostRegen)
             {
+                // Rebuild both shared and host cache files.
+                // Rebuilding shared is required because the shader information returned by the translator
+                // might have changed, and so we have to reconstruct the file with the new information.
+                _hostStorage.ClearSharedCache();
                 _hostStorage.ClearHostCache(_context);
 
                 foreach (var kv in _programList)
@@ -269,17 +273,8 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                         break;
                     }
 
-                    int programIndex = kv.Key;
-                    IProgram hostProgram = kv.Value;
-
-                    if (hostProgram != null)
-                    {
-                        _hostStorage.AddHostShader(_context, hostProgram.GetBinary(), programIndex);
-                    }
-                    else
-                    {
-                        _hostStorage.AddHostShader(_context, ReadOnlySpan<byte>.Empty, programIndex);
-                    }
+                    CachedShaderProgram program = kv.Value;
+                    _hostStorage.AddShader(_context, program, program.HostProgram.GetBinary());
                 }
             }
 
@@ -375,7 +370,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                     _needsHostRegen = true;
                 }
 
-                _programList.Add(entry.ProgramIndex, entry.HostProgram);
+                _programList.Add(entry.ProgramIndex, entry.CachedProgram);
                 SignalCompiled();
             }
             else if (entry.IsBinary)
@@ -398,7 +393,6 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             {
                 // Failed to compile from both host and guest binary.
                 ErrorCount++;
-                _programList.Add(entry.ProgramIndex, null);
                 SignalCompiled();
             }
         }

@@ -223,6 +223,22 @@ namespace Ryujinx.Graphics.Gpu.Shader
             state.Value.CoordNormalized = descriptor.UnpackTextureCoordNormalized();
         }
 
+        public void RegisterTexture(
+            int stageIndex,
+            int handle,
+            int cbufSlot,
+            uint format,
+            bool formatSrgb,
+            Image.TextureTarget target,
+            bool coordNormalized)
+        {
+            Box<TextureSpecializationState> state = GetOrCreateTextureSpecState(stageIndex, handle, cbufSlot);
+            state.Value.Format = format;
+            state.Value.FormatSrgb = formatSrgb;
+            state.Value.TextureTarget = target;
+            state.Value.CoordNormalized = coordNormalized;
+        }
+
         /// <summary>
         /// Indicates that the format of a given texture was used during the shader translation process.
         /// </summary>
