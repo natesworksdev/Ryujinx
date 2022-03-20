@@ -217,7 +217,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             _cancellationToken = cancellationToken;
             _validationQueue = new Queue<ProgramEntry>();
             _compilationQueue = new ConcurrentQueue<ProgramCompilation>();
-            _asyncTranslationQueue = new BlockingCollection<AsyncProgramTranslation>();
+            _asyncTranslationQueue = new BlockingCollection<AsyncProgramTranslation>(ThreadCount);
             _programList = new SortedList<int, CachedShaderProgram>();
         }
 
