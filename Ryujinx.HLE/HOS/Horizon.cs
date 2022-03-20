@@ -238,7 +238,6 @@ namespace Ryujinx.HLE.HOS
             SurfaceFlinger = new SurfaceFlinger(device);
 
             InitializeAudioRenderer();
-
             InitializeServices();
         }
 
