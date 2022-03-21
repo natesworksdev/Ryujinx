@@ -152,6 +152,7 @@
   "SettingsTabLoggingEnableInfoLogs": "Aktiviere Info-Logs",
   "SettingsTabLoggingEnableWarningLogs": "Aktiviere Warn-Logs",
   "SettingsTabLoggingEnableErrorLogs": "Aktiviere Fehler-Logs",
+  "SettingsTabLoggingEnableTraceLogs": "Aktiviere Trace-Logs",
   "SettingsTabLoggingEnableGuestLogs": "Aktiviere Gast-Logs",
   "SettingsTabLoggingEnableFsAccessLogs": "Aktiviere Fs Zugriff-Logs",
   "SettingsTabLoggingFsGlobalAccessLogMode": "Fs Globaler Zugriff-Log-Modus:",
@@ -456,6 +457,7 @@
   "StubLogTooltip": "Aktiviert die Ausgabe von Stub-Logs in der Konsole",
   "InfoLogTooltip": "Aktiviert die Ausgabe von Info-Logs in der Konsole",
   "WarnLogTooltip": "Aktiviert die Ausgabe von Warn-Logs in der Konsole",
+  "TraceLogTooltip": "Aktiviert die Ausgabe von Trace-Log in der Konsole",
   "ErrorLogTooltip": "Aktiviert die Ausgabe von Fehler-Logs in der Konsole",
   "GuestLogTooltip": "Aktiviert die Ausgabe von Gast-Logs in der Konsole",
   "FileAccessLogTooltip": "Aktiviert die Ausgabe von FS-Zugriff-Logs in der Konsole",
@@ -493,7 +495,14 @@
   "SettingsTabGraphicsFrameRate" : "Host Aktualisierungsrate:",
   "SettingsTabGraphicsFrameRateTooltip" : "Aktiviert die Host Aktualisierungsrate. Auf 0 setzen, um den Grenzwert aufzuheben.",
   "SettingsTabCpuCache" : "CPU-Cache",
+  "SettingsTabCpuMemory" : "CPU-Speicher",
+  "DialogUpdaterFlatpakNotSupportedMessage": "Bitte Aktualisiere Ryujinx mit FlatHub",
+  "UpdaterDisabledWarningTitle": "Updater deaktiviert!",
+  "GameListContextMenuOpenSdModsDirectory": "Atmosphere-Mod-Verzeichnis öffnen",
+  "GameListContextMenuOpenSdModsDirectoryToolTip": "Öffnet das alternative SD-Karten-Atmosphere-Verzeichnis, das die Mods der Anwendung enthält",
+  "ControllerSettingsRotate90": "Rotiert um 90°",
+  "IconSize": "Cover Größe",
+  "IconSizeTooltip": "Ändert die Größe der Spiel-Cover",
   "SettingsTabGraphicsBackend" : "Grafik-Backend",
-  "GraphicsBackendTooltip" : "Ändert das Grafik-Backend",
-  "SettingsTabCpuMemory" : "CPU-Speicher"
+  "GraphicsBackendTooltip" : "Ändert das Grafik-Backend"
 }
