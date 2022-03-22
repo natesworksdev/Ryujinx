@@ -115,6 +115,65 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
+        public ReadOnlySpan<byte> GetSpanMapped(ulong va, int size, bool tracked = false)
+        {
+            bool isContiguous = true;
+            int mappedSize = 0;
+
+            if (ValidateAddress(va) && GetPte(va) != PteUnmapped && Physical.IsMapped(Translate(va)))
+            {
+                ulong endVa = va + (ulong)size;
+                ulong endVaAligned = (endVa + PageMask) & ~PageMask;
+                ulong currentVa = va & ~PageMask;
+
+                int pages = (int)((endVaAligned - currentVa) / PageSize);
+
+                for (int page = 0; page < pages - 1; page++)
+                {
+                    ulong nextVa = currentVa + PageSize;
+                    ulong nextPa = Translate(nextVa);
+
+                    if (!ValidateAddress(nextVa) || GetPte(nextVa) == PteUnmapped || !Physical.IsMapped(nextPa))
+                    {
+                        break;
+                    }
+
+                    if (Translate(currentVa) + PageSize != nextPa)
+                    {
+                        isContiguous = false;
+                    }
+
+                    currentVa += PageSize;
+                }
+
+                currentVa += PageSize;
+
+                if (currentVa > endVa)
+                {
+                    currentVa = endVa;
+                }
+
+                mappedSize = (int)(currentVa - va);
+            }
+            else
+            {
+                return ReadOnlySpan<byte>.Empty;
+            }
+
+            if (isContiguous)
+            {
+                return Physical.GetSpan(Translate(va), mappedSize, tracked);
+            }
+            else
+            {
+                Span<byte> data = new byte[mappedSize];
+
+                ReadImpl(va, data, tracked);
+
+                return data;
+            }
+        }
+
         /// <summary>
         /// Reads data from a possibly non-contiguous region of GPU mapped memory.
         /// </summary>
@@ -251,6 +310,49 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     size = Math.Min(data.Length - offset, (int)PageSize);
 
                     writeCallback(pa, data.Slice(offset, size));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Writes data to GPU mapped memory, stopping at the first unmapped page at the memory region, if any.
+        /// </summary>
+        /// <param name="va">GPU virtual address to write the data into</param>
+        /// <param name="data">The data to be written</param>
+        public void WriteMapped(ulong va, ReadOnlySpan<byte> data)
+        {
+            if (IsContiguous(va, data.Length))
+            {
+                Physical.Write(Translate(va), data);
+            }
+            else
+            {
+                int offset = 0, size;
+
+                if ((va & PageMask) != 0)
+                {
+                    ulong pa = Translate(va);
+
+                    size = Math.Min(data.Length, (int)PageSize - (int)(va & PageMask));
+
+                    if (pa != PteUnmapped && Physical.IsMapped(pa))
+                    {
+                        Physical.Write(pa, data.Slice(0, size));
+                    }
+
+                    offset += size;
+                }
+
+                for (; offset < data.Length; offset += size)
+                {
+                    ulong pa = Translate(va + (ulong)offset);
+
+                    size = Math.Min(data.Length - offset, (int)PageSize);
+
+                    if (pa != PteUnmapped && Physical.IsMapped(pa))
+                    {
+                        Physical.Write(pa, data.Slice(offset, size));
+                    }
                 }
             }
         }
