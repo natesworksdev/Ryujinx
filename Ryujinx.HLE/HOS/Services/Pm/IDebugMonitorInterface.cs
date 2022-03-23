@@ -14,7 +14,7 @@ namespace Ryujinx.HLE.HOS.Services.Pm
         // AtmosphereGetProcessInfo(os::ProcessId process_id) -> sf::OutCopyHandle out_process_handle, sf::Out<ncm::ProgramLocation> out_loc, sf::Out<cfg::OverrideStatus> out_status
         public ResultCode GetProcessInfo(ServiceCtx context)
         {
-            long pid = context.RequestData.ReadInt64();
+            ulong pid = context.RequestData.ReadUInt64();
 
             KProcess process = KernelStatic.GetProcessByPid(pid);
 
