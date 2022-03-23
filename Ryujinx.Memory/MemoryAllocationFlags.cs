@@ -29,6 +29,12 @@ namespace Ryujinx.Memory
         /// Enables mirroring of the memory block through aliasing of memory pages.
         /// When enabled, this allows creating more memory blocks sharing the same backing storage.
         /// </summary>
-        Mirrorable = 1 << 2
+        Mirrorable = 1 << 2,
+
+        /// <summary>
+        /// Indicates that the memory block should support mapping views of a mirrorable memory block.
+        /// The block that is to have their views mapped should be created with the <see cref="Mirrorable"/> flag.
+        /// </summary>
+        ViewCompatible = 1 << 3
     }
 }
