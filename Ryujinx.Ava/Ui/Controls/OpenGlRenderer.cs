@@ -1,4 +1,4 @@
-﻿using Avalonia;
+﻿/*using Avalonia;
 using Avalonia.Controls;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Controls;
@@ -23,30 +23,11 @@ namespace Ryujinx.Ava.Ui.Controls
 {
     internal class OpenGlRenderer : RendererControl
     {
-        private IntPtr _handle;
-        private int _framebuffer;
-
-        public int Major { get; }
-        public int Minor { get; }
-        public GraphicsDebugLevel DebugLevel { get; }
-        public OpenGLContextBase GameContext { get; set; }
-        private SwappableNativeWindowBase _gameBackgroundWindow;
-
-        public OpenGLContextBase PrimaryContext =>
-                AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>().PrimaryContext.AsOpenGLContextBase();
-
         public OpenGlRenderer(int major, int minor, GraphicsDebugLevel graphicsDebugLevel)
         {
             Major = major;
             Minor = minor;
             DebugLevel = graphicsDebugLevel;
-        }
-
-        public IGlContext GetControlContext()
-        {
-            var field = GetType().BaseType.BaseType.GetField("_context", BindingFlags.NonPublic | BindingFlags.Instance);
-
-            return field.GetValue(this) as IGlContext;
         }
 
         protected override void OnOpenGlInit(GlInterface gl, int fb)
@@ -124,36 +105,6 @@ namespace Ryujinx.Ava.Ui.Controls
 
             Window.SwapInterval = 1;
         }
-
-        public async Task DestroyBackgroundContext()
-        {
-            await Task.Delay(1000);
-            // WGL hangs here when disposing context
-            //Context?.Dispose();
-            _gameBackgroundWindow?.Dispose();
-        }
-
-        internal void MakeCurrent()
-        {
-            GameContext.MakeCurrent(_gameBackgroundWindow);
-        }
-        internal void MakeCurrent(SwappableNativeWindowBase window)
-        {
-            GameContext.MakeCurrent(window);
-        }
-
-        private void CreateWindow(OpenGLContextBase mainContext)
-        {
-            var flags = OpenGLContextFlags.Compat;
-            if(DebugLevel != GraphicsDebugLevel.None)
-            {
-                flags |= OpenGLContextFlags.Debug;
-            }
-            _gameBackgroundWindow = PlatformHelper.CreateOpenGLWindow(FramebufferFormat.Default, 0, 0, (int)Bounds.Width, (int)Bounds.Height);
-            _gameBackgroundWindow.Hide();
-
-            GameContext = PlatformHelper.CreateOpenGLContext(FramebufferFormat.Default, Major, Minor, flags, shareContext: mainContext);
-            GameContext.Initialize(_gameBackgroundWindow);
-        }
     }
 }
+*/

@@ -260,7 +260,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
             _mainViewContent = ContentFrame.Content as Control;
 
-            GlRenderer = new OpenGlRenderer(3, 3, ConfigurationState.Instance.Logger.GraphicsDebugLevel);
+            GlRenderer = new RendererControl(3, 3, ConfigurationState.Instance.Logger.GraphicsDebugLevel);
             AppHost    = new AppHost(GlRenderer, InputManager, path, VirtualFileSystem, ContentManager, AccountManager, _userChannelPersistence, this);
 
             GlRenderer.GlInitialized += GlRenderer_Created;

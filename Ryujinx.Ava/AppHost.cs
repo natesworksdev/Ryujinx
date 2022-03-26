@@ -405,17 +405,15 @@ namespace Ryujinx.Ava
             NpadManager.Dispose();
             TouchScreenManager.Dispose();
             Device.Dispose();
-
-            OpenGlRenderer glRenderer = Renderer as OpenGlRenderer;
-            glRenderer?.MakeCurrent();
+            Renderer?.MakeCurrent();
 
             Device.DisposeGpu();
             _vsyncResetEvent?.Dispose();
 
-            glRenderer?.MakeCurrent(null);
+            Renderer?.MakeCurrent(null);
 
             // TODO fix this on wgl
-            glRenderer?.DestroyBackgroundContext();
+            Renderer?.DestroyBackgroundContext();
 
             AppExit?.Invoke(this, EventArgs.Empty);
         }
@@ -872,12 +870,9 @@ namespace Ryujinx.Ava
 
             _renderer.ScreenCaptured += Renderer_ScreenCaptured;
 
-            if (Renderer is OpenGlRenderer openGlEmbeddedWindow)
-            {
-                (_renderer as Renderer).InitializeBackgroundContext(SPBOpenGLContext.CreateBackgroundContext(openGlEmbeddedWindow.GameContext));
+            (_renderer as Renderer).InitializeBackgroundContext(SPBOpenGLContext.CreateBackgroundContext(Renderer.GameContext));
 
-                openGlEmbeddedWindow.MakeCurrent();
-            }
+            Renderer.MakeCurrent();
 
             Device.Gpu.Renderer.Initialize(_glLogLevel);
 
@@ -888,14 +883,14 @@ namespace Ryujinx.Ava
 
             if (!_isGALthreaded)
             {
-                (Renderer as OpenGlRenderer).MakeCurrent(null);
+                Renderer.MakeCurrent(null);
             }
 
             Device.Gpu.Renderer.RunLoop(() =>
             {
                 if (!_isGALthreaded)
                 {
-                    (Renderer as OpenGlRenderer).MakeCurrent();
+                    Renderer.MakeCurrent();
                 }
 
                 Device.Gpu.SetGpuThread();
@@ -910,7 +905,7 @@ namespace Ryujinx.Ava
 
                 if (!_isGALthreaded)
                 {
-                    (Renderer as OpenGlRenderer).MakeCurrent(null);
+                    Renderer.MakeCurrent(null);
                 }
 
                 Renderer.IsThreaded = _isGALthreaded;
@@ -992,7 +987,7 @@ namespace Ryujinx.Ava
                 _vsyncResetEvent.Set();
             });
 
-            (Renderer as OpenGlRenderer)?.MakeCurrent(null);
+            Renderer?.MakeCurrent(null);
 
             Renderer.SizeChanged -= Window_SizeChanged;
 
