@@ -4,7 +4,6 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Ryujinx.Ava.Ui.ViewModels;
 using Ryujinx.HLE.FileSystem;
-using Ryujinx.HLE.FileSystem.Content;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using System.Threading.Tasks;
 using UserProfile = Ryujinx.Ava.Ui.Models.UserProfile;

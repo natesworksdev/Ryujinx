@@ -2,7 +2,6 @@
 using ARMeilleure.Translation.PTC;
 using Avalonia.Input;
 using Avalonia.Threading;
-using LibHac.FsSystem;
 using LibHac.Tools.FsSystem;
 using OpenTK.Windowing.Common;
 using Ryujinx.Audio.Backends.Dummy;
@@ -26,7 +25,6 @@ using Ryujinx.Graphics.GAL.Multithreading;
 using Ryujinx.Graphics.Gpu;
 using Ryujinx.Graphics.OpenGL;
 using Ryujinx.HLE.FileSystem;
-using Ryujinx.HLE.FileSystem.Content;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.HLE.HOS.SystemState;
@@ -37,12 +35,9 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using SPB.Graphics.OpenGL;
-using SPB.Platform.WGL;
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 

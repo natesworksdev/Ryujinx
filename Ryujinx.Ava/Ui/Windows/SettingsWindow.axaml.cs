@@ -9,7 +9,6 @@ using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.ViewModels;
 using Ryujinx.HLE.FileSystem;
-using Ryujinx.HLE.FileSystem.Content;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

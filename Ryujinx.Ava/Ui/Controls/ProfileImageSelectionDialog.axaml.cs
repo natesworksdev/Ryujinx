@@ -3,7 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Ryujinx.Ava.Ui.Windows;
-using Ryujinx.HLE.FileSystem.Content;
+using Ryujinx.HLE.FileSystem;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using System.IO;

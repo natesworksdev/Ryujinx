@@ -1,20 +1,17 @@
 using ARMeilleure.Translation.PTC;
 using Avalonia;
-using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Threading;
 using DynamicData;
 using DynamicData.Binding;
-using LibHac;
 using LibHac.Fs;
 using LibHac.FsSystem;
-using LibHac.Tools.FsSystem.NcaUtils;
+using LibHac.Ncm;
 using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Controls;
-using Ryujinx.Ava.Ui.Models;
 using Ryujinx.Ava.Ui.Windows;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
@@ -22,16 +19,12 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
 using Ryujinx.HLE;
 using Ryujinx.HLE.FileSystem;
-using Ryujinx.HLE.FileSystem.Content;
-using Ryujinx.HLE.HOS;
 using Ryujinx.Modules;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
-using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Path = System.IO.Path;
@@ -869,7 +862,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public async void OpenMiiApplet()
         {
-            string contentPath = _owner.ContentManager.GetInstalledContentPath(0x0100000000001009, StorageId.NandSystem, NcaContentType.Program);
+            string contentPath = _owner.ContentManager.GetInstalledContentPath(0x0100000000001009, StorageId.BuiltInSystem, NcaContentType.Program);
 
             if (!string.IsNullOrWhiteSpace(contentPath))
             {

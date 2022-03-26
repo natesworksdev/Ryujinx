@@ -1,12 +1,8 @@
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
-using Avalonia.Media;
-using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Ui.ViewModels;
-using Ryujinx.HLE.FileSystem.Content;
-using Ryujinx.HLE.HOS.Services.Account.Acc;
+using Ryujinx.HLE.FileSystem;
 using System;
 
 namespace Ryujinx.Ava.Ui.Windows

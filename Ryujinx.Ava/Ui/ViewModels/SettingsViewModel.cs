@@ -1,7 +1,6 @@
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Threading;
-using LibHac.FsSystem;
 using LibHac.Tools.FsSystem;
 using Ryujinx.Audio.Backends.OpenAL;
 using Ryujinx.Audio.Backends.SDL2;
@@ -15,7 +14,6 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
 using Ryujinx.Configuration.System;
 using Ryujinx.HLE.FileSystem;
-using Ryujinx.HLE.FileSystem.Content;
 using Ryujinx.HLE.HOS.Services.Time.TimeZone;
 using System;
 using System.Collections.Generic;

@@ -46,17 +46,10 @@ namespace Ryujinx.Graphics.OpenGL
 
             (int oldDrawFramebufferHandle, int oldReadFramebufferHandle) = ((Pipeline)_renderer.Pipeline).GetBoundFramebuffers();
 
-            CopyTextureToFrameBufferRGB(0, GetCopyFramebufferHandleLazy(), (TextureView)texture, crop, swapBuffersCallback);
-
-            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, _stagingFrameBuffer);
-
-            _currentTexture = swapBuffersCallback(_stagingTextures[_currentTexture]) ? ++_currentTexture % _stagingTextures.Length : _currentTexture;
+            CopyTextureToFrameBufferRGB(_stagingFrameBuffer, GetCopyFramebufferHandleLazy(), (TextureView)texture, crop, swapBuffersCallback);
 
             GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, oldReadFramebufferHandle);
             GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, oldDrawFramebufferHandle);
-
-            ((Pipeline)_renderer.Pipeline).RestoreScissor0Enable();
-            ((Pipeline)_renderer.Pipeline).RestoreRasterizerDiscard();
 
             GL.Enable(EnableCap.FramebufferSrgb);
 
@@ -91,7 +84,7 @@ namespace Ryujinx.Graphics.OpenGL
             _sizeChanged = true;
         }
 
-        private void CopyTextureToFrameBufferRGB(int drawFramebuffer, int readFramebuffer, TextureView view, ImageCrop crop, Action swapBuffersCallback)
+        private void CopyTextureToFrameBufferRGB(int drawFramebuffer, int readFramebuffer, TextureView view, ImageCrop crop, Func<int, bool> swapBuffersCallback)
         {
             GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, drawFramebuffer);
             GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, readFramebuffer);
@@ -195,7 +188,9 @@ namespace Ryujinx.Graphics.OpenGL
             GL.Viewport(0, 0, _width, _height);
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, drawFramebuffer);
 
-            swapBuffersCallback();
+            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, _stagingFrameBuffer);
+
+            _currentTexture = swapBuffersCallback(_stagingTextures[_currentTexture]) ? ++_currentTexture % _stagingTextures.Length : _currentTexture;
 
             ((Pipeline)_renderer.Pipeline).RestoreClipControl();
             ((Pipeline)_renderer.Pipeline).RestoreScissor0Enable();

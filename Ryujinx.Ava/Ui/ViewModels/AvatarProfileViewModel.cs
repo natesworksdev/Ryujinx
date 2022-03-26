@@ -4,22 +4,20 @@ using LibHac.Common;
 using LibHac.Fs;
 using LibHac.Fs.Fsa;
 using LibHac.FsSystem;
+using LibHac.Ncm;
 using LibHac.Tools.Fs;
 using LibHac.Tools.FsSystem;
 using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Ava.Ui.Models;
 using Ryujinx.HLE.FileSystem;
-using Ryujinx.HLE.FileSystem.Content;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Color = Avalonia.Media.Color;
@@ -182,7 +180,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             }
 
             string contentPath =
-                contentManager.GetInstalledContentPath(0x010000000000080A, StorageId.NandSystem, NcaContentType.Data);
+                contentManager.GetInstalledContentPath(0x010000000000080A, StorageId.BuiltInSystem, NcaContentType.Data);
             string avatarPath = virtualFileSystem.SwitchPathToSystemPath(contentPath);
 
             if (!string.IsNullOrWhiteSpace(avatarPath))
