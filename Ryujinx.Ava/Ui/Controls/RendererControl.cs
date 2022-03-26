@@ -38,7 +38,6 @@ namespace Ryujinx.Ava.Ui.Controls
         public bool IsStarted { get; private set; }
 
         protected IntPtr Fence { get; set; } = IntPtr.Zero;
-        public bool IsThreaded { get; internal set; }
 
         public int Major { get; }
         public int Minor { get; }
@@ -90,20 +89,6 @@ namespace Ryujinx.Ava.Ui.Controls
                 return;
             }
 
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
-
-            if (!IsThreaded)
-            {
-                MakeCurrent();
-            }
-
-            CallRenderEvent();
-
-            if (!IsThreaded)
-            {
-                MakeCurrent(null);
-            }
-
             if (Image == 0)
             {
                 return;
@@ -115,22 +100,12 @@ namespace Ryujinx.Ava.Ui.Controls
             _postFrameResetEvent.Set();
         }
 
-        protected void CallRenderEvent()
-        {
-            _preFrameResetEvent.Reset();
-            Rendered?.Invoke(this, EventArgs.Empty);
-            _preFrameResetEvent.Wait();
-        }
-
-        public void Continue()
-        {
-            _preFrameResetEvent?.Set();
-        }
-
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
-            Continue();
-            _preFrameResetEvent.Dispose();
+            _preFrameResetEvent?.Set();
+            _preFrameResetEvent?.Dispose();
+            _postFrameResetEvent?.Set();
+            _postFrameResetEvent?.Dispose();
 
             Window.SwapInterval = 1;
             base.OnDetachedFromVisualTree(e);
@@ -172,6 +147,8 @@ namespace Ryujinx.Ava.Ui.Controls
         {
             Image = image;
 
+            QueueRender();
+
             if(Fence != IntPtr.Zero)
             {
                 GL.DeleteSync(Fence);
@@ -180,18 +157,9 @@ namespace Ryujinx.Ava.Ui.Controls
 
             Fence = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags.None);
 
-            _postFrameResetEvent.Reset();
-
             GL.Finish();
 
-            Continue();
-
-            if (IsThreaded)
-            {
-                _postFrameResetEvent.Wait();
-            }
-
-            return false;
+            return true;
         }
 
         internal void Start()
@@ -202,7 +170,6 @@ namespace Ryujinx.Ava.Ui.Controls
 
         internal void Stop()
         {
-            Continue();
             IsStarted = false;
         }
 
