@@ -357,6 +357,7 @@
                   HorizontalAlignment="Stretch">
                 <Grid
                     HorizontalAlignment="Center"
+                    IsVisible="{Binding ShowLoadProgress}"
                     Margin="40"
                     VerticalAlignment="Center">
                     <Grid.ColumnDefinitions>
@@ -366,6 +367,7 @@
                     <Border
                         Grid.Column="0"
                         Grid.RowSpan="2"
+                        IsVisible="{Binding ShowLoadProgress}"
                         Width="256"
                         Height="256"
                         Margin="10"
@@ -374,12 +376,14 @@
                         BorderThickness="2"
                         BoxShadow="4 4 32 8 #40000000"
                         CornerRadius="3">
-                        <Image
+						<Image
+                            IsVisible="{Binding ShowLoadProgress}"
                             Width="256"
                             Height="256"
                             Source="{Binding SelectedIcon, Converter={StaticResource ByteImage}}" />
                     </Border>
                     <Grid Grid.Column="1"
+                          IsVisible="{Binding ShowLoadProgress}"
                           HorizontalAlignment="Stretch"
                           VerticalAlignment="Center">
                         <Grid.RowDefinitions>
@@ -387,7 +391,8 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <TextBlock
+						<TextBlock
+                            IsVisible="{Binding ShowLoadProgress}"
                             Grid.Row="0"
                             Margin="10"
                             FontSize="30"
@@ -395,7 +400,8 @@
                             TextWrapping="Wrap"
                             Text="{Binding LoadHeading}"
                             TextAlignment="Left" />
-                        <Border
+						<Border
+                            IsVisible="{Binding ShowLoadProgress}"
                             Grid.Row="1"
                             CornerRadius="5"
                             ClipToBounds="True"
@@ -404,7 +410,8 @@
                             HorizontalAlignment="Stretch"
                             Margin="10"
                             BorderThickness="1">
-                            <ProgressBar
+							<ProgressBar
+                                IsVisible="{Binding ShowLoadProgress}"
                                 Height="10"
                                 Margin="0"
                                 Padding="0"
@@ -419,7 +426,8 @@
                                 IsIndeterminate="{Binding IsLoadingIndeterminate}"
                                 Value="{Binding ProgressValue}" />
                         </Border>
-                        <TextBlock
+						<TextBlock
+                            IsVisible="{Binding ShowLoadProgress}"
                             Grid.Row="2"
                             Margin="10"
                             FontSize="18"

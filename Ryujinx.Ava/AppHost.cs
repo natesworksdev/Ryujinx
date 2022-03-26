@@ -37,6 +37,8 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using SPB.Graphics.OpenGL;
+using SPB.Platform.WGL;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -98,6 +100,7 @@ namespace Ryujinx.Ava
         private ManualResetEventSlim _vsyncResetEvent;
         private AdjustableRenderTimer _renderTimer;
         private bool _frameRateUnlocked;
+        private bool _isGALthreaded;
 
         public event EventHandler AppExit;
         public event EventHandler<StatusUpdatedEventArgs> StatusUpdatedEvent;
@@ -645,14 +648,14 @@ namespace Ryujinx.Ava
 
             BackendThreading threadingMode = ConfigurationState.Instance.Graphics.BackendThreading;
 
-            bool threadedGAL = threadingMode == BackendThreading.On || (threadingMode == BackendThreading.Auto && renderer.PreferThreading);
+            _isGALthreaded = threadingMode == BackendThreading.On || (threadingMode == BackendThreading.Auto && renderer.PreferThreading);
 
-            if (threadedGAL)
+            if (_isGALthreaded)
             {
                 renderer = new ThreadedRenderer(renderer);
             }
 
-            Logger.Info?.PrintMsg(LogClass.Gpu, $"Backend Threading ({threadingMode}): {threadedGAL}");
+            Logger.Info?.PrintMsg(LogClass.Gpu, $"Backend Threading ({threadingMode}): {_isGALthreaded}");
 
             if (ConfigurationState.Instance.System.AudioBackend.Value == AudioBackend.SDL2)
             {
@@ -871,20 +874,30 @@ namespace Ryujinx.Ava
 
             if (Renderer is OpenGlRenderer openGlEmbeddedWindow)
             {
-                (_renderer as Renderer).InitializeBackgroundContext(SPBOpenGLContext.CreateBackgroundContext(openGlEmbeddedWindow.Context));
+                (_renderer as Renderer).InitializeBackgroundContext(SPBOpenGLContext.CreateBackgroundContext(openGlEmbeddedWindow.GameContext));
 
                 openGlEmbeddedWindow.MakeCurrent();
             }
 
             Device.Gpu.Renderer.Initialize(_glLogLevel);
 
-            Width  = (int)Renderer.Bounds.Width;
+            Width = (int)Renderer.Bounds.Width;
             Height = (int)Renderer.Bounds.Height;
 
             _renderer.Window.SetSize((int)(Width * Program.WindowScaleFactor), (int)(Height * Program.WindowScaleFactor));
 
+            if (!_isGALthreaded)
+            {
+                (Renderer as OpenGlRenderer).MakeCurrent(null);
+            }
+
             Device.Gpu.Renderer.RunLoop(() =>
             {
+                if (!_isGALthreaded)
+                {
+                    (Renderer as OpenGlRenderer).MakeCurrent();
+                }
+
                 Device.Gpu.SetGpuThread();
                 Device.Gpu.InitializeShaderCache();
                 Translator.IsReadyForTranslation.Set();
@@ -895,20 +908,25 @@ namespace Ryujinx.Ava
                 _renderTimer.Tick += RenderTimer_Tick;
                 UpdateTimer(ConfigurationState.Instance.Graphics.HostRefreshRate.Value);
 
-                while (_isActive)
+                if (!_isGALthreaded)
                 {
-                    _ticks += _chrono.ElapsedTicks;
+                    (Renderer as OpenGlRenderer).MakeCurrent(null);
+                }
 
-                    _chrono.Restart();
+                Renderer.IsThreaded = _isGALthreaded;
 
-                    if (Device.WaitFifo())
+                Renderer.Start();
+
+                EventHandler renderPass = (object s, EventArgs e) =>
+                {
+                    if (!Device.IsFrameAvailable && Device.WaitFifo())
                     {
                         Device.Statistics.RecordFifoStart();
                         Device.ProcessFrame();
                         Device.Statistics.RecordFifoEnd();
                     }
 
-                    while (Device.ConsumeFrameAvailable())
+                    if (Device.ConsumeFrameAvailable())
                     {
                         if (!_renderingStarted)
                         {
@@ -916,8 +934,27 @@ namespace Ryujinx.Ava
                             _parent.SwitchToGameControl();
                         }
 
-                        Device.PresentFrame(Present);
+                        Device.PresentFrame(Renderer.Present);
                     }
+                    else
+                    {
+                        Renderer.Continue();
+                    }
+                };
+
+                Renderer.Rendered += renderPass;
+
+                Renderer.QueueRender();
+
+                while (_isActive)
+                {
+                    _vsyncResetEvent.Wait();
+
+                    _vsyncResetEvent.Reset();
+
+                    _ticks += _chrono.ElapsedTicks;
+
+                    _chrono.Restart();                    
 
                     if (_ticks >= _ticksPerFrame)
                     {
@@ -946,6 +983,10 @@ namespace Ryujinx.Ava
                     }
                 }
 
+                Renderer.Stop();
+
+                Renderer.Rendered -= renderPass;
+
                 _renderTimer.Tick -= RenderTimer_Tick;
                 _renderTimer.Dispose();
                 _vsyncResetEvent.Set();
@@ -960,26 +1001,8 @@ namespace Ryujinx.Ava
 
         private void RenderTimer_Tick(TimeSpan obj)
         {
+            Renderer.QueueRender();
             _vsyncResetEvent.Set();
-        }
-
-        private bool Present(int image)
-        {
-            bool presented = Renderer.Present(image);
-
-            try
-            {
-                if (_isActive && !_frameRateUnlocked)
-                {
-                    _vsyncResetEvent.Wait();
-
-                }
-
-                _vsyncResetEvent.Reset();
-            }
-            catch (Exception) { }
-
-            return presented;
         }
 
         public async Task ShowExitPrompt()

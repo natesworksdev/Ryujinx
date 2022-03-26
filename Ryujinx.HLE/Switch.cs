@@ -27,6 +27,8 @@ namespace Ryujinx.HLE
 
         public bool EnableDeviceVsync { get; set; } = true;
 
+        public bool IsFrameAvailable => Gpu.Window.IsFrameAvailable;
+
         public Switch(HLEConfiguration configuration)
         {
             if (configuration.GpuRenderer == null)

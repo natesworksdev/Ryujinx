@@ -90,6 +90,8 @@ namespace Ryujinx.Graphics.Gpu
 
         private int _framesAvailable;
 
+        public bool IsFrameAvailable => _framesAvailable != 0;
+
         /// <summary>
         /// Creates a new instance of the GPU presentation window.
         /// </summary>

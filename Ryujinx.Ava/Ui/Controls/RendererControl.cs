@@ -18,17 +18,21 @@ namespace Ryujinx.Ava.Ui.Controls
 {
     public abstract class RendererControl : OpenGlControlBase
     {
-        protected int Image { get; private set; }
+        protected int Image { get; set; }
         public SwappableNativeWindowBase Window { get; private set; }
 
         public event EventHandler<EventArgs> GlInitialized;
         public event EventHandler<Size> SizeChanged;
-
-        private bool _presented;
-        private IntPtr _guiFence = IntPtr.Zero;
-        private IntPtr _gameFence = IntPtr.Zero;
+        public event EventHandler Rendered;
 
         protected Size RenderSize { get;private set; }
+        public bool IsStarted { get; private set; }
+
+        protected IntPtr Fence { get; set; } = IntPtr.Zero;
+        public bool IsThreaded { get; internal set; }
+
+        private ManualResetEventSlim _preFrameResetEvent;
+        private ManualResetEventSlim _postFrameResetEvent;
 
         public RendererControl()
         {
@@ -48,6 +52,8 @@ namespace Ryujinx.Ava.Ui.Controls
 
         protected override void OnOpenGlInit(GlInterface gl, int fb)
         {
+            _preFrameResetEvent = new ManualResetEventSlim(false);
+            _postFrameResetEvent = new ManualResetEventSlim(false);
             base.OnOpenGlInit(gl, fb);
 
             if (OperatingSystem.IsWindows())
@@ -71,18 +77,22 @@ namespace Ryujinx.Ava.Ui.Controls
         {
             lock (this)
             {
-                if (_gameFence != IntPtr.Zero)
-                {
-                    GL.ClientWaitSync(_gameFence, ClientWaitSyncFlags.SyncFlushCommandsBit, Int64.MaxValue);
-                    GL.DeleteSync(_gameFence);
-                    _gameFence = IntPtr.Zero;
-                }
                 OnRender(gl, fb);
 
-                _guiFence = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags.None);
-
-                _presented = true;
+                _postFrameResetEvent.Set();
             }
+        }
+
+        protected void CallRenderEvent()
+        {
+            _preFrameResetEvent.Reset();
+            Rendered?.Invoke(this, EventArgs.Empty);
+            _preFrameResetEvent.Wait();
+        }
+
+        public void Continue()
+        {
+            _preFrameResetEvent?.Set();
         }
 
         protected abstract void OnRender(GlInterface gl, int fb);
@@ -90,16 +100,8 @@ namespace Ryujinx.Ava.Ui.Controls
         protected override void OnOpenGlDeinit(GlInterface gl, int fb)
         {
             base.OnOpenGlDeinit(gl, fb);
-
-            if (_guiFence != IntPtr.Zero)
-            {
-                GL.DeleteSync(_guiFence);
-            }
-
-            if (_gameFence != IntPtr.Zero)
-            {
-                GL.DeleteSync(_gameFence);
-            }
+            Continue();
+            _preFrameResetEvent.Dispose();
         }
 
         protected void OnInitialized(GlInterface gl)
@@ -115,33 +117,38 @@ namespace Ryujinx.Ava.Ui.Controls
 
         internal bool Present(int image)
         {
-            if (_guiFence != IntPtr.Zero)
-            {
-                GL.ClientWaitSync(_guiFence, ClientWaitSyncFlags.SyncFlushCommandsBit, Int64.MaxValue);
-                GL.DeleteSync(_guiFence);
-                _guiFence = IntPtr.Zero;
-            }
-            
-            bool returnValue = _presented;
+            Image = image;
 
-            if (_presented)
+            if(Fence != IntPtr.Zero)
             {
-                lock (this)
-                {
-                    Image = image;
-                    _presented = false;
-                }
+                GL.DeleteSync(Fence);
+                Fence = IntPtr.Zero;
             }
 
-            if (_gameFence != IntPtr.Zero)
-            {
-                GL.DeleteSync(_gameFence);
-            }
-            _gameFence = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags.None);
+            Fence = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags.None);
 
+            _postFrameResetEvent.Reset();
+
+            Continue();
+
+            if (IsThreaded)
+            {
+                _postFrameResetEvent.Wait();
+            }
+
+            return true;
+        }
+
+        internal void Start()
+        {
+            IsStarted = true;
             QueueRender();
+        }
 
-            return returnValue;
+        internal void Stop()
+        {
+            Continue();
+            IsStarted = false;
         }
     }
 }
