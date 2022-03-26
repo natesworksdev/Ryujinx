@@ -55,15 +55,18 @@ namespace Ryujinx.Graphics.OpenGL
 
         public Program(ReadOnlySpan<byte> code, bool hasFragmentShader, int fragmentOutputMap)
         {
-            BinaryFormat binaryFormat = (BinaryFormat)BinaryPrimitives.ReadInt32LittleEndian(code.Slice(code.Length - 4, 4));
-
             Handle = GL.CreateProgram();
 
-            unsafe
+            if (code.Length >= 4)
             {
-                fixed (byte* ptr = code)
+                BinaryFormat binaryFormat = (BinaryFormat)BinaryPrimitives.ReadInt32LittleEndian(code.Slice(code.Length - 4, 4));
+
+                unsafe
                 {
-                    GL.ProgramBinary(Handle, binaryFormat, (IntPtr)ptr, code.Length - 4);
+                    fixed (byte* ptr = code)
+                    {
+                        GL.ProgramBinary(Handle, binaryFormat, (IntPtr)ptr, code.Length - 4);
+                    }
                 }
             }
 

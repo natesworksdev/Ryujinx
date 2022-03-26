@@ -25,6 +25,20 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         }
 
         /// <summary>
+        /// Reads data from the stream.
+        /// </summary>
+        /// <typeparam name="T">Type of the data</typeparam>
+        /// <param name="data">Data read</param>
+        public void Read<T>(ref T data) where T : unmanaged
+        {
+            Span<byte> buffer = MemoryMarshal.Cast<T, byte>(MemoryMarshal.CreateSpan(ref data, 1));
+            for (int offset = 0; offset < buffer.Length;)
+            {
+                offset += _activeStream.Read(buffer.Slice(offset));
+            }
+        }
+
+        /// <summary>
         /// Tries to read data from the stream.
         /// </summary>
         /// <typeparam name="T">Type of the data</typeparam>
@@ -42,12 +56,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 }
             }
 
-            Span<byte> buffer = MemoryMarshal.Cast<T, byte>(MemoryMarshal.CreateSpan(ref data, 1));
-            for (int offset = 0; offset < buffer.Length;)
-            {
-                offset += _activeStream.Read(buffer.Slice(offset));
-            }
-
+            Read(ref data);
             return true;
         }
 
@@ -61,10 +70,20 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         {
             uint actualMagic = 0;
             int size = 0;
-            TryRead(ref actualMagic);
-            TryRead(ref size);
-            // TODO: Throw if actualMagic != magic.
-            // TODO: Throw if size > Unsafe.SizeOf<T>().
+            Read(ref actualMagic);
+            Read(ref size);
+
+            if (actualMagic != magic)
+            {
+                throw new DiskCacheLoadException(DiskCacheLoadResult.FileCorruptedInvalidMagic);
+            }
+
+            // Structs are expected to expand but not shrink between versions.
+            if (size > Unsafe.SizeOf<T>())
+            {
+                throw new DiskCacheLoadException(DiskCacheLoadResult.FileCorruptedInvalidLength);
+            }
+
             Span<byte> buffer = MemoryMarshal.Cast<T, byte>(MemoryMarshal.CreateSpan(ref data, 1)).Slice(0, size);
             for (int offset = 0; offset < buffer.Length;)
             {
@@ -104,7 +123,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         public void BeginCompression()
         {
             CompressionAlgorithm algorithm = CompressionAlgorithm.None;
-            TryRead(ref algorithm);
+            Read(ref algorithm);
 
             if (algorithm == CompressionAlgorithm.Deflate)
             {

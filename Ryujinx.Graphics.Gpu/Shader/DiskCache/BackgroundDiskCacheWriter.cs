@@ -1,5 +1,7 @@
 using Ryujinx.Common;
+using Ryujinx.Common.Logging;
 using System;
+using System.IO;
 
 namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
 {
@@ -94,7 +96,18 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             {
                 case CacheFileOperation.AddShader:
                     AddShaderData data = (AddShaderData)task.Data;
-                    _hostStorage.AddShader(_context, data.Program, data.HostCode);
+                    try
+                    {
+                        _hostStorage.AddShader(_context, data.Program, data.HostCode);
+                    }
+                    catch (DiskCacheLoadException diskCacheLoadException)
+                    {
+                        Logger.Error?.Print(LogClass.Gpu, $"Error writing shader to disk cache. {diskCacheLoadException.Message}");
+                    }
+                    catch (IOException ioException)
+                    {
+                        Logger.Error?.Print(LogClass.Gpu, $"Error writing shader to disk cache. {ioException.Message}");
+                    }
                     break;
             }
         }

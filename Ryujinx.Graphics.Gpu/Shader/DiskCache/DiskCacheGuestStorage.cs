@@ -175,6 +175,15 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             return DiskCacheCommon.OpenFile(_basePath, DataFileName, writable: false);
         }
 
+        public void ClearCache()
+        {
+            using var tocFileStream = DiskCacheCommon.OpenFile(_basePath, TocFileName, writable: true);
+            using var dataFileStream = DiskCacheCommon.OpenFile(_basePath, DataFileName, writable: true);
+
+            tocFileStream.SetLength(0);
+            dataFileStream.SetLength(0);
+        }
+
         /// <summary>
         /// Loads the guest cache from file or memory cache.
         /// </summary>
@@ -197,10 +206,15 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 tocFileStream.Seek(Unsafe.SizeOf<TocHeader>() + index * Unsafe.SizeOf<TocEntry>(), SeekOrigin.Begin);
 
                 TocEntry entry = new TocEntry();
-                tocReader.TryRead(ref entry);
+                tocReader.Read(ref entry);
 
                 guestCode = new byte[entry.CodeSize];
                 cb1Data = new byte[entry.Cb1DataSize];
+
+                if (entry.Offset >= (ulong)dataFileStream.Length)
+                {
+                    throw new DiskCacheLoadException(DiskCacheLoadResult.FileCorruptedGeneric);
+                }
 
                 dataFileStream.Seek((long)entry.Offset, SeekOrigin.Begin);
                 dataFileStream.Read(cb1Data);

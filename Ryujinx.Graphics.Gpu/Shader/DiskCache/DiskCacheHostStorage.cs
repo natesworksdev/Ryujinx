@@ -263,103 +263,123 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             Stream hostTocFileStream = null;
             Stream hostDataFileStream = null;
 
-            using var tocFileStream = DiskCacheCommon.OpenFile(_basePath, SharedTocFileName, writable: false);
-            using var dataFileStream = DiskCacheCommon.OpenFile(_basePath, SharedDataFileName, writable: false);
-
-            using var guestTocFileStream = _guestStorage.OpenTocFileStream();
-            using var guestDataFileStream = _guestStorage.OpenDataFileStream();
-
-            BinarySerializer tocReader = new BinarySerializer(tocFileStream);
-            BinarySerializer dataReader = new BinarySerializer(dataFileStream);
-
-            TocHeader header = new TocHeader();
-
-            if (!tocReader.TryRead(ref header) || header.Magic != TocsMagic || header.FormatVersion != FileFormatVersionPacked)
+            try
             {
-                return;
+                using var tocFileStream = DiskCacheCommon.OpenFile(_basePath, SharedTocFileName, writable: false);
+                using var dataFileStream = DiskCacheCommon.OpenFile(_basePath, SharedDataFileName, writable: false);
+
+                using var guestTocFileStream = _guestStorage.OpenTocFileStream();
+                using var guestDataFileStream = _guestStorage.OpenDataFileStream();
+
+                BinarySerializer tocReader = new BinarySerializer(tocFileStream);
+                BinarySerializer dataReader = new BinarySerializer(dataFileStream);
+
+                TocHeader header = new TocHeader();
+
+                if (!tocReader.TryRead(ref header) || header.Magic != TocsMagic)
+                {
+                    throw new DiskCacheLoadException(DiskCacheLoadResult.FileCorruptedGeneric);
+                }
+
+                if (header.FormatVersion != FileFormatVersionPacked)
+                {
+                    throw new DiskCacheLoadException(DiskCacheLoadResult.IncompatibleVersion);
+                }
+
+                bool loadHostCache = header.CodeGenVersion == CodeGenVersion;
+
+                int programIndex = 0;
+
+                DataEntry entry = new DataEntry();
+
+                while (tocFileStream.Position < tocFileStream.Length && loader.Active)
+                {
+                    ulong dataOffset = 0;
+                    tocReader.Read(ref dataOffset);
+
+                    if ((ulong)dataOffset >= (ulong)dataFileStream.Length)
+                    {
+                        throw new DiskCacheLoadException(DiskCacheLoadResult.FileCorruptedGeneric);
+                    }
+
+                    dataFileStream.Seek((long)dataOffset, SeekOrigin.Begin);
+
+                    dataReader.BeginCompression();
+                    dataReader.Read(ref entry);
+                    uint stagesBitMask = entry.StagesBitMask;
+
+                    if ((stagesBitMask & ~0x3fu) != 0)
+                    {
+                        throw new DiskCacheLoadException(DiskCacheLoadResult.FileCorruptedGeneric);
+                    }
+
+                    bool isCompute = stagesBitMask == 0;
+                    if (isCompute)
+                    {
+                        stagesBitMask = 1;
+                    }
+
+                    CachedShaderStage[] shaders = new CachedShaderStage[isCompute ? 1 : Constants.ShaderStages + 1];
+
+                    DataEntryPerStage stageEntry = new DataEntryPerStage();
+
+                    while (stagesBitMask != 0)
+                    {
+                        int stageIndex = BitOperations.TrailingZeroCount(stagesBitMask);
+
+                        dataReader.Read(ref stageEntry);
+
+                        ShaderProgramInfo info = stageIndex != 0 || isCompute ? ReadShaderProgramInfo(ref dataReader) : null;
+
+                        (byte[] guestCode, byte[] cb1Data) = _guestStorage.LoadShader(
+                            guestTocFileStream,
+                            guestDataFileStream,
+                            stageEntry.GuestCodeIndex);
+
+                        shaders[stageIndex] = new CachedShaderStage(info, guestCode, cb1Data);
+
+                        stagesBitMask &= ~(1u << stageIndex);
+                    }
+
+                    ShaderSpecializationState specState = ShaderSpecializationState.Read(ref dataReader);
+                    dataReader.EndCompression();
+
+                    if (loadHostCache)
+                    {
+                        byte[] hostCode = ReadHostCode(context, ref hostTocFileStream, ref hostDataFileStream, programIndex);
+
+                        if (hostCode != null)
+                        {
+                            bool hasFragmentShader = shaders.Length > 5 && shaders[5] != null;
+                            int fragmentOutputMap = hasFragmentShader ? shaders[5].Info.FragmentOutputMap : -1;
+                            IProgram hostProgram = context.Renderer.LoadProgramBinary(hostCode, hasFragmentShader, new ShaderInfo(fragmentOutputMap));
+
+                            CachedShaderProgram program = new CachedShaderProgram(hostProgram, specState, shaders);
+
+                            loader.QueueHostProgram(program, hostProgram, programIndex, isCompute);
+                        }
+                        else
+                        {
+                            loadHostCache = false;
+                        }
+                    }
+
+                    if (!loadHostCache)
+                    {
+                        loader.QueueGuestProgram(shaders, specState, programIndex, isCompute);
+                    }
+
+                    loader.CheckCompilation();
+                    programIndex++;
+                }
             }
-
-            bool loadHostCache = header.CodeGenVersion == CodeGenVersion;
-
-            int programIndex = 0;
-
-            DataEntry entry = new DataEntry();
-
-            while (tocFileStream.Position < tocFileStream.Length && loader.Active)
+            finally
             {
-                ulong dataOffset = 0;
-                tocReader.TryRead(ref dataOffset);
+                _guestStorage.ClearMemoryCache();
 
-                dataFileStream.Seek((long)dataOffset, SeekOrigin.Begin);
-
-                dataReader.BeginCompression();
-                dataReader.TryRead(ref entry);
-                uint stagesBitMask = entry.StagesBitMask;
-
-                bool isCompute = stagesBitMask == 0;
-                if (isCompute)
-                {
-                    stagesBitMask = 1;
-                }
-
-                CachedShaderStage[] shaders = new CachedShaderStage[isCompute ? 1 : Constants.ShaderStages + 1];
-
-                DataEntryPerStage stageEntry = new DataEntryPerStage();
-
-                while (stagesBitMask != 0)
-                {
-                    int stageIndex = BitOperations.TrailingZeroCount(stagesBitMask);
-
-                    dataReader.TryRead(ref stageEntry);
-
-                    ShaderProgramInfo info = stageIndex != 0 || isCompute ? ReadShaderProgramInfo(ref dataReader) : null;
-
-                    (byte[] guestCode, byte[] cb1Data) = _guestStorage.LoadShader(
-                        guestTocFileStream,
-                        guestDataFileStream,
-                        stageEntry.GuestCodeIndex);
-
-                    shaders[stageIndex] = new CachedShaderStage(info, guestCode, cb1Data);
-
-                    stagesBitMask &= ~(1u << stageIndex);
-                }
-
-                ShaderSpecializationState specState = ShaderSpecializationState.Read(ref dataReader);
-                dataReader.EndCompression();
-
-                if (loadHostCache)
-                {
-                    byte[] hostCode = ReadHostCode(context, ref hostTocFileStream, ref hostDataFileStream, programIndex);
-
-                    if (hostCode != null)
-                    {
-                        bool hasFragmentShader = shaders.Length > 5 && shaders[5] != null;
-                        int fragmentOutputMap = hasFragmentShader ? shaders[5].Info.FragmentOutputMap : -1;
-                        IProgram hostProgram = context.Renderer.LoadProgramBinary(hostCode, hasFragmentShader, new ShaderInfo(fragmentOutputMap));
-
-                        CachedShaderProgram program = new CachedShaderProgram(hostProgram, specState, shaders);
-
-                        loader.QueueHostProgram(program, hostProgram, programIndex, isCompute);
-                    }
-                    else
-                    {
-                        loadHostCache = false;
-                    }
-                }
-
-                if (!loadHostCache)
-                {
-                    loader.QueueGuestProgram(shaders, specState, programIndex, isCompute);
-                }
-
-                loader.CheckCompilation();
-                programIndex++;
+                hostTocFileStream?.Dispose();
+                hostDataFileStream?.Dispose();
             }
-
-            _guestStorage.ClearMemoryCache();
-
-            hostTocFileStream?.Dispose();
-            hostDataFileStream?.Dispose();
         }
 
         /// <summary>
@@ -392,12 +412,22 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 return null;
             }
 
+            if ((ulong)offset >= (ulong)dataFileStream.Length)
+            {
+                throw new DiskCacheLoadException(DiskCacheLoadResult.FileCorruptedGeneric);
+            }
+
             tocFileStream.Seek(offset, SeekOrigin.Begin);
 
             BinarySerializer tocReader = new BinarySerializer(tocFileStream);
 
             OffsetAndSize offsetAndSize = new OffsetAndSize();
-            tocReader.TryRead(ref offsetAndSize);
+            tocReader.Read(ref offsetAndSize);
+
+            if (offsetAndSize.Offset >= (ulong)dataFileStream.Length)
+            {
+                throw new DiskCacheLoadException(DiskCacheLoadResult.FileCorruptedGeneric);
+            }
 
             dataFileStream.Seek((long)offsetAndSize.Offset, SeekOrigin.Begin);
 
@@ -480,6 +510,11 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             }
 
             WriteHostCode(context, hostCode);
+        }
+
+        public void ClearGuestCache()
+        {
+            _guestStorage.ClearCache();
         }
 
         /// <summary>
