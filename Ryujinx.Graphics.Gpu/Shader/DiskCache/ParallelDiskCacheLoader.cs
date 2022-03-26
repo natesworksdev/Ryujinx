@@ -479,6 +479,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         {
             ResourceCounts counts = new ResourceCounts();
             List<ShaderProgram> translatedStages = new List<ShaderProgram>();
+            ShaderSpecializationState newSpecState = new ShaderSpecializationState(specState.GraphicsState, specState.TransformFeedbackDescriptors);
             TranslatorContext nextStage = null;
 
             for (int stageIndex = Constants.ShaderStages - 1; stageIndex >= 0; stageIndex--)
@@ -490,22 +491,25 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                     continue;
                 }
 
-                var guestCode = shader.Code;
-                var cb1Data = shader.Cb1Data;
+                byte[] guestCode = shader.Code;
+                byte[] cb1Data = shader.Cb1Data;
 
-                DiskCacheGpuAccessor gpuAccessor = new DiskCacheGpuAccessor(_context, guestCode, cb1Data, specState, counts, stageIndex);
+                DiskCacheGpuAccessor gpuAccessor = new DiskCacheGpuAccessor(_context, guestCode, cb1Data, specState, newSpecState, counts, stageIndex);
                 TranslatorContext currentStage = DecodeGraphicsShader(gpuAccessor, DefaultFlags, 0);
 
                 ShaderProgram program;
 
                 if (stageIndex == 0 && shaders[0] != null)
                 {
-                    DiskCacheGpuAccessor gpuAccessorA = new DiskCacheGpuAccessor(_context, shaders[0].Code, shaders[0].Cb1Data, specState, counts, 0);
+                    byte[] guestCodeA = shaders[0].Code;
+                    byte[] cb1DataA = shaders[0].Cb1Data;
+
+                    DiskCacheGpuAccessor gpuAccessorA = new DiskCacheGpuAccessor(_context, guestCodeA, cb1DataA, specState, newSpecState, counts, 0);
                     TranslatorContext vertexA = DecodeGraphicsShader(gpuAccessorA, DefaultFlags | TranslationFlags.VertexA, 0);
 
                     program = currentStage.Translate(nextStage, vertexA);
 
-                    shaders[0] = new CachedShaderStage(null, shaders[0].Code, shaders[0].Cb1Data);
+                    shaders[0] = new CachedShaderStage(null, guestCodeA, cb1DataA);
                     shaders[1] = new CachedShaderStage(program.Info, guestCode, cb1Data);
                 }
                 else
@@ -523,7 +527,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 nextStage = currentStage;
             }
 
-            _compilationQueue.Enqueue(new ProgramCompilation(translatedStages.ToArray(), shaders, specState, programIndex, isCompute: false));
+            _compilationQueue.Enqueue(new ProgramCompilation(translatedStages.ToArray(), shaders, newSpecState, programIndex, isCompute: false));
         }
 
         /// <summary>
@@ -536,7 +540,8 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         {
             CachedShaderStage shader = shaders[0];
             ResourceCounts counts = new ResourceCounts();
-            DiskCacheGpuAccessor gpuAccessor = new DiskCacheGpuAccessor(_context, shader.Code, shader.Cb1Data, specState, counts, 0);
+            ShaderSpecializationState newSpecState = new ShaderSpecializationState(specState.ComputeState);
+            DiskCacheGpuAccessor gpuAccessor = new DiskCacheGpuAccessor(_context, shader.Code, shader.Cb1Data, specState, newSpecState, counts, 0);
 
             TranslatorContext translatorContext = DecodeComputeShader(gpuAccessor, 0);
 
@@ -544,7 +549,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
 
             shaders[0] = new CachedShaderStage(program.Info, shader.Code, shader.Cb1Data);
 
-            _compilationQueue.Enqueue(new ProgramCompilation(new[] { program }, shaders, specState, programIndex, isCompute: true));
+            _compilationQueue.Enqueue(new ProgramCompilation(new[] { program }, shaders, newSpecState, programIndex, isCompute: true));
         }
 
         /// <summary>
