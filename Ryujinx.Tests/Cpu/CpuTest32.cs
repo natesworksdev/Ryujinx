@@ -286,6 +286,35 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(GetContext().Pstate, Is.EqualTo(finalCpsr));
         }
 
+        public void RunPrecomputedTestCase(PrecomputedMemoryThumbTestCase test)
+        {
+            byte[] testmem = new byte[Size];
+
+            for (ulong i = 0; i < Size; i += 2)
+            {
+                testmem[i + 0] = (byte)((i + DataBaseAddress) >> 0);
+                testmem[i + 1] = (byte)((i + DataBaseAddress) >> 8);
+            }
+
+            SetWorkingMemory(0, testmem);
+
+            RunPrecomputedTestCase(new PrecomputedThumbTestCase(){
+                Instructions = test.Instructions,
+                StartRegs = test.StartRegs,
+                FinalRegs = test.FinalRegs,
+            });
+
+            foreach (Tuple<ulong, ushort> delta in test.MemoryDelta)
+            {
+                testmem[delta.Item1 - DataBaseAddress + 0] = (byte)(delta.Item2 >> 0);
+                testmem[delta.Item1 - DataBaseAddress + 1] = (byte)(delta.Item2 >> 8);
+            }
+
+            byte[] mem = _memory.GetSpan(DataBaseAddress, (int)Size).ToArray();
+
+            Assert.That(mem, Is.EqualTo(testmem), "testmem");
+        }
+
         protected void SetWorkingMemory(uint offset, byte[] data)
         {
             _memory.Write(DataBaseAddress + offset, data);
