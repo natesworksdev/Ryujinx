@@ -101,6 +101,11 @@ namespace Ryujinx.Configuration
             public ReactiveObject<bool> StartFullscreen { get; private set; }
 
             /// <summary>
+            /// Hide / Show Console Window
+            /// </summary>
+            public ReactiveObject<bool> ShowConsole { get; private set; }
+
+            /// <summary>
             /// View Mode of the Game list
             /// </summary>
             public ReactiveObject<Glyph> GameListViewMode { get; private set; }
@@ -140,6 +145,8 @@ namespace Ryujinx.Configuration
                 ApplicationSort   = new ReactiveObject<ApplicationSort>();
                 IsAscendingOrder  = new ReactiveObject<bool>();
                 LanguageCode      = new ReactiveObject<string>();
+                ShowConsole       = new ReactiveObject<bool>();
+                ShowConsole.Event += static (s, e) => { ConsoleHelper.SetConsoleWindowState(e.NewValue); };
             }
         }
 
@@ -559,6 +566,7 @@ namespace Ryujinx.Configuration
                 ApplicationSort           = Ui.ApplicationSort,
                 IsAscendingOrder          = Ui.IsAscendingOrder,
                 StartFullscreen           = Ui.StartFullscreen,
+                ShowConsole               = Ui.ShowConsole,
                 EnableKeyboard            = Hid.EnableKeyboard,
                 EnableMouse               = Hid.EnableMouse,
                 Hotkeys                   = Hid.Hotkeys,
@@ -632,6 +640,7 @@ namespace Ryujinx.Configuration
             Ui.ApplicationSort.Value               = ApplicationSort.Favorite;
             Ui.IsAscendingOrder.Value              = true;
             Ui.StartFullscreen.Value               = false;
+            Ui.ShowConsole.Value                   = true;
             Hid.EnableKeyboard.Value               = false;
             Hid.EnableMouse.Value                  = false;
             Hid.Hotkeys.Value = new KeyboardHotkeys
@@ -1069,11 +1078,19 @@ namespace Ryujinx.Configuration
             {
                 Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 37.");
 
+                configurationFileFormat.ShowConsole = true;
+
+                configurationFileUpdated = true;
+            }
+
+            if (configurationFileFormat.Version < 38)
+            {
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 37.");
+
                 configurationFileFormat.BaseStyle        = "Dark";
                 configurationFileFormat.GameListViewMode = Glyph.List;
                 configurationFileFormat.ShowNames        = true;
                 configurationFileFormat.GridSize         = 2;
-                configurationFileFormat.HostRefreshRate  = 60;
                 configurationFileFormat.LanguageCode     = "en_US";
 
                 configurationFileUpdated = true;
@@ -1139,6 +1156,7 @@ namespace Ryujinx.Configuration
             Ui.GridSize.Value                      = configurationFileFormat.GridSize;
             Ui.ApplicationSort.Value               = configurationFileFormat.ApplicationSort;
             Ui.StartFullscreen.Value               = configurationFileFormat.StartFullscreen;
+            Ui.ShowConsole.Value                   = configurationFileFormat.ShowConsole;
             Hid.EnableKeyboard.Value               = configurationFileFormat.EnableKeyboard;
             Hid.EnableMouse.Value                  = configurationFileFormat.EnableMouse;
             Hid.Hotkeys.Value                      = configurationFileFormat.Hotkeys;

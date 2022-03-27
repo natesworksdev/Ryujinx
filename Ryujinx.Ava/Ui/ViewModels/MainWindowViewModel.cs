@@ -520,6 +520,19 @@ namespace Ryujinx.Ava.Ui.ViewModels
             }
         }
 
+        public bool ShowConsole
+        {
+            get => ConfigurationState.Instance.Ui.ShowConsole;
+            set
+            {
+                ConfigurationState.Instance.Ui.ShowConsole.Value = value;
+
+                ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+
+                OnPropertyChanged();
+            }
+        }
+
         public ObservableCollection<ApplicationData> Applications
         {
             get => _applications;

@@ -16,7 +16,7 @@ namespace Ryujinx.Configuration
         /// <summary>
         /// The current version of the file format
         /// </summary>
-        public const int CurrentVersion = 37;
+        public const int CurrentVersion = 38;
 
         /// <summary>
         /// Version of the configuration file format
@@ -165,11 +165,6 @@ namespace Ryujinx.Configuration
         public bool EnableShaderCache { get; set; }
 
         /// <summary>
-        /// Sets maximum host frame rate. Set to 0 to remove limit. 
-        /// </summary>
-        public uint HostRefreshRate { get; set; }
-
-        /// <summary>
         /// Enables or disables profiled translation cache persistency
         /// </summary>
         public bool EnablePtc { get; set; }
@@ -279,6 +274,11 @@ namespace Ryujinx.Configuration
         /// Start games in fullscreen mode
         /// </summary>
         public bool StartFullscreen { get; set; }
+
+        /// <summary>
+        /// Show console window
+        /// </summary>
+        public bool ShowConsole { get; set; }
 
         /// <summary>
         /// Enable or disable keyboard support (Independent from controllers binding)

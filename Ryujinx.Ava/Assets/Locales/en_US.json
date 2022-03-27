@@ -492,8 +492,8 @@
   "SettingsTabAudio": "Audio",
   "SettingsTabNetwork": "Network",
   "SettingsTabNetworkConnection": "Network Connection",
-  "SettingsTabGraphicsFrameRate": "Host Refresh Rate:",
-  "SettingsTabGraphicsFrameRateTooltip": "Sets host refresh rate. Set to 0 to remove limit.",
+  "[REMOVE]SettingsTabGraphicsFrameRate": "Host Refresh Rate:",
+  "[REMOVE]SettingsTabGraphicsFrameRateTooltip": "Sets host refresh rate. Set to 0 to remove limit.",
   "SettingsTabCpuCache": "CPU Cache",
   "SettingsTabCpuMemory": "CPU Memory",
   "DialogUpdaterFlatpakNotSupportedMessage": "Please update Ryujinx via FlatHub.",
@@ -502,5 +502,6 @@
   "GameListContextMenuOpenSdModsDirectoryToolTip": "Opens the alternative SD card atmosphere directory which contains Application's Mods",
   "ControllerSettingsRotate90": "Rotate 90° Clockwise",
   "IconSize": "Icon Size",
-  "IconSizeTooltip": "Change the size of game icon"
+  "IconSizeTooltip": "Change the size of game icon",
+  "MenuBarOptionsShowConsole": "Show Console"
 }
