@@ -94,7 +94,7 @@ namespace Ryujinx.Ava.Ui.Controls
                 return;
             }
 
-            context.Custom(new GlDrawOperation(this, Image, Bounds, Bounds));
+            context.Custom(new GlDrawOperation(this, Image, new Rect(new Point(), RenderSize), new Rect(new Point(), RenderSize)));
             base.Render(context);
 
             _postFrameResetEvent.Set();
