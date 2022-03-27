@@ -12,6 +12,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         private const uint TexkMagic = (byte)'T' | ((byte)'E' << 8) | ((byte)'X' << 16) | ((byte)'K' << 24);
         private const uint TexsMagic = (byte)'T' | ((byte)'E' << 8) | ((byte)'X' << 16) | ((byte)'S' << 24);
 
+        [Flags]
         private enum QueriedStateFlags : byte
         {
             EarlyZForce = 1 << 0,
@@ -44,6 +45,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// </summary>
         public TransformFeedbackDescriptor[] TransformFeedbackDescriptors;
 
+        [Flags]
         private enum QueriedTextureStateFlags : byte
         {
             TextureFormat = 1 << 0,
@@ -434,8 +436,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
         {
             ShaderSpecializationState specState = new ShaderSpecializationState();
 
-            dataReader.TryRead(ref specState._queriedState);
-            dataReader.TryRead(ref specState._compute);
+            dataReader.Read(ref specState._queriedState);
+            dataReader.Read(ref specState._compute);
 
             if (specState._compute)
             {
@@ -448,13 +450,13 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             if (specState._queriedState.HasFlag(QueriedStateFlags.ConstantBufferUse))
             {
-                dataReader.TryRead(ref specState.ConstantBufferUse);
+                dataReader.Read(ref specState.ConstantBufferUse);
             }
 
             if (specState._queriedState.HasFlag(QueriedStateFlags.TransformFeedback))
             {
                 ushort tfCount = 0;
-                dataReader.TryRead(ref tfCount);
+                dataReader.Read(ref tfCount);
                 specState.TransformFeedbackDescriptors = new TransformFeedbackDescriptor[tfCount];
 
                 for (int index = 0; index < tfCount; index++)
@@ -464,7 +466,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             }
 
             ushort count = 0;
-            dataReader.TryRead(ref count);
+            dataReader.Read(ref count);
 
             for (int index = 0; index < count; index++)
             {

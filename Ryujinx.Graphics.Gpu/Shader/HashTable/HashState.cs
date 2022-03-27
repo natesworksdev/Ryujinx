@@ -8,6 +8,8 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
     /// </summary>
     struct HashState
     {
+        // This is using a slightly modified implementation of FastHash64.
+        // Reference: https://github.com/ztanml/fast-hash/blob/master/fasthash.c
         private const ulong M = 0x880355f21e6d1965UL;
         private ulong _hash;
         private int _start;

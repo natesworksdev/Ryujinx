@@ -75,7 +75,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         private readonly AsyncWorkQueue<CacheFileOperationTask> _fileWriterWorkerQueue;
 
         /// <summary>
-        /// Creates an ew background disk cache writer.
+        /// Creates a new background disk cache writer.
         /// </summary>
         /// <param name="context">GPU context</param>
         /// <param name="hostStorage">Disk cache host storage</param>
