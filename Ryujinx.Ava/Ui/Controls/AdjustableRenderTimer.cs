@@ -45,6 +45,7 @@ namespace Ryujinx.Ava.Ui.Controls
         }
 
         private Thread _timingThread;
+        private Thread _tickThread;
         private Stopwatch _timer;
 
         private Action<TimeSpan> _tick;
@@ -55,16 +56,14 @@ namespace Ryujinx.Ava.Ui.Controls
         private bool _isRunning;
         private bool _isSuspended;
 
+        private ManualResetEventSlim _resetEvent;
+
         public AdjustableRenderTimer(uint framerate)
         {
             _targetFrameRate = framerate;
             _timer = new Stopwatch();
+            _resetEvent = new ManualResetEventSlim(false);
             _intervalTicks = Stopwatch.Frequency / framerate;
-        }
-
-        private void Timer_Elapsed(object sender, ElapsedEventArgs e)
-        {
-            _tick?.Invoke(TimeSpan.FromMilliseconds(Environment.TickCount));
         }
 
         public void Start()
@@ -78,8 +77,29 @@ namespace Ryujinx.Ava.Ui.Controls
                 _isRunning = true;
                 _timingThread.Start();
             }
+            if (_tickThread == null)
+            {
+                _tickThread = new Thread(RunTick);
+                _tickThread.Name = "RenderTimerTickThread";
+                _tickThread.IsBackground = true;
+                _isRunning = true;
+                _tickThread.Start();
+            }
 
             _isSuspended = false;
+        }
+
+        public void RunTick()
+        {
+            while (_isRunning)
+            {
+                _resetEvent.Wait();
+                lock (this)
+                {
+                    _resetEvent.Reset();
+                }
+                _tick?.Invoke(TimeSpan.FromMilliseconds(_timer.ElapsedTicks * 1000 / Stopwatch.Frequency));
+            }
         }
 
         private void Run()
@@ -92,7 +112,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
                 if ((elapsed > nextElapsed) && !_isSuspended)
                 {
-                    _tick?.Invoke(TimeSpan.FromMilliseconds(Environment.TickCount));
+                    TickNow();
 
                     lastElapsed = elapsed;
                 }
@@ -108,6 +128,14 @@ namespace Ryujinx.Ava.Ui.Controls
             }
         }
 
+        public void TickNow()
+        {
+            lock (this)
+            {
+                _resetEvent.Set();
+            }
+        }
+
         public void Stop()
         {
             _timer.Stop();
@@ -119,6 +147,8 @@ namespace Ryujinx.Ava.Ui.Controls
             _timer.Stop();
             _isRunning = false;
             _timingThread.Join();
+            _tickThread.Join();
+            _resetEvent.Dispose();
         }
     }
 }

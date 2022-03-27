@@ -50,6 +50,10 @@ namespace Ryujinx.Ava.Ui.Controls
         private SwappableNativeWindowBase _gameBackgroundWindow;
 
         private bool _isInitialized;
+        private bool _inFlight;
+
+        private int _drawId;
+        private IntPtr _fence;
 
         public RendererControl(int major, int minor, GraphicsDebugLevel graphicsDebugLevel)
         {
@@ -77,8 +81,6 @@ namespace Ryujinx.Ava.Ui.Controls
                 CreateWindow();
 
                 OnGlInitialized();
-
-                Window.SwapInterval = 0;
                 _isInitialized = true;
             }
 
@@ -90,8 +92,6 @@ namespace Ryujinx.Ava.Ui.Controls
 
             context.Custom(new GlDrawOperation(this, Image, new Rect(new Point(), RenderSize), new Rect(new Point(), RenderSize)));
             base.Render(context);
-
-            _postFrameResetEvent.Set();
         }
 
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -100,8 +100,6 @@ namespace Ryujinx.Ava.Ui.Controls
             _preFrameResetEvent?.Dispose();
             _postFrameResetEvent?.Set();
             _postFrameResetEvent?.Dispose();
-
-            Window.SwapInterval = 1;
             base.OnDetachedFromVisualTree(e);
         }
 
@@ -134,6 +132,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
         public void QueueRender()
         {
+            Program.RenderTimer.TickNow();
             Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Render);
         }
 
@@ -141,16 +140,24 @@ namespace Ryujinx.Ava.Ui.Controls
         {
             Image = image;
 
+            _inFlight = true;
+
+            _fence = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags.None);
+
             QueueRender();
 
-            _preFrameResetEvent.Reset();
+            Wait();
 
             return true;
         }
 
         public void OnPreFrame()
         {
-            _preFrameResetEvent.Wait();
+            if (_inFlight)
+            {
+                _preFrameResetEvent.Wait();
+                _preFrameResetEvent.Reset();
+            }
         }
 
         public void Wait()
@@ -205,6 +212,9 @@ namespace Ryujinx.Ava.Ui.Controls
             private int _texture;
             private int _framebuffer;
 
+            private int _drawId;
+            private IntPtr _fence;
+
             public Rect Bounds => _control.Bounds;
 
             private readonly RendererControl _control;
@@ -217,16 +227,19 @@ namespace Ryujinx.Ava.Ui.Controls
                 _srcRect = srcRect;
                 _dstRect = dstRect;
                 _texture = texture;
+                _drawId = ++control._drawId;
+                _fence = control._fence;
             }
 
             public void Dispose()
             {
                 GL.DeleteFramebuffer(_framebuffer);
+                GL.DeleteSync(_fence);
             }
 
             public bool Equals(ICustomDrawOperation other)
             {
-                return other is GlDrawOperation operation && _texture == operation._texture && Equals(this, other);
+                return other is GlDrawOperation operation && _texture == operation._texture && operation._drawId == _drawId;
             }
 
             public bool HitTest(Point p)
@@ -247,7 +260,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
             public void Render(IDrawingContextImpl context)
             {
-                if (_texture == 0)
+                if (_texture == 0 || _drawId != _control._drawId)
                     return;
 
                 if (_framebuffer == 0)
@@ -263,6 +276,8 @@ namespace Ryujinx.Ava.Ui.Controls
 
                 var stencils = GL.GetInteger(GetPName.StencilBits);
 
+                GL.WaitSync(_fence, WaitSyncFlags.None, ulong.MaxValue);
+
                 using (var backendTexture = new GRBackendRenderTarget(imageInfo.Width, imageInfo.Height, 1, stencils, glInfo))
                 using (var surface = SKSurface.Create(skiaDrawingContextImpl.GrContext, backendTexture,
                     GRSurfaceOrigin.BottomLeft, SKColorType.Rgba8888))
@@ -274,6 +289,7 @@ namespace Ryujinx.Ava.Ui.Controls
                         skiaDrawingContextImpl.SkCanvas.DrawImage(snapshot, _srcRect.ToSKRect(), _dstRect.ToSKRect(), new SKPaint());
 
                     _control._preFrameResetEvent.Set();
+                    _control._inFlight = false;
                 }
             }
         }

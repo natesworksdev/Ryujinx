@@ -25,7 +25,7 @@ namespace Ryujinx.Graphics.OpenGL
         public Window(Renderer renderer)
         {
             _renderer = renderer;
-            _stagingTextures = new int[2];
+            _stagingTextures = new int[5];
         }
 
         public void Present(ITexture texture, ImageCrop crop, Func<int, bool> swapBuffersCallback)

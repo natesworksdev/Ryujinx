@@ -863,14 +863,19 @@ namespace Ryujinx.Ava
 
                     if (Device.WaitFifo())
                     {
-                        Renderer.OnPreFrame();
                         Device.Statistics.RecordFifoStart();
                         Device.ProcessFrame();
                         Device.Statistics.RecordFifoEnd();
                     }
 
+                    bool ticked = false;
+
                     while (Device.ConsumeFrameAvailable())
                     {
+                        ticked = true;
+
+                        Renderer.OnPreFrame();
+
                         if (!_renderingStarted)
                         {
                             _renderingStarted = true;
@@ -878,6 +883,11 @@ namespace Ryujinx.Ava
                         }
 
                         Device.PresentFrame(Present);
+                    }
+
+                    if(!ticked)
+                    {
+                        Program.RenderTimer.TickNow();
                     }
 
                     if (_ticks >= _ticksPerFrame)
@@ -890,9 +900,10 @@ namespace Ryujinx.Ava
                             dockedMode += $" ({scale}x)";
                         }
 
-                        string vendor = _renderer is Renderer renderer ? renderer.GpuVendor : "Vulkan Test";
+                        // slow down ui timer.
+                        Program.RenderTimer.TargetFrameRate = 5;
 
-                        Program.RenderTimer.TargetFrameRate = 500;
+                        string vendor = _renderer is Renderer renderer ? renderer.GpuVendor : "Vulkan Test";
 
                         StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
                             Device.EnableDeviceVsync,
@@ -920,12 +931,6 @@ namespace Ryujinx.Ava
         private bool Present(int image)
         {
             bool presented = Renderer.Present(image);
-
-            try
-            {
-               Renderer.Wait();
-            }
-            catch (Exception) { }
 
             return presented;
         }
