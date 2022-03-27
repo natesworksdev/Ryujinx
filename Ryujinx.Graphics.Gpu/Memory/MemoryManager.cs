@@ -115,10 +115,18 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
+        /// <summary>
+        /// Gets a read-only span of data from GPU mapped memory, up to the entire range specified,
+        /// or the last mapped page if the range is not fully mapped.
+        /// </summary>
+        /// <param name="va">GPU virtual address where the data is located</param>
+        /// <param name="size">Size of the data</param>
+        /// <param name="tracked">True if read tracking is triggered on the span</param>
+        /// <returns>The span of the data at the specified memory location</returns>
         public ReadOnlySpan<byte> GetSpanMapped(ulong va, int size, bool tracked = false)
         {
             bool isContiguous = true;
-            int mappedSize = 0;
+            int mappedSize;
 
             if (ValidateAddress(va) && GetPte(va) != PteUnmapped && Physical.IsMapped(Translate(va)))
             {

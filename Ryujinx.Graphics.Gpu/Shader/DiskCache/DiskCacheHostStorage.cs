@@ -512,6 +512,9 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             WriteHostCode(context, hostCode);
         }
 
+        /// <summary>
+        /// Clears all content from the guest cache files.
+        /// </summary>
         public void ClearGuestCache()
         {
             _guestStorage.ClearCache();

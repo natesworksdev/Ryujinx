@@ -175,6 +175,9 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             return DiskCacheCommon.OpenFile(_basePath, DataFileName, writable: false);
         }
 
+        /// <summary>
+        /// Clear all content from the guest cache files.
+        /// </summary>
         public void ClearCache()
         {
             using var tocFileStream = DiskCacheCommon.OpenFile(_basePath, TocFileName, writable: true);

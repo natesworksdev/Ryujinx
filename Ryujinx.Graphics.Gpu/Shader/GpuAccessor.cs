@@ -16,8 +16,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
         private readonly int _stageIndex;
         private readonly bool _compute;
 
-        public int Cb1DataSize { get; private set; }
-
         /// <summary>
         /// Creates a new instance of the GPU state accessor for graphics shader translation.
         /// </summary>
@@ -45,18 +43,9 @@ namespace Ryujinx.Graphics.Gpu.Shader
             _compute = true;
         }
 
-        /// <summary>
-        /// Reads data from the constant buffer 1.
-        /// </summary>
-        /// <param name="offset">Offset in bytes to read from</param>
-        /// <returns>Value at the given offset</returns>
+        /// <inheritdoc/>
         public uint ConstantBuffer1Read(int offset)
         {
-            if (Cb1DataSize < offset + 4)
-            {
-                Cb1DataSize = offset + 4;
-            }
-
             ulong baseAddress = _compute
                 ? _channel.BufferManager.GetComputeUniformBufferAddress(1)
                 : _channel.BufferManager.GetGraphicsUniformBufferAddress(_stageIndex, 1);
@@ -64,81 +53,59 @@ namespace Ryujinx.Graphics.Gpu.Shader
             return _channel.MemoryManager.Physical.Read<uint>(baseAddress + (ulong)offset);
         }
 
-        /// <summary>
-        /// Prints a log message.
-        /// </summary>
-        /// <param name="message">Message to print</param>
+        /// <inheritdoc/>
         public void Log(string message)
         {
             Logger.Warning?.Print(LogClass.Gpu, $"Shader translator: {message}");
         }
 
-        /// <summary>
-        /// Gets a span of the specified memory location, containing shader code.
-        /// </summary>
-        /// <param name="address">GPU virtual address of the data</param>
-        /// <param name="minimumSize">Minimum size that the returned span may have</param>
-        /// <returns>Span of the memory location</returns>
+        /// <inheritdoc/>
         public ReadOnlySpan<ulong> GetCode(ulong address, int minimumSize)
         {
             int size = Math.Max(minimumSize, 0x1000 - (int)(address & 0xfff));
             return MemoryMarshal.Cast<byte, ulong>(_channel.MemoryManager.GetSpan(address, size));
         }
 
+        /// <inheritdoc/>
         public int QueryBindingConstantBuffer(int index)
         {
             return _state.ResourceCounts.UniformBuffersCount++;
         }
 
+        /// <inheritdoc/>
         public int QueryBindingStorageBuffer(int index)
         {
             return _state.ResourceCounts.StorageBuffersCount++;
         }
 
+        /// <inheritdoc/>
         public int QueryBindingTexture(int index)
         {
             return _state.ResourceCounts.TexturesCount++;
         }
 
+        /// <inheritdoc/>
         public int QueryBindingImage(int index)
         {
             return _state.ResourceCounts.ImagesCount++;
         }
 
-        /// <summary>
-        /// Queries Local Size X for compute shaders.
-        /// </summary>
-        /// <returns>Local Size X</returns>
+        /// <inheritdoc/>
         public int QueryComputeLocalSizeX() => _state.ComputeState.LocalSizeX;
 
-        /// <summary>
-        /// Queries Local Size Y for compute shaders.
-        /// </summary>
-        /// <returns>Local Size Y</returns>
+        /// <inheritdoc/>
         public int QueryComputeLocalSizeY() => _state.ComputeState.LocalSizeY;
 
-        /// <summary>
-        /// Queries Local Size Z for compute shaders.
-        /// </summary>
-        /// <returns>Local Size Z</returns>
+        /// <inheritdoc/>
         public int QueryComputeLocalSizeZ() => _state.ComputeState.LocalSizeZ;
 
-        /// <summary>
-        /// Queries Local Memory size in bytes for compute shaders.
-        /// </summary>
-        /// <returns>Local Memory size in bytes</returns>
+        /// <inheritdoc/>
         public int QueryComputeLocalMemorySize() => _state.ComputeState.LocalMemorySize;
 
-        /// <summary>
-        /// Queries Shared Memory size in bytes for compute shaders.
-        /// </summary>
-        /// <returns>Shared Memory size in bytes</returns>
+        /// <inheritdoc/>
         public int QueryComputeSharedMemorySize() => _state.ComputeState.SharedMemorySize;
 
-        /// <summary>
-        /// Queries Constant Buffer usage information.
-        /// </summary>
-        /// <returns>A mask where each bit set indicates a bound constant buffer</returns>
+        /// <inheritdoc/>
         public uint QueryConstantBufferUse()
         {
             uint useMask = _compute
@@ -149,44 +116,32 @@ namespace Ryujinx.Graphics.Gpu.Shader
             return useMask;
         }
 
-        /// <summary>
-        /// Queries current primitive topology for geometry shaders.
-        /// </summary>
-        /// <returns>Current primitive topology</returns>
+        /// <inheritdoc/>
         public InputTopology QueryPrimitiveTopology()
         {
             _state.SpecializationState?.RecordPrimitiveTopology();
             return ConvertToInputTopology(_state.GraphicsState.Topology, _state.GraphicsState.TessellationMode);
         }
 
-        /// <summary>
-        /// Queries the tessellation evaluation shader primitive winding order.
-        /// </summary>
-        /// <returns>True if the primitive winding order is clockwise, false if counter-clockwise</returns>
-        public bool QueryTessCw() => _state.GraphicsState.TessellationMode.UnpackCw();
+        /// <inheritdoc/>
+        public bool QueryTessCw()
+        {
+            return _state.GraphicsState.TessellationMode.UnpackCw();
+        }
 
-        /// <summary>
-        /// Queries the tessellation evaluation shader abstract patch type.
-        /// </summary>
-        /// <returns>Abstract patch type</returns>
-        public TessPatchType QueryTessPatchType() => _state.GraphicsState.TessellationMode.UnpackPatchType();
+        /// <inheritdoc/>
+        public TessPatchType QueryTessPatchType()
+        {
+            return _state.GraphicsState.TessellationMode.UnpackPatchType();
+        }
 
-        /// <summary>
-        /// Queries the tessellation evaluation shader spacing between tessellated vertices of the patch.
-        /// </summary>
-        /// <returns>Spacing between tessellated vertices of the patch</returns>
-        public TessSpacing QueryTessSpacing() => _state.GraphicsState.TessellationMode.UnpackSpacing();
+        /// <inheritdoc/>
+        public TessSpacing QueryTessSpacing()
+        {
+            return _state.GraphicsState.TessellationMode.UnpackSpacing();
+        }
 
-        /// <summary>
-        /// Queries texture format information, for shaders using image load or store.
-        /// </summary>
-        /// <remarks>
-        /// This only returns non-compressed color formats.
-        /// If the format of the texture is a compressed, depth or unsupported format, then a default value is returned.
-        /// </remarks>
-        /// <param name="handle">Texture handle</param>
-        /// <param name="cbufSlot">Constant buffer slot for the texture handle</param>
-        /// <returns>Color format of the non-compressed texture</returns>
+        //// <inheritdoc/>
         public TextureFormat QueryTextureFormat(int handle, int cbufSlot)
         {
             _state.SpecializationState?.RecordTextureFormat(_stageIndex, handle, cbufSlot);
@@ -194,24 +149,14 @@ namespace Ryujinx.Graphics.Gpu.Shader
             return ConvertToTextureFormat(descriptor.UnpackFormat(), descriptor.UnpackSrgb());
         }
 
-        /// <summary>
-        /// Queries sampler type information.
-        /// </summary>
-        /// <param name="handle">Texture handle</param>
-        /// <param name="cbufSlot">Constant buffer slot for the texture handle</param>
-        /// <returns>The sampler type value for the given handle</returns>
+        /// <inheritdoc/>
         public SamplerType QuerySamplerType(int handle, int cbufSlot)
         {
             _state.SpecializationState?.RecordTextureSamplerType(_stageIndex, handle, cbufSlot);
             return GetTextureDescriptor(handle, cbufSlot).UnpackTextureTarget().ConvertSamplerType();
         }
 
-        /// <summary>
-        /// Queries texture target information.
-        /// </summary>
-        /// <param name="handle">Texture handle</param>
-        /// <param name="cbufSlot">Constant buffer slot for the texture handle</param>
-        /// <returns>True if the texture is a rectangle texture, false otherwise</returns>
+        /// <inheritdoc/>
         public bool QueryIsTextureRectangle(int handle, int cbufSlot)
         {
             _state.SpecializationState?.RecordTextureCoordNormalized(_stageIndex, handle, cbufSlot);
@@ -254,45 +199,32 @@ namespace Ryujinx.Graphics.Gpu.Shader
             }
         }
 
-        /// <summary>
-        /// Queries transform feedback enable state.
-        /// </summary>
-        /// <returns>True if the shader uses transform feedback, false otherwise</returns>
+        /// <inheritdoc/>
         public bool QueryTransformFeedbackEnabled()
         {
             return _state.TransformFeedbackDescriptors != null;
         }
 
-        /// <summary>
-        /// Queries the varying locations that should be written to the transform feedback buffer.
-        /// </summary>
-        /// <param name="bufferIndex">Index of the transform feedback buffer</param>
-        /// <returns>Varying locations for the specified buffer</returns>
+        /// <inheritdoc/>
         public ReadOnlySpan<byte> QueryTransformFeedbackVaryingLocations(int bufferIndex)
         {
             return _state.TransformFeedbackDescriptors[bufferIndex].AsSpan();
         }
 
-        /// <summary>
-        /// Queries the stride (in bytes) of the per vertex data written into the transform feedback buffer.
-        /// </summary>
-        /// <param name="bufferIndex">Index of the transform feedback buffer</param>
-        /// <returns>Stride for the specified buffer</returns>
+        /// <inheritdoc/>
         public int QueryTransformFeedbackStride(int bufferIndex)
         {
             return _state.TransformFeedbackDescriptors[bufferIndex].Stride;
         }
 
-        /// <summary>
-        /// Queries if host state forces early depth testing.
-        /// </summary>
-        /// <returns>True if early depth testing is forced</returns>
+        /// <inheritdoc/>
         public bool QueryEarlyZForce()
         {
             _state.SpecializationState?.RecordEarlyZForce();
             return _state.GraphicsState.EarlyZForce;
         }
 
+        /// <inheritdoc/>
         public void RegisterTexture(int handle, int cbufSlot)
         {
             _state.SpecializationState?.RegisterTexture(_stageIndex, handle, cbufSlot, GetTextureDescriptor(handle, cbufSlot));

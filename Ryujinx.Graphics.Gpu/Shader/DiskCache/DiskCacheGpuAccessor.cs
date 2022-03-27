@@ -44,134 +44,96 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             _resourceCounts = counts;
         }
 
-        /// <summary>
-        /// Reads data from the constant buffer 1.
-        /// </summary>
-        /// <param name="offset">Offset in bytes to read from</param>
-        /// <returns>Value at the given offset</returns>
+        /// <inheritdoc/>
         public uint ConstantBuffer1Read(int offset)
         {
             return MemoryMarshal.Cast<byte, uint>(_cb1Data.Span.Slice(offset))[0];
         }
 
-        /// <summary>
-        /// Prints a log message.
-        /// </summary>
-        /// <param name="message">Message to print</param>
+        /// <inheritdoc/>
         public void Log(string message)
         {
             Logger.Warning?.Print(LogClass.Gpu, $"Shader translator: {message}");
         }
 
-        /// <summary>
-        /// Gets a span of the specified memory location, containing shader code.
-        /// </summary>
-        /// <param name="address">GPU virtual address of the data</param>
-        /// <param name="minimumSize">Minimum size that the returned span may have</param>
-        /// <returns>Span of the memory location</returns>
+        /// <inheritdoc/>
         public ReadOnlySpan<ulong> GetCode(ulong address, int minimumSize)
         {
             return MemoryMarshal.Cast<byte, ulong>(_data.Span.Slice((int)address));
         }
 
+        /// <inheritdoc/>
         public int QueryBindingConstantBuffer(int index)
         {
             return _resourceCounts.UniformBuffersCount++;
         }
 
+        /// <inheritdoc/>
         public int QueryBindingStorageBuffer(int index)
         {
             return _resourceCounts.StorageBuffersCount++;
         }
 
+        /// <inheritdoc/>
         public int QueryBindingTexture(int index)
         {
             return _resourceCounts.TexturesCount++;
         }
 
+        /// <inheritdoc/>
         public int QueryBindingImage(int index)
         {
             return _resourceCounts.ImagesCount++;
         }
 
-        /// <summary>
-        /// Queries Local Size X for compute shaders.
-        /// </summary>
-        /// <returns>Local Size X</returns>
+        /// <inheritdoc/>
         public int QueryComputeLocalSizeX() => _oldSpecState.ComputeState.LocalSizeX;
 
-        /// <summary>
-        /// Queries Local Size Y for compute shaders.
-        /// </summary>
-        /// <returns>Local Size Y</returns>
+        /// <inheritdoc/>
         public int QueryComputeLocalSizeY() => _oldSpecState.ComputeState.LocalSizeY;
 
-        /// <summary>
-        /// Queries Local Size Z for compute shaders.
-        /// </summary>
-        /// <returns>Local Size Z</returns>
+        /// <inheritdoc/>
         public int QueryComputeLocalSizeZ() => _oldSpecState.ComputeState.LocalSizeZ;
 
-        /// <summary>
-        /// Queries Local Memory size in bytes for compute shaders.
-        /// </summary>
-        /// <returns>Local Memory size in bytes</returns>
+        /// <inheritdoc/>
         public int QueryComputeLocalMemorySize() => _oldSpecState.ComputeState.LocalMemorySize;
 
-        /// <summary>
-        /// Queries Shared Memory size in bytes for compute shaders.
-        /// </summary>
-        /// <returns>Shared Memory size in bytes</returns>
+        /// <inheritdoc/>
         public int QueryComputeSharedMemorySize() => _oldSpecState.ComputeState.SharedMemorySize;
 
-        /// <summary>
-        /// Queries Constant Buffer usage information.
-        /// </summary>
-        /// <returns>A mask where each bit set indicates a bound constant buffer</returns>
+        /// <inheritdoc/>
         public uint QueryConstantBufferUse()
         {
             _newSpecState.RecordConstantBufferUse(_oldSpecState.ConstantBufferUse);
             return _oldSpecState.ConstantBufferUse;
         }
 
-        /// <summary>
-        /// Queries current primitive topology for geometry shaders.
-        /// </summary>
-        /// <returns>Current primitive topology</returns>
+        /// <inheritdoc/>
         public InputTopology QueryPrimitiveTopology()
         {
             _newSpecState.RecordPrimitiveTopology();
             return ConvertToInputTopology(_oldSpecState.GraphicsState.Topology, _oldSpecState.GraphicsState.TessellationMode);
         }
 
-        /// <summary>
-        /// Queries the tessellation evaluation shader primitive winding order.
-        /// </summary>
-        /// <returns>True if the primitive winding order is clockwise, false if counter-clockwise</returns>
-        public bool QueryTessCw() => _oldSpecState.GraphicsState.TessellationMode.UnpackCw();
+        /// <inheritdoc/>
+        public bool QueryTessCw()
+        {
+            return _oldSpecState.GraphicsState.TessellationMode.UnpackCw();
+        }
 
-        /// <summary>
-        /// Queries the tessellation evaluation shader abstract patch type.
-        /// </summary>
-        /// <returns>Abstract patch type</returns>
-        public TessPatchType QueryTessPatchType() => _oldSpecState.GraphicsState.TessellationMode.UnpackPatchType();
+        /// <inheritdoc/>
+        public TessPatchType QueryTessPatchType()
+        {
+            return _oldSpecState.GraphicsState.TessellationMode.UnpackPatchType();
+        }
 
-        /// <summary>
-        /// Queries the tessellation evaluation shader spacing between tessellated vertices of the patch.
-        /// </summary>
-        /// <returns>Spacing between tessellated vertices of the patch</returns>
-        public TessSpacing QueryTessSpacing() => _oldSpecState.GraphicsState.TessellationMode.UnpackSpacing();
+        /// <inheritdoc/>
+        public TessSpacing QueryTessSpacing()
+        {
+            return _oldSpecState.GraphicsState.TessellationMode.UnpackSpacing();
+        }
 
-        /// <summary>
-        /// Queries texture format information, for shaders using image load or store.
-        /// </summary>
-        /// <remarks>
-        /// This only returns non-compressed color formats.
-        /// If the format of the texture is a compressed, depth or unsupported format, then a default value is returned.
-        /// </remarks>
-        /// <param name="handle">Texture handle</param>
-        /// <param name="cbufSlot">Constant buffer slot for the texture handle</param>
-        /// <returns>Color format of the non-compressed texture</returns>
+        /// <inheritdoc/>
         public TextureFormat QueryTextureFormat(int handle, int cbufSlot)
         {
             _newSpecState.RecordTextureFormat(_stageIndex, handle, cbufSlot);
@@ -179,57 +141,39 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             return ConvertToTextureFormat(format, formatSrgb);
         }
 
-        /// <summary>
-        /// Queries sampler type information.
-        /// </summary>
-        /// <param name="handle">Texture handle</param>
-        /// <param name="cbufSlot">Constant buffer slot for the texture handle</param>
-        /// <returns>The sampler type value for the given handle</returns>
+        /// <inheritdoc/>
         public SamplerType QuerySamplerType(int handle, int cbufSlot)
         {
             _newSpecState.RecordTextureSamplerType(_stageIndex, handle, cbufSlot);
             return _oldSpecState.GetTextureTarget(_stageIndex, handle, cbufSlot).ConvertSamplerType();
         }
 
+        /// <inheritdoc/>
         public bool QueryIsTextureRectangle(int handle, int cbufSlot)
         {
             _newSpecState.RecordTextureCoordNormalized(_stageIndex, handle, cbufSlot);
             return !_oldSpecState.GetCoordNormalized(_stageIndex, handle, cbufSlot);
         }
 
-        /// <summary>
-        /// Queries transform feedback enable state.
-        /// </summary>
-        /// <returns>True if the shader uses transform feedback, false otherwise</returns>
+        /// <inheritdoc/>
         public bool QueryTransformFeedbackEnabled()
         {
             return _oldSpecState.TransformFeedbackDescriptors != null;
         }
 
-        /// <summary>
-        /// Queries the varying locations that should be written to the transform feedback buffer.
-        /// </summary>
-        /// <param name="bufferIndex">Index of the transform feedback buffer</param>
-        /// <returns>Varying locations for the specified buffer</returns>
+        /// <inheritdoc/>
         public ReadOnlySpan<byte> QueryTransformFeedbackVaryingLocations(int bufferIndex)
         {
             return _oldSpecState.TransformFeedbackDescriptors[bufferIndex].AsSpan();
         }
 
-        /// <summary>
-        /// Queries the stride (in bytes) of the per vertex data written into the transform feedback buffer.
-        /// </summary>
-        /// <param name="bufferIndex">Index of the transform feedback buffer</param>
-        /// <returns>Stride for the specified buffer</returns>
+        /// <inheritdoc/>
         public int QueryTransformFeedbackStride(int bufferIndex)
         {
             return _oldSpecState.TransformFeedbackDescriptors[bufferIndex].Stride;
         }
 
-        /// <summary>
-        /// Queries if host state forces early depth testing.
-        /// </summary>
-        /// <returns>True if early depth testing is forced</returns>
+        /// <inheritdoc/>
         public bool QueryEarlyZForce()
         {
             _newSpecState.RecordEarlyZForce();
