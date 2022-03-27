@@ -259,7 +259,6 @@ namespace Ryujinx.Ava.Ui.ViewModels
             IgnoreMissingServices = config.System.IgnoreMissingServices;
             ExpandDramSize = config.System.ExpandRam;
             EnableShaderCache = config.Graphics.EnableShaderCache;
-            HostRefreshRate = config.Graphics.HostRefreshRate;
             EnableFileLog = config.Logger.EnableFileLog;
             EnableStub = config.Logger.EnableStub;
             EnableInfo = config.Logger.EnableInfo;
@@ -333,7 +332,6 @@ namespace Ryujinx.Ava.Ui.ViewModels
             config.HideCursorOnIdle.Value = HideCursorOnIdle;
             config.Graphics.EnableVsync.Value = EnableVsync;
             config.Graphics.EnableShaderCache.Value = EnableShaderCache;
-            config.Graphics.HostRefreshRate.Value = HostRefreshRate;
             config.System.EnablePtc.Value = EnablePptc;
             config.System.EnableInternetAccess.Value = EnableInternetAccess;
             config.System.EnableFsIntegrityChecks.Value = EnableFsIntegrityChecks;

@@ -264,7 +264,6 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 _vsyncColor = value;
 
                 OnPropertyChanged();
-                OnPropertyChanged(nameof(FrameRateLimitText));
             }
         }
 
@@ -333,8 +332,6 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 OnPropertyChanged();
             }
         }
-
-        public string FrameRateLimitText => $"{(ConfigurationState.Instance.Graphics.HostRefreshRate == 0 ? "∞" : ConfigurationState.Instance.Graphics.HostRefreshRate.Value.ToString())} Hz";
 
         public string GpuStatusText
         {

@@ -563,37 +563,6 @@
                                     </ComboBoxItem>
                                 </ComboBox>
                             </StackPanel>
-                            <StackPanel
-                                Margin="0,5,0,0"
-                                Orientation="Horizontal"
-                                Spacing="20">
-                                <TextBlock VerticalAlignment="Center"
-                                           Text="{locale:Locale SettingsTabGraphicsFrameRate}"
-                                           ToolTip.Tip="{locale:Locale SettingsTabGraphicsFrameRateTooltip}"
-                                           Width="230" />
-                                <ui:NumberBox Value="{Binding HostRefreshRate}"
-                                    ToolTip.Tip="{locale:Locale SettingsTabGraphicsFrameRateTooltip}"
-                                    Width="350"
-                                    SmallChange="1"
-                                    LargeChange="10"
-                                    SimpleNumberFormat="F0"
-                                    SpinButtonPlacementMode="Inline"
-                                    Minimum="0"
-                                    Maximum="240" />
-                            </StackPanel>
-                            <StackPanel
-                                Margin="250,0,0,0"
-                                Orientation="Horizontal">
-                                <Slider Value="{Binding HostRefreshRate}"
-                                        ToolTip.Tip="{locale:Locale SettingsTabGraphicsFrameRateTooltip}"
-                                        Minimum="0"
-                                        Maximum="240"
-                                        SmallChange="5"
-                                        TickFrequency="5"
-                                        IsSnapToTickEnabled="True"
-                                        LargeChange="10"
-                                        Width="350" />
-                            </StackPanel>
                         </StackPanel>
                         <Separator Height="1" Margin="0,5" />
                         <TextBlock FontWeight="Bold" Text="{locale:Locale SettingsTabGraphicsFeatures}" />

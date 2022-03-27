@@ -37,8 +37,6 @@ namespace Ryujinx.Ava.Ui.Controls
         protected Size RenderSize { get;private set; }
         public bool IsStarted { get; private set; }
 
-        protected IntPtr Fence { get; set; } = IntPtr.Zero;
-
         public int Major { get; }
         public int Minor { get; }
         public GraphicsDebugLevel DebugLevel { get; }
@@ -84,13 +82,9 @@ namespace Ryujinx.Ava.Ui.Controls
                 _isInitialized = true;
             }
 
-            if (GameContext == null || !IsStarted)
+            if (GameContext == null || !IsStarted || Image == 0)
             {
-                return;
-            }
-
-            if (Image == 0)
-            {
+                _preFrameResetEvent.Set();
                 return;
             }
 
@@ -149,17 +143,19 @@ namespace Ryujinx.Ava.Ui.Controls
 
             QueueRender();
 
-            if(Fence != IntPtr.Zero)
-            {
-                GL.DeleteSync(Fence);
-                Fence = IntPtr.Zero;
-            }
-
-            Fence = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags.None);
-
-            GL.Finish();
+            _preFrameResetEvent.Reset();
 
             return true;
+        }
+
+        public void OnPreFrame()
+        {
+            _preFrameResetEvent.Wait();
+        }
+
+        public void Wait()
+        {
+            _gameBackgroundWindow?.SwapBuffers();
         }
 
         internal void Start()
@@ -259,8 +255,6 @@ namespace Ryujinx.Ava.Ui.Controls
                     CreateRenderTarget();
                 }
 
-                GL.WaitSync(_control.Fence, WaitSyncFlags.None, ulong.MaxValue);
-
                 if (context is not ISkiaDrawingContextImpl skiaDrawingContextImpl)
                     return;
 
@@ -278,6 +272,8 @@ namespace Ryujinx.Ava.Ui.Controls
 
                     using (var snapshot = surface.Snapshot())
                         skiaDrawingContextImpl.SkCanvas.DrawImage(snapshot, _srcRect.ToSKRect(), _dstRect.ToSKRect(), new SKPaint());
+
+                    _control._preFrameResetEvent.Set();
                 }
             }
         }
