@@ -1,4 +1,7 @@
 ﻿using Avalonia.Rendering;
+using SPB.Graphics;
+using SPB.Platform;
+using SPB.Windowing;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -46,6 +49,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
         private Thread _timingThread;
         private Thread _tickThread;
+        private Thread _vsyncThread;
         private Stopwatch _timer;
 
         private Action<TimeSpan> _tick;
@@ -56,13 +60,16 @@ namespace Ryujinx.Ava.Ui.Controls
         private bool _isRunning;
         private bool _isSuspended;
 
-        private ManualResetEventSlim _resetEvent;
+        private AutoResetEvent _resetEvent;
+        private ManualResetEvent _pauseEvent;
+        private bool _useVSync;
 
         public AdjustableRenderTimer(uint framerate)
         {
             _targetFrameRate = framerate;
             _timer = new Stopwatch();
-            _resetEvent = new ManualResetEventSlim(false);
+            _resetEvent = new AutoResetEvent(true);
+            _pauseEvent = new ManualResetEvent(true);
             _intervalTicks = Stopwatch.Frequency / framerate;
         }
 
@@ -93,12 +100,11 @@ namespace Ryujinx.Ava.Ui.Controls
         {
             while (_isRunning)
             {
-                _resetEvent.Wait();
                 lock (this)
                 {
-                    _resetEvent.Reset();
+                    _resetEvent.WaitOne();
+                    _tick?.Invoke(TimeSpan.FromMilliseconds(_timer.ElapsedTicks * 1000 / Stopwatch.Frequency));
                 }
-                _tick?.Invoke(TimeSpan.FromMilliseconds(_timer.ElapsedTicks * 1000 / Stopwatch.Frequency));
             }
         }
 
@@ -107,6 +113,7 @@ namespace Ryujinx.Ava.Ui.Controls
             long lastElapsed = 0;
             while (_isRunning)
             {
+                _pauseEvent.WaitOne();
                 var elapsed = _timer.ElapsedTicks;
                 var nextElapsed = lastElapsed + _intervalTicks;
 
@@ -130,10 +137,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
         public void TickNow()
         {
-            lock (this)
-            {
-                _resetEvent.Set();
-            }
+            _resetEvent.Set();
         }
 
         public void Stop()
@@ -142,11 +146,58 @@ namespace Ryujinx.Ava.Ui.Controls
             _isSuspended = true;
         }
 
+        public void SwitchToVSyncTiming()
+        {
+            if (_vsyncThread != null && _vsyncThread.IsAlive)
+            {
+                return;
+            }
+
+            _pauseEvent.Reset();
+            _vsyncThread = new Thread(VSyncRunner);
+            _vsyncThread.IsBackground = true;
+            _vsyncThread.Name = "VSyncRenderThread";
+            _vsyncThread.Start();
+        }
+
+        public void VSyncRunner()
+        {
+            var vsyncWindow = PlatformHelper.CreateOpenGLWindow(FramebufferFormat.Default, 0, 0, 100, 100);
+            vsyncWindow.Hide();
+
+            var vsyncContext = PlatformHelper.CreateOpenGLContext(FramebufferFormat.Default, 3, 0, SPB.Graphics.OpenGL.OpenGLContextFlags.OffScreen);
+            vsyncContext.Initialize(vsyncWindow);
+
+            vsyncContext.MakeCurrent(vsyncWindow);
+
+            _useVSync = true;
+
+            while (_useVSync)
+            {
+                vsyncWindow.SwapBuffers();
+                TickNow();
+            }
+
+            vsyncContext.MakeCurrent(null);
+            vsyncContext.Dispose();
+            vsyncWindow.Dispose();
+        }
+
+        public void SwitchToEventTiming()
+        {
+            _useVSync = false;
+            _pauseEvent.Set();
+        }
+
         public void Dispose()
         {
+            _pauseEvent.Set();
+            _useVSync = false;
             _timer.Stop();
             _isRunning = false;
             _timingThread.Join();
+            _resetEvent.Set();
+            _vsyncThread?.Join();
             _tickThread.Join();
             _resetEvent.Dispose();
         }

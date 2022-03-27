@@ -377,7 +377,10 @@ namespace Ryujinx.Ava
             Renderer?.MakeCurrent(null);
 
             // TODO fix this on wgl
-            Renderer?.DestroyBackgroundContext();
+            if (Renderer != null) 
+            {
+                Dispatcher.UIThread.InvokeAsync(Renderer.DestroyBackgroundContext, DispatcherPriority.Render);
+            }
 
             AppExit?.Invoke(this, EventArgs.Empty);
         }
@@ -868,26 +871,16 @@ namespace Ryujinx.Ava
                         Device.Statistics.RecordFifoEnd();
                     }
 
-                    bool ticked = false;
-
                     while (Device.ConsumeFrameAvailable())
                     {
-                        ticked = true;
-
-                        Renderer.OnPreFrame();
-
                         if (!_renderingStarted)
                         {
+                            Program.RenderTimer.SwitchToVSyncTiming();
                             _renderingStarted = true;
                             _parent.SwitchToGameControl();
                         }
 
                         Device.PresentFrame(Present);
-                    }
-
-                    if(!ticked)
-                    {
-                        Program.RenderTimer.TickNow();
                     }
 
                     if (_ticks >= _ticksPerFrame)
@@ -899,9 +892,6 @@ namespace Ryujinx.Ava
                         {
                             dockedMode += $" ({scale}x)";
                         }
-
-                        // slow down ui timer.
-                        Program.RenderTimer.TargetFrameRate = 5;
 
                         string vendor = _renderer is Renderer renderer ? renderer.GpuVendor : "Vulkan Test";
 
@@ -924,6 +914,8 @@ namespace Ryujinx.Ava
             Renderer?.MakeCurrent(null);
 
             Renderer.SizeChanged -= Window_SizeChanged;
+
+            Program.RenderTimer.SwitchToEventTiming();
 
             Program.RenderTimer.TargetFrameRate = 60;
         }

@@ -46,7 +46,6 @@ namespace Ryujinx.Ava.Ui.Controls
                 AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>().PrimaryContext.AsOpenGLContextBase();
 
         private ManualResetEventSlim _preFrameResetEvent;
-        private ManualResetEventSlim _postFrameResetEvent;
         private SwappableNativeWindowBase _gameBackgroundWindow;
 
         private bool _isInitialized;
@@ -54,6 +53,8 @@ namespace Ryujinx.Ava.Ui.Controls
 
         private int _drawId;
         private IntPtr _fence;
+
+        private GlDrawOperation _glDrawOperation;
 
         public RendererControl(int major, int minor, GraphicsDebugLevel graphicsDebugLevel)
         {
@@ -90,7 +91,11 @@ namespace Ryujinx.Ava.Ui.Controls
                 return;
             }
 
-            context.Custom(new GlDrawOperation(this, Image, new Rect(new Point(), RenderSize), new Rect(new Point(), RenderSize)));
+            if (_glDrawOperation != null)
+            {
+                context.Custom(_glDrawOperation);
+            }
+
             base.Render(context);
         }
 
@@ -98,15 +103,12 @@ namespace Ryujinx.Ava.Ui.Controls
         {
             _preFrameResetEvent?.Set();
             _preFrameResetEvent?.Dispose();
-            _postFrameResetEvent?.Set();
-            _postFrameResetEvent?.Dispose();
             base.OnDetachedFromVisualTree(e);
         }
 
         protected void OnGlInitialized()
         {
             _preFrameResetEvent = new ManualResetEventSlim(false);
-            _postFrameResetEvent = new ManualResetEventSlim(false);
 
             if (OperatingSystem.IsWindows())
             {
@@ -132,7 +134,6 @@ namespace Ryujinx.Ava.Ui.Controls
 
         public void QueueRender()
         {
-            Program.RenderTimer.TickNow();
             Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Render);
         }
 
@@ -143,6 +144,8 @@ namespace Ryujinx.Ava.Ui.Controls
             _inFlight = true;
 
             _fence = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags.None);
+
+            _glDrawOperation = new GlDrawOperation(this, Image, new Rect(new Point(), RenderSize), new Rect(new Point(), RenderSize));
 
             QueueRender();
 
@@ -155,7 +158,7 @@ namespace Ryujinx.Ava.Ui.Controls
         {
             if (_inFlight)
             {
-                _preFrameResetEvent.Wait();
+                //_preFrameResetEvent.Wait();
                 _preFrameResetEvent.Reset();
             }
         }
@@ -176,11 +179,10 @@ namespace Ryujinx.Ava.Ui.Controls
             IsStarted = false;
         }
 
-        public async Task DestroyBackgroundContext()
+        public void DestroyBackgroundContext()
         {
-            await Task.Delay(1000);
             // WGL hangs here when disposing context
-            //Context?.Dispose();
+            //GameContext?.Dispose();
             _gameBackgroundWindow?.Dispose();
         }
 
@@ -260,7 +262,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
             public void Render(IDrawingContextImpl context)
             {
-                if (_texture == 0 || _drawId != _control._drawId)
+                if (_texture == 0)
                     return;
 
                 if (_framebuffer == 0)
