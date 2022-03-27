@@ -257,7 +257,12 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             catch (DiskCacheLoadException diskCacheLoadException)
             {
                 Logger.Error?.Print(LogClass.Gpu, $"Error loading the shader cache. {diskCacheLoadException.Message}");
-                _needsHostRegen = true;
+
+                // If we can't even access the file, then we also can't rebuild.
+                if (diskCacheLoadException.Result != DiskCacheLoadResult.NoAccess)
+                {
+                    _needsHostRegen = true;
+                }
             }
             catch (InvalidDataException invalidDataException)
             {
@@ -284,31 +289,42 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 // Rebuild both shared and host cache files.
                 // Rebuilding shared is required because the shader information returned by the translator
                 // might have changed, and so we have to reconstruct the file with the new information.
-                _hostStorage.ClearSharedCache();
-                _hostStorage.ClearHostCache(_context);
-
-                if (_programList.Count != 0)
+                try
                 {
-                    Logger.Info?.Print(LogClass.Gpu, $"Rebuilding {_programList.Count} shaders...");
+                    _hostStorage.ClearSharedCache();
+                    _hostStorage.ClearHostCache(_context);
 
-                    foreach (var kv in _programList)
+                    if (_programList.Count != 0)
                     {
-                        if (!Active)
+                        Logger.Info?.Print(LogClass.Gpu, $"Rebuilding {_programList.Count} shaders...");
+
+                        foreach (var kv in _programList)
                         {
-                            break;
+                            if (!Active)
+                            {
+                                break;
+                            }
+
+                            CachedShaderProgram program = kv.Value;
+                            _hostStorage.AddShader(_context, program, program.HostProgram.GetBinary());
                         }
 
-                        CachedShaderProgram program = kv.Value;
-                        _hostStorage.AddShader(_context, program, program.HostProgram.GetBinary());
+                        Logger.Info?.Print(LogClass.Gpu, $"Rebuilt {_programList.Count} shaders successfully.");
                     }
+                    else
+                    {
+                        _hostStorage.ClearGuestCache();
 
-                    Logger.Info?.Print(LogClass.Gpu, $"Rebuilt {_programList.Count} shaders successfully.");
+                        Logger.Info?.Print(LogClass.Gpu, "Shader cache deleted due to corruption.");
+                    }
                 }
-                else
+                catch (DiskCacheLoadException diskCacheLoadException)
                 {
-                    _hostStorage.ClearGuestCache();
-
-                    Logger.Info?.Print(LogClass.Gpu, "Shader cache deleted due to corruption.");
+                    Logger.Error?.Print(LogClass.Gpu, $"Error deleting the shader cache. {diskCacheLoadException.Message}");
+                }
+                catch (IOException ioException)
+                {
+                    Logger.Error?.Print(LogClass.Gpu, $"Error deleting the shader cache file. {ioException.Message}");
                 }
             }
 

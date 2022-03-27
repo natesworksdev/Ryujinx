@@ -1,3 +1,4 @@
+using Ryujinx.Common.Logging;
 using System.IO;
 
 namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
@@ -33,7 +34,16 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 access = FileAccess.Read;
             }
 
-            return new FileStream(fullPath, mode, access, FileShare.Read);
+            try
+            {
+                return new FileStream(fullPath, mode, access, FileShare.Read);
+            }
+            catch (IOException ioException)
+            {
+                Logger.Error?.Print(LogClass.Gpu, $"Could not access file \"{fullPath}\". {ioException.Message}");
+
+                throw new DiskCacheLoadException(DiskCacheLoadResult.NoAccess);
+            }
         }
 
         /// <summary>
