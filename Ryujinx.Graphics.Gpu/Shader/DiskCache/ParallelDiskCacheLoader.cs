@@ -438,14 +438,14 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         {
             while (_compilationQueue.TryDequeue(out ProgramCompilation compilation) && Active)
             {
-                IShader[] hostShaders = new IShader[compilation.TranslatedStages.Length];
+                ShaderSource[] shaderSources = new ShaderSource[compilation.TranslatedStages.Length];
 
                 int fragmentOutputMap = -1;
 
                 for (int index = 0; index < compilation.TranslatedStages.Length; index++)
                 {
                     ShaderProgram shader = compilation.TranslatedStages[index];
-                    hostShaders[index] = _context.Renderer.CompileShader(shader.Info.Stage, shader.Code);
+                    shaderSources[index] = CreateShaderSource(shader);
 
                     if (shader.Info.Stage == ShaderStage.Fragment)
                     {
@@ -453,7 +453,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                     }
                 }
 
-                IProgram hostProgram = _context.Renderer.CreateProgram(hostShaders, new ShaderInfo(fragmentOutputMap));
+                IProgram hostProgram = _context.Renderer.CreateProgram(shaderSources, new ShaderInfo(fragmentOutputMap));
                 CachedShaderProgram program = new CachedShaderProgram(hostProgram, compilation.SpecializationState, compilation.Shaders);
 
                 _validationQueue.Enqueue(new ProgramEntry(program, hostProgram, compilation.ProgramIndex, compilation.IsCompute, isBinary: false));

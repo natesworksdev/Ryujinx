@@ -215,9 +215,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             TranslatedShader translatedShader = TranslateShader(_dumper, channel, translatorContext, null, cachedGuestCode);
 
-            IShader hostShader = _context.Renderer.CompileShader(ShaderStage.Compute, translatedShader.Program.Code);
-
-            IProgram hostProgram = _context.Renderer.CreateProgram(new IShader[] { hostShader }, new ShaderInfo(-1));
+            IProgram hostProgram = _context.Renderer.CreateProgram(new ShaderSource[] { CreateShaderSource(translatedShader.Program) }, new ShaderInfo(-1));
 
             cpShader = new CachedShaderProgram(hostProgram, specState, translatedShader.Shader);
 
@@ -267,7 +265,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             ReadOnlySpan<ulong> addressesSpan = addresses.AsSpan();
 
             CachedShaderStage[] shaders = new CachedShaderStage[Constants.ShaderStages + 1];
-            List<IShader> hostShaders = new List<IShader>();
+            List<ShaderSource> shaderSources = new List<ShaderSource>();
             TranslatorContext nextStage = null;
 
             for (int stageIndex = Constants.ShaderStages - 1; stageIndex >= 0; stageIndex--)
@@ -313,14 +311,14 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
                 if (program != null)
                 {
-                    hostShaders.Add(_context.Renderer.CompileShader(program.Info.Stage, program.Code));
+                    shaderSources.Add(CreateShaderSource(program));
                 }
 
                 nextStage = currentStage;
             }
 
             int fragmentOutputMap = shaders[5]?.Info.FragmentOutputMap ?? -1;
-            IProgram hostProgram = _context.Renderer.CreateProgram(hostShaders.ToArray(), new ShaderInfo(fragmentOutputMap));
+            IProgram hostProgram = _context.Renderer.CreateProgram(shaderSources.ToArray(), new ShaderInfo(fragmentOutputMap));
 
             gpShaders = new CachedShaderProgram(hostProgram, specState, shaders);
 
@@ -329,6 +327,16 @@ namespace Ryujinx.Graphics.Gpu.Shader
             _gpPrograms[addresses] = gpShaders;
 
             return gpShaders;
+        }
+
+        /// <summary>
+        /// Creates a shader source for use with the backend from a translated shader program.
+        /// </summary>
+        /// <param name="program">Translated shader program</param>
+        /// <returns>Shader source</returns>
+        public static ShaderSource CreateShaderSource(ShaderProgram program)
+        {
+            return new ShaderSource(program.Code, program.BinaryCode, program.Info.Stage, program.Language);
         }
 
         /// <summary>

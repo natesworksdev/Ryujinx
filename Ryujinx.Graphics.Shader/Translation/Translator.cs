@@ -94,7 +94,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             return config.Options.TargetLanguage switch
             {
-                TargetLanguage.Glsl => new ShaderProgram(info, GlslGenerator.Generate(sInfo, config)),
+                TargetLanguage.Glsl => new ShaderProgram(info, TargetLanguage.Glsl, GlslGenerator.Generate(sInfo, config)),
                 _ => throw new NotImplementedException(config.Options.TargetLanguage.ToString())
             };
         }
