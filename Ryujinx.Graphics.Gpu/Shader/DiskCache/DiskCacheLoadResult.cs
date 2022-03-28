@@ -16,6 +16,11 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         NoAccess,
 
         /// <summary>
+        /// The constant buffer 1 data length is too low for the translation of the guest shader.
+        /// </summary>
+        InvalidCb1DataLength,
+
+        /// <summary>
         /// File is corrupted.
         /// </summary>
         FileCorruptedGeneric,
@@ -49,6 +54,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             {
                 DiskCacheLoadResult.Success => "No error.",
                 DiskCacheLoadResult.NoAccess => "Could not access the cache file.",
+                DiskCacheLoadResult.InvalidCb1DataLength => "Constant buffer 1 data length is too low.",
                 DiskCacheLoadResult.FileCorruptedGeneric => "The cache file is corrupted.",
                 DiskCacheLoadResult.FileCorruptedInvalidMagic => "Magic check failed, the cache file is corrupted.",
                 DiskCacheLoadResult.FileCorruptedInvalidLength => "Length check failed, the cache file is corrupted.",

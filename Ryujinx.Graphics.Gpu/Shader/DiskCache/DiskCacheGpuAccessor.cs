@@ -47,6 +47,11 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         /// <inheritdoc/>
         public uint ConstantBuffer1Read(int offset)
         {
+            if (offset + sizeof(uint) > _cb1Data.Length)
+            {
+                throw new DiskCacheLoadException(DiskCacheLoadResult.InvalidCb1DataLength);
+            }
+
             return MemoryMarshal.Cast<byte, uint>(_cb1Data.Span.Slice(offset))[0];
         }
 

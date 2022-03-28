@@ -527,13 +527,23 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         /// <param name="isCompute">Indicates if the program is a compute shader</param>
         private void RecompileFromGuestCode(CachedShaderStage[] shaders, ShaderSpecializationState specState, int programIndex, bool isCompute)
         {
-            if (isCompute)
+            try
             {
-                RecompileComputeFromGuestCode(shaders, specState, programIndex);
+                if (isCompute)
+                {
+                    RecompileComputeFromGuestCode(shaders, specState, programIndex);
+                }
+                else
+                {
+                    RecompileGraphicsFromGuestCode(shaders, specState, programIndex);
+                }
             }
-            else
+            catch (DiskCacheLoadException diskCacheLoadException)
             {
-                RecompileGraphicsFromGuestCode(shaders, specState, programIndex);
+                Logger.Error?.Print(LogClass.Gpu, $"Error translating guest shader. {diskCacheLoadException.Message}");
+
+                ErrorCount++;
+                SignalCompiled();
             }
         }
 
