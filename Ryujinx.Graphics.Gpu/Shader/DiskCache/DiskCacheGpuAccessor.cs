@@ -179,5 +179,14 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             _newSpecState.RecordEarlyZForce();
             return _oldSpecState.GraphicsState.EarlyZForce;
         }
+
+        /// <inheritdoc/>
+        public void RegisterTexture(int handle, int cbufSlot)
+        {
+            (uint format, bool formatSrgb) = _oldSpecState.GetFormat(_stageIndex, handle, cbufSlot);
+            TextureTarget target = _oldSpecState.GetTextureTarget(_stageIndex, handle, cbufSlot);
+            bool coordNormalized = _oldSpecState.GetCoordNormalized(_stageIndex, handle, cbufSlot);
+            _newSpecState.RegisterTexture(_stageIndex, handle, cbufSlot, format, formatSrgb, target, coordNormalized);
+        }
     }
 }
