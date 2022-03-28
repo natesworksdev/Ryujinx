@@ -189,6 +189,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         private readonly BlockingCollection<AsyncProgramTranslation> _asyncTranslationQueue;
         private readonly SortedList<int, CachedShaderProgram> _programList;
 
+        private int _backendParallelCompileThreads;
         private int _compiledCount;
         private int _totalCount;
 
@@ -221,6 +222,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             _compilationQueue = new ConcurrentQueue<ProgramCompilation>();
             _asyncTranslationQueue = new BlockingCollection<AsyncProgramTranslation>(ThreadCount);
             _programList = new SortedList<int, CachedShaderProgram>();
+            _backendParallelCompileThreads = Math.Min(Environment.ProcessorCount, 8); // Must be kept in sync with the backend code.
         }
 
         /// <summary>
@@ -340,7 +342,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         /// <param name="isCompute">Indicates if the program is a compute shader</param>
         public void QueueHostProgram(CachedShaderProgram cachedProgram, IProgram hostProgram, int programIndex, bool isCompute)
         {
-            _validationQueue.Enqueue(new ProgramEntry(cachedProgram, hostProgram, programIndex, isCompute, isBinary: true));
+            EnqueueForValidation(new ProgramEntry(cachedProgram, hostProgram, programIndex, isCompute, isBinary: true));
         }
 
         /// <summary>
@@ -472,7 +474,21 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 IProgram hostProgram = _context.Renderer.CreateProgram(shaderSources, new ShaderInfo(fragmentOutputMap));
                 CachedShaderProgram program = new CachedShaderProgram(hostProgram, compilation.SpecializationState, compilation.Shaders);
 
-                _validationQueue.Enqueue(new ProgramEntry(program, hostProgram, compilation.ProgramIndex, compilation.IsCompute, isBinary: false));
+                EnqueueForValidation(new ProgramEntry(program, hostProgram, compilation.ProgramIndex, compilation.IsCompute, isBinary: false));
+            }
+        }
+
+        /// <summary>
+        /// Enqueues a program for validation, which will check if the program was compiled successfully.
+        /// </summary>
+        /// <param name="newEntry">Program entry to be validated</param>
+        private void EnqueueForValidation(ProgramEntry newEntry)
+        {
+            _validationQueue.Enqueue(newEntry);
+
+            if (_validationQueue.Count >= _backendParallelCompileThreads && _validationQueue.TryDequeue(out ProgramEntry entry))
+            {
+                ProcessCompiledProgram(ref entry, entry.HostProgram.CheckProgramLink(true), asyncCompile: false);
             }
         }
 
