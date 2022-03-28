@@ -356,6 +356,9 @@ namespace Ryujinx.Ava.Ui.Windows
                 Title = $"Ryujinx {Program.Version}";
             });
 
+            AppHost.StatusUpdatedEvent -= Update_StatusBar;
+            AppHost.AppExit            -= AppHost_AppExit;
+
             HandleRelaunch();
         }
 

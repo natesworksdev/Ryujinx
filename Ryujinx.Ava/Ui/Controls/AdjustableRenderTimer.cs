@@ -100,11 +100,8 @@ namespace Ryujinx.Ava.Ui.Controls
         {
             while (_isRunning)
             {
-                lock (this)
-                {
-                    _resetEvent.WaitOne();
-                    _tick?.Invoke(TimeSpan.FromMilliseconds(_timer.ElapsedTicks * 1000 / Stopwatch.Frequency));
-                }
+                _resetEvent.WaitOne();
+                _tick?.Invoke(TimeSpan.FromMilliseconds(_timer.ElapsedTicks * 1000 / Stopwatch.Frequency));
             }
         }
 
@@ -174,8 +171,8 @@ namespace Ryujinx.Ava.Ui.Controls
 
             while (_useVSync)
             {
-                vsyncWindow.SwapBuffers();
                 TickNow();
+                vsyncWindow.SwapBuffers();
             }
 
             vsyncContext.MakeCurrent(null);
