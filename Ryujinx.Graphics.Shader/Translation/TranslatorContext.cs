@@ -126,13 +126,13 @@ namespace Ryujinx.Graphics.Shader.Translation
             return output;
         }
 
-        public ShaderProgram Translate(TranslatorContext nextStage = null, TranslatorContext other = null)
+        public void SetNextStage(TranslatorContext nextStage)
         {
-            if (nextStage != null)
-            {
-                _config.MergeFromtNextStage(nextStage._config);
-            }
+            _config.MergeFromtNextStage(nextStage._config);
+        }
 
+        public ShaderProgram Translate(TranslatorContext other = null)
+        {
             FunctionCode[] code = EmitShader(_program, _config, initializeOutputs: other == null, out _);
 
             if (other != null)

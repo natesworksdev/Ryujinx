@@ -527,54 +527,78 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         /// <param name="programIndex">Program index</param>
         private void RecompileGraphicsFromGuestCode(CachedShaderStage[] shaders, ShaderSpecializationState specState, int programIndex)
         {
-            ResourceCounts counts = new ResourceCounts();
-            List<ShaderProgram> translatedStages = new List<ShaderProgram>();
             ShaderSpecializationState newSpecState = new ShaderSpecializationState(specState.GraphicsState, specState.TransformFeedbackDescriptors);
+            ResourceCounts counts = new ResourceCounts();
+
+            TranslatorContext[] translatorContexts = new TranslatorContext[Constants.ShaderStages + 1];
             TranslatorContext nextStage = null;
 
             for (int stageIndex = Constants.ShaderStages - 1; stageIndex >= 0; stageIndex--)
             {
                 CachedShaderStage shader = shaders[stageIndex + 1];
 
-                if (shader == null)
+                if (shader != null)
                 {
-                    continue;
+                    byte[] guestCode = shader.Code;
+                    byte[] cb1Data = shader.Cb1Data;
+
+                    DiskCacheGpuAccessor gpuAccessor = new DiskCacheGpuAccessor(_context, guestCode, cb1Data, specState, newSpecState, counts, stageIndex);
+                    TranslatorContext currentStage = DecodeGraphicsShader(gpuAccessor, DefaultFlags, 0);
+
+                    if (nextStage != null)
+                    {
+                        currentStage.SetNextStage(nextStage);
+                    }
+
+                    if (stageIndex == 0 && shaders[0] != null)
+                    {
+                        byte[] guestCodeA = shaders[0].Code;
+                        byte[] cb1DataA = shaders[0].Cb1Data;
+
+                        DiskCacheGpuAccessor gpuAccessorA = new DiskCacheGpuAccessor(_context, guestCodeA, cb1DataA, specState, newSpecState, counts, 0);
+                        translatorContexts[0] = DecodeGraphicsShader(gpuAccessorA, DefaultFlags | TranslationFlags.VertexA, 0);
+                    }
+
+                    translatorContexts[stageIndex + 1] = currentStage;
+                    nextStage = currentStage;
                 }
+            }
 
-                byte[] guestCode = shader.Code;
-                byte[] cb1Data = shader.Cb1Data;
+            List<ShaderProgram> translatedStages = new List<ShaderProgram>();
 
-                DiskCacheGpuAccessor gpuAccessor = new DiskCacheGpuAccessor(_context, guestCode, cb1Data, specState, newSpecState, counts, stageIndex);
-                TranslatorContext currentStage = DecodeGraphicsShader(gpuAccessor, DefaultFlags, 0);
+            for (int stageIndex = 0; stageIndex < Constants.ShaderStages; stageIndex++)
+            {
+                TranslatorContext currentStage = translatorContexts[stageIndex + 1];
 
-                ShaderProgram program;
-
-                if (stageIndex == 0 && shaders[0] != null)
+                if (currentStage != null)
                 {
-                    byte[] guestCodeA = shaders[0].Code;
-                    byte[] cb1DataA = shaders[0].Cb1Data;
+                    ShaderProgram program;
 
-                    DiskCacheGpuAccessor gpuAccessorA = new DiskCacheGpuAccessor(_context, guestCodeA, cb1DataA, specState, newSpecState, counts, 0);
-                    TranslatorContext vertexA = DecodeGraphicsShader(gpuAccessorA, DefaultFlags | TranslationFlags.VertexA, 0);
+                    byte[] guestCode = shaders[stageIndex + 1].Code;
+                    byte[] cb1Data = shaders[stageIndex + 1].Cb1Data;
 
-                    program = currentStage.Translate(nextStage, vertexA);
+                    if (stageIndex == 0 && shaders[0] != null)
+                    {
+                        program = currentStage.Translate(translatorContexts[0]);
 
-                    shaders[0] = new CachedShaderStage(null, guestCodeA, cb1DataA);
-                    shaders[1] = new CachedShaderStage(program.Info, guestCode, cb1Data);
+                        byte[] guestCodeA = shaders[0].Code;
+                        byte[] cb1DataA = shaders[0].Cb1Data;
+
+                        shaders[0] = new CachedShaderStage(null, guestCodeA, cb1DataA);
+                        shaders[1] = new CachedShaderStage(program.Info, guestCode, cb1Data);
+                    }
+                    else
+                    {
+                        program = currentStage.Translate();
+
+                        shaders[stageIndex + 1] = new CachedShaderStage(program.Info, guestCode, cb1Data);
+                    }
+
+                    if (program != null)
+                    {
+                        translatedStages.Add(program);
+                    }
                 }
-                else
-                {
-                    program = currentStage.Translate(nextStage, null);
-
-                    shaders[stageIndex + 1] = new CachedShaderStage(program.Info, guestCode, cb1Data);
-                }
-
-                if (program != null)
-                {
-                    translatedStages.Add(program);
-                }
-
-                nextStage = currentStage;
             }
 
             _compilationQueue.Enqueue(new ProgramCompilation(translatedStages.ToArray(), shaders, newSpecState, programIndex, isCompute: false));

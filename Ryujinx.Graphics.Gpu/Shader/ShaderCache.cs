@@ -213,7 +213,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             TranslatorContext translatorContext = DecodeComputeShader(gpuAccessor, gpuVa);
 
-            TranslatedShader translatedShader = TranslateShader(_dumper, channel, translatorContext, null, cachedGuestCode);
+            TranslatedShader translatedShader = TranslateShader(_dumper, channel, translatorContext, cachedGuestCode);
 
             IProgram hostProgram = _context.Renderer.CreateProgram(new ShaderSource[] { CreateShaderSource(translatedShader.Program) }, new ShaderInfo(-1));
 
@@ -264,57 +264,73 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             ReadOnlySpan<ulong> addressesSpan = addresses.AsSpan();
 
-            CachedShaderStage[] shaders = new CachedShaderStage[Constants.ShaderStages + 1];
-            List<ShaderSource> shaderSources = new List<ShaderSource>();
+            TranslatorContext[] translatorContexts = new TranslatorContext[Constants.ShaderStages + 1];
             TranslatorContext nextStage = null;
 
             for (int stageIndex = Constants.ShaderStages - 1; stageIndex >= 0; stageIndex--)
             {
                 ulong gpuVa = addressesSpan[stageIndex + 1];
-                if (gpuVa == 0)
+
+                if (gpuVa != 0)
                 {
-                    continue;
+                    GpuAccessor gpuAccessor = new GpuAccessor(_context, channel, gpuAccessorState, stageIndex);
+                    TranslatorContext currentStage = DecodeGraphicsShader(gpuAccessor, DefaultFlags, gpuVa);
+
+                    if (nextStage != null)
+                    {
+                        currentStage.SetNextStage(nextStage);
+                    }
+
+                    if (stageIndex == 0 && addresses.VertexA != 0)
+                    {
+                        translatorContexts[0] = DecodeGraphicsShader(gpuAccessor, DefaultFlags | TranslationFlags.VertexA, addresses.VertexA);
+                    }
+
+                    translatorContexts[stageIndex + 1] = currentStage;
+                    nextStage = currentStage;
                 }
+            }
 
-                GpuAccessor gpuAccessor = new GpuAccessor(_context, channel, gpuAccessorState, stageIndex);
-                TranslatorContext currentStage = DecodeGraphicsShader(gpuAccessor, DefaultFlags, gpuVa);
+            CachedShaderStage[] shaders = new CachedShaderStage[Constants.ShaderStages + 1];
+            List<ShaderSource> shaderSources = new List<ShaderSource>();
 
-                ShaderProgram program;
+            for (int stageIndex = 0; stageIndex < Constants.ShaderStages; stageIndex++)
+            {
+                TranslatorContext currentStage = translatorContexts[stageIndex + 1];
 
-                if (stageIndex == 0 && addresses.VertexA != 0)
+                if (currentStage != null)
                 {
-                    TranslatedShaderVertexPair translatedShader = TranslateShader(
-                        _dumper,
-                        channel,
-                        currentStage,
-                        nextStage,
-                        DecodeGraphicsShader(gpuAccessor, DefaultFlags | TranslationFlags.VertexA, addresses.VertexA),
-                        cachedGuestCode.VertexACode,
-                        cachedGuestCode.VertexBCode);
+                    ShaderProgram program;
 
-                    shaders[0] = translatedShader.VertexA;
-                    shaders[1] = translatedShader.VertexB;
-                    program = translatedShader.Program;
+                    if (stageIndex == 0 && translatorContexts[0] != null)
+                    {
+                        TranslatedShaderVertexPair translatedShader = TranslateShader(
+                            _dumper,
+                            channel,
+                            currentStage,
+                            translatorContexts[0],
+                            cachedGuestCode.VertexACode,
+                            cachedGuestCode.VertexBCode);
+
+                        shaders[0] = translatedShader.VertexA;
+                        shaders[1] = translatedShader.VertexB;
+                        program = translatedShader.Program;
+                    }
+                    else
+                    {
+                        byte[] code = cachedGuestCode.GetByIndex(stageIndex);
+
+                        TranslatedShader translatedShader = TranslateShader(_dumper, channel, currentStage, code);
+
+                        shaders[stageIndex + 1] = translatedShader.Shader;
+                        program = translatedShader.Program;
+                    }
+
+                    if (program != null)
+                    {
+                        shaderSources.Add(CreateShaderSource(program));
+                    }
                 }
-                else
-                {
-                    TranslatedShader translatedShader = TranslateShader(
-                        _dumper,
-                        channel,
-                        currentStage,
-                        nextStage,
-                        cachedGuestCode.GetByIndex(stageIndex));
-
-                    shaders[stageIndex + 1] = translatedShader.Shader;
-                    program = translatedShader.Program;
-                }
-
-                if (program != null)
-                {
-                    shaderSources.Add(CreateShaderSource(program));
-                }
-
-                nextStage = currentStage;
             }
 
             int fragmentOutputMap = shaders[5]?.Info.FragmentOutputMap ?? -1;
@@ -489,7 +505,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <param name="dumper">Optional shader code dumper</param>
         /// <param name="channel">GPU channel using the shader</param>
         /// <param name="currentStage">Translator context of the stage to be translated</param>
-        /// <param name="nextStage">Translator context of the next active stage, if existent</param>
         /// <param name="vertexA">Optional translator context of the shader that should be combined</param>
         /// <param name="codeA">Optional Maxwell binary code of the Vertex A shader, if present</param>
         /// <param name="codeB">Optional Maxwell binary code of the Vertex B or current stage shader, if present on cache</param>
@@ -498,7 +513,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
             ShaderDumper dumper,
             GpuChannel channel,
             TranslatorContext currentStage,
-            TranslatorContext nextStage,
             TranslatorContext vertexA,
             byte[] codeA,
             byte[] codeB)
@@ -521,7 +535,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 pathsB = dumper.Dump(codeB, compute: false);
             }
 
-            ShaderProgram program = currentStage.Translate(nextStage, vertexA);
+            ShaderProgram program = currentStage.Translate(vertexA);
 
             pathsB.Prepend(program);
             pathsA.Prepend(program);
@@ -537,33 +551,22 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// </summary>
         /// <param name="dumper">Optional shader code dumper</param>
         /// <param name="channel">GPU channel using the shader</param>
-        /// <param name="currentStage">Translator context of the stage to be translated</param>
-        /// <param name="nextStage">Translator context of the next active stage, if existent</param>
+        /// <param name="context">Translator context of the stage to be translated</param>
         /// <param name="code">Optional Maxwell binary code of the current stage shader, if present on cache</param>
         /// <returns>Compiled graphics shader code</returns>
-        private static TranslatedShader TranslateShader(
-            ShaderDumper dumper,
-            GpuChannel channel,
-            TranslatorContext currentStage,
-            TranslatorContext nextStage,
-            byte[] code)
+        private static TranslatedShader TranslateShader(ShaderDumper dumper, GpuChannel channel, TranslatorContext context, byte[] code)
         {
-            if (currentStage == null)
-            {
-                return new TranslatedShader(null, null);
-            }
-
             var memoryManager = channel.MemoryManager;
 
-            ulong cb1DataAddress = currentStage.Stage == ShaderStage.Compute
+            ulong cb1DataAddress = context.Stage == ShaderStage.Compute
                 ? channel.BufferManager.GetComputeUniformBufferAddress(1)
-                : channel.BufferManager.GetGraphicsUniformBufferAddress(StageToStageIndex(currentStage.Stage), 1);
+                : channel.BufferManager.GetGraphicsUniformBufferAddress(StageToStageIndex(context.Stage), 1);
 
-            byte[] cb1Data = memoryManager.Physical.GetSpan(cb1DataAddress, currentStage.Cb1DataSize).ToArray();
-            code ??= memoryManager.GetSpan(currentStage.Address, currentStage.Size).ToArray();
+            byte[] cb1Data = memoryManager.Physical.GetSpan(cb1DataAddress, context.Cb1DataSize).ToArray();
+            code ??= memoryManager.GetSpan(context.Address, context.Size).ToArray();
 
-            ShaderDumpPaths paths = dumper?.Dump(code, currentStage.Stage == ShaderStage.Compute) ?? default;
-            ShaderProgram program = currentStage.Translate(nextStage);
+            ShaderDumpPaths paths = dumper?.Dump(code, context.Stage == ShaderStage.Compute) ?? default;
+            ShaderProgram program = context.Translate();
 
             paths.Prepend(program);
 
