@@ -154,11 +154,10 @@ namespace Ryujinx.Graphics.Gpu.Shader
                     _graphicsShaderCache,
                     _computeShaderCache,
                     _diskCacheHostStorage,
-                    cancellationToken);
+                    cancellationToken,
+                    ShaderCacheStateUpdate);
 
-                loader.ShaderCacheStateChanged += ShaderCacheStateUpdate;
                 loader.LoadShaders();
-                loader.ShaderCacheStateChanged -= ShaderCacheStateUpdate;
 
                 int errorCount = loader.ErrorCount;
                 if (errorCount != 0)

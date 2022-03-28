@@ -20,6 +20,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         private readonly ComputeShaderCacheHashTable _computeCache;
         private readonly DiskCacheHostStorage _hostStorage;
         private readonly CancellationToken _cancellationToken;
+        private readonly Action<ShaderCacheState, int, int> _stateChangeCallback;
 
         /// <summary>
         /// Indicates if the cache should be loaded.
@@ -194,11 +195,6 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         private int _totalCount;
 
         /// <summary>
-        /// Shader cache state change event.
-        /// </summary>
-        public event Action<ShaderCacheState, int, int> ShaderCacheStateChanged;
-
-        /// <summary>
         /// Creates a new parallel disk cache loader.
         /// </summary>
         /// <param name="context">GPU context</param>
@@ -206,18 +202,21 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         /// <param name="computeCache">Compute shader cache</param>
         /// <param name="hostStorage">Disk cache host storage</param>
         /// <param name="cancellationToken">Cancellation token</param>
+        /// <param name="stateChangeCallback">Function to be called when there is a state change, reporting state, compiled and total shaders count</param>
         public ParallelDiskCacheLoader(
             GpuContext context,
             ShaderCacheHashTable graphicsCache,
             ComputeShaderCacheHashTable computeCache,
             DiskCacheHostStorage hostStorage,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            Action<ShaderCacheState, int, int> stateChangeCallback)
         {
             _context = context;
             _graphicsCache = graphicsCache;
             _computeCache = computeCache;
             _hostStorage = hostStorage;
             _cancellationToken = cancellationToken;
+            _stateChangeCallback = stateChangeCallback;
             _validationQueue = new Queue<ProgramEntry>();
             _compilationQueue = new ConcurrentQueue<ProgramCompilation>();
             _asyncTranslationQueue = new BlockingCollection<AsyncProgramTranslation>(ThreadCount);
@@ -245,7 +244,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             _compiledCount = 0;
             _totalCount = programCount;
 
-            ShaderCacheStateChanged?.Invoke(ShaderCacheState.Start, 0, programCount);
+            _stateChangeCallback(ShaderCacheState.Start, 0, programCount);
 
             for (int index = 0; index < ThreadCount; index++)
             {
@@ -330,7 +329,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 }
             }
 
-            ShaderCacheStateChanged?.Invoke(ShaderCacheState.Loaded, programCount, programCount);
+            _stateChangeCallback(ShaderCacheState.Loaded, programCount, programCount);
         }
 
         /// <summary>
@@ -486,6 +485,9 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         {
             _validationQueue.Enqueue(newEntry);
 
+            // Do not allow more than N shader compilation in-flight, where N is the maximum number of threads
+            // the driver will be using for parallel compilation.
+            // Submiting more seems to cause NVIDIA OpenGL driver to crash.
             if (_validationQueue.Count >= _backendParallelCompileThreads && _validationQueue.TryDequeue(out ProgramEntry entry))
             {
                 ProcessCompiledProgram(ref entry, entry.HostProgram.CheckProgramLink(true), asyncCompile: false);
@@ -648,7 +650,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         /// </summary>
         private void SignalCompiled()
         {
-            ShaderCacheStateChanged?.Invoke(ShaderCacheState.Loading, ++_compiledCount, _totalCount);
+            _stateChangeCallback(ShaderCacheState.Loading, ++_compiledCount, _totalCount);
         }
     }
 }
