@@ -134,7 +134,10 @@ namespace Ryujinx.Ava.Ui.Controls
 
         public void TickNow()
         {
-            _resetEvent.Set();
+            lock (this)
+            {
+                _resetEvent.Set();
+            }
         }
 
         public void Stop()

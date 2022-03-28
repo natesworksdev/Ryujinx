@@ -65,6 +65,8 @@ namespace Ryujinx.Ava.Ui.Controls
 
             resizeObservable.Subscribe(Resized);
 
+            _glDrawOperation = new GlDrawOperation(this);
+
             Focusable = true;
         }
 
@@ -135,6 +137,8 @@ namespace Ryujinx.Ava.Ui.Controls
         public void QueueRender()
         {
             Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Render);
+
+            Program.RenderTimer.TickNow();
         }
 
         internal bool Present(int image)
@@ -143,9 +147,12 @@ namespace Ryujinx.Ava.Ui.Controls
 
             _inFlight = true;
 
-            _fence = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags.None);
+            if (_fence != IntPtr.Zero)
+            {
+                GL.DeleteSync(_fence);
+            }
 
-            _glDrawOperation = new GlDrawOperation(this, Image, new Rect(new Point(), RenderSize), new Rect(new Point(), RenderSize));
+            _fence = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags.None);
 
             QueueRender();
 
@@ -181,6 +188,16 @@ namespace Ryujinx.Ava.Ui.Controls
 
         public void DestroyBackgroundContext()
         {
+            Image = 0;
+
+            if (_fence != IntPtr.Zero)
+            {
+                MakeCurrent();
+                _glDrawOperation.Dispose();
+                GL.DeleteSync(_fence);
+                MakeCurrent(null);
+            }
+
             // WGL hangs here when disposing context
             //GameContext?.Dispose();
             _gameBackgroundWindow?.Dispose();
@@ -211,37 +228,25 @@ namespace Ryujinx.Ava.Ui.Controls
 
         private class GlDrawOperation : ICustomDrawOperation
         {
-            private int _texture;
             private int _framebuffer;
-
-            private int _drawId;
-            private IntPtr _fence;
 
             public Rect Bounds => _control.Bounds;
 
             private readonly RendererControl _control;
-            private readonly Rect _srcRect;
-            private readonly Rect _dstRect;
 
-            public GlDrawOperation(RendererControl control, int texture, Rect srcRect, Rect dstRect)
+            public GlDrawOperation(RendererControl control)
             {
                 _control = control;
-                _srcRect = srcRect;
-                _dstRect = dstRect;
-                _texture = texture;
-                _drawId = ++control._drawId;
-                _fence = control._fence;
             }
 
             public void Dispose()
             {
                 GL.DeleteFramebuffer(_framebuffer);
-                GL.DeleteSync(_fence);
             }
 
             public bool Equals(ICustomDrawOperation other)
             {
-                return other is GlDrawOperation operation && _texture == operation._texture && operation._drawId == _drawId;
+                return other is GlDrawOperation operation && Equals(this, operation);
             }
 
             public bool HitTest(Point p)
@@ -252,23 +257,26 @@ namespace Ryujinx.Ava.Ui.Controls
             private void CreateRenderTarget()
             {
                 _framebuffer = GL.GenFramebuffer();
-
-                int currentFramebuffer = GL.GetInteger(GetPName.FramebufferBinding);
-
-                GL.BindFramebuffer(FramebufferTarget.Framebuffer, _framebuffer);
-                GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, _texture, 0);
-                GL.BindFramebuffer( FramebufferTarget.Framebuffer, currentFramebuffer);
             }
 
             public void Render(IDrawingContextImpl context)
             {
-                if (_texture == 0)
+                if (_control.Image == 0)
                     return;
 
                 if (_framebuffer == 0)
                 {
                     CreateRenderTarget();
                 }
+
+                int currentFramebuffer = GL.GetInteger(GetPName.FramebufferBinding);
+
+                var image = _control.Image;
+                var fence = _control._fence;
+
+                GL.BindFramebuffer(FramebufferTarget.Framebuffer, _framebuffer);
+                GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, image, 0);
+                GL.BindFramebuffer(FramebufferTarget.Framebuffer, currentFramebuffer);
 
                 if (context is not ISkiaDrawingContextImpl skiaDrawingContextImpl)
                     return;
@@ -278,7 +286,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
                 var stencils = GL.GetInteger(GetPName.StencilBits);
 
-                GL.WaitSync(_fence, WaitSyncFlags.None, ulong.MaxValue);
+                GL.WaitSync(fence, WaitSyncFlags.None, ulong.MaxValue);
 
                 using (var backendTexture = new GRBackendRenderTarget(imageInfo.Width, imageInfo.Height, 1, stencils, glInfo))
                 using (var surface = SKSurface.Create(skiaDrawingContextImpl.GrContext, backendTexture,
@@ -287,8 +295,10 @@ namespace Ryujinx.Ava.Ui.Controls
                     if (surface == null)
                         return;
 
+                    var rect = new Rect(new Point(), _control.RenderSize);
+
                     using (var snapshot = surface.Snapshot())
-                        skiaDrawingContextImpl.SkCanvas.DrawImage(snapshot, _srcRect.ToSKRect(), _dstRect.ToSKRect(), new SKPaint());
+                        skiaDrawingContextImpl.SkCanvas.DrawImage(snapshot, rect.ToSKRect(), rect.ToSKRect(), new SKPaint());
 
                     _control._preFrameResetEvent.Set();
                     _control._inFlight = false;
