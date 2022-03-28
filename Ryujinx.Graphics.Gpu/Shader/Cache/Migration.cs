@@ -9,6 +9,7 @@ using Ryujinx.Graphics.Shader;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Gpu.Shader.Cache
@@ -29,6 +30,16 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
         /// <returns>Number of migrated shaders</returns>
         public static int MigrateFromLegacyCache(GpuContext context, DiskCacheHostStorage hostStorage)
         {
+            string baseCacheDirectory = CacheHelper.GetBaseCacheDirectory(GraphicsConfig.TitleId);
+            string cacheDirectory = CacheHelper.GenerateCachePath(baseCacheDirectory, CacheGraphicsApi.Guest, "", "program");
+
+            // If the directory does not exist, we have no old cache.
+            // Exist early as the CacheManager constructor will create the directories.
+            if (!Directory.Exists(cacheDirectory))
+            {
+                return 0;
+            }
+
             if (GraphicsConfig.EnableShaderCache && GraphicsConfig.TitleId != null)
             {
                 CacheManager cacheManager = new CacheManager(CacheGraphicsApi.OpenGL, CacheHashType.XxHash128, "glsl", GraphicsConfig.TitleId, ShaderCodeGenVersion);
