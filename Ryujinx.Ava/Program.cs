@@ -8,6 +8,8 @@ using OpenTK.Windowing.GraphicsLibraryFramework;
 using Ryujinx.Ava.Application.Module;
 using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Common.Locale;
+using Ryujinx.Ava.Ui.Backend;
+using Ryujinx.Ava.Ui.Backend.OpenGl;
 using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.Windows;
 using Ryujinx.Common;
@@ -57,6 +59,7 @@ namespace Ryujinx.Ava
         // Avalonia configuration, don't remove; also used by visual designer.
         public static AppBuilder BuildAvaloniaApp()
         {
+            bool useVulkan = false;
             return AppBuilder.Configure<App>()
                 .UsePlatformDetect()
                 .With(new X11PlatformOptions
@@ -64,19 +67,23 @@ namespace Ryujinx.Ava
                     EnableMultiTouch = true,
                     EnableIme = true,
                     UseEGL = false,
-                    UseGpu = true,
+                    UseGpu = false,
                     GlProfiles = new[] { new GlVersion(GlProfileType.OpenGL, 4, 3) }
                 })
                 .With(new Win32PlatformOptions
                 {
                     EnableMultitouch = true,
                     UseWindowsUIComposition = true,
-                    UseWgl = true,
+                    UseWgl = false,
                     AllowEglInitialization = false,
                     CompositionBackdropCornerRadius = 8f,
                     WglProfiles = new[] { new GlVersion(GlProfileType.OpenGL, 4, 3) }
                 })
                 .UseSkia()
+                .With(new SkiaOptions()
+                {
+                    CustomGpuFactory = useVulkan ? SkiaGpuFactory.CreateVulkanGpu : SkiaGpuFactory.CreateOpenGlGpu
+                })
                 .AfterSetup(_ =>
                 {
                     AvaloniaLocator.CurrentMutable
@@ -131,7 +138,7 @@ namespace Ryujinx.Ava
 
             // Make process DPI aware for proper window sizing on high-res screens.
             ForceDpiAware.Windows();
-            WindowScaleFactor = 1;//ForceDpiAware.GetWindowScaleFactor();
+            WindowScaleFactor = ForceDpiAware.GetWindowScaleFactor();
 
             // Delete backup files after updating.
             Task.Run(Updater.CleanupUpdate);

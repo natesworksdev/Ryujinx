@@ -69,6 +69,7 @@
         <PackageReference Include="Avalonia.Diagnostics" Version="0.10.13" />
         <PackageReference Include="Silk.NET.Vulkan" Version="2.2.0" />
         <PackageReference Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.2.0" />
+        <PackageReference Include="Silk.NET.Vulkan.Extensions.EXT" Version="2.2.0" />
         <PackageReference Include="SixLabors.ImageSharp" Version="1.0.4" />
         <PackageReference Include="SPB" Version="0.0.4-build17" />
     </ItemGroup>

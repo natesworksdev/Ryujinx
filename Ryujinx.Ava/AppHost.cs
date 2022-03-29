@@ -361,6 +361,16 @@ namespace Ryujinx.Ava
             NpadManager.Dispose();
             TouchScreenManager.Dispose();
             Device.Dispose();
+
+            var disposeThread = new Thread(DisposeGpu) { Name = "GpuDisposalThread"};
+            disposeThread.Start();
+            disposeThread.Join();
+
+            AppExit?.Invoke(this, EventArgs.Empty);
+        }
+
+        public void DisposeGpu()
+        {
             Renderer?.MakeCurrent();
 
             Device.DisposeGpu();
@@ -368,12 +378,10 @@ namespace Ryujinx.Ava
             Renderer?.MakeCurrent(null);
 
             // TODO fix this on wgl
-            if (Renderer != null) 
+            if (Renderer != null)
             {
-                Dispatcher.UIThread.InvokeAsync(Renderer.DestroyBackgroundContext, DispatcherPriority.Render);
+                Renderer.DestroyBackgroundContext();
             }
-
-            AppExit?.Invoke(this, EventArgs.Empty);
         }
 
         private void Window_MouseMove(object sender, (double X, double Y) e)
@@ -384,16 +392,6 @@ namespace Ryujinx.Ava
             {
                 _lastCursorMoveTime = Stopwatch.GetTimestamp();
             }
-        }
-
-        private void Window_MouseUp(object sender, MouseButtonEventArgs e)
-        {
-            (_inputManager.MouseDriver as AvaloniaMouseDriver).SetMouseReleased((MouseButton) e.Button);
-        }
-
-        private void Window_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            (_inputManager.MouseDriver as AvaloniaMouseDriver).SetMousePressed((MouseButton) e.Button);
         }
 
         private void HideCursorState_Changed(object sender, ReactiveEventArgs<bool> state)
@@ -862,7 +860,7 @@ namespace Ryujinx.Ava
                     {
                         if (!_renderingStarted)
                         {
-                            Program.RenderTimer.SwitchToVSyncTiming();
+                            Program.RenderTimer.TargetFrameRate = 200;
                             _renderingStarted = true;
                             _parent.SwitchToGameControl();
                         }
