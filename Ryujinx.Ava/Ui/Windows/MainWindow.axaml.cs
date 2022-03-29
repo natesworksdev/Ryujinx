@@ -129,6 +129,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
         public void LoadGameList()
         {
+            this.Renderer.DrawFps = true;
             if (_isLoading)
             {
                 return;
@@ -289,6 +290,7 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             ViewModel.ShowContent = true;
             ViewModel.ShowLoadProgress = false;
+            ViewModel.IsLoadingIndeterminate = false;
 
             Dispatcher.UIThread.InvokeAsync(() =>
             {
@@ -307,6 +309,7 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             ViewModel.ShowContent = false;
             ViewModel.ShowLoadProgress = true;
+            ViewModel.IsLoadingIndeterminate = true;
             
             Dispatcher.UIThread.InvokeAsync(() =>
             {
@@ -343,6 +346,7 @@ namespace Ryujinx.Ava.Ui.Windows
                 ViewModel.ShowMenuAndStatusBar = true;
                 ViewModel.ShowContent = true;
                 ViewModel.ShowLoadProgress = false;
+                ViewModel.IsLoadingIndeterminate = false;
             });
             GlRenderer.GlInitialized -= GlRenderer_Created;
             GlRenderer = null;

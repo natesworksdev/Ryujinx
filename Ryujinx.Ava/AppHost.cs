@@ -52,7 +52,6 @@ namespace Ryujinx.Ava
 {
     public class AppHost : IDisposable
     {
-        private const int TargetFps          = 60;
         private const int CursorHideIdleTime = 8; // Hide Cursor seconds
 
         private static readonly Cursor InvisibleCursor = new Cursor(StandardCursorType.None);
@@ -60,15 +59,11 @@ namespace Ryujinx.Ava
         private readonly AccountManager _accountManager;
         private UserChannelPersistence _userChannelPersistence;
 
-        private readonly Stopwatch _chrono;
-
         private readonly InputManager _inputManager;
 
         private readonly IKeyboard _keyboardInterface;
 
         private readonly MainWindow _parent;
-
-        private readonly long _ticksPerFrame;
 
         private readonly GraphicsDebugLevel _glLogLevel;
 
@@ -83,8 +78,6 @@ namespace Ryujinx.Ava
         private IRenderer _renderer;
         private readonly Thread _renderingThread;
         private Thread _nvStutterWorkaround;
-
-        private long _ticks;
 
         private bool _isMouseInClient;
         private bool _renderingStarted;
@@ -124,10 +117,8 @@ namespace Ryujinx.Ava
             _accountManager         = accountManager;
             _userChannelPersistence = userChannelPersistence;
             _renderingThread        = new Thread(RenderLoop) { Name = "GUI.RenderThread" };
-            _chrono                 = new Stopwatch();
             _hideCursorOnIdle       = ConfigurationState.Instance.HideCursorOnIdle;
             _lastCursorMoveTime     = Stopwatch.GetTimestamp();
-            _ticksPerFrame          = Stopwatch.Frequency / TargetFps;
             _glLogLevel             = ConfigurationState.Instance.Logger.GraphicsDebugLevel;
 
             _inputManager.SetMouseDriver(new AvaloniaMouseDriver(renderer));
@@ -860,10 +851,6 @@ namespace Ryujinx.Ava
 
                 while (_isActive)
                 {
-                    _ticks += _chrono.ElapsedTicks;
-
-                    _chrono.Restart();
-
                     if (Device.WaitFifo())
                     {
                         Device.Statistics.RecordFifoStart();
@@ -882,30 +869,6 @@ namespace Ryujinx.Ava
 
                         Device.PresentFrame(Present);
                     }
-
-                    if (_ticks >= _ticksPerFrame)
-                    {
-                        string dockedMode = ConfigurationState.Instance.System.EnableDockedMode ? "Docked" : "Handheld";
-                        float scale = GraphicsConfig.ResScale;
-
-                        if (scale != 1)
-                        {
-                            dockedMode += $" ({scale}x)";
-                        }
-
-                        string vendor = _renderer is Renderer renderer ? renderer.GpuVendor : "Vulkan Test";
-
-                        StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
-                            Device.EnableDeviceVsync,
-                            Device.GetVolume(),
-                            dockedMode,
-                            ConfigurationState.Instance.Graphics.AspectRatio.Value.ToText(),
-                            $"Game: {Device.Statistics.GetGameFrameRate():00.00} FPS ({Device.Statistics.GetGameFrameTime():00.00} ms)",
-                            $"FIFO: {Device.Statistics.GetFifoPercent():00.00} %",
-                            $"GPU: {vendor}"));
-
-                        _ticks = Math.Min(_ticks - _ticksPerFrame, _ticksPerFrame);
-                    }
                 }
 
                 Renderer.Stop();
@@ -922,6 +885,26 @@ namespace Ryujinx.Ava
 
         private bool Present(int image)
         {
+            // Run a status update only when a frame is to be drawn. This prevents from updating the ui and wasting a render when no frame is queued
+            string dockedMode = ConfigurationState.Instance.System.EnableDockedMode ? "Docked" : "Handheld";
+            float scale = GraphicsConfig.ResScale;
+
+            if (scale != 1)
+            {
+                dockedMode += $" ({scale}x)";
+            }
+
+            string vendor = _renderer is Renderer renderer ? renderer.GpuVendor : "Vulkan Test";
+
+            StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
+                Device.EnableDeviceVsync,
+                Device.GetVolume(),
+                dockedMode,
+                ConfigurationState.Instance.Graphics.AspectRatio.Value.ToText(),
+                $"Game: {Device.Statistics.GetGameFrameRate():00.00} FPS ({Device.Statistics.GetGameFrameTime():00.00} ms)",
+                $"FIFO: {Device.Statistics.GetFifoPercent():00.00} %",
+                $"GPU: {vendor}"));
+
             bool presented = Renderer.Present(image);
 
             return presented;
