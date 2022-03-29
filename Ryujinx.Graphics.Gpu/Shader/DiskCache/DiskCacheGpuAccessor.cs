@@ -154,10 +154,10 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         }
 
         /// <inheritdoc/>
-        public bool QueryIsTextureRectangle(int handle, int cbufSlot)
+        public bool QueryTextureCoordNormalized(int handle, int cbufSlot)
         {
             _newSpecState.RecordTextureCoordNormalized(_stageIndex, handle, cbufSlot);
-            return !_oldSpecState.GetCoordNormalized(_stageIndex, handle, cbufSlot);
+            return _oldSpecState.GetCoordNormalized(_stageIndex, handle, cbufSlot);
         }
 
         /// <inheritdoc/>

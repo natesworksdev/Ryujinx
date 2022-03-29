@@ -157,17 +157,10 @@ namespace Ryujinx.Graphics.Gpu.Shader
         }
 
         /// <inheritdoc/>
-        public bool QueryIsTextureRectangle(int handle, int cbufSlot)
+        public bool QueryTextureCoordNormalized(int handle, int cbufSlot)
         {
             _state.SpecializationState?.RecordTextureCoordNormalized(_stageIndex, handle, cbufSlot);
-            var descriptor = GetTextureDescriptor(handle, cbufSlot);
-
-            TextureTarget target = descriptor.UnpackTextureTarget();
-
-            bool is2DTexture = target == TextureTarget.Texture2D ||
-                               target == TextureTarget.Texture2DRect;
-
-            return !descriptor.UnpackTextureCoordNormalized() && is2DTexture;
+            return GetTextureDescriptor(handle, cbufSlot).UnpackTextureCoordNormalized();
         }
 
         /// <summary>

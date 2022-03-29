@@ -230,12 +230,12 @@ namespace Ryujinx.Graphics.Shader
         }
 
         /// <summary>
-        /// Queries texture target information.
+        /// Queries texture coordinate normalization information.
         /// </summary>
         /// <param name="handle">Texture handle</param>
         /// <param name="cbufSlot">Constant buffer slot for the texture handle</param>
-        /// <returns>True if the texture is a rectangle texture, false otherwise</returns>
-        bool QueryIsTextureRectangle(int handle, int cbufSlot = -1)
+        /// <returns>True if the coordinates are normalized, false otherwise</returns>
+        bool QueryTextureCoordNormalized(int handle, int cbufSlot = -1)
         {
             return false;
         }
