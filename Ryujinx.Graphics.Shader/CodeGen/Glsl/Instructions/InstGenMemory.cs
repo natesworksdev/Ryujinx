@@ -762,8 +762,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             }
             else
             {
-                SamplerType declarationType = context.FindTextureDescriptor(texOp, out int descriptorIndex).Type;
-                bool hasLod = !declarationType.HasFlag(SamplerType.Multisample) && declarationType != SamplerType.TextureBuffer;
+                (TextureDescriptor descriptor, int descriptorIndex) = context.FindTextureDescriptor(texOp);
+                bool hasLod = !descriptor.Type.HasFlag(SamplerType.Multisample) && descriptor.Type != SamplerType.TextureBuffer;
                 string texCall;
 
                 if (hasLod)

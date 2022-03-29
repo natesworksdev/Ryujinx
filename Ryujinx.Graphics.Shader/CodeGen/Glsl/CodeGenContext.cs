@@ -70,7 +70,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             AppendLine("}" + suffix);
         }
 
-        public TextureDescriptor FindTextureDescriptor(AstTextureOperation texOp, out int descriptorIndex)
+        public (TextureDescriptor, int) FindTextureDescriptor(AstTextureOperation texOp)
         {
             TextureDescriptor[] descriptors = Config.GetTextureDescriptors();
 
@@ -82,13 +82,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                     descriptor.HandleIndex == texOp.Handle &&
                     descriptor.Format == texOp.Format)
                 {
-                    descriptorIndex = i;
-                    return descriptor;
+                    return (descriptor, i);
                 }
             }
 
-            descriptorIndex = -1;
-            return default;
+            return (default, -1);
         }
 
         private static int FindDescriptorIndex(TextureDescriptor[] array, AstTextureOperation texOp)
