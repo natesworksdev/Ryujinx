@@ -1,6 +1,8 @@
+using Ryujinx.Common.Memory;
 using Ryujinx.Graphics.Gpu.Shader.DiskCache;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace Ryujinx.Graphics.Gpu.Shader
 {
@@ -12,18 +14,21 @@ namespace Ryujinx.Graphics.Gpu.Shader
         private const uint TexkMagic = (byte)'T' | ((byte)'E' << 8) | ((byte)'X' << 16) | ((byte)'K' << 24);
         private const uint TexsMagic = (byte)'T' | ((byte)'E' << 8) | ((byte)'X' << 16) | ((byte)'S' << 24);
 
+        /// <summary>
+        /// Flags indicating GPU state that is used by the shader.
+        /// </summary>
         [Flags]
-        private enum QueriedStateFlags : byte
+        private enum QueriedStateFlags
         {
             EarlyZForce = 1 << 0,
             PrimitiveTopology = 1 << 1,
             TessellationMode = 1 << 2,
-            ConstantBufferUse = 1 << 3,
-            TransformFeedback = 1 << 4
+            TransformFeedback = 1 << 3
         }
 
         private QueriedStateFlags _queriedState;
         private bool _compute;
+        private byte _constantBufferUsePerStage;
 
         /// <summary>
         /// Compute engine state.
@@ -36,25 +41,34 @@ namespace Ryujinx.Graphics.Gpu.Shader
         public GpuChannelGraphicsState GraphicsState;
 
         /// <summary>
-        /// Contant buffers bound at the time the shader was compiled.
+        /// Contant buffers bound at the time the shader was compiled, per stage.
         /// </summary>
-        public uint ConstantBufferUse;
+        public Array5<uint> ConstantBufferUse;
 
         /// <summary>
         /// Transform feedback buffers active at the time the shader was compiled.
         /// </summary>
         public TransformFeedbackDescriptor[] TransformFeedbackDescriptors;
 
+        /// <summary>
+        /// Flags indicating texture state that is used by the shader.
+        /// </summary>
         [Flags]
-        private enum QueriedTextureStateFlags : byte
+        private enum QueriedTextureStateFlags
         {
             TextureFormat = 1 << 0,
             SamplerType = 1 << 1,
             CoordNormalized = 1 << 2
         }
 
+        /// <summary>
+        /// Reference type wrapping a value.
+        /// </summary>
         private class Box<T>
         {
+            /// <summary>
+            /// Wrapped value.
+            /// </summary>
             public T Value;
         }
 
@@ -202,11 +216,12 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <summary>
         /// Indicates that the shader accesses the constant buffer use state.
         /// </summary>
+        /// <param name="stageIndex">Shader stage index</param>
         /// <param name="useMask">Mask indicating the constant buffers bound at the time of the shader compilation</param>
-        public void RecordConstantBufferUse(uint useMask)
+        public void RecordConstantBufferUse(int stageIndex, uint useMask)
         {
-            ConstantBufferUse = useMask;
-            _queriedState |= QueriedStateFlags.ConstantBufferUse;
+            ConstantBufferUse[stageIndex] = useMask;
+            _constantBufferUsePerStage |= (byte)(1 << stageIndex);
         }
 
         /// <summary>
@@ -380,6 +395,24 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <returns>True if the state matches, false otherwise</returns>
         private bool Matches(GpuChannel channel, GpuChannelPoolState poolState, bool isCompute)
         {
+            int constantBufferUsePerStageMask = _constantBufferUsePerStage;
+
+            while (constantBufferUsePerStageMask != 0)
+            {
+                int index = BitOperations.TrailingZeroCount(constantBufferUsePerStageMask);
+
+                uint useMask = isCompute
+                    ? channel.BufferManager.GetComputeUniformBufferUseMask()
+                    : channel.BufferManager.GetGraphicsUniformBufferUseMask(index);
+
+                if (ConstantBufferUse[index] != useMask)
+                {
+                    return false;
+                }
+
+                constantBufferUsePerStageMask &= ~(1 << index);
+            }
+
             foreach (var kv in _textureSpecialization)
             {
                 TextureKey textureKey = kv.Key;
@@ -448,9 +481,15 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 dataReader.ReadWithMagicAndSize(ref specState.GraphicsState, GfxsMagic);
             }
 
-            if (specState._queriedState.HasFlag(QueriedStateFlags.ConstantBufferUse))
+            dataReader.Read(ref specState._constantBufferUsePerStage);
+
+            int constantBufferUsePerStageMask = specState._constantBufferUsePerStage;
+
+            while (constantBufferUsePerStageMask != 0)
             {
-                dataReader.Read(ref specState.ConstantBufferUse);
+                int index = BitOperations.TrailingZeroCount(constantBufferUsePerStageMask);
+                dataReader.Read(ref specState.ConstantBufferUse[index]);
+                constantBufferUsePerStageMask &= ~(1 << index);
             }
 
             if (specState._queriedState.HasFlag(QueriedStateFlags.TransformFeedback))
@@ -500,9 +539,15 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 dataWriter.WriteWithMagicAndSize(ref GraphicsState, GfxsMagic);
             }
 
-            if (_queriedState.HasFlag(QueriedStateFlags.ConstantBufferUse))
+            dataWriter.Write(ref _constantBufferUsePerStage);
+
+            int constantBufferUsePerStageMask = _constantBufferUsePerStage;
+
+            while (constantBufferUsePerStageMask != 0)
             {
-                dataWriter.Write(ref ConstantBufferUse);
+                int index = BitOperations.TrailingZeroCount(constantBufferUsePerStageMask);
+                dataWriter.Write(ref ConstantBufferUse[index]);
+                constantBufferUsePerStageMask &= ~(1 << index);
             }
 
             if (_queriedState.HasFlag(QueriedStateFlags.TransformFeedback))

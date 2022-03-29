@@ -112,7 +112,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 ? _channel.BufferManager.GetComputeUniformBufferUseMask()
                 : _channel.BufferManager.GetGraphicsUniformBufferUseMask(_stageIndex);
 
-            _state.SpecializationState?.RecordConstantBufferUse(useMask);
+            _state.SpecializationState?.RecordConstantBufferUse(_stageIndex, useMask);
             return useMask;
         }
 

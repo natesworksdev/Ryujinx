@@ -109,8 +109,8 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         /// <inheritdoc/>
         public uint QueryConstantBufferUse()
         {
-            _newSpecState.RecordConstantBufferUse(_oldSpecState.ConstantBufferUse);
-            return _oldSpecState.ConstantBufferUse;
+            _newSpecState.RecordConstantBufferUse(_stageIndex, _oldSpecState.ConstantBufferUse[_stageIndex]);
+            return _oldSpecState.ConstantBufferUse[_stageIndex];
         }
 
         /// <inheritdoc/>

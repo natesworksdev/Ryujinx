@@ -19,7 +19,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         private const uint TexdMagic = (byte)'T' | ((byte)'E' << 8) | ((byte)'X' << 16) | ((byte)'D' << 24);
 
         private const ushort FileFormatVersionMajor = 1;
-        private const ushort FileFormatVersionMinor = 0;
+        private const ushort FileFormatVersionMinor = 1;
         private const uint FileFormatVersionPacked = ((uint)FileFormatVersionMajor << 16) | FileFormatVersionMinor;
         private const uint CodeGenVersion = 0;
 
