@@ -101,7 +101,7 @@ namespace Ryujinx.Ava.Ui.Controls
             }
             finally
             {
-                _postFrameResetEvent?.Set();
+               // _postFrameResetEvent?.Set();
             }
         }
 
@@ -136,11 +136,11 @@ namespace Ryujinx.Ava.Ui.Controls
 
         public void QueueRender()
         {
-            _postFrameResetEvent.Reset();
+            //_postFrameResetEvent.Reset();
             Dispatcher.UIThread.InvokeAsync(InvalidateVisual, DispatcherPriority.Render);
 
             Program.RenderTimer.TickNow();
-            _postFrameResetEvent.Wait(100);
+            //_postFrameResetEvent.Wait(100);
         }
 
         internal bool Present(int image)
@@ -168,7 +168,7 @@ namespace Ryujinx.Ava.Ui.Controls
                 _postFrameResetEvent.Reset();
             }
         }
-        
+
         internal void Start()
         {
             IsStarted = true;
