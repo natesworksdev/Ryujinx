@@ -86,7 +86,7 @@ namespace Ryujinx.HLE.Debugger
                 case 32:
                     return ToHex(BitConverter.GetBytes(state.DebugPc));
                 case 33:
-                    return ToHex(BitConverter.GetBytes(state.GetPstate()));
+                    return ToHex(BitConverter.GetBytes(state.Pstate));
                 case >= 34 and <= 65:
                     return ToHex(state.GetV(gdbRegId - 34).ToArray());
                 case 66:
@@ -117,7 +117,7 @@ namespace Ryujinx.HLE.Debugger
                 case 33:
                     {
                         ulong value = ss.ReadLengthAsHex(8);
-                        state.SetPstate((uint)value);
+                        state.Pstate = (uint)value;
                         return true;
                     }
                 case >= 34 and <= 65:
