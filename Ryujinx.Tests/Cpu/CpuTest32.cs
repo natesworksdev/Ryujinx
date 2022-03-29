@@ -288,15 +288,15 @@ namespace Ryujinx.Tests.Cpu
 
         public void RunPrecomputedTestCase(PrecomputedMemoryThumbTestCase test)
         {
-            byte[] testmem = new byte[Size];
+            byte[] testMem = new byte[Size];
 
             for (ulong i = 0; i < Size; i += 2)
             {
-                testmem[i + 0] = (byte)((i + DataBaseAddress) >> 0);
-                testmem[i + 1] = (byte)((i + DataBaseAddress) >> 8);
+                testMem[i + 0] = (byte)((i + DataBaseAddress) >> 0);
+                testMem[i + 1] = (byte)((i + DataBaseAddress) >> 8);
             }
 
-            SetWorkingMemory(0, testmem);
+            SetWorkingMemory(0, testMem);
 
             RunPrecomputedTestCase(new PrecomputedThumbTestCase(){
                 Instructions = test.Instructions,
@@ -304,15 +304,15 @@ namespace Ryujinx.Tests.Cpu
                 FinalRegs = test.FinalRegs,
             });
 
-            foreach (Tuple<ulong, ushort> delta in test.MemoryDelta)
+            foreach (var delta in test.MemoryDelta)
             {
-                testmem[delta.Item1 - DataBaseAddress + 0] = (byte)(delta.Item2 >> 0);
-                testmem[delta.Item1 - DataBaseAddress + 1] = (byte)(delta.Item2 >> 8);
+                testMem[delta.Address - DataBaseAddress + 0] = (byte)(delta.Value >> 0);
+                testMem[delta.Address - DataBaseAddress + 1] = (byte)(delta.Value >> 8);
             }
 
             byte[] mem = _memory.GetSpan(DataBaseAddress, (int)Size).ToArray();
 
-            Assert.That(mem, Is.EqualTo(testmem), "testmem");
+            Assert.That(mem, Is.EqualTo(testMem), "testmem");
         }
 
         protected void SetWorkingMemory(uint offset, byte[] data)

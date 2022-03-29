@@ -7,6 +7,6 @@ namespace Ryujinx.Tests.Cpu
         public ushort[] Instructions;
         public uint[] StartRegs;
         public uint[] FinalRegs;
-        public Tuple<ulong, ushort>[] MemoryDelta;
+        public (ulong Address, ushort Value)[] MemoryDelta;
     };
 }
