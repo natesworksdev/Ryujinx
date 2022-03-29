@@ -59,22 +59,23 @@ The latest automatic build for Windows, macOS, and Linux can be found on the [Of
 
 ## Building
 
-If you wish to build the emulator yourself, follow these steps:
+Follow these steps to build the emulator on your computer. Please note that we do not offer support for custom builds.
 
 ### Step 1
-Install the X64 version of [.NET 6.0 (or higher) SDK](https://dotnet.microsoft.com/download/dotnet/6.0).
+Install the x64 version of [.NET 6.0 SDK](https://dotnet.microsoft.com/download/dotnet/6.0) for your operating system.
 
 ### Step 2
-Either use `git clone https://github.com/Ryujinx/Ryujinx` on the command line to clone the repository or use Code --> Download zip button to get the files.
+Either clone the repo by using `git clone https://github.com/Ryujinx/Ryujinx`, or download the repo directly from the web interface by clicking the green <strong>Code</strong> button > <strong>Download ZIP</strong>.
 
 ### Step 3
+To build Ryujinx, open the command prompt or terminal and use the `cd` command to navigate to the Ryujinx project folder. Windows users can also quickly access it by holding <kbd>Shift</kbd> in File Explorer, then right clicking and selecting `Open command window here`.
 
-To build Ryujinx, open a command prompt inside the project directory. You can quickly access it on Windows by holding shift in File Explorer, then right clicking and selecting `Open command window here`. Then type the following command:
-`dotnet build -c Release -o build`
-the built files will be found in the newly created build directory.
+After that, type the following command:  
+`dotnet publish -c Release -r win-x64 -o build-ryujinx-custom /p:DebugType=embedded Ryujinx --self-contained`
 
-Ryujinx system files are stored in the `Ryujinx` folder. This folder is located in the user folder, which can be accessed by clicking `Open Ryujinx Folder` under the File menu in the GUI.
+Change `win-x64` to `linux-x64` if you use Linux.
 
+The output build files will be in the `build-ryujinx-custom` folder. Excluding that folder, you can delete the project files to save disk space.
 
 ## Features
 
