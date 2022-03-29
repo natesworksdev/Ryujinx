@@ -612,7 +612,7 @@ namespace Ryujinx.Graphics.OpenGL
                     _program?.Bind();
                     _unit0Sampler?.Bind(0);
 
-                    GL.ViewportArray(0, 1, _viewportArray);
+                    RestoreViewport0();
 
                     Enable(EnableCap.CullFace, _cullEnable);
                     Enable(EnableCap.StencilTest, _stencilTestEnable);
@@ -1478,6 +1478,11 @@ namespace Ryujinx.Graphics.OpenGL
             _currentComponentMasks |= componentMaskAtIndex;
         }
 
+        public void RestoreClipControl()
+        {
+            GL.ClipControl(_clipOrigin, _clipDepthMode);
+        }
+
         public void RestoreScissor0Enable()
         {
             if ((_scissorEnables & 1u) != 0)
@@ -1491,6 +1496,14 @@ namespace Ryujinx.Graphics.OpenGL
             if (_rasterizerDiscard)
             {
                 GL.Enable(EnableCap.RasterizerDiscard);
+            }
+        }
+
+        public void RestoreViewport0()
+        {
+            if (_viewportArray.Length > 0)
+            {
+                GL.ViewportArray(0, 1, _viewportArray);
             }
         }
 
