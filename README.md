@@ -65,7 +65,7 @@ Follow these steps to build the emulator on your computer. Please note that we d
 Install the x64 version of [.NET 6.0 SDK](https://dotnet.microsoft.com/download/dotnet/6.0) for your operating system.
 
 ### Step 2
-Either clone the repo by using `git clone https://github.com/Ryujinx/Ryujinx`, or download the repo directly from the web interface by clicking the green `Code` button > `Download ZIP`.
+Either clone the repo by using `git clone https://github.com/Ryujinx/Ryujinx`, or download the repo directly from the web interface by clicking the `Code` button > `Download ZIP`.
 
 ### Step 3
 Use the `cd` command to change to the Ryujinx project folder in the command line.  
