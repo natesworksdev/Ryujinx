@@ -188,6 +188,11 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         /// <inheritdoc/>
         public void RegisterTexture(int handle, int cbufSlot)
         {
+            if (!_oldSpecState.TextureRegistered(_stageIndex, handle, cbufSlot))
+            {
+                throw new DiskCacheLoadException(DiskCacheLoadResult.MissingTextureDescriptor);
+            }
+
             (uint format, bool formatSrgb) = _oldSpecState.GetFormat(_stageIndex, handle, cbufSlot);
             TextureTarget target = _oldSpecState.GetTextureTarget(_stageIndex, handle, cbufSlot);
             bool coordNormalized = _oldSpecState.GetCoordNormalized(_stageIndex, handle, cbufSlot);

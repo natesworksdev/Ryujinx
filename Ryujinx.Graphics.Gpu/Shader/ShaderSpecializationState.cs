@@ -293,6 +293,17 @@ namespace Ryujinx.Graphics.Gpu.Shader
         }
 
         /// <summary>
+        /// Checks if a given texture was registerd on this specialization state.
+        /// </summary>
+        /// <param name="stageIndex">Shader stage where the texture is used</param>
+        /// <param name="handle">Offset in words of the texture handle on the texture buffer</param>
+        /// <param name="cbufSlot">Slot of the texture buffer constant buffer</param>
+        public bool TextureRegistered(int stageIndex, int handle, int cbufSlot)
+        {
+            return GetTextureSpecState(stageIndex, handle, cbufSlot) != null;
+        }
+
+        /// <summary>
         /// Gets the recorded format of a given texture.
         /// </summary>
         /// <param name="stageIndex">Shader stage where the texture is used</param>
