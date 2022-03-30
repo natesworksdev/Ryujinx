@@ -308,7 +308,9 @@ namespace Ryujinx.Graphics.Shader.Translation
             {
                 config.SetUsedFeature(FeatureFlags.IntegerSampling);
 
-                for (int index = 0; index < coordsCount; index++)
+                int normCoordsCount = (texOp.Type & SamplerType.Mask) == SamplerType.TextureCube ? 2 : coordsCount;
+
+                for (int index = 0; index < normCoordsCount; index++)
                 {
                     Operand coordSize = Local();
 
