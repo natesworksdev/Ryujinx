@@ -68,7 +68,7 @@ Install the x64 version of [.NET 6.0 SDK](https://dotnet.microsoft.com/download/
 Either clone the repo by using `git clone https://github.com/Ryujinx/Ryujinx`, or download the repo directly from the web interface by clicking the `Code` button > `Download ZIP`.
 
 ### Step 3
-Use the `cd` command to change to the Ryujinx project folder in the command line.  
+Use the `cd` command to change to Ryujinx project folder in the command line.  
 Windows users can also open the project folder in File Explorer, then hold <kbd>Shift</kbd>+right click > `Open command window here`.
 
 Then use the following command to build Ryujinx:  
