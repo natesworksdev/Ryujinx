@@ -4,54 +4,54 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using FluentAvalonia.UI.Controls;
+using Ryujinx.Ava.Common.Locale;
+using Ryujinx.Ava.Ui.Models;
 using Ryujinx.Ava.Ui.Windows;
+using Ryujinx.HLE.HOS.Applets;
 using System;
+using System.Threading.Tasks;
+using Button = Avalonia.Controls.Button;
 
 namespace Ryujinx.Ava.Ui.Controls
 {
-    public class SwkbdAppletWindow : StyleableWindow
+    public class SwkbdAppletDialog : UserControl
     {
         private Predicate<int> _checkLength;
         private int _inputMax;
         private int _inputMin;
         private string _placeholder;
 
-        public SwkbdAppletWindow(string mainText, string secondaryText, string placeholder)
+        private ContentDialog _host;
+
+        public SwkbdAppletDialog(string mainText, string secondaryText, string placeholder)
         {
             MainText = mainText;
             SecondaryText = secondaryText;
             DataContext = this;
             _placeholder = placeholder;
             InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
+            
             SetInputLengthValidation(0, int.MaxValue); // Disable by default.
         }
 
-        public SwkbdAppletWindow()
+        public SwkbdAppletDialog()
         {
             DataContext = this;
             InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
         }
 
         public string Message { get; set; } = "";
         public string MainText { get; set; } = "";
         public string SecondaryText { get; set; } = "";
-        public bool IsOkPressed { get; set; }
 
         public TextBlock Error { get; private set; }
         public TextBox Input { get; set; }
-        public Button OkButton { get; set; }
 
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
             Error = this.FindControl<TextBlock>("Error");
-            OkButton = this.FindControl<Button>("OkButton");
             Input = this.FindControl<TextBox>("Input");
 
             Input.Watermark = _placeholder;
@@ -59,17 +59,41 @@ namespace Ryujinx.Ava.Ui.Controls
             Input.AddHandler(TextInputEvent, Message_TextInput, RoutingStrategies.Tunnel, true);
         }
 
-
-        private void OkButton_OnClick(object sender, RoutedEventArgs e)
+        public static async Task<(UserResult Result, string Input)> ShowInputDialog(StyleableWindow window,
+            string title, SoftwareKeyboardUiArgs args)
         {
-            IsOkPressed = true;
+            ContentDialog contentDialog = window.ContentDialog;
 
-            Close();
-        }
+            UserResult result = UserResult.Cancel;
 
-        private void Cancel_OnClick(object sender, RoutedEventArgs e)
-        {
-            Close();
+            SwkbdAppletDialog content =
+                new SwkbdAppletDialog(args.HeaderText, args.SubtitleText, args.GuideText)
+                {
+                    Message = args.InitialText ?? ""
+                };
+
+            string input = string.Empty;
+            
+            content.SetInputLengthValidation(args.StringLengthMin, args.StringLengthMax);
+
+            if (contentDialog != null)
+            {
+                content._host = contentDialog;
+                contentDialog.Title = title;
+                contentDialog.PrimaryButtonText = args.SubmitText;
+                contentDialog.IsPrimaryButtonEnabled = content._checkLength(content.Message.Length);
+                contentDialog.SecondaryButtonText = "";
+                contentDialog.CloseButtonText = LocaleManager.Instance["InputDialogCancel"];
+                contentDialog.Content = content;
+                contentDialog.PrimaryButtonCommand = MiniCommand.Create(() =>
+                {
+                    result = UserResult.Ok;
+                    input = content.Input.Text;
+                });
+                await contentDialog.ShowAsync();
+            }
+
+            return (result, input);
         }
 
         public void SetInputLengthValidation(int min, int max)
@@ -106,20 +130,21 @@ namespace Ryujinx.Ava.Ui.Controls
 
         private void Message_TextInput(object sender, TextInputEventArgs e)
         {
-            OkButton.IsEnabled = _checkLength(Message.Length);
+            if (_host != null)
+            {
+                _host.IsPrimaryButtonEnabled = _checkLength(Message.Length);
+            }
         }
 
         private void Message_KeyUp(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Enter && OkButton.IsEnabled)
+            if (e.Key == Key.Enter && _host.IsPrimaryButtonEnabled)
             {
-                IsOkPressed = true;
-
-                Close();
+                _host.Hide(ContentDialogResult.Primary);
             }
             else
             {
-                OkButton.IsEnabled = _checkLength(Message.Length);
+                _host.IsPrimaryButtonEnabled = _checkLength(Message.Length);
             }
         }
     }

@@ -107,21 +107,11 @@ namespace Ryujinx.Ava.Ui.Applet
             {
                 try
                 {
-                    SwkbdAppletWindow swkbdDialog = new(args.HeaderText, args.SubtitleText, args.GuideText)
+                    var response = await SwkbdAppletDialog.ShowInputDialog(_parent, "Software Keyboard", args);
+
+                    if (response.Result == UserResult.Ok)
                     {
-                        Title = "Software Keyboard", Message = inputText
-                    };
-
-                    swkbdDialog.Input.Text = inputText;
-                    swkbdDialog.OkButton.Content = args.SubmitText;
-
-                    swkbdDialog.SetInputLengthValidation(args.StringLengthMin, args.StringLengthMax);
-
-                    await swkbdDialog.ShowDialog(_parent);
-
-                    if (swkbdDialog.IsOkPressed)
-                    {
-                        inputText = swkbdDialog.Input.Text;
+                        inputText = response.Input;
                         okPressed = true;
                     }
                 }
