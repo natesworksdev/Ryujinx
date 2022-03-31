@@ -41,12 +41,7 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGl
                 {
                     GrContext.ResetContext();
 
-                    GL.Enable(EnableCap.Multisample);
                     GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
-
-                    var maxSamples = GrContext.GetMaxSurfaceSampleCount(SKColorType.Rgba8888);
-                    GL.GetInteger(GetPName.Samples, out var samples);
-                    samples = samples > maxSamples ? maxSamples : samples;
 
                     var imageInfo = new GRGlFramebufferInfo()
                     {
@@ -56,9 +51,7 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGl
 
                     GL.GetInteger(GetPName.StencilBits, out var stencil);
 
-                    stencil = stencil == 0 ? 8 : stencil;
-
-                     var renderTarget = new GRBackendRenderTarget(session.CurrentSize.Width, session.CurrentSize.Height, samples, stencil, imageInfo);
+                     var renderTarget = new GRBackendRenderTarget(session.CurrentSize.Width, session.CurrentSize.Height, 1, 0, imageInfo);
 
                     var surface = SKSurface.Create(GrContext, renderTarget,
                         session.IsYFlipped ? GRSurfaceOrigin.TopLeft : GRSurfaceOrigin.BottomLeft,

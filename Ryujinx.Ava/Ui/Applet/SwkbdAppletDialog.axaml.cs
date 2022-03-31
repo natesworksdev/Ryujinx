@@ -4,6 +4,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using FluentAvalonia.Core;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Models;
@@ -85,12 +86,15 @@ namespace Ryujinx.Ava.Ui.Controls
                 contentDialog.SecondaryButtonText = "";
                 contentDialog.CloseButtonText = LocaleManager.Instance["InputDialogCancel"];
                 contentDialog.Content = content;
-                contentDialog.PrimaryButtonCommand = MiniCommand.Create(() =>
-                {
-                    result = UserResult.Ok;
-                    input = content.Input.Text;
-                });
+                TypedEventHandler<ContentDialog, ContentDialogClosedEventArgs> handler = (s,e) =>{
+                    if(e.Result == ContentDialogResult.Primary){
+                        result = UserResult.Ok;
+                        input = content.Input.Text;
+                    }
+                };
+                contentDialog.Closed += handler;
                 await contentDialog.ShowAsync();
+                contentDialog.Closed -= handler;
             }
 
             return (result, input);

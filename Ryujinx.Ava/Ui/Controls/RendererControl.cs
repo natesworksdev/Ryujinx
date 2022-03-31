@@ -57,8 +57,6 @@ namespace Ryujinx.Ava.Ui.Controls
 
             resizeObservable.Subscribe(Resized);
 
-            _glDrawOperation = new GlDrawOperation(this);
-
             Focusable = true;
         }
 
@@ -67,6 +65,8 @@ namespace Ryujinx.Ava.Ui.Controls
             SizeChanged?.Invoke(this, rect.Size);
 
             RenderSize = rect.Size * Program.WindowScaleFactor;
+
+            _glDrawOperation = new GlDrawOperation(this);
         }
 
         public override void Render(DrawingContext context)
@@ -193,13 +193,14 @@ namespace Ryujinx.Ava.Ui.Controls
         {
             private int _framebuffer;
 
-            public Rect Bounds => _control.Bounds;
+            public Rect Bounds { get; }
 
             private readonly RendererControl _control;
 
             public GlDrawOperation(RendererControl control)
             {
                 _control = control;
+                Bounds = _control.Bounds;
             }
 
             public void Dispose()
@@ -209,7 +210,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
             public bool Equals(ICustomDrawOperation other)
             {
-                return other is GlDrawOperation operation && Equals(this, operation);
+                return other is GlDrawOperation operation && Equals(this, operation) && operation.Bounds == Bounds;
             }
 
             public bool HitTest(Point p)
@@ -247,11 +248,9 @@ namespace Ryujinx.Ava.Ui.Controls
                 var imageInfo = new SKImageInfo((int)_control.RenderSize.Width, (int)_control.RenderSize.Height, SKColorType.Rgba8888);
                 var glInfo = new GRGlFramebufferInfo((uint)_framebuffer, SKColorType.Rgba8888.ToGlSizedFormat());
 
-                var stencils = GL.GetInteger(GetPName.StencilBits);
-
                 GL.WaitSync(fence, WaitSyncFlags.None, ulong.MaxValue);
 
-                using (var backendTexture = new GRBackendRenderTarget(imageInfo.Width, imageInfo.Height, 1, stencils, glInfo))
+                using (var backendTexture = new GRBackendRenderTarget(imageInfo.Width, imageInfo.Height, 1, 0, glInfo))
                 using (var surface = SKSurface.Create(skiaDrawingContextImpl.GrContext, backendTexture,
                     GRSurfaceOrigin.BottomLeft, SKColorType.Rgba8888))
                 {
