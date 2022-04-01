@@ -266,7 +266,7 @@ namespace Ryujinx.Cpu
 
                     if ((va & PageMask) != 0)
                     {
-                        ulong pa = GetPhysicalAddressInternal(va);
+                        ulong pa = GetPhysicalAddressChecked(va);
 
                         size = Math.Min(data.Length, PageSize - (int)(va & PageMask));
 
@@ -277,7 +277,7 @@ namespace Ryujinx.Cpu
 
                     for (; offset < data.Length; offset += size)
                     {
-                        ulong pa = GetPhysicalAddressInternal(va + (ulong)offset);
+                        ulong pa = GetPhysicalAddressChecked(va + (ulong)offset);
 
                         size = Math.Min(data.Length - offset, PageSize);
 
@@ -356,7 +356,9 @@ namespace Ryujinx.Cpu
                 ThrowMemoryNotContiguous();
             }
 
-            return ref _backingMemory.GetRef<T>(GetPhysicalAddressInternal(va));
+            SignalMemoryTracking(va, (ulong)Unsafe.SizeOf<T>(), true);
+
+            return ref _backingMemory.GetRef<T>(GetPhysicalAddressChecked(va));
         }
 
         /// <inheritdoc/>
@@ -490,7 +492,7 @@ namespace Ryujinx.Cpu
 
             var regions = new List<MemoryRange>();
 
-            ulong regionStart = GetPhysicalAddressInternal(va);
+            ulong regionStart = GetPhysicalAddressChecked(va);
             ulong regionSize = PageSize;
 
             for (int page = 0; page < pages - 1; page++)
@@ -500,9 +502,9 @@ namespace Ryujinx.Cpu
                     return null;
                 }
 
-                ulong newPa = GetPhysicalAddressInternal(va + PageSize);
+                ulong newPa = GetPhysicalAddressChecked(va + PageSize);
 
-                if (GetPhysicalAddressInternal(va) + PageSize != newPa)
+                if (GetPhysicalAddressChecked(va) + PageSize != newPa)
                 {
                     regions.Add(new MemoryRange(regionStart, regionSize));
                     regionStart = newPa;
@@ -533,7 +535,7 @@ namespace Ryujinx.Cpu
 
                 if ((va & PageMask) != 0)
                 {
-                    ulong pa = GetPhysicalAddressInternal(va);
+                    ulong pa = GetPhysicalAddressChecked(va);
 
                     size = Math.Min(data.Length, PageSize - (int)(va & PageMask));
 
@@ -544,7 +546,7 @@ namespace Ryujinx.Cpu
 
                 for (; offset < data.Length; offset += size)
                 {
-                    ulong pa = GetPhysicalAddressInternal(va + (ulong)offset);
+                    ulong pa = GetPhysicalAddressChecked(va + (ulong)offset);
 
                     size = Math.Min(data.Length - offset, PageSize);
 
@@ -847,6 +849,16 @@ namespace Ryujinx.Cpu
 
                 mask = 0;
             }
+        }
+
+        private ulong GetPhysicalAddressChecked(ulong va)
+        {
+            if (!IsMapped(va))
+            {
+                ThrowInvalidMemoryRegionException($"Not mapped: va=0x{va:X16}");
+            }
+
+            return GetPhysicalAddressInternal(va);
         }
 
         private ulong GetPhysicalAddressInternal(ulong va)
