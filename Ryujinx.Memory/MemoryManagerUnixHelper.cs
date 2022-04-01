@@ -151,9 +151,9 @@ namespace Ryujinx.Memory
                 }
             }
 
-            if (OperatingSystem.IsMacOSVersionAtLeast(10, 14) && RuntimeInformation.ProcessArchitecture == Architecure.Arm64)
+            if (OperatingSystem.IsMacOSVersionAtLeast(10, 14) && RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
             {
-                result |= MAP_JIT_DARWIN; // not to be used on Intel builds (unless the Hardened Runtime is enabled)
+                result |= MAP_JIT_DARWIN; // Not to be used on Intel builds (unless the Hardened Runtime is enabled).
             }
 
             return result;
