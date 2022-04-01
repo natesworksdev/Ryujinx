@@ -1,0 +1,438 @@
+using System;
+using System.Diagnostics;
+
+namespace Ryujinx.Memory.WindowsShared
+{
+    class PlaceholderManager
+    {
+        private const ulong MinimumPageSize = 0x1000;
+
+        private readonly IntervalTree<ulong, ulong> _mappings = new IntervalTree<ulong, ulong>();
+        private readonly IntervalTree<ulong, MemoryPermission> _protections = new IntervalTree<ulong, MemoryPermission>();
+
+        public void ReserveRange(ulong address, ulong size)
+        {
+            lock (_mappings)
+            {
+                _mappings.Add(address, address + size, ulong.MaxValue);
+            }
+        }
+
+        public void MapView(IntPtr sharedMemory, ulong srcOffset, IntPtr location, IntPtr size)
+        {
+            UnmapView(sharedMemory, location, size);
+            MapViewInternal(sharedMemory, srcOffset, location, size);
+        }
+
+        private void MapViewInternal(IntPtr sharedMemory, ulong srcOffset, IntPtr location, IntPtr size)
+        {
+            SplitForMap((ulong)location, (ulong)size, srcOffset);
+
+            var ptr = WindowsApi.MapViewOfFile3(
+                sharedMemory,
+                WindowsApi.CurrentProcessHandle,
+                location,
+                srcOffset,
+                size,
+                0x4000,
+                MemoryProtection.ReadWrite,
+                IntPtr.Zero,
+                0);
+
+            if (ptr == IntPtr.Zero)
+            {
+                throw new WindowsApiException("MapViewOfFile3");
+            }
+        }
+
+        private void SplitForMap(ulong address, ulong size, ulong backingOffset)
+        {
+            ulong endAddress = address + size;
+
+            var overlaps = Array.Empty<IntervalTreeNode<ulong, ulong>>();
+
+            lock (_mappings)
+            {
+                int count = _mappings.Get(address, endAddress, ref overlaps);
+
+                Debug.Assert(count == 1);
+                Debug.Assert(!IsMapped(overlaps[0].Value));
+
+                var overlap = overlaps[0];
+
+                // Tree operations might modify the node start/end values, so save a copy before we modify the tree.
+                ulong overlapStart = overlap.Start;
+                ulong overlapEnd = overlap.End;
+                ulong overlapValue = overlap.Value;
+
+                _mappings.Remove(overlap);
+
+                bool overlapStartsBefore = overlapStart < address;
+                bool overlapEndsAfter = overlapEnd > endAddress;
+
+                if (overlapStartsBefore && overlapEndsAfter)
+                {
+                    CheckFreeResult(WindowsApi.VirtualFree(
+                        (IntPtr)address,
+                        (IntPtr)size,
+                        AllocationType.Release | AllocationType.PreservePlaceholder));
+
+                    _mappings.Add(overlapStart, address, overlapValue);
+                    _mappings.Add(endAddress, overlapEnd, AddBackingOffset(overlapValue, endAddress - overlapStart));
+                }
+                else if (overlapStartsBefore)
+                {
+                    ulong overlappedSize = overlapEnd - address;
+
+                    CheckFreeResult(WindowsApi.VirtualFree(
+                        (IntPtr)address,
+                        (IntPtr)overlappedSize,
+                        AllocationType.Release | AllocationType.PreservePlaceholder));
+
+                    _mappings.Add(overlapStart, address, overlapValue);
+                }
+                else if (overlapEndsAfter)
+                {
+                    ulong overlappedSize = endAddress - overlapStart;
+
+                    CheckFreeResult(WindowsApi.VirtualFree(
+                        (IntPtr)overlapStart,
+                        (IntPtr)overlappedSize,
+                        AllocationType.Release | AllocationType.PreservePlaceholder));
+
+                    _mappings.Add(endAddress, overlapEnd, AddBackingOffset(overlapValue, overlappedSize));
+                }
+
+                _mappings.Add(address, endAddress, backingOffset);
+            }
+        }
+
+        public void UnmapView(IntPtr sharedMemory, IntPtr location, IntPtr size)
+        {
+            ulong startAddress = (ulong)location;
+            ulong unmapSize = (ulong)size;
+            ulong endAddress = startAddress + unmapSize;
+
+            var overlaps = Array.Empty<IntervalTreeNode<ulong, ulong>>();
+            int count = 0;
+
+            lock (_mappings)
+            {
+                count = _mappings.Get(startAddress, endAddress, ref overlaps);
+            }
+
+            for (int index = 0; index < count; index++)
+            {
+                var overlap = overlaps[index];
+
+                if (IsMapped(overlap.Value))
+                {
+                    if (!WindowsApi.UnmapViewOfFile2(WindowsApi.CurrentProcessHandle, (IntPtr)overlap.Start, 2))
+                    {
+                        throw new WindowsApiException("UnmapViewOfFile2");
+                    }
+
+                    // Tree operations might modify the node start/end values, so save a copy before we modify the tree.
+                    ulong overlapStart = overlap.Start;
+                    ulong overlapEnd = overlap.End;
+                    ulong overlapValue = overlap.Value;
+
+                    _mappings.Remove(overlap);
+                    _mappings.Add(overlapStart, overlapEnd, ulong.MaxValue);
+
+                    // If the overlap extends beyond the region we are unmapping,
+                    // then we need to re-map the regions that are supposed to remain mapped.
+                    // This is necessary because Windows does not support partial view unmaps.
+                    // That is, you can only fully unmap a view that was previously mapped, you can't just unmap a chunck of it.
+                    if (overlapStart < startAddress)
+                    {
+                        ulong remapSize = startAddress - overlapStart;
+
+                        MapViewInternal(sharedMemory, overlapValue, (IntPtr)overlapStart, (IntPtr)remapSize);
+                        RestoreRangeProtection(overlapStart, remapSize);
+                    }
+
+                    if (overlapEnd > endAddress)
+                    {
+                        ulong overlappedSize = endAddress - overlapStart;
+                        ulong remapBackingOffset = overlapValue + overlappedSize;
+                        ulong remapAddress = overlapStart + overlappedSize;
+                        ulong remapSize = overlapEnd - endAddress;
+
+                        MapViewInternal(sharedMemory, remapBackingOffset, (IntPtr)remapAddress, (IntPtr)remapSize);
+                        RestoreRangeProtection(remapAddress, remapSize);
+                    }
+                }
+            }
+
+            CoalesceForUnmap(startAddress, unmapSize);
+            RemoveProtection(startAddress, unmapSize);
+        }
+
+        private void CoalesceForUnmap(ulong address, ulong size)
+        {
+            ulong endAddress = address + size;
+            var overlaps = Array.Empty<IntervalTreeNode<ulong, ulong>>();
+            int unmappedCount = 0;
+
+            lock (_mappings)
+            {
+                int count = _mappings.Get(address - MinimumPageSize, endAddress + MinimumPageSize, ref overlaps);
+                if (count < 2)
+                {
+                    // Nothing to coalesce if we only have 1 or no overlaps.
+                    return;
+                }
+
+                for (int index = 0; index < count; index++)
+                {
+                    var overlap = overlaps[index];
+
+                    if (!IsMapped(overlap.Value))
+                    {
+                        if (address > overlap.Start)
+                        {
+                            address = overlap.Start;
+                        }
+
+                        if (endAddress < overlap.End)
+                        {
+                            endAddress = overlap.End;
+                        }
+
+                        _mappings.Remove(overlap);
+
+                        unmappedCount++;
+                    }
+                }
+
+                _mappings.Add(address, endAddress, ulong.MaxValue);
+            }
+
+            if (unmappedCount > 1)
+            {
+                size = endAddress - address;
+
+                CheckFreeResult(WindowsApi.VirtualFree(
+                    (IntPtr)address,
+                    (IntPtr)size,
+                    AllocationType.Release | AllocationType.CoalescePlaceholders));
+            }
+        }
+
+        public bool ReprotectView(IntPtr address, IntPtr size, MemoryPermission permission, bool throwOnError = false)
+        {
+            ulong reprotectAddress = (ulong)address;
+            ulong reprotectSize = (ulong)size;
+            ulong endAddress = reprotectAddress + reprotectSize;
+
+            var overlaps = Array.Empty<IntervalTreeNode<ulong, ulong>>();
+            int count = 0;
+
+            lock (_mappings)
+            {
+                count = _mappings.Get(reprotectAddress, endAddress, ref overlaps);
+            }
+
+            bool success = true;
+
+            for (int index = 0; index < count; index++)
+            {
+                var overlap = overlaps[index];
+
+                ulong mappedAddress = overlap.Start;
+                ulong mappedSize = overlap.End - overlap.Start;
+
+                if (mappedAddress < reprotectAddress)
+                {
+                    ulong delta = reprotectAddress - mappedAddress;
+                    mappedAddress = reprotectAddress;
+                    mappedSize -= delta;
+                }
+
+                ulong mappedEndAddress = mappedAddress + mappedSize;
+
+                if (mappedEndAddress > endAddress)
+                {
+                    ulong delta = mappedEndAddress - endAddress;
+                    mappedSize -= delta;
+                }
+
+                if (!WindowsApi.VirtualProtect((IntPtr)mappedAddress, (IntPtr)mappedSize, WindowsApi.GetProtection(permission), out _))
+                {
+                    if (throwOnError)
+                    {
+                        throw new WindowsApiException("VirtualProtect");
+                    }
+
+                    success = false;
+                }
+
+                // We only keep track of "non-standard" protections,
+                // that is, everything that is not just RW (which is the default when views are mapped).
+                if (permission == MemoryPermission.ReadAndWrite)
+                {
+                    RemoveProtection(mappedAddress, mappedSize);
+                }
+                else
+                {
+                    AddProtection(mappedAddress, mappedSize, permission);
+                }
+            }
+
+            return success;
+        }
+
+        private static void CheckFreeResult(bool success)
+        {
+            if (!success)
+            {
+                throw new WindowsApiException("VirtualFree");
+            }
+        }
+
+        private static ulong AddBackingOffset(ulong backingOffset, ulong offset)
+        {
+            if (backingOffset == ulong.MaxValue)
+            {
+                return backingOffset;
+            }
+
+            return backingOffset + offset;
+        }
+
+        private static bool IsMapped(ulong backingOffset)
+        {
+            return backingOffset != ulong.MaxValue;
+        }
+
+        private void AddProtection(ulong address, ulong size, MemoryPermission permission)
+        {
+            ulong endAddress = address + size;
+            var overlaps = Array.Empty<IntervalTreeNode<ulong, MemoryPermission>>();
+            int count = 0;
+
+            lock (_protections)
+            {
+                count = _protections.Get(address, endAddress, ref overlaps);
+
+                Debug.Assert(count > 0);
+
+                if (count == 1 &&
+                    overlaps[0].Start <= address &&
+                    overlaps[0].End >= endAddress &&
+                    overlaps[0].Value == permission)
+                {
+                    return;
+                }
+
+                ulong startAddress = address;
+
+                for (int index = 0; index < count; index++)
+                {
+                    var protection = overlaps[index];
+
+                    ulong protAddress = protection.Start;
+                    ulong protEndAddress = protection.End;
+                    MemoryPermission protPermission = protection.Value;
+
+                    _protections.Remove(protection);
+
+                    if (protection.Value == permission)
+                    {
+                        if (startAddress > protAddress)
+                        {
+                            startAddress = protAddress;
+                        }
+
+                        if (endAddress < protEndAddress)
+                        {
+                            endAddress = protEndAddress;
+                        }
+                    }
+                    else
+                    {
+                        if (startAddress > protAddress)
+                        {
+                            _protections.Add(protAddress, startAddress, protPermission);
+                        }
+
+                        if (endAddress < protEndAddress)
+                        {
+                            _protections.Add(endAddress, protEndAddress, protPermission);
+                        }
+                    }
+                }
+
+                _protections.Add(startAddress, endAddress, permission);
+            }
+        }
+
+        private void RemoveProtection(ulong address, ulong size)
+        {
+            ulong endAddress = address + size;
+            var overlaps = Array.Empty<IntervalTreeNode<ulong, MemoryPermission>>();
+            int count = 0;
+
+            lock (_protections)
+            {
+                count = _protections.Get(address, endAddress, ref overlaps);
+
+                for (int index = 0; index < count; index++)
+                {
+                    var protection = overlaps[index];
+
+                    ulong protAddress = protection.Start;
+                    ulong protEndAddress = protection.End;
+                    MemoryPermission protPermission = protection.Value;
+
+                    _protections.Remove(protection);
+
+                    if (address > protAddress)
+                    {
+                        _protections.Add(protAddress, address, protPermission);
+                    }
+
+                    if (endAddress < protEndAddress)
+                    {
+                        _protections.Add(endAddress, protEndAddress, protPermission);
+                    }
+                }
+            }
+        }
+
+        private void RestoreRangeProtection(ulong address, ulong size)
+        {
+            ulong endAddress = address + size;
+            var overlaps = Array.Empty<IntervalTreeNode<ulong, MemoryPermission>>();
+            int count = 0;
+
+            lock (_protections)
+            {
+                count = _protections.Get(address, endAddress, ref overlaps);
+            }
+
+            ulong startAddress = address;
+
+            for (int index = 0; index < count; index++)
+            {
+                var protection = overlaps[index];
+
+                ulong protAddress = protection.Start;
+                ulong protEndAddress = protection.End;
+
+                if (protAddress < address)
+                {
+                    protAddress = address;
+                }
+
+                if (protEndAddress > endAddress)
+                {
+                    protEndAddress = endAddress;
+                }
+
+                ReprotectView((IntPtr)protAddress, (IntPtr)(protEndAddress - protAddress), protection.Value, true);
+            }
+        }
+    }
+}

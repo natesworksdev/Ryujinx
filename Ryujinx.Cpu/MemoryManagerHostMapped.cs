@@ -173,7 +173,7 @@ namespace Ryujinx.Cpu
             Tracking.Unmap(va, size);
 
             RemoveMapping(va, size);
-            _addressSpace.UnmapView(va, size);
+            _addressSpace.UnmapView(_backingMemory, va, size);
             PtUnmap(va, size);
         }
 

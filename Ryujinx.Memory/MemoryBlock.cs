@@ -137,11 +137,12 @@ namespace Ryujinx.Memory
         /// <summary>
         /// Unmaps a view of memory from another memory block.
         /// </summary>
+        /// <param name="srcBlock">Memory block from where the backing memory was taken during map</param>
         /// <param name="offset">Offset of the view previously mapped with <see cref="MapView"/></param>
         /// <param name="size">Size of the range to be unmapped</param>
-        public void UnmapView(ulong offset, ulong size)
+        public void UnmapView(MemoryBlock srcBlock, ulong offset, ulong size)
         {
-            MemoryManagement.UnmapView(GetPointerInternal(offset, size), size);
+            MemoryManagement.UnmapView(srcBlock._sharedMemory, GetPointerInternal(offset, size), size);
         }
 
         /// <summary>

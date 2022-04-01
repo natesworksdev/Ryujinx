@@ -94,13 +94,13 @@ namespace Ryujinx.Memory
             }
         }
 
-        public static void UnmapView(IntPtr address, ulong size)
+        public static void UnmapView(IntPtr sharedMemory, IntPtr address, ulong size)
         {
             if (OperatingSystem.IsWindows())
             {
                 IntPtr sizeNint = new IntPtr((long)size);
 
-                MemoryManagementWindows.UnmapView(address, sizeNint);
+                MemoryManagementWindows.UnmapView(sharedMemory, address, sizeNint);
             }
             else if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
             {

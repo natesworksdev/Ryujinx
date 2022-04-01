@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
 using static Ryujinx.Memory.MemoryManagerUnixHelper;
