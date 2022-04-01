@@ -78,6 +78,12 @@ namespace Ryujinx.Memory
         [DllImport("libc", SetLastError = true)]
         public static extern int close(int fd);
 
+        [DllImport("libc", SetLastError = true)]
+        public static extern int shm_open(IntPtr name, int oflag, uint mode);
+
+        [DllImport("libc", SetLastError = true)]
+        public static extern int shm_unlink(IntPtr name);
+
         private static int MmapFlagsToSystemFlags(MmapFlags flags)
         {
             int result = 0;
@@ -145,9 +151,9 @@ namespace Ryujinx.Memory
                 }
             }
 
-            if (OperatingSystem.IsMacOSVersionAtLeast(10, 14))
+            if (OperatingSystem.IsMacOSVersionAtLeast(10, 14) && RuntimeInformation.ProcessArchitecture == Architecure.Arm64)
             {
-                result |= MAP_JIT_DARWIN;
+                result |= MAP_JIT_DARWIN; // not to be used on Intel builds (unless the Hardened Runtime is enabled)
             }
 
             return result;

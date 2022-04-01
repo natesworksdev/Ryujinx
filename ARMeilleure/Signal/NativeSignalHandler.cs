@@ -103,7 +103,11 @@ namespace ARMeilleure.Signal
                     // Unix siginfo struct locations.
                     // NOTE: These are incredibly likely to be different between kernel version and architectures.
 
-                    config.StructAddressOffset = 16; // si_addr
+                    if (OperatingSystem.IsMacOS())
+                        config.StructAddressOffset = 24; // si_addr
+                    else
+                        config.StructAddressOffset = 16; // si_addr
+
                     config.StructWriteOffset = 8; // si_code
 
                     _signalHandlerPtr = Marshal.GetFunctionPointerForDelegate(GenerateUnixSignalHandler(_handlerConfig));

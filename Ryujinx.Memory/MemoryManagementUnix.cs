@@ -109,19 +109,41 @@ namespace Ryujinx.Memory
         public unsafe static IntPtr CreateSharedMemory(ulong size, bool reserve)
         {
             int fd;
-            byte[] fileName = Encoding.ASCII.GetBytes("/dev/shm/Ryujinx-XXXXXX");
 
-            fixed (byte* pFileName = fileName)
+            if (OperatingSystem.IsMacOS())
             {
-                fd = mkstemp((IntPtr)pFileName);
-                if (fd == -1)
-                {
-                    throw new OutOfMemoryException();
-                }
+                byte[] memName = Encoding.ASCII.GetBytes("Ryujinx-XXXXXX");
 
-                if (unlink((IntPtr)pFileName) != 0)
+                fixed (byte* pMemName = memName)
                 {
-                    throw new OutOfMemoryException();
+                    fd = shm_open((IntPtr)pMemName, 0x2 | 0x200 | 0x800 | 0x400, 384); // O_RDWR | O_CREAT | O_EXCL | O_TRUNC, 0600
+                    if (fd == -1)
+                    {
+                        throw new OutOfMemoryException();
+                    }
+
+                    if (shm_unlink((IntPtr)pMemName) != 0)
+                    {
+                        throw new OutOfMemoryException();
+                    }
+                }
+            }
+            else
+            {
+                byte[] fileName = Encoding.ASCII.GetBytes("/dev/shm/Ryujinx-XXXXXX");
+
+                fixed (byte* pFileName = fileName)
+                {
+                    fd = mkstemp((IntPtr)pFileName);
+                    if (fd == -1)
+                    {
+                        throw new OutOfMemoryException();
+                    }
+
+                    if (unlink((IntPtr)pFileName) != 0)
+                    {
+                        throw new OutOfMemoryException();
+                    }
                 }
             }
 
