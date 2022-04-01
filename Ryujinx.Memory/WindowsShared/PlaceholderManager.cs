@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Threading;
 
 namespace Ryujinx.Memory.WindowsShared
 {
@@ -7,8 +8,20 @@ namespace Ryujinx.Memory.WindowsShared
     {
         private const ulong MinimumPageSize = 0x1000;
 
-        private readonly IntervalTree<ulong, ulong> _mappings = new IntervalTree<ulong, ulong>();
-        private readonly IntervalTree<ulong, MemoryPermission> _protections = new IntervalTree<ulong, MemoryPermission>();
+        [ThreadStatic]
+        private static int _threadLocalPartialUnmapsCount;
+
+        private readonly IntervalTree<ulong, ulong> _mappings;
+        private readonly IntervalTree<ulong, MemoryPermission> _protections;
+        private readonly ReaderWriterLock _partialUnmapLock;
+        private int _partialUnmapsCount;
+
+        public PlaceholderManager()
+        {
+            _mappings = new IntervalTree<ulong, ulong>();
+            _protections = new IntervalTree<ulong, MemoryPermission>();
+            _partialUnmapLock = new ReaderWriterLock();
+        }
 
         public void ReserveRange(ulong address, ulong size)
         {
@@ -20,8 +33,17 @@ namespace Ryujinx.Memory.WindowsShared
 
         public void MapView(IntPtr sharedMemory, ulong srcOffset, IntPtr location, IntPtr size)
         {
-            UnmapView(sharedMemory, location, size);
-            MapViewInternal(sharedMemory, srcOffset, location, size);
+            _partialUnmapLock.AcquireReaderLock(Timeout.Infinite);
+
+            try
+            {
+                UnmapViewInternal(sharedMemory, location, size);
+                MapViewInternal(sharedMemory, srcOffset, location, size);
+            }
+            finally
+            {
+                _partialUnmapLock.ReleaseReaderLock();
+            }
         }
 
         private void MapViewInternal(IntPtr sharedMemory, ulong srcOffset, IntPtr location, IntPtr size)
@@ -109,6 +131,20 @@ namespace Ryujinx.Memory.WindowsShared
 
         public void UnmapView(IntPtr sharedMemory, IntPtr location, IntPtr size)
         {
+            _partialUnmapLock.AcquireReaderLock(Timeout.Infinite);
+
+            try
+            {
+                UnmapViewInternal(sharedMemory, location, size);
+            }
+            finally
+            {
+                _partialUnmapLock.ReleaseReaderLock();
+            }
+        }
+
+        private void UnmapViewInternal(IntPtr sharedMemory, IntPtr location, IntPtr size)
+        {
             ulong startAddress = (ulong)location;
             ulong unmapSize = (ulong)size;
             ulong endAddress = startAddress + unmapSize;
@@ -140,27 +176,40 @@ namespace Ryujinx.Memory.WindowsShared
                     _mappings.Remove(overlap);
                     _mappings.Add(overlapStart, overlapEnd, ulong.MaxValue);
 
-                    // If the overlap extends beyond the region we are unmapping,
-                    // then we need to re-map the regions that are supposed to remain mapped.
-                    // This is necessary because Windows does not support partial view unmaps.
-                    // That is, you can only fully unmap a view that was previously mapped, you can't just unmap a chunck of it.
-                    if (overlapStart < startAddress)
+                    bool overlapStartsBefore = overlapStart < startAddress;
+                    bool overlapEndsAfter = overlapEnd > endAddress;
+
+                    if (overlapStartsBefore || overlapEndsAfter)
                     {
-                        ulong remapSize = startAddress - overlapStart;
+                        // If the overlap extends beyond the region we are unmapping,
+                        // then we need to re-map the regions that are supposed to remain mapped.
+                        // This is necessary because Windows does not support partial view unmaps.
+                        // That is, you can only fully unmap a view that was previously mapped, you can't just unmap a chunck of it.
 
-                        MapViewInternal(sharedMemory, overlapValue, (IntPtr)overlapStart, (IntPtr)remapSize);
-                        RestoreRangeProtection(overlapStart, remapSize);
-                    }
+                        LockCookie lockCookie = _partialUnmapLock.UpgradeToWriterLock(Timeout.Infinite);
 
-                    if (overlapEnd > endAddress)
-                    {
-                        ulong overlappedSize = endAddress - overlapStart;
-                        ulong remapBackingOffset = overlapValue + overlappedSize;
-                        ulong remapAddress = overlapStart + overlappedSize;
-                        ulong remapSize = overlapEnd - endAddress;
+                        _partialUnmapsCount++;
 
-                        MapViewInternal(sharedMemory, remapBackingOffset, (IntPtr)remapAddress, (IntPtr)remapSize);
-                        RestoreRangeProtection(remapAddress, remapSize);
+                        if (overlapStartsBefore)
+                        {
+                            ulong remapSize = startAddress - overlapStart;
+
+                            MapViewInternal(sharedMemory, overlapValue, (IntPtr)overlapStart, (IntPtr)remapSize);
+                            RestoreRangeProtection(overlapStart, remapSize);
+                        }
+
+                        if (overlapEndsAfter)
+                        {
+                            ulong overlappedSize = endAddress - overlapStart;
+                            ulong remapBackingOffset = overlapValue + overlappedSize;
+                            ulong remapAddress = overlapStart + overlappedSize;
+                            ulong remapSize = overlapEnd - endAddress;
+
+                            MapViewInternal(sharedMemory, remapBackingOffset, (IntPtr)remapAddress, (IntPtr)remapSize);
+                            RestoreRangeProtection(remapAddress, remapSize);
+                        }
+
+                        _partialUnmapLock.DowngradeFromWriterLock(ref lockCookie);
                     }
                 }
             }
@@ -220,7 +269,21 @@ namespace Ryujinx.Memory.WindowsShared
             }
         }
 
-        public bool ReprotectView(IntPtr address, IntPtr size, MemoryPermission permission, bool throwOnError = false)
+        public bool ReprotectView(IntPtr address, IntPtr size, MemoryPermission permission)
+        {
+            _partialUnmapLock.AcquireReaderLock(Timeout.Infinite);
+
+            try
+            {
+                return ReprotectViewInternal(address, size, permission, false);
+            }
+            finally
+            {
+                _partialUnmapLock.ReleaseReaderLock();
+            }
+        }
+
+        private bool ReprotectViewInternal(IntPtr address, IntPtr size, MemoryPermission permission, bool throwOnError)
         {
             ulong reprotectAddress = (ulong)address;
             ulong reprotectSize = (ulong)size;
@@ -431,8 +494,23 @@ namespace Ryujinx.Memory.WindowsShared
                     protEndAddress = endAddress;
                 }
 
-                ReprotectView((IntPtr)protAddress, (IntPtr)(protEndAddress - protAddress), protection.Value, true);
+                ReprotectViewInternal((IntPtr)protAddress, (IntPtr)(protEndAddress - protAddress), protection.Value, true);
             }
+        }
+
+        public bool RetryFromAccessViolation()
+        {
+            _partialUnmapLock.AcquireReaderLock(Timeout.Infinite);
+
+            bool retry = _threadLocalPartialUnmapsCount != _partialUnmapsCount;
+            if (retry)
+            {
+                _threadLocalPartialUnmapsCount = _partialUnmapsCount;
+            }
+
+            _partialUnmapLock.ReleaseReaderLock();
+
+            return retry;
         }
     }
 }
