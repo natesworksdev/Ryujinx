@@ -7,6 +7,8 @@ namespace Ryujinx.Memory
     [SupportedOSPlatform("windows")]
     static class MemoryManagementWindows
     {
+        private const int PageSize = 0x1000;
+
         private static readonly PlaceholderManager _placeholders = new PlaceholderManager();
 
         public static IntPtr Allocate(IntPtr size)
@@ -65,9 +67,56 @@ namespace Ryujinx.Memory
             _placeholders.MapView(sharedMemory, srcOffset, location, size);
         }
 
+        public static void MapView4KB(IntPtr sharedMemory, ulong srcOffset, IntPtr location, IntPtr size)
+        {
+            ulong uaddress = (ulong)location;
+            ulong usize = (ulong)size;
+            IntPtr endLocation = (IntPtr)(uaddress + usize);
+
+            while (location != endLocation)
+            {
+                WindowsApi.VirtualFree(location, (IntPtr)PageSize, AllocationType.Release | AllocationType.PreservePlaceholder);
+
+                var ptr = WindowsApi.MapViewOfFile3(
+                    sharedMemory,
+                    WindowsApi.CurrentProcessHandle,
+                    location,
+                    srcOffset,
+                    (IntPtr)PageSize,
+                    0x4000,
+                    MemoryProtection.ReadWrite,
+                    IntPtr.Zero,
+                    0);
+
+                if (ptr == IntPtr.Zero)
+                {
+                    throw new WindowsApiException("MapViewOfFile3");
+                }
+
+                location += PageSize;
+                srcOffset += PageSize;
+            }
+        }
+
         public static void UnmapView(IntPtr sharedMemory, IntPtr location, IntPtr size)
         {
             _placeholders.UnmapView(sharedMemory, location, size);
+        }
+
+        public static void UnmapView4KB(IntPtr location, IntPtr size)
+        {
+            IntPtr endLocation = (nint)location + (int)size;
+
+            while (location != endLocation)
+            {
+                bool result = WindowsApi.UnmapViewOfFile2(WindowsApi.CurrentProcessHandle, location, 2);
+                if (!result)
+                {
+                    throw new WindowsApiException("UnmapViewOfFile2");
+                }
+
+                location += PageSize;
+            }
         }
 
         public static bool Reprotect(IntPtr address, IntPtr size, MemoryPermission permission, bool forView)
@@ -80,6 +129,24 @@ namespace Ryujinx.Memory
             {
                 return WindowsApi.VirtualProtect(address, size, WindowsApi.GetProtection(permission), out _);
             }
+        }
+
+        public static bool Reprotect4KB(IntPtr address, IntPtr size, MemoryPermission permission, bool forView)
+        {
+            ulong uaddress = (ulong)address;
+            ulong usize = (ulong)size;
+            while (usize > 0)
+            {
+                if (!WindowsApi.VirtualProtect((IntPtr)uaddress, (IntPtr)PageSize, WindowsApi.GetProtection(permission), out _))
+                {
+                    return false;
+                }
+
+                uaddress += PageSize;
+                usize -= PageSize;
+            }
+
+            return true;
         }
 
         public static bool Free(IntPtr address)

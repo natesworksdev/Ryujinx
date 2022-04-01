@@ -12,6 +12,7 @@ namespace Ryujinx.Memory
         private readonly bool _usesSharedMemory;
         private readonly bool _isMirror;
         private readonly bool _viewCompatible;
+        private readonly bool _forceWindows4KBView;
         private IntPtr _sharedMemory;
         private IntPtr _pointer;
 
@@ -43,6 +44,7 @@ namespace Ryujinx.Memory
             else if (flags.HasFlag(MemoryAllocationFlags.Reserve))
             {
                 _viewCompatible = flags.HasFlag(MemoryAllocationFlags.ViewCompatible);
+                _forceWindows4KBView = flags.HasFlag(MemoryAllocationFlags.ForceWindows4KBViewMapping);
                 _pointer = MemoryManagement.Reserve(size, _viewCompatible);
             }
             else
@@ -131,7 +133,7 @@ namespace Ryujinx.Memory
                 throw new ArgumentException("The source memory block is not mirrorable, and thus cannot be mapped on the current block.");
             }
 
-            MemoryManagement.MapView(srcBlock._sharedMemory, srcOffset, GetPointerInternal(dstOffset, size), size);
+            MemoryManagement.MapView(srcBlock._sharedMemory, srcOffset, GetPointerInternal(dstOffset, size), size, _forceWindows4KBView);
         }
 
         /// <summary>
@@ -142,7 +144,7 @@ namespace Ryujinx.Memory
         /// <param name="size">Size of the range to be unmapped</param>
         public void UnmapView(MemoryBlock srcBlock, ulong offset, ulong size)
         {
-            MemoryManagement.UnmapView(srcBlock._sharedMemory, GetPointerInternal(offset, size), size);
+            MemoryManagement.UnmapView(srcBlock._sharedMemory, GetPointerInternal(offset, size), size, _forceWindows4KBView);
         }
 
         /// <summary>
@@ -157,7 +159,7 @@ namespace Ryujinx.Memory
         /// <exception cref="MemoryProtectionException">Throw when <paramref name="permission"/> is invalid</exception>
         public void Reprotect(ulong offset, ulong size, MemoryPermission permission, bool throwOnFail = true)
         {
-            MemoryManagement.Reprotect(GetPointerInternal(offset, size), size, permission, _viewCompatible, throwOnFail);
+            MemoryManagement.Reprotect(GetPointerInternal(offset, size), size, permission, _viewCompatible, _forceWindows4KBView, throwOnFail);
         }
 
         /// <summary>
