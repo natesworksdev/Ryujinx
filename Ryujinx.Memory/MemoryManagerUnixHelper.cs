@@ -84,7 +84,7 @@ namespace Ryujinx.Memory
         [DllImport("libc", SetLastError = true)]
         public static extern int shm_unlink(IntPtr name);
 
-        private static int MmapFlagsToSystemFlags(MmapFlags flags)
+        private static int MmapFlagsToSystemFlags(MmapProts prot, MmapFlags flags)
         {
             int result = 0;
 
@@ -151,7 +151,7 @@ namespace Ryujinx.Memory
                 }
             }
 
-            if (OperatingSystem.IsMacOSVersionAtLeast(10, 14))
+            if (OperatingSystem.IsMacOSVersionAtLeast(10, 14) && prot.HasFlag(MmapProts.PROT_EXEC))
             {
                 result |= MAP_JIT_DARWIN;
             }
@@ -161,7 +161,7 @@ namespace Ryujinx.Memory
 
         public static IntPtr mmap(IntPtr address, ulong length, MmapProts prot, MmapFlags flags, int fd, long offset)
         {
-            return Internal_mmap(address, length, prot, MmapFlagsToSystemFlags(flags), fd, offset);
+            return Internal_mmap(address, length, prot, MmapFlagsToSystemFlags(prot, flags), fd, offset);
         }
     }
 }
