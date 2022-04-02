@@ -7,6 +7,7 @@ using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
 using Avalonia.Threading;
 using OpenTK.Graphics.OpenGL;
+using Ryujinx.Ava.Ui.Backend.OpenGl;
 using Ryujinx.Common.Configuration;
 using SkiaSharp;
 using SPB.Graphics;
@@ -47,6 +48,7 @@ namespace Ryujinx.Ava.Ui.Controls
         private IntPtr _fence;
 
         private GlDrawOperation _glDrawOperation;
+        private AutoResetEvent _swapEvent;
 
         public RendererControl(int major, int minor, GraphicsDebugLevel graphicsDebugLevel)
         {
@@ -100,6 +102,12 @@ namespace Ryujinx.Ava.Ui.Controls
             base.OnDetachedFromVisualTree(e);
         }
 
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            _swapEvent = OpenGlSurface.GetWindowSwapEvent(((this.VisualRoot as TopLevel).PlatformImpl as IWindowImpl).Handle.Handle);
+        }
+
         protected void OnGlInitialized()
         {
             GlInitialized?.Invoke(this, EventArgs.Empty);
@@ -128,6 +136,8 @@ namespace Ryujinx.Ava.Ui.Controls
             _fence = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, WaitSyncFlags.None);
 
             QueueRender();
+
+            _swapEvent?.WaitOne();
 
             return true;
         }

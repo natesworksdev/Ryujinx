@@ -11,6 +11,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Ryujinx.Ava.Ui.Backend;
+using System.Collections.Generic;
 
 namespace Ryujinx.Ava.Ui.Backend.OpenGl
 {
@@ -19,8 +20,25 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGl
     {
         public SwappableNativeWindowBase Window { get; }
 
-        private int _texture;
         private OpenGlSkiaGpu _gpu;
+        private AutoResetEvent _swapEvent;
+
+        private static readonly Dictionary<IntPtr, AutoResetEvent> _swapEvents;
+
+        static OpenGlSurface()
+        {
+            _swapEvents = new Dictionary<IntPtr, AutoResetEvent>();
+        }
+
+        public static AutoResetEvent GetWindowSwapEvent(IntPtr windowHandle)
+        {
+            if (_swapEvents.TryGetValue(windowHandle, out var swapEvent))
+            {
+                return swapEvent;
+            }
+
+            return null;
+        }
 
         public OpenGlSurface(IntPtr handle) : base(handle)
         {
@@ -39,6 +57,10 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGl
             context.Initialize(Window);
 
             context.Dispose();
+
+            _swapEvent = new AutoResetEvent(true);
+
+            _swapEvents.TryAdd(handle, _swapEvent);
         }
 
         internal static FramebufferFormat GetFramebufferFormat()
@@ -59,6 +81,7 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGl
         public void SwapBuffers()
         {
             Window.SwapBuffers();
+            _swapEvent.Set();
         }
 
         public void ReleaseCurrent()
@@ -68,6 +91,8 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGl
 
         public override void Dispose()
         {
+            _swapEvent?.Dispose();
+            _swapEvents.Remove(Handle);
             base.Dispose();
         }
     }
