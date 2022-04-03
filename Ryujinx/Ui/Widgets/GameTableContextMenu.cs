@@ -81,14 +81,14 @@ namespace Ryujinx.Ui.Widgets
         private bool TryFindSaveData(string titleName, ulong titleId, BlitStruct<ApplicationControlProperty> controlHolder, in SaveDataFilter filter, out ulong saveDataId)
         {
             saveDataId = default;
-            
+
             Result result = _horizonClient.Fs.FindSaveDataWithFilter(out SaveDataInfo saveDataInfo, SaveDataSpaceId.User, in filter);
 
             if (ResultFs.TargetNotFound.Includes(result))
             {
                 ref ApplicationControlProperty control = ref controlHolder.Value;
 
-                Logger.Info?.Print(LogClass.Application, $"Creating save dir for Title: {titleName} [{titleId:x16}]");
+                Logger.Info?.Print(LogClass.Application, $"Creating save directory for Title: {titleName} [{titleId:x16}]");
 
                 if (Utilities.IsZeros(controlHolder.ByteSpan))
                 {
