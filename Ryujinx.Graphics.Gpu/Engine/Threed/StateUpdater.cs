@@ -35,6 +35,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
         private bool _prevDrawIndexed;
         private IndexType _prevIndexType;
+        private uint _prevFirstVertex;
         private bool _prevTfEnable;
 
         /// <summary>
@@ -195,14 +196,21 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             // method when doing indexed draws, so we need to make sure
             // to update the vertex buffers if we are doing a regular
             // draw after a indexed one and vice-versa.
-            // In some cases, the index type is also used to guess the
-            // vertex buffer size, so we must update it if the type changed too.
-            if ((_drawState.DrawIndexed != _prevDrawIndexed) ||
-                (_drawState.DrawIndexed && (_prevIndexType != _state.State.IndexBufferState.Type)))
+            if (_drawState.DrawIndexed != _prevDrawIndexed)
             {
                 _updateTracker.ForceDirty(VertexBufferStateIndex);
                 _prevDrawIndexed = _drawState.DrawIndexed;
+            }
+
+            // In some cases, the index type is also used to guess the
+            // vertex buffer size, so we must update it if the type changed too.
+            if (_drawState.DrawIndexed &&
+                (_prevIndexType != _state.State.IndexBufferState.Type ||
+                 _prevFirstVertex != _state.State.FirstVertex))
+            {
+                _updateTracker.ForceDirty(VertexBufferStateIndex);
                 _prevIndexType = _state.State.IndexBufferState.Type;
+                _prevFirstVertex = _state.State.FirstVertex;
             }
 
             bool tfEnable = _state.State.TfEnable;
