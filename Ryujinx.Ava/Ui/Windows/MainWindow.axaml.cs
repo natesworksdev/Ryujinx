@@ -27,6 +27,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using InputManager = Ryujinx.Input.HLE.InputManager;
 using ProgressBar = Avalonia.Controls.ProgressBar;
@@ -49,6 +50,7 @@ namespace Ryujinx.Ava.Ui.Windows
         private static bool _startFullscreen;
         private string _currentEmulatedGamePath;
         internal readonly AvaHostUiHandler UiHandler;
+        private AutoResetEvent _rendererWaitEvent;
         
         public SettingsWindow SettingsWindow { get; set; }
         
@@ -119,6 +121,7 @@ namespace Ryujinx.Ava.Ui.Windows
             {
                 Program.WindowScaleFactor = this.PlatformImpl.RenderScaling;
             }
+            _rendererWaitEvent = new AutoResetEvent(false);
         }
 
         [Conditional("DEBUG")]
@@ -256,14 +259,35 @@ namespace Ryujinx.Ava.Ui.Windows
             GlRenderer = new RendererControl(3, 3, ConfigurationState.Instance.Logger.GraphicsDebugLevel);
             AppHost    = new AppHost(GlRenderer, InputManager, path, VirtualFileSystem, ContentManager, AccountManager, _userChannelPersistence, this);
 
-            GlRenderer.GlInitialized += GlRenderer_Created;
+            if (!AppHost.LoadGuestApplication().Result)
+            {
+                AppHost.DisposeContext();
+
+                return;
+            }
 
             SwitchToGameControl(startFullscreen);
 
-            AppHost.StatusUpdatedEvent += Update_StatusBar;
-            AppHost.AppExit            += AppHost_AppExit;
-
             _currentEmulatedGamePath = path;
+            Thread gameThread = new Thread(InitializeGame)
+            {
+                Name = "GUI.WindowThread"
+            };
+            gameThread.Start();
+        }
+
+        private void InitializeGame()
+        {
+            GlRenderer.GlInitialized += GlRenderer_Created;
+
+            AppHost.StatusUpdatedEvent += Update_StatusBar;
+            AppHost.AppExit += AppHost_AppExit;
+
+            _rendererWaitEvent.WaitOne();
+
+            AppHost?.Start();
+
+            AppHost.DisposeContext();
         }
 
 
@@ -323,8 +347,8 @@ namespace Ryujinx.Ava.Ui.Windows
         private void GlRenderer_Created(object sender, EventArgs e)
         {
             ShowLoading();
-            
-            AppHost?.Start();
+
+            _rendererWaitEvent.Set();
         }
 
         private void AppHost_AppExit(object sender, EventArgs e)
@@ -347,11 +371,14 @@ namespace Ryujinx.Ava.Ui.Windows
                 ViewModel.ShowContent = true;
                 ViewModel.ShowLoadProgress = false;
                 ViewModel.IsLoadingIndeterminate = false;
+
+                AppHost?.DisposeGpu();
+                AppHost = null;
+
+                HandleRelaunch();
             });
             GlRenderer.GlInitialized -= GlRenderer_Created;
             GlRenderer = null;
-
-            AppHost = null;
 
             ViewModel.SelectedIcon = null;
 
@@ -359,8 +386,6 @@ namespace Ryujinx.Ava.Ui.Windows
             {
                 Title = $"Ryujinx {Program.Version}";
             });
-
-            HandleRelaunch();
         }
 
         public void Sort_Checked(object sender, RoutedEventArgs args)
@@ -646,8 +671,14 @@ namespace Ryujinx.Ava.Ui.Windows
             }
 
             _isClosing = true;
-            
-            AppHost?.Dispose();
+
+            if (AppHost != null)
+            {
+                AppHost.AppExit -= AppHost_AppExit;
+                AppHost?.Stop();
+                AppHost?.DisposeGpu();
+            }
+
             InputManager.Dispose();
             Program.Exit();
 

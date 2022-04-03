@@ -50,7 +50,7 @@ using WindowState = Avalonia.Controls.WindowState;
 
 namespace Ryujinx.Ava
 {
-    public class AppHost : IDisposable
+    public class AppHost
     {
         private const int CursorHideIdleTime = 8; // Hide Cursor seconds
 
@@ -68,10 +68,9 @@ namespace Ryujinx.Ava
         private readonly GraphicsDebugLevel _glLogLevel;
 
         private bool _hideCursorOnIdle;
+        private bool _isStopped;
         private bool _isActive;
         private long _lastCursorMoveTime;
-
-        private Thread _mainThread;
 
         private KeyboardHotkeyState _prevHotkeyState;
 
@@ -102,6 +101,8 @@ namespace Ryujinx.Ava
 
         public bool ScreenshotRequested { get; set; }
 
+        private ManualResetEvent _closeEvent;
+
         public AppHost(
             RendererControl        renderer,
             InputManager           inputManager,
@@ -127,7 +128,7 @@ namespace Ryujinx.Ava
             TouchScreenManager = _inputManager.CreateTouchScreenManager();
             _lastKeyboardSnapshot = _keyboardInterface.GetKeyboardStateSnapshot();
 
-            Renderer            = renderer;
+            Renderer          = renderer;
             Path              = path;
             VirtualFileSystem = virtualFileSystem;
             ContentManager    = contentManager;
@@ -141,7 +142,8 @@ namespace Ryujinx.Ava
             ConfigurationState.Instance.Graphics.AspectRatio.Event         += UpdateAspectRatioState;
             ConfigurationState.Instance.System.EnableDockedMode.Event      += UpdateDockedModeState;
             ConfigurationState.Instance.System.AudioVolume.Event           += UpdateAudioVolumeState;
-            //ConfigurationState.Instance.Graphics.HostRefreshRate.Event       += UpdateRenderTimerFrameRate;
+
+            _closeEvent = new ManualResetEvent(false);
         }
 
         private void Parent_PointerLeft(object sender, PointerEventArgs e)
@@ -226,71 +228,66 @@ namespace Ryujinx.Ava
 
         public void Start()
         {
-            if (LoadGuestApplication().Result)
+            if (OperatingSystem.IsWindows())
             {
-                if (OperatingSystem.IsWindows())
-                {
-                    _windowsMultimediaTimerResolution = new WindowsMultimediaTimerResolution(1);
-                }
-
-                DisplaySleep.Prevent();
-
-                NpadManager.Initialize(Device, ConfigurationState.Instance.Hid.InputConfig, ConfigurationState.Instance.Hid.EnableKeyboard, ConfigurationState.Instance.Hid.EnableMouse);
-                TouchScreenManager.Initialize(Device);
-
-                Task.Run(() =>
-                {
-                    _parent.ViewModel.IsGameRunning = true;
-                });
-
-                string titleNameSection = string.IsNullOrWhiteSpace(Device.Application.TitleName)
-                    ? string.Empty
-                    : $" - {Device.Application.TitleName}";
-
-                string titleVersionSection = string.IsNullOrWhiteSpace(Device.Application.DisplayVersion)
-                    ? string.Empty
-                    : $" v{Device.Application.DisplayVersion}";
-
-                string titleIdSection = string.IsNullOrWhiteSpace(Device.Application.TitleIdText)
-                    ? string.Empty
-                    : $" ({Device.Application.TitleIdText.ToUpper()})";
-
-                string titleArchSection = Device.Application.TitleIs64Bit
-                    ? " (64-bit)"
-                    : " (32-bit)";
-
-                Dispatcher.UIThread.InvokeAsync(() =>
-                {
-                    _parent.Title = $"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}";
-                });
-
-                _parent.ViewModel.HandleShaderProgress(Device);
-
-                Renderer.SizeChanged += Window_SizeChanged;
-
-                _isActive = true;
-
-                _renderingThread.Start();
-
-                _mainThread = new Thread(MainLoop)
-                {
-                    Name = "GUI.UpdateThread"
-                };
-                _mainThread.Start();
-
-                _nvStutterWorkaround = null;
-
-                if (_renderer is Graphics.OpenGL.Renderer)
-                {
-                    _nvStutterWorkaround = new Thread(NVStutterWorkaround)
-                    {
-                        Name = "GUI.NVStutterWorkaround"
-                    };
-                    _nvStutterWorkaround.Start();
-                }
-                
-                _parent.ViewModel.Volume = ConfigurationState.Instance.System.AudioVolume.Value;
+                _windowsMultimediaTimerResolution = new WindowsMultimediaTimerResolution(1);
             }
+
+            DisplaySleep.Prevent();
+
+            NpadManager.Initialize(Device, ConfigurationState.Instance.Hid.InputConfig, ConfigurationState.Instance.Hid.EnableKeyboard, ConfigurationState.Instance.Hid.EnableMouse);
+            TouchScreenManager.Initialize(Device);
+
+            Task.Run(() =>
+            {
+                _parent.ViewModel.IsGameRunning = true;
+            });
+
+            string titleNameSection = string.IsNullOrWhiteSpace(Device.Application.TitleName)
+                ? string.Empty
+                : $" - {Device.Application.TitleName}";
+
+            string titleVersionSection = string.IsNullOrWhiteSpace(Device.Application.DisplayVersion)
+                ? string.Empty
+                : $" v{Device.Application.DisplayVersion}";
+
+            string titleIdSection = string.IsNullOrWhiteSpace(Device.Application.TitleIdText)
+                ? string.Empty
+                : $" ({Device.Application.TitleIdText.ToUpper()})";
+
+            string titleArchSection = Device.Application.TitleIs64Bit
+                ? " (64-bit)"
+                : " (32-bit)";
+
+            Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                _parent.Title = $"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}";
+            });
+
+            _parent.ViewModel.HandleShaderProgress(Device);
+
+            Renderer.SizeChanged += Window_SizeChanged;
+
+            _isActive = true;
+
+            _renderingThread.Start();
+
+            _nvStutterWorkaround = null;
+
+            if (_renderer is Graphics.OpenGL.Renderer)
+            {
+                _nvStutterWorkaround = new Thread(NVStutterWorkaround)
+                {
+                    Name = "GUI.NVStutterWorkaround"
+                };
+                _nvStutterWorkaround.Start();
+            }
+
+            _parent.ViewModel.Volume = ConfigurationState.Instance.System.AudioVolume.Value;
+
+            MainLoop();
+
+            Exit();
         }
         
         private void UpdateIgnoreMissingServicesState(object sender, ReactiveEventArgs<bool> args)
@@ -322,39 +319,38 @@ namespace Ryujinx.Ava
                 var value = e.NewValue;
                 _parent.ViewModel.Volume = e.NewValue;
             });
-    }
+        }
 
-        public void Dispose()
+        public void Stop()
+        {
+            _isActive = false;
+
+            _closeEvent?.WaitOne();
+        }
+
+        private void Exit()
         {
             (_keyboardInterface as AvaloniaKeyboard)?.Clear();
 
-            if (!_isActive)
+            if (_isStopped)
             {
                 return;
             }
 
-            if (Device.Application != null)
-            {
-                MainWindow.UpdateGameMetadata(Device.Application.TitleIdText);
-            }
+            _isStopped = true;
+            _isActive = false;
+        }
 
-            if (OperatingSystem.IsWindows())
-            {
-                _windowsMultimediaTimerResolution?.Dispose();
-                _windowsMultimediaTimerResolution = null;
-            }
-
-            DisplaySleep.Restore();
+        public void DisposeContext()
+        {
+            Dispose();
 
             _isActive = false;
 
-            ConfigurationState.Instance.System.IgnoreMissingServices.Event -= UpdateIgnoreMissingServicesState;
-            ConfigurationState.Instance.Graphics.AspectRatio.Event         -= UpdateAspectRatioState;
-            ConfigurationState.Instance.System.EnableDockedMode.Event      -= UpdateDockedModeState;
-
-            _mainThread.Join();
             _renderingThread.Join();
             _nvStutterWorkaround?.Join();
+
+            DisplaySleep.Restore();
 
             Ptc.Close();
             PtcProfiler.Stop();
@@ -362,36 +358,49 @@ namespace Ryujinx.Ava
             TouchScreenManager.Dispose();
             Device.Dispose();
 
-            var disposeThread = new Thread(DisposeGpu) { Name = "GpuDisposalThread"};
-            disposeThread.Start();
-            disposeThread.Join();
+            _closeEvent?.Set();
+            _closeEvent?.Dispose();
+            _closeEvent = null;
 
             AppExit?.Invoke(this, EventArgs.Empty);
         }
 
-        public void DisposeGpu()
+        private void Dispose()
         {
-            Renderer?.MakeCurrent();
-
-            Device.DisposeGpu();
-
-            Renderer?.MakeCurrent(null);
-
-            // TODO fix this on wgl
-            if (Renderer != null)
+            if (Device.Application != null)
             {
-                Renderer.DestroyBackgroundContext();
+                MainWindow.UpdateGameMetadata(Device.Application.TitleIdText);
             }
+
+            ConfigurationState.Instance.System.IgnoreMissingServices.Event -= UpdateIgnoreMissingServicesState;
+            ConfigurationState.Instance.Graphics.AspectRatio.Event -= UpdateAspectRatioState;
+            ConfigurationState.Instance.System.EnableDockedMode.Event -= UpdateDockedModeState;
         }
 
-        private void Window_MouseMove(object sender, (double X, double Y) e)
+        public void DisposeGpu()
         {
-            (_inputManager.MouseDriver as AvaloniaMouseDriver).SetPosition(e.X, e.Y);
-
-            if (_hideCursorOnIdle)
+            if (OperatingSystem.IsWindows())
             {
-                _lastCursorMoveTime = Stopwatch.GetTimestamp();
+                _windowsMultimediaTimerResolution?.Dispose();
+                _windowsMultimediaTimerResolution = null;
             }
+
+            var thread = new Thread(() =>
+            {
+                Renderer?.MakeCurrent();
+
+                Device.DisposeGpu();
+
+                Renderer?.MakeCurrent(null);
+
+                // TODO fix this on wgl
+                if (Renderer != null)
+                {
+                    Renderer.DestroyBackgroundContext();
+                }
+            });
+            thread.Start();
+            thread.Join();
         }
 
         private void HideCursorState_Changed(object sender, ReactiveEventArgs<bool> state)
@@ -411,7 +420,7 @@ namespace Ryujinx.Ava
             });
         }
 
-        private async Task<bool> LoadGuestApplication()
+        public async Task<bool> LoadGuestApplication()
         {
             InitializeSwitchInstance();
 
@@ -926,7 +935,7 @@ namespace Ryujinx.Ava
 
             if (shouldExit)
             {
-                Task.Run(Dispose);
+                Task.Run(Stop);
             }
         }
 
