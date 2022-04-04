@@ -256,5 +256,20 @@ namespace Ryujinx.Graphics.Gpu.Shader
             ShaderCodeAccessor codeAccessor = new ShaderCodeAccessor(memoryManager, baseAddress);
             return idCache.TryFind(codeAccessor, out id, out data);
         }
+
+        /// <summary>
+        /// Gets all programs that have been added to the table.
+        /// </summary>
+        /// <returns>Programs added to the table</returns>
+        public IEnumerable<CachedShaderProgram> GetPrograms()
+        {
+            foreach (var specList in _shaderPrograms.Values)
+            {
+                foreach (var program in specList)
+                {
+                    yield return program;
+                }
+            }
+        }
     }
 }

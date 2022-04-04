@@ -1,4 +1,5 @@
 using Ryujinx.Graphics.Gpu.Shader.HashTable;
+using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Gpu.Shader
 {
@@ -8,6 +9,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
     class ComputeShaderCacheHashTable
     {
         private readonly PartitionedHashTable<ShaderSpecializationList> _cache;
+        private readonly List<CachedShaderProgram> _shaderPrograms;
 
         /// <summary>
         /// Creates a new compute shader cache hash table.
@@ -15,6 +17,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         public ComputeShaderCacheHashTable()
         {
             _cache = new PartitionedHashTable<ShaderSpecializationList>();
+            _shaderPrograms = new List<CachedShaderProgram>();
         }
 
         /// <summary>
@@ -25,6 +28,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         {
             var specList = _cache.GetOrAdd(program.Shaders[0].Code, new ShaderSpecializationList());
             specList.Add(program);
+            _shaderPrograms.Add(program);
         }
 
         /// <summary>
@@ -47,6 +51,18 @@ namespace Ryujinx.Graphics.Gpu.Shader
             ShaderCodeAccessor codeAccessor = new ShaderCodeAccessor(channel.MemoryManager, gpuVa);
             bool hasSpecList = _cache.TryFindItem(codeAccessor, out var specList, out cachedGuestCode);
             return hasSpecList && specList.TryFindForCompute(channel, poolState, out program);
+        }
+
+        /// <summary>
+        /// Gets all programs that have been added to the table.
+        /// </summary>
+        /// <returns>Programs added to the table</returns>
+        public IEnumerable<CachedShaderProgram> GetPrograms()
+        {
+            foreach (var program in _shaderPrograms)
+            {
+                yield return program;
+            }
         }
     }
 }

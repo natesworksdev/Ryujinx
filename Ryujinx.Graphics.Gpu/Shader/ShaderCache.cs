@@ -599,12 +599,12 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// </summary>
         public void Dispose()
         {
-            foreach (CachedShaderProgram program in _cpPrograms.Values)
+            foreach (CachedShaderProgram program in _graphicsShaderCache.GetPrograms())
             {
                 program.Dispose();
             }
 
-            foreach (CachedShaderProgram program in _gpPrograms.Values)
+            foreach (CachedShaderProgram program in _computeShaderCache.GetPrograms())
             {
                 program.Dispose();
             }

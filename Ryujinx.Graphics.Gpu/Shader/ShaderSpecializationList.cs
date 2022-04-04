@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Gpu.Shader
@@ -5,7 +6,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
     /// <summary>
     /// List of cached shader programs that differs only by specialization state.
     /// </summary>
-    class ShaderSpecializationList
+    class ShaderSpecializationList : IEnumerable<CachedShaderProgram>
     {
         private readonly List<CachedShaderProgram> _entries = new List<CachedShaderProgram>();
 
@@ -60,6 +61,16 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             program = default;
             return false;
+        }
+
+        public IEnumerator<CachedShaderProgram> GetEnumerator()
+        {
+            return _entries.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }
