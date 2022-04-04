@@ -246,6 +246,8 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
 
             _stateChangeCallback(ShaderCacheState.Start, 0, programCount);
 
+            Logger.Info?.Print(LogClass.Gpu, $"Loading {programCount} shaders from the cache...");
+
             for (int index = 0; index < ThreadCount; index++)
             {
                 workThreads[index].Start(_cancellationToken);
@@ -257,7 +259,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             }
             catch (DiskCacheLoadException diskCacheLoadException)
             {
-                Logger.Error?.Print(LogClass.Gpu, $"Error loading the shader cache. {diskCacheLoadException.Message}");
+                Logger.Warning?.Print(LogClass.Gpu, $"Error loading the shader cache. {diskCacheLoadException.Message}");
 
                 // If we can't even access the file, then we also can't rebuild.
                 if (diskCacheLoadException.Result != DiskCacheLoadResult.NoAccess)
@@ -267,12 +269,12 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             }
             catch (InvalidDataException invalidDataException)
             {
-                Logger.Error?.Print(LogClass.Gpu, $"Error decompressing the shader cache file. {invalidDataException.Message}");
+                Logger.Warning?.Print(LogClass.Gpu, $"Error decompressing the shader cache file. {invalidDataException.Message}");
                 _needsHostRegen = true;
             }
             catch (IOException ioException)
             {
-                Logger.Error?.Print(LogClass.Gpu, $"Error reading the shader cache file. {ioException.Message}");
+                Logger.Warning?.Print(LogClass.Gpu, $"Error reading the shader cache file. {ioException.Message}");
                 _needsHostRegen = true;
             }
 
@@ -323,13 +325,15 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 }
                 catch (DiskCacheLoadException diskCacheLoadException)
                 {
-                    Logger.Error?.Print(LogClass.Gpu, $"Error deleting the shader cache. {diskCacheLoadException.Message}");
+                    Logger.Warning?.Print(LogClass.Gpu, $"Error deleting the shader cache. {diskCacheLoadException.Message}");
                 }
                 catch (IOException ioException)
                 {
-                    Logger.Error?.Print(LogClass.Gpu, $"Error deleting the shader cache file. {ioException.Message}");
+                    Logger.Warning?.Print(LogClass.Gpu, $"Error deleting the shader cache file. {ioException.Message}");
                 }
             }
+
+            Logger.Info?.Print(LogClass.Gpu, "Shader cache loaded.");
 
             _stateChangeCallback(ShaderCacheState.Loaded, programCount, programCount);
         }
