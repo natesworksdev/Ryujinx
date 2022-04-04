@@ -94,13 +94,13 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             _programsToSaveQueue = new Queue<ProgramToSave>();
 
-            string diskCachePath = GraphicsConfig.EnableShaderCache && GraphicsConfig.TitleId != null
+            string diskCacheTitleId = GraphicsConfig.EnableShaderCache && GraphicsConfig.TitleId != null
                 ? CacheHelper.GetBaseCacheDirectory(GraphicsConfig.TitleId)
                 : null;
 
             _computeShaderCache = new ComputeShaderCacheHashTable();
             _graphicsShaderCache = new ShaderCacheHashTable();
-            _diskCacheHostStorage = new DiskCacheHostStorage(diskCachePath);
+            _diskCacheHostStorage = new DiskCacheHostStorage(diskCacheTitleId);
 
             if (_diskCacheHostStorage.CacheEnabled)
             {

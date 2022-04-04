@@ -165,6 +165,11 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         {
             _basePath = basePath;
             _guestStorage = new DiskCacheGuestStorage(basePath);
+
+            if (CacheEnabled)
+            {
+                Directory.CreateDirectory(basePath);
+            }
         }
 
         /// <summary>

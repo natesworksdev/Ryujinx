@@ -17,7 +17,6 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         /// <returns>File stream</returns>
         public static FileStream OpenFile(string basePath, string fileName, bool writable)
         {
-            Directory.CreateDirectory(basePath);
             string fullPath = Path.Combine(basePath, fileName);
 
             FileMode mode;
