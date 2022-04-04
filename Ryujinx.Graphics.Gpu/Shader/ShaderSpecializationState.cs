@@ -1,5 +1,6 @@
 using Ryujinx.Common.Memory;
 using Ryujinx.Graphics.Gpu.Shader.DiskCache;
+using Ryujinx.Graphics.Shader;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -428,12 +429,23 @@ namespace Ryujinx.Graphics.Gpu.Shader
             {
                 TextureKey textureKey = kv.Key;
 
-                ulong cbAddress = isCompute
-                    ? channel.BufferManager.GetComputeUniformBufferAddress(poolState.TextureBufferIndex)
-                    : channel.BufferManager.GetGraphicsUniformBufferAddress(textureKey.StageIndex, poolState.TextureBufferIndex);
+                (int textureBufferIndex, int samplerBufferIndex) = TextureHandle.UnpackSlots(textureKey.CbufSlot, poolState.TextureBufferIndex);
 
-                bool cbAccessible = channel.MemoryManager.Physical.IsMapped(cbAddress);
-                if (!cbAccessible)
+                ulong textureCbAddress;
+                ulong samplerCbAddress;
+
+                if (isCompute)
+                {
+                    textureCbAddress = channel.BufferManager.GetComputeUniformBufferAddress(textureBufferIndex);
+                    samplerCbAddress = channel.BufferManager.GetComputeUniformBufferAddress(samplerBufferIndex);
+                }
+                else
+                {
+                    textureCbAddress = channel.BufferManager.GetGraphicsUniformBufferAddress(textureKey.StageIndex, textureBufferIndex);
+                    samplerCbAddress = channel.BufferManager.GetGraphicsUniformBufferAddress(textureKey.StageIndex, samplerBufferIndex);
+                }
+
+                if (!channel.MemoryManager.Physical.IsMapped(textureCbAddress) || !channel.MemoryManager.Physical.IsMapped(samplerCbAddress))
                 {
                     continue;
                 }
