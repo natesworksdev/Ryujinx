@@ -439,12 +439,29 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         }
 
         /// <summary>
+        /// Gets output streams for the disk cache, for faster batch writing.
+        /// </summary>
+        /// <param name="context">The GPU context, used to determine the host disk cache</param>
+        /// <returns>A collection of disk cache output streams</returns>
+        public DiskCacheOutputStreams GetOutputStreams(GpuContext context)
+        {
+            var tocFileStream = DiskCacheCommon.OpenFile(_basePath, SharedTocFileName, writable: true);
+            var dataFileStream = DiskCacheCommon.OpenFile(_basePath, SharedDataFileName, writable: true);
+
+            var hostTocFileStream = DiskCacheCommon.OpenFile(_basePath, GetHostTocFileName(context), writable: true);
+            var hostDataFileStream = DiskCacheCommon.OpenFile(_basePath, GetHostDataFileName(context), writable: true);
+
+            return new DiskCacheOutputStreams(tocFileStream, dataFileStream, hostTocFileStream, hostDataFileStream);
+        }
+
+        /// <summary>
         /// Adds a shader to the cache.
         /// </summary>
         /// <param name="context">GPU context</param>
         /// <param name="program">Cached program</param>
         /// <param name="hostCode">Optional host binary code</param>
-        public void AddShader(GpuContext context, CachedShaderProgram program, ReadOnlySpan<byte> hostCode)
+        /// <param name="streams">Output streams to use</param>
+        public void AddShader(GpuContext context, CachedShaderProgram program, ReadOnlySpan<byte> hostCode, DiskCacheOutputStreams streams = null)
         {
             uint stagesBitMask = 0;
 
@@ -459,8 +476,8 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 stagesBitMask |= 1u << index;
             }
 
-            using var tocFileStream = DiskCacheCommon.OpenFile(_basePath, SharedTocFileName, writable: true);
-            using var dataFileStream = DiskCacheCommon.OpenFile(_basePath, SharedDataFileName, writable: true);
+            var tocFileStream = streams != null ? streams.TocFileStream : DiskCacheCommon.OpenFile(_basePath, SharedTocFileName, writable: true);
+            var dataFileStream = streams != null ? streams.DataFileStream : DiskCacheCommon.OpenFile(_basePath, SharedDataFileName, writable: true);
 
             if (tocFileStream.Length == 0)
             {
@@ -504,12 +521,18 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             program.SpecializationState.Write(ref dataWriter);
             dataWriter.EndCompression();
 
+            if (streams == null)
+            {
+                tocFileStream.Dispose();
+                dataFileStream.Dispose();
+            }
+
             if (hostCode.IsEmpty)
             {
                 return;
             }
 
-            WriteHostCode(context, hostCode);
+            WriteHostCode(context, hostCode, -1, streams);
         }
 
         /// <summary>
@@ -567,10 +590,11 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         /// <param name="context">GPU context</param>
         /// <param name="hostCode">Host binary code</param>
         /// <param name="programIndex">Index of the program in the cache</param>
-        private void WriteHostCode(GpuContext context, ReadOnlySpan<byte> hostCode, int programIndex = -1)
+        /// <param name="streams">Output streams to use</param>
+        private void WriteHostCode(GpuContext context, ReadOnlySpan<byte> hostCode, int programIndex, DiskCacheOutputStreams streams = null)
         {
-            using var tocFileStream = DiskCacheCommon.OpenFile(_basePath, GetHostTocFileName(context), writable: true);
-            using var dataFileStream = DiskCacheCommon.OpenFile(_basePath, GetHostDataFileName(context), writable: true);
+            var tocFileStream = streams != null ? streams.HostTocFileStream : DiskCacheCommon.OpenFile(_basePath, GetHostTocFileName(context), writable: true);
+            var dataFileStream = streams != null ? streams.HostDataFileStream : DiskCacheCommon.OpenFile(_basePath, GetHostDataFileName(context), writable: true);
 
             if (tocFileStream.Length == 0)
             {
@@ -597,6 +621,12 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             tocWriter.Write(ref offsetAndSize);
 
             BinarySerializer.WriteCompressed(dataFileStream, hostCode, DiskCacheCommon.GetCompressionAlgorithm());
+
+            if (streams == null)
+            {
+                tocFileStream.Dispose();
+                dataFileStream.Dispose();
+            }
         }
 
         /// <summary>

@@ -299,6 +299,8 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                     {
                         Logger.Info?.Print(LogClass.Gpu, $"Rebuilding {_programList.Count} shaders...");
 
+                        using var streams = _hostStorage.GetOutputStreams(_context);
+
                         foreach (var kv in _programList)
                         {
                             if (!Active)
@@ -307,7 +309,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                             }
 
                             CachedShaderProgram program = kv.Value;
-                            _hostStorage.AddShader(_context, program, program.HostProgram.GetBinary());
+                            _hostStorage.AddShader(_context, program, program.HostProgram.GetBinary(), streams);
                         }
 
                         Logger.Info?.Print(LogClass.Gpu, $"Rebuilt {_programList.Count} shaders successfully.");
