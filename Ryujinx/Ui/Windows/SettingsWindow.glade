@@ -1342,7 +1342,7 @@
                                         <property name="padding">5</property>
                                         <property name="position">6</property>
                                       </packing>
-                                    </child> # year spinner
+                                    </child>
                                     <child>
                                       <object class="GtkSpinButton" id="_systemTimeYearSpin">
                                         <property name="visible">True</property>
@@ -1402,7 +1402,7 @@
                                         <property name="padding">5</property>
                                         <property name="position">7</property>
                                       </packing>
-                                    </child> # day spinner
+                                    </child>
                                     <child>
                                       <object class="GtkSpinButton" id="_systemTimeDaySpin">
                                         <property name="visible">True</property>
