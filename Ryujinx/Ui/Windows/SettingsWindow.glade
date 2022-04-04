@@ -1332,7 +1332,7 @@
                                       <object class="GtkLabel">
                                         <property name="visible">True</property>
                                         <property name="can-focus">False</property>
-                                        <property name="tooltip-text" translatable="yes">Change System Date (YYYY/MM/DD)</property>
+                                        <property name="tooltip-text" translatable="yes">Change System Date (DD/MM/YYYY)</property>
                                         <property name="halign">end</property>
                                         <property name="label" translatable="yes">System Date:</property>
                                       </object>
@@ -1344,14 +1344,14 @@
                                       </packing>
                                     </child>
                                     <child>
-                                      <object class="GtkSpinButton" id="_systemTimeYearSpin">
+                                      <object class="GtkSpinButton" id="_systemTimeDaySpin">
                                         <property name="visible">True</property>
                                         <property name="can-focus">True</property>
-                                        <property name="text" translatable="yes">2000</property>
+                                        <property name="text" translatable="yes">1</property>
                                         <property name="orientation">vertical</property>
-                                        <property name="adjustment">_systemTimeYearSpinAdjustment</property>
+                                        <property name="adjustment">_systemTimeDaySpinAdjustment</property>
                                         <property name="wrap">True</property>
-                                        <property name="value">2000</property>
+                                        <property name="value">4</property>
                                       </object>
                                       <packing>
                                         <property name="expand">False</property>
@@ -1404,14 +1404,14 @@
                                       </packing>
                                     </child>
                                     <child>
-                                      <object class="GtkSpinButton" id="_systemTimeDaySpin">
+                                      <object class="GtkSpinButton" id="_systemTimeYearSpin">
                                         <property name="visible">True</property>
                                         <property name="can-focus">True</property>
-                                        <property name="text" translatable="yes">1</property>
+                                        <property name="text" translatable="yes">2000</property>
                                         <property name="orientation">vertical</property>
-                                        <property name="adjustment">_systemTimeDaySpinAdjustment</property>
+                                        <property name="adjustment">_systemTimeYearSpinAdjustment</property>
                                         <property name="wrap">True</property>
-                                        <property name="value">4</property>
+                                        <property name="value">2000</property>
                                       </object>
                                       <packing>
                                         <property name="expand">False</property>
