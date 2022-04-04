@@ -428,10 +428,11 @@ namespace Ryujinx.Graphics.Gpu.Shader
             {
                 TextureKey textureKey = kv.Key;
 
-                bool cbAccessible = isCompute
-                    ? channel.BufferManager.GetComputeUniformBufferAddress(poolState.TextureBufferIndex) != 0
-                    : channel.BufferManager.GetGraphicsUniformBufferAddress(textureKey.StageIndex, poolState.TextureBufferIndex) != 0;
+                ulong cbAddress = isCompute
+                    ? channel.BufferManager.GetComputeUniformBufferAddress(poolState.TextureBufferIndex)
+                    : channel.BufferManager.GetGraphicsUniformBufferAddress(textureKey.StageIndex, poolState.TextureBufferIndex);
 
+                bool cbAccessible = channel.MemoryManager.Physical.IsMapped(cbAddress);
                 if (!cbAccessible)
                 {
                     continue;
