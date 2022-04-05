@@ -94,7 +94,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 case SReg.InvocationInfo:
                     if (context.Config.Stage != ShaderStage.Compute && context.Config.Stage != ShaderStage.Fragment)
                     {
-                        // Note: Lowest 8-bits seems to contain some primitve index,
+                        // Note: Lowest 8-bits seems to contain some primitive index,
                         // but it seems to be NVIDIA implementation specific as it's only used
                         // to calculate ISBE offsets, so we can just keep it as zero.
 
