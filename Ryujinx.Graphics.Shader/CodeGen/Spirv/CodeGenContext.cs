@@ -23,6 +23,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         public Instruction StorageBuffersArray { get; set; }
         public Instruction LocalMemory { get; set; }
         public Instruction SharedMemory { get; set; }
+        public Instruction InputsArray { get; set; }
+        public Instruction OutputsArray { get; set; }
         public Dictionary<TextureMeta, (Instruction, Instruction, Instruction)> Samplers { get; } = new Dictionary<TextureMeta, (Instruction, Instruction, Instruction)>();
         public Dictionary<TextureMeta, (Instruction, Instruction)> Images { get; } = new Dictionary<TextureMeta, (Instruction, Instruction)>();
         public Dictionary<int, Instruction> Inputs { get; } = new Dictionary<int, Instruction>();
@@ -144,7 +146,19 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         public Instruction[] GetMainInterface()
         {
-            return Inputs.Values.Concat(Outputs.Values).ToArray();
+            var mainInterface = Inputs.Values.Concat(Outputs.Values);
+
+            if (InputsArray != null)
+            {
+                mainInterface = mainInterface.Append(InputsArray);
+            }
+
+            if (OutputsArray != null)
+            {
+                mainInterface = mainInterface.Append(OutputsArray);
+            }
+
+            return mainInterface.ToArray();
         }
 
         public void DeclareLocal(AstOperand local, Instruction spvLocal)
@@ -211,23 +225,39 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             throw new NotImplementedException(node.GetType().Name);
         }
 
-        public Instruction GetAttributeVectorPointer(AstOperand operand, bool isOutAttr)
-        {
-            var attrInfo = AttributeInfo.From(Config, operand.Value, isOutAttr);
-
-            return isOutAttr ? Outputs[attrInfo.BaseValue] : Inputs[attrInfo.BaseValue];
-        }
-
         public Instruction GetAttributeElemPointer(int attr, bool isOutAttr, Instruction index, out AggregateType elemType)
         {
+            var storageClass = isOutAttr ? StorageClass.Output : StorageClass.Input;
             var attrInfo = AttributeInfo.From(Config, attr, isOutAttr);
-
-            elemType = attrInfo.Type & AggregateType.ElementTypeMask;
 
             int attrOffset = attrInfo.BaseValue;
             AggregateType type = attrInfo.Type;
 
+            Instruction ioVariable, elemIndex;
+
             bool isUserAttr = attr >= AttributeConsts.UserAttributeBase && attr < AttributeConsts.UserAttributeEnd;
+
+            if (isUserAttr &&
+                ((!isOutAttr && Config.UsedFeatures.HasFlag(FeatureFlags.IaIndexing)) ||
+                (isOutAttr && Config.UsedFeatures.HasFlag(FeatureFlags.OaIndexing))))
+            {
+                elemType = AggregateType.FP32;
+                ioVariable = isOutAttr ? OutputsArray : InputsArray;
+                elemIndex = Constant(TypeU32(), attrInfo.GetInnermostIndex());
+                var vecIndex = Constant(TypeU32(), (attr - AttributeConsts.UserAttributeBase) >> 4);
+
+                if (Config.Stage == ShaderStage.Geometry && !isOutAttr)
+                {
+                    return AccessChain(TypePointer(storageClass, GetType(elemType)), ioVariable, index, vecIndex, elemIndex);
+                }
+                else
+                {
+                    return AccessChain(TypePointer(storageClass, GetType(elemType)), ioVariable, vecIndex, elemIndex);
+                }
+            }
+
+            elemType = attrInfo.Type & AggregateType.ElementTypeMask;
+
             if (isUserAttr && Config.TransformFeedbackEnabled &&
                 ((isOutAttr && Config.Stage != ShaderStage.Fragment) ||
                 (!isOutAttr && Config.Stage != ShaderStage.Vertex)))
@@ -236,15 +266,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 type = elemType;
             }
 
-            var ioVariable = isOutAttr ? Outputs[attrOffset] : Inputs[attrOffset];
+            ioVariable = isOutAttr ? Outputs[attrOffset] : Inputs[attrOffset];
 
             if ((type & (AggregateType.Array | AggregateType.Vector)) == 0)
             {
                 return ioVariable;
             }
 
-            var storageClass = isOutAttr ? StorageClass.Output : StorageClass.Input;
-            var elemIndex = Constant(TypeU32(), attrInfo.GetInnermostIndex());
+            elemIndex = Constant(TypeU32(), attrInfo.GetInnermostIndex());
 
             if (Config.Stage == ShaderStage.Geometry && !isOutAttr && (!attrInfo.IsBuiltin || AttributeInfo.IsArrayBuiltIn(attr)))
             {
@@ -256,7 +285,32 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             }
         }
 
+        public Instruction GetAttributeElemPointer(Instruction attrIndex, bool isOutAttr, Instruction index, out AggregateType elemType)
+        {
+            var storageClass = isOutAttr ? StorageClass.Output : StorageClass.Input;
+
+            elemType = AggregateType.FP32;
+            var ioVariable = isOutAttr ? OutputsArray : InputsArray;
+            var vecIndex = ShiftRightLogical(TypeS32(), attrIndex, Constant(TypeS32(), 2));
+            var elemIndex = BitwiseAnd(TypeS32(), attrIndex, Constant(TypeS32(), 3));
+
+            if (Config.Stage == ShaderStage.Geometry && !isOutAttr)
+            {
+                return AccessChain(TypePointer(storageClass, GetType(elemType)), ioVariable, index, vecIndex, elemIndex);
+            }
+            else
+            {
+                return AccessChain(TypePointer(storageClass, GetType(elemType)), ioVariable, vecIndex, elemIndex);
+            }
+        }
+
         public Instruction GetAttribute(AggregateType type, int attr, bool isOutAttr, Instruction index = null)
+        {
+            var elemPointer = GetAttributeElemPointer(attr, isOutAttr, index, out var elemType);
+            return BitcastIfNeeded(type, elemType, Load(GetType(elemType), elemPointer));
+        }
+
+        public Instruction GetAttribute(AggregateType type, Instruction attr, bool isOutAttr, Instruction index = null)
         {
             var elemPointer = GetAttributeElemPointer(attr, isOutAttr, index, out var elemType);
             return BitcastIfNeeded(type, elemType, Load(GetType(elemType), elemPointer));
