@@ -1300,8 +1300,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             shift = context.ShiftLeftLogical(context.TypeU32(), shift, context.Constant(context.TypeU32(), (SpvLiteralInteger)1));
             var lutIdx = context.ShiftRightLogical(context.TypeU32(), mask, shift);
 
-            var xLutValue = context.AccessChain(context.TypeFP32(), xLut, lutIdx);
-            var yLutValue = context.AccessChain(context.TypeFP32(), yLut, lutIdx);
+            var xLutValue = context.VectorExtractDynamic(context.TypeFP32(), xLut, lutIdx);
+            var yLutValue = context.VectorExtractDynamic(context.TypeFP32(), yLut, lutIdx);
 
             var xResult = context.FMul(context.TypeFP32(), x, xLutValue);
             var yResult = context.FMul(context.TypeFP32(), y, yLutValue);
@@ -1465,7 +1465,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                     }
 
                     var vectorType = context.TypeVector(context.TypeS32(), count);
-                    
+
                     return context.ConstantComposite(vectorType, elems);
                 }
                 else
