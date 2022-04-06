@@ -43,6 +43,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                     context.AppendLine("#extension GL_INTEL_fragment_shader_ordering : enable");
                 }
             }
+            else
+            {
+                context.AppendLine("#extension GL_ARB_shader_viewport_layer_array : enable");
+            }
 
             if (context.Config.GpPassthrough)
             {

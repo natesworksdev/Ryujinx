@@ -28,9 +28,11 @@ namespace Ryujinx.Graphics.Vulkan
             ExtConditionalRendering.ExtensionName,
             ExtExtendedDynamicState.ExtensionName,
             KhrDrawIndirectCount.ExtensionName,
-            "VK_EXT_index_type_uint8",
             "VK_EXT_custom_border_color",
-            "VK_EXT_robustness2"
+            "VK_EXT_fragment_shader_interlock",
+            "VK_EXT_index_type_uint8",
+            "VK_EXT_robustness2",
+            "VK_EXT_shader_subgroup_ballot"
         };
 
         private static readonly string[] _excludedMessages = new string[]
@@ -340,6 +342,7 @@ namespace Ryujinx.Graphics.Vulkan
                 PipelineStatisticsQuery = true,
                 SamplerAnisotropy = true,
                 ShaderClipDistance = true,
+                ShaderFloat64 = true,
                 ShaderImageGatherExtended = true,
                 // ShaderStorageImageReadWithoutFormat = true,
                 // ShaderStorageImageWriteWithoutFormat = true,
@@ -388,6 +391,13 @@ namespace Ryujinx.Graphics.Vulkan
                 DrawIndirectCount = supportedExtensions.Contains(KhrDrawIndirectCount.ExtensionName)
             };
 
+            var featuresFragmentShaderInterlock = new PhysicalDeviceFragmentShaderInterlockFeaturesEXT()
+            {
+                SType = StructureType.PhysicalDeviceFragmentShaderInterlockFeaturesExt,
+                PNext = &featuresVk12,
+                FragmentShaderPixelInterlock = true
+            };
+
             var enabledExtensions = _requiredExtensions.Union(_desirableExtensions.Intersect(supportedExtensions)).ToArray();
 
             IntPtr* ppEnabledExtensions = stackalloc IntPtr[enabledExtensions.Length];
@@ -400,7 +410,7 @@ namespace Ryujinx.Graphics.Vulkan
             var deviceCreateInfo = new DeviceCreateInfo()
             {
                 SType = StructureType.DeviceCreateInfo,
-                PNext = &featuresVk12,
+                PNext = supportedExtensions.Contains("VK_EXT_fragment_shader_interlock") ? &featuresFragmentShaderInterlock : &featuresVk12,
                 QueueCreateInfoCount = 1,
                 PQueueCreateInfos = &queueCreateInfo,
                 PpEnabledExtensionNames = (byte**)ppEnabledExtensions,
