@@ -245,6 +245,16 @@ namespace Ryujinx.Graphics.Gpu.Shader
             state.Value.CoordNormalized = descriptor.UnpackTextureCoordNormalized();
         }
 
+        /// <summary>
+        /// Indicates that a given texture is accessed by the shader.
+        /// </summary>
+        /// <param name="stageIndex">Shader stage where the texture is used</param>
+        /// <param name="handle">Offset in words of the texture handle on the texture buffer</param>
+        /// <param name="cbufSlot">Slot of the texture buffer constant buffer</param>
+        /// <param name="format">Maxwell texture format value</param>
+        /// <param name="formatSrgb">Whenever the texture format is a sRGB format</param>
+        /// <param name="target">Texture target type</param>
+        /// <param name="coordNormalized">Whenever the texture coordinates used on the shader are considered normalized</param>
         public void RegisterTexture(
             int stageIndex,
             int handle,
