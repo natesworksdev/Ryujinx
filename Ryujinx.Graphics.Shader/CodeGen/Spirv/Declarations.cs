@@ -331,41 +331,82 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static void DeclareInputAttributes(CodeGenContext context, StructuredProgramInfo info)
         {
+            bool iaIndexing = context.Config.UsedFeatures.HasFlag(FeatureFlags.IaIndexing);
+
             foreach (int attr in info.Inputs)
             {
-                PixelImap iq = PixelImap.Unused;
+                bool isUserAttr = attr >= AttributeConsts.UserAttributeBase && attr < AttributeConsts.UserAttributeEnd;
 
-                if (context.Config.Stage == ShaderStage.Fragment &&
-                    attr >= AttributeConsts.UserAttributeBase &&
-                    attr < AttributeConsts.UserAttributeEnd)
+                if (iaIndexing && isUserAttr)
                 {
-                    iq = context.Config.ImapTypes[(attr - AttributeConsts.UserAttributeBase) / 16].GetFirstUsedType();
-                }
+                    if (context.InputsArray == null)
+                    {
+                        var attrType = context.TypeVector(context.TypeFP32(), (LiteralInteger)4);
+                        attrType = context.TypeArray(attrType, context.Constant(context.TypeU32(), (LiteralInteger)MaxAttributes));
 
-                DeclareInputOrOutput(context, attr, false, iq);
+                        if (context.Config.Stage == ShaderStage.Geometry)
+                        {
+                            attrType = context.TypeArray(attrType, context.Constant(context.TypeU32(), (LiteralInteger)context.InputVertices));
+                        }
+
+                        var spvType = context.TypePointer(StorageClass.Input, attrType);
+                        var spvVar = context.Variable(spvType, StorageClass.Input);
+
+                        context.Decorate(spvVar, Decoration.Location, (LiteralInteger)0);
+
+                        context.AddGlobalVariable(spvVar);
+                        context.InputsArray = spvVar;
+                    }
+                }
+                else
+                {
+                    PixelImap iq = PixelImap.Unused;
+
+                    if (context.Config.Stage == ShaderStage.Fragment &&
+                        attr >= AttributeConsts.UserAttributeBase &&
+                        attr < AttributeConsts.UserAttributeEnd)
+                    {
+                        iq = context.Config.ImapTypes[(attr - AttributeConsts.UserAttributeBase) / 16].GetFirstUsedType();
+                    }
+
+                    DeclareInputOrOutput(context, attr, false, iq);
+                }
             }
         }
 
         private static void DeclareOutputAttributes(CodeGenContext context, StructuredProgramInfo info)
         {
+            bool oaIndexing = context.Config.UsedFeatures.HasFlag(FeatureFlags.OaIndexing);
+
             foreach (int attr in info.Outputs)
             {
-                DeclareOutputAttribute(context, attr);
+                bool isUserAttr = attr >= AttributeConsts.UserAttributeBase && attr < AttributeConsts.UserAttributeEnd;
+
+                if (oaIndexing && isUserAttr)
+                {
+                    if (context.OutputsArray == null)
+                    {
+                        var attrType = context.TypeVector(context.TypeFP32(), (LiteralInteger)4);
+                        attrType = context.TypeArray(attrType, context.Constant(context.TypeU32(), (LiteralInteger)MaxAttributes));
+
+                        var spvType = context.TypePointer(StorageClass.Output, attrType);
+                        var spvVar = context.Variable(spvType, StorageClass.Output);
+
+                        context.Decorate(spvVar, Decoration.Location, (LiteralInteger)0);
+
+                        context.AddGlobalVariable(spvVar);
+                        context.OutputsArray = spvVar;
+                    }
+                }
+                else
+                {
+                    DeclareOutputAttribute(context, attr);
+                }
             }
 
-            if (context.Config.Stage != ShaderStage.Compute &&
-                context.Config.Stage != ShaderStage.Fragment &&
-                !context.Config.GpPassthrough)
+            if (context.Config.Stage == ShaderStage.Vertex)
             {
-                for (int attr = 0; attr < MaxAttributes; attr++)
-                {
-                    DeclareOutputAttribute(context, AttributeConsts.UserAttributeBase + attr * 16);
-                }
-
-                if (context.Config.Stage == ShaderStage.Vertex)
-                {
-                    DeclareOutputAttribute(context, AttributeConsts.PositionX);
-                }
+                DeclareOutputAttribute(context, AttributeConsts.PositionX);
             }
         }
 

@@ -121,6 +121,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             Add(Instruction.ShuffleXor,               GenerateShuffleXor);
             Add(Instruction.Sine,                     GenerateSine);
             Add(Instruction.SquareRoot,               GenerateSquareRoot);
+            Add(Instruction.StoreAttribute,           GenerateStoreAttribute);
             Add(Instruction.StoreLocal,               GenerateStoreLocal);
             Add(Instruction.StoreShared,              GenerateStoreShared);
             Add(Instruction.StoreStorage,             GenerateStoreStorage);
@@ -864,11 +865,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             if (src2 is AstOperand operand && operand.Type == OperandType.Constant)
             {
                 int attrOffset = baseAttr.Value + (operand.Value << 2);
-                return new OperationResult(resultType, context.GetAttribute(resultType, attrOffset, false, index));
+                return new OperationResult(resultType, context.GetAttribute(resultType, attrOffset, isOutAttr: false, index));
             }
             else
             {
-                throw new NotImplementedException();
+                var attr = context.Get(AggregateType.S32, src2);
+                return new OperationResult(resultType, context.GetAttribute(resultType, attr, isOutAttr: false, index));
             }
         }
 
@@ -1242,6 +1244,37 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         private static OperationResult GenerateSquareRoot(CodeGenContext context, AstOperation operation)
         {
             return GenerateUnary(context, operation, context.Delegates.GlslSqrt, null);
+        }
+
+        private static OperationResult GenerateStoreAttribute(CodeGenContext context, AstOperation operation)
+        {
+            var src1 = operation.GetSource(0);
+            var src2 = operation.GetSource(1);
+            var src3 = operation.GetSource(2);
+
+            if (!(src1 is AstOperand baseAttr) || baseAttr.Type != OperandType.Constant)
+            {
+                throw new InvalidOperationException($"First input of {nameof(Instruction.StoreAttribute)} must be a constant operand.");
+            }
+
+            SpvInstruction elemPointer;
+            AggregateType elemType;
+
+            if (src2 is AstOperand operand && operand.Type == OperandType.Constant)
+            {
+                int attrOffset = baseAttr.Value + (operand.Value << 2);
+                elemPointer = context.GetAttributeElemPointer(attrOffset, isOutAttr: true, index: null, out elemType);
+            }
+            else
+            {
+                var attr = context.Get(AggregateType.S32, src2);
+                elemPointer = context.GetAttributeElemPointer(attr, isOutAttr: true, index: null, out elemType);
+            }
+
+            var value = context.Get(elemType, src3);
+            context.Store(elemPointer, value);
+
+            return OperationResult.Invalid;
         }
 
         private static OperationResult GenerateStoreLocal(CodeGenContext context, AstOperation operation)
