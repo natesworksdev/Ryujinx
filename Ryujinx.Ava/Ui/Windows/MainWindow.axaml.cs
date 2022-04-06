@@ -132,7 +132,6 @@ namespace Ryujinx.Ava.Ui.Windows
 
         public void LoadGameList()
         {
-            this.Renderer.DrawFps = true;
             if (_isLoading)
             {
                 return;
