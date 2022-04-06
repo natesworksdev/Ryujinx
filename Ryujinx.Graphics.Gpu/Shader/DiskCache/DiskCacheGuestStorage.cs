@@ -55,7 +55,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             /// <summary>
             /// Reserved space, to be used in the future. Write as zero.
             /// </summary>
-            public ulong Reversed2;
+            public ulong Reserved2;
         }
 
         /// <summary>
@@ -331,7 +331,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             header.Padding = 0;
             header.ModificationsCount = 0;
             header.Reserved = 0;
-            header.Reversed2 = 0;
+            header.Reserved2 = 0;
 
             if (tocFileStream.Length > 0)
             {

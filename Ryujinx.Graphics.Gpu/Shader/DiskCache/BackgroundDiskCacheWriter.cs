@@ -6,7 +6,7 @@ using System.IO;
 namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
 {
     /// <summary>
-    /// Represent a background disk cache writer.
+    /// Represents a background disk cache writer.
     /// </summary>
     class BackgroundDiskCacheWriter : IDisposable
     {
@@ -22,7 +22,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         }
 
         /// <summary>
-        /// Represent an operation to perform on the <see cref="_fileWriterWorkerQueue"/>.
+        /// Represents an operation to perform on the <see cref="_fileWriterWorkerQueue"/>.
         /// </summary>
         private struct CacheFileOperationTask
         {

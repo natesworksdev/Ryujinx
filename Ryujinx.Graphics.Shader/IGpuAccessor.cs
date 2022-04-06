@@ -65,7 +65,7 @@ namespace Ryujinx.Graphics.Shader
         }
 
         /// <summary>
-        /// Queries the binding number of a image.
+        /// Queries the binding number of an image.
         /// </summary>
         /// <param name="index">Image index</param>
         /// <returns>Binding number</returns>

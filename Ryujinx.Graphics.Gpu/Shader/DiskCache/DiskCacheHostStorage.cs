@@ -63,7 +63,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             /// <summary>
             /// Reserved space, to be used in the future. Write as zero.
             /// </summary>
-            public ulong Reversed2;
+            public ulong Reserved2;
         }
 
         /// <summary>
@@ -562,7 +562,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         }
 
         /// <summary>
-        /// Deletes all content from the host caches.
+        /// Deletes all content from the host cache files.
         /// </summary>
         /// <param name="context">GPU context</param>
         public void ClearHostCache(GpuContext context)
@@ -650,7 +650,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             header.CodeGenVersion = codegenVersion;
             header.Padding = 0;
             header.Reserved = 0;
-            header.Reversed2 = 0;
+            header.Reserved2 = 0;
 
             if (tocFileStream.Length > 0)
             {

@@ -78,6 +78,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// </summary>
         private struct TextureSpecializationState
         {
+            // New fields should be added to the end of the struct to keep disk shader cache compatibility.
+
             /// <summary>
             /// Flags indicating which state of the texture the shader depends on.
             /// </summary>
@@ -109,6 +111,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// </summary>
         private struct TextureKey : IEquatable<TextureKey>
         {
+            // New fields should be added to the end of the struct to keep disk shader cache compatibility.
+
             /// <summary>
             /// Shader stage where the texture is used.
             /// </summary>

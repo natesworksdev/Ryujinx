@@ -18,6 +18,11 @@ namespace Ryujinx.Graphics.Gpu.Shader
         public byte[] GeometryCode;
         public byte[] FragmentCode;
 
+        /// <summary>
+        /// Gets the guest code of a shader stage by its index.
+        /// </summary>
+        /// <param name="stageIndex">Index of the shader stage</param>
+        /// <returns>Guest code, or null if not present</returns>
         public byte[] GetByIndex(int stageIndex)
         {
             return stageIndex switch

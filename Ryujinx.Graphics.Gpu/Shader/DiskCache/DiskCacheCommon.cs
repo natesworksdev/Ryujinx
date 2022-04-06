@@ -9,7 +9,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
     static class DiskCacheCommon
     {
         /// <summary>
-        /// Opens a file for read of write.
+        /// Opens a file for read or write.
         /// </summary>
         /// <param name="basePath">Base path of the file (should not include the file name)</param>
         /// <param name="fileName">Name of the file</param>

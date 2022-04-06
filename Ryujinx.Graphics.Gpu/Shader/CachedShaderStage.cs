@@ -23,7 +23,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         public byte[] Cb1Data { get; }
 
         /// <summary>
-        /// Creates a new instace of the shader code holder.
+        /// Creates a new instance of the shader code holder.
         /// </summary>
         /// <param name="info">Shader program information</param>
         /// <param name="code">Maxwell binary shader code</param>

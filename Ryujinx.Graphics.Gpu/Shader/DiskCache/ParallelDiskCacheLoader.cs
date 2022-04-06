@@ -493,7 +493,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
 
             // Do not allow more than N shader compilation in-flight, where N is the maximum number of threads
             // the driver will be using for parallel compilation.
-            // Submiting more seems to cause NVIDIA OpenGL driver to crash.
+            // Submitting more seems to cause NVIDIA OpenGL driver to crash.
             if (_validationQueue.Count >= _backendParallelCompileThreads && _validationQueue.TryDequeue(out ProgramEntry entry))
             {
                 ProcessCompiledProgram(ref entry, entry.HostProgram.CheckProgramLink(true), asyncCompile: false);

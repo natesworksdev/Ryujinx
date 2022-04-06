@@ -8,6 +8,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
     /// </summary>
     struct GpuChannelGraphicsState
     {
+        // New fields should be added to the end of the struct to keep disk shader cache compatibility.
+
         /// <summary>
         /// Early Z force enable.
         /// </summary>

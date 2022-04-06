@@ -132,7 +132,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         }
 
         /// <summary>
-        /// Indicates that all data that will be wwritten into the stream should be compressed.
+        /// Indicates that all data that will be written into the stream should be compressed.
         /// </summary>
         /// <param name="algorithm">Compression algorithm that should be used</param>
         public void BeginCompression(CompressionAlgorithm algorithm)

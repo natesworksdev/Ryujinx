@@ -9,6 +9,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
     /// </summary>
     struct TransformFeedbackDescriptor
     {
+        // New fields should be added to the end of the struct to keep disk shader cache compatibility.
+
         /// <summary>
         /// Index of the transform feedback.
         /// </summary>

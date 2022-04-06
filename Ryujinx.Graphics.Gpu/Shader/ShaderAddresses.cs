@@ -36,7 +36,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         public bool Equals(ShaderAddresses other)
         {
             return VertexA        == other.VertexA &&
-                   VertexB         == other.VertexB &&
+                   VertexB        == other.VertexB &&
                    TessControl    == other.TessControl &&
                    TessEvaluation == other.TessEvaluation &&
                    Geometry       == other.Geometry &&
@@ -53,7 +53,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         }
 
         /// <summary>
-        /// Gets a view of the structure as a span of address.
+        /// Gets a view of the structure as a span of addresses.
         /// </summary>
         /// <returns>Span of addresses</returns>
         public Span<ulong> AsSpan()

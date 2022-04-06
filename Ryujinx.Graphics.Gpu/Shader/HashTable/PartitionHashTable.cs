@@ -95,7 +95,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
         }
 
         /// <summary>
-        /// Hash table bucked.
+        /// Hash table bucket.
         /// </summary>
         private struct Bucket
         {
@@ -148,7 +148,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
         }
 
         /// <summary>
-        /// Adds an item to the hash table
+        /// Adds an item to the hash table.
         /// </summary>
         /// <param name="data">Data</param>
         /// <param name="dataHash">Hash of the data</param>
@@ -426,7 +426,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
         }
 
         /// <summary>
-        /// Gets the bucked for a given hash.
+        /// Gets the bucket for a given hash.
         /// </summary>
         /// <param name="hash">Data hash</param>
         /// <returns>Bucket for the hash</returns>
@@ -445,7 +445,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.HashTable
         private static int GetPow2Count(int count)
         {
             // This returns the nearest power of two that is lower than count.
-            // That was done to optimize memory usage rather than performance.
+            // This was done to optimize memory usage rather than performance.
             return 1 << BitOperations.Log2((uint)count);
         }
     }
