@@ -66,10 +66,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 context.AddCapability(Capability.FragmentShaderPixelInterlockEXT);
                 context.AddExtension("SPV_EXT_fragment_shader_interlock");
             }
-
-            if (config.Stage == ShaderStage.Geometry)
+            else if (config.Stage == ShaderStage.Geometry)
             {
                 context.AddCapability(Capability.Geometry);
+            }
+            else if (config.Stage == ShaderStage.TessellationControl || config.Stage == ShaderStage.TessellationEvaluation)
+            {
+                context.AddCapability(Capability.Tessellation);
             }
 
             context.AddExtension("SPV_KHR_shader_ballot");
@@ -149,11 +152,50 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             {
                 context.AddEntryPoint(context.Config.Stage.Convert(), spvFunc, "main", context.GetMainInterface());
 
-                if (context.Config.Stage == ShaderStage.Geometry)
+                if (context.Config.Stage == ShaderStage.TessellationControl)
                 {
-                    InputTopology inPrimitive = context.Config.GpuAccessor.QueryPrimitiveTopology();
+                    context.AddExecutionMode(spvFunc, ExecutionMode.OutputVertices, (SpvLiteralInteger)context.Config.ThreadsPerInputPrimitive);
+                }
+                else if (context.Config.Stage == ShaderStage.TessellationEvaluation)
+                {
+                    switch (context.Config.GpuAccessor.QueryTessPatchType())
+                    {
+                        case TessPatchType.Isolines:
+                            context.AddExecutionMode(spvFunc, ExecutionMode.Isolines);
+                            break;
+                        case TessPatchType.Triangles:
+                            context.AddExecutionMode(spvFunc, ExecutionMode.Triangles);
+                            break;
+                        case TessPatchType.Quads:
+                            context.AddExecutionMode(spvFunc, ExecutionMode.Quads);
+                            break;
+                    }
 
-                    switch (inPrimitive)
+                    switch (context.Config.GpuAccessor.QueryTessSpacing())
+                    {
+                        case TessSpacing.EqualSpacing:
+                            context.AddExecutionMode(spvFunc, ExecutionMode.SpacingEqual);
+                            break;
+                        case TessSpacing.FractionalEventSpacing:
+                            context.AddExecutionMode(spvFunc, ExecutionMode.SpacingFractionalEven);
+                            break;
+                        case TessSpacing.FractionalOddSpacing:
+                            context.AddExecutionMode(spvFunc, ExecutionMode.SpacingFractionalOdd);
+                            break;
+                    }
+
+                    if (context.Config.GpuAccessor.QueryTessCw())
+                    {
+                        context.AddExecutionMode(spvFunc, ExecutionMode.VertexOrderCw);
+                    }
+                    else
+                    {
+                        context.AddExecutionMode(spvFunc, ExecutionMode.VertexOrderCcw);
+                    }
+                }
+                else if (context.Config.Stage == ShaderStage.Geometry)
+                {
+                    switch (context.Config.GpuAccessor.QueryPrimitiveTopology())
                     {
                         case InputTopology.Points:
                             context.AddExecutionMode(spvFunc, ExecutionMode.InputPoints);
@@ -329,11 +371,17 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                         var source = context.Get(dest.VarType.Convert(), assignment.Source);
                         context.Store(context.GetLocalPointer(dest), source);
                     }
-                    else if (dest.Type == OperandType.Attribute)
+                    else if (dest.Type == OperandType.Attribute || dest.Type == OperandType.AttributePerPatch)
                     {
                         if (AttributeInfo.Validate(context.Config, dest.Value, isOutAttr: true))
                         {
-                            var elemPointer = context.GetAttributeElemPointer(dest.Value, true, null, out var elemType);
+                            bool perPatch = dest.Type == OperandType.AttributePerPatch;
+                            AggregateType elemType;
+
+                            var elemPointer = perPatch
+                                ? context.GetAttributePerPatchElemPointer(dest.Value, true, out elemType)
+                                : context.GetAttributeElemPointer(dest.Value, true, null, out elemType);
+
                             context.Store(elemPointer, context.Get(elemType, assignment.Source));
                         }
                     }

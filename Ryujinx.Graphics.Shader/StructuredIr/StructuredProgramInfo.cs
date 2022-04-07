@@ -24,6 +24,8 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
         public HashSet<int> Inputs { get; }
         public HashSet<int> Outputs { get; }
+        public HashSet<int> InputsPerPatch { get; }
+        public HashSet<int> OutputsPerPatch { get; }
 
         public HelperFunctionsMask HelperFunctionsMask { get; set; }
 
@@ -35,6 +37,8 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
             Inputs = new HashSet<int>();
             Outputs = new HashSet<int>();
+            InputsPerPatch = new HashSet<int>();
+            OutputsPerPatch = new HashSet<int>();
 
             TransformFeedbackOutputs = new TransformFeedbackOutput[0xc0];
         }

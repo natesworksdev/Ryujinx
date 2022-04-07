@@ -281,6 +281,10 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             {
                 Info.Outputs.Add(operand.Value & AttributeConsts.Mask);
             }
+            else if (operand.Type == OperandType.AttributePerPatch)
+            {
+                Info.OutputsPerPatch.Add(operand.Value & AttributeConsts.Mask);
+            }
 
             return GetOperand(operand);
         }
@@ -296,6 +300,10 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             if (operand.Type == OperandType.Attribute)
             {
                 Info.Inputs.Add(operand.Value);
+            }
+            else if (operand.Type == OperandType.AttributePerPatch)
+            {
+                Info.InputsPerPatch.Add(operand.Value);
             }
 
             return GetOperand(operand);

@@ -31,6 +31,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         public Dictionary<TextureMeta, (Instruction, Instruction)> Images { get; } = new Dictionary<TextureMeta, (Instruction, Instruction)>();
         public Dictionary<int, Instruction> Inputs { get; } = new Dictionary<int, Instruction>();
         public Dictionary<int, Instruction> Outputs { get; } = new Dictionary<int, Instruction>();
+        public Dictionary<int, Instruction> InputsPerPatch { get; } = new Dictionary<int, Instruction>();
+        public Dictionary<int, Instruction> OutputsPerPatch { get; } = new Dictionary<int, Instruction>();
 
         private readonly Dictionary<AstOperand, Instruction> _locals = new Dictionary<AstOperand, Instruction>();
         private readonly Dictionary<int, Instruction[]> _localForArgs = new Dictionary<int, Instruction[]>();
@@ -148,7 +150,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         public Instruction[] GetMainInterface()
         {
-            var mainInterface = Inputs.Values.Concat(Outputs.Values);
+            var mainInterface = Inputs.Values
+                .Concat(Outputs.Values)
+                .Concat(InputsPerPatch.Values)
+                .Concat(OutputsPerPatch.Values);
 
             if (InputsArray != null)
             {
@@ -216,6 +221,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 {
                     IrOperandType.Argument => GetArgument(type, operand),
                     IrOperandType.Attribute => GetAttribute(type, operand.Value & AttributeConsts.Mask, (operand.Value & AttributeConsts.LoadOutputMask) != 0),
+                    IrOperandType.AttributePerPatch => GetAttributePerPatch(type, operand.Value & AttributeConsts.Mask, (operand.Value & AttributeConsts.LoadOutputMask) != 0),
                     IrOperandType.Constant => GetConstant(type, operand),
                     IrOperandType.ConstantBuffer => GetConstantBuffer(type, operand),
                     IrOperandType.LocalVariable => GetLocal(type, operand),
@@ -314,6 +320,40 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             }
 
             var elemPointer = GetAttributeElemPointer(attr, isOutAttr, index, out var elemType);
+            return BitcastIfNeeded(type, elemType, Load(GetType(elemType), elemPointer));
+        }
+
+        public Instruction GetAttributePerPatchElemPointer(int attr, bool isOutAttr, out AggregateType elemType)
+        {
+            var storageClass = isOutAttr ? StorageClass.Output : StorageClass.Input;
+            var attrInfo = AttributeInfo.From(Config, attr, isOutAttr);
+
+            int attrOffset = attrInfo.BaseValue;
+            Instruction ioVariable;
+
+            bool isUserAttr = attr >= AttributeConsts.UserAttributeBase && attr < AttributeConsts.UserAttributeEnd;
+
+            elemType = attrInfo.Type & AggregateType.ElementTypeMask;
+
+            ioVariable = isOutAttr ? OutputsPerPatch[attrOffset] : InputsPerPatch[attrOffset];
+
+            if ((attrInfo.Type & (AggregateType.Array | AggregateType.Vector)) == 0)
+            {
+                return ioVariable;
+            }
+
+            var elemIndex = Constant(TypeU32(), attrInfo.GetInnermostIndex());
+            return AccessChain(TypePointer(storageClass, GetType(elemType)), ioVariable, elemIndex);
+        }
+
+        public Instruction GetAttributePerPatch(AggregateType type, int attr, bool isOutAttr)
+        {
+            if (!AttributeInfo.Validate(Config, attr, isOutAttr: false))
+            {
+                return GetConstant(type, new AstOperand(IrOperandType.Constant, 0));
+            }
+
+            var elemPointer = GetAttributePerPatchElemPointer(attr, isOutAttr, out var elemType);
             return BitcastIfNeeded(type, elemType, Load(GetType(elemType), elemPointer));
         }
 
