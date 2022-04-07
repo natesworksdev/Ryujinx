@@ -20,6 +20,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         public int InputVertices { get; }
 
         public Dictionary<int, Instruction> UniformBuffers { get; } = new Dictionary<int, Instruction>();
+        public Instruction UniformBuffersArray { get; set; }
         public Instruction StorageBuffersArray { get; set; }
         public Instruction LocalMemory { get; set; }
         public Instruction SharedMemory { get; set; }
@@ -332,12 +333,26 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         public Instruction GetConstantBuffer(AggregateType type, AstOperand operand)
         {
-            var ubVariable = UniformBuffers[operand.CbufSlot];
-            var i0 = Constant(TypeS32(), 0);
-            var i1 = Constant(TypeS32(), operand.CbufOffset >> 2);
-            var i2 = Constant(TypeU32(), operand.CbufOffset & 3);
+            var i1 = Constant(TypeS32(), 0);
+            var i2 = Constant(TypeS32(), operand.CbufOffset >> 2);
+            var i3 = Constant(TypeU32(), operand.CbufOffset & 3);
 
-            var elemPointer = AccessChain(TypePointer(StorageClass.Uniform, TypeFP32()), ubVariable, i0, i1, i2);
+            Instruction elemPointer;
+
+            if (UniformBuffersArray != null)
+            {
+                var ubVariable = UniformBuffersArray;
+                var i0 = Constant(TypeS32(), operand.CbufSlot);
+
+                elemPointer = AccessChain(TypePointer(StorageClass.Uniform, TypeFP32()), ubVariable, i0, i1, i2, i3);
+            }
+            else
+            {
+                var ubVariable = UniformBuffers[operand.CbufSlot];
+
+                elemPointer = AccessChain(TypePointer(StorageClass.Uniform, TypeFP32()), ubVariable, i1, i2, i3);
+            }
+
             return BitcastIfNeeded(type, AggregateType.FP32, Load(TypeFP32(), elemPointer));
         }
 
