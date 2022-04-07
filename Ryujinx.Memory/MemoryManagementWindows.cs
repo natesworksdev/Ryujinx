@@ -105,7 +105,9 @@ namespace Ryujinx.Memory
 
         public static void UnmapView4KB(IntPtr location, IntPtr size)
         {
-            IntPtr endLocation = (nint)location + (int)size;
+            ulong uaddress = (ulong)location;
+            ulong usize = (ulong)size;
+            IntPtr endLocation = (IntPtr)(uaddress + usize);
 
             while (location != endLocation)
             {
