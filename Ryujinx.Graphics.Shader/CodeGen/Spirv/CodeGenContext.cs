@@ -308,6 +308,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         public Instruction GetAttribute(AggregateType type, int attr, bool isOutAttr, Instruction index = null)
         {
+            if (!AttributeInfo.Validate(Config, attr, isOutAttr: false))
+            {
+                return GetConstant(type, new AstOperand(IrOperandType.Constant, 0));
+            }
+
             var elemPointer = GetAttributeElemPointer(attr, isOutAttr, index, out var elemType);
             return BitcastIfNeeded(type, elemType, Load(GetType(elemType), elemPointer));
         }

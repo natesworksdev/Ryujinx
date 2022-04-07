@@ -360,6 +360,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             foreach (int attr in info.Inputs)
             {
+                if (!AttributeInfo.Validate(context.Config, attr, isOutAttr: false))
+                {
+                    continue;
+                }
+
                 bool isUserAttr = attr >= AttributeConsts.UserAttributeBase && attr < AttributeConsts.UserAttributeEnd;
 
                 if (iaIndexing && isUserAttr)
@@ -405,6 +410,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             foreach (int attr in info.Outputs)
             {
+                if (!AttributeInfo.Validate(context.Config, attr, isOutAttr: true))
+                {
+                    continue;
+                }
+
                 bool isUserAttr = attr >= AttributeConsts.UserAttributeBase && attr < AttributeConsts.UserAttributeEnd;
 
                 if (oaIndexing && isUserAttr)

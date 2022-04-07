@@ -200,7 +200,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                         context.AddExecutionMode(spvFunc, ExecutionMode.EarlyFragmentTests);
                     }
 
-                    if ((info.HelperFunctionsMask & HelperFunctionsMask.FSI) != 0 && 
+                    if ((info.HelperFunctionsMask & HelperFunctionsMask.FSI) != 0 &&
                         context.Config.GpuAccessor.QueryHostSupportsFragmentShaderInterlock())
                     {
                         context.AddExecutionMode(spvFunc, ExecutionMode.PixelInterlockOrderedEXT);
@@ -331,8 +331,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                     }
                     else if (dest.Type == OperandType.Attribute)
                     {
-                        var elemPointer = context.GetAttributeElemPointer(dest.Value, true, null, out var elemType);
-                        context.Store(elemPointer, context.Get(elemType, assignment.Source));
+                        if (AttributeInfo.Validate(context.Config, dest.Value, isOutAttr: true))
+                        {
+                            var elemPointer = context.GetAttributeElemPointer(dest.Value, true, null, out var elemType);
+                            context.Store(elemPointer, context.Get(elemType, assignment.Source));
+                        }
                     }
                     else if (dest.Type == OperandType.Argument)
                     {
