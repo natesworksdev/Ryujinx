@@ -1662,10 +1662,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 index = context.GetS32(texOp.GetSource(0));
             }
 
-            int lodSrcIndex = isBindless || isIndexed ? 1 : 0;
-
-            var lod = context.GetS32(operation.GetSource(lodSrcIndex));
-
             var meta = new TextureMeta(texOp.CbufSlot, texOp.Handle, texOp.Format);
 
             (var imageType, var sampledImageType, var sampledImageVariable) = context.Samplers[meta];
@@ -1679,9 +1675,24 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             }
             else
             {
-                int components = (texOp.Type & SamplerType.Mask) == SamplerType.TextureCube ? 2 : texOp.Type.GetDimensions();
+                var type = context.SamplersTypes[meta];
+                bool hasLod = !type.HasFlag(SamplerType.Multisample) && type != SamplerType.TextureBuffer;
+
+                int components = (type & SamplerType.Mask) == SamplerType.TextureCube ? 2 : type.GetDimensions();
                 var resultType = components == 1 ? context.TypeS32() : context.TypeVector(context.TypeS32(), components);
-                var result = context.ImageQuerySizeLod(resultType, image, lod);
+
+                SpvInstruction result;
+
+                if (hasLod)
+                {
+                    int lodSrcIndex = isBindless || isIndexed ? 1 : 0;
+                    var lod = context.GetS32(operation.GetSource(lodSrcIndex));
+                    result = context.ImageQuerySizeLod(resultType, image, lod);
+                }
+                else
+                {
+                    result = context.ImageQuerySize(resultType, image);
+                }
 
                 if (components != 1)
                 {
