@@ -125,6 +125,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static void DeclareUniformBuffers(CodeGenContext context, BufferDescriptor[] descriptors)
         {
+            if (descriptors.Length == 0)
+            {
+                return;
+            }
+
             uint ubSize = Constants.ConstantBufferSize / 16;
 
             var ubArrayType = context.TypeArray(context.TypeVector(context.TypeFP32(), 4), context.Constant(context.TypeU32(), ubSize), true);
@@ -132,17 +137,36 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             var ubStructType = context.TypeStruct(true, ubArrayType);
             context.Decorate(ubStructType, Decoration.Block);
             context.MemberDecorate(ubStructType, 0, Decoration.Offset, (LiteralInteger)0);
-            var ubPointerType = context.TypePointer(StorageClass.Uniform, ubStructType);
 
-            foreach (var descriptor in descriptors)
+            if (context.Config.UsedFeatures.HasFlag(FeatureFlags.CbIndexing))
             {
+                int count = descriptors.Max(x => x.Slot) + 1;
+
+                var ubStructArrayType = context.TypeArray(ubStructType, context.Constant(context.TypeU32(), count));
+                var ubPointerType = context.TypePointer(StorageClass.Uniform, ubStructArrayType);
                 var ubVariable = context.Variable(ubPointerType, StorageClass.Uniform);
 
-                context.Name(ubVariable, $"{GetStagePrefix(context.Config.Stage)}_c{descriptor.Slot}");
+                context.Name(ubVariable, $"{GetStagePrefix(context.Config.Stage)}_u");
                 context.Decorate(ubVariable, Decoration.DescriptorSet, (LiteralInteger)0);
-                context.Decorate(ubVariable, Decoration.Binding, (LiteralInteger)descriptor.Binding);
+                context.Decorate(ubVariable, Decoration.Binding, (LiteralInteger)context.Config.FirstConstantBufferBinding);
                 context.AddGlobalVariable(ubVariable);
-                context.UniformBuffers.Add(descriptor.Slot, ubVariable);
+
+                context.UniformBuffersArray = ubVariable;
+            }
+            else
+            {
+                var ubPointerType = context.TypePointer(StorageClass.Uniform, ubStructType);
+
+                foreach (var descriptor in descriptors)
+                {
+                    var ubVariable = context.Variable(ubPointerType, StorageClass.Uniform);
+
+                    context.Name(ubVariable, $"{GetStagePrefix(context.Config.Stage)}_c{descriptor.Slot}");
+                    context.Decorate(ubVariable, Decoration.DescriptorSet, (LiteralInteger)0);
+                    context.Decorate(ubVariable, Decoration.Binding, (LiteralInteger)descriptor.Binding);
+                    context.AddGlobalVariable(ubVariable);
+                    context.UniformBuffers.Add(descriptor.Slot, ubVariable);
+                }
             }
         }
 
@@ -154,7 +178,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             }
 
             int setIndex = context.Config.Options.TargetApi == TargetApi.Vulkan ? 1 : 0;
-            int count = descriptors.Max(x => x.Binding) + 1;
+            int count = descriptors.Max(x => x.Slot) + 1;
 
             var sbArrayType = context.TypeRuntimeArray(context.TypeU32());
             context.Decorate(sbArrayType, Decoration.ArrayStride, (LiteralInteger)4);
