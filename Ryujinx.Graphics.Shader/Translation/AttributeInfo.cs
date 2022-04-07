@@ -70,6 +70,11 @@ namespace Ryujinx.Graphics.Shader.Translation
             return (Value - BaseValue) / 4;
         }
 
+        public static bool Validate(ShaderConfig config, int value, bool isOutAttr)
+        {
+            return From(config, value, isOutAttr).IsValid;
+        }
+
         public static AttributeInfo From(ShaderConfig config, int value, bool isOutAttr)
         {
             value &= ~3;
