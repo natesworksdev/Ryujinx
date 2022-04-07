@@ -2,6 +2,7 @@ using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.Translation;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 
 using static Ryujinx.Graphics.Shader.StructuredIr.AstHelper;
 
@@ -35,6 +36,34 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             Info = new StructuredProgramInfo();
 
             Config = config;
+
+            if (config.GpPassthrough)
+            {
+                int passthroughAttributes = config.PassthroughAttributes;
+                while (passthroughAttributes != 0)
+                {
+                    int index = BitOperations.TrailingZeroCount(passthroughAttributes);
+
+                    int attrBase = AttributeConsts.UserAttributeBase + index * 16;
+                    Info.Inputs.Add(attrBase);
+                    Info.Inputs.Add(attrBase + 4);
+                    Info.Inputs.Add(attrBase + 8);
+                    Info.Inputs.Add(attrBase + 12);
+
+                    passthroughAttributes &= ~(1 << index);
+                }
+
+                Info.Inputs.Add(AttributeConsts.PositionX);
+                Info.Inputs.Add(AttributeConsts.PositionY);
+                Info.Inputs.Add(AttributeConsts.PositionZ);
+                Info.Inputs.Add(AttributeConsts.PositionW);
+                Info.Inputs.Add(AttributeConsts.PointSize);
+
+                for (int i = 0; i < 8; i++)
+                {
+                    Info.Inputs.Add(AttributeConsts.ClipDistance0 + i * 4);
+                }
+            }
         }
 
         public void EnterFunction(

@@ -69,6 +69,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             else if (config.Stage == ShaderStage.Geometry)
             {
                 context.AddCapability(Capability.Geometry);
+
+                if (config.GpPassthrough)
+                {
+                    context.AddExtension("SPV_NV_geometry_shader_passthrough");
+                    context.AddCapability(Capability.GeometryShaderPassthroughNV);
+                }
             }
             else if (config.Stage == ShaderStage.TessellationControl || config.Stage == ShaderStage.TessellationEvaluation)
             {
