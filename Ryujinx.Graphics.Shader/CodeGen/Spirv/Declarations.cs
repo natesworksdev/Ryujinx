@@ -213,6 +213,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 var sampledImageVariable = context.Variable(sampledImagePointerType, StorageClass.UniformConstant);
 
                 context.Samplers.Add(meta, (imageType, sampledImageType, sampledImageVariable));
+                context.SamplersTypes.Add(meta, descriptor.Type);
 
                 context.Name(sampledImageVariable, $"{GetStagePrefix(context.Config.Stage)}_tex{nameSuffix}");
                 context.Decorate(sampledImageVariable, Decoration.DescriptorSet, (LiteralInteger)setIndex);
