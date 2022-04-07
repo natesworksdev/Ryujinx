@@ -96,6 +96,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             Add(Instruction.Lod,                      GenerateLod);
             Add(Instruction.LogarithmB2,              GenerateLogarithmB2);
             Add(Instruction.LogicalAnd,               GenerateLogicalAnd);
+            Add(Instruction.LogicalExclusiveOr,       GenerateLogicalExclusiveOr);
             Add(Instruction.LogicalNot,               GenerateLogicalNot);
             Add(Instruction.LogicalOr,                GenerateLogicalOr);
             Add(Instruction.LoopBreak,                GenerateLoopBreak);
@@ -992,6 +993,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         private static OperationResult GenerateLogicalAnd(CodeGenContext context, AstOperation operation)
         {
             return GenerateBinaryBool(context, operation, context.Delegates.LogicalAnd);
+        }
+
+        private static OperationResult GenerateLogicalExclusiveOr(CodeGenContext context, AstOperation operation)
+        {
+            return GenerateBinaryBool(context, operation, context.Delegates.LogicalNotEqual);
         }
 
         private static OperationResult GenerateLogicalNot(CodeGenContext context, AstOperation operation)
