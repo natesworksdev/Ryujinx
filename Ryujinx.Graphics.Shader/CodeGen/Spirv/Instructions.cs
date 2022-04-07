@@ -880,12 +880,26 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             var src1 = operation.GetSource(0);
             var src2 = context.Get(AggregateType.S32, operation.GetSource(1));
 
-            var ubVariable = context.UniformBuffers[((AstOperand)src1).Value];
-            var i0 = context.Constant(context.TypeS32(), 0);
-            var i1 = context.ShiftRightArithmetic(context.TypeS32(), src2, context.Constant(context.TypeS32(), 2));
-            var i2 = context.BitwiseAnd(context.TypeS32(), src2, context.Constant(context.TypeS32(), 3));
+            var i1 = context.Constant(context.TypeS32(), 0);
+            var i2 = context.ShiftRightArithmetic(context.TypeS32(), src2, context.Constant(context.TypeS32(), 2));
+            var i3 = context.BitwiseAnd(context.TypeS32(), src2, context.Constant(context.TypeS32(), 3));
 
-            var elemPointer = context.AccessChain(context.TypePointer(StorageClass.Uniform, context.TypeFP32()), ubVariable, i0, i1, i2);
+            SpvInstruction elemPointer;
+
+            if (context.UniformBuffersArray != null)
+            {
+                var ubVariable = context.UniformBuffersArray;
+                var i0 = context.Get(AggregateType.S32, src1);
+
+                elemPointer = context.AccessChain(context.TypePointer(StorageClass.Uniform, context.TypeFP32()), ubVariable, i0, i1, i2, i3);
+            }
+            else
+            {
+                var ubVariable = context.UniformBuffers[((AstOperand)src1).Value];
+
+                elemPointer = context.AccessChain(context.TypePointer(StorageClass.Uniform, context.TypeFP32()), ubVariable, i1, i2, i3);
+            }
+
             var value = context.Load(context.TypeFP32(), elemPointer);
 
             return new OperationResult(AggregateType.FP32, value);
