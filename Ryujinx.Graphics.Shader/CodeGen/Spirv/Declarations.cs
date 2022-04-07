@@ -98,8 +98,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             DeclareStorageBuffers(context, context.Config.GetStorageBufferDescriptors());
             DeclareSamplers(context, context.Config.GetTextureDescriptors());
             DeclareImages(context, context.Config.GetImageDescriptors());
-            DeclareInputAttributes(context, info);
-            DeclareOutputAttributes(context, info);
+            DeclareInputAttributes(context, info, perPatch: false);
+            DeclareOutputAttributes(context, info, perPatch: false);
+            DeclareInputAttributes(context, info, perPatch: true);
+            DeclareOutputAttributes(context, info, perPatch: true);
         }
 
         private static void DeclareLocalMemory(CodeGenContext context, int size)
@@ -354,11 +356,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             };
         }
 
-        private static void DeclareInputAttributes(CodeGenContext context, StructuredProgramInfo info)
+        private static void DeclareInputAttributes(CodeGenContext context, StructuredProgramInfo info, bool perPatch)
         {
             bool iaIndexing = context.Config.UsedFeatures.HasFlag(FeatureFlags.IaIndexing);
+            var inputs = perPatch ? info.InputsPerPatch : info.Inputs;
 
-            foreach (int attr in info.Inputs)
+            foreach (int attr in inputs)
             {
                 if (!AttributeInfo.Validate(context.Config, attr, isOutAttr: false))
                 {
@@ -367,7 +370,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
                 bool isUserAttr = attr >= AttributeConsts.UserAttributeBase && attr < AttributeConsts.UserAttributeEnd;
 
-                if (iaIndexing && isUserAttr)
+                if (iaIndexing && isUserAttr && !perPatch)
                 {
                     if (context.InputsArray == null)
                     {
@@ -399,16 +402,17 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                         iq = context.Config.ImapTypes[(attr - AttributeConsts.UserAttributeBase) / 16].GetFirstUsedType();
                     }
 
-                    DeclareInputOrOutput(context, attr, false, iq);
+                    DeclareInputOrOutput(context, attr, perPatch, isOutAttr: false, iq);
                 }
             }
         }
 
-        private static void DeclareOutputAttributes(CodeGenContext context, StructuredProgramInfo info)
+        private static void DeclareOutputAttributes(CodeGenContext context, StructuredProgramInfo info, bool perPatch)
         {
             bool oaIndexing = context.Config.UsedFeatures.HasFlag(FeatureFlags.OaIndexing);
+            var outputs = perPatch ? info.OutputsPerPatch : info.Outputs;
 
-            foreach (int attr in info.Outputs)
+            foreach (int attr in outputs)
             {
                 if (!AttributeInfo.Validate(context.Config, attr, isOutAttr: true))
                 {
@@ -417,7 +421,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
                 bool isUserAttr = attr >= AttributeConsts.UserAttributeBase && attr < AttributeConsts.UserAttributeEnd;
 
-                if (oaIndexing && isUserAttr)
+                if (oaIndexing && isUserAttr && !perPatch)
                 {
                     if (context.OutputsArray == null)
                     {
@@ -435,30 +439,30 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 }
                 else
                 {
-                    DeclareOutputAttribute(context, attr);
+                    DeclareOutputAttribute(context, attr, perPatch);
                 }
             }
 
             if (context.Config.Stage == ShaderStage.Vertex)
             {
-                DeclareOutputAttribute(context, AttributeConsts.PositionX);
+                DeclareOutputAttribute(context, AttributeConsts.PositionX, perPatch: false);
             }
         }
 
-        private static void DeclareOutputAttribute(CodeGenContext context, int attr)
+        private static void DeclareOutputAttribute(CodeGenContext context, int attr, bool perPatch)
         {
-            DeclareInputOrOutput(context, attr, true);
+            DeclareInputOrOutput(context, attr, perPatch, isOutAttr: true);
         }
 
         public static void DeclareInvocationId(CodeGenContext context)
         {
-            DeclareInputOrOutput(context, AttributeConsts.LaneId, false);
+            DeclareInputOrOutput(context, AttributeConsts.LaneId, perPatch: false, isOutAttr: false);
         }
 
-        private static void DeclareInputOrOutput(CodeGenContext context, int attr, bool isOutAttr, PixelImap iq = PixelImap.Unused)
+        private static void DeclareInputOrOutput(CodeGenContext context, int attr, bool perPatch, bool isOutAttr, PixelImap iq = PixelImap.Unused)
         {
             bool isUserAttr = attr >= AttributeConsts.UserAttributeBase && attr < AttributeConsts.UserAttributeEnd;
-            if (isUserAttr && context.Config.TransformFeedbackEnabled &&
+            if (isUserAttr && context.Config.TransformFeedbackEnabled && !perPatch &&
                 ((isOutAttr && context.Config.Stage != ShaderStage.Fragment) ||
                 (!isOutAttr && context.Config.Stage != ShaderStage.Vertex)))
             {
@@ -466,7 +470,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 return;
             }
 
-            var dict = isOutAttr ? context.Outputs : context.Inputs;
+            var dict = perPatch
+                ? (isOutAttr ? context.OutputsPerPatch : context.InputsPerPatch)
+                : (isOutAttr ? context.Outputs : context.Inputs);
+
             var attrInfo = AttributeInfo.From(context.Config, attr, isOutAttr);
 
             if (dict.ContainsKey(attrInfo.BaseValue))
@@ -484,6 +491,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             var spvType = context.TypePointer(storageClass, attrType);
             var spvVar = context.Variable(spvType, storageClass);
+
+            if (perPatch)
+            {
+                context.Decorate(spvVar, Decoration.Patch);
+            }
 
             if (attrInfo.IsBuiltin)
             {
@@ -503,6 +515,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             else if (isUserAttr)
             {
                 int location = (attr - AttributeConsts.UserAttributeBase) / 16;
+
+                if (perPatch)
+                {
+                    location += 32;
+                }
+
                 context.Decorate(spvVar, Decoration.Location, (LiteralInteger)location);
 
                 if (!isOutAttr)
@@ -586,6 +604,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         {
             return attr switch
             {
+                AttributeConsts.TessLevelOuter0 => BuiltIn.TessLevelOuter,
+                AttributeConsts.TessLevelInner0 => BuiltIn.TessLevelInner,
                 AttributeConsts.Layer => BuiltIn.Layer,
                 AttributeConsts.ViewportIndex => BuiltIn.ViewportIndex,
                 AttributeConsts.PointSize => BuiltIn.PointSize,
