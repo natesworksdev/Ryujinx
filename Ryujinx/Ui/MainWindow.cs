@@ -949,8 +949,8 @@ namespace Ryujinx.Ui
             UpdateColumns();
             UpdateGameTable();
 
-            Task.Run(RefreshFirmwareLabel);
-            Task.Run(HandleRelaunch);
+            RefreshFirmwareLabel();
+            HandleRelaunch();
 
             _actionMenu.Sensitive = false;
             _firmwareInstallFile.Sensitive = true;
