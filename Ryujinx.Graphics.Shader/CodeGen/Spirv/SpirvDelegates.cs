@@ -74,6 +74,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         // BinaryBool
         public readonly FuncBinaryInstruction LogicalAnd;
+        public readonly FuncBinaryInstruction LogicalNotEqual;
         public readonly FuncBinaryInstruction LogicalOr;
 
         // BinaryS32
@@ -180,6 +181,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             // BinaryBool
             LogicalAnd = context.LogicalAnd;
+            LogicalNotEqual = context.LogicalNotEqual;
             LogicalOr = context.LogicalOr;
 
             // BinaryS32
