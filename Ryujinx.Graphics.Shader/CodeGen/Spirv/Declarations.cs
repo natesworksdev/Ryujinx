@@ -385,6 +385,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                         var spvType = context.TypePointer(StorageClass.Input, attrType);
                         var spvVar = context.Variable(spvType, StorageClass.Input);
 
+                        if (context.Config.PassthroughAttributes != 0)
+                        {
+                            context.Decorate(spvVar, Decoration.PassthroughNV);
+                        }
+
                         context.Decorate(spvVar, Decoration.Location, (LiteralInteger)0);
 
                         context.AddGlobalVariable(spvVar);
@@ -483,10 +488,16 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             var storageClass = isOutAttr ? StorageClass.Output : StorageClass.Input;
             var attrType = context.GetType(attrInfo.Type, attrInfo.Length);
+            bool builtInPassthrough = false;
 
             if (context.Config.Stage == ShaderStage.Geometry && !isOutAttr && (!attrInfo.IsBuiltin || AttributeInfo.IsArrayBuiltIn(attr)))
             {
                 attrType = context.TypeArray(attrType, context.Constant(context.TypeU32(), (LiteralInteger)context.InputVertices));
+
+                if (context.Config.GpPassthrough)
+                {
+                    builtInPassthrough = true;
+                }
             }
 
             var spvType = context.TypePointer(storageClass, attrType);
@@ -495,6 +506,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             if (perPatch)
             {
                 context.Decorate(spvVar, Decoration.Patch);
+            }
+
+            if (builtInPassthrough)
+            {
+                context.Decorate(spvVar, Decoration.PassthroughNV);
             }
 
             if (attrInfo.IsBuiltin)
@@ -525,6 +541,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
                 if (!isOutAttr)
                 {
+                    if (!perPatch && (context.Config.PassthroughAttributes & (1 << location)) != 0)
+                    {
+                        context.Decorate(spvVar, Decoration.PassthroughNV);
+                    }
+
                     switch (iq)
                     {
                         case PixelImap.Constant:
@@ -585,6 +606,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             }
             else
             {
+                if ((context.Config.PassthroughAttributes & (1 << location)) != 0)
+                {
+                    context.Decorate(spvVar, Decoration.PassthroughNV);
+                }
+
                 switch (iq)
                 {
                     case PixelImap.Constant:
