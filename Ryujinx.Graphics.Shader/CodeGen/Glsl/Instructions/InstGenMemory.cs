@@ -85,7 +85,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             string ApplyScaling(string vector)
             {
-                if ((context.Config.Stage.SupportsRenderScale()) &&
+                if (context.Config.Stage.SupportsRenderScale() &&
                     texOp.Inst == Instruction.ImageLoad &&
                     !isBindless &&
                     !isIndexed)
@@ -621,7 +621,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             {
                 if (intCoords)
                 {
-                    if ((context.Config.Stage.SupportsRenderScale()) &&
+                    if (context.Config.Stage.SupportsRenderScale() &&
                         !isBindless &&
                         !isIndexed)
                     {
