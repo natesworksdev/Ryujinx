@@ -46,6 +46,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 context.AddLocalVariable(spvLocal);
                 context.DeclareLocal(local, spvLocal);
             }
+
+            var ivector2Type = context.TypeVector(context.TypeS32(), 2);
+            var coordTempPointerType = context.TypePointer(StorageClass.Function, ivector2Type);
+            var coordTemp = context.Variable(coordTempPointerType, StorageClass.Function);
+
+            context.AddLocalVariable(coordTemp);
+            context.CoordTemp = coordTemp;
         }
 
         public static void DeclareLocalForArgs(CodeGenContext context, List<StructuredFunction> functions)
@@ -94,6 +101,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 DeclareLocalMemory(context, localMemorySize);
             }
 
+            DeclareSupportBuffer(context);
             DeclareUniformBuffers(context, context.Config.GetConstantBufferDescriptors());
             DeclareStorageBuffers(context, context.Config.GetStorageBufferDescriptors());
             DeclareSamplers(context, context.Config.GetTextureDescriptors());
@@ -123,6 +131,38 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             context.AddGlobalVariable(variable);
 
             return variable;
+        }
+
+        private static void DeclareSupportBuffer(CodeGenContext context)
+        {
+            if (!context.Config.Stage.SupportsRenderScale())
+            {
+                return;
+            }
+
+            var isBgraArrayType = context.TypeArray(context.TypeU32(), context.Constant(context.TypeU32(), SupportBuffer.FragmentIsBgraCount));
+            var renderScaleArrayType = context.TypeArray(context.TypeFP32(), context.Constant(context.TypeU32(), SupportBuffer.RenderScaleMaxCount));
+
+            context.Decorate(isBgraArrayType, Decoration.ArrayStride, (LiteralInteger)SupportBuffer.FieldSize);
+            context.Decorate(renderScaleArrayType, Decoration.ArrayStride, (LiteralInteger)SupportBuffer.FieldSize);
+
+            var supportBufferStructType = context.TypeStruct(false, context.TypeU32(), isBgraArrayType, context.TypeS32(), renderScaleArrayType);
+
+            context.MemberDecorate(supportBufferStructType, 0, Decoration.Offset, (LiteralInteger)SupportBuffer.FragmentAlphaTestOffset);
+            context.MemberDecorate(supportBufferStructType, 1, Decoration.Offset, (LiteralInteger)SupportBuffer.FragmentIsBgraOffset);
+            context.MemberDecorate(supportBufferStructType, 2, Decoration.Offset, (LiteralInteger)SupportBuffer.FragmentRenderScaleCountOffset);
+            context.MemberDecorate(supportBufferStructType, 3, Decoration.Offset, (LiteralInteger)SupportBuffer.GraphicsRenderScaleOffset);
+            context.Decorate(supportBufferStructType, Decoration.Block);
+
+            var supportBufferPointerType = context.TypePointer(StorageClass.Uniform, supportBufferStructType);
+            var supportBufferVariable = context.Variable(supportBufferPointerType, StorageClass.Uniform);
+
+            context.Decorate(supportBufferVariable, Decoration.DescriptorSet, (LiteralInteger)0);
+            context.Decorate(supportBufferVariable, Decoration.Binding, (LiteralInteger)0);
+
+            context.AddGlobalVariable(supportBufferVariable);
+
+            context.SupportBuffer = supportBufferVariable;
         }
 
         private static void DeclareUniformBuffers(CodeGenContext context, BufferDescriptor[] descriptors)
