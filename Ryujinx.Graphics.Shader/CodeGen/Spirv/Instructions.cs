@@ -1733,8 +1733,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 var type = context.SamplersTypes[meta];
                 bool hasLod = !type.HasFlag(SamplerType.Multisample) && type != SamplerType.TextureBuffer;
 
-                int components = (type & SamplerType.Mask) == SamplerType.TextureCube ? 2 : type.GetDimensions();
-                var resultType = components == 1 ? context.TypeS32() : context.TypeVector(context.TypeS32(), components);
+                int dimensions = (type & SamplerType.Mask) == SamplerType.TextureCube ? 2 : type.GetDimensions();
+
+                if (type.HasFlag(SamplerType.Array))
+                {
+                    dimensions++;
+                }
+
+                var resultType = dimensions == 1 ? context.TypeS32() : context.TypeVector(context.TypeS32(), dimensions);
 
                 SpvInstruction result;
 
@@ -1749,12 +1755,15 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                     result = context.ImageQuerySize(resultType, image);
                 }
 
-                if (components != 1)
+                if (dimensions != 1)
                 {
                     result = context.CompositeExtract(context.TypeS32(), result, (SpvLiteralInteger)texOp.Index);
                 }
 
-                result = ScalingHelpers.ApplyUnscaling(context, texOp, result, isBindless, isIndexed);
+                if (texOp.Index < 2 || (type & SamplerType.Mask) == SamplerType.Texture3D)
+                {
+                    result = ScalingHelpers.ApplyUnscaling(context, texOp, result, isBindless, isIndexed);
+                }
 
                 return new OperationResult(AggregateType.S32, result);
             }
