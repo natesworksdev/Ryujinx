@@ -64,6 +64,12 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                     Info.Inputs.Add(AttributeConsts.ClipDistance0 + i * 4);
                 }
             }
+            else if (config.Stage == ShaderStage.Fragment)
+            {
+                // Potentially used for texture coordinate scaling.
+                Info.Inputs.Add(AttributeConsts.PositionX);
+                Info.Inputs.Add(AttributeConsts.PositionY);
+            }
         }
 
         public void EnterFunction(

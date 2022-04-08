@@ -20,6 +20,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         public int InputVertices { get; }
 
         public Dictionary<int, Instruction> UniformBuffers { get; } = new Dictionary<int, Instruction>();
+        public Instruction SupportBuffer { get; set; }
         public Instruction UniformBuffersArray { get; set; }
         public Instruction StorageBuffersArray { get; set; }
         public Instruction LocalMemory { get; set; }
@@ -34,6 +35,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         public Dictionary<int, Instruction> InputsPerPatch { get; } = new Dictionary<int, Instruction>();
         public Dictionary<int, Instruction> OutputsPerPatch { get; } = new Dictionary<int, Instruction>();
 
+        public Instruction CoordTemp { get; set; }
         private readonly Dictionary<AstOperand, Instruction> _locals = new Dictionary<AstOperand, Instruction>();
         private readonly Dictionary<int, Instruction[]> _localForArgs = new Dictionary<int, Instruction[]>();
         private readonly Dictionary<int, Instruction> _funcArgs = new Dictionary<int, Instruction>();
@@ -150,19 +152,21 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         public Instruction[] GetMainInterface()
         {
-            var mainInterface = Inputs.Values
-                .Concat(Outputs.Values)
-                .Concat(InputsPerPatch.Values)
-                .Concat(OutputsPerPatch.Values);
+            var mainInterface = new List<Instruction>();
+
+            mainInterface.AddRange(Inputs.Values);
+            mainInterface.AddRange(Outputs.Values);
+            mainInterface.AddRange(InputsPerPatch.Values);
+            mainInterface.AddRange(OutputsPerPatch.Values);
 
             if (InputsArray != null)
             {
-                mainInterface = mainInterface.Append(InputsArray);
+                mainInterface.Add(InputsArray);
             }
 
             if (OutputsArray != null)
             {
-                mainInterface = mainInterface.Append(OutputsArray);
+                mainInterface.Add(OutputsArray);
             }
 
             return mainInterface.ToArray();
@@ -320,7 +324,21 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             }
 
             var elemPointer = GetAttributeElemPointer(attr, isOutAttr, index, out var elemType);
-            return BitcastIfNeeded(type, elemType, Load(GetType(elemType), elemPointer));
+            var value = Load(GetType(elemType), elemPointer);
+
+            if (Config.Stage == ShaderStage.Fragment && (attr == AttributeConsts.PositionX || attr == AttributeConsts.PositionY))
+            {
+                var pointerType = TypePointer(StorageClass.Uniform, TypeFP32());
+                var fieldIndex = Constant(TypeU32(), 3);
+                var scaleIndex = Constant(TypeU32(), 0);
+
+                var scaleElemPointer = AccessChain(pointerType, SupportBuffer, fieldIndex, scaleIndex);
+                var scale = Load(TypeFP32(), scaleElemPointer);
+
+                value = FDiv(TypeFP32(), value, scale);
+            }
+
+            return BitcastIfNeeded(type, elemType, value);
         }
 
         public Instruction GetAttributePerPatchElemPointer(int attr, bool isOutAttr, out AggregateType elemType)
