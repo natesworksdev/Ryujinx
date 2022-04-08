@@ -190,7 +190,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 if (context.Config.Stage == ShaderStage.Vertex)
                 {
                     var scaleCountPointerType = context.TypePointer(StorageClass.Uniform, context.TypeS32());
-                    var scaleCountElemPointer = context.AccessChain(scaleCountPointerType, context.SupportBuffer, context.Constant(context.TypeU32(), 3));
+                    var scaleCountElemPointer = context.AccessChain(scaleCountPointerType, context.SupportBuffer, context.Constant(context.TypeU32(), 2));
                     var scaleCount = context.Load(context.TypeS32(), scaleCountElemPointer);
 
                     scaleIndex = context.IAdd(context.TypeU32(), scaleIndex, scaleCount);
