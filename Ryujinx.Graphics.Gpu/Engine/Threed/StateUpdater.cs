@@ -20,6 +20,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         public const int RasterizerStateIndex = 1;
         public const int ScissorStateIndex = 2;
         public const int VertexBufferStateIndex = 3;
+        public const int PrimitiveRestartStateIndex = 4;
 
         private readonly GpuContext _context;
         private readonly GpuChannel _channel;
@@ -34,6 +35,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         private byte _vsClipDistancesWritten;
 
         private bool _prevDrawIndexed;
+        private IndexType _prevIndexType;
+        private uint _prevFirstVertex;
         private bool _prevTfEnable;
 
         /// <summary>
@@ -74,6 +77,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     nameof(ThreedClassState.VertexBufferInstanced),
                     nameof(ThreedClassState.VertexBufferState),
                     nameof(ThreedClassState.VertexBufferEndAddress)),
+
+                new StateUpdateCallbackEntry(UpdatePrimitiveRestartState,
+                    nameof(ThreedClassState.PrimitiveRestartDrawArrays),
+                    nameof(ThreedClassState.PrimitiveRestartState)),
 
                 new StateUpdateCallbackEntry(UpdateTessellationState,
                     nameof(ThreedClassState.TessOuterLevel),
@@ -140,8 +147,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     nameof(ThreedClassState.PointSpriteEnable),
                     nameof(ThreedClassState.PointCoordReplace)),
 
-                new StateUpdateCallbackEntry(UpdatePrimitiveRestartState, nameof(ThreedClassState.PrimitiveRestartState)),
-
                 new StateUpdateCallbackEntry(UpdateIndexBufferState,
                     nameof(ThreedClassState.IndexBufferState),
                     nameof(ThreedClassState.IndexBufferCount)),
@@ -197,7 +202,29 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             if (_drawState.DrawIndexed != _prevDrawIndexed)
             {
                 _updateTracker.ForceDirty(VertexBufferStateIndex);
+
+                // If PrimitiveRestartDrawArrays is false and this is a non-indexed draw, we need to ensure primitive restart is disabled.
+                // If PrimitiveRestartDrawArrays is false and this is a indexed draw, we need to ensure primitive restart enable matches GPU state.
+                // If PrimitiveRestartDrawArrays is true, then primitive restart enable should always match GPU state.
+                // That is because "PrimitiveRestartDrawArrays" is not configurable on the backend, it is always
+                // true on OpenGL and always false on Vulkan.
+                if (!_state.State.PrimitiveRestartDrawArrays && _state.State.PrimitiveRestartState.Enable)
+                {
+                    _updateTracker.ForceDirty(PrimitiveRestartStateIndex);
+                }
+
                 _prevDrawIndexed = _drawState.DrawIndexed;
+            }
+
+            // In some cases, the index type is also used to guess the
+            // vertex buffer size, so we must update it if the type changed too.
+            if (_drawState.DrawIndexed &&
+                (_prevIndexType != _state.State.IndexBufferState.Type ||
+                 _prevFirstVertex != _state.State.FirstVertex))
+            {
+                _updateTracker.ForceDirty(VertexBufferStateIndex);
+                _prevIndexType = _state.State.IndexBufferState.Type;
+                _prevFirstVertex = _state.State.FirstVertex;
             }
 
             bool tfEnable = _state.State.TfEnable;
@@ -816,8 +843,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         private void UpdatePrimitiveRestartState()
         {
             PrimitiveRestartState primitiveRestart = _state.State.PrimitiveRestartState;
+            bool enable = primitiveRestart.Enable && (_drawState.DrawIndexed || _state.State.PrimitiveRestartDrawArrays);
 
-            _context.Renderer.Pipeline.SetPrimitiveRestart(primitiveRestart.Enable, primitiveRestart.Index);
+            _context.Renderer.Pipeline.SetPrimitiveRestart(enable, primitiveRestart.Index);
         }
 
         /// <summary>
@@ -852,6 +880,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// </summary>
         private void UpdateVertexBufferState()
         {
+            IndexType indexType = _state.State.IndexBufferState.Type;
+            bool indexTypeSmall = indexType == IndexType.UByte || indexType == IndexType.UShort;
+
             _drawState.IsAnyVbInstanced = false;
 
             for (int index = 0; index < Constants.TotalVertexBuffers; index++)
@@ -883,12 +914,27 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 {
                     // This size may be (much) larger than the real vertex buffer size.
                     // Avoid calculating it this way, unless we don't have any other option.
+
                     size = endAddress.Pack() - address + 1;
+
+                    if (stride > 0 && indexTypeSmall)
+                    {
+                        // If the index type is a small integer type, then we might be still able
+                        // to reduce the vertex buffer size based on the maximum possible index value.
+
+                        ulong maxVertexBufferSize = indexType == IndexType.UByte ? 0x100UL : 0x10000UL;
+
+                        maxVertexBufferSize += _state.State.FirstVertex;
+                        maxVertexBufferSize *= (uint)stride;
+
+                        size = Math.Min(size, maxVertexBufferSize);
+                    }
                 }
                 else
                 {
                     // For non-indexed draws, we can guess the size from the vertex count
                     // and stride.
+
                     int firstInstance = (int)_state.State.FirstInstance;
 
                     var drawState = _state.State.VertexBufferDrawState;
