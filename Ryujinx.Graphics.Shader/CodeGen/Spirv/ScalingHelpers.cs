@@ -21,7 +21,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         {
             if (intCoords)
             {
-                if ((context.Config.Stage.SupportsRenderScale()) &&
+                if (context.Config.Stage.SupportsRenderScale() &&
                     !isBindless &&
                     !isIndexed)
                 {
@@ -63,7 +63,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             if (context.Config.Stage == ShaderStage.Vertex)
             {
                 var scaleCountPointerType = context.TypePointer(StorageClass.Uniform, context.TypeS32());
-                var scaleCountElemPointer = context.AccessChain(scaleCountPointerType, context.SupportBuffer, context.Constant(context.TypeU32(), 3));
+                var scaleCountElemPointer = context.AccessChain(scaleCountPointerType, context.SupportBuffer, context.Constant(context.TypeU32(), 2));
                 var scaleCount = context.Load(context.TypeS32(), scaleCountElemPointer);
 
                 scaleIndex = context.IAdd(context.TypeU32(), scaleIndex, scaleCount);
@@ -177,7 +177,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             bool isBindless,
             bool isIndexed)
         {
-            if ((context.Config.Stage.SupportsRenderScale()) &&
+            if (context.Config.Stage.SupportsRenderScale() &&
                 !isBindless &&
                 !isIndexed)
             {
