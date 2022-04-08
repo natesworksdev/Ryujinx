@@ -780,6 +780,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 }
 
                 if (context.Config.Stage.SupportsRenderScale() &&
+                    (texOp.Index < 2 || (texOp.Type & SamplerType.Mask) == SamplerType.Texture3D) &&
                     !isBindless &&
                     !isIndexed)
                 {

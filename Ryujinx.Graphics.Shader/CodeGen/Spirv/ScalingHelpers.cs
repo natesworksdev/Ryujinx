@@ -105,9 +105,20 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
                 context.AddLabel(mergeLabel);
 
-                var passthroughVector = context.CompositeConstruct(context.TypeVector(context.TypeBool(), 2), passthrough, passthrough);
+                var passthroughLabel = context.Label();
+                var finalMergeLabel = context.Label();
 
-                return context.Select(ivector2Type, passthroughVector, vector, context.Load(ivector2Type, localVector));
+                context.SelectionMerge(finalMergeLabel, SelectionControlMask.MaskNone);
+                context.BranchConditional(passthrough, passthroughLabel, finalMergeLabel);
+
+                context.AddLabel(passthroughLabel);
+
+                context.Store(localVector, vector);
+                context.Branch(finalMergeLabel);
+
+                context.AddLabel(finalMergeLabel);
+
+                return context.Load(ivector2Type, localVector);
             }
             else
             {
@@ -149,7 +160,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             var fragCoord = context.Load(context.TypeVector(context.TypeFP32(), 4), fragCoordPointer);
             var fragCoordXY = context.VectorShuffle(vector2Type, fragCoord, fragCoord, 0, 1);
 
-            var scaleMod = context.FMod(vector2Type, scaleVector, fragCoordXY);
+            var scaleMod = context.FMod(vector2Type, fragCoordXY, scaleVector);
             var vectorInterpolated = context.FAdd(vector2Type, vectorScaled, scaleMod);
 
             context.Store(output, context.ConvertFToS(context.TypeVector(context.TypeS32(), 2), vectorInterpolated));
@@ -199,12 +210,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 scaleIndex = context.IAdd(context.TypeU32(), scaleIndex, context.Constant(context.TypeU32(), 1));
 
                 var scaleElemPointer = context.AccessChain(pointerType, context.SupportBuffer, fieldIndex, scaleIndex);
-                var scale = context.Load(context.TypeFP32(), scaleElemPointer);
+                var scale = context.GlslFAbs(context.TypeFP32(), context.Load(context.TypeFP32(), scaleElemPointer));
 
                 var passthrough = context.FOrdEqual(context.TypeBool(), scale, context.Constant(context.TypeFP32(), 1f));
 
                 var sizeFloat = context.ConvertSToF(context.TypeFP32(), size);
-                var sizeUnscaled = context.FDiv(context.TypeFP32(), size, scale);
+                var sizeUnscaled = context.FDiv(context.TypeFP32(), sizeFloat, scale);
                 var sizeUnscaledInt = context.ConvertFToS(context.TypeS32(), sizeUnscaled);
 
                 return context.Select(context.TypeS32(), passthrough, size, sizeUnscaledInt);
