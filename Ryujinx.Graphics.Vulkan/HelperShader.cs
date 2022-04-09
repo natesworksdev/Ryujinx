@@ -8,7 +8,7 @@ namespace Ryujinx.Graphics.Vulkan
 {
     class HelperShader : IDisposable
     {
-        private const string VertexShaderSource = @"#version 450 core
+        private const string ColorBlitVertexShaderSource = @"#version 450 core
 
 layout (std140, binding = 1) uniform tex_coord_in
 {
@@ -41,7 +41,7 @@ void main()
     colour = texture(tex, tex_coord);
 }";
 
-        private const string ClearAlphaFragmentShaderSource = @"#version 450 core
+        private const string ColorBlitClearAlphaFragmentShaderSource = @"#version 450 core
 
 layout (binding = 32, set = 2) uniform sampler2D tex;
 
@@ -53,15 +53,47 @@ void main()
     colour = vec4(texture(tex, tex_coord).rgb, 1.0f);
 }";
 
-        private readonly PipelineBlit _pipeline;
+        private const string ColorClearVertexShaderSource = @"#version 450 core
+
+layout (std140, binding = 1) uniform clear_colour_in
+{
+    vec4 clear_colour_in_data;
+};
+
+layout (location = 0) out vec4 clear_colour;
+
+void main()
+{
+    int low = gl_VertexIndex & 1;
+	int high = gl_VertexIndex >> 1;
+	clear_colour = clear_colour_in_data;
+    gl_Position.x = (float(low) - 0.5f) * 2.0f;
+    gl_Position.y = (float(high) - 0.5f) * 2.0f;
+    gl_Position.z = 0.0f;
+    gl_Position.w = 1.0f;
+}";
+
+        private const string ColorClearFragmentShaderSource = @"#version 450 core
+
+layout (location = 0) in vec4 clear_colour;
+layout (location = 0) out vec4 colour;
+
+void main()
+{
+    colour = clear_colour;
+}";
+
+
+        private readonly PipelineHelperShader _pipeline;
         private readonly ISampler _samplerLinear;
         private readonly ISampler _samplerNearest;
         private readonly IProgram _programColorBlit;
-        private readonly IProgram _programClearAlpha;
+        private readonly IProgram _programColorBlitClearAlpha;
+        private readonly IProgram _programColorClear;
 
         public HelperShader(VulkanGraphicsDevice gd, Device device)
         {
-            _pipeline = new PipelineBlit(gd, device);
+            _pipeline = new PipelineHelperShader(gd, device);
 
             static GAL.SamplerCreateInfo GetSamplerCreateInfo(MinFilter minFilter, MagFilter magFilter)
             {
@@ -100,12 +132,25 @@ void main()
                 Array.Empty<int>(),
                 Array.Empty<int>());
 
-            var vertexShader = gd.CompileShader(ShaderStage.Vertex, vertexBindings, VertexShaderSource);
-            var fragmentShaderColorBlit = gd.CompileShader(ShaderStage.Fragment, fragmentBindings, ColorBlitFragmentShaderSource);
-            var fragmentShaderClearAlpha = gd.CompileShader(ShaderStage.Fragment, fragmentBindings, ClearAlphaFragmentShaderSource);
+            var colorBlitVertexShader = gd.CompileShader(ShaderStage.Vertex, vertexBindings, ColorBlitVertexShaderSource);
+            var colorBlitFragmentShader = gd.CompileShader(ShaderStage.Fragment, fragmentBindings, ColorBlitFragmentShaderSource);
+            var colorBlitClearAlphaFragmentShader = gd.CompileShader(ShaderStage.Fragment, fragmentBindings, ColorBlitClearAlphaFragmentShaderSource);
 
-            _programColorBlit = gd.CreateProgram(new[] { vertexShader, fragmentShaderColorBlit }, new ShaderInfo(-1));
-            _programClearAlpha = gd.CreateProgram(new[] { vertexShader, fragmentShaderClearAlpha }, new ShaderInfo(-1));
+            _programColorBlit = gd.CreateProgram(new[] { colorBlitVertexShader, colorBlitFragmentShader }, new ShaderInfo(-1));
+            _programColorBlitClearAlpha = gd.CreateProgram(new[] { colorBlitVertexShader, colorBlitClearAlphaFragmentShader }, new ShaderInfo(-1));
+
+            var fragmentBindings2 = new ShaderBindings(
+                Array.Empty<int>(),
+                Array.Empty<int>(),
+                Array.Empty<int>(),
+                Array.Empty<int>(),
+                Array.Empty<int>(),
+                Array.Empty<int>());
+
+            var colorClearVertexShader = gd.CompileShader(ShaderStage.Vertex, vertexBindings, ColorClearVertexShaderSource);
+            var colorClearFragmentShader = gd.CompileShader(ShaderStage.Fragment, fragmentBindings2, ColorClearFragmentShaderSource);
+
+            _programColorClear = gd.CreateProgram(new[] { colorClearVertexShader, colorClearFragmentShader }, new ShaderInfo(-1));
         }
 
         public void Blit(
@@ -200,15 +245,70 @@ void main()
 
             scissors[0] = new Rectangle<int>(0, 0, dstWidth, dstHeight);
 
-            _pipeline.SetProgram(clearAlpha ? _programClearAlpha : _programColorBlit);
+            _pipeline.SetProgram(clearAlpha ? _programColorBlitClearAlpha : _programColorBlit);
             _pipeline.SetRenderTarget(dst, (uint)dstWidth, (uint)dstHeight, false, dstFormat);
             _pipeline.SetRenderTargetColorMasks(new uint[] { 0xf });
+            _pipeline.SetScissors(scissors);
 
             if (clearAlpha)
             {
-                _pipeline.ClearRenderTargetColor(0, 0, 0xf, new ColorF(0f, 0f, 0f, 1f));
+                _pipeline.ClearRenderTargetColor(0, 0, new ColorF(0f, 0f, 0f, 1f));
             }
 
+            _pipeline.SetViewports(0, viewports, false);
+            _pipeline.SetPrimitiveTopology(GAL.PrimitiveTopology.TriangleStrip);
+            _pipeline.Draw(4, 1, 0, 0);
+            _pipeline.Finish();
+
+            gd.BufferManager.Delete(bufferHandle);
+        }
+
+        public void Clear(
+            VulkanGraphicsDevice gd,
+            Auto<DisposableImageView> dst,
+            ReadOnlySpan<float> clearColor,
+            uint componentMask,
+            int dstWidth,
+            int dstHeight,
+            VkFormat dstFormat,
+            Rectangle<int> scissor)
+        {
+            gd.FlushAllCommands();
+
+            using var cbs = gd.CommandBufferPool.Rent();
+
+            _pipeline.SetCommandBuffer(cbs);
+
+            const int ClearColorBufferSize = 16;
+
+            var bufferHandle = gd.BufferManager.CreateWithHandle(gd, ClearColorBufferSize, false);
+
+            gd.BufferManager.SetData<float>(bufferHandle, 0, clearColor);
+
+            Span<BufferRange> bufferRanges = stackalloc BufferRange[1];
+
+            bufferRanges[0] = new BufferRange(bufferHandle, 0, ClearColorBufferSize);
+
+            _pipeline.SetUniformBuffers(1, bufferRanges);
+
+            Span<GAL.Viewport> viewports = stackalloc GAL.Viewport[1];
+
+            viewports[0] = new GAL.Viewport(
+                new Rectangle<float>(0, 0, dstWidth, dstHeight),
+                ViewportSwizzle.PositiveX,
+                ViewportSwizzle.PositiveY,
+                ViewportSwizzle.PositiveZ,
+                ViewportSwizzle.PositiveW,
+                0f,
+                1f);
+
+            Span<Rectangle<int>> scissors = stackalloc Rectangle<int>[1];
+
+            scissors[0] = scissor;
+
+            _pipeline.SetProgram(_programColorClear);
+            _pipeline.SetRenderTarget(dst, (uint)dstWidth, (uint)dstHeight, false, dstFormat);
+            _pipeline.SetRenderTargetColorMasks(new uint[] { componentMask });
             _pipeline.SetViewports(0, viewports, false);
             _pipeline.SetScissors(scissors);
             _pipeline.SetPrimitiveTopology(GAL.PrimitiveTopology.TriangleStrip);
@@ -335,7 +435,7 @@ void main()
         {
             if (disposing)
             {
-                _programClearAlpha.Dispose();
+                _programColorBlitClearAlpha.Dispose();
                 _programColorBlit.Dispose();
                 _samplerNearest.Dispose();
                 _samplerLinear.Dispose();
