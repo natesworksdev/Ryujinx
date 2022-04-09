@@ -69,10 +69,13 @@ namespace Ryujinx.Graphics.Vulkan
                 layers,
                 levels);
 
+            uint copySrcLevel = (uint)srcLevel;
+            uint copyDstLevel = (uint)dstLevel;
+
             for (int level = 0; level < levels; level++)
             {
-                var srcSl = new ImageSubresourceLayers(srcAspectFlags, (uint)srcLevel, (uint)srcLayer, (uint)layers);
-                var dstSl = new ImageSubresourceLayers(dstAspectFlags, (uint)dstLevel, (uint)dstLayer, (uint)layers);
+                var srcSl = new ImageSubresourceLayers(srcAspectFlags, copySrcLevel, (uint)srcLayer, (uint)layers);
+                var dstSl = new ImageSubresourceLayers(dstAspectFlags, copyDstLevel, (uint)dstLayer, (uint)layers);
 
                 (srcOffsets.Element0, srcOffsets.Element1) = ExtentsToOffset3D(srcRegion, srcInfo.Width, srcInfo.Height, level);
                 (dstOffsets.Element0, dstOffsets.Element1) = ExtentsToOffset3D(dstRegion, dstInfo.Width, dstInfo.Height, level);
@@ -87,8 +90,8 @@ namespace Ryujinx.Graphics.Vulkan
 
                 api.CmdBlitImage(commandBuffer, srcImage, ImageLayout.General, dstImage, ImageLayout.General, 1, region, filter);
 
-                srcLevel++;
-                dstLevel++;
+                copySrcLevel++;
+                copyDstLevel++;
 
                 if (srcInfo.Target == Target.Texture3D || dstInfo.Target == Target.Texture3D)
                 {
