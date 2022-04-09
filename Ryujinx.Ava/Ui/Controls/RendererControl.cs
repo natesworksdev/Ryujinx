@@ -159,10 +159,8 @@ namespace Ryujinx.Ava.Ui.Controls
 
             if (_fence != IntPtr.Zero)
             {
-                MakeCurrent();
                 _glDrawOperation.Dispose();
                 GL.DeleteSync(_fence);
-                MakeCurrent(null);
             }
 
             if (!OperatingSystem.IsWindows())

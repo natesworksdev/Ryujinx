@@ -391,13 +391,13 @@ namespace Ryujinx.Ava
 
                 Device.DisposeGpu();
 
-                Renderer?.MakeCurrent(null);
-
                 // TODO fix this on wgl
                 if (Renderer != null)
                 {
                     Renderer.DestroyBackgroundContext();
                 }
+
+                Renderer?.MakeCurrent(null);
             });
             thread.Start();
             thread.Join();

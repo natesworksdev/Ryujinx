@@ -260,7 +260,7 @@
                         <TextBlock Text="{locale:Locale IconSize}"
                                    VerticalAlignment="Center" Margin="10,0"
                                    ToolTip.Tip="{locale:Locale IconSizeTooltip}" />
-                        <Slider Width="150" Margin="5,-10,5 ,0" Height="40"
+                        <Slider Width="150" Margin="5,-10,5 ,0" Height="35"
                                 ToolTip.Tip="{locale:Locale IconSizeTooltip}" 
                                 VerticalAlignment="Center" Minimum="1" Maximum="4" IsSnapToTickEnabled="True"
                                 TickFrequency="1" Value="{Binding GridSizeScale}" />

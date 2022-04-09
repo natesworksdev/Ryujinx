@@ -52,22 +52,9 @@ namespace Ryujinx.Ava.Common
 
             if (ResultFs.TargetNotFound.Includes(result))
             {
-                // Savedata was not found. Ask the user if they want to create it
-
-                bool dialogResponse = false;
-
-                Dispatcher.UIThread.InvokeAsync(async () =>
-                {
-                    dialogResponse = await ContentDialogHelper.CreateChoiceDialog(_owner, "Ryujinx", string.Format(LocaleManager.Instance["DialogMessageSaveNotAvailableMessage"], titleName, titleId),
-                        LocaleManager.Instance["DialogMessageSaveNotAvailableCreateSaveMessage"]);
-                }).Wait();
-
-                if (!dialogResponse)
-                {
-                    return false;
-                }
-
                 ref ApplicationControlProperty control = ref controlHolder.Value;
+
+                Logger.Info?.Print(LogClass.Application, $"Creating save directory for Title: {titleName} [{titleId:x16}]");
 
                 if (Utilities.IsZeros(controlHolder.ByteSpan))
                 {
