@@ -38,6 +38,7 @@ namespace Ryujinx.Graphics.Vulkan
         internal bool SupportsCustomBorderColor { get; private set; }
         internal bool SupportsIndirectParameters { get; private set; }
         internal bool SupportsFragmentShaderInterlock { get; private set; }
+        internal bool SupportsSubgroupSizeControl { get; private set; }
 
         internal uint QueueFamilyIndex { get; private set; }
 
@@ -126,6 +127,7 @@ namespace Ryujinx.Graphics.Vulkan
             SupportsCustomBorderColor = supportedExtensions.Contains("VK_EXT_custom_border_color");
             SupportsIndirectParameters = supportedExtensions.Contains(KhrDrawIndirectCount.ExtensionName);
             SupportsFragmentShaderInterlock = supportedExtensions.Contains("VK_EXT_fragment_shader_interlock");
+            SupportsSubgroupSizeControl = supportedExtensions.Contains("VK_EXT_subgroup_size_control");
 
             if (api.TryGetDeviceExtension(_instance, _device, out KhrSwapchain swapchainApi))
             {
