@@ -744,9 +744,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             (var imageType, var imageVariable) = context.Images[new TextureMeta(texOp.CbufSlot, texOp.Handle, texOp.Format)];
 
             var image = context.Load(imageType, imageVariable);
+            var imageComponentType = context.GetType(componentType.Convert());
 
-            var texel = context.ImageRead(context.TypeVector(context.GetType(componentType.Convert()), 4), image, pCoords, ImageOperandsMask.MaskNone);
-            var result = context.CompositeExtract(context.TypeFP32(), texel, (SpvLiteralInteger)texOp.Index);
+            var texel = context.ImageRead(context.TypeVector(imageComponentType, 4), image, pCoords, ImageOperandsMask.MaskNone);
+            var result = context.CompositeExtract(imageComponentType, texel, (SpvLiteralInteger)texOp.Index);
 
             return new OperationResult(componentType.Convert(), result);
         }
