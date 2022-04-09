@@ -188,11 +188,6 @@ namespace Ryujinx.Graphics.Vulkan
             }
             else
             {
-                if (sampler == null)
-                {
-                    return;
-                }
-
                 if (_textures.Length <= binding)
                 {
                     Array.Resize(ref _textures, binding + 1);
@@ -201,7 +196,7 @@ namespace Ryujinx.Graphics.Vulkan
                 }
 
                 _textureRefs[binding] = ((TextureView)texture).GetImageView();
-                _samplerRefs[binding] = ((SamplerHolder)sampler).GetSampler();
+                _samplerRefs[binding] = ((SamplerHolder)sampler)?.GetSampler();
 
                 _textures[binding] = new DescriptorImageInfo()
                 {
@@ -386,9 +381,13 @@ namespace Ryujinx.Graphics.Vulkan
                             texture.Sampler = _samplerRefs[binding + i]?.Get(cbs).Value ?? default;
                             texture.ImageLayout = ImageLayout.General;
 
-                            if (texture.ImageView.Handle == 0 || texture.Sampler.Handle == 0)
+                            if (texture.ImageView.Handle == 0)
                             {
                                 texture.ImageView = _dummyTexture.GetImageView().Get(cbs).Value;
+                            }
+
+                            if (texture.Sampler.Handle == 0)
+                            {
                                 texture.Sampler = _dummySampler.GetSampler().Get(cbs).Value;
                             }
                         }
