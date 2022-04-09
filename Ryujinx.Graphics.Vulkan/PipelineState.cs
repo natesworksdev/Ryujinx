@@ -299,7 +299,7 @@ namespace Ryujinx.Graphics.Vulkan
         public NativeArray<PipelineShaderStageRequiredSubgroupSizeCreateInfoEXT> StageRequiredSubgroupSizes;
         public PipelineLayout PipelineLayout;
 
-        public unsafe void Initialize()
+        public void Initialize()
         {
             Stages = new NativeArray<PipelineShaderStageCreateInfo>(Constants.MaxShaderStages);
             StageRequiredSubgroupSizes = new NativeArray<PipelineShaderStageRequiredSubgroupSizeCreateInfoEXT>(Constants.MaxShaderStages);

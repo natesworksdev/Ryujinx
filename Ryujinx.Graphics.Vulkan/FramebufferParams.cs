@@ -121,14 +121,29 @@ namespace Ryujinx.Graphics.Vulkan
             AttachmentsCount = count;
         }
 
+        public Auto<DisposableImageView> GetAttachment(int index)
+        {
+            if ((uint)index >= _attachments.Length)
+            {
+                return null;
+            }
+
+            return _attachments[index];
+        }
+
         private static bool IsValidTextureView(ITexture texture)
         {
             return texture is TextureView view && view.Valid;
         }
 
-        public ClearRect GetClearRect()
+        public ClearRect GetClearRect(Rectangle<int> scissor)
         {
-            return new ClearRect(new Rect2D(null, new Extent2D(Width, Height)), 0, Layers);
+            int x = scissor.X;
+            int y = scissor.Y;
+            int width = Math.Min((int)Width - scissor.X, scissor.Width);
+            int height = Math.Min((int)Height - scissor.Y, scissor.Height);
+
+            return new ClearRect(new Rect2D(new Offset2D(x, y), new Extent2D((uint)width, (uint)height)), 0, Layers);
         }
 
         public unsafe Auto<DisposableFramebuffer> Create(Vk api, CommandBufferScoped cbs, Auto<DisposableRenderPass> renderPass)

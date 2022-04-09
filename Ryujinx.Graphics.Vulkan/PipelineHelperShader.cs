@@ -3,9 +3,9 @@ using VkFormat = Silk.NET.Vulkan.Format;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    class PipelineBlit : PipelineBase
+    class PipelineHelperShader : PipelineBase
     {
-        public PipelineBlit(VulkanGraphicsDevice gd, Device device) : base(gd, device)
+        public PipelineHelperShader(VulkanGraphicsDevice gd, Device device) : base(gd, device)
         {
         }
 

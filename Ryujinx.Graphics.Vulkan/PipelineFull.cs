@@ -183,6 +183,45 @@ namespace Ryujinx.Graphics.Vulkan
             return layouts;
         }
 
+        public void ClearRenderTargetColor(int index, uint componentMask, ColorF color)
+        {
+            if (FramebufferParams == null)
+            {
+                return;
+            }
+
+            if (componentMask != 0xf)
+            {
+                // We can't use CmdClearAttachments if the clear has a custom scissor or is not writing all components,
+                // because on Vulkan, the pipeline state does not affect clears.
+                var dstTexture = FramebufferParams.GetAttachment(index);
+                if (dstTexture == null)
+                {
+                    return;
+                }
+
+                Span<float> clearColor = stackalloc float[4];
+                clearColor[0] = color.Red;
+                clearColor[1] = color.Green;
+                clearColor[2] = color.Blue;
+                clearColor[3] = color.Alpha;
+
+                Gd.HelperShader.Clear(
+                    Gd,
+                    dstTexture,
+                    clearColor,
+                    componentMask,
+                    (int)FramebufferParams.Width,
+                    (int)FramebufferParams.Height,
+                    FramebufferParams.AttachmentFormats[index],
+                    ClearScissor);
+            }
+            else
+            {
+                ClearRenderTargetColor(index, color);
+            }
+        }
+
         public void EndHostConditionalRendering()
         {
             if (Gd.Capabilities.SupportsConditionalRendering)

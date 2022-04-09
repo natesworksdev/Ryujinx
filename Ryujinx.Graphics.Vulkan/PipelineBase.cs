@@ -52,6 +52,7 @@ namespace Ryujinx.Graphics.Vulkan
         private BufferState _indexBuffer;
         private readonly BufferState[] _transformFeedbackBuffers;
         private readonly BufferState[] _vertexBuffers;
+        protected Rectangle<int> ClearScissor;
 
         public SupportBufferUpdater SupportBufferUpdater;
 
@@ -87,6 +88,8 @@ namespace Ryujinx.Graphics.Vulkan
             emptyVb.SetData(0, new byte[EmptyVbSize]);
             _vertexBuffers[0] = new BufferState(emptyVb.GetBuffer(), 0, EmptyVbSize, 0UL);
             _needsVertexBuffersRebind = true;
+
+            ClearScissor = new Rectangle<int>(0, 0, 0xffff, 0xffff);
 
             var defaultScale = new Vector4<float> { X = 1f, Y = 0f, Z = 0f, W = 0f };
             new Span<Vector4<float>>(_renderScale).Fill(defaultScale);
@@ -140,10 +143,8 @@ namespace Ryujinx.Graphics.Vulkan
             Gd.Api.CmdFillBuffer(CommandBuffer, dst, (ulong)offset, (ulong)size, value);
         }
 
-        public unsafe void ClearRenderTargetColor(int index, uint componentMask, ColorF color)
+        public unsafe void ClearRenderTargetColor(int index, ColorF color)
         {
-            // TODO: Use componentMask
-
             if (_framebuffer == null)
             {
                 return;
@@ -158,7 +159,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             var clearValue = new ClearValue(new ClearColorValue(color.Red, color.Green, color.Blue, color.Alpha));
             var attachment = new ClearAttachment(ImageAspectFlags.ImageAspectColorBit, (uint)index, clearValue);
-            var clearRect = FramebufferParams?.GetClearRect() ?? default;
+            var clearRect = FramebufferParams?.GetClearRect(ClearScissor) ?? default;
 
             Gd.Api.CmdClearAttachments(CommandBuffer, 1, &attachment, 1, &clearRect);
         }
@@ -188,7 +189,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             var attachment = new ClearAttachment(flags, 0, clearValue);
-            var clearRect = FramebufferParams?.GetClearRect() ?? default;
+            var clearRect = FramebufferParams?.GetClearRect(ClearScissor) ?? default;
 
             Gd.Api.CmdClearAttachments(CommandBuffer, 1, &attachment, 1, &clearRect);
         }
@@ -618,6 +619,10 @@ namespace Ryujinx.Graphics.Vulkan
         public void SetScissors(ReadOnlySpan<Rectangle<int>> regions)
         {
             int count = Math.Min(Constants.MaxViewports, regions.Length);
+            if (count > 0)
+            {
+                ClearScissor = regions[0];
+            }
 
             for (int i = 0; i < count; i++)
             {
@@ -1047,7 +1052,6 @@ namespace Ryujinx.Graphics.Vulkan
 
         private void RecreatePipelineIfNeeded(PipelineBindPoint pbp)
         {
-            // Take the opportunity to process any pending work requested by other threads.
             _dynamicState.ReplayIfDirty(Gd.Api, CommandBuffer);
 
             // Commit changes to the support buffer before drawing.
