@@ -41,8 +41,6 @@ namespace Ryujinx.Ava
         public static bool   PreviewerDetached { get; private set; }
         public static AdjustableRenderTimer RenderTimer { get; private set; }
 
-        // NOTE: Initialization code. Don't use any Avalonia, third-party APIs or any SynchronizationContext-reliant code before AppMain is called:
-        //       Things aren't initialized yet and stuff might break.
         public static void Main(string[] args)
         {
             PreviewerDetached = true;
@@ -56,7 +54,6 @@ namespace Ryujinx.Ava
             RenderTimer.Dispose();
         }
 
-        // Avalonia configuration, don't remove; also used by visual designer.
         public static AppBuilder BuildAvaloniaApp()
         {
             bool useVulkan = false;
@@ -68,16 +65,13 @@ namespace Ryujinx.Ava
                     EnableIme = true,
                     UseEGL = false,
                     UseGpu = false,
-                    GlProfiles = new[] { new GlVersion(GlProfileType.OpenGL, 4, 3) }
                 })
                 .With(new Win32PlatformOptions
                 {
                     EnableMultitouch = true,
-                    UseWindowsUIComposition = true,
                     UseWgl = false,
                     AllowEglInitialization = false,
                     CompositionBackdropCornerRadius = 8f,
-                    WglProfiles = new[] { new GlVersion(GlProfileType.OpenGL, 4, 3) }
                 })
                 .UseSkia()
                 .With(new SkiaOptions()

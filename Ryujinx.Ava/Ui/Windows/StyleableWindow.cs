@@ -1,20 +1,11 @@
-﻿using Avalonia;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using Avalonia.Threading;
-using Avalonia.VisualTree;
-using FluentAvalonia.Core.ApplicationModel;
 using FluentAvalonia.UI.Controls;
-using FluentAvalonia.UI.Controls.Primitives;
 using System;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.Ui.Windows
 {
@@ -50,7 +41,7 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             base.OnApplyTemplate(e);
 
-            ExtendClientAreaChromeHints = ExtendClientAreaChromeHints.PreferSystemChrome | ExtendClientAreaChromeHints.OSXThickTitleBar;
+            ExtendClientAreaChromeHints = ExtendClientAreaChromeHints.SystemChrome | ExtendClientAreaChromeHints.OSXThickTitleBar;
         }
     }
 }

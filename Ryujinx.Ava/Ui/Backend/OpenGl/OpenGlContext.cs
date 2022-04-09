@@ -22,7 +22,7 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGl
 
         public OpenGlContext()
         {
-            BaseContext = PlatformHelper.CreateOpenGLContext(OpenGlSurface.GetFramebufferFormat(), 3, 2, OpenGLContextFlags.Compat);
+            BaseContext = PlatformHelper.CreateOpenGLContext(OpenGlSurface.GetFramebufferFormat(), 4, 3, OpenGLContextFlags.Compat);
             BaseContext.Initialize();
         }
 
@@ -50,8 +50,14 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGl
 
         public void ReleaseCurrent()
         {
+            bool isCurrent = BaseContext.IsCurrent;
+
             BaseContext.MakeCurrent(null);
-            Monitor.Exit(BaseContext);
+
+            if (isCurrent)
+            {
+                Monitor.Exit(BaseContext);
+            }
         }
 
 

@@ -53,7 +53,7 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGl
 
             _gpu = AvaloniaLocator.Current.GetService<OpenGlSkiaGpu>();
 
-            var context = PlatformHelper.CreateOpenGLContext(OpenGlSurface.GetFramebufferFormat(), 3, 2, OpenGLContextFlags.Compat);
+            var context = PlatformHelper.CreateOpenGLContext(OpenGlSurface.GetFramebufferFormat(), 4, 3, OpenGLContextFlags.Default);
             context.Initialize(Window);
 
             context.Dispose();

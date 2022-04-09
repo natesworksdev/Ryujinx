@@ -49,8 +49,6 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGl
                         Format = (uint)InternalFormat.Rgba8
                     };
 
-                    GL.GetInteger(GetPName.StencilBits, out var stencil);
-
                      var renderTarget = new GRBackendRenderTarget(session.CurrentSize.Width, session.CurrentSize.Height, 1, 0, imageInfo);
 
                     var surface = SKSurface.Create(GrContext, renderTarget,
