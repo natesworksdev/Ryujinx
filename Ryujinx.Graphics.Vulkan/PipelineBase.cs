@@ -1102,7 +1102,7 @@ namespace Ryujinx.Graphics.Vulkan
                 }
 
                 var pipeline = pbp == PipelineBindPoint.Compute
-                    ? _newState.CreateComputePipeline(Gd.Api, Device, _program, PipelineCache)
+                    ? _newState.CreateComputePipeline(Gd, Device, _program, PipelineCache)
                     : _newState.CreateGraphicsPipeline(Gd, Device, _program, PipelineCache, _renderPass.Get(Cbs).Value);
 
                 ulong pipelineHandle = pipeline.GetUnsafe().Value.Handle;

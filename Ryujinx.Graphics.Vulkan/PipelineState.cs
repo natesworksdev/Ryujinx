@@ -296,18 +296,38 @@ namespace Ryujinx.Graphics.Vulkan
         }
 
         public NativeArray<PipelineShaderStageCreateInfo> Stages;
+        public NativeArray<PipelineShaderStageRequiredSubgroupSizeCreateInfoEXT> StageRequiredSubgroupSizes;
         public PipelineLayout PipelineLayout;
 
-        public void Initialize()
+        public unsafe void Initialize()
         {
             Stages = new NativeArray<PipelineShaderStageCreateInfo>(Constants.MaxShaderStages);
+            StageRequiredSubgroupSizes = new NativeArray<PipelineShaderStageRequiredSubgroupSizeCreateInfoEXT>(Constants.MaxShaderStages);
+
+            for (int index = 0; index < Constants.MaxShaderStages; index++)
+            {
+                StageRequiredSubgroupSizes[index] = new PipelineShaderStageRequiredSubgroupSizeCreateInfoEXT()
+                {
+                    SType = StructureType.PipelineShaderStageRequiredSubgroupSizeCreateInfoExt,
+                    RequiredSubgroupSize = 32
+                };
+            }
         }
 
-        public unsafe Auto<DisposablePipeline> CreateComputePipeline(Vk api, Device device, ShaderCollection program, PipelineCache cache)
+        public unsafe Auto<DisposablePipeline> CreateComputePipeline(
+            VulkanGraphicsDevice gd,
+            Device device,
+            ShaderCollection program,
+            PipelineCache cache)
         {
             if (program.TryGetComputePipeline(out var pipeline))
             {
                 return pipeline;
+            }
+
+            if (gd.SupportsSubgroupSizeControl)
+            {
+                UpdateStageRequiredSubgroupSizes(1);
             }
 
             var pipelineCreateInfo = new ComputePipelineCreateInfo()
@@ -320,9 +340,9 @@ namespace Ryujinx.Graphics.Vulkan
 
             Pipeline pipelineHandle = default;
 
-            api.CreateComputePipelines(device, cache, 1, &pipelineCreateInfo, null, &pipelineHandle).ThrowOnError();
+            gd.Api.CreateComputePipelines(device, cache, 1, &pipelineCreateInfo, null, &pipelineHandle).ThrowOnError();
 
-            pipeline = new Auto<DisposablePipeline>(new DisposablePipeline(api, device, pipelineHandle));
+            pipeline = new Auto<DisposablePipeline>(new DisposablePipeline(gd.Api, device, pipelineHandle));
 
             program.AddComputePipeline(pipeline);
 
@@ -494,6 +514,11 @@ namespace Ryujinx.Graphics.Vulkan
                     pDynamicState = &pipelineDynamicStateCreateInfo;
                 }
 
+                if (gd.SupportsSubgroupSizeControl)
+                {
+                    UpdateStageRequiredSubgroupSizes((int)StagesCount);
+                }
+
                 var pipelineCreateInfo = new GraphicsPipelineCreateInfo()
                 {
                     SType = StructureType.GraphicsPipelineCreateInfo,
@@ -523,9 +548,18 @@ namespace Ryujinx.Graphics.Vulkan
             return pipeline;
         }
 
+        private unsafe void UpdateStageRequiredSubgroupSizes(int count)
+        {
+            for (int index = 0; index < count; index++)
+            {
+                Stages[index].PNext = StageRequiredSubgroupSizes.Pointer + index;
+            }
+        }
+
         public void Dispose()
         {
             Stages.Dispose();
+            StageRequiredSubgroupSizes.Dispose();
         }
     }
 }
