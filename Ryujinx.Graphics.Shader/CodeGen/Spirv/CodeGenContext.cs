@@ -326,16 +326,28 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             var elemPointer = GetAttributeElemPointer(attr, isOutAttr, index, out var elemType);
             var value = Load(GetType(elemType), elemPointer);
 
-            if (Config.Stage == ShaderStage.Fragment && (attr == AttributeConsts.PositionX || attr == AttributeConsts.PositionY))
+            if (Config.Stage == ShaderStage.Fragment)
             {
-                var pointerType = TypePointer(StorageClass.Uniform, TypeFP32());
-                var fieldIndex = Constant(TypeU32(), 3);
-                var scaleIndex = Constant(TypeU32(), 0);
+                if (attr == AttributeConsts.PositionX || attr == AttributeConsts.PositionY)
+                {
+                    var pointerType = TypePointer(StorageClass.Uniform, TypeFP32());
+                    var fieldIndex = Constant(TypeU32(), 3);
+                    var scaleIndex = Constant(TypeU32(), 0);
 
-                var scaleElemPointer = AccessChain(pointerType, SupportBuffer, fieldIndex, scaleIndex);
-                var scale = Load(TypeFP32(), scaleElemPointer);
+                    var scaleElemPointer = AccessChain(pointerType, SupportBuffer, fieldIndex, scaleIndex);
+                    var scale = Load(TypeFP32(), scaleElemPointer);
 
-                value = FDiv(TypeFP32(), value, scale);
+                    value = FDiv(TypeFP32(), value, scale);
+                }
+                else if (attr == AttributeConsts.FrontFacing && Config.GpuAccessor.QueryHostHasFrontFacingBug())
+                {
+                    // Workaround for what appears to be a bug on Intel compiler.
+                    var valueFloat = Select(TypeFP32(), value, Constant(TypeFP32(), 1f), Constant(TypeFP32(), 0f));
+                    var valueAsInt = Bitcast(TypeS32(), valueFloat);
+                    var valueNegated = SNegate(TypeS32(), valueAsInt);
+
+                    value = SLessThan(TypeBool(), valueNegated, Constant(TypeS32(), 0));
+                }
             }
 
             return BitcastIfNeeded(type, elemType, value);
