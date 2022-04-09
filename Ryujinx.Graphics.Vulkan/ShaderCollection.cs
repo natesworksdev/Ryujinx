@@ -216,7 +216,8 @@ namespace Ryujinx.Graphics.Vulkan
             pipeline.Stages[0] = ((Shader)_shaders[0]).GetInfo();
             pipeline.StagesCount = 1;
 
-            pipeline.CreateComputePipeline(_gd.Api, _device, this, (_gd.Pipeline as PipelineBase).PipelineCache);
+            pipeline.CreateComputePipeline(_gd, _device, this, (_gd.Pipeline as PipelineBase).PipelineCache);
+            pipeline.Dispose();
         }
 
         public void CreateBackgroundGraphicsPipeline()
@@ -244,6 +245,7 @@ namespace Ryujinx.Graphics.Vulkan
             pipeline.PipelineLayout = PipelineLayout;
 
             pipeline.CreateGraphicsPipeline(_gd, _device, this, (_gd.Pipeline as PipelineBase).PipelineCache, renderPass.Value);
+            pipeline.Dispose();
         }
 
         public ProgramLinkStatus CheckProgramLink(bool blocking)

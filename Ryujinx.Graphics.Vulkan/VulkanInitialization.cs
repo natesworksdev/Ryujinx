@@ -33,6 +33,7 @@ namespace Ryujinx.Graphics.Vulkan
             "VK_EXT_index_type_uint8",
             "VK_EXT_robustness2",
             "VK_EXT_shader_subgroup_ballot",
+            "VK_EXT_subgroup_size_control",
             "VK_NV_geometry_shader_passthrough"
         };
 
@@ -351,53 +352,94 @@ namespace Ryujinx.Graphics.Vulkan
                 VertexPipelineStoresAndAtomics = true
             };
 
-            var featuresIndexU8 = new PhysicalDeviceIndexTypeUint8FeaturesEXT()
-            {
-                SType = StructureType.PhysicalDeviceIndexTypeUint8FeaturesExt,
-                IndexTypeUint8 = true
-            };
+            void* pExtendedFeatures = null;
 
             var featuresTransformFeedback = new PhysicalDeviceTransformFeedbackFeaturesEXT()
             {
                 SType = StructureType.PhysicalDeviceTransformFeedbackFeaturesExt,
-                PNext = supportedExtensions.Contains("VK_EXT_index_type_uint8") ? &featuresIndexU8 : null,
+                PNext = pExtendedFeatures,
                 TransformFeedback = true
             };
+
+            pExtendedFeatures = &featuresTransformFeedback;
 
             var featuresRobustness2 = new PhysicalDeviceRobustness2FeaturesEXT()
             {
                 SType = StructureType.PhysicalDeviceRobustness2FeaturesExt,
-                PNext = &featuresTransformFeedback,
+                PNext = pExtendedFeatures,
                 NullDescriptor = true
             };
+
+            pExtendedFeatures = &featuresRobustness2;
 
             var featuresExtendedDynamicState = new PhysicalDeviceExtendedDynamicStateFeaturesEXT()
             {
                 SType = StructureType.PhysicalDeviceExtendedDynamicStateFeaturesExt,
-                PNext = &featuresRobustness2,
+                PNext = pExtendedFeatures,
                 ExtendedDynamicState = supportedExtensions.Contains(ExtExtendedDynamicState.ExtensionName)
             };
+
+            pExtendedFeatures = &featuresExtendedDynamicState;
 
             var featuresVk11 = new PhysicalDeviceVulkan11Features()
             {
                 SType = StructureType.PhysicalDeviceVulkan11Features,
-                PNext = &featuresExtendedDynamicState,
+                PNext = pExtendedFeatures,
                 ShaderDrawParameters = true
             };
+
+            pExtendedFeatures = &featuresVk11;
 
             var featuresVk12 = new PhysicalDeviceVulkan12Features()
             {
                 SType = StructureType.PhysicalDeviceVulkan12Features,
-                PNext = &featuresVk11,
+                PNext = pExtendedFeatures,
                 DrawIndirectCount = supportedExtensions.Contains(KhrDrawIndirectCount.ExtensionName)
             };
 
-            var featuresFragmentShaderInterlock = new PhysicalDeviceFragmentShaderInterlockFeaturesEXT()
+            pExtendedFeatures = &featuresVk12;
+
+            PhysicalDeviceIndexTypeUint8FeaturesEXT featuresIndexU8;
+
+            if (supportedExtensions.Contains("VK_EXT_index_type_uint8"))
             {
-                SType = StructureType.PhysicalDeviceFragmentShaderInterlockFeaturesExt,
-                PNext = &featuresVk12,
-                FragmentShaderPixelInterlock = true
-            };
+                featuresIndexU8 = new PhysicalDeviceIndexTypeUint8FeaturesEXT()
+                {
+                    SType = StructureType.PhysicalDeviceIndexTypeUint8FeaturesExt,
+                    PNext = pExtendedFeatures,
+                    IndexTypeUint8 = true
+                };
+
+                pExtendedFeatures = &featuresIndexU8;
+            }
+
+            PhysicalDeviceFragmentShaderInterlockFeaturesEXT featuresFragmentShaderInterlock;
+
+            if (supportedExtensions.Contains("VK_EXT_fragment_shader_interlock"))
+            {
+                featuresFragmentShaderInterlock = new PhysicalDeviceFragmentShaderInterlockFeaturesEXT()
+                {
+                    SType = StructureType.PhysicalDeviceFragmentShaderInterlockFeaturesExt,
+                    PNext = pExtendedFeatures,
+                    FragmentShaderPixelInterlock = true
+                };
+
+                pExtendedFeatures = &featuresFragmentShaderInterlock;
+            }
+
+            PhysicalDeviceSubgroupSizeControlFeaturesEXT featuresSubgroupSizeControl;
+
+            if (supportedExtensions.Contains("VK_EXT_subgroup_size_control"))
+            {
+                featuresSubgroupSizeControl = new PhysicalDeviceSubgroupSizeControlFeaturesEXT()
+                {
+                    SType = StructureType.PhysicalDeviceSubgroupSizeControlFeaturesExt,
+                    PNext = pExtendedFeatures,
+                    SubgroupSizeControl = true
+                };
+
+                pExtendedFeatures = &featuresSubgroupSizeControl;
+            }
 
             var enabledExtensions = _requiredExtensions.Union(_desirableExtensions.Intersect(supportedExtensions)).ToArray();
 
@@ -411,7 +453,7 @@ namespace Ryujinx.Graphics.Vulkan
             var deviceCreateInfo = new DeviceCreateInfo()
             {
                 SType = StructureType.DeviceCreateInfo,
-                PNext = supportedExtensions.Contains("VK_EXT_fragment_shader_interlock") ? &featuresFragmentShaderInterlock : &featuresVk12,
+                PNext = pExtendedFeatures,
                 QueueCreateInfoCount = 1,
                 PQueueCreateInfos = &queueCreateInfo,
                 PpEnabledExtensionNames = (byte**)ppEnabledExtensions,
