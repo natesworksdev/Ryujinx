@@ -90,11 +90,6 @@ namespace Ryujinx.Graphics.Vulkan
 
             var flags = ImageCreateFlags.ImageCreateMutableFormatBit;
 
-            if (info.BlockWidth != 1 || info.BlockHeight != 1)
-            {
-                flags |= ImageCreateFlags.ImageCreateBlockTexelViewCompatibleBit;
-            }
-
             bool cubeCompatible = info.Width == info.Height && layers >= 6;
 
             if (type == ImageType.ImageType2D && cubeCompatible)
