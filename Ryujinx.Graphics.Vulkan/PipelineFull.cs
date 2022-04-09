@@ -192,7 +192,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (componentMask != 0xf)
             {
-                // We can't use CmdClearAttachments if the clear has a custom scissor or is not writing all components,
+                // We can't use CmdClearAttachments if not writing all components,
                 // because on Vulkan, the pipeline state does not affect clears.
                 var dstTexture = FramebufferParams.GetAttachment(index);
                 if (dstTexture == null)

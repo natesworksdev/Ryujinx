@@ -140,7 +140,29 @@ namespace Ryujinx.Graphics.Vulkan
 
             var dst = Gd.BufferManager.GetBuffer(CommandBuffer, destination, true).Get(Cbs, offset, size).Value;
 
+            BufferHolder.InsertBufferBarrier(
+                Gd,
+                Cbs.CommandBuffer,
+                dst,
+                BufferHolder.DefaultAccessFlags,
+                AccessFlags.AccessTransferWriteBit,
+                PipelineStageFlags.PipelineStageAllCommandsBit,
+                PipelineStageFlags.PipelineStageTransferBit,
+                offset,
+                size);
+
             Gd.Api.CmdFillBuffer(CommandBuffer, dst, (ulong)offset, (ulong)size, value);
+
+            BufferHolder.InsertBufferBarrier(
+                Gd,
+                Cbs.CommandBuffer,
+                dst,
+                AccessFlags.AccessTransferWriteBit,
+                BufferHolder.DefaultAccessFlags,
+                PipelineStageFlags.PipelineStageTransferBit,
+                PipelineStageFlags.PipelineStageAllCommandsBit,
+                offset,
+                size);
         }
 
         public unsafe void ClearRenderTargetColor(int index, ColorF color)
