@@ -17,7 +17,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
     {
         public const int ShaderStateIndex = 16;
         public const int RasterizerStateIndex = 15;
-        public const int ScissorStateIndex = 17;
+        public const int ScissorStateIndex = 18;
         public const int VertexBufferStateIndex = 0;
         public const int PrimitiveRestartStateIndex = 12;
 
