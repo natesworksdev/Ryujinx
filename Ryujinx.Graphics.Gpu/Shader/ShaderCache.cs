@@ -688,7 +688,9 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
         private static TranslationOptions CreateTranslationOptions(TargetApi api, TranslationFlags flags)
         {
-            TargetLanguage lang = GraphicsConfig.EnableSpirvCompilation ? TargetLanguage.Spirv : TargetLanguage.Glsl;
+            TargetLanguage lang = GraphicsConfig.EnableSpirvCompilationOnVulkan && api == TargetApi.Vulkan
+                ? TargetLanguage.Spirv
+                : TargetLanguage.Glsl;
 
             return new TranslationOptions(lang, api, flags);
         }
