@@ -12,20 +12,22 @@ namespace Ryujinx.Common.System
         [DllImport("user32.dll")]
         private static extern bool SetProcessDPIAware();
 
-        [DllImport("libX11.so.6")]
-        public static extern IntPtr XOpenDisplay(string display);
+        private const string X11LibraryName = "libX11.so.6";
 
-        [DllImport("libX11.so.6")]
-        public static extern IntPtr XGetDefault(IntPtr display, string program, string option);
+        [DllImport(X11LibraryName)]
+        private static extern IntPtr XOpenDisplay(string display);
 
-        [DllImport("libX11.so.6")]
-        public static extern int XDisplayWidth(IntPtr display, int screenNumber);
+        [DllImport(X11LibraryName)]
+        private static extern IntPtr XGetDefault(IntPtr display, string program, string option);
 
-        [DllImport("libX11.so.6")]
-        public static extern int XDisplayWidthMM(IntPtr display, int screenNumber);
+        [DllImport(X11LibraryName)]
+        private static extern int XDisplayWidth(IntPtr display, int screenNumber);
 
-        [DllImport("libX11.so.6")]
-        public static extern int XCloseDisplay(IntPtr display);
+        [DllImport(X11LibraryName)]
+        private static extern int XDisplayWidthMM(IntPtr display, int screenNumber);
+
+        [DllImport(X11LibraryName)]
+        private static extern int XCloseDisplay(IntPtr display);
 
         private static readonly double _standardDpiScale = 96.0;
         private static readonly double _maxScaleFactor   = 1.25;
@@ -54,7 +56,7 @@ namespace Ryujinx.Common.System
                 }
                 else if (OperatingSystem.IsLinux())
                 {
-                    string xdgSessionType = Environment.GetEnvironmentVariable("XDG_SESSION_TYPE");
+                    string xdgSessionType = Environment.GetEnvironmentVariable("XDG_SESSION_TYPE")?.ToLower();
 
                     if (xdgSessionType == null || xdgSessionType == "x11")
                     {
@@ -69,6 +71,7 @@ namespace Ryujinx.Common.System
                     else if (xdgSessionType == "wayland")
                     {
                         // TODO
+                        Logger.Warning?.Print(LogClass.Application, $"Couldn't determine monitor DPI: Wayland not yet supported");
                     }
                     else
                     {
