@@ -305,18 +305,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 return gpShaders;
             }
 
-            AttributeType[] attributeTypes = new AttributeType[32];
-
-            for (int location = 0; location < attributeTypes.Length; location++)
-            {
-                attributeTypes[location] = state.VertexAttribState[location].UnpackType() switch
-                {
-                    3 => AttributeType.Sint,
-                    4 => AttributeType.Uint,
-                    _ => AttributeType.Float
-                };
-            }
-
             TransformFeedbackDescriptor[] transformFeedbackDescriptors = GetTransformFeedbackDescriptors(ref state);
 
             ShaderSpecializationState specState = new ShaderSpecializationState(graphicsState, transformFeedbackDescriptors);
@@ -335,7 +323,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
                 if (gpuVa != 0)
                 {
-                    GpuAccessor gpuAccessor = new GpuAccessor(_context, channel, gpuAccessorState, attributeTypes, stageIndex);
+                    GpuAccessor gpuAccessor = new GpuAccessor(_context, channel, gpuAccessorState, stageIndex);
                     TranslatorContext currentStage = DecodeGraphicsShader(gpuAccessor, api, DefaultFlags, gpuVa);
 
                     if (nextStage != null)
