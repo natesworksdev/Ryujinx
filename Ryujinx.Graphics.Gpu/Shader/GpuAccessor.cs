@@ -15,7 +15,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
     {
         private readonly GpuChannel _channel;
         private readonly GpuAccessorState _state;
-        private readonly AttributeType[] _attributeTypes;
         private readonly int _stageIndex;
         private readonly bool _compute;
         private readonly bool _isVulkan;
@@ -26,19 +25,16 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <param name="context">GPU context</param>
         /// <param name="channel">GPU channel</param>
         /// <param name="state">Current GPU state</param>
-        /// <param name="attributeTypes">Type of the vertex attributes consumed by the shader</param>
         /// <param name="stageIndex">Graphics shader stage index (0 = Vertex, 4 = Fragment)</param>
         public GpuAccessor(
             GpuContext context,
             GpuChannel channel,
             GpuAccessorState state,
-            AttributeType[] attributeTypes,
             int stageIndex) : base(context, state.ResourceCounts, stageIndex)
         {
             _isVulkan = context.Capabilities.Api == TargetApi.Vulkan;
             _channel = channel;
             _state = state;
-            _attributeTypes = attributeTypes;
             _stageIndex = stageIndex;
         }
 
@@ -108,12 +104,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <inheritdoc/>
         public AttributeType QueryAttributeType(int location)
         {
-            if (_attributeTypes != null)
-            {
-                return _attributeTypes[location];
-            }
-
-            return AttributeType.Float;
+            return _state.GraphicsState.AttributeTypes[location];
         }
 
         /// <inheritdoc/>

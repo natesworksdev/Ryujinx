@@ -163,6 +163,8 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
                             _ => PrimitiveTopology.Points
                         };
 
+                        Array32<AttributeType> attributeTypes = default;
+
                         GpuChannelGraphicsState graphicsState = new GpuChannelGraphicsState(
                             accessorHeader.StateFlags.HasFlag(GuestGpuStateFlags.EarlyZForce),
                             topology,
@@ -173,7 +175,8 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
                             1f,
                             false,
                             CompareOp.Always,
-                            0f);
+                            0f,
+                            ref attributeTypes);
 
                         TransformFeedbackDescriptor[] tfdNew = null;
 
