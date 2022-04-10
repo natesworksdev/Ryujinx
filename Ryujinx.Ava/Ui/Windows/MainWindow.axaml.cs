@@ -253,9 +253,6 @@ namespace Ryujinx.Ava.Ui.Windows
 
             PrepareLoadScreen();
 
-            ViewModel.LoadHeading = string.IsNullOrWhiteSpace(titleName) ? $"Loading {ViewModel.SelectedApplication.TitleName}" : titleName;
-            ViewModel.TitleName = string.IsNullOrWhiteSpace(titleName) ? ViewModel.SelectedApplication.TitleName : titleName;
-
             _mainViewContent = ContentFrame.Content as Control;
 
             GlRenderer = new RendererControl(3, 3, ConfigurationState.Instance.Logger.GraphicsDebugLevel);
@@ -267,6 +264,9 @@ namespace Ryujinx.Ava.Ui.Windows
 
                 return;
             }
+
+            ViewModel.LoadHeading = string.IsNullOrWhiteSpace(titleName) ? $"Loading {AppHost.Device.Application.TitleName}" : titleName;
+            ViewModel.TitleName = string.IsNullOrWhiteSpace(titleName) ? AppHost.Device.Application.TitleName : titleName;
 
             SwitchToGameControl(startFullscreen);
 
@@ -462,9 +462,7 @@ namespace Ryujinx.Ava.Ui.Windows
             {
                 _deferLoad = false;
 
-                string name = new FileInfo(_launchPath).Name;
-
-                LoadApplication(_launchPath, _startFullscreen, name);
+                LoadApplication(_launchPath, _startFullscreen);
             }
 
             if (ConfigurationState.Instance.CheckUpdatesOnStart.Value && Updater.CanUpdate(false, this))

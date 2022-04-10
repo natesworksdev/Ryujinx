@@ -815,9 +815,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
             if (files != null && files.Length > 0)
             {
-                string name = new FileInfo(files[0]).Name;
-
-                _owner.LoadApplication(files[0], titleName: name);
+                _owner.LoadApplication(files[0]);
             }
         }
 
@@ -832,9 +830,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
             if (!string.IsNullOrWhiteSpace(folder) && Directory.Exists(folder))
             {
-                string name = new DirectoryInfo(folder).Name;
-
-                _owner.LoadApplication(folder, titleName: name);
+                _owner.LoadApplication(folder);
             }
         }
 
