@@ -35,15 +35,15 @@ namespace Ryujinx.Graphics.Vulkan
             switch (mode)
             {
                 case AddressMode.Clamp:
-                    return SamplerAddressMode.ClampToBorder; // TODO: Should be clamp
+                    return SamplerAddressMode.ClampToEdge; // TODO: Should be clamp.
                 case AddressMode.Repeat:
                     return SamplerAddressMode.Repeat;
                 case AddressMode.MirrorClamp:
-                    return SamplerAddressMode.ClampToBorder; // TODO: Should be mirror clamp
+                    return SamplerAddressMode.ClampToEdge; // TODO: Should be mirror clamp.
                 case AddressMode.MirrorClampToEdge:
                     return SamplerAddressMode.MirrorClampToEdgeKhr;
                 case AddressMode.MirrorClampToBorder:
-                    return SamplerAddressMode.ClampToBorder; // TODO: Should be mirror clamp to border
+                    return SamplerAddressMode.ClampToBorder; // TODO: Should be mirror clamp to border.
                 case AddressMode.ClampToBorder:
                     return SamplerAddressMode.ClampToBorder;
                 case AddressMode.MirroredRepeat:
@@ -54,7 +54,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(AddressMode)} enum value: {mode}.");
 
-            return SamplerAddressMode.ClampToBorder; // TODO: Should be clamp
+            return SamplerAddressMode.ClampToEdge; // TODO: Should be clamp.
         }
 
         public static Silk.NET.Vulkan.BlendFactor Convert(this GAL.BlendFactor factor)
