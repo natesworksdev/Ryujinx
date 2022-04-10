@@ -56,7 +56,6 @@ namespace Ryujinx.Ava
 
         public static AppBuilder BuildAvaloniaApp()
         {
-            bool useVulkan = false;
             return AppBuilder.Configure<App>()
                 .UsePlatformDetect()
                 .With(new X11PlatformOptions
@@ -76,7 +75,7 @@ namespace Ryujinx.Ava
                 .UseSkia()
                 .With(new SkiaOptions()
                 {
-                    CustomGpuFactory = useVulkan ? SkiaGpuFactory.CreateVulkanGpu : SkiaGpuFactory.CreateOpenGlGpu
+                    CustomGpuFactory = SkiaGpuFactory.CreateOpenGlGpu
                 })
                 .AfterSetup(_ =>
                 {
