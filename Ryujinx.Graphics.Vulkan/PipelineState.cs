@@ -5,6 +5,8 @@ namespace Ryujinx.Graphics.Vulkan
 {
     struct PipelineState : IDisposable
     {
+        private const int RequiredSubgroupSize = 32;
+
         public PipelineUid Internal;
 
         public float LineWidth
@@ -321,7 +323,7 @@ namespace Ryujinx.Graphics.Vulkan
                 StageRequiredSubgroupSizes[index] = new PipelineShaderStageRequiredSubgroupSizeCreateInfoEXT()
                 {
                     SType = StructureType.PipelineShaderStageRequiredSubgroupSizeCreateInfoExt,
-                    RequiredSubgroupSize = 32
+                    RequiredSubgroupSize = RequiredSubgroupSize
                 };
             }
         }
@@ -339,7 +341,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (gd.SupportsSubgroupSizeControl)
             {
-                UpdateStageRequiredSubgroupSizes(1);
+                UpdateStageRequiredSubgroupSizes(gd, 1);
             }
 
             var pipelineCreateInfo = new ComputePipelineCreateInfo()
@@ -530,7 +532,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (gd.SupportsSubgroupSizeControl)
                 {
-                    UpdateStageRequiredSubgroupSizes((int)StagesCount);
+                    UpdateStageRequiredSubgroupSizes(gd, (int)StagesCount);
                 }
 
                 var pipelineCreateInfo = new GraphicsPipelineCreateInfo()
@@ -562,11 +564,16 @@ namespace Ryujinx.Graphics.Vulkan
             return pipeline;
         }
 
-        private unsafe void UpdateStageRequiredSubgroupSizes(int count)
+        private unsafe void UpdateStageRequiredSubgroupSizes(VulkanGraphicsDevice gd, int count)
         {
             for (int index = 0; index < count; index++)
             {
-                Stages[index].PNext = StageRequiredSubgroupSizes.Pointer + index;
+                bool canUseExplicitSubgroupSize =
+                    (gd.Capabilities.RequiredSubgroupSizeStages & Stages[index].Stage) != 0 &&
+                    gd.Capabilities.MinSubgroupSize <= RequiredSubgroupSize &&
+                    gd.Capabilities.MaxSubgroupSize >= RequiredSubgroupSize;
+
+                Stages[index].PNext = canUseExplicitSubgroupSize ? StageRequiredSubgroupSizes.Pointer + index : null;
             }
         }
 
