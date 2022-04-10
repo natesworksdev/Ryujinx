@@ -330,6 +330,8 @@ namespace Ryujinx.Graphics.Vulkan
                 PQueuePriorities = queuePriorities
             };
 
+            var supportedFeatures = api.GetPhysicalDeviceFeature(physicalDevice);
+
             var features = new PhysicalDeviceFeatures()
             {
                 DepthBiasClamp = true,
@@ -344,7 +346,7 @@ namespace Ryujinx.Graphics.Vulkan
                 PipelineStatisticsQuery = true,
                 SamplerAnisotropy = true,
                 ShaderClipDistance = true,
-                ShaderFloat64 = true,
+                ShaderFloat64 = supportedFeatures.ShaderFloat64,
                 ShaderImageGatherExtended = true,
                 // ShaderStorageImageReadWithoutFormat = true,
                 // ShaderStorageImageWriteWithoutFormat = true,
