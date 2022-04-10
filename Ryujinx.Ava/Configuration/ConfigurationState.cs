@@ -108,7 +108,7 @@ namespace Ryujinx.Configuration
             /// <summary>
             /// View Mode of the Game list
             /// </summary>
-            public ReactiveObject<Glyph> GameListViewMode { get; private set; }
+            public ReactiveObject<int> GameListViewMode { get; private set; }
 
             /// <summary>
             /// Show application name in Grid Mode
@@ -123,7 +123,7 @@ namespace Ryujinx.Configuration
             /// <summary>
             /// Sorts Apps in Grid Mode
             /// </summary>
-            public ReactiveObject<ApplicationSort> ApplicationSort { get; private set; }
+            public ReactiveObject<int> ApplicationSort { get; private set; }
 
             /// <summary>
             /// Sets if Grid is ordered in Ascending Order
@@ -139,10 +139,10 @@ namespace Ryujinx.Configuration
                 CustomThemePath   = new ReactiveObject<string>();
                 BaseStyle         = new ReactiveObject<string>();
                 StartFullscreen   = new ReactiveObject<bool>();
-                GameListViewMode  = new ReactiveObject<Glyph>();
+                GameListViewMode  = new ReactiveObject<int>();
                 ShowNames         = new ReactiveObject<bool>();
                 GridSize          = new ReactiveObject<int>();
-                ApplicationSort   = new ReactiveObject<ApplicationSort>();
+                ApplicationSort   = new ReactiveObject<int>();
                 IsAscendingOrder  = new ReactiveObject<bool>();
                 LanguageCode      = new ReactiveObject<string>();
                 ShowConsole       = new ReactiveObject<bool>();
@@ -634,10 +634,10 @@ namespace Ryujinx.Configuration
             Ui.LanguageCode.Value                  = "en_US";
             Ui.CustomThemePath.Value               = "";
             Ui.BaseStyle.Value                     = "Dark";
-            Ui.GameListViewMode.Value              = Glyph.List;
+            Ui.GameListViewMode.Value              = (int)Glyph.List;
             Ui.ShowNames.Value                     = true;
             Ui.GridSize.Value                      = 2;
-            Ui.ApplicationSort.Value               = ApplicationSort.Favorite;
+            Ui.ApplicationSort.Value               = (int)ApplicationSort.Favorite;
             Ui.IsAscendingOrder.Value              = true;
             Ui.StartFullscreen.Value               = false;
             Ui.ShowConsole.Value                   = true;
@@ -1085,10 +1085,10 @@ namespace Ryujinx.Configuration
 
             if (configurationFileFormat.Version < 38)
             {
-                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 37.");
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 38.");
 
                 configurationFileFormat.BaseStyle        = "Dark";
-                configurationFileFormat.GameListViewMode = Glyph.List;
+                configurationFileFormat.GameListViewMode = (int)Glyph.List;
                 configurationFileFormat.ShowNames        = true;
                 configurationFileFormat.GridSize         = 2;
                 configurationFileFormat.LanguageCode     = "en_US";

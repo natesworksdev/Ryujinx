@@ -14,7 +14,7 @@ namespace Ryujinx.Configuration
         /// <summary>
         /// The current version of the file format
         /// </summary>
-        public const int CurrentVersion = 37;
+        public const int CurrentVersion = 38;
 
         /// <summary>
         /// Version of the configuration file format
@@ -80,7 +80,7 @@ namespace Ryujinx.Configuration
         /// Enables printing error log messages
         /// </summary>
         public bool LoggingEnableError { get; set; }
-
+        
         /// <summary>
         /// Enables printing trace log messages
         /// </summary>
@@ -105,6 +105,7 @@ namespace Ryujinx.Configuration
         /// Change Graphics API debug log level
         /// </summary>
         public GraphicsDebugLevel LoggingGraphicsDebugLevel { get; set; }
+
 
         /// <summary>
         /// Change System Language
@@ -222,6 +223,11 @@ namespace Ryujinx.Configuration
         public List<string> GameDirs { get; set; }
 
         /// <summary>
+        /// Language Code for the UI
+        /// </summary>
+        public string LanguageCode { get; set; }
+
+        /// <summary>
         /// Enable or disable custom themes in the GUI
         /// </summary>
         public bool EnableCustomTheme { get; set; }
@@ -230,6 +236,37 @@ namespace Ryujinx.Configuration
         /// Path to custom GUI theme
         /// </summary>
         public string CustomThemePath { get; set; }
+
+        /// <summary>
+        /// Chooses the base style // Not Used
+        /// </summary>
+        public string BaseStyle { get; set; }
+
+        /// <summary>
+        /// Chooses the view mode of the game list // Not Used
+        /// </summary>
+        public int GameListViewMode { get; set; }
+
+        /// <summary>
+        /// Show application name in Grid Mode // Not Used
+        /// </summary>
+        public bool ShowNames { get; set; }
+
+
+        /// <summary>
+        /// Sets App Icon Size // Not Used
+        /// </summary>
+        public int GridSize { get; set; }
+
+        /// <summary>
+        /// Sorts Apps in the game list // Not Used
+        /// </summary>
+        public int ApplicationSort { get; set; }
+
+        /// <summary>
+        /// Sets if Grid is ordered in Ascending Order // Not Used
+        /// </summary>
+        public bool IsAscendingOrder { get; set; }
 
         /// <summary>
         /// Start games in fullscreen mode

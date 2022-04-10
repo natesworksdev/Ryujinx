@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
 using Ryujinx.Ava.Common;
-using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Logging;
@@ -245,9 +244,9 @@ namespace Ryujinx.Configuration
         public string BaseStyle { get; set; }
 
         /// <summary>
-        /// Chooses the base style
+        /// Chooses the view mode of the game list
         /// </summary>
-        public Glyph GameListViewMode { get; set; }
+        public int GameListViewMode { get; set; }
 
         /// <summary>
         /// Show application name in Grid Mode
@@ -256,14 +255,14 @@ namespace Ryujinx.Configuration
 
 
         /// <summary>
-        /// Sets App Icon Size in Grid Mode
+        /// Sets App Icon Size
         /// </summary>
         public int GridSize { get; set; }
 
         /// <summary>
-        /// Sorts Apps in Grid Mode
+        /// Sorts Apps in the game list
         /// </summary>
-        public ApplicationSort ApplicationSort { get; set; }
+        public int ApplicationSort { get; set; }
 
         /// <summary>
         /// Sets if Grid is ordered in Ascending Order

@@ -546,10 +546,10 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public Glyph Glyph
         {
-            get => ConfigurationState.Instance.Ui.GameListViewMode;
+            get =>(Glyph)ConfigurationState.Instance.Ui.GameListViewMode.Value;
             set
             {
-                ConfigurationState.Instance.Ui.GameListViewMode.Value = value;
+                ConfigurationState.Instance.Ui.GameListViewMode.Value = (int)value;
 
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(IsGrid));
@@ -575,10 +575,10 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public ApplicationSort SortMode
         {
-            get => ConfigurationState.Instance.Ui.ApplicationSort;
+            get => (ApplicationSort)ConfigurationState.Instance.Ui.ApplicationSort.Value;
             private set
             {
-                ConfigurationState.Instance.Ui.ApplicationSort.Value = value;
+                ConfigurationState.Instance.Ui.ApplicationSort.Value = (int)value;
 
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(SortName));

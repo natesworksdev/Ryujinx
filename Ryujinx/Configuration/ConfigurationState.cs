@@ -75,6 +75,11 @@ namespace Ryujinx.Configuration
             public ReactiveObject<List<string>> GameDirs { get; private set; }
 
             /// <summary>
+            /// Language Code for the UI
+            /// </summary>
+            public ReactiveObject<string> LanguageCode { get; private set; }
+
+            /// <summary>
             /// Enable or disable custom themes in the GUI
             /// </summary>
             public ReactiveObject<bool> EnableCustomTheme { get; private set; }
@@ -83,6 +88,11 @@ namespace Ryujinx.Configuration
             /// Path to custom GUI theme
             /// </summary>
             public ReactiveObject<string> CustomThemePath { get; private set; }
+
+            /// <summary>
+            /// Selects the base style
+            /// </summary>
+            public ReactiveObject<string> BaseStyle { get; private set; }
 
             /// <summary>
             /// Start games in fullscreen mode
@@ -94,6 +104,31 @@ namespace Ryujinx.Configuration
             /// </summary>
             public ReactiveObject<bool> ShowConsole { get; private set; }
 
+            /// <summary>
+            /// View Mode of the Game list
+            /// </summary>
+            public ReactiveObject<int> GameListViewMode { get; private set; }
+
+            /// <summary>
+            /// Show application name in Grid Mode
+            /// </summary>
+            public ReactiveObject<bool> ShowNames { get; private set; }
+
+            /// <summary>
+            /// Sets App Icon Size in Grid Mode
+            /// </summary>
+            public ReactiveObject<int> GridSize { get; private set; }
+
+            /// <summary>
+            /// Sorts Apps in Grid Mode
+            /// </summary>
+            public ReactiveObject<int> ApplicationSort { get; private set; }
+
+            /// <summary>
+            /// Sets if Grid is ordered in Ascending Order
+            /// </summary>
+            public ReactiveObject<bool> IsAscendingOrder { get; private set; }
+
             public UiSection()
             {
                 GuiColumns        = new Columns();
@@ -101,7 +136,14 @@ namespace Ryujinx.Configuration
                 GameDirs          = new ReactiveObject<List<string>>();
                 EnableCustomTheme = new ReactiveObject<bool>();
                 CustomThemePath   = new ReactiveObject<string>();
+                BaseStyle         = new ReactiveObject<string>();
                 StartFullscreen   = new ReactiveObject<bool>();
+                GameListViewMode  = new ReactiveObject<int>();
+                ShowNames         = new ReactiveObject<bool>();
+                GridSize          = new ReactiveObject<int>();
+                ApplicationSort   = new ReactiveObject<int>();
+                IsAscendingOrder  = new ReactiveObject<bool>();
+                LanguageCode      = new ReactiveObject<string>();
                 ShowConsole       = new ReactiveObject<bool>();
                 ShowConsole.Event += static (s, e) => { ConsoleHelper.SetConsoleWindowState(e.NewValue); };
             }
@@ -238,7 +280,7 @@ namespace Ryujinx.Configuration
             /// The selected audio backend
             /// </summary>
             public ReactiveObject<AudioBackend> AudioBackend { get; private set; }
-
+            
             /// <summary>
             /// The audio backend volume
             /// </summary>
@@ -268,7 +310,7 @@ namespace Ryujinx.Configuration
                 EnableDockedMode              = new ReactiveObject<bool>();
                 EnableDockedMode.Event        += static (sender, e) => LogValueChange(sender, e, nameof(EnableDockedMode));
                 EnablePtc                     = new ReactiveObject<bool>();
-                EnablePtc.Event               += static (sender, e) => LogValueChange(sender, e, nameof(EnablePtc));
+                EnablePtc.Event               += static (sender, e) => LogValueChange(sender, e, nameof(EnablePtc)); 
                 EnableInternetAccess          = new ReactiveObject<bool>();
                 EnableInternetAccess.Event    += static (sender, e) => LogValueChange(sender, e, nameof(EnableInternetAccess));
                 EnableFsIntegrityChecks       = new ReactiveObject<bool>();
@@ -297,7 +339,7 @@ namespace Ryujinx.Configuration
             /// Enable or disable keyboard support (Independent from controllers binding)
             /// </summary>
             public ReactiveObject<bool> EnableKeyboard { get; private set; }
-
+            
             /// <summary>
             /// Enable or disable mouse support (Independent from controllers binding)
             /// </summary>
@@ -457,8 +499,8 @@ namespace Ryujinx.Configuration
             ConfigurationFileFormat configurationFile = new ConfigurationFileFormat
             {
                 Version                   = ConfigurationFileFormat.CurrentVersion,
-                EnableFileLog             = Logger.EnableFileLog,
                 BackendThreading          = Graphics.BackendThreading,
+                EnableFileLog             = Logger.EnableFileLog,
                 ResScale                  = Graphics.ResScale,
                 ResScaleCustom            = Graphics.ResScaleCustom,
                 MaxAnisotropy             = Graphics.MaxAnisotropy,
@@ -513,8 +555,15 @@ namespace Ryujinx.Configuration
                     SortAscending = Ui.ColumnSort.SortAscending
                 },
                 GameDirs                  = Ui.GameDirs,
+                LanguageCode              = Ui.LanguageCode,
                 EnableCustomTheme         = Ui.EnableCustomTheme,
                 CustomThemePath           = Ui.CustomThemePath,
+                BaseStyle                 = Ui.BaseStyle,
+                GameListViewMode          = Ui.GameListViewMode,
+                ShowNames                 = Ui.ShowNames,
+                GridSize                  = Ui.GridSize,
+                ApplicationSort           = Ui.ApplicationSort,
+                IsAscendingOrder          = Ui.IsAscendingOrder,
                 StartFullscreen           = Ui.StartFullscreen,
                 ShowConsole               = Ui.ShowConsole,
                 EnableKeyboard            = Hid.EnableKeyboard,
@@ -581,7 +630,14 @@ namespace Ryujinx.Configuration
             Ui.ColumnSort.SortAscending.Value      = false;
             Ui.GameDirs.Value                      = new List<string>();
             Ui.EnableCustomTheme.Value             = false;
+            Ui.LanguageCode.Value                  = "en_US";
             Ui.CustomThemePath.Value               = "";
+            Ui.BaseStyle.Value                     = "Dark";
+            Ui.GameListViewMode.Value              = 0;
+            Ui.ShowNames.Value                     = true;
+            Ui.GridSize.Value                      = 2;
+            Ui.ApplicationSort.Value               = 0;
+            Ui.IsAscendingOrder.Value              = true;
             Ui.StartFullscreen.Value               = false;
             Ui.ShowConsole.Value                   = true;
             Hid.EnableKeyboard.Value               = false;
@@ -907,18 +963,17 @@ namespace Ryujinx.Configuration
 
                 configurationFileUpdated = true;
             }
-
+            
             if (configurationFileFormat.Version < 29)
             {
                 Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 29.");
-
                 configurationFileFormat.Hotkeys = new KeyboardHotkeys
                 {
                     ToggleVsync = Key.Tab,
                     Screenshot = Key.F8,
-                    ShowUi = Key.F4
+                    ShowUi = Key.F4,
+                    Pause = Key.F5
                 };
-
                 configurationFileUpdated = true;
             }
 
@@ -926,7 +981,7 @@ namespace Ryujinx.Configuration
             {
                 Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 30.");
 
-                foreach (InputConfig config in configurationFileFormat.InputConfig)
+                foreach(InputConfig config in configurationFileFormat.InputConfig)
                 {
                     if (config is StandardControllerInputConfig controllerConfig)
                     {
@@ -965,7 +1020,7 @@ namespace Ryujinx.Configuration
 
                 configurationFileUpdated = true;
             }
-
+            
             if (configurationFileFormat.Version < 33)
             {
                 Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 33.");
@@ -992,7 +1047,7 @@ namespace Ryujinx.Configuration
 
                 configurationFileUpdated = true;
             }
-
+            
             if (configurationFileFormat.Version < 35)
             {
                 Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 35.");
@@ -1008,7 +1063,7 @@ namespace Ryujinx.Configuration
 
                 configurationFileUpdated = true;
             }
-
+            
             if (configurationFileFormat.Version < 36)
             {
                 Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 36.");
@@ -1027,13 +1082,26 @@ namespace Ryujinx.Configuration
                 configurationFileUpdated = true;
             }
 
+            if (configurationFileFormat.Version < 38)
+            {
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 38.");
+
+                configurationFileFormat.BaseStyle        = "Dark";
+                configurationFileFormat.GameListViewMode = 0;
+                configurationFileFormat.ShowNames        = true;
+                configurationFileFormat.GridSize         = 2;
+                configurationFileFormat.LanguageCode     = "en_US";
+
+                configurationFileUpdated = true;
+            }
+
             Logger.EnableFileLog.Value             = configurationFileFormat.EnableFileLog;
-            Graphics.BackendThreading.Value        = configurationFileFormat.BackendThreading;
             Graphics.ResScale.Value                = configurationFileFormat.ResScale;
             Graphics.ResScaleCustom.Value          = configurationFileFormat.ResScaleCustom;
             Graphics.MaxAnisotropy.Value           = configurationFileFormat.MaxAnisotropy;
             Graphics.AspectRatio.Value             = configurationFileFormat.AspectRatio;
             Graphics.ShadersDumpPath.Value         = configurationFileFormat.GraphicsShadersDumpPath;
+            Graphics.BackendThreading.Value        = configurationFileFormat.BackendThreading;
             Logger.EnableDebug.Value               = configurationFileFormat.LoggingEnableDebug;
             Logger.EnableStub.Value                = configurationFileFormat.LoggingEnableStub;
             Logger.EnableInfo.Value                = configurationFileFormat.LoggingEnableInfo;
@@ -1078,7 +1146,14 @@ namespace Ryujinx.Configuration
             Ui.ColumnSort.SortAscending.Value      = configurationFileFormat.ColumnSort.SortAscending;
             Ui.GameDirs.Value                      = configurationFileFormat.GameDirs;
             Ui.EnableCustomTheme.Value             = configurationFileFormat.EnableCustomTheme;
+            Ui.LanguageCode.Value                  = configurationFileFormat.LanguageCode;
             Ui.CustomThemePath.Value               = configurationFileFormat.CustomThemePath;
+            Ui.BaseStyle.Value                     = configurationFileFormat.BaseStyle;
+            Ui.GameListViewMode.Value              = configurationFileFormat.GameListViewMode;
+            Ui.ShowNames.Value                     = configurationFileFormat.ShowNames;
+            Ui.IsAscendingOrder.Value              = configurationFileFormat.IsAscendingOrder;
+            Ui.GridSize.Value                      = configurationFileFormat.GridSize;
+            Ui.ApplicationSort.Value               = configurationFileFormat.ApplicationSort;
             Ui.StartFullscreen.Value               = configurationFileFormat.StartFullscreen;
             Ui.ShowConsole.Value                   = configurationFileFormat.ShowConsole;
             Hid.EnableKeyboard.Value               = configurationFileFormat.EnableKeyboard;
