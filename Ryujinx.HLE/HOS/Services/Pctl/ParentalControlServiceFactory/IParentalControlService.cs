@@ -1,3 +1,4 @@
+using LibHac.Ns;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Services.Arp;
 using System;

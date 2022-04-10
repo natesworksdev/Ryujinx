@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Ryujinx.Graphics.Nvdec.Dependencies" Version="4.4.0-build7" Condition="'$(RuntimeIdentifier)' != 'linux-x64' AND '$(RuntimeIdentifier)' != 'osx-x64'" />
+    <PackageReference Include="Ryujinx.Graphics.Nvdec.Dependencies" Version="4.4.0-build9" Condition="'$(RuntimeIdentifier)' != 'linux-x64' AND '$(RuntimeIdentifier)' != 'osx-x64'" />
   </ItemGroup>
 
   <ItemGroup>
