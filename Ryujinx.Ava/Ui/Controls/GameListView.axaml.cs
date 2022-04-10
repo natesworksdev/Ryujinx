@@ -1,15 +1,12 @@
-using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
-using LibHac;
 using LibHac.Common;
-using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Ui.ViewModels;
+using Ryujinx.Ui.App.Common;
 using System;
-using System.Collections.Generic;
 
 namespace Ryujinx.Ava.Ui.Controls
 {

@@ -6,6 +6,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using Ryujinx.Ava.Common;
 using Ryujinx.Common.Utilities;
+using Ryujinx.Ui.Common.Helper;
 using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Threading.Tasks;

@@ -65,10 +65,10 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
         public SoftwareKeyboardRendererBase(IHostUiTheme uiTheme)
         {
-            string ryujinxLogoPath = "Ryujinx.Ava.Assets.Images.Logo_Ryujinx.png";
+            string ryujinxLogoPath = "Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png";
             int    ryujinxLogoSize = 32;
 
-            _ryujinxLogo = LoadResource(Assembly.GetEntryAssembly(), ryujinxLogoPath, ryujinxLogoSize, ryujinxLogoSize);
+            _ryujinxLogo = LoadResource(Assembly.Load("Ryujinx.Ui.Common"), ryujinxLogoPath, ryujinxLogoSize, ryujinxLogoSize);
 
             string padAcceptIconPath = "Ryujinx.HLE.HOS.Applets.SoftwareKeyboard.Resources.Icon_BtnA.png";
             string padCancelIconPath = "Ryujinx.HLE.HOS.Applets.SoftwareKeyboard.Resources.Icon_BtnB.png";

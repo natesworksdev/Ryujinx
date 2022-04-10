@@ -25,6 +25,7 @@ using ApplicationId = LibHac.Ncm.ApplicationId;
 using Path = System.IO.Path;
 using LibHac.Tools.Fs;
 using LibHac.Tools.FsSystem;
+using Ryujinx.Ui.Common.Helper;
 
 namespace Ryujinx.Ava.Common
 {

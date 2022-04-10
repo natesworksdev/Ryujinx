@@ -41,7 +41,7 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <Image Grid.Row="0" Grid.Column="0" Grid.RowSpan="3" Margin="5, 10, 20 , 10"
-                       Source="resm:Ryujinx.Ava.Assets.Images.Logo_Ryujinx.png" Height="110" MinWidth="50" />
+                       Source="resm:Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png?assembly=Ryujinx.Ui.Common" Height="110" MinWidth="50" />
                 <TextBlock FontSize="35" TextAlignment="Left" Grid.Row="0" Grid.Column="1" Text="Ryujinx"
                            Margin="0,20,0,0" />
                 <TextBlock FontSize="16" TextAlignment="Left" Grid.Row="1" Grid.Column="1" Text="(REE-YOU-JINX)"
@@ -73,7 +73,7 @@
                                 <RowDefinition />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
-                            <Image Source="resm:Ryujinx.Ava.Assets.Images.Logo_Patreon.png" />
+                            <Image Source="resm:Ryujinx.Ui.Common.Resources.Logo_Patreon.png?assembly=Ryujinx.Ui.Common" />
                             <TextBlock Grid.Row="1" Margin="0,5,0,0" Text="Patreon" HorizontalAlignment="Center" />
                         </Grid>
                     </Button>
@@ -87,7 +87,7 @@
                                 <RowDefinition />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
-                            <Image Source="resm:Ryujinx.Ava.Assets.Images.Logo_GitHub.png" />
+                            <Image Source="resm:Ryujinx.Ui.Common.Resources.Logo_GitHub.png?assembly=Ryujinx.Ui.Common" />
                             <TextBlock Grid.Row="1" Margin="0,5,0,0" Text="GitHub" HorizontalAlignment="Center" />
                         </Grid>
                     </Button>
@@ -101,7 +101,7 @@
                                 <RowDefinition />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
-                            <Image Source="resm:Ryujinx.Ava.Assets.Images.Logo_Discord.png" />
+                            <Image Source="resm:Ryujinx.Ui.Common.Resources.Logo_Discord.png?assembly=Ryujinx.Ui.Common" />
                             <TextBlock Grid.Row="1" Margin="0,5,0,0" Text="Discord" HorizontalAlignment="Center" />
                         </Grid>
                     </Button>
@@ -115,7 +115,7 @@
                                 <RowDefinition />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
-                            <Image Source="resm:Ryujinx.Ava.Assets.Images.Logo_Twitter.png" />
+                            <Image Source="resm:Ryujinx.Ui.Common.Resources.Logo_Twitter.png?assembly=Ryujinx.Ui.Common" />
                             <TextBlock Grid.Row="1" Margin="0,5,0,0" Text="Twitter" HorizontalAlignment="Center" />
                         </Grid>
                     </Button>

@@ -16,7 +16,7 @@ using Ryujinx.Ava.Ui.Windows;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
-using Ryujinx.Configuration;
+using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.HLE;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.Modules;
@@ -29,6 +29,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Path = System.IO.Path;
 using ShaderCacheLoadingState = Ryujinx.Graphics.Gpu.Shader.ShaderCacheState;
+using Ryujinx.Ui.App.Common;
+using Ryujinx.Ui.Common;
+using Ryujinx.Ui.Common.Helper;
 
 namespace Ryujinx.Ava.Ui.ViewModels
 {
@@ -81,12 +84,6 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 .Sort(GetComparer())
                 .Bind(out _appsObservableList).AsObservableList();
 
-            ApplicationLibrary.ApplicationCountUpdated += ApplicationLibrary_ApplicationCountUpdated;
-            ApplicationLibrary.ApplicationAdded += ApplicationLibrary_ApplicationAdded;
-
-            Ptc.PtcStateChanged -= ProgressHandler;
-            Ptc.PtcStateChanged += ProgressHandler;
-
             if (Program.PreviewerDetached)
             {
                 ShowUiKey = KeyGesture.Parse(ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUi.ToString());
@@ -95,6 +92,15 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
                 Volume = ConfigurationState.Instance.System.AudioVolume;
             }
+        }
+
+        public void Initialize()
+        {
+            _owner.ApplicationLibrary.ApplicationCountUpdated += ApplicationLibrary_ApplicationCountUpdated;
+            _owner.ApplicationLibrary.ApplicationAdded += ApplicationLibrary_ApplicationAdded;
+
+            Ptc.PtcStateChanged -= ProgressHandler;
+            Ptc.PtcStateChanged += ProgressHandler;
         }
 
         public string SearchText
@@ -473,7 +479,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 case ApplicationSort.TotalTimePlayed:
                     return new Models.Generic.TimePlayedSortComparer(IsAscending);
                 case ApplicationSort.Title:
-                    return IsAscending ? SortExpressionComparer<ApplicationData>.Ascending(app => app.ApplicationName) : SortExpressionComparer<ApplicationData>.Descending(app => app.ApplicationName);
+                    return IsAscending ? SortExpressionComparer<ApplicationData>.Ascending(app => app.TitleName) : SortExpressionComparer<ApplicationData>.Descending(app => app.TitleName);
                 case ApplicationSort.Favorite:
                     return !IsAscending ? SortExpressionComparer<ApplicationData>.Ascending(app => app.Favorite) : SortExpressionComparer<ApplicationData>.Descending(app => app.Favorite);
                 case ApplicationSort.Developer:
@@ -711,7 +717,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
         {
             if (arg is ApplicationData app)
             {
-                return string.IsNullOrWhiteSpace(_searchText) || app.ApplicationName.ToLower().Contains(_searchText.ToLower());
+                return string.IsNullOrWhiteSpace(_searchText) || app.TitleName.ToLower().Contains(_searchText.ToLower());
             }
 
             return false;
@@ -770,7 +776,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
             Thread thread = new(() =>
             {
-                ApplicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs, ConfigurationState.Instance.System.Language);
+                _owner.ApplicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs, ConfigurationState.Instance.System.Language);
 
                 _isLoading = false;
             })

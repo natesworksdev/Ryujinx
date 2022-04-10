@@ -14,7 +14,7 @@ using Ryujinx.Ava.Ui.Models;
 using Ryujinx.Ava.Ui.ViewModels;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
-using Ryujinx.Configuration;
+using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Graphics.Gpu;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
@@ -31,6 +31,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using InputManager = Ryujinx.Input.HLE.InputManager;
 using ProgressBar = Avalonia.Controls.ProgressBar;
+using Ryujinx.Ui.App.Common;
+using Ryujinx.Ui.Common;
 
 namespace Ryujinx.Ava.Ui.Windows
 {
@@ -90,6 +92,7 @@ namespace Ryujinx.Ava.Ui.Windows
         }
 
         public static bool ShowKeyErrorOnLoad { get; set; }
+        public ApplicationLibrary ApplicationLibrary { get; set; }
 
         public MainWindow()
         {
@@ -107,6 +110,8 @@ namespace Ryujinx.Ava.Ui.Windows
             if (Program.PreviewerDetached)
             {
                 Initialize();
+
+                ViewModel.Initialize();
 
                 InputManager = new InputManager(new AvaloniaKeyboardDriver(this), new SDL2GamepadDriver());
 
@@ -425,8 +430,8 @@ namespace Ryujinx.Ava.Ui.Windows
             LibHacHorizonManager.InitializeBcatServer();
             LibHacHorizonManager.InitializeSystemClients();
 
-            ApplicationLibrary.VirtualFileSystem = VirtualFileSystem;
-            
+            ApplicationLibrary = new ApplicationLibrary(VirtualFileSystem);
+
             // Save data created before we supported extra data in directory save data will not work properly if
             // given empty extra data. Luckily some of that extra data can be created using the data from the
             // save data indexer, which should be enough to check access permissions for user saves.
@@ -550,7 +555,7 @@ namespace Ryujinx.Ava.Ui.Windows
             ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
         }
 
-        public static void UpdateGameMetadata(string titleId)
+        public void UpdateGameMetadata(string titleId)
         {
             ApplicationLibrary.LoadAndSaveMetaData(titleId, appMetadata =>
             {

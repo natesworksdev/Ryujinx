@@ -19,7 +19,7 @@ namespace Ryujinx.Ava.Ui.Windows
             WindowStartupLocation = WindowStartupLocation.CenterOwner;
             TransparencyLevelHint = WindowTransparencyLevel.None;
 
-            using Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Ryujinx.Ava.Assets.Images.Logo_Ryujinx.png");
+            using Stream stream = Assembly.GetAssembly(typeof(Ryujinx.Ui.Common.Configuration.ConfigurationState)).GetManifestResourceStream("Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png");
 
             Icon = new WindowIcon(stream);
             stream.Position = 0;

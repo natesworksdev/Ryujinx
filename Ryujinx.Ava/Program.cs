@@ -1,15 +1,8 @@
 using ARMeilleure.Translation.PTC;
 using Avalonia;
-using Avalonia.OpenGL;
 using Avalonia.Rendering;
 using Avalonia.Threading;
-using FFmpeg.AutoGen;
-using OpenTK.Windowing.GraphicsLibraryFramework;
-using Ryujinx.Ava.Application.Module;
-using Ryujinx.Ava.Common;
-using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Backend;
-using Ryujinx.Ava.Ui.Backend.OpenGl;
 using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.Windows;
 using Ryujinx.Common;
@@ -18,15 +11,12 @@ using Ryujinx.Common.GraphicsDriver;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.System;
 using Ryujinx.Common.SystemInfo;
-using Ryujinx.Configuration;
 using Ryujinx.Modules;
+using Ryujinx.Ui.Common;
+using Ryujinx.Ui.Common.Configuration;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace Ryujinx.Ava

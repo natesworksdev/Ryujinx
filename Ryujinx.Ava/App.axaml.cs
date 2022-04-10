@@ -1,23 +1,14 @@
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using FluentAvalonia.Styling;
-using Ryujinx.Ava.Common;
-using Ryujinx.Ava.Common.Locale;
-using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.Windows;
 using Ryujinx.Common;
-using Ryujinx.Configuration;
-using System;
-using System.Linq;
-using System.Diagnostics;
 using Ryujinx.Common.Logging;
-using Avalonia.Rendering;
-using Avalonia.Media;
-
+using Ryujinx.Ui.Common.Configuration;
+using System;
 
 namespace Ryujinx.Ava
 {

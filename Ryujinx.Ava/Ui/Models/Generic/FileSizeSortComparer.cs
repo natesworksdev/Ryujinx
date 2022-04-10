@@ -1,6 +1,4 @@
-using Ryujinx.Ava.Common;
-using System;
-using System.Collections;
+using Ryujinx.Ui.App.Common;
 using System.Collections.Generic;
 
 namespace Ryujinx.Ava.Ui.Models.Generic

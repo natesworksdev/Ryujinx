@@ -1,6 +1,6 @@
 ﻿using Ryujinx.Ava.Ui.ViewModels;
 using Ryujinx.Common;
-using Ryujinx.Configuration;
+using Ryujinx.Ui.Common.Configuration;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.Json;

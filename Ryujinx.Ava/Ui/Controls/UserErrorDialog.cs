@@ -1,6 +1,8 @@
 ﻿using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Windows;
+using Ryujinx.Ui.Common;
+using Ryujinx.Ui.Common.Helper;
 using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.Ui.Controls
