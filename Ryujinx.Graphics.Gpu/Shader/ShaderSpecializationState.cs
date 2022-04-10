@@ -463,6 +463,23 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 return false;
             }
 
+            if (graphicsState.DepthMode != GraphicsState.DepthMode)
+            {
+                return false;
+            }
+
+            if (graphicsState.AlphaTestEnable != GraphicsState.AlphaTestEnable ||
+                graphicsState.AlphaTestCompare != GraphicsState.AlphaTestCompare ||
+                graphicsState.AlphaTestReference != GraphicsState.AlphaTestReference)
+            {
+                return false;
+            }
+
+            if (!graphicsState.AttributeTypes.ToSpan().SequenceEqual(GraphicsState.AttributeTypes.ToSpan()))
+            {
+                return false;
+            }
+
             return Matches(channel, poolState, checkTextures, isCompute: false);
         }
 

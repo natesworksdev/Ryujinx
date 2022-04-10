@@ -2,7 +2,7 @@ using System;
 
 namespace Ryujinx.Graphics.Shader
 {
-    public enum AttributeType
+    public enum AttributeType : byte
     {
         Float,
         Sint,

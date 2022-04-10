@@ -1,4 +1,5 @@
 ﻿using Ryujinx.Common.Logging;
+using Ryujinx.Common.Memory;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Engine.Types;
 using Ryujinx.Graphics.Gpu.Image;
@@ -1285,6 +1286,20 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// <returns>Current GPU channel state</returns>
         private GpuChannelGraphicsState GetGraphicsState()
         {
+            ref var vertexAttribState = ref _state.State.VertexAttribState;
+
+            Array32<AttributeType> attributeTypes = new Array32<AttributeType>();
+
+            for (int location = 0; location < attributeTypes.Length; location++)
+            {
+                attributeTypes[location] = vertexAttribState[location].UnpackType() switch
+                {
+                    3 => AttributeType.Sint,
+                    4 => AttributeType.Uint,
+                    _ => AttributeType.Float
+                };
+            }
+
             return new GpuChannelGraphicsState(
                 _state.State.EarlyZForce,
                 _drawState.Topology,
@@ -1297,7 +1312,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 _state.State.PointSize,
                 _state.State.AlphaTestEnable,
                 _state.State.AlphaTestFunc,
-                _state.State.AlphaTestRef);
+                _state.State.AlphaTestRef,
+                ref attributeTypes);
         }
 
         private DepthMode GetDepthMode()
