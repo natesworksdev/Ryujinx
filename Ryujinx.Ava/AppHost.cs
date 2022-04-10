@@ -3,7 +3,6 @@ using ARMeilleure.Translation.PTC;
 using Avalonia.Input;
 using Avalonia.Threading;
 using LibHac.Tools.FsSystem;
-using OpenTK.Windowing.Common;
 using Ryujinx.Audio.Backends.Dummy;
 using Ryujinx.Audio.Backends.OpenAL;
 using Ryujinx.Audio.Backends.SDL2;
@@ -137,6 +136,7 @@ namespace Ryujinx.Ava
 
             _parent.PointerEnter += Parent_PointerEntered;
             _parent.PointerLeave += Parent_PointerLeft;
+            _parent.PointerMoved += Parent_PointerMoved;
             
             ConfigurationState.Instance.System.IgnoreMissingServices.Event += UpdateIgnoreMissingServicesState;
             ConfigurationState.Instance.Graphics.AspectRatio.Event         += UpdateAspectRatioState;
@@ -144,6 +144,11 @@ namespace Ryujinx.Ava
             ConfigurationState.Instance.System.AudioVolume.Event           += UpdateAudioVolumeState;
 
             _closeEvent = new ManualResetEvent(false);
+        }
+
+        private void Parent_PointerMoved(object sender, PointerEventArgs e)
+        {
+            _lastCursorMoveTime = Stopwatch.GetTimestamp();
         }
 
         private void Parent_PointerLeft(object sender, PointerEventArgs e)
@@ -869,7 +874,6 @@ namespace Ryujinx.Ava
                     {
                         if (!_renderingStarted)
                         {
-                            Program.RenderTimer.TargetFrameRate = 200;
                             _renderingStarted = true;
                             _parent.SwitchToGameControl();
                         }
@@ -884,10 +888,6 @@ namespace Ryujinx.Ava
             Renderer?.MakeCurrent(null);
 
             Renderer.SizeChanged -= Window_SizeChanged;
-
-            Program.RenderTimer.SwitchToEventTiming();
-
-            Program.RenderTimer.TargetFrameRate = 60;
         }
 
         private bool Present(int image)

@@ -39,7 +39,7 @@ namespace Ryujinx.Ava
 
         public static string CommandLineProfile { get; set; }
         public static bool   PreviewerDetached { get; private set; }
-        public static AdjustableRenderTimer RenderTimer { get; private set; }
+        public static RenderTimer RenderTimer { get; private set; }
 
         public static void Main(string[] args)
         {
@@ -47,7 +47,7 @@ namespace Ryujinx.Ava
             
             Initialize(args);
 
-            RenderTimer = new AdjustableRenderTimer(60);
+            RenderTimer = new RenderTimer();
 
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
 

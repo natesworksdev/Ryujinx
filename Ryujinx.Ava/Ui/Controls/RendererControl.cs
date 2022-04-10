@@ -27,7 +27,6 @@ namespace Ryujinx.Ava.Ui.Controls
 
         public event EventHandler<EventArgs> GlInitialized;
         public event EventHandler<Size> SizeChanged;
-        public event EventHandler Rendered;
 
         protected Size RenderSize { get;private set; }
         public bool IsStarted { get; private set; }
@@ -43,8 +42,6 @@ namespace Ryujinx.Ava.Ui.Controls
         private SwappableNativeWindowBase _gameBackgroundWindow;
 
         private bool _isInitialized;
-
-        private int _drawId;
         private IntPtr _fence;
 
         private GlDrawOperation _glDrawOperation;
@@ -68,6 +65,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
             RenderSize = rect.Size * Program.WindowScaleFactor;
 
+            _glDrawOperation?.Dispose();
             _glDrawOperation = new GlDrawOperation(this);
         }
 
@@ -119,7 +117,7 @@ namespace Ryujinx.Ava.Ui.Controls
             {
                 InvalidateVisual();
             }
-            catch (Exception ex) { }
+            catch (Exception) { }
 
             Program.RenderTimer.TickNow();
         }
@@ -163,11 +161,8 @@ namespace Ryujinx.Ava.Ui.Controls
                 GL.DeleteSync(_fence);
             }
 
-            if (!OperatingSystem.IsWindows())
-            {
-                // WGL hangs here when disposing context
-                GameContext?.Dispose();
-            }
+            GameContext?.Dispose();
+
             _gameBackgroundWindow?.Dispose();
         }
 
@@ -175,6 +170,7 @@ namespace Ryujinx.Ava.Ui.Controls
         {
             GameContext.MakeCurrent(_gameBackgroundWindow);
         }
+
         internal void MakeCurrent(SwappableNativeWindowBase window)
         {
             GameContext.MakeCurrent(window);
