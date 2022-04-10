@@ -122,9 +122,9 @@ namespace Ryujinx.Ava.Ui.Controls
             Program.RenderTimer.TickNow();
         }
 
-        internal bool Present(int image)
+        internal void Present(object image)
         {
-            Image = image;
+            Image = (int)image;
 
             if (_fence != IntPtr.Zero)
             {
@@ -136,8 +136,6 @@ namespace Ryujinx.Ava.Ui.Controls
             QueueRender();
 
             _swapEvent?.WaitOne();
-
-            return true;
         }
 
         internal void Start()

@@ -28,7 +28,7 @@ namespace Ryujinx.Graphics.OpenGL
             _stagingTextures = new int[5];
         }
 
-        public void Present(ITexture texture, ImageCrop crop, Func<int, bool> swapBuffersCallback)
+        public void Present(ITexture texture, ImageCrop crop, Action<object> swapBuffersCallback)
         {
             GL.Disable(EnableCap.FramebufferSrgb);
 
@@ -84,7 +84,7 @@ namespace Ryujinx.Graphics.OpenGL
             _sizeChanged = true;
         }
 
-        private void CopyTextureToFrameBufferRGB(int drawFramebuffer, int readFramebuffer, TextureView view, ImageCrop crop, Func<int, bool> swapBuffersCallback)
+        private void CopyTextureToFrameBufferRGB(int drawFramebuffer, int readFramebuffer, TextureView view, ImageCrop crop, Action<object> swapBuffersCallback)
         {
             GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, drawFramebuffer);
             GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, readFramebuffer);
@@ -190,7 +190,8 @@ namespace Ryujinx.Graphics.OpenGL
 
             GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, _stagingFrameBuffer);
 
-            _currentTexture = swapBuffersCallback(_stagingTextures[_currentTexture]) ? ++_currentTexture % _stagingTextures.Length : _currentTexture;
+            swapBuffersCallback((object)_stagingTextures[_currentTexture]);
+            _currentTexture = ++_currentTexture % _stagingTextures.Length;
 
             ((Pipeline)_renderer.Pipeline).RestoreClipControl();
             ((Pipeline)_renderer.Pipeline).RestoreScissor0Enable();

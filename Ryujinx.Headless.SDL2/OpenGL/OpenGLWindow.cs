@@ -159,9 +159,9 @@ namespace Ryujinx.Headless.SDL2.OpenGL
             _openGLContext.Dispose();
         }
 
-        protected override void SwapBuffers(int image)
+        protected override void SwapBuffers(object image)
         {
-            if (image != 0)
+            if ((int)image != 0)
             {
                 GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);
 

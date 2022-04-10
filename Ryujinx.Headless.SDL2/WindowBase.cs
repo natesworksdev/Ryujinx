@@ -155,7 +155,7 @@ namespace Ryujinx.Headless.SDL2
 
         protected abstract void FinalizeRenderer();
 
-        protected abstract void SwapBuffers(int image);
+        protected abstract void SwapBuffers(object image);
 
         protected abstract string GetGpuVendorName();
 
@@ -194,7 +194,7 @@ namespace Ryujinx.Headless.SDL2
 
                     while (Device.ConsumeFrameAvailable())
                     {
-                        Device.PresentFrame((texture) => { SwapBuffers(texture); return true; });
+                        Device.PresentFrame((texture) => { SwapBuffers(texture); });
                     }
 
                     if (_ticks >= _ticksPerFrame)

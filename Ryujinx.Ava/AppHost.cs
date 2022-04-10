@@ -890,7 +890,7 @@ namespace Ryujinx.Ava
             Renderer.SizeChanged -= Window_SizeChanged;
         }
 
-        private bool Present(int image)
+        private void Present(object image)
         {
             // Run a status update only when a frame is to be drawn. This prevents from updating the ui and wasting a render when no frame is queued
             string dockedMode = ConfigurationState.Instance.System.EnableDockedMode ? "Docked" : "Handheld";
@@ -912,9 +912,7 @@ namespace Ryujinx.Ava
                 $"FIFO: {Device.Statistics.GetFifoPercent():00.00} %",
                 $"GPU: {vendor}"));
 
-            bool presented = Renderer.Present(image);
-
-            return presented;
+            Renderer.Present(image);
         }
 
         public async Task ShowExitPrompt()
