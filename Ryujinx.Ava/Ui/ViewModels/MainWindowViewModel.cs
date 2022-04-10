@@ -1163,16 +1163,19 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 UserResult result = await ContentDialogHelper.CreateConfirmationDialog(_owner, LocaleManager.Instance["DialogWarning"],
                     string.Format(LocaleManager.Instance["DialogShaderDeletionMessage"], selection.TitleName));
 
-                List<DirectoryInfo> cacheDirectory = new();
+                List<DirectoryInfo> oldCacheDirectories = new List<DirectoryInfo>();
+                List<FileInfo> newCacheFiles = new List<FileInfo>();
 
                 if (shaderCacheDir.Exists)
                 {
-                    cacheDirectory.AddRange(shaderCacheDir.EnumerateDirectories("*"));
+                    oldCacheDirectories.AddRange(shaderCacheDir.EnumerateDirectories("*"));
+                    newCacheFiles.AddRange(shaderCacheDir.GetFiles("*.toc"));
+                    newCacheFiles.AddRange(shaderCacheDir.GetFiles("*.data"));
                 }
 
-                if (cacheDirectory.Count > 0 && result == UserResult.Yes)
+                if ((oldCacheDirectories.Count > 0 || newCacheFiles.Count > 0) && result == UserResult.Yes)
                 {
-                    foreach (DirectoryInfo directory in cacheDirectory)
+                    foreach (DirectoryInfo directory in oldCacheDirectories)
                     {
                         try
                         {
@@ -1184,6 +1187,20 @@ namespace Ryujinx.Ava.Ui.ViewModels
                                 string.Format(LocaleManager.Instance["DialogPPTCDeletionErrorMessage"], directory.Name,
                                     e));
                         }
+                    }
+                }
+
+                foreach (FileInfo file in newCacheFiles)
+                {
+                    try
+                    {
+                        file.Delete();
+                    }
+                    catch (Exception e)
+                    {
+                        ContentDialogHelper.CreateErrorDialog(_owner,
+                                string.Format(LocaleManager.Instance["ShaderCachePurgeError"], file.Name,
+                                    e));
                     }
                 }
             }

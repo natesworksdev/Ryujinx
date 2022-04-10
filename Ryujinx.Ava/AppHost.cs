@@ -86,6 +86,8 @@ namespace Ryujinx.Ava
         private WindowsMultimediaTimerResolution _windowsMultimediaTimerResolution;
         private KeyboardStateSnapshot _lastKeyboardSnapshot;
 
+        private readonly CancellationTokenSource _gpuCancellationTokenSource;
+
         public event EventHandler AppExit;
         public event EventHandler<StatusUpdatedEventArgs> StatusUpdatedEvent;
 
@@ -146,6 +148,8 @@ namespace Ryujinx.Ava
             ConfigurationState.Instance.System.AudioVolume.Event           += UpdateAudioVolumeState;
 
             _closeEvent = new ManualResetEvent(false);
+
+            _gpuCancellationTokenSource = new CancellationTokenSource();
         }
 
         private void Parent_PointerMoved(object sender, PointerEventArgs e)
@@ -382,6 +386,9 @@ namespace Ryujinx.Ava
             ConfigurationState.Instance.System.IgnoreMissingServices.Event -= UpdateIgnoreMissingServicesState;
             ConfigurationState.Instance.Graphics.AspectRatio.Event -= UpdateAspectRatioState;
             ConfigurationState.Instance.System.EnableDockedMode.Event -= UpdateDockedModeState;
+
+            _gpuCancellationTokenSource.Cancel();
+            _gpuCancellationTokenSource.Dispose();
         }
 
         public void DisposeGpu()
@@ -856,7 +863,7 @@ namespace Ryujinx.Ava
             Device.Gpu.Renderer.RunLoop(() =>
             {
                 Device.Gpu.SetGpuThread();
-                Device.Gpu.InitializeShaderCache();
+                Device.Gpu.InitializeShaderCache(_gpuCancellationTokenSource.Token);
                 Translator.IsReadyForTranslation.Set();
 
                 Renderer.Start();
