@@ -94,7 +94,7 @@ namespace Ryujinx.Graphics.Vulkan
             Samplers = new HashSet<SamplerHolder>();
         }
 
-        private void SetupContext(GraphicsDebugLevel logLevel)
+        private unsafe void SetupContext(GraphicsDebugLevel logLevel)
         {
             var api = Vk.GetApi();
 
@@ -118,10 +118,6 @@ namespace Ryujinx.Graphics.Vulkan
             var supportedExtensions = VulkanInitialization.GetSupportedExtensions(api, _physicalDevice);
 
             _device = VulkanInitialization.CreateDevice(api, _physicalDevice, queueFamilyIndex, supportedExtensions, maxQueueCount);
-
-            Capabilities = new HardwareCapabilities(
-                supportedExtensions.Contains(ExtConditionalRendering.ExtensionName),
-                supportedExtensions.Contains(ExtExtendedDynamicState.ExtensionName));
 
             SupportsIndexTypeUint8 = supportedExtensions.Contains("VK_EXT_index_type_uint8");
             SupportsCustomBorderColor = supportedExtensions.Contains("VK_EXT_custom_border_color");
@@ -165,7 +161,31 @@ namespace Ryujinx.Graphics.Vulkan
                 BackgroundQueueLock = new object();
             }
 
-            Api.GetPhysicalDeviceProperties(_physicalDevice, out var properties);
+            PhysicalDeviceProperties2 properties2 = new PhysicalDeviceProperties2()
+            {
+                SType = StructureType.PhysicalDeviceProperties2
+            };
+
+            PhysicalDeviceSubgroupSizeControlPropertiesEXT propertiesSubgroupSizeControl = new PhysicalDeviceSubgroupSizeControlPropertiesEXT()
+            {
+                SType = StructureType.PhysicalDeviceSubgroupSizeControlPropertiesExt
+            };
+
+            if (SupportsSubgroupSizeControl)
+            {
+                properties2.PNext = &propertiesSubgroupSizeControl;
+            }
+
+            Api.GetPhysicalDeviceProperties2(_physicalDevice, &properties2);
+
+            Capabilities = new HardwareCapabilities(
+                supportedExtensions.Contains(ExtConditionalRendering.ExtensionName),
+                supportedExtensions.Contains(ExtExtendedDynamicState.ExtensionName),
+                propertiesSubgroupSizeControl.MinSubgroupSize,
+                propertiesSubgroupSizeControl.MaxSubgroupSize,
+                propertiesSubgroupSizeControl.RequiredSubgroupSizeStages);
+
+            ref var properties = ref properties2.Properties;
 
             MemoryAllocator = new MemoryAllocator(api, _device, properties.Limits.MaxMemoryAllocationCount);
 
