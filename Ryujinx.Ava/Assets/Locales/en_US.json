@@ -503,5 +503,6 @@
   "ControllerSettingsRotate90": "Rotate 90° Clockwise",
   "IconSize": "Icon Size",
   "IconSizeTooltip": "Change the size of game icon",
-  "MenuBarOptionsShowConsole": "Show Console"
+  "MenuBarOptionsShowConsole": "Show Console",
+  "ShaderCachePurgeError" :  "Error purging shader cache at {0}: {1}"
 }
