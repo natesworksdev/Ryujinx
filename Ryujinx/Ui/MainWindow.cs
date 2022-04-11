@@ -1037,7 +1037,7 @@ namespace Ryujinx.Ui
             Graphics.Gpu.GraphicsConfig.ResScale          = (resScale == -1) ? resScaleCustom : resScale;
             Graphics.Gpu.GraphicsConfig.MaxAnisotropy     = ConfigurationState.Instance.Graphics.MaxAnisotropy;
             Graphics.Gpu.GraphicsConfig.ShadersDumpPath   = ConfigurationState.Instance.Graphics.ShadersDumpPath;
-            Graphics.Gpu.GraphicsConfig.EnableShaderCache = ConfigurationState.Instance.Graphics.EnableShaderCache && ConfigurationState.Instance.Graphics.GraphicsBackend != GraphicsBackend.Vulkan;
+            Graphics.Gpu.GraphicsConfig.EnableShaderCache = ConfigurationState.Instance.Graphics.EnableShaderCache;
         }
 
         public void SaveConfig()

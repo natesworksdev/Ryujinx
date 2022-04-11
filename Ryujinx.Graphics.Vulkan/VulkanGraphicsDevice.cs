@@ -226,7 +226,9 @@ namespace Ryujinx.Graphics.Vulkan
 
         public IProgram CreateProgram(IShader[] shaders, ShaderInfo info)
         {
-            if (info.BackgroundCompile && info.State.HasValue && VulkanConfiguration.UseDynamicState)
+            bool isCompute = shaders.Length == 1 && ((Shader)shaders[0]).StageFlags == ShaderStageFlags.ShaderStageComputeBit;
+
+            if (info.BackgroundCompile && (info.State.HasValue || isCompute) && VulkanConfiguration.UseDynamicState)
             {
                 return new ShaderCollection(this, _device, shaders, info.State.Value);
             }

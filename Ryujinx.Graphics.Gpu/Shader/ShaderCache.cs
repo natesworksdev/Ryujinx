@@ -62,11 +62,13 @@ namespace Ryujinx.Graphics.Gpu.Shader
         {
             public readonly CachedShaderProgram CachedProgram;
             public readonly IProgram HostProgram;
+            public readonly byte[] BinaryCode;
 
-            public ProgramToSave(CachedShaderProgram cachedProgram, IProgram hostProgram)
+            public ProgramToSave(CachedShaderProgram cachedProgram, IProgram hostProgram, byte[] binaryCode)
             {
                 CachedProgram = cachedProgram;
                 HostProgram = hostProgram;
+                BinaryCode = binaryCode;
             }
         }
 
@@ -126,7 +128,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 {
                     if (result == ProgramLinkStatus.Success)
                     {
-                        _cacheWriter.AddShader(programToSave.CachedProgram, programToSave.HostProgram.GetBinary());
+                        _cacheWriter.AddShader(programToSave.CachedProgram, programToSave.BinaryCode ?? programToSave.HostProgram.GetBinary());
                     }
 
                     _programsToSaveQueue.Dequeue();
@@ -146,7 +148,9 @@ namespace Ryujinx.Graphics.Gpu.Shader
         {
             if (_diskCacheHostStorage.CacheEnabled)
             {
-                if (!_diskCacheHostStorage.CacheExists())
+                // Migration disabled as Vulkan added a lot of new state,
+                // most migrated shaders would be unused due to the state not matching.
+                /* if (!_diskCacheHostStorage.CacheExists())
                 {
                     // If we don't have a shader cache on the new format, try to perform migration from the old shader cache.
                     Logger.Info?.Print(LogClass.Gpu, "No shader cache found, trying to migrate from legacy shader cache...");
@@ -154,7 +158,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                     int migrationCount = Migration.MigrateFromLegacyCache(_context, _diskCacheHostStorage);
 
                     Logger.Info?.Print(LogClass.Gpu, $"Migrated {migrationCount} shaders.");
-                }
+                } */
 
                 ParallelDiskCacheLoader loader = new ParallelDiskCacheLoader(
                     _context,
@@ -213,7 +217,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 return cpShader;
             }
 
-            ShaderSpecializationState specState = new ShaderSpecializationState(computeState);
+            ShaderSpecializationState specState = new ShaderSpecializationState(ref computeState);
             GpuAccessorState gpuAccessorState = new GpuAccessorState(poolState, computeState, default, specState);
             GpuAccessor gpuAccessor = new GpuAccessor(_context, channel, gpuAccessorState);
 
@@ -221,12 +225,14 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             TranslatedShader translatedShader = TranslateShader(_dumper, channel, translatorContext, cachedGuestCode);
 
-            IProgram hostProgram = _context.Renderer.CreateProgram(new ShaderSource[] { CreateShaderSource(translatedShader.Program) }, new ShaderInfo(-1));
+            ShaderSource[] shaderSourcesArray = new ShaderSource[] { CreateShaderSource(translatedShader.Program) };
+
+            IProgram hostProgram = _context.Renderer.CreateProgram(shaderSourcesArray, new ShaderInfo(-1));
 
             cpShader = new CachedShaderProgram(hostProgram, specState, translatedShader.Shader);
 
             _computeShaderCache.Add(cpShader);
-            EnqueueProgramToSave(new ProgramToSave(cpShader, hostProgram));
+            EnqueueProgramToSave(cpShader, hostProgram, shaderSourcesArray);
             _cpPrograms[gpuVa] = cpShader;
 
             return cpShader;
@@ -307,7 +313,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             TransformFeedbackDescriptor[] transformFeedbackDescriptors = GetTransformFeedbackDescriptors(ref state);
 
-            ShaderSpecializationState specState = new ShaderSpecializationState(graphicsState, transformFeedbackDescriptors);
+            ShaderSpecializationState specState = new ShaderSpecializationState(ref graphicsState, ref pipeline, transformFeedbackDescriptors);
             GpuAccessorState gpuAccessorState = new GpuAccessorState(poolState, default, graphicsState, specState, transformFeedbackDescriptors);
 
             ReadOnlySpan<ulong> addressesSpan = addresses.AsSpan();
@@ -385,13 +391,15 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             UpdatePipelineInfo(ref state, ref pipeline, graphicsState, channel);
 
+            ShaderSource[] shaderSourcesArray = shaderSources.ToArray();
+
             int fragmentOutputMap = shaders[5]?.Info.FragmentOutputMap ?? -1;
-            IProgram hostProgram = _context.Renderer.CreateProgram(shaderSources.ToArray(), new ShaderInfo(fragmentOutputMap, pipeline));
+            IProgram hostProgram = _context.Renderer.CreateProgram(shaderSourcesArray, new ShaderInfo(fragmentOutputMap, pipeline));
 
             gpShaders = new CachedShaderProgram(hostProgram, specState, shaders);
 
             _graphicsShaderCache.Add(gpShaders);
-            EnqueueProgramToSave(new ProgramToSave(gpShaders, hostProgram));
+            EnqueueProgramToSave(gpShaders, hostProgram, shaderSourcesArray);
             _gpPrograms[addresses] = gpShaders;
 
             return gpShaders;
@@ -413,9 +421,15 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <remarks>
         /// This will not do anything if disk shader cache is disabled.
         /// </remarks>
-        /// <param name="programToSave">Program to be saved on disk</param>
-        private void EnqueueProgramToSave(ProgramToSave programToSave)
+        /// <param name="program">Cached shader program</param>
+        /// <param name="hostProgram">Host program</param>
+        /// <param name="sources">Source for each shader stage</param>
+        private void EnqueueProgramToSave(CachedShaderProgram program, IProgram hostProgram, ShaderSource[] sources)
         {
+            byte[] binaryCode = _context.Capabilities.Api == TargetApi.Vulkan ? ShaderBinarySerializer.Pack(sources) : null;
+
+            ProgramToSave programToSave = new ProgramToSave(program, hostProgram, binaryCode);
+
             if (_diskCacheHostStorage.CacheEnabled)
             {
                 _programsToSaveQueue.Enqueue(programToSave);
@@ -646,7 +660,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             };
         }
 
-        private static ShaderBindings GetBindings(ShaderProgramInfo info)
+        public static ShaderBindings GetBindings(ShaderProgramInfo info)
         {
             static bool IsBuffer(Graphics.Shader.TextureDescriptor descriptor)
             {
