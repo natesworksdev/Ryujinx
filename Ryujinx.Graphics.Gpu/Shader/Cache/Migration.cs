@@ -105,7 +105,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
                             entry.Header.GpuAccessorHeader.ComputeLocalMemorySize,
                             entry.Header.GpuAccessorHeader.ComputeSharedMemorySize);
 
-                        ShaderSpecializationState specState = new ShaderSpecializationState(computeState);
+                        ShaderSpecializationState specState = new ShaderSpecializationState(ref computeState);
 
                         foreach (var td in entry.TextureDescriptors)
                         {
@@ -200,7 +200,9 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
                             }
                         }
 
-                        ShaderSpecializationState specState = new ShaderSpecializationState(graphicsState, tfdNew);
+                        ProgramPipelineState pipelineState = default;
+
+                        ShaderSpecializationState specState = new ShaderSpecializationState(ref graphicsState, ref pipelineState, tfdNew);
 
                         for (int i = 0; i < entries.Length; i++)
                         {

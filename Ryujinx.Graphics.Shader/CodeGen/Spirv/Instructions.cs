@@ -107,6 +107,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             Add(Instruction.Minimum,                  GenerateMinimum);
             Add(Instruction.MinimumU32,               GenerateMinimumU32);
             Add(Instruction.Multiply,                 GenerateMultiply);
+            Add(Instruction.MultiplyHighS32,          GenerateMultiplyHighS32);
+            Add(Instruction.MultiplyHighU32,          GenerateMultiplyHighU32);
             Add(Instruction.Negate,                   GenerateNegate);
             Add(Instruction.PackDouble2x32,           GeneratePackDouble2x32);
             Add(Instruction.PackHalf2x16,             GeneratePackHalf2x16);
@@ -1088,6 +1090,30 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         private static OperationResult GenerateMultiply(CodeGenContext context, AstOperation operation)
         {
             return GenerateBinary(context, operation, context.Delegates.FMul, context.Delegates.IMul);
+        }
+
+        private static OperationResult GenerateMultiplyHighS32(CodeGenContext context, AstOperation operation)
+        {
+            var src1 = operation.GetSource(0);
+            var src2 = operation.GetSource(1);
+
+            var resultType = context.TypeStruct(false, context.TypeS32(), context.TypeS32());
+            var result = context.SMulExtended(resultType, context.GetS32(src1), context.GetS32(src2));
+            result = context.CompositeExtract(context.TypeS32(), result, 1);
+
+            return new OperationResult(AggregateType.S32, result);
+        }
+
+        private static OperationResult GenerateMultiplyHighU32(CodeGenContext context, AstOperation operation)
+        {
+            var src1 = operation.GetSource(0);
+            var src2 = operation.GetSource(1);
+
+            var resultType = context.TypeStruct(false, context.TypeU32(), context.TypeU32());
+            var result = context.UMulExtended(resultType, context.GetU32(src1), context.GetU32(src2));
+            result = context.CompositeExtract(context.TypeU32(), result, 1);
+
+            return new OperationResult(AggregateType.U32, result);
         }
 
         private static OperationResult GenerateNegate(CodeGenContext context, AstOperation operation)

@@ -300,7 +300,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public byte[] GetBinary()
         {
-            throw new System.NotImplementedException();
+            return null;
         }
 
         public void AddComputePipeline(Auto<DisposablePipeline> pipeline)
