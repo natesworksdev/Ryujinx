@@ -468,9 +468,14 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 return false;
             }
 
-            if (graphicsState.AlphaTestEnable != GraphicsState.AlphaTestEnable ||
-                graphicsState.AlphaTestCompare != GraphicsState.AlphaTestCompare ||
-                graphicsState.AlphaTestReference != GraphicsState.AlphaTestReference)
+            if (graphicsState.AlphaTestEnable != GraphicsState.AlphaTestEnable)
+            {
+                return false;
+            }
+
+            if (graphicsState.AlphaTestEnable &&
+                (graphicsState.AlphaTestCompare != GraphicsState.AlphaTestCompare ||
+                graphicsState.AlphaTestReference != GraphicsState.AlphaTestReference))
             {
                 return false;
             }
