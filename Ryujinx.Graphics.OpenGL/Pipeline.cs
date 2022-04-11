@@ -1177,20 +1177,22 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void SetTextureAndSampler(int binding, ITexture texture, ISampler sampler)
         {
-            if (texture != null && sampler != null)
+            if (texture != null)
             {
                 if (binding == 0)
                 {
                     _unit0Texture = (TextureBase)texture;
-                    _unit0Sampler = (Sampler)sampler;
                 }
                 else
                 {
                     ((TextureBase)texture).Bind(binding);
                 }
-
-                ((Sampler)sampler).Bind(binding);
             }
+
+            Sampler glSampler = (Sampler)sampler;
+
+            glSampler?.Bind(binding);
+            _unit0Sampler = glSampler;
         }
 
 
