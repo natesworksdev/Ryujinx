@@ -313,6 +313,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             TransformFeedbackDescriptor[] transformFeedbackDescriptors = GetTransformFeedbackDescriptors(ref state);
 
+            UpdatePipelineInfo(ref state, ref pipeline, graphicsState, channel);
+
             ShaderSpecializationState specState = new ShaderSpecializationState(ref graphicsState, ref pipeline, transformFeedbackDescriptors);
             GpuAccessorState gpuAccessorState = new GpuAccessorState(poolState, default, graphicsState, specState, transformFeedbackDescriptors);
 
@@ -388,8 +390,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
                     }
                 }
             }
-
-            UpdatePipelineInfo(ref state, ref pipeline, graphicsState, channel);
 
             ShaderSource[] shaderSourcesArray = shaderSources.ToArray();
 
