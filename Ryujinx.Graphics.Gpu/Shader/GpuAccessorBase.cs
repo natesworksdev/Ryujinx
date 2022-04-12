@@ -1,3 +1,4 @@
+using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Engine.Threed;
 using Ryujinx.Graphics.Gpu.Image;
@@ -31,7 +32,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         {
             if (_context.Capabilities.Api == TargetApi.Vulkan)
             {
-                return 1 + GetStageIndex() * 18 + index;
+                return 1 + GetBindingFromIndex(index, _context.Capabilities.MaximumUniformBuffersPerStage, "Uniform buffer");
             }
             else
             {
@@ -44,7 +45,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         {
             if (_context.Capabilities.Api == TargetApi.Vulkan)
             {
-                return GetStageIndex() * 16 + index;
+                return GetBindingFromIndex(index, _context.Capabilities.MaximumStorageBuffersPerStage, "Storage buffer");
             }
             else
             {
@@ -57,7 +58,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         {
             if (_context.Capabilities.Api == TargetApi.Vulkan)
             {
-                return GetStageIndex() * 32 + index;
+                return GetBindingFromIndex(index, _context.Capabilities.MaximumTexturesPerStage, "Texture");
             }
             else
             {
@@ -70,12 +71,22 @@ namespace Ryujinx.Graphics.Gpu.Shader
         {
             if (_context.Capabilities.Api == TargetApi.Vulkan)
             {
-                return GetStageIndex() * 8 + index;
+                return GetBindingFromIndex(index, _context.Capabilities.MaximumImagesPerStage, "Image");
             }
             else
             {
                 return _resourceCounts.ImagesCount++;
             }
+        }
+
+        private int GetBindingFromIndex(int index, uint maxPerStage, string resourceName)
+        {
+            if ((uint)index >= maxPerStage)
+            {
+                Logger.Error?.Print(LogClass.Gpu, $"{resourceName} index {index} exceeds per stage limit of {maxPerStage}.");
+            }
+
+            return GetStageIndex() * (int)maxPerStage + index;
         }
 
         private int GetStageIndex()
