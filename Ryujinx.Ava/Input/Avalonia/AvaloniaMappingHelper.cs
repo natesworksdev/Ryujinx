@@ -51,7 +51,6 @@ namespace Ryujinx.Input.Avalonia
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryGetAvaKey(Key key, out AvaKey avaKey)
         {
             var keyExist = (int)key < _keyMapping.Length;
@@ -67,7 +66,6 @@ namespace Ryujinx.Input.Avalonia
             return keyExist;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Key ToInputKey(AvaKey key)
         {
             return _avaKeyMapping.GetValueOrDefault(key, Key.Unknown);
