@@ -1,6 +1,7 @@
 ﻿using Ryujinx.Ava.Ui.ViewModels;
 using Ryujinx.Common;
 using Ryujinx.Ui.Common.Configuration;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.Json;
@@ -16,12 +17,12 @@ namespace Ryujinx.Ava.Common.Locale
         public static LocaleManager Instance { get; } = new LocaleManager();
         public Dictionary<string, string> LocaleStrings { get => _localeStrings; set => _localeStrings = value; }
 
-        private Dictionary<string, object[]> _dynamicValues;
+        private ConcurrentDictionary<string, object[]> _dynamicValues;
 
         public LocaleManager()
         {
             _localeStrings = new Dictionary<string, string>();
-            _dynamicValues = new Dictionary<string, object[]>();
+            _dynamicValues = new ConcurrentDictionary<string, object[]>();
 
             Load();
         }
@@ -53,7 +54,7 @@ namespace Ryujinx.Ava.Common.Locale
             {
                 if (_localeStrings.TryGetValue(key, out string value))
                 {
-                    if(_dynamicValues.TryGetValue(key, out var dynamicValue))
+                    if (_dynamicValues.TryGetValue(key, out var dynamicValue))
                     {
                         return string.Format(value, dynamicValue);
                     }
@@ -73,17 +74,7 @@ namespace Ryujinx.Ava.Common.Locale
 
         public void UpdateDynamicValue(string key, params object[] values)
         {
-            lock (_dynamicValues)
-            {
-                if (_dynamicValues.ContainsKey(key))
-                {
-                    _dynamicValues[key] = values;
-                }
-                else
-                {
-                    _dynamicValues.Add(key, values);
-                }
-            }
+            _dynamicValues[key] = values;
 
             OnPropertyChanged("Item");
         }

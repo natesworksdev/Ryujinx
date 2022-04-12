@@ -7,9 +7,8 @@ using LibHac.Fs;
 using LibHac.Fs.Fsa;
 using LibHac.Fs.Shim;
 using LibHac.FsSystem;
-using LibHac.Tools.FsSystem.NcaUtils;
-using LibHac.Ncm;
 using LibHac.Ns;
+using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.Windows;
@@ -20,11 +19,12 @@ using System;
 using System.Buffers;
 using System.IO;
 using System.Threading;
+
 using static LibHac.Fs.ApplicationSaveDataManagement;
-using ApplicationId = LibHac.Ncm.ApplicationId;
-using Path = System.IO.Path;
+
 using LibHac.Tools.Fs;
 using LibHac.Tools.FsSystem;
+using Path = System.IO.Path;
 using Ryujinx.Ui.Common.Helper;
 
 namespace Ryujinx.Ava.Common
@@ -75,7 +75,6 @@ namespace Ryujinx.Ava.Common
 
                 result = _horizonClient.Fs.EnsureApplicationSaveData(out _, new LibHac.Ncm.ApplicationId(titleId), in control, in user);
 
-
                 if (result.IsFailure())
                 {
                     ContentDialogHelper.CreateErrorDialog(_owner, string.Format(LocaleManager.Instance["DialogMessageCreateSaveErrorMessage"], result.ToStringWithName()));
@@ -84,8 +83,7 @@ namespace Ryujinx.Ava.Common
                 }
 
                 // Try to find the savedata again after creating it
-                result = _horizonClient.Fs.FindSaveDataWithFilter(out saveDataInfo, SaveDataSpaceId.User,
-                    in filter);
+                result = _horizonClient.Fs.FindSaveDataWithFilter(out saveDataInfo, SaveDataSpaceId.User, in filter);
             }
 
             if (result.IsSuccess())
@@ -173,13 +171,13 @@ namespace Ryujinx.Ava.Common
                         Nca mainNca = null;
                         Nca patchNca = null;
 
-                        if (Path.GetExtension(titleFilePath).ToLower() == ".nsp" ||
-                            Path.GetExtension(titleFilePath).ToLower() == ".pfs0" ||
-                            Path.GetExtension(titleFilePath).ToLower() == ".xci")
+                        string extension = Path.GetExtension(titleFilePath).ToLower();
+
+                        if (extension == ".nsp" || extension == ".pfs0" || extension == ".xci")
                         {
                             PartitionFileSystem pfs;
 
-                            if (Path.GetExtension(titleFilePath) == ".xci")
+                            if (extension == ".xci")
                             {
                                 Xci xci = new(_virtualFileSystem.KeySet, file.AsStorage());
 
@@ -222,7 +220,7 @@ namespace Ryujinx.Ava.Common
                         if (mainNca == null)
                         {
                             Logger.Error?.Print(LogClass.Application,
-                                "Extraction failure. The main NCA was not present in the selected file.");
+                                "Extraction failure. The main NCA was not present in the selected file");
 
                             Dispatcher.UIThread.InvokeAsync(() =>
                             {
@@ -370,7 +368,7 @@ namespace Ryujinx.Ava.Common
 
                 using (destHandle)
                 {
-                    const int maxBufferSize = 1024 * 1024;
+                    const int MaxBufferSize = 1024 * 1024;
 
                     rc = fs.GetFileSize(out long fileSize, sourceHandle);
                     if (rc.IsFailure())
@@ -378,7 +376,7 @@ namespace Ryujinx.Ava.Common
                         return rc;
                     }
 
-                    int bufferSize = (int)Math.Min(maxBufferSize, fileSize);
+                    int bufferSize = (int)Math.Min(MaxBufferSize, fileSize);
 
                     byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
                     try

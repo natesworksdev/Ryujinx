@@ -1,11 +1,9 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Input;
-using Ryujinx.Ava.Ui.Controls;
-using Ryujinx.Ava.Ui.Windows;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
+
 using AvaKey = Avalonia.Input.Key;
 using TextInputEventArgs = OpenTK.Windowing.Common.TextInputEventArgs;
 
@@ -19,7 +17,7 @@ namespace Ryujinx.Input.Avalonia
 
         public event EventHandler<KeyEventArgs> KeyPressed;
         public event EventHandler<KeyEventArgs> KeyRelease;
-        public event EventHandler<OpenTK.Windowing.Common.TextInputEventArgs> TextInput;
+        public event EventHandler<TextInputEventArgs> TextInput;
 
         public string DriverName => "Avalonia";
 
@@ -104,7 +102,7 @@ namespace Ryujinx.Input.Avalonia
                 return false;
             }
 
-            AvaKey nativeKey = AvaloniaMappingHelper.ToAvaKey(key);
+            AvaloniaMappingHelper.TryGetAvaKey(key, out var nativeKey);
 
             return _pressedKeys.Contains(nativeKey);
         }

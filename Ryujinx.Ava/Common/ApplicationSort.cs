@@ -1,6 +1,6 @@
 namespace Ryujinx.Ava.Common
 {
-    public enum ApplicationSort
+    internal enum ApplicationSort
     {
         Title,
         TitleId,

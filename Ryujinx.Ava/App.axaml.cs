@@ -9,6 +9,7 @@ using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.Ui.Common.Configuration;
 using System;
+using System.IO;
 
 namespace Ryujinx.Ava
 {
@@ -40,16 +41,7 @@ namespace Ryujinx.Ava
 
         private void CustomThemeChanged_Event(object sender, ReactiveEventArgs<bool> e)
         {
-            try
-            {
-                ApplyConfiguredTheme();
-            }
-            catch (Exception)
-            {
-                Logger.Warning?.Print(LogClass.Application, "Failed to Apply Theme. A restart is needed to apply the selected theme");
-
-                ShowRestartDialog();
-            }
+            ApplyConfiguredTheme();
         }
 
         private async void ShowRestartDialog()
@@ -64,78 +56,85 @@ namespace Ryujinx.Ava
 
         private void ThemeChanged_Event(object sender, ReactiveEventArgs<string> e)
         {
+            ApplyConfiguredTheme();
+        }
+
+        private void ApplyConfiguredTheme()
+        {
             try
             {
-                ApplyConfiguredTheme();
+                string baseStyle = ConfigurationState.Instance.Ui.BaseStyle;
+                string themePath = ConfigurationState.Instance.Ui.CustomThemePath;
+                bool enableCustomTheme = ConfigurationState.Instance.Ui.EnableCustomTheme;
+
+                if (string.IsNullOrWhiteSpace(baseStyle))
+                {
+                    ConfigurationState.Instance.Ui.BaseStyle.Value = "Dark";
+
+                    baseStyle = ConfigurationState.Instance.Ui.BaseStyle;
+                }
+
+                var theme = AvaloniaLocator.Current.GetService<FluentAvaloniaTheme>();
+
+                theme.RequestedTheme = baseStyle;
+
+                var currentStyles = this.Styles;
+
+                if (currentStyles.Count > 1)
+                {
+                    currentStyles.RemoveRange(1, currentStyles.Count - 1);
+                }
+
+                IStyle newStyles = null;
+
+                try
+                {
+                    newStyles = (Styles)AvaloniaXamlLoader.Load(new Uri($"avares://Ryujinx.Ava/Assets/Styles/Base{baseStyle}.xaml", UriKind.Absolute));
+                }
+                catch (XamlLoadException)
+                {
+                    newStyles = (Styles)AvaloniaXamlLoader.Load(new Uri($"avares://Ryujinx.Ava/Assets/Styles/BaseDark.xaml", UriKind.Absolute));
+                }
+
+                if (currentStyles.Count == 2)
+                {
+                    currentStyles[1] = newStyles;
+                }
+                else
+                {
+                    currentStyles.Add(newStyles);
+                }
+
+                if (enableCustomTheme)
+                {
+                    if (!string.IsNullOrWhiteSpace(themePath))
+                    {
+                        try
+                        {
+                            var themeContent = File.ReadAllText(themePath);
+                            var customStyle = AvaloniaRuntimeXamlLoader.Parse<IStyle>(themeContent);
+
+                            if (currentStyles.Count == 3)
+                            {
+                                currentStyles[2] = customStyle;
+                            }
+                            else
+                            {
+                                currentStyles.Add(customStyle);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Error?.Print(LogClass.Application, $"Failed to Apply Custom Theme. Error: {ex.Message}");
+                        }
+                    }
+                }
             }
             catch (Exception)
             {
                 Logger.Warning?.Print(LogClass.Application, "Failed to Apply Theme. A restart is needed to apply the selected theme");
 
                 ShowRestartDialog();
-            }
-        }
-
-        private void ApplyConfiguredTheme()
-        {
-            string baseStyle = ConfigurationState.Instance.Ui.BaseStyle;
-            string themePath = ConfigurationState.Instance.Ui.CustomThemePath;
-            bool enableCustomTheme = ConfigurationState.Instance.Ui.EnableCustomTheme;
-
-            if (string.IsNullOrWhiteSpace(baseStyle))
-            {
-                ConfigurationState.Instance.Ui.BaseStyle.Value = "Dark";
-
-                baseStyle = ConfigurationState.Instance.Ui.BaseStyle;
-            }
-
-            var theme = AvaloniaLocator.Current.GetService<FluentAvaloniaTheme>();
-            
-            theme.RequestedTheme = baseStyle;
-            
-            var currentStyles = this.Styles;
-
-            if (currentStyles.Count > 1)
-            {
-                currentStyles.RemoveRange(1, currentStyles.Count - 1);
-            }
-
-            IStyle newStyles = null;
-
-            newStyles = (Styles)AvaloniaXamlLoader.Load(new Uri($"avares://Ryujinx.Ava/Assets/Styles/Base{baseStyle}.xaml", UriKind.Absolute));
-
-            if (currentStyles.Count == 2)
-            {
-                currentStyles[1] = newStyles;
-            }
-            else
-            {
-                currentStyles.Add(newStyles);
-            }
-
-            if (enableCustomTheme)
-            {
-                if (!string.IsNullOrWhiteSpace(themePath))
-                {
-                    try
-                    {
-                        var themeContent = System.IO.File.ReadAllText(themePath);
-                        var customStyle = AvaloniaRuntimeXamlLoader.Parse<IStyle>(themeContent);
-
-                        if (currentStyles.Count == 3)
-                        {
-                            currentStyles[2] = customStyle;
-                        }
-                        else
-                        {
-                            currentStyles.Add(customStyle);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Error?.Print(LogClass.Application, $"Failed to Apply Custom Theme. Error: {ex.Message}");
-                    }
-                }
             }
         }
     }

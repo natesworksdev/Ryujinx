@@ -3,8 +3,8 @@ using Ryujinx.Common.Configuration.Hid.Keyboard;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+
 using ConfigKey = Ryujinx.Common.Configuration.Hid.Key;
-using Vector2 = OpenTK.Mathematics.Vector2;
 
 namespace Ryujinx.Input.Avalonia
 {
@@ -61,7 +61,7 @@ namespace Ryujinx.Input.Avalonia
                         continue;
                     }
 
-                    // Do not touch state of button already pressed
+                    // Do not touch state of the button already pressed
                     if (!result.IsPressed(entry.To))
                     {
                         result.SetPressed(entry.To, rawState.IsPressed(entry.From));
@@ -100,7 +100,7 @@ namespace Ryujinx.Input.Avalonia
             {
                 return _driver.IsPressed(key);
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
@@ -200,14 +200,14 @@ namespace Ryujinx.Input.Avalonia
 
             Vector2 stick = new(stickX, stickY);
 
-            stick.NormalizeFast();
+            stick = Vector2.Normalize(stick);
 
             return ((short)(stick.X * short.MaxValue), (short)(stick.Y * short.MaxValue));
         }
 
         public void Clear()
         {
-            (_driver as AvaloniaKeyboardDriver)?.ResetKeys();
+            _driver?.ResetKeys();
         }
 
         private class ButtonMappingEntry
