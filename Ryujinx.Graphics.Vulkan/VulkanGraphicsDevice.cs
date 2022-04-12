@@ -318,6 +318,10 @@ namespace Ryujinx.Graphics.Vulkan
                 supportsTextureShadowLod: false,
                 supportsViewportSwizzle: false,
                 supportsIndirectParameters: SupportsIndirectParameters,
+                maximumUniformBuffersPerStage: Constants.MaxUniformBuffersPerStage,
+                maximumStorageBuffersPerStage: Constants.MaxStorageBuffersPerStage,
+                maximumTexturesPerStage: Constants.MaxTexturesPerStage,
+                maximumImagesPerStage: Constants.MaxImagesPerStage,
                 maximumComputeSharedMemorySize: (int)limits.MaxComputeSharedMemorySize,
                 maximumSupportedAnisotropy: (int)limits.MaxSamplerAnisotropy,
                 storageBufferOffsetAlignment: (int)limits.MinStorageBufferOffsetAlignment);

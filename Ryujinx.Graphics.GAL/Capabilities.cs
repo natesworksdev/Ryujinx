@@ -24,6 +24,11 @@ namespace Ryujinx.Graphics.GAL
         public readonly bool SupportsViewportSwizzle;
         public readonly bool SupportsIndirectParameters;
 
+        public readonly uint MaximumUniformBuffersPerStage;
+        public readonly uint MaximumStorageBuffersPerStage;
+        public readonly uint MaximumTexturesPerStage;
+        public readonly uint MaximumImagesPerStage;
+
         public readonly int MaximumComputeSharedMemorySize;
         public readonly float MaximumSupportedAnisotropy;
         public readonly int StorageBufferOffsetAlignment;
@@ -46,6 +51,10 @@ namespace Ryujinx.Graphics.GAL
             bool supportsTextureShadowLod,
             bool supportsViewportSwizzle,
             bool supportsIndirectParameters,
+            uint maximumUniformBuffersPerStage,
+            uint maximumStorageBuffersPerStage,
+            uint maximumTexturesPerStage,
+            uint maximumImagesPerStage,
             int maximumComputeSharedMemorySize,
             float maximumSupportedAnisotropy,
             int storageBufferOffsetAlignment)
@@ -67,6 +76,10 @@ namespace Ryujinx.Graphics.GAL
             SupportsTextureShadowLod = supportsTextureShadowLod;
             SupportsViewportSwizzle = supportsViewportSwizzle;
             SupportsIndirectParameters = supportsIndirectParameters;
+            MaximumUniformBuffersPerStage = maximumUniformBuffersPerStage;
+            MaximumStorageBuffersPerStage = maximumStorageBuffersPerStage;
+            MaximumTexturesPerStage = maximumTexturesPerStage;
+            MaximumImagesPerStage = maximumImagesPerStage;
             MaximumComputeSharedMemorySize = maximumComputeSharedMemorySize;
             MaximumSupportedAnisotropy = maximumSupportedAnisotropy;
             StorageBufferOffsetAlignment = storageBufferOffsetAlignment;

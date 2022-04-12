@@ -43,7 +43,7 @@ namespace Ryujinx.Graphics.OpenGL
         private CounterQueueEvent _activeConditionalRender;
 
         private Vector4<int>[] _fpIsBgra = new Vector4<int>[SupportBuffer.FragmentIsBgraCount];
-        private Vector4<float>[] _renderScale = new Vector4<float>[65];
+        private Vector4<float>[] _renderScale = new Vector4<float>[73];
         private int _fragmentScaleCount;
 
         private TextureBase _unit0Texture;

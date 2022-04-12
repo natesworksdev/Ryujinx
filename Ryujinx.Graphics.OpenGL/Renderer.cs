@@ -117,6 +117,10 @@ namespace Ryujinx.Graphics.OpenGL
                 supportsTextureShadowLod: HwCapabilities.SupportsTextureShadowLod,
                 supportsViewportSwizzle: HwCapabilities.SupportsViewportSwizzle,
                 supportsIndirectParameters: HwCapabilities.SupportsIndirectParameters,
+                maximumUniformBuffersPerStage: 13, // TODO: Avoid hardcoding those limits here and get from driver?
+                maximumStorageBuffersPerStage: 16,
+                maximumTexturesPerStage: 32,
+                maximumImagesPerStage: 8,
                 maximumComputeSharedMemorySize: HwCapabilities.MaximumComputeSharedMemorySize,
                 maximumSupportedAnisotropy: HwCapabilities.MaximumSupportedAnisotropy,
                 storageBufferOffsetAlignment: HwCapabilities.StorageBufferOffsetAlignment);

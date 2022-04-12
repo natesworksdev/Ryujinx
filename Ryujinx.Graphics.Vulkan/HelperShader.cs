@@ -31,7 +31,7 @@ void main()
 
         private const string ColorBlitFragmentShaderSource = @"#version 450 core
 
-layout (binding = 32, set = 2) uniform sampler2D tex;
+layout (binding = 64, set = 2) uniform sampler2D tex;
 
 layout (location = 0) in vec2 tex_coord;
 layout (location = 0) out vec4 colour;
@@ -43,7 +43,7 @@ void main()
 
         private const string ColorBlitClearAlphaFragmentShaderSource = @"#version 450 core
 
-layout (binding = 32, set = 2) uniform sampler2D tex;
+layout (binding = 64, set = 2) uniform sampler2D tex;
 
 layout (location = 0) in vec2 tex_coord;
 layout (location = 0) out vec4 colour;
@@ -82,7 +82,6 @@ void main()
 {
     colour = clear_colour;
 }";
-
 
         private readonly PipelineHelperShader _pipeline;
         private readonly ISampler _samplerLinear;
@@ -127,7 +126,7 @@ void main()
             var fragmentBindings = new ShaderBindings(
                 Array.Empty<int>(),
                 Array.Empty<int>(),
-                new[] { 32 },
+                new[] { Constants.MaxTexturesPerStage },
                 Array.Empty<int>(),
                 Array.Empty<int>(),
                 Array.Empty<int>());
@@ -191,7 +190,7 @@ void main()
 
             var sampler = linearFilter ? _samplerLinear : _samplerNearest;
 
-            _pipeline.SetTextureAndSampler(32, src, sampler);
+            _pipeline.SetTextureAndSampler(Constants.MaxTexturesPerStage, src, sampler);
 
             Span<float> region = stackalloc float[RegionBufferSize / sizeof(float)];
 
@@ -328,7 +327,7 @@ void main()
         {
             const int RegionBufferSize = 16;
 
-            pipeline.SetTextureAndSampler(32, src, srcSampler);
+            pipeline.SetTextureAndSampler(Constants.MaxTexturesPerStage, src, srcSampler);
 
             Span<float> region = stackalloc float[RegionBufferSize / sizeof(float)];
 
