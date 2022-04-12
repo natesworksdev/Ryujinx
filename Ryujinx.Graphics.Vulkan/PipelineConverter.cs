@@ -52,8 +52,6 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     int bindIndex = attachmentIndices[i];
 
-                    var format = state.AttachmentFormats[i];
-
                     attachmentDescs[i] = new AttachmentDescription(
                         0,
                         attachmentFormats[i],
