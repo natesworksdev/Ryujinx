@@ -426,12 +426,11 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <param name="sources">Source for each shader stage</param>
         private void EnqueueProgramToSave(CachedShaderProgram program, IProgram hostProgram, ShaderSource[] sources)
         {
-            byte[] binaryCode = _context.Capabilities.Api == TargetApi.Vulkan ? ShaderBinarySerializer.Pack(sources) : null;
-
-            ProgramToSave programToSave = new ProgramToSave(program, hostProgram, binaryCode);
-
             if (_diskCacheHostStorage.CacheEnabled)
             {
+                byte[] binaryCode = _context.Capabilities.Api == TargetApi.Vulkan ? ShaderBinarySerializer.Pack(sources) : null;
+                ProgramToSave programToSave = new ProgramToSave(program, hostProgram, binaryCode);
+
                 _programsToSaveQueue.Enqueue(programToSave);
             }
         }
