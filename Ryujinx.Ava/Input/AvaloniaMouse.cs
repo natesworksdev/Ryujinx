@@ -1,9 +1,10 @@
 using Ryujinx.Common.Configuration.Hid;
+using Ryujinx.Input;
 using System;
 using System.Drawing;
 using System.Numerics;
 
-namespace Ryujinx.Input.Avalonia
+namespace Ryujinx.Ava.Input
 {
     public class AvaloniaMouse : IMouse
     {

@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Ryujinx.Input;
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using AvaKey = Avalonia.Input.Key;
 
-namespace Ryujinx.Input.Avalonia
+namespace Ryujinx.Ava.Input
 {
     public static class AvaloniaMappingHelper
     {

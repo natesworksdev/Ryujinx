@@ -1,12 +1,13 @@
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Threading;
+using Ryujinx.Input;
 using System;
 using System.Numerics;
+using MouseButton = Ryujinx.Input.MouseButton;
 using Size = System.Drawing.Size;
 
-namespace Ryujinx.Input.Avalonia
+namespace Ryujinx.Ava.Input
 {
     public class AvaloniaMouseDriver : IGamepadDriver
     {

@@ -1,13 +1,15 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Input;
+using Ryujinx.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 using AvaKey = Avalonia.Input.Key;
+using Key = Ryujinx.Input.Key;
 using TextInputEventArgs = OpenTK.Windowing.Common.TextInputEventArgs;
 
-namespace Ryujinx.Input.Avalonia
+namespace Ryujinx.Ava.Input
 {
     public class AvaloniaKeyboardDriver : IGamepadDriver
     {

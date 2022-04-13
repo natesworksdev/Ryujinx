@@ -1,12 +1,14 @@
 ﻿using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Keyboard;
+using Ryujinx.Input;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
 
 using ConfigKey = Ryujinx.Common.Configuration.Hid.Key;
+using Key = Ryujinx.Input.Key;
 
-namespace Ryujinx.Input.Avalonia
+namespace Ryujinx.Ava.Input
 {
     public class AvaloniaKeyboard : IKeyboard
     {
