@@ -8,20 +8,20 @@ using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Common.Locale;
+using Ryujinx.Ava.Input;
 using Ryujinx.Ava.Ui.Applet;
 using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.Models;
 using Ryujinx.Ava.Ui.ViewModels;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
-using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Graphics.Gpu;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
-using Ryujinx.Input.Avalonia;
 using Ryujinx.Input.SDL2;
 using Ryujinx.Modules;
+using Ryujinx.Ui.Common.Configuration;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.ComponentModel;
@@ -29,9 +29,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+
 using InputManager = Ryujinx.Input.HLE.InputManager;
-using ProgressBar = Avalonia.Controls.ProgressBar;
-using Ryujinx.Ui.App.Common;
+using ProgressBar = Avalonia.Controls.ProgressBar;using Ryujinx.Ui.App.Common;
 using Ryujinx.Ui.Common;
 
 namespace Ryujinx.Ava.Ui.Windows

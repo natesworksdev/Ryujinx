@@ -574,7 +574,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             }
         }
 
-        public ApplicationSort SortMode
+        internal ApplicationSort SortMode
         {
             get => (ApplicationSort)ConfigurationState.Instance.Ui.ApplicationSort.Value;
             private set
@@ -776,7 +776,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
             Thread thread = new(() =>
             {
-                _owner.ApplicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs, ConfigurationState.Instance.System.Language);
+                _owner.ApplicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs.Value, ConfigurationState.Instance.System.Language);
 
                 _isLoading = false;
             })

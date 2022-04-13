@@ -2,16 +2,13 @@
 using Avalonia.Controls;
 using Avalonia.Threading;
 using OpenTK.Windowing.Common;
+using Ryujinx.Ava.Input;
 using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.Windows;
+using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.HLE.Ui;
-using Ryujinx.Input.Avalonia;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.Ui.Applet
 {
@@ -74,7 +71,7 @@ namespace Ryujinx.Ava.Ui.Applet
 
         private void AvaloniaDynamicTextInputHandler_KeyRelease(object sender, Avalonia.Input.KeyEventArgs e)
         {
-            var key = (Ryujinx.Common.Configuration.Hid.Key)AvaloniaMappingHelper.ToInputKey(e.Key);
+            var key = (Key)AvaloniaMappingHelper.ToInputKey(e.Key);
 
             if (!(KeyReleasedEvent?.Invoke(key)).GetValueOrDefault(true))
             {
@@ -119,7 +116,6 @@ namespace Ryujinx.Ava.Ui.Applet
             {
                 return Volatile.Read(ref _canProcessInput);
             }
-
             set
             {
                 Volatile.Write(ref _canProcessInput, value);

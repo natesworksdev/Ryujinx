@@ -58,7 +58,7 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGl
 
             _initialized = true;
 
-            _interface = GRGlInterface.Create(proc => PrimaryContext.BaseContext.GetProcAddress(proc));
+            _interface = GRGlInterface.Create();
             _grContext = GRContext.CreateGl(_interface, new GRContextOptions { AvoidStencilBuffers = true });
             if (_maxResourceBytes.HasValue)
             {

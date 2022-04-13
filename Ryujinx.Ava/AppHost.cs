@@ -10,6 +10,7 @@ using Ryujinx.Audio.Backends.SoundIo;
 using Ryujinx.Audio.Integration;
 using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Common.Locale;
+using Ryujinx.Ava.Input;
 using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.Models;
 using Ryujinx.Ava.Ui.Windows;
@@ -26,7 +27,6 @@ using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.Input;
-using Ryujinx.Input.Avalonia;
 using Ryujinx.Input.HLE;
 using Ryujinx.Ui.Common;
 using Ryujinx.Ui.Common.Configuration;
@@ -412,7 +412,6 @@ namespace Ryujinx.Ava
                 Device.DisposeGpu();
 
                 Renderer?.DestroyBackgroundContext();
-
                 Renderer?.MakeCurrent(null);
             });
             thread.Start();
@@ -904,7 +903,7 @@ namespace Ryujinx.Ava
                 dockedMode += $" ({scale}x)";
             }
 
-            string vendor = _renderer is Renderer renderer ? renderer.GpuVendor : "Vulkan Test";
+            string vendor = _renderer is Renderer renderer ? renderer.GpuVendor : "";
 
             StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
                 Device.EnableDeviceVsync,
