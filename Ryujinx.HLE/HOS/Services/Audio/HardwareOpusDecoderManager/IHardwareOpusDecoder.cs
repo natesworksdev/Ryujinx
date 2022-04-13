@@ -1,5 +1,6 @@
 using Ryujinx.HLE.HOS.Services.Audio.Types;
 using System;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Audio.HardwareOpusDecoderManager
 {
@@ -97,9 +98,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.HardwareOpusDecoderManager
 
             if (result == ResultCode.Success)
             {
-                byte[] pcmDataBytes = new byte[outPcmData.Length * sizeof(short)];
-                Buffer.BlockCopy(outPcmData, 0, pcmDataBytes, 0, pcmDataBytes.Length);
-                context.Memory.Write(outputPosition, pcmDataBytes);
+                context.Memory.Write(outputPosition, MemoryMarshal.Cast<short, byte>(outPcmData.AsSpan()));
 
                 context.ResponseData.Write(outConsumed);
                 context.ResponseData.Write(outSamples);
