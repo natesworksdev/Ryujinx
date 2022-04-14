@@ -14,7 +14,6 @@ using Ryujinx.Common.SystemInfo;
 using Ryujinx.Modules;
 using Ryujinx.Ui.Common;
 using Ryujinx.Ui.Common.Configuration;
-using SixLabors.ImageSharp.Formats.Jpeg;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -23,12 +22,12 @@ namespace Ryujinx.Ava
 {
     internal class Program
     {
-        public static double WindowScaleFactor { get; set; }
-        public static string Version           { get; private set; }
-        public static string ConfigurationPath { get; private set; }
-
+        public static double WindowScaleFactor  { get; set; }
+        public static string Version            { get; private set; }
+        public static string ConfigurationPath  { get; private set; }
         public static string CommandLineProfile { get; set; }
-        public static bool   PreviewerDetached { get; private set; }
+        public static bool   PreviewerDetached  { get; private set; }
+
         public static RenderTimer RenderTimer { get; private set; }
 
         public static void Main(string[] args)
@@ -113,7 +112,7 @@ namespace Ryujinx.Ava
                 {
                     startFullscreenArg = true;
                 }
-                else if (launchPathArg == null)
+                else
                 {
                     launchPathArg = arg;
                 }
@@ -130,12 +129,9 @@ namespace Ryujinx.Ava
 
             Console.Title = $"Ryujinx Console {Version}";
 
-            string systemPath = Environment.GetEnvironmentVariable("Path", EnvironmentVariableTarget.Machine);
-            Environment.SetEnvironmentVariable("Path", $"{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin")};{systemPath}");
-
             // Hook unhandled exception and process exit events.
             AppDomain.CurrentDomain.UnhandledException += (object sender, UnhandledExceptionEventArgs e) => ProcessUnhandledException(e.ExceptionObject as Exception, e.IsTerminating);
-            AppDomain.CurrentDomain.ProcessExit        += (object sender, EventArgs e)                   => Exit();
+            AppDomain.CurrentDomain.ProcessExit += (object sender, EventArgs e) => Exit();
 
             // Setup base data directory.
             AppDataManager.Initialize(baseDirPathArg);
@@ -149,12 +145,6 @@ namespace Ryujinx.Ava
             // Initialize Discord integration.
             DiscordIntegrationModule.Initialize();
 
-            // Sets ImageSharp Jpeg Encoder Quality.
-            SixLabors.ImageSharp.Configuration.Default.ImageFormatsManager.SetEncoder(JpegFormat.Instance, new JpegEncoder()
-            {
-                Quality = 100
-            });
-
             ReloadConfig();
 
             // Logging system information.
@@ -166,10 +156,12 @@ namespace Ryujinx.Ava
 
             // Check if keys exists.
             bool hasSystemProdKeys = File.Exists(Path.Combine(AppDataManager.KeysDirPath, "prod.keys"));
-            bool hasCommonProdKeys = AppDataManager.Mode == AppDataManager.LaunchMode.UserProfile && File.Exists(Path.Combine(AppDataManager.KeysDirPathUser, "prod.keys"));
-            if (!hasSystemProdKeys && !hasCommonProdKeys)
+            if (!hasSystemProdKeys)
             {
-                MainWindow.ShowKeyErrorOnLoad = true;
+                if (!(AppDataManager.Mode == AppDataManager.LaunchMode.UserProfile && File.Exists(Path.Combine(AppDataManager.KeysDirPathUser, "prod.keys"))))
+                {
+                    MainWindow.ShowKeyErrorOnLoad = true;
+                }
             }
 
             if (launchPathArg != null)
@@ -184,7 +176,14 @@ namespace Ryujinx.Ava
             string appDataConfigurationPath = Path.Combine(AppDataManager.BaseDirPath,            "Config.json");
 
             // Now load the configuration as the other subsystems are now registered
-            ConfigurationPath = File.Exists(localConfigurationPath) ? localConfigurationPath : File.Exists(appDataConfigurationPath) ? appDataConfigurationPath : null;
+            if (File.Exists(localConfigurationPath))
+            {
+                ConfigurationPath = localConfigurationPath;
+            }
+            else if (File.Exists(appDataConfigurationPath))
+            {
+                ConfigurationPath = appDataConfigurationPath;
+            }
 
             if (ConfigurationPath == null)
             {

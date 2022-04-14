@@ -1,13 +1,7 @@
-﻿using Avalonia.Controls;
-using Avalonia.Media;
-using Avalonia.Threading;
+﻿using Avalonia.Media;
 using Ryujinx.Ava.Ui.Windows;
 using Ryujinx.HLE.Ui;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.Ui.Applet
 {
@@ -40,15 +34,10 @@ namespace Ryujinx.Ava.Ui.Applet
                     (float)solidColor.Color.G / 255,
                     (float)solidColor.Color.B / 255);
             }
-            else return new ThemeColor();
-        }
-
-        private ThemeColor ColorToThemeColor(Color color)
-        {
-                return new ThemeColor((float)color.A / 255,
-                    (float)color.R / 255,
-                    (float)color.G / 255,
-                    (float)color.B / 255);
+            else
+            {
+                return new ThemeColor();
+            }
         }
     }
 }

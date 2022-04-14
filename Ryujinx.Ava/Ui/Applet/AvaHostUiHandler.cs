@@ -1,6 +1,5 @@
 using Avalonia.Controls;
 using Avalonia.Threading;
-using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.Windows;
@@ -11,7 +10,6 @@ using Ryujinx.HLE.Ui;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-
 
 namespace Ryujinx.Ava.Ui.Applet
 {
@@ -92,9 +90,9 @@ namespace Ryujinx.Ava.Ui.Applet
         public void ExecuteProgram(Switch device, ProgramSpecifyKind kind, ulong value)
         {
             device.Configuration.UserChannelPersistence.ExecuteProgram(kind, value);
-            if (((MainWindow)_parent).AppHost != null)
+            if (_parent.AppHost != null)
             {
-                Task.Run(((MainWindow)_parent).AppHost.Stop);
+                Task.Run(_parent.AppHost.Stop);
             }
         }
 

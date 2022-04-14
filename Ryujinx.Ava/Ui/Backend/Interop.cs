@@ -1,4 +1,3 @@
-using PInvoke;
 using System;
 using System.Runtime.InteropServices;
 
@@ -34,6 +33,15 @@ namespace Ryujinx.Ava.Ui.Backend
             public IntPtr screen;
         }
 
+        [StructLayout(LayoutKind.Sequential)]
+        public struct RECT
+        {
+            public int left;
+            public int top;
+            public int right;
+            public int bottom;
+        }
+
         [DllImport("user32.dll")]
         public static extern bool GetClientRect(IntPtr hwnd, out RECT lpRect);
 
@@ -42,7 +50,6 @@ namespace Ryujinx.Ava.Ui.Backend
 
         [DllImport("libX11.so.6")]
         public static extern int XGetWindowAttributes(IntPtr display, IntPtr window, ref XWindowAttributes attributes);
-
 
         [DllImport("libX11.so.6")]
         public static extern IntPtr XOpenDisplay(IntPtr display);

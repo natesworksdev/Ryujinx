@@ -1,17 +1,11 @@
 using Avalonia;
-using Avalonia.Platform;
-using OpenTK.Graphics.OpenGL;
-using PInvoke;
-using Ryujinx.Ava.Ui.Controls;
 using SPB.Graphics;
 using SPB.Graphics.OpenGL;
 using SPB.Platform;
 using SPB.Windowing;
 using System;
-using System.Runtime.InteropServices;
-using System.Threading;
-using Ryujinx.Ava.Ui.Backend;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Ryujinx.Ava.Ui.Backend.OpenGl
 {
@@ -48,7 +42,7 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGl
             }
             else if (OperatingSystem.IsLinux())
             {
-                Window = new SPB.Platform.GLX.GLXWindow(new NativeHandle(Display), new NativeHandle(Handle));
+                Window = new SPB.Platform.GLX.GLXWindow(new NativeHandle(OpenGl.OpenGlContext.X11DefaultDisplay), new NativeHandle(Handle));
             }
 
             _gpu = AvaloniaLocator.Current.GetService<OpenGlSkiaGpu>();

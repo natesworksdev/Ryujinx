@@ -1,24 +1,20 @@
 ﻿using SPB.Graphics.OpenGL;
 using SPB.Platform;
-using SPB.Platform.GLX;
 using SPB.Platform.WGL;
 using SPB.Windowing;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
+using System.Runtime.Versioning;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.Ui.Backend.OpenGl
 {
     internal class OpenGlContext : IDisposable
     {
         public OpenGLContextBase BaseContext { get; }
-        private static IntPtr _defaultDisplay = IntPtr.Zero;
 
-        public static IntPtr DefaultDisplay => SPB.Platform.X11.X11.DefaultDisplay;
+        [SupportedOSPlatform("linux")]
+        internal static IntPtr X11DefaultDisplay => SPB.Platform.X11.X11.DefaultDisplay;
 
         public OpenGlContext()
         {
@@ -28,21 +24,21 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGl
 
         public void MakeCurrent(SwappableNativeWindowBase window)
         {
-            if(window == null)
+            if (window == null)
             {
                 return;
             }
 
             Monitor.Enter(BaseContext);
 
-            if(OperatingSystem.IsWindows())
+            if (OperatingSystem.IsWindows())
             {
-                if(window  is WGLWindow wGLWindow)
+                if (window is WGLWindow wGLWindow)
                 {
                     MakeCurrent(wGLWindow.DisplayHandle.RawHandle, BaseContext.ContextHandle);
                 }
             }
-            else if(OperatingSystem.IsLinux())
+            else if (OperatingSystem.IsLinux())
             {
                 BaseContext.MakeCurrent(window);
             }
@@ -60,17 +56,12 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGl
             }
         }
 
-
         [DllImport("OPENGL32.DLL", EntryPoint = "wglMakeCurrent", SetLastError = true)]
         private extern static bool MakeCurrent(IntPtr hDc, IntPtr newContext);
 
         public void Dispose()
         {
             BaseContext?.Dispose();
-            if (_defaultDisplay != IntPtr.Zero)
-            {
-                Interop.XCloseDisplay(_defaultDisplay);
-            }
         }
     }
 }

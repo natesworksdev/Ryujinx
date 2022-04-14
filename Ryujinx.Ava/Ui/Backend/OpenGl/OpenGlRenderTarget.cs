@@ -1,9 +1,7 @@
-using System;
-using System.Threading;
 using Avalonia.Skia;
 using OpenTK.Graphics.OpenGL;
-using Ryujinx.Ava.Ui.Backend.OpenGl;
 using SkiaSharp;
+using System;
 
 namespace Ryujinx.Ava.Ui.Backend.OpenGl
 {
@@ -49,15 +47,17 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGl
                         Format = (uint)InternalFormat.Rgba8
                     };
 
-                     var renderTarget = new GRBackendRenderTarget(session.CurrentSize.Width, session.CurrentSize.Height, 1, 0, imageInfo);
+                    var renderTarget = new GRBackendRenderTarget(session.CurrentSize.Width, session.CurrentSize.Height, 1, 0, imageInfo);
 
                     var surface = SKSurface.Create(GrContext, renderTarget,
                         session.IsYFlipped ? GRSurfaceOrigin.TopLeft : GRSurfaceOrigin.BottomLeft,
                         SKColorType.Rgba8888, SKColorSpace.CreateSrgb());
 
                     if (surface == null)
+                    {
                         throw new InvalidOperationException(
                             $"Surface can't be created with the provided render target");
+                    }
 
                     success = true;
 
@@ -102,10 +102,11 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGl
                 _openGlSession.Dispose();
             }
 
-            public GRContext GrContext { get; }
-            public SKSurface SkSurface { get; }
-            public double ScaleFactor => _openGlSession.Scaling;
+            public GRContext       GrContext     { get; }
+            public SKSurface       SkSurface     { get; }
             public GRSurfaceOrigin SurfaceOrigin { get; }
+
+            public double ScaleFactor => _openGlSession.Scaling;
         }
     }
 }

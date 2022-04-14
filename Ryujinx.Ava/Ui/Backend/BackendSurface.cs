@@ -1,13 +1,12 @@
 using Avalonia;
-using Avalonia.Platform;
 using System;
+
 using static Ryujinx.Ava.Ui.Backend.Interop;
 
 namespace Ryujinx.Ava.Ui.Backend
 {
     public abstract class BackendSurface : IDisposable
     {
-        protected IntPtr Display => OpenGl.OpenGlContext.DefaultDisplay;
         private PixelSize _currentSize;
         public IntPtr Handle { get; protected set; }
 
@@ -31,7 +30,7 @@ namespace Ryujinx.Ava.Ui.Backend
                 else if (OperatingSystem.IsLinux())
                 {
                     XWindowAttributes attributes = new XWindowAttributes();
-                    XGetWindowAttributes(Display, Handle, ref attributes);
+                    XGetWindowAttributes(OpenGl.OpenGlContext.X11DefaultDisplay, Handle, ref attributes);
 
                     size = new PixelSize(attributes.width, attributes.height);
                 }
@@ -43,7 +42,6 @@ namespace Ryujinx.Ava.Ui.Backend
         }
 
         public PixelSize CurrentSize => _currentSize;
-
 
         public virtual void Dispose()
         {
