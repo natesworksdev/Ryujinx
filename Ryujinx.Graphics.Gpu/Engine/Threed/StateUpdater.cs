@@ -7,7 +7,6 @@ using Ryujinx.Graphics.Shader;
 using Ryujinx.Graphics.Texture;
 using System;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Gpu.Engine.Threed
 {
@@ -20,6 +19,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         public const int RasterizerStateIndex = 1;
         public const int ScissorStateIndex = 2;
         public const int VertexBufferStateIndex = 3;
+        public const int PrimitiveRestartStateIndex = 4;
 
         private readonly GpuContext _context;
         private readonly GpuChannel _channel;
@@ -29,11 +29,14 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         private readonly StateUpdateTracker<ThreedClassState> _updateTracker;
 
         private readonly ShaderProgramInfo[] _currentProgramInfo;
+        private ShaderSpecializationState _shaderSpecState;
 
         private bool _vtgWritesRtLayer;
         private byte _vsClipDistancesWritten;
 
         private bool _prevDrawIndexed;
+        private IndexType _prevIndexType;
+        private uint _prevFirstVertex;
         private bool _prevTfEnable;
 
         /// <summary>
@@ -74,6 +77,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     nameof(ThreedClassState.VertexBufferInstanced),
                     nameof(ThreedClassState.VertexBufferState),
                     nameof(ThreedClassState.VertexBufferEndAddress)),
+
+                new StateUpdateCallbackEntry(UpdatePrimitiveRestartState,
+                    nameof(ThreedClassState.PrimitiveRestartDrawArrays),
+                    nameof(ThreedClassState.PrimitiveRestartState)),
 
                 new StateUpdateCallbackEntry(UpdateTessellationState,
                     nameof(ThreedClassState.TessOuterLevel),
@@ -140,8 +147,6 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     nameof(ThreedClassState.PointSpriteEnable),
                     nameof(ThreedClassState.PointCoordReplace)),
 
-                new StateUpdateCallbackEntry(UpdatePrimitiveRestartState, nameof(ThreedClassState.PrimitiveRestartState)),
-
                 new StateUpdateCallbackEntry(UpdateIndexBufferState,
                     nameof(ThreedClassState.IndexBufferState),
                     nameof(ThreedClassState.IndexBufferCount)),
@@ -190,6 +195,17 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Update()
         {
+            // If any state that the shader depends on changed,
+            // then we may need to compile/bind a different version
+            // of the shader for the new state.
+            if (_shaderSpecState != null)
+            {
+                if (!_shaderSpecState.MatchesGraphics(_channel, GetPoolState()))
+                {
+                    ForceShaderUpdate();
+                }
+            }
+
             // The vertex buffer size is calculated using a different
             // method when doing indexed draws, so we need to make sure
             // to update the vertex buffers if we are doing a regular
@@ -197,7 +213,29 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             if (_drawState.DrawIndexed != _prevDrawIndexed)
             {
                 _updateTracker.ForceDirty(VertexBufferStateIndex);
+
+                // If PrimitiveRestartDrawArrays is false and this is a non-indexed draw, we need to ensure primitive restart is disabled.
+                // If PrimitiveRestartDrawArrays is false and this is a indexed draw, we need to ensure primitive restart enable matches GPU state.
+                // If PrimitiveRestartDrawArrays is true, then primitive restart enable should always match GPU state.
+                // That is because "PrimitiveRestartDrawArrays" is not configurable on the backend, it is always
+                // true on OpenGL and always false on Vulkan.
+                if (!_state.State.PrimitiveRestartDrawArrays && _state.State.PrimitiveRestartState.Enable)
+                {
+                    _updateTracker.ForceDirty(PrimitiveRestartStateIndex);
+                }
+
                 _prevDrawIndexed = _drawState.DrawIndexed;
+            }
+
+            // In some cases, the index type is also used to guess the
+            // vertex buffer size, so we must update it if the type changed too.
+            if (_drawState.DrawIndexed &&
+                (_prevIndexType != _state.State.IndexBufferState.Type ||
+                 _prevFirstVertex != _state.State.FirstVertex))
+            {
+                _updateTracker.ForceDirty(VertexBufferStateIndex);
+                _prevIndexType = _state.State.IndexBufferState.Type;
+                _prevFirstVertex = _state.State.FirstVertex;
             }
 
             bool tfEnable = _state.State.TfEnable;
@@ -816,8 +854,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         private void UpdatePrimitiveRestartState()
         {
             PrimitiveRestartState primitiveRestart = _state.State.PrimitiveRestartState;
+            bool enable = primitiveRestart.Enable && (_drawState.DrawIndexed || _state.State.PrimitiveRestartDrawArrays);
 
-            _context.Renderer.Pipeline.SetPrimitiveRestart(primitiveRestart.Enable, primitiveRestart.Index);
+            _context.Renderer.Pipeline.SetPrimitiveRestart(enable, primitiveRestart.Index);
         }
 
         /// <summary>
@@ -852,6 +891,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// </summary>
         private void UpdateVertexBufferState()
         {
+            IndexType indexType = _state.State.IndexBufferState.Type;
+            bool indexTypeSmall = indexType == IndexType.UByte || indexType == IndexType.UShort;
+
             _drawState.IsAnyVbInstanced = false;
 
             for (int index = 0; index < Constants.TotalVertexBuffers; index++)
@@ -883,12 +925,27 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 {
                     // This size may be (much) larger than the real vertex buffer size.
                     // Avoid calculating it this way, unless we don't have any other option.
+
                     size = endAddress.Pack() - address + 1;
+
+                    if (stride > 0 && indexTypeSmall)
+                    {
+                        // If the index type is a small integer type, then we might be still able
+                        // to reduce the vertex buffer size based on the maximum possible index value.
+
+                        ulong maxVertexBufferSize = indexType == IndexType.UByte ? 0x100UL : 0x10000UL;
+
+                        maxVertexBufferSize += _state.State.FirstVertex;
+                        maxVertexBufferSize *= (uint)stride;
+
+                        size = Math.Min(size, maxVertexBufferSize);
+                    }
                 }
                 else
                 {
                     // For non-indexed draws, we can guess the size from the vertex count
                     // and stride.
+
                     int firstInstance = (int)_state.State.FirstInstance;
 
                     var drawState = _state.State.VertexBufferDrawState;
@@ -1019,106 +1076,125 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// </summary>
         private void UpdateShaderState()
         {
+            var shaderCache = _channel.MemoryManager.Physical.ShaderCache;
+
+            _vtgWritesRtLayer = false;
+
             ShaderAddresses addresses = new ShaderAddresses();
-
-            Span<ShaderAddresses> addressesSpan = MemoryMarshal.CreateSpan(ref addresses, 1);
-
-            Span<ulong> addressesArray = MemoryMarshal.Cast<ShaderAddresses, ulong>(addressesSpan);
+            Span<ulong> addressesSpan = addresses.AsSpan();
 
             ulong baseAddress = _state.State.ShaderBaseAddress.Pack();
 
             for (int index = 0; index < 6; index++)
             {
                 var shader = _state.State.ShaderState[index];
-
                 if (!shader.UnpackEnable() && index != 1)
                 {
                     continue;
                 }
 
-                addressesArray[index] = baseAddress + shader.Offset;
+                addressesSpan[index] = baseAddress + shader.Offset;
             }
 
-            GpuAccessorState gas = new GpuAccessorState(
-                _state.State.TexturePoolState.Address.Pack(),
-                _state.State.TexturePoolState.MaximumId,
-                (int)_state.State.TextureBufferIndex,
-                _state.State.EarlyZForce,
-                _drawState.Topology,
-                _state.State.TessMode);
+            GpuChannelPoolState poolState = GetPoolState();
+            GpuChannelGraphicsState graphicsState = GetGraphicsState();
 
-            ShaderBundle gs = _channel.MemoryManager.Physical.ShaderCache.GetGraphicsShader(ref _state.State, _channel, gas, addresses);
+            CachedShaderProgram gs = shaderCache.GetGraphicsShader(ref _state.State, _channel, poolState, graphicsState, addresses);
+
+            _shaderSpecState = gs.SpecializationState;
 
             byte oldVsClipDistancesWritten = _vsClipDistancesWritten;
 
-            _drawState.VsUsesInstanceId = gs.Shaders[0]?.Info.UsesInstanceId ?? false;
-            _vsClipDistancesWritten = gs.Shaders[0]?.Info.ClipDistancesWritten ?? 0;
-            _vtgWritesRtLayer = false;
+            _drawState.VsUsesInstanceId = gs.Shaders[1]?.Info.UsesInstanceId ?? false;
+            _vsClipDistancesWritten = gs.Shaders[1]?.Info.ClipDistancesWritten ?? 0;
 
             if (oldVsClipDistancesWritten != _vsClipDistancesWritten)
             {
                 UpdateUserClipState();
             }
 
-            for (int stage = 0; stage < Constants.ShaderStages; stage++)
+            for (int stageIndex = 0; stageIndex < Constants.ShaderStages; stageIndex++)
             {
-                ShaderProgramInfo info = gs.Shaders[stage]?.Info;
-
-                _currentProgramInfo[stage] = info;
-
-                if (info == null)
-                {
-                    _channel.TextureManager.RentGraphicsTextureBindings(stage, 0);
-                    _channel.TextureManager.RentGraphicsImageBindings(stage, 0);
-                    _channel.BufferManager.SetGraphicsStorageBufferBindings(stage, null);
-                    _channel.BufferManager.SetGraphicsUniformBufferBindings(stage, null);
-                    continue;
-                }
-
-                Span<TextureBindingInfo> textureBindings = _channel.TextureManager.RentGraphicsTextureBindings(stage, info.Textures.Count);
-
-                if (info.UsesRtLayer)
-                {
-                    _vtgWritesRtLayer = true;
-                }
-
-                for (int index = 0; index < info.Textures.Count; index++)
-                {
-                    var descriptor = info.Textures[index];
-
-                    Target target = ShaderTexture.GetTarget(descriptor.Type);
-
-                    textureBindings[index] = new TextureBindingInfo(
-                        target,
-                        descriptor.Binding,
-                        descriptor.CbufSlot,
-                        descriptor.HandleIndex,
-                        descriptor.Flags);
-                }
-
-                TextureBindingInfo[] imageBindings = _channel.TextureManager.RentGraphicsImageBindings(stage, info.Images.Count);
-
-                for (int index = 0; index < info.Images.Count; index++)
-                {
-                    var descriptor = info.Images[index];
-
-                    Target target = ShaderTexture.GetTarget(descriptor.Type);
-                    Format format = ShaderTexture.GetFormat(descriptor.Format);
-
-                    imageBindings[index] = new TextureBindingInfo(
-                        target,
-                        format,
-                        descriptor.Binding,
-                        descriptor.CbufSlot,
-                        descriptor.HandleIndex,
-                        descriptor.Flags);
-                }
-
-                _channel.BufferManager.SetGraphicsStorageBufferBindings(stage, info.SBuffers);
-                _channel.BufferManager.SetGraphicsUniformBufferBindings(stage, info.CBuffers);
+                UpdateStageBindings(stageIndex, gs.Shaders[stageIndex + 1]?.Info);
             }
 
             _context.Renderer.Pipeline.SetProgram(gs.HostProgram);
+        }
+
+        private void UpdateStageBindings(int stage, ShaderProgramInfo info)
+        {
+            _currentProgramInfo[stage] = info;
+
+            if (info == null)
+            {
+                _channel.TextureManager.RentGraphicsTextureBindings(stage, 0);
+                _channel.TextureManager.RentGraphicsImageBindings(stage, 0);
+                _channel.BufferManager.SetGraphicsStorageBufferBindings(stage, null);
+                _channel.BufferManager.SetGraphicsUniformBufferBindings(stage, null);
+                return;
+            }
+
+            Span<TextureBindingInfo> textureBindings = _channel.TextureManager.RentGraphicsTextureBindings(stage, info.Textures.Count);
+
+            if (info.UsesRtLayer)
+            {
+                _vtgWritesRtLayer = true;
+            }
+
+            for (int index = 0; index < info.Textures.Count; index++)
+            {
+                var descriptor = info.Textures[index];
+
+                Target target = ShaderTexture.GetTarget(descriptor.Type);
+
+                textureBindings[index] = new TextureBindingInfo(
+                    target,
+                    descriptor.Binding,
+                    descriptor.CbufSlot,
+                    descriptor.HandleIndex,
+                    descriptor.Flags);
+            }
+
+            TextureBindingInfo[] imageBindings = _channel.TextureManager.RentGraphicsImageBindings(stage, info.Images.Count);
+
+            for (int index = 0; index < info.Images.Count; index++)
+            {
+                var descriptor = info.Images[index];
+
+                Target target = ShaderTexture.GetTarget(descriptor.Type);
+                Format format = ShaderTexture.GetFormat(descriptor.Format);
+
+                imageBindings[index] = new TextureBindingInfo(
+                    target,
+                    format,
+                    descriptor.Binding,
+                    descriptor.CbufSlot,
+                    descriptor.HandleIndex,
+                    descriptor.Flags);
+            }
+
+            _channel.BufferManager.SetGraphicsStorageBufferBindings(stage, info.SBuffers);
+            _channel.BufferManager.SetGraphicsUniformBufferBindings(stage, info.CBuffers);
+        }
+
+        private GpuChannelPoolState GetPoolState()
+        {
+            return new GpuChannelPoolState(
+                _state.State.TexturePoolState.Address.Pack(),
+                _state.State.TexturePoolState.MaximumId,
+                (int)_state.State.TextureBufferIndex);
+        }
+
+        /// <summary>
+        /// Gets the current GPU channel state for shader creation or compatibility verification.
+        /// </summary>
+        /// <returns>Current GPU channel state</returns>
+        private GpuChannelGraphicsState GetGraphicsState()
+        {
+            return new GpuChannelGraphicsState(
+                _state.State.EarlyZForce,
+                _drawState.Topology,
+                _state.State.TessMode);
         }
 
         /// <summary>
