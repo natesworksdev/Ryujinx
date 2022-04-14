@@ -10,12 +10,13 @@ namespace Ryujinx.Graphics.Vulkan
     {
         private readonly Device _device;
         private readonly Auto<DisposableImageView>[] _attachments;
+        private uint _validColorAttachments;
 
         public uint Width { get; }
         public uint Height { get; }
         public uint Layers { get; }
 
-        public uint[]  AttachmentSamples { get; }
+        public uint[] AttachmentSamples { get; }
         public VkFormat[] AttachmentFormats { get; }
         public int[] AttachmentIndices { get; }
 
@@ -34,6 +35,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             _device = device;
             _attachments = new[] { view };
+            _validColorAttachments = 1u;
 
             Width = width;
             Height = height;
@@ -77,6 +79,7 @@ namespace Ryujinx.Graphics.Vulkan
                     var texture = (TextureView)color;
 
                     _attachments[index] = texture.GetImageViewForAttachment();
+                    _validColorAttachments |= 1u << bindIndex;
 
                     AttachmentSamples[index] = (uint)texture.Info.Samples;
                     AttachmentFormats[index] = texture.VkFormat;
@@ -129,6 +132,11 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             return _attachments[index];
+        }
+
+        public bool IsVaidColorAttachment(int bindIndex)
+        {
+            return (uint)bindIndex < Constants.MaxRenderTargets && (_validColorAttachments & (1u << bindIndex)) != 0;
         }
 
         private static bool IsValidTextureView(ITexture texture)
