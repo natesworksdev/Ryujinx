@@ -106,6 +106,8 @@ namespace Ryujinx.Graphics.OpenGL
             GL.Disable(EnableCap.RasterizerDiscard);
             GL.Disable(IndexedEnableCap.ScissorTest, 0);
 
+            GL.Clear(ClearBufferMask.ColorBufferBit);
+
             int srcX0, srcX1, srcY0, srcY1;
             float scale = view.ScaleFactor;
 
