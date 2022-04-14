@@ -167,7 +167,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public unsafe void ClearRenderTargetColor(int index, int layer, ColorF color)
         {
-            if (_framebuffer == null)
+            if (FramebufferParams == null || !FramebufferParams.IsVaidColorAttachment(index))
             {
                 return;
             }
@@ -190,7 +190,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             // TODO: Use stencilMask (fully)
 
-            if (_framebuffer == null || !FramebufferParams.HasDepthStencil)
+            if (FramebufferParams == null || !FramebufferParams.HasDepthStencil)
             {
                 return;
             }
