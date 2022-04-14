@@ -1144,12 +1144,32 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 int vIndex = index * 4;
 
-                v[vIndex] = regions[index].X;
-                v[vIndex + 1] = regions[index].Y;
-                v[vIndex + 2] = regions[index].Width;
-                v[vIndex + 3] = regions[index].Height;
+                var region = regions[index];
 
-                GL.Enable(IndexedEnableCap.ScissorTest, index);
+                bool enabled = (region.X | region.Y) != 0 || region.Width != 0xffff || region.Height != 0xffff;
+                uint mask = 1u << index;
+
+                if (enabled)
+                {
+                    v[vIndex] = region.X;
+                    v[vIndex + 1] = region.Y;
+                    v[vIndex + 2] = region.Width;
+                    v[vIndex + 3] = region.Height;
+
+                    if ((_scissorEnables & mask) == 0)
+                    {
+                        _scissorEnables |= mask;
+                        GL.Enable(IndexedEnableCap.ScissorTest, index);
+                    }
+                }
+                else
+                {
+                    if ((_scissorEnables & mask) != 0)
+                    {
+                        _scissorEnables &= ~mask;
+                        GL.Disable(IndexedEnableCap.ScissorTest, index);
+                    }
+                }
             }
 
             GL.ScissorArray(0, count, v);
