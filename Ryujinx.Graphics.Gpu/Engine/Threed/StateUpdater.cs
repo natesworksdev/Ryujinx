@@ -686,37 +686,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// </summary>
         private void UpdateDepthMode()
         {
-            ref var transform = ref _state.State.ViewportTransform[0];
-            ref var extents = ref _state.State.ViewportExtents[0];
-
-            DepthMode depthMode;
-
-            if (!float.IsInfinity(extents.DepthNear) &&
-                !float.IsInfinity(extents.DepthFar) &&
-                (extents.DepthFar - extents.DepthNear) != 0)
-            {
-                // Try to guess the depth mode being used on the high level API
-                // based on current transform.
-                // It is setup like so by said APIs:
-                // If depth mode is ZeroToOne:
-                //  TranslateZ = Near
-                //  ScaleZ = Far - Near
-                // If depth mode is MinusOneToOne:
-                //  TranslateZ = (Near + Far) / 2
-                //  ScaleZ = (Far - Near) / 2
-                // DepthNear/Far are sorted such as that Near is always less than Far.
-                depthMode = extents.DepthNear != transform.TranslateZ &&
-                            extents.DepthFar  != transform.TranslateZ
-                    ? DepthMode.MinusOneToOne
-                    : DepthMode.ZeroToOne;
-            }
-            else
-            {
-                // If we can't guess from the viewport transform, then just use the depth mode register.
-                depthMode = (DepthMode)(_state.State.DepthMode & 1);
-            }
-
-            _context.Renderer.Pipeline.SetDepthMode(depthMode);
+            _context.Renderer.Pipeline.SetDepthMode(GetDepthMode());
         }
 
         /// <summary>
@@ -1321,18 +1291,34 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             ref var transform = ref _state.State.ViewportTransform[0];
             ref var extents = ref _state.State.ViewportExtents[0];
 
-            // Try to guess the depth mode being used on the high level API
-            // based on current transform.
-            // It is setup like so by said APIs:
-            // If depth mode is ZeroToOne:
-            //  TranslateZ = Near
-            //  ScaleZ = Far - Near
-            // If depth mode is MinusOneToOne:
-            //  TranslateZ = (Near + Far) / 2
-            //  ScaleZ = (Far - Near) / 2
-            // DepthNear/Far are sorted such as that Near is always less than Far.
-            return extents.DepthNear != transform.TranslateZ &&
-                   extents.DepthFar != transform.TranslateZ ? DepthMode.MinusOneToOne : DepthMode.ZeroToOne;
+            DepthMode depthMode;
+
+            if (!float.IsInfinity(extents.DepthNear) &&
+                !float.IsInfinity(extents.DepthFar) &&
+                (extents.DepthFar - extents.DepthNear) != 0)
+            {
+                // Try to guess the depth mode being used on the high level API
+                // based on current transform.
+                // It is setup like so by said APIs:
+                // If depth mode is ZeroToOne:
+                //  TranslateZ = Near
+                //  ScaleZ = Far - Near
+                // If depth mode is MinusOneToOne:
+                //  TranslateZ = (Near + Far) / 2
+                //  ScaleZ = (Far - Near) / 2
+                // DepthNear/Far are sorted such as that Near is always less than Far.
+                depthMode = extents.DepthNear != transform.TranslateZ &&
+                            extents.DepthFar  != transform.TranslateZ
+                    ? DepthMode.MinusOneToOne
+                    : DepthMode.ZeroToOne;
+            }
+            else
+            {
+                // If we can't guess from the viewport transform, then just use the depth mode register.
+                depthMode = (DepthMode)(_state.State.DepthMode & 1);
+            }
+
+            return depthMode;
         }
 
         /// <summary>
