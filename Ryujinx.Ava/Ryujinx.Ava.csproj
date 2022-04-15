@@ -34,12 +34,10 @@
         <AvaloniaResource Include="Assets\Fonts\SegoeFluentIcons.ttf" />
     </ItemGroup>
     <ItemGroup>
-        <None Remove="Assets\Images\star.png" />
         <None Remove="Assets\Styles\BaseDark.xaml" />
         <None Remove="Assets\Styles\BaseLight.xaml" />
     </ItemGroup>
     <ItemGroup>
-        <EmbeddedResource Include="Assets\Images\star.png" />
         <AvaloniaResource Include="Assets\Styles\BaseLight.xaml">
             <Generator>MSBuild:Compile</Generator>
         </AvaloniaResource>
