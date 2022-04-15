@@ -15,9 +15,9 @@ namespace Ryujinx.Ava.Input
         private bool _isDisposed;
 
         public bool[] PressedButtons { get; }
-        
+
         public Vector2 CurrentPosition { get; private set; }
-        public Vector2 Scroll{ get; private set; }
+        public Vector2 Scroll { get; private set; }
 
         public AvaloniaMouseDriver(Control parent)
         {
@@ -39,72 +39,71 @@ namespace Ryujinx.Ava.Input
         private void Parent_PointerReleaseEvent(object o, PointerReleasedEventArgs args)
         {
             var pointerProperties = args.GetCurrentPoint(_widget).Properties;
-            PressedButtons[(int)args.InitialPressMouseButton -1] = false;
+            PressedButtons[(int)args.InitialPressMouseButton - 1] = false;
         }
 
         private void Parent_PointerPressEvent(object o, PointerPressedEventArgs args)
         {
             var pointerProperties = args.GetCurrentPoint(_widget).Properties;
 
-            PressedButtons[(int)(pointerProperties.PointerUpdateKind)] = true;
+            PressedButtons[(int)pointerProperties.PointerUpdateKind] = true;
         }
 
         private void Parent_PointerMovedEvent(object o, PointerEventArgs args)
         {
             var position = args.GetPosition(_widget);
-            
-            CurrentPosition = new Vector2((float) position.X, (float) position.Y);
+
+            CurrentPosition = new Vector2((float)position.X, (float)position.Y);
         }
 
         public void SetMousePressed(MouseButton button)
         {
-            PressedButtons[(int) button] = true;
+            PressedButtons[(int)button] = true;
         }
-        
+
         public void SetMouseReleased(MouseButton button)
         {
-            PressedButtons[(int) button] = false;
+            PressedButtons[(int)button] = false;
         }
-        
+
         public void SetPosition(double x, double y)
         {
-            CurrentPosition = new Vector2((float) x, (float) y);
+            CurrentPosition = new Vector2((float)x, (float)y);
         }
 
         public bool IsButtonPressed(MouseButton button)
         {
-            return PressedButtons[(int) button];
+            return PressedButtons[(int)button];
         }
 
         public Size GetClientSize()
         {
             Size size = new();
-            
+
             Dispatcher.UIThread.InvokeAsync(() =>
             {
-                size.Width = (int)_widget.Bounds.Width;
-                size.Height = (int)_widget.Bounds.Height;
+                size = new Size((int)_widget.Bounds.Width, (int)_widget.Bounds.Height);
             }).Wait();
 
             return size;
         }
 
         public string DriverName => "Avalonia";
-        
+
         public event Action<string> OnGamepadConnected
         {
-            add    { }
+            add { }
             remove { }
         }
 
         public event Action<string> OnGamepadDisconnected
         {
-            add    { }
+            add { }
             remove { }
         }
 
-        public ReadOnlySpan<string> GamepadsIds => new[] {"0"};
-        
+        public ReadOnlySpan<string> GamepadsIds => new[] { "0" };
+
         public IGamepad GetGamepad(string id)
         {
             return new AvaloniaMouse(this);
