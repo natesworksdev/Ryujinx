@@ -310,7 +310,7 @@ namespace Ryujinx.Graphics.Vulkan
                 supportsAstcCompression: features.TextureCompressionAstcLdr,
                 supports3DTextureCompression: true,
                 supportsBgraFormat: true,
-                supportsR4G4Format: false,
+                supportsR4G4Format: FormatCapabilities.FormatSupports(GAL.Format.R4G4Unorm, FormatFeatureFlags.FormatFeatureSampledImageBit),
                 supportsFragmentShaderInterlock: SupportsFragmentShaderInterlock,
                 supportsFragmentShaderOrderingIntel: false,
                 supportsGeometryShaderPassthrough: SupportsGeometryShaderPassthrough,
