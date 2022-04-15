@@ -1,11 +1,9 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
-using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
-using Avalonia.Threading;
 using OpenTK.Graphics.OpenGL;
 using Ryujinx.Ava.Ui.Backend.OpenGl;
 using Ryujinx.Common.Configuration;
@@ -17,7 +15,6 @@ using SPB.Windowing;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-
 
 namespace Ryujinx.Ava.Ui.Controls
 {
@@ -36,8 +33,7 @@ namespace Ryujinx.Ava.Ui.Controls
         public GraphicsDebugLevel DebugLevel { get; }
         public OpenGLContextBase GameContext { get; set; }
 
-        public OpenGLContextBase PrimaryContext =>
-                AvaloniaLocator.Current.GetService<OpenGLContextBase>();
+        public static OpenGLContextBase PrimaryContext => AvaloniaLocator.Current.GetService<OpenGLContextBase>();
 
         private SwappableNativeWindowBase _gameBackgroundWindow;
 
@@ -73,10 +69,7 @@ namespace Ryujinx.Ava.Ui.Controls
         {
             if (!_isInitialized)
             {
-                Task.Run(() =>
-                {
-                    CreateWindow();
-                }).Wait();
+                CreateWindow();
 
                 OnGlInitialized();
                 _isInitialized = true;
@@ -186,9 +179,6 @@ namespace Ryujinx.Ava.Ui.Controls
 
             GameContext = PlatformHelper.CreateOpenGLContext(FramebufferFormat.Default, Major, Minor, flags, shareContext: PrimaryContext);
             GameContext.Initialize(_gameBackgroundWindow);
-            MakeCurrent();
-            GL.LoadBindings(new OpenToolkitBindingsContext(GameContext.GetProcAddress));
-            MakeCurrent(null);
         }
 
         private class GlDrawOperation : ICustomDrawOperation
@@ -228,7 +218,9 @@ namespace Ryujinx.Ava.Ui.Controls
             public void Render(IDrawingContextImpl context)
             {
                 if (_control.Image == 0)
+                {
                     return;
+                }
 
                 if (_framebuffer == 0)
                 {
@@ -245,25 +237,28 @@ namespace Ryujinx.Ava.Ui.Controls
                 GL.BindFramebuffer(FramebufferTarget.Framebuffer, currentFramebuffer);
 
                 if (context is not ISkiaDrawingContextImpl skiaDrawingContextImpl)
+                {
                     return;
+                }
 
                 var imageInfo = new SKImageInfo((int)_control.RenderSize.Width, (int)_control.RenderSize.Height, SKColorType.Rgba8888);
                 var glInfo = new GRGlFramebufferInfo((uint)_framebuffer, SKColorType.Rgba8888.ToGlSizedFormat());
 
                 GL.WaitSync(fence, WaitSyncFlags.None, ulong.MaxValue);
 
-                using (var backendTexture = new GRBackendRenderTarget(imageInfo.Width, imageInfo.Height, 1, 0, glInfo))
-                using (var surface = SKSurface.Create(skiaDrawingContextImpl.GrContext, backendTexture,
-                    GRSurfaceOrigin.BottomLeft, SKColorType.Rgba8888))
+                using var backendTexture = new GRBackendRenderTarget(imageInfo.Width, imageInfo.Height, 1, 0, glInfo);
+                using var surface = SKSurface.Create(skiaDrawingContextImpl.GrContext, backendTexture,
+                    GRSurfaceOrigin.BottomLeft, SKColorType.Rgba8888);
+
+                if (surface == null)
                 {
-                    if (surface == null)
-                        return;
-
-                    var rect = new Rect(new Point(), _control.RenderSize);
-
-                    using (var snapshot = surface.Snapshot())
-                        skiaDrawingContextImpl.SkCanvas.DrawImage(snapshot, rect.ToSKRect(), _control.Bounds.ToSKRect(), new SKPaint());
+                    return;
                 }
+
+                var rect = new Rect(new Point(), _control.RenderSize);
+
+                using var snapshot = surface.Snapshot();
+                skiaDrawingContextImpl.SkCanvas.DrawImage(snapshot, rect.ToSKRect(), _control.Bounds.ToSKRect(), new SKPaint());
             }
         }
     }

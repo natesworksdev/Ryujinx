@@ -1,9 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Input.Raw;
 using Avalonia.Interactivity;
-using Avalonia.VisualTree;
-using System;
 
 namespace Ryujinx.Ava.Ui.Controls
 {
@@ -31,7 +28,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
         public void SendText(string text)
         {
-            OnTextInput(new TextInputEventArgs(){Text = text, Device = KeyboardDevice.Instance, Source = this, RoutedEvent = TextInputEvent});
+            OnTextInput(new TextInputEventArgs() { Text = text, Device = KeyboardDevice.Instance, Source = this, RoutedEvent = TextInputEvent });
         }
     }
 }

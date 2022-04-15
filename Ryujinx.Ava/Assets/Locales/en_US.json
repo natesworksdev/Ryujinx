@@ -504,5 +504,20 @@
   "IconSize": "Icon Size",
   "IconSizeTooltip": "Change the size of game icon",
   "MenuBarOptionsShowConsole": "Show Console",
-  "ShaderCachePurgeError" :  "Error purging shader cache at {0}: {1}"
+  "ShaderCachePurgeError" :  "Error purging shader cache at {0}: {1}",
+  "UserErrorNoKeys" :  "Keys not found",
+  "UserErrorNoFirmware": "Firmware not found",
+  "UserErrorFirmwareParsingFailed": "Firmware parsing error",
+  "UserErrorApplicationNotFound": "Application not found",
+  "UserErrorUnknown": "Unknown error",
+  "UserErrorUndefined": "Undefined error",
+  "UserErrorNoKeysDescription" :  "Ryujinx was unable to find your 'prod.keys' file",
+  "UserErrorNoFirmwareDescription": "Ryujinx was unable to find any firmwares installed",
+  "UserErrorFirmwareParsingFailedDescription": "Ryujinx was unable to parse the provided firmware. This is usually caused by outdated keys.",
+  "UserErrorApplicationNotFoundDescription": "Ryujinx couldn't find a valid application at the given path.",
+  "UserErrorUnknownDescription": "An unknown error occured!",
+  "UserErrorUndefinedDescription": "An undefined error occured! This shouldn't happen, please contact a dev!",
+  "OpenSetupGuideMessage" : "Open the Setup Guide",
+  "NoUpdate" : "No Update",
+  "TitleUpdateVersionLabel" : "Version {0} - {1}"
 }

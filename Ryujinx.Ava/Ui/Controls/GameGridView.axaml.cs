@@ -26,9 +26,7 @@ namespace Ryujinx.Ava.Ui.Controls
         {
             if (sender is ListBox listBox)
             {
-                var selected = listBox.SelectedItem as ApplicationData;
-
-                if (selected != null)
+                if (listBox.SelectedItem is ApplicationData selected)
                 {
                     RaiseEvent(new ApplicationOpenedEventArgs(selected, ApplicationOpenedEvent));
                 }

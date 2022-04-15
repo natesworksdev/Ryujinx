@@ -27,9 +27,6 @@ namespace Ryujinx.Ava.Ui.Controls
             set { SetAndRaise(CommandProperty, ref _command, value); }
         }
 
-        /// <summary>
-        /// Gets or sets an <see cref="KeyGesture"/> associated with this control
-        /// </summary>
         public KeyGesture HotKey
         {
             get { return GetValue(HotKeyProperty); }

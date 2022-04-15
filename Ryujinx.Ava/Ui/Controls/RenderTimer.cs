@@ -1,14 +1,6 @@
 ﻿using Avalonia.Rendering;
-using SPB.Graphics;
-using SPB.Platform;
-using SPB.Windowing;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Timers;
 
 namespace Ryujinx.Ava.Ui.Controls

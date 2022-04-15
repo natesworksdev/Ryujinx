@@ -6,18 +6,18 @@ namespace Ryujinx.Ava.Ui.Models
 {
     public sealed class MiniCommand<T> : MiniCommand, ICommand
     {
-        private readonly Action<T> _cb;
+        private readonly Action<T> _callback;
         private bool _busy;
-        private Func<T, Task> _acb;
+        private Func<T, Task> _asyncCallback;
 
-        public MiniCommand(Action<T> cb)
+        public MiniCommand(Action<T> callback)
         {
-            _cb = cb;
+            _callback = callback;
         }
 
-        public MiniCommand(Func<T, Task> cb)
+        public MiniCommand(Func<T, Task> callback)
         {
-            _acb = cb;
+            _asyncCallback = callback;
         }
 
         private bool Busy
@@ -30,21 +30,26 @@ namespace Ryujinx.Ava.Ui.Models
             }
         }
 
-
         public override event EventHandler CanExecuteChanged;
         public override bool CanExecute(object parameter) => !_busy;
 
         public override async void Execute(object parameter)
         {
             if (Busy)
+            {
                 return;
+            }
             try
             {
                 Busy = true;
-                if (_cb != null)
-                    _cb((T)parameter);
+                if (_callback != null)
+                {
+                    _callback((T)parameter);
+                }
                 else
-                    await _acb((T)parameter);
+                {
+                    await _asyncCallback((T)parameter);
+                }
             }
             finally
             {
@@ -55,9 +60,9 @@ namespace Ryujinx.Ava.Ui.Models
 
     public abstract class MiniCommand : ICommand
     {
-        public static MiniCommand Create(Action cb) => new MiniCommand<object>(_ => cb());
-        public static MiniCommand Create<TArg>(Action<TArg> cb) => new MiniCommand<TArg>(cb);
-        public static MiniCommand CreateFromTask(Func<Task> cb) => new MiniCommand<object>(_ => cb());
+        public static MiniCommand Create(Action callback) => new MiniCommand<object>(_ => callback());
+        public static MiniCommand Create<TArg>(Action<TArg> callback) => new MiniCommand<TArg>(callback);
+        public static MiniCommand CreateFromTask(Func<Task> callback) => new MiniCommand<object>(_ => callback());
 
         public abstract bool CanExecute(object parameter);
         public abstract void Execute(object parameter);

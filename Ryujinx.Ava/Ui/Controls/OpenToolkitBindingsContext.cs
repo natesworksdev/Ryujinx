@@ -1,12 +1,11 @@
 using OpenTK;
-using OpenTK.Windowing.GraphicsLibraryFramework;
 using System;
 
 namespace Ryujinx.Ava.Ui.Controls
 {
     public class OpenToolkitBindingsContext : IBindingsContext
     {
-        private Func<string, IntPtr> _getProcAddress;
+        private readonly Func<string, IntPtr> _getProcAddress;
 
         public OpenToolkitBindingsContext(Func<string, IntPtr> getProcAddress)
         {

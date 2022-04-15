@@ -1,7 +1,4 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
-using Avalonia.Media;
 using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
@@ -18,8 +15,16 @@ namespace Ryujinx.Ava.Ui.Controls
     {
         private static bool _isChoiceDialogOpen;
 
-        private async static Task<UserResult> ShowContentDialog(StyleableWindow window, string title, string primaryText, string secondaryText, string primaryButton,
-            string secondaryButton, string closeButton, int iconSymbol, UserResult primaryButtonResult = UserResult.Ok)
+        private async static Task<UserResult> ShowContentDialog(
+            StyleableWindow window,
+            string title,
+            string primaryText,
+            string secondaryText,
+            string primaryButton,
+            string secondaryButton,
+            string closeButton,
+            int iconSymbol,
+            UserResult primaryButtonResult = UserResult.Ok)
         {
             UserResult result = UserResult.None;
 
@@ -57,8 +62,17 @@ namespace Ryujinx.Ava.Ui.Controls
             return result;
         }
 
-        public async static Task<UserResult> ShowDeferredContentDialog(StyleableWindow window, string title, string primaryText, string secondaryText, string primaryButton,
-            string secondaryButton, string closeButton, int iconSymbol, ManualResetEvent deferResetEvent, Func<Window, Task> doWhileDeferred = null)
+        public async static Task<UserResult> ShowDeferredContentDialog(
+            StyleableWindow window,
+            string title,
+            string primaryText,
+            string secondaryText,
+            string primaryButton,
+            string secondaryButton,
+            string closeButton,
+            int iconSymbol,
+            ManualResetEvent deferResetEvent,
+            Func<Window, Task> doWhileDeferred = null)
         {
             bool startedDeferring = false;
 
@@ -79,7 +93,7 @@ namespace Ryujinx.Ava.Ui.Controls
                 // Todo check proper responses
                 contentDialog.PrimaryButtonCommand = MiniCommand.Create(() =>
                 {
-                    result = primaryButton.ToLower() == "yes" ? UserResult.Yes : UserResult.Ok;
+                    result = primaryButton == LocaleManager.Instance["InputDialogYes"] ? UserResult.Yes : UserResult.Ok;
                 });
                 contentDialog.SecondaryButtonCommand = MiniCommand.Create(() =>
                 {
@@ -94,7 +108,9 @@ namespace Ryujinx.Ava.Ui.Controls
 
             return result;
 
-            async void DeferClose(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+            async void DeferClose(
+                ContentDialog sender,
+                ContentDialogButtonClickEventArgs args)
             {
                 if(startedDeferring)
                 {
@@ -105,7 +121,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
                 var deferral = args.GetDeferral();
 
-                result = primaryButton.ToLower() == "yes" ? UserResult.Yes : UserResult.Ok;
+                result = primaryButton == LocaleManager.Instance["InputDialogYes"] ? UserResult.Yes : UserResult.Ok;
 
                 contentDialog.PrimaryButtonClick -= DeferClose;
 
@@ -127,7 +143,10 @@ namespace Ryujinx.Ava.Ui.Controls
             }
         }
 
-        private static Grid CreateDialogTextContent(string primaryText, string secondaryText, int symbol = 0xF4A3)
+        private static Grid CreateDialogTextContent(
+            string primaryText,
+            string secondaryText,
+            int symbol)
         {
             Grid content = new Grid();
             content.RowDefinitions = new RowDefinitions() { new RowDefinition(), new RowDefinition() };
@@ -156,51 +175,121 @@ namespace Ryujinx.Ava.Ui.Controls
             return content;
         }
 
-        public static async Task<UserResult> CreateInfoDialog(StyleableWindow window, string primary, string secondaryText, string acceptButton = "Ok", string closeButton = "Close", string title = "Ryujinx - Info")
+        public static async Task<UserResult> CreateInfoDialog(
+            StyleableWindow window,
+            string primary,
+            string secondaryText,
+            string acceptButton,
+            string closeButton,
+            string title)
         {
-            return await ShowContentDialog(window, title, primary, secondaryText, acceptButton, "", closeButton,
+            return await ShowContentDialog(
+                window,
+                title,
+                primary,
+                secondaryText,
+                acceptButton,
+                "",
+                closeButton,
                 (int)Symbol.Important);
         }
 
-        internal static async Task<UserResult> CreateConfirmationDialog(StyleableWindow window, string primaryText, string secondaryText, string acceptButtonText = "Yes", string cancelButtonText = "No", string title = "Ryujinx - Confirmation", UserResult primaryButtonResult = UserResult.Yes)
+        internal static async Task<UserResult> CreateConfirmationDialog(
+            StyleableWindow window,
+            string primaryText,
+            string secondaryText,
+            string acceptButtonText,
+            string cancelButtonText,
+            UserResult primaryButtonResult = UserResult.Yes)
         {
-            return await ShowContentDialog(window, LocaleManager.Instance["DialogConfirmationTitle"], primaryText, secondaryText, acceptButtonText, "",
+            return await ShowContentDialog(
+                window,
+                LocaleManager.Instance["DialogConfirmationTitle"],
+                primaryText,
+                secondaryText,
+                acceptButtonText,
+                "",
                 cancelButtonText,
-                (int) Symbol.Help, primaryButtonResult);
+                (int)Symbol.Help,
+                primaryButtonResult);
         }
 
-        internal static UpdateWaitWindow CreateWaitingDialog(string mainText, string secondaryText)
+        internal static UpdateWaitWindow CreateWaitingDialog(
+            string mainText,
+            string secondaryText)
         {
             return new(mainText, secondaryText);
         }
 
-        internal static async void CreateUpdaterInfoDialog(StyleableWindow window, string primary, string secondaryText)
+        internal static async void CreateUpdaterInfoDialog(
+            StyleableWindow window,
+            string primary,
+            string secondaryText)
         {
-            await ShowContentDialog(window, LocaleManager.Instance["DialogUpdaterTitle"], primary, secondaryText, "", "", LocaleManager.Instance["InputDialogOk"],
+            await ShowContentDialog(
+                window,
+                LocaleManager.Instance["DialogUpdaterTitle"],
+                primary,
+                secondaryText,
+                "",
+                "",
+                LocaleManager.Instance["InputDialogOk"],
                 (int)Symbol.Important);
         }
 
         internal static async void ShowNotAvailableMessage(StyleableWindow window)
         {
             // Temporary placeholder for features to be added
-            await ShowContentDialog(window,"Feature Not Available", "The selected feature is not available in this version.", "", "", "", LocaleManager.Instance["InputDialogOk"],
+            await ShowContentDialog(
+                window,
+                "Feature Not Available",
+                "The selected feature is not available in this version.",
+                "",
+                "",
+                "",
+                LocaleManager.Instance["InputDialogOk"],
                 (int)Symbol.Important);
         }
 
-        internal static async void CreateWarningDialog(StyleableWindow window, string primary, string secondaryText)
+        internal static async void CreateWarningDialog(
+            StyleableWindow window,
+            string primary,
+            string secondaryText)
         {
-            await ShowContentDialog(window, LocaleManager.Instance["DialogWarningTitle"], primary, secondaryText, "", "", LocaleManager.Instance["InputDialogOk"],
+            await ShowContentDialog(
+                window,
+                LocaleManager.Instance["DialogWarningTitle"],
+                primary,
+                secondaryText,
+                "",
+                "",
+                LocaleManager.Instance["InputDialogOk"],
                 (int)Symbol.Important);
         }
 
-        internal static async void CreateErrorDialog(StyleableWindow owner, string errorMessage, string secondaryErrorMessage = "")
+        internal static async void CreateErrorDialog(
+            StyleableWindow owner,
+            string errorMessage,
+            string secondaryErrorMessage = "")
         {
             Logger.Error?.Print(LogClass.Application, errorMessage);
 
-            await ShowContentDialog(owner, LocaleManager.Instance["DialogErrorTitle"], LocaleManager.Instance["DialogErrorMessage"], errorMessage, secondaryErrorMessage, "", LocaleManager.Instance["InputDialogOk"], (int)Symbol.Dismiss);
+            await ShowContentDialog(
+                owner,
+                LocaleManager.Instance["DialogErrorTitle"],
+                LocaleManager.Instance["DialogErrorMessage"],
+                errorMessage,
+                secondaryErrorMessage,
+                "",
+                LocaleManager.Instance["InputDialogOk"],
+                (int)Symbol.Dismiss);
         }
 
-        internal static async Task<bool> CreateChoiceDialog(StyleableWindow window, string title, string primary, string secondaryText)
+        internal static async Task<bool> CreateChoiceDialog(
+            StyleableWindow window,
+            string title,
+            string primary,
+            string secondaryText)
         {
             if (_isChoiceDialogOpen)
             {
@@ -210,7 +299,16 @@ namespace Ryujinx.Ava.Ui.Controls
             _isChoiceDialogOpen = true;
 
             UserResult response =
-                await ShowContentDialog(window, title, primary, secondaryText, LocaleManager.Instance["InputDialogYes"], "", LocaleManager.Instance["InputDialogNo"], (int) Symbol.Help, UserResult.Yes);
+                await ShowContentDialog(
+                    window,
+                    title,
+                    primary,
+                    secondaryText,
+                    LocaleManager.Instance["InputDialogYes"],
+                    "",
+                    LocaleManager.Instance["InputDialogNo"],
+                    (int)Symbol.Help,
+                    UserResult.Yes);
 
             _isChoiceDialogOpen = false;
 
@@ -219,19 +317,37 @@ namespace Ryujinx.Ava.Ui.Controls
         
         internal static async Task<bool> CreateExitDialog(StyleableWindow owner)
         {
-            return await CreateChoiceDialog(owner, LocaleManager.Instance["DialogExitTitle"], LocaleManager.Instance["DialogExitMessage"],
-                LocaleManager.Instance["DialogExitSubMessage"]);
-        }
-        internal static async Task<bool> CreateStopEmulationDialog(StyleableWindow owner)
-        {
-            return await CreateChoiceDialog(owner, LocaleManager.Instance["DialogStopEmulationTitle"], LocaleManager.Instance["DialogStopEmulationMessage"],
+            return await CreateChoiceDialog(
+                owner,
+                LocaleManager.Instance["DialogExitTitle"],
+                LocaleManager.Instance["DialogExitMessage"],
                 LocaleManager.Instance["DialogExitSubMessage"]);
         }
 
-        internal static async Task<string> CreateInputDialog(string title, string mainText, string subText,
-            StyleableWindow owner, uint maxLength = Int32.MaxValue, string input = "")
+        internal static async Task<bool> CreateStopEmulationDialog(StyleableWindow owner)
         {
-            var result = await InputDialog.ShowInputDialog(owner, title,mainText, input, subText, maxLength);
+            return await CreateChoiceDialog(
+                owner,
+                LocaleManager.Instance["DialogStopEmulationTitle"],
+                LocaleManager.Instance["DialogStopEmulationMessage"],
+                LocaleManager.Instance["DialogExitSubMessage"]);
+        }
+
+        internal static async Task<string> CreateInputDialog(
+            string title,
+            string mainText,
+            string subText,
+            StyleableWindow owner,
+            uint maxLength = int.MaxValue,
+            string input = "")
+        {
+            var result = await InputDialog.ShowInputDialog(
+                owner,
+                title,
+                mainText,
+                input,
+                subText,
+                maxLength);
 
             if (result.Result == UserResult.Ok)
             {

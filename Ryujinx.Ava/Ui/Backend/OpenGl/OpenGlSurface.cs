@@ -4,6 +4,7 @@ using SPB.Graphics.OpenGL;
 using SPB.Platform;
 using SPB.Windowing;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -17,11 +18,11 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGl
         private OpenGlSkiaGpu _gpu;
         private AutoResetEvent _swapEvent;
 
-        private static readonly Dictionary<IntPtr, AutoResetEvent> _swapEvents;
+        private static readonly ConcurrentDictionary<IntPtr, AutoResetEvent> _swapEvents;
 
         static OpenGlSurface()
         {
-            _swapEvents = new Dictionary<IntPtr, AutoResetEvent>();
+            _swapEvents = new ConcurrentDictionary<IntPtr, AutoResetEvent>();
         }
 
         public static AutoResetEvent GetWindowSwapEvent(IntPtr windowHandle)
@@ -42,12 +43,12 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGl
             }
             else if (OperatingSystem.IsLinux())
             {
-                Window = new SPB.Platform.GLX.GLXWindow(new NativeHandle(OpenGl.OpenGlContext.X11DefaultDisplay), new NativeHandle(Handle));
+                Window = new SPB.Platform.GLX.GLXWindow(new NativeHandle(OpenGlContext.X11DefaultDisplay), new NativeHandle(Handle));
             }
 
             _gpu = AvaloniaLocator.Current.GetService<OpenGlSkiaGpu>();
 
-            var context = PlatformHelper.CreateOpenGLContext(OpenGlSurface.GetFramebufferFormat(), 4, 3, OpenGLContextFlags.Default);
+            var context = PlatformHelper.CreateOpenGLContext(GetFramebufferFormat(), 4, 3, OpenGLContextFlags.Default);
             context.Initialize(Window);
 
             context.Dispose();
@@ -85,8 +86,8 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGl
 
         public override void Dispose()
         {
-            _swapEvent?.Dispose();
-            _swapEvents.Remove(Handle);
+            _swapEvent.Dispose();
+            _swapEvents.TryRemove(Handle, out _);
             base.Dispose();
         }
     }

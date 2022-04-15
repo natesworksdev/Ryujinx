@@ -2,7 +2,6 @@ using Avalonia;
 using Avalonia.Skia;
 using Ryujinx.Ava.Ui.Backend.OpenGl;
 
-
 namespace Ryujinx.Ava.Ui.Backend
 {
     public static class SkiaGpuFactory

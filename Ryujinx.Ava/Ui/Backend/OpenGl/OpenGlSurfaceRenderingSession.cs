@@ -1,7 +1,6 @@
 using Avalonia;
 using OpenTK.Graphics.OpenGL;
 using System;
-using System.Threading;
 
 namespace Ryujinx.Ava.Ui.Backend.OpenGl
 {

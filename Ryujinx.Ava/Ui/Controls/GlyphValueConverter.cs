@@ -1,14 +1,8 @@
 using Avalonia.Data;
-using Avalonia.Data.Converters;
 using Avalonia.Markup.Xaml;
-using Avalonia.Media;
-using Avalonia.Media.Imaging;
 using FluentAvalonia.UI.Controls;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
 
 namespace Ryujinx.Ava.Ui.Controls
 {
@@ -18,9 +12,9 @@ namespace Ryujinx.Ava.Ui.Controls
 
         private static Dictionary<Glyph, string> _glyphs = new Dictionary<Glyph, string>
         {
-            {Glyph.List, char.ConvertFromUtf32((int)Symbol.List).ToString()},
-            {Glyph.Grid, char.ConvertFromUtf32((int)Symbol.ViewAll).ToString()},
-            {Glyph.Chip, char.ConvertFromUtf32(59748).ToString()}
+            { Glyph.List, char.ConvertFromUtf32((int)Symbol.List).ToString() },
+            { Glyph.Grid, char.ConvertFromUtf32((int)Symbol.ViewAll).ToString() },
+            { Glyph.Chip, char.ConvertFromUtf32(59748).ToString() }
         };
 
         public GlyphValueConverter(string key)
@@ -32,7 +26,7 @@ namespace Ryujinx.Ava.Ui.Controls
         {
             get
             {
-                if(_glyphs.TryGetValue(Enum.Parse<Glyph>(key), out var val))
+                if (_glyphs.TryGetValue(Enum.Parse<Glyph>(key), out var val))
                 {
                     return val;
                 }

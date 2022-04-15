@@ -8,7 +8,7 @@ namespace Ryujinx.Ava.Ui.Models
             Data = data;
         }
 
-        public string Name{ get; set; }
-        public byte[] Data{ get; set; }
+        public string Name { get; set; }
+        public byte[] Data { get; set; }
     }
 }

@@ -2,7 +2,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Ryujinx.Ava.Ui.Windows;
-using System;
 
 namespace Ryujinx.Ava.Ui.Controls
 {

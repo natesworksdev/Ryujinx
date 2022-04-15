@@ -1,6 +1,4 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;

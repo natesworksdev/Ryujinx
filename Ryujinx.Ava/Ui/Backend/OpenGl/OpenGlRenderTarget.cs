@@ -67,7 +67,9 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGl
             finally
             {
                 if (!success)
+                {
                     session.Dispose();
+                }
             }
         }
 

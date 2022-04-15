@@ -1,5 +1,4 @@
-﻿using Ryujinx.Ava.Common;
-using Ryujinx.Ava.Common.Locale;
+﻿using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Windows;
 using Ryujinx.Ui.Common;
 using Ryujinx.Ui.Common.Helper;
@@ -21,12 +20,12 @@ namespace Ryujinx.Ava.Ui.Controls
         {
             return error switch
             {
-                UserError.NoKeys => "Keys not found",
-                UserError.NoFirmware => "Firmware not found",
-                UserError.FirmwareParsingFailed => "Firmware parsing error",
-                UserError.ApplicationNotFound => "Application not found",
-                UserError.Unknown => "Unknown error",
-                _ => "Undefined error"
+                UserError.NoKeys => LocaleManager.Instance["UserErrorNoKeys"],
+                UserError.NoFirmware => LocaleManager.Instance["UserErrorNoFirmware"],
+                UserError.FirmwareParsingFailed => LocaleManager.Instance["UserErrorFirmwareParsingFailed"],
+                UserError.ApplicationNotFound => LocaleManager.Instance["UserErrorApplicationNotFound"],
+                UserError.Unknown => LocaleManager.Instance["UserErrorUnknown"],
+                _ => LocaleManager.Instance["UserErrorUndefined"]
             };
         }
 
@@ -34,13 +33,12 @@ namespace Ryujinx.Ava.Ui.Controls
         {
             return error switch
             {
-                UserError.NoKeys => "Ryujinx was unable to find your 'prod.keys' file",
-                UserError.NoFirmware => "Ryujinx was unable to find any firmwares installed",
-                UserError.FirmwareParsingFailed =>
-                    "Ryujinx was unable to parse the provided firmware. This is usually caused by outdated keys.",
-                UserError.ApplicationNotFound => "Ryujinx couldn't find a valid application at the given path.",
-                UserError.Unknown => "An unknown error occured!",
-                _ => "An undefined error occured! This shouldn't happen, please contact a dev!"
+                UserError.NoKeys => LocaleManager.Instance["UserErrorNoKeysDescription"],
+                UserError.NoFirmware => LocaleManager.Instance["UserErrorNoFirmwareDescription"],
+                UserError.FirmwareParsingFailed => LocaleManager.Instance["UserErrorFirmwareParsingFailedDescription"],
+                UserError.ApplicationNotFound => LocaleManager.Instance["UserErrorApplicationNotFoundDescription"],
+                UserError.Unknown => LocaleManager.Instance["UserErrorUnknownDescription"],
+                _ => LocaleManager.Instance["UserErrorUndefinedDescription"]
             };
         }
 
@@ -76,7 +74,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
             bool isInSetupGuide = IsCoveredBySetupGuide(error);
 
-            string setupButtonLabel = isInSetupGuide ? "Open the Setup Guide" : "";
+            string setupButtonLabel = isInSetupGuide ? LocaleManager.Instance["OpenSetupGuideMessage"] : "";
 
             var result = await ContentDialogHelper.CreateInfoDialog(owner,
                 string.Format(LocaleManager.Instance["DialogUserErrorDialogMessage"], errorCode, GetErrorTitle(error)),
