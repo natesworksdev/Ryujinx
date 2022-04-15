@@ -21,6 +21,8 @@ using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.Input.SDL2;
 using Ryujinx.Modules;
+using Ryujinx.Ui.App.Common;
+using Ryujinx.Ui.Common;
 using Ryujinx.Ui.Common.Configuration;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
@@ -29,11 +31,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-
 using InputManager = Ryujinx.Input.HLE.InputManager;
-using ProgressBar = Avalonia.Controls.ProgressBar;using Ryujinx.Ui.App.Common;
-using Ryujinx.Ui.Common;
-
+using ProgressBar = Avalonia.Controls.ProgressBar;
 namespace Ryujinx.Ava.Ui.Windows
 {
     public class MainWindow : StyleableWindow
@@ -681,7 +680,8 @@ namespace Ryujinx.Ava.Ui.Windows
                 AppHost?.Stop();
                 AppHost?.DisposeGpu();
             }
-
+            
+            ApplicationLibrary.CancelLoading();
             InputManager.Dispose();
             Program.Exit();
 
