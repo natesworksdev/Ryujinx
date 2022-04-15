@@ -105,64 +105,37 @@ namespace Ryujinx.Graphics.Gpu.Shader
             };
         }
 
-        /// <summary>
-        /// Queries host about the presence of the FrontFacing built-in variable bug.
-        /// </summary>
-        /// <returns>True if the bug is present on the host device used, false otherwise</returns>
+        /// <inheritdoc/>
         public bool QueryHostHasFrontFacingBug() => _context.Capabilities.HasFrontFacingBug;
 
-        /// <summary>
-        /// Queries host about the presence of the vector indexing bug.
-        /// </summary>
-        /// <returns>True if the bug is present on the host device used, false otherwise</returns>
+        /// <inheritdoc/>
         public bool QueryHostHasVectorIndexingBug() => _context.Capabilities.HasVectorIndexingBug;
 
-        /// <summary>
-        /// Queries host storage buffer alignment required.
-        /// </summary>
-        /// <returns>Host storage buffer alignment in bytes</returns>
+        /// <inheritdoc/>
         public int QueryHostStorageBufferOffsetAlignment() => _context.Capabilities.StorageBufferOffsetAlignment;
 
-        /// <summary>
-        /// Queries host support for texture formats with BGRA component order (such as BGRA8).
-        /// </summary>
-        /// <returns>True if BGRA formats are supported, false otherwise</returns>
+        /// <inheritdoc/>
         public bool QueryHostSupportsBgraFormat() => _context.Capabilities.SupportsBgraFormat;
 
-        /// <summary>
-        /// Queries host support for fragment shader ordering critical sections on the shader code.
-        /// </summary>
-        /// <returns>True if fragment shader interlock is supported, false otherwise</returns>
+        /// <inheritdoc/>
         public bool QueryHostSupportsFragmentShaderInterlock() => _context.Capabilities.SupportsFragmentShaderInterlock;
 
-        /// <summary>
-        /// Queries host support for fragment shader ordering scoped critical sections on the shader code.
-        /// </summary>
-        /// <returns>True if fragment shader ordering is supported, false otherwise</returns>
+        /// <inheritdoc/>
         public bool QueryHostSupportsFragmentShaderOrderingIntel() => _context.Capabilities.SupportsFragmentShaderOrderingIntel;
 
-        /// <summary>
-        /// Queries host support for readable images without a explicit format declaration on the shader.
-        /// </summary>
-        /// <returns>True if formatted image load is supported, false otherwise</returns>
+        /// <inheritdoc/>
+        public bool QueryHostSupportsGeometryShaderPassthrough() => _context.Capabilities.SupportsGeometryShaderPassthrough;
+
+        /// <inheritdoc/>
         public bool QueryHostSupportsImageLoadFormatted() => _context.Capabilities.SupportsImageLoadFormatted;
 
-        /// <summary>
-        /// Queries host GPU non-constant texture offset support.
-        /// </summary>
-        /// <returns>True if the GPU and driver supports non-constant texture offsets, false otherwise</returns>
+        /// <inheritdoc/>
         public bool QueryHostSupportsNonConstantTextureOffset() => _context.Capabilities.SupportsNonConstantTextureOffset;
 
-        /// <summary>
-        /// Queries host GPU shader ballot support.
-        /// </summary>
-        /// <returns>True if the GPU and driver supports shader ballot, false otherwise</returns>
+        /// <inheritdoc/>
         public bool QueryHostSupportsShaderBallot() => _context.Capabilities.SupportsShaderBallot;
 
-        /// <summary>
-        /// Queries host GPU texture shadow LOD support.
-        /// </summary>
-        /// <returns>True if the GPU and driver supports texture shadow LOD, false otherwise</returns>
+        /// <inheritdoc/>
         public bool QueryHostSupportsTextureShadowLod() => _context.Capabilities.SupportsTextureShadowLod;
 
         /// <summary>

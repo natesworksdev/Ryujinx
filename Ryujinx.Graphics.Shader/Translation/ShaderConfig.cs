@@ -15,6 +15,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         public ShaderStage Stage { get; }
 
         public bool GpPassthrough { get; }
+        public bool GpPassthroughWithHostSupport => GpPassthrough && GpuAccessor.QueryHostSupportsGeometryShaderPassthrough();
         public bool LastInVertexPipeline { get; private set; }
 
         public int ThreadsPerInputPrimitive { get; }

@@ -110,6 +110,7 @@ namespace Ryujinx.Graphics.OpenGL
                 supportsR4G4Format: false,
                 supportsFragmentShaderInterlock: HwCapabilities.SupportsFragmentShaderInterlock,
                 supportsFragmentShaderOrderingIntel: HwCapabilities.SupportsFragmentShaderOrdering,
+                supportsGeometryShaderPassthrough: HwCapabilities.SupportsGeometryShaderPassthrough,
                 supportsImageLoadFormatted: HwCapabilities.SupportsImageLoadFormatted,
                 supportsMismatchingViewFormat: HwCapabilities.SupportsMismatchingViewFormat,
                 supportsNonConstantTextureOffset: HwCapabilities.SupportsNonConstantTextureOffset,

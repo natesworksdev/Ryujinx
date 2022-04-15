@@ -2,6 +2,7 @@ using Ryujinx.Graphics.Shader.Decoders;
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 
 using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
@@ -231,6 +232,44 @@ namespace Ryujinx.Graphics.Shader.Translation
                 (Config.Options.Flags & TranslationFlags.VertexA) == 0)
             {
                 PrepareForVertexReturn();
+            }
+            else if (Config.Stage == ShaderStage.Geometry)
+            {
+                void WriteOutput(int index, int primIndex)
+                {
+                    Operand x = this.LoadAttribute(Const(index), Const(0), Const(primIndex));
+                    Operand y = this.LoadAttribute(Const(index + 4), Const(0), Const(primIndex));
+                    Operand z = this.LoadAttribute(Const(index + 8), Const(0), Const(primIndex));
+                    Operand w = this.LoadAttribute(Const(index + 12), Const(0), Const(primIndex));
+
+                    this.Copy(Attribute(index), x);
+                    this.Copy(Attribute(index + 4), y);
+                    this.Copy(Attribute(index + 8), z);
+                    this.Copy(Attribute(index + 12), w);
+                }
+
+                if (Config.GpPassthrough)
+                {
+                    int inputVertices = Config.GpuAccessor.QueryPrimitiveTopology().ToInputVertices();
+
+                    for (int primIndex = 0; primIndex < inputVertices; primIndex++)
+                    {
+                        WriteOutput(AttributeConsts.PositionX, primIndex);
+
+                        int passthroughAttributes = Config.PassthroughAttributes;
+                        while (passthroughAttributes != 0)
+                        {
+                            int index = BitOperations.TrailingZeroCount(passthroughAttributes);
+                            WriteOutput(AttributeConsts.UserAttributeBase + index * 16, primIndex);
+                            Config.SetOutputUserAttribute(index, perPatch: false);
+                            passthroughAttributes &= ~(1 << index);
+                        }
+
+                        this.EmitVertex();
+                    }
+
+                    this.EndPrimitive();
+                }
             }
             else if (Config.Stage == ShaderStage.Fragment)
             {

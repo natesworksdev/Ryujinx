@@ -48,7 +48,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 context.AppendLine("#extension GL_ARB_shader_viewport_layer_array : enable");
             }
 
-            if (context.Config.GpPassthrough)
+            if (context.Config.GpPassthrough && context.Config.GpuAccessor.QueryHostSupportsGeometryShaderPassthrough())
             {
                 context.AppendLine("#extension GL_NV_geometry_shader_passthrough : enable");
             }
@@ -127,11 +127,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             {
                 if (context.Config.Stage == ShaderStage.Geometry)
                 {
-                    string inPrimitive = context.Config.GpuAccessor.QueryPrimitiveTopology().ToGlslString();
+                    InputTopology inputTopology = context.Config.GpuAccessor.QueryPrimitiveTopology();
+                    string inPrimitive = inputTopology.ToGlslString();
 
                     context.AppendLine($"layout ({inPrimitive}) in;");
 
-                    if (context.Config.GpPassthrough)
+                    if (context.Config.GpPassthrough && context.Config.GpuAccessor.QueryHostSupportsGeometryShaderPassthrough())
                     {
                         context.AppendLine($"layout (passthrough) in gl_PerVertex");
                         context.EnterScope();
@@ -144,7 +145,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                     {
                         string outPrimitive = context.Config.OutputTopology.ToGlslString();
 
-                        int maxOutputVertices = context.Config.MaxOutputVertices;
+                        int maxOutputVertices = context.Config.GpPassthrough
+                            ? inputTopology.ToInputVertices()
+                            : context.Config.MaxOutputVertices;
 
                         context.AppendLine($"layout ({outPrimitive}, max_vertices = {maxOutputVertices}) out;");
                     }
@@ -563,7 +566,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 };
             }
 
-            string pass = (context.Config.PassthroughAttributes & (1 << attr)) != 0 ? "passthrough, " : string.Empty;
+            bool passthrough = (context.Config.PassthroughAttributes & (1 << attr)) != 0;
+            string pass = passthrough && context.Config.GpuAccessor.QueryHostSupportsGeometryShaderPassthrough() ? "passthrough, " : string.Empty;
             string name = $"{DefaultNames.IAttributePrefix}{attr}";
 
             if (context.Config.TransformFeedbackEnabled && context.Config.Stage != ShaderStage.Vertex)
