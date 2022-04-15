@@ -91,7 +91,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                 AggregateType elemType;
 
-                if (!isOutAttr)
+                if (config.Stage == ShaderStage.Vertex && !isOutAttr)
                 {
                     elemType = config.GpuAccessor.QueryAttributeType(location) switch
                     {

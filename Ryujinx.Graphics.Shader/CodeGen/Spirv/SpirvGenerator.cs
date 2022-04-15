@@ -70,7 +70,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             {
                 context.AddCapability(Capability.Geometry);
 
-                if (config.GpPassthrough)
+                if (config.GpPassthrough && context.Config.GpuAccessor.QueryHostSupportsGeometryShaderPassthrough())
                 {
                     context.AddExtension("SPV_NV_geometry_shader_passthrough");
                     context.AddCapability(Capability.GeometryShaderPassthroughNV);
@@ -230,7 +230,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                         _ => throw new InvalidOperationException($"Invalid output topology \"{context.Config.OutputTopology}\".")
                     });
 
-                    context.AddExecutionMode(spvFunc, ExecutionMode.OutputVertices, (SpvLiteralInteger)context.Config.MaxOutputVertices);
+                    int maxOutputVertices = context.Config.GpPassthrough ? context.InputVertices : context.Config.MaxOutputVertices;
+
+                    context.AddExecutionMode(spvFunc, ExecutionMode.OutputVertices, (SpvLiteralInteger)maxOutputVertices);
                 }
                 else if (context.Config.Stage == ShaderStage.Fragment)
                 {
