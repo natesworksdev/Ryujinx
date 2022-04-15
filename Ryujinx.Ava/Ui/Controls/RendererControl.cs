@@ -152,6 +152,8 @@ namespace Ryujinx.Ava.Ui.Controls
                 GL.DeleteSync(_fence);
             }
 
+            GlDrawOperation.DeleteFramebuffer();
+
             GameContext?.Dispose();
 
             _gameBackgroundWindow?.Dispose();
@@ -183,7 +185,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
         private class GlDrawOperation : ICustomDrawOperation
         {
-            private int _framebuffer;
+            private static int _framebuffer;
 
             public Rect Bounds { get; }
 
@@ -195,9 +197,16 @@ namespace Ryujinx.Ava.Ui.Controls
                 Bounds = _control.Bounds;
             }
 
-            public void Dispose()
+            public void Dispose() { }
+
+            public static void DeleteFramebuffer()
             {
-                GL.DeleteFramebuffer(_framebuffer);
+                if(_framebuffer == 0)
+                {
+                    GL.DeleteFramebuffer(_framebuffer);
+                }
+
+                _framebuffer = 0;
             }
 
             public bool Equals(ICustomDrawOperation other)

@@ -131,13 +131,13 @@
                     <Grid>
 						<Grid.Styles>
 							<Style Selector="ui|SymbolIcon.small.icon">
-								<Setter Property="FontSize" Value="12" />
-							</Style>
-							<Style Selector="ui|SymbolIcon.normal.icon">
 								<Setter Property="FontSize" Value="15" />
 							</Style>
-							<Style Selector="ui|SymbolIcon.large.icon">
+							<Style Selector="ui|SymbolIcon.normal.icon">
 								<Setter Property="FontSize" Value="19" />
+							</Style>
+							<Style Selector="ui|SymbolIcon.large.icon">
+								<Setter Property="FontSize" Value="23" />
 							</Style>
 							<Style Selector="ui|SymbolIcon.huge.icon">
 								<Setter Property="FontSize" Value="26" />
@@ -171,15 +171,15 @@
                                Classes.large="{Binding $parent[UserControl].DataContext.IsGridLarge}"
                                Classes.huge="{Binding $parent[UserControl].DataContext.IsGridHuge}"
 									    Foreground="Yellow" Symbol="StarFilled"
-                               IsVisible="{Binding Favorite}" Margin="5" VerticalAlignment="Bottom"
-                               HorizontalAlignment="Right" />
+                               IsVisible="{Binding Favorite}" Margin="5" VerticalAlignment="Top"
+                               HorizontalAlignment="Left" />
                         <ui:SymbolIcon Classes.icon="true" Classes.small="{Binding $parent[UserControl].DataContext.IsGridSmall}"
                                Classes.normal="{Binding $parent[UserControl].DataContext.IsGridNormal}"
                                Classes.large="{Binding $parent[UserControl].DataContext.IsGridLarge}"
                                Classes.huge="{Binding $parent[UserControl].DataContext.IsGridHuge}"
 									    Foreground="Black" Symbol="Star"
-                               IsVisible="{Binding Favorite}" Margin="5" VerticalAlignment="Bottom"
-                               HorizontalAlignment="Right" />
+                               IsVisible="{Binding Favorite}" Margin="5" VerticalAlignment="Top"
+                               HorizontalAlignment="Left" />
                     </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
