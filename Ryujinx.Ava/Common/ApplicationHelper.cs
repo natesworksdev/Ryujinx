@@ -34,7 +34,6 @@ namespace Ryujinx.Ava.Common
         private static HorizonClient _horizonClient;
         private static VirtualFileSystem _virtualFileSystem;
         private static StyleableWindow _owner;
-        private static bool _cancel;
 
         public static void Initialize(VirtualFileSystem virtualFileSystem,HorizonClient horizonClient, StyleableWindow owner)
         {
@@ -143,7 +142,7 @@ namespace Ryujinx.Ava.Common
 
             string destination = await folderDialog.ShowAsync(_owner);
 
-            _cancel = false;
+            var cancellationToken = new CancellationTokenSource();
 
             if (!string.IsNullOrWhiteSpace(destination))
             {
@@ -160,7 +159,7 @@ namespace Ryujinx.Ava.Common
 
                         if (result == UserResult.Cancel)
                         {
-                            _cancel = true;
+                            cancellationToken.Cancel();
                         }
                     });
 
@@ -258,7 +257,7 @@ namespace Ryujinx.Ava.Common
                             fsClient.Register(source.ToU8Span(), ref uniqueSourceFs.Ref());
                             fsClient.Register(output.ToU8Span(), ref uniqueOutputFs.Ref());
 
-                            (Result? resultCode, bool canceled) = CopyDirectory(fsClient, $"{source}:/", $"{output}:/");
+                            (Result? resultCode, bool canceled) = CopyDirectory(fsClient, $"{source}:/", $"{output}:/", cancellationToken.Token);
 
                             if (!canceled)
                             {
@@ -302,7 +301,7 @@ namespace Ryujinx.Ava.Common
         }
 
         public static (Result? result, bool canceled) CopyDirectory(FileSystemClient fs, string sourcePath,
-            string destPath)
+            string destPath, CancellationToken token)
         {
             Result rc = fs.OpenDirectory(out DirectoryHandle sourceHandle, sourcePath.ToU8Span(),
                 OpenDirectoryMode.All);
@@ -315,7 +314,7 @@ namespace Ryujinx.Ava.Common
             {
                 foreach (DirectoryEntryEx entry in fs.EnumerateEntries(sourcePath, "*", SearchOptions.Default))
                 {
-                    if (_cancel)
+                    if (token.IsCancellationRequested)
                     {
                         return (null, true);
                     }
@@ -327,7 +326,7 @@ namespace Ryujinx.Ava.Common
                     {
                         fs.EnsureDirectoryExists(subDstPath);
 
-                        (Result? result, bool canceled) = CopyDirectory(fs, subSrcPath, subDstPath);
+                        (Result? result, bool canceled) = CopyDirectory(fs, subSrcPath, subDstPath, token);
                         if (canceled || result.Value.IsFailure())
                         {
                             return (result, canceled);
