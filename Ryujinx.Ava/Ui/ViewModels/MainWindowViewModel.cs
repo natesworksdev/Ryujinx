@@ -1098,7 +1098,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
                 // FIXME: Found a way to reproduce the bold effect on the title name (fork?).
                 UserResult result = await ContentDialogHelper.CreateConfirmationDialog(_owner, LocaleManager.Instance["DialogWarning"],
-                    string.Format(LocaleManager.Instance["DialogPPTCDeletionMessage"], selection.TitleName));
+                    string.Format(LocaleManager.Instance["DialogPPTCDeletionMessage"], selection.TitleName), LocaleManager.Instance["InputDialogYes"], LocaleManager.Instance["InputDialogNo"], LocaleManager.Instance["RyujinxConfirm"]);
 
                 List<FileInfo> cacheFiles = new();
 
@@ -1161,7 +1161,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
                 // FIXME: Found a way to reproduce the bold effect on the title name (fork?).
                 UserResult result = await ContentDialogHelper.CreateConfirmationDialog(_owner, LocaleManager.Instance["DialogWarning"],
-                    string.Format(LocaleManager.Instance["DialogShaderDeletionMessage"], selection.TitleName));
+                    string.Format(LocaleManager.Instance["DialogShaderDeletionMessage"], selection.TitleName), LocaleManager.Instance["InputDialogYes"], LocaleManager.Instance["InputDialogNo"], LocaleManager.Instance["RyujinxConfirm"]);
 
                 List<DirectoryInfo> oldCacheDirectories = new List<DirectoryInfo>();
                 List<FileInfo> newCacheFiles = new List<FileInfo>();
@@ -1360,7 +1360,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
                 dialogMessage += LocaleManager.Instance["DialogFirmwareInstallerFirmwareInstallConfirmMessage"];
 
-                UserResult result = await ContentDialogHelper.CreateConfirmationDialog(_owner, dialogTitle, dialogMessage);
+                UserResult result = await ContentDialogHelper.CreateConfirmationDialog(_owner, dialogTitle, dialogMessage, LocaleManager.Instance["InputDialogYes"], LocaleManager.Instance["InputDialogNo"], LocaleManager.Instance["RyujinxConfirm"]);
 
                 UpdateWaitWindow waitingDialog = ContentDialogHelper.CreateWaitingDialog(dialogTitle, LocaleManager.Instance["DialogFirmwareInstallerFirmwareInstallWaitMessage"]);
 
@@ -1387,7 +1387,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                                     LocaleManager.Instance["DialogFirmwareInstallerFirmwareInstallSuccessMessage"],
                                     firmwareVersion.VersionString);
 
-                                await ContentDialogHelper.CreateInfoDialog(_owner, dialogTitle, message, "", LocaleManager.Instance["InputDialogOk"]);
+                                await ContentDialogHelper.CreateInfoDialog(_owner, dialogTitle, message, LocaleManager.Instance["InputDialogOk"], "", LocaleManager.Instance["RyujinxInfo"]);
                                 Logger.Info?.Print(LogClass.Application, message);
 
                                 // Purge Applet Cache.

@@ -200,11 +200,12 @@ namespace Ryujinx.Ava.Ui.Controls
             string secondaryText,
             string acceptButtonText,
             string cancelButtonText,
+            string title,
             UserResult primaryButtonResult = UserResult.Yes)
         {
             return await ShowContentDialog(
                 window,
-                LocaleManager.Instance["DialogConfirmationTitle"],
+                string.IsNullOrWhiteSpace(title) ? LocaleManager.Instance["DialogConfirmationTitle"] : title,
                 primaryText,
                 secondaryText,
                 acceptButtonText,

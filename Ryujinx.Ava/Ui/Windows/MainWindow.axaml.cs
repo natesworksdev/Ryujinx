@@ -194,7 +194,7 @@ namespace Ryujinx.Ava.Ui.Windows
                 string mainMessage      = LocaleManager.Instance["DialogPerformanceCheckLoggingEnabledMessage"];
                 string secondaryMessage = LocaleManager.Instance["DialogPerformanceCheckLoggingEnabledConfirmMessage"];
 
-                UserResult result = await ContentDialogHelper.CreateConfirmationDialog(this, mainMessage, secondaryMessage);
+                UserResult result = await ContentDialogHelper.CreateConfirmationDialog(this, mainMessage, secondaryMessage, LocaleManager.Instance["InputDialogYes"], LocaleManager.Instance["InputDialogNo"], LocaleManager.Instance["RyujinxConfirm"]);
 
                 if (result != UserResult.Yes)
                 {
@@ -209,7 +209,7 @@ namespace Ryujinx.Ava.Ui.Windows
                 string mainMessage      = LocaleManager.Instance["DialogPerformanceCheckShaderDumpEnabledMessage"];
                 string secondaryMessage = LocaleManager.Instance["DialogPerformanceCheckShaderDumpEnabledConfirmMessage"];
 
-                UserResult result = await ContentDialogHelper.CreateConfirmationDialog(this, mainMessage, secondaryMessage);
+                UserResult result = await ContentDialogHelper.CreateConfirmationDialog(this, mainMessage, secondaryMessage, LocaleManager.Instance["InputDialogYes"], LocaleManager.Instance["InputDialogNo"], LocaleManager.Instance["RyujinxConfirm"]);
 
                 if (result != UserResult.Yes)
                 {
@@ -235,7 +235,10 @@ namespace Ryujinx.Ava.Ui.Windows
             {
                 ContentDialogHelper.CreateInfoDialog(this,
                     LocaleManager.Instance["DialogLoadAppGameAlreadyLoadedMessage"],
-                    LocaleManager.Instance["DialogLoadAppGameAlreadyLoadedSubMessage"]);
+                    LocaleManager.Instance["DialogLoadAppGameAlreadyLoadedSubMessage"],
+                    LocaleManager.Instance["InputDialogOk"],
+                    "",
+                    LocaleManager.Instance["RyujinxInfo"]);
 
                 return;
             }

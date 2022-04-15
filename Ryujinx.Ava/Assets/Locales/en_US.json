@@ -519,5 +519,7 @@
   "UserErrorUndefinedDescription": "An undefined error occured! This shouldn't happen, please contact a dev!",
   "OpenSetupGuideMessage" : "Open the Setup Guide",
   "NoUpdate" : "No Update",
-  "TitleUpdateVersionLabel" : "Version {0} - {1}"
+  "TitleUpdateVersionLabel" : "Version {0} - {1}",
+  "RyujinxInfo" : "Ryujinx - Info",
+  "RyujinxConfirm" : "Ryujinx - Confirmation"
 }

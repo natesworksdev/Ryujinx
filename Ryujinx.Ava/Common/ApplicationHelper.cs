@@ -276,7 +276,7 @@ namespace Ryujinx.Ava.Common
                                 {
                                     Dispatcher.UIThread.InvokeAsync(async () =>
                                     {
-                                        await ContentDialogHelper.CreateInfoDialog(_owner, LocaleManager.Instance["DialogNcaExtractionSuccessMessage"], "", closeButton: "", title: LocaleManager.Instance["DialogNcaExtractionTitle"]);
+                                        await ContentDialogHelper.CreateInfoDialog(_owner, LocaleManager.Instance["DialogNcaExtractionSuccessMessage"], "", LocaleManager.Instance["InputDialogOk"] , "", LocaleManager.Instance["DialogNcaExtractionTitle"]);
                                     });
                                 }
                             }
