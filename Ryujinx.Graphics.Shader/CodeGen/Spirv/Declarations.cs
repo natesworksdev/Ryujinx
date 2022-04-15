@@ -425,7 +425,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                         var spvType = context.TypePointer(StorageClass.Input, attrType);
                         var spvVar = context.Variable(spvType, StorageClass.Input);
 
-                        if (context.Config.PassthroughAttributes != 0)
+                        if (context.Config.PassthroughAttributes != 0 && context.Config.GpuAccessor.QueryHostSupportsGeometryShaderPassthrough())
                         {
                             context.Decorate(spvVar, Decoration.PassthroughNV);
                         }
@@ -534,7 +534,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             {
                 attrType = context.TypeArray(attrType, context.Constant(context.TypeU32(), (LiteralInteger)context.InputVertices));
 
-                if (context.Config.GpPassthrough)
+                if (context.Config.GpPassthrough && context.Config.GpuAccessor.QueryHostSupportsGeometryShaderPassthrough())
                 {
                     builtInPassthrough = true;
                 }
@@ -581,7 +581,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
                 if (!isOutAttr)
                 {
-                    if (!perPatch && (context.Config.PassthroughAttributes & (1 << location)) != 0)
+                    if (!perPatch &&
+                        (context.Config.PassthroughAttributes & (1 << location)) != 0 &&
+                        context.Config.GpuAccessor.QueryHostSupportsGeometryShaderPassthrough())
                     {
                         context.Decorate(spvVar, Decoration.PassthroughNV);
                     }
@@ -646,7 +648,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             }
             else
             {
-                if ((context.Config.PassthroughAttributes & (1 << location)) != 0)
+                if ((context.Config.PassthroughAttributes & (1 << location)) != 0 &&
+                    context.Config.GpuAccessor.QueryHostSupportsGeometryShaderPassthrough())
                 {
                     context.Decorate(spvVar, Decoration.PassthroughNV);
                 }

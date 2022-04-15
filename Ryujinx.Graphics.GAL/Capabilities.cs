@@ -16,6 +16,7 @@ namespace Ryujinx.Graphics.GAL
         public readonly bool SupportsR4G4Format;
         public readonly bool SupportsFragmentShaderInterlock;
         public readonly bool SupportsFragmentShaderOrderingIntel;
+        public readonly bool SupportsGeometryShaderPassthrough;
         public readonly bool SupportsImageLoadFormatted;
         public readonly bool SupportsMismatchingViewFormat;
         public readonly bool SupportsNonConstantTextureOffset;
@@ -44,6 +45,7 @@ namespace Ryujinx.Graphics.GAL
             bool supportsR4G4Format,
             bool supportsFragmentShaderInterlock,
             bool supportsFragmentShaderOrderingIntel,
+            bool supportsGeometryShaderPassthrough,
             bool supportsImageLoadFormatted,
             bool supportsMismatchingViewFormat,
             bool supportsNonConstantTextureOffset,
@@ -69,6 +71,7 @@ namespace Ryujinx.Graphics.GAL
             SupportsR4G4Format = supportsR4G4Format;
             SupportsFragmentShaderInterlock = supportsFragmentShaderInterlock;
             SupportsFragmentShaderOrderingIntel = supportsFragmentShaderOrderingIntel;
+            SupportsGeometryShaderPassthrough = supportsGeometryShaderPassthrough;
             SupportsImageLoadFormatted = supportsImageLoadFormatted;
             SupportsMismatchingViewFormat = supportsMismatchingViewFormat;
             SupportsNonConstantTextureOffset = supportsNonConstantTextureOffset;
