@@ -10,6 +10,8 @@ namespace Ryujinx.Graphics.Vulkan
     {
         private readonly Device _device;
         private readonly Auto<DisposableImageView>[] _attachments;
+        private readonly TextureView[] _colors;
+        private readonly TextureView _depthStencil;
         private uint _validColorAttachments;
 
         public uint Width { get; }
@@ -59,6 +61,7 @@ namespace Ryujinx.Graphics.Vulkan
             int count = colorsCount + (IsValidTextureView(depthStencil) ? 1 : 0);
 
             _attachments = new Auto<DisposableImageView>[count];
+            _colors = new TextureView[colorsCount];
 
             AttachmentSamples = new uint[count];
             AttachmentFormats = new VkFormat[count];
@@ -79,6 +82,7 @@ namespace Ryujinx.Graphics.Vulkan
                     var texture = (TextureView)color;
 
                     _attachments[index] = texture.GetImageViewForAttachment();
+                    _colors[index] = texture;
                     _validColorAttachments |= 1u << bindIndex;
 
                     AttachmentSamples[index] = (uint)texture.Info.Samples;
@@ -101,6 +105,7 @@ namespace Ryujinx.Graphics.Vulkan
             if (depthStencil is TextureView dsTexture && dsTexture.Valid)
             {
                 _attachments[count - 1] = dsTexture.GetImageViewForAttachment();
+                _depthStencil = dsTexture;
 
                 AttachmentSamples[count - 1] = (uint)dsTexture.Info.Samples;
                 AttachmentFormats[count - 1] = dsTexture.VkFormat;
@@ -176,6 +181,23 @@ namespace Ryujinx.Graphics.Vulkan
 
             api.CreateFramebuffer(_device, framebufferCreateInfo, null, out var framebuffer).ThrowOnError();
             return new Auto<DisposableFramebuffer>(new DisposableFramebuffer(api, _device, framebuffer), null, _attachments);
+        }
+
+        public void UpdateModifications()
+        {
+            if (_colors != null)
+            {
+                for (int index = 0; index < _colors.Length; index++)
+                {
+                    _colors[index].Storage.SetModification(
+                        AccessFlags.AccessColorAttachmentWriteBit,
+                        PipelineStageFlags.PipelineStageColorAttachmentOutputBit);
+                }
+            }
+
+            _depthStencil?.Storage.SetModification(
+                AccessFlags.AccessDepthStencilAttachmentWriteBit,
+                PipelineStageFlags.PipelineStageColorAttachmentOutputBit);
         }
     }
 }

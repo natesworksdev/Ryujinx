@@ -1,6 +1,7 @@
 ﻿using Ryujinx.Graphics.GAL.Multithreading.Commands;
 using Ryujinx.Graphics.GAL.Multithreading.Model;
 using Ryujinx.Graphics.GAL.Multithreading.Resources;
+using Ryujinx.Graphics.Shader;
 using System;
 using System.Linq;
 
@@ -268,9 +269,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             _renderer.QueueCommand();
         }
 
-        public void SetTextureAndSampler(int binding, ITexture texture, ISampler sampler)
+        public void SetTextureAndSampler(ShaderStage stage, int binding, ITexture texture, ISampler sampler)
         {
-            _renderer.New<SetTextureAndSamplerCommand>().Set(binding, Ref(texture), Ref(sampler));
+            _renderer.New<SetTextureAndSamplerCommand>().Set(stage, binding, Ref(texture), Ref(sampler));
             _renderer.QueueCommand();
         }
 

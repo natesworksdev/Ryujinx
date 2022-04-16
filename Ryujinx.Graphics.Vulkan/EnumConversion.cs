@@ -30,6 +30,29 @@ namespace Ryujinx.Graphics.Vulkan
             return 0;
         }
 
+        public static PipelineStageFlags ConvertToPipelineStageFlags(this ShaderStage stage)
+        {
+            switch (stage)
+            {
+                case ShaderStage.Vertex:
+                    return PipelineStageFlags.PipelineStageVertexShaderBit;
+                case ShaderStage.Geometry:
+                    return PipelineStageFlags.PipelineStageGeometryShaderBit;
+                case ShaderStage.TessellationControl:
+                    return PipelineStageFlags.PipelineStageTessellationControlShaderBit;
+                case ShaderStage.TessellationEvaluation:
+                    return PipelineStageFlags.PipelineStageTessellationEvaluationShaderBit;
+                case ShaderStage.Fragment:
+                    return PipelineStageFlags.PipelineStageFragmentShaderBit;
+                case ShaderStage.Compute:
+                    return PipelineStageFlags.PipelineStageComputeShaderBit;
+            };
+
+            Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(ShaderStage)} enum value: {stage}.");
+
+            return 0;
+        }
+
         public static SamplerAddressMode Convert(this AddressMode mode)
         {
             switch (mode)
