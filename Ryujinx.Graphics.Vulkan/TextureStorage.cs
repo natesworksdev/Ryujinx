@@ -43,6 +43,9 @@ namespace Ryujinx.Graphics.Vulkan
 
         private Dictionary<GAL.Format, TextureStorage> _aliasedStorages;
 
+        private AccessFlags _lastModificationAccess;
+        private PipelineStageFlags _lastModificationStage;
+
         public VkFormat VkFormat { get; }
         public float ScaleFactor { get; }
 
@@ -397,6 +400,56 @@ namespace Ryujinx.Graphics.Vulkan
         private bool NeedsD24S8Conversion()
         {
             return Info.Format == GAL.Format.D24UnormS8Uint && VkFormat == VkFormat.D32SfloatS8Uint;
+        }
+
+        public void SetModification(AccessFlags accessFlags, PipelineStageFlags stage)
+        {
+            _lastModificationAccess = accessFlags;
+            _lastModificationStage = stage;
+        }
+
+        public void InsertBarrier(CommandBufferScoped cbs, AccessFlags dstAccessFlags, PipelineStageFlags dstStageFlags)
+        {
+            if (_lastModificationAccess != AccessFlags.AccessNoneKhr)
+            {
+                ImageAspectFlags aspectFlags;
+
+                if (_info.Format.IsDepthOrStencil())
+                {
+                    if (_info.Format == GAL.Format.S8Uint)
+                    {
+                        aspectFlags = ImageAspectFlags.ImageAspectStencilBit;
+                    }
+                    else if (_info.Format == GAL.Format.D16Unorm || _info.Format == GAL.Format.D32Float)
+                    {
+                        aspectFlags = ImageAspectFlags.ImageAspectDepthBit;
+                    }
+                    else
+                    {
+                        aspectFlags = ImageAspectFlags.ImageAspectDepthBit | ImageAspectFlags.ImageAspectStencilBit;
+                    }
+                }
+                else
+                {
+                    aspectFlags = ImageAspectFlags.ImageAspectColorBit;
+                }
+
+                TextureView.InsertImageBarrier(
+                    _gd.Api,
+                    cbs.CommandBuffer,
+                    _imageAuto.Get(cbs).Value,
+                    _lastModificationAccess,
+                    dstAccessFlags,
+                    _lastModificationStage,
+                    dstStageFlags,
+                    aspectFlags,
+                    0,
+                    0,
+                    _info.GetLayers(),
+                    _info.Levels);
+
+                _lastModificationAccess = AccessFlags.AccessNoneKhr;
+            }
         }
 
         public void Dispose()

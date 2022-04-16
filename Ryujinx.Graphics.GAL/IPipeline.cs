@@ -1,3 +1,4 @@
+using Ryujinx.Graphics.Shader;
 using System;
 
 namespace Ryujinx.Graphics.GAL
@@ -85,7 +86,7 @@ namespace Ryujinx.Graphics.GAL
 
         void SetStorageBuffers(int first, ReadOnlySpan<BufferRange> buffers);
 
-        void SetTextureAndSampler(int binding, ITexture texture, ISampler sampler);
+        void SetTextureAndSampler(ShaderStage stage, int binding, ITexture texture, ISampler sampler);
 
         void SetTransformFeedbackBuffers(ReadOnlySpan<BufferRange> buffers);
         void SetUniformBuffers(int first, ReadOnlySpan<BufferRange> buffers);

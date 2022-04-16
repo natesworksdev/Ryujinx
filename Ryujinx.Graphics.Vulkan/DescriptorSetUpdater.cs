@@ -167,7 +167,7 @@ namespace Ryujinx.Graphics.Vulkan
             SignalDirty(DirtyFlags.Storage);
         }
 
-        public void SetTextureAndSampler(int binding, ITexture texture, ISampler sampler)
+        public void SetTextureAndSampler(CommandBufferScoped cbs, ShaderStage stage, int binding, ITexture texture, ISampler sampler)
         {
             if (texture == null)
             {
@@ -195,7 +195,11 @@ namespace Ryujinx.Graphics.Vulkan
                     Array.Resize(ref _samplerRefs, binding + 1);
                 }
 
-                _textureRefs[binding] = ((TextureView)texture).GetImageView();
+                TextureView view = (TextureView)texture;
+
+                view.Storage.InsertBarrier(cbs, AccessFlags.AccessShaderReadBit, stage.ConvertToPipelineStageFlags());
+
+                _textureRefs[binding] = view.GetImageView();
                 _samplerRefs[binding] = ((SamplerHolder)sampler)?.GetSampler();
 
                 _textures[binding] = new DescriptorImageInfo()
