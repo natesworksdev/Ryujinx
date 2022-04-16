@@ -12,9 +12,9 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace Ryujinx.Ava.Ui.Backend.OpenGl
+namespace Ryujinx.Ava.Ui.Backend.OpenGL
 {
-    public class OpenGlSkiaGpu : ISkiaGpu, IDisposable
+    public class OpenGLSkiaGpu : ISkiaGpu, IDisposable
     {
         private readonly long? _maxResourceBytes;
         private GRContext _grContext;
@@ -22,9 +22,9 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGl
         private GRGlInterface _interface;
 
         public GRContext GrContext { get => _grContext; set => _grContext = value; }
-        internal OpenGlContext PrimaryContext { get; }
+        internal OpenGLContext PrimaryContext { get; }
 
-        public OpenGlSkiaGpu(long? maxResourceBytes)
+        public OpenGLSkiaGpu(long? maxResourceBytes)
         {
             _maxResourceBytes = maxResourceBytes;
 
@@ -41,7 +41,7 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGl
             window.Dispose();
 
             // Make Primary Context
-            PrimaryContext = new OpenGlContext();
+            PrimaryContext = new OpenGLContext();
 
             AvaloniaLocator.CurrentMutable.Bind<OpenGLContextBase>().ToConstant(PrimaryContext.BaseContext);
             AvaloniaLocator.CurrentMutable.Bind<ISkiaGpu>().ToConstant(this);
@@ -68,17 +68,17 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGl
         {
             foreach (var surface in surfaces)
             {
-                OpenGlSurface window = null;
+                OpenGLSurface window = null;
 
                 if (surface is IPlatformHandle handle)
                 {
-                    window = new OpenGlSurface(handle.Handle);
+                    window = new OpenGLSurface(handle.Handle);
                 }
                 else if (surface is X11FramebufferSurface x11FramebufferSurface)
                 {
                     var xId = (IntPtr)x11FramebufferSurface.GetType().GetField("_xid", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(x11FramebufferSurface);
 
-                    window = new OpenGlSurface(xId);
+                    window = new OpenGLSurface(xId);
                 }
 
                 if (window == null)
@@ -86,7 +86,7 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGl
                     return null;
                 }
 
-                var openGlRenderTarget = new OpenGlRenderTarget(window);
+                var openGlRenderTarget = new OpenGLRenderTarget(window);
 
                 window.MakeCurrent();
                 Initialize();

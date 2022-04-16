@@ -3,14 +3,14 @@ using OpenTK.Graphics.OpenGL;
 using SkiaSharp;
 using System;
 
-namespace Ryujinx.Ava.Ui.Backend.OpenGl
+namespace Ryujinx.Ava.Ui.Backend.OpenGL
 {
-    internal class OpenGlRenderTarget : ISkiaGpuRenderTarget
+    internal class OpenGLRenderTarget : ISkiaGpuRenderTarget
     {
         internal GRContext GrContext { get; set; }
-        private readonly OpenGlSurface _openglSurface;
+        private readonly OpenGLSurface _openglSurface;
 
-        public OpenGlRenderTarget(OpenGlSurface openglSurface)
+        public OpenGLRenderTarget(OpenGLSurface openglSurface)
         {
             _openglSurface = openglSurface;
         }
@@ -78,12 +78,12 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGl
         internal class OpenGlGpuSession : ISkiaGpuRenderSession
         {
             private readonly GRBackendRenderTarget _backendRenderTarget;
-            private readonly OpenGlSurfaceRenderingSession _openGlSession;
+            private readonly OpenGLSurfaceRenderingSession _openGlSession;
 
             public OpenGlGpuSession(GRContext grContext,
                 GRBackendRenderTarget backendRenderTarget,
                 SKSurface surface,
-                OpenGlSurfaceRenderingSession OpenGlSession)
+                OpenGLSurfaceRenderingSession OpenGlSession)
             {
                 GrContext = grContext;
                 SkSurface = surface;

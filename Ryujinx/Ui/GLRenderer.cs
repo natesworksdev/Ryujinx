@@ -106,6 +106,7 @@ namespace Ryujinx.Ui
         {
             if((int)image != 0)
             {
+                // The game's framebruffer is already bound, so blit it to the window's backbuffer
                 GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);
 
                 GL.Clear(ClearBufferMask.ColorBufferBit);

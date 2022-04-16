@@ -8,6 +8,7 @@ namespace Ryujinx.Graphics.OpenGL
 {
     class Window : IWindow, IDisposable
     {
+        private const int TextureCount = 3;
         private readonly Renderer _renderer;
 
         private int _width;
@@ -25,7 +26,7 @@ namespace Ryujinx.Graphics.OpenGL
         public Window(Renderer renderer)
         {
             _renderer = renderer;
-            _stagingTextures = new int[5];
+            _stagingTextures = new int[TextureCount];
         }
 
         public void Present(ITexture texture, ImageCrop crop, Action<object> swapBuffersCallback)

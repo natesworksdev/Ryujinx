@@ -1,4 +1,5 @@
 ﻿using Ryujinx.Common.Logging;
+using System;
 using System.Diagnostics;
 
 namespace Ryujinx.Ui.Common.Helper

@@ -7,18 +7,18 @@ using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Threading;
 
-namespace Ryujinx.Ava.Ui.Backend.OpenGl
+namespace Ryujinx.Ava.Ui.Backend.OpenGL
 {
-    internal class OpenGlContext : IDisposable
+    internal class OpenGLContext : IDisposable
     {
         public OpenGLContextBase BaseContext { get; }
 
         [SupportedOSPlatform("linux")]
         internal static IntPtr X11DefaultDisplay => SPB.Platform.X11.X11.DefaultDisplay;
 
-        public OpenGlContext()
+        public OpenGLContext()
         {
-            BaseContext = PlatformHelper.CreateOpenGLContext(OpenGlSurface.GetFramebufferFormat(), 4, 3, OpenGLContextFlags.Compat);
+            BaseContext = PlatformHelper.CreateOpenGLContext(OpenGLSurface.GetFramebufferFormat(), 4, 3, OpenGLContextFlags.Compat);
             BaseContext.Initialize();
         }
 

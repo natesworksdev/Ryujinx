@@ -30,7 +30,7 @@ namespace Ryujinx.Ava.Ui.Backend
                 else if (OperatingSystem.IsLinux())
                 {
                     XWindowAttributes attributes = new XWindowAttributes();
-                    XGetWindowAttributes(OpenGl.OpenGlContext.X11DefaultDisplay, Handle, ref attributes);
+                    XGetWindowAttributes(OpenGL.OpenGLContext.X11DefaultDisplay, Handle, ref attributes);
 
                     size = new PixelSize(attributes.width, attributes.height);
                 }

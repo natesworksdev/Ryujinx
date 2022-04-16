@@ -21,7 +21,7 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
-
+using System.Threading;
 using JsonHelper = Ryujinx.Common.Utilities.JsonHelper;
 using Path = System.IO.Path;
 
@@ -158,12 +158,14 @@ namespace Ryujinx.Ui.App.Common
                             return;
                         }
 
-                        if ((Path.GetExtension(app).ToLower() == ".nsp") ||
-                            (Path.GetExtension(app).ToLower() == ".pfs0") ||
-                            (Path.GetExtension(app).ToLower() == ".xci") ||
-                            (Path.GetExtension(app).ToLower() == ".nca") ||
-                            (Path.GetExtension(app).ToLower() == ".nro") ||
-                            (Path.GetExtension(app).ToLower() == ".nso"))
+                        string extension = Path.GetExtension(app).ToLower();
+
+                        if ((extension == ".nsp")  ||
+                            (extension == ".pfs0") ||
+                            (extension == ".xci")  ||
+                            (extension == ".nca")  ||
+                            (extension == ".nro")  ||
+                            (extension == ".nso"))
                         {
                             applications.Add(app);
                             numApplicationsFound++;
@@ -190,11 +192,11 @@ namespace Ryujinx.Ui.App.Common
 
                     try
                     {
+                        string extension = Path.GetExtension(applicationPath).ToLower();
+
                         using (FileStream file = new FileStream(applicationPath, FileMode.Open, FileAccess.Read))
                         {
-                            if ((Path.GetExtension(applicationPath).ToLower() == ".nsp") ||
-                                (Path.GetExtension(applicationPath).ToLower() == ".pfs0") ||
-                                (Path.GetExtension(applicationPath).ToLower() == ".xci"))
+                            if (extension == ".nsp" || extension == ".pfs0" || extension == ".xci")
                             {
                                 try
                                 {
@@ -202,7 +204,7 @@ namespace Ryujinx.Ui.App.Common
 
                                     bool isExeFs = false;
 
-                                    if (Path.GetExtension(applicationPath).ToLower() == ".xci")
+                                    if (extension == ".xci")
                                     {
                                         Xci xci = new Xci(_virtualFileSystem.KeySet, file.AsStorage());
 
@@ -319,20 +321,20 @@ namespace Ryujinx.Ui.App.Common
 
                                             if (applicationIcon == null)
                                             {
-                                                applicationIcon = Path.GetExtension(applicationPath).ToLower() == ".xci" ? _xciIcon : _nspIcon;
+                                                applicationIcon = extension == ".xci" ? _xciIcon : _nspIcon;
                                             }
                                         }
                                     }
                                 }
                                 catch (MissingKeyException exception)
                                 {
-                                    applicationIcon = Path.GetExtension(applicationPath).ToLower() == ".xci" ? _xciIcon : _nspIcon;
+                                    applicationIcon = extension == ".xci" ? _xciIcon : _nspIcon;
 
                                     Logger.Warning?.Print(LogClass.Application, $"Your key set is missing a key with the name: {exception.Name}");
                                 }
                                 catch (InvalidDataException)
                                 {
-                                    applicationIcon = Path.GetExtension(applicationPath).ToLower() == ".xci" ? _xciIcon : _nspIcon;
+                                    applicationIcon = extension == ".xci" ? _xciIcon : _nspIcon;
 
                                     Logger.Warning?.Print(LogClass.Application, $"The header key is incorrect or missing and therefore the NCA header content type check has failed. Errored File: {applicationPath}");
                                 }
@@ -345,7 +347,7 @@ namespace Ryujinx.Ui.App.Common
                                     continue;
                                 }
                             }
-                            else if (Path.GetExtension(applicationPath).ToLower() == ".nro")
+                            else if (extension == ".nro")
                             {
                                 BinaryReader reader = new BinaryReader(file);
 
@@ -395,7 +397,7 @@ namespace Ryujinx.Ui.App.Common
                                     continue;
                                 }
                             }
-                            else if (Path.GetExtension(applicationPath).ToLower() == ".nca")
+                            else if (extension == ".nca")
                             {
                                 try
                                 {
@@ -426,7 +428,7 @@ namespace Ryujinx.Ui.App.Common
                                 titleName = Path.GetFileNameWithoutExtension(applicationPath);
                             }
                             // If its an NSO we just set defaults
-                            else if (Path.GetExtension(applicationPath).ToLower() == ".nso")
+                            else if (extension == ".nso")
                             {
                                 applicationIcon = _nsoIcon;
                                 titleName = Path.GetFileNameWithoutExtension(applicationPath);
@@ -562,17 +564,14 @@ namespace Ryujinx.Ui.App.Common
 
             try
             {
-                if (Directory.Exists(applicationPath))
+                // Look for icon only if applicationPath is not a directory
+                if (!Directory.Exists(applicationPath))
                 {
+                    string extension = Path.GetExtension(applicationPath).ToLower();
 
-                }
-                else
-                {
-                    using (FileStream file = new(applicationPath, FileMode.Open, FileAccess.Read))
+                    using (FileStream file = new FileStream(applicationPath, FileMode.Open, FileAccess.Read))
                     {
-                        if (Path.GetExtension(applicationPath).ToLower() == ".nsp" ||
-                            Path.GetExtension(applicationPath).ToLower() == ".pfs0" ||
-                            Path.GetExtension(applicationPath).ToLower() == ".xci")
+                        if (extension == ".nsp" || extension == ".pfs0" || extension == ".xci")
                         {
                             try
                             {
@@ -580,7 +579,7 @@ namespace Ryujinx.Ui.App.Common
 
                                 bool isExeFs = false;
 
-                                if (Path.GetExtension(applicationPath).ToLower() == ".xci")
+                                if (extension == ".xci")
                                 {
                                     Xci xci = new(_virtualFileSystem.KeySet, file.AsStorage());
 
@@ -648,20 +647,20 @@ namespace Ryujinx.Ui.App.Common
 
                                         if (applicationIcon == null)
                                         {
-                                            applicationIcon = Path.GetExtension(applicationPath).ToLower() == ".xci" ? _xciIcon : _nspIcon;
+                                            applicationIcon = extension == ".xci" ? _xciIcon : _nspIcon;
                                         }
                                     }
                                 }
                             }
                             catch (MissingKeyException exception)
                             {
-                                applicationIcon = Path.GetExtension(applicationPath).ToLower() == ".xci"
+                                applicationIcon = extension == ".xci"
                                     ? _xciIcon
                                     : _nspIcon;
                             }
                             catch (InvalidDataException)
                             {
-                                applicationIcon = Path.GetExtension(applicationPath).ToLower() == ".xci"
+                                applicationIcon = extension == ".xci"
                                     ? _xciIcon
                                     : _nspIcon;
                             }
@@ -671,7 +670,7 @@ namespace Ryujinx.Ui.App.Common
                                     $"The file encountered was not of a valid type. File: '{applicationPath}' Error: {exception}");
                             }
                         }
-                        else if (Path.GetExtension(applicationPath).ToLower() == ".nro")
+                        else if (extension == ".nro")
                         {
                             BinaryReader reader = new(file);
 
@@ -709,19 +708,23 @@ namespace Ryujinx.Ui.App.Common
                                     $"The file encountered was not of a valid type. Errored File: {applicationPath}");
                             }
                         }
-                        else if (Path.GetExtension(applicationPath).ToLower() == ".nca")
+                        else if (extension == ".nca")
                         {
                             applicationIcon = _ncaIcon;
                         }
                         // If its an NSO we just set defaults
-                        else if (Path.GetExtension(applicationPath).ToLower() == ".nso")
+                        else if (extension == ".nso")
                         {
                             applicationIcon = _nsoIcon;
                         }
                     }
                 }
             }
-            catch { }
+            catch(Exception ex)
+            {
+                Logger.Warning?.Print(LogClass.Application,
+                    $"Could not retrieve a valid icon for the app. Default icon will be used. Errored File: {applicationPath}");
+            }
 
             return applicationIcon ?? _ncaIcon;
         }

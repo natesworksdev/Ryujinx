@@ -4,6 +4,8 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Common.Utilities;
 using Ryujinx.Ui.Common.Configuration.System;
 using Ryujinx.Ui.Common.Configuration.Ui;
+using System.Collections.Generic;
+using System.IO;
 
 namespace Ryujinx.Ui.Common.Configuration
 {

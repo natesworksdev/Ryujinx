@@ -5,7 +5,7 @@ using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
 using OpenTK.Graphics.OpenGL;
-using Ryujinx.Ava.Ui.Backend.OpenGl;
+using Ryujinx.Ava.Ui.Backend.OpenGL;
 using Ryujinx.Common.Configuration;
 using SkiaSharp;
 using SPB.Graphics;
@@ -96,7 +96,7 @@ namespace Ryujinx.Ava.Ui.Controls
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnAttachedToVisualTree(e);
-            _swapEvent = OpenGlSurface.GetWindowSwapEvent(((this.VisualRoot as TopLevel).PlatformImpl as IWindowImpl).Handle.Handle);
+            _swapEvent = OpenGLSurface.GetWindowSwapEvent(((this.VisualRoot as TopLevel).PlatformImpl as IWindowImpl).Handle.Handle);
         }
 
         protected void OnGlInitialized()

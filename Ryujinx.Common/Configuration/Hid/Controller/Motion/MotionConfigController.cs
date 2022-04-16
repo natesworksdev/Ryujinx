@@ -1,10 +1,4 @@
-﻿using System;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using System.Text.Json.Serialization;
-using NotImplementedException = System.NotImplementedException;
-
-namespace Ryujinx.Common.Configuration.Hid.Controller.Motion
+﻿namespace Ryujinx.Common.Configuration.Hid.Controller.Motion
 {
     public class MotionConfigController
     {

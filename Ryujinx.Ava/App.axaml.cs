@@ -49,7 +49,7 @@ namespace Ryujinx.Ava
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             Dispatcher.UIThread.InvokeAsync(async () =>
             {
-                // TODO
+                // TODO. Implement Restart Dialog when SettingsWindow is implemented.
             });
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         }
@@ -67,6 +67,8 @@ namespace Ryujinx.Ava
                 string themePath = ConfigurationState.Instance.Ui.CustomThemePath;
                 bool enableCustomTheme = ConfigurationState.Instance.Ui.EnableCustomTheme;
 
+                const string BaseStyleUrl = "avares://Ryujinx.Ava/Assets/Styles/Base{0}.xaml";
+
                 if (string.IsNullOrWhiteSpace(baseStyle))
                 {
                     ConfigurationState.Instance.Ui.BaseStyle.Value = "Dark";
@@ -80,6 +82,7 @@ namespace Ryujinx.Ava
 
                 var currentStyles = this.Styles;
 
+                // Remove all styles except the base style.
                 if (currentStyles.Count > 1)
                 {
                     currentStyles.RemoveRange(1, currentStyles.Count - 1);
@@ -87,23 +90,17 @@ namespace Ryujinx.Ava
 
                 IStyle newStyles = null;
 
+                // Load requested style, and fallback to Dark theme if loading failed.
                 try
                 {
-                    newStyles = (Styles)AvaloniaXamlLoader.Load(new Uri($"avares://Ryujinx.Ava/Assets/Styles/Base{baseStyle}.xaml", UriKind.Absolute));
+                    newStyles = (Styles)AvaloniaXamlLoader.Load(new Uri(string.Format(BaseStyleUrl, baseStyle), UriKind.Absolute));
                 }
                 catch (XamlLoadException)
                 {
-                    newStyles = (Styles)AvaloniaXamlLoader.Load(new Uri($"avares://Ryujinx.Ava/Assets/Styles/BaseDark.xaml", UriKind.Absolute));
+                    newStyles = (Styles)AvaloniaXamlLoader.Load(new Uri(string.Format(BaseStyleUrl, "Dark"), UriKind.Absolute));
                 }
 
-                if (currentStyles.Count == 2)
-                {
-                    currentStyles[1] = newStyles;
-                }
-                else
-                {
-                    currentStyles.Add(newStyles);
-                }
+                currentStyles.Add(newStyles);
 
                 if (enableCustomTheme)
                 {
@@ -114,14 +111,7 @@ namespace Ryujinx.Ava
                             var themeContent = File.ReadAllText(themePath);
                             var customStyle = AvaloniaRuntimeXamlLoader.Parse<IStyle>(themeContent);
 
-                            if (currentStyles.Count == 3)
-                            {
-                                currentStyles[2] = customStyle;
-                            }
-                            else
-                            {
-                                currentStyles.Add(customStyle);
-                            }
+                            currentStyles.Add(customStyle);
                         }
                         catch (Exception ex)
                         {

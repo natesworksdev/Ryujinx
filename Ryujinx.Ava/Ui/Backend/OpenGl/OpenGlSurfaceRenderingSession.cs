@@ -2,13 +2,13 @@ using Avalonia;
 using OpenTK.Graphics.OpenGL;
 using System;
 
-namespace Ryujinx.Ava.Ui.Backend.OpenGl
+namespace Ryujinx.Ava.Ui.Backend.OpenGL
 {
-    public class OpenGlSurfaceRenderingSession : IDisposable
+    public class OpenGLSurfaceRenderingSession : IDisposable
     {
-        private readonly OpenGlSurface _window;
+        private readonly OpenGLSurface _window;
 
-        public OpenGlSurfaceRenderingSession(OpenGlSurface window, float scaling)
+        public OpenGLSurfaceRenderingSession(OpenGLSurface window, float scaling)
         {
             _window = window;
             Scaling = scaling;

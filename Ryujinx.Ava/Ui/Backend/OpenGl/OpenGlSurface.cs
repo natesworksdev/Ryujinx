@@ -8,19 +8,18 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Ryujinx.Ava.Ui.Backend.OpenGl
+namespace Ryujinx.Ava.Ui.Backend.OpenGL
 {
-
-    public class OpenGlSurface : BackendSurface
+    public class OpenGLSurface : BackendSurface
     {
         public SwappableNativeWindowBase Window { get; }
 
-        private OpenGlSkiaGpu _gpu;
+        private OpenGLSkiaGpu _gpu;
         private AutoResetEvent _swapEvent;
 
         private static readonly ConcurrentDictionary<IntPtr, AutoResetEvent> _swapEvents;
 
-        static OpenGlSurface()
+        static OpenGLSurface()
         {
             _swapEvents = new ConcurrentDictionary<IntPtr, AutoResetEvent>();
         }
@@ -35,7 +34,7 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGl
             return null;
         }
 
-        public OpenGlSurface(IntPtr handle) : base(handle)
+        public OpenGLSurface(IntPtr handle) : base(handle)
         {
             if (OperatingSystem.IsWindows())
             {
@@ -43,10 +42,10 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGl
             }
             else if (OperatingSystem.IsLinux())
             {
-                Window = new SPB.Platform.GLX.GLXWindow(new NativeHandle(OpenGlContext.X11DefaultDisplay), new NativeHandle(Handle));
+                Window = new SPB.Platform.GLX.GLXWindow(new NativeHandle(OpenGLContext.X11DefaultDisplay), new NativeHandle(Handle));
             }
 
-            _gpu = AvaloniaLocator.Current.GetService<OpenGlSkiaGpu>();
+            _gpu = AvaloniaLocator.Current.GetService<OpenGLSkiaGpu>();
 
             var context = PlatformHelper.CreateOpenGLContext(GetFramebufferFormat(), 4, 3, OpenGLContextFlags.Default);
             context.Initialize(Window);
@@ -63,9 +62,9 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGl
             return FramebufferFormat.Default;
         }
 
-        public OpenGlSurfaceRenderingSession BeginDraw()
+        public OpenGLSurfaceRenderingSession BeginDraw()
         {
-            return new OpenGlSurfaceRenderingSession(this, (float)Program.WindowScaleFactor);
+            return new OpenGLSurfaceRenderingSession(this, (float)Program.WindowScaleFactor);
         }
 
         public void MakeCurrent()

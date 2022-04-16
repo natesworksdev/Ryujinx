@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <RuntimeIdentifiers>win-x64;osx-x64;linux-x64</RuntimeIdentifiers>
@@ -16,11 +16,20 @@
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
-    <ItemGroup>
-        <None Update="alsoft.ini" Condition="'$(RuntimeIdentifier)' != 'linux-x64' AND '$(RuntimeIdentifier)' != 'osx-x64'">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
-    </ItemGroup>
+	<ItemGroup>
+		<ContentWithTargetPath Include="..\distribution\windows\alsoft.ini" Condition="'$(RuntimeIdentifier)' != 'linux-x64' AND '$(RuntimeIdentifier)' != 'osx-x64'">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<TargetPath>alsoft.ini</TargetPath>
+		</ContentWithTargetPath>
+		<ContentWithTargetPath Include="..\distribution\legal\THIRDPARTY.md">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<TargetPath>THIRDPARTY.md</TargetPath>
+		</ContentWithTargetPath>
+		<ContentWithTargetPath Include="..\Ryujinx.Audio\LICENSE.txt">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<TargetPath>LICENSE-Ryujinx.Audio.txt</TargetPath>
+		</ContentWithTargetPath>
+	</ItemGroup>
     <PropertyGroup Condition="'$(RuntimeIdentifier)' != ''">
         <PublishSingleFile>true</PublishSingleFile>
         <PublishTrimmed>true</PublishTrimmed>
@@ -125,10 +134,5 @@
           <DependentUpon>GameListView.axaml</DependentUpon>
           <SubType>Code</SubType>
         </Compile>
-    </ItemGroup>
-    <ItemGroup>
-        <None Update="THIRDPARTY.md">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
     </ItemGroup>
 </Project>

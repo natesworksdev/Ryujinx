@@ -7,6 +7,8 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Ui.Common.Configuration.System;
 using Ryujinx.Ui.Common.Configuration.Ui;
 using Ryujinx.Ui.Common.Helper;
+using System;
+using System.Collections.Generic;
 
 namespace Ryujinx.Ui.Common.Configuration
 {
@@ -961,7 +963,7 @@ namespace Ryujinx.Ui.Common.Configuration
 
                 configurationFileUpdated = true;
             }
-            
+
             if (configurationFileFormat.Version < 29)
             {
                 Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 29.");
@@ -969,8 +971,7 @@ namespace Ryujinx.Ui.Common.Configuration
                 {
                     ToggleVsync = Key.Tab,
                     Screenshot = Key.F8,
-                    ShowUi = Key.F4,
-                    Pause = Key.F5
+                    ShowUi = Key.F4
                 };
                 configurationFileUpdated = true;
             }
@@ -1018,7 +1019,7 @@ namespace Ryujinx.Ui.Common.Configuration
 
                 configurationFileUpdated = true;
             }
-            
+
             if (configurationFileFormat.Version < 33)
             {
                 Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 33.");
@@ -1045,7 +1046,7 @@ namespace Ryujinx.Ui.Common.Configuration
 
                 configurationFileUpdated = true;
             }
-            
+
             if (configurationFileFormat.Version < 35)
             {
                 Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 35.");

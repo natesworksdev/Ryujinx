@@ -70,6 +70,18 @@ namespace Ryujinx.Input.SDL2
             SDL_Keycode.SDLK_F23,
             SDL_Keycode.SDLK_F24,
 
+            SDL_Keycode.SDLK_0,
+            SDL_Keycode.SDLK_0,
+            SDL_Keycode.SDLK_0,
+            SDL_Keycode.SDLK_0,
+            SDL_Keycode.SDLK_0,
+            SDL_Keycode.SDLK_0,
+            SDL_Keycode.SDLK_0,
+            SDL_Keycode.SDLK_0,
+            SDL_Keycode.SDLK_0,
+            SDL_Keycode.SDLK_0,
+            SDL_Keycode.SDLK_0,
+
             SDL_Keycode.SDLK_UP,
             SDL_Keycode.SDLK_DOWN,
             SDL_Keycode.SDLK_LEFT,

@@ -1,6 +1,6 @@
 using Avalonia;
 using Avalonia.Skia;
-using Ryujinx.Ava.Ui.Backend.OpenGl;
+using Ryujinx.Ava.Ui.Backend.OpenGL;
 
 namespace Ryujinx.Ava.Ui.Backend
 {
@@ -9,8 +9,8 @@ namespace Ryujinx.Ava.Ui.Backend
         public static ISkiaGpu CreateOpenGlGpu()
         {
             var skiaOptions = AvaloniaLocator.Current.GetService<SkiaOptions>() ?? new SkiaOptions();
-            var gpu = new OpenGlSkiaGpu(skiaOptions.MaxGpuResourceSizeBytes);
-            AvaloniaLocator.CurrentMutable.Bind<OpenGlSkiaGpu>().ToConstant(gpu);
+            var gpu = new OpenGLSkiaGpu(skiaOptions.MaxGpuResourceSizeBytes);
+            AvaloniaLocator.CurrentMutable.Bind<OpenGLSkiaGpu>().ToConstant(gpu);
 
             return gpu;
         }
