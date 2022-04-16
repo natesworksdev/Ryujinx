@@ -190,7 +190,7 @@ void main()
 
             var sampler = linearFilter ? _samplerLinear : _samplerNearest;
 
-            _pipeline.SetTextureAndSampler(Constants.MaxTexturesPerStage, src, sampler);
+            _pipeline.SetTextureAndSampler(ShaderStage.Fragment, Constants.MaxTexturesPerStage, src, sampler);
 
             Span<float> region = stackalloc float[RegionBufferSize / sizeof(float)];
 
@@ -327,7 +327,7 @@ void main()
         {
             const int RegionBufferSize = 16;
 
-            pipeline.SetTextureAndSampler(Constants.MaxTexturesPerStage, src, srcSampler);
+            pipeline.SetTextureAndSampler(ShaderStage.Fragment, Constants.MaxTexturesPerStage, src, srcSampler);
 
             Span<float> region = stackalloc float[RegionBufferSize / sizeof(float)];
 

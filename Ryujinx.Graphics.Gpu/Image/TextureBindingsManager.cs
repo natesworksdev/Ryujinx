@@ -559,7 +559,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                         state.ScaleIndex = index;
                         state.UsageFlags = usageFlags;
 
-                        _context.Renderer.Pipeline.SetTextureAndSampler(bindingInfo.Binding, hostTextureRebind, state.Sampler);
+                        _context.Renderer.Pipeline.SetTextureAndSampler(stage, bindingInfo.Binding, hostTextureRebind, state.Sampler);
                     }
 
                     continue;
@@ -582,7 +582,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     // Ensure that the buffer texture is using the correct buffer as storage.
                     // Buffers are frequently re-created to accomodate larger data, so we need to re-bind
                     // to ensure we're not using a old buffer that was already deleted.
-                    _channel.BufferManager.SetBufferTextureStorage(hostTexture, texture.Range.GetSubRange(0).Address, texture.Size, bindingInfo, bindingInfo.Format, false);
+                    _channel.BufferManager.SetBufferTextureStorage(stage, hostTexture, texture.Range.GetSubRange(0).Address, texture.Size, bindingInfo, bindingInfo.Format, false);
                 }
                 else
                 {
@@ -599,7 +599,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                         state.Sampler = hostSampler;
 
-                        _context.Renderer.Pipeline.SetTextureAndSampler(bindingInfo.Binding, hostTexture, hostSampler);
+                        _context.Renderer.Pipeline.SetTextureAndSampler(stage, bindingInfo.Binding, hostTexture, hostSampler);
                     }
 
                     state.CachedTexture = texture;
@@ -715,7 +715,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                         format = texture.Format;
                     }
 
-                    _channel.BufferManager.SetBufferTextureStorage(hostTexture, texture.Range.GetSubRange(0).Address, texture.Size, bindingInfo, format, true);
+                    _channel.BufferManager.SetBufferTextureStorage(stage, hostTexture, texture.Range.GetSubRange(0).Address, texture.Size, bindingInfo, format, true);
                 }
                 else
                 {

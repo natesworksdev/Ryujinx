@@ -627,6 +627,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetRenderTargets(ITexture[] colors, ITexture depthStencil)
         {
+            FramebufferParams?.UpdateModifications();
             CreateFramebuffer(colors, depthStencil);
             CreateRenderPass();
             SignalStateChange();
@@ -710,9 +711,9 @@ namespace Ryujinx.Graphics.Vulkan
             _descriptorSetUpdater.SetStorageBuffers(CommandBuffer, first, buffers);
         }
 
-        public void SetTextureAndSampler(int binding, ITexture texture, ISampler sampler)
+        public void SetTextureAndSampler(ShaderStage stage, int binding, ITexture texture, ISampler sampler)
         {
-            _descriptorSetUpdater.SetTextureAndSampler(binding, texture, sampler);
+            _descriptorSetUpdater.SetTextureAndSampler(Cbs, stage, binding, texture, sampler);
         }
 
         public void SetTransformFeedbackBuffers(ReadOnlySpan<BufferRange> buffers)

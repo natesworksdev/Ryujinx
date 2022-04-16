@@ -1195,7 +1195,7 @@ namespace Ryujinx.Graphics.OpenGL
             SetBuffers(first, buffers, isStorage: true);
         }
 
-        public void SetTextureAndSampler(int binding, ITexture texture, ISampler sampler)
+        public void SetTextureAndSampler(ShaderStage stage, int binding, ITexture texture, ISampler sampler)
         {
             if (texture != null)
             {
