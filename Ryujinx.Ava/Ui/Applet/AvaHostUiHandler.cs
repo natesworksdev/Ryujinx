@@ -44,7 +44,10 @@ namespace Ryujinx.Ava.Ui.Applet
         public bool DisplayMessageDialog(string title, string message)
         {
             // TODO
-            ContentDialogHelper.ShowNotAvailableMessage(_parent);
+            Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                ContentDialogHelper.ShowNotAvailableMessage(_parent);
+            });
 
             return true;
         }
