@@ -664,7 +664,9 @@
                       <object class="GtkEventBox">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="events">GDK_SCROLL_MASK</property>
                         <signal name="button-release-event" handler="VolumeStatus_Clicked" swapped="no"/>
+                        <signal name="scroll-event" handler="VolumeStatus_Scroll" swapped="no"/>
                         <child>
                           <object class="GtkLabel" id="_volumeStatus">
                             <property name="visible">True</property>

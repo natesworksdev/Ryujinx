@@ -1205,6 +1205,21 @@ namespace Ryujinx.Ui
             }
         }
 
+        private void VolumeStatus_Scroll(object sender, ScrollEventArgs args)
+        {
+            if (_emulationContext != null)
+            {
+                if (args.Event.Direction == Gdk.ScrollDirection.Up)
+                {
+                    _emulationContext.SetVolume(MathF.Round(MathF.Min(1.0f, _emulationContext.GetVolume() + 0.1f), 1));
+                }
+                else if (args.Event.Direction == Gdk.ScrollDirection.Down)
+                {
+                    _emulationContext.SetVolume(MathF.Round(MathF.Max(0.0f, _emulationContext.GetVolume() - 0.1f), 1));
+                }
+            }
+        }
+
         private void AspectRatio_Clicked(object sender, ButtonReleaseEventArgs args)
         {
             AspectRatio aspectRatio = ConfigurationState.Instance.Graphics.AspectRatio.Value;
