@@ -11,6 +11,7 @@ namespace Ryujinx.Graphics.Vulkan.Queries
     {
         private const int MaxQueryRetries = 5000;
         private const long DefaultValue = -1;
+        private const long DefaultValueInt = 0xFFFFFFFF;
 
         private readonly Vk _api;
         private readonly Device _device;
@@ -22,13 +23,17 @@ namespace Ryujinx.Graphics.Vulkan.Queries
         private readonly BufferHolder _buffer;
         private readonly IntPtr _bufferMap;
         private readonly CounterType _type;
+        private bool _result32Bit;
 
-        public unsafe BufferedQuery(VulkanGraphicsDevice gd, Device device, PipelineFull pipeline, CounterType type)
+        private long _defaultValue;
+
+        public unsafe BufferedQuery(VulkanGraphicsDevice gd, Device device, PipelineFull pipeline, CounterType type, bool result32Bit)
         {
             _api = gd.Api;
             _device = device;
             _pipeline = pipeline;
             _type = type;
+            _result32Bit = result32Bit;
 
             QueryPipelineStatisticFlags flags = type == CounterType.PrimitivesGenerated ? 
                 QueryPipelineStatisticFlags.QueryPipelineStatisticGeometryShaderPrimitivesBit : 0;
@@ -46,7 +51,8 @@ namespace Ryujinx.Graphics.Vulkan.Queries
             var buffer = gd.BufferManager.Create(gd, sizeof(long), forConditionalRendering: true);
 
             _bufferMap = buffer.Map(0, sizeof(long));
-            Marshal.WriteInt64(_bufferMap, DefaultValue);
+            _defaultValue = result32Bit ? DefaultValueInt : DefaultValue;
+            Marshal.WriteInt64(_bufferMap, _defaultValue);
             _buffer = buffer;
         }
 
@@ -84,7 +90,7 @@ namespace Ryujinx.Graphics.Vulkan.Queries
 
             if (withResult)
             {
-                Marshal.WriteInt64(_bufferMap, DefaultValue);
+                Marshal.WriteInt64(_bufferMap, _defaultValue);
                 _pipeline.CopyQueryResults(this);
             }
             else
@@ -98,16 +104,16 @@ namespace Ryujinx.Graphics.Vulkan.Queries
         {
             result = Marshal.ReadInt64(_bufferMap);
 
-            return result != DefaultValue;
+            return result != _defaultValue;
         }
 
         public long AwaitResult(AutoResetEvent wakeSignal = null)
         {
-            long data = DefaultValue;
+            long data = _defaultValue;
 
             if (wakeSignal == null)
             {
-                while (data == DefaultValue)
+                while (data == _defaultValue)
                 {
                     data = Marshal.ReadInt64(_bufferMap);
                 }
@@ -115,10 +121,10 @@ namespace Ryujinx.Graphics.Vulkan.Queries
             else
             {
                 int iterations = 0;
-                while (data == DefaultValue && iterations++ < MaxQueryRetries)
+                while (data == _defaultValue && iterations++ < MaxQueryRetries)
                 {
                     data = Marshal.ReadInt64(_bufferMap);
-                    if (data == DefaultValue)
+                    if (data == _defaultValue)
                     {
                         wakeSignal.WaitOne(1);
                     }
@@ -143,6 +149,13 @@ namespace Ryujinx.Graphics.Vulkan.Queries
         {
             var buffer = _buffer.GetBuffer(cbs.CommandBuffer, true).Get(cbs, 0, sizeof(long)).Value;
 
+            QueryResultFlags flags = QueryResultFlags.QueryResultWaitBit;
+
+            if (!_result32Bit)
+            {
+                flags |= QueryResultFlags.QueryResult64Bit;
+            }
+
             _api.CmdCopyQueryPoolResults(
                 cbs.CommandBuffer,
                 _queryPool,
@@ -150,8 +163,8 @@ namespace Ryujinx.Graphics.Vulkan.Queries
                 1,
                 buffer,
                 0,
-                sizeof(long),
-                QueryResultFlags.QueryResult64Bit | QueryResultFlags.QueryResultWaitBit);
+                (ulong)(_result32Bit ? sizeof(int) : sizeof(long)),
+                flags);
         }
 
         public unsafe void Dispose()
