@@ -77,6 +77,7 @@ namespace Ryujinx.Graphics.Vulkan
         private Func<string[]> GetRequiredExtensions;
 
         internal Vendor Vendor { get; private set; }
+        internal bool IsAmdWindows { get; private set; }
         internal bool IsIntelWindows { get; private set; }
         public string GpuVendor { get; private set; }
         public string GpuRenderer { get; private set; }
@@ -385,6 +386,7 @@ namespace Ryujinx.Graphics.Vulkan
                 _ => Vendor.Unknown
             };
 
+            IsAmdWindows = Vendor == Vendor.Amd && RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             IsIntelWindows = Vendor == Vendor.Intel && RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
             GpuVendor = vendorName;
