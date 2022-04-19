@@ -43,7 +43,8 @@ namespace Ryujinx.Graphics.Vulkan.Queries
             _queryPool = new Queue<BufferedQuery>(QueryPoolInitialSize);
             for (int i = 0; i < QueryPoolInitialSize; i++)
             {
-                _queryPool.Enqueue(new BufferedQuery(_gd, _device, _pipeline, type));
+                // AMD Polaris GPUs on Windows seem to have issues reporting 64-bit query results.
+                _queryPool.Enqueue(new BufferedQuery(_gd, _device, _pipeline, type, gd.IsAmdWindows));
             }
 
             _current = new CounterQueueEvent(this, type, 0);
@@ -96,7 +97,7 @@ namespace Ryujinx.Graphics.Vulkan.Queries
                 }
                 else
                 {
-                    return new BufferedQuery(_gd, _device, _pipeline, Type);
+                    return new BufferedQuery(_gd, _device, _pipeline, Type, _gd.IsAmdWindows);
                 }
             }
         }
