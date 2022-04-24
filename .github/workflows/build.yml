@@ -71,7 +71,7 @@ jobs:
       - name: Upload Ryujinx artifact
         uses: actions/upload-artifact@v2
         with:
-          name: ryujinx-${{ matrix.configuration }}-1.0.0+${{ steps.git_short_hash.outputs.result }}-${{ matrix.RELEASE_ZIP_OS_NAME }}
+          name: ryujinx-${{ matrix.configuration }}-${{ env.RYUJINX_BASE_VERSION }}.0+${{ steps.git_short_hash.outputs.result }}-${{ matrix.RELEASE_ZIP_OS_NAME }}
           path: publish
         if: github.event_name == 'pull_request'
       - name: Upload Ryujinx.Headless.SDL2 artifact
