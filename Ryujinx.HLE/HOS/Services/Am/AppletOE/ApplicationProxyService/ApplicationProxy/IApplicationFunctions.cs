@@ -148,12 +148,10 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
             // TODO: When above calls are implemented, switch to using ns:am
 
             long desiredLanguageCode = context.Device.System.State.DesiredLanguageCode;
-            int desiredTitleLanguage = (int)context.Device.System.State.DesiredTitleLanguage;
-            int  supportedLanguages  = (int)context.Device.Application.ControlData.Value.SupportedLanguageFlag;
-            int  firstSupported      = BitOperations.TrailingZeroCount(supportedLanguages);
-            int numberOfCurrentlyDefinedLanguages = Enum.GetNames(typeof(TitleLanguage)).Length - 1;
+            int supportedLanguages = (int)context.Device.Application.ControlData.Value.SupportedLanguageFlag;
+            int firstSupported = BitOperations.TrailingZeroCount(supportedLanguages);
 
-            if (firstSupported > numberOfCurrentlyDefinedLanguages)
+            if (firstSupported > (int)SystemState.TitleLanguage.BrazilianPortuguese)
             {
                 Logger.Warning?.Print(LogClass.ServiceAm, "Application has zero supported languages");
 
@@ -164,9 +162,9 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
             // If desired language is not supported by application, use first supported language from TitleLanguage.
             // TODO: In the future, a GUI could enable user-specified search priority
-            if ((supportedLanguages & 1 << desiredTitleLanguage) != 1 << desiredTitleLanguage)
+            if (((1 << (int)context.Device.System.State.DesiredTitleLanguage) & supportedLanguages) == 0)
             {
-                SystemLanguage newLanguage = Enum.Parse<SystemLanguage>(Enum.GetName(typeof(TitleLanguage), firstSupported));
+                SystemLanguage newLanguage = Enum.Parse<SystemLanguage>(Enum.GetName(typeof(SystemState.TitleLanguage), firstSupported));
                 desiredLanguageCode = SystemStateMgr.GetLanguageCode((int)newLanguage);
 
                 Logger.Info?.Print(LogClass.ServiceAm, $"Application doesn't support configured language. Using {newLanguage}");
@@ -176,7 +174,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
             return ResultCode.Success;
         }
-
+        
         [CommandHipc(22)]
         // SetTerminateResult(u32)
         public ResultCode SetTerminateResult(ServiceCtx context)
