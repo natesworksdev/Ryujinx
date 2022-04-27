@@ -591,7 +591,7 @@ namespace Ryujinx.Ui.App
                 {
                     if (!controlTitle.PublisherString.IsEmpty())
                     {
-                        publisher = controlTitle.ToString();
+                        publisher = controlTitle.PublisherString.ToString();
 
                         break;
                     }
