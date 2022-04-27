@@ -602,7 +602,7 @@ namespace Ryujinx.Ui.App
             List<string> supportedLanguagesList = new List<string>();
             for (int i = 0; i < Enum.GetNames(typeof(TitleLanguage)).Length; i++)
             {
-                if ((controlData.SupportedLanguageFlag & 1 << i) == 1 << i) {
+                if ((1 << i & controlData.SupportedLanguageFlag) != 0) {
                     var languageToAdd = Enum.GetNames(typeof(TitleLanguage))[i];
                     var formattedLanguageToAdd = Regex.Replace(languageToAdd, "([A-Z])", " $1").Trim();
                     supportedLanguagesList.Add(formattedLanguageToAdd);
