@@ -599,7 +599,7 @@ namespace Ryujinx.Ui.App
             }
 
             supportedLanguages = string.Empty;
-            var supportedLanguagesList = new List<string>();
+            List<string> supportedLanguagesList = new List<string>();
             for (int i = 0; i < Enum.GetNames(typeof(TitleLanguage)).Length; i++)
             {
                 if ((controlData.SupportedLanguageFlag & 1 << i) == 1 << i) {
