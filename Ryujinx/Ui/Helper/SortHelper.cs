@@ -7,8 +7,8 @@ namespace Ryujinx.Ui.Helper
     {
         public static int TimePlayedSort(ITreeModel model, TreeIter a, TreeIter b)
         {
-            string aValue = model.GetValue(a, 5).ToString();
-            string bValue = model.GetValue(b, 5).ToString();
+            string aValue = model.GetValue(a, 6).ToString();
+            string bValue = model.GetValue(b, 6).ToString();
 
             if (aValue.Length > 4 && aValue[^4..] == "mins")
             {
@@ -60,8 +60,8 @@ namespace Ryujinx.Ui.Helper
 
         public static int LastPlayedSort(ITreeModel model, TreeIter a, TreeIter b)
         {
-            string aValue = model.GetValue(a, 6).ToString();
-            string bValue = model.GetValue(b, 6).ToString();
+            string aValue = model.GetValue(a, 7).ToString();
+            string bValue = model.GetValue(b, 7).ToString();
 
             if (aValue == "Never")
             {
@@ -78,8 +78,8 @@ namespace Ryujinx.Ui.Helper
 
         public static int FileSizeSort(ITreeModel model, TreeIter a, TreeIter b)
         {
-            string aValue = model.GetValue(a, 8).ToString();
-            string bValue = model.GetValue(b, 8).ToString();
+            string aValue = model.GetValue(a, 9).ToString();
+            string bValue = model.GetValue(b, 9).ToString();
 
             if (aValue[^2..] == "GB")
             {

@@ -18,10 +18,11 @@ using Ryujinx.HLE.Loaders.Npdm;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
-
+using System.Text.RegularExpressions;
 using JsonHelper = Ryujinx.Common.Utilities.JsonHelper;
 using Path = System.IO.Path;
 
@@ -160,6 +161,7 @@ namespace Ryujinx.Ui.App
                 string titleId         = "0000000000000000";
                 string developer       = "Unknown";
                 string version         = "0";
+                string supportedLanguages = string.Empty;
                 byte[] applicationIcon = null;
 
                 BlitStruct<ApplicationControlProperty> controlHolder = new BlitStruct<ApplicationControlProperty>(1);
@@ -253,7 +255,7 @@ namespace Ryujinx.Ui.App
 
                                     ReadControlData(controlFs, controlHolder.ByteSpan);
 
-                                    GetGameInformation(ref controlHolder.Value, out titleName, out _, out developer, out version);
+                                    GetGameInformation(ref controlHolder.Value, out titleName, out _, out developer, out version, out supportedLanguages);
 
                                     // Read the icon from the ControlFS and store it as a byte array
                                     try
@@ -354,7 +356,7 @@ namespace Ryujinx.Ui.App
                                     // Read the NACP data
                                     Read(assetOffset + (int)nacpOffset, (int)nacpSize).AsSpan().CopyTo(controlHolder.ByteSpan);
 
-                                    GetGameInformation(ref controlHolder.Value, out titleName, out titleId, out developer, out version);
+                                    GetGameInformation(ref controlHolder.Value, out titleName, out titleId, out developer, out version, out supportedLanguages);
                                 }
                                 else
                                 {
@@ -435,6 +437,7 @@ namespace Ryujinx.Ui.App
                     TitleId       = titleId,
                     Developer     = developer,
                     Version       = version,
+                    SupportedLanguages = supportedLanguages,
                     TimePlayed    = ConvertSecondsToReadableString(appMetadata.TimePlayed),
                     LastPlayed    = appMetadata.LastPlayed,
                     FileExtension = Path.GetExtension(applicationPath).ToUpper().Remove(0, 1),
@@ -554,7 +557,7 @@ namespace Ryujinx.Ui.App
             return readableString;
         }
 
-        private void GetGameInformation(ref ApplicationControlProperty controlData, out string titleName, out string titleId, out string publisher, out string version)
+        private void GetGameInformation(ref ApplicationControlProperty controlData, out string titleName, out string titleId, out string publisher, out string version, out string supportedLanguages)
         {
             _ = Enum.TryParse(_desiredTitleLanguage.ToString(), out TitleLanguage desiredTitleLanguage);
 
@@ -588,12 +591,25 @@ namespace Ryujinx.Ui.App
                 {
                     if (!controlTitle.PublisherString.IsEmpty())
                     {
-                        publisher = controlTitle.PublisherString.ToString();
+                        publisher = controlTitle.ToString();
 
                         break;
                     }
                 }
             }
+
+            supportedLanguages = string.Empty;
+            var supportedLanguagesList = new List<string>();
+            for (int i = 0; i < Enum.GetNames(typeof(TitleLanguage)).Length; i++)
+            {
+                if ((controlData.SupportedLanguageFlag & 1 << i) == 1 << i) {
+                    var languageToAdd = Enum.GetNames(typeof(TitleLanguage))[i];
+                    var formattedLanguageToAdd = Regex.Replace(languageToAdd, "([A-Z])", " $1").Trim();
+                    supportedLanguagesList.Add(formattedLanguageToAdd);
+                }
+            }
+
+            supportedLanguages = string.Join("\n", supportedLanguagesList.OrderBy(language => language));
 
             if (controlData.PresenceGroupId != 0)
             {

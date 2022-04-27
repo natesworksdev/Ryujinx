@@ -26,6 +26,7 @@ namespace Ryujinx.Configuration
                 public ReactiveObject<bool> AppColumn        { get; private set; }
                 public ReactiveObject<bool> DevColumn        { get; private set; }
                 public ReactiveObject<bool> VersionColumn    { get; private set; }
+                public ReactiveObject<bool> SupportedLanguagesColumn { get; private set; }
                 public ReactiveObject<bool> TimePlayedColumn { get; private set; }
                 public ReactiveObject<bool> LastPlayedColumn { get; private set; }
                 public ReactiveObject<bool> FileExtColumn    { get; private set; }
@@ -39,6 +40,7 @@ namespace Ryujinx.Configuration
                     AppColumn        = new ReactiveObject<bool>();
                     DevColumn        = new ReactiveObject<bool>();
                     VersionColumn    = new ReactiveObject<bool>();
+                    SupportedLanguagesColumn = new ReactiveObject<bool>();
                     TimePlayedColumn = new ReactiveObject<bool>();
                     LastPlayedColumn = new ReactiveObject<bool>();
                     FileExtColumn    = new ReactiveObject<bool>();
@@ -456,51 +458,52 @@ namespace Ryujinx.Configuration
         {
             ConfigurationFileFormat configurationFile = new ConfigurationFileFormat
             {
-                Version                   = ConfigurationFileFormat.CurrentVersion,
-                EnableFileLog             = Logger.EnableFileLog,
-                BackendThreading          = Graphics.BackendThreading,
-                ResScale                  = Graphics.ResScale,
-                ResScaleCustom            = Graphics.ResScaleCustom,
-                MaxAnisotropy             = Graphics.MaxAnisotropy,
-                AspectRatio               = Graphics.AspectRatio,
-                GraphicsShadersDumpPath   = Graphics.ShadersDumpPath,
-                LoggingEnableDebug        = Logger.EnableDebug,
-                LoggingEnableStub         = Logger.EnableStub,
-                LoggingEnableInfo         = Logger.EnableInfo,
-                LoggingEnableWarn         = Logger.EnableWarn,
-                LoggingEnableError        = Logger.EnableError,
-                LoggingEnableTrace        = Logger.EnableTrace,
-                LoggingEnableGuest        = Logger.EnableGuest,
-                LoggingEnableFsAccessLog  = Logger.EnableFsAccessLog,
-                LoggingFilteredClasses    = Logger.FilteredClasses,
+                Version = ConfigurationFileFormat.CurrentVersion,
+                EnableFileLog = Logger.EnableFileLog,
+                BackendThreading = Graphics.BackendThreading,
+                ResScale = Graphics.ResScale,
+                ResScaleCustom = Graphics.ResScaleCustom,
+                MaxAnisotropy = Graphics.MaxAnisotropy,
+                AspectRatio = Graphics.AspectRatio,
+                GraphicsShadersDumpPath = Graphics.ShadersDumpPath,
+                LoggingEnableDebug = Logger.EnableDebug,
+                LoggingEnableStub = Logger.EnableStub,
+                LoggingEnableInfo = Logger.EnableInfo,
+                LoggingEnableWarn = Logger.EnableWarn,
+                LoggingEnableError = Logger.EnableError,
+                LoggingEnableTrace = Logger.EnableTrace,
+                LoggingEnableGuest = Logger.EnableGuest,
+                LoggingEnableFsAccessLog = Logger.EnableFsAccessLog,
+                LoggingFilteredClasses = Logger.FilteredClasses,
                 LoggingGraphicsDebugLevel = Logger.GraphicsDebugLevel,
-                SystemLanguage            = System.Language,
-                SystemRegion              = System.Region,
-                SystemTimeZone            = System.TimeZone,
-                SystemTimeOffset          = System.SystemTimeOffset,
-                DockedMode                = System.EnableDockedMode,
-                EnableDiscordIntegration  = EnableDiscordIntegration,
-                CheckUpdatesOnStart       = CheckUpdatesOnStart,
-                ShowConfirmExit           = ShowConfirmExit,
-                HideCursorOnIdle          = HideCursorOnIdle,
-                EnableVsync               = Graphics.EnableVsync,
-                EnableShaderCache         = Graphics.EnableShaderCache,
-                EnablePtc                 = System.EnablePtc,
-                EnableInternetAccess      = System.EnableInternetAccess,
-                EnableFsIntegrityChecks   = System.EnableFsIntegrityChecks,
-                FsGlobalAccessLogMode     = System.FsGlobalAccessLogMode,
-                AudioBackend              = System.AudioBackend,
-                AudioVolume               = System.AudioVolume,
-                MemoryManagerMode         = System.MemoryManagerMode,
-                ExpandRam                 = System.ExpandRam,
-                IgnoreMissingServices     = System.IgnoreMissingServices,
-                GuiColumns                = new GuiColumns
+                SystemLanguage = System.Language,
+                SystemRegion = System.Region,
+                SystemTimeZone = System.TimeZone,
+                SystemTimeOffset = System.SystemTimeOffset,
+                DockedMode = System.EnableDockedMode,
+                EnableDiscordIntegration = EnableDiscordIntegration,
+                CheckUpdatesOnStart = CheckUpdatesOnStart,
+                ShowConfirmExit = ShowConfirmExit,
+                HideCursorOnIdle = HideCursorOnIdle,
+                EnableVsync = Graphics.EnableVsync,
+                EnableShaderCache = Graphics.EnableShaderCache,
+                EnablePtc = System.EnablePtc,
+                EnableInternetAccess = System.EnableInternetAccess,
+                EnableFsIntegrityChecks = System.EnableFsIntegrityChecks,
+                FsGlobalAccessLogMode = System.FsGlobalAccessLogMode,
+                AudioBackend = System.AudioBackend,
+                AudioVolume = System.AudioVolume,
+                MemoryManagerMode = System.MemoryManagerMode,
+                ExpandRam = System.ExpandRam,
+                IgnoreMissingServices = System.IgnoreMissingServices,
+                GuiColumns = new GuiColumns
                 {
-                    FavColumn        = Ui.GuiColumns.FavColumn,
-                    IconColumn       = Ui.GuiColumns.IconColumn,
-                    AppColumn        = Ui.GuiColumns.AppColumn,
-                    DevColumn        = Ui.GuiColumns.DevColumn,
-                    VersionColumn    = Ui.GuiColumns.VersionColumn,
+                    FavColumn = Ui.GuiColumns.FavColumn,
+                    IconColumn = Ui.GuiColumns.IconColumn,
+                    AppColumn = Ui.GuiColumns.AppColumn,
+                    DevColumn = Ui.GuiColumns.DevColumn,
+                    VersionColumn = Ui.GuiColumns.VersionColumn,
+                    SupportedLanguagesColumn = Ui.GuiColumns.SupportedLanguagesColumn,
                     TimePlayedColumn = Ui.GuiColumns.TimePlayedColumn,
                     LastPlayedColumn = Ui.GuiColumns.LastPlayedColumn,
                     FileExtColumn    = Ui.GuiColumns.FileExtColumn,
@@ -572,6 +575,7 @@ namespace Ryujinx.Configuration
             Ui.GuiColumns.AppColumn.Value          = true;
             Ui.GuiColumns.DevColumn.Value          = true;
             Ui.GuiColumns.VersionColumn.Value      = true;
+            Ui.GuiColumns.SupportedLanguagesColumn.Value = true;
             Ui.GuiColumns.TimePlayedColumn.Value   = true;
             Ui.GuiColumns.LastPlayedColumn.Value   = true;
             Ui.GuiColumns.FileExtColumn.Value      = true;
@@ -1027,6 +1031,28 @@ namespace Ryujinx.Configuration
                 configurationFileUpdated = true;
             }
 
+            if (configurationFileFormat.Version < 38)
+            {
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 38.");
+
+                configurationFileFormat.GuiColumns = new GuiColumns
+                {
+                    FavColumn = configurationFileFormat.GuiColumns.FavColumn,
+                    IconColumn = configurationFileFormat.GuiColumns.IconColumn,
+                    AppColumn = configurationFileFormat.GuiColumns.AppColumn,
+                    DevColumn = configurationFileFormat.GuiColumns.DevColumn,
+                    VersionColumn = configurationFileFormat.GuiColumns.VersionColumn,
+                    SupportedLanguagesColumn = true,
+                    TimePlayedColumn = configurationFileFormat.GuiColumns.TimePlayedColumn,
+                    LastPlayedColumn = configurationFileFormat.GuiColumns.LastPlayedColumn,
+                    FileExtColumn = configurationFileFormat.GuiColumns.FileExtColumn,
+                    FileSizeColumn = configurationFileFormat.GuiColumns.FileSizeColumn,
+                    PathColumn = configurationFileFormat.GuiColumns.PathColumn
+                };
+
+                configurationFileUpdated = true;
+            }
+
             Logger.EnableFileLog.Value             = configurationFileFormat.EnableFileLog;
             Graphics.BackendThreading.Value        = configurationFileFormat.BackendThreading;
             Graphics.ResScale.Value                = configurationFileFormat.ResScale;
@@ -1069,6 +1095,7 @@ namespace Ryujinx.Configuration
             Ui.GuiColumns.AppColumn.Value          = configurationFileFormat.GuiColumns.AppColumn;
             Ui.GuiColumns.DevColumn.Value          = configurationFileFormat.GuiColumns.DevColumn;
             Ui.GuiColumns.VersionColumn.Value      = configurationFileFormat.GuiColumns.VersionColumn;
+            Ui.GuiColumns.SupportedLanguagesColumn.Value = configurationFileFormat.GuiColumns.SupportedLanguagesColumn;
             Ui.GuiColumns.TimePlayedColumn.Value   = configurationFileFormat.GuiColumns.TimePlayedColumn;
             Ui.GuiColumns.LastPlayedColumn.Value   = configurationFileFormat.GuiColumns.LastPlayedColumn;
             Ui.GuiColumns.FileExtColumn.Value      = configurationFileFormat.GuiColumns.FileExtColumn;

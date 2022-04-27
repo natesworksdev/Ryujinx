@@ -1,5 +1,6 @@
 ﻿using LibHac.Common;
 using LibHac.Ns;
+using System.Collections.Generic;
 
 namespace Ryujinx.Ui.App
 {
@@ -11,6 +12,7 @@ namespace Ryujinx.Ui.App
         public string TitleId       { get; set; }
         public string Developer     { get; set; }
         public string Version       { get; set; }
+        public string SupportedLanguages { get; set; }
         public string TimePlayed    { get; set; }
         public string LastPlayed    { get; set; }
         public string FileExtension { get; set; }
