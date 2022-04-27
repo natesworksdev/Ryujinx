@@ -214,14 +214,14 @@
                               </object>
                             </child>
                             <child>
-	                          <object class="GtkCheckMenuItem" id="_supportedLanguagesToggle">
-	                           <property name="visible">True</property>
-	                           <property name="can_focus">False</property>
-	                           <property name="tooltip_text" translatable="yes">Enable or Disable Supported Languages in the game list</property>
-	                           <property name="label" translatable="yes">Enable Supported Languages Column</property>
-	                           <property name="use_underline">True</property>
-	                          </object>
-                            </child>  
+                              <object class="GtkCheckMenuItem" id="_supportedLanguagesToggle">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="tooltip_text" translatable="yes">Enable or Disable Supported Languages in the game list</property>
+                                <property name="label" translatable="yes">Enable Supported Languages Column</property>
+                                <property name="use_underline">True</property>
+                              </object>
+                            </child>
                             <child>
                               <object class="GtkCheckMenuItem" id="_timePlayedToggle">
                                 <property name="visible">True</property>
