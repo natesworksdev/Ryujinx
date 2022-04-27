@@ -174,7 +174,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
             return ResultCode.Success;
         }
-        
+
         [CommandHipc(22)]
         // SetTerminateResult(u32)
         public ResultCode SetTerminateResult(ServiceCtx context)
