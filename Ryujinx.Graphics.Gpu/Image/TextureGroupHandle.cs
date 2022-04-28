@@ -172,7 +172,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 _syncActionRegistered = true;
             }
 
-            if (Interlocked.CompareExchange(ref _actionRegistered, 1, 0) == 0)
+            if (Interlocked.Exchange(ref _actionRegistered, 1) == 0)
             {
                 _group.RegisterAction(this);
             }
@@ -290,7 +290,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             _registeredSync = _modifiedSync;
             _syncActionRegistered = false;
 
-            if (Interlocked.CompareExchange(ref _actionRegistered, 1, 0) == 0)
+            if (Interlocked.Exchange(ref _actionRegistered, 1) == 0)
             {
                 _group.RegisterAction(this);
             }
