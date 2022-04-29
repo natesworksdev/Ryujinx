@@ -25,12 +25,15 @@ namespace Ryujinx.Graphics.GAL
         void DispatchCompute(int groupsX, int groupsY, int groupsZ);
 
         void Draw(int vertexCount, int instanceCount, int firstVertex, int firstInstance);
+        void DrawIndirect(BufferRange indirectBuffer);
         void DrawIndexed(
             int indexCount,
             int instanceCount,
             int firstIndex,
             int firstVertex,
             int firstInstance);
+        void DrawIndexedIndirect(BufferRange indirectBuffer);
+
         void DrawTexture(ITexture texture, ISampler sampler, Extents2DF srcRegion, Extents2DF dstRegion);
 
         void EndTransformFeedback();

@@ -170,6 +170,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     case Instruction.LoadConstant:
                         return LoadConstant(context, operation);
 
+                    case Instruction.LoadGlobal:
+                        return LoadGlobal(context, operation);
+
                     case Instruction.LoadLocal:
                         return LoadLocal(context, operation);
 
@@ -193,6 +196,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
                     case Instruction.StoreAttribute:
                         return StoreAttribute(context, operation);
+
+                    case Instruction.StoreGlobal:
+                        return StoreGlobal(context, operation);
 
                     case Instruction.StoreLocal:
                         return StoreLocal(context, operation);

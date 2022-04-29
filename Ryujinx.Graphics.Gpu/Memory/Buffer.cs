@@ -66,6 +66,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private bool _useGranular;
         private bool _syncActionRegistered;
 
+        private ulong _hostGpuAddress;
+
         /// <summary>
         /// Creates a new instance of the buffer.
         /// </summary>
@@ -164,6 +166,16 @@ namespace Ryujinx.Graphics.Gpu.Memory
             int offset = (int)(address - Address);
 
             return new BufferRange(Handle, offset, (int)size);
+        }
+
+        public ulong GetHostGpuAddress(ulong address)
+        {
+            if (_hostGpuAddress == 0)
+            {
+                _hostGpuAddress = _context.Renderer.GetBufferGpuAddress(Handle);
+            }
+
+            return _hostGpuAddress + (address - Address);
         }
 
         /// <summary>

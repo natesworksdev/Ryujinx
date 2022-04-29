@@ -76,9 +76,21 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             _renderer.QueueCommand();
         }
 
+        public void DrawIndirect(BufferRange indirectBuffer)
+        {
+            _renderer.New<DrawIndirectCommand>().Set(indirectBuffer);
+            _renderer.QueueCommand();
+        }
+
         public void DrawIndexed(int indexCount, int instanceCount, int firstIndex, int firstVertex, int firstInstance)
         {
             _renderer.New<DrawIndexedCommand>().Set(indexCount, instanceCount, firstIndex, firstVertex, firstInstance);
+            _renderer.QueueCommand();
+        }
+
+        public void DrawIndexedIndirect(BufferRange indirectBuffer)
+        {
+            _renderer.New<DrawIndexedIndirectCommand>().Set(indirectBuffer);
             _renderer.QueueCommand();
         }
 

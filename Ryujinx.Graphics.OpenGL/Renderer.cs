@@ -92,6 +92,11 @@ namespace Ryujinx.Graphics.OpenGL
             return Buffer.GetData(this, buffer, offset, size);
         }
 
+        public ulong GetBufferGpuAddress(BufferHandle buffer)
+        {
+            return Buffer.GetGpuAddress(buffer);
+        }
+
         public Capabilities GetCapabilities()
         {
             return new Capabilities(

@@ -95,6 +95,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
                             ShaderStage.Compute,
                             false,
                             false,
+                            false,
                             0,
                             0);
 
@@ -205,6 +206,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
                                 Array.Empty<TextureDescriptor>(),
                                 Array.Empty<TextureDescriptor>(),
                                 (ShaderStage)(i + 1),
+                                false,
                                 false,
                                 false,
                                 0,

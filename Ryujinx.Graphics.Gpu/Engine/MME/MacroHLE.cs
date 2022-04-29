@@ -45,12 +45,38 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
         {
             switch (_functionName)
             {
+                case MacroHLEFunctionName.DrawElementsIndirect:
+                    DrawElementsIndirect(state, arg0);
+                    break;
                 case MacroHLEFunctionName.MultiDrawElementsIndirectCount:
                     MultiDrawElementsIndirectCount(state, arg0);
                     break;
                 default:
                     throw new NotImplementedException(_functionName.ToString());
             }
+        }
+
+        private void DrawElementsIndirect(IDeviceState state, int arg0)
+        {
+            var topology = (PrimitiveTopology)arg0;
+
+            var count = FetchParam();
+            var instanceCount = FetchParam();
+            var firstIndex = FetchParam();
+            var baseVertex = FetchParam();
+            var baseInstance = FetchParam();
+
+            ulong indirectBufferGpuVa = count.GpuVa;
+            int indexCount = Math.Max(0x10000, count.Word + firstIndex.Word);
+
+            // It should be empty at this point, but clear it just to be safe.
+            Fifo.Clear();
+
+            var bufferCache = _processor.MemoryManager.Physical.BufferCache;
+
+            var indirectBuffer = bufferCache.GetGpuBufferRange(_processor.MemoryManager, indirectBufferGpuVa, 0x14);
+
+            _processor.ThreedClass.DrawIndirect(indexCount, topology, indirectBuffer);
         }
 
         /// <summary>

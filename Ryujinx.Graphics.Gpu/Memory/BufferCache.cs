@@ -23,7 +23,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private readonly PhysicalMemory _physicalMemory;
 
         private readonly RangeList<Buffer> _buffers;
-
         private Buffer[] _bufferOverlaps;
 
         private readonly Dictionary<ulong, BufferCacheEntry> _dirtyCache;
@@ -360,6 +359,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
         public BufferRange GetBufferRange(ulong address, ulong size, bool write = false)
         {
             return GetBuffer(address, size, write).GetRange(address, size);
+        }
+
+        public ulong GetBufferHostGpuAddress(ulong address, ulong size, bool write = false)
+        {
+            return GetBuffer(address, size, write).GetHostGpuAddress(address);
         }
 
         /// <summary>

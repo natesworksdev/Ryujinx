@@ -6,6 +6,7 @@
     enum MacroHLEFunctionName
     {
         None,
+        DrawElementsIndirect,
         MultiDrawElementsIndirectCount
     }
 }

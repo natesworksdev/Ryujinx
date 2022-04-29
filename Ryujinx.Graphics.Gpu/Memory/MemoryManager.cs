@@ -32,6 +32,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
         private readonly ulong[][] _pageTable;
 
+        private readonly RangeList<Mapping> _mappings;
+        internal bool MappingsModified { get; private set; }
+
         public event EventHandler<UnmapEventArgs> MemoryUnmapped;
 
         /// <summary>
@@ -53,6 +56,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             Physical = physicalMemory;
             CounterCache = new CounterCache();
             _pageTable = new ulong[PtLvl0Size][];
+            _mappings = new RangeList<Mapping>();
             MemoryUnmapped += Physical.TextureCache.MemoryUnmappedHandler;
             MemoryUnmapped += Physical.BufferCache.MemoryUnmappedHandler;
             MemoryUnmapped += CounterCache.MemoryUnmappedHandler;
@@ -379,6 +383,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             lock (_pageTable)
             {
+                if (kind == PteKind.Pitch)
+                {
+                    AddMapping(va, size);
+                }
+
                 MemoryUnmapped?.Invoke(this, new UnmapEventArgs(va, size));
 
                 for (ulong offset = 0; offset < size; offset += PageSize)
@@ -397,6 +406,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             lock (_pageTable)
             {
+                RemoveMapping(va, size);
+
                 // Event handlers are not expected to be thread safe.
                 MemoryUnmapped?.Invoke(this, new UnmapEventArgs(va, size));
 
@@ -676,6 +687,80 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private static ulong UnpackPaFromPte(ulong pte)
         {
             return pte & 0xffffffffffffffUL;
+        }
+
+        private void AddMapping(ulong va, ulong size)
+        {
+            lock (_mappings)
+            {
+                ulong startAddress = va;
+                ulong endAddress = va + size;
+
+                Mapping[] overlaps = Array.Empty<Mapping>();
+
+                int overlapsCount = _mappings.FindOverlapsNonOverlapping(va, size, ref overlaps);
+                for (int i = 0; i < overlapsCount; i++)
+                {
+                    Mapping overlap = overlaps[i];
+
+                    if (overlap.Address < startAddress)
+                    {
+                        startAddress = overlap.Address;
+                    }
+
+                    if (overlap.EndAddress > endAddress)
+                    {
+                        endAddress = overlap.EndAddress;
+                    }
+
+                    _mappings.Remove(overlap);
+                }
+
+                _mappings.Add(new Mapping(startAddress, endAddress - startAddress));
+                MappingsModified = true;
+            }
+        }
+
+        private void RemoveMapping(ulong va, ulong size)
+        {
+            lock (_mappings)
+            {
+                ulong endAddress = va + size;
+
+                Mapping[] overlaps = Array.Empty<Mapping>();
+
+                int overlapsCount = _mappings.FindOverlapsNonOverlapping(va, size, ref overlaps);
+                for (int i = 0; i < overlapsCount; i++)
+                {
+                    Mapping overlap = overlaps[i];
+
+                    _mappings.Remove(overlap);
+
+                    if (overlap.Address < va)
+                    {
+                        _mappings.Add(new Mapping(overlap.Address, va - overlap.Address));
+                    }
+
+                    if (overlap.EndAddress > endAddress)
+                    {
+                        _mappings.Add(new Mapping(endAddress, overlap.EndAddress - endAddress));
+                    }
+                }
+
+                if (overlapsCount != 0)
+                {
+                    MappingsModified = true;
+                }
+            }
+        }
+
+        internal Mapping[] GetMappings()
+        {
+            lock (_mappings)
+            {
+                MappingsModified = false;
+                return _mappings.ToArray();
+            }
         }
     }
 }

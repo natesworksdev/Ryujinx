@@ -203,6 +203,13 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                 case Instruction.AtomicMinS32 | Instruction.MrStorage:
                     context.Info.HelperFunctionsMask |= HelperFunctionsMask.AtomicMinMaxS32Storage;
                     break;
+                case Instruction.LoadGlobal:
+                case Instruction.StoreGlobal:
+                case Instruction.StoreGlobal16:
+                case Instruction.StoreGlobal8:
+                    context.Config.SetUsedFeature(FeatureFlags.GlobalMemory);
+                    context.Info.HelperFunctionsMask |= HelperFunctionsMask.GlobalMemory;
+                    break;
                 case Instruction.MultiplyHighS32:
                     context.Info.HelperFunctionsMask |= HelperFunctionsMask.MultiplyHighS32;
                     break;

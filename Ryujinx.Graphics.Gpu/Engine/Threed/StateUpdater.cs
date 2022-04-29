@@ -31,6 +31,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         private readonly ShaderProgramInfo[] _currentProgramInfo;
         private ShaderSpecializationState _shaderSpecState;
 
+        private bool _usesGlobalMemory;
         private bool _vtgWritesRtLayer;
         private byte _vsClipDistancesWritten;
 
@@ -273,6 +274,11 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         private void CommitBindings()
         {
             UpdateStorageBuffers();
+
+            if (_usesGlobalMemory)
+            {
+                _channel.BufferManager.SyncAllBuffers();
+            }
 
             _channel.TextureManager.CommitGraphicsBindings();
             _channel.BufferManager.CommitGraphicsBindings();
@@ -1113,6 +1119,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 UpdateUserClipState();
             }
 
+            _usesGlobalMemory = false;
+
             for (int stageIndex = 0; stageIndex < Constants.ShaderStages; stageIndex++)
             {
                 UpdateStageBindings(stageIndex, gs.Shaders[stageIndex + 1]?.Info);
@@ -1135,6 +1143,11 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             }
 
             Span<TextureBindingInfo> textureBindings = _channel.TextureManager.RentGraphicsTextureBindings(stage, info.Textures.Count);
+
+            if (info.UsesGlobalMemory)
+            {
+                _usesGlobalMemory = true;
+            }
 
             if (info.UsesRtLayer)
             {

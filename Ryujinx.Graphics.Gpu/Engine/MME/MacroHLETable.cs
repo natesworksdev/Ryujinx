@@ -46,12 +46,17 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
 
         private static readonly TableEntry[] Table = new TableEntry[]
         {
+            new TableEntry(MacroHLEFunctionName.DrawElementsIndirect, new Hash128(0x86A3E8E903AF8F45, 0xD35BBA07C23860A4), 0x7c),
             new TableEntry(MacroHLEFunctionName.MultiDrawElementsIndirectCount, new Hash128(0x890AF57ED3FB1C37, 0x35D0C95C61F5386F), 0x19C)
         };
 
         private static bool IsMacroHLESupported(Capabilities caps, MacroHLEFunctionName name)
         {
-            if (name == MacroHLEFunctionName.MultiDrawElementsIndirectCount)
+            if (name == MacroHLEFunctionName.DrawElementsIndirect)
+            {
+                return true;
+            }
+            else if (name == MacroHLEFunctionName.MultiDrawElementsIndirectCount)
             {
                 return caps.SupportsIndirectParameters;
             }

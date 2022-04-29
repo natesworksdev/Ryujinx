@@ -23,10 +23,10 @@ namespace Ryujinx.Graphics.Shader.Translation
                         continue;
                     }
 
-                    if (UsesGlobalMemory(operation.Inst))
+                    /* if (UsesGlobalMemory(operation.Inst))
                     {
                         node = RewriteGlobalAccess(node, config);
-                    }
+                    } */
 
                     if (operation is TextureOperation texOp)
                     {

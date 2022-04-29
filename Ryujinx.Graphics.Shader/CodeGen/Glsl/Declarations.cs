@@ -27,6 +27,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             context.AppendLine("#extension GL_ARB_shader_group_vote : enable");
             context.AppendLine("#extension GL_EXT_shader_image_load_formatted : enable");
             context.AppendLine("#extension GL_EXT_texture_shadow_lod : enable");
+            context.AppendLine("#extension GL_NV_shader_buffer_load : enable");
 
             if (context.Config.Stage == ShaderStage.Compute)
             {
@@ -263,6 +264,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             if ((info.HelperFunctionsMask & HelperFunctionsMask.AtomicMinMaxS32Storage) != 0)
             {
                 AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/AtomicMinMaxS32Storage.glsl");
+            }
+
+            if ((info.HelperFunctionsMask & HelperFunctionsMask.GlobalMemory) != 0)
+            {
+                AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/GlobalMemory.glsl");
             }
 
             if ((info.HelperFunctionsMask & HelperFunctionsMask.MultiplyHighS32) != 0)

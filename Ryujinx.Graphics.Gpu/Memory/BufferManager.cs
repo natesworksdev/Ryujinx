@@ -2,10 +2,12 @@
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Image;
 using Ryujinx.Graphics.Shader;
+using Ryujinx.Memory.Range;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Gpu.Memory
 {
@@ -96,6 +98,24 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private bool _transformFeedbackBuffersDirty;
 
         private bool _rebind;
+
+        private struct BufferMapping
+        {
+            public readonly ulong CpuAddress;
+            public readonly ulong GpuAddress;
+            public readonly ulong Size;
+
+            public BufferMapping(ulong cpuAddress, ulong gpuAddress, ulong size)
+            {
+                CpuAddress = cpuAddress;
+                GpuAddress = gpuAddress;
+                Size = size;
+            }
+        }
+
+        private BufferMapping[] _mappings;
+        private BufferHandle _bufferMap;
+        private int _bufferMapSize;
 
         /// <summary>
         /// Creates a new instance of the buffer manager.
@@ -719,6 +739,80 @@ namespace Ryujinx.Graphics.Gpu.Memory
         public void Rebind()
         {
             _rebind = true;
+        }
+
+        private struct BufferMapEntry
+        {
+            public ulong GuestStartAddress;
+            public ulong GuestEndAddress;
+            public ulong HostAddress;
+            public ulong ModifiedFlag;
+        }
+
+        public void SyncAllBuffers()
+        {
+            MemoryManager memoryManager = _channel.MemoryManager;
+            BufferCache bufferCache = memoryManager.Physical.BufferCache;
+
+            if (memoryManager.MappingsModified)
+            {
+                Mapping[] mappings = memoryManager.GetMappings();
+
+                _mappings = new BufferMapping[mappings.Length];
+
+                for (int i = 0; i < mappings.Length; i++)
+                {
+                    Mapping mapping = mappings[i];
+                    ulong cpuAddress = bufferCache.TranslateAndCreateBuffer(memoryManager, mapping.Address, mapping.Size);
+                    _mappings[i] = new BufferMapping(cpuAddress, mapping.Address, mapping.Size);
+                }
+            }
+
+            BufferMapping[] bufferMappings = _mappings;
+
+            if (bufferMappings != null)
+            {
+                BufferMapEntry[] entries = new BufferMapEntry[bufferMappings.Length];
+
+                for (int i = 0; i < bufferMappings.Length; i++)
+                {
+                    BufferMapping mapping = bufferMappings[i];
+
+                    ref BufferMapEntry entry = ref entries[i];
+
+                    entry.GuestStartAddress = mapping.GpuAddress;
+                    entry.GuestEndAddress = mapping.GpuAddress + mapping.Size;
+
+                    if (mapping.CpuAddress != 0)
+                    {
+                        entry.HostAddress = bufferCache.GetBufferHostGpuAddress(mapping.CpuAddress, mapping.Size);
+                    }
+                }
+
+                BufferHandle bufferMap = EnsureBufferMap(entries.Length, out int bufferSize);
+                BufferRange range = new BufferRange(bufferMap, 0, bufferSize);
+                _context.Renderer.SetBufferData(bufferMap, 0x10, MemoryMarshal.Cast<BufferMapEntry, byte>(entries.AsSpan()));
+                _context.Renderer.Pipeline.SetStorageBuffers(0, MemoryMarshal.CreateSpan(ref range, 1));
+            }
+        }
+
+        private BufferHandle EnsureBufferMap(int count, out int bufferSize)
+        {
+            int requiredSize = 0x10 + Unsafe.SizeOf<BufferMapEntry>() * count;
+            if (requiredSize != _bufferMapSize)
+            {
+                if (_bufferMap != BufferHandle.Null)
+                {
+                    _context.Renderer.DeleteBuffer(_bufferMap);
+                }
+
+                _bufferMap = _context.Renderer.CreateBuffer(requiredSize);
+                _bufferMapSize = requiredSize;
+                _context.Renderer.SetBufferData(_bufferMap, 0, MemoryMarshal.Cast<int, byte>(MemoryMarshal.CreateSpan(ref count, 1)));
+            }
+
+            bufferSize = requiredSize;
+            return _bufferMap;
         }
     }
 }

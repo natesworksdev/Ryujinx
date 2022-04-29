@@ -222,6 +222,11 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
                     descriptor.Flags);
             }
 
+            if (info.UsesGlobalMemory)
+            {
+                _channel.BufferManager.SyncAllBuffers();
+            }
+
             _channel.TextureManager.CommitComputeBindings();
             _channel.BufferManager.CommitComputeBindings();
 

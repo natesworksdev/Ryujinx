@@ -273,7 +273,15 @@ namespace Ryujinx.Graphics.Shader.Translation
             NextInputAttributesComponents = config.ThisInputAttributesComponents;
             NextInputAttributesPerPatchComponents = config.ThisInputAttributesPerPatchComponents;
             NextUsesFixedFuncAttributes = config.UsedFeatures.HasFlag(FeatureFlags.FixedFuncAttr);
-            MergeOutputUserAttributes(config.UsedInputAttributes, config.UsedInputAttributesPerPatch);
+            MergeOutputUserAttributes(config.UsedInputAttributes | config.PassthroughAttributes, config.UsedInputAttributesPerPatch);
+
+            int passthroughAttributes = config.PassthroughAttributes;
+            while (passthroughAttributes != 0)
+            {
+                int bit = BitOperations.TrailingZeroCount(passthroughAttributes);
+                NextInputAttributesComponents |= new UInt128(0xf, 0) << (bit * 4);
+                passthroughAttributes &= ~(1 << bit);
+            }
         }
 
         public void MergeOutputUserAttributes(int mask, int maskPerPatch)

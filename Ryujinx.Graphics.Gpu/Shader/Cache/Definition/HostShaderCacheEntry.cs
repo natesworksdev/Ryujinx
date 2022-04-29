@@ -97,6 +97,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache.Definition
                 Textures,
                 Images,
                 default,
+                false,
                 Header.UseFlags.HasFlag(UseFlags.InstanceId),
                 Header.UseFlags.HasFlag(UseFlags.RtLayer),
                 Header.ClipDistancesWritten,

@@ -21,7 +21,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         private const ushort FileFormatVersionMajor = 1;
         private const ushort FileFormatVersionMinor = 1;
         private const uint FileFormatVersionPacked = ((uint)FileFormatVersionMajor << 16) | FileFormatVersionMinor;
-        private const uint CodeGenVersion = 0;
+        private const uint CodeGenVersion = 10;
 
         private const string SharedTocFileName = "shared.toc";
         private const string SharedDataFileName = "shared.data";
@@ -133,6 +133,8 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             /// Shader stage.
             /// </summary>
             public ShaderStage Stage;
+
+            public bool UsesGlobalMemory;
 
             /// <summary>
             /// Indicates if the shader accesses the Instance ID built-in variable.
@@ -703,6 +705,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 textures,
                 images,
                 dataInfo.Stage,
+                dataInfo.UsesGlobalMemory,
                 dataInfo.UsesInstanceId,
                 dataInfo.UsesRtLayer,
                 dataInfo.ClipDistancesWritten,
@@ -728,6 +731,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             dataInfo.TexturesCount = (ushort)info.Textures.Count;
             dataInfo.ImagesCount = (ushort)info.Images.Count;
             dataInfo.Stage = info.Stage;
+            dataInfo.UsesGlobalMemory = info.UsesGlobalMemory;
             dataInfo.UsesInstanceId = info.UsesInstanceId;
             dataInfo.UsesRtLayer = info.UsesRtLayer;
             dataInfo.ClipDistancesWritten = info.ClipDistancesWritten;

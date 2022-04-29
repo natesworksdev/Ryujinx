@@ -17,6 +17,7 @@
 
         BufferDispose,
         BufferGetData,
+        BufferGetGpuAddress,
         BufferSetData,
 
         CounterEventDispose,
@@ -50,7 +51,9 @@
         CopyBuffer,
         DispatchCompute,
         Draw,
+        DrawIndirect,
         DrawIndexed,
+        DrawIndexedIndirect,
         DrawTexture,
         EndHostConditionalRendering,
         EndTransformFeedback,

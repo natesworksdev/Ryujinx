@@ -234,11 +234,6 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
                 op = InstTable.GetOp(address, opCode);
 
-                if (op.Props.HasFlag(InstProps.TexB))
-                {
-                    config.SetUsedFeature(FeatureFlags.Bindless);
-                }
-
                 if (op.Name == InstName.Ald || op.Name == InstName.Ast || op.Name == InstName.Ipa)
                 {
                     SetUserAttributeUses(config, op.Name, opCode);
