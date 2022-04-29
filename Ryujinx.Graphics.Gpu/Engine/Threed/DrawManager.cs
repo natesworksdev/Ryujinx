@@ -379,7 +379,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 new Extents2DF(dstX0, dstY0, dstX1, dstY1));
         }
 
-        public void DrawIndirect(ThreedClass engine, int indexCount, PrimitiveTopology topology, BufferRange indirectBuffer)
+        public void DrawIndirect(ThreedClass engine, int indexCount, PrimitiveTopology topology, ulong indirectBufferAddress)
         {
             engine.Write(IndexBufferCountMethodOffset * 4, indexCount);
 
@@ -403,6 +403,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             _drawState.IndexCount = indexCount;
 
             engine.UpdateState();
+
+            var indirectBuffer = _channel.MemoryManager.Physical.BufferCache.GetBufferRange(indirectBufferAddress, 0x14);
 
             if (_drawState.DrawIndexed)
             {

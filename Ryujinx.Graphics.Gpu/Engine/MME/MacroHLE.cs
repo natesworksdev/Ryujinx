@@ -74,9 +74,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
 
             var bufferCache = _processor.MemoryManager.Physical.BufferCache;
 
-            var indirectBuffer = bufferCache.GetGpuBufferRange(_processor.MemoryManager, indirectBufferGpuVa, 0x14);
+            ulong indirectBufferAddress = bufferCache.TranslateAndCreateBuffer(_processor.MemoryManager, indirectBufferGpuVa, 0x14);
 
-            _processor.ThreedClass.DrawIndirect(indexCount, topology, indirectBuffer);
+            _processor.ThreedClass.DrawIndirect(indexCount, topology, indirectBufferAddress);
         }
 
         /// <summary>

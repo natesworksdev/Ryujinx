@@ -484,9 +484,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             return 0;
         }
 
-        public void DrawIndirect(int indexCount, PrimitiveTopology topology, BufferRange indirectBuffer)
+        public void DrawIndirect(int indexCount, PrimitiveTopology topology, ulong indirectBufferAddress)
         {
-            _drawManager.DrawIndirect(this, indexCount, topology, indirectBuffer);
+            _drawManager.DrawIndirect(this, indexCount, topology, indirectBufferAddress);
         }
 
         /// <summary>
