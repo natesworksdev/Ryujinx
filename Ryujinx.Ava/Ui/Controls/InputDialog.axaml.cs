@@ -38,12 +38,12 @@ namespace Ryujinx.Ava.Ui.Controls
             AvaloniaXamlLoader.Load(this);
         }
 
-        public static async Task<(UserResult Result, string Input)> ShowInputDialog(StyleableWindow window, string title, string message, string input = "", string subMessage = "",  uint maxLength = int.MaxValue)
+        public static async Task<(UserResult Result, string Input)> ShowInputDialog(StyleableWindow window, string title, string message, string input = "", string subMessage = "", uint maxLength = int.MaxValue)
         {
             ContentDialog contentDialog = window.ContentDialog;
 
             UserResult result = UserResult.Cancel;
-            
+
             InputDialog content = new InputDialog(message, input = "", subMessage = "", maxLength);
 
             if (contentDialog != null)

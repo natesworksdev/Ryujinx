@@ -1,4 +1,3 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
@@ -55,7 +54,7 @@ namespace Ryujinx.Ava.Ui.Applet
         {
             Dispatcher.UIThread.InvokeAsync(() =>
             {
-                Button button = new() {Content = label, Tag = tag};
+                Button button = new() { Content = label, Tag = tag };
 
                 button.Click += Button_Click;
                 ButtonStack.Children.Add(button);

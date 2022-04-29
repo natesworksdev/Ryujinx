@@ -90,15 +90,15 @@ namespace Ryujinx.Ava
         public event EventHandler AppExit;
         public event EventHandler<StatusUpdatedEventArgs> StatusUpdatedEvent;
 
-        public RendererControl      Renderer           { get; }
-        public VirtualFileSystem    VirtualFileSystem  { get; }
-        public ContentManager       ContentManager     { get; }
-        public Switch               Device             { get; set; }
-        public NpadManager          NpadManager        { get; }
-        public TouchScreenManager   TouchScreenManager { get; }
+        public RendererControl Renderer { get; }
+        public VirtualFileSystem VirtualFileSystem { get; }
+        public ContentManager ContentManager { get; }
+        public Switch Device { get; set; }
+        public NpadManager NpadManager { get; }
+        public TouchScreenManager TouchScreenManager { get; }
 
-        public int    Width           { get; private set; }
-        public int    Height          { get; private set; }
+        public int Width { get; private set; }
+        public int Height { get; private set; }
         public string ApplicationPath { get; private set; }
 
         private bool _isFirmwareTitle;
@@ -109,23 +109,23 @@ namespace Ryujinx.Ava
         private object _lockObject = new();
 
         public AppHost(
-            RendererControl        renderer,
-            InputManager           inputManager,
-            string                 applicationPath,
-            VirtualFileSystem      virtualFileSystem,
-            ContentManager         contentManager,
-            AccountManager         accountManager,
+            RendererControl renderer,
+            InputManager inputManager,
+            string applicationPath,
+            VirtualFileSystem virtualFileSystem,
+            ContentManager contentManager,
+            AccountManager accountManager,
             UserChannelPersistence userChannelPersistence,
-            MainWindow             parent)
+            MainWindow parent)
         {
-            _parent                 = parent;
-            _inputManager           = inputManager;
-            _accountManager         = accountManager;
+            _parent = parent;
+            _inputManager = inputManager;
+            _accountManager = accountManager;
             _userChannelPersistence = userChannelPersistence;
-            _renderingThread        = new Thread(RenderLoop) { Name = "GUI.RenderThread" };
-            _hideCursorOnIdle       = ConfigurationState.Instance.HideCursorOnIdle;
-            _lastCursorMoveTime     = Stopwatch.GetTimestamp();
-            _glLogLevel             = ConfigurationState.Instance.Logger.GraphicsDebugLevel;
+            _renderingThread = new Thread(RenderLoop) { Name = "GUI.RenderThread" };
+            _hideCursorOnIdle = ConfigurationState.Instance.HideCursorOnIdle;
+            _lastCursorMoveTime = Stopwatch.GetTimestamp();
+            _glLogLevel = ConfigurationState.Instance.Logger.GraphicsDebugLevel;
 
             _inputManager.SetMouseDriver(new AvaloniaMouseDriver(renderer));
             NpadManager = _inputManager.CreateNpadManager();
@@ -133,10 +133,10 @@ namespace Ryujinx.Ava
             TouchScreenManager = _inputManager.CreateTouchScreenManager();
             _lastKeyboardSnapshot = _keyboardInterface.GetKeyboardStateSnapshot();
 
-            Renderer          = renderer;
-            ApplicationPath   = applicationPath;
+            Renderer = renderer;
+            ApplicationPath = applicationPath;
             VirtualFileSystem = virtualFileSystem;
-            ContentManager    = contentManager;
+            ContentManager = contentManager;
 
             if (ApplicationPath.StartsWith("@SystemContent"))
             {
@@ -150,11 +150,11 @@ namespace Ryujinx.Ava
             _parent.PointerEnter += Parent_PointerEntered;
             _parent.PointerLeave += Parent_PointerLeft;
             _parent.PointerMoved += Parent_PointerMoved;
-            
+
             ConfigurationState.Instance.System.IgnoreMissingServices.Event += UpdateIgnoreMissingServicesState;
-            ConfigurationState.Instance.Graphics.AspectRatio.Event         += UpdateAspectRatioState;
-            ConfigurationState.Instance.System.EnableDockedMode.Event      += UpdateDockedModeState;
-            ConfigurationState.Instance.System.AudioVolume.Event           += UpdateAudioVolumeState;
+            ConfigurationState.Instance.Graphics.AspectRatio.Event += UpdateAspectRatioState;
+            ConfigurationState.Instance.System.EnableDockedMode.Event += UpdateDockedModeState;
+            ConfigurationState.Instance.System.AudioVolume.Event += UpdateAudioVolumeState;
 
             _closeEvent = new ManualResetEvent(false);
 
@@ -169,7 +169,7 @@ namespace Ryujinx.Ava
         private void Parent_PointerLeft(object sender, PointerEventArgs e)
         {
             Renderer.Cursor = ConfigurationState.Instance.Hid.EnableMouse ? InvisibleCursor : Cursor.Default;
-            
+
             _isMouseInClient = false;
         }
 
@@ -195,9 +195,9 @@ namespace Ryujinx.Ava
                 {
                     lock (_lockObject)
                     {
-                        var    currentTime = DateTime.Now;
-                        string filename    = $"ryujinx_capture_{currentTime.Year}-{currentTime.Month:D2}-{currentTime.Day:D2}_{currentTime.Hour:D2}-{currentTime.Minute:D2}-{currentTime.Second:D2}.png";
-                        string directory   = AppDataManager.Mode switch
+                        var currentTime = DateTime.Now;
+                        string filename = $"ryujinx_capture_{currentTime.Year}-{currentTime.Month:D2}-{currentTime.Day:D2}_{currentTime.Hour:D2}-{currentTime.Minute:D2}-{currentTime.Second:D2}.png";
+                        string directory = AppDataManager.Mode switch
                         {
                             AppDataManager.LaunchMode.Portable => Path.Combine(AppDataManager.BaseDirPath, "screenshots"),
                             _ => Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyPictures), "Ryujinx")
@@ -306,7 +306,7 @@ namespace Ryujinx.Ava
 
             Exit();
         }
-        
+
         private void UpdateIgnoreMissingServicesState(object sender, ReactiveEventArgs<bool> args)
         {
             if (Device != null)
@@ -451,7 +451,7 @@ namespace Ryujinx.Ava
                     {
                         string message = string.Format(LocaleManager.Instance["DialogFirmwareInstallEmbeddedMessage"], firmwareVersion.VersionString);
 
-                        UserResult result = await ContentDialogHelper.CreateConfirmationDialog(_parent, 
+                        UserResult result = await ContentDialogHelper.CreateConfirmationDialog(_parent,
                             LocaleManager.Instance["DialogFirmwareNoFirmwareInstalledMessage"], message, LocaleManager.Instance["InputDialogYes"], LocaleManager.Instance["InputDialogNo"], "");
 
                         if (result != UserResult.Yes)
@@ -482,7 +482,7 @@ namespace Ryujinx.Ava
 
                         _parent.RefreshFirmwareStatus();
 
-                        string message = string.Format(LocaleManager.Instance["DialogFirmwareInstallEmbeddedSuccessMessage"],firmwareVersion.VersionString);
+                        string message = string.Format(LocaleManager.Instance["DialogFirmwareInstallEmbeddedSuccessMessage"], firmwareVersion.VersionString);
 
                         ContentDialogHelper.CreateInfoDialog(_parent,
                                                              string.Format(LocaleManager.Instance["DialogFirmwareInstalledMessage"], firmwareVersion.VersionString),
@@ -504,7 +504,7 @@ namespace Ryujinx.Ava
             }
 
             Logger.Notice.Print(LogClass.Application, $"Using Firmware Version: {firmwareVersion?.VersionString}");
-            
+
             if (_isFirmwareTitle)
             {
                 Logger.Info?.Print(LogClass.Application, "Loading as Firmware Title (NCA).");
@@ -618,7 +618,7 @@ namespace Ryujinx.Ava
         {
             VirtualFileSystem.ReloadKeySet();
 
-            IRenderer             renderer     = new Renderer();
+            IRenderer renderer = new Renderer();
             IHardwareDeviceDriver deviceDriver = new DummyHardwareDeviceDriver();
 
             BackendThreading threadingMode = ConfigurationState.Instance.Graphics.BackendThreading;
@@ -755,7 +755,7 @@ namespace Ryujinx.Ava
                 : HLE.MemoryConfiguration.MemoryConfiguration4GB;
 
             IntegrityCheckLevel fsIntegrityCheckLevel = ConfigurationState.Instance.System.EnableFsIntegrityChecks ? IntegrityCheckLevel.ErrorOnInvalid : IntegrityCheckLevel.None;
-            
+
             HLE.HLEConfiguration configuration = new HLE.HLEConfiguration(VirtualFileSystem,
                                                                           _parent.LibHacHorizonManager,
                                                                           ContentManager,
@@ -785,7 +785,7 @@ namespace Ryujinx.Ava
 
         private void Window_SizeChanged(object sender, Size e)
         {
-            Width  = (int)e.Width;
+            Width = (int)e.Width;
             Height = (int)e.Height;
 
             SetRendererWindowSize(e);
@@ -1041,7 +1041,7 @@ namespace Ryujinx.Ava
                             (_keyboardInterface as AvaloniaKeyboard).Clear();
                             break;
                     }
-                }                
+                }
                 _prevHotkeyState = currentHotkeyState;
 
                 if (ScreenshotRequested)

@@ -28,7 +28,7 @@ namespace Ryujinx.Ava.Ui.Applet
 
             (_parent.InputManager.KeyboardDriver as AvaloniaKeyboardDriver).KeyPressed += AvaloniaDynamicTextInputHandler_KeyPressed;
             (_parent.InputManager.KeyboardDriver as AvaloniaKeyboardDriver).KeyRelease += AvaloniaDynamicTextInputHandler_KeyRelease;
-            (_parent.InputManager.KeyboardDriver as AvaloniaKeyboardDriver).TextInput  += AvaloniaDynamicTextInputHandler_TextInput;
+            (_parent.InputManager.KeyboardDriver as AvaloniaKeyboardDriver).TextInput += AvaloniaDynamicTextInputHandler_TextInput;
 
             _hiddenTextBox = _parent.HiddenTextBox;
 
@@ -58,7 +58,7 @@ namespace Ryujinx.Ava.Ui.Applet
                 _hiddenTextBox.SelectionEnd, true);
         }
 
-        private void AvaloniaDynamicTextInputHandler_TextInput(object sender,TextInputEventArgs e)
+        private void AvaloniaDynamicTextInputHandler_TextInput(object sender, TextInputEventArgs e)
         {
             Dispatcher.UIThread.InvokeAsync(() =>
             {
@@ -130,8 +130,8 @@ namespace Ryujinx.Ava.Ui.Applet
         {
             (_parent.InputManager.KeyboardDriver as AvaloniaKeyboardDriver).KeyPressed -= AvaloniaDynamicTextInputHandler_KeyPressed;
             (_parent.InputManager.KeyboardDriver as AvaloniaKeyboardDriver).KeyRelease -= AvaloniaDynamicTextInputHandler_KeyRelease;
-            (_parent.InputManager.KeyboardDriver as AvaloniaKeyboardDriver).TextInput  -= AvaloniaDynamicTextInputHandler_TextInput;
-            
+            (_parent.InputManager.KeyboardDriver as AvaloniaKeyboardDriver).TextInput -= AvaloniaDynamicTextInputHandler_TextInput;
+
             _textChangedSubscription?.Dispose();
             _selectionStartChangedSubscription?.Dispose();
             _selectionEndtextChangedSubscription?.Dispose();

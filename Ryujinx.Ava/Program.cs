@@ -22,18 +22,18 @@ namespace Ryujinx.Ava
 {
     internal class Program
     {
-        public static double WindowScaleFactor  { get; set; }
-        public static string Version            { get; private set; }
-        public static string ConfigurationPath  { get; private set; }
+        public static double WindowScaleFactor { get; set; }
+        public static string Version { get; private set; }
+        public static string ConfigurationPath { get; private set; }
         public static string CommandLineProfile { get; set; }
-        public static bool   PreviewerDetached  { get; private set; }
+        public static bool PreviewerDetached { get; private set; }
 
         public static RenderTimer RenderTimer { get; private set; }
 
         public static void Main(string[] args)
         {
             PreviewerDetached = true;
-            
+
             Initialize(args);
 
             RenderTimer = new RenderTimer();
@@ -78,9 +78,9 @@ namespace Ryujinx.Ava
         private static void Initialize(string[] args)
         {
             // Parse Arguments.
-            string launchPathArg      = null;
-            string baseDirPathArg     = null;
-            bool   startFullscreenArg = false;
+            string launchPathArg = null;
+            string baseDirPathArg = null;
+            bool startFullscreenArg = false;
 
             for (int i = 0; i < args.Length; ++i)
             {
@@ -125,7 +125,7 @@ namespace Ryujinx.Ava
             // Delete backup files after updating.
             Task.Run(Updater.CleanupUpdate);
 
-            Version = ReleaseInformations.GetVersion();;
+            Version = ReleaseInformations.GetVersion(); ;
 
             Console.Title = $"Ryujinx Console {Version}";
 
@@ -172,8 +172,8 @@ namespace Ryujinx.Ava
 
         private static void ReloadConfig()
         {
-            string localConfigurationPath   = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json");
-            string appDataConfigurationPath = Path.Combine(AppDataManager.BaseDirPath,            "Config.json");
+            string localConfigurationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json");
+            string appDataConfigurationPath = Path.Combine(AppDataManager.BaseDirPath, "Config.json");
 
             // Now load the configuration as the other subsystems are now registered
             if (File.Exists(localConfigurationPath))

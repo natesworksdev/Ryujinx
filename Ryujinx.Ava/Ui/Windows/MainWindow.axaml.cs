@@ -50,33 +50,33 @@ namespace Ryujinx.Ava.Ui.Windows
         private string _currentEmulatedGamePath;
         internal readonly AvaHostUiHandler UiHandler;
         private AutoResetEvent _rendererWaitEvent;
-        
+
         public VirtualFileSystem VirtualFileSystem { get; private set; }
-        public ContentManager    ContentManager    { get; private set; }
-        public AccountManager    AccountManager    { get; private set; }
+        public ContentManager ContentManager { get; private set; }
+        public AccountManager AccountManager { get; private set; }
 
         public LibHacHorizonManager LibHacHorizonManager { get; private set; }
 
-        public AppHost      AppHost      { get; private set; }
+        public AppHost AppHost { get; private set; }
         public InputManager InputManager { get; private set; }
 
-        public RendererControl   GlRenderer        { get; private set; }
-        public ContentControl    ContentFrame      { get; private set; }
-        public TextBlock         LoadStatus        { get; private set; }
-        public TextBlock         FirmwareStatus    { get; private set; }
-        public TextBox           SearchBox         { get; private set; }
-        public ProgressBar       LoadProgressBar   { get; private set; }
-        public Menu              Menu              { get; private set; }
-        public MenuItem          UpdateMenuItem    { get; private set; }
-        public MenuItem          ActionsMenuItem   { get; private set; }
-        public GameGridView      GameGrid          { get; private set; }
-        public GameListView      GameList          { get; private set; }
-        public OffscreenTextBox  HiddenTextBox     { get; private set; }
-        public HotKeyControl     FullscreenHotKey  { get; private set; }
-        public HotKeyControl     FullscreenHotKey2 { get; private set; }
-        public HotKeyControl     DockToggleHotKey  { get; private set; }
-        public HotKeyControl     ExitHotKey        { get; private set; }
-        public ToggleSplitButton VolumeStatus      { get; set; }
+        public RendererControl GlRenderer { get; private set; }
+        public ContentControl ContentFrame { get; private set; }
+        public TextBlock LoadStatus { get; private set; }
+        public TextBlock FirmwareStatus { get; private set; }
+        public TextBox SearchBox { get; private set; }
+        public ProgressBar LoadProgressBar { get; private set; }
+        public Menu Menu { get; private set; }
+        public MenuItem UpdateMenuItem { get; private set; }
+        public MenuItem ActionsMenuItem { get; private set; }
+        public GameGridView GameGrid { get; private set; }
+        public GameListView GameList { get; private set; }
+        public OffscreenTextBox HiddenTextBox { get; private set; }
+        public HotKeyControl FullscreenHotKey { get; private set; }
+        public HotKeyControl FullscreenHotKey2 { get; private set; }
+        public HotKeyControl DockToggleHotKey { get; private set; }
+        public HotKeyControl ExitHotKey { get; private set; }
+        public ToggleSplitButton VolumeStatus { get; set; }
         public MainWindowViewModel ViewModel { get; private set; }
 
         public bool CanUpdate
@@ -171,7 +171,7 @@ namespace Ryujinx.Ava.Ui.Windows
                 });
             }
         }
-        
+
         public void Application_Opened(object sender, ApplicationOpenedEventArgs args)
         {
             if (args.Application != null)
@@ -190,7 +190,7 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             if (ConfigurationState.Instance.Logger.EnableTrace.Value)
             {
-                string mainMessage      = LocaleManager.Instance["DialogPerformanceCheckLoggingEnabledMessage"];
+                string mainMessage = LocaleManager.Instance["DialogPerformanceCheckLoggingEnabledMessage"];
                 string secondaryMessage = LocaleManager.Instance["DialogPerformanceCheckLoggingEnabledConfirmMessage"];
 
                 UserResult result = await ContentDialogHelper.CreateConfirmationDialog(this, mainMessage, secondaryMessage, LocaleManager.Instance["InputDialogYes"], LocaleManager.Instance["InputDialogNo"], LocaleManager.Instance["RyujinxConfirm"]);
@@ -205,7 +205,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
             if (!string.IsNullOrWhiteSpace(ConfigurationState.Instance.Graphics.ShadersDumpPath.Value))
             {
-                string mainMessage      = LocaleManager.Instance["DialogPerformanceCheckShaderDumpEnabledMessage"];
+                string mainMessage = LocaleManager.Instance["DialogPerformanceCheckShaderDumpEnabledMessage"];
                 string secondaryMessage = LocaleManager.Instance["DialogPerformanceCheckShaderDumpEnabledConfirmMessage"];
 
                 UserResult result = await ContentDialogHelper.CreateConfirmationDialog(this, mainMessage, secondaryMessage, LocaleManager.Instance["InputDialogYes"], LocaleManager.Instance["InputDialogNo"], LocaleManager.Instance["RyujinxConfirm"]);
@@ -248,7 +248,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
             Logger.RestartTime();
 
-            if(ViewModel.SelectedIcon == null)
+            if (ViewModel.SelectedIcon == null)
             {
                 ViewModel.SelectedIcon = ApplicationLibrary.GetApplicationIcon(path);
             }
@@ -258,7 +258,7 @@ namespace Ryujinx.Ava.Ui.Windows
             _mainViewContent = ContentFrame.Content as Control;
 
             GlRenderer = new RendererControl(3, 3, ConfigurationState.Instance.Logger.GraphicsDebugLevel);
-            AppHost    = new AppHost(GlRenderer, InputManager, path, VirtualFileSystem, ContentManager, AccountManager, _userChannelPersistence, this);
+            AppHost = new AppHost(GlRenderer, InputManager, path, VirtualFileSystem, ContentManager, AccountManager, _userChannelPersistence, this);
 
             if (!AppHost.LoadGuestApplication().Result)
             {
@@ -324,7 +324,7 @@ namespace Ryujinx.Ava.Ui.Windows
             {
                 ContentFrame.Content = GlRenderer;
 
-                if(startFullscreen && WindowState != WindowState.FullScreen)
+                if (startFullscreen && WindowState != WindowState.FullScreen)
                 {
                     ViewModel.ToggleFullscreen();
                 }
@@ -338,10 +338,10 @@ namespace Ryujinx.Ava.Ui.Windows
             ViewModel.ShowContent = false;
             ViewModel.ShowLoadProgress = true;
             ViewModel.IsLoadingIndeterminate = true;
-            
+
             Dispatcher.UIThread.InvokeAsync(() =>
             {
-                if(startFullscreen && WindowState != WindowState.FullScreen)
+                if (startFullscreen && WindowState != WindowState.FullScreen)
                 {
                     ViewModel.ToggleFullscreen();
                 }
@@ -394,7 +394,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
         public void Sort_Checked(object sender, RoutedEventArgs args)
         {
-            if(sender is RadioButton button)
+            if (sender is RadioButton button)
             {
                 var sort = Enum.Parse<ApplicationSort>(button.Tag.ToString());
                 ViewModel.Sort(sort);
@@ -423,9 +423,9 @@ namespace Ryujinx.Ava.Ui.Windows
         private void Initialize()
         {
             _userChannelPersistence = new UserChannelPersistence();
-            VirtualFileSystem       = VirtualFileSystem.CreateInstance();
-            LibHacHorizonManager    = new LibHacHorizonManager();
-            ContentManager          = new ContentManager(VirtualFileSystem);
+            VirtualFileSystem = VirtualFileSystem.CreateInstance();
+            LibHacHorizonManager = new LibHacHorizonManager();
+            ContentManager = new ContentManager(VirtualFileSystem);
 
             LibHacHorizonManager.InitializeFsServer(VirtualFileSystem);
             LibHacHorizonManager.InitializeArpServer();
@@ -440,7 +440,7 @@ namespace Ryujinx.Ava.Ui.Windows
             // Every single save data's extra data will be checked and fixed if needed each time the emulator is opened.
             // Consider removing this at some point in the future when we don't need to worry about old saves.
             VirtualFileSystem.FixExtraData(LibHacHorizonManager.RyujinxClient);
-            
+
             AccountManager = new AccountManager(LibHacHorizonManager.RyujinxClient, Program.CommandLineProfile);
 
             VirtualFileSystem.ReloadKeySet();
@@ -460,7 +460,7 @@ namespace Ryujinx.Ava.Ui.Windows
                     UserErrorDialog.ShowUserErrorDialog(UserError.NoKeys, this));
             }
 
-            if(_deferLoad)
+            if (_deferLoad)
             {
                 _deferLoad = false;
 
@@ -479,7 +479,7 @@ namespace Ryujinx.Ava.Ui.Windows
         public void RefreshFirmwareStatus()
         {
             SystemVersion version = ContentManager.GetCurrentFirmwareVersion();
-            
+
             bool hasApplet = false;
 
             if (version != null)
@@ -501,22 +501,22 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             AvaloniaXamlLoader.Load(this);
 
-            ContentFrame      = this.FindControl<ContentControl>("Content");
-            GameList          = this.FindControl<GameListView>("GameList");
-            LoadStatus        = this.FindControl<TextBlock>("LoadStatus");
-            FirmwareStatus    = this.FindControl<TextBlock>("FirmwareStatus");
-            LoadProgressBar   = this.FindControl<ProgressBar>("LoadProgressBar");
-            SearchBox         = this.FindControl<TextBox>("SearchBox");
-            Menu              = this.FindControl<Menu>("Menu");
-            UpdateMenuItem    = this.FindControl<MenuItem>("UpdateMenuItem");
-            GameGrid          = this.FindControl<GameGridView>("GameGrid");
-            HiddenTextBox     = this.FindControl<OffscreenTextBox>("HiddenTextBox");
-            FullscreenHotKey  = this.FindControl<HotKeyControl>("FullscreenHotKey");
+            ContentFrame = this.FindControl<ContentControl>("Content");
+            GameList = this.FindControl<GameListView>("GameList");
+            LoadStatus = this.FindControl<TextBlock>("LoadStatus");
+            FirmwareStatus = this.FindControl<TextBlock>("FirmwareStatus");
+            LoadProgressBar = this.FindControl<ProgressBar>("LoadProgressBar");
+            SearchBox = this.FindControl<TextBox>("SearchBox");
+            Menu = this.FindControl<Menu>("Menu");
+            UpdateMenuItem = this.FindControl<MenuItem>("UpdateMenuItem");
+            GameGrid = this.FindControl<GameGridView>("GameGrid");
+            HiddenTextBox = this.FindControl<OffscreenTextBox>("HiddenTextBox");
+            FullscreenHotKey = this.FindControl<HotKeyControl>("FullscreenHotKey");
             FullscreenHotKey2 = this.FindControl<HotKeyControl>("FullscreenHotKey2");
-            DockToggleHotKey  = this.FindControl<HotKeyControl>("DockToggleHotKey");
-            ExitHotKey        = this.FindControl<HotKeyControl>("ExitHotKey");
-            VolumeStatus      = this.FindControl<ToggleSplitButton>("VolumeStatus");
-            ActionsMenuItem   = this.FindControl<MenuItem>("ActionsMenuItem");
+            DockToggleHotKey = this.FindControl<HotKeyControl>("DockToggleHotKey");
+            ExitHotKey = this.FindControl<HotKeyControl>("ExitHotKey");
+            VolumeStatus = this.FindControl<ToggleSplitButton>("VolumeStatus");
+            ActionsMenuItem = this.FindControl<MenuItem>("ActionsMenuItem");
 
             VolumeStatus.Click += VolumeStatus_CheckedChanged;
 
@@ -533,21 +533,21 @@ namespace Ryujinx.Ava.Ui.Windows
 
         public static void UpdateGraphicsConfig()
         {
-            int   resScale       = ConfigurationState.Instance.Graphics.ResScale;
+            int resScale = ConfigurationState.Instance.Graphics.ResScale;
             float resScaleCustom = ConfigurationState.Instance.Graphics.ResScaleCustom;
 
-            GraphicsConfig.ResScale          = resScale == -1 ? resScaleCustom : resScale;
-            GraphicsConfig.MaxAnisotropy     = ConfigurationState.Instance.Graphics.MaxAnisotropy;
-            GraphicsConfig.ShadersDumpPath   = ConfigurationState.Instance.Graphics.ShadersDumpPath;
+            GraphicsConfig.ResScale = resScale == -1 ? resScaleCustom : resScale;
+            GraphicsConfig.MaxAnisotropy = ConfigurationState.Instance.Graphics.MaxAnisotropy;
+            GraphicsConfig.ShadersDumpPath = ConfigurationState.Instance.Graphics.ShadersDumpPath;
             GraphicsConfig.EnableShaderCache = ConfigurationState.Instance.Graphics.EnableShaderCache;
         }
 
         public void LoadHotKeys()
         {
-            HotKeyManager.SetHotKey(FullscreenHotKey,  new KeyGesture(Key.Enter, KeyModifiers.Alt));
+            HotKeyManager.SetHotKey(FullscreenHotKey, new KeyGesture(Key.Enter, KeyModifiers.Alt));
             HotKeyManager.SetHotKey(FullscreenHotKey2, new KeyGesture(Key.F11));
-            HotKeyManager.SetHotKey(DockToggleHotKey,  new KeyGesture(Key.F9));
-            HotKeyManager.SetHotKey(ExitHotKey,        new KeyGesture(Key.Escape));
+            HotKeyManager.SetHotKey(DockToggleHotKey, new KeyGesture(Key.F9));
+            HotKeyManager.SetHotKey(ExitHotKey, new KeyGesture(Key.Escape));
         }
 
         public static void SaveConfig()
@@ -560,7 +560,7 @@ namespace Ryujinx.Ava.Ui.Windows
             ApplicationLibrary.LoadAndSaveMetaData(titleId, appMetadata =>
             {
                 DateTime lastPlayedDateTime = DateTime.Parse(appMetadata.LastPlayed);
-                double   sessionTimePlayed  = DateTime.UtcNow.Subtract(lastPlayedDateTime).TotalSeconds;
+                double sessionTimePlayed = DateTime.UtcNow.Subtract(lastPlayedDateTime).TotalSeconds;
 
                 appMetadata.TimePlayed += Math.Round(sessionTimePlayed, MidpointRounding.AwayFromZero);
             });
@@ -680,7 +680,7 @@ namespace Ryujinx.Ava.Ui.Windows
                 AppHost?.Stop();
                 AppHost?.DisposeGpu();
             }
-            
+
             ApplicationLibrary.CancelLoading();
             InputManager.Dispose();
             Program.Exit();
@@ -694,10 +694,10 @@ namespace Ryujinx.Ava.Ui.Windows
            {
                _isClosing = await ContentDialogHelper.CreateExitDialog(this);
 
-               if(_isClosing)
+               if (_isClosing)
                {
                    Close();
-               }    
+               }
            });
         }
     }

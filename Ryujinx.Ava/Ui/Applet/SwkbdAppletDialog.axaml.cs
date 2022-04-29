@@ -29,7 +29,7 @@ namespace Ryujinx.Ava.Ui.Controls
             DataContext = this;
             _placeholder = placeholder;
             InitializeComponent();
-            
+
             SetInputLengthValidation(0, int.MaxValue); // Disable by default.
         }
 

@@ -5,7 +5,6 @@ using SPB.Platform;
 using SPB.Windowing;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Threading;
 
 namespace Ryujinx.Ava.Ui.Backend.OpenGL

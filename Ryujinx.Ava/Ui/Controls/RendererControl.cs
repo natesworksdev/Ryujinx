@@ -14,7 +14,6 @@ using SPB.Platform;
 using SPB.Windowing;
 using System;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.Ui.Controls
 {
@@ -25,7 +24,7 @@ namespace Ryujinx.Ava.Ui.Controls
         public event EventHandler<EventArgs> GlInitialized;
         public event EventHandler<Size> SizeChanged;
 
-        protected Size RenderSize { get;private set; }
+        protected Size RenderSize { get; private set; }
         public bool IsStarted { get; private set; }
 
         public int Major { get; }
@@ -172,7 +171,7 @@ namespace Ryujinx.Ava.Ui.Controls
         protected void CreateWindow()
         {
             var flags = OpenGLContextFlags.Compat;
-            if(DebugLevel != GraphicsDebugLevel.None)
+            if (DebugLevel != GraphicsDebugLevel.None)
             {
                 flags |= OpenGLContextFlags.Debug;
             }
@@ -201,7 +200,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
             public static void DeleteFramebuffer()
             {
-                if(_framebuffer == 0)
+                if (_framebuffer == 0)
                 {
                     GL.DeleteFramebuffer(_framebuffer);
                 }

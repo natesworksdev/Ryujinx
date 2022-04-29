@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Ryujinx.Ava.Common
+﻿namespace Ryujinx.Ava.Common
 {
     public enum KeyboardHotkeyState
     {

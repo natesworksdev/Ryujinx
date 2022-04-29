@@ -16,14 +16,14 @@ namespace Ryujinx.Ava.Input
         private readonly AvaloniaKeyboardDriver _driver;
 
         private readonly object _userMappingLock = new();
-        
+
         private StandardKeyboardInputConfig _configuration;
 
         private bool HasConfiguration => _configuration != null;
 
         public string Id { get; }
         public string Name { get; }
-        
+
         public bool IsConnected => true;
 
         public GamepadFeaturesFlag Features => GamepadFeaturesFlag.None;

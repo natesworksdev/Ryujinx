@@ -10,7 +10,7 @@ namespace Ryujinx.Ava.Ui.Controls
         {
             return KeyDownEvent;
         }
-        
+
         public RoutedEvent<KeyEventArgs> GetKeyUpRoutedEvent()
         {
             return KeyUpEvent;

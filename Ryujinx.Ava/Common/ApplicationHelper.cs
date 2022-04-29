@@ -8,6 +8,8 @@ using LibHac.Fs.Fsa;
 using LibHac.Fs.Shim;
 using LibHac.FsSystem;
 using LibHac.Ns;
+using LibHac.Tools.Fs;
+using LibHac.Tools.FsSystem;
 using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Controls;
@@ -15,17 +17,13 @@ using Ryujinx.Ava.Ui.Windows;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
+using Ryujinx.Ui.Common.Helper;
 using System;
 using System.Buffers;
 using System.IO;
 using System.Threading;
-
 using static LibHac.Fs.ApplicationSaveDataManagement;
-
-using LibHac.Tools.Fs;
-using LibHac.Tools.FsSystem;
 using Path = System.IO.Path;
-using Ryujinx.Ui.Common.Helper;
 
 namespace Ryujinx.Ava.Common
 {
@@ -35,7 +33,7 @@ namespace Ryujinx.Ava.Common
         private static VirtualFileSystem _virtualFileSystem;
         private static StyleableWindow _owner;
 
-        public static void Initialize(VirtualFileSystem virtualFileSystem,HorizonClient horizonClient, StyleableWindow owner)
+        public static void Initialize(VirtualFileSystem virtualFileSystem, HorizonClient horizonClient, StyleableWindow owner)
         {
             _owner = owner;
             _virtualFileSystem = virtualFileSystem;
@@ -138,7 +136,7 @@ namespace Ryujinx.Ava.Common
         public static async void ExtractSection(NcaSectionType ncaSectionType, string titleFilePath,
             int programIndex = 0)
         {
-            OpenFolderDialog folderDialog = new() {Title = LocaleManager.Instance["FolderDialogExtractTitle"]};
+            OpenFolderDialog folderDialog = new() { Title = LocaleManager.Instance["FolderDialogExtractTitle"] };
 
             string destination = await folderDialog.ShowAsync(_owner);
 
@@ -276,7 +274,7 @@ namespace Ryujinx.Ava.Common
                                 {
                                     Dispatcher.UIThread.InvokeAsync(async () =>
                                     {
-                                        await ContentDialogHelper.CreateInfoDialog(_owner, LocaleManager.Instance["DialogNcaExtractionSuccessMessage"], "", LocaleManager.Instance["InputDialogOk"] , "", LocaleManager.Instance["DialogNcaExtractionTitle"]);
+                                        await ContentDialogHelper.CreateInfoDialog(_owner, LocaleManager.Instance["DialogNcaExtractionSuccessMessage"], "", LocaleManager.Instance["InputDialogOk"], "", LocaleManager.Instance["DialogNcaExtractionTitle"]);
                                     });
                                 }
                             }
@@ -284,7 +282,7 @@ namespace Ryujinx.Ava.Common
                             fsClient.Unmount(source.ToU8Span());
                             fsClient.Unmount(output.ToU8Span());
                         }
-                        catch(ArgumentException ex)
+                        catch (ArgumentException ex)
                         {
                             Dispatcher.UIThread.InvokeAsync(() =>
                             {

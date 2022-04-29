@@ -92,7 +92,7 @@ namespace Ryujinx.Ava.Ui.Models
                 OnPropertyChanged();
             }
         }
-        
+
         public float TriggerThreshold
         {
             get => _triggerThreshold;

@@ -54,9 +54,9 @@ namespace Ryujinx.Ava.Ui.Controls
                     {
                         result = UserResult.Cancel;
                     });
-                    
+
                     await contentDialog.ShowAsync(ContentDialogPlacement.Popup);
-                };   
+                };
             }
 
             return result;
@@ -112,7 +112,7 @@ namespace Ryujinx.Ava.Ui.Controls
                 ContentDialog sender,
                 ContentDialogButtonClickEventArgs args)
             {
-                if(startedDeferring)
+                if (startedDeferring)
                 {
                     return;
                 }
@@ -125,7 +125,8 @@ namespace Ryujinx.Ava.Ui.Controls
 
                 contentDialog.PrimaryButtonClick -= DeferClose;
 
-                Task.Run(()=>{
+                Task.Run(() =>
+                {
                     deferResetEvent.WaitOne();
 
                     Dispatcher.UIThread.Post(() =>
@@ -134,9 +135,9 @@ namespace Ryujinx.Ava.Ui.Controls
                     });
                 });
 
-                if(doWhileDeferred != null)
+                if (doWhileDeferred != null)
                 {
-                   await doWhileDeferred(overlay);
+                    await doWhileDeferred(overlay);
 
                     deferResetEvent.Set();
                 }
@@ -161,8 +162,8 @@ namespace Ryujinx.Ava.Ui.Controls
             Grid.SetRowSpan(icon, 2);
             Grid.SetRow(icon, 0);
 
-            TextBlock primaryLabel = new TextBlock() { Text = primaryText,  Margin = new Avalonia.Thickness(5), TextWrapping = Avalonia.Media.TextWrapping.Wrap, MaxWidth = 450 };
-            TextBlock secondaryLabel = new TextBlock() { Text = secondaryText,  Margin = new Avalonia.Thickness(5), TextWrapping = Avalonia.Media.TextWrapping.Wrap, MaxWidth = 450 };
+            TextBlock primaryLabel = new TextBlock() { Text = primaryText, Margin = new Avalonia.Thickness(5), TextWrapping = Avalonia.Media.TextWrapping.Wrap, MaxWidth = 450 };
+            TextBlock secondaryLabel = new TextBlock() { Text = secondaryText, Margin = new Avalonia.Thickness(5), TextWrapping = Avalonia.Media.TextWrapping.Wrap, MaxWidth = 450 };
             Grid.SetColumn(primaryLabel, 1);
             Grid.SetColumn(secondaryLabel, 1);
             Grid.SetRow(primaryLabel, 0);
@@ -315,7 +316,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
             return response == UserResult.Yes;
         }
-        
+
         internal static async Task<bool> CreateExitDialog(StyleableWindow owner)
         {
             return await CreateChoiceDialog(

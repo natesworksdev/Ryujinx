@@ -83,7 +83,7 @@ namespace Ryujinx.Ava.Ui.Controls
                     : ""), setupButtonLabel, LocaleManager.Instance["InputDialogOk"],
                 string.Format(LocaleManager.Instance["DialogUserErrorDialogTitle"], errorCode));
 
-            if(result == UserResult.Ok)
+            if (result == UserResult.Ok)
             {
                 OpenHelper.OpenUrl(GetSetupGuideUrl(error));
             }

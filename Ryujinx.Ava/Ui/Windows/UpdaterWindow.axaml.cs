@@ -1,4 +1,3 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Ryujinx.Modules;
@@ -6,7 +5,6 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.Ava.Ui.Windows
@@ -50,7 +48,7 @@ namespace Ryujinx.Ava.Ui.Windows
             ProgressBar = this.FindControl<ProgressBar>("ProgressBar");
             ButtonBox = this.FindControl<StackPanel>("ButtonBox");
         }
-        
+
         [DllImport("libc", SetLastError = true)]
         private static extern int chmod(string path, uint mode);
 

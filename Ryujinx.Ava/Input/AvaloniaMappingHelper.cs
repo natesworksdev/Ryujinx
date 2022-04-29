@@ -1,7 +1,6 @@
 ﻿using Ryujinx.Input;
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using AvaKey = Avalonia.Input.Key;
 
 namespace Ryujinx.Ava.Input
@@ -11,8 +10,8 @@ namespace Ryujinx.Ava.Input
         private static readonly AvaKey[] _keyMapping = new AvaKey[(int)Key.Count]
         {
             // NOTE: invalid
-            AvaKey.None, 
-            
+            AvaKey.None,
+
             AvaKey.LeftShift,
             AvaKey.RightShift,
             AvaKey.LeftCtrl,

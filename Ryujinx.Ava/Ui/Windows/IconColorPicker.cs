@@ -1,10 +1,7 @@
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Advanced;
-using SixLabors.ImageSharp.PixelFormats;
-using System.Runtime.InteropServices;
-using Image = SixLabors.ImageSharp.Image;
 
 namespace Ryujinx.Ava.Ui.Windows
 {
@@ -50,9 +47,9 @@ namespace Ryujinx.Ava.Ui.Windows
             if (luminosity < CutOffLuminosity)
             {
                 color = Color.FromRgb(
-                    (byte) Math.Min(CutOffLuminosity + color.R, byte.MaxValue),
-                    (byte) Math.Min(CutOffLuminosity + color.G, byte.MaxValue),
-                    (byte) Math.Min(CutOffLuminosity + color.B, byte.MaxValue));
+                    (byte)Math.Min(CutOffLuminosity + color.R, byte.MaxValue),
+                    (byte)Math.Min(CutOffLuminosity + color.G, byte.MaxValue),
+                    (byte)Math.Min(CutOffLuminosity + color.B, byte.MaxValue));
             }
 
             return color;
@@ -128,7 +125,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
         public static Bgra32[] GetBuffer(Image<Bgra32> image)
         {
-            return image.TryGetSinglePixelSpan(out var data) ? data.ToArray() : new  Bgra32[0];
+            return image.TryGetSinglePixelSpan(out var data) ? data.ToArray() : new Bgra32[0];
         }
 
         private static int GetColorScore(Dictionary<int, int> dominantColorBin, int maxHitCount, PaletteColor color)

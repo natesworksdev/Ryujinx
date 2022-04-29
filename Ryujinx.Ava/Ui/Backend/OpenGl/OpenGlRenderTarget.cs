@@ -104,8 +104,8 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGL
                 _openGlSession.Dispose();
             }
 
-            public GRContext       GrContext     { get; }
-            public SKSurface       SkSurface     { get; }
+            public GRContext GrContext { get; }
+            public SKSurface SkSurface { get; }
             public GRSurfaceOrigin SurfaceOrigin { get; }
 
             public double ScaleFactor => _openGlSession.Scaling;

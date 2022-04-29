@@ -16,10 +16,13 @@ using Ryujinx.Ava.Ui.Windows;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
-using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.HLE;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.Modules;
+using Ryujinx.Ui.App.Common;
+using Ryujinx.Ui.Common;
+using Ryujinx.Ui.Common.Configuration;
+using Ryujinx.Ui.Common.Helper;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -29,9 +32,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Path = System.IO.Path;
 using ShaderCacheLoadingState = Ryujinx.Graphics.Gpu.Shader.ShaderCacheState;
-using Ryujinx.Ui.App.Common;
-using Ryujinx.Ui.Common;
-using Ryujinx.Ui.Common.Helper;
 
 namespace Ryujinx.Ava.Ui.ViewModels
 {
@@ -547,7 +547,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public Glyph Glyph
         {
-            get =>(Glyph)ConfigurationState.Instance.Ui.GameListViewMode.Value;
+            get => (Glyph)ConfigurationState.Instance.Ui.GameListViewMode.Value;
             set
             {
                 ConfigurationState.Instance.Ui.GameListViewMode.Value = (int)value;
@@ -900,7 +900,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                     ShowMenuAndStatusBar = false;
                 }
             }
-            
+
             OnPropertyChanged(nameof(IsFullScreen));
         }
 

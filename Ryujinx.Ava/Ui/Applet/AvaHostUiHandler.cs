@@ -111,7 +111,8 @@ namespace Ryujinx.Ava.Ui.Applet
                 {
                     ErrorAppletWindow msgDialog = new(_parent, buttons, message)
                     {
-                        Title = title, WindowStartupLocation = WindowStartupLocation.CenterScreen
+                        Title = title,
+                        WindowStartupLocation = WindowStartupLocation.CenterScreen
                     };
                     msgDialog.Width = 400;
 
