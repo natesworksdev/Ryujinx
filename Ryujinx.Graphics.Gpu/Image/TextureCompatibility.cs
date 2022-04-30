@@ -71,11 +71,15 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 if (info.FormatInfo.Format.IsAstcUnorm())
                 {
-                    return new FormatInfo(Format.R8G8B8A8Unorm, 1, 1, 4, 4);
+                    return GraphicsConfig.EnableTextureRecompression
+                        ? new FormatInfo(Format.Bc7Unorm, 4, 4, 16, 4)
+                        : new FormatInfo(Format.R8G8B8A8Unorm, 1, 1, 4, 4);
                 }
                 else if (info.FormatInfo.Format.IsAstcSrgb())
                 {
-                    return new FormatInfo(Format.R8G8B8A8Srgb, 1, 1, 4, 4);
+                    return GraphicsConfig.EnableTextureRecompression
+                        ? new FormatInfo(Format.Bc7Srgb, 4, 4, 16, 4)
+                        : new FormatInfo(Format.R8G8B8A8Srgb, 1, 1, 4, 4);
                 }
             }
 
