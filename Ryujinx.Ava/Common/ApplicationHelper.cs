@@ -211,7 +211,7 @@ namespace Ryujinx.Ava.Common
                                 }
                             }
                         }
-                        else if (Path.GetExtension(titleFilePath).ToLower() == ".nca")
+                        else if (extension == ".nca")
                         {
                             mainNca = new Nca(_virtualFileSystem.KeySet, file.AsStorage());
                         }
