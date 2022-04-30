@@ -5,6 +5,7 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Threading;
+using Avalonia.Win32;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Common.Locale;
@@ -105,6 +106,9 @@ namespace Ryujinx.Ava.Ui.Windows
             UiHandler = new AvaHostUiHandler(this);
 
             Title = $"Ryujinx {Program.Version}";
+
+            Height = Height / Program.WindowScaleFactor;
+            Width = Width / Program.WindowScaleFactor;
 
             if (Program.PreviewerDetached)
             {
