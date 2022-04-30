@@ -535,6 +535,9 @@
   "UpdaterAddingFiles": "Neue Dateien hinzufügen...",
   "UpdaterExtracting": "Update extrahieren...",
   "UpdaterDownloading": "Update herunterladen...",
+  "Game": "Spiel",
+  "Docked": "Docked",
+  "Handheld": "Handheld",
   "SettingsTabGraphicsBackend" : "Grafik-Backend",
   "GraphicsBackendTooltip" : "Ändert das Grafik-Backend"
 }
