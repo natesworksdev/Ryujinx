@@ -61,5 +61,10 @@ namespace Ryujinx.Graphics.Gpu
         /// Enables or disables shader SPIR-V compilation.
         /// </summary>
         public static bool EnableSpirvCompilationOnVulkan = true;
+
+        /// <summary>
+        /// Enables or disables recompression of compressed textures that are not natively supported by the host.
+        /// </summary>
+        public static bool EnableTextureRecompression = false;
     }
 }
