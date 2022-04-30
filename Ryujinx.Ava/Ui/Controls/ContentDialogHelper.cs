@@ -125,6 +125,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
                 contentDialog.PrimaryButtonClick -= DeferClose;
 
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
                 Task.Run(() =>
                 {
                     deferResetEvent.WaitOne();
@@ -134,6 +135,7 @@ namespace Ryujinx.Ava.Ui.Controls
                         deferral.Complete();
                     });
                 });
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
                 if (doWhileDeferred != null)
                 {
@@ -162,8 +164,21 @@ namespace Ryujinx.Ava.Ui.Controls
             Grid.SetRowSpan(icon, 2);
             Grid.SetRow(icon, 0);
 
-            TextBlock primaryLabel = new TextBlock() { Text = primaryText, Margin = new Avalonia.Thickness(5), TextWrapping = Avalonia.Media.TextWrapping.Wrap, MaxWidth = 450 };
-            TextBlock secondaryLabel = new TextBlock() { Text = secondaryText, Margin = new Avalonia.Thickness(5), TextWrapping = Avalonia.Media.TextWrapping.Wrap, MaxWidth = 450 };
+            TextBlock primaryLabel = new TextBlock()
+            {
+                Text = primaryText,
+                Margin = new Avalonia.Thickness(5),
+                TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+                MaxWidth = 450
+            };
+            TextBlock secondaryLabel = new TextBlock()
+            {
+                Text = secondaryText,
+                Margin = new Avalonia.Thickness(5),
+                TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+                MaxWidth = 450
+            };
+
             Grid.SetColumn(primaryLabel, 1);
             Grid.SetColumn(secondaryLabel, 1);
             Grid.SetRow(primaryLabel, 0);

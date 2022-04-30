@@ -74,7 +74,8 @@ namespace Ryujinx.Ava.Common
 
                 if (result.IsFailure())
                 {
-                    ContentDialogHelper.CreateErrorDialog(_owner, string.Format(LocaleManager.Instance["DialogMessageCreateSaveErrorMessage"], result.ToStringWithName()));
+                    ContentDialogHelper.CreateErrorDialog(_owner,
+                                                          string.Format(LocaleManager.Instance["DialogMessageCreateSaveErrorMessage"], result.ToStringWithName()));
 
                     return false;
                 }
@@ -148,12 +149,13 @@ namespace Ryujinx.Ava.Common
                 {
                     Dispatcher.UIThread.Post(async () =>
                     {
-                        UserResult result = await ContentDialogHelper.CreateConfirmationDialog(_owner,
-                                                                                               string.Format(LocaleManager.Instance["DialogNcaExtractionMessage"], ncaSectionType, Path.GetFileName(titleFilePath)),
-                                                                                               "",
-                                                                                               "",
-                                                                                               LocaleManager.Instance["InputDialogCancel"],
-                                                                                               LocaleManager.Instance["DialogNcaExtractionTitle"]);
+                        UserResult result = await ContentDialogHelper.CreateConfirmationDialog(
+                            _owner,
+                            string.Format(LocaleManager.Instance["DialogNcaExtractionMessage"], ncaSectionType, Path.GetFileName(titleFilePath)),
+                            "",
+                            "",
+                            LocaleManager.Instance["InputDialogCancel"],
+                            LocaleManager.Instance["DialogNcaExtractionTitle"]);
 
                         if (result == UserResult.Cancel)
                         {
@@ -274,7 +276,13 @@ namespace Ryujinx.Ava.Common
                                 {
                                     Dispatcher.UIThread.InvokeAsync(async () =>
                                     {
-                                        await ContentDialogHelper.CreateInfoDialog(_owner, LocaleManager.Instance["DialogNcaExtractionSuccessMessage"], "", LocaleManager.Instance["InputDialogOk"], "", LocaleManager.Instance["DialogNcaExtractionTitle"]);
+                                        await ContentDialogHelper.CreateInfoDialog(
+                                            _owner,
+                                            LocaleManager.Instance["DialogNcaExtractionSuccessMessage"],
+                                            "",
+                                            LocaleManager.Instance["InputDialogOk"],
+                                            "",
+                                            LocaleManager.Instance["DialogNcaExtractionTitle"]);
                                     });
                                 }
                             }

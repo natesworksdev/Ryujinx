@@ -668,7 +668,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
         }
 
         public bool IsGridSmall => ConfigurationState.Instance.Ui.GridSize == 1;
-        public bool IsGridNormal => ConfigurationState.Instance.Ui.GridSize == 2;
+        public bool IsGridMedium => ConfigurationState.Instance.Ui.GridSize == 2;
         public bool IsGridLarge => ConfigurationState.Instance.Ui.GridSize == 3;
         public bool IsGridHuge => ConfigurationState.Instance.Ui.GridSize == 4;
 
@@ -686,7 +686,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(IsGridSmall));
-                OnPropertyChanged(nameof(IsGridNormal));
+                OnPropertyChanged(nameof(IsGridMedium));
                 OnPropertyChanged(nameof(IsGridLarge));
                 OnPropertyChanged(nameof(IsGridHuge));
                 OnPropertyChanged(nameof(ShowNames));
@@ -1434,7 +1434,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
         public async void InstallFirmwareFromFile()
         {
             OpenFileDialog dialog = new() { AllowMultiple = false };
-            dialog.Filters.Add(new FileDialogFilter { Name = "All types", Extensions = { "xci", "zip" } });
+            dialog.Filters.Add(new FileDialogFilter { Name = LocaleManager.Instance["FileDialogAllTypes"], Extensions = { "xci", "zip" } });
             dialog.Filters.Add(new FileDialogFilter { Name = "XCI", Extensions = { "xci" } });
             dialog.Filters.Add(new FileDialogFilter { Name = "ZIP", Extensions = { "zip" } });
 

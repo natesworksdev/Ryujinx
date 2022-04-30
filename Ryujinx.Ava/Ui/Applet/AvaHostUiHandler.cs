@@ -29,14 +29,16 @@ namespace Ryujinx.Ava.Ui.Applet
         public bool DisplayMessageDialog(ControllerAppletUiArgs args)
         {
             string playerCount = args.PlayerCountMin == args.PlayerCountMax
-                ? $"exactly {args.PlayerCountMin}"
+                ? args.PlayerCountMin.ToString()
                 : $"{args.PlayerCountMin}-{args.PlayerCountMax}";
 
-            string message = $"Application requests {playerCount} player(s) with:\n\n"
-                             + $"TYPES: {args.SupportedStyles}\n\n"
-                             + $"PLAYERS: {string.Join(", ", args.SupportedPlayers)}\n\n"
-                             + (args.IsDocked ? "Docked mode set. Handheld is also invalid.\n\n" : "")
-                             + "Please open Settings and reconfigure Input now or press Close.";
+            string key = args.PlayerCountMin == args.PlayerCountMax ? "DialogControllerAppletMessage" : "DialogControllerAppletMessagePlayerRange";
+
+            string message = string.Format(LocaleManager.Instance[key],
+                                           playerCount,
+                                           args.SupportedStyles,
+                                           string.Join(", ", args.SupportedPlayers),
+                                           args.IsDocked ? LocaleManager.Instance["DialogControllerAppletDockModeSet"] : "");
 
             return DisplayMessageDialog(LocaleManager.Instance["DialogControllerAppletTitle"], message);
         }
@@ -64,7 +66,7 @@ namespace Ryujinx.Ava.Ui.Applet
             {
                 try
                 {
-                    var response = await SwkbdAppletDialog.ShowInputDialog(_parent, "Software Keyboard", args);
+                    var response = await SwkbdAppletDialog.ShowInputDialog(_parent, LocaleManager.Instance["SoftwareKeyboard"], args);
 
                     if (response.Result == UserResult.Ok)
                     {
@@ -118,15 +120,9 @@ namespace Ryujinx.Ava.Ui.Applet
 
                     object response = await msgDialog.Run();
 
-                    if (response != null)
+                    if (response != null && buttons.Length > 1 && (int)response != buttons.Length - 1)
                     {
-                        if (buttons.Length > 1)
-                        {
-                            if ((int)response != buttons.Length - 1)
-                            {
-                                showDetails = true;
-                            }
-                        }
+                        showDetails = true;
                     }
 
                     dialogCloseEvent.Set();

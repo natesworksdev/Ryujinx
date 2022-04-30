@@ -145,7 +145,7 @@
                                 </Grid.RowDefinitions>
                                 <Image 
                                     Classes.small="{Binding $parent[UserControl].DataContext.IsGridSmall}"
-                                    Classes.normal="{Binding $parent[UserControl].DataContext.IsGridNormal}"
+                                    Classes.normal="{Binding $parent[UserControl].DataContext.IsGridMedium}"
                                     Classes.large="{Binding $parent[UserControl].DataContext.IsGridLarge}"
                                     Classes.huge="{Binding $parent[UserControl].DataContext.IsGridHuge}"
                                     Grid.RowSpan="3" Grid.Column="0" Margin="0"

@@ -17,7 +17,6 @@ namespace Ryujinx.Ava.Ui.Applet
         private MainWindow _parent;
         private OffscreenTextBox _hiddenTextBox;
         private bool _canProcessInput;
-        private long _lastInputTimestamp;
         private IDisposable _textChangedSubscription;
         private IDisposable _selectionStartChangedSubscription;
         private IDisposable _selectionEndtextChangedSubscription;
@@ -91,7 +90,7 @@ namespace Ryujinx.Ava.Ui.Applet
 
         private void AvaloniaDynamicTextInputHandler_KeyPressed(object sender, Avalonia.Input.KeyEventArgs e)
         {
-            var key = (Ryujinx.Common.Configuration.Hid.Key)AvaloniaMappingHelper.ToInputKey(e.Key);
+            var key = (Key)AvaloniaMappingHelper.ToInputKey(e.Key);
 
             if (!(KeyPressedEvent?.Invoke(key)).GetValueOrDefault(true))
             {
@@ -105,7 +104,6 @@ namespace Ryujinx.Ava.Ui.Applet
                 if (_canProcessInput)
                 {
                     _hiddenTextBox.SendKeyDownEvent(e);
-                    _lastInputTimestamp = DateTime.Now.Ticks;
                 }
             });
         }

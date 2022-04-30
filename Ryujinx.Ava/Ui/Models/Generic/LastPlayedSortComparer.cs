@@ -1,3 +1,4 @@
+using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ui.App.Common;
 using System;
 using System.Collections.Generic;
@@ -16,12 +17,12 @@ namespace Ryujinx.Ava.Ui.Models.Generic
             string aValue = x.LastPlayed;
             string bValue = y.LastPlayed;
 
-            if (aValue == "Never")
+            if (aValue == LocaleManager.Instance["Never"])
             {
                 aValue = DateTime.UnixEpoch.ToString();
             }
 
-            if (bValue == "Never")
+            if (bValue == LocaleManager.Instance["Never"])
             {
                 bValue = DateTime.UnixEpoch.ToString();
             }

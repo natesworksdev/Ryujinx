@@ -211,7 +211,7 @@ namespace Ryujinx.Modules
             string updateFile = Path.Combine(UpdateDir, "update.bin");
 
             // Download the update .zip
-            updateDialog.MainText.Text = "Downloading Update...";
+            updateDialog.MainText.Text = LocaleManager.Instance["UpdaterDownloading"];
             updateDialog.ProgressBar.Value = 0;
             updateDialog.ProgressBar.Maximum = 100;
 
@@ -396,7 +396,7 @@ namespace Ryujinx.Modules
         private static async void InstallUpdate(UpdaterWindow updateDialog, string updateFile)
         {
             // Extract Update
-            updateDialog.MainText.Text = "Extracting Update...";
+            updateDialog.MainText.Text = LocaleManager.Instance["UpdaterExtracting"];
             updateDialog.ProgressBar.Value = 0;
 
             if (OperatingSystem.IsLinux())
@@ -476,7 +476,7 @@ namespace Ryujinx.Modules
 
             List<string> allFiles = EnumerateFilesToDelete().ToList();
 
-            updateDialog.MainText.Text = "Renaming Old Files...";
+            updateDialog.MainText.Text = LocaleManager.Instance["UpdaterRenaming"];
             updateDialog.ProgressBar.Value = 0;
             updateDialog.ProgressBar.Maximum = allFiles.Count;
 
@@ -496,13 +496,13 @@ namespace Ryujinx.Modules
                     }
                     catch
                     {
-                        Logger.Warning?.Print(LogClass.Application, "Updater was unable to rename file: " + file);
+                        Logger.Warning?.Print(LogClass.Application, string.Format(LocaleManager.Instance["UpdaterRenameFailed"], file));
                     }
                 }
 
                 Dispatcher.UIThread.Post(() =>
                 {
-                    updateDialog.MainText.Text = "Adding New Files...";
+                    updateDialog.MainText.Text = LocaleManager.Instance["UpdaterAddingFiles"];
                     updateDialog.ProgressBar.Value = 0;
                     updateDialog.ProgressBar.Maximum = Directory.GetFiles(UpdatePublishDir, "*", SearchOption.AllDirectories).Length;
                 });
@@ -574,9 +574,9 @@ namespace Ryujinx.Modules
                         LocaleManager.Instance["DialogUpdaterDirtyBuildSubMessage"]);
                 }
             }
-#endif
 
             return false;
+#endif
         }
 
         // NOTE: This method should always reflect the latest build layout.s
@@ -626,12 +626,9 @@ namespace Ryujinx.Modules
 
         public static void CleanupUpdate()
         {
-            foreach (string file in Directory.GetFiles(HomeDir, "*", SearchOption.AllDirectories))
+            foreach (string file in Directory.GetFiles(HomeDir, "*.ryuold", SearchOption.AllDirectories))
             {
-                if (Path.GetExtension(file).EndsWith(".ryuold"))
-                {
-                    File.Delete(file);
-                }
+                File.Delete(file);
             }
         }
     }

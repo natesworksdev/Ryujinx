@@ -116,14 +116,14 @@ namespace Ryujinx.Ava.Ui.Controls
             else if (_inputMin > 0 && _inputMax == int.MaxValue)
             {
                 Error.IsVisible = true;
-                Error.Text = $"Must be at least {_inputMin} characters long";
+                Error.Text = string.Format(LocaleManager.Instance["SwkbdMinCharacters"], _inputMin);
 
                 _checkLength = length => _inputMin <= length;
             }
             else
             {
                 Error.IsVisible = true;
-                Error.Text = $"Must be {_inputMin}-{_inputMax} characters long";
+                Error.Text = string.Format(LocaleManager.Instance["SwkbdMinRangeCharacters"], _inputMin, _inputMax);
 
                 _checkLength = length => _inputMin <= length && length <= _inputMax;
             }

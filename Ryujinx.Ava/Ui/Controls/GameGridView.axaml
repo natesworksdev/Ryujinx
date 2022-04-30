@@ -145,7 +145,7 @@
 						</Grid.Styles>
                         <Border
                             Classes.small="{Binding $parent[UserControl].DataContext.IsGridSmall}"
-                            Classes.normal="{Binding $parent[UserControl].DataContext.IsGridNormal}"
+                            Classes.normal="{Binding $parent[UserControl].DataContext.IsGridMedium}"
                             Classes.large="{Binding $parent[UserControl].DataContext.IsGridLarge}"
                             Classes.huge="{Binding $parent[UserControl].DataContext.IsGridHuge}"
                             HorizontalAlignment="Stretch"
@@ -167,14 +167,14 @@
                             </Grid>
                         </Border>
 						<ui:SymbolIcon Classes.icon="true" Classes.small="{Binding $parent[UserControl].DataContext.IsGridSmall}"
-                               Classes.normal="{Binding $parent[UserControl].DataContext.IsGridNormal}"
+                               Classes.normal="{Binding $parent[UserControl].DataContext.IsGridMedium}"
                                Classes.large="{Binding $parent[UserControl].DataContext.IsGridLarge}"
                                Classes.huge="{Binding $parent[UserControl].DataContext.IsGridHuge}"
 									    Foreground="Yellow" Symbol="StarFilled"
                                IsVisible="{Binding Favorite}" Margin="5" VerticalAlignment="Top"
                                HorizontalAlignment="Left" />
                         <ui:SymbolIcon Classes.icon="true" Classes.small="{Binding $parent[UserControl].DataContext.IsGridSmall}"
-                               Classes.normal="{Binding $parent[UserControl].DataContext.IsGridNormal}"
+                               Classes.normal="{Binding $parent[UserControl].DataContext.IsGridMedium}"
                                Classes.large="{Binding $parent[UserControl].DataContext.IsGridLarge}"
                                Classes.huge="{Binding $parent[UserControl].DataContext.IsGridHuge}"
 									    Foreground="Black" Symbol="Star"

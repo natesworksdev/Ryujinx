@@ -116,7 +116,7 @@ namespace Ryujinx.Ava.Input
 
                 _buttonsUserMapping.Clear();
 
-                // Then left joycon
+                // Left joycon
                 _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.LeftStick,
                     (Key)_configuration.LeftJoyconStick.StickButton));
                 _buttonsUserMapping.Add(new ButtonMappingEntry(GamepadButtonInputId.DpadUp,
