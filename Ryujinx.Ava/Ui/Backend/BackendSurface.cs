@@ -35,9 +35,9 @@ namespace Ryujinx.Ava.Ui.Backend
                     size = new PixelSize(attributes.width, attributes.height);
                 }
 
-                _currentSize = size;
+                _currentSize = size.Width <= 0 || size.Height <= 0 ? _currentSize : size;
 
-                return size;
+                return _currentSize;
             }
         }
 
