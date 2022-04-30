@@ -826,11 +826,16 @@ namespace Ryujinx.Graphics.Gpu.Image
                     depth,
                     levels,
                     layers,
-                    out Span<byte> decoded))
+                    out byte[] decoded))
                 {
                     string texInfo = $"{Info.Target} {Info.FormatInfo.Format} {Info.Width}x{Info.Height}x{Info.DepthOrLayers} levels {Info.Levels}";
 
                     Logger.Debug?.Print(LogClass.Gpu, $"Invalid ASTC texture at 0x{Info.GpuAddress:X} ({texInfo}).");
+                }
+
+                if (GraphicsConfig.EnableTextureRecompression)
+                {
+                    decoded = BCnEncoder.EncodeBC7(decoded, width, height, depth, levels, layers);
                 }
 
                 data = decoded;
