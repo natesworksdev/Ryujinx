@@ -534,5 +534,8 @@
     "UpdaterRenameFailed": "L'updater non è riuscito a rinominare il file: {0}",
     "UpdaterAddingFiles": "Aggiungendo nuovi files...",
     "UpdaterExtracting": "Estraendo aggiornamento...",
-    "UpdaterDownloading": "Scaricando aggiornamento..."
+    "UpdaterDownloading": "Scaricando aggiornamento...",
+    "Game": "Gioco",
+    "Docked": "Docked",
+    "Handheld": "Handheld"
 }
