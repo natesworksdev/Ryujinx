@@ -534,5 +534,8 @@
   "UpdaterRenameFailed": "Updater was unable to rename file: {0}",
   "UpdaterAddingFiles": "Adding New Files...",
   "UpdaterExtracting": "Extracting Update...",
-  "UpdaterDownloading": "Downloading Update..."
+  "UpdaterDownloading": "Downloading Update...",
+  "Game": "Game",
+  "Docked": "Docked",
+  "Handheld": "Handheld"
 }
