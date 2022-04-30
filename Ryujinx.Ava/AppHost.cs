@@ -76,7 +76,6 @@ namespace Ryujinx.Ava
 
         private IRenderer _renderer;
         private readonly Thread _renderingThread;
-        private Thread _nvStutterWorkaround;
 
         private bool _isMouseInClient;
         private bool _renderingStarted;
@@ -286,17 +285,6 @@ namespace Ryujinx.Ava
 
             _renderingThread.Start();
 
-            _nvStutterWorkaround = null;
-
-            if (_renderer is Graphics.OpenGL.Renderer)
-            {
-                _nvStutterWorkaround = new Thread(NVStutterWorkaround)
-                {
-                    Name = "GUI.NVStutterWorkaround"
-                };
-                _nvStutterWorkaround.Start();
-            }
-
             _parent.ViewModel.Volume = ConfigurationState.Instance.System.AudioVolume.Value;
 
             MainLoop();
@@ -360,7 +348,6 @@ namespace Ryujinx.Ava
             _isActive = false;
 
             _renderingThread.Join();
-            _nvStutterWorkaround?.Join();
 
             DisplaySleep.Restore();
 
@@ -787,25 +774,6 @@ namespace Ryujinx.Ava
 
                 // Polling becomes expensive if it's not slept
                 Thread.Sleep(1);
-            }
-        }
-
-        private void NVStutterWorkaround()
-        {
-            while (_isActive)
-            {
-                // When NVIDIA Threaded Optimization is on, the driver will snapshot all threads in the system whenever the application creates any new ones.
-                // The ThreadPool has something called a "GateThread" which terminates itself after some inactivity.
-                // However, it immediately starts up again, since the rules regarding when to terminate and when to start differ.
-                // This creates a new thread every second or so.
-                // The main problem with this is that the thread snapshot can take 70ms, is on the OpenGL thread and will delay rendering any graphics.
-                // This is a little over budget on a frame time of 16ms, so creates a large stutter.
-                // The solution is to keep the ThreadPool active so that it never has a reason to terminate the GateThread.
-
-                // TODO: This should be removed when the issue with the GateThread is resolved.
-
-                ThreadPool.QueueUserWorkItem(state => { });
-                Thread.Sleep(300);
             }
         }
 
