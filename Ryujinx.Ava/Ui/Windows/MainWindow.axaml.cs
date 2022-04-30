@@ -376,7 +376,6 @@ namespace Ryujinx.Ava.Ui.Windows
                 ViewModel.ShowLoadProgress = false;
                 ViewModel.IsLoadingIndeterminate = false;
 
-                AppHost?.DisposeGpu();
                 AppHost = null;
 
                 HandleRelaunch();
@@ -678,7 +677,6 @@ namespace Ryujinx.Ava.Ui.Windows
             {
                 AppHost.AppExit -= AppHost_AppExit;
                 AppHost?.Stop();
-                AppHost?.DisposeGpu();
             }
 
             ApplicationLibrary.CancelLoading();

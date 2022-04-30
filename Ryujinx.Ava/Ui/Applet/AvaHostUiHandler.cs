@@ -95,7 +95,7 @@ namespace Ryujinx.Ava.Ui.Applet
             device.Configuration.UserChannelPersistence.ExecuteProgram(kind, value);
             if (_parent.AppHost != null)
             {
-                Task.Run(_parent.AppHost.Stop);
+                _parent.AppHost.Stop();
             }
         }
 

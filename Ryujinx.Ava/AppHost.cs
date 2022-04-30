@@ -105,7 +105,6 @@ namespace Ryujinx.Ava
 
         public bool ScreenshotRequested { get; set; }
 
-        private ManualResetEvent _closeEvent;
         private object _lockObject = new();
 
         public AppHost(
@@ -155,8 +154,6 @@ namespace Ryujinx.Ava
             ConfigurationState.Instance.Graphics.AspectRatio.Event += UpdateAspectRatioState;
             ConfigurationState.Instance.System.EnableDockedMode.Event += UpdateDockedModeState;
             ConfigurationState.Instance.System.AudioVolume.Event += UpdateAudioVolumeState;
-
-            _closeEvent = new ManualResetEvent(false);
 
             _gpuCancellationTokenSource = new CancellationTokenSource();
         }
@@ -341,8 +338,6 @@ namespace Ryujinx.Ava
         public void Stop()
         {
             _isActive = false;
-
-            _closeEvent?.WaitOne();
         }
 
         private void Exit()
@@ -375,9 +370,7 @@ namespace Ryujinx.Ava
             TouchScreenManager.Dispose();
             Device.Dispose();
 
-            _closeEvent?.Set();
-            _closeEvent?.Dispose();
-            _closeEvent = null;
+            DisposeGpu();
 
             AppExit?.Invoke(this, EventArgs.Empty);
         }
@@ -405,17 +398,12 @@ namespace Ryujinx.Ava
                 _windowsMultimediaTimerResolution = null;
             }
 
-            var thread = new Thread(() =>
-            {
-                Renderer?.MakeCurrent();
+            Renderer?.MakeCurrent();
 
-                Device.DisposeGpu();
+            Device.DisposeGpu();
 
-                Renderer?.DestroyBackgroundContext();
-                Renderer?.MakeCurrent(null);
-            });
-            thread.Start();
-            thread.Join();
+            Renderer?.DestroyBackgroundContext();
+            Renderer?.MakeCurrent(null);
         }
 
         private void HideCursorState_Changed(object sender, ReactiveEventArgs<bool> state)
@@ -940,7 +928,7 @@ namespace Ryujinx.Ava
 
             if (shouldExit)
             {
-                Task.Run(Stop);
+                Stop();
             }
         }
 
