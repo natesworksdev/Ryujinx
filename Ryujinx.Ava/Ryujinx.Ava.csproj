@@ -5,11 +5,15 @@
         <OutputType>Exe</OutputType>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <Version>1.0.0-dirty</Version>
-        <TieredCompilation>false</TieredCompilation>
-        <TieredCompilationQuickJit>false</TieredCompilationQuickJit>
+		<TieredCompilation>true</TieredCompilation>
+        <TieredCompilationQuickJit>true</TieredCompilationQuickJit>
         <RootNamespace>Ryujinx.Ava</RootNamespace>
         <ApplicationIcon>Ryujinx.ico</ApplicationIcon>
     </PropertyGroup>
+	<PropertyGroup Condition="'$(RuntimeIdentifier)' != ''">
+		<PublishSingleFile>true</PublishSingleFile>
+		<PublishTrimmed>true</PublishTrimmed>
+	</PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
