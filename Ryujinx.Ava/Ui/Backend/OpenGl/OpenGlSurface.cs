@@ -84,6 +84,7 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGL
 
         public override void Dispose()
         {
+            _swapEvent.Set();
             _swapEvent.Dispose();
             _swapEvents.TryRemove(Handle, out _);
             base.Dispose();

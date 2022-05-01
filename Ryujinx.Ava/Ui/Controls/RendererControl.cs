@@ -90,7 +90,10 @@ namespace Ryujinx.Ava.Ui.Controls
         protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
         {
             base.OnDetachedFromVisualTree(e);
-            _swapEvent?.Set();
+            if (!_swapEvent.SafeWaitHandle.IsClosed)
+            {
+                _swapEvent?.Set();
+            }
             _swapEvent = null;
         }
 
