@@ -28,18 +28,12 @@ namespace Ryujinx.Ava.Ui.Controls
         }
 
         private Thread _tickThread;
-        private SemaphoreSlim _semaphore;
 
         private Action<TimeSpan> _tick;
         private int _subscriberCount;
 
         private bool _isRunning;
         private bool _tickNow;
-
-        public RenderTimer()
-        {
-            _semaphore = new SemaphoreSlim(0, 1);
-        }
 
         public void Start()
         {
