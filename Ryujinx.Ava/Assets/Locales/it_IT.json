@@ -537,5 +537,8 @@
     "UpdaterDownloading": "Scaricando aggiornamento...",
     "Game": "Gioco",
     "Docked": "TV",
-    "Handheld": "Portatile"
+    "Handheld": "Portatile",
+    "ConnectionError": "Errore di connessione.",
+    "AboutPageDeveloperListMore": "{0} e altri ancora...",
+    "ApiError": "Errore dell'API."
 }
