@@ -450,11 +450,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
             ApplicationHelper.Initialize(VirtualFileSystem, LibHacHorizonManager.RyujinxClient, this);
 
-            try
-            {
-                RefreshFirmwareStatus();
-            }
-            catch (Exception _) { }
+            RefreshFirmwareStatus();
         }
 
         protected async void CheckLaunchState()
@@ -485,18 +481,24 @@ namespace Ryujinx.Ava.Ui.Windows
 
         public void RefreshFirmwareStatus()
         {
-            SystemVersion version = ContentManager.GetCurrentFirmwareVersion();
-
             bool hasApplet = false;
-
-            if (version != null)
+            try
             {
-                LocaleManager.Instance.UpdateDynamicValue("StatusBarSystemVersion",
-                    version.VersionString);
+                SystemVersion version = ContentManager.GetCurrentFirmwareVersion();
 
-                hasApplet = version.Major > 3;
+                if (version != null)
+                {
+                    LocaleManager.Instance.UpdateDynamicValue("StatusBarSystemVersion",
+                        version.VersionString);
+
+                    hasApplet = version.Major > 3;
+                }
+                else
+                {
+                    LocaleManager.Instance.UpdateDynamicValue("StatusBarSystemVersion", "0.0");
+                }
             }
-            else
+            catch (Exception _)
             {
                 LocaleManager.Instance.UpdateDynamicValue("StatusBarSystemVersion", "0.0");
             }
