@@ -342,7 +342,7 @@
   "DialogSoftwareKeyboardErrorExceptionMessage": "Ошибка отображения программной клавиатуры: {0}",
   "DialogErrorAppletErrorExceptionMessage": "Ошибка отображения диалогового окна ErrorApplet: {0}",
   "DialogUserErrorDialogMessage": "{0}: {1}",
-  "DialogUserErrorDialogInfoMessage": "\\Для получения дополнительной информации о том, как исправить эту ошибку, следуйте нашему Руководству по установке.",
+  "DialogUserErrorDialogInfoMessage": "\nДля получения дополнительной информации о том, как исправить эту ошибку, следуйте нашему Руководству по установке.",
   "DialogUserErrorDialogTitle": "Ошибка Ryujinx! ({0})",
   "DialogAmiiboApiTitle": "Amiibo API",
   "DialogAmiiboApiFailFetchMessage": "Произошла ошибка при получении информации из API.",

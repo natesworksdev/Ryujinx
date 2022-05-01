@@ -343,7 +343,7 @@
   "DialogSoftwareKeyboardErrorExceptionMessage": "Σφάλμα εμφάνισης Λογισμικού Πληκτρολογίου: {0}",
   "DialogErrorAppletErrorExceptionMessage": "Σφάλμα εμφάνισης του διαλόγου ErrorApplet: {0}",
   "DialogUserErrorDialogMessage": "{0}: {1}",
-  "DialogUserErrorDialogInfoMessage": "\\nΓια πληροφορίες σχετικά με τον τρόπο διόρθωσης του σφάλματος, ακολουθήστε τον Οδηγό Εγκατάστασης.",
+  "DialogUserErrorDialogInfoMessage": "\nΓια πληροφορίες σχετικά με τον τρόπο διόρθωσης του σφάλματος, ακολουθήστε τον Οδηγό Εγκατάστασης.",
   "DialogUserErrorDialogTitle": "Σφάλμα Ryujinx ({0})",
   "DialogAmiiboApiTitle": "Amiibo API",
   "DialogAmiiboApiFailFetchMessage": "Παρουσιάστηκε σφάλμα κατά την ανάκτηση πληροφοριών από το API.",

@@ -343,7 +343,7 @@
   "DialogSoftwareKeyboardErrorExceptionMessage": "Erro ao exibir teclado virtual: {0}",
   "DialogErrorAppletErrorExceptionMessage": "Erro ao exibir applet ErrorApplet: {0}",
   "DialogUserErrorDialogMessage": "{0}: {1}",
-  "DialogUserErrorDialogInfoMessage": "\\nPara mais informações sobre como corrigir esse erro, siga nosso Guia de Configuração.",
+  "DialogUserErrorDialogInfoMessage": "\nPara mais informações sobre como corrigir esse erro, siga nosso Guia de Configuração.",
   "DialogUserErrorDialogTitle": "Erro do Ryujinx ({0})",
   "DialogAmiiboApiTitle": "API Amiibo",
   "DialogAmiiboApiFailFetchMessage": "Um erro ocorreu ao tentar obter informações da API.",

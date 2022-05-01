@@ -342,7 +342,7 @@
   "DialogSoftwareKeyboardErrorExceptionMessage": "소프트웨어 키보드를 표시하는 동안 오류가 발생했습니다 : {0}",
   "DialogErrorAppletErrorExceptionMessage": "ErrorApplet 대화 상자를 표시하는 동안 오류가 발생했습니다 : {0}",
   "DialogUserErrorDialogMessage": "{0}: {1}",
-  "DialogUserErrorDialogInfoMessage": "\\n이 오류를 수정하는 방법에 대한 자세한 내용은 설정 가이드를 따르십시오",
+  "DialogUserErrorDialogInfoMessage": "\n이 오류를 수정하는 방법에 대한 자세한 내용은 설정 가이드를 따르십시오",
   "DialogUserErrorDialogTitle": "Ryuijnx의 오류 ({0})",
   "DialogAmiiboApiTitle": "Amiibo API",
   "DialogAmiiboApiFailFetchMessage": "API에서 정보를 가져오는 동안 오류가 발생했습니다.",

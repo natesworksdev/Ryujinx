@@ -342,7 +342,7 @@
   "DialogSoftwareKeyboardErrorExceptionMessage": "Error al mostrar teclado de software: {0}",
   "DialogErrorAppletErrorExceptionMessage": "Error al mostrar díalogo ErrorApplet: {0}",
   "DialogUserErrorDialogMessage": "{0}: {1}",
-  "DialogUserErrorDialogInfoMessage": "\\nPara más información sobre cómo arreglar este error, sigue nuestra Guía de Instalación.",
+  "DialogUserErrorDialogInfoMessage": "\nPara más información sobre cómo arreglar este error, sigue nuestra Guía de Instalación.",
   "DialogUserErrorDialogTitle": "Ryujinx Error ({0})",
   "DialogAmiiboApiTitle": "Amiibo API",
   "DialogAmiiboApiFailFetchMessage": "Ocurrió un error al recibir información de la API.",

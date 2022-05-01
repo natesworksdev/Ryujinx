@@ -343,7 +343,7 @@
   "DialogSoftwareKeyboardErrorExceptionMessage": "Error displaying Software Keyboard: {0}",
   "DialogErrorAppletErrorExceptionMessage": "Error displaying ErrorApplet Dialog: {0}",
   "DialogUserErrorDialogMessage": "{0}: {1}",
-  "DialogUserErrorDialogInfoMessage": "\\nFor more information on how to fix this error, follow our Setup Guide.",
+  "DialogUserErrorDialogInfoMessage": "\nFor more information on how to fix this error, follow our Setup Guide.",
   "DialogUserErrorDialogTitle": "Ryujinx Error ({0})",
   "DialogAmiiboApiTitle": "Amiibo API",
   "DialogAmiiboApiFailFetchMessage": "An error occured while fetching information from the API.",

@@ -343,7 +343,7 @@
     "DialogSoftwareKeyboardErrorExceptionMessage": "Errore nella visualizzazione della tastiera software: {0}",
     "DialogErrorAppletErrorExceptionMessage": "Errore nella visualizzazione dell'ErrorApplet Dialog: {0}",
     "DialogUserErrorDialogMessage": "{0}: {1}",
-    "DialogUserErrorDialogInfoMessage": "\\nPer più informazioni su come risolvere questo errore, segui la nostra guida all'installazione.",
+    "DialogUserErrorDialogInfoMessage": "\nPer più informazioni su come risolvere questo errore, segui la nostra guida all'installazione.",
     "DialogUserErrorDialogTitle": "Errore di Ryujinx ({0})",
     "DialogAmiiboApiTitle": "Amiibo API",
     "DialogAmiiboApiFailFetchMessage": "Si è verificato un errore durante il recupero delle informazioni dall'API.",
