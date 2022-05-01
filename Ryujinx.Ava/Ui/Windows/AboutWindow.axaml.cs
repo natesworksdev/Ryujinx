@@ -1,9 +1,10 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Common.Utilities;
 using Ryujinx.Ui.Common.Helper;
 using System.Net.Http;
@@ -36,6 +37,8 @@ namespace Ryujinx.Ava.Ui.Windows
         public string Supporters { get; set; }
         public string Version { get; set; }
 
+        public string Developers => string.Format(LocaleManager.Instance["AboutPageDeveloperListMore"], "gdkchan, Ac_K, Thog, rip in peri peri, LDj3SNuD, emmaus, Thealexbarney,&#10; Xpl0itR, GoffyDude, »jD«");
+
         public TextBlock SupportersTextBlock { get; set; }
 
         private void InitializeComponent()
@@ -57,7 +60,7 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             if (!NetworkInterface.GetIsNetworkAvailable())
             {
-                Supporters = "Connection Error.";
+                Supporters = LocaleManager.Instance["ConnectionError"];
 
                 return;
             }
@@ -72,7 +75,7 @@ namespace Ryujinx.Ava.Ui.Windows
             }
             catch
             {
-                Supporters = "API Error.";
+                Supporters = LocaleManager.Instance["ApiError"];
             }
 
             await Dispatcher.UIThread.InvokeAsync(() => SupportersTextBlock.Text = Supporters);

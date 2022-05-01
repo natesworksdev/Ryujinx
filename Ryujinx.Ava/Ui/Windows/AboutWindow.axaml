@@ -143,7 +143,7 @@
                        FontWeight="Bold"
                        TextDecorations="Underline" />
             <TextBlock LineHeight="20" Grid.Row="3" Margin="20,5,5,5"
-                       Text="gdkchan, Ac_K, Thog, rip in peri peri, LDj3SNuD, emmaus, Thealexbarney,&#10; Xpl0itR, GoffyDude, »jD« and more..." />
+                       Text="{Binding Developers}" />
             <Button Background="Transparent" HorizontalAlignment="Right" Grid.Row="4"
                     Tag="https://github.com/Ryujinx/Ryujinx/graphs/contributors?type=a" Click="Button_OnClick">
                 <TextBlock ToolTip.Tip="{locale:Locale AboutRyujinxMaintainersContentTooltipMessage}"
