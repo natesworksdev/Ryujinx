@@ -334,7 +334,7 @@
   "DialogThemeRestartMessage": "Das Thema wurde gespeichert. Ein Neustart ist erforderlich, um das Thema anzuwenden.",
   "DialogThemeRestartSubMessage": "Jetzt neu starten?",
   "DialogFirmwareInstallEmbeddedMessage": "Die in diesem Spiel enthaltene Firmware installieren? (Firmware {0})",
-  "DialogFirmwareInstallEmbeddedSuccessMessage": "Es wurde keine installierte Firmware gefunden, aber Ryujinx konnte die Firmware {0} aus dem bereitgestellten Spiel installieren.\\nRyujinx wird nun gestartet.",
+  "DialogFirmwareInstallEmbeddedSuccessMessage": "Es wurde keine installierte Firmware gefunden, aber Ryujinx konnte die Firmware {0} aus dem bereitgestellten Spiel installieren.\nRyujinx wird nun gestartet.",
   "DialogFirmwareNoFirmwareInstalledMessage": "Keine Firmware installiert",
   "DialogFirmwareInstalledMessage": "Firmware {0} wurde installiert",
   "DialogOpenSettingsWindowLabel": "Fenster-Einstellungen öffnen",
