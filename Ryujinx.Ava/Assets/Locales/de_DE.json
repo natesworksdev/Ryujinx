@@ -539,7 +539,7 @@
   "Docked": "Docked",
   "Handheld": "Handheld",
   "ConnectionError": "Verbindungsfehler.",
-  "AboutPageDeveloperListMore": "{0} un mehr...",
+  "AboutPageDeveloperListMore": "{0} und mehr...",
   "ApiError": "API Fehler.",
   "SettingsTabGraphicsBackend" : "Grafik-Backend",
   "GraphicsBackendTooltip" : "Ändert das Grafik-Backend"
