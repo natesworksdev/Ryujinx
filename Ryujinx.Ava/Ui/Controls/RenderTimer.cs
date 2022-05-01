@@ -21,40 +21,28 @@ namespace Ryujinx.Ava.Ui.Controls
 
             remove
             {
-                if (--_subscriberCount == 0)
-                {
-                    Stop();
-                }
+                --_subscriberCount;
 
                 _tick -= value;
             }
         }
 
         private Thread _tickThread;
-        private readonly System.Timers.Timer _timer;
+        private SemaphoreSlim _semaphore;
 
         private Action<TimeSpan> _tick;
         private int _subscriberCount;
 
         private bool _isRunning;
-
-        private AutoResetEvent _resetEvent;
+        private bool _tickNow;
 
         public RenderTimer()
         {
-            _timer = new System.Timers.Timer(15);
-            _resetEvent = new AutoResetEvent(true);
-            _timer.Elapsed += Timer_Elapsed;
-        }
-
-        private void Timer_Elapsed(object sender, ElapsedEventArgs e)
-        {
-            TickNow();
+            _semaphore = new SemaphoreSlim(0, 1);
         }
 
         public void Start()
         {
-            _timer.Start();
             if (_tickThread == null)
             {
                 _tickThread = new Thread(RunTick);
@@ -69,32 +57,15 @@ namespace Ryujinx.Ava.Ui.Controls
         {
             while (_isRunning)
             {
-                _resetEvent.WaitOne();
+                Thread.Sleep(1);
                 _tick?.Invoke(TimeSpan.FromMilliseconds(Environment.TickCount));
             }
         }
 
-        public void TickNow()
-        {
-            lock (this)
-            {
-                _resetEvent.Set();
-            }
-        }
-
-        public void Stop()
-        {
-            _timer.Stop();
-        }
-
         public void Dispose()
         {
-            _timer.Elapsed -= Timer_Elapsed;
-            _timer.Stop();
             _isRunning = false;
-            _resetEvent.Set();
             _tickThread.Join();
-            _resetEvent.Dispose();
         }
     }
 }
