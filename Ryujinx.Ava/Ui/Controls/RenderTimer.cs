@@ -76,7 +76,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
         public void TickNow()
         {
-            lock (this)
+            lock (_timer)
             {
                 _resetEvent.Set();
             }
