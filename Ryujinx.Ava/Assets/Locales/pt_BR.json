@@ -483,7 +483,7 @@
   "AudioVolumeTooltip": "Mudar volume do áudio",
   "SettingsTabSystemEnableInternetAccess": "Habilitar acesso à internet do programa convidado",
   "EnableInternetAccessTooltip": "Habilita acesso à internet do programa convidado. Se habilitado, o aplicativo vai se comportar como se o sistema Switch emulado estivesse conectado a Internet. Note que em alguns casos, aplicativos podem acessar a Internet mesmo com essa opção desabilitada",
-  "GameListContextMenuManageCheatToolTip" : "Gerenciar Cheats",
+  "GameListContextMenuManageCheatToolTip": "Gerenciar Cheats",
   "GameListContextMenuManageCheat": "Gerenciar Cheats",
   "ControllerSettingsStickRange": "Intervalo",
   "DialogStopEmulationTitle": "Ryujinx - Parar emulação",
@@ -537,5 +537,8 @@
   "UpdaterDownloading": "Baixando atualização...",
   "Game": "Jogo",
   "Docked": "TV",
-  "Handheld": "Portátil"
+  "Handheld": "Portátil",
+  "ConnectionError": "Erro de conexão.",
+  "AboutPageDeveloperListMore": "{0} e mais...",
+  "ApiError": "Erro de API."
 }

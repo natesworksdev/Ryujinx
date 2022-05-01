@@ -450,7 +450,11 @@ namespace Ryujinx.Ava.Ui.Windows
 
             ApplicationHelper.Initialize(VirtualFileSystem, LibHacHorizonManager.RyujinxClient, this);
 
-            Task.Run(RefreshFirmwareStatus);
+            try
+            {
+                RefreshFirmwareStatus();
+            }
+            catch (Exception _) { }
         }
 
         protected async void CheckLaunchState()
