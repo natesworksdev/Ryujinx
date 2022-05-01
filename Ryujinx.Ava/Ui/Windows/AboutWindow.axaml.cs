@@ -37,7 +37,7 @@ namespace Ryujinx.Ava.Ui.Windows
         public string Supporters { get; set; }
         public string Version { get; set; }
 
-        public string Developers => string.Format(LocaleManager.Instance["AboutPageDeveloperListMore"], "gdkchan, Ac_K, Thog, rip in peri peri, LDj3SNuD, emmaus, Thealexbarney,&#10; Xpl0itR, GoffyDude, »jD«");
+        public string Developers => string.Format(LocaleManager.Instance["AboutPageDeveloperListMore"], "gdkchan, Ac_K, Thog, rip in peri peri, LDj3SNuD, emmaus, Thealexbarney, Xpl0itR, GoffyDude, »jD«");
 
         public TextBlock SupportersTextBlock { get; set; }
 
