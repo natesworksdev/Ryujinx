@@ -1,7 +1,6 @@
 ﻿using Avalonia.Rendering;
 using System;
 using System.Threading;
-using System.Timers;
 
 namespace Ryujinx.Ava.Ui.Controls
 {
@@ -33,7 +32,6 @@ namespace Ryujinx.Ava.Ui.Controls
         private int _subscriberCount;
 
         private bool _isRunning;
-        private bool _tickNow;
 
         public void Start()
         {
