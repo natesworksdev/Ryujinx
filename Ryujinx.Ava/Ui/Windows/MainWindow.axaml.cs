@@ -79,6 +79,7 @@ namespace Ryujinx.Ava.Ui.Windows
         public HotKeyControl ExitHotKey { get; private set; }
         public ToggleSplitButton VolumeStatus { get; set; }
         public MainWindowViewModel ViewModel { get; private set; }
+        public SettingsWindow SettingsWindow { get; set; }
 
         public bool CanUpdate
         {
