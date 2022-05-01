@@ -528,7 +528,7 @@
   "SwkbdMinRangeCharacters": "Must be {0}-{1} characters long",
   "SoftwareKeyboard": "Software Keyboard",
   "DialogControllerAppletMessagePlayerRange": "Application requests {0} player(s) with:\n\nTYPES: {1}\n\nPLAYERS: {2}\n\n{3}Please open Settings and reconfigure Input now or press Close.",
-  "DialogControllerAppletMessage": "Application requests exactly {0} player(s) with:\n\nTYPES: {1}\n\nPLAYERS: {2)}\n\n{3}Please open Settings and reconfigure Input now or press Close.",
+  "DialogControllerAppletMessage": "Application requests exactly {0} player(s) with:\n\nTYPES: {1}\n\nPLAYERS: {2}\n\n{3}Please open Settings and reconfigure Input now or press Close.",
   "DialogControllerAppletDockModeSet": "Docked mode set. Handheld is also invalid.\n\n",
   "UpdaterRenaming": "Renaming Old Files...",
   "UpdaterRenameFailed": "Updater was unable to rename file: {0}",
