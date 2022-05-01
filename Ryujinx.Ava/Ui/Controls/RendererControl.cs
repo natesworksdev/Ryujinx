@@ -114,7 +114,11 @@ namespace Ryujinx.Ava.Ui.Controls
             {
                 InvalidateVisual();
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+            }
+
+            Program.RenderTimer.TickNow();
         }
 
         internal void Present(object image)
