@@ -383,17 +383,6 @@ namespace Ryujinx.Memory
             }
         }
 
-        private ulong GetPhysicalAddress(ulong va)
-        {
-            // We return -1L if the virtual address is invalid or unmapped.
-            if (!ValidateAddress(va) || !IsMapped(va))
-            {
-                return ulong.MaxValue;
-            }
-
-            return GetPhysicalAddressInternal(va);
-        }
-
         private ulong GetPhysicalAddressInternal(ulong va)
         {
             return _pageTable.Read(va) + (va & PageMask);

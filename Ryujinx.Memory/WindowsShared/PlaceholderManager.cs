@@ -4,6 +4,9 @@ using System.Threading;
 
 namespace Ryujinx.Memory.WindowsShared
 {
+    /// <summary>
+    /// Windows memory placeholder manager.
+    /// </summary>
     class PlaceholderManager
     {
         private const ulong MinimumPageSize = 0x1000;
@@ -16,6 +19,9 @@ namespace Ryujinx.Memory.WindowsShared
         private readonly ReaderWriterLock _partialUnmapLock;
         private int _partialUnmapsCount;
 
+        /// <summary>
+        /// Creates a new instance of the Windows memory placeholder manager.
+        /// </summary>
         public PlaceholderManager()
         {
             _mappings = new IntervalTree<ulong, ulong>();
@@ -23,6 +29,11 @@ namespace Ryujinx.Memory.WindowsShared
             _partialUnmapLock = new ReaderWriterLock();
         }
 
+        /// <summary>
+        /// Reserves a range of the address space to be later mapped as shared memory views.
+        /// </summary>
+        /// <param name="address">Start address of the region to reserve</param>
+        /// <param name="size">Size in bytes of the region to reserve</param>
         public void ReserveRange(ulong address, ulong size)
         {
             lock (_mappings)
@@ -31,6 +42,13 @@ namespace Ryujinx.Memory.WindowsShared
             }
         }
 
+        /// <summary>
+        /// Maps a shared memory view on a previously reserved memory region.
+        /// </summary>
+        /// <param name="sharedMemory">Shared memory that will be the backing storage for the view</param>
+        /// <param name="srcOffset">Offset in the shared memory to map</param>
+        /// <param name="location">Address to map the view into</param>
+        /// <param name="size">Size of the view in bytes</param>
         public void MapView(IntPtr sharedMemory, ulong srcOffset, IntPtr location, IntPtr size)
         {
             _partialUnmapLock.AcquireReaderLock(Timeout.Infinite);
@@ -46,6 +64,14 @@ namespace Ryujinx.Memory.WindowsShared
             }
         }
 
+        /// <summary>
+        /// Maps a shared memory view on a previously reserved memory region.
+        /// </summary>
+        /// <param name="sharedMemory">Shared memory that will be the backing storage for the view</param>
+        /// <param name="srcOffset">Offset in the shared memory to map</param>
+        /// <param name="location">Address to map the view into</param>
+        /// <param name="size">Size of the view in bytes</param>
+        /// <exception cref="WindowsApiException">Thrown when the Windows API returns an error mapping the memory</exception>
         private void MapViewInternal(IntPtr sharedMemory, ulong srcOffset, IntPtr location, IntPtr size)
         {
             SplitForMap((ulong)location, (ulong)size, srcOffset);
@@ -67,6 +93,12 @@ namespace Ryujinx.Memory.WindowsShared
             }
         }
 
+        /// <summary>
+        /// Splits a larger placeholder, slicing at the start and end address, for a new memory mapping.
+        /// </summary>
+        /// <param name="address">Address to split</param>
+        /// <param name="size">Size of the new region</param>
+        /// <param name="backingOffset">Offset in the shared memory that will be mapped</param>
         private void SplitForMap(ulong address, ulong size, ulong backingOffset)
         {
             ulong endAddress = address + size;
@@ -129,6 +161,16 @@ namespace Ryujinx.Memory.WindowsShared
             }
         }
 
+        /// <summary>
+        /// Unmaps a view that has been previously mapped with <see cref="MapView"/>.
+        /// </summary>
+        /// <remarks>
+        /// For "partial unmaps" (when not the entire mapped range is being unmapped), it might be
+        /// necessary to unmap the whole range and then remap the sub-ranges that should remain mapped.
+        /// </remarks>
+        /// <param name="sharedMemory">Shared memory that the view being unmapped belongs to</param>
+        /// <param name="location">Address to unmap</param>
+        /// <param name="size">Size of the region to unmap in bytes</param>
         public void UnmapView(IntPtr sharedMemory, IntPtr location, IntPtr size)
         {
             _partialUnmapLock.AcquireReaderLock(Timeout.Infinite);
@@ -143,6 +185,17 @@ namespace Ryujinx.Memory.WindowsShared
             }
         }
 
+        /// <summary>
+        /// Unmaps a view that has been previously mapped with <see cref="MapView"/>.
+        /// </summary>
+        /// <remarks>
+        /// For "partial unmaps" (when not the entire mapped range is being unmapped), it might be
+        /// necessary to unmap the whole range and then remap the sub-ranges that should remain mapped.
+        /// </remarks>
+        /// <param name="sharedMemory">Shared memory that the view being unmapped belongs to</param>
+        /// <param name="location">Address to unmap</param>
+        /// <param name="size">Size of the region to unmap in bytes</param>
+        /// <exception cref="WindowsApiException">Thrown when the Windows API returns an error unmapping or remapping the memory</exception>
         private void UnmapViewInternal(IntPtr sharedMemory, IntPtr location, IntPtr size)
         {
             ulong startAddress = (ulong)location;
@@ -218,6 +271,11 @@ namespace Ryujinx.Memory.WindowsShared
             RemoveProtection(startAddress, unmapSize);
         }
 
+        /// <summary>
+        /// Coalesces adjacent placeholders after unmap.
+        /// </summary>
+        /// <param name="address">Address of the region that was unmapped</param>
+        /// <param name="size">Size of the region that was unmapped in bytes</param>
         private void CoalesceForUnmap(ulong address, ulong size)
         {
             ulong endAddress = address + size;
@@ -269,6 +327,13 @@ namespace Ryujinx.Memory.WindowsShared
             }
         }
 
+        /// <summary>
+        /// Reprotects a region of memory that has been mapped.
+        /// </summary>
+        /// <param name="address">Address of the region to reprotect</param>
+        /// <param name="size">Size of the region to reprotect in bytes</param>
+        /// <param name="permission">New permissions</param>
+        /// <returns>True if the reprotection was successful, false otherwise</returns>
         public bool ReprotectView(IntPtr address, IntPtr size, MemoryPermission permission)
         {
             _partialUnmapLock.AcquireReaderLock(Timeout.Infinite);
@@ -283,6 +348,15 @@ namespace Ryujinx.Memory.WindowsShared
             }
         }
 
+        /// <summary>
+        /// Reprotects a region of memory that has been mapped.
+        /// </summary>
+        /// <param name="address">Address of the region to reprotect</param>
+        /// <param name="size">Size of the region to reprotect in bytes</param>
+        /// <param name="permission">New permissions</param>
+        /// <param name="throwOnError">Throw an exception instead of returning an error if the operation fails</param>
+        /// <returns>True if the reprotection was successful or if <paramref name="throwOnError"/> is true, false otherwise</returns>
+        /// <exception cref="WindowsApiException">If <paramref name="throwOnError"/> is true, it is thrown when the Windows API returns an error reprotecting the memory</exception>
         private bool ReprotectViewInternal(IntPtr address, IntPtr size, MemoryPermission permission, bool throwOnError)
         {
             ulong reprotectAddress = (ulong)address;
@@ -346,6 +420,11 @@ namespace Ryujinx.Memory.WindowsShared
             return success;
         }
 
+        /// <summary>
+        /// Checks the result of a VirtualFree operation, throwing if needed.
+        /// </summary>
+        /// <param name="success">Operation result</param>
+        /// <exception cref="WindowsApiException">Thrown if <paramref name="success"/> is false</exception>
         private static void CheckFreeResult(bool success)
         {
             if (!success)
@@ -354,6 +433,12 @@ namespace Ryujinx.Memory.WindowsShared
             }
         }
 
+        /// <summary>
+        /// Adds an offset to a backing offset. This will do nothing if the backing offset is the special "unmapped" value.
+        /// </summary>
+        /// <param name="backingOffset">Backing offset</param>
+        /// <param name="offset">Offset to be added</param>
+        /// <returns>Added offset or just <paramref name="backingOffset"/> if the region is unmapped</returns>
         private static ulong AddBackingOffset(ulong backingOffset, ulong offset)
         {
             if (backingOffset == ulong.MaxValue)
@@ -364,11 +449,22 @@ namespace Ryujinx.Memory.WindowsShared
             return backingOffset + offset;
         }
 
+        /// <summary>
+        /// Checks if a region is unmapped.
+        /// </summary>
+        /// <param name="backingOffset">Backing offset to check</param>
+        /// <returns>True if the backing offset is the special "unmapped" value, false otherwise</returns>
         private static bool IsMapped(ulong backingOffset)
         {
             return backingOffset != ulong.MaxValue;
         }
 
+        /// <summary>
+        /// Adds a protection to the list of protections.
+        /// </summary>
+        /// <param name="address">Address of the protected region</param>
+        /// <param name="size">Size of the protected region in bytes</param>
+        /// <param name="permission">Memory permissions of the region</param>
         private void AddProtection(ulong address, ulong size, MemoryPermission permission)
         {
             ulong endAddress = address + size;
@@ -431,6 +527,11 @@ namespace Ryujinx.Memory.WindowsShared
             }
         }
 
+        /// <summary>
+        /// Removes protection from the list of protections.
+        /// </summary>
+        /// <param name="address">Address of the protected region</param>
+        /// <param name="size">Size of the protected region in bytes</param>
         private void RemoveProtection(ulong address, ulong size)
         {
             ulong endAddress = address + size;
@@ -464,6 +565,11 @@ namespace Ryujinx.Memory.WindowsShared
             }
         }
 
+        /// <summary>
+        /// Restores the protection of a given memory region that was remapped, using the protections list.
+        /// </summary>
+        /// <param name="address">Address of the remapped region</param>
+        /// <param name="size">Size of the remapped region in bytes</param>
         private void RestoreRangeProtection(ulong address, ulong size)
         {
             ulong endAddress = address + size;
@@ -498,6 +604,17 @@ namespace Ryujinx.Memory.WindowsShared
             }
         }
 
+        /// <summary>
+        /// Checks if an access violation handler should retry execution due to a fault caused by partial unmap.
+        /// </summary>
+        /// <remarks>
+        /// Due to Windows limitations, <see cref="UnmapView"/> might need to unmap more memory than requested.
+        /// The additional memory that was unmapped is later remapped, however this leaves a time gap where the
+        /// memory might be accessed but is unmapped. Users of the API must compensate for that by catching the
+        /// access violation and retrying if it happened between the unmap and remap operation.
+        /// This method can be used to decide if retrying in such cases is necessary or not.
+        /// </remarks>
+        /// <returns>True if execution should be retried, false otherwise</returns>
         public bool RetryFromAccessViolation()
         {
             _partialUnmapLock.AcquireReaderLock(Timeout.Infinite);
