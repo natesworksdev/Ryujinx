@@ -967,11 +967,11 @@ namespace Ryujinx.Ava.Ui.ViewModels
                         {
                             case PtcLoadingState.Start:
                             case PtcLoadingState.Loading:
-                                LoadHeading = "Compiling PTC";
+                                LoadHeading = LocaleManager.Instance["CompilingPPTC"];
                                 IsLoadingIndeterminate = false;
                                 break;
                             case PtcLoadingState.Loaded:
-                                LoadHeading = $"Loading {TitleName}";
+                                LoadHeading = string.Format(LocaleManager.Instance["LoadingHeading"], TitleName);
                                 IsLoadingIndeterminate = true;
                                 CacheLoadStatus = "";
                                 break;
@@ -983,11 +983,11 @@ namespace Ryujinx.Ava.Ui.ViewModels
                         {
                             case ShaderCacheLoadingState.Start:
                             case ShaderCacheLoadingState.Loading:
-                                LoadHeading = "Compiling shaders";
+                                LoadHeading = LocaleManager.Instance["CompilingShaders"];
                                 IsLoadingIndeterminate = false;
                                 break;
                             case ShaderCacheLoadingState.Loaded:
-                                LoadHeading = $"Loading {TitleName}";
+                                LoadHeading = string.Format(LocaleManager.Instance["LoadingHeading"], TitleName);
                                 IsLoadingIndeterminate = true;
                                 CacheLoadStatus = "";
                                 break;

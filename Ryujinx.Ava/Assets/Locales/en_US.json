@@ -540,5 +540,8 @@
   "Handheld": "Handheld",
   "ConnectionError": "Connection Error.",
   "AboutPageDeveloperListMore": "{0} and more...",
-  "ApiError": "API Error."
+  "ApiError": "API Error.",
+  "LoadingHeading": "Loading {0}",
+  "CompilingPPTC": "Compiling PTC",
+  "CompilingShaders": "Compiling Shaders"
 }

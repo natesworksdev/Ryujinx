@@ -271,7 +271,7 @@ namespace Ryujinx.Ava.Ui.Windows
                 return;
             }
 
-            ViewModel.LoadHeading = string.IsNullOrWhiteSpace(titleName) ? $"Loading {AppHost.Device.Application.TitleName}" : titleName;
+            ViewModel.LoadHeading = string.IsNullOrWhiteSpace(titleName) ? string.Format(LocaleManager.Instance["LoadingHeading"], AppHost.Device.Application.TitleName) : titleName;
             ViewModel.TitleName = string.IsNullOrWhiteSpace(titleName) ? AppHost.Device.Application.TitleName : titleName;
 
             SwitchToGameControl(startFullscreen);
