@@ -541,6 +541,9 @@
   "ConnectionError": "Verbindungsfehler.",
   "AboutPageDeveloperListMore": "{0} und mehr...",
   "ApiError": "API Fehler.",
+  "LoadingHeading": "{0} wird gestartet",
+  "CompilingPPTC": "PTC wird kompiliert",
+  "CompilingShaders": "Shader werden kompiliert",
   "SettingsTabGraphicsBackend" : "Grafik-Backend",
   "GraphicsBackendTooltip" : "Ändert das Grafik-Backend"
 }
