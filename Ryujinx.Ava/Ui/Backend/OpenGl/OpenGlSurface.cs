@@ -4,8 +4,6 @@ using SPB.Graphics.OpenGL;
 using SPB.Platform;
 using SPB.Windowing;
 using System;
-using System.Collections.Concurrent;
-using System.Threading;
 
 namespace Ryujinx.Ava.Ui.Backend.OpenGL
 {
@@ -14,24 +12,6 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGL
         public SwappableNativeWindowBase Window { get; }
 
         private OpenGLSkiaGpu _gpu;
-        private AutoResetEvent _swapEvent;
-
-        private static readonly ConcurrentDictionary<IntPtr, AutoResetEvent> _swapEvents;
-
-        static OpenGLSurface()
-        {
-            _swapEvents = new ConcurrentDictionary<IntPtr, AutoResetEvent>();
-        }
-
-        public static AutoResetEvent GetWindowSwapEvent(IntPtr windowHandle)
-        {
-            if (_swapEvents.TryGetValue(windowHandle, out var swapEvent))
-            {
-                return swapEvent;
-            }
-
-            return null;
-        }
 
         public OpenGLSurface(IntPtr handle) : base(handle)
         {
@@ -50,10 +30,6 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGL
             context.Initialize(Window);
 
             context.Dispose();
-
-            _swapEvent = new AutoResetEvent(true);
-
-            _swapEvents.TryAdd(handle, _swapEvent);
         }
 
         internal static FramebufferFormat GetFramebufferFormat()
@@ -74,20 +50,11 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGL
         public void SwapBuffers()
         {
             Window.SwapBuffers();
-            _swapEvent.Set();
         }
 
         public void ReleaseCurrent()
         {
             _gpu.PrimaryContext.ReleaseCurrent();
-        }
-
-        public override void Dispose()
-        {
-            _swapEvent.Set();
-            _swapEvent.Dispose();
-            _swapEvents.TryRemove(Handle, out _);
-            base.Dispose();
         }
     }
 }

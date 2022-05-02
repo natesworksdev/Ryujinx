@@ -4,8 +4,8 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
+using Avalonia.Threading;
 using OpenTK.Graphics.OpenGL;
-using Ryujinx.Ava.Ui.Backend.OpenGL;
 using Ryujinx.Common.Configuration;
 using SkiaSharp;
 using SPB.Graphics;
@@ -13,7 +13,6 @@ using SPB.Graphics.OpenGL;
 using SPB.Platform;
 using SPB.Windowing;
 using System;
-using System.Threading;
 
 namespace Ryujinx.Ava.Ui.Controls
 {
@@ -40,7 +39,6 @@ namespace Ryujinx.Ava.Ui.Controls
         private IntPtr _fence;
 
         private GlDrawOperation _glDrawOperation;
-        private AutoResetEvent _swapEvent;
 
         public RendererControl(int major, int minor, GraphicsDebugLevel graphicsDebugLevel)
         {
@@ -87,22 +85,6 @@ namespace Ryujinx.Ava.Ui.Controls
             base.Render(context);
         }
 
-        protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-            base.OnDetachedFromVisualTree(e);
-            if (!_swapEvent.SafeWaitHandle.IsClosed)
-            {
-                _swapEvent?.Set();
-            }
-            _swapEvent = null;
-        }
-
-        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
-        {
-            base.OnAttachedToVisualTree(e);
-            _swapEvent = OpenGLSurface.GetWindowSwapEvent(((this.VisualRoot as TopLevel).PlatformImpl as IWindowImpl).Handle.Handle);
-        }
-
         protected void OnGlInitialized()
         {
             GlInitialized?.Invoke(this, EventArgs.Empty);
@@ -110,13 +92,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
         public void QueueRender()
         {
-            try
-            {
-                InvalidateVisual();
-            }
-            catch (Exception)
-            {
-            }
+            Dispatcher.UIThread.Post(InvalidateVisual, DispatcherPriority.Normal);
 
             Program.RenderTimer.TickNow();
         }
@@ -134,7 +110,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
             QueueRender();
 
-            _swapEvent?.WaitOne();
+            _gameBackgroundWindow.SwapBuffers();
         }
 
         internal void Start()
