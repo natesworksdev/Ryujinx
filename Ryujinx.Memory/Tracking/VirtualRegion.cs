@@ -8,7 +8,7 @@ namespace Ryujinx.Memory.Tracking
     /// </summary>
     class VirtualRegion : AbstractRegion
     {
-        public List<RegionHandle> Handles = new List<RegionHandle>();
+        public List<RegionHandleBase> Handles = new List<RegionHandleBase>();
 
         private readonly MemoryTracking _tracking;
         private MemoryPermission _lastPermission;
@@ -21,7 +21,7 @@ namespace Ryujinx.Memory.Tracking
 
         public override void Signal(ulong address, ulong size, bool write)
         {
-            IList<RegionHandle> handles = Handles;
+            IList<RegionHandleBase> handles = Handles;
 
             for (int i = 0; i < handles.Count; i++)
             {
@@ -33,7 +33,7 @@ namespace Ryujinx.Memory.Tracking
 
         public override void SignalPrecise(ulong address, ulong size, bool write)
         {
-            IList<RegionHandle> handles = Handles;
+            IList<RegionHandleBase> handles = Handles;
 
             bool allPrecise = true;
 
@@ -105,7 +105,7 @@ namespace Ryujinx.Memory.Tracking
         /// Removes a handle from this virtual region. If there are no handles left, this virtual region is removed.
         /// </summary>
         /// <param name="handle">Handle to remove</param>
-        public void RemoveHandle(RegionHandle handle)
+        public void RemoveHandle(RegionHandleBase handle)
         {
             lock (_tracking.TrackingLock)
             {
@@ -124,7 +124,7 @@ namespace Ryujinx.Memory.Tracking
             Size = splitAddress - Address;
 
             // The new region inherits all of our parents.
-            newRegion.Handles = new List<RegionHandle>(Handles);
+            newRegion.Handles = new List<RegionHandleBase>(Handles);
             foreach (var parent in Handles)
             {
                 parent.AddChild(newRegion);

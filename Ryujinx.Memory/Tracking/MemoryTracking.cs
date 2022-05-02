@@ -145,6 +145,21 @@ namespace Ryujinx.Memory.Tracking
         }
 
         /// <summary>
+        /// Obtains a memory tracking handle for the given virtual region, with a specified granularity. This should be disposed when finished with.
+        /// </summary>
+        /// <param name="address">CPU virtual address of the region</param>
+        /// <param name="size">Size of the region</param>
+        /// <param name="handles">Handles to inherit state from or reuse. When none are present, provide null</param>
+        /// <param name="granularity">Desired granularity of write tracking</param>
+        /// <returns>The memory tracking handle</returns>
+        public BitmapMultiRegionHandle BeginBitmapGranularTracking(ulong address, ulong size, IEnumerable<IRegionHandle> handles, ulong granularity)
+        {
+            (address, size) = PageAlign(address, size);
+
+            return new BitmapMultiRegionHandle(this, address, size, handles, granularity);
+        }
+
+        /// <summary>
         /// Obtains a smart memory tracking handle for the given virtual region, with a specified granularity. This should be disposed when finished with.
         /// </summary>
         /// <param name="address">CPU virtual address of the region</param>
@@ -171,6 +186,26 @@ namespace Ryujinx.Memory.Tracking
             lock (TrackingLock)
             {
                 RegionHandle handle = new RegionHandle(this, address, size, _memoryManager.IsRangeMapped(address, size));
+
+                return handle;
+            }
+        }
+
+        /// <summary>
+        /// Obtains a memory tracking handle for the given virtual region. This should be disposed when finished with.
+        /// </summary>
+        /// <param name="address">CPU virtual address of the region</param>
+        /// <param name="size">Size of the region</param>
+        /// <param name="bitmap">The bitmap owning the dirty flag for this handle</param>
+        /// <param name="bit">The bit of this handle within the dirty flag</param>
+        /// <returns>The memory tracking handle</returns>
+        internal BitmapRegionHandle BeginTrackingBitmap(ulong address, ulong size, MultithreadedBitmap bitmap, int bit)
+        {
+            (address, size) = PageAlign(address, size);
+
+            lock (TrackingLock)
+            {
+                BitmapRegionHandle handle = new BitmapRegionHandle(this, address, size, bitmap, bit, _memoryManager.IsRangeMapped(address, size));
 
                 return handle;
             }
