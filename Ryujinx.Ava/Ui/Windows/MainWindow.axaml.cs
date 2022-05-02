@@ -472,10 +472,10 @@ namespace Ryujinx.Ava.Ui.Windows
 
             if (ConfigurationState.Instance.CheckUpdatesOnStart.Value && Updater.CanUpdate(false, this))
             {
-                /*await Updater.BeginParse(this, false).ContinueWith(task =>
+                await Updater.BeginParse(this, false).ContinueWith(task =>
                 {
                     Logger.Error?.Print(LogClass.Application, $"Updater Error: {task.Exception}");
-                }, TaskContinuationOptions.OnlyOnFaulted);*/
+                }, TaskContinuationOptions.OnlyOnFaulted);
             }
         }
 
@@ -591,11 +591,6 @@ namespace Ryujinx.Ava.Ui.Windows
 
             ViewModel.ProgressBarForegroundColor = new SolidColorBrush(progressFgColor);
             ViewModel.ProgressBarBackgroundColor = new SolidColorBrush(progressBgColor);
-        }
-
-        private void GameList_OnTapped(object sender, RoutedEventArgs e)
-        {
-            //GameList.SelectedIndex = -1;
         }
 
         private void SearchBox_OnKeyUp(object sender, KeyEventArgs e)
