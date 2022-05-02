@@ -771,6 +771,7 @@ namespace Ryujinx.Cpu
         protected override void Destroy()
         {
             _addressSpace.Dispose();
+            _addressSpaceMirror.Dispose();
             _memoryEh.Dispose();
         }
 

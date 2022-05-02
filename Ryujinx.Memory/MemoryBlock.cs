@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
@@ -15,6 +16,8 @@ namespace Ryujinx.Memory
         private readonly bool _forceWindows4KBView;
         private IntPtr _sharedMemory;
         private IntPtr _pointer;
+        private ConcurrentDictionary<MemoryBlock, byte> _viewStorages;
+        private int _viewCount;
 
         /// <summary>
         /// Pointer to the memory block data.
@@ -53,6 +56,10 @@ namespace Ryujinx.Memory
             }
 
             Size = size;
+
+            _viewStorages = new ConcurrentDictionary<MemoryBlock, byte>();
+            _viewStorages.TryAdd(this, 0);
+            _viewCount = 1;
         }
 
         /// <summary>
@@ -131,6 +138,11 @@ namespace Ryujinx.Memory
             if (srcBlock._sharedMemory == IntPtr.Zero)
             {
                 throw new ArgumentException("The source memory block is not mirrorable, and thus cannot be mapped on the current block.");
+            }
+
+            if (_viewStorages.TryAdd(srcBlock, 0))
+            {
+                srcBlock.IncrementViewCount();
             }
 
             MemoryManagement.MapView(srcBlock._sharedMemory, srcOffset, GetPointerInternal(dstOffset, size), size, _forceWindows4KBView);
@@ -389,17 +401,38 @@ namespace Ryujinx.Memory
                 if (_usesSharedMemory)
                 {
                     MemoryManagement.UnmapSharedMemory(ptr, Size);
-
-                    if (_sharedMemory != IntPtr.Zero && !_isMirror)
-                    {
-                        MemoryManagement.DestroySharedMemory(_sharedMemory);
-                        _sharedMemory = IntPtr.Zero;
-                    }
                 }
                 else
                 {
                     MemoryManagement.Free(ptr);
                 }
+
+                foreach (MemoryBlock viewStorage in _viewStorages.Keys)
+                {
+                    viewStorage.DecrementViewCount();
+                }
+
+                _viewStorages.Clear();
+            }
+        }
+
+        /// <summary>
+        /// Increments the number of views that uses this memory block as storage.
+        /// </summary>
+        private void IncrementViewCount()
+        {
+            Interlocked.Increment(ref _viewCount);
+        }
+
+        /// <summary>
+        /// Decrements the number of views that uses this memory block as storage.
+        /// </summary>
+        private void DecrementViewCount()
+        {
+            if (Interlocked.Decrement(ref _viewCount) == 0 && _sharedMemory != IntPtr.Zero && !_isMirror)
+            {
+                MemoryManagement.DestroySharedMemory(_sharedMemory);
+                _sharedMemory = IntPtr.Zero;
             }
         }
 
