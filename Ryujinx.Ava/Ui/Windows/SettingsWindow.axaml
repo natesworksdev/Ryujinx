@@ -22,6 +22,9 @@
     <Design.DataContext>
         <viewModels:SettingsViewModel />
     </Design.DataContext>
+	<Window.Resources>
+		<controls:KeyValueConverter x:Key="Key" />
+	</Window.Resources>
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" MinWidth="600">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -201,6 +204,57 @@
                     </StackPanel>
                 </Border>
             </ScrollViewer>
+			<ScrollViewer Name="HotkeysPage"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch"
+                          HorizontalScrollBarVisibility="Disabled"
+                          VerticalScrollBarVisibility="Auto">
+				<Border>
+					<StackPanel Margin="10,5" Spacing="5" Orientation="Vertical">
+						<TextBlock FontWeight="Bold" Text="{locale:Locale SettingsTabHotkeysHotkeys}" />
+						<StackPanel Orientation="Horizontal" Margin="10,0,0,0">
+                            <TextBlock VerticalAlignment="Center" Text="{locale:Locale SettingsTabHotkeysToggleVsyncHotkey}" Width="230" />
+                            <ToggleButton Width="90" Height="27" Margin="2" Checked="Button_Checked" Unchecked="Button_Unchecked">
+                                <TextBlock
+                                    Text="{Binding KeyboardHotkeys.ToggleVsync, Mode=TwoWay, Converter={StaticResource Key}}"
+                                    TextAlignment="Center" />
+                            </ToggleButton>
+                        </StackPanel>
+						<StackPanel Orientation="Horizontal" Margin="10,0,0,0">
+                            <TextBlock VerticalAlignment="Center" Text="{locale:Locale SettingsTabHotkeysScreenshotHotkey}" Width="230" />
+                            <ToggleButton Width="90" Height="27" Margin="2" Checked="Button_Checked" Unchecked="Button_Unchecked">
+                                <TextBlock
+                                    Text="{Binding KeyboardHotkeys.Screenshot, Mode=TwoWay, Converter={StaticResource Key}}"
+                                    TextAlignment="Center" />
+                            </ToggleButton>
+                        </StackPanel>
+						<StackPanel Orientation="Horizontal" Margin="10,0,0,0">
+                            <TextBlock VerticalAlignment="Center" Text="{locale:Locale SettingsTabHotkeysShowUiHotkey}" Width="230" />
+                            <ToggleButton Width="90" Height="27" Margin="2" Checked="Button_Checked" Unchecked="Button_Unchecked">
+                                <TextBlock
+                                    Text="{Binding KeyboardHotkeys.ShowUi, Mode=TwoWay, Converter={StaticResource Key}}"
+                                    TextAlignment="Center" />
+                            </ToggleButton>
+                        </StackPanel>
+						<StackPanel Orientation="Horizontal" Margin="10,0,0,0">
+                            <TextBlock VerticalAlignment="Center" Text="{locale:Locale SettingsTabHotkeysPauseHotkey}" Width="230" />
+                            <ToggleButton Width="90" Height="27" Margin="2" Checked="Button_Checked" Unchecked="Button_Unchecked">
+                                <TextBlock
+                                    Text="{Binding KeyboardHotkeys.Pause, Mode=TwoWay, Converter={StaticResource Key}}"
+                                    TextAlignment="Center" />
+                            </ToggleButton>
+                        </StackPanel>
+					    <StackPanel Orientation="Horizontal" Margin="10,0,0,0">
+                            <TextBlock VerticalAlignment="Center" Text="{locale:Locale SettingsTabHotkeysToggleMuteHotkey}" Width="230" />
+                            <ToggleButton Width="90" Height="27" Margin="2" Checked="Button_Checked" Unchecked="Button_Unchecked">
+                                <TextBlock
+                                    Text="{Binding KeyboardHotkeys.ToggleMute, Mode=TwoWay, Converter={StaticResource Key}}"
+                                    TextAlignment="Center" />
+                            </ToggleButton>
+                        </StackPanel>
+					</StackPanel>
+				</Border>
+			</ScrollViewer>
             <ScrollViewer Name="SystemPage"
                           HorizontalAlignment="Stretch"
                           VerticalAlignment="Stretch"
@@ -208,7 +262,7 @@
                           VerticalScrollBarVisibility="Auto">
                 <Border>
                     <StackPanel
-                        Margin="10, 5"
+                        Margin="10,5"
                         HorizontalAlignment="Stretch"
                         Orientation="Vertical">
                         <TextBlock FontWeight="Bold" Text="{locale:Locale SettingsTabSystemCore}" />
@@ -347,7 +401,7 @@
                                 Spacing="20">
                                 <TextBlock VerticalAlignment="Center"
                                            Text="{locale:Locale SettingsTabSystemSystemTime}"
-                                           ToolTip.Tip="{locale:Locale TimeTooltip}" 
+                                           ToolTip.Tip="{locale:Locale TimeTooltip}"
                                            Width="230"/>
                                 <DatePicker VerticalAlignment="Center" SelectedDate="{Binding DateOffset}"
                                             ToolTip.Tip="{locale:Locale TimeTooltip}"
@@ -834,6 +888,10 @@
                     Content="{locale:Locale SettingsTabInput}"
                     Tag="InputPage"
                     Icon="Games" />
+				<ui:NavigationViewItem
+                    Content="{locale:Locale SettingsTabHotkeys}"
+                    Tag="HotkeysPage"
+                    Icon="Keyboard" />
                 <ui:NavigationViewItem
                     Content="{locale:Locale SettingsTabSystem}"
                     Tag="SystemPage"

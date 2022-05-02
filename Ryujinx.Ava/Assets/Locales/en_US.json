@@ -548,5 +548,12 @@
   "OpenFileDialogTitle": "Select a supported file to open",
   "OpenFolderDialogTitle": "Select a folder with an unpacked game",
   "AllSupportedFormats": "All Supported Formats",
-  "RyujinxUpdater": "Ryujinx Updater"
+  "RyujinxUpdater": "Ryujinx Updater",
+  "SettingsTabHotkeys": "Keyboard Hotkeys",
+  "SettingsTabHotkeysHotkeys": "Keyboard Hotkeys",
+  "SettingsTabHotkeysToggleVsyncHotkey": "Toggle VSync:",
+  "SettingsTabHotkeysScreenshotHotkey": "Screenshot:",
+  "SettingsTabHotkeysShowUiHotkey": "Show UI:",
+  "SettingsTabHotkeysPauseHotkey": "Pause:",
+  "SettingsTabHotkeysToggleMuteHotkey":  "Mute:"
 }

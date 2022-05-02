@@ -6,13 +6,16 @@ using Ryujinx.Audio.Backends.OpenAL;
 using Ryujinx.Audio.Backends.SDL2;
 using Ryujinx.Audio.Backends.SoundIo;
 using Ryujinx.Ava.Common.Locale;
+using Ryujinx.Ava.Input;
 using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.Windows;
 using Ryujinx.Common.Configuration;
+using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.GraphicsDriver;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Time.TimeZone;
+using Ryujinx.Input;
 using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Configuration.System;
 using System;
@@ -158,6 +161,21 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public AvaloniaList<string> GameDirectories { get; set; }
 
+        private KeyboardHotkeys _keyboardHotkeys;
+
+        public KeyboardHotkeys KeyboardHotkeys
+        {
+            get => _keyboardHotkeys;
+            set
+            {
+                _keyboardHotkeys = value;
+
+                OnPropertyChanged();
+            }
+        }
+
+        public IGamepadDriver AvaloniaKeyboardDriver { get; }
+
         public SettingsViewModel(VirtualFileSystem virtualFileSystem, ContentManager contentManager, StyleableWindow owner) : this()
         {
             _virtualFileSystem = virtualFileSystem;
@@ -166,6 +184,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             if (Program.PreviewerDetached)
             {
                 LoadTimeZones();
+                AvaloniaKeyboardDriver = new AvaloniaKeyboardDriver(owner);
             }
         }
 
@@ -301,6 +320,8 @@ namespace Ryujinx.Ava.Ui.ViewModels
             DateOffset = dateTimeOffset.Date;
             TimeOffset = dateTimeOffset.TimeOfDay;
 
+            KeyboardHotkeys = config.Hid.Hotkeys.Value;
+
             _previousVolumeLevel = Volume;
         }
 
@@ -375,6 +396,8 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
                 Logger.Info?.Print(LogClass.Application, $"AudioBackend toggled to: {audioBackend}");
             }
+
+            config.Hid.Hotkeys.Value = KeyboardHotkeys;
 
             config.ToFileFormat().SaveConfig(Program.ConfigurationPath);
 

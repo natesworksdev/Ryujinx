@@ -1,19 +1,27 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
+using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using FluentAvalonia.Core;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.ViewModels;
 using Ryujinx.HLE.FileSystem;
+using Ryujinx.Input;
+using Ryujinx.Input.Assigner;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.Ui.Windows
 {
@@ -23,10 +31,15 @@ namespace Ryujinx.Ava.Ui.Windows
         private TextBox                 _pathBox;
         private AutoCompleteBox          _timeZoneBox;
         private ControllerSettingsWindow _controllerSettings;
-        
+
+        private bool _isWaitingForInput;
+        private bool _mousePressed;
+        private bool _middleMousePressed;
+
         // Pages
         private Control _uiPage;
         private Control _inputPage;
+        private Control _hotkeysPage;
         private Control _systemPage;
         private Control _cpuPage;
         private Control _graphicsPage;
@@ -36,6 +49,8 @@ namespace Ryujinx.Ava.Ui.Windows
         private NavigationView _navPanel;
 
         public SettingsViewModel ViewModel { get; set; }
+
+        public ToggleButton CurrentToggledButton { get; set; }
 
         public SettingsWindow(VirtualFileSystem virtualFileSystem, ContentManager contentManager)
         {
@@ -82,6 +97,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
             _uiPage = this.FindControl<Control>("UiPage");
             _inputPage = this.FindControl<Control>("InputPage");
+            _hotkeysPage = this.FindControl<Control>("HotkeysPage");
             _systemPage = this.FindControl<Control>("SystemPage");
             _cpuPage = this.FindControl<Control>("CpuPage");
             _graphicsPage = this.FindControl<Control>("GraphicsPage");
@@ -97,6 +113,151 @@ namespace Ryujinx.Ava.Ui.Windows
             _navPanel.SelectedItem = _navPanel.MenuItems.ElementAt(0);
         }
 
+        private void Button_Checked(object sender, RoutedEventArgs e)
+        {
+            if (sender is ToggleButton button)
+            {
+                if (button == CurrentToggledButton)
+                {
+                    return;
+                }
+
+                if (CurrentToggledButton == null && (bool)button.IsChecked)
+                {
+                    CurrentToggledButton = button;
+                    _isWaitingForInput = false;
+
+                    FocusManager.Instance.Focus(this, NavigationMethod.Pointer);
+
+                    Task.Run(() => HandleButtonPressed(button));
+                }
+                else
+                {
+                    if (CurrentToggledButton != null)
+                    {
+                        ToggleButton oldButton = CurrentToggledButton;
+
+                        CurrentToggledButton = null;
+                        oldButton.IsChecked = false;
+                        button.IsChecked = false;
+                    }
+                }
+            }
+        }
+
+        public void HandleButtonPressed(ToggleButton button)
+        {
+            if (_isWaitingForInput)
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    button.IsChecked = false;
+                });
+
+                return;
+            }
+
+            _mousePressed = false;
+            _isWaitingForInput = true;
+
+            PointerPressed += MouseClick;
+
+            IKeyboard keyboard = (IKeyboard)ViewModel.AvaloniaKeyboardDriver.GetGamepad(ViewModel.AvaloniaKeyboardDriver.GamepadsIds[0]);
+            IButtonAssigner assigner = new KeyboardKeyAssigner(keyboard);
+
+            Thread inputThread = new(() =>
+            {
+                assigner.Initialize();
+
+                while (true)
+                {
+                    if (!_isWaitingForInput)
+                    {
+                        return;
+                    }
+
+                    Thread.Sleep(10);
+
+                    assigner.ReadInput();
+
+                    if (_mousePressed || assigner.HasAnyButtonPressed() || assigner.ShouldCancel())
+                    {
+                        break;
+                    }
+                }
+
+                Dispatcher.UIThread.Post(() =>
+                {
+                    string pressedButton = assigner.GetPressedButton();
+                    if (_middleMousePressed)
+                    {
+                        try
+                        {
+                            SetButtonText(button, "Unbound");
+                        }
+                        catch { }
+                    }
+                    else if (pressedButton != "")
+                    {
+                        try
+                        {
+                            SetButtonText(button, pressedButton);
+                        }
+                        catch { }
+                    }
+
+                    _middleMousePressed = false;
+                    _isWaitingForInput = false;
+
+                    button = CurrentToggledButton;
+
+                    CurrentToggledButton = null;
+
+                    if (button != null)
+                    {
+                        button.IsChecked = false;
+                    }
+
+                    PointerPressed -= MouseClick;
+
+                    static void SetButtonText(ToggleButton button, string text)
+                    {
+                        ILogical textBlock = button.GetLogicalDescendants().First(x => x is TextBlock);
+
+                        if (textBlock != null && textBlock is TextBlock block)
+                        {
+                            block.Text = text;
+                        }
+                    }
+                });
+            });
+
+            inputThread.Name = "GUI.InputThread";
+            inputThread.IsBackground = true;
+            inputThread.Start();
+        }
+
+        private void Button_Unchecked(object sender, RoutedEventArgs e)
+        {
+            if (CurrentToggledButton != null)
+            {
+                ToggleButton button = CurrentToggledButton;
+
+                CurrentToggledButton = null;
+                button.IsChecked = false;
+            }
+        }
+
+        private void MouseClick(object sender, PointerPressedEventArgs e)
+        {
+            _mousePressed = true;
+
+            if (e.GetCurrentPoint(this).Properties.IsMiddleButtonPressed)
+            {
+                _middleMousePressed = true;
+            }
+        }
+
         private void NavPanelOnSelectionChanged(object sender, NavigationViewSelectionChangedEventArgs e)
         {
             if (e.SelectedItem is NavigationViewItem navitem)
@@ -108,6 +269,9 @@ namespace Ryujinx.Ava.Ui.Windows
                         break;
                     case "InputPage":
                         _navPanel.Content = _inputPage;
+                        break;
+                    case "HotkeysPage":
+                        _navPanel.Content = _hotkeysPage;
                         break;
                     case "SystemPage":
                         _navPanel.Content = _systemPage;
