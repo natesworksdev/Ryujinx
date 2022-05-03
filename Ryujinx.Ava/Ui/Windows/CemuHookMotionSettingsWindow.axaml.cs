@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using FluentAvalonia.UI.Controls;
+using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.Models;
 using Ryujinx.Ava.Ui.ViewModels;
@@ -53,10 +54,10 @@ namespace Ryujinx.Ava.Ui.Windows
 
             if (contentDialog != null)
             {
-                contentDialog.Title = "CemuHook Input Source Settings";
-                contentDialog.PrimaryButtonText = "Save";
+                contentDialog.Title = LocaleManager.Instance["CemuhookMotionTitle"];
+                contentDialog.PrimaryButtonText = LocaleManager.Instance["ControllerSettingsSave"];
                 contentDialog.SecondaryButtonText = "";
-                contentDialog.CloseButtonText = "Close";
+                contentDialog.CloseButtonText = LocaleManager.Instance["ControllerSettingsClose"];
                 contentDialog.Content = content;
                 contentDialog.PrimaryButtonClick += (sender, args) =>
                 {

@@ -555,5 +555,6 @@
   "SettingsTabHotkeysScreenshotHotkey": "Screenshot:",
   "SettingsTabHotkeysShowUiHotkey": "Show UI:",
   "SettingsTabHotkeysPauseHotkey": "Pause:",
-  "SettingsTabHotkeysToggleMuteHotkey": "Mute:"
+  "SettingsTabHotkeysToggleMuteHotkey": "Mute:",
+  "CemuhookMotionTitle": "CemuHook Input Source Settings"
 }
