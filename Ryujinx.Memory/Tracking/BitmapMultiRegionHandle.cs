@@ -224,11 +224,55 @@ namespace Ryujinx.Memory.Tracking
             int startHandle = (int)((address - Address) / Granularity);
             int lastHandle = (int)((address + (size - 1) - Address) / Granularity);
 
-            ulong rgStart = _handles[startHandle].Address;
+            /*
+            if (startHandle == lastHandle)
+            {
+                var handle = _handles[startHandle];
+                if (handle.Dirty)
+                {
+                    if (sequenceNumber != _sequenceNumber || !_sequenceNumberBitmap.IsSet(startHandle))
+                    {
+                        if (sequenceNumber != _sequenceNumber)
+                        {
+                            if (_sequenceNumberSet)
+                            {
+                                _sequenceNumberBitmap.Clear();
+
+                                _sequenceNumberSet = false;
+                            }
+
+                            _sequenceNumber = sequenceNumber;
+                        }
+
+                        _sequenceNumberBitmap.Set(startHandle);
+                        _sequenceNumberSet = true;
+                        handle.Reprotect();
+
+                        modifiedAction(handle.Address, handle.Size);
+                    }
+                }
+
+                return;
+            }
+            */
+
+            ulong rgStart = Address + (ulong)startHandle * Granularity;
             ulong rgSize = 0;
 
             long[] seqMasks = _sequenceNumberBitmap.Masks;
             long[] masks = _dirtyBitmap.Masks;
+
+            if (sequenceNumber != _sequenceNumber)
+            {
+                if (_sequenceNumberSet)
+                {
+                    _sequenceNumberBitmap.Clear();
+
+                    _sequenceNumberSet = false;
+                }
+
+                _sequenceNumber = sequenceNumber;
+            }
 
             int startIndex = startHandle >> MultithreadedBitmap.IntShift;
             int startBit = startHandle & MultithreadedBitmap.IntMask;
@@ -244,76 +288,59 @@ namespace Ryujinx.Memory.Tracking
             int prevHandle = startHandle - 1;
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            void parseDirtyBits(long dirtyBits)
+            void parseDirtyBits(long dirtyBits, long mask, int index)
             {
-                if (dirtyBits != 0)
+                dirtyBits &= mask & ~seqMasks[index];
+
+                while (dirtyBits != 0)
                 {
-                    if (sequenceNumber != _sequenceNumber)
+                    int bit = BitOperations.TrailingZeroCount(dirtyBits);
+
+                    dirtyBits &= ~(1L << bit);
+
+                    int handleIndex = baseBit + bit;
+
+                    BitmapRegionHandle handle = _handles[handleIndex];
+
+                    if (handleIndex != prevHandle + 1)
                     {
-                        if (_sequenceNumberSet)
+                        // Submit handles scanned until the gap as dirty
+                        if (rgSize != 0)
                         {
-                            _sequenceNumberBitmap.Clear();
-
-                            _sequenceNumberSet = false;
+                            modifiedAction(rgStart, rgSize);
+                            rgSize = 0;
                         }
-
-                        _sequenceNumber = sequenceNumber;
+                        rgStart = handle.Address;
                     }
 
-                    dirtyBits &= ~Volatile.Read(ref seqMasks[baseBit >> MultithreadedBitmap.IntShift]);
+                    rgSize += handle.Size;
+                    handle.Reprotect();
 
-                    while (dirtyBits != 0)
-                    {
-                        int bit = BitOperations.TrailingZeroCount(dirtyBits);
-
-                        dirtyBits &= ~(1L << bit);
-
-                        int handleIndex = baseBit + bit;
-
-                        BitmapRegionHandle handle = _handles[handleIndex];
-
-                        if (handleIndex != prevHandle + 1)
-                        {
-                            // Submit handles scanned until the gap as dirty
-                            if (rgSize != 0)
-                            {
-                                modifiedAction(rgStart, rgSize);
-                                rgSize = 0;
-                            }
-                            rgStart = handle.Address;
-                        }
-
-                        if (handle.Dirty)
-                        {
-                            rgSize += handle.Size;
-                            _sequenceNumberBitmap.Set(handleIndex);
-                            _sequenceNumberSet = true;
-                            handle.Reprotect();
-                        }
-
-                        prevHandle = handleIndex;
-                    }
+                    prevHandle = handleIndex;
                 }
+
+                seqMasks[index] |= mask;
+                _sequenceNumberSet = true;
 
                 baseBit += MultithreadedBitmap.IntSize;
             }
 
             if (startIndex == endIndex)
             {
-                parseDirtyBits(startValue & startMask & endMask);
+                parseDirtyBits(startValue, startMask & endMask, startIndex);
             }
             else
             {
-                parseDirtyBits(startValue & startMask);
+                parseDirtyBits(startValue, startMask, startIndex);
 
                 for (int i = startIndex + 1; i < endIndex; i++)
                 {
-                    parseDirtyBits(Volatile.Read(ref masks[i]));
+                    parseDirtyBits(Volatile.Read(ref masks[i]), -1L, i);
                 }
 
                 long endValue = Volatile.Read(ref masks[endIndex]);
 
-                parseDirtyBits(endValue & endMask);
+                parseDirtyBits(endValue, endMask, endIndex);
             }
 
             if (rgSize != 0)
