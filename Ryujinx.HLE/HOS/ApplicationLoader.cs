@@ -24,6 +24,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 
 using static LibHac.Fs.ApplicationSaveDataManagement;
 using static Ryujinx.HLE.HOS.ModLoader;
@@ -306,6 +307,87 @@ namespace Ryujinx.HLE.HOS
             Nca nca = new Nca(_device.Configuration.VirtualFileSystem.KeySet, file.AsStorage(false));
 
             LoadNca(nca, null, null);
+        }
+
+        public void LoadServiceNca(string ncaFile)
+        {
+            FileStream file = new FileStream(ncaFile, FileMode.Open, FileAccess.Read);
+            Nca mainNca = new Nca(_device.Configuration.VirtualFileSystem.KeySet, file.AsStorage(false));
+
+            if (mainNca.Header.ContentType != NcaContentType.Program)
+            {
+                Logger.Error?.Print(LogClass.Loader, "Selected NCA is not a \"Program\" NCA");
+
+                return;
+            }
+
+            IFileSystem codeFs = null;
+
+            if (mainNca.CanOpenSection(NcaSectionType.Code))
+            {
+                codeFs = mainNca.OpenFileSystem(NcaSectionType.Code, _device.System.FsIntegrityCheckLevel);
+            }
+
+            if (codeFs == null)
+            {
+                Logger.Error?.Print(LogClass.Loader, "No ExeFS found in NCA");
+
+                return;
+            }
+
+            using var npdmFile = new UniqueRef<IFile>();
+
+            Result result = codeFs.OpenFile(ref npdmFile.Ref(), "/main.npdm".ToU8Span(), OpenMode.Read);
+
+            MetaLoader metaData;
+
+            npdmFile.Get.GetSize(out long fileSize).ThrowIfFailure();
+
+            var npdmBuffer = new byte[fileSize];
+            npdmFile.Get.Read(out _, 0, npdmBuffer).ThrowIfFailure();
+
+            metaData = new MetaLoader();
+            metaData.Load(npdmBuffer).ThrowIfFailure();
+
+            NsoExecutable[] nsos = new NsoExecutable[ExeFsPrefixes.Length];
+
+            for (int i = 0; i < nsos.Length; i++)
+            {
+                string name = ExeFsPrefixes[i];
+
+                if (!codeFs.FileExists($"/{name}"))
+                {
+                    continue; // file doesn't exist, skip
+                }
+
+                Logger.Info?.Print(LogClass.Loader, $"Loading {name}...");
+
+                using var nsoFile = new UniqueRef<IFile>();
+
+                codeFs.OpenFile(ref nsoFile.Ref(), $"/{name}".ToU8Span(), OpenMode.Read).ThrowIfFailure();
+
+                nsos[i] = new NsoExecutable(nsoFile.Release().AsStorage(), name);
+            }
+
+            // collect the nsos, ignoring ones that aren't used
+            NsoExecutable[] programs = nsos.Where(x => x != null).ToArray();
+
+            MemoryManagerMode memoryManagerMode = _device.Configuration.MemoryManagerMode;
+
+            if (!MemoryBlock.SupportsFlags(MemoryAllocationFlags.ViewCompatible))
+            {
+                memoryManagerMode = MemoryManagerMode.SoftwarePageTable;
+            }
+
+            metaData.GetNpdm(out Npdm npdm).ThrowIfFailure();
+            ProgramLoader.LoadNsos(_device.System.KernelContext, out _, metaData, new ProgramInfo(in npdm), executables: programs);
+
+            string titleIdText = npdm.Aci.Value.ProgramId.Value.ToString("x16");
+            bool titleIs64Bit = (npdm.Meta.Value.Flags & 1) != 0;
+
+            string programName = Encoding.ASCII.GetString(npdm.Meta.Value.ProgramName).TrimEnd('\0');
+
+            Logger.Info?.Print(LogClass.Loader, $"Service Loaded: {programName} [{titleIdText}] [{(titleIs64Bit ? "64-bit" : "32-bit")}]");
         }
 
         private void LoadNca(Nca mainNca, Nca patchNca, Nca controlNca)

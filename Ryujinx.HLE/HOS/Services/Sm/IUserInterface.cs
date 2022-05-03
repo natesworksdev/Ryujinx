@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.Sm
 {
@@ -18,6 +19,7 @@ namespace Ryujinx.HLE.HOS.Services.Sm
         private static Dictionary<string, Type> _services;
 
         private static readonly ConcurrentDictionary<string, KPort> _registeredServices;
+        private static readonly AutoResetEvent _serviceRegistrationEvent;
 
         private readonly ServerBase _commonServer;
 
@@ -31,6 +33,7 @@ namespace Ryujinx.HLE.HOS.Services.Sm
         static IUserInterface()
         {
             _registeredServices = new ConcurrentDictionary<string, KPort>();
+            _serviceRegistrationEvent = new AutoResetEvent(false);
 
             _services = Assembly.GetExecutingAssembly().GetTypes()
                 .SelectMany(type => type.GetCustomAttributes(typeof(ServiceAttribute), true)
@@ -82,6 +85,15 @@ namespace Ryujinx.HLE.HOS.Services.Sm
                 {
                     throw new InvalidOperationException($"Session enqueue on port returned error \"{result}\".");
                 }
+
+                if (context.Process.HandleTable.GenerateHandle(session.ClientSession, out int handle) != KernelResult.Success)
+                {
+                    throw new InvalidOperationException("Out of handles!");
+                }
+
+                session.ClientSession.DecrementReferenceCount();
+
+                context.Response.HandleDesc = IpcHandleDesc.MakeMove(handle);
             }
             else
             {
@@ -107,17 +119,17 @@ namespace Ryujinx.HLE.HOS.Services.Sm
                         throw new NotImplementedException(name);
                     }
                 }
+
+                if (context.Process.HandleTable.GenerateHandle(session.ClientSession, out int handle) != KernelResult.Success)
+                {
+                    throw new InvalidOperationException("Out of handles!");
+                }
+
+                session.ServerSession.DecrementReferenceCount();
+                session.ClientSession.DecrementReferenceCount();
+
+                context.Response.HandleDesc = IpcHandleDesc.MakeMove(handle);
             }
-
-            if (context.Process.HandleTable.GenerateHandle(session.ClientSession, out int handle) != KernelResult.Success)
-            {
-                throw new InvalidOperationException("Out of handles!");
-            }
-
-            session.ServerSession.DecrementReferenceCount();
-            session.ClientSession.DecrementReferenceCount();
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeMove(handle);
 
             return ResultCode.Success;
         }
@@ -191,6 +203,8 @@ namespace Ryujinx.HLE.HOS.Services.Sm
 
             context.Response.HandleDesc = IpcHandleDesc.MakeMove(handle);
 
+            _serviceRegistrationEvent.Set();
+
             return ResultCode.Success;
         }
 
@@ -225,6 +239,16 @@ namespace Ryujinx.HLE.HOS.Services.Sm
             }
 
             return ResultCode.Success;
+        }
+
+        public static bool IsServiceRegistered(string name)
+        {
+            return _registeredServices.TryGetValue(name, out _);
+        }
+
+        public static void WaitForServiceRegistration()
+        {
+            _serviceRegistrationEvent.WaitOne();
         }
 
         private static string ReadName(ServiceCtx context)
