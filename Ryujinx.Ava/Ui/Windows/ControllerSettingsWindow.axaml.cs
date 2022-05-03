@@ -109,7 +109,7 @@ namespace Ryujinx.Ava.Ui.Windows
             ViewModel.Save();
         }
 
-        public void HandleButtonPressed(ToggleButton button, bool forStick)
+        public async void HandleButtonPressed(ToggleButton button, bool forStick)
         {
             if (_isWaitingForInput)
             {
@@ -129,80 +129,73 @@ namespace Ryujinx.Ava.Ui.Windows
             IButtonAssigner assigner = CreateButtonAssigner(forStick);
             IKeyboard keyboard = (IKeyboard)ViewModel.AvaloniaKeyboardDriver.GetGamepad("0"); // Open Avalonia keyboard for cancel operations.
 
-            Thread inputThread = new(() =>
+            assigner.Initialize();
+
+            while (true)
             {
-                assigner.Initialize();
-
-                while (true)
+                if (!_isWaitingForInput)
                 {
-                    if (!_isWaitingForInput)
-                    {
-                        return;
-                    }
-
-                    Thread.Sleep(10);
-
-                    assigner.ReadInput();
-
-                    if (_mousePressed || keyboard.IsPressed(Key.Escape) || assigner.HasAnyButtonPressed() || assigner.ShouldCancel())
-                    {
-                        break;
-                    }
+                    return;
                 }
 
-                Dispatcher.UIThread.Post(() =>
+                Thread.Sleep(10);
+
+                assigner.ReadInput();
+
+                if (_mousePressed || keyboard.IsPressed(Key.Escape) || assigner.HasAnyButtonPressed() || assigner.ShouldCancel())
                 {
-                    string pressedButton = assigner.GetPressedButton();
-                    if (_middleMousePressed)
+                    break;
+                }
+            }
+
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                string pressedButton = assigner.GetPressedButton();
+                if (_middleMousePressed)
+                {
+                    try
                     {
-                        try
-                        {
-                            SetButtonText(button, "Unbound");
-                        }
-                        catch { }
+                        SetButtonText(button, "Unbound");
                     }
-                    else if (pressedButton != "")
+                    catch { }
+                }
+                else if (pressedButton != "")
+                {
+                    try
                     {
-                        try
-                        {
-                            SetButtonText(button, pressedButton);
-                        }
-                        catch { }
+                        SetButtonText(button, pressedButton);
                     }
+                    catch { }
+                }
 
-                    ViewModel.IsModified = true;
+                ViewModel.IsModified = true;
 
-                    keyboard.Dispose();
+                keyboard.Dispose();
 
-                    _middleMousePressed = false;
-                    _isWaitingForInput = false;
+                _middleMousePressed = false;
+                _isWaitingForInput = false;
 
-                    button = CurrentToggledButton;
+                button = CurrentToggledButton;
 
-                    CurrentToggledButton = null;
+                CurrentToggledButton = null;
 
-                    if (button != null)
+                if (button != null)
+                {
+                    button.IsChecked = false;
+                }
+
+                PointerPressed -= MouseClick;
+
+                static void SetButtonText(ToggleButton button, string text)
+                {
+                    ILogical textBlock = button.GetLogicalDescendants().First(x => x is TextBlock);
+
+                    if (textBlock != null && textBlock is TextBlock block)
                     {
-                        button.IsChecked = false;
+                        block.Text = text;
                     }
-
-                    PointerPressed -= MouseClick;
-
-                    static void SetButtonText(ToggleButton button, string text)
-                    {
-                        ILogical textBlock = button.GetLogicalDescendants().First(x => x is TextBlock);
-
-                        if (textBlock != null && textBlock is TextBlock block)
-                        {
-                            block.Text = text;
-                        }
-                    }
-                });
+                }
             });
-
-            inputThread.Name = "GUI.InputThread";
-            inputThread.IsBackground = true;
-            inputThread.Start();
         }
 
         private IButtonAssigner CreateButtonAssigner(bool forStick)

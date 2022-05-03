@@ -27,9 +27,9 @@ namespace Ryujinx.Ava.Ui.Windows
 {
     public class SettingsWindow : StyleableWindow
     {
-        private ListBox                 _gameList;
-        private TextBox                 _pathBox;
-        private AutoCompleteBox          _timeZoneBox;
+        private ListBox _gameList;
+        private TextBox _pathBox;
+        private AutoCompleteBox _timeZoneBox;
         private ControllerSettingsWindow _controllerSettings;
 
         private bool _isWaitingForInput;
@@ -56,7 +56,7 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             Title = $"Ryujinx {Program.Version} - {LocaleManager.Instance["Settings"]}";
 
-            ViewModel   = new SettingsViewModel(virtualFileSystem, contentManager, this);
+            ViewModel = new SettingsViewModel(virtualFileSystem, contentManager, this);
             DataContext = ViewModel;
 
             InitializeComponent();
@@ -73,7 +73,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
         public SettingsWindow()
         {
-            ViewModel   = new SettingsViewModel();
+            ViewModel = new SettingsViewModel();
             DataContext = ViewModel;
 
             InitializeComponent();
@@ -90,8 +90,8 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             AvaloniaXamlLoader.Load(this);
 
-            _pathBox     = this.FindControl<TextBox>("PathBox");
-            _gameList    = this.FindControl<ListBox>("GameList");
+            _pathBox = this.FindControl<TextBox>("PathBox");
+            _gameList = this.FindControl<ListBox>("GameList");
             _timeZoneBox = this.FindControl<AutoCompleteBox>("TimeZoneBox");
             _controllerSettings = this.FindControl<ControllerSettingsWindow>("ControllerSettings");
 
@@ -145,7 +145,7 @@ namespace Ryujinx.Ava.Ui.Windows
             }
         }
 
-        public void HandleButtonPressed(ToggleButton button)
+        public async void HandleButtonPressed(ToggleButton button)
         {
             if (_isWaitingForInput)
             {
@@ -165,76 +165,69 @@ namespace Ryujinx.Ava.Ui.Windows
             IKeyboard keyboard = (IKeyboard)ViewModel.AvaloniaKeyboardDriver.GetGamepad(ViewModel.AvaloniaKeyboardDriver.GamepadsIds[0]);
             IButtonAssigner assigner = new KeyboardKeyAssigner(keyboard);
 
-            Thread inputThread = new(() =>
+            assigner.Initialize();
+
+            while (true)
             {
-                assigner.Initialize();
-
-                while (true)
+                if (!_isWaitingForInput)
                 {
-                    if (!_isWaitingForInput)
-                    {
-                        return;
-                    }
-
-                    Thread.Sleep(10);
-
-                    assigner.ReadInput();
-
-                    if (_mousePressed || assigner.HasAnyButtonPressed() || assigner.ShouldCancel())
-                    {
-                        break;
-                    }
+                    return;
                 }
 
-                Dispatcher.UIThread.Post(() =>
+                Thread.Sleep(10);
+
+                assigner.ReadInput();
+
+                if (_mousePressed || assigner.HasAnyButtonPressed() || assigner.ShouldCancel())
                 {
-                    string pressedButton = assigner.GetPressedButton();
-                    if (_middleMousePressed)
+                    break;
+                }
+            }
+
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                string pressedButton = assigner.GetPressedButton();
+                if (_middleMousePressed)
+                {
+                    try
                     {
-                        try
-                        {
-                            SetButtonText(button, "Unbound");
-                        }
-                        catch { }
+                        SetButtonText(button, "Unbound");
                     }
-                    else if (pressedButton != "")
+                    catch { }
+                }
+                else if (pressedButton != "")
+                {
+                    try
                     {
-                        try
-                        {
-                            SetButtonText(button, pressedButton);
-                        }
-                        catch { }
+                        SetButtonText(button, pressedButton);
                     }
+                    catch { }
+                }
 
-                    _middleMousePressed = false;
-                    _isWaitingForInput = false;
+                _middleMousePressed = false;
+                _isWaitingForInput = false;
 
-                    button = CurrentToggledButton;
+                button = CurrentToggledButton;
 
-                    CurrentToggledButton = null;
+                CurrentToggledButton = null;
 
-                    if (button != null)
+                if (button != null)
+                {
+                    button.IsChecked = false;
+                }
+
+                PointerPressed -= MouseClick;
+
+                static void SetButtonText(ToggleButton button, string text)
+                {
+                    ILogical textBlock = button.GetLogicalDescendants().First(x => x is TextBlock);
+
+                    if (textBlock != null && textBlock is TextBlock block)
                     {
-                        button.IsChecked = false;
+                        block.Text = text;
                     }
-
-                    PointerPressed -= MouseClick;
-
-                    static void SetButtonText(ToggleButton button, string text)
-                    {
-                        ILogical textBlock = button.GetLogicalDescendants().First(x => x is TextBlock);
-
-                        if (textBlock != null && textBlock is TextBlock block)
-                        {
-                            block.Text = text;
-                        }
-                    }
-                });
+                }
             });
-
-            inputThread.Name = "GUI.InputThread";
-            inputThread.IsBackground = true;
-            inputThread.Start();
         }
 
         private void Button_Unchecked(object sender, RoutedEventArgs e)
@@ -262,7 +255,7 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             if (e.SelectedItem is NavigationViewItem navitem)
             {
-                switch(navitem.Tag.ToString())
+                switch (navitem.Tag.ToString())
                 {
                     case "UiPage":
                         _navPanel.Content = _uiPage;
@@ -293,40 +286,6 @@ namespace Ryujinx.Ava.Ui.Windows
                         break;
                 }
             }
-        }
-
-        private void Tabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            // TODO: Remove hardcoded size maybe?
-
-           /* if (_tabs.SelectedIndex == 4)
-            {
-                if (Width == 800)
-                {
-                    Width    = 1100;
-                    Position = new PixelPoint(Position.X - 150, Position.Y);
-                }
-
-                if (Height == 650)
-                {
-                    Height   = 780;
-                    Position = new PixelPoint(Position.X, Position.Y - 65);
-                }
-            }
-            else
-            {
-                if (Width == 1100)
-                {
-                    Width    = 800;
-                    Position = new PixelPoint(Position.X + 150, Position.Y);
-                }
-
-                if (Height == 780)
-                {
-                    Height   = 650;
-                    Position = new PixelPoint(Position.X, Position.Y + 65);
-                }
-            }*/
         }
 
         private async void AddButton_OnClick(object sender, RoutedEventArgs e)
