@@ -600,7 +600,10 @@ namespace Ryujinx.Ava.Ui.Windows
 
         private async void StopEmulation_Click(object sender, RoutedEventArgs e)
         {
-            await AppHost?.ShowExitPrompt();
+            if (AppHost != null)
+            {
+                await AppHost.ShowExitPrompt();
+            }
         }
 
         private async void PauseEmulation_Click(object sender, RoutedEventArgs e)
