@@ -259,7 +259,15 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                         {
                             case AttributeConsts.PositionX: return $"(gl_FragCoord.x / {DefaultNames.SupportBlockRenderScaleName}[0])";
                             case AttributeConsts.PositionY: return $"(gl_FragCoord.y / {DefaultNames.SupportBlockRenderScaleName}[0])";
-                            case AttributeConsts.PositionZ: return "gl_FragCoord.z";
+                            case AttributeConsts.PositionZ:
+                                if (config.Options.TargetApi == TargetApi.Vulkan && config.GpuAccessor.QueryTransformDepthMinusOneToOne())
+                                {
+                                    return "((gl_FragCoord.z - (gl_FragCoord.w * 0.5)) * 2.0)";
+                                }
+                                else
+                                {
+                                    return "gl_FragCoord.z";
+                                }
                             case AttributeConsts.PositionW: return "gl_FragCoord.w";
 
                             case AttributeConsts.FrontFacing:
