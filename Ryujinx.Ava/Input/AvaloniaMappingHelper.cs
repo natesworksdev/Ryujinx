@@ -9,7 +9,7 @@ namespace Ryujinx.Ava.Input
     {
         private static readonly AvaKey[] _keyMapping = new AvaKey[(int)Key.Count]
         {
-            // NOTE: invalid
+            // NOTE: Invalid
             AvaKey.None,
 
             AvaKey.LeftShift,
