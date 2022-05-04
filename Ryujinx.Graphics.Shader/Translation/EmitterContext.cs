@@ -182,7 +182,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 this.Copy(Attribute(AttributeConsts.PositionY), this.FPFusedMultiplyAdd(y, yScale, negativeOne));
             }
 
-            if (Config.GpuAccessor.QueryTransformDepthMinusOneToOne())
+            if (Config.Options.TargetApi == TargetApi.Vulkan && Config.GpuAccessor.QueryTransformDepthMinusOneToOne())
             {
                 Operand z = Attribute(AttributeConsts.PositionZ | AttributeConsts.LoadOutputMask);
                 Operand w = Attribute(AttributeConsts.PositionW | AttributeConsts.LoadOutputMask);
@@ -207,7 +207,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                 oldYLocal = null;
             }
 
-            if (Config.GpuAccessor.QueryTransformDepthMinusOneToOne())
+            if (Config.Options.TargetApi == TargetApi.Vulkan && Config.GpuAccessor.QueryTransformDepthMinusOneToOne())
             {
                 oldZLocal = Local();
                 this.Copy(oldYLocal, Attribute(AttributeConsts.PositionZ | AttributeConsts.LoadOutputMask));
@@ -283,7 +283,14 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                     Operand src = Register(Config.GetDepthRegister(), RegisterType.Gpr);
 
-                    this.Copy(dest, src);
+                    if (Config.Options.TargetApi == TargetApi.Vulkan && Config.GpuAccessor.QueryTransformDepthMinusOneToOne())
+                    {
+                        this.Copy(dest, this.FPFusedMultiplyAdd(src, ConstF(0.5f), ConstF(0.5f)));
+                    }
+                    else
+                    {
+                        this.Copy(dest, src);
+                    }
                 }
 
                 AlphaTestOp alphaTestOp = Config.GpuAccessor.QueryAlphaTestCompare();
