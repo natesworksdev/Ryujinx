@@ -220,7 +220,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                             break;
                     }
 
-                    context.AddExecutionMode(spvFunc, ExecutionMode.Invocations, (SpvLiteralInteger)context.InputVertices);
+                    context.AddExecutionMode(spvFunc, ExecutionMode.Invocations, (SpvLiteralInteger)context.Config.ThreadsPerInputPrimitive);
 
                     context.AddExecutionMode(spvFunc, context.Config.OutputTopology switch
                     {

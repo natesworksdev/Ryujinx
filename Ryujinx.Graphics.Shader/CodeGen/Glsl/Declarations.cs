@@ -130,7 +130,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                     InputTopology inputTopology = context.Config.GpuAccessor.QueryPrimitiveTopology();
                     string inPrimitive = inputTopology.ToGlslString();
 
-                    context.AppendLine($"layout ({inPrimitive}) in;");
+                    context.AppendLine($"layout (invocations = {context.Config.ThreadsPerInputPrimitive}, {inPrimitive}) in;");
 
                     if (context.Config.GpPassthrough && context.Config.GpuAccessor.QueryHostSupportsGeometryShaderPassthrough())
                     {
