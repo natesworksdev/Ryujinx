@@ -1,5 +1,6 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Input;
+using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Input;
 using System;
 using System.Collections.Generic;
@@ -35,7 +36,7 @@ namespace Ryujinx.Ava.Input
             _control.TextInput += Control_TextInput;
         }
 
-        private void Control_TextInput(object? sender, global::Avalonia.Input.TextInputEventArgs e)
+        private void Control_TextInput(object sender, Avalonia.Input.TextInputEventArgs e)
         {
             TextInput?.Invoke(this, new TextInputEventArgs(e.Text.First()));
         }
@@ -64,12 +65,7 @@ namespace Ryujinx.Ava.Input
                 return null;
             }
 
-            return new AvaloniaKeyboard(this, _keyboardIdentifers[0], "All keyboards");
-        }
-
-        private void OnTextInput(object? sender, TextInputEventArgs e)
-        {
-            TextInput?.Invoke(this, e);
+            return new AvaloniaKeyboard(this, _keyboardIdentifers[0], LocaleManager.Instance["AllKeyboards"]);
         }
 
         protected virtual void Dispose(bool disposing)

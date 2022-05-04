@@ -448,7 +448,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
             VirtualFileSystem.ReloadKeySet();
 
-            ApplicationHelper.Initialize(VirtualFileSystem, LibHacHorizonManager.RyujinxClient, this);
+            ApplicationHelper.Initialize(VirtualFileSystem, AccountManager, LibHacHorizonManager.RyujinxClient, this);
 
             RefreshFirmwareStatus();
         }

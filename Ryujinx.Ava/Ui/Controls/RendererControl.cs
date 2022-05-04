@@ -238,8 +238,7 @@ namespace Ryujinx.Ava.Ui.Controls
                 GL.WaitSync(fence, WaitSyncFlags.None, ulong.MaxValue);
 
                 using var backendTexture = new GRBackendRenderTarget(imageInfo.Width, imageInfo.Height, 1, 0, glInfo);
-                using var surface = SKSurface.Create(skiaDrawingContextImpl.GrContext, backendTexture,
-                    GRSurfaceOrigin.BottomLeft, SKColorType.Rgba8888);
+                using var surface = SKSurface.Create(skiaDrawingContextImpl.GrContext, backendTexture, GRSurfaceOrigin.BottomLeft, SKColorType.Rgba8888);
 
                 if (surface == null)
                 {

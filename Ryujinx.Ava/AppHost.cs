@@ -124,13 +124,12 @@ namespace Ryujinx.Ava
             _hideCursorOnIdle = ConfigurationState.Instance.HideCursorOnIdle;
             _lastCursorMoveTime = Stopwatch.GetTimestamp();
             _glLogLevel = ConfigurationState.Instance.Logger.GraphicsDebugLevel;
-
             _inputManager.SetMouseDriver(new AvaloniaMouseDriver(renderer));
-            NpadManager = _inputManager.CreateNpadManager();
             _keyboardInterface = (IKeyboard)_inputManager.KeyboardDriver.GetGamepad("0");
-            TouchScreenManager = _inputManager.CreateTouchScreenManager();
             _lastKeyboardSnapshot = _keyboardInterface.GetKeyboardStateSnapshot();
 
+            NpadManager = _inputManager.CreateNpadManager();
+            TouchScreenManager = _inputManager.CreateTouchScreenManager();
             Renderer = renderer;
             ApplicationPath = applicationPath;
             VirtualFileSystem = virtualFileSystem;
@@ -433,7 +432,6 @@ namespace Ryujinx.Ava
                         {
                             Dispatcher.UIThread.Post(async () => await
                                 UserErrorDialog.ShowUserErrorDialog(userError, _parent));
-
                             Device.Dispose();
 
                             return false;
@@ -444,7 +442,6 @@ namespace Ryujinx.Ava
                     {
                         Dispatcher.UIThread.Post(async () => await
                             UserErrorDialog.ShowUserErrorDialog(userError, _parent));
-
                         Device.Dispose();
 
                         return false;
@@ -888,6 +885,7 @@ namespace Ryujinx.Ava
                 {
                     return;
                 }
+
                 _dialogShown = true;
                 shouldExit = await ContentDialogHelper.CreateStopEmulationDialog(_parent);
 
@@ -917,6 +915,7 @@ namespace Ryujinx.Ava
                 if (_hideCursorOnIdle)
                 {
                     long cursorMoveDelta = Stopwatch.GetTimestamp() - _lastCursorMoveTime;
+
                     Dispatcher.UIThread.Post(() =>
                     {
                         _parent.Cursor = cursorMoveDelta >= CursorHideIdleTime * Stopwatch.Frequency ? InvisibleCursor : Cursor.Default;
@@ -998,6 +997,7 @@ namespace Ryujinx.Ava
                             break;
                     }
                 }
+
                 _prevHotkeyState = currentHotkeyState;
 
                 if (ScreenshotRequested)
@@ -1010,8 +1010,6 @@ namespace Ryujinx.Ava
             // Touchscreen
             bool hasTouch = false;
 
-            // Get screen touch position from left mouse click
-            // Get screen touch position
             if (_parent.IsActive && !ConfigurationState.Instance.Hid.EnableMouse)
             {
                 hasTouch = TouchScreenManager.Update(true, (_inputManager.MouseDriver as AvaloniaMouseDriver).IsButtonPressed(MouseButton.Button1), ConfigurationState.Instance.Graphics.AspectRatio.Value.ToFloat());

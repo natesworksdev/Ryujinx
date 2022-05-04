@@ -104,8 +104,7 @@ namespace Ryujinx.Modules
                             {
                                 if (showVersionUpToDate)
                                 {
-                                    ContentDialogHelper.CreateUpdaterInfoDialog(mainWindow,
-                                        LocaleManager.Instance["DialogUpdaterAlreadyOnLatestVersionMessage"], "");
+                                    ContentDialogHelper.CreateUpdaterInfoDialog(mainWindow, LocaleManager.Instance["DialogUpdaterAlreadyOnLatestVersionMessage"], "");
                                 }
 
                                 return;
@@ -120,8 +119,7 @@ namespace Ryujinx.Modules
                     {
                         if (showVersionUpToDate)
                         {
-                            ContentDialogHelper.CreateUpdaterInfoDialog(mainWindow,
-                                LocaleManager.Instance["DialogUpdaterAlreadyOnLatestVersionMessage"], "");
+                            ContentDialogHelper.CreateUpdaterInfoDialog(mainWindow, LocaleManager.Instance["DialogUpdaterAlreadyOnLatestVersionMessage"], "");
                         }
 
                         return;
@@ -131,8 +129,7 @@ namespace Ryujinx.Modules
             catch (Exception exception)
             {
                 Logger.Error?.Print(LogClass.Application, exception.Message);
-                ContentDialogHelper.CreateErrorDialog(mainWindow,
-                    LocaleManager.Instance["DialogUpdaterFailedToGetVersionMessage"]);
+                ContentDialogHelper.CreateErrorDialog(mainWindow, LocaleManager.Instance["DialogUpdaterFailedToGetVersionMessage"]);
 
                 return;
             }
@@ -144,8 +141,7 @@ namespace Ryujinx.Modules
             catch
             {
                 ContentDialogHelper.CreateWarningDialog(mainWindow, LocaleManager.Instance["DialogUpdaterConvertFailedGithubMessage"], LocaleManager.Instance["DialogUpdaterCancelUpdateMessage"]);
-                Logger.Error?.Print(LogClass.Application,
-                    "Failed to convert the received Ryujinx version from AppVeyor!");
+                Logger.Error?.Print(LogClass.Application, "Failed to convert the received Ryujinx version from AppVeyor!");
 
                 return;
             }
@@ -154,8 +150,7 @@ namespace Ryujinx.Modules
             {
                 if (showVersionUpToDate)
                 {
-                    ContentDialogHelper.CreateUpdaterInfoDialog(mainWindow,
-                        LocaleManager.Instance["DialogUpdaterAlreadyOnLatestVersionMessage"], "");
+                    ContentDialogHelper.CreateUpdaterInfoDialog(mainWindow, LocaleManager.Instance["DialogUpdaterAlreadyOnLatestVersionMessage"], "");
                 }
 
                 Running = false;
@@ -163,6 +158,7 @@ namespace Ryujinx.Modules
 
                 return;
             }
+
             // Fetch build size information to learn chunk sizes.
             using (HttpClient buildSizeClient = ConstructHttpClient())
             {
@@ -564,14 +560,12 @@ namespace Ryujinx.Modules
                 if (ReleaseInformations.IsFlatHubBuild())
                 {
                     ContentDialogHelper.CreateWarningDialog(parent,
-                        LocaleManager.Instance["UpdaterDisabledWarningTitle"],
-                        LocaleManager.Instance["DialogUpdaterFlatpakNotSupportedMessage"]);
+                        LocaleManager.Instance["UpdaterDisabledWarningTitle"], LocaleManager.Instance["DialogUpdaterFlatpakNotSupportedMessage"]);
                 }
                 else
                 {
                     ContentDialogHelper.CreateWarningDialog(parent,
-                        LocaleManager.Instance["UpdaterDisabledWarningTitle"],
-                        LocaleManager.Instance["DialogUpdaterDirtyBuildSubMessage"]);
+                        LocaleManager.Instance["UpdaterDisabledWarningTitle"], LocaleManager.Instance["DialogUpdaterDirtyBuildSubMessage"]);
                 }
             }
 

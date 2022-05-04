@@ -41,7 +41,7 @@ namespace Ryujinx.Ava.Ui.Controls
                     contentDialog.SecondaryButtonText = secondaryButton;
                     contentDialog.CloseButtonText = closeButton;
                     contentDialog.Content = CreateDialogTextContent(primaryText, secondaryText, iconSymbol);
-                    // Todo check proper responses
+
                     contentDialog.PrimaryButtonCommand = MiniCommand.Create(() =>
                     {
                         result = primaryButtonResult;
@@ -89,8 +89,8 @@ namespace Ryujinx.Ava.Ui.Controls
                 contentDialog.PrimaryButtonText = primaryButton;
                 contentDialog.SecondaryButtonText = secondaryButton;
                 contentDialog.CloseButtonText = closeButton;
-                contentDialog.Content = CreateDialogTextContent(primaryText, secondaryText, iconSymbol);
-                // Todo check proper responses
+                contentDialog.Content = CreateDialogTextContent(primaryText, secondaryText, iconSymbol); 
+
                 contentDialog.PrimaryButtonCommand = MiniCommand.Create(() =>
                 {
                     result = primaryButton == LocaleManager.Instance["InputDialogYes"] ? UserResult.Yes : UserResult.Ok;
@@ -108,9 +108,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
             return result;
 
-            async void DeferClose(
-                ContentDialog sender,
-                ContentDialogButtonClickEventArgs args)
+            async void DeferClose(ContentDialog sender, ContentDialogButtonClickEventArgs args)
             {
                 if (startedDeferring)
                 {
@@ -146,10 +144,7 @@ namespace Ryujinx.Ava.Ui.Controls
             }
         }
 
-        private static Grid CreateDialogTextContent(
-            string primaryText,
-            string secondaryText,
-            int symbol)
+        private static Grid CreateDialogTextContent(string primaryText, string secondaryText, int symbol)
         {
             Grid content = new Grid();
             content.RowDefinitions = new RowDefinitions() { new RowDefinition(), new RowDefinition() };
@@ -231,17 +226,12 @@ namespace Ryujinx.Ava.Ui.Controls
                 primaryButtonResult);
         }
 
-        internal static UpdateWaitWindow CreateWaitingDialog(
-            string mainText,
-            string secondaryText)
+        internal static UpdateWaitWindow CreateWaitingDialog(string mainText, string secondaryText)
         {
             return new(mainText, secondaryText);
         }
 
-        internal static async void CreateUpdaterInfoDialog(
-            StyleableWindow window,
-            string primary,
-            string secondaryText)
+        internal static async void CreateUpdaterInfoDialog(StyleableWindow window, string primary, string secondaryText)
         {
             await ShowContentDialog(
                 window,
@@ -268,10 +258,7 @@ namespace Ryujinx.Ava.Ui.Controls
                 (int)Symbol.Important);
         }
 
-        internal static async void CreateWarningDialog(
-            StyleableWindow window,
-            string primary,
-            string secondaryText)
+        internal static async void CreateWarningDialog(StyleableWindow window, string primary, string secondaryText)
         {
             await ShowContentDialog(
                 window,
@@ -284,10 +271,7 @@ namespace Ryujinx.Ava.Ui.Controls
                 (int)Symbol.Important);
         }
 
-        internal static async void CreateErrorDialog(
-            StyleableWindow owner,
-            string errorMessage,
-            string secondaryErrorMessage = "")
+        internal static async void CreateErrorDialog(StyleableWindow owner, string errorMessage, string secondaryErrorMessage = "")
         {
             Logger.Error?.Print(LogClass.Application, errorMessage);
 
@@ -302,11 +286,7 @@ namespace Ryujinx.Ava.Ui.Controls
                 (int)Symbol.Dismiss);
         }
 
-        internal static async Task<bool> CreateChoiceDialog(
-            StyleableWindow window,
-            string title,
-            string primary,
-            string secondaryText)
+        internal static async Task<bool> CreateChoiceDialog(StyleableWindow window, string title, string primary, string secondaryText)
         {
             if (_isChoiceDialogOpen)
             {

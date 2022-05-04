@@ -45,7 +45,7 @@ namespace Ryujinx.Ava.Ui.Applet
 
         public bool DisplayMessageDialog(string title, string message)
         {
-            // TODO
+            // TODO : Show controller applet. Needs settings window to be implemented.
             Dispatcher.UIThread.InvokeAsync(() =>
             {
                 ContentDialogHelper.ShowNotAvailableMessage(_parent);
@@ -114,9 +114,9 @@ namespace Ryujinx.Ava.Ui.Applet
                     ErrorAppletWindow msgDialog = new(_parent, buttons, message)
                     {
                         Title = title,
-                        WindowStartupLocation = WindowStartupLocation.CenterScreen
+                        WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                        Width = 400
                     };
-                    msgDialog.Width = 400;
 
                     object response = await msgDialog.Run();
 

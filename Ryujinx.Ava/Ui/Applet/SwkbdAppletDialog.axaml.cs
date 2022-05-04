@@ -57,18 +57,16 @@ namespace Ryujinx.Ava.Ui.Controls
             Input.AddHandler(TextInputEvent, Message_TextInput, RoutingStrategies.Tunnel, true);
         }
 
-        public static async Task<(UserResult Result, string Input)> ShowInputDialog(StyleableWindow window,
-            string title, SoftwareKeyboardUiArgs args)
+        public static async Task<(UserResult Result, string Input)> ShowInputDialog(StyleableWindow window, string title, SoftwareKeyboardUiArgs args)
         {
             ContentDialog contentDialog = window.ContentDialog;
 
             UserResult result = UserResult.Cancel;
 
-            SwkbdAppletDialog content =
-                new SwkbdAppletDialog(args.HeaderText, args.SubtitleText, args.GuideText)
-                {
-                    Message = args.InitialText ?? ""
-                };
+            SwkbdAppletDialog content = new SwkbdAppletDialog(args.HeaderText, args.SubtitleText, args.GuideText)
+            {
+                Message = args.InitialText ?? ""
+            };
 
             string input = string.Empty;
 

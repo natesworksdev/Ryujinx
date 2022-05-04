@@ -15,8 +15,7 @@ namespace Ryujinx.Ava.Ui.Controls
             AvaloniaProperty.RegisterDirect<HotKeyControl, ICommand>(nameof(Command),
                 control => control.Command, (control, command) => control.Command = command, enableDataValidation: true);
 
-        public static readonly StyledProperty<KeyGesture> HotKeyProperty =
-            HotKeyManager.HotKeyProperty.AddOwner<Button>();
+        public static readonly StyledProperty<KeyGesture> HotKeyProperty = HotKeyManager.HotKeyProperty.AddOwner<Button>();
 
         private ICommand _command;
         private bool _commandCanExecute;

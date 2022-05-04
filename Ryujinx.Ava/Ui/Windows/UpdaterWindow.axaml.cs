@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Modules;
 using System;
 using System.Diagnostics;
@@ -25,7 +26,7 @@ namespace Ryujinx.Ava.Ui.Windows
 #if DEBUG
             this.AttachDevTools();
 #endif
-            Title = "Ryujinx Updater";
+            Title = LocaleManager.Instance["RyujinxUpdater"];
         }
 
         public UpdaterWindow(MainWindow mainWindow, Version newVersion, string buildUrl) : this()

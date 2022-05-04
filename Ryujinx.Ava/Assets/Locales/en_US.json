@@ -543,5 +543,10 @@
   "ApiError": "API Error.",
   "LoadingHeading": "Loading {0}",
   "CompilingPPTC": "Compiling PTC",
-  "CompilingShaders": "Compiling Shaders"
+  "CompilingShaders": "Compiling Shaders",
+  "AllKeyboards": "All keyboards",
+  "OpenFileDialogTitle": "Select a supported file to open",
+  "OpenFolderDialogTitle": "Select a folder with an unpacked game",
+  "AllSupportedFormats": "All Supported Formats",
+  "RyujinxUpdater": "Ryujinx Updater"
 }

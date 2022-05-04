@@ -54,6 +54,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             GL.Enable(EnableCap.FramebufferSrgb);
 
+            // Restore unpack alignment to 4, as performance overlays such as RTSS may change this to load their resources.
             GL.PixelStore(PixelStoreParameter.UnpackAlignment, 4);
         }
 

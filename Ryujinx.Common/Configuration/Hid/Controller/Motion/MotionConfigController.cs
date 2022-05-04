@@ -12,7 +12,7 @@
         /// <summary>
         /// Gyro Deadzone
         /// </summary>
-        public double GyroDeadzone { get; set;}
+        public double GyroDeadzone { get; set; }
 
         /// <summary>
         /// Enable Motion Controls

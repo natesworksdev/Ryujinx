@@ -106,7 +106,6 @@ namespace Ryujinx.Ui.Common.Configuration
         /// </summary>
         public GraphicsDebugLevel LoggingGraphicsDebugLevel { get; set; }
 
-
         /// <summary>
         /// Change System Language
         /// </summary>
@@ -251,7 +250,6 @@ namespace Ryujinx.Ui.Common.Configuration
         /// Show application name in Grid Mode // Not Used
         /// </summary>
         public bool ShowNames { get; set; }
-
 
         /// <summary>
         /// Sets App Icon Size // Not Used

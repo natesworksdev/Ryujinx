@@ -19,7 +19,7 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             if (Program.PreviewerDetached)
             {
-                Title = $"Ryujinx {Program.Version} - About";
+                Title = $"Ryujinx {Program.Version} - " + LocaleManager.Instance["MenuBarHelpAbout"];
             }
 
             Version = Program.Version;

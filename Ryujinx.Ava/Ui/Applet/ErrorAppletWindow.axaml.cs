@@ -24,6 +24,7 @@ namespace Ryujinx.Ava.Ui.Applet
             this.AttachDevTools();
 #endif
             int responseId = 0;
+
             if (buttons != null)
             {
                 foreach (string buttonText in buttons)

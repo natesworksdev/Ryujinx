@@ -652,7 +652,7 @@ namespace Ryujinx.Ui.App.Common
                                     }
                                 }
                             }
-                            catch (MissingKeyException exception)
+                            catch (MissingKeyException)
                             {
                                 applicationIcon = extension == ".xci"
                                     ? _xciIcon
@@ -720,7 +720,7 @@ namespace Ryujinx.Ui.App.Common
                     }
                 }
             }
-            catch(Exception ex)
+            catch(Exception)
             {
                 Logger.Warning?.Print(LogClass.Application,
                     $"Could not retrieve a valid icon for the app. Default icon will be used. Errored File: {applicationPath}");

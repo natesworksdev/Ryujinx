@@ -31,8 +31,7 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGL
                 if (size.Width <= 0 || size.Height <= 0 || scaling < 0)
                 {
                     session.Dispose();
-                    throw new InvalidOperationException(
-                        $"Can't create drawing context for surface with {size} size and {scaling} scaling");
+                    throw new InvalidOperationException($"Can't create drawing context for surface with {size} size and {scaling} scaling");
                 }
 
                 lock (GrContext)
@@ -55,8 +54,7 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGL
 
                     if (surface == null)
                     {
-                        throw new InvalidOperationException(
-                            $"Surface can't be created with the provided render target");
+                        throw new InvalidOperationException($"Surface can't be created with the provided render target");
                     }
 
                     success = true;
@@ -80,10 +78,7 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGL
             private readonly GRBackendRenderTarget _backendRenderTarget;
             private readonly OpenGLSurfaceRenderingSession _openGlSession;
 
-            public OpenGlGpuSession(GRContext grContext,
-                GRBackendRenderTarget backendRenderTarget,
-                SKSurface surface,
-                OpenGLSurfaceRenderingSession OpenGlSession)
+            public OpenGlGpuSession(GRContext grContext, GRBackendRenderTarget backendRenderTarget, SKSurface surface, OpenGLSurfaceRenderingSession OpenGlSession)
             {
                 GrContext = grContext;
                 SkSurface = surface;

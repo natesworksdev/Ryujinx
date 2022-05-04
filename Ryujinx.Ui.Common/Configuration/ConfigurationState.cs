@@ -280,7 +280,7 @@ namespace Ryujinx.Ui.Common.Configuration
             /// The selected audio backend
             /// </summary>
             public ReactiveObject<AudioBackend> AudioBackend { get; private set; }
-            
+
             /// <summary>
             /// The audio backend volume
             /// </summary>
@@ -339,7 +339,7 @@ namespace Ryujinx.Ui.Common.Configuration
             /// Enable or disable keyboard support (Independent from controllers binding)
             /// </summary>
             public ReactiveObject<bool> EnableKeyboard { get; private set; }
-            
+
             /// <summary>
             /// Enable or disable mouse support (Independent from controllers binding)
             /// </summary>
@@ -967,12 +967,14 @@ namespace Ryujinx.Ui.Common.Configuration
             if (configurationFileFormat.Version < 29)
             {
                 Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 29.");
+                
                 configurationFileFormat.Hotkeys = new KeyboardHotkeys
                 {
                     ToggleVsync = Key.Tab,
                     Screenshot = Key.F8,
                     ShowUi = Key.F4
                 };
+
                 configurationFileUpdated = true;
             }
 
@@ -1062,7 +1064,7 @@ namespace Ryujinx.Ui.Common.Configuration
 
                 configurationFileUpdated = true;
             }
-            
+
             if (configurationFileFormat.Version < 36)
             {
                 Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 36.");

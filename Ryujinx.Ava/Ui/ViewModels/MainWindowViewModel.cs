@@ -703,7 +703,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 return;
             }
 
-            // TODO
+            // TODO : Implement Amiibo window
             ContentDialogHelper.ShowNotAvailableMessage(_owner);
         }
 
@@ -789,11 +789,12 @@ namespace Ryujinx.Ava.Ui.ViewModels
         {
             OpenFileDialog dialog = new()
             {
-                Title = "Select a supported file to open"
+                Title = LocaleManager.Instance["OpenFileDialogTitle"]
             };
+
             dialog.Filters.Add(new FileDialogFilter
             {
-                Name = "All Supported Formats",
+                Name = LocaleManager.Instance["AllSupportedFormats"],
                 Extensions =
                 {
                     "nsp",
@@ -804,6 +805,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                     "nso"
                 }
             });
+
             dialog.Filters.Add(new FileDialogFilter { Name = "NSP", Extensions = { "nsp" } });
             dialog.Filters.Add(new FileDialogFilter { Name = "PFS0", Extensions = { "pfs0" } });
             dialog.Filters.Add(new FileDialogFilter { Name = "XCI", Extensions = { "xci" } });
@@ -823,8 +825,8 @@ namespace Ryujinx.Ava.Ui.ViewModels
         {
             OpenFolderDialog dialog = new()
             {
-                Title = "Select a folder with an unpacked game"
-            }; ;
+                Title = LocaleManager.Instance["OpenFolderDialogTitle"]
+            };
 
             string folder = await dialog.ShowAsync(_owner);
 
@@ -930,13 +932,13 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public async void OpenSettings()
         {
-            // TODO
+            // TODO : Implement Settings window
             ContentDialogHelper.ShowNotAvailableMessage(_owner);
         }
 
         public async void ManageProfiles()
         {
-            // TODO
+            // TODO : Implement Profiles window
             ContentDialogHelper.ShowNotAvailableMessage(_owner);
         }
 
@@ -1183,9 +1185,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                         }
                         catch (Exception e)
                         {
-                            ContentDialogHelper.CreateErrorDialog(_owner,
-                                string.Format(LocaleManager.Instance["DialogPPTCDeletionErrorMessage"], directory.Name,
-                                    e));
+                            ContentDialogHelper.CreateErrorDialog(_owner, string.Format(LocaleManager.Instance["DialogPPTCDeletionErrorMessage"], directory.Name, e));
                         }
                     }
                 }
@@ -1198,9 +1198,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                     }
                     catch (Exception e)
                     {
-                        ContentDialogHelper.CreateErrorDialog(_owner,
-                                string.Format(LocaleManager.Instance["ShaderCachePurgeError"], file.Name,
-                                    e));
+                        ContentDialogHelper.CreateErrorDialog(_owner, string.Format(LocaleManager.Instance["ShaderCachePurgeError"], file.Name, e));
                     }
                 }
             }
@@ -1216,19 +1214,19 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public async void OpenTitleUpdateManager()
         {
-            // TODO
+            // TODO : Implement Update window
             ContentDialogHelper.ShowNotAvailableMessage(_owner);
         }
 
         public async void OpenDlcManager()
         {
-            // TODO
+            // TODO : Implement Dlc window
             ContentDialogHelper.ShowNotAvailableMessage(_owner);
         }
 
         public async void OpenCheatManager()
         {
-            // TODO
+            // TODO : Implement cheat window
             ContentDialogHelper.ShowNotAvailableMessage(_owner);
         }
 
@@ -1239,7 +1237,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 return;
             }
 
-            // TODO
+            // TODO : Implement cheat window
             ContentDialogHelper.ShowNotAvailableMessage(_owner);
         }
 
@@ -1341,21 +1339,16 @@ namespace Ryujinx.Ava.Ui.ViewModels
                     return;
                 }
 
-                string dialogTitle =
-                    string.Format(LocaleManager.Instance["DialogFirmwareInstallerFirmwareInstallTitle"],
-                        firmwareVersion.VersionString);
+                string dialogTitle = string.Format(LocaleManager.Instance["DialogFirmwareInstallerFirmwareInstallTitle"], firmwareVersion.VersionString);
 
 
                 SystemVersion currentVersion = _owner.ContentManager.GetCurrentFirmwareVersion();
 
-                string dialogMessage = string.Format(LocaleManager.Instance["DialogFirmwareInstallerFirmwareInstallMessage"],
-                    firmwareVersion.VersionString);
+                string dialogMessage = string.Format(LocaleManager.Instance["DialogFirmwareInstallerFirmwareInstallMessage"], firmwareVersion.VersionString);
 
                 if (currentVersion != null)
                 {
-                    dialogMessage +=
-                        string.Format(LocaleManager.Instance["DialogFirmwareInstallerFirmwareInstallSubMessage"],
-                            currentVersion.VersionString);
+                    dialogMessage += string.Format(LocaleManager.Instance["DialogFirmwareInstallerFirmwareInstallSubMessage"], currentVersion.VersionString);
                 }
 
                 dialogMessage += LocaleManager.Instance["DialogFirmwareInstallerFirmwareInstallConfirmMessage"];
@@ -1383,9 +1376,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                             {
                                 waitingDialog.Close();
 
-                                string message = string.Format(
-                                    LocaleManager.Instance["DialogFirmwareInstallerFirmwareInstallSuccessMessage"],
-                                    firmwareVersion.VersionString);
+                                string message = string.Format(LocaleManager.Instance["DialogFirmwareInstallerFirmwareInstallSuccessMessage"], firmwareVersion.VersionString);
 
                                 await ContentDialogHelper.CreateInfoDialog(_owner, dialogTitle, message, LocaleManager.Instance["InputDialogOk"], "", LocaleManager.Instance["RyujinxInfo"]);
                                 Logger.Info?.Print(LogClass.Application, message);

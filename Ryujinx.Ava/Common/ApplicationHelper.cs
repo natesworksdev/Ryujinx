@@ -17,6 +17,7 @@ using Ryujinx.Ava.Ui.Windows;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
+using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.Ui.Common.Helper;
 using System;
 using System.Buffers;
@@ -30,14 +31,16 @@ namespace Ryujinx.Ava.Common
     public static class ApplicationHelper
     {
         private static HorizonClient _horizonClient;
+        private static AccountManager _accountManager;
         private static VirtualFileSystem _virtualFileSystem;
         private static StyleableWindow _owner;
 
-        public static void Initialize(VirtualFileSystem virtualFileSystem, HorizonClient horizonClient, StyleableWindow owner)
+        public static void Initialize(VirtualFileSystem virtualFileSystem, AccountManager accountManager, HorizonClient horizonClient, StyleableWindow owner)
         {
             _owner = owner;
             _virtualFileSystem = virtualFileSystem;
             _horizonClient = horizonClient;
+            _accountManager = accountManager;
         }
 
         private static bool TryFindSaveData(string titleName, ulong titleId,
@@ -68,7 +71,7 @@ namespace Ryujinx.Ava.Common
                         "No control file was found for this game. Using a dummy one instead. This may cause inaccuracies in some games.");
                 }
 
-                Uid user = new(1, 0); // TODO: Remove Hardcoded value.
+                Uid user = new Uid((ulong)_accountManager.LastOpenedUser.UserId.High, (ulong)_accountManager.LastOpenedUser.UserId.Low);
 
                 result = _horizonClient.Fs.EnsureApplicationSaveData(out _, new LibHac.Ncm.ApplicationId(titleId), in control, in user);
 
@@ -199,7 +202,6 @@ namespace Ryujinx.Ava.Common
                                 {
                                     int dataIndex =
                                         Nca.GetSectionIndexFromType(NcaSectionType.Data, NcaContentType.Program);
-
                                     if (nca.Header.GetFsHeader(dataIndex).IsPatchSection())
                                     {
                                         patchNca = nca;
@@ -220,19 +222,15 @@ namespace Ryujinx.Ava.Common
                         {
                             Logger.Error?.Print(LogClass.Application,
                                 "Extraction failure. The main NCA was not present in the selected file");
-
                             Dispatcher.UIThread.InvokeAsync(() =>
                             {
-                                ContentDialogHelper.CreateErrorDialog(_owner,
-                                    LocaleManager.Instance["DialogNcaExtractionMainNcaNotFoundErrorMessage"]);
+                                ContentDialogHelper.CreateErrorDialog(_owner, LocaleManager.Instance["DialogNcaExtractionMainNcaNotFoundErrorMessage"]);
                             });
-
                             return;
                         }
 
                         (Nca updatePatchNca, _) = ApplicationLoader.GetGameUpdateData(_virtualFileSystem,
                             mainNca.Header.TitleId.ToString("x16"), programIndex, out _);
-
                         if (updatePatchNca != null)
                         {
                             patchNca = updatePatchNca;
@@ -265,11 +263,9 @@ namespace Ryujinx.Ava.Common
                                 {
                                     Logger.Error?.Print(LogClass.Application,
                                         $"LibHac returned error code: {resultCode.Value.ErrorCode}");
-
                                     Dispatcher.UIThread.InvokeAsync(() =>
                                     {
-                                        ContentDialogHelper.CreateErrorDialog(_owner,
-                                            LocaleManager.Instance["DialogNcaExtractionCheckLogErrorMessage"]);
+                                        ContentDialogHelper.CreateErrorDialog(_owner, LocaleManager.Instance["DialogNcaExtractionCheckLogErrorMessage"]);
                                     });
                                 }
                                 else if (resultCode.Value.IsSuccess())
@@ -306,11 +302,9 @@ namespace Ryujinx.Ava.Common
             }
         }
 
-        public static (Result? result, bool canceled) CopyDirectory(FileSystemClient fs, string sourcePath,
-            string destPath, CancellationToken token)
+        public static (Result? result, bool canceled) CopyDirectory(FileSystemClient fs, string sourcePath, string destPath, CancellationToken token)
         {
-            Result rc = fs.OpenDirectory(out DirectoryHandle sourceHandle, sourcePath.ToU8Span(),
-                OpenDirectoryMode.All);
+            Result rc = fs.OpenDirectory(out DirectoryHandle sourceHandle, sourcePath.ToU8Span(), OpenDirectoryMode.All);
             if (rc.IsFailure())
             {
                 return (rc, false);
