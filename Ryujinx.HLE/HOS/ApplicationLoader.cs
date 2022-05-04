@@ -311,6 +311,12 @@ namespace Ryujinx.HLE.HOS
 
         public void LoadServiceNca(string ncaFile)
         {
+            // Disable PPTC here as it does not support multiple processes running.
+            // TODO: This should be eventually removed and it should stop using global state and
+            // instead manage the cache per process.
+            Ptc.Close();
+            PtcProfiler.Stop();
+
             FileStream file = new FileStream(ncaFile, FileMode.Open, FileAccess.Read);
             Nca mainNca = new Nca(_device.Configuration.VirtualFileSystem.KeySet, file.AsStorage(false));
 
