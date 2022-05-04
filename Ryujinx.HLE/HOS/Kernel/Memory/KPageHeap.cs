@@ -84,7 +84,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             }
         }
 
-        private static readonly int[] MemoryBlockPageShifts = new int[] { 12, 16, 21, 22, 25, 29, 30 };
+        private static readonly int[] _memoryBlockPageShifts = new int[] { 12, 16, 21, 22, 25, 29, 30 };
 
         private readonly ulong _heapAddress;
         private readonly ulong _heapSize;
@@ -92,7 +92,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         private readonly int _blocksCount;
         private readonly Block[] _blocks;
 
-        public KPageHeap(ulong address, ulong size) : this(address, size, MemoryBlockPageShifts)
+        public KPageHeap(ulong address, ulong size) : this(address, size, _memoryBlockPageShifts)
         {
         }
 
@@ -101,7 +101,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             _heapAddress = address;
             _heapSize = size;
             _blocksCount = blockShifts.Length;
-            _blocks = new Block[MemoryBlockPageShifts.Length];
+            _blocks = new Block[_memoryBlockPageShifts.Length];
 
             var currBitmapStorage = new ArraySegment<ulong>(new ulong[CalculateManagementOverheadSize(size, blockShifts)]);
 
@@ -232,7 +232,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         {
             ulong targetPages = Math.Max(pagesCount, alignPages);
 
-            for (int i = 0; i < MemoryBlockPageShifts.Length; i++)
+            for (int i = 0; i < _memoryBlockPageShifts.Length; i++)
             {
                 if (targetPages <= GetBlockPagesCount(i))
                 {
@@ -245,7 +245,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
         public static int GetBlockIndex(ulong pagesCount)
         {
-            for (int i = MemoryBlockPageShifts.Length - 1; i >= 0; i--)
+            for (int i = _memoryBlockPageShifts.Length - 1; i >= 0; i--)
             {
                 if (pagesCount >= GetBlockPagesCount(i))
                 {
@@ -258,7 +258,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
         public static ulong GetBlockSize(int index)
         {
-            return 1UL << MemoryBlockPageShifts[index];
+            return 1UL << _memoryBlockPageShifts[index];
         }
 
         public static ulong GetBlockPagesCount(int index)
