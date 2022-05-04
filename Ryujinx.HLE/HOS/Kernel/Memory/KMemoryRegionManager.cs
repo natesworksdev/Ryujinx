@@ -1,6 +1,5 @@
 using Ryujinx.HLE.HOS.Kernel.Common;
 using System.Diagnostics;
-using System.Numerics;
 
 namespace Ryujinx.HLE.HOS.Kernel.Memory
 {
