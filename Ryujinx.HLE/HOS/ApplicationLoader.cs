@@ -386,7 +386,8 @@ namespace Ryujinx.HLE.HOS
             }
 
             metaData.GetNpdm(out Npdm npdm).ThrowIfFailure();
-            ProgramLoader.LoadNsos(_device.System.KernelContext, out _, metaData, new ProgramInfo(in npdm), executables: programs);
+            ProgramInfo programInfo = new ProgramInfo(in npdm, allowCodeMemoryForJit: false);
+            ProgramLoader.LoadNsos(_device.System.KernelContext, out _, metaData, programInfo, executables: programs);
 
             string titleIdText = npdm.Aci.Value.ProgramId.Value.ToString("x16");
             bool titleIs64Bit = (npdm.Meta.Value.Flags & 1) != 0;
