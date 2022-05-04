@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Common.Configuration.Hid
 {
-    public class InputConfig:  INotifyPropertyChanged
+    public class InputConfig : INotifyPropertyChanged
     {
         /// <summary>
         /// The current version of the input file format
