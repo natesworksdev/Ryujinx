@@ -1,16 +1,13 @@
 using Ryujinx.Common.Logging;
-using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Ipc;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.Sm
 {
@@ -18,23 +15,19 @@ namespace Ryujinx.HLE.HOS.Services.Sm
     {
         private static Dictionary<string, Type> _services;
 
-        private static readonly ConcurrentDictionary<string, KPort> _registeredServices;
-        private static readonly AutoResetEvent _serviceRegistrationEvent;
-
+        private readonly SmRegistry _registry;
         private readonly ServerBase _commonServer;
 
         private bool _isInitialized;
 
-        public IUserInterface(KernelContext context)
+        public IUserInterface(KernelContext context, SmRegistry registry)
         {
             _commonServer = new ServerBase(context, "CommonServer");
+            _registry = registry;
         }
 
         static IUserInterface()
         {
-            _registeredServices = new ConcurrentDictionary<string, KPort>();
-            _serviceRegistrationEvent = new AutoResetEvent(false);
-
             _services = Assembly.GetExecutingAssembly().GetTypes()
                 .SelectMany(type => type.GetCustomAttributes(typeof(ServiceAttribute), true)
                 .Select(service => (((ServiceAttribute)service).Name, type)))
@@ -77,7 +70,7 @@ namespace Ryujinx.HLE.HOS.Services.Sm
 
             KSession session = new KSession(context.Device.System.KernelContext);
 
-            if (_registeredServices.TryGetValue(name, out KPort port))
+            if (_registry.TryGetService(name, out KPort port))
             {
                 KernelResult result = port.EnqueueIncomingSession(session.ServerSession);
 
@@ -191,7 +184,7 @@ namespace Ryujinx.HLE.HOS.Services.Sm
 
             KPort port = new KPort(context.Device.System.KernelContext, maxSessions, isLight, 0);
 
-            if (!_registeredServices.TryAdd(name, port))
+            if (!_registry.TryRegister(name, port))
             {
                 return ResultCode.AlreadyRegistered;
             }
@@ -202,8 +195,6 @@ namespace Ryujinx.HLE.HOS.Services.Sm
             }
 
             context.Response.HandleDesc = IpcHandleDesc.MakeMove(handle);
-
-            _serviceRegistrationEvent.Set();
 
             return ResultCode.Success;
         }
@@ -233,22 +224,12 @@ namespace Ryujinx.HLE.HOS.Services.Sm
                 return ResultCode.InvalidName;
             }
 
-            if (!_registeredServices.TryRemove(name, out _))
+            if (!_registry.Unregister(name))
             {
                 return ResultCode.NotRegistered;
             }
 
             return ResultCode.Success;
-        }
-
-        public static bool IsServiceRegistered(string name)
-        {
-            return _registeredServices.TryGetValue(name, out _);
-        }
-
-        public static void WaitForServiceRegistration()
-        {
-            _serviceRegistrationEvent.WaitOne();
         }
 
         private static string ReadName(ServiceCtx context)

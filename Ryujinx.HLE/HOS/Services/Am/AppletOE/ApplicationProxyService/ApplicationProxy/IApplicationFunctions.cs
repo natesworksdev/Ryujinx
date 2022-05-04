@@ -656,9 +656,9 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
                 context.Device.Application.LoadServiceNca(filePath);
 
                 // FIXME: Most likely not how this should be done?
-                while (!IUserInterface.IsServiceRegistered("jit:u"))
+                while (!context.Device.System.SmRegistry.IsServiceRegistered("jit:u"))
                 {
-                    IUserInterface.WaitForServiceRegistration();
+                    context.Device.System.SmRegistry.WaitForServiceRegistration();
                 }
             }
 
