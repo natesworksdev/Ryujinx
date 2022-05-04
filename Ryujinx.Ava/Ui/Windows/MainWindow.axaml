@@ -145,6 +145,8 @@
                                           Header="Korean" />
                                 <MenuItem Command="{ReflectionBinding ChangeLanguage}" CommandParameter="ru_RU"
                                           Header="Russian" />
+				<MenuItem Command="{ReflectionBinding ChangeLanguage}" CommandParameter="tr_TR"
+                                          Header="Turkish" />
                             </MenuItem>
                             <Separator />
                             <MenuItem Command="{ReflectionBinding OpenSettings}" Header="{locale:Locale MenuBarOptionsSettings}"

@@ -89,6 +89,7 @@
         <EmbeddedResource Include="Assets\Locales\ko_KR.json" />
         <EmbeddedResource Include="Assets\Locales\pt_BR.json" />
         <EmbeddedResource Include="Assets\Locales\ru_RU.json" />
+	<EmbeddedResource Include="Assets\Locales\tr_TR.json" />    
         <EmbeddedResource Include="Assets\Styles\Styles.xaml" />
     </ItemGroup>
     <ItemGroup>
