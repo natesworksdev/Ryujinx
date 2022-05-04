@@ -997,7 +997,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                         throw new ArgumentException($"Unknown Progress Handler type {typeof(T)}");
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) { }
             {
 
             }
