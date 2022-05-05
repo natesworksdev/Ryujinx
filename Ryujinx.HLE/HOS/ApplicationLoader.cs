@@ -363,7 +363,7 @@ namespace Ryujinx.HLE.HOS
 
                 if (!codeFs.FileExists($"/{name}"))
                 {
-                    continue; // file doesn't exist, skip
+                    continue; // File doesn't exist, skip.
                 }
 
                 Logger.Info?.Print(LogClass.Loader, $"Loading {name}...");
@@ -375,7 +375,7 @@ namespace Ryujinx.HLE.HOS
                 nsos[i] = new NsoExecutable(nsoFile.Release().AsStorage(), name);
             }
 
-            // collect the nsos, ignoring ones that aren't used
+            // Collect the nsos, ignoring ones that aren't used.
             NsoExecutable[] programs = nsos.Where(x => x != null).ToArray();
 
             MemoryManagerMode memoryManagerMode = _device.Configuration.MemoryManagerMode;
@@ -597,7 +597,7 @@ namespace Ryujinx.HLE.HOS
         {
             if (_device.Configuration.VirtualFileSystem.ModLoader.ReplaceExefsPartition(TitleId, ref codeFs))
             {
-                metaData = null; //TODO: Check if we should retain old npdm
+                metaData = null; // TODO: Check if we should retain old npdm.
             }
 
             metaData ??= ReadNpdm(codeFs);
@@ -610,7 +610,7 @@ namespace Ryujinx.HLE.HOS
 
                 if (!codeFs.FileExists($"/{name}"))
                 {
-                    continue; // file doesn't exist, skip
+                    continue; // File doesn't exist, skip.
                 }
 
                 Logger.Info?.Print(LogClass.Loader, $"Loading {name}...");
@@ -622,13 +622,13 @@ namespace Ryujinx.HLE.HOS
                 nsos[i] = new NsoExecutable(nsoFile.Release().AsStorage(), name);
             }
 
-            // ExeFs file replacements
+            // ExeFs file replacements.
             ModLoadResult modLoadResult = _device.Configuration.VirtualFileSystem.ModLoader.ApplyExefsMods(TitleId, nsos);
 
-            // collect the nsos, ignoring ones that aren't used
+            // Collect the nsos, ignoring ones that aren't used.
             NsoExecutable[] programs = nsos.Where(x => x != null).ToArray();
 
-            // take the npdm from mods if present
+            // Take the npdm from mods if present.
             if (modLoadResult.Npdm != null)
             {
                 metaData = modLoadResult.Npdm;
@@ -687,7 +687,7 @@ namespace Ryujinx.HLE.HOS
 
                 executable = obj;
 
-                // homebrew NRO can actually have some data after the actual NRO
+                // Homebrew NRO can actually have some data after the actual NRO.
                 if (input.Length > obj.FileSize)
                 {
                     input.Position = obj.FileSize;
@@ -766,7 +766,7 @@ namespace Ryujinx.HLE.HOS
             TitleIs64Bit = (npdm.Meta.Value.Flags & 1) != 0;
             _device.System.LibHacHorizonManager.ArpIReader.ApplicationId = new LibHac.ApplicationId(TitleId);
 
-            // Explicitly null titleid to disable the shader cache
+            // Explicitly null titleid to disable the shader cache.
             Graphics.Gpu.GraphicsConfig.TitleId = null;
             _device.Gpu.HostInitalized.Set();
 
