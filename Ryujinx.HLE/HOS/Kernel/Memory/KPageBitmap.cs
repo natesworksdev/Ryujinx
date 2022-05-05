@@ -36,7 +36,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             {
                 int selected = 0;
 
-                int bitsCount = UlongBitSize / 2;
+                int bitsCount = UInt64BitSize / 2;
                 ulong mask = (1UL << bitsCount) - 1;
 
                 while (bitsCount != 0)
@@ -77,7 +77,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             }
         }
 
-        private const int UlongBitSize = sizeof(ulong) * 8;
+        private const int UInt64BitSize = sizeof(ulong) * 8;
         private const int MaxDepth = 4;
 
         private readonly RandomNumberGenerator _rng;
@@ -101,7 +101,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             for (int depth = HighestDepthIndex; depth >= 0; depth--)
             {
                 _bitStorages[depth] = storage;
-                size = BitUtils.DivRoundUp(size, UlongBitSize);
+                size = BitUtils.DivRoundUp(size, UInt64BitSize);
                 storage = storage.Slice((int)size);
             }
 
@@ -124,7 +124,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                         return ulong.MaxValue;
                     }
 
-                    offset = offset * UlongBitSize + (ulong)_rng.SelectRandomBit(v);
+                    offset = offset * UInt64BitSize + (ulong)_rng.SelectRandomBit(v);
                 }
                 while (++depth < _usedDepths);
             }
@@ -139,7 +139,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                         return ulong.MaxValue;
                     }
 
-                    offset = offset * UlongBitSize + (ulong)BitOperations.TrailingZeroCount(v);
+                    offset = offset * UInt64BitSize + (ulong)BitOperations.TrailingZeroCount(v);
                 }
                 while (++depth < _usedDepths);
             }
@@ -164,11 +164,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             int depth = HighestDepthIndex;
             var bits = _bitStorages[depth];
 
-            int bitInd = (int)(offset / UlongBitSize);
+            int bitInd = (int)(offset / UInt64BitSize);
 
-            if (count < UlongBitSize)
+            if (count < UInt64BitSize)
             {
-                int shift = (int)(offset % UlongBitSize);
+                int shift = (int)(offset % UInt64BitSize);
 
                 ulong mask = ((1UL << count) - 1) << shift;
 
@@ -199,7 +199,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                         return false;
                     }
 
-                    remaining -= UlongBitSize;
+                    remaining -= UInt64BitSize;
                 }
                 while (remaining > 0);
 
@@ -211,7 +211,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     bits[bitInd + i] = 0;
                     ClearBit(depth - 1, (ulong)(bitInd + i));
                     i++;
-                    remaining -= UlongBitSize;
+                    remaining -= UInt64BitSize;
                 }
                 while (remaining > 0);
             }
@@ -224,8 +224,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         {
             while (depth >= 0)
             {
-                int ind   = (int)(offset / UlongBitSize);
-                int which = (int)(offset % UlongBitSize);
+                int ind   = (int)(offset / UInt64BitSize);
+                int which = (int)(offset % UInt64BitSize);
 
                 ulong mask = 1UL << which;
 
@@ -247,8 +247,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         {
             while (depth >= 0)
             {
-                int ind   = (int)(offset / UlongBitSize);
-                int which = (int)(offset % UlongBitSize);
+                int ind   = (int)(offset / UInt64BitSize);
+                int which = (int)(offset % UInt64BitSize);
 
                 ulong mask = 1UL << which;
 
@@ -274,7 +274,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
             do
             {
-                regionSize /= UlongBitSize;
+                regionSize /= UInt64BitSize;
                 depth++;
             }
             while (regionSize != 0);
@@ -288,7 +288,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
             for (int depth = GetRequiredDepth(regionSize) - 1; depth >= 0; depth--)
             {
-                regionSize = BitUtils.DivRoundUp(regionSize, UlongBitSize);
+                regionSize = BitUtils.DivRoundUp(regionSize, UInt64BitSize);
                 overheadBits += (int)regionSize;
             }
 
