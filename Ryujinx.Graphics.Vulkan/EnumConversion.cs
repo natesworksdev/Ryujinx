@@ -335,20 +335,28 @@ namespace Ryujinx.Graphics.Vulkan
             switch (op)
             {
                 case GAL.StencilOp.Keep:
+                case GAL.StencilOp.KeepGl:
                     return Silk.NET.Vulkan.StencilOp.Keep;
                 case GAL.StencilOp.Zero:
+                case GAL.StencilOp.ZeroGl:
                     return Silk.NET.Vulkan.StencilOp.Zero;
                 case GAL.StencilOp.Replace:
+                case GAL.StencilOp.ReplaceGl:
                     return Silk.NET.Vulkan.StencilOp.Replace;
                 case GAL.StencilOp.IncrementAndClamp:
+                case GAL.StencilOp.IncrementAndClampGl:
                     return Silk.NET.Vulkan.StencilOp.IncrementAndClamp;
                 case GAL.StencilOp.DecrementAndClamp:
+                case GAL.StencilOp.DecrementAndClampGl:
                     return Silk.NET.Vulkan.StencilOp.DecrementAndClamp;
                 case GAL.StencilOp.Invert:
+                case GAL.StencilOp.InvertGl:
                     return Silk.NET.Vulkan.StencilOp.Invert;
                 case GAL.StencilOp.IncrementAndWrap:
+                case GAL.StencilOp.IncrementAndWrapGl:
                     return Silk.NET.Vulkan.StencilOp.IncrementAndWrap;
                 case GAL.StencilOp.DecrementAndWrap:
+                case GAL.StencilOp.DecrementAndWrapGl:
                     return Silk.NET.Vulkan.StencilOp.DecrementAndWrap;
             }
 
