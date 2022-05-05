@@ -39,6 +39,9 @@ namespace Ryujinx.Ava.Ui.Controls
         private SwappableNativeWindowBase _gameBackgroundWindow;
 
         private bool _isInitialized;
+        private bool _renderRequested;
+        private bool _rendered = true;
+
         private IntPtr _fence;
 
         private GlDrawOperation _glDrawOperation;
@@ -75,6 +78,15 @@ namespace Ryujinx.Ava.Ui.Controls
                 _isInitialized = true;
             }
 
+            lock (this)
+            {
+                _rendered = true;
+                if (_renderRequested)
+                {
+                    InvalidateVisual();
+                }
+            }
+
             if (GameContext == null || !IsStarted || Image == 0)
             {
                 return;
@@ -95,7 +107,23 @@ namespace Ryujinx.Ava.Ui.Controls
 
         public void QueueRender()
         {
-            Dispatcher.UIThread.Post(InvalidateVisual, DispatcherPriority.Normal);
+            lock (this)
+            {
+                if (_rendered)
+                {
+                    _rendered = false;
+                    _renderRequested = false;
+                    InvalidateVisual();
+                }
+                else if (_renderRequested)
+                {
+                    InvalidateVisual();
+                }
+                else
+                {
+                    _renderRequested = true;
+                }
+            }
 
             Program.RenderTimer.TickNow();
         }
