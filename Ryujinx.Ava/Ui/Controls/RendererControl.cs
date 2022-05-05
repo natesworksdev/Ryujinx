@@ -32,7 +32,7 @@ namespace Ryujinx.Ava.Ui.Controls
         public GraphicsDebugLevel DebugLevel { get; }
         public OpenGLContextBase GameContext { get; set; }
 
-        public static OpenGLContextBase PrimaryContext => System.OperatingSystem.IsLinux()  ? 
+        public static OpenGLContextBase PrimaryContext => System.OperatingSystem.IsLinux() ?
                     AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>().PrimaryContext.AsOpenGLContextBase() :
                     AvaloniaLocator.Current.GetService<OpenGLContextBase>();
 
