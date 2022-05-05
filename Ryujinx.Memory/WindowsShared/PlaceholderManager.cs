@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Runtime.Versioning;
 using System.Threading;
 
 namespace Ryujinx.Memory.WindowsShared
@@ -7,6 +8,7 @@ namespace Ryujinx.Memory.WindowsShared
     /// <summary>
     /// Windows memory placeholder manager.
     /// </summary>
+    [SupportedOSPlatform("windows")]
     class PlaceholderManager
     {
         private const ulong MinimumPageSize = 0x1000;
@@ -208,61 +210,61 @@ namespace Ryujinx.Memory.WindowsShared
             lock (_mappings)
             {
                 count = _mappings.Get(startAddress, endAddress, ref overlaps);
-            }
 
-            for (int index = 0; index < count; index++)
-            {
-                var overlap = overlaps[index];
-
-                if (IsMapped(overlap.Value))
+                for (int index = 0; index < count; index++)
                 {
-                    if (!WindowsApi.UnmapViewOfFile2(WindowsApi.CurrentProcessHandle, (IntPtr)overlap.Start, 2))
+                    var overlap = overlaps[index];
+
+                    if (IsMapped(overlap.Value))
                     {
-                        throw new WindowsApiException("UnmapViewOfFile2");
-                    }
-
-                    // Tree operations might modify the node start/end values, so save a copy before we modify the tree.
-                    ulong overlapStart = overlap.Start;
-                    ulong overlapEnd = overlap.End;
-                    ulong overlapValue = overlap.Value;
-
-                    _mappings.Remove(overlap);
-                    _mappings.Add(overlapStart, overlapEnd, ulong.MaxValue);
-
-                    bool overlapStartsBefore = overlapStart < startAddress;
-                    bool overlapEndsAfter = overlapEnd > endAddress;
-
-                    if (overlapStartsBefore || overlapEndsAfter)
-                    {
-                        // If the overlap extends beyond the region we are unmapping,
-                        // then we need to re-map the regions that are supposed to remain mapped.
-                        // This is necessary because Windows does not support partial view unmaps.
-                        // That is, you can only fully unmap a view that was previously mapped, you can't just unmap a chunck of it.
-
-                        LockCookie lockCookie = _partialUnmapLock.UpgradeToWriterLock(Timeout.Infinite);
-
-                        _partialUnmapsCount++;
-
-                        if (overlapStartsBefore)
+                        if (!WindowsApi.UnmapViewOfFile2(WindowsApi.CurrentProcessHandle, (IntPtr)overlap.Start, 2))
                         {
-                            ulong remapSize = startAddress - overlapStart;
-
-                            MapViewInternal(sharedMemory, overlapValue, (IntPtr)overlapStart, (IntPtr)remapSize);
-                            RestoreRangeProtection(overlapStart, remapSize);
+                            throw new WindowsApiException("UnmapViewOfFile2");
                         }
 
-                        if (overlapEndsAfter)
+                        // Tree operations might modify the node start/end values, so save a copy before we modify the tree.
+                        ulong overlapStart = overlap.Start;
+                        ulong overlapEnd = overlap.End;
+                        ulong overlapValue = overlap.Value;
+
+                        _mappings.Remove(overlap);
+                        _mappings.Add(overlapStart, overlapEnd, ulong.MaxValue);
+
+                        bool overlapStartsBefore = overlapStart < startAddress;
+                        bool overlapEndsAfter = overlapEnd > endAddress;
+
+                        if (overlapStartsBefore || overlapEndsAfter)
                         {
-                            ulong overlappedSize = endAddress - overlapStart;
-                            ulong remapBackingOffset = overlapValue + overlappedSize;
-                            ulong remapAddress = overlapStart + overlappedSize;
-                            ulong remapSize = overlapEnd - endAddress;
+                            // If the overlap extends beyond the region we are unmapping,
+                            // then we need to re-map the regions that are supposed to remain mapped.
+                            // This is necessary because Windows does not support partial view unmaps.
+                            // That is, you can only fully unmap a view that was previously mapped, you can't just unmap a chunck of it.
 
-                            MapViewInternal(sharedMemory, remapBackingOffset, (IntPtr)remapAddress, (IntPtr)remapSize);
-                            RestoreRangeProtection(remapAddress, remapSize);
+                            LockCookie lockCookie = _partialUnmapLock.UpgradeToWriterLock(Timeout.Infinite);
+
+                            _partialUnmapsCount++;
+
+                            if (overlapStartsBefore)
+                            {
+                                ulong remapSize = startAddress - overlapStart;
+
+                                MapViewInternal(sharedMemory, overlapValue, (IntPtr)overlapStart, (IntPtr)remapSize);
+                                RestoreRangeProtection(overlapStart, remapSize);
+                            }
+
+                            if (overlapEndsAfter)
+                            {
+                                ulong overlappedSize = endAddress - overlapStart;
+                                ulong remapBackingOffset = overlapValue + overlappedSize;
+                                ulong remapAddress = overlapStart + overlappedSize;
+                                ulong remapSize = overlapEnd - endAddress;
+
+                                MapViewInternal(sharedMemory, remapBackingOffset, (IntPtr)remapAddress, (IntPtr)remapSize);
+                                RestoreRangeProtection(remapAddress, remapSize);
+                            }
+
+                            _partialUnmapLock.DowngradeFromWriterLock(ref lockCookie);
                         }
-
-                        _partialUnmapLock.DowngradeFromWriterLock(ref lockCookie);
                     }
                 }
             }
@@ -469,11 +471,13 @@ namespace Ryujinx.Memory.WindowsShared
         {
             ulong endAddress = address + size;
             var overlaps = Array.Empty<IntervalTreeNode<ulong, MemoryPermission>>();
-            int count;
+            int count = 0;
 
             lock (_protections)
             {
                 count = _protections.Get(address, endAddress, ref overlaps);
+
+                Debug.Assert(count > 0);
 
                 if (count == 1 &&
                     overlaps[0].Start <= address &&
@@ -572,7 +576,7 @@ namespace Ryujinx.Memory.WindowsShared
         {
             ulong endAddress = address + size;
             var overlaps = Array.Empty<IntervalTreeNode<ulong, MemoryPermission>>();
-            int count;
+            int count = 0;
 
             lock (_protections)
             {
