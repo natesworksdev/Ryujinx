@@ -1,5 +1,6 @@
 using ARMeilleure.Translation.PTC;
 using Avalonia;
+using Avalonia.OpenGL;
 using Avalonia.Rendering;
 using Avalonia.Threading;
 using Ryujinx.Ava.Ui.Backend;
@@ -15,6 +16,7 @@ using Ryujinx.Modules;
 using Ryujinx.Ui.Common;
 using Ryujinx.Ui.Common.Configuration;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -52,7 +54,11 @@ namespace Ryujinx.Ava
                     EnableMultiTouch = true,
                     EnableIme = true,
                     UseEGL = false,
-                    UseGpu = false,
+                    UseGpu = true,
+                    GlProfiles = new List<GlVersion>()
+                    {
+                        new GlVersion(GlProfileType.OpenGL, 4, 3)
+                    }
                 })
                 .With(new Win32PlatformOptions
                 {
@@ -64,7 +70,7 @@ namespace Ryujinx.Ava
                 .UseSkia()
                 .With(new SkiaOptions()
                 {
-                    CustomGpuFactory = SkiaGpuFactory.CreateOpenGlGpu
+                    CustomGpuFactory = OperatingSystem.IsLinux() ? null : SkiaGpuFactory.CreateOpenGlGpu
                 })
                 .AfterSetup(_ =>
                 {

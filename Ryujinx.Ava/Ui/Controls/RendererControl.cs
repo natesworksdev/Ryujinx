@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using Avalonia.OpenGL;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
@@ -31,7 +32,9 @@ namespace Ryujinx.Ava.Ui.Controls
         public GraphicsDebugLevel DebugLevel { get; }
         public OpenGLContextBase GameContext { get; set; }
 
-        public static OpenGLContextBase PrimaryContext => AvaloniaLocator.Current.GetService<OpenGLContextBase>();
+        public static OpenGLContextBase PrimaryContext => System.OperatingSystem.IsLinux()  ? 
+                    AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>().PrimaryContext.AsOpenGLContextBase() :
+                    AvaloniaLocator.Current.GetService<OpenGLContextBase>();
 
         private SwappableNativeWindowBase _gameBackgroundWindow;
 
