@@ -54,7 +54,7 @@ namespace Ryujinx.Ava.Ui.Backend.OpenGL
 
                     if (surface == null)
                     {
-                        throw new InvalidOperationException($"Surface can't be created with the provided render target");
+                        throw new InvalidOperationException("Surface can't be created with the provided render target");
                     }
 
                     success = true;
