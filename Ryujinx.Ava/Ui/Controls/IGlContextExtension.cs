@@ -10,7 +10,11 @@ namespace Ryujinx.Ava.Ui.Controls
         {
             var handle = (IntPtr)context.GetType().GetProperty("Handle").GetValue(context);
 
-            if (OperatingSystem.IsLinux())
+            if (OperatingSystem.IsWindows())
+            {
+                return new AvaloniaWglContext(handle);
+            }
+            else if (OperatingSystem.IsLinux())
             {
                 return new AvaloniaGlxContext(handle);
             }

@@ -3,7 +3,6 @@ using Avalonia;
 using Avalonia.OpenGL;
 using Avalonia.Rendering;
 using Avalonia.Threading;
-using Ryujinx.Ava.Ui.Backend;
 using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.Windows;
 using Ryujinx.Common;
@@ -63,15 +62,15 @@ namespace Ryujinx.Ava
                 .With(new Win32PlatformOptions
                 {
                     EnableMultitouch = true,
-                    UseWgl = false,
+                    UseWgl = true,
+                    WglProfiles = new List<GlVersion>()
+                    {
+                        new GlVersion(GlProfileType.OpenGL, 4, 3)
+                    },
                     AllowEglInitialization = false,
                     CompositionBackdropCornerRadius = 8f,
                 })
                 .UseSkia()
-                .With(new SkiaOptions()
-                {
-                    CustomGpuFactory = OperatingSystem.IsLinux() ? null : SkiaGpuFactory.CreateOpenGlGpu
-                })
                 .AfterSetup(_ =>
                 {
                     AvaloniaLocator.CurrentMutable

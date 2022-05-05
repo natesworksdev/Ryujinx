@@ -1,5 +1,6 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Media;
 using Avalonia.OpenGL;
 using Avalonia.Platform;
@@ -19,7 +20,21 @@ namespace Ryujinx.Ava.Ui.Controls
 {
     public class RendererControl : Control
     {
-        protected int Image { get; set; }
+        private int _image;
+
+        static RendererControl()
+        {
+            AffectsRender<RendererControl>(ImageProperty);
+        }
+
+        public readonly static StyledProperty<int> ImageProperty =
+            AvaloniaProperty.Register<RendererControl, int>(nameof(Image), 0, inherits: true, defaultBindingMode: BindingMode.TwoWay);
+
+        protected int Image
+        {
+            get => _image;
+            set => SetAndRaise(ImageProperty, ref _image, value);
+        }
 
         public event EventHandler<EventArgs> GlInitialized;
         public event EventHandler<Size> SizeChanged;
@@ -32,9 +47,7 @@ namespace Ryujinx.Ava.Ui.Controls
         public GraphicsDebugLevel DebugLevel { get; }
         public OpenGLContextBase GameContext { get; set; }
 
-        public static OpenGLContextBase PrimaryContext => System.OperatingSystem.IsLinux() ?
-                    AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>().PrimaryContext.AsOpenGLContextBase() :
-                    AvaloniaLocator.Current.GetService<OpenGLContextBase>();
+        public static OpenGLContextBase PrimaryContext => AvaloniaLocator.Current.GetService<IPlatformOpenGlInterface>().PrimaryContext.AsOpenGLContextBase();
 
         private SwappableNativeWindowBase _gameBackgroundWindow;
 
@@ -78,15 +91,6 @@ namespace Ryujinx.Ava.Ui.Controls
                 _isInitialized = true;
             }
 
-            lock (this)
-            {
-                _rendered = true;
-                if (_renderRequested)
-                {
-                    InvalidateVisual();
-                }
-            }
-
             if (GameContext == null || !IsStarted || Image == 0)
             {
                 return;
@@ -107,30 +111,15 @@ namespace Ryujinx.Ava.Ui.Controls
 
         public void QueueRender()
         {
-            lock (this)
-            {
-                if (_rendered)
-                {
-                    _rendered = false;
-                    _renderRequested = false;
-                    InvalidateVisual();
-                }
-                else if (_renderRequested)
-                {
-                    InvalidateVisual();
-                }
-                else
-                {
-                    _renderRequested = true;
-                }
-            }
-
             Program.RenderTimer.TickNow();
         }
 
         internal void Present(object image)
         {
-            Image = (int)image;
+            Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                Image = (int)image;
+            }).Wait();
 
             if (_fence != IntPtr.Zero)
             {
@@ -157,7 +146,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
         public void DestroyBackgroundContext()
         {
-            Image = 0;
+            _image = 0;
 
             if (_fence != IntPtr.Zero)
             {
