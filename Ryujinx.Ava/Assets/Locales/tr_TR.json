@@ -505,10 +505,6 @@
   "IconSizeTooltip": "Oyunların simge boyutlarını değiştirir",
   "MenuBarOptionsShowConsole": "Konsolu Göster",
   "ShaderCachePurgeError" :  "Belirtilen shader cache temizlenirken hata {0}: {1}",
-
-
-
-  
   "UserErrorNoKeys": "Keys bulunamadı",
   "UserErrorNoFirmware": "Firmware bulunamadı",
   "UserErrorFirmwareParsingFailed": "Firmware çözümleme hatası",
