@@ -683,7 +683,17 @@ namespace Ryujinx.Ava.Ui.Windows
             if (AppHost != null)
             {
                 AppHost.AppExit -= AppHost_AppExit;
+                AppHost.AppExit += (sender, e) =>
+                {
+                    AppHost = null;
+
+                    Dispatcher.UIThread.Post(Close);
+                };
                 AppHost?.Stop();
+
+                e.Cancel = true;
+
+                return;
             }
 
             ApplicationLibrary.CancelLoading();
