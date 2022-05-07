@@ -912,7 +912,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             context.RequestData.BaseStream.Position += 4; // Padding
             long appletResourceUserId = context.RequestData.ReadInt64();
 
-            if (npadIdType <= NpadIdType.Player8 || npadIdType == NpadIdType.Handheld || npadIdType == NpadIdType.Unknown)
+            if (HidUtils.IsValidNpadIdType(npadIdType))
             {
                 context.Device.Hid.SharedMemory.Npads[(int)HidUtils.GetIndexFromNpadIdType(npadIdType)].InternalState.JoyAssignmentMode = NpadJoyAssignmentMode.Single;
             }
@@ -929,7 +929,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             long appletResourceUserId = context.RequestData.ReadInt64();
             NpadJoyDeviceType npadJoyDeviceType = (NpadJoyDeviceType)context.RequestData.ReadUInt32();
 
-            if (npadIdType <= NpadIdType.Player8 || npadIdType == NpadIdType.Handheld || npadIdType == NpadIdType.Unknown)
+            if (HidUtils.IsValidNpadIdType(npadIdType))
             {
                 SetNpadJoyAssignmentModeSingleWithDestinationImpl(context, npadIdType, appletResourceUserId, npadJoyDeviceType, out _, out _);
             }
@@ -945,7 +945,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             context.RequestData.BaseStream.Position += 4; // Padding
             long appletResourceUserId = context.RequestData.ReadInt64();
 
-            if (npadIdType <= NpadIdType.Player8 || npadIdType == NpadIdType.Handheld || npadIdType == NpadIdType.Unknown)
+            if (HidUtils.IsValidNpadIdType(npadIdType))
             {
                 context.Device.Hid.SharedMemory.Npads[(int)HidUtils.GetIndexFromNpadIdType(npadIdType)].InternalState.JoyAssignmentMode = NpadJoyAssignmentMode.Dual;
             }
@@ -961,8 +961,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             NpadIdType npadIdType1          = (NpadIdType)context.RequestData.ReadUInt32();
             long       appletResourceUserId = context.RequestData.ReadInt64();
 
-            if (npadIdType0 <= NpadIdType.Player8 || npadIdType0 == NpadIdType.Handheld || npadIdType0 == NpadIdType.Unknown ||
-                npadIdType1 <= NpadIdType.Player8 || npadIdType1 == NpadIdType.Handheld || npadIdType1 == NpadIdType.Unknown)
+            if (HidUtils.IsValidNpadIdType(npadIdType0) && HidUtils.IsValidNpadIdType(npadIdType1))
             {
                 Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, npadIdType0, npadIdType1 });
             }
@@ -1066,7 +1065,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             context.RequestData.BaseStream.Position += 4; // Padding
             long appletResourceUserId = context.RequestData.ReadInt64();
 
-            if (npadIdType <= NpadIdType.Player8 || npadIdType == NpadIdType.Handheld || npadIdType == NpadIdType.Unknown)
+            if (HidUtils.IsValidNpadIdType(npadIdType))
             {
                 SetNpadJoyAssignmentModeSingleWithDestinationImpl(context, npadIdType, appletResourceUserId, npadJoyDeviceType, out NpadIdType npadIdTypeSet, out bool npadIdTypeIsSet);
 
