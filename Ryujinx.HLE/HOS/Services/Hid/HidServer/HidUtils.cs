@@ -38,7 +38,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.HidServer
 
         public static bool IsValidNpadIdType(NpadIdType npadIdType)
         {
-            return (npadIdType <= NpadIdType.Player8 || npadIdType == NpadIdType.Handheld || npadIdType == NpadIdType.Unknown);
+            return npadIdType <= NpadIdType.Player8 || npadIdType == NpadIdType.Handheld || npadIdType == NpadIdType.Unknown;
         }
     }
 }
