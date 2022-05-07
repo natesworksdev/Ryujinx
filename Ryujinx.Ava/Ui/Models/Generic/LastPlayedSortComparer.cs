@@ -12,7 +12,7 @@ namespace Ryujinx.Ava.Ui.Models.Generic
 
         public bool IsAscending { get; }
 
-        public int Compare(ApplicationData? x, ApplicationData? y)
+        public int Compare(ApplicationData x, ApplicationData y)
         {
             string aValue = x.LastPlayed;
             string bValue = y.LastPlayed;

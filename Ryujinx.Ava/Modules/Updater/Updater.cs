@@ -194,7 +194,7 @@ namespace Ryujinx.Modules
             return result;
         }
 
-        public static async Task UpdateRyujinx(UpdaterWindow updateDialog, string downloadUrl)
+        public static void UpdateRyujinx(UpdaterWindow updateDialog, string downloadUrl)
         {
             // Empty update dir, although it shouldn't ever have anything inside it
             if (Directory.Exists(UpdateDir))
@@ -211,14 +211,17 @@ namespace Ryujinx.Modules
             updateDialog.ProgressBar.Value = 0;
             updateDialog.ProgressBar.Maximum = 100;
 
-            if (_buildSize >= 0)
+            Task.Run(() =>
             {
-                DoUpdateWithMultipleThreads(updateDialog, downloadUrl, updateFile);
-            }
-            else
-            {
-                DoUpdateWithSingleThread(updateDialog, downloadUrl, updateFile);
-            }
+                if (_buildSize >= 0)
+                {
+                    DoUpdateWithMultipleThreads(updateDialog, downloadUrl, updateFile);
+                }
+                else
+                {
+                    DoUpdateWithSingleThread(updateDialog, downloadUrl, updateFile);
+                }
+            });
         }
 
         private static void DoUpdateWithMultipleThreads(UpdaterWindow updateDialog, string downloadUrl, string updateFile)

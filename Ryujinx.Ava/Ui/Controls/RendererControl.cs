@@ -52,8 +52,6 @@ namespace Ryujinx.Ava.Ui.Controls
         private SwappableNativeWindowBase _gameBackgroundWindow;
 
         private bool _isInitialized;
-        private bool _renderRequested;
-        private bool _rendered = true;
 
         private IntPtr _fence;
 

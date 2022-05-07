@@ -456,7 +456,7 @@ namespace Ryujinx.Ava
 
                         string message = string.Format(LocaleManager.Instance["DialogFirmwareInstallEmbeddedSuccessMessage"], firmwareVersion.VersionString);
 
-                        ContentDialogHelper.CreateInfoDialog(_parent,
+                        await ContentDialogHelper.CreateInfoDialog(_parent,
                                                              string.Format(LocaleManager.Instance["DialogFirmwareInstalledMessage"], firmwareVersion.VersionString),
                                                              message,
                                                              LocaleManager.Instance["InputDialogOk"],
@@ -898,7 +898,7 @@ namespace Ryujinx.Ava
             }
         }
 
-        private async Task HandleScreenState(KeyboardStateSnapshot keyboard, KeyboardStateSnapshot lastKeyboard)
+        private void HandleScreenState(KeyboardStateSnapshot keyboard, KeyboardStateSnapshot lastKeyboard)
         {
             if (ConfigurationState.Instance.Hid.EnableMouse)
             {
@@ -933,11 +933,11 @@ namespace Ryujinx.Ava
 
             if (_parent.IsActive)
             {
-                Dispatcher.UIThread.Post(async () =>
+                Dispatcher.UIThread.Post(() =>
                 {
                     KeyboardStateSnapshot keyboard = _keyboardInterface.GetKeyboardStateSnapshot();
 
-                    await HandleScreenState(keyboard, _lastKeyboardSnapshot);
+                    HandleScreenState(keyboard, _lastKeyboardSnapshot);
 
                     if (keyboard.IsPressed(Key.Delete))
                     {

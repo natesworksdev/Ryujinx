@@ -236,7 +236,7 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             if (AppHost != null)
             {
-                ContentDialogHelper.CreateInfoDialog(this,
+                await ContentDialogHelper.CreateInfoDialog(this,
                     LocaleManager.Instance["DialogLoadAppGameAlreadyLoadedMessage"],
                     LocaleManager.Instance["DialogLoadAppGameAlreadyLoadedSubMessage"],
                     LocaleManager.Instance["InputDialogOk"],
@@ -299,7 +299,7 @@ namespace Ryujinx.Ava.Ui.Windows
         }
 
 
-        private async void HandleRelaunch()
+        private void HandleRelaunch()
         {
             if (_userChannelPersistence.PreviousIndex != -1 && _userChannelPersistence.ShouldRestart)
             {
@@ -486,7 +486,7 @@ namespace Ryujinx.Ava.Ui.Windows
             {
                 version = ContentManager.GetCurrentFirmwareVersion();
             }
-            catch (Exception _) { }
+            catch (Exception) { }
 
             bool hasApplet = false;
 

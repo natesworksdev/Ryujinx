@@ -44,14 +44,9 @@ namespace Ryujinx.Ava
             ApplyConfiguredTheme();
         }
 
-        private async void ShowRestartDialog()
+        private void ShowRestartDialog()
         {
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-            Dispatcher.UIThread.InvokeAsync(async () =>
-            {
-                // TODO. Implement Restart Dialog when SettingsWindow is implemented.
-            });
-#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            // TODO. Implement Restart Dialog when SettingsWindow is implemented.
         }
 
         private void ThemeChanged_Event(object sender, ReactiveEventArgs<string> e)

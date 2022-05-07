@@ -10,7 +10,7 @@ namespace Ryujinx.Ava.Ui.Models.Generic
 
         private int _order;
 
-        public int Compare(ApplicationData? x, ApplicationData? y)
+        public int Compare(ApplicationData x, ApplicationData y)
         {
             string aValue = x.FileSize;
             string bValue = y.FileSize;

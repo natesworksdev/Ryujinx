@@ -696,7 +696,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             }
         }
 
-        public async void OpenAmiiboWindow()
+        public void OpenAmiiboWindow()
         {
             if (!_isAmiiboRequested)
             {
@@ -836,27 +836,27 @@ namespace Ryujinx.Ava.Ui.ViewModels
             }
         }
 
-        public async void TakeScreenshot()
+        public void TakeScreenshot()
         {
             _owner.AppHost.ScreenshotRequested = true;
         }
 
-        public async void HideUi()
+        public void HideUi()
         {
             ShowMenuAndStatusBar = false;
         }
 
-        public async void SetListMode()
+        public void SetListMode()
         {
             Glyph = Glyph.List;
         }
 
-        public async void SetGridMode()
+        public void SetGridMode()
         {
             Glyph = Glyph.Grid;
         }
 
-        public async void OpenMiiApplet()
+        public void OpenMiiApplet()
         {
             string contentPath = _owner.ContentManager.GetInstalledContentPath(0x0100000000001009, StorageId.BuiltInSystem, NcaContentType.Program);
 
@@ -866,12 +866,12 @@ namespace Ryujinx.Ava.Ui.ViewModels
             }
         }
 
-        public void OpenRyujinxFolder()
+        public static void OpenRyujinxFolder()
         {
             OpenHelper.OpenFolder(AppDataManager.BaseDirPath);
         }
 
-        public void OpenLogsFolder()
+        public static void OpenLogsFolder()
         {
             string logPath = Path.Combine(ReleaseInformations.GetBaseApplicationDirectory(), "Logs");
 
@@ -930,13 +930,13 @@ namespace Ryujinx.Ava.Ui.ViewModels
             }
         }
 
-        public async void OpenSettings()
+        public void OpenSettings()
         {
             // TODO : Implement Settings window
             ContentDialogHelper.ShowNotAvailableMessage(_owner);
         }
 
-        public async void ManageProfiles()
+        public void ManageProfiles()
         {
             // TODO : Implement Profiles window
             ContentDialogHelper.ShowNotAvailableMessage(_owner);
@@ -999,10 +999,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                         throw new ArgumentException($"Unknown Progress Handler type {typeof(T)}");
                 }
             }
-            catch (Exception ex) { }
-            {
-
-            }
+            catch (Exception) { }
         }
 
         public void OpenUserSaveDirectory()
@@ -1212,25 +1209,25 @@ namespace Ryujinx.Ava.Ui.ViewModels
             }
         }
 
-        public async void OpenTitleUpdateManager()
+        public void OpenTitleUpdateManager()
         {
             // TODO : Implement Update window
             ContentDialogHelper.ShowNotAvailableMessage(_owner);
         }
 
-        public async void OpenDlcManager()
+        public void OpenDlcManager()
         {
             // TODO : Implement Dlc window
             ContentDialogHelper.ShowNotAvailableMessage(_owner);
         }
 
-        public async void OpenCheatManager()
+        public void OpenCheatManager()
         {
             // TODO : Implement cheat window
             ContentDialogHelper.ShowNotAvailableMessage(_owner);
         }
 
-        public async void OpenCheatManagerForCurrentApp()
+        public void OpenCheatManagerForCurrentApp()
         {
             if (!IsGameRunning)
             {
@@ -1393,7 +1390,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                         }
                         catch (Exception ex)
                         {
-                            Dispatcher.UIThread.InvokeAsync(async delegate
+                            Dispatcher.UIThread.InvokeAsync(() =>
                             {
                                 waitingDialog.Close();
 
