@@ -135,7 +135,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static void DeclareSupportBuffer(CodeGenContext context)
         {
-            if (!context.Config.Stage.SupportsRenderScale())
+            if (!context.Config.Stage.SupportsRenderScale() && !(context.Config.LastInVertexPipeline && context.Config.GpuAccessor.QueryViewportTransformDisable()))
             {
                 return;
             }
@@ -146,12 +146,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             context.Decorate(isBgraArrayType, Decoration.ArrayStride, (LiteralInteger)SupportBuffer.FieldSize);
             context.Decorate(renderScaleArrayType, Decoration.ArrayStride, (LiteralInteger)SupportBuffer.FieldSize);
 
-            var supportBufferStructType = context.TypeStruct(false, context.TypeU32(), isBgraArrayType, context.TypeS32(), renderScaleArrayType);
+            var supportBufferStructType = context.TypeStruct(false, context.TypeU32(), isBgraArrayType, context.GetType(AggregateType.FP32 | AggregateType.Vector), context.TypeS32(), renderScaleArrayType);
 
             context.MemberDecorate(supportBufferStructType, 0, Decoration.Offset, (LiteralInteger)SupportBuffer.FragmentAlphaTestOffset);
             context.MemberDecorate(supportBufferStructType, 1, Decoration.Offset, (LiteralInteger)SupportBuffer.FragmentIsBgraOffset);
-            context.MemberDecorate(supportBufferStructType, 2, Decoration.Offset, (LiteralInteger)SupportBuffer.FragmentRenderScaleCountOffset);
-            context.MemberDecorate(supportBufferStructType, 3, Decoration.Offset, (LiteralInteger)SupportBuffer.GraphicsRenderScaleOffset);
+            context.MemberDecorate(supportBufferStructType, 2, Decoration.Offset, (LiteralInteger)SupportBuffer.ViewportInverseOffset);
+            context.MemberDecorate(supportBufferStructType, 3, Decoration.Offset, (LiteralInteger)SupportBuffer.FragmentRenderScaleCountOffset);
+            context.MemberDecorate(supportBufferStructType, 4, Decoration.Offset, (LiteralInteger)SupportBuffer.GraphicsRenderScaleOffset);
             context.Decorate(supportBufferStructType, Decoration.Block);
 
             var supportBufferPointerType = context.TypePointer(StorageClass.Uniform, supportBufferStructType);
@@ -698,6 +699,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 AttributeConsts.GtMask => BuiltIn.SubgroupGtMask,
                 AttributeConsts.LeMask => BuiltIn.SubgroupLeMask,
                 AttributeConsts.LtMask => BuiltIn.SubgroupLtMask,
+                AttributeConsts.SupportBlockViewInverseX => BuiltIn.Position,
+                AttributeConsts.SupportBlockViewInverseY => BuiltIn.Position,
                 _ => throw new ArgumentException($"Invalid attribute number 0x{attr:X}.")
             };
         }

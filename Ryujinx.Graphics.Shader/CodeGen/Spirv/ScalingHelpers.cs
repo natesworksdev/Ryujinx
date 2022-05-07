@@ -57,13 +57,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         private static SpvInstruction ApplyScaling2D(CodeGenContext context, SpvInstruction vector, int index)
         {
             var pointerType = context.TypePointer(StorageClass.Uniform, context.TypeFP32());
-            var fieldIndex = context.Constant(context.TypeU32(), 3);
+            var fieldIndex = context.Constant(context.TypeU32(), 4);
             var scaleIndex = context.Constant(context.TypeU32(), index);
 
             if (context.Config.Stage == ShaderStage.Vertex)
             {
                 var scaleCountPointerType = context.TypePointer(StorageClass.Uniform, context.TypeS32());
-                var scaleCountElemPointer = context.AccessChain(scaleCountPointerType, context.SupportBuffer, context.Constant(context.TypeU32(), 2));
+                var scaleCountElemPointer = context.AccessChain(scaleCountPointerType, context.SupportBuffer, context.Constant(context.TypeU32(), 3));
                 var scaleCount = context.Load(context.TypeS32(), scaleCountElemPointer);
 
                 scaleIndex = context.IAdd(context.TypeU32(), scaleIndex, scaleCount);
@@ -195,13 +195,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 int index = context.Config.FindTextureDescriptorIndex(texOp);
 
                 var pointerType = context.TypePointer(StorageClass.Uniform, context.TypeFP32());
-                var fieldIndex = context.Constant(context.TypeU32(), 3);
+                var fieldIndex = context.Constant(context.TypeU32(), 4);
                 var scaleIndex = context.Constant(context.TypeU32(), index);
 
                 if (context.Config.Stage == ShaderStage.Vertex)
                 {
                     var scaleCountPointerType = context.TypePointer(StorageClass.Uniform, context.TypeS32());
-                    var scaleCountElemPointer = context.AccessChain(scaleCountPointerType, context.SupportBuffer, context.Constant(context.TypeU32(), 2));
+                    var scaleCountElemPointer = context.AccessChain(scaleCountPointerType, context.SupportBuffer, context.Constant(context.TypeU32(), 3));
                     var scaleCount = context.Load(context.TypeS32(), scaleCountElemPointer);
 
                     scaleIndex = context.IAdd(context.TypeU32(), scaleIndex, scaleCount);
