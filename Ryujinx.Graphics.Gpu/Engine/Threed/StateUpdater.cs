@@ -201,7 +201,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             // of the shader for the new state.
             if (_shaderSpecState != null)
             {
-                if (!_shaderSpecState.MatchesGraphics(_channel, GetPoolState()))
+                if (!_shaderSpecState.MatchesGraphics(_channel, GetPoolState(), GetGraphicsState()))
                 {
                     ForceShaderUpdate();
                 }
@@ -1204,7 +1204,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             return new GpuChannelGraphicsState(
                 _state.State.EarlyZForce,
                 _drawState.Topology,
-                _state.State.TessMode);
+                _state.State.TessMode,
+                _state.State.ViewportTransformEnable == 0);
         }
 
         /// <summary>

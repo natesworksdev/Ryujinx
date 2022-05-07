@@ -206,7 +206,39 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             if (emit)
             {
+                Operand tempXLocal = null;
+                Operand tempYLocal = null;
+
+                if (context.Config.LastInVertexPipeline && context.Config.GpuAccessor.QueryViewportTransformDisable())
+                {
+                    tempXLocal = Local();
+                    context.Copy(tempXLocal, Attribute(AttributeConsts.PositionX | AttributeConsts.LoadOutputMask));
+                    tempYLocal = Local();
+                    context.Copy(tempYLocal, Attribute(AttributeConsts.PositionY | AttributeConsts.LoadOutputMask));
+
+                    Operand x = Attribute(AttributeConsts.PositionX | AttributeConsts.LoadOutputMask);
+                    Operand y = Attribute(AttributeConsts.PositionY | AttributeConsts.LoadOutputMask);
+                    Operand xScale = Attribute(AttributeConsts.SupportBlockViewInverseX);
+                    Operand yScale = Attribute(AttributeConsts.SupportBlockViewInverseY);
+                    Operand negativeOne = ConstF(-1.0f);
+
+                    context.Copy(Attribute(AttributeConsts.PositionX), context.FPFusedMultiplyAdd(x, xScale, negativeOne));
+                    context.Copy(Attribute(AttributeConsts.PositionY), context.FPFusedMultiplyAdd(y, yScale, negativeOne));
+                }
+
                 context.EmitVertex();
+
+                // Restore output position value before transformation.
+
+                if (tempXLocal != null)
+                {
+                    context.Copy(Attribute(AttributeConsts.PositionX), tempXLocal);
+                }
+
+                if (tempYLocal != null)
+                {
+                    context.Copy(Attribute(AttributeConsts.PositionY), tempYLocal);
+                }
             }
 
             if (cut)

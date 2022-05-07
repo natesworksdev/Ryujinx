@@ -25,18 +25,5 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             return $"{function.Name}({string.Join(", ", args)})";
         }
-
-        public static string Return(CodeGenContext context, AstOperation operation)
-        {
-            if (context.Config.Stage == ShaderStage.Vertex && context.CurrentFunction.Name == "fun0")
-            {
-                context.AppendLine($"if ({DefaultNames.SupportBlockViewportInverse}.w == 1.0)");
-                context.EnterScope();
-                context.AppendLine($"gl_Position.xy = (gl_Position.xy * {DefaultNames.SupportBlockViewportInverse}.xy) - vec2(1.0);");
-                context.LeaveScope();
-            }
-
-            return "return";
-        }
     }
 }

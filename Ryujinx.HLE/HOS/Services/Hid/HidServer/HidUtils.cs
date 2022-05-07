@@ -17,7 +17,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.HidServer
             NpadIdType.Player8  => PlayerIndex.Player8,
             NpadIdType.Handheld => PlayerIndex.Handheld,
             NpadIdType.Unknown  => PlayerIndex.Unknown,
-            _                   => throw new ArgumentOutOfRangeException(nameof(npadIdType))
+            _                   => PlayerIndex.Player1
         };
 
         public static NpadIdType GetNpadIdTypeFromIndex(PlayerIndex index)
