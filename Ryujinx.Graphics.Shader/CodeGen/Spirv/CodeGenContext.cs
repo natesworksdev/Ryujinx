@@ -268,6 +268,15 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 }
             }
 
+            bool isViewportInverse = attr == AttributeConsts.SupportBlockViewInverseX || attr == AttributeConsts.SupportBlockViewInverseY;
+
+            if (isViewportInverse)
+            {
+                elemType = AggregateType.FP32;
+                elemIndex = Constant(TypeU32(), (attr - AttributeConsts.SupportBlockViewInverseX) >> 2);
+                return AccessChain(TypePointer(StorageClass.Uniform, TypeFP32()), SupportBuffer, Constant(TypeU32(), 2), elemIndex);
+            }
+
             elemType = attrInfo.Type & AggregateType.ElementTypeMask;
 
             if (isUserAttr && Config.TransformFeedbackEnabled &&
@@ -331,7 +340,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 if (attr == AttributeConsts.PositionX || attr == AttributeConsts.PositionY)
                 {
                     var pointerType = TypePointer(StorageClass.Uniform, TypeFP32());
-                    var fieldIndex = Constant(TypeU32(), 3);
+                    var fieldIndex = Constant(TypeU32(), 4);
                     var scaleIndex = Constant(TypeU32(), 0);
 
                     var scaleElemPointer = AccessChain(pointerType, SupportBuffer, fieldIndex, scaleIndex);

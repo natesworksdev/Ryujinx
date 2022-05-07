@@ -111,6 +111,10 @@ namespace Ryujinx.Graphics.Shader.Translation
             {
                 return new AttributeInfo(value & ~0xf, (value >> 2) & 3, 4, AggregateType.Vector | AggregateType.FP32, false);
             }
+            else if (value == AttributeConsts.SupportBlockViewInverseX || value == AttributeConsts.SupportBlockViewInverseY)
+            {
+                return new AttributeInfo(value, 0, 1, AggregateType.FP32);
+            }
             else if (BuiltInAttributes.TryGetValue(value, out AttributeInfo info))
             {
                 return info;
