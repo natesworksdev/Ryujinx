@@ -17,6 +17,7 @@ using Ryujinx.Ui.Common.Configuration;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace Ryujinx.Ava
@@ -31,8 +32,20 @@ namespace Ryujinx.Ava
 
         public static RenderTimer RenderTimer { get; private set; }
 
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern int MessageBoxA(IntPtr hWnd, string text, string caption, uint type);
+
+        private const uint MB_ICONWARNING = 0x30;
+
         public static void Main(string[] args)
         {
+            Version = ReleaseInformations.GetVersion();
+
+            if (OperatingSystem.IsWindows() && !OperatingSystem.IsWindowsVersionAtLeast(10, 0, 17134))
+            {
+                MessageBoxA(IntPtr.Zero, "You are running an outdated version of Windows.\n\nStarting on June 1st 2022, Ryujinx will only support Windows 10 1803 and newer.\n", $"Ryujinx {Version}", MB_ICONWARNING);
+            }
+
             PreviewerDetached = true;
 
             Initialize(args);
@@ -129,8 +142,6 @@ namespace Ryujinx.Ava
 
             // Delete backup files after updating.
             Task.Run(Updater.CleanupUpdate);
-
-            Version = ReleaseInformations.GetVersion(); ;
 
             Console.Title = $"Ryujinx Console {Version}";
 
