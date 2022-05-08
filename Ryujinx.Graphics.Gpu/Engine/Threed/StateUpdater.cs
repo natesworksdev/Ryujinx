@@ -582,9 +582,13 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             {
                 if (disableTransform)
                 {
-                    var scissor = _state.State.ScreenScissorState;
-                    viewports[index] = new Viewport(new RectangleF(scissor.X, scissor.Y, scissor.Width, scissor.Height), ViewportSwizzle.PositiveX, ViewportSwizzle.PositiveY, ViewportSwizzle.PositiveZ, ViewportSwizzle.PositiveW, 0, 1);
-                    break;
+                    ref var scissor = ref _state.State.ScreenScissorState;
+
+                    float rScale = _channel.TextureManager.RenderTargetScale;
+                    var scissorRect = new RectangleF(0, 0, (scissor.X + scissor.Width) * rScale, (scissor.Y + scissor.Height) * rScale);
+
+                    viewports[index] = new Viewport(scissorRect, ViewportSwizzle.PositiveX, ViewportSwizzle.PositiveY, ViewportSwizzle.PositiveZ, ViewportSwizzle.PositiveW, 0, 1);
+                    continue;
                 }
 
                 ref var transform = ref _state.State.ViewportTransform[index];

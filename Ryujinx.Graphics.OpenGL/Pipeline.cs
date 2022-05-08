@@ -1309,10 +1309,11 @@ namespace Ryujinx.Graphics.OpenGL
             float disableTransformF = disableTransform ? 1.0f : 0.0f;
             if (_supportBuffer.Data.ViewportInverse.W != disableTransformF || disableTransform)
             {
+                float scale = _renderScale[0].X;
                 _supportBuffer.UpdateViewportInverse(new Vector4<float>
                 {
-                    X = 2f / viewports[first].Region.Width,
-                    Y = 2f / viewports[first].Region.Height,
+                    X = scale * 2f / viewports[first].Region.Width,
+                    Y = scale * 2f / viewports[first].Region.Height,
                     Z = 1,
                     W = disableTransformF
                 });
