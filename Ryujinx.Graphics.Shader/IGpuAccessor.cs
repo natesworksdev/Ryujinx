@@ -333,7 +333,7 @@ namespace Ryujinx.Graphics.Shader
         /// Queries if host state disables the viewport transform.
         /// </summary>
         /// <returns>True if the viewport transform is disabled</returns>
-        public bool QueryViewportTransformDisable()
+        bool QueryViewportTransformDisable()
         {
             return false;
         }

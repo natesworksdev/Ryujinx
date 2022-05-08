@@ -615,8 +615,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private static void DeclareSupportUniformBlock(CodeGenContext context, ShaderStage stage, int scaleElements)
         {
-            bool isFragment = stage == ShaderStage.Fragment || stage == ShaderStage.Vertex;
-            if (!isFragment && scaleElements == 0)
+            bool needsSupportBlock = stage == ShaderStage.Fragment || 
+                (context.Config.LastInVertexPipeline && context.Config.GpuAccessor.QueryViewportTransformDisable());
+
+            if (!needsSupportBlock && scaleElements == 0)
             {
                 return;
             }

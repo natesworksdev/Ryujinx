@@ -206,38 +206,32 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             if (emit)
             {
-                Operand tempXLocal = null;
-                Operand tempYLocal = null;
-
-                if (context.Config.LastInVertexPipeline && context.Config.GpuAccessor.QueryViewportTransformDisable())
+                if (context.Config.LastInVertexPipeline)
                 {
-                    tempXLocal = Local();
-                    context.Copy(tempXLocal, Attribute(AttributeConsts.PositionX | AttributeConsts.LoadOutputMask));
-                    tempYLocal = Local();
-                    context.Copy(tempYLocal, Attribute(AttributeConsts.PositionY | AttributeConsts.LoadOutputMask));
+                    context.PrepareForVertexReturn(out var tempXLocal, out var tempYLocal, out var tempZLocal);
 
-                    Operand x = Attribute(AttributeConsts.PositionX | AttributeConsts.LoadOutputMask);
-                    Operand y = Attribute(AttributeConsts.PositionY | AttributeConsts.LoadOutputMask);
-                    Operand xScale = Attribute(AttributeConsts.SupportBlockViewInverseX);
-                    Operand yScale = Attribute(AttributeConsts.SupportBlockViewInverseY);
-                    Operand negativeOne = ConstF(-1.0f);
+                    context.EmitVertex();
 
-                    context.Copy(Attribute(AttributeConsts.PositionX), context.FPFusedMultiplyAdd(x, xScale, negativeOne));
-                    context.Copy(Attribute(AttributeConsts.PositionY), context.FPFusedMultiplyAdd(y, yScale, negativeOne));
+                    // Restore output position value before transformation.
+
+                    if (tempXLocal != null)
+                    {
+                        context.Copy(Attribute(AttributeConsts.PositionX), tempXLocal);
+                    }
+
+                    if (tempYLocal != null)
+                    {
+                        context.Copy(Attribute(AttributeConsts.PositionY), tempYLocal);
+                    }
+
+                    if (tempZLocal != null)
+                    {
+                        context.Copy(Attribute(AttributeConsts.PositionZ), tempZLocal);
+                    }
                 }
-
-                context.EmitVertex();
-
-                // Restore output position value before transformation.
-
-                if (tempXLocal != null)
+                else
                 {
-                    context.Copy(Attribute(AttributeConsts.PositionX), tempXLocal);
-                }
-
-                if (tempYLocal != null)
-                {
-                    context.Copy(Attribute(AttributeConsts.PositionY), tempYLocal);
+                    context.EmitVertex();
                 }
             }
 

@@ -277,7 +277,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             NextUsesFixedFuncAttributes = config.UsedFeatures.HasFlag(FeatureFlags.FixedFuncAttr);
             MergeOutputUserAttributes(config.UsedInputAttributes, config.UsedInputAttributesPerPatch);
 
-            if (config.Stage < ShaderStage.Fragment)
+            if (config.Stage != ShaderStage.Fragment)
             {
                 LastInVertexPipeline = false;
             }
