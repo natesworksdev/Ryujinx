@@ -231,6 +231,9 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         {
             Thread[] workThreads = new Thread[ThreadCount];
 
+            // Prefetch the capabilities, so that the async translation threads don't all try to fetch them at the same time.
+            Capabilities capabilities = _context.Capabilities;
+
             for (int index = 0; index < ThreadCount; index++)
             {
                 workThreads[index] = new Thread(ProcessAsyncQueue)
