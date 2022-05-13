@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Threading;
 
-namespace Ryujinx.Cpu
+namespace Ryujinx.Cpu.Jit
 {
     public abstract class MemoryManagerBase : IRefCounted
     {

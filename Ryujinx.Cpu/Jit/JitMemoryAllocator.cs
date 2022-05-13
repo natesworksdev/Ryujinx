@@ -1,7 +1,7 @@
 ﻿using ARMeilleure.Memory;
 using Ryujinx.Memory;
 
-namespace Ryujinx.Cpu
+namespace Ryujinx.Cpu.Jit
 {
     class JitMemoryAllocator : IJitMemoryAllocator
     {

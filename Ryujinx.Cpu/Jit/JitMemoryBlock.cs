@@ -2,7 +2,7 @@
 using Ryujinx.Memory;
 using System;
 
-namespace Ryujinx.Cpu
+namespace Ryujinx.Cpu.Jit
 {
     class JitMemoryBlock : IJitMemoryBlock
     {

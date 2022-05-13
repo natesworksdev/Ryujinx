@@ -744,7 +744,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             }
         }
 
-        public void SubscribeThreadEventHandlers(ARMeilleure.State.ExecutionContext context)
+        public void SubscribeThreadEventHandlers(IExecutionContext context)
         {
             context.Interrupt += InterruptHandler;
             context.SupervisorCall += KernelContext.SyscallHandler.SvcCall;

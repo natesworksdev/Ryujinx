@@ -1,15 +1,16 @@
 ﻿using ARMeilleure.Memory;
-using ARMeilleure.State;
 using ARMeilleure.Translation;
 
-namespace Ryujinx.Cpu
+namespace Ryujinx.Cpu.Jit
 {
-    public class CpuContext
+    class JitCpuContext : ICpuContext
     {
+        private readonly JitTickSource _tickSource;
         private readonly Translator _translator;
 
-        public CpuContext(IMemoryManager memory, bool for64Bit)
+        public JitCpuContext(JitTickSource tickSource, IMemoryManager memory, bool for64Bit)
         {
+            _tickSource = tickSource;
             _translator = new Translator(new JitMemoryAllocator(), memory, for64Bit);
             memory.UnmapEvent += UnmapHandler;
         }
@@ -19,14 +20,14 @@ namespace Ryujinx.Cpu
             _translator.InvalidateJitCacheRegion(address, size);
         }
 
-        public static ExecutionContext CreateExecutionContext()
+        public IExecutionContext CreateExecutionContext()
         {
-            return new ExecutionContext(new JitMemoryAllocator());
+            return new JitExecutionContext(new JitMemoryAllocator(), _tickSource);
         }
 
-        public void Execute(ExecutionContext context, ulong address)
+        public void Execute(IExecutionContext context, ulong address)
         {
-            _translator.Execute(context, address);
+            _translator.Execute(((JitExecutionContext)context).Impl, address);
         }
 
         public void InvalidateCacheRegion(ulong address, ulong size)

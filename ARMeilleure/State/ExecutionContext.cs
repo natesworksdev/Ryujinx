@@ -1,6 +1,5 @@
 using ARMeilleure.Memory;
 using System;
-using System.Diagnostics;
 
 namespace ARMeilleure.State
 {
@@ -14,34 +13,22 @@ namespace ARMeilleure.State
 
         private bool _interrupted;
 
-        private static Stopwatch _tickCounter;
+        private readonly ICounter _counter;
 
-        private static double _hostTickFreq;
+        public ulong Pc => _nativeContext.GetPc();
 
-        public uint CtrEl0   => 0x8444c004;
+        public uint CtrEl0 => 0x8444c004;
         public uint DczidEl0 => 0x00000004;
 
-        public ulong CntfrqEl0 { get; set; }
-        public ulong CntpctEl0
-        {
-            get
-            {
-                double ticks = _tickCounter.ElapsedTicks * _hostTickFreq;
-
-                return (ulong)(ticks * CntfrqEl0);
-            }
-        }
+        public ulong CntfrqEl0 => _counter.Frequency;
+        public ulong CntpctEl0 => _counter.Counter;
 
         // CNTVCT_EL0 = CNTPCT_EL0 - CNTVOFF_EL2
         // Since EL2 isn't implemented, CNTVOFF_EL2 = 0
         public ulong CntvctEl0 => CntpctEl0;
 
-        public static TimeSpan ElapsedTime => _tickCounter.Elapsed;
-        public static long ElapsedTicks => _tickCounter.ElapsedTicks;
-        public static double TickFrequency => _hostTickFreq;
-
         public long TpidrEl0 { get; set; }
-        public long Tpidr    { get; set; }
+        public long TpidrroEl0 { get; set; }
 
         public uint Pstate
         {
@@ -78,35 +65,28 @@ namespace ARMeilleure.State
             private set => _nativeContext.SetRunning(value);
         }
 
-        public event EventHandler<EventArgs>              Interrupt;
+        public event EventHandler<EventArgs> Interrupt;
         public event EventHandler<InstExceptionEventArgs> Break;
         public event EventHandler<InstExceptionEventArgs> SupervisorCall;
         public event EventHandler<InstUndefinedEventArgs> Undefined;
 
-        static ExecutionContext()
-        {
-            _hostTickFreq = 1.0 / Stopwatch.Frequency;
-
-            _tickCounter = new Stopwatch();
-            _tickCounter.Start();
-        }
-
-        public ExecutionContext(IJitMemoryAllocator allocator)
+        public ExecutionContext(IJitMemoryAllocator allocator, ICounter counter)
         {
             _nativeContext = new NativeContext(allocator);
+            _counter = counter;
 
             Running = true;
 
             _nativeContext.SetCounter(MinCountForCheck);
         }
 
-        public ulong GetX(int index)              => _nativeContext.GetX(index);
-        public void  SetX(int index, ulong value) => _nativeContext.SetX(index, value);
+        public ulong GetX(int index) => _nativeContext.GetX(index);
+        public void SetX(int index, ulong value) => _nativeContext.SetX(index, value);
 
-        public V128 GetV(int index)             => _nativeContext.GetV(index);
+        public V128 GetV(int index) => _nativeContext.GetV(index);
         public void SetV(int index, V128 value) => _nativeContext.SetV(index, value);
 
-        public bool GetPstateFlag(PState flag)             => _nativeContext.GetPstateFlag(flag);
+        public bool GetPstateFlag(PState flag) => _nativeContext.GetPstateFlag(flag);
         public void SetPstateFlag(PState flag, bool value) => _nativeContext.SetPstateFlag(flag, value);
 
         public bool GetFPstateFlag(FPState flag) => _nativeContext.GetFPStateFlag(flag);
@@ -149,16 +129,6 @@ namespace ARMeilleure.State
             Running = false;
 
             _nativeContext.SetCounter(0);
-        }
-
-        public static void SuspendCounter()
-        {
-            _tickCounter.Stop();
-        }
-
-        public static void ResumeCounter()
-        {
-            _tickCounter.Start();
         }
 
         public void Dispose()
