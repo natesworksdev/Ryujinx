@@ -254,7 +254,7 @@ void main()
                 _pipeline.ClearRenderTargetColor(0, new ColorF(0f, 0f, 0f, 1f));
             }
 
-            _pipeline.SetViewports(0, viewports);
+            _pipeline.SetViewports(0, viewports, false);
             _pipeline.SetPrimitiveTopology(GAL.PrimitiveTopology.TriangleStrip);
             _pipeline.Draw(4, 1, 0, 0);
             _pipeline.Finish();
@@ -308,7 +308,7 @@ void main()
             _pipeline.SetProgram(_programColorClear);
             _pipeline.SetRenderTarget(dst, (uint)dstWidth, (uint)dstHeight, false, dstFormat);
             _pipeline.SetRenderTargetColorMasks(new uint[] { componentMask });
-            _pipeline.SetViewports(0, viewports);
+            _pipeline.SetViewports(0, viewports, false);
             _pipeline.SetScissors(scissors);
             _pipeline.SetPrimitiveTopology(GAL.PrimitiveTopology.TriangleStrip);
             _pipeline.Draw(4, 1, 0, 0);
@@ -380,7 +380,7 @@ void main()
             Span<Rectangle<int>> scissors = stackalloc Rectangle<int>[1];
 
             pipeline.SetProgram(_programColorBlit);
-            pipeline.SetViewports(0, viewports);
+            pipeline.SetViewports(0, viewports, false);
             pipeline.SetPrimitiveTopology(GAL.PrimitiveTopology.TriangleStrip);
             pipeline.Draw(4, 1, 0, 0);
 

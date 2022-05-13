@@ -829,7 +829,7 @@ namespace Ryujinx.Graphics.Vulkan
         }
 
         // TODO: Remove first parameter.
-        public void SetViewports(int first, ReadOnlySpan<GAL.Viewport> viewports)
+        public void SetViewports(int first, ReadOnlySpan<GAL.Viewport> viewports, bool disableTransform)
         {
             int count = Math.Min(Constants.MaxViewports, viewports.Length);
 
@@ -870,6 +870,19 @@ namespace Ryujinx.Graphics.Vulkan
                     vkViewport.MinDepth = Clamp(viewport.DepthNear);
                     vkViewport.MaxDepth = Clamp(viewport.DepthFar);
                 }
+            }
+
+            float disableTransformF = disableTransform ? 1.0f : 0.0f;
+            if (SupportBufferUpdater.Data.ViewportInverse.W != disableTransformF || disableTransform)
+            {
+                float scale = _renderScale[0].X;
+                SupportBufferUpdater.UpdateViewportInverse(new Vector4<float>
+                {
+                    X = scale * 2f / viewports[first].Region.Width,
+                    Y = scale * 2f / viewports[first].Region.Height,
+                    Z = 1,
+                    W = disableTransformF
+                });
             }
 
             _newState.ViewportsCount = (uint)count;

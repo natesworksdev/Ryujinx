@@ -14,7 +14,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         private const uint TocMagic = (byte)'T' | ((byte)'O' << 8) | ((byte)'C' << 16) | ((byte)'G' << 24);
 
         private const ushort VersionMajor = 1;
-        private const ushort VersionMinor = 0;
+        private const ushort VersionMinor = 1;
         private const uint VersionPacked = ((uint)VersionMajor << 16) | VersionMinor;
 
         private const string TocFileName = "guest.toc";
