@@ -879,6 +879,19 @@ namespace Ryujinx.Graphics.Vulkan
                 }
             }
 
+            float disableTransformF = disableTransform ? 1.0f : 0.0f;
+            if (SupportBufferUpdater.Data.ViewportInverse.W != disableTransformF || disableTransform)
+            {
+                float scale = _renderScale[0].X;
+                SupportBufferUpdater.UpdateViewportInverse(new Vector4<float>
+                {
+                    X = scale * 2f / viewports[first].Region.Width,
+                    Y = scale * 2f / viewports[first].Region.Height,
+                    Z = 1,
+                    W = disableTransformF
+                });
+            }
+
             _newState.ViewportsCount = (uint)count;
             SignalStateChange();
         }
