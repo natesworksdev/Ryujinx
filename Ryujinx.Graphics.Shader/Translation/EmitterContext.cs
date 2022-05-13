@@ -210,7 +210,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             if (Config.Options.TargetApi == TargetApi.Vulkan && Config.GpuAccessor.QueryTransformDepthMinusOneToOne())
             {
                 oldZLocal = Local();
-                this.Copy(oldYLocal, Attribute(AttributeConsts.PositionZ | AttributeConsts.LoadOutputMask));
+                this.Copy(oldZLocal, Attribute(AttributeConsts.PositionZ | AttributeConsts.LoadOutputMask));
             }
             else
             {
