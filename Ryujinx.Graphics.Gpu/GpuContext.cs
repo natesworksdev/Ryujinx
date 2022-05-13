@@ -82,19 +82,7 @@ namespace Ryujinx.Graphics.Gpu
         /// <summary>
         /// Host hardware capabilities.
         /// </summary>
-        internal ref Capabilities Capabilities
-        {
-            get
-            {
-                if (!_capsLoaded)
-                {
-                    _caps = Renderer.GetCapabilities();
-                    _capsLoaded = true;
-                }
-
-                return ref _caps;
-            }
-        }
+        internal ref Capabilities Capabilities => ref _caps;
 
         /// <summary>
         /// Event for signalling shader cache loading progress.
@@ -254,6 +242,8 @@ namespace Ryujinx.Graphics.Gpu
         public void SetGpuThread()
         {
             _gpuThread = Thread.CurrentThread;
+
+            _caps = Renderer.GetCapabilities();
         }
 
         /// <summary>
