@@ -10,6 +10,7 @@ namespace Ryujinx.Common.Logging
         Font,
         Emulation,
         FFmpeg,
+        GdbStub,
         Gpu,
         Hid,
         Host1x,

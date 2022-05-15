@@ -484,7 +484,9 @@ namespace Ryujinx.Headless.SDL2
                                                                   options.MemoryManagerMode,
                                                                   (bool)options.IgnoreMissingServices,
                                                                   options.AspectRatio,
-                                                                  options.AudioVolume);
+                                                                  options.AudioVolume,
+                                                                  (bool)options.EnableGdbStub,
+                                                                  (ushort)options.GdbStubPort);
 
             return new Switch(configuration);
         }

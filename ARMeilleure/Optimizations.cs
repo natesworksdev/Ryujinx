@@ -8,6 +8,7 @@ namespace ARMeilleure
 
         public static bool AllowLcqInFunctionTable  { get; set; } = true;
         public static bool UseUnmanagedDispatchLoop { get; set; } = true;
+        public static bool EnableDebugging          { get; set; } = false;
 
         public static bool UseSseIfAvailable       { get; set; } = true;
         public static bool UseSse2IfAvailable      { get; set; } = true;

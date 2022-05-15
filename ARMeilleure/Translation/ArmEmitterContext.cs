@@ -68,7 +68,7 @@ namespace ARMeilleure.Translation
             bool highCq,
             Aarch32Mode mode)
         {
-            HasPtc = Ptc.State != PtcState.Disabled;
+            HasPtc = Ptc.State != PtcState.Disabled && !Optimizations.EnableDebugging;
             Memory = memory;
             CountTable = countTable;
             FunctionTable = funcTable;

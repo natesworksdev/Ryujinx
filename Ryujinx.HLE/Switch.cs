@@ -19,6 +19,7 @@ namespace Ryujinx.HLE
         public MemoryBlock           Memory            { get; }
         public GpuContext            Gpu               { get; }
         public VirtualFileSystem     FileSystem        { get; }
+        public Debugger.Debugger     Debugger          { get; }
         public Horizon               System            { get; }
         public ApplicationLoader     Application       { get; }
         public PerformanceStatistics Statistics        { get; }
@@ -56,6 +57,7 @@ namespace Ryujinx.HLE
             AudioDeviceDriver = new CompatLayerHardwareDeviceDriver(Configuration.AudioDeviceDriver);
             Memory            = new MemoryBlock(Configuration.MemoryConfiguration.ToDramSize(), memoryAllocationFlags);
             Gpu               = new GpuContext(Configuration.GpuRenderer);
+            Debugger          = Configuration.EnableGdbStub ? new Debugger.Debugger(this, configuration.GdbStubPort) : null;
             System            = new Horizon(this);
             Statistics        = new PerformanceStatistics();
             Hid               = new Hid(this, System.HidStorage);
@@ -158,6 +160,7 @@ namespace Ryujinx.HLE
                 AudioDeviceDriver.Dispose();
                 FileSystem.Dispose();
                 Memory.Dispose();
+                Debugger.Dispose();
             }
         }
     }

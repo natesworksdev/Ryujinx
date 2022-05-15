@@ -32,6 +32,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Debugger\GdbXml\aarch64-core.xml" />
+    <None Remove="Debugger\GdbXml\aarch64-fpu.xml" />
+    <None Remove="Debugger\GdbXml\target.xml" />
     <None Remove="Homebrew.npdm" />
     <None Remove="HOS\Applets\SoftwareKeyboard\Resources\Icon_BtnA.png" />
     <None Remove="HOS\Applets\SoftwareKeyboard\Resources\Icon_BtnB.png" />
@@ -40,6 +43,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Debugger\GdbXml\aarch64-core.xml" />
+    <EmbeddedResource Include="Debugger\GdbXml\aarch64-fpu.xml" />
+    <EmbeddedResource Include="Debugger\GdbXml\target.xml" />
     <EmbeddedResource Include="Homebrew.npdm" />
     <EmbeddedResource Include="HOS\Applets\SoftwareKeyboard\Resources\Icon_BtnA.png" />
     <EmbeddedResource Include="HOS\Applets\SoftwareKeyboard\Resources\Icon_BtnB.png" />
