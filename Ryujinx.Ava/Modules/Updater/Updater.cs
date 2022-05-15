@@ -90,6 +90,8 @@ namespace Ryujinx.Modules
                     JObject jsonRoot = JObject.Parse(fetchedJson);
                     JToken assets = jsonRoot["assets"];
 
+                    _buildVer = (string)jsonRoot["name"];
+
                     foreach (JToken asset in assets)
                     {
                         string assetName = (string)asset["name"];
