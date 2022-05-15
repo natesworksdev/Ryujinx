@@ -143,7 +143,7 @@ namespace Ryujinx.Modules
             catch
             {
                 ContentDialogHelper.CreateWarningDialog(mainWindow, LocaleManager.Instance["DialogUpdaterConvertFailedGithubMessage"], LocaleManager.Instance["DialogUpdaterCancelUpdateMessage"]);
-                Logger.Error?.Print(LogClass.Application, "Failed to convert the received Ryujinx version from AppVeyor!");
+                Logger.Error?.Print(LogClass.Application, "Failed to convert the received Ryujinx version from Github!");
 
                 return;
             }
