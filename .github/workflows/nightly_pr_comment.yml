@@ -41,7 +41,7 @@ jobs:
             for (const art of artifacts) {
               if(art.name.includes('Debug')) {
                 hidden_debug_artifacts += `\n* [${art.name}](https://nightly.link/${owner}/${repo}/actions/artifacts/${art.id}.zip)`;
-              } else if(art.name.includes('headless-sdl2')) {
+              } else if(art.name.includes('sdl2-ryujinx')) {
                 hidden_headless_artifacts += `\n* [${art.name}](https://nightly.link/${owner}/${repo}/actions/artifacts/${art.id}.zip)`;
               } else {
                 body += `\n* [${art.name}](https://nightly.link/${owner}/${repo}/actions/artifacts/${art.id}.zip)`;
