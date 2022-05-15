@@ -114,12 +114,12 @@ namespace Ryujinx.Ui
 
                 GL.BlitFramebuffer(0,
                     0,
-                    AllocatedWidth,
-                    AllocatedHeight,
+                    (int)(AllocatedWidth * Program.WindowScaleFactor),
+                    (int)(AllocatedHeight * Program.WindowScaleFactor),
                     0,
                     0,
-                    AllocatedWidth,
-                    AllocatedHeight,
+                    (int)(AllocatedWidth * Program.WindowScaleFactor),
+                    (int)(AllocatedHeight * Program.WindowScaleFactor),
                     ClearBufferMask.ColorBufferBit,
                     BlitFramebufferFilter.Linear);
             }
