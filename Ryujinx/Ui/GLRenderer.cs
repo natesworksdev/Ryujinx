@@ -114,8 +114,8 @@ namespace Ryujinx.Ui
 
                 GL.BlitFramebuffer(0,
                     0,
-                    (int)(AllocatedWidth * Program.WindowScaleFactor),
-                    (int)(AllocatedHeight * Program.WindowScaleFactor),
+                    WindowWidth,
+                    WindowHeight,
                     0,
                     0,
                     WindowWidth,
