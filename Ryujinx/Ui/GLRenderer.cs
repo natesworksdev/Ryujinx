@@ -118,8 +118,8 @@ namespace Ryujinx.Ui
                     (int)(AllocatedHeight * Program.WindowScaleFactor),
                     0,
                     0,
-                    (int)(AllocatedWidth * Program.WindowScaleFactor),
-                    (int)(AllocatedHeight * Program.WindowScaleFactor),
+                    WindowWidth,
+                    WindowHeight,
                     ClearBufferMask.ColorBufferBit,
                     BlitFramebufferFilter.Linear);
             }
