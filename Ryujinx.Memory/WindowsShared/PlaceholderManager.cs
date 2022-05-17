@@ -50,18 +50,16 @@ namespace Ryujinx.Memory.WindowsShared
         /// <param name="address">Start address of the region to unreserve</param>
         /// <param name="size">Size in bytes of the region to unreserve</param>
         /// <exception cref="WindowsApiException">Thrown when the Windows API returns an error unreserving the memory</exception>
-        public void UnreserveRange(IntPtr location, IntPtr size)
+        public void UnreserveRange(ulong address, ulong size)
         {
-            ulong startAddress = (ulong)location;
-            ulong unmapSize = (ulong)size;
-            ulong endAddress = startAddress + unmapSize;
+            ulong endAddress = address + size;
 
             var overlaps = Array.Empty<IntervalTreeNode<ulong, ulong>>();
             int count;
 
             lock (_mappings)
             {
-                count = _mappings.Get(startAddress, endAddress, ref overlaps);
+                count = _mappings.Get(address, endAddress, ref overlaps);
 
                 for (int index = 0; index < count; index++)
                 {
@@ -82,12 +80,12 @@ namespace Ryujinx.Memory.WindowsShared
             if (count > 1)
             {
                 CheckFreeResult(WindowsApi.VirtualFree(
-                    (IntPtr)startAddress,
-                    (IntPtr)unmapSize,
+                    (IntPtr)address,
+                    (IntPtr)size,
                     AllocationType.Release | AllocationType.CoalescePlaceholders));
             }
 
-            RemoveProtection(startAddress, unmapSize);
+            RemoveProtection(address, size);
         }
 
         /// <summary>

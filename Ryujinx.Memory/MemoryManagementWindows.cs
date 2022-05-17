@@ -154,7 +154,7 @@ namespace Ryujinx.Memory
             }
             else
             {
-                _placeholders.UnreserveRange(address, size);
+                _placeholders.UnreserveRange((ulong)address, (ulong)size);
             }
 
             return WindowsApi.VirtualFree(address, IntPtr.Zero, AllocationType.Release);
