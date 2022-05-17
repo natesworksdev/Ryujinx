@@ -124,10 +124,6 @@ namespace Ryujinx.Ava.Ui.Windows
                 CheckLaunchState();
             }
 
-            if (OperatingSystem.IsLinux())
-            {
-                Program.WindowScaleFactor = this.PlatformImpl.RenderScaling;
-            }
             _rendererWaitEvent = new AutoResetEvent(false);
         }
 
