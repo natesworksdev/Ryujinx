@@ -20,7 +20,7 @@ using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Common.Configuration.System;
 using System;
 using System.Collections.Generic;
-using TimeZone = Ryujinx.Ava.Ui.Windows.TimeZone;
+using TimeZone = Ryujinx.Ava.Ui.Models.TimeZone;
 
 namespace Ryujinx.Ava.Ui.ViewModels
 {

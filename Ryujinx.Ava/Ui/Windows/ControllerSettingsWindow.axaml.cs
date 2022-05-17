@@ -25,13 +25,10 @@ namespace Ryujinx.Ava.Ui.Windows
 {
     public class ControllerSettingsWindow : UserControl
     {
-        private bool _isWaitingForInput;
-        private bool _mousePressed;
-        private bool _middleMousePressed;
         private bool _dialogOpen;
 
         public Grid SettingButtons { get; set; }
-        public ToggleButton CurrentToggledButton { get; set; }
+        private ButtonKeyAssigner _currentAssigner;
         public ControllerSettingsViewModel ViewModel { get; set; }
 
         public ControllerSettingsWindow()
@@ -61,12 +58,9 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             base.OnPointerReleased(e);
 
-            if (CurrentToggledButton != null && !CurrentToggledButton.IsPointerOver)
+            if (_currentAssigner != null && _currentAssigner.ToggledButton != null && !_currentAssigner.ToggledButton.IsPointerOver)
             {
-                ToggleButton button = CurrentToggledButton;
-
-                CurrentToggledButton = null;
-                button.IsChecked = false;
+                _currentAssigner.Cancel();
             }
         }
 
@@ -74,30 +68,42 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             if (sender is ToggleButton button)
             {
-                if (button == CurrentToggledButton)
+                if (_currentAssigner != null && button == _currentAssigner.ToggledButton)
                 {
                     return;
                 }
 
-                if (CurrentToggledButton == null && (bool)button.IsChecked)
-                {
-                    CurrentToggledButton = button;
-                    _isWaitingForInput = false;
+                bool isStick = button.Tag != null && button.Tag.ToString() == "stick";
 
-                    bool isStick = button.Tag != null && button.Tag.ToString() == "stick";
+                if (_currentAssigner == null && (bool)button.IsChecked)
+                {
+                    _currentAssigner = new ButtonKeyAssigner(button);
 
                     FocusManager.Instance.Focus(this, NavigationMethod.Pointer);
 
-                    Task.Run(() => HandleButtonPressed(button, isStick));
+                    PointerPressed += MouseClick;
+
+                    IKeyboard keyboard = (IKeyboard)ViewModel.AvaloniaKeyboardDriver.GetGamepad("0"); // Open Avalonia keyboard for cancel operations.
+                    IButtonAssigner assigner = CreateButtonAssigner(isStick);
+
+                    _currentAssigner.ButtonAssigned += (sender, e) =>
+                    {
+                        if (e.IsAssigned)
+                        {
+                            ViewModel.IsModified = true;
+                        }
+                    };
+
+                    _currentAssigner.GetInputAndAssign(assigner, keyboard);
                 }
                 else
                 {
-                    if (CurrentToggledButton != null)
+                    if (_currentAssigner != null)
                     {
-                        ToggleButton oldButton = CurrentToggledButton;
+                        ToggleButton oldButton = _currentAssigner.ToggledButton;
 
-                        CurrentToggledButton = null;
-                        oldButton.IsChecked = false;
+                        _currentAssigner.Cancel();
+                        _currentAssigner = null;
                         button.IsChecked = false;
                     }
                 }
@@ -107,95 +113,6 @@ namespace Ryujinx.Ava.Ui.Windows
         public void SaveCurrentProfile()
         {
             ViewModel.Save();
-        }
-
-        public async void HandleButtonPressed(ToggleButton button, bool forStick)
-        {
-            if (_isWaitingForInput)
-            {
-                Dispatcher.UIThread.Post(() =>
-                {
-                    button.IsChecked = false;
-                });
-
-                return;
-            }
-
-            _mousePressed = false;
-            _isWaitingForInput = true;
-
-            PointerPressed += MouseClick;
-
-            IButtonAssigner assigner = CreateButtonAssigner(forStick);
-            IKeyboard keyboard = (IKeyboard)ViewModel.AvaloniaKeyboardDriver.GetGamepad("0"); // Open Avalonia keyboard for cancel operations.
-
-            assigner.Initialize();
-
-            while (true)
-            {
-                if (!_isWaitingForInput)
-                {
-                    return;
-                }
-
-                Thread.Sleep(10);
-
-                assigner.ReadInput();
-
-                if (_mousePressed || keyboard.IsPressed(Key.Escape) || assigner.HasAnyButtonPressed() || assigner.ShouldCancel())
-                {
-                    break;
-                }
-            }
-
-            await Dispatcher.UIThread.InvokeAsync(() =>
-            {
-                string pressedButton = assigner.GetPressedButton();
-                if (_middleMousePressed)
-                {
-                    try
-                    {
-                        SetButtonText(button, "Unbound");
-                    }
-                    catch { }
-                }
-                else if (pressedButton != "")
-                {
-                    try
-                    {
-                        SetButtonText(button, pressedButton);
-                    }
-                    catch { }
-                }
-
-                ViewModel.IsModified = true;
-
-                keyboard.Dispose();
-
-                _middleMousePressed = false;
-                _isWaitingForInput = false;
-
-                button = CurrentToggledButton;
-
-                CurrentToggledButton = null;
-
-                if (button != null)
-                {
-                    button.IsChecked = false;
-                }
-
-                PointerPressed -= MouseClick;
-
-                static void SetButtonText(ToggleButton button, string text)
-                {
-                    ILogical textBlock = button.GetLogicalDescendants().First(x => x is TextBlock);
-
-                    if (textBlock != null && textBlock is TextBlock block)
-                    {
-                        block.Text = text;
-                    }
-                }
-            });
         }
 
         private IButtonAssigner CreateButtonAssigner(bool forStick)
@@ -223,23 +140,22 @@ namespace Ryujinx.Ava.Ui.Windows
         }
         private void Button_Unchecked(object sender, RoutedEventArgs e)
         {
-            if (CurrentToggledButton != null)
-            {
-                ToggleButton button = CurrentToggledButton;
-
-                CurrentToggledButton = null;
-                button.IsChecked = false;
-            }
+            _currentAssigner?.Cancel();
+            _currentAssigner = null;
         }
 
         private void MouseClick(object sender, PointerPressedEventArgs e)
         {
-            _mousePressed = true;
+            bool shouldUnbind = false;
 
             if (e.GetCurrentPoint(this).Properties.IsMiddleButtonPressed)
             {
-                _middleMousePressed = true;
+                shouldUnbind = true;
             }
+
+            _currentAssigner?.Cancel(shouldUnbind);
+
+            PointerPressed -= MouseClick;
         }
 
         private async void PlayerIndexBox_OnSelectionChanged(object? sender, SelectionChangedEventArgs e)

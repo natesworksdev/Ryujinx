@@ -11,6 +11,8 @@ using Avalonia.Threading;
 using FluentAvalonia.Core;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
+using Ryujinx.Ava.Ui.Controls;
+using Ryujinx.Ava.Ui.Models;
 using Ryujinx.Ava.Ui.ViewModels;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.Input;
@@ -22,6 +24,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using TimeZone = Ryujinx.Ava.Ui.Models.TimeZone;
 
 namespace Ryujinx.Ava.Ui.Windows
 {
@@ -31,10 +34,6 @@ namespace Ryujinx.Ava.Ui.Windows
         private TextBox _pathBox;
         private AutoCompleteBox _timeZoneBox;
         private ControllerSettingsWindow _controllerSettings;
-
-        private bool _isWaitingForInput;
-        private bool _mousePressed;
-        private bool _middleMousePressed;
 
         // Pages
         private Control _uiPage;
@@ -47,10 +46,9 @@ namespace Ryujinx.Ava.Ui.Windows
         private Control _networkPage;
         private Control _loggingPage;
         private NavigationView _navPanel;
+        private ButtonKeyAssigner _currentAssigner;
 
         public SettingsViewModel ViewModel { get; set; }
-
-        public ToggleButton CurrentToggledButton { get; set; }
 
         public SettingsWindow(VirtualFileSystem virtualFileSystem, ContentManager contentManager)
         {
@@ -117,138 +115,56 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             if (sender is ToggleButton button)
             {
-                if (button == CurrentToggledButton)
+                if (_currentAssigner != null && button == _currentAssigner.ToggledButton)
                 {
                     return;
                 }
 
-                if (CurrentToggledButton == null && (bool)button.IsChecked)
+                if (_currentAssigner == null && (bool)button.IsChecked)
                 {
-                    CurrentToggledButton = button;
-                    _isWaitingForInput = false;
+                    _currentAssigner = new ButtonKeyAssigner(button);
 
                     FocusManager.Instance.Focus(this, NavigationMethod.Pointer);
 
-                    Task.Run(() => HandleButtonPressed(button));
+                    PointerPressed += MouseClick;
+
+                    IKeyboard keyboard = (IKeyboard)ViewModel.AvaloniaKeyboardDriver.GetGamepad(ViewModel.AvaloniaKeyboardDriver.GamepadsIds[0]);
+                    IButtonAssigner assigner = new KeyboardKeyAssigner(keyboard);
+
+                    _currentAssigner.GetInputAndAssign(assigner);
                 }
                 else
                 {
-                    if (CurrentToggledButton != null)
+                    if (_currentAssigner != null)
                     {
-                        ToggleButton oldButton = CurrentToggledButton;
+                        ToggleButton oldButton = _currentAssigner.ToggledButton;
 
-                        CurrentToggledButton = null;
-                        oldButton.IsChecked = false;
+                        _currentAssigner.Cancel();
+                        _currentAssigner = null;
                         button.IsChecked = false;
                     }
                 }
             }
-        }
-
-        public async void HandleButtonPressed(ToggleButton button)
-        {
-            if (_isWaitingForInput)
-            {
-                Dispatcher.UIThread.Post(() =>
-                {
-                    button.IsChecked = false;
-                });
-
-                return;
-            }
-
-            _mousePressed = false;
-            _isWaitingForInput = true;
-
-            PointerPressed += MouseClick;
-
-            IKeyboard keyboard = (IKeyboard)ViewModel.AvaloniaKeyboardDriver.GetGamepad(ViewModel.AvaloniaKeyboardDriver.GamepadsIds[0]);
-            IButtonAssigner assigner = new KeyboardKeyAssigner(keyboard);
-
-            assigner.Initialize();
-
-            while (true)
-            {
-                if (!_isWaitingForInput)
-                {
-                    return;
-                }
-
-                Thread.Sleep(10);
-
-                assigner.ReadInput();
-
-                if (_mousePressed || assigner.HasAnyButtonPressed() || assigner.ShouldCancel())
-                {
-                    break;
-                }
-            }
-
-            await Dispatcher.UIThread.InvokeAsync(() =>
-            {
-                string pressedButton = assigner.GetPressedButton();
-                if (_middleMousePressed)
-                {
-                    try
-                    {
-                        SetButtonText(button, "Unbound");
-                    }
-                    catch { }
-                }
-                else if (pressedButton != "")
-                {
-                    try
-                    {
-                        SetButtonText(button, pressedButton);
-                    }
-                    catch { }
-                }
-
-                _middleMousePressed = false;
-                _isWaitingForInput = false;
-
-                button = CurrentToggledButton;
-
-                CurrentToggledButton = null;
-
-                if (button != null)
-                {
-                    button.IsChecked = false;
-                }
-
-                PointerPressed -= MouseClick;
-
-                static void SetButtonText(ToggleButton button, string text)
-                {
-                    ILogical textBlock = button.GetLogicalDescendants().First(x => x is TextBlock);
-
-                    if (textBlock != null && textBlock is TextBlock block)
-                    {
-                        block.Text = text;
-                    }
-                }
-            });
-        }
+        }        
 
         private void Button_Unchecked(object sender, RoutedEventArgs e)
         {
-            if (CurrentToggledButton != null)
-            {
-                ToggleButton button = CurrentToggledButton;
-
-                CurrentToggledButton = null;
-                button.IsChecked = false;
-            }
+            _currentAssigner?.Cancel();
+            _currentAssigner = null;
         }
 
         private void MouseClick(object sender, PointerPressedEventArgs e)
         {
-            _mousePressed = true;
+            bool shouldUnbind = false;
 
             if (e.GetCurrentPoint(this).Properties.IsMiddleButtonPressed)
             {
-                _middleMousePressed = true;
+                shouldUnbind = true;
             }
+
+            _currentAssigner?.Cancel(shouldUnbind);
+
+            PointerPressed -= MouseClick;
         }
 
         private void NavPanelOnSelectionChanged(object sender, NavigationViewSelectionChangedEventArgs e)

@@ -1,4 +1,4 @@
-namespace Ryujinx.Ava.Ui.Windows
+namespace Ryujinx.Ava.Ui.Models
 {
     public class TimeZone
     {

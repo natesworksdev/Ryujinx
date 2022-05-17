@@ -1,9 +1,7 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
-using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.Models;
 using Ryujinx.Ava.Ui.ViewModels;
 using Ryujinx.Common.Configuration.Hid.Controller;
@@ -33,14 +31,14 @@ namespace Ryujinx.Ava.Ui.Windows
                 MirrorInput = config.MirrorInput,
                 EnableCemuHookMotion = config.EnableCemuHookMotion
             };
-            
+
             InitializeComponent();
         }
 
         private void InitializeComponent()
         {
             DataContext = _viewmodel;
-            
+
             AvaloniaXamlLoader.Load(this);
         }
 
