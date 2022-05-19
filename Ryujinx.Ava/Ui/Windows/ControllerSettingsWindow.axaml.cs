@@ -191,6 +191,8 @@ namespace Ryujinx.Ava.Ui.Windows
 
         public void Dispose()
         {
+            _currentAssigner?.Cancel();
+            _currentAssigner = null;
             ViewModel.Dispose();
         }
     }

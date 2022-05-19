@@ -290,6 +290,8 @@ namespace Ryujinx.Ava.Ui.Windows
         protected override void OnClosed(EventArgs e)
         {
             _controllerSettings.Dispose();
+            _currentAssigner?.Cancel();
+            _currentAssigner = null;
             base.OnClosed(e);
         }
     }
