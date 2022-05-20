@@ -310,7 +310,7 @@ namespace Ryujinx.Graphics.Vulkan
                 api: TargetApi.Vulkan,
                 GpuVendor,
                 hasFrontFacingBug: IsIntelWindows,
-                hasVectorIndexingBug: false,
+                hasVectorIndexingBug: Vendor == Vendor.Qualcomm,
                 supportsAstcCompression: features.TextureCompressionAstcLdr,
                 supports3DTextureCompression: true,
                 supportsBgraFormat: true,
@@ -386,6 +386,7 @@ namespace Ryujinx.Graphics.Vulkan
                 0x1002 => Vendor.Amd,
                 0x10DE => Vendor.Nvidia,
                 0x8086 => Vendor.Intel,
+                0x5143 => Vendor.Qualcomm,
                 _ => Vendor.Unknown
             };
 
