@@ -5,6 +5,7 @@ namespace Ryujinx.Graphics.Vulkan
         Amd,
         Intel,
         Nvidia,
+        Qualcomm,
         Unknown
     }
 }
