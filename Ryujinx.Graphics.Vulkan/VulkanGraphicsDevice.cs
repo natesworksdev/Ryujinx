@@ -118,6 +118,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             var queueFamilyIndex = VulkanInitialization.FindSuitableQueueFamily(api, _physicalDevice, _surface, out uint maxQueueCount);
             var supportedExtensions = VulkanInitialization.GetSupportedExtensions(api, _physicalDevice);
+            var supportedFeatures = api.GetPhysicalDeviceFeature(_physicalDevice);
 
             _device = VulkanInitialization.CreateDevice(api, _physicalDevice, queueFamilyIndex, supportedExtensions, maxQueueCount);
 
@@ -184,6 +185,8 @@ namespace Ryujinx.Graphics.Vulkan
             Capabilities = new HardwareCapabilities(
                 supportedExtensions.Contains(ExtConditionalRendering.ExtensionName),
                 supportedExtensions.Contains(ExtExtendedDynamicState.ExtensionName),
+                supportedExtensions.Contains(ExtTransformFeedback.ExtensionName),
+                supportedFeatures.GeometryShader,
                 propertiesSubgroupSizeControl.MinSubgroupSize,
                 propertiesSubgroupSizeControl.MaxSubgroupSize,
                 propertiesSubgroupSizeControl.RequiredSubgroupSizeStages);
