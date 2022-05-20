@@ -24,6 +24,7 @@ namespace Ryujinx.Graphics.Vulkan.Queries
         private readonly IntPtr _bufferMap;
         private readonly CounterType _type;
         private bool _result32Bit;
+        private bool _isSupported;
 
         private long _defaultValue;
 
@@ -35,18 +36,23 @@ namespace Ryujinx.Graphics.Vulkan.Queries
             _type = type;
             _result32Bit = result32Bit;
 
-            QueryPipelineStatisticFlags flags = type == CounterType.PrimitivesGenerated ? 
-                QueryPipelineStatisticFlags.QueryPipelineStatisticGeometryShaderPrimitivesBit : 0;
+            _isSupported = QueryTypeSupported(gd, type);
 
-            var queryPoolCreateInfo = new QueryPoolCreateInfo()
+            if (_isSupported)
             {
-                SType = StructureType.QueryPoolCreateInfo,
-                QueryCount = 1,
-                QueryType = GetQueryType(type),
-                PipelineStatistics = flags
-            };
+                QueryPipelineStatisticFlags flags = type == CounterType.PrimitivesGenerated ?
+                    QueryPipelineStatisticFlags.QueryPipelineStatisticGeometryShaderPrimitivesBit : 0;
 
-            gd.Api.CreateQueryPool(device, queryPoolCreateInfo, null, out _queryPool).ThrowOnError();
+                var queryPoolCreateInfo = new QueryPoolCreateInfo()
+                {
+                    SType = StructureType.QueryPoolCreateInfo,
+                    QueryCount = 1,
+                    QueryType = GetQueryType(type),
+                    PipelineStatistics = flags
+                };
+
+                gd.Api.CreateQueryPool(device, queryPoolCreateInfo, null, out _queryPool).ThrowOnError();
+            }
 
             var buffer = gd.BufferManager.Create(gd, sizeof(long), forConditionalRendering: true);
 
@@ -54,6 +60,17 @@ namespace Ryujinx.Graphics.Vulkan.Queries
             _defaultValue = result32Bit ? DefaultValueInt : DefaultValue;
             Marshal.WriteInt64(_bufferMap, _defaultValue);
             _buffer = buffer;
+        }
+
+        private bool QueryTypeSupported(VulkanGraphicsDevice gd, CounterType type)
+        {
+            return type switch
+            {
+                CounterType.SamplesPassed => true,
+                CounterType.TransformFeedbackPrimitivesWritten => gd.Capabilities.SupportsTransformFeedback,
+                CounterType.PrimitivesGenerated => gd.Capabilities.SupportsGeometryShader,
+                _ => false
+            };
         }
 
         private static QueryType GetQueryType(CounterType type)
@@ -80,15 +97,21 @@ namespace Ryujinx.Graphics.Vulkan.Queries
 
         public void Begin()
         {
-            _pipeline.BeginQuery(this, _queryPool, !_isReset);
+            if (_isSupported)
+            {
+                _pipeline.BeginQuery(this, _queryPool, !_isReset);
+            }
             _isReset = false;
         }
 
         public unsafe void End(bool withResult)
         {
-            _pipeline.EndQuery(_queryPool);
+            if (_isSupported)
+            {
+                _pipeline.EndQuery(_queryPool);
+            }
 
-            if (withResult)
+            if (withResult && _isSupported)
             {
                 Marshal.WriteInt64(_bufferMap, _defaultValue);
                 _pipeline.CopyQueryResults(this);
@@ -141,7 +164,10 @@ namespace Ryujinx.Graphics.Vulkan.Queries
 
         public void PoolReset(CommandBuffer cmd)
         {
-            _api.CmdResetQueryPool(cmd, _queryPool, 0, 1);
+            if (_isSupported)
+            {
+                _api.CmdResetQueryPool(cmd, _queryPool, 0, 1);
+            }
             _isReset = true;
         }
 
@@ -170,7 +196,10 @@ namespace Ryujinx.Graphics.Vulkan.Queries
         public unsafe void Dispose()
         {
             _buffer.Dispose();
-            _api.DestroyQueryPool(_device, _queryPool, null);
+            if (_isSupported)
+            {
+                _api.DestroyQueryPool(_device, _queryPool, null);
+            }
             _queryPool = default;
         }
     }
