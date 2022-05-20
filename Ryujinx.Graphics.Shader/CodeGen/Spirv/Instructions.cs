@@ -893,23 +893,55 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             var i2 = context.ShiftRightArithmetic(context.TypeS32(), src2, context.Constant(context.TypeS32(), 2));
             var i3 = context.BitwiseAnd(context.TypeS32(), src2, context.Constant(context.TypeS32(), 3));
 
-            SpvInstruction elemPointer;
+            SpvInstruction value = null;
 
-            if (context.UniformBuffersArray != null)
+            if (context.Config.GpuAccessor.QueryHostHasVectorIndexingBug())
             {
-                var ubVariable = context.UniformBuffersArray;
-                var i0 = context.Get(AggregateType.S32, src1);
+                // Test for each component individually.
+                for (int i = 0; i < 4; i++)
+                {
+                    var component = context.Constant(context.TypeS32(), i);
 
-                elemPointer = context.AccessChain(context.TypePointer(StorageClass.Uniform, context.TypeFP32()), ubVariable, i0, i1, i2, i3);
+                    SpvInstruction elemPointer;
+                    if (context.UniformBuffersArray != null)
+                    {
+                        var ubVariable = context.UniformBuffersArray;
+                        var i0 = context.Get(AggregateType.S32, src1);
+
+                        elemPointer = context.AccessChain(context.TypePointer(StorageClass.Uniform, context.TypeFP32()), ubVariable, i0, i1, i2, component);
+                    }
+                    else
+                    {
+                        var ubVariable = context.UniformBuffers[((AstOperand)src1).Value];
+
+                        elemPointer = context.AccessChain(context.TypePointer(StorageClass.Uniform, context.TypeFP32()), ubVariable, i1, i2, component);
+                    }
+
+                    SpvInstruction newValue = context.Load(context.TypeFP32(), elemPointer);
+
+                    value = value != null ? context.Select(context.TypeFP32(), context.IEqual(context.TypeBool(), i3, component), newValue, value) : newValue;
+                }
             }
             else
             {
-                var ubVariable = context.UniformBuffers[((AstOperand)src1).Value];
+                SpvInstruction elemPointer;
 
-                elemPointer = context.AccessChain(context.TypePointer(StorageClass.Uniform, context.TypeFP32()), ubVariable, i1, i2, i3);
+                if (context.UniformBuffersArray != null)
+                {
+                    var ubVariable = context.UniformBuffersArray;
+                    var i0 = context.Get(AggregateType.S32, src1);
+
+                    elemPointer = context.AccessChain(context.TypePointer(StorageClass.Uniform, context.TypeFP32()), ubVariable, i0, i1, i2, i3);
+                }
+                else
+                {
+                    var ubVariable = context.UniformBuffers[((AstOperand)src1).Value];
+
+                    elemPointer = context.AccessChain(context.TypePointer(StorageClass.Uniform, context.TypeFP32()), ubVariable, i1, i2, i3);
+                }
+
+                value = context.Load(context.TypeFP32(), elemPointer);
             }
-
-            var value = context.Load(context.TypeFP32(), elemPointer);
 
             return new OperationResult(AggregateType.FP32, value);
         }
