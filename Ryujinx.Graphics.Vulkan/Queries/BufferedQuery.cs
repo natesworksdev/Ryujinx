@@ -67,7 +67,7 @@ namespace Ryujinx.Graphics.Vulkan.Queries
             return type switch
             {
                 CounterType.SamplesPassed => true,
-                CounterType.TransformFeedbackPrimitivesWritten => gd.Capabilities.SupportsTransformFeedback,
+                CounterType.TransformFeedbackPrimitivesWritten => gd.Capabilities.SupportsTransformFeedbackQueries,
                 CounterType.PrimitivesGenerated => gd.Capabilities.SupportsGeometryShader,
                 _ => false
             };
