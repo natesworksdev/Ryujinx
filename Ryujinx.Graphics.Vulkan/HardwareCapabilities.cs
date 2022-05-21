@@ -7,6 +7,7 @@ namespace Ryujinx.Graphics.Vulkan
         public bool SupportsConditionalRendering { get; }
         public bool SupportsExtendedDynamicState { get; }
         public bool SupportsTransformFeedback { get; }
+        public bool SupportsTransformFeedbackQueries { get; }
         public bool SupportsGeometryShader { get; }
         public uint MinSubgroupSize { get; }
         public uint MaxSubgroupSize { get; }
@@ -16,6 +17,7 @@ namespace Ryujinx.Graphics.Vulkan
             bool supportsConditionalRendering,
             bool supportsExtendedDynamicState,
             bool supportsTransformFeedback,
+            bool supportsTransformFeedbackQueries,
             bool supportsGeometryShader,
             uint minSubgroupSize,
             uint maxSubgroupSize,
@@ -24,6 +26,7 @@ namespace Ryujinx.Graphics.Vulkan
             SupportsConditionalRendering = supportsConditionalRendering;
             SupportsExtendedDynamicState = supportsExtendedDynamicState;
             SupportsTransformFeedback = supportsTransformFeedback;
+            SupportsTransformFeedbackQueries = supportsTransformFeedbackQueries;
             SupportsGeometryShader = supportsGeometryShader;
             MinSubgroupSize = minSubgroupSize;
             MaxSubgroupSize = maxSubgroupSize;
