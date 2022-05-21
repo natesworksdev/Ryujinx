@@ -180,12 +180,26 @@ namespace Ryujinx.Graphics.Vulkan
                 properties2.PNext = &propertiesSubgroupSizeControl;
             }
 
+            bool supportsTransformFeedback = supportedExtensions.Contains(ExtTransformFeedback.ExtensionName);
+
+            PhysicalDeviceTransformFeedbackPropertiesEXT propertiesTransformFeedback = new PhysicalDeviceTransformFeedbackPropertiesEXT()
+            {
+                SType = StructureType.PhysicalDeviceTransformFeedbackPropertiesExt
+            };
+
+            if (supportsTransformFeedback)
+            {
+                propertiesTransformFeedback.PNext = properties2.PNext;
+                properties2.PNext = &propertiesTransformFeedback;
+            }
+
             Api.GetPhysicalDeviceProperties2(_physicalDevice, &properties2);
 
             Capabilities = new HardwareCapabilities(
                 supportedExtensions.Contains(ExtConditionalRendering.ExtensionName),
                 supportedExtensions.Contains(ExtExtendedDynamicState.ExtensionName),
-                supportedExtensions.Contains(ExtTransformFeedback.ExtensionName),
+                supportsTransformFeedback,
+                propertiesTransformFeedback.TransformFeedbackQueries,
                 supportedFeatures.GeometryShader,
                 propertiesSubgroupSizeControl.MinSubgroupSize,
                 propertiesSubgroupSizeControl.MaxSubgroupSize,
