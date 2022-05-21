@@ -348,20 +348,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
                     value = FDiv(TypeFP32(), value, scale);
                 }
-                else if (Config.Options.TargetApi == TargetApi.Vulkan &&
-                    attr == AttributeConsts.PositionZ &&
-                    Config.GpuAccessor.QueryTransformDepthMinusOneToOne())
-                {
-                    var constTwo = Constant(TypeFP32(), 2.0f);
-                    var constZeroPointFive = Constant(TypeFP32(), 0.5f);
-
-                    var elemPointerW = GetAttributeElemPointer(AttributeConsts.PositionW, isOutAttr, null, out var elemTypeW);
-                    var valueW = Load(GetType(elemTypeW), elemPointerW);
-
-                    var halfW = FMul(TypeFP32(), valueW, constZeroPointFive);
-
-                    value = FMul(TypeFP32(), FSub(TypeFP32(), value, halfW), constTwo);
-                }
                 else if (attr == AttributeConsts.FrontFacing && Config.GpuAccessor.QueryHostHasFrontFacingBug())
                 {
                     // Workaround for what appears to be a bug on Intel compiler.
