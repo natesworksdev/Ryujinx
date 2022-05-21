@@ -86,6 +86,6 @@ namespace Ryujinx.Headless.SDL2.Vulkan
             Device.DisposeGpu();
         }
 
-        protected override void SwapBuffers() { }
+        protected override void SwapBuffers(object texture) { }
     }
 }
