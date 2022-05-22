@@ -1229,16 +1229,18 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (_arrayViewTexture == null && IsSameDimensionsTarget(target))
             {
+                FormatInfo formatInfo = TextureCompatibility.ToHostCompatibleFormat(Info, _context.Capabilities);
+
                 TextureCreateInfo createInfo = new TextureCreateInfo(
                     Info.Width,
                     Info.Height,
                     target == Target.CubemapArray ? 6 : 1,
                     Info.Levels,
                     Info.Samples,
-                    Info.FormatInfo.BlockWidth,
-                    Info.FormatInfo.BlockHeight,
-                    Info.FormatInfo.BytesPerPixel,
-                    Info.FormatInfo.Format,
+                    formatInfo.BlockWidth,
+                    formatInfo.BlockHeight,
+                    formatInfo.BytesPerPixel,
+                    formatInfo.Format,
                     Info.DepthStencilMode,
                     target,
                     Info.SwizzleR,
