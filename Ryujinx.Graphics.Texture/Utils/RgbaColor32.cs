@@ -3,16 +3,35 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
-namespace Ryujinx.Graphics.Texture.Encoders
+namespace Ryujinx.Graphics.Texture.Utils
 {
     struct RgbaColor32 : IEquatable<RgbaColor32>
     {
-        private readonly Vector128<int> _color;
+        private Vector128<int> _color;
 
-        public int R => _color.GetElement(0);
-        public int G => _color.GetElement(1);
-        public int B => _color.GetElement(2);
-        public int A => _color.GetElement(3);
+        public int R
+        {
+            get => _color.GetElement(0);
+            set => _color = _color.WithElement(0, value);
+        }
+
+        public int G
+        {
+            get => _color.GetElement(1);
+            set => _color = _color.WithElement(1, value);
+        }
+
+        public int B
+        {
+            get => _color.GetElement(2);
+            set => _color = _color.WithElement(2, value);
+        }
+
+        public int A
+        {
+            get => _color.GetElement(3);
+            set => _color = _color.WithElement(3, value);
+        }
 
         public RgbaColor32(Vector128<int> color)
         {
@@ -193,7 +212,7 @@ namespace Ryujinx.Graphics.Texture.Encoders
             return HashCode.Combine(R, G, B, A);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is RgbaColor32 other && Equals(other);
         }

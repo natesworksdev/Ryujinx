@@ -20,7 +20,20 @@ namespace Ryujinx.Graphics.Vulkan
             _table = new FormatFeatureFlags[Enum.GetNames(typeof(GAL.Format)).Length];
         }
 
-        public bool FormatSupports(GAL.Format format, FormatFeatureFlags flags)
+        public bool FormatsSupports(FormatFeatureFlags flags, params GAL.Format[] formats)
+        {
+            foreach (GAL.Format format in formats)
+            {
+                if (!FormatSupports(flags, format))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public bool FormatSupports(FormatFeatureFlags flags, GAL.Format format)
         {
             var formatFeatureFlags = _table[(int)format];
 
@@ -56,7 +69,7 @@ namespace Ryujinx.Graphics.Vulkan
                 requiredFeatures |= FormatFeatureFlags.FormatFeatureStorageImageBit;
             }
 
-            if (!FormatSupports(srcFormat, requiredFeatures) ||
+            if (!FormatSupports(requiredFeatures, srcFormat) ||
                 (srcFormat == GAL.Format.D24UnormS8Uint && VulkanConfiguration.ForceD24S8Unsupported))
             {
                 // The format is not supported. Can we convert it to a higher precision format?
