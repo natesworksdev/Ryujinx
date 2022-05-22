@@ -315,6 +315,33 @@ namespace Ryujinx.Graphics.Vulkan
 
         public Capabilities GetCapabilities()
         {
+            FormatFeatureFlags compressedFormatFeatureFlags =
+                FormatFeatureFlags.FormatFeatureSampledImageBit |
+                FormatFeatureFlags.FormatFeatureSampledImageFilterLinearBit |
+                FormatFeatureFlags.FormatFeatureBlitSrcBit |
+                FormatFeatureFlags.FormatFeatureTransferSrcBit |
+                FormatFeatureFlags.FormatFeatureTransferDstBit;
+
+            bool supportsBc123CompressionFormat = FormatCapabilities.FormatsSupports(compressedFormatFeatureFlags,
+                GAL.Format.Bc1RgbaSrgb,
+                GAL.Format.Bc1RgbaUnorm,
+                GAL.Format.Bc2Srgb,
+                GAL.Format.Bc2Unorm,
+                GAL.Format.Bc3Srgb,
+                GAL.Format.Bc3Unorm);
+
+            bool supportsBc45CompressionFormat = FormatCapabilities.FormatsSupports(compressedFormatFeatureFlags,
+                GAL.Format.Bc4Snorm,
+                GAL.Format.Bc4Unorm,
+                GAL.Format.Bc5Snorm,
+                GAL.Format.Bc5Unorm);
+
+            bool supportsBc67CompressionFormat = FormatCapabilities.FormatsSupports(compressedFormatFeatureFlags,
+                GAL.Format.Bc6HSfloat,
+                GAL.Format.Bc6HUfloat,
+                GAL.Format.Bc7Srgb,
+                GAL.Format.Bc7Unorm);
+
             Api.GetPhysicalDeviceFeatures(_physicalDevice, out var features);
             Api.GetPhysicalDeviceProperties(_physicalDevice, out var properties);
 
@@ -326,6 +353,9 @@ namespace Ryujinx.Graphics.Vulkan
                 hasFrontFacingBug: IsIntelWindows,
                 hasVectorIndexingBug: Vendor == Vendor.Qualcomm,
                 supportsAstcCompression: features.TextureCompressionAstcLdr,
+                supportsBc123Compression: supportsBc123CompressionFormat,
+                supportsBc45Compression: supportsBc45CompressionFormat,
+                supportsBc67Compression: supportsBc67CompressionFormat,
                 supports3DTextureCompression: true,
                 supportsBgraFormat: true,
                 supportsR4G4Format: false,

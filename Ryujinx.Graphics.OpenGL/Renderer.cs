@@ -105,6 +105,9 @@ namespace Ryujinx.Graphics.OpenGL
                 hasFrontFacingBug: HwCapabilities.Vendor == HwCapabilities.GpuVendor.IntelWindows,
                 hasVectorIndexingBug: HwCapabilities.Vendor == HwCapabilities.GpuVendor.AmdWindows,
                 supportsAstcCompression: HwCapabilities.SupportsAstcCompression,
+                supportsBc123Compression: HwCapabilities.SupportsTextureCompressionS3tc,
+                supportsBc45Compression: HwCapabilities.SupportsTextureCompressionRgtc,
+                supportsBc67Compression: true, // Should check BPTC extension, but for some reason NVIDIA is not exposing the extension.
                 supports3DTextureCompression: false,
                 supportsBgraFormat: false,
                 supportsR4G4Format: false,

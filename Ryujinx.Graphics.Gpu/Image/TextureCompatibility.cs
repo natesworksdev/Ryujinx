@@ -88,9 +88,9 @@ namespace Ryujinx.Graphics.Gpu.Image
                 return new FormatInfo(Format.R4G4B4A4Unorm, 1, 1, 2, 4);
             }
 
-            if (!caps.Supports3DTextureCompression && info.Target == Target.Texture3D)
+            if (!HostSupportsBcFormat(info.FormatInfo.Format, info.Target, caps))
             {
-                // The host API does not support 3D compressed formats.
+                // The host API does not this compressed format.
                 // We assume software decompression will be done for those textures,
                 // and so we adjust the format here to match the decompressor output.
                 switch (info.FormatInfo.Format)
@@ -98,10 +98,12 @@ namespace Ryujinx.Graphics.Gpu.Image
                     case Format.Bc1RgbaSrgb:
                     case Format.Bc2Srgb:
                     case Format.Bc3Srgb:
+                    case Format.Bc7Srgb:
                         return new FormatInfo(Format.R8G8B8A8Srgb, 1, 1, 4, 4);
                     case Format.Bc1RgbaUnorm:
                     case Format.Bc2Unorm:
                     case Format.Bc3Unorm:
+                    case Format.Bc7Unorm:
                         return new FormatInfo(Format.R8G8B8A8Unorm, 1, 1, 4, 4);
                     case Format.Bc4Unorm:
                         return new FormatInfo(Format.R8Unorm, 1, 1, 1, 1);
@@ -111,10 +113,48 @@ namespace Ryujinx.Graphics.Gpu.Image
                         return new FormatInfo(Format.R8G8Unorm, 1, 1, 2, 2);
                     case Format.Bc5Snorm:
                         return new FormatInfo(Format.R8G8Snorm, 1, 1, 2, 2);
+                    case Format.Bc6HSfloat:
+                    case Format.Bc6HUfloat:
+                        return new FormatInfo(Format.R16G16B16A16Float, 1, 1, 8, 4);
                 }
             }
 
             return info.FormatInfo;
+        }
+
+        /// <summary>
+        /// Checks if the host API supports a given texture compression format of the BC family.
+        /// </summary>
+        /// <param name="format">BC format to be checked</param>
+        /// <param name="target">Target usage of the texture</param>
+        /// <param name="caps">Host GPU Capabilities</param>
+        /// <returns>True if the texture host supports the format with the given target usage, false otherwise</returns>
+        public static bool HostSupportsBcFormat(Format format, Target target, Capabilities caps)
+        {
+            bool not3DOr3DCompressionSupported = target != Target.Texture3D || caps.Supports3DTextureCompression;
+
+            switch (format)
+            {
+                case Format.Bc1RgbaSrgb:
+                case Format.Bc1RgbaUnorm:
+                case Format.Bc2Srgb:
+                case Format.Bc2Unorm:
+                case Format.Bc3Srgb:
+                case Format.Bc3Unorm:
+                    return caps.SupportsBc123Compression && not3DOr3DCompressionSupported;
+                case Format.Bc4Unorm:
+                case Format.Bc4Snorm:
+                case Format.Bc5Unorm:
+                case Format.Bc5Snorm:
+                    return caps.SupportsBc45Compression && not3DOr3DCompressionSupported;
+                case Format.Bc6HSfloat:
+                case Format.Bc6HUfloat:
+                case Format.Bc7Srgb:
+                case Format.Bc7Unorm:
+                    return caps.SupportsBc67Compression && not3DOr3DCompressionSupported;
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -748,7 +788,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>True if the texture target and samples count matches, false otherwise</returns>
         public static bool TargetAndSamplesCompatible(TextureInfo lhs, TextureInfo rhs)
         {
-            return lhs.Target     == rhs.Target &&
+            return lhs.Target == rhs.Target &&
                    lhs.SamplesInX == rhs.SamplesInX &&
                    lhs.SamplesInY == rhs.SamplesInY;
         }

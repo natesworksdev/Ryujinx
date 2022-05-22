@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
-namespace Ryujinx.Graphics.Texture.Encoders
+namespace Ryujinx.Graphics.Texture.Utils
 {
     struct RgbaColor8 : IEquatable<RgbaColor8>
     {
