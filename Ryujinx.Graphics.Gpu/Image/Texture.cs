@@ -844,7 +844,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 data = PixelConverter.ConvertR4G4ToR4G4B4A4(data);
             }
-            else if (!_context.Capabilities.Supports3DTextureCompression && Target == Target.Texture3D)
+            else if (!TextureCompatibility.HostSupportsBcFormat(Format, Target, _context.Capabilities))
             {
                 switch (Format)
                 {
@@ -867,6 +867,14 @@ namespace Ryujinx.Graphics.Gpu.Image
                     case Format.Bc5Snorm:
                     case Format.Bc5Unorm:
                         data = BCnDecoder.DecodeBC5(data, width, height, depth, levels, layers, Format == Format.Bc5Snorm);
+                        break;
+                    case Format.Bc6HSfloat:
+                    case Format.Bc6HUfloat:
+                        data = BCnDecoder.DecodeBC6(data, width, height, depth, levels, layers, Format == Format.Bc6HSfloat);
+                        break;
+                    case Format.Bc7Srgb:
+                    case Format.Bc7Unorm:
+                        data = BCnDecoder.DecodeBC7(data, width, height, depth, levels, layers);
                         break;
                 }
             }

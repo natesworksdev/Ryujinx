@@ -4,14 +4,14 @@ using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
-namespace Ryujinx.Graphics.Texture.Encoders
+namespace Ryujinx.Graphics.Texture.Utils
 {
-    static class BC7Utils
+    static class BC67Utils
     {
         private static byte[][] _quantizationLut;
         private static byte[][] _quantizationLutNoPBit;
 
-        static BC7Utils()
+        static BC67Utils()
         {
             _quantizationLut = new byte[5][];
             _quantizationLutNoPBit = new byte[5][];
@@ -322,7 +322,7 @@ namespace Ryujinx.Graphics.Texture.Encoders
             Vector128<byte> rWeights;
             Vector128<byte> lWeights;
 
-            fixed (byte* pWeights = BC7Tables.Weights[0], pInvWeights = BC7Tables.InverseWeights[0])
+            fixed (byte* pWeights = BC67Tables.Weights[0], pInvWeights = BC67Tables.InverseWeights[0])
             {
                 rWeights = Sse2.LoadScalarVector128((uint*)pWeights).AsByte();
                 lWeights = Sse2.LoadScalarVector128((uint*)pInvWeights).AsByte();
@@ -394,7 +394,7 @@ namespace Ryujinx.Graphics.Texture.Encoders
             Vector128<byte> rWeights;
             Vector128<byte> lWeights;
 
-            fixed (byte* pWeights = BC7Tables.Weights[1], pInvWeights = BC7Tables.InverseWeights[1])
+            fixed (byte* pWeights = BC67Tables.Weights[1], pInvWeights = BC67Tables.InverseWeights[1])
             {
                 rWeights = Sse2.LoadScalarVector128((ulong*)pWeights).AsByte();
                 lWeights = Sse2.LoadScalarVector128((ulong*)pInvWeights).AsByte();
@@ -476,7 +476,7 @@ namespace Ryujinx.Graphics.Texture.Encoders
             Vector128<byte> rWeights;
             Vector128<byte> lWeights;
 
-            fixed (byte* pWeights = BC7Tables.Weights[2], pInvWeights = BC7Tables.InverseWeights[2])
+            fixed (byte* pWeights = BC67Tables.Weights[2], pInvWeights = BC67Tables.InverseWeights[2])
             {
                 rWeights = Sse2.LoadVector128(pWeights);
                 lWeights = Sse2.LoadVector128(pInvWeights);
@@ -726,7 +726,7 @@ namespace Ryujinx.Graphics.Texture.Encoders
             int pBits,
             uint alphaMask)
         {
-            byte[] partitionTable = BC7Tables.PartitionTable[subsetCount - 1][partition];
+            byte[] partitionTable = BC67Tables.PartitionTable[subsetCount - 1][partition];
 
             uint alphaMaskForPalette = alphaMask;
 
@@ -762,7 +762,7 @@ namespace Ryujinx.Graphics.Texture.Encoders
                 Vector128<byte> rWeights;
                 Vector128<byte> lWeights;
 
-                fixed (byte* pWeights = BC7Tables.Weights[0], pInvWeights = BC7Tables.InverseWeights[0])
+                fixed (byte* pWeights = BC67Tables.Weights[0], pInvWeights = BC67Tables.InverseWeights[0])
                 {
                     rWeights = Sse2.LoadScalarVector128((uint*)pWeights).AsByte();
                     lWeights = Sse2.LoadScalarVector128((uint*)pInvWeights).AsByte();
@@ -831,7 +831,7 @@ namespace Ryujinx.Graphics.Texture.Encoders
             int pBits,
             uint alphaMask)
         {
-            byte[] partitionTable = BC7Tables.PartitionTable[subsetCount - 1][partition];
+            byte[] partitionTable = BC67Tables.PartitionTable[subsetCount - 1][partition];
 
             uint alphaMaskForPalette = alphaMask;
 
@@ -867,7 +867,7 @@ namespace Ryujinx.Graphics.Texture.Encoders
                 Vector128<byte> rWeights;
                 Vector128<byte> lWeights;
 
-                fixed (byte* pWeights = BC7Tables.Weights[1], pInvWeights = BC7Tables.InverseWeights[1])
+                fixed (byte* pWeights = BC67Tables.Weights[1], pInvWeights = BC67Tables.InverseWeights[1])
                 {
                     rWeights = Sse2.LoadScalarVector128((ulong*)pWeights).AsByte();
                     lWeights = Sse2.LoadScalarVector128((ulong*)pInvWeights).AsByte();
@@ -973,7 +973,7 @@ namespace Ryujinx.Graphics.Texture.Encoders
             Vector128<byte> rWeights;
             Vector128<byte> lWeights;
 
-            fixed (byte* pWeights = BC7Tables.Weights[2], pInvWeights = BC7Tables.InverseWeights[2])
+            fixed (byte* pWeights = BC67Tables.Weights[2], pInvWeights = BC67Tables.InverseWeights[2])
             {
                 rWeights = Sse2.LoadVector128(pWeights);
                 lWeights = Sse2.LoadVector128(pInvWeights);
@@ -1129,7 +1129,7 @@ namespace Ryujinx.Graphics.Texture.Encoders
             {
                 for (int tx = 0; tx < w; tx++)
                 {
-                    int subset = BC7Tables.PartitionTable[subsetCount - 1][partition][ty * 4 + tx];
+                    int subset = BC67Tables.PartitionTable[subsetCount - 1][partition][ty * 4 + tx];
                     uint color = tile[i++] | alphaMask;
 
                     int bestMatchScore = int.MaxValue;
@@ -1178,6 +1178,28 @@ namespace Ryujinx.Graphics.Texture.Encoders
 
             RgbaColor32 weightV = new RgbaColor32(weight);
             RgbaColor32 invWeightV = new RgbaColor32(64 - weight);
+
+            return (color1 * invWeightV + color2 * weightV + new RgbaColor32(32)) >> 6;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static RgbaColor32 Interpolate(
+            RgbaColor32 color1,
+            RgbaColor32 color2,
+            int colorWeightIndex,
+            int alphaWeightIndex,
+            int colorIndexBitCount,
+            int alphaIndexBitCount)
+        {
+            Debug.Assert(colorIndexBitCount >= 2 && colorIndexBitCount <= 4);
+            Debug.Assert(alphaIndexBitCount >= 2 && alphaIndexBitCount <= 4);
+
+            int colorWeight = BC67Tables.Weights[colorIndexBitCount - 2][colorWeightIndex];
+            int alphaWeight = BC67Tables.Weights[alphaIndexBitCount - 2][alphaWeightIndex];
+
+            RgbaColor32 weightV = new RgbaColor32(colorWeight);
+            weightV.A = alphaWeight;
+            RgbaColor32 invWeightV = new RgbaColor32(64) - weightV;
 
             return (color1 * invWeightV + color2 * weightV + new RgbaColor32(32)) >> 6;
         }

@@ -1,7 +1,19 @@
-﻿namespace Ryujinx.Graphics.Texture.Encoders
+﻿namespace Ryujinx.Graphics.Texture.Utils
 {
-    static class BC7Tables
+    static class BC67Tables
     {
+        public static readonly BC7ModeInfo[] BC7ModeInfos = new BC7ModeInfo[]
+        {
+            new BC7ModeInfo(3, 4, 6, 0, 0, 3, 0, 4, 0),
+            new BC7ModeInfo(2, 6, 2, 0, 0, 3, 0, 6, 0),
+            new BC7ModeInfo(3, 6, 0, 0, 0, 2, 0, 5, 0),
+            new BC7ModeInfo(2, 6, 4, 0, 0, 2, 0, 7, 0),
+            new BC7ModeInfo(1, 0, 0, 2, 1, 2, 3, 5, 6),
+            new BC7ModeInfo(1, 0, 0, 2, 0, 2, 2, 7, 8),
+            new BC7ModeInfo(1, 0, 2, 0, 0, 4, 0, 7, 7),
+            new BC7ModeInfo(2, 6, 4, 0, 0, 2, 0, 5, 5)
+        };
+
         public static readonly byte[][] Weights =
         {
             new byte[] { 0, 21, 43, 64 },

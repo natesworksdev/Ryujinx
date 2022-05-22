@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Ryujinx.Graphics.Texture.Utils;
+using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -10,53 +11,6 @@ namespace Ryujinx.Graphics.Texture.Encoders
 {
     static class BC7Encoder
     {
-        private struct ModeInfo
-        {
-            public readonly int SubsetCount;
-            public readonly int PartitionBitCount;
-            public readonly int PBits;
-            public readonly int RotationBitCount;
-            public readonly int IndexModeBitCount;
-            public readonly int ColorIndexBitCount;
-            public readonly int AlphaIndexBitCount;
-            public readonly int ColorDepth;
-            public readonly int AlphaDepth;
-
-            public ModeInfo(
-                int subsetCount,
-                int partitionBitsCount,
-                int pBits,
-                int rotationBitCount,
-                int indexModeBitCount,
-                int colorIndexBitCount,
-                int alphaIndexBitCount,
-                int colorDepth,
-                int alphaDepth)
-            {
-                SubsetCount = subsetCount;
-                PartitionBitCount = partitionBitsCount;
-                PBits = pBits;
-                RotationBitCount = rotationBitCount;
-                IndexModeBitCount = indexModeBitCount;
-                ColorIndexBitCount = colorIndexBitCount;
-                AlphaIndexBitCount = alphaIndexBitCount;
-                ColorDepth = colorDepth;
-                AlphaDepth = alphaDepth;
-            }
-        }
-
-        private static readonly ModeInfo[] _modeInfos = new ModeInfo[]
-        {
-            new ModeInfo(3, 4, 6, 0, 0, 3, 0, 4, 0),
-            new ModeInfo(2, 6, 2, 0, 0, 3, 0, 6, 0),
-            new ModeInfo(3, 6, 0, 0, 0, 2, 0, 5, 0),
-            new ModeInfo(2, 6, 4, 0, 0, 2, 0, 7, 0),
-            new ModeInfo(1, 0, 0, 2, 1, 2, 3, 5, 6),
-            new ModeInfo(1, 0, 0, 2, 0, 2, 2, 7, 8),
-            new ModeInfo(1, 0, 2, 0, 0, 4, 0, 7, 7),
-            new ModeInfo(2, 6, 4, 0, 0, 2, 0, 5, 5)
-        };
-
         public static void Encode(Memory<byte> outputStorage, ReadOnlyMemory<byte> data, int width, int height, EncodeMode mode)
         {
             int widthInBlocks = (width + 3) / 4;
@@ -105,32 +59,6 @@ namespace Ryujinx.Graphics.Texture.Encoders
             0, 13, 2, 1, 15, 14, 10, 23
         };
 
-        private struct Block
-        {
-            public ulong Low;
-            public ulong High;
-
-            public void Encode(ulong value, ref int offset, int bits)
-            {
-                if (offset >= 64)
-                {
-                    High |= value << (offset - 64);
-                }
-                else
-                {
-                    Low |= value << offset;
-
-                    if (offset + bits > 64)
-                    {
-                        int remainder = 64 - offset;
-                        High |= value >> remainder;
-                    }
-                }
-
-                offset += bits;
-            }
-        }
-
         private static Block CompressBlock(ReadOnlySpan<byte> data, int x, int y, int width, int height, bool fastMode)
         {
             int w = Math.Min(4, width - x);
@@ -157,10 +85,10 @@ namespace Ryujinx.Graphics.Texture.Encoders
 
         private static Block EncodeFast(ReadOnlySpan<uint> tile, int w, int h)
         {
-            (RgbaColor8 minColor, RgbaColor8 maxColor) = BC7Utils.GetMinMaxColors(tile, w, h);
+            (RgbaColor8 minColor, RgbaColor8 maxColor) = BC67Utils.GetMinMaxColors(tile, w, h);
 
             bool alphaNotOne = minColor.A != 255 || maxColor.A != 255;
-            int variance = BC7Utils.SquaredDifference(minColor.GetColor32(), maxColor.GetColor32());
+            int variance = BC67Utils.SquaredDifference(minColor.GetColor32(), maxColor.GetColor32());
             int selectedMode;
             int indexMode = 0;
 
@@ -253,13 +181,13 @@ namespace Ryujinx.Graphics.Texture.Encoders
                 {
                     for (int im = 0; im < (m == 4 ? 2 : 1); im++)
                     {
-                        for (int p = 0; p < 1 << _modeInfos[m].PartitionBitCount; p++)
+                        for (int p = 0; p < 1 << BC67Tables.BC7ModeInfos[m].PartitionBitCount; p++)
                         {
                             Block block = Encode(m, p, r, im, fastMode: false, tile, w, h, out int maxError);
-                            if (maxError < lowestError || (maxError == lowestError && _modeInfos[m].SubsetCount < lowestErrorSubsets))
+                            if (maxError < lowestError || (maxError == lowestError && BC67Tables.BC7ModeInfos[m].SubsetCount < lowestErrorSubsets))
                             {
                                 lowestError = maxError;
-                                lowestErrorSubsets = _modeInfos[m].SubsetCount;
+                                lowestErrorSubsets = BC67Tables.BC7ModeInfos[m].SubsetCount;
                                 bestBlock = block;
                             }
                         }
@@ -281,7 +209,7 @@ namespace Ryujinx.Graphics.Texture.Encoders
             int h,
             out int errorSum)
         {
-            ModeInfo modeInfo = _modeInfos[mode];
+            BC7ModeInfo modeInfo = BC67Tables.BC7ModeInfos[mode];
             int subsetCount = modeInfo.SubsetCount;
             int partitionBitCount = modeInfo.PartitionBitCount;
             int rotationBitCount = modeInfo.RotationBitCount;
@@ -379,7 +307,7 @@ namespace Ryujinx.Graphics.Texture.Encoders
             Span<byte> colorIndices = stackalloc byte[16];
             Span<byte> alphaIndices = stackalloc byte[16];
 
-            errorSum = BC7Utils.SelectIndices(
+            errorSum = BC67Utils.SelectIndices(
                 tile,
                 w,
                 h,
@@ -398,7 +326,7 @@ namespace Ryujinx.Graphics.Texture.Encoders
 
             if (separateAlphaIndices)
             {
-                errorSum += BC7Utils.SelectIndices(
+                errorSum += BC67Utils.SelectIndices(
                     tile,
                     w,
                     h,
@@ -420,7 +348,7 @@ namespace Ryujinx.Graphics.Texture.Encoders
 
             for (int i = 0; i < 3; i++)
             {
-                colorSwapSubset[i] = colorIndices[BC7Tables.FixUpIndices[subsetCount - 1][partition][i]] >= (colorIndexCount >> 1);
+                colorSwapSubset[i] = colorIndices[BC67Tables.FixUpIndices[subsetCount - 1][partition][i]] >= (colorIndexCount >> 1);
             }
 
             bool alphaSwapSubset = alphaIndices[0] >= (alphaIndexCount >> 1);
@@ -462,13 +390,13 @@ namespace Ryujinx.Graphics.Texture.Encoders
 
                     if (indexMode == 0 ? colorSwapSubset[subset] : alphaSwapSubset)
                     {
-                        block.Encode(BC7Utils.QuantizeComponent(color1.GetComponent(rotatedComp), colorDepth, pBit1), ref offset, colorDepth);
-                        block.Encode(BC7Utils.QuantizeComponent(color0.GetComponent(rotatedComp), colorDepth, pBit0), ref offset, colorDepth);
+                        block.Encode(BC67Utils.QuantizeComponent(color1.GetComponent(rotatedComp), colorDepth, pBit1), ref offset, colorDepth);
+                        block.Encode(BC67Utils.QuantizeComponent(color0.GetComponent(rotatedComp), colorDepth, pBit0), ref offset, colorDepth);
                     }
                     else
                     {
-                        block.Encode(BC7Utils.QuantizeComponent(color0.GetComponent(rotatedComp), colorDepth, pBit0), ref offset, colorDepth);
-                        block.Encode(BC7Utils.QuantizeComponent(color1.GetComponent(rotatedComp), colorDepth, pBit1), ref offset, colorDepth);
+                        block.Encode(BC67Utils.QuantizeComponent(color0.GetComponent(rotatedComp), colorDepth, pBit0), ref offset, colorDepth);
+                        block.Encode(BC67Utils.QuantizeComponent(color1.GetComponent(rotatedComp), colorDepth, pBit1), ref offset, colorDepth);
                     }
                 }
             }
@@ -496,13 +424,13 @@ namespace Ryujinx.Graphics.Texture.Encoders
 
                     if (separateAlphaIndices && indexMode == 0 ? alphaSwapSubset : colorSwapSubset[subset])
                     {
-                        block.Encode(BC7Utils.QuantizeComponent(color1.GetComponent(rotatedComp), alphaDepth, pBit1), ref offset, alphaDepth);
-                        block.Encode(BC7Utils.QuantizeComponent(color0.GetComponent(rotatedComp), alphaDepth, pBit0), ref offset, alphaDepth);
+                        block.Encode(BC67Utils.QuantizeComponent(color1.GetComponent(rotatedComp), alphaDepth, pBit1), ref offset, alphaDepth);
+                        block.Encode(BC67Utils.QuantizeComponent(color0.GetComponent(rotatedComp), alphaDepth, pBit0), ref offset, alphaDepth);
                     }
                     else
                     {
-                        block.Encode(BC7Utils.QuantizeComponent(color0.GetComponent(rotatedComp), alphaDepth, pBit0), ref offset, alphaDepth);
-                        block.Encode(BC7Utils.QuantizeComponent(color1.GetComponent(rotatedComp), alphaDepth, pBit1), ref offset, alphaDepth);
+                        block.Encode(BC67Utils.QuantizeComponent(color0.GetComponent(rotatedComp), alphaDepth, pBit0), ref offset, alphaDepth);
+                        block.Encode(BC67Utils.QuantizeComponent(color1.GetComponent(rotatedComp), alphaDepth, pBit1), ref offset, alphaDepth);
                     }
                 }
             }
@@ -512,11 +440,11 @@ namespace Ryujinx.Graphics.Texture.Encoders
                 block.Encode((ulong)pBitValues[i], ref offset, 1);
             }
 
-            byte[] fixUpTable = BC7Tables.FixUpIndices[subsetCount - 1][partition];
+            byte[] fixUpTable = BC67Tables.FixUpIndices[subsetCount - 1][partition];
 
             for (int i = 0; i < 16; i++)
             {
-                int subset = BC7Tables.PartitionTable[subsetCount - 1][partition][i];
+                int subset = BC67Tables.PartitionTable[subsetCount - 1][partition][i];
                 byte index = colorIndices[i];
 
                 if (colorSwapSubset[subset])
@@ -561,12 +489,12 @@ namespace Ryujinx.Graphics.Texture.Encoders
 
         private static unsafe int GetEndPointSelectionErrorFast(ReadOnlySpan<uint> tile, int subsetCount, int partition, int w, int h, int maxError)
         {
-            byte[] partitionTable = BC7Tables.PartitionTable[subsetCount - 1][partition];
+            byte[] partitionTable = BC67Tables.PartitionTable[subsetCount - 1][partition];
 
             Span<RgbaColor8> minColors = stackalloc RgbaColor8[subsetCount];
             Span<RgbaColor8> maxColors = stackalloc RgbaColor8[subsetCount];
 
-            BC7Utils.GetMinMaxColors(partitionTable, tile, w, h, minColors, maxColors, subsetCount);
+            BC67Utils.GetMinMaxColors(partitionTable, tile, w, h, minColors, maxColors, subsetCount);
 
             Span<uint> endPoints0 = stackalloc uint[subsetCount];
             Span<uint> endPoints1 = stackalloc uint[subsetCount];
@@ -592,8 +520,8 @@ namespace Ryujinx.Graphics.Texture.Encoders
                 int pBit0 = GetPBit(c0, 6, 0);
                 int pBit1 = GetPBit(c1, 6, 0);
 
-                c0 = BC7Utils.Quantize(RgbaColor8.FromUInt32(c0), 6, 0, pBit0).ToUInt32();
-                c1 = BC7Utils.Quantize(RgbaColor8.FromUInt32(c1), 6, 0, pBit1).ToUInt32();
+                c0 = BC67Utils.Quantize(RgbaColor8.FromUInt32(c0), 6, 0, pBit0).ToUInt32();
+                c1 = BC67Utils.Quantize(RgbaColor8.FromUInt32(c1), 6, 0, pBit1).ToUInt32();
 
                 if (Sse41.IsSupported)
                 {
@@ -605,7 +533,7 @@ namespace Ryujinx.Graphics.Texture.Encoders
                     Vector128<byte> rWeights;
                     Vector128<byte> lWeights;
 
-                    fixed (byte* pWeights = BC7Tables.Weights[1], pInvWeights = BC7Tables.InverseWeights[1])
+                    fixed (byte* pWeights = BC67Tables.Weights[1], pInvWeights = BC67Tables.InverseWeights[1])
                     {
                         rWeights = Sse2.LoadScalarVector128((ulong*)pWeights).AsByte();
                         lWeights = Sse2.LoadScalarVector128((ulong*)pInvWeights).AsByte();
@@ -670,7 +598,7 @@ namespace Ryujinx.Graphics.Texture.Encoders
 
                     for (int i = 1; i < palette.Length - 1; i++)
                     {
-                        palette[i] = BC7Utils.Interpolate(e032, e132, i, 3);
+                        palette[i] = BC67Utils.Interpolate(e032, e132, i, 3);
                     }
 
                     for (int i = 0; i < tile.Length; i++)
@@ -687,7 +615,7 @@ namespace Ryujinx.Graphics.Texture.Encoders
 
                         for (int j = 0; j < palette.Length; j++)
                         {
-                            int score = BC7Utils.SquaredDifference(color, palette[j]);
+                            int score = BC67Utils.SquaredDifference(color, palette[j]);
 
                             if (score < bestMatchScore)
                             {
@@ -723,12 +651,12 @@ namespace Ryujinx.Graphics.Texture.Encoders
             uint writeMask,
             bool fastMode)
         {
-            byte[] partitionTable = BC7Tables.PartitionTable[subsetCount - 1][partition];
+            byte[] partitionTable = BC67Tables.PartitionTable[subsetCount - 1][partition];
 
             Span<RgbaColor8> minColors = stackalloc RgbaColor8[subsetCount];
             Span<RgbaColor8> maxColors = stackalloc RgbaColor8[subsetCount];
 
-            BC7Utils.GetMinMaxColors(partitionTable, tile, w, h, minColors, maxColors, subsetCount);
+            BC67Utils.GetMinMaxColors(partitionTable, tile, w, h, minColors, maxColors, subsetCount);
 
             uint inverseMask = ~writeMask;
 
@@ -934,8 +862,8 @@ namespace Ryujinx.Graphics.Texture.Encoders
                 return (default, default);
             }
 
-            minValue = BC7Utils.Quantize(minValue, colorDepth, alphaDepth);
-            maxValue = BC7Utils.Quantize(maxValue, colorDepth, alphaDepth);
+            minValue = BC67Utils.Quantize(minValue, colorDepth, alphaDepth);
+            maxValue = BC67Utils.Quantize(maxValue, colorDepth, alphaDepth);
 
             RgbaColor32 blockDir = maxValue.GetColor32() - minValue.GetColor32();
             blockDir = RgbaColor32.DivideGuarded(blockDir << 6, new RgbaColor32(blockDir.R + blockDir.G + blockDir.B + blockDir.A), 0);
@@ -946,7 +874,7 @@ namespace Ryujinx.Graphics.Texture.Encoders
             for (int i = 0; i < values.Length; i++)
             {
                 RgbaColor8 color = values[i];
-                int dist = RgbaColor32.Dot(BC7Utils.Quantize(color, colorDepth, alphaDepth).GetColor32(), blockDir);
+                int dist = RgbaColor32.Dot(BC67Utils.Quantize(color, colorDepth, alphaDepth).GetColor32(), blockDir);
 
                 if (minDist >= dist)
                 {
@@ -1019,7 +947,7 @@ namespace Ryujinx.Graphics.Texture.Encoders
                     int pBit0 = GetPBit(candidateE0.ToUInt32(), colorDepth, alphaDepth);
                     int pBit1 = GetPBit(candidateE1.ToUInt32(), colorDepth, alphaDepth);
 
-                    int errorSum = BC7Utils.SelectIndices(
+                    int errorSum = BC67Utils.SelectIndices(
                         MemoryMarshal.Cast<RgbaColor8, uint>(values),
                         candidateE0.ToUInt32(),
                         candidateE1.ToUInt32(),

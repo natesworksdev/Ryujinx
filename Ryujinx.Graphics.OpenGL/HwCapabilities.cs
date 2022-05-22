@@ -17,6 +17,9 @@ namespace Ryujinx.Graphics.OpenGL
         private static readonly Lazy<bool> _supportsQuads                     = new Lazy<bool>(SupportsQuadsCheck);
         private static readonly Lazy<bool> _supportsSeamlessCubemapPerTexture = new Lazy<bool>(() => HasExtension("GL_ARB_seamless_cubemap_per_texture"));
         private static readonly Lazy<bool> _supportsShaderBallot              = new Lazy<bool>(() => HasExtension("GL_ARB_shader_ballot"));
+        private static readonly Lazy<bool> _supportsTextureCompressionBptc    = new Lazy<bool>(() => HasExtension("GL_EXT_texture_compression_bptc"));
+        private static readonly Lazy<bool> _supportsTextureCompressionRgtc    = new Lazy<bool>(() => HasExtension("GL_EXT_texture_compression_rgtc"));
+        private static readonly Lazy<bool> _supportsTextureCompressionS3tc    = new Lazy<bool>(() => HasExtension("GL_EXT_texture_compression_s3tc"));
         private static readonly Lazy<bool> _supportsTextureShadowLod          = new Lazy<bool>(() => HasExtension("GL_EXT_texture_shadow_lod"));
         private static readonly Lazy<bool> _supportsViewportSwizzle           = new Lazy<bool>(() => HasExtension("GL_NV_viewport_swizzle"));
 
@@ -56,6 +59,9 @@ namespace Ryujinx.Graphics.OpenGL
         public static bool SupportsQuads                     => _supportsQuads.Value;
         public static bool SupportsSeamlessCubemapPerTexture => _supportsSeamlessCubemapPerTexture.Value;
         public static bool SupportsShaderBallot              => _supportsShaderBallot.Value;
+        public static bool SupportsTextureCompressionBptc    => _supportsTextureCompressionBptc.Value;
+        public static bool SupportsTextureCompressionRgtc    => _supportsTextureCompressionRgtc.Value;
+        public static bool SupportsTextureCompressionS3tc    => _supportsTextureCompressionS3tc.Value;
         public static bool SupportsTextureShadowLod          => _supportsTextureShadowLod.Value;
         public static bool SupportsViewportSwizzle           => _supportsViewportSwizzle.Value;
 
