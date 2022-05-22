@@ -298,8 +298,11 @@ namespace Ryujinx.Graphics.Texture
 
             for (int l = 0; l < levels; l++)
             {
-                size += Math.Max(1, width >> l) * Math.Max(1, height >> l) * Math.Max(1, depth >> l) * layers;
+                size += BitUtils.AlignUp(Math.Max(1, width >> l), 4) * Math.Max(1, height >> l) * Math.Max(1, depth >> l) * layers;
             }
+
+            // Backends currently expect a stride alignment of 4 bytes, so output width must be aligned.
+            int alignedWidth = BitUtils.AlignUp(width, 4);
 
             byte[] output = new byte[size];
             Span<byte> outputSpan = new Span<byte>(output);
@@ -331,14 +334,14 @@ namespace Ryujinx.Graphics.Texture
                         {
                             int baseY = y * BlockHeight;
                             int copyHeight = Math.Min(BlockHeight, height - baseY);
-                            int lineBaseOOffs = imageBaseOOffs + baseY * width;
+                            int lineBaseOOffs = imageBaseOOffs + baseY * alignedWidth;
 
                             if (copyHeight == 4)
                             {
                                 outputLine0 = MemoryMarshal.Cast<byte, uint>(outputSpan.Slice(lineBaseOOffs));
-                                outputLine1 = MemoryMarshal.Cast<byte, uint>(outputSpan.Slice(lineBaseOOffs + width));
-                                outputLine2 = MemoryMarshal.Cast<byte, uint>(outputSpan.Slice(lineBaseOOffs + width * 2));
-                                outputLine3 = MemoryMarshal.Cast<byte, uint>(outputSpan.Slice(lineBaseOOffs + width * 3));
+                                outputLine1 = MemoryMarshal.Cast<byte, uint>(outputSpan.Slice(lineBaseOOffs + alignedWidth));
+                                outputLine2 = MemoryMarshal.Cast<byte, uint>(outputSpan.Slice(lineBaseOOffs + alignedWidth * 2));
+                                outputLine3 = MemoryMarshal.Cast<byte, uint>(outputSpan.Slice(lineBaseOOffs + alignedWidth * 3));
                             }
 
                             for (int x = 0; x < w; x++)
@@ -375,7 +378,7 @@ namespace Ryujinx.Graphics.Texture
 
                                     for (int tY = 0; tY < copyHeight; tY++)
                                     {
-                                        tile.Slice(tY * 4, copyWidth).CopyTo(outputSpan.Slice(pixelBaseOOffs + width * tY, copyWidth));
+                                        tile.Slice(tY * 4, copyWidth).CopyTo(outputSpan.Slice(pixelBaseOOffs + alignedWidth * tY, copyWidth));
                                     }
                                 }
 
@@ -383,13 +386,15 @@ namespace Ryujinx.Graphics.Texture
                             }
                         }
 
-                        imageBaseOOffs += width * height;
+                        imageBaseOOffs += alignedWidth * height;
                     }
                 }
 
                 width = Math.Max(1, width >> 1);
                 height = Math.Max(1, height >> 1);
                 depth = Math.Max(1, depth >> 1);
+
+                alignedWidth = BitUtils.AlignUp(width, 4);
             }
 
             return output;
@@ -401,8 +406,11 @@ namespace Ryujinx.Graphics.Texture
 
             for (int l = 0; l < levels; l++)
             {
-                size += Math.Max(1, width >> l) * Math.Max(1, height >> l) * Math.Max(1, depth >> l) * layers * 2;
+                size += BitUtils.AlignUp(Math.Max(1, width >> l), 2) * Math.Max(1, height >> l) * Math.Max(1, depth >> l) * layers * 2;
             }
+
+            // Backends currently expect a stride alignment of 4 bytes, so output width must be aligned.
+            int alignedWidth = BitUtils.AlignUp(width, 2);
 
             byte[] output = new byte[size];
 
@@ -438,14 +446,14 @@ namespace Ryujinx.Graphics.Texture
                         {
                             int baseY = y * BlockHeight;
                             int copyHeight = Math.Min(BlockHeight, height - baseY);
-                            int lineBaseOOffs = imageBaseOOffs + baseY * width;
+                            int lineBaseOOffs = imageBaseOOffs + baseY * alignedWidth;
 
                             if (copyHeight == 4)
                             {
                                 outputLine0 = MemoryMarshal.Cast<ushort, ulong>(outputAsUshort.Slice(lineBaseOOffs));
-                                outputLine1 = MemoryMarshal.Cast<ushort, ulong>(outputAsUshort.Slice(lineBaseOOffs + width));
-                                outputLine2 = MemoryMarshal.Cast<ushort, ulong>(outputAsUshort.Slice(lineBaseOOffs + width * 2));
-                                outputLine3 = MemoryMarshal.Cast<ushort, ulong>(outputAsUshort.Slice(lineBaseOOffs + width * 3));
+                                outputLine1 = MemoryMarshal.Cast<ushort, ulong>(outputAsUshort.Slice(lineBaseOOffs + alignedWidth));
+                                outputLine2 = MemoryMarshal.Cast<ushort, ulong>(outputAsUshort.Slice(lineBaseOOffs + alignedWidth * 2));
+                                outputLine3 = MemoryMarshal.Cast<ushort, ulong>(outputAsUshort.Slice(lineBaseOOffs + alignedWidth * 3));
                             }
 
                             for (int x = 0; x < w; x++)
@@ -488,7 +496,7 @@ namespace Ryujinx.Graphics.Texture
 
                                     for (int tY = 0; tY < copyHeight; tY++)
                                     {
-                                        int line = pixelBaseOOffs + width * tY;
+                                        int line = pixelBaseOOffs + alignedWidth * tY;
 
                                         for (int tX = 0; tX < copyWidth; tX++)
                                         {
@@ -503,13 +511,15 @@ namespace Ryujinx.Graphics.Texture
                             }
                         }
 
-                        imageBaseOOffs += width * height;
+                        imageBaseOOffs += alignedWidth * height;
                     }
                 }
 
                 width = Math.Max(1, width >> 1);
                 height = Math.Max(1, height >> 1);
                 depth = Math.Max(1, depth >> 1);
+
+                alignedWidth = BitUtils.AlignUp(width, 2);
             }
 
             return output;
