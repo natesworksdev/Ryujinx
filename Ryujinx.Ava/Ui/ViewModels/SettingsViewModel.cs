@@ -38,7 +38,6 @@ namespace Ryujinx.Ava.Ui.ViewModels
         private int _graphicsBackendMultithreadingIndex;
         private float _previousVolumeLevel;
         private float _volume;
-        private uint _hostRefreshRate;
 
         public int ResolutionScale
         {
@@ -121,7 +120,6 @@ namespace Ryujinx.Ava.Ui.ViewModels
         public string TimeZone { get; set; }
         public string ShaderDumpPath { get; set; }
         public string CustomThemePath { get; set; }
-        public string HostRefreshRateDisplay => HostRefreshRate == 0 ? "∞" : HostRefreshRate.ToString();
 
         public int Language { get; set; }
         public int Region { get; set; }
@@ -132,15 +130,6 @@ namespace Ryujinx.Ava.Ui.ViewModels
         public int OpenglDebugLevel { get; set; }
         public int MemoryMode { get; set; }
         public int BaseStyleIndex { get; set; }
-        public uint HostRefreshRate
-        {
-            get => _hostRefreshRate; set
-            {
-                _hostRefreshRate = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(HostRefreshRateDisplay));
-            }
-        }
 
         public float Volume
         {
