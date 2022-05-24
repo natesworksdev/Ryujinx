@@ -165,8 +165,17 @@ namespace Ryujinx.Graphics.Vulkan
             pipeline.PrimitiveRestartEnable = state.PrimitiveRestartEnable;
             pipeline.RasterizerDiscardEnable = state.RasterizerDiscard;
             pipeline.SamplesCount = (uint)state.SamplesCount;
-            pipeline.ScissorsCount = 16;
-            pipeline.ViewportsCount = 16;
+
+            if (gd.Capabilities.SupportsMultiView)
+            {
+                pipeline.ScissorsCount = Constants.MaxViewports;
+                pipeline.ViewportsCount = Constants.MaxViewports;
+            }
+            else
+            {
+                pipeline.ScissorsCount = 1;
+                pipeline.ViewportsCount = 1;
+            }
 
             pipeline.DepthBiasEnable = state.BiasEnable != 0;
 

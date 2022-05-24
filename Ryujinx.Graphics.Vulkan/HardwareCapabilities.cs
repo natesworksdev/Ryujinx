@@ -4,19 +4,21 @@ namespace Ryujinx.Graphics.Vulkan
 {
     struct HardwareCapabilities
     {
-        public bool SupportsConditionalRendering { get; }
-        public bool SupportsExtendedDynamicState { get; }
-        public bool SupportsNullDescriptors { get; }
-        public bool SupportsTransformFeedback { get; }
-        public bool SupportsTransformFeedbackQueries { get; }
-        public bool SupportsGeometryShader { get; }
-        public uint MinSubgroupSize { get; }
-        public uint MaxSubgroupSize { get; }
-        public ShaderStageFlags RequiredSubgroupSizeStages { get; }
+        public readonly bool SupportsConditionalRendering;
+        public readonly bool SupportsExtendedDynamicState;
+        public readonly bool SupportsMultiView;
+        public readonly bool SupportsNullDescriptors;
+        public readonly bool SupportsTransformFeedback;
+        public readonly bool SupportsTransformFeedbackQueries;
+        public readonly bool SupportsGeometryShader;
+        public readonly uint MinSubgroupSize;
+        public readonly uint MaxSubgroupSize;
+        public readonly ShaderStageFlags RequiredSubgroupSizeStages;
 
         public HardwareCapabilities(
             bool supportsConditionalRendering,
             bool supportsExtendedDynamicState,
+            bool supportsMultiView,
             bool supportsNullDescriptors,
             bool supportsTransformFeedback,
             bool supportsTransformFeedbackQueries,
@@ -27,6 +29,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             SupportsConditionalRendering = supportsConditionalRendering;
             SupportsExtendedDynamicState = supportsExtendedDynamicState;
+            SupportsMultiView = supportsMultiView;
             SupportsNullDescriptors = supportsNullDescriptors;
             SupportsTransformFeedback = supportsTransformFeedback;
             SupportsTransformFeedbackQueries = supportsTransformFeedbackQueries;
