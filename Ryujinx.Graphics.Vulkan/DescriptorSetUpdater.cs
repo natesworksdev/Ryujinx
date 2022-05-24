@@ -45,6 +45,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private DirtyFlags _dirty;
 
+        private readonly BufferHolder _dummyBuffer;
         private readonly TextureView _dummyTexture;
         private readonly SamplerHolder _dummySampler;
 
@@ -61,6 +62,17 @@ namespace Ryujinx.Graphics.Vulkan
             _images = Array.Empty<DescriptorImageInfo>();
             _bufferTextures = Array.Empty<BufferView>();
             _bufferImages = Array.Empty<BufferView>();
+
+            if (gd.Capabilities.SupportsNullDescriptors)
+            {
+                // If null descriptors are supported, we can pass null as the handle.
+                _dummyBuffer = null;
+            }
+            else
+            {
+                // If null descriptors are not supported, we need to pass the handle of a dummy buffer on unused bindings.
+                _dummyBuffer = gd.BufferManager.Create(gd, 0x10000, forConditionalRendering: false, deviceLocal: true);
+            }
 
             _dummyTexture = (TextureView)gd.CreateTexture(new GAL.TextureCreateInfo(
                 1,
@@ -283,13 +295,18 @@ namespace Ryujinx.Graphics.Vulkan
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void UpdateBuffer(CommandBufferScoped cbs, ref DescriptorBufferInfo info, Auto<DisposableBuffer> buffer)
+        private static void UpdateBuffer(
+            CommandBufferScoped cbs,
+            ref DescriptorBufferInfo info,
+            Auto<DisposableBuffer> buffer,
+            Auto<DisposableBuffer> dummyBuffer)
         {
             info.Buffer = buffer?.Get(cbs, (int)info.Offset, (int)info.Range).Value ?? default;
 
             // The spec requires that buffers with null handle have offset as 0 and range as VK_WHOLE_SIZE.
             if (info.Buffer.Handle == 0)
             {
+                info.Buffer = dummyBuffer?.Get(cbs).Value ?? default;
                 info.Offset = 0;
                 info.Range = Vk.WholeSize;
             }
@@ -303,6 +320,8 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 return;
             }
+
+            var dummyBuffer = _dummyBuffer?.GetBuffer();
 
             var dsc = _program.GetNewDescriptorSetCollection(_gd, cbs.CommandBufferIndex, setIndex, out var isNew).Get(cbs);
 
@@ -352,7 +371,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                         for (int i = 0; i < count; i++)
                         {
-                            UpdateBuffer(cbs, ref _uniformBuffers[binding + i], _uniformBufferRefs[binding + i]);
+                            UpdateBuffer(cbs, ref _uniformBuffers[binding + i], _uniformBufferRefs[binding + i], dummyBuffer);
                         }
 
                         ReadOnlySpan<DescriptorBufferInfo> uniformBuffers = _uniformBuffers;
@@ -369,7 +388,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                         for (int i = 0; i < count; i++)
                         {
-                            UpdateBuffer(cbs, ref _storageBuffers[binding + i], _storageBufferRefs[binding + i]);
+                            UpdateBuffer(cbs, ref _storageBuffers[binding + i], _storageBufferRefs[binding + i], dummyBuffer);
                         }
 
                         ReadOnlySpan<DescriptorBufferInfo> storageBuffers = _storageBuffers;
@@ -461,6 +480,8 @@ namespace Ryujinx.Graphics.Vulkan
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void Initialize(CommandBufferScoped cbs, int setIndex, DescriptorSetCollection dsc)
         {
+            var dummyBuffer = _dummyBuffer?.GetBuffer().Get(cbs).Value ?? default;
+
             uint stages = _program.Stages;
 
             while (stages != 0)
@@ -470,11 +491,21 @@ namespace Ryujinx.Graphics.Vulkan
 
                 if (setIndex == PipelineBase.UniformSetIndex)
                 {
-                    dsc.InitializeBuffers(0, 1 + stage * Constants.MaxUniformBuffersPerStage, Constants.MaxUniformBuffersPerStage, DescriptorType.UniformBuffer);
+                    dsc.InitializeBuffers(
+                        0,
+                        1 + stage * Constants.MaxUniformBuffersPerStage,
+                        Constants.MaxUniformBuffersPerStage,
+                        DescriptorType.UniformBuffer,
+                        dummyBuffer);
                 }
                 else if (setIndex == PipelineBase.StorageSetIndex)
                 {
-                    dsc.InitializeBuffers(0, stage * Constants.MaxStorageBuffersPerStage, Constants.MaxStorageBuffersPerStage, DescriptorType.StorageBuffer);
+                    dsc.InitializeBuffers(
+                        0,
+                        stage * Constants.MaxStorageBuffersPerStage,
+                        Constants.MaxStorageBuffersPerStage,
+                        DescriptorType.StorageBuffer,
+                        dummyBuffer);
                 }
             }
         }
