@@ -195,9 +195,27 @@ namespace Ryujinx.Graphics.Vulkan
 
             Api.GetPhysicalDeviceProperties2(_physicalDevice, &properties2);
 
+            PhysicalDeviceFeatures2 features2 = new PhysicalDeviceFeatures2()
+            {
+                SType = StructureType.PhysicalDeviceFeatures2
+            };
+
+            PhysicalDeviceRobustness2FeaturesEXT featuresRobustness2 = new PhysicalDeviceRobustness2FeaturesEXT()
+            {
+                SType = StructureType.PhysicalDeviceRobustness2FeaturesExt
+            };
+
+            if (supportedExtensions.Contains("VK_EXT_robustness2"))
+            {
+                features2.PNext = &featuresRobustness2;
+            }
+
+            Api.GetPhysicalDeviceFeatures2(_physicalDevice, &features2);
+
             Capabilities = new HardwareCapabilities(
                 supportedExtensions.Contains(ExtConditionalRendering.ExtensionName),
                 supportedExtensions.Contains(ExtExtendedDynamicState.ExtensionName),
+                featuresRobustness2.NullDescriptor,
                 supportsTransformFeedback,
                 propertiesTransformFeedback.TransformFeedbackQueries,
                 supportedFeatures.GeometryShader,
@@ -392,7 +410,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             uint driverVersionRaw = properties.DriverVersion;
 
-            // NVIDIA differ from the standard here and use a different format.
+            // NVIDIA differ from the standard here and uses a different format.
             if (properties.VendorID == 0x10DE)
             {
                 return $"{(driverVersionRaw >> 22) & 0x3FF}.{(driverVersionRaw >> 14) & 0xFF}.{(driverVersionRaw >> 6) & 0xFF}.{driverVersionRaw & 0x3F}";
