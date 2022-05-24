@@ -23,7 +23,7 @@ namespace Ryujinx.Graphics.Vulkan
         private Window _window;
 
         internal FormatCapabilities FormatCapabilities { get; private set; }
-        internal HardwareCapabilities Capabilities { get; private set; }
+        internal HardwareCapabilities Capabilities;
 
         internal Vk Api { get; private set; }
         internal KhrSurface SurfaceApi { get; private set; }
@@ -215,6 +215,7 @@ namespace Ryujinx.Graphics.Vulkan
             Capabilities = new HardwareCapabilities(
                 supportedExtensions.Contains(ExtConditionalRendering.ExtensionName),
                 supportedExtensions.Contains(ExtExtendedDynamicState.ExtensionName),
+                features2.Features.MultiViewport,
                 featuresRobustness2.NullDescriptor,
                 supportsTransformFeedback,
                 propertiesTransformFeedback.TransformFeedbackQueries,

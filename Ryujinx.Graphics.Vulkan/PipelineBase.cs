@@ -648,7 +648,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetScissors(ReadOnlySpan<Rectangle<int>> regions)
         {
-            int count = Math.Min(Constants.MaxViewports, regions.Length);
+            int maxScissors = Gd.Capabilities.SupportsMultiView ? Constants.MaxViewports : 1;
+            int count = Math.Min(maxScissors, regions.Length);
             if (count > 0)
             {
                 ClearScissor = regions[0];
@@ -838,7 +839,8 @@ namespace Ryujinx.Graphics.Vulkan
         // TODO: Remove first parameter.
         public void SetViewports(int first, ReadOnlySpan<GAL.Viewport> viewports, bool disableTransform)
         {
-            int count = Math.Min(Constants.MaxViewports, viewports.Length);
+            int maxViewports = Gd.Capabilities.SupportsMultiView ? Constants.MaxViewports : 1;
+            int count = Math.Min(maxViewports, viewports.Length);
 
             static float Clamp(float value)
             {
