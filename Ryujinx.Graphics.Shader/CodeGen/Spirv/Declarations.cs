@@ -141,12 +141,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             }
 
             var isBgraArrayType = context.TypeArray(context.TypeU32(), context.Constant(context.TypeU32(), SupportBuffer.FragmentIsBgraCount));
+            var viewportInverseVectorType = context.TypeVector(context.TypeFP32(), 4);
             var renderScaleArrayType = context.TypeArray(context.TypeFP32(), context.Constant(context.TypeU32(), SupportBuffer.RenderScaleMaxCount));
 
             context.Decorate(isBgraArrayType, Decoration.ArrayStride, (LiteralInteger)SupportBuffer.FieldSize);
             context.Decorate(renderScaleArrayType, Decoration.ArrayStride, (LiteralInteger)SupportBuffer.FieldSize);
 
-            var supportBufferStructType = context.TypeStruct(false, context.TypeU32(), isBgraArrayType, context.GetType(AggregateType.FP32 | AggregateType.Vector), context.TypeS32(), renderScaleArrayType);
+            var supportBufferStructType = context.TypeStruct(false, context.TypeU32(), isBgraArrayType, viewportInverseVectorType, context.TypeS32(), renderScaleArrayType);
 
             context.MemberDecorate(supportBufferStructType, 0, Decoration.Offset, (LiteralInteger)SupportBuffer.FragmentAlphaTestOffset);
             context.MemberDecorate(supportBufferStructType, 1, Decoration.Offset, (LiteralInteger)SupportBuffer.FragmentIsBgraOffset);

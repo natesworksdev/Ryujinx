@@ -1434,16 +1434,16 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             var y = context.Get(AggregateType.FP32, operation.GetSource(1));
             var mask = context.Get(AggregateType.U32, operation.GetSource(2));
 
-            var v4float = context.TypeVector(context.TypeFP32(), (SpvLiteralInteger)4);
-            var one = context.Constant(context.TypeFP32(), (SpvLiteralInteger)1.0f);
-            var minusOne = context.Constant(context.TypeFP32(), (SpvLiteralInteger)(-1.0f));
-            var zero = context.Constant(context.TypeFP32(), (SpvLiteralInteger)0.0f);
+            var v4float = context.TypeVector(context.TypeFP32(), 4);
+            var one = context.Constant(context.TypeFP32(), 1.0f);
+            var minusOne = context.Constant(context.TypeFP32(), -1.0f);
+            var zero = context.Constant(context.TypeFP32(), 0.0f);
             var xLut = context.ConstantComposite(v4float, one, minusOne, one, zero);
             var yLut = context.ConstantComposite(v4float, one, one, minusOne, one);
 
             var threadId = context.GetAttribute(AggregateType.U32, AttributeConsts.LaneId, false);
-            var shift = context.BitwiseAnd(context.TypeU32(), threadId, context.Constant(context.TypeU32(), (SpvLiteralInteger)3));
-            shift = context.ShiftLeftLogical(context.TypeU32(), shift, context.Constant(context.TypeU32(), (SpvLiteralInteger)1));
+            var shift = context.BitwiseAnd(context.TypeU32(), threadId, context.Constant(context.TypeU32(), 3));
+            shift = context.ShiftLeftLogical(context.TypeU32(), shift, context.Constant(context.TypeU32(), 1));
             var lutIdx = context.ShiftRightLogical(context.TypeU32(), mask, shift);
 
             var xLutValue = context.VectorExtractDynamic(context.TypeFP32(), xLut, lutIdx);
