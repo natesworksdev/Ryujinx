@@ -1,5 +1,6 @@
 using Silk.NET.Vulkan;
 using System;
+using VkBuffer = Silk.NET.Vulkan.Buffer;
 
 namespace Ryujinx.Graphics.Vulkan
 {
@@ -15,17 +16,15 @@ namespace Ryujinx.Graphics.Vulkan
             _descriptorSets = descriptorSets;
         }
 
-        public void InitializeBuffers(int setIndex, int baseBinding, int countPerUnit, DescriptorType type)
+        public void InitializeBuffers(int setIndex, int baseBinding, int countPerUnit, DescriptorType type, VkBuffer dummyBuffer)
         {
             Span<DescriptorBufferInfo> infos = stackalloc DescriptorBufferInfo[countPerUnit];
 
-            for (int j = 0; j < countPerUnit; j++)
+            infos.Fill(new DescriptorBufferInfo()
             {
-                infos[j] = new DescriptorBufferInfo()
-                {
-                    Range = Vk.WholeSize
-                };
-            }
+                Buffer = dummyBuffer,
+                Range = Vk.WholeSize
+            });
 
             UpdateBuffers(setIndex, baseBinding, infos, type);
         }

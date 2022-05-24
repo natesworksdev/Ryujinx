@@ -6,6 +6,7 @@ namespace Ryujinx.Graphics.Vulkan
     {
         public bool SupportsConditionalRendering { get; }
         public bool SupportsExtendedDynamicState { get; }
+        public bool SupportsNullDescriptors { get; }
         public bool SupportsTransformFeedback { get; }
         public bool SupportsTransformFeedbackQueries { get; }
         public bool SupportsGeometryShader { get; }
@@ -16,6 +17,7 @@ namespace Ryujinx.Graphics.Vulkan
         public HardwareCapabilities(
             bool supportsConditionalRendering,
             bool supportsExtendedDynamicState,
+            bool supportsNullDescriptors,
             bool supportsTransformFeedback,
             bool supportsTransformFeedbackQueries,
             bool supportsGeometryShader,
@@ -25,6 +27,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             SupportsConditionalRendering = supportsConditionalRendering;
             SupportsExtendedDynamicState = supportsExtendedDynamicState;
+            SupportsNullDescriptors = supportsNullDescriptors;
             SupportsTransformFeedback = supportsTransformFeedback;
             SupportsTransformFeedbackQueries = supportsTransformFeedbackQueries;
             SupportsGeometryShader = supportsGeometryShader;
