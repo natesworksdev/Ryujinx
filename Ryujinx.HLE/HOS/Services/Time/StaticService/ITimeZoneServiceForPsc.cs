@@ -4,9 +4,12 @@ using Ryujinx.Cpu;
 using Ryujinx.HLE.HOS.Services.Time.Clock;
 using Ryujinx.HLE.HOS.Services.Time.TimeZone;
 using Ryujinx.HLE.Utilities;
+using Ryujinx.Memory;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 {
@@ -165,11 +168,11 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 
             using (MemoryStream timeZoneBinaryStream = new MemoryStream(temp))
             {
-                result = _timeZoneManager.ParseTimeZoneRuleBinary(out TimeZoneRule timeZoneRule, timeZoneBinaryStream);
-
-                if (result == ResultCode.Success)
+                using (WritableRegion region = context.Memory.GetWritableRegion(timeZoneRuleBufferPosition, Unsafe.SizeOf<TimeZoneRule>()))
                 {
-                    MemoryHelper.Write(context.Memory, timeZoneRuleBufferPosition, timeZoneRule);
+                    ref TimeZoneRule rule = ref MemoryMarshal.Cast<byte, TimeZoneRule>(region.Memory.Span)[0];
+
+                    result = _timeZoneManager.ParseTimeZoneRuleBinary(ref rule, timeZoneBinaryStream);
                 }
             }
 
@@ -199,9 +202,9 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
                 throw new InvalidOperationException();
             }
 
-            TimeZoneRule rules = MemoryHelper.Read<TimeZoneRule>(context.Memory, bufferPosition);
+            ref TimeZoneRule rules = ref context.Memory.GetRef<TimeZoneRule>(bufferPosition);
 
-            ResultCode resultCode = _timeZoneManager.ToCalendarTime(rules, posixTime, out CalendarInfo calendar);
+            ResultCode resultCode = _timeZoneManager.ToCalendarTime(in rules, posixTime, out CalendarInfo calendar);
 
             if (resultCode == 0)
             {
@@ -244,9 +247,9 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
                 throw new InvalidOperationException();
             }
 
-            TimeZoneRule rules = MemoryHelper.Read<TimeZoneRule>(context.Memory, inBufferPosition);
+            ref TimeZoneRule rules = ref context.Memory.GetRef<TimeZoneRule>(inBufferPosition);
 
-            ResultCode resultCode = _timeZoneManager.ToPosixTime(rules, calendarTime, out long posixTime);
+            ResultCode resultCode = _timeZoneManager.ToPosixTime(in rules, calendarTime, out long posixTime);
 
             if (resultCode == ResultCode.Success)
             {
