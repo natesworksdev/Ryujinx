@@ -24,6 +24,12 @@
 
         public void Add(int cbIndex, int offset, int size)
         {
+            // Some usages can be out of bounds (vertex buffer on amd), so bound if necessary.
+            if (offset + size > _size)
+            {
+                size = _size - offset;
+            }
+
             int cbBase = cbIndex * _bitsPerCb;
             int start = cbBase + offset / _granularity;
             int end = cbBase + (offset + size - 1) / _granularity;
