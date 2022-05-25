@@ -64,7 +64,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
         {
             InitializeInstance(device.FileSystem, device.System.ContentManager, device.System.FsIntegrityCheckLevel);
 
-            ITickSource tickSource = device.System.CpuEngine.TickSource;
+            ITickSource tickSource = device.System.TickSource;
 
             SteadyClockTimePoint timeZoneUpdatedTimePoint = timeManager.StandardSteadyClock.GetCurrentTimePoint(tickSource);
 

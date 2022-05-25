@@ -689,7 +689,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
                         if (context.Device.System.NfpDevices[i].State == NfpDeviceState.TagMounted)
                         {
                             RegisterInfo registerInfo = VirtualAmiibo.GetRegisterInfo(
-                                context.Device.System.CpuEngine.TickSource,
+                                context.Device.System.TickSource,
                                 context.Device.System.NfpDevices[i].AmiiboId,
                                 context.Device.System.AccountManager.LastOpenedUser.Name);
 

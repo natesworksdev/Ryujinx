@@ -26,7 +26,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
                 return ResultCode.UninitializedClock;
             }
 
-            ITickSource tickSource = context.Device.System.CpuEngine.TickSource;
+            ITickSource tickSource = context.Device.System.TickSource;
 
             SteadyClockTimePoint currentTimePoint = _steadyClock.GetCurrentTimePoint(tickSource);
 

@@ -32,7 +32,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
                 return ResultCode.UninitializedClock;
             }
 
-            ITickSource tickSource = context.Device.System.CpuEngine.TickSource;
+            ITickSource tickSource = context.Device.System.TickSource;
 
             ResultCode result = _clockCore.GetCurrentTime(tickSource, out long posixTime);
 
@@ -60,7 +60,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 
             long posixTime = context.RequestData.ReadInt64();
 
-            ITickSource tickSource = context.Device.System.CpuEngine.TickSource;
+            ITickSource tickSource = context.Device.System.TickSource;
 
             return _clockCore.SetCurrentTime(tickSource, posixTime);
         }
@@ -74,7 +74,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
                 return ResultCode.UninitializedClock;
             }
 
-            ITickSource tickSource = context.Device.System.CpuEngine.TickSource;
+            ITickSource tickSource = context.Device.System.TickSource;
 
             ResultCode result = _clockCore.GetClockContext(tickSource, out SystemClockContext clockContext);
 

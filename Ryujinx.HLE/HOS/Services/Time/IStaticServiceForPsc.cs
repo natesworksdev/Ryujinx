@@ -162,7 +162,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
             bool autoCorrectionEnabled = context.RequestData.ReadBoolean();
 
-            ITickSource tickSource = context.Device.System.CpuEngine.TickSource;
+            ITickSource tickSource = context.Device.System.TickSource;
 
             ResultCode result = userClock.SetAutomaticCorrectionEnabled(tickSource, autoCorrectionEnabled);
 
@@ -191,7 +191,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // IsStandardNetworkSystemClockAccuracySufficient() -> bool
         public ResultCode IsStandardNetworkSystemClockAccuracySufficient(ServiceCtx context)
         {
-            ITickSource tickSource = context.Device.System.CpuEngine.TickSource;
+            ITickSource tickSource = context.Device.System.TickSource;
 
             context.ResponseData.Write(_timeManager.StandardNetworkSystemClock.IsStandardNetworkSystemClockAccuracySufficient(tickSource));
 
@@ -225,7 +225,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
                 return ResultCode.UninitializedClock;
             }
 
-            ITickSource tickSource = context.Device.System.CpuEngine.TickSource;
+            ITickSource tickSource = context.Device.System.TickSource;
 
             SystemClockContext   otherContext     = context.RequestData.ReadStruct<SystemClockContext>();
             SteadyClockTimePoint currentTimePoint = steadyClock.GetCurrentTimePoint(tickSource);
@@ -253,7 +253,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
             context.Response.PtrBuff[0] = context.Response.PtrBuff[0].WithSize((uint)Marshal.SizeOf<ClockSnapshot>());
 
-            ITickSource tickSource = context.Device.System.CpuEngine.TickSource;
+            ITickSource tickSource = context.Device.System.TickSource;
 
             ResultCode result = _timeManager.StandardUserSystemClock.GetClockContext(tickSource, out SystemClockContext userContext);
 
@@ -288,7 +288,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
             SystemClockContext userContext    = context.RequestData.ReadStruct<SystemClockContext>();
             SystemClockContext networkContext = context.RequestData.ReadStruct<SystemClockContext>();
 
-            ITickSource tickSource = context.Device.System.CpuEngine.TickSource;
+            ITickSource tickSource = context.Device.System.TickSource;
 
             ResultCode result = GetClockSnapshotFromSystemClockContextInternal(tickSource, userContext, networkContext, type, out ClockSnapshot clockSnapshot);
 

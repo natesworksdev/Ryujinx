@@ -6,7 +6,7 @@
         {
             BufferQueueCore core = new BufferQueueCore(device, pid);
 
-            producer = new BufferQueueProducer(core, device.System.CpuEngine.TickSource);
+            producer = new BufferQueueProducer(core, device.System.TickSource);
             consumer = new BufferQueueConsumer(core);
 
             return core;

@@ -4,12 +4,11 @@ namespace Ryujinx.Cpu.Jit
 {
     public class JitEngine : ICpuEngine
     {
-        private readonly JitTickSource _tickSource;
-        public ITickSource TickSource => _tickSource;
+        private readonly ITickSource _tickSource;
 
-        public JitEngine(ulong tickFrequency)
+        public JitEngine(ITickSource tickSource)
         {
-            _tickSource = new JitTickSource(tickFrequency);
+            _tickSource = tickSource;
         }
 
         public ICpuContext CreateCpuContext(IMemoryManager memoryManager, bool for64Bit)

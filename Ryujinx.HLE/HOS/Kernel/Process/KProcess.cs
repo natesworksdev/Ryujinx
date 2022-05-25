@@ -1,4 +1,3 @@
-using ARMeilleure.State;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;

@@ -59,6 +59,7 @@ namespace Ryujinx.HLE.HOS
 
         internal Switch Device { get; private set; }
 
+        internal ITickSource TickSource { get; }
         internal ICpuEngine CpuEngine { get; }
 
         internal SurfaceFlinger SurfaceFlinger { get; private set; }
@@ -125,10 +126,11 @@ namespace Ryujinx.HLE.HOS
 
         public Horizon(Switch device)
         {
-            CpuEngine = new JitEngine(KernelConstants.CounterFrequency);
+            TickSource = new TickSource(KernelConstants.CounterFrequency);
+            CpuEngine = new JitEngine(TickSource);
 
             KernelContext = new KernelContext(
-                CpuEngine.TickSource,
+                TickSource,
                 device,
                 device.Memory,
                 device.Configuration.MemoryConfiguration.ToKernelMemorySize(),
@@ -222,31 +224,31 @@ namespace Ryujinx.HLE.HOS
             internalOffset = new TimeSpanType(-internalOffset.NanoSeconds);
 
             // First init the standard steady clock
-            TimeServiceManager.Instance.SetupStandardSteadyClock(CpuEngine.TickSource, clockSourceId, systemTime, internalOffset, TimeSpanType.Zero, false);
-            TimeServiceManager.Instance.SetupStandardLocalSystemClock(CpuEngine.TickSource, new SystemClockContext(), systemTime.ToSeconds());
+            TimeServiceManager.Instance.SetupStandardSteadyClock(TickSource, clockSourceId, systemTime, internalOffset, TimeSpanType.Zero, false);
+            TimeServiceManager.Instance.SetupStandardLocalSystemClock(TickSource, new SystemClockContext(), systemTime.ToSeconds());
 
             if (NxSettings.Settings.TryGetValue("time!standard_network_clock_sufficient_accuracy_minutes", out object standardNetworkClockSufficientAccuracyMinutes))
             {
                 TimeSpanType standardNetworkClockSufficientAccuracy = new TimeSpanType((int)standardNetworkClockSufficientAccuracyMinutes * 60000000000);
 
                 // The network system clock needs a valid system clock, as such we setup this system clock using the local system clock.
-                TimeServiceManager.Instance.StandardLocalSystemClock.GetClockContext(CpuEngine.TickSource, out SystemClockContext localSytemClockContext);
+                TimeServiceManager.Instance.StandardLocalSystemClock.GetClockContext(TickSource, out SystemClockContext localSytemClockContext);
                 TimeServiceManager.Instance.SetupStandardNetworkSystemClock(localSytemClockContext, standardNetworkClockSufficientAccuracy);
             }
 
-            TimeServiceManager.Instance.SetupStandardUserSystemClock(CpuEngine.TickSource, false, SteadyClockTimePoint.GetRandom());
+            TimeServiceManager.Instance.SetupStandardUserSystemClock(TickSource, false, SteadyClockTimePoint.GetRandom());
 
             // FIXME: TimeZone should be init here but it's actually done in ContentManager
 
             TimeServiceManager.Instance.SetupEphemeralNetworkSystemClock();
 
-            DatabaseImpl.Instance.InitializeDatabase(CpuEngine.TickSource, LibHacHorizonManager.SdbClient);
+            DatabaseImpl.Instance.InitializeDatabase(TickSource, LibHacHorizonManager.SdbClient);
 
             HostSyncpoint = new NvHostSyncpt(device);
 
             SurfaceFlinger = new SurfaceFlinger(device);
 
-            InitializeAudioRenderer(CpuEngine.TickSource);
+            InitializeAudioRenderer(TickSource);
             InitializeServices();
         }
 
@@ -499,12 +501,12 @@ namespace Ryujinx.HLE.HOS
                 if (pause && !IsPaused)
                 {
                     Device.AudioDeviceDriver.GetPauseEvent().Reset();
-                    CpuEngine.TickSource.Suspend();
+                    TickSource.Suspend();
                 }
                 else if (!pause && IsPaused)
                 {
                     Device.AudioDeviceDriver.GetPauseEvent().Set();
-                    CpuEngine.TickSource.Resume();
+                    TickSource.Resume();
                 }
             }
             IsPaused = pause;
