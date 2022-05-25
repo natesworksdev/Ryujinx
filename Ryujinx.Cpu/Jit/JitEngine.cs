@@ -11,6 +11,7 @@ namespace Ryujinx.Cpu.Jit
             _tickSource = tickSource;
         }
 
+        /// <inheritdoc/>
         public ICpuContext CreateCpuContext(IMemoryManager memoryManager, bool for64Bit)
         {
             return new JitCpuContext(_tickSource, memoryManager, for64Bit);
