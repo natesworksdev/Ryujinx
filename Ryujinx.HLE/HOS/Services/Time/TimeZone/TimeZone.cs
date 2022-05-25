@@ -388,7 +388,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
         private static bool ParsePosixName(ReadOnlySpan<byte> name, ref TimeZoneRule outRules, bool lastDitch)
         {
-            //outRules = new TimeZoneRule();
+            outRules = new TimeZoneRule();
 
             int        stdLen;
 
@@ -884,7 +884,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
         internal static bool ParseTimeZoneBinary(ref TimeZoneRule outRules, Stream inputData)
         {
-            // outRules = new TimeZoneRule();
+            outRules = new TimeZoneRule();
 
             BinaryReader reader = new BinaryReader(inputData);
 
