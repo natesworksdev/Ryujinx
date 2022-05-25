@@ -23,11 +23,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
         public bool Running { get; private set; } = true;
 
-        public event EventHandler<EventArgs> Interrupt;
-        public event EventHandler<InstExceptionEventArgs> Break;
-        public event EventHandler<InstExceptionEventArgs> SupervisorCall;
-        public event EventHandler<InstUndefinedEventArgs> Undefined;
-
         public ulong GetX(int index) => 0UL;
         public void SetX(int index, ulong value) { }
 
@@ -41,26 +36,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         public void StopRunning()
         {
             Running = false;
-        }
-
-        public void OnInterrupt()
-        {
-            Interrupt?.Invoke(this, EventArgs.Empty);
-        }
-
-        public void OnBreak(ulong address, int imm)
-        {
-            Break?.Invoke(this, new InstExceptionEventArgs(address, imm));
-        }
-
-        public void OnSupervisorCall(ulong address, int imm)
-        {
-            SupervisorCall?.Invoke(this, new InstExceptionEventArgs(address, imm));
-        }
-
-        public void OnUndefined(ulong address, int opCode)
-        {
-            Undefined?.Invoke(this, new InstUndefinedEventArgs(address, opCode));
         }
 
         public void Dispose()

@@ -20,9 +20,9 @@ namespace Ryujinx.Cpu.Jit
             _translator.InvalidateJitCacheRegion(address, size);
         }
 
-        public IExecutionContext CreateExecutionContext()
+        public IExecutionContext CreateExecutionContext(ExceptionCallbacks exceptionCallbacks)
         {
-            return new JitExecutionContext(new JitMemoryAllocator(), _tickSource);
+            return new JitExecutionContext(new JitMemoryAllocator(), _tickSource, exceptionCallbacks);
         }
 
         public void Execute(IExecutionContext context, ulong address)

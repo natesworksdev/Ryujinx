@@ -1,6 +1,5 @@
 using ARMeilleure.Memory;
 using ARMeilleure.State;
-using System;
 
 namespace Ryujinx.Cpu.Jit
 {
@@ -49,33 +48,19 @@ namespace Ryujinx.Cpu.Jit
 
         public bool Running => _impl.Running;
 
-        public event EventHandler<EventArgs> Interrupt
-        {
-            add => _impl.Interrupt += value;
-            remove => _impl.Interrupt -= value;
-        }
+        private readonly ExceptionCallbacks _exceptionCallbacks;
 
-        public event EventHandler<InstExceptionEventArgs> Break
+        public JitExecutionContext(IJitMemoryAllocator allocator, ICounter counter, ExceptionCallbacks exceptionCallbacks)
         {
-            add => _impl.Break += value;
-            remove => _impl.Break -= value;
-        }
+            _impl = new ExecutionContext(
+                allocator,
+                counter,
+                InterruptHandler,
+                BreakHandler,
+                SupervisorCallHandler,
+                UndefinedHandler);
 
-        public event EventHandler<InstExceptionEventArgs> SupervisorCall
-        {
-            add => _impl.SupervisorCall += value;
-            remove => _impl.SupervisorCall -= value;
-        }
-
-        public event EventHandler<InstUndefinedEventArgs> Undefined
-        {
-            add => _impl.Undefined += value;
-            remove => _impl.Undefined -= value;
-        }
-
-        public JitExecutionContext(IJitMemoryAllocator allocator, ICounter counter)
-        {
-            _impl = new ExecutionContext(allocator, counter);
+            _exceptionCallbacks = exceptionCallbacks;
         }
 
         public ulong GetX(int index) => _impl.GetX(index);
@@ -83,6 +68,26 @@ namespace Ryujinx.Cpu.Jit
 
         public V128 GetV(int index) => _impl.GetV(index);
         public void SetV(int index, V128 value) => _impl.SetV(index, value);
+
+        private void InterruptHandler(ExecutionContext context)
+        {
+            _exceptionCallbacks.InterruptCallback?.Invoke(this);
+        }
+
+        private void BreakHandler(ExecutionContext context, ulong address, int imm)
+        {
+            _exceptionCallbacks.BreakCallback?.Invoke(this, address, imm);
+        }
+
+        private void SupervisorCallHandler(ExecutionContext context, ulong address, int imm)
+        {
+            _exceptionCallbacks.SupervisorCallback?.Invoke(this, address, imm);
+        }
+
+        private void UndefinedHandler(ExecutionContext context, ulong address, int opCode)
+        {
+            _exceptionCallbacks.UndefinedCallback?.Invoke(this, address, opCode);
+        }
 
         public void RequestInterrupt()
         {

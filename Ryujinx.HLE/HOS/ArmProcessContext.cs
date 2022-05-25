@@ -1,6 +1,5 @@
 ﻿using ARMeilleure.Memory;
 using Ryujinx.Cpu;
-using Ryujinx.Cpu.Jit;
 using Ryujinx.Graphics.Gpu;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.Memory;
@@ -31,9 +30,9 @@ namespace Ryujinx.HLE.HOS
             _memoryManager = memoryManager;
         }
 
-        public IExecutionContext CreateExecutionContext()
+        public IExecutionContext CreateExecutionContext(ExceptionCallbacks exceptionCallbacks)
         {
-            return _cpuContext.CreateExecutionContext();
+            return _cpuContext.CreateExecutionContext(exceptionCallbacks);
         }
 
         public void Execute(IExecutionContext context, ulong codeAddress)

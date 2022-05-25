@@ -19,11 +19,6 @@ namespace Ryujinx.Cpu
 
         bool Running { get; }
 
-        event EventHandler<EventArgs> Interrupt;
-        event EventHandler<InstExceptionEventArgs> Break;
-        event EventHandler<InstExceptionEventArgs> SupervisorCall;
-        event EventHandler<InstUndefinedEventArgs> Undefined;
-
         ulong GetX(int index);
         void SetX(int index, ulong value);
 

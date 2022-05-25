@@ -192,7 +192,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
             HostThread = new Thread(ThreadStart);
 
-            Context = owner?.Context?.CreateExecutionContext() ?? new ProcessExecutionContext();
+            Context = owner?.CreateExecutionContext() ?? new ProcessExecutionContext();
 
             Context.IsAarch32 = !is64Bits;
 
@@ -220,7 +220,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
             if (owner != null)
             {
-                owner.SubscribeThreadEventHandlers(Context);
                 owner.AddThread(this);
 
                 if (owner.IsPaused)

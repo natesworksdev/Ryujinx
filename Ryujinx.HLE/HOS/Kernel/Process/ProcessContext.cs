@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             AddressSpace = asManager;
         }
 
-        public IExecutionContext CreateExecutionContext()
+        public IExecutionContext CreateExecutionContext(ExceptionCallbacks exceptionCallbacks)
         {
             return new ProcessExecutionContext();
         }

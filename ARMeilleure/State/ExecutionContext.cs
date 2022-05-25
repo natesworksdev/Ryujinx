@@ -65,15 +65,25 @@ namespace ARMeilleure.State
             private set => _nativeContext.SetRunning(value);
         }
 
-        public event EventHandler<EventArgs> Interrupt;
-        public event EventHandler<InstExceptionEventArgs> Break;
-        public event EventHandler<InstExceptionEventArgs> SupervisorCall;
-        public event EventHandler<InstUndefinedEventArgs> Undefined;
+        private readonly ExceptionCallbackNoArgs _interruptCallback;
+        private readonly ExceptionCallback _breakCallback;
+        private readonly ExceptionCallback _supervisorCallback;
+        private readonly ExceptionCallback _undefinedCallback;
 
-        public ExecutionContext(IJitMemoryAllocator allocator, ICounter counter)
+        public ExecutionContext(
+            IJitMemoryAllocator allocator,
+            ICounter counter,
+            ExceptionCallbackNoArgs interruptCallback = null,
+            ExceptionCallback breakCallback = null,
+            ExceptionCallback supervisorCallback = null,
+            ExceptionCallback undefinedCallback = null)
         {
             _nativeContext = new NativeContext(allocator);
             _counter = counter;
+            _interruptCallback = interruptCallback;
+            _breakCallback = breakCallback;
+            _supervisorCallback = supervisorCallback;
+            _undefinedCallback = undefinedCallback;
 
             Running = true;
 
@@ -98,7 +108,7 @@ namespace ARMeilleure.State
             {
                 _interrupted = false;
 
-                Interrupt?.Invoke(this, EventArgs.Empty);
+                _interruptCallback?.Invoke(this);
             }
 
             _nativeContext.SetCounter(MinCountForCheck);
@@ -111,17 +121,17 @@ namespace ARMeilleure.State
 
         internal void OnBreak(ulong address, int imm)
         {
-            Break?.Invoke(this, new InstExceptionEventArgs(address, imm));
+            _breakCallback?.Invoke(this, address, imm);
         }
 
         internal void OnSupervisorCall(ulong address, int imm)
         {
-            SupervisorCall?.Invoke(this, new InstExceptionEventArgs(address, imm));
+            _supervisorCallback?.Invoke(this, address, imm);
         }
 
         internal void OnUndefined(ulong address, int opCode)
         {
-            Undefined?.Invoke(this, new InstUndefinedEventArgs(address, opCode));
+            _undefinedCallback?.Invoke(this, address, opCode);
         }
 
         public void StopRunning()
