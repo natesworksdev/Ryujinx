@@ -39,7 +39,17 @@ namespace Ryujinx.Graphics.Vulkan
         /// <param name="size">Size of the buffer region being used, in bytes</param>
         public void AddBufferUse(int cbIndex, int offset, int size)
         {
-            _bufferUsageBitmap.Add(cbIndex, offset, size);
+            _bufferUsageBitmap.Add(cbIndex, offset, size, false);
+        }
+
+        public void AddBufferUse(int cbIndex, int offset, int size, bool write)
+        {
+            _bufferUsageBitmap.Add(cbIndex, offset, size, false);
+
+            if (write)
+            {
+                _bufferUsageBitmap.Add(cbIndex, offset, size, true);
+            }
         }
 
         /// <summary>
@@ -72,6 +82,11 @@ namespace Ryujinx.Graphics.Vulkan
         public bool IsBufferRangeInUse(int offset, int size)
         {
             return _bufferUsageBitmap.OverlapsWith(offset, size);
+        }
+
+        public bool IsBufferRangeInUse(int offset, int size, bool write)
+        {
+            return _bufferUsageBitmap.OverlapsWith(offset, size, write);
         }
 
         /// <summary>

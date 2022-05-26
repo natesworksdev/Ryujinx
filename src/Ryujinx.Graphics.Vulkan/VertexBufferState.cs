@@ -88,15 +88,21 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (autoBuffer != null)
             {
-                var buffer = autoBuffer.Get(cbs, _offset, _size).Value;
+                int offset = _offset;
+                var buffer = autoBuffer.GetMirrorable(cbs, ref offset, _size, out _).Value;
 
-                updater.BindVertexBuffer(cbs, binding, buffer, (ulong)_offset, (ulong)_size, (ulong)_stride);
+                updater.BindVertexBuffer(cbs, binding, buffer, (ulong)offset, (ulong)_size, (ulong)_stride);
             }
         }
 
         public readonly bool BoundEquals(Auto<DisposableBuffer> buffer)
         {
             return _buffer == buffer;
+        }
+
+        public bool Overlaps(Auto<DisposableBuffer> buffer, int offset, int size)
+        {
+            return buffer == _buffer && offset < _offset + _size && offset + size > _offset;
         }
 
         public readonly bool Matches(Auto<DisposableBuffer> buffer, int descriptorIndex, int offset, int size, int stride = 0)
