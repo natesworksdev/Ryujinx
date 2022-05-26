@@ -291,7 +291,7 @@ namespace Ryujinx.HLE.HOS
             }
 
             // This is not a normal NSP, it's actually a ExeFS as a NSP
-            LoadExeFs(nsp);
+            LoadExeFs(nsp, null, isHomebrew: true);
         }
 
         public void LoadNca(string ncaFile)
