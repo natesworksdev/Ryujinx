@@ -202,9 +202,9 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
                 throw new InvalidOperationException();
             }
 
-            ref TimeZoneRule rules = ref context.Memory.GetRef<TimeZoneRule>(bufferPosition);
+            ReadOnlySpan<TimeZoneRule> rules = MemoryMarshal.Cast<byte, TimeZoneRule>(context.Memory.GetSpan(bufferPosition, (int)bufferSize));
 
-            ResultCode resultCode = _timeZoneManager.ToCalendarTime(in rules, posixTime, out CalendarInfo calendar);
+            ResultCode resultCode = _timeZoneManager.ToCalendarTime(in rules[0], posixTime, out CalendarInfo calendar);
 
             if (resultCode == 0)
             {
@@ -247,9 +247,9 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
                 throw new InvalidOperationException();
             }
 
-            ref TimeZoneRule rules = ref context.Memory.GetRef<TimeZoneRule>(inBufferPosition);
+            ReadOnlySpan<TimeZoneRule> rules = MemoryMarshal.Cast<byte, TimeZoneRule>(context.Memory.GetSpan(inBufferPosition, (int)inBufferSize));
 
-            ResultCode resultCode = _timeZoneManager.ToPosixTime(in rules, calendarTime, out long posixTime);
+            ResultCode resultCode = _timeZoneManager.ToPosixTime(in rules[0], calendarTime, out long posixTime);
 
             if (resultCode == ResultCode.Success)
             {

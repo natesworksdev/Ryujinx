@@ -16,7 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-using static Ryujinx.HLE.HOS.Services.Time.TimeZone.TimeZoneRule;
+using TimeZoneRuleBox = Ryujinx.Common.Memory.Box<Ryujinx.HLE.HOS.Services.Time.TimeZone.TimeZoneRule>;
 
 namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 {
@@ -149,7 +149,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                         continue;
                     }
 
-                    Common.Memory.Box<TimeZoneRule> tzRuleBox = new Common.Memory.Box<TimeZoneRule>();
+                    TimeZoneRuleBox tzRuleBox = new TimeZoneRuleBox();
                     ref TimeZoneRule tzRule = ref tzRuleBox.Data;
 
                     TimeZone.ParseTimeZoneBinary(ref tzRule, tzif.Get.AsStream());
