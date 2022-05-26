@@ -384,7 +384,7 @@ namespace Ryujinx.Graphics.Vulkan
             _hasPendingQuery = true;
         }
 
-        protected override void SignalProgramChange()
+        protected override void SignalAttachmentChange()
         {
             FlushPendingQuery();
         }

@@ -45,6 +45,7 @@ namespace Ryujinx.Graphics.Vulkan
         protected FramebufferParams FramebufferParams;
         private Auto<DisposableFramebuffer> _framebuffer;
         private Auto<DisposableRenderPass> _renderPass;
+        private int _writtenAttachmentCount;
         private bool _renderPassActive;
 
         private readonly DescriptorSetUpdater _descriptorSetUpdater;
@@ -598,10 +599,9 @@ namespace Ryujinx.Graphics.Vulkan
             stages.CopyTo(_newState.Stages.ToSpan().Slice(0, stages.Length));
 
             SignalStateChange();
-            SignalProgramChange();
         }
 
-        protected virtual void SignalProgramChange()
+        protected virtual void SignalAttachmentChange()
         {
         }
 
@@ -614,15 +614,27 @@ namespace Ryujinx.Graphics.Vulkan
         public void SetRenderTargetColorMasks(ReadOnlySpan<uint> componentMask)
         {
             int count = Math.Min(Constants.MaxRenderTargets, componentMask.Length);
+            int writtenAttachments = 0;
 
             for (int i = 0; i < count; i++)
             {
                 ref var vkBlend = ref _newState.Internal.ColorBlendAttachmentState[i];
 
                 vkBlend.ColorWriteMask = (ColorComponentFlags)componentMask[i];
+
+                if (componentMask[i] != 0)
+                {
+                    writtenAttachments++;
+                }
             }
 
             SignalStateChange();
+
+            if (writtenAttachments != _writtenAttachmentCount)
+            {
+                SignalAttachmentChange();
+                _writtenAttachmentCount = writtenAttachments;
+            }
         }
 
         public void SetRenderTargets(ITexture[] colors, ITexture depthStencil)
@@ -631,6 +643,7 @@ namespace Ryujinx.Graphics.Vulkan
             CreateFramebuffer(colors, depthStencil);
             CreateRenderPass();
             SignalStateChange();
+            SignalAttachmentChange();
         }
 
         public void SetRenderTargetScale(float scale)
