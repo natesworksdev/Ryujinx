@@ -146,6 +146,8 @@
                                           Header="Russian" />
                                 <MenuItem Command="{ReflectionBinding ChangeLanguage}" CommandParameter="tr_TR"
                                           Header="Turkish" />
+                                <MenuItem Command="{ReflectionBinding ChangeLanguage}" CommandParameter="zh_CN"
+                                          Header="Simplified Chinese" />
                             </MenuItem>
                             <Separator />
                             <MenuItem Command="{ReflectionBinding OpenSettings}"
