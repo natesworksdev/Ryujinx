@@ -86,7 +86,7 @@ namespace Ryujinx.Cpu
         /// Sets the value of a FP/SIMD register.
         /// </summary>
         /// <param name="index">Index of the register, in the range 0-31 (inclusive)</param>
-        /// <returns>The register value</returns>
+        /// <param name="value">Value to be set</param>
         void SetV(int index, V128 value);
 
         /// <summary>
