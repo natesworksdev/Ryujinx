@@ -36,25 +36,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             if (context.IsAarch32)
             {
-                var svcFunc = SyscallTable.SvcTable32[id];
-
-                if (svcFunc == null)
-                {
-                    throw new NotImplementedException($"SVC 0x{id:X4} is not implemented.");
-                }
-
-                svcFunc(_syscall32, context);
+                SyscallDispatch.Dispatch32(_context.Syscall, context, id);
             }
             else
             {
-                var svcFunc = SyscallTable.SvcTable64[id];
-
-                if (svcFunc == null)
-                {
-                    throw new NotImplementedException($"SVC 0x{id:X4} is not implemented.");
-                }
-
-                svcFunc(_syscall64, context);
+                SyscallDispatch.Dispatch64(_context.Syscall, context, id);
             }
 
             currentThread.HandlePostSyscall();
