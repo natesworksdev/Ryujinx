@@ -384,7 +384,7 @@ namespace Ryujinx.Horizon.Generators.Kernel
         private static void GenerateLogPrintBeforeCall(CodeGenerator generator, string methodName, List<string> argList)
         {
             string log = $"{methodName}({string.Join(", ", argList)})";
-            AppendLog(generator, "Trace", "KernelSvc", log);
+            GenerateLogPrint(generator, "Trace", "KernelSvc", log);
         }
 
         private static void GenerateLogPrintAfterCall(
@@ -413,21 +413,21 @@ namespace Ryujinx.Horizon.Generators.Kernel
                 string checks = string.Join(" || ", expectedChecks);
 
                 generator.EnterScope($"if ({checks})");
-                AppendLog(generator, "Trace", "KernelSvc", log);
+                GenerateLogPrint(generator, "Trace", "KernelSvc", log);
                 generator.LeaveScope();
                 generator.EnterScope("else");
-                AppendLog(generator, "Warning", "KernelSvc", log);
+                GenerateLogPrint(generator, "Warning", "KernelSvc", log);
                 generator.LeaveScope();
             }
             else
             {
-                AppendLog(generator, "Trace", "KernelSvc", log);
+                GenerateLogPrint(generator, "Trace", "KernelSvc", log);
             }
         }
 
-        private static void AppendLog(CodeGenerator generator, string logLevel, string logClass, string log)
+        private static void GenerateLogPrint(CodeGenerator generator, string logLevel, string logClass, string log)
         {
-            generator.AppendLine($"Logger.{logLevel}?.Print(LogClass.{logClass}, $\"{log}\");");
+            generator.AppendLine($"Logger.{logLevel}?.PrintMsg(LogClass.{logClass}, $\"{log}\");");
         }
 
         private static void GenerateDispatch(CodeGenerator generator, List<SyscallIdAndName> syscalls, string suffix)

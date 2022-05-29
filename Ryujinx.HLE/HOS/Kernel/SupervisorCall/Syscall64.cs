@@ -162,7 +162,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         public KernelResult CreateCodeMemory64([R(1)] ulong address, [R(2)] ulong size, [R(1)] out int handle)
         {
-            return _syscall.CreateCodeMemory(address, size, out handle);
+            return _syscall.CreateCodeMemory(out handle, address, size);
         }
 
         public KernelResult ControlCodeMemory64([R(0)] int handle, [R(1)] CodeMemoryOperation op, [R(2)] ulong address, [R(3)] ulong size, [R(4)] KMemoryPermission permission)

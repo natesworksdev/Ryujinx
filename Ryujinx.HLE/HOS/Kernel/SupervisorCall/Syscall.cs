@@ -602,9 +602,9 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         [Svc(0x44)]
         public KernelResult ReplyAndReceiveWithUserBuffer(
             out int handleIndex,
-            [PointerSized] ulong handlesPtr,
             [PointerSized] ulong messagePtr,
             [PointerSized] ulong messageSize,
+            [PointerSized] ulong handlesPtr,
             int handlesCount,
             int replyTargetHandle,
             long timeout)
@@ -1358,7 +1358,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         }
 
         [Svc(0x4b)]
-        public KernelResult CreateCodeMemory([PointerSized] ulong address, [PointerSized] ulong size, out int handle)
+        public KernelResult CreateCodeMemory(out int handle, [PointerSized] ulong address, [PointerSized] ulong size)
         {
             handle = 0;
 

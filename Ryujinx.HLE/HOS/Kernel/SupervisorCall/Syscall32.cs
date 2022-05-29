@@ -145,7 +145,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         public KernelResult CreateCodeMemory32([R(1)] uint address, [R(2)] uint size, [R(1)] out int handle)
         {
-            return _syscall.CreateCodeMemory(address, size, out handle);
+            return _syscall.CreateCodeMemory(out handle, address, size);
         }
 
         public KernelResult ControlCodeMemory32(
