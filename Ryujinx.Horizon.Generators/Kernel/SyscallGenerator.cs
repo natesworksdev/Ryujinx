@@ -15,6 +15,8 @@ namespace Ryujinx.Horizon.Generators.Kernel
         private const string A32Suffix = "32";
         private const string A64Suffix = "64";
         private const string ResultVariableName = "result";
+        private const string ArgVariablePrefix = "arg";
+        private const string ResultCheckHelperName = "LogResultAsTrace";
 
         private const string TypeSystemBoolean = "System.Boolean";
         private const string TypeSystemInt32 = "System.Int32";
@@ -22,17 +24,20 @@ namespace Ryujinx.Horizon.Generators.Kernel
         private const string TypeSystemUInt32 = "System.UInt32";
         private const string TypeSystemUInt64 = "System.UInt64";
 
-        private const string TypeSvcAttribute = "Ryujinx.HLE.HOS.Kernel.SupervisorCall.SvcAttribute";
-        private const string TypePointerSizedAttribute = "Ryujinx.HLE.HOS.Kernel.SupervisorCall.PointerSizedAttribute";
-        private const string TypeKernelResult = "Ryujinx.HLE.HOS.Kernel.Common.KernelResult";
+        private const string NamespaceKernel = "Ryujinx.HLE.HOS.Kernel";
+        private const string TypeSvcAttribute = NamespaceKernel + ".SupervisorCall.SvcAttribute";
+        private const string TypePointerSizedAttribute = NamespaceKernel + ".SupervisorCall.PointerSizedAttribute";
+        private const string TypeKernelResultName = "KernelResult";
+        private const string TypeKernelResult = NamespaceKernel + ".Common." + TypeKernelResultName;
+        private const string TypeExecutionContext = "IExecutionContext";
 
         private static readonly string[] _expectedResults = new string[]
         {
-            "KernelResult.Success",
-            "KernelResult.TimedOut",
-            "KernelResult.Cancelled",
-            "KernelResult.PortRemoteClosed",
-            "KernelResult.InvalidState"
+            $"{TypeKernelResultName}.Success",
+            $"{TypeKernelResultName}.TimedOut",
+            $"{TypeKernelResultName}.Cancelled",
+            $"{TypeKernelResultName}.PortRemoteClosed",
+            $"{TypeKernelResultName}.InvalidState"
         };
 
         private struct OutParameter
@@ -124,14 +129,17 @@ namespace Ryujinx.Horizon.Generators.Kernel
 
             generator.AppendLine("using Ryujinx.Common.Logging;");
             generator.AppendLine("using Ryujinx.Cpu;");
-            generator.AppendLine("using Ryujinx.HLE.HOS.Kernel.Common;");
-            generator.AppendLine("using Ryujinx.HLE.HOS.Kernel.Memory;");
-            generator.AppendLine("using Ryujinx.HLE.HOS.Kernel.Process;");
-            generator.AppendLine("using Ryujinx.HLE.HOS.Kernel.Threading;");
+            generator.AppendLine($"using {NamespaceKernel}.Common;");
+            generator.AppendLine($"using {NamespaceKernel}.Memory;");
+            generator.AppendLine($"using {NamespaceKernel}.Process;");
+            generator.AppendLine($"using {NamespaceKernel}.Threading;");
             generator.AppendLine("using System;");
             generator.AppendLine();
             generator.EnterScope($"namespace {ClassNamespace}");
             generator.EnterScope($"static class {ClassName}");
+
+            GenerateResultCheckHelper(generator);
+            generator.AppendLine();
 
             List<SyscallIdAndName> syscalls = new List<SyscallIdAndName>();
 
@@ -173,9 +181,26 @@ namespace Ryujinx.Horizon.Generators.Kernel
             context.AddSource($"{ClassName}.g.cs", generator.ToString());
         }
 
+        private static void GenerateResultCheckHelper(CodeGenerator generator)
+        {
+            generator.EnterScope($"private static bool {ResultCheckHelperName}({TypeKernelResultName} {ResultVariableName})");
+
+            string[] expectedChecks = new string[_expectedResults.Length];
+
+            for (int i = 0; i < expectedChecks.Length; i++)
+            {
+                expectedChecks[i] = $"{ResultVariableName} == {_expectedResults[i]}";
+            }
+
+            string checks = string.Join(" || ", expectedChecks);
+
+            generator.AppendLine($"return {checks};");
+            generator.LeaveScope();
+        }
+
         private static void GenerateMethod32(CodeGenerator generator, Compilation compilation, MethodDeclarationSyntax method)
         {
-            generator.EnterScope($"private static void {method.Identifier.Text}{A32Suffix}(Syscall syscall, IExecutionContext context)");
+            generator.EnterScope($"private static void {method.Identifier.Text}{A32Suffix}(Syscall syscall, {TypeExecutionContext} context)");
 
             string[] args = new string[method.ParameterList.Parameters.Count];
             int index = 0;
@@ -189,16 +214,17 @@ namespace Ryujinx.Horizon.Generators.Kernel
             foreach (var methodParameter in method.ParameterList.Parameters)
             {
                 string name = methodParameter.Identifier.Text;
+                string argName = GetPrefixedArgName(name);
                 string typeName = methodParameter.Type.ToString();
                 string canonicalTypeName = GetCanonicalTypeName(compilation, methodParameter.Type);
 
                 if (methodParameter.Modifiers.Any(SyntaxKind.OutKeyword))
                 {
                     bool needsSplit = Is64BitInteger(canonicalTypeName) && !IsPointerSized(compilation, methodParameter);
-                    outParameters.Add(new OutParameter(name, needsSplit));
-                    logOutArgs.Add($"{name}: {GetFormattedLogValue(name, canonicalTypeName)}");
+                    outParameters.Add(new OutParameter(argName, needsSplit));
+                    logOutArgs.Add($"{name}: {GetFormattedLogValue(argName, canonicalTypeName)}");
 
-                    name = $"out {typeName} {name}";
+                    argName = $"out {typeName} {argName}";
 
                     regAlloc.AdvanceLinearIndex();
                 }
@@ -210,7 +236,7 @@ namespace Ryujinx.Horizon.Generators.Kernel
                         {
                             int registerIndex = regAlloc.AllocateSingle();
 
-                            generator.AppendLine($"var {name} = (uint)context.GetX({registerIndex});");
+                            generator.AppendLine($"var {argName} = (uint)context.GetX({registerIndex});");
                         }
                         else
                         {
@@ -220,7 +246,7 @@ namespace Ryujinx.Horizon.Generators.Kernel
                             string valueHigh = $"(ulong)(uint)context.GetX({registerIndex2})";
                             string value = $"{valueLow} | ({valueHigh} << 32)";
 
-                            generator.AppendLine($"var {name} = ({typeName})({value});");
+                            generator.AppendLine($"var {argName} = ({typeName})({value});");
                         }
                     }
                     else
@@ -229,13 +255,13 @@ namespace Ryujinx.Horizon.Generators.Kernel
 
                         string value = GenerateCastFromUInt64($"context.GetX({registerIndex})", canonicalTypeName, typeName);
 
-                        generator.AppendLine($"var {name} = {value};");
+                        generator.AppendLine($"var {argName} = {value};");
                     }
 
-                    logInArgs.Add($"{name}: {GetFormattedLogValue(name, canonicalTypeName)}");
+                    logInArgs.Add($"{name}: {GetFormattedLogValue(argName, canonicalTypeName)}");
                 }
 
-                args[index++] = name;
+                args[index++] = argName;
             }
 
             GenerateLogPrintBeforeCall(generator, method.Identifier.Text, logInArgs);
@@ -288,7 +314,7 @@ namespace Ryujinx.Horizon.Generators.Kernel
 
         private static void GenerateMethod64(CodeGenerator generator, Compilation compilation, MethodDeclarationSyntax method)
         {
-            generator.EnterScope($"private static void {method.Identifier.Text}{A64Suffix}(Syscall syscall, IExecutionContext context)");
+            generator.EnterScope($"private static void {method.Identifier.Text}{A64Suffix}(Syscall syscall, {TypeExecutionContext} context)");
 
             string[] args = new string[method.ParameterList.Parameters.Count];
             int registerIndex = 0;
@@ -301,24 +327,25 @@ namespace Ryujinx.Horizon.Generators.Kernel
             foreach (var methodParameter in method.ParameterList.Parameters)
             {
                 string name = methodParameter.Identifier.Text;
+                string argName = GetPrefixedArgName(name);
                 string typeName = methodParameter.Type.ToString();
                 string canonicalTypeName = GetCanonicalTypeName(compilation, methodParameter.Type);
 
                 if (methodParameter.Modifiers.Any(SyntaxKind.OutKeyword))
                 {
-                    outParameters.Add(new OutParameter(name));
-                    logOutArgs.Add($"{name}: {GetFormattedLogValue(name, canonicalTypeName)}");
-                    name = $"out {typeName} {name}";
+                    outParameters.Add(new OutParameter(argName));
+                    logOutArgs.Add($"{name}: {GetFormattedLogValue(argName, canonicalTypeName)}");
+                    argName = $"out {typeName} {argName}";
                     registerIndex++;
                 }
                 else
                 {
                     string value = GenerateCastFromUInt64($"context.GetX({registerIndex++})", canonicalTypeName, typeName);
-                    generator.AppendLine($"var {name} = {value};");
-                    logInArgs.Add($"{name}: {GetFormattedLogValue(name, canonicalTypeName)}");
+                    generator.AppendLine($"var {argName} = {value};");
+                    logInArgs.Add($"{name}: {GetFormattedLogValue(argName, canonicalTypeName)}");
                 }
 
-                args[index++] = name;
+                args[index++] = argName;
             }
 
             GenerateLogPrintBeforeCall(generator, method.Identifier.Text, logInArgs);
@@ -370,7 +397,12 @@ namespace Ryujinx.Horizon.Generators.Kernel
             return $"{{{value}}}";
         }
 
-        public static string GetCanonicalTypeName(Compilation compilation, SyntaxNode syntaxNode)
+        private static string GetPrefixedArgName(string name)
+        {
+            return ArgVariablePrefix + name[0].ToString().ToUpperInvariant() + name.Substring(1);
+        }
+
+        private static string GetCanonicalTypeName(Compilation compilation, SyntaxNode syntaxNode)
         {
             TypeInfo typeInfo = compilation.GetSemanticModel(syntaxNode.SyntaxTree).GetTypeInfo(syntaxNode);
             if (typeInfo.Type.ContainingNamespace == null)
@@ -403,16 +435,7 @@ namespace Ryujinx.Horizon.Generators.Kernel
 
             if (canonicalResultTypeName == TypeKernelResult)
             {
-                string[] expectedChecks = new string[_expectedResults.Length];
-
-                for (int i = 0; i < expectedChecks.Length; i++)
-                {
-                    expectedChecks[i] = $"{ResultVariableName} == {_expectedResults[i]}";
-                }
-
-                string checks = string.Join(" || ", expectedChecks);
-
-                generator.EnterScope($"if ({checks})");
+                generator.EnterScope($"if ({ResultCheckHelperName}({ResultVariableName}))");
                 GenerateLogPrint(generator, "Trace", "KernelSvc", log);
                 generator.LeaveScope();
                 generator.EnterScope("else");
@@ -432,7 +455,7 @@ namespace Ryujinx.Horizon.Generators.Kernel
 
         private static void GenerateDispatch(CodeGenerator generator, List<SyscallIdAndName> syscalls, string suffix)
         {
-            generator.EnterScope($"public static void Dispatch{suffix}(Syscall syscall, IExecutionContext context, int id)");
+            generator.EnterScope($"public static void Dispatch{suffix}(Syscall syscall, {TypeExecutionContext} context, int id)");
             generator.EnterScope("switch (id)");
 
             foreach (var syscall in syscalls)
