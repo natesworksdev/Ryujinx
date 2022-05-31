@@ -1402,8 +1402,8 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         public KernelResult ControlCodeMemory(
             int handle,
             CodeMemoryOperation op,
-            [PointerSized] ulong address,
-            [PointerSized] ulong size,
+            ulong address,
+            ulong size,
             KMemoryPermission permission)
         {
             KProcess currentProcess = KernelStatic.GetCurrentProcess();
