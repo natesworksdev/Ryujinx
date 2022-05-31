@@ -397,7 +397,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public void RevertIfNotSaved()
         {
-            Volume = _previousVolumeLevel;
+            Program.ReloadConfig();
         }
     }
 }

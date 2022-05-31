@@ -43,7 +43,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
         private InputConfig _inputConfig;
         private object _configuration;
         private string _profileName;
-        private bool _isProfileLoading;
+        private bool _isLoaded;
         private readonly UserControl _owner;
 
         public IGamepadDriver AvaloniaKeyboardDriver { get; }
@@ -96,6 +96,8 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 LoadConfiguration();
                 LoadDevice();
                 LoadProfiles();
+
+                _isLoaded = true;
 
                 OnPropertyChanged();
             }
@@ -212,7 +214,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
                 LoadControllers();
 
-                if (!_isProfileLoading)
+                if (_isLoaded)
                 {
                     LoadConfiguration(LoadDefaultConfiguration());
                 }
@@ -247,7 +249,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                     _mainWindow.AppHost.NpadManager.BlockInputUpdates();
                 }
 
-                _isProfileLoading = true;
+                _isLoaded = false;
 
                 LoadDevices();
 
@@ -712,13 +714,13 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
             if (config != null)
             {
-                _isProfileLoading = true;
+                _isLoaded = false;
 
                 LoadConfiguration(config);
 
                 LoadDevice();
 
-                _isProfileLoading = false;
+                _isLoaded = true;
 
                 NotifyChanges();
             }

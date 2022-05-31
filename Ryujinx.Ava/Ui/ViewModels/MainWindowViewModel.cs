@@ -11,6 +11,7 @@ using LibHac.FsSystem;
 using LibHac.Ncm;
 using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Common.Locale;
+using Ryujinx.Ava.Input;
 using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.Windows;
 using Ryujinx.Common;
@@ -836,9 +837,18 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public void LoadConfigurableHotKeys()
         {
-            ShowUiKey = KeyGesture.Parse(ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUi.ToString());
-            ScreenshotKey = KeyGesture.Parse(ConfigurationState.Instance.Hid.Hotkeys.Value.Screenshot.ToString());
-            PauseKey = KeyGesture.Parse(ConfigurationState.Instance.Hid.Hotkeys.Value.Pause.ToString());
+            if(AvaloniaMappingHelper.TryGetAvaKey((Ryujinx.Input.Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ShowUi, out var showUiKey))
+            {
+                ShowUiKey = new KeyGesture(showUiKey, KeyModifiers.None);
+            }
+            if (AvaloniaMappingHelper.TryGetAvaKey((Ryujinx.Input.Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Screenshot, out var screenshotKey))
+            {
+                ScreenshotKey = new KeyGesture(screenshotKey, KeyModifiers.None);
+            }
+            if (AvaloniaMappingHelper.TryGetAvaKey((Ryujinx.Input.Key)ConfigurationState.Instance.Hid.Hotkeys.Value.Pause, out var pauseKey))
+            {
+                PauseKey = new KeyGesture(pauseKey, KeyModifiers.None);
+            }
         }
 
         public void TakeScreenshot()

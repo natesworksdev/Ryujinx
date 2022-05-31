@@ -23,7 +23,7 @@ namespace Ryujinx.Ava.Ui.Controls
             ToggledButton = toggleButton;
         }
 
-        public async Task GetInputAndAssign(IButtonAssigner assigner, IKeyboard keyboard = null)
+        public async void GetInputAndAssign(IButtonAssigner assigner, IKeyboard keyboard = null)
         {
             Dispatcher.UIThread.Post(() =>
             {

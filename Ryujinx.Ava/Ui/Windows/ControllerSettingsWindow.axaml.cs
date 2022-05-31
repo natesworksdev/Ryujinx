@@ -158,7 +158,7 @@ namespace Ryujinx.Ava.Ui.Windows
             PointerPressed -= MouseClick;
         }
 
-        private async void PlayerIndexBox_OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
+        private async void PlayerIndexBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (ViewModel.IsModified && !_dialogOpen)
             {
