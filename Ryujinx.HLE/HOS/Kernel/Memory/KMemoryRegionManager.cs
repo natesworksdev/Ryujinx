@@ -25,7 +25,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             _pageHeap.UpdateUsedSize();
         }
 
-        public KernelResult AllocatePages(ulong pagesCount, bool backwards, out KPageList pageList)
+        public KernelResult AllocatePages(out KPageList pageList, ulong pagesCount)
         {
             if (pagesCount == 0)
             {
@@ -36,7 +36,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
             lock (_pageHeap)
             {
-                KernelResult result = AllocatePagesImpl(pagesCount, backwards, out pageList);
+                KernelResult result = AllocatePagesImpl(out pageList, pagesCount, false);
 
                 if (result == KernelResult.Success)
                 {
@@ -71,7 +71,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             }
         }
 
-        private KernelResult AllocatePagesImpl(ulong pagesCount, bool backwards, out KPageList pageList)
+        private KernelResult AllocatePagesImpl(out KPageList pageList, ulong pagesCount, bool random)
         {
             pageList = new KPageList();
 
@@ -88,7 +88,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                 while (pagesCount >= pagesPerAlloc)
                 {
-                    ulong allocatedBlock = _pageHeap.AllocateBlock(index, true);
+                    ulong allocatedBlock = _pageHeap.AllocateBlock(index, random);
 
                     if (allocatedBlock == 0)
                     {
@@ -119,11 +119,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             return KernelResult.Success;
         }
 
-        private ulong AllocatePagesContiguousImpl(ulong pagesCount, ulong alignPages, bool backwards)
+        private ulong AllocatePagesContiguousImpl(ulong pagesCount, ulong alignPages, bool random)
         {
             int heapIndex = KPageHeap.GetAlignedBlockIndex(pagesCount, alignPages);
 
-            ulong allocatedBlock = _pageHeap.AllocateBlock(heapIndex, true);
+            ulong allocatedBlock = _pageHeap.AllocateBlock(heapIndex, random);
 
             if (allocatedBlock == 0)
             {
