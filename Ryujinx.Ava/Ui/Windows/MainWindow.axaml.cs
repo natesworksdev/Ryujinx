@@ -61,7 +61,7 @@ namespace Ryujinx.Ava.Ui.Windows
         public AppHost AppHost { get; private set; }
         public InputManager InputManager { get; private set; }
 
-        public RendererControl GlRenderer { get; private set; }
+        public RendererControl RendererControl { get; private set; }
         public ContentControl ContentFrame { get; private set; }
         public TextBlock LoadStatus { get; private set; }
         public TextBlock FirmwareStatus { get; private set; }
@@ -257,8 +257,8 @@ namespace Ryujinx.Ava.Ui.Windows
 
             _mainViewContent = ContentFrame.Content as Control;
 
-            GlRenderer = new RendererControl(3, 3, ConfigurationState.Instance.Logger.GraphicsDebugLevel);
-            AppHost = new AppHost(GlRenderer, InputManager, path, VirtualFileSystem, ContentManager, AccountManager, _userChannelPersistence, this);
+            RendererControl = Program.UseVulkan ? new VulkanRendererControl(ConfigurationState.Instance.Logger.GraphicsDebugLevel) : new OpenGLRendererControl(3, 3, ConfigurationState.Instance.Logger.GraphicsDebugLevel);
+            AppHost = new AppHost(RendererControl, InputManager, path, VirtualFileSystem, ContentManager, AccountManager, _userChannelPersistence, this);
 
             if (!AppHost.LoadGuestApplication().Result)
             {
@@ -282,7 +282,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
         private void InitializeGame()
         {
-            GlRenderer.GlInitialized += GlRenderer_Created;
+            RendererControl.RendererInitialized += GlRenderer_Created;
 
             AppHost.StatusUpdatedEvent += Update_StatusBar;
             AppHost.AppExit += AppHost_AppExit;
@@ -322,14 +322,14 @@ namespace Ryujinx.Ava.Ui.Windows
 
             Dispatcher.UIThread.InvokeAsync(() =>
             {
-                ContentFrame.Content = GlRenderer;
+                ContentFrame.Content = RendererControl;
 
                 if (startFullscreen && WindowState != WindowState.FullScreen)
                 {
                     ViewModel.ToggleFullscreen();
                 }
 
-                GlRenderer.Focus();
+                RendererControl.Focus();
             });
         }
 
@@ -380,8 +380,8 @@ namespace Ryujinx.Ava.Ui.Windows
 
                 HandleRelaunch();
             });
-            GlRenderer.GlInitialized -= GlRenderer_Created;
-            GlRenderer = null;
+            RendererControl.RendererInitialized -= GlRenderer_Created;
+            RendererControl = null;
 
             ViewModel.SelectedIcon = null;
 

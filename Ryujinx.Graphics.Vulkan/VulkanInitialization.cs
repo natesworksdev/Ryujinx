@@ -10,20 +10,13 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    unsafe static class VulkanInitialization
+    public unsafe static class VulkanInitialization
     {
         private const uint InvalidIndex = uint.MaxValue;
         private const string AppName = "Ryujinx.Graphics.Vulkan";
         private const int QueuesCount = 2;
 
-        private static readonly string[] _requiredExtensions = new string[]
-        {
-            KhrSwapchain.ExtensionName,
-            "VK_EXT_shader_subgroup_vote",
-            ExtTransformFeedback.ExtensionName
-        };
-
-        private static readonly string[] _desirableExtensions = new string[]
+        public static string[] DesirableExtensions { get; } = new string[]
         {
             ExtConditionalRendering.ExtensionName,
             ExtExtendedDynamicState.ExtensionName,
@@ -37,7 +30,14 @@ namespace Ryujinx.Graphics.Vulkan
             "VK_NV_geometry_shader_passthrough"
         };
 
-        private static readonly string[] _excludedMessages = new string[]
+        public static string[] RequiredExtensions { get; } = new string[]
+        {
+            KhrSwapchain.ExtensionName,
+            "VK_EXT_shader_subgroup_vote",
+            ExtTransformFeedback.ExtensionName
+        };
+
+        private static string[] _excludedMessages = new string[]
         {
             // NOTE: Done on purpuse right now.
             "UNASSIGNED-CoreValidation-Shader-OutputNotConsumed",
@@ -49,7 +49,7 @@ namespace Ryujinx.Graphics.Vulkan
             "VUID-VkSubpassDependency-srcSubpass-00867"
         };
 
-        public static Instance CreateInstance(Vk api, GraphicsDebugLevel logLevel, string[] requiredExtensions, out ExtDebugReport debugReport, out DebugReportCallbackEXT debugReportCallback)
+        internal static Instance CreateInstance(Vk api, GraphicsDebugLevel logLevel, string[] requiredExtensions, out ExtDebugReport debugReport, out DebugReportCallbackEXT debugReportCallback)
         {
             var enabledLayers = new List<string>();
 
@@ -135,38 +135,7 @@ namespace Ryujinx.Graphics.Vulkan
                 Marshal.FreeHGlobal(ppEnabledLayers[i]);
             }
 
-            if (!api.TryGetInstanceExtension(instance, out debugReport))
-            {
-                throw new Exception();
-                // TODO: Exception.
-            }
-
-            if (logLevel != GraphicsDebugLevel.None)
-            {
-                var flags = logLevel switch
-                {
-                    GraphicsDebugLevel.Error => DebugReportFlagsEXT.DebugReportErrorBitExt,
-                    GraphicsDebugLevel.Slowdowns => DebugReportFlagsEXT.DebugReportErrorBitExt | DebugReportFlagsEXT.DebugReportPerformanceWarningBitExt,
-                    GraphicsDebugLevel.All => DebugReportFlagsEXT.DebugReportInformationBitExt        |
-                                              DebugReportFlagsEXT.DebugReportWarningBitExt            |
-                                              DebugReportFlagsEXT.DebugReportPerformanceWarningBitExt |
-                                              DebugReportFlagsEXT.DebugReportErrorBitExt              |
-                                              DebugReportFlagsEXT.DebugReportDebugBitExt,
-                    _ => throw new NotSupportedException()
-                };
-                var debugReportCallbackCreateInfo = new DebugReportCallbackCreateInfoEXT()
-                {
-                    SType = StructureType.DebugReportCallbackCreateInfoExt,
-                    Flags = flags,
-                    PfnCallback = new PfnDebugReportCallbackEXT(DebugReport)
-                };
-
-                debugReport.CreateDebugReportCallback(instance, in debugReportCallbackCreateInfo, null, out debugReportCallback).ThrowOnError();
-            }
-            else
-            {
-                debugReportCallback = default;
-            }
+            CreateDebugCallbacks(api, logLevel, instance, out debugReport, out debugReportCallback);
 
             return instance;
         }
@@ -218,7 +187,7 @@ namespace Ryujinx.Graphics.Vulkan
             return 0;
         }
 
-        public static PhysicalDevice FindSuitablePhysicalDevice(Vk api, Instance instance, SurfaceKHR surface)
+        internal static PhysicalDevice FindSuitablePhysicalDevice(Vk api, Instance instance, SurfaceKHR surface)
         {
             uint physicalDeviceCount;
 
@@ -264,17 +233,17 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     string extensionName = Marshal.PtrToStringAnsi((IntPtr)pExtensionProperties[i].ExtensionName);
 
-                    if (_requiredExtensions.Contains(extensionName))
+                    if (RequiredExtensions.Contains(extensionName))
                     {
                         extensionMatches++;
                     }
                 }
             }
 
-            return extensionMatches == _requiredExtensions.Length && FindSuitableQueueFamily(api, physicalDevice, surface, out _) != InvalidIndex;
+            return extensionMatches == RequiredExtensions.Length && FindSuitableQueueFamily(api, physicalDevice, surface, out _) != InvalidIndex;
         }
 
-        public static uint FindSuitableQueueFamily(Vk api, PhysicalDevice physicalDevice, SurfaceKHR surface, out uint queueCount)
+        internal static uint FindSuitableQueueFamily(Vk api, PhysicalDevice physicalDevice, SurfaceKHR surface, out uint queueCount)
         {
             const QueueFlags RequiredFlags = QueueFlags.QueueGraphicsBit | QueueFlags.QueueComputeBit;
 
@@ -443,7 +412,7 @@ namespace Ryujinx.Graphics.Vulkan
                 pExtendedFeatures = &featuresSubgroupSizeControl;
             }
 
-            var enabledExtensions = _requiredExtensions.Union(_desirableExtensions.Intersect(supportedExtensions)).ToArray();
+            var enabledExtensions = RequiredExtensions.Union(DesirableExtensions.Intersect(supportedExtensions)).ToArray();
 
             IntPtr* ppEnabledExtensions = stackalloc IntPtr[enabledExtensions.Length];
 
@@ -489,9 +458,47 @@ namespace Ryujinx.Graphics.Vulkan
             return extensionProperties.Select(x => Marshal.PtrToStringAnsi((IntPtr)x.ExtensionName)).ToArray();
         }
 
-        public static CommandBufferPool CreateCommandBufferPool(Vk api, Device device, Queue queue, object queueLock, uint queueFamilyIndex)
+        internal static CommandBufferPool CreateCommandBufferPool(Vk api, Device device, Queue queue, object queueLock, uint queueFamilyIndex)
         {
             return new CommandBufferPool(api, device, queue, queueLock, queueFamilyIndex);
+        }
+
+        internal unsafe static void CreateDebugCallbacks(Vk api, GraphicsDebugLevel logLevel, Instance instance, out ExtDebugReport debugReport, out DebugReportCallbackEXT debugReportCallback)
+        {
+            debugReport = default;
+
+            if (logLevel != GraphicsDebugLevel.None)
+            {
+                if (!api.TryGetInstanceExtension(instance, out debugReport))
+                {
+                    throw new Exception();
+                    // TODO: Exception.
+                }
+
+                var flags = logLevel switch
+                {
+                    GraphicsDebugLevel.Error => DebugReportFlagsEXT.DebugReportErrorBitExt,
+                    GraphicsDebugLevel.Slowdowns => DebugReportFlagsEXT.DebugReportErrorBitExt | DebugReportFlagsEXT.DebugReportPerformanceWarningBitExt,
+                    GraphicsDebugLevel.All => DebugReportFlagsEXT.DebugReportInformationBitExt |
+                                              DebugReportFlagsEXT.DebugReportWarningBitExt |
+                                              DebugReportFlagsEXT.DebugReportPerformanceWarningBitExt |
+                                              DebugReportFlagsEXT.DebugReportErrorBitExt |
+                                              DebugReportFlagsEXT.DebugReportDebugBitExt,
+                    _ => throw new NotSupportedException()
+                };
+                var debugReportCallbackCreateInfo = new DebugReportCallbackCreateInfoEXT()
+                {
+                    SType = StructureType.DebugReportCallbackCreateInfoExt,
+                    Flags = flags,
+                    PfnCallback = new PfnDebugReportCallbackEXT(DebugReport)
+                };
+
+                debugReport.CreateDebugReportCallback(instance, in debugReportCallbackCreateInfo, null, out debugReportCallback).ThrowOnError();
+            }
+            else
+            {
+                debugReportCallback = default;
+            }
         }
     }
 }
