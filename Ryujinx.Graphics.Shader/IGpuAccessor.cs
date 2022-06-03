@@ -82,8 +82,9 @@ namespace Ryujinx.Graphics.Shader
         /// Queries the binding number of a texture.
         /// </summary>
         /// <param name="index">Texture index</param>
+        /// <param name="isBuffer">Indicates if the texture is a buffer texture</param>
         /// <returns>Binding number</returns>
-        int QueryBindingTexture(int index)
+        int QueryBindingTexture(int index, bool isBuffer)
         {
             return index;
         }
@@ -92,8 +93,9 @@ namespace Ryujinx.Graphics.Shader
         /// Queries the binding number of an image.
         /// </summary>
         /// <param name="index">Image index</param>
+        /// <param name="isBuffer">Indicates if the image is a buffer image</param>
         /// <returns>Binding number</returns>
-        int QueryBindingImage(int index)
+        int QueryBindingImage(int index, bool isBuffer)
         {
             return index;
         }

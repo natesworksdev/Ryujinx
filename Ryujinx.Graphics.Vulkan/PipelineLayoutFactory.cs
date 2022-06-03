@@ -10,17 +10,13 @@ namespace Ryujinx.Graphics.Vulkan
             int stagesCount = BitOperations.PopCount(stages);
 
             int uCount = Constants.MaxUniformBuffersPerStage * stagesCount + 1;
-            int tCount = Constants.MaxTexturesPerStage * stagesCount;
-            int iCount = Constants.MaxImagesPerStage * stagesCount;
-            int bTCount = tCount;
-            int bICount = iCount;
+            int tCount = Constants.MaxTexturesPerStage * 2 * stagesCount;
+            int iCount = Constants.MaxImagesPerStage * 2 * stagesCount;
 
             DescriptorSetLayoutBinding* uLayoutBindings = stackalloc DescriptorSetLayoutBinding[uCount];
             DescriptorSetLayoutBinding* sLayoutBindings = stackalloc DescriptorSetLayoutBinding[stagesCount];
             DescriptorSetLayoutBinding* tLayoutBindings = stackalloc DescriptorSetLayoutBinding[tCount];
             DescriptorSetLayoutBinding* iLayoutBindings = stackalloc DescriptorSetLayoutBinding[iCount];
-            DescriptorSetLayoutBinding* bTLayoutBindings = stackalloc DescriptorSetLayoutBinding[bTCount];
-            DescriptorSetLayoutBinding* bILayoutBindings = stackalloc DescriptorSetLayoutBinding[bICount];
 
             uLayoutBindings[0] = new DescriptorSetLayoutBinding
             {
@@ -46,13 +42,15 @@ namespace Ryujinx.Graphics.Vulkan
                     _ => ShaderStageFlags.ShaderStageVertexBit | ShaderStageFlags.ShaderStageComputeBit
                 };
 
-                void Set(DescriptorSetLayoutBinding* bindings, int maxPerStage, DescriptorType type, int start = 0)
+                void Set(DescriptorSetLayoutBinding* bindings, int maxPerStage, DescriptorType type, int start, int skip)
                 {
+                    int totalPerStage = maxPerStage * skip;
+
                     for (int i = 0; i < maxPerStage; i++)
                     {
-                        bindings[start + iter * maxPerStage + i] = new DescriptorSetLayoutBinding
+                        bindings[start + iter * totalPerStage + i] = new DescriptorSetLayoutBinding
                         {
-                            Binding = (uint)(start + stage * maxPerStage + i),
+                            Binding = (uint)(start + stage * totalPerStage + i),
                             DescriptorType = type,
                             DescriptorCount = 1,
                             StageFlags = stageFlags
@@ -71,12 +69,12 @@ namespace Ryujinx.Graphics.Vulkan
                     };
                 }
 
-                Set(uLayoutBindings, Constants.MaxUniformBuffersPerStage, DescriptorType.UniformBuffer, 1);
+                Set(uLayoutBindings, Constants.MaxUniformBuffersPerStage, DescriptorType.UniformBuffer, 1, 1);
                 SetStorage(sLayoutBindings, Constants.MaxStorageBuffersPerStage);
-                Set(tLayoutBindings, Constants.MaxTexturesPerStage, DescriptorType.CombinedImageSampler);
-                Set(iLayoutBindings, Constants.MaxImagesPerStage, DescriptorType.StorageImage);
-                Set(bTLayoutBindings, Constants.MaxTexturesPerStage, DescriptorType.UniformTexelBuffer);
-                Set(bILayoutBindings, Constants.MaxImagesPerStage, DescriptorType.StorageTexelBuffer);
+                Set(tLayoutBindings, Constants.MaxTexturesPerStage, DescriptorType.CombinedImageSampler, 0, 2);
+                Set(tLayoutBindings, Constants.MaxTexturesPerStage, DescriptorType.UniformTexelBuffer, Constants.MaxTexturesPerStage, 2);
+                Set(iLayoutBindings, Constants.MaxImagesPerStage, DescriptorType.StorageImage, 0, 2);
+                Set(iLayoutBindings, Constants.MaxImagesPerStage, DescriptorType.StorageTexelBuffer, Constants.MaxImagesPerStage, 2);
 
                 iter++;
             }
@@ -111,26 +109,10 @@ namespace Ryujinx.Graphics.Vulkan
                 BindingCount = (uint)iCount
             };
 
-            var bTDescriptorSetLayoutCreateInfo = new DescriptorSetLayoutCreateInfo()
-            {
-                SType = StructureType.DescriptorSetLayoutCreateInfo,
-                PBindings = bTLayoutBindings,
-                BindingCount = (uint)bTCount
-            };
-
-            var bIDescriptorSetLayoutCreateInfo = new DescriptorSetLayoutCreateInfo()
-            {
-                SType = StructureType.DescriptorSetLayoutCreateInfo,
-                PBindings = bILayoutBindings,
-                BindingCount = (uint)bICount
-            };
-
             gd.Api.CreateDescriptorSetLayout(device, uDescriptorSetLayoutCreateInfo, null, out layouts[PipelineFull.UniformSetIndex]).ThrowOnError();
             gd.Api.CreateDescriptorSetLayout(device, sDescriptorSetLayoutCreateInfo, null, out layouts[PipelineFull.StorageSetIndex]).ThrowOnError();
             gd.Api.CreateDescriptorSetLayout(device, tDescriptorSetLayoutCreateInfo, null, out layouts[PipelineFull.TextureSetIndex]).ThrowOnError();
             gd.Api.CreateDescriptorSetLayout(device, iDescriptorSetLayoutCreateInfo, null, out layouts[PipelineFull.ImageSetIndex]).ThrowOnError();
-            gd.Api.CreateDescriptorSetLayout(device, bTDescriptorSetLayoutCreateInfo, null, out layouts[PipelineFull.BufferTextureSetIndex]).ThrowOnError();
-            gd.Api.CreateDescriptorSetLayout(device, bIDescriptorSetLayoutCreateInfo, null, out layouts[PipelineFull.BufferImageSetIndex]).ThrowOnError();
 
             fixed (DescriptorSetLayout* pLayouts = layouts)
             {

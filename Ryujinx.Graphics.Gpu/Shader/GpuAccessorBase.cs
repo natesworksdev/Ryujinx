@@ -54,11 +54,16 @@ namespace Ryujinx.Graphics.Gpu.Shader
         }
 
         /// <inheritdoc/>
-        public int QueryBindingTexture(int index)
+        public int QueryBindingTexture(int index, bool isBuffer)
         {
             if (_context.Capabilities.Api == TargetApi.Vulkan)
             {
-                return GetBindingFromIndex(index, _context.Capabilities.MaximumTexturesPerStage, "Texture");
+                if (isBuffer)
+                {
+                    index += (int)_context.Capabilities.MaximumTexturesPerStage;
+                }
+
+                return GetBindingFromIndex(index, _context.Capabilities.MaximumTexturesPerStage * 2, "Texture");
             }
             else
             {
@@ -67,11 +72,16 @@ namespace Ryujinx.Graphics.Gpu.Shader
         }
 
         /// <inheritdoc/>
-        public int QueryBindingImage(int index)
+        public int QueryBindingImage(int index, bool isBuffer)
         {
             if (_context.Capabilities.Api == TargetApi.Vulkan)
             {
-                return GetBindingFromIndex(index, _context.Capabilities.MaximumImagesPerStage, "Image");
+                if (isBuffer)
+                {
+                    index += (int)_context.Capabilities.MaximumImagesPerStage;
+                }
+
+                return GetBindingFromIndex(index, _context.Capabilities.MaximumImagesPerStage * 2, "Image");
             }
             else
             {

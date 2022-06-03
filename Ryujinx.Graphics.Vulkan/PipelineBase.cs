@@ -7,14 +7,12 @@ namespace Ryujinx.Graphics.Vulkan
 {
     class PipelineBase : IDisposable
     {
-        public const int DescriptorSetLayouts = 6;
+        public const int DescriptorSetLayouts = 4;
 
         public const int UniformSetIndex = 0;
         public const int StorageSetIndex = 1;
         public const int TextureSetIndex = 2;
         public const int ImageSetIndex = 3;
-        public const int BufferTextureSetIndex = 4;
-        public const int BufferImageSetIndex = 5;
 
         protected readonly VulkanGraphicsDevice Gd;
         protected readonly Device Device;
@@ -101,11 +99,6 @@ namespace Ryujinx.Graphics.Vulkan
             _newState.Initialize();
             _newState.LineWidth = 1f;
             _newState.SamplesCount = 1;
-        }
-
-        protected virtual DescriptorSetLayout[] CreateDescriptorSetLayouts(VulkanGraphicsDevice gd, Device device, out PipelineLayout layout)
-        {
-            throw new NotSupportedException();
         }
 
         public unsafe void Barrier()
