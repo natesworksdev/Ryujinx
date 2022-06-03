@@ -458,10 +458,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                 if (context.Config.Options.TargetApi == TargetApi.Vulkan)
                 {
-                    bool isBuffer = (descriptor.Type & SamplerType.Mask) == SamplerType.TextureBuffer;
-                    int setIndex = isBuffer ? 4 : 2;
-
-                    layout = $", set = {setIndex}";
+                    layout = ", set = 2";
                 }
 
                 context.AppendLine($"layout (binding = {descriptor.Binding}{layout}) uniform {samplerTypeName} {samplerName};");
@@ -511,10 +508,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                 if (context.Config.Options.TargetApi == TargetApi.Vulkan)
                 {
-                    bool isBuffer = (descriptor.Type & SamplerType.Mask) == SamplerType.TextureBuffer;
-                    int setIndex = isBuffer ? 5 : 3;
-
-                    layout = $", set = {setIndex}{layout}";
+                    layout = $", set = 3{layout}";
                 }
 
                 context.AppendLine($"layout (binding = {descriptor.Binding}{layout}) uniform {imageTypeName} {imageName};");
@@ -693,7 +687,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private static void DeclareSupportUniformBlock(CodeGenContext context, ShaderStage stage, int scaleElements)
         {
-            bool needsSupportBlock = stage == ShaderStage.Fragment || 
+            bool needsSupportBlock = stage == ShaderStage.Fragment ||
                 (context.Config.LastInVertexPipeline && context.Config.GpuAccessor.QueryViewportTransformDisable());
 
             if (!needsSupportBlock && scaleElements == 0)

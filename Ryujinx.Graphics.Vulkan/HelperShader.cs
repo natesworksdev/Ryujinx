@@ -31,7 +31,7 @@ void main()
 
         private const string ColorBlitFragmentShaderSource = @"#version 450 core
 
-layout (binding = 64, set = 2) uniform sampler2D tex;
+layout (binding = 128, set = 2) uniform sampler2D tex;
 
 layout (location = 0) in vec2 tex_coord;
 layout (location = 0) out vec4 colour;
@@ -43,7 +43,7 @@ void main()
 
         private const string ColorBlitClearAlphaFragmentShaderSource = @"#version 450 core
 
-layout (binding = 64, set = 2) uniform sampler2D tex;
+layout (binding = 128, set = 2) uniform sampler2D tex;
 
 layout (location = 0) in vec2 tex_coord;
 layout (location = 0) out vec4 colour;
@@ -119,16 +119,12 @@ void main()
                 new[] { 1 },
                 Array.Empty<int>(),
                 Array.Empty<int>(),
-                Array.Empty<int>(),
-                Array.Empty<int>(),
                 Array.Empty<int>());
 
             var fragmentBindings = new ShaderBindings(
                 Array.Empty<int>(),
                 Array.Empty<int>(),
-                new[] { Constants.MaxTexturesPerStage },
-                Array.Empty<int>(),
-                Array.Empty<int>(),
+                new[] { Constants.MaxTexturesPerStage * 2 },
                 Array.Empty<int>());
 
             var colorBlitVertexShader = gd.CompileShader(ShaderStage.Vertex, vertexBindings, ColorBlitVertexShaderSource);
@@ -139,8 +135,6 @@ void main()
             _programColorBlitClearAlpha = gd.CreateProgram(new[] { colorBlitVertexShader, colorBlitClearAlphaFragmentShader }, new ShaderInfo(-1));
 
             var fragmentBindings2 = new ShaderBindings(
-                Array.Empty<int>(),
-                Array.Empty<int>(),
                 Array.Empty<int>(),
                 Array.Empty<int>(),
                 Array.Empty<int>(),
@@ -190,7 +184,7 @@ void main()
 
             var sampler = linearFilter ? _samplerLinear : _samplerNearest;
 
-            _pipeline.SetTextureAndSampler(ShaderStage.Fragment, Constants.MaxTexturesPerStage, src, sampler);
+            _pipeline.SetTextureAndSampler(ShaderStage.Fragment, Constants.MaxTexturesPerStage * 2, src, sampler);
 
             Span<float> region = stackalloc float[RegionBufferSize / sizeof(float)];
 
@@ -327,7 +321,7 @@ void main()
         {
             const int RegionBufferSize = 16;
 
-            pipeline.SetTextureAndSampler(ShaderStage.Fragment, Constants.MaxTexturesPerStage, src, srcSampler);
+            pipeline.SetTextureAndSampler(ShaderStage.Fragment, Constants.MaxTexturesPerStage * 2, src, srcSampler);
 
             Span<float> region = stackalloc float[RegionBufferSize / sizeof(float)];
 

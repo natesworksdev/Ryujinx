@@ -252,8 +252,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                     continue;
                 }
 
-                bool isBuffer = (descriptor.Type & SamplerType.Mask) == SamplerType.TextureBuffer;
-                int setIndex = context.Config.Options.TargetApi == TargetApi.Vulkan ? (isBuffer ? 4 : 2) : 0;
+                int setIndex = context.Config.Options.TargetApi == TargetApi.Vulkan ? 2 : 0;
 
                 var dim = (descriptor.Type & SamplerType.Mask) switch
                 {
@@ -301,8 +300,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                     continue;
                 }
 
-                bool isBuffer = (descriptor.Type & SamplerType.Mask) == SamplerType.TextureBuffer;
-                int setIndex = context.Config.Options.TargetApi == TargetApi.Vulkan ? (isBuffer ? 5 : 3) : 0;
+                int setIndex = context.Config.Options.TargetApi == TargetApi.Vulkan ? 3 : 0;
 
                 var dim = GetDim(descriptor.Type);
 

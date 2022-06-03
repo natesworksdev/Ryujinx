@@ -110,9 +110,7 @@ namespace Ryujinx.Graphics.Vulkan
                 GrabAll(x => x.UniformBufferBindings),
                 GrabAll(x => x.StorageBufferBindings),
                 GrabAll(x => x.TextureBindings),
-                GrabAll(x => x.ImageBindings),
-                GrabAll(x => x.BufferTextureBindings),
-                GrabAll(x => x.BufferImageBindings)
+                GrabAll(x => x.ImageBindings)
             };
 
             _compileTask = Task.CompletedTask;
