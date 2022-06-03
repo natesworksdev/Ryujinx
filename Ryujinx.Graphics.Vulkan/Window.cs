@@ -6,7 +6,7 @@ using VkFormat = Silk.NET.Vulkan.Format;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    class Window : IWindow, IDisposable
+    class Window : WindowBase, IDisposable
     {
         private const int SurfaceWidth = 1280;
         private const int SurfaceHeight = 720;
@@ -26,8 +26,6 @@ namespace Ryujinx.Graphics.Vulkan
         private int _width;
         private int _height;
         private VkFormat _format;
-
-        internal bool ScreenCaptureRequested { get; set; }
 
         public unsafe Window(VulkanGraphicsDevice gd, SurfaceKHR surface, PhysicalDevice physicalDevice, Device device)
         {
@@ -211,7 +209,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public unsafe void Present(ITexture texture, ImageCrop crop, Action<object> swapBuffersCallback)
+        public unsafe override void Present(ITexture texture, ImageCrop crop, Action<object> swapBuffersCallback)
         {
             uint nextImage = 0;
 
@@ -401,7 +399,7 @@ namespace Ryujinx.Graphics.Vulkan
             _gd.OnScreenCaptured(new ScreenCaptureImageInfo(width, height, isBgra, bitmap, flipX, flipY));
         }
 
-        public void SetSize(int width, int height)
+        public override void SetSize(int width, int height)
         {
             // Not needed as we can get the size from the surface.
         }
@@ -426,7 +424,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             Dispose(true);
         }
