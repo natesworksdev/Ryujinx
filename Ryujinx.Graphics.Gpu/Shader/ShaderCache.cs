@@ -661,30 +661,16 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
         public static ShaderBindings GetBindings(ShaderProgramInfo info)
         {
-            static bool IsBuffer(Graphics.Shader.TextureDescriptor descriptor)
-            {
-                return (descriptor.Type & SamplerType.Mask) == SamplerType.TextureBuffer;
-            }
-
-            static bool IsNotBuffer(Graphics.Shader.TextureDescriptor descriptor)
-            {
-                return !IsBuffer(descriptor);
-            }
-
             var uniformBufferBindings = info.CBuffers.Select(x => x.Binding).ToArray();
             var storageBufferBindings = info.SBuffers.Select(x => x.Binding).ToArray();
-            var textureBindings = info.Textures.Where(IsNotBuffer).Select(x => x.Binding).ToArray();
-            var imageBindings = info.Images.Where(IsNotBuffer).Select(x => x.Binding).ToArray();
-            var bufferTextureBindings = info.Textures.Where(IsBuffer).Select(x => x.Binding).ToArray();
-            var bufferImageBindings = info.Images.Where(IsBuffer).Select(x => x.Binding).ToArray();
+            var textureBindings = info.Textures.Select(x => x.Binding).ToArray();
+            var imageBindings = info.Images.Select(x => x.Binding).ToArray();
 
             return new ShaderBindings(
                 uniformBufferBindings,
                 storageBufferBindings,
                 textureBindings,
-                imageBindings,
-                bufferTextureBindings,
-                bufferImageBindings);
+                imageBindings);
         }
 
         private static TranslationOptions CreateTranslationOptions(TargetApi api, TranslationFlags flags)
