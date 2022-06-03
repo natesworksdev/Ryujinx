@@ -20,7 +20,8 @@ namespace Ryujinx.Graphics.Vulkan
         private SurfaceKHR _surface;
         private PhysicalDevice _physicalDevice;
         private Device _device;
-        private Window _window;
+        private uint _queueFamilyIndex;
+        private WindowBase _window;
 
         internal FormatCapabilities FormatCapabilities { get; private set; }
         internal HardwareCapabilities Capabilities;
@@ -42,7 +43,7 @@ namespace Ryujinx.Graphics.Vulkan
         internal bool SupportsSubgroupSizeControl { get; private set; }
 
         internal uint QueueFamilyIndex { get; private set; }
-
+        public bool IsOffScreen { get; }
         internal Queue Queue { get; private set; }
         internal Queue BackgroundQueue { get; private set; }
         internal object BackgroundQueueLock { get; private set; }
@@ -96,32 +97,27 @@ namespace Ryujinx.Graphics.Vulkan
             Samplers = new HashSet<SamplerHolder>();
         }
 
-        private unsafe void SetupContext(GraphicsDebugLevel logLevel)
+        public VulkanGraphicsDevice(Instance instance, Device device, PhysicalDevice physicalDevice, Queue queue, uint queueFamilyIndex, object lockObject)
         {
-            var api = Vk.GetApi();
+            _instance = instance;
+            _physicalDevice = physicalDevice;
+            _device = device;
+            _queueFamilyIndex = queueFamilyIndex;
 
-            Api = api;
+            Queue = queue;
+            QueueLock = lockObject;
 
-            _instance = VulkanInitialization.CreateInstance(api, logLevel, GetRequiredExtensions(), out ExtDebugReport debugReport, out _debugReportCallback);
+            IsOffScreen = true;
+            Shaders = new HashSet<ShaderCollection>();
+            Textures = new HashSet<ITexture>();
+            Samplers = new HashSet<SamplerHolder>();
+        }
 
-            DebugReportApi = debugReport;
+        private unsafe void LoadFeatures(string[] supportedExtensions, uint maxQueueCount, uint queueFamilyIndex)
+        {
+            FormatCapabilities = new FormatCapabilities(Api, _physicalDevice);
 
-            if (api.TryGetInstanceExtension(_instance, out KhrSurface surfaceApi))
-            {
-                SurfaceApi = surfaceApi;
-            }
-
-            _surface = GetSurface(_instance, api);
-            _physicalDevice = VulkanInitialization.FindSuitablePhysicalDevice(api, _instance, _surface);
-
-            FormatCapabilities = new FormatCapabilities(api, _physicalDevice);
-
-            var queueFamilyIndex = VulkanInitialization.FindSuitableQueueFamily(api, _physicalDevice, _surface, out uint maxQueueCount);
-            var supportedExtensions = VulkanInitialization.GetSupportedExtensions(api, _physicalDevice);
-            var supportedFeatures = api.GetPhysicalDeviceFeature(_physicalDevice);
-
-            _device = VulkanInitialization.CreateDevice(api, _physicalDevice, queueFamilyIndex, supportedExtensions, maxQueueCount);
-
+            var supportedFeatures = Api.GetPhysicalDeviceFeature(_physicalDevice);
             SupportsIndexTypeUint8 = supportedExtensions.Contains("VK_EXT_index_type_uint8");
             SupportsCustomBorderColor = supportedExtensions.Contains("VK_EXT_custom_border_color");
             SupportsIndirectParameters = supportedExtensions.Contains(KhrDrawIndirectCount.ExtensionName);
@@ -129,38 +125,29 @@ namespace Ryujinx.Graphics.Vulkan
             SupportsGeometryShaderPassthrough = supportedExtensions.Contains("VK_NV_geometry_shader_passthrough");
             SupportsSubgroupSizeControl = supportedExtensions.Contains("VK_EXT_subgroup_size_control");
 
-            if (api.TryGetDeviceExtension(_instance, _device, out KhrSwapchain swapchainApi))
-            {
-                SwapchainApi = swapchainApi;
-            }
-
-            if (api.TryGetDeviceExtension(_instance, _device, out ExtConditionalRendering conditionalRenderingApi))
+            if (Api.TryGetDeviceExtension(_instance, _device, out ExtConditionalRendering conditionalRenderingApi))
             {
                 ConditionalRenderingApi = conditionalRenderingApi;
             }
 
-            if (api.TryGetDeviceExtension(_instance, _device, out ExtExtendedDynamicState extendedDynamicStateApi))
+            if (Api.TryGetDeviceExtension(_instance, _device, out ExtExtendedDynamicState extendedDynamicStateApi))
             {
                 ExtendedDynamicStateApi = extendedDynamicStateApi;
             }
 
-            if (api.TryGetDeviceExtension(_instance, _device, out ExtTransformFeedback transformFeedbackApi))
+            if (Api.TryGetDeviceExtension(_instance, _device, out ExtTransformFeedback transformFeedbackApi))
             {
                 TransformFeedbackApi = transformFeedbackApi;
             }
 
-            if (api.TryGetDeviceExtension(_instance, _device, out KhrDrawIndirectCount drawIndirectCountApi))
+            if (Api.TryGetDeviceExtension(_instance, _device, out KhrDrawIndirectCount drawIndirectCountApi))
             {
                 DrawIndirectCountApi = drawIndirectCountApi;
             }
 
-            api.GetDeviceQueue(_device, queueFamilyIndex, 0, out var queue);
-            Queue = queue;
-            QueueLock = new object();
-
             if (maxQueueCount >= 2)
             {
-                api.GetDeviceQueue(_device, queueFamilyIndex, 1, out var backgroundQueue);
+                Api.GetDeviceQueue(_device, queueFamilyIndex, 1, out var backgroundQueue);
                 BackgroundQueue = backgroundQueue;
                 BackgroundQueueLock = new object();
             }
@@ -226,9 +213,9 @@ namespace Ryujinx.Graphics.Vulkan
 
             ref var properties = ref properties2.Properties;
 
-            MemoryAllocator = new MemoryAllocator(api, _device, properties.Limits.MaxMemoryAllocationCount);
+            MemoryAllocator = new MemoryAllocator(Api, _device, properties.Limits.MaxMemoryAllocationCount);
 
-            CommandBufferPool = VulkanInitialization.CreateCommandBufferPool(api, _device, queue, QueueLock, queueFamilyIndex);
+            CommandBufferPool = VulkanInitialization.CreateCommandBufferPool(Api, _device, Queue, QueueLock, queueFamilyIndex);
 
             DescriptorSetManager = new DescriptorSetManager(_device);
 
@@ -244,8 +231,71 @@ namespace Ryujinx.Graphics.Vulkan
             HelperShader = new HelperShader(this, _device);
 
             _counters = new Counters(this, _device, _pipeline);
+        }
+
+        private unsafe void SetupContext(GraphicsDebugLevel logLevel)
+        {
+            var api = Vk.GetApi();
+
+            Api = api;
+
+            _instance = VulkanInitialization.CreateInstance(api, logLevel, GetRequiredExtensions(), out ExtDebugReport debugReport, out _debugReportCallback);
+
+            DebugReportApi = debugReport;
+
+            if (api.TryGetInstanceExtension(_instance, out KhrSurface surfaceApi))
+            {
+                SurfaceApi = surfaceApi;
+            }
+
+            _surface = GetSurface(_instance, api);
+            _physicalDevice = VulkanInitialization.FindSuitablePhysicalDevice(api, _instance, _surface);
+
+            var queueFamilyIndex = VulkanInitialization.FindSuitableQueueFamily(api, _physicalDevice, _surface, out uint maxQueueCount);
+            var supportedExtensions = VulkanInitialization.GetSupportedExtensions(api, _physicalDevice);
+
+            _device = VulkanInitialization.CreateDevice(api, _physicalDevice, queueFamilyIndex, supportedExtensions, maxQueueCount);
+
+            if (api.TryGetDeviceExtension(_instance, _device, out KhrSwapchain swapchainApi))
+            {
+                SwapchainApi = swapchainApi;
+            }
+
+            api.GetDeviceQueue(_device, queueFamilyIndex, 0, out var queue);
+            Queue = queue;
+            QueueLock = new object();
+
+            LoadFeatures(supportedExtensions, maxQueueCount, queueFamilyIndex);
 
             _window = new Window(this, _surface, _physicalDevice, _device);
+        }
+
+        private unsafe void SetupOffScreenContext(GraphicsDebugLevel logLevel)
+        {
+            var api = Vk.GetApi();
+
+            Api = api;
+
+            VulkanInitialization.CreateDebugCallbacks(api, logLevel, _instance, out var debugReport, out _debugReportCallback);
+
+            DebugReportApi = debugReport;
+
+            var supportedExtensions = VulkanInitialization.GetSupportedExtensions(api, _physicalDevice);
+
+            uint propertiesCount;
+
+            api.GetPhysicalDeviceQueueFamilyProperties(_physicalDevice, &propertiesCount, null);
+
+            QueueFamilyProperties[] queueFamilyProperties = new QueueFamilyProperties[propertiesCount];
+
+            fixed (QueueFamilyProperties* pProperties = queueFamilyProperties)
+            {
+                api.GetPhysicalDeviceQueueFamilyProperties(_physicalDevice, &propertiesCount, pProperties);
+            }
+            
+            LoadFeatures(supportedExtensions, queueFamilyProperties[0].QueueCount, _queueFamilyIndex);
+
+            _window = new ImageWindow(this, _physicalDevice, _device);
         }
 
         public IShader CompileShader(ShaderStage stage, ShaderBindings bindings, string code)
@@ -465,7 +515,14 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void Initialize(GraphicsDebugLevel logLevel)
         {
-            SetupContext(logLevel);
+            if (IsOffScreen)
+            {
+                SetupOffScreenContext(logLevel);
+            }
+            else
+            {
+                SetupContext(logLevel);
+            }
 
             PrintGpuInformation();
         }
@@ -507,8 +564,6 @@ namespace Ryujinx.Graphics.Vulkan
             DescriptorSetManager.Dispose();
             PipelineLayoutCache.Dispose();
 
-            SurfaceApi.DestroySurface(_instance, _surface, null);
-
             MemoryAllocator.Dispose();
 
             if (_debugReportCallback.Handle != 0)
@@ -531,10 +586,15 @@ namespace Ryujinx.Graphics.Vulkan
                 sampler.Dispose();
             }
 
-            Api.DestroyDevice(_device, null);
+            if (!IsOffScreen)
+            {
+                SurfaceApi.DestroySurface(_instance, _surface, null);
 
-            // Last step destroy the instance
-            Api.DestroyInstance(_instance, null);
+                Api.DestroyDevice(_device, null);
+
+                // Last step destroy the instance
+                Api.DestroyInstance(_instance, null);
+            }
         }
 
         public void BackgroundContextAction(Action action, bool alwaysBackground = false)
