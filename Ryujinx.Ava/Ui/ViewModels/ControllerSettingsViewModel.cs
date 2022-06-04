@@ -325,9 +325,14 @@ namespace Ryujinx.Ava.Ui.ViewModels
             }
         }
 
-        public async void ShowCemuHookConfig()
+        public async void ShowMotionConfig()
         {
-            await CemuHookMotionSettingsWindow.Show(this, _owner.GetVisualRoot() as StyleableWindow);
+            await MotionSettingsWindow.Show(this, _owner.GetVisualRoot() as StyleableWindow);
+        }
+
+        public async void ShowRumbleConfig()
+        {
+            await RumbleSettingsWindow.Show(this, _owner.GetVisualRoot() as StyleableWindow);
         }
 
         private void LoadInputDriver()

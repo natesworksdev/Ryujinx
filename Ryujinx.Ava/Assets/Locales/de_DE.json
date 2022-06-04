@@ -243,8 +243,6 @@
   "ControllerSettingsMisc": "Verschiedenes",
   "ControllerSettingsTriggerThreshold": "Empfindlichkeit:",
   "ControllerSettingsMotion": "Bewegungssteuerung",
-  "ControllerSettingsCemuHook": "CemuHook",
-  "ControllerSettingsMotionEnableMotionControls": "Aktiviere Bewegungssteuerung",
   "ControllerSettingsMotionUseCemuhookCompatibleMotion": "CemuHook kompatible Bewegungssteuerung",
   "ControllerSettingsMotionControllerSlot": "Controller Slot:",
   "ControllerSettingsMotionMirrorInput": "Spiegele Eingabe",
@@ -290,9 +288,8 @@
   "SettingsTabGeneralThemeBaseStyleLight": "Hell",
   "SettingsTabGeneralThemeEnableCustomTheme": "Benutzerdefiniertes Thema",
   "ButtonBrowse": "Durchsuchen",
-  "ControllerSettingsMotionConfigureCemuHookSettings": "CemuHook Motion konfigurieren",
+  "ControllerSettingsConfigureGeneral": "Konfigurieren",
   "ControllerSettingsRumble": "Vibration",
-  "ControllerSettingsRumbleEnable": "Aktiviere Vibration",
   "ControllerSettingsRumbleStrongMultiplier": "Starke Vibration - Multiplikator",
   "ControllerSettingsRumbleWeakMultiplier": "Schwache Vibration - Multiplikator",
   "DialogMessageSaveNotAvailableMessage": "Es existieren keine Speicherdaten für {0} [{1:x16}]",
@@ -485,7 +482,7 @@
   "EnableInternetAccessTooltip": "Aktiviert den Gast-Internet-Zugang. Die Anwendung verhält sich so, als ob die emulierte Switch-Konsole mit dem Internet verbunden wäre. Beachte, dass in einigen Fällen Anwendungen auch bei deaktivierter Option auf das Internet zugreifen können",
   "GameListContextMenuManageCheatToolTip": "Öffnet den Cheat-Manager",
   "GameListContextMenuManageCheat": "Cheats verwalten",
-  "ControllerSettingsStickRange": "Bereich",
+  "ControllerSettingsStickRange": "Bereich:",
   "DialogStopEmulationTitle": "Ryujinx - Beende Emulation",
   "DialogStopEmulationMessage": "Emulation wirklich beenden?",
   "SettingsTabCpu": "CPU",
@@ -545,5 +542,7 @@
   "CompilingPPTC": "PTC wird kompiliert",
   "CompilingShaders": "Shader werden kompiliert",
   "SettingsTabGraphicsBackend" : "Grafik-Backend",
-  "GraphicsBackendTooltip" : "Ändert das Grafik-Backend"
+  "GraphicsBackendTooltip" : "Ändert das Grafik-Backend",
+  "ControllerMotionTitle": "Bewegungssteuerung einstellungen",
+  "ControllerRumbleTitle": "Vibration einstellungen"
 }

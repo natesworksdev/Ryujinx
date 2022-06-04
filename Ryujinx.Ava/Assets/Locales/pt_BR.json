@@ -243,8 +243,6 @@
   "ControllerSettingsMisc": "Miscelâneas",
   "ControllerSettingsTriggerThreshold": "Sensibilidade do gatilho:",
   "ControllerSettingsMotion": "Sensor de movimento",
-  "ControllerSettingsCemuHook": "CemuHook",
-  "ControllerSettingsMotionEnableMotionControls": "Habilitar sensor de movimento",
   "ControllerSettingsMotionUseCemuhookCompatibleMotion": "Usar sensor compatível com CemuHook",
   "ControllerSettingsMotionControllerSlot": "Slot do controle:",
   "ControllerSettingsMotionMirrorInput": "Espelhar movimento",
@@ -290,9 +288,8 @@
   "SettingsTabGeneralThemeBaseStyleLight": "Claro",
   "SettingsTabGeneralThemeEnableCustomTheme": "Habilitar tema customizado",
   "ButtonBrowse": "Procurar",
-  "ControllerSettingsMotionConfigureCemuHookSettings": "Configurar sensor de movimento CemuHook",
+  "ControllerSettingsConfigureGeneral": "Configurar",
   "ControllerSettingsRumble": "Vibração",
-  "ControllerSettingsRumbleEnable": "Habilitar vibração",
   "ControllerSettingsRumbleStrongMultiplier": "Multiplicador de vibração forte",
   "ControllerSettingsRumbleWeakMultiplier": "Multiplicador de vibração fraca",
   "DialogMessageSaveNotAvailableMessage": "Não há jogos salvos para {0} [{1:x16}]",
@@ -485,7 +482,7 @@
   "EnableInternetAccessTooltip": "Habilita acesso à internet do programa convidado. Se habilitado, o aplicativo vai se comportar como se o sistema Switch emulado estivesse conectado a Internet. Note que em alguns casos, aplicativos podem acessar a Internet mesmo com essa opção desabilitada",
   "GameListContextMenuManageCheatToolTip": "Gerenciar Cheats",
   "GameListContextMenuManageCheat": "Gerenciar Cheats",
-  "ControllerSettingsStickRange": "Intervalo",
+  "ControllerSettingsStickRange": "Intervalo:",
   "DialogStopEmulationTitle": "Ryujinx - Parar emulação",
   "DialogStopEmulationMessage": "Tem certeza que deseja parar a emulação?",
   "SettingsTabCpu": "CPU",
@@ -540,5 +537,7 @@
   "Handheld": "Portátil",
   "ConnectionError": "Erro de conexão.",
   "AboutPageDeveloperListMore": "{0} e mais...",
-  "ApiError": "Erro de API."
+  "ApiError": "Erro de API.",
+  "ControllerMotionTitle": "Motion Control Settings",
+  "ControllerRumbleTitle": "Rumble Settings"
 }

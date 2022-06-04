@@ -197,7 +197,11 @@
             </Grid.ColumnDefinitions>
 
             <!--  Left  -->
-            <Grid Grid.Column="0" VerticalAlignment="Stretch" DockPanel.Dock="Left" Margin="0,0,10,0">
+            <Grid
+                Grid.Column="0"
+                VerticalAlignment="Stretch"
+                DockPanel.Dock="Left"
+                Margin="0,0,10,0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -419,10 +423,15 @@
                                 Orientation="Horizontal">
                                 <CheckBox IsChecked="{Binding Configuration.LeftInvertStickX}">
                                     <TextBlock Margin="0,0,15,0"
-                                               Text="{locale:Locale ControllerSettingsLStickInvertXAxis}" />
+                                               Text="{locale:Locale ControllerSettingsLStickInvertXAxis}"
+                                               MaxWidth="100"
+                                               TextWrapping="WrapWithOverflow"  />
                                 </CheckBox>
                                 <CheckBox IsChecked="{Binding Configuration.LeftInvertStickY}">
-                                    <TextBlock Margin="0" Text="{locale:Locale ControllerSettingsLStickInvertYAxis}" />
+                                    <TextBlock Margin="0"
+                                               Text="{locale:Locale ControllerSettingsLStickInvertYAxis}"
+                                               MaxWidth="100"
+                                               TextWrapping="WrapWithOverflow" />
                                 </CheckBox>
                             </StackPanel>
 							<CheckBox IsChecked="{Binding Configuration.LeftRotate90}">
@@ -446,7 +455,7 @@
                                     <TextBlock
                                         VerticalAlignment="Center"
                                         Margin="5, 0"
-                                        Text="{Binding Configuration.DeadzoneLeft, StringFormat=\{0:0.000\}}" />
+                                        Text="{Binding Configuration.DeadzoneLeft, StringFormat=\{0:0.00\}}" />
                                 </StackPanel>
                                 <TextBlock Margin="2" Text="{locale:Locale ControllerSettingsStickRange}" />
                                 <StackPanel
@@ -464,7 +473,7 @@
                                     <TextBlock
                                         VerticalAlignment="Center"
                                         Margin="5, 0"
-                                        Text="{Binding Configuration.RangeLeft, StringFormat=\{0:0.000\}}" />
+                                        Text="{Binding Configuration.RangeLeft, StringFormat=\{0:0.00\}}" />
                                 </StackPanel>
                             </StackPanel>
                         </StackPanel>
@@ -592,62 +601,6 @@
                                         TextAlignment="Center" />
                                 </ToggleButton>
                             </StackPanel>
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
-                <Border
-                    Grid.Row="2"
-                    Margin="2,0,2,2"
-                    BorderBrush="{DynamicResource ThemeControlBorderColor}"
-                    BorderThickness="1"
-                    Padding="2"
-                    VerticalAlignment="Top"
-                    IsVisible="{Binding IsController}">
-                    <StackPanel
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Top"
-                        Orientation="Vertical">
-                        <TextBlock
-                            Margin="0"
-                            HorizontalAlignment="Center"
-                            Text="{locale:Locale ControllerSettingsRumble}" />
-                        <CheckBox HorizontalAlignment="Center" IsChecked="{Binding Configuration.EnableRumble}">
-                            <TextBlock Margin="0,0,15,0"
-                                       Text="{locale:Locale ControllerSettingsRumbleEnable}" />
-                        </CheckBox>
-                        <TextBlock Margin="0"
-                                   Text="{locale:Locale ControllerSettingsRumbleStrongMultiplier}" />
-                        <StackPanel Orientation="Horizontal" Margin="0">
-                            <Slider
-                                Margin="0,-5,0,-5"
-                                Width="200"
-                                MaxWidth="200"
-                                TickFrequency="0.01"
-                                IsSnapToTickEnabled="True"
-                                Maximum="10"
-                                Minimum="0"
-                                Value="{Binding Configuration.StrongRumble, Mode=TwoWay}" />
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                Margin="5,0"
-                                Text="{Binding Configuration.StrongRumble, StringFormat=\{0:0.000\}}" />
-                        </StackPanel>
-                        <TextBlock
-                            Text="{locale:Locale ControllerSettingsRumbleWeakMultiplier}" />
-                        <StackPanel Orientation="Horizontal" Margin="0">
-                            <Slider
-                                Margin="0,-5,0,-5"
-                                Width="200"
-                                MaxWidth="200"
-                                Maximum="10"
-                                TickFrequency="0.01"
-                                IsSnapToTickEnabled="True"
-                                Minimum="0"
-                                Value="{Binding Configuration.WeakRumble, Mode=TwoWay}" />
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                Margin="5,0"
-                                Text="{Binding Configuration.WeakRumble, StringFormat=\{0:0.000\}}" />
                         </StackPanel>
                     </StackPanel>
                 </Border>
@@ -798,7 +751,7 @@
                                 Minimum="0"
                                 Value="{Binding Configuration.TriggerThreshold, Mode=TwoWay}" />
                             <TextBlock Margin="5,0"
-                                       Text="{Binding Configuration.TriggerThreshold, StringFormat=\{0:0.000\}}" />
+                                       Text="{Binding Configuration.TriggerThreshold, StringFormat=\{0:0.00\}}" />
                         </StackPanel>
                         <StackPanel
                             HorizontalAlignment="Left"
@@ -978,7 +931,7 @@
                 Margin="10,0,0,0"
                 Grid.Column="2"
                 VerticalAlignment="Top"
-                HorizontalAlignment="Stretch">
+                HorizontalAlignment="Stretch" >
                 <Grid.RowDefinitions>
                     <RowDefinition />
                     <RowDefinition />
@@ -1334,10 +1287,15 @@
                                 Orientation="Horizontal">
                                 <CheckBox IsChecked="{Binding Configuration.RightInvertStickX}">
                                     <TextBlock Margin="0,0,15,0"
-                                               Text="{locale:Locale ControllerSettingsRStickInvertXAxis}" />
+                                               Text="{locale:Locale ControllerSettingsRStickInvertXAxis}"
+                                               MaxWidth="100"
+                                               TextWrapping="WrapWithOverflow" />
                                 </CheckBox>
                                 <CheckBox IsChecked="{Binding Configuration.RightInvertStickY}">
-                                    <TextBlock Margin="0" Text="{locale:Locale ControllerSettingsRStickInvertYAxis}" />
+                                    <TextBlock Margin="0"
+                                               Text="{locale:Locale ControllerSettingsRStickInvertYAxis}"
+                                               MaxWidth="100"
+                                               TextWrapping="WrapWithOverflow" />
                                 </CheckBox>
                             </StackPanel>
 							<CheckBox IsChecked="{Binding Configuration.RightRotate90}">
@@ -1363,7 +1321,7 @@
                                     <TextBlock
                                         VerticalAlignment="Center"
                                         Margin="5, 0"
-                                        Text="{Binding Configuration.DeadzoneRight, StringFormat=\{0:0.000\}}" />
+                                        Text="{Binding Configuration.DeadzoneRight, StringFormat=\{0:0.00\}}" />
                                 </StackPanel>
                                 <TextBlock Margin="2" Text="{locale:Locale ControllerSettingsStickRange}" />
                                 <StackPanel
@@ -1381,123 +1339,62 @@
                                     <TextBlock
                                         VerticalAlignment="Center"
                                         Margin="5, 0"
-                                        Text="{Binding Configuration.RangeRight, StringFormat=\{0:0.000\}}" />
+                                        Text="{Binding Configuration.RangeRight, StringFormat=\{0:0.00\}}" />
                                 </StackPanel>
                             </StackPanel>
                         </StackPanel>
                     </StackPanel>
                 </Border>
-                <!--  Misc  -->
-                <StackPanel Grid.Row="3" Orientation="Vertical">
-                    <Border
-                        HorizontalAlignment="Stretch"
+                <!--  Motion+Rumble  -->
+                <StackPanel Grid.Row="3" Orientation="Horizontal" >
+                   <Border
                         Margin="2,0,2,2"
+                        Padding="10,5,5,0"
                         BorderBrush="{DynamicResource ThemeControlBorderColor}"
                         BorderThickness="1"
-                        Padding="8"
+                        HorizontalAlignment="Stretch"
                         IsVisible="{Binding IsController}">
-                        <Grid VerticalAlignment="Top">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="*" />
-                            </Grid.RowDefinitions>
-                            <StackPanel
-                                Grid.Row="0"
-                                Margin="0,0,0,5"
-                                HorizontalAlignment="Center"
-                                Orientation="Vertical">
+                        <StackPanel Orientation="Vertical">
+                            <CheckBox
+                                IsChecked="{Binding Configuration.EnableMotion, Mode=TwoWay}">
                                 <TextBlock
                                     Text="{locale:Locale ControllerSettingsMotion}"
-                                    Margin="0" />
-                            </StackPanel>
-                            <StackPanel
-                                Grid.Row="1"
-                                HorizontalAlignment="Center"
-                                Orientation="Vertical">
-                                <CheckBox
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
-                                    IsChecked="{Binding Configuration.EnableMotion, Mode=TwoWay}">
-                                    <TextBlock
-                                        Margin="0,0,15,0"
-                                        Text="{locale:Locale ControllerSettingsMotionEnableMotionControls}" />
-                                </CheckBox>
-                            </StackPanel>
-                            <!--  Motion  -->
-                            <Border
-                                Margin="0"
-                                Grid.Row="2"
-                                Padding="0"
-                                BorderBrush="{DynamicResource ThemeControlBorderColor}"
-                                HorizontalAlignment="Stretch"
-                                IsVisible="{Binding Configuration.EnableMotion}">
-                                <StackPanel
-                                    HorizontalAlignment="Center"
-                                    Orientation="Vertical">
-                                    <StackPanel
-                                        Margin="0"
-                                        HorizontalAlignment="Center"
-                                        Orientation="Vertical">
-                                        <TextBlock
-                                            Margin="0"
-                                            HorizontalAlignment="Center"
-                                            Text="{locale:Locale ControllerSettingsMotionGyroSensitivity}" />
-                                        <StackPanel
-                                            Margin="0"
-                                            VerticalAlignment="Center"
-                                            Orientation="Horizontal">
-                                            <Slider
-                                                Margin="0,-5,0,-5"
-                                                Width="150"
-                                                MaxWidth="150"
-                                                TickFrequency="0.01"
-                                                IsSnapToTickEnabled="True"
-                                                Maximum="100"
-                                                Minimum="0"
-                                                Value="{Binding Configuration.Sensitivity, Mode=TwoWay}" />
-                                            <TextBlock HorizontalAlignment="Center"
-                                                       Margin="5, 0"
-                                                       Text="{Binding Configuration.Sensitivity, StringFormat=\{0:0\}%}" />
-                                        </StackPanel>
-                                    </StackPanel>
-                                    <StackPanel
-                                        Margin="0"
-                                        HorizontalAlignment="Center"
-                                        Orientation="Vertical">
-                                        <TextBlock
-                                            Margin="0"
-                                            HorizontalAlignment="Center"
-                                            Text="{locale:Locale ControllerSettingsMotionGyroDeadzone}" />
-                                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-                                            <Slider
-                                                Margin="0,-5,0,-5"
-                                                Width="150"
-                                                MaxWidth="150"
-                                                TickFrequency="0.01"
-                                                IsSnapToTickEnabled="True"
-                                                Maximum="100"
-                                                Minimum="0"
-                                                Value="{Binding Configuration.GyroDeadzone, Mode=TwoWay}" />
-                                            <TextBlock
-                                                VerticalAlignment="Center"
-                                                Margin="5, 0"
-                                                Text="{Binding Configuration.GyroDeadzone, StringFormat=\{0:0.000\}}" />
-                                        </StackPanel>
-                                    </StackPanel>
-                                    <Separator Margin="-16,0" />
-                                    <Button Margin="0,8,0,0" HorizontalAlignment="Center"
-                                            Command="{Binding ShowCemuHookConfig}">
-                                        <TextBlock
-                                            Text="{locale:Locale ControllerSettingsMotionConfigureCemuHookSettings}" />
-                                    </Button>
-                                </StackPanel>
-                            </Border>
-                        </Grid>
+                                    Width="105"
+                                    TextWrapping="WrapWithOverflow" />
+                            </CheckBox>
+                            <Button Command="{Binding ShowMotionConfig}"
+                                    Margin="0,5"
+                                    HorizontalAlignment="Center">
+                                <TextBlock
+                                    Text="{locale:Locale ControllerSettingsConfigureGeneral}" />
+                            </Button>
+                        </StackPanel>
+                    </Border>
+                    <Border
+                        Margin="2,0,2,2"
+                        Padding="10,5,5,0"
+                        BorderBrush="{DynamicResource ThemeControlBorderColor}"
+                        BorderThickness="1"
+                        HorizontalAlignment="Stretch"
+                        IsVisible="{Binding IsController}">
+                        <StackPanel Orientation="Vertical">
+                            <CheckBox
+                                IsChecked="{Binding Configuration.EnableRumble, Mode=TwoWay}">
+                                <TextBlock
+                                    Text="{locale:Locale ControllerSettingsRumble}"
+                                    Width="105"
+                                    TextWrapping="WrapWithOverflow" />
+                            </CheckBox>
+                            <Button Command="{Binding ShowRumbleConfig}"
+                                    Margin="0,5"
+                                    HorizontalAlignment="Center">
+                                <TextBlock
+                                    Text="{locale:Locale ControllerSettingsConfigureGeneral}" />
+                            </Button>
+                        </StackPanel>
                     </Border>
                 </StackPanel>
             </Grid>
-
 
         </Grid>
 

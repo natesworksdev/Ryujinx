@@ -243,8 +243,6 @@
     "ControllerSettingsMisc": "Miscellanee",
     "ControllerSettingsTriggerThreshold": "Sensibilità dei grilletti:",
     "ControllerSettingsMotion": "Movimento",
-    "ControllerSettingsCemuHook": "CemuHook",
-    "ControllerSettingsMotionEnableMotionControls": "Attiva sensore di movimento",
     "ControllerSettingsMotionUseCemuhookCompatibleMotion": "Usa sensore compatibile con CemuHook",
     "ControllerSettingsMotionControllerSlot": "Slot del controller:",
     "ControllerSettingsMotionMirrorInput": "Input specchiato",
@@ -290,9 +288,8 @@
     "SettingsTabGeneralThemeBaseStyleLight": "Chiara",
     "SettingsTabGeneralThemeEnableCustomTheme": "Attiva tema personalizzato",
     "ButtonBrowse": "Sfoglia",
-    "ControllerSettingsMotionConfigureCemuHookSettings": "Configura movimento CemuHook",
+    "ControllerSettingsConfigureGeneral": "Configura",
     "ControllerSettingsRumble": "Vibrazione",
-    "ControllerSettingsRumbleEnable": "Attiva vibrazione",
     "ControllerSettingsRumbleStrongMultiplier": "Moltiplicatore vibrazione forte",
     "ControllerSettingsRumbleWeakMultiplier": "Moltiplicatore vibrazione debole",
     "DialogMessageSaveNotAvailableMessage": "Non ci sono dati di salvataggio per {0} [{1:x16}]",
@@ -485,7 +482,7 @@
     "EnableInternetAccessTooltip": "Attiva il guest Internet access. Se abilitato, l'applicazione si comporterà come se la console Switch emulata fosse collegata a Internet. Si noti che in alcuni casi, le applicazioni possono comunque accedere a Internet anche con questa opzione disabilitata",
     "GameListContextMenuManageCheatToolTip": "Gestisci Cheats",
     "GameListContextMenuManageCheat": "Gestisci Cheats",
-    "ControllerSettingsStickRange": "Raggio",
+    "ControllerSettingsStickRange": "Raggio:",
     "DialogStopEmulationTitle": "Ryujinx - Ferma emulazione",
     "DialogStopEmulationMessage": "Sei sicuro di voler fermare l'emulazione?",
     "SettingsTabCpu": "CPU",
@@ -543,5 +540,7 @@
     "ApiError": "Errore dell'API.",
     "LoadingHeading": "Caricamento di {0}",
     "CompilingPPTC": "Compilazione PTC",
-    "CompilingShaders": "Compilazione Shaders"
+    "CompilingShaders": "Compilazione Shaders",
+    "ControllerMotionTitle": "Motion Control Settings",
+    "ControllerRumbleTitle": "Rumble Settings"
 }

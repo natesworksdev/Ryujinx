@@ -243,8 +243,6 @@
   "ControllerSettingsMisc": "Miscellaneous",
   "ControllerSettingsTriggerThreshold": "Trigger Threshold:",
   "ControllerSettingsMotion": "Motion",
-  "ControllerSettingsCemuHook": "CemuHook",
-  "ControllerSettingsMotionEnableMotionControls": "Enable Motion Controls",
   "ControllerSettingsMotionUseCemuhookCompatibleMotion": "Use CemuHook compatible motion",
   "ControllerSettingsMotionControllerSlot": "Controller Slot:",
   "ControllerSettingsMotionMirrorInput": "Mirror Input",
@@ -290,9 +288,8 @@
   "SettingsTabGeneralThemeBaseStyleLight": "Light",
   "SettingsTabGeneralThemeEnableCustomTheme": "Enable Custom Theme",
   "ButtonBrowse": "Browse",
-  "ControllerSettingsMotionConfigureCemuHookSettings": "Configure CemuHook Motion",
+  "ControllerSettingsConfigureGeneral": "Configure",
   "ControllerSettingsRumble": "Rumble",
-  "ControllerSettingsRumbleEnable": "Enable Rumble",
   "ControllerSettingsRumbleStrongMultiplier": "Strong Rumble Multiplier",
   "ControllerSettingsRumbleWeakMultiplier": "Weak Rumble Multiplier",
   "DialogMessageSaveNotAvailableMessage": "There is no savedata for {0} [{1:x16}]",
@@ -485,7 +482,7 @@
   "EnableInternetAccessTooltip": "Enables guest Internet access. If enabled, the application will behave as if the emulated Switch console was connected to the Internet. Note that in some cases, applications may still access the Internet even with this option disabled",
   "GameListContextMenuManageCheatToolTip": "Manage Cheats",
   "GameListContextMenuManageCheat": "Manage Cheats",
-  "ControllerSettingsStickRange": "Range",
+  "ControllerSettingsStickRange": "Range:",
   "DialogStopEmulationTitle": "Ryujinx - Stop Emulation",
   "DialogStopEmulationMessage": "Are you sure you want to stop emulation?",
   "SettingsTabCpu": "CPU",
@@ -556,5 +553,6 @@
   "SettingsTabHotkeysShowUiHotkey": "Show UI:",
   "SettingsTabHotkeysPauseHotkey": "Pause:",
   "SettingsTabHotkeysToggleMuteHotkey": "Mute:",
-  "CemuhookMotionTitle": "CemuHook Input Source Settings"
+  "ControllerMotionTitle": "Motion Control Settings",
+  "ControllerRumbleTitle": "Rumble Settings"
 }

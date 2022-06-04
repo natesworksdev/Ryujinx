@@ -9,27 +9,23 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.Ui.Windows
 {
-    public class CemuHookMotionSettingsWindow : UserControl
+    public class RumbleSettingsWindow : UserControl
     {
         private readonly InputConfiguration<GamepadInputId, StickInputId> _viewmodel;
 
-        public CemuHookMotionSettingsWindow()
+        public RumbleSettingsWindow()
         {
             InitializeComponent();
         }
 
-        public CemuHookMotionSettingsWindow(ControllerSettingsViewModel viewmodel)
+        public RumbleSettingsWindow(ControllerSettingsViewModel viewmodel)
         {
             var config = viewmodel.Configuration as InputConfiguration<GamepadInputId, StickInputId>;
 
             _viewmodel = new InputConfiguration<GamepadInputId, StickInputId>()
             {
-                Slot = config.Slot,
-                AltSlot = config.AltSlot,
-                DsuServerHost = config.DsuServerHost,
-                DsuServerPort = config.DsuServerPort,
-                MirrorInput = config.MirrorInput,
-                EnableCemuHookMotion = config.EnableCemuHookMotion
+                StrongRumble = config.StrongRumble,
+                WeakRumble = config.WeakRumble
             };
 
             InitializeComponent();
@@ -48,11 +44,11 @@ namespace Ryujinx.Ava.Ui.Windows
 
             string name = string.Empty;
 
-            CemuHookMotionSettingsWindow content = new CemuHookMotionSettingsWindow(viewmodel);
+            RumbleSettingsWindow content = new RumbleSettingsWindow(viewmodel);
 
             if (contentDialog != null)
             {
-                contentDialog.Title = LocaleManager.Instance["CemuhookMotionTitle"];
+                contentDialog.Title = LocaleManager.Instance["ControllerRumbleTitle"];
                 contentDialog.PrimaryButtonText = LocaleManager.Instance["ControllerSettingsSave"];
                 contentDialog.SecondaryButtonText = "";
                 contentDialog.CloseButtonText = LocaleManager.Instance["ControllerSettingsClose"];
@@ -60,12 +56,8 @@ namespace Ryujinx.Ava.Ui.Windows
                 contentDialog.PrimaryButtonClick += (sender, args) =>
                 {
                     var config = viewmodel.Configuration as InputConfiguration<GamepadInputId, StickInputId>;
-                    config.Slot = content._viewmodel.Slot;
-                    config.AltSlot = content._viewmodel.AltSlot;
-                    config.DsuServerHost = content._viewmodel.DsuServerHost;
-                    config.DsuServerPort = content._viewmodel.DsuServerPort;
-                    config.EnableCemuHookMotion = content._viewmodel.EnableCemuHookMotion;
-                    config.MirrorInput = content._viewmodel.MirrorInput;
+                    config.StrongRumble = content._viewmodel.StrongRumble;
+                    config.WeakRumble = content._viewmodel.WeakRumble;
                 };
 
                 await contentDialog.ShowAsync();
