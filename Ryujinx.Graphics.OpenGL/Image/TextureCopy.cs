@@ -517,6 +517,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
                 _copyPboHandle = 0;
             }
+
+            IntermmediatePool.Dispose();
         }
     }
 }

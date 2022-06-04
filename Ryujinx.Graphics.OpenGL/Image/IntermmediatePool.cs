@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.OpenGL.Image
 {
-    class IntermmediatePool
+    class IntermmediatePool : IDisposable
     {
         private readonly Renderer _renderer;
         private readonly List<TextureView> _entries;
@@ -83,6 +83,16 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 SwizzleComponent.Green,
                 SwizzleComponent.Blue,
                 SwizzleComponent.Alpha), 1f);
+        }
+
+        public void Dispose()
+        {
+            foreach (TextureView entry in _entries)
+            {
+                entry.Dispose();
+            }
+
+            _entries.Clear();
         }
     }
 }
