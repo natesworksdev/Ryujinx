@@ -1158,7 +1158,8 @@ namespace Ryujinx.Graphics.Gpu.Image
                 {
                     result = TextureCompatibility.PropagateViewCompatibility(result, TextureCompatibility.ViewTargetCompatible(Info, info));
 
-                    if (Info.SamplesInX != info.SamplesInX || Info.SamplesInY != info.SamplesInY)
+                    bool bothMs = Info.Target.IsMultisample() && info.Target.IsMultisample();
+                    if (bothMs && (Info.SamplesInX != info.SamplesInX || Info.SamplesInY != info.SamplesInY))
                     {
                         result = TextureViewCompatibility.Incompatible;
                     }
