@@ -131,8 +131,12 @@ namespace Ryujinx.Graphics.OpenGL.Image
                     Info.Depth,
                     Info.Levels);
 
+                GL.Disable(EnableCap.FramebufferSrgb);
+
                 _renderer.TextureCopy.Copy(this, intermmediate, srcRegion, srcRegion, true);
                 _renderer.TextureCopy.Copy(intermmediate, destinationView, srcRegion, dstRegion, true, 0, firstLayer, 0, firstLevel);
+
+                GL.Enable(EnableCap.FramebufferSrgb);
             }
             else
             {
@@ -160,8 +164,12 @@ namespace Ryujinx.Graphics.OpenGL.Image
                     1,
                     1);
 
+                GL.Disable(EnableCap.FramebufferSrgb);
+
                 _renderer.TextureCopy.Copy(this, intermmediate, srcRegion, srcRegion, true, srcLayer, 0, srcLevel, 0, 1, 1);
                 _renderer.TextureCopy.Copy(intermmediate, destinationView, srcRegion, dstRegion, true, 0, dstLayer, 0, dstLevel, 1, 1);
+
+                GL.Enable(EnableCap.FramebufferSrgb);
             }
             else
             {
