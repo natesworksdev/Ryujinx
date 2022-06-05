@@ -47,7 +47,7 @@ namespace Ryujinx.Graphics.Vic
 
         private unsafe static void BlendOneSse41(Surface dst, Surface src, ref SlotStruct slot, int x1, int y1, int x2, int y2)
         {
-            Debug.Assert((dst.Width & 3) == 0);
+            Debug.Assert(((x1 | x2) & 3) == 0);
 
             ref MatrixStruct mtx = ref slot.ColorMatrixStruct;
 
