@@ -9,6 +9,7 @@ using Ryujinx.Ava.Input;
 using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.Models;
 using Ryujinx.Ava.Ui.Windows;
+using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
@@ -33,14 +34,19 @@ namespace Ryujinx.Ava.Ui.ViewModels
 {
     public class ControllerSettingsViewModel : BaseModel, IDisposable
     {
+        private const string Disabled = "disabled";
+        private const string ProControllerResource = "Ryujinx.Ui.Common/Resources/Controller_ProCon.svg";
+        private const string JoyConPairResource = "Ryujinx.Ui.Common/Resources/Controller_JoyConPair.svg";
+        private const string JoyConLeftResource = "Ryujinx.Ui.Common/Resources/Controller_JoyConLeft.svg";
+        private const string JoyConRightResource = "Ryujinx.Ui.Common/Resources/Controller_JoyConRight.svg";
+        private const string KeyboardString = "keyboard";
+        private const string ControllerString = "controller";
         private readonly MainWindow _mainWindow;
 
         private PlayerIndex _playerId;
         private int _controller;
         private string _controllerImage;
         private int _device;
-
-        private InputConfig _inputConfig;
         private object _configuration;
         private string _profileName;
         private bool _isLoaded;
@@ -125,20 +131,20 @@ namespace Ryujinx.Ava.Ui.ViewModels
                     switch (controller)
                     {
                         case ControllerType.Handheld:
-                            ControllerImage = "Ryujinx.Ui.Common.Resources.Controller_JoyConPair.svg";
+                            ControllerImage = JoyConPairResource;
                             break;
                         case ControllerType.ProController:
-                            ControllerImage = "Ryujinx.Ui.Common.Resources.Controller_ProCon.svg";
+                            ControllerImage = ProControllerResource;
                             break;
                         case ControllerType.JoyconPair:
-                            ControllerImage = "Ryujinx.Ui.Common.Resources.Controller_JoyConPair.svg";
+                            ControllerImage = JoyConPairResource;
                             break;
                         case ControllerType.JoyconLeft:
-                            ControllerImage = "Ryujinx.Ui.Common.Resources.Controller_JoyConLeft.svg";
+                            ControllerImage = JoyConLeftResource;
                             IsRight = false;
                             break;
                         case ControllerType.JoyconRight:
-                            ControllerImage = "Ryujinx.Ui.Common.Resources.Controller_JoyConRight.svg";
+                            ControllerImage = JoyConRightResource;
                             IsLeft = false;
                             break;
                     }
@@ -174,7 +180,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 {
                     SvgSource source = new SvgSource();
 
-                    source.Load(Assembly.GetAssembly(typeof(ConfigurationState)).GetManifestResourceStream(_controllerImage));
+                    source.Load(EmbeddedResources.GetStream(_controllerImage));
 
                     image.Source = source;
                 }
@@ -207,16 +213,14 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
                 string selected = Devices[_device].Id;
 
-                if (selected == "disable")
+                if (selected != Disabled)
                 {
-                    return;
-                }
+                    LoadControllers();
 
-                LoadControllers();
-
-                if (_isLoaded)
-                {
-                    LoadConfiguration(LoadDefaultConfiguration());
+                    if (_isLoaded)
+                    {
+                        LoadConfiguration(LoadDefaultConfiguration());
+                    }
                 }
 
                 OnPropertyChanged();
@@ -224,11 +228,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             }
         }
 
-        public InputConfig Config
-        {
-            get => _inputConfig;
-            set => _inputConfig = value;
-        }
+        public InputConfig Config { get; set; }
 
         public ControllerSettingsViewModel(UserControl owner) : this()
         {
@@ -265,7 +265,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             ProfilesList = new AvaloniaList<string>();
             DeviceList = new AvaloniaList<string>();
 
-            ControllerImage = "Ryujinx.Ui.Common.Resources.Controller_ProCon.svg";
+            ControllerImage = ProControllerResource;
 
             PlayerIndexes.Add(new(PlayerIndex.Player1, LocaleManager.Instance["ControllerSettingsPlayer1"]));
             PlayerIndexes.Add(new(PlayerIndex.Player2, LocaleManager.Instance["ControllerSettingsPlayer2"]));
@@ -282,14 +282,14 @@ namespace Ryujinx.Ava.Ui.ViewModels
         {
             Config = inputConfig ?? ConfigurationState.Instance.Hid.InputConfig.Value.Find(inputConfig => inputConfig.PlayerIndex == _playerId);
 
-            if (Config is StandardKeyboardInputConfig)
+            if (Config is StandardKeyboardInputConfig keyboardInputConfig)
             {
-                Configuration = new InputConfiguration<Key, ConfigStickInputId>(Config as StandardKeyboardInputConfig);
+                Configuration = new InputConfiguration<Key, ConfigStickInputId>(keyboardInputConfig);
             }
 
-            if (Config is StandardControllerInputConfig)
+            if (Config is StandardControllerInputConfig controllerInputConfig)
             {
-                Configuration = new InputConfiguration<ConfigGamepadInputId, ConfigStickInputId>(Config as StandardControllerInputConfig);
+                Configuration = new InputConfiguration<ConfigGamepadInputId, ConfigStickInputId>(controllerInputConfig);
             }
         }
 
@@ -305,12 +305,12 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
                 if (Config is StandardKeyboardInputConfig)
                 {
-                    ident = "keyboard";
+                    ident = KeyboardString;
                 }
 
                 if (Config is StandardControllerInputConfig)
                 {
-                    ident = "controller";
+                    ident = ControllerString;
                 }
 
                 var item = Devices.FirstOrDefault(x => x.Id == $"{ident}/{Config.Id}");
@@ -345,12 +345,12 @@ namespace Ryujinx.Ava.Ui.ViewModels
             string id = GetCurrentGamepadId();
             string selected = Devices[Device].Id;
 
-            if (selected == "disabled")
+            if (selected == Disabled)
             {
                 return;
             }
 
-            if (selected.StartsWith("keyboard"))
+            if (selected.StartsWith(KeyboardString))
             {
                 if (_mainWindow.InputManager.KeyboardDriver is AvaloniaKeyboardDriver)
                 {
@@ -393,7 +393,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
             string selected = Devices[Device].Id;
 
-            if (selected == null || selected == "disabled")
+            if (selected == null || selected == Disabled)
             {
                 return null;
             }
@@ -429,14 +429,14 @@ namespace Ryujinx.Ava.Ui.ViewModels
             }
         }
 
-        private static string GetShrinkedGamepadName(string str)
+        private static string GetShortGamepadName(string str)
         {
-            const string ShrinkChars = "...";
+            const string Ellipsis = "...";
             const int MaxSize = 50;
 
             if (str.Length > MaxSize)
             {
-                return str.Substring(0, MaxSize - ShrinkChars.Length) + ShrinkChars;
+                return str.Substring(0, MaxSize - Ellipsis.Length) + Ellipsis;
             }
 
             return str;
@@ -448,29 +448,25 @@ namespace Ryujinx.Ava.Ui.ViewModels
             {
                 Devices.Clear();
                 DeviceList.Clear();
-                Devices.Add(("disabled", LocaleManager.Instance["ControllerSettingsDeviceDisabled"]));
+                Devices.Add((Disabled, LocaleManager.Instance["ControllerSettingsDeviceDisabled"]));
 
                 foreach (string id in _mainWindow.InputManager.KeyboardDriver.GamepadsIds)
                 {
-                    IGamepad gamepad = _mainWindow.InputManager.KeyboardDriver.GetGamepad(id);
+                    using IGamepad gamepad = _mainWindow.InputManager.KeyboardDriver.GetGamepad(id);
 
                     if (gamepad != null)
                     {
-                        Devices.Add(($"keyboard/{id}", $"{GetShrinkedGamepadName(gamepad.Name)} ({id})"));
-
-                        gamepad.Dispose();
+                        Devices.Add(($"keyboard/{id}", $"{GetShortGamepadName(gamepad.Name)} ({id})"));
                     }
                 }
 
                 foreach (string id in _mainWindow.InputManager.GamepadDriver.GamepadsIds)
                 {
-                    IGamepad gamepad = _mainWindow.InputManager.GamepadDriver.GetGamepad(id);
+                    using IGamepad gamepad = _mainWindow.InputManager.GamepadDriver.GetGamepad(id);
 
                     if (gamepad != null)
                     {
-                        Devices.Add(($"controller/{id}", $"{GetShrinkedGamepadName(gamepad.Name)} ({id})"));
-
-                        gamepad.Dispose();
+                        Devices.Add(($"controller/{id}", $"{GetShortGamepadName(gamepad.Name)} ({id})"));
                     }
                 }
 
@@ -484,13 +480,13 @@ namespace Ryujinx.Ava.Ui.ViewModels
             string path = AppDataManager.ProfilesDirPath;
             string selected = Devices[Device == -1 ? 0 : Device].Id;
 
-            if (selected.StartsWith("keyboard"))
+            if (selected.StartsWith(KeyboardString))
             {
-                path = Path.Combine(path, "keyboard");
+                path = Path.Combine(path, KeyboardString);
             }
-            else if (selected.StartsWith("controller"))
+            else if (selected.StartsWith(ControllerString))
             {
-                path = Path.Combine(path, "controller");
+                path = Path.Combine(path, ControllerString);
             }
 
             return path;
@@ -522,7 +518,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public InputConfig LoadDefaultConfiguration()
         {
-            string activeDevice = "disabled";
+            string activeDevice = Disabled;
 
             if (Devices.Count > 0 && Device < Devices.Count && Device >= 0)
             {
@@ -530,7 +526,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             }
 
             InputConfig config;
-            if (activeDevice.StartsWith("keyboard"))
+            if (activeDevice.StartsWith(KeyboardString))
             {
                 string id = activeDevice.Split("/")[1];
 
@@ -540,19 +536,18 @@ namespace Ryujinx.Ava.Ui.ViewModels
                     Backend = InputBackendType.WindowKeyboard,
                     Id = id,
                     ControllerType = ControllerType.ProController,
-                    LeftJoycon =
-                        new LeftJoyconCommonConfig<Key>
-                        {
-                            DpadUp = Key.Up,
-                            DpadDown = Key.Down,
-                            DpadLeft = Key.Left,
-                            DpadRight = Key.Right,
-                            ButtonMinus = Key.Minus,
-                            ButtonL = Key.E,
-                            ButtonZl = Key.Q,
-                            ButtonSl = Key.Unbound,
-                            ButtonSr = Key.Unbound
-                        },
+                    LeftJoycon = new LeftJoyconCommonConfig<Key>
+                    {
+                        DpadUp = Key.Up,
+                        DpadDown = Key.Down,
+                        DpadLeft = Key.Left,
+                        DpadRight = Key.Right,
+                        ButtonMinus = Key.Minus,
+                        ButtonL = Key.E,
+                        ButtonZl = Key.Q,
+                        ButtonSl = Key.Unbound,
+                        ButtonSr = Key.Unbound
+                    },
                     LeftJoyconStick =
                         new JoyconConfigKeyboardStick<Key>
                         {
@@ -584,7 +579,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                     }
                 };
             }
-            else if (activeDevice.StartsWith("controller"))
+            else if (activeDevice.StartsWith(ControllerString))
             {
                 bool isNintendoStyle = Devices.ToList().Find(x => x.Id == activeDevice).Name.Contains("Nintendo");
 
@@ -601,40 +596,37 @@ namespace Ryujinx.Ava.Ui.ViewModels
                     RangeLeft = 1.0f,
                     RangeRight = 1.0f,
                     TriggerThreshold = 0.5f,
-                    LeftJoycon =
-                        new LeftJoyconCommonConfig<ConfigGamepadInputId>
-                        {
-                            DpadUp = ConfigGamepadInputId.DpadUp,
-                            DpadDown = ConfigGamepadInputId.DpadDown,
-                            DpadLeft = ConfigGamepadInputId.DpadLeft,
-                            DpadRight = ConfigGamepadInputId.DpadRight,
-                            ButtonMinus = ConfigGamepadInputId.Minus,
-                            ButtonL = ConfigGamepadInputId.LeftShoulder,
-                            ButtonZl = ConfigGamepadInputId.LeftTrigger,
-                            ButtonSl = ConfigGamepadInputId.Unbound,
-                            ButtonSr = ConfigGamepadInputId.Unbound
-                        },
-                    LeftJoyconStick =
-                        new JoyconConfigControllerStick<ConfigGamepadInputId, ConfigStickInputId>
-                        {
-                            Joystick = ConfigStickInputId.Left,
-                            StickButton = ConfigGamepadInputId.LeftStick,
-                            InvertStickX = false,
-                            InvertStickY = false
-                        },
-                    RightJoycon =
-                        new RightJoyconCommonConfig<ConfigGamepadInputId>
-                        {
-                            ButtonA = isNintendoStyle ? ConfigGamepadInputId.A : ConfigGamepadInputId.B,
-                            ButtonB = isNintendoStyle ? ConfigGamepadInputId.B : ConfigGamepadInputId.A,
-                            ButtonX = isNintendoStyle ? ConfigGamepadInputId.X : ConfigGamepadInputId.Y,
-                            ButtonY = isNintendoStyle ? ConfigGamepadInputId.Y : ConfigGamepadInputId.X,
-                            ButtonPlus = ConfigGamepadInputId.Plus,
-                            ButtonR = ConfigGamepadInputId.RightShoulder,
-                            ButtonZr = ConfigGamepadInputId.RightTrigger,
-                            ButtonSl = ConfigGamepadInputId.Unbound,
-                            ButtonSr = ConfigGamepadInputId.Unbound
-                        },
+                    LeftJoycon = new LeftJoyconCommonConfig<ConfigGamepadInputId>
+                    {
+                        DpadUp = ConfigGamepadInputId.DpadUp,
+                        DpadDown = ConfigGamepadInputId.DpadDown,
+                        DpadLeft = ConfigGamepadInputId.DpadLeft,
+                        DpadRight = ConfigGamepadInputId.DpadRight,
+                        ButtonMinus = ConfigGamepadInputId.Minus,
+                        ButtonL = ConfigGamepadInputId.LeftShoulder,
+                        ButtonZl = ConfigGamepadInputId.LeftTrigger,
+                        ButtonSl = ConfigGamepadInputId.Unbound,
+                        ButtonSr = ConfigGamepadInputId.Unbound
+                    },
+                    LeftJoyconStick = new JoyconConfigControllerStick<ConfigGamepadInputId, ConfigStickInputId>
+                    {
+                        Joystick = ConfigStickInputId.Left,
+                        StickButton = ConfigGamepadInputId.LeftStick,
+                        InvertStickX = false,
+                        InvertStickY = false
+                    },
+                    RightJoycon = new RightJoyconCommonConfig<ConfigGamepadInputId>
+                    {
+                        ButtonA = isNintendoStyle ? ConfigGamepadInputId.A : ConfigGamepadInputId.B,
+                        ButtonB = isNintendoStyle ? ConfigGamepadInputId.B : ConfigGamepadInputId.A,
+                        ButtonX = isNintendoStyle ? ConfigGamepadInputId.X : ConfigGamepadInputId.Y,
+                        ButtonY = isNintendoStyle ? ConfigGamepadInputId.Y : ConfigGamepadInputId.X,
+                        ButtonPlus = ConfigGamepadInputId.Plus,
+                        ButtonR = ConfigGamepadInputId.RightShoulder,
+                        ButtonZr = ConfigGamepadInputId.RightTrigger,
+                        ButtonSl = ConfigGamepadInputId.Unbound,
+                        ButtonSr = ConfigGamepadInputId.Unbound
+                    },
                     RightJoyconStick = new JoyconConfigControllerStick<ConfigGamepadInputId, ConfigStickInputId>
                     {
                         Joystick = ConfigStickInputId.Right,
@@ -751,15 +743,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             }
             else
             {
-                bool validFileName = true;
-
-                foreach (char invalidChar in Path.GetInvalidFileNameChars())
-                {
-                    if (ProfileName.Contains(invalidChar))
-                    {
-                        validFileName = false;
-                    }
-                }
+                bool validFileName = ProfileName.IndexOfAny(Path.GetInvalidFileNameChars()) == -1;
 
                 if (validFileName)
                 {
@@ -837,7 +821,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             {
                 string selected = Devices[Device].Id;
 
-                if (selected.StartsWith("keyboard"))
+                if (selected.StartsWith(KeyboardString))
                 {
                     var inputConfig = Configuration as InputConfiguration<Key, ConfigStickInputId>;
                     inputConfig.Id = selected.Split("/")[1];
@@ -854,7 +838,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 config.ControllerType = Controllers[_controller].Type;
                 config.PlayerIndex = _playerId;
 
-                int i = newConfig.FindIndex(x => x.PlayerIndex == this.PlayerId);
+                int i = newConfig.FindIndex(x => x.PlayerIndex == PlayerId);
                 if (i == -1)
                 {
                     newConfig.Add(config);
@@ -865,10 +849,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 }
             }
 
-            if (_mainWindow.AppHost != null)
-            {
-                _mainWindow.AppHost.NpadManager.ReloadConfiguration(newConfig, ConfigurationState.Instance.Hid.EnableKeyboard, ConfigurationState.Instance.Hid.EnableMouse);
-            }
+            _mainWindow.AppHost?.NpadManager.ReloadConfiguration(newConfig, ConfigurationState.Instance.Hid.EnableKeyboard, ConfigurationState.Instance.Hid.EnableMouse);
 
             // Atomically replace and signal input change.
             // NOTE: Do not modify InputConfig.Value directly as other code depends on the on-change event.

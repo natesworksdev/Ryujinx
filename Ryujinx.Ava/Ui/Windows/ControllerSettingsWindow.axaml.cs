@@ -138,6 +138,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
             return assigner;
         }
+
         private void Button_Unchecked(object sender, RoutedEventArgs e)
         {
             _currentAssigner?.Cancel();

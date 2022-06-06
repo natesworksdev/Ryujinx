@@ -47,7 +47,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 _resolutionScale = value;
 
                 OnPropertyChanged(nameof(CustomResolutionScale));
-                OnPropertyChanged(nameof(IsResolutionScaleActive));
+                OnPropertyChanged(nameof(IsCustomResolutionScaleActive));
             }
         }
         public int GraphicsBackendMultithreadingIndex
@@ -115,7 +115,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
         public bool IsSoundIoEnabled { get; set; }
         public bool IsSDL2Enabled { get; set; }
         public bool EnableCustomTheme { get; set; }
-        public bool IsResolutionScaleActive => _resolutionScale == 0;
+        public bool IsCustomResolutionScaleActive => _resolutionScale == 0;
 
         public string TimeZone { get; set; }
         public string ShaderDumpPath { get; set; }
@@ -231,11 +231,11 @@ namespace Ryujinx.Ava.Ui.ViewModels
         {
             var dialog = new OpenFileDialog()
             {
-                Title = "Select Theme File",
+                Title = LocaleManager.Instance["SettingsSelectThemeFileDialogTitle"],
                 AllowMultiple = false
             };
 
-            dialog.Filters.Add(new FileDialogFilter() { Extensions = { "xaml" }, Name = "Xaml Theme File" });
+            dialog.Filters.Add(new FileDialogFilter() { Extensions = { "xaml" }, Name = LocaleManager.Instance["SettingsXamlThemeFile"] });
 
             var file = await dialog.ShowAsync(_owner);
 

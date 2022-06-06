@@ -554,5 +554,7 @@
   "SettingsTabHotkeysPauseHotkey": "Pause:",
   "SettingsTabHotkeysToggleMuteHotkey": "Mute:",
   "ControllerMotionTitle": "Motion Control Settings",
-  "ControllerRumbleTitle": "Rumble Settings"
+  "ControllerRumbleTitle": "Rumble Settings",
+  "SettingsSelectThemeFileDialogTitle" : "Select Theme File",
+  "SettingsXamlThemeFile" : "Xaml Theme File"
 }

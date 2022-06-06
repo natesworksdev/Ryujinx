@@ -12,6 +12,18 @@ namespace Ryujinx.Ava.Ui.Controls
 {
     public class ButtonKeyAssigner
     {
+        public class ButtonAssignedEventArgs : EventArgs
+        {
+            public ToggleButton Button { get; }
+            public bool IsAssigned { get; }
+
+            public ButtonAssignedEventArgs(ToggleButton button, bool isAssigned)
+            {
+                Button = button;
+                IsAssigned = isAssigned;
+            }
+        }
+        
         public ToggleButton ToggledButton { get; set; }
 
         private bool _isWaitingForInput;
@@ -67,21 +79,14 @@ namespace Ryujinx.Ava.Ui.Controls
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
                 string pressedButton = assigner.GetPressedButton();
+
                 if (_shouldUnbind)
                 {
-                    try
-                    {
-                        SetButtonText(ToggledButton, "Unbound");
-                    }
-                    catch { }
+                    SetButtonText(ToggledButton, "Unbound");
                 }
                 else if (pressedButton != "")
                 {
-                    try
-                    {
-                        SetButtonText(ToggledButton, pressedButton);
-                    }
-                    catch { }
+                    SetButtonText(ToggledButton, pressedButton);
                 }
 
                 _shouldUnbind = false;
@@ -108,18 +113,6 @@ namespace Ryujinx.Ava.Ui.Controls
             _isWaitingForInput = false;
             ToggledButton.IsChecked = false;
             _shouldUnbind = shouldUnbind;
-        }
-
-        public class ButtonAssignedEventArgs : EventArgs
-        {
-            public ToggleButton Button { get; }
-            public bool IsAssigned { get; }
-
-            public ButtonAssignedEventArgs(ToggleButton button, bool isAssigned)
-            {
-                Button = button;
-                IsAssigned = isAssigned;
-            }
         }
     }
 }

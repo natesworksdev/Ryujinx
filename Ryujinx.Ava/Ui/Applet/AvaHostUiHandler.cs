@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Threading;
+using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.Windows;
@@ -57,8 +58,15 @@ namespace Ryujinx.Ava.Ui.Applet
 
                     bool opened = false;
 
-                    UserResult response = await ContentDialogHelper.ShowDeferredContentDialog(_parent, title, message, "",
-                        LocaleManager.Instance["DialogOpenSettingsWindow"], "", "Close", 0xF4A3, deferEvent,
+                    UserResult response = await ContentDialogHelper.ShowDeferredContentDialog(_parent, 
+                       title, 
+                       message, 
+                       "", 
+                       LocaleManager.Instance["DialogOpenSettingsWindow"], 
+                       "", 
+                       LocaleManager.Instance["SettingsButtonClose"], 
+                       (int)Symbol.Important, 
+                       deferEvent,
                        async (window) =>
                        {
                            if (opened)

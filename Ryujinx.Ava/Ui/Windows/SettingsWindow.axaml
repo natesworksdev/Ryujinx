@@ -574,7 +574,7 @@
                                     LargeChange="1"
                                     SimpleNumberFormat="F2"
                                     SpinButtonPlacementMode="Inline"
-                                    IsVisible="{Binding IsResolutionScaleActive}"
+                                    IsVisible="{Binding IsCustomResolutionScaleActive}"
                                     Maximum="100"
                                     Minimum="0.1"
                                     Value="{Binding CustomResolutionScale}" />
