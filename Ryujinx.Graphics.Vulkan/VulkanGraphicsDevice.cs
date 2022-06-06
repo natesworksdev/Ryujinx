@@ -292,7 +292,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 api.GetPhysicalDeviceQueueFamilyProperties(_physicalDevice, &propertiesCount, pProperties);
             }
-            
+
             LoadFeatures(supportedExtensions, queueFamilyProperties[0].QueueCount, _queueFamilyIndex);
 
             _window = new ImageWindow(this, _physicalDevice, _device);
@@ -356,6 +356,11 @@ namespace Ryujinx.Graphics.Vulkan
                 return new TextureBuffer(this, info, scale);
             }
 
+            return CreateTextureView(info, scale);
+        }
+
+        internal TextureView CreateTextureView(TextureCreateInfo info, float scale)
+        {
             // This should be disposed when all views are destroyed.
             using var storage = CreateTextureStorage(info, scale);
             return storage.CreateView(info, 0, 0);
