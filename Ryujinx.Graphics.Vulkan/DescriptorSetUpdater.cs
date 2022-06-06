@@ -72,7 +72,7 @@ namespace Ryujinx.Graphics.Vulkan
                 _dummyBuffer = gd.BufferManager.Create(gd, 0x10000, forConditionalRendering: false, deviceLocal: true);
             }
 
-            _dummyTexture = (TextureView)gd.CreateTexture(new GAL.TextureCreateInfo(
+            _dummyTexture = gd.CreateTextureView(new GAL.TextureCreateInfo(
                 1,
                 1,
                 1,
