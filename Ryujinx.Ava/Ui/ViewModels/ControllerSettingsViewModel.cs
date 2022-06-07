@@ -56,7 +56,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
         public IGamepad SelectedGamepad { get; private set; }
 
         public ObservableCollection<PlayerModel> PlayerIndexes { get; set; }
-        public ObservableCollection<(DeviceType Type,string Id, string Name)> Devices { get; set; }
+        public ObservableCollection<(DeviceType Type, string Id, string Name)> Devices { get; set; }
         public ObservableCollection<ControllerModel> Controllers { get; set; }
         public AvaloniaList<string> ProfilesList { get; set; }
         public AvaloniaList<string> DeviceList { get; set; }
