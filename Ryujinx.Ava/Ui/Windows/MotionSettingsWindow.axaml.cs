@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.Ui.Windows
 {
-    public class MotionSettingsWindow : UserControl
+    internal class MotionSettingsWindow : UserControl
     {
         private readonly InputConfiguration<GamepadInputId, StickInputId> _viewmodel;
 

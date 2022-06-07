@@ -36,7 +36,7 @@ using ShaderCacheLoadingState = Ryujinx.Graphics.Gpu.Shader.ShaderCacheState;
 
 namespace Ryujinx.Ava.Ui.ViewModels
 {
-    public class MainWindowViewModel : BaseModel
+    internal class MainWindowViewModel : BaseModel
     {
         private readonly MainWindow _owner;
         private ObservableCollection<ApplicationData> _applications;

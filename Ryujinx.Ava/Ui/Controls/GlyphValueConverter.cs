@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Ava.Ui.Controls
 {
-    public class GlyphValueConverter : MarkupExtension
+    internal class GlyphValueConverter : MarkupExtension
     {
         private string _key;
 

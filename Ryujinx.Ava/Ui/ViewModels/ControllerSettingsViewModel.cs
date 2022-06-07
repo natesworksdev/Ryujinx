@@ -32,7 +32,7 @@ using Key = Ryujinx.Common.Configuration.Hid.Key;
 
 namespace Ryujinx.Ava.Ui.ViewModels
 {
-    public class ControllerSettingsViewModel : BaseModel, IDisposable
+    internal class ControllerSettingsViewModel : BaseModel, IDisposable
     {
         private const string Disabled = "disabled";
         private const string ProControllerResource = "Ryujinx.Ui.Common/Resources/Controller_ProCon.svg";

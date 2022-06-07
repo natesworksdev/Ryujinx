@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Ava.Ui.ViewModels
 {
-    public class BaseModel : INotifyPropertyChanged
+    internal class BaseModel : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 

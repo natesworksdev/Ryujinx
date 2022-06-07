@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.Ui.Windows
 {
-    public class RumbleSettingsWindow : UserControl
+    internal class RumbleSettingsWindow : UserControl
     {
         private readonly InputConfiguration<GamepadInputId, StickInputId> _viewmodel;
 

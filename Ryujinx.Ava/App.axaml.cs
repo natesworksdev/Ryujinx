@@ -16,7 +16,7 @@ using System.IO;
 
 namespace Ryujinx.Ava
 {
-    public class App : Avalonia.Application
+    internal class App : Avalonia.Application
     {
         public override void Initialize()
         {

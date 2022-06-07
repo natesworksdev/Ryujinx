@@ -5,7 +5,7 @@ using Ryujinx.Ava.Ui.Windows;
 
 namespace Ryujinx.Ava.Ui.Controls
 {
-    public class UpdateWaitWindow : StyleableWindow
+    internal class UpdateWaitWindow : StyleableWindow
     {
         public UpdateWaitWindow(string primaryText, string secondaryText) : this()
         {

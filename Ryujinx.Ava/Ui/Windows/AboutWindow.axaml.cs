@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.Ui.Windows
 {
-    public class AboutWindow : StyleableWindow
+    internal class AboutWindow : StyleableWindow
     {
         public AboutWindow()
         {

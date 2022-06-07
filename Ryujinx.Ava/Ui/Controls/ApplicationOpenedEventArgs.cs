@@ -3,7 +3,7 @@ using Ryujinx.Ui.App.Common;
 
 namespace Ryujinx.Ava.Ui.Controls
 {
-    public class ApplicationOpenedEventArgs : RoutedEventArgs
+    internal class ApplicationOpenedEventArgs : RoutedEventArgs
     {
         public ApplicationData Application { get; }
 

@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.Ui.Controls
 {
-    public class ButtonKeyAssigner
+    internal class ButtonKeyAssigner
     {
-        public class ButtonAssignedEventArgs : EventArgs
+        internal class ButtonAssignedEventArgs : EventArgs
         {
             public ToggleButton Button { get; }
             public bool IsAssigned { get; }

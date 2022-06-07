@@ -23,7 +23,7 @@ using Key = Ryujinx.Input.Key;
 
 namespace Ryujinx.Ava.Ui.Windows
 {
-    public class ControllerSettingsWindow : UserControl
+    internal class ControllerSettingsWindow : UserControl
     {
         private bool _dialogOpen;
 

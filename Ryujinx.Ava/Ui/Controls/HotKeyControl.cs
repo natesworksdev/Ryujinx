@@ -6,7 +6,7 @@ using System.Windows.Input;
 
 namespace Ryujinx.Ava.Ui.Controls
 {
-    public class HotKeyControl : ContentControl, ICommandSource
+    internal class HotKeyControl : ContentControl, ICommandSource
     {
         public static readonly StyledProperty<object> CommandParameterProperty =
             AvaloniaProperty.Register<HotKeyControl, object>(nameof(CommandParameter));

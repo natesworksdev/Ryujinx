@@ -36,7 +36,7 @@ using InputManager = Ryujinx.Input.HLE.InputManager;
 using ProgressBar = Avalonia.Controls.ProgressBar;
 namespace Ryujinx.Ava.Ui.Windows
 {
-    public class MainWindow : StyleableWindow
+    internal class MainWindow : StyleableWindow
     {
         private bool _canUpdate;
         private bool _isClosing;

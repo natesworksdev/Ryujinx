@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.Ui.Controls
 {
-    public class InputDialog : UserControl
+    internal class InputDialog : UserControl
     {
         public string Message { get; set; }
         public string Input { get; set; }
