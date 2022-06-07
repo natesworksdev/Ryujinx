@@ -119,13 +119,13 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             IButtonAssigner assigner;
 
-            string selected = ViewModel.Devices[ViewModel.Device].Id;
+            var device = ViewModel.Devices[ViewModel.Device];
 
-            if (selected.StartsWith("keyboard"))
+            if (device.Type == Models.DeviceType.Keyboard)
             {
                 assigner = new KeyboardKeyAssigner((IKeyboard)ViewModel.SelectedGamepad);
             }
-            else if (selected.StartsWith("controller"))
+            else if (device.Type == Models.DeviceType.Controller)
             {
                 InputConfig config = ConfigurationState.Instance.Hid.InputConfig.Value.Find(inputConfig => inputConfig.Id == ViewModel.SelectedGamepad.Id);
 
