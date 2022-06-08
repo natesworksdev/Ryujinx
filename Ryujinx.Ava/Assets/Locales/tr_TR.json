@@ -541,4 +541,20 @@
   "LoadingHeading": "Yükleniyor {0}",
   "CompilingPPTC": "PTC derleniyor",
   "CompilingShaders": "Shaderlar derleniyor"
+  "AllKeyboards": "Tüm klavyeler",
+  "OpenFileDialogTitle": "Açılacak desteklenen bir dosya seçin",
+  "OpenFolderDialogTitle": "Sıkıştırılmamış oyun içeren klasör seçin",
+  "AllSupportedFormats": "Tüm Desteklenen Formatlar",
+  "RyujinxUpdater": "Ryujinx Güncelleyicisi",
+  "SettingsTabHotkeys": "Klavye Kısayolları",
+  "SettingsTabHotkeysHotkeys": "Klavye Kısayolları",
+  "SettingsTabHotkeysToggleVsyncHotkey": "VSync'i Etkinleştir:",
+  "SettingsTabHotkeysScreenshotHotkey": "Ekran Görüntüsü Al:",
+  "SettingsTabHotkeysShowUiHotkey": "Arayüzü Göster:",
+  "SettingsTabHotkeysPauseHotkey": "Duraklat:",
+  "SettingsTabHotkeysToggleMuteHotkey": "Sustur:",
+  "ControllerMotionTitle": "Hareket Kontrol Seçenekleri",
+  "ControllerRumbleTitle": "Titreşim Seçenekleri",
+  "SettingsSelectThemeFileDialogTitle" : "Tema Dosyası Seçin",
+  "SettingsXamlThemeFile" : "Xaml Tema Dosyası"
 }
