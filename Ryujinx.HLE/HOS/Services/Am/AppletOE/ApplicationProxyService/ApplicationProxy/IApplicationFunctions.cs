@@ -2,9 +2,12 @@ using LibHac;
 using LibHac.Account;
 using LibHac.Common;
 using LibHac.Fs;
+using LibHac.FsSystem;
+using LibHac.Ncm;
 using LibHac.Ns;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
+using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Memory;
@@ -15,6 +18,7 @@ using Ryujinx.HLE.HOS.Services.Sdb.Pdm.QueryService;
 using Ryujinx.HLE.HOS.SystemState;
 using System;
 using System.Numerics;
+using System.Threading;
 
 using static LibHac.Fs.ApplicationSaveDataManagement;
 using AccountUid    = Ryujinx.HLE.HOS.Services.Account.Acc.UserId;
@@ -36,6 +40,10 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         private int _friendInvitationStorageChannelEventHandle;
         private int _notificationStorageChannelEventHandle;
         private int _healthWarningDisappearedSystemEventHandle;
+
+        private bool _gamePlayRecordingState;
+
+        private int _jitLoaded;
 
         private HorizonClient _horizon;
 
@@ -342,6 +350,15 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
             return ResultCode.Success;
         }
 
+        [CommandHipc(65)] // 3.0.0+
+        // IsGamePlayRecordingSupported() -> u8
+        public ResultCode IsGamePlayRecordingSupported(ServiceCtx context)
+        {
+            context.ResponseData.Write(_gamePlayRecordingState);
+
+            return ResultCode.Success;
+        }
+
         [CommandHipc(66)] // 3.0.0+
         // InitializeGamePlayRecording(u64, handle<copy>)
         public ResultCode InitializeGamePlayRecording(ServiceCtx context)
@@ -355,9 +372,9 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         // SetGamePlayRecordingState(u32)
         public ResultCode SetGamePlayRecordingState(ServiceCtx context)
         {
-            int state = context.RequestData.ReadInt32();
+            _gamePlayRecordingState = context.RequestData.ReadInt32() != 0;
 
-            Logger.Stub?.PrintStub(LogClass.ServiceAm, new { state });
+            Logger.Stub?.PrintStub(LogClass.ServiceAm, new { _gamePlayRecordingState });
 
             return ResultCode.Success;
         }
@@ -628,6 +645,32 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
             }
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_healthWarningDisappearedSystemEventHandle);
+
+            return ResultCode.Success;
+        }
+
+        [CommandHipc(1001)] // 10.0.0+
+        // PrepareForJit()
+        public ResultCode PrepareForJit(ServiceCtx context)
+        {
+            if (Interlocked.Exchange(ref _jitLoaded, 1) == 0)
+            {
+                string jitPath = context.Device.System.ContentManager.GetInstalledContentPath(0x010000000000003B, StorageId.BuiltInSystem, NcaContentType.Program);
+                string filePath = context.Device.FileSystem.SwitchPathToSystemPath(jitPath);
+
+                if (string.IsNullOrWhiteSpace(filePath))
+                {
+                    throw new InvalidSystemResourceException($"JIT (010000000000003B) system title not found! The JIT will not work, provide the system archive to fix this error. (See https://github.com/Ryujinx/Ryujinx#requirements for more information)");
+                }
+
+                context.Device.Application.LoadServiceNca(filePath);
+
+                // FIXME: Most likely not how this should be done?
+                while (!context.Device.System.SmRegistry.IsServiceRegistered("jit:u"))
+                {
+                    context.Device.System.SmRegistry.WaitForServiceRegistration();
+                }
+            }
 
             return ResultCode.Success;
         }

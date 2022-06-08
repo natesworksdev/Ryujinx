@@ -2,6 +2,7 @@
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Utilities;
+using Ryujinx.Ui.Common.Configuration;
 using Ryujinx.Ui.Widgets;
 using System;
 using System.Collections.Generic;
@@ -97,7 +98,7 @@ namespace Ryujinx.Ui.Windows
 
         public AmiiboWindow() : base($"Ryujinx {Program.Version} - Amiibo")
         {
-            Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.Resources.Logo_Ryujinx.png");
+            Icon = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png");
 
             InitializeComponent();
 
@@ -111,7 +112,7 @@ namespace Ryujinx.Ui.Windows
             _amiiboJsonPath = System.IO.Path.Join(AppDataManager.BaseDirPath, "system", "amiibo", "Amiibo.json");
             _amiiboList     = new List<AmiiboApi>();
 
-            _amiiboLogoBytes    = EmbeddedResources.Read("Ryujinx/Ui/Resources/Logo_Amiibo.png");
+            _amiiboLogoBytes    = EmbeddedResources.Read("Ryujinx.Ui.Common/Resources/Logo_Amiibo.png");
             _amiiboImage.Pixbuf = new Gdk.Pixbuf(_amiiboLogoBytes);
 
             _scanButton.Sensitive         = false;

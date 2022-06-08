@@ -1,5 +1,6 @@
 using Ryujinx.Audio.Backends.CompatLayer;
 using Ryujinx.Audio.Integration;
+using Ryujinx.Common.Configuration;
 using Ryujinx.Graphics.Gpu;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
@@ -27,6 +28,8 @@ namespace Ryujinx.HLE
 
         public bool EnableDeviceVsync { get; set; } = true;
 
+        public bool IsFrameAvailable => Gpu.Window.IsFrameAvailable;
+
         public Switch(HLEConfiguration configuration)
         {
             if (configuration.GpuRenderer == null)
@@ -48,8 +51,12 @@ namespace Ryujinx.HLE
             FileSystem    = Configuration.VirtualFileSystem;
             UiHandler     = Configuration.HostUiHandler;
 
+            MemoryAllocationFlags memoryAllocationFlags = configuration.MemoryManagerMode == MemoryManagerMode.SoftwarePageTable
+                ? MemoryAllocationFlags.Reserve
+                : MemoryAllocationFlags.Reserve | MemoryAllocationFlags.Mirrorable;
+
             AudioDeviceDriver = new CompatLayerHardwareDeviceDriver(Configuration.AudioDeviceDriver);
-            Memory            = new MemoryBlock(Configuration.MemoryConfiguration.ToDramSize(), MemoryAllocationFlags.Reserve);
+            Memory            = new MemoryBlock(Configuration.MemoryConfiguration.ToDramSize(), memoryAllocationFlags);
             Gpu               = new GpuContext(Configuration.GpuRenderer);
             System            = new Horizon(this);
             Statistics        = new PerformanceStatistics();
@@ -110,7 +117,7 @@ namespace Ryujinx.HLE
             return Gpu.Window.ConsumeFrameAvailable();
         }
 
-        public void PresentFrame(Action swapBuffersCallback)
+        public void PresentFrame(Action<object> swapBuffersCallback)
         {
             Gpu.Window.Present(swapBuffersCallback);
         }
