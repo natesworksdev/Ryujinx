@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
+using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
 using Silk.NET.Vulkan.Extensions.KHR;
@@ -188,7 +189,7 @@ namespace Ryujinx.Graphics.Vulkan
             return 0;
         }
 
-        internal static PhysicalDevice FindSuitablePhysicalDevice(Vk api, Instance instance, SurfaceKHR surface)
+        internal static PhysicalDevice FindSuitablePhysicalDevice(Vk api, Instance instance, SurfaceKHR surface, string preferredGpuId)
         {
             uint physicalDeviceCount;
 
@@ -201,11 +202,16 @@ namespace Ryujinx.Graphics.Vulkan
                 api.EnumeratePhysicalDevices(instance, &physicalDeviceCount, pPhysicalDevices).ThrowOnError();
             }
 
-            if (physicalDevices.Length > 1)
+            // First we try to pick the the user preferred GPU.
+            for (int i = 0; i < physicalDevices.Length; i++)
             {
-                return physicalDevices[0];
+                if (IsPreferredAndSuitableDevice(api, physicalDevices[i], surface, preferredGpuId))
+                {
+                    return physicalDevices[i];
+                }
             }
 
+            // If we fail to do that, just use the first compatible GPU.
             for (int i = 0; i < physicalDevices.Length; i++)
             {
                 if (IsSuitableDevice(api, physicalDevices[i], surface))
@@ -215,6 +221,80 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             throw new VulkanException("Initialization failed, none of the available GPUs meets the minimum requirements.");
+        }
+
+        internal static DeviceInfo[] GetSuitablePhysicalDevices(Vk api)
+        {
+            var appName = Marshal.StringToHGlobalAnsi(AppName);
+
+            var applicationInfo = new ApplicationInfo
+            {
+                PApplicationName = (byte*)appName,
+                ApplicationVersion = 1,
+                PEngineName = (byte*)appName,
+                EngineVersion = 1,
+                ApiVersion = Vk.Version12.Value
+            };
+
+            var instanceCreateInfo = new InstanceCreateInfo
+            {
+                SType = StructureType.InstanceCreateInfo,
+                PApplicationInfo = &applicationInfo,
+                PpEnabledExtensionNames = null,
+                PpEnabledLayerNames = null,
+                EnabledExtensionCount = 0,
+                EnabledLayerCount = 0
+            };
+
+            api.CreateInstance(in instanceCreateInfo, null, out var instance).ThrowOnError();
+
+            Marshal.FreeHGlobal(appName);
+
+            uint physicalDeviceCount;
+
+            api.EnumeratePhysicalDevices(instance, &physicalDeviceCount, null).ThrowOnError();
+
+            PhysicalDevice[] physicalDevices = new PhysicalDevice[physicalDeviceCount];
+
+            fixed (PhysicalDevice* pPhysicalDevices = physicalDevices)
+            {
+                api.EnumeratePhysicalDevices(instance, &physicalDeviceCount, pPhysicalDevices).ThrowOnError();
+            }
+
+            DeviceInfo[] devices = new DeviceInfo[physicalDevices.Length];
+
+            for (int i = 0; i < physicalDevices.Length; i++)
+            {
+                var physicalDevice = physicalDevices[i];
+                api.GetPhysicalDeviceProperties(physicalDevice, out var properties);
+
+                devices[i] = new DeviceInfo(
+                    StringFromIdPair(properties.VendorID, properties.DeviceID),
+                    VendorUtils.GetNameFromId(properties.VendorID),
+                    Marshal.PtrToStringAnsi((IntPtr)properties.DeviceName),
+                    properties.DeviceType == PhysicalDeviceType.DiscreteGpu);
+            }
+
+            api.DestroyInstance(instance, null);
+
+            return devices;
+        }
+
+        private static string StringFromIdPair(uint vendorId, uint deviceId)
+        {
+            return $"0x{vendorId:X}_0x{deviceId:X}";
+        }
+
+        private static bool IsPreferredAndSuitableDevice(Vk api, PhysicalDevice physicalDevice, SurfaceKHR surface, string preferredGpuId)
+        {
+            api.GetPhysicalDeviceProperties(physicalDevice, out var properties);
+
+            if (StringFromIdPair(properties.VendorID, properties.DeviceID) != preferredGpuId)
+            {
+                return false;
+            }
+
+            return IsSuitableDevice(api, physicalDevice, surface);
         }
 
         private static bool IsSuitableDevice(Vk api, PhysicalDevice physicalDevice, SurfaceKHR surface)
