@@ -80,7 +80,7 @@ namespace Ryujinx.Ui.Common.Configuration
         /// Enables printing error log messages
         /// </summary>
         public bool LoggingEnableError { get; set; }
-        
+
         /// <summary>
         /// Enables printing trace log messages
         /// </summary>
@@ -160,6 +160,11 @@ namespace Ryujinx.Ui.Common.Configuration
         /// Enables or disables Shader cache
         /// </summary>
         public bool EnableShaderCache { get; set; }
+
+        /// <summary>
+        /// Enables or disables texture recompression
+        /// </summary>
+        public bool EnableTextureRecompression { get; set; }
 
         /// <summary>
         /// Enables or disables profiled translation cache persistency
@@ -314,6 +319,11 @@ namespace Ryujinx.Ui.Common.Configuration
         /// Graphics backend
         /// </summary>
         public GraphicsBackend GraphicsBackend { get; set; }
+
+        /// <summary>
+        /// Preferred GPU
+        /// </summary>
+        public string PreferredGpu { get; set; }
 
         /// <summary>
         /// Loads a configuration file from disk
