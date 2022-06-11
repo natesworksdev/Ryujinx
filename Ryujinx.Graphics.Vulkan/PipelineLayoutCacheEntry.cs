@@ -1,3 +1,4 @@
+using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
 using System.Collections.Generic;
 
@@ -15,16 +16,10 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly int[] _dsCacheCursor;
         private int _dsLastCbIndex;
 
-        private readonly uint _stages;
-
-        public PipelineLayoutCacheEntry(VulkanGraphicsDevice gd, Device device, uint stages)
+        private PipelineLayoutCacheEntry(VulkanGraphicsDevice gd, Device device)
         {
             _gd = gd;
             _device = device;
-            _stages = stages;
-
-            DescriptorSetLayouts = PipelineLayoutFactory.Create(gd, device, stages, out var pipelineLayout);
-            PipelineLayout = pipelineLayout;
 
             _dsCache = new List<Auto<DescriptorSetCollection>>[CommandBufferPool.MaxCommandBuffers][];
 
@@ -39,6 +34,18 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             _dsCacheCursor = new int[PipelineBase.DescriptorSetLayouts];
+        }
+
+        public PipelineLayoutCacheEntry(VulkanGraphicsDevice gd, Device device, uint stages) : this(gd, device)
+        {
+            DescriptorSetLayouts = PipelineLayoutFactory.Create(gd, device, stages, out var pipelineLayout);
+            PipelineLayout = pipelineLayout;
+        }
+
+        public PipelineLayoutCacheEntry(VulkanGraphicsDevice gd, Device device, ShaderSource[] shaders) : this(gd, device)
+        {
+            DescriptorSetLayouts = PipelineLayoutFactory.CreateMinimal(gd, device, shaders, out var pipelineLayout);
+            PipelineLayout = pipelineLayout;
         }
 
         public Auto<DescriptorSetCollection> GetNewDescriptorSetCollection(
@@ -75,27 +82,24 @@ namespace Ryujinx.Graphics.Vulkan
         {
             if (disposing)
             {
-                unsafe
+                for (int i = 0; i < _dsCache.Length; i++)
                 {
-                    for (int i = 0; i < _dsCache.Length; i++)
+                    for (int j = 0; j < _dsCache[i].Length; j++)
                     {
-                        for (int y = 0; y < _dsCache[i].Length; y++)
+                        for (int k = 0; k < _dsCache[i][j].Count; k++)
                         {
-                            for (int z = 0; z < _dsCache[i][y].Count; z++)
-                            {
-                                _dsCache[i][y][z].Dispose();
-                            }
-
-                            _dsCache[i][y].Clear();
+                            _dsCache[i][j][k].Dispose();
                         }
-                    }
 
-                    _gd.Api.DestroyPipelineLayout(_device, PipelineLayout, null);
-
-                    for (int i = 0; i < DescriptorSetLayouts.Length; i++)
-                    {
-                        _gd.Api.DestroyDescriptorSetLayout(_device, DescriptorSetLayouts[i], null);
+                        _dsCache[i][j].Clear();
                     }
+                }
+
+                _gd.Api.DestroyPipelineLayout(_device, PipelineLayout, null);
+
+                for (int i = 0; i < DescriptorSetLayouts.Length; i++)
+                {
+                    _gd.Api.DestroyDescriptorSetLayout(_device, DescriptorSetLayouts[i], null);
                 }
             }
         }
