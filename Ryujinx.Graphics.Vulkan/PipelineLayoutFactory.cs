@@ -156,14 +156,6 @@ namespace Ryujinx.Graphics.Vulkan
             DescriptorSetLayoutBinding* tLayoutBindings = stackalloc DescriptorSetLayoutBinding[tCount];
             DescriptorSetLayoutBinding* iLayoutBindings = stackalloc DescriptorSetLayoutBinding[iCount];
 
-            uLayoutBindings[0] = new DescriptorSetLayoutBinding
-            {
-                Binding = 0,
-                DescriptorType = DescriptorType.UniformBuffer,
-                DescriptorCount = 1,
-                StageFlags = SupportBufferStages
-            };
-
             int uIndex = 0;
             int sIndex = 0;
             int tIndex = 0;

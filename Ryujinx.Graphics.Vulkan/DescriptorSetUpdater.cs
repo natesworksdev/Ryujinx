@@ -299,7 +299,8 @@ namespace Ryujinx.Graphics.Vulkan
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void UpdateAndBind(CommandBufferScoped cbs, int setIndex, DirtyFlags flag, PipelineBindPoint pbp)
         {
-            int stagesCount = _program.Bindings[setIndex].Length;
+            var program = _program;
+            int stagesCount = program.Bindings[setIndex].Length;
             if (stagesCount == 0 && setIndex != PipelineBase.UniformSetIndex)
             {
                 return;
@@ -307,30 +308,33 @@ namespace Ryujinx.Graphics.Vulkan
 
             var dummyBuffer = _dummyBuffer?.GetBuffer();
 
-            var dsc = _program.GetNewDescriptorSetCollection(_gd, cbs.CommandBufferIndex, setIndex, out var isNew).Get(cbs);
+            var dsc = program.GetNewDescriptorSetCollection(_gd, cbs.CommandBufferIndex, setIndex, out var isNew).Get(cbs);
 
-            if (isNew)
+            if (!program.HasMinimalLayout)
             {
-                Initialize(cbs, setIndex, dsc);
-            }
-
-            if (setIndex == PipelineBase.UniformSetIndex)
-            {
-                Span<DescriptorBufferInfo> uniformBuffer = stackalloc DescriptorBufferInfo[1];
-
-                uniformBuffer[0] = new DescriptorBufferInfo()
+                if (isNew)
                 {
-                    Offset = 0,
-                    Range = (ulong)SupportBuffer.RequiredSize,
-                    Buffer = _gd.BufferManager.GetBuffer(cbs.CommandBuffer, _pipeline.SupportBufferUpdater.Handle, false).Get(cbs, 0, SupportBuffer.RequiredSize).Value
-                };
+                    Initialize(cbs, setIndex, dsc);
+                }
 
-                dsc.UpdateBuffers(0, 0, uniformBuffer, DescriptorType.UniformBuffer);
+                if (setIndex == PipelineBase.UniformSetIndex)
+                {
+                    Span<DescriptorBufferInfo> uniformBuffer = stackalloc DescriptorBufferInfo[1];
+
+                    uniformBuffer[0] = new DescriptorBufferInfo()
+                    {
+                        Offset = 0,
+                        Range = (ulong)SupportBuffer.RequiredSize,
+                        Buffer = _gd.BufferManager.GetBuffer(cbs.CommandBuffer, _pipeline.SupportBufferUpdater.Handle, false).Get(cbs, 0, SupportBuffer.RequiredSize).Value
+                    };
+
+                    dsc.UpdateBuffers(0, 0, uniformBuffer, DescriptorType.UniformBuffer);
+                }
             }
 
             for (int stageIndex = 0; stageIndex < stagesCount; stageIndex++)
             {
-                var stageBindings = _program.Bindings[setIndex][stageIndex];
+                var stageBindings = program.Bindings[setIndex][stageIndex];
                 int bindingsCount = stageBindings.Length;
                 int count;
 
@@ -380,7 +384,7 @@ namespace Ryujinx.Graphics.Vulkan
                     }
                     else if (setIndex == PipelineBase.TextureSetIndex)
                     {
-                        if ((binding % (Constants.MaxTexturesPerStage * 2)) < Constants.MaxTexturesPerStage)
+                        if ((binding % (Constants.MaxTexturesPerStage * 2)) < Constants.MaxTexturesPerStage || program.HasMinimalLayout)
                         {
                             for (int i = 0; i < count; i++)
                             {
@@ -424,7 +428,7 @@ namespace Ryujinx.Graphics.Vulkan
                     }
                     else if (setIndex == PipelineBase.ImageSetIndex)
                     {
-                        if ((binding % (Constants.MaxImagesPerStage * 2)) < Constants.MaxImagesPerStage)
+                        if ((binding % (Constants.MaxImagesPerStage * 2)) < Constants.MaxImagesPerStage || program.HasMinimalLayout)
                         {
                             count = Math.Min(count, _images.Length - binding);
 
