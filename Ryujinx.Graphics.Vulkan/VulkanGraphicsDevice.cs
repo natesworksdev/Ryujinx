@@ -74,8 +74,9 @@ namespace Ryujinx.Graphics.Vulkan
 
         public IWindow Window => _window;
 
-        private Func<Instance, Vk, SurfaceKHR> GetSurface;
-        private Func<string[]> GetRequiredExtensions;
+        private readonly Func<Instance, Vk, SurfaceKHR> _getSurface;
+        private readonly Func<string[]> _getRequiredExtensions;
+        private readonly string _preferredGpuId;
 
         internal Vendor Vendor { get; private set; }
         internal bool IsAmdWindows { get; private set; }
@@ -88,10 +89,11 @@ namespace Ryujinx.Graphics.Vulkan
 
         public event EventHandler<ScreenCaptureImageInfo> ScreenCaptured;
 
-        public VulkanGraphicsDevice(Func<Instance, Vk, SurfaceKHR> surfaceFunc, Func<string[]> requiredExtensionsFunc)
+        public VulkanGraphicsDevice(Func<Instance, Vk, SurfaceKHR> surfaceFunc, Func<string[]> requiredExtensionsFunc, string preferredGpuId)
         {
-            GetSurface = surfaceFunc;
-            GetRequiredExtensions = requiredExtensionsFunc;
+            _getSurface = surfaceFunc;
+            _getRequiredExtensions = requiredExtensionsFunc;
+            _preferredGpuId = preferredGpuId;
             Shaders = new HashSet<ShaderCollection>();
             Textures = new HashSet<ITexture>();
             Samplers = new HashSet<SamplerHolder>();
@@ -239,7 +241,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             Api = api;
 
-            _instance = VulkanInitialization.CreateInstance(api, logLevel, GetRequiredExtensions(), out ExtDebugReport debugReport, out _debugReportCallback);
+            _instance = VulkanInitialization.CreateInstance(api, logLevel, _getRequiredExtensions(), out ExtDebugReport debugReport, out _debugReportCallback);
 
             DebugReportApi = debugReport;
 
@@ -248,8 +250,8 @@ namespace Ryujinx.Graphics.Vulkan
                 SurfaceApi = surfaceApi;
             }
 
-            _surface = GetSurface(_instance, api);
-            _physicalDevice = VulkanInitialization.FindSuitablePhysicalDevice(api, _instance, _surface);
+            _surface = _getSurface(_instance, api);
+            _physicalDevice = VulkanInitialization.FindSuitablePhysicalDevice(api, _instance, _surface, _preferredGpuId);
 
             var queueFamilyIndex = VulkanInitialization.FindSuitableQueueFamily(api, _physicalDevice, _surface, out uint maxQueueCount);
             var supportedExtensions = VulkanInitialization.GetSupportedExtensions(api, _physicalDevice);
@@ -435,6 +437,11 @@ namespace Ryujinx.Graphics.Vulkan
             return new HardwareInfo(GpuVendor, GpuRenderer);
         }
 
+        public static DeviceInfo[] GetPhysicalDevices()
+        {
+            return VulkanInitialization.GetSuitablePhysicalDevices(Vk.GetApi());
+        }
+
         private static string ParseStandardVulkanVersion(uint version)
         {
             return $"{version >> 22}.{(version >> 12) & 0x3FF}.{version & 0xFFF}";
@@ -459,23 +466,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             Api.GetPhysicalDeviceProperties(_physicalDevice, out var properties);
 
-            string vendorName = properties.VendorID switch
-            {
-                0x1002 => "AMD",
-                0x1010 => "ImgTec",
-                0x10DE => "NVIDIA",
-                0x13B5 => "ARM",
-                0x1AE0 => "Google",
-                0x5143 => "Qualcomm",
-                0x8086 => "Intel",
-                0x10001 => "Vivante",
-                0x10002 => "VeriSilicon",
-                0x10003 => "Kazan",
-                0x10004 => "Codeplay Software Ltd.",
-                0x10005 => "Mesa",
-                0x10006 => "PoCL",
-                _ => $"0x{properties.VendorID:X}"
-            };
+            string vendorName = VendorUtils.GetNameFromId(properties.VendorID);
 
             Vendor = VendorUtils.FromId(properties.VendorID);
 
@@ -528,6 +519,36 @@ namespace Ryujinx.Graphics.Vulkan
             _counters.Update();
         }
 
+        public void BackgroundContextAction(Action action, bool alwaysBackground = false)
+        {
+            action();
+        }
+
+        public void CreateSync(ulong id)
+        {
+            _syncManager.Create(id);
+        }
+
+        public IProgram LoadProgramBinary(byte[] programBinary, bool isFragment, ShaderInfo info)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void WaitSync(ulong id)
+        {
+            _syncManager.Wait(id);
+        }
+
+        public void Screenshot()
+        {
+            _window.ScreenCaptureRequested = true;
+        }
+
+        public void OnScreenCaptured(ScreenCaptureImageInfo bitmap)
+        {
+            ScreenCaptured?.Invoke(this, bitmap);
+        }
+
         public unsafe void Dispose()
         {
             CommandBufferPool.Dispose();
@@ -571,36 +592,6 @@ namespace Ryujinx.Graphics.Vulkan
                 // Last step destroy the instance
                 Api.DestroyInstance(_instance, null);
             }
-        }
-
-        public void BackgroundContextAction(Action action, bool alwaysBackground = false)
-        {
-            action();
-        }
-
-        public void CreateSync(ulong id)
-        {
-            _syncManager.Create(id);
-        }
-
-        public IProgram LoadProgramBinary(byte[] programBinary, bool isFragment, ShaderInfo info)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void WaitSync(ulong id)
-        {
-            _syncManager.Wait(id);
-        }
-
-        public void Screenshot()
-        {
-            _window.ScreenCaptureRequested = true;
-        }
-
-        public void OnScreenCaptured(ScreenCaptureImageInfo bitmap)
-        {
-            ScreenCaptured?.Invoke(this, bitmap);
         }
     }
 }

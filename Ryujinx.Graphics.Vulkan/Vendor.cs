@@ -22,5 +22,26 @@ namespace Ryujinx.Graphics.Vulkan
                 _ => Vendor.Unknown
             };
         }
+
+        public static string GetNameFromId(uint id)
+        {
+            return id switch
+            {
+                0x1002 => "AMD",
+                0x1010 => "ImgTec",
+                0x10DE => "NVIDIA",
+                0x13B5 => "ARM",
+                0x1AE0 => "Google",
+                0x5143 => "Qualcomm",
+                0x8086 => "Intel",
+                0x10001 => "Vivante",
+                0x10002 => "VeriSilicon",
+                0x10003 => "Kazan",
+                0x10004 => "Codeplay Software Ltd.",
+                0x10005 => "Mesa",
+                0x10006 => "PoCL",
+                _ => $"0x{id:X}"
+            };
+        }
     }
 }

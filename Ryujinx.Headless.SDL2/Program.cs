@@ -406,7 +406,8 @@ namespace Ryujinx.Headless.SDL2
             }
 
             // Setup graphics configuration
-            GraphicsConfig.EnableShaderCache = (bool)option.EnableShaderCache && option.GraphicsBackend != GraphicsBackend.Vulkan;
+            GraphicsConfig.EnableShaderCache = (bool)option.EnableShaderCache;
+            GraphicsConfig.EnableTextureRecompression = (bool)option.EnableTextureRecompression;
             GraphicsConfig.ResScale = option.ResScale;
             GraphicsConfig.MaxAnisotropy = option.MaxAnisotropy;
             GraphicsConfig.ShadersDumpPath = option.GraphicsShadersDumpPath;
@@ -461,8 +462,28 @@ namespace Ryujinx.Headless.SDL2
             {
                 VulkanWindow vulkanWindow = new VulkanWindow(_inputManager, options.LoggingGraphicsDebugLevel, options.AspectRatio, (bool)options.EnableMouse);
                 window = vulkanWindow;
-                renderer = new VulkanGraphicsDevice((instance, vk) => new SurfaceKHR((ulong)(vulkanWindow.CreateWindowSurface(instance.Handle))),
-                                                    vulkanWindow.GetRequiredInstanceExtensions);
+
+                string preferredGpuId = string.Empty;
+
+                if (!string.IsNullOrEmpty(options.PreferredGpuVendor))
+                {
+                    string preferredGpuVendor = options.PreferredGpuVendor.ToLowerInvariant();
+                    var devices = VulkanGraphicsDevice.GetPhysicalDevices();
+
+                    foreach (var device in devices)
+                    {
+                        if (device.Vendor.ToLowerInvariant() == preferredGpuVendor)
+                        {
+                            preferredGpuId = device.Id;
+                            break;
+                        }
+                    }
+                }
+
+                renderer = new VulkanGraphicsDevice(
+                    (instance, vk) => new SurfaceKHR((ulong)(vulkanWindow.CreateWindowSurface(instance.Handle))),
+                    vulkanWindow.GetRequiredInstanceExtensions,
+                    preferredGpuId);
             }
             else
             {
