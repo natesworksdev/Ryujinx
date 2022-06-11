@@ -49,7 +49,7 @@ namespace Ryujinx.Graphics.Vulkan
         private Task _compileTask;
         private bool _firstBackgroundUse;
 
-        public ShaderCollection(VulkanGraphicsDevice gd, Device device, ShaderSource[] shaders)
+        public ShaderCollection(VulkanGraphicsDevice gd, Device device, ShaderSource[] shaders, bool isMinimal = false)
         {
             _gd = gd;
             _device = device;
@@ -87,7 +87,9 @@ namespace Ryujinx.Graphics.Vulkan
 
             _shaders = internalShaders;
 
-            _plce = gd.PipelineLayoutCache.GetOrCreate(gd, device, stages);
+            _plce = isMinimal
+                ? gd.PipelineLayoutCache.Create(gd, device, shaders)
+                : gd.PipelineLayoutCache.GetOrCreate(gd, device, stages);
 
             Stages = stages;
 

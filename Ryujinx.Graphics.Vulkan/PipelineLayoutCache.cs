@@ -1,14 +1,25 @@
+using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
+using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Vulkan
 {
     class PipelineLayoutCache
     {
-        private PipelineLayoutCacheEntry[] _plce;
+        private readonly PipelineLayoutCacheEntry[] _plce;
+        private readonly List<PipelineLayoutCacheEntry> _plceMinimal;
 
         public PipelineLayoutCache()
         {
             _plce = new PipelineLayoutCacheEntry[1 << Constants.MaxShaderStages];
+            _plceMinimal = new List<PipelineLayoutCacheEntry>();
+        }
+
+        public PipelineLayoutCacheEntry Create(VulkanGraphicsDevice gd, Device device, ShaderSource[] shaders)
+        {
+            var plce = new PipelineLayoutCacheEntry(gd, device, shaders);
+            _plceMinimal.Add(plce);
+            return plce;
         }
 
         public PipelineLayoutCacheEntry GetOrCreate(VulkanGraphicsDevice gd, Device device, uint stages)
@@ -29,6 +40,13 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     _plce[i]?.Dispose();
                 }
+
+                foreach (var plce in _plceMinimal)
+                {
+                    plce.Dispose();
+                }
+
+                _plceMinimal.Clear();
             }
         }
 

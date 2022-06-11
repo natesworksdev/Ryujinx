@@ -32,7 +32,7 @@ void main()
 
         private const string ColorBlitFragmentShaderSource = @"#version 450 core
 
-layout (binding = 128, set = 2) uniform sampler2D tex;
+layout (binding = 0, set = 2) uniform sampler2D tex;
 
 layout (location = 0) in vec2 tex_coord;
 layout (location = 0) out vec4 colour;
@@ -44,7 +44,7 @@ void main()
 
         private const string ColorBlitClearAlphaFragmentShaderSource = @"#version 450 core
 
-layout (binding = 128, set = 2) uniform sampler2D tex;
+layout (binding = 0, set = 2) uniform sampler2D tex;
 
 layout (location = 0) in vec2 tex_coord;
 layout (location = 0) out vec4 colour;
@@ -125,20 +125,20 @@ void main()
             var fragmentBindings = new ShaderBindings(
                 Array.Empty<int>(),
                 Array.Empty<int>(),
-                new[] { Constants.MaxTexturesPerStage * 2 },
+                new[] { 0 },
                 Array.Empty<int>());
 
-            _programColorBlit = gd.CreateProgram(new[]
+            _programColorBlit = gd.CreateProgramWithMinimalLayout(new[]
             {
                 new ShaderSource(ColorBlitVertexShaderSource, vertexBindings, ShaderStage.Vertex, TargetLanguage.Glsl),
                 new ShaderSource(ColorBlitFragmentShaderSource, fragmentBindings, ShaderStage.Fragment, TargetLanguage.Glsl),
-            }, new ShaderInfo(-1));
+            });
 
-            _programColorBlitClearAlpha = gd.CreateProgram(new[]
+            _programColorBlitClearAlpha = gd.CreateProgramWithMinimalLayout(new[]
             {
                 new ShaderSource(ColorBlitVertexShaderSource, vertexBindings, ShaderStage.Vertex, TargetLanguage.Glsl),
                 new ShaderSource(ColorBlitClearAlphaFragmentShaderSource, fragmentBindings, ShaderStage.Fragment, TargetLanguage.Glsl),
-            }, new ShaderInfo(-1));
+            });
 
             var fragmentBindings2 = new ShaderBindings(
                 Array.Empty<int>(),
@@ -146,11 +146,11 @@ void main()
                 Array.Empty<int>(),
                 Array.Empty<int>());
 
-            _programColorClear = gd.CreateProgram(new[]
+            _programColorClear = gd.CreateProgramWithMinimalLayout(new[]
             {
                 new ShaderSource(ColorClearVertexShaderSource, vertexBindings, ShaderStage.Vertex, TargetLanguage.Glsl),
                 new ShaderSource(ColorClearFragmentShaderSource, fragmentBindings2, ShaderStage.Fragment, TargetLanguage.Glsl),
-            }, new ShaderInfo(-1));
+            });
         }
 
         public void Blit(
@@ -191,7 +191,7 @@ void main()
 
             var sampler = linearFilter ? _samplerLinear : _samplerNearest;
 
-            _pipeline.SetTextureAndSampler(ShaderStage.Fragment, Constants.MaxTexturesPerStage * 2, src, sampler);
+            _pipeline.SetTextureAndSampler(ShaderStage.Fragment, 0, src, sampler);
 
             Span<float> region = stackalloc float[RegionBufferSize / sizeof(float)];
 
@@ -328,7 +328,7 @@ void main()
         {
             const int RegionBufferSize = 16;
 
-            pipeline.SetTextureAndSampler(ShaderStage.Fragment, Constants.MaxTexturesPerStage * 2, src, srcSampler);
+            pipeline.SetTextureAndSampler(ShaderStage.Fragment, 0, src, srcSampler);
 
             Span<float> region = stackalloc float[RegionBufferSize / sizeof(float)];
 
