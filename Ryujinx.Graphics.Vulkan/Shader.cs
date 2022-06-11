@@ -4,7 +4,6 @@ using Ryujinx.Graphics.Shader;
 using shaderc;
 using Silk.NET.Vulkan;
 using System;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 

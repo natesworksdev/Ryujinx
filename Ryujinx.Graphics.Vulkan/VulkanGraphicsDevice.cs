@@ -317,6 +317,11 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
+        internal ShaderCollection CreateProgramWithMinimalLayout(ShaderSource[] sources)
+        {
+            return new ShaderCollection(this, _device, sources, isMinimal: true);
+        }
+
         public ISampler CreateSampler(GAL.SamplerCreateInfo info)
         {
             return new SamplerHolder(this, _device, info);
