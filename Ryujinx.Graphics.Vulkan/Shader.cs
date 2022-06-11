@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    class Shader : IShader
+    class Shader
     {
         // The shaderc.net dependency's Options constructor and dispose are not thread safe.
         // Take this lock when using them.
@@ -31,86 +31,33 @@ namespace Ryujinx.Graphics.Vulkan
 
         public readonly Task CompileTask;
 
-        public unsafe Shader(Vk api, Device device, ShaderStage stage, ShaderBindings bindings, string glsl)
+        public unsafe Shader(Vk api, Device device, ShaderSource shaderSource)
         {
             _api = api;
             _device = device;
-            _stage = stage.Convert();
-            _entryPointName = Marshal.StringToHGlobalAnsi("main");
-
-            Bindings = bindings;
-
-            CompileTask = Task.Run(() =>
-            {
-                glsl = glsl.Replace("gl_VertexID", "(gl_VertexIndex - gl_BaseVertex)");
-                glsl = glsl.Replace("gl_InstanceID", "(gl_InstanceIndex - gl_BaseInstance)");
-
-                // System.Console.WriteLine(glsl);
-
-                Options options;
-
-                lock (_shaderOptionsLock)
-                {
-                    options = new Options(false)
-                    {
-                        SourceLanguage = SourceLanguage.Glsl,
-                        TargetSpirVVersion = new SpirVVersion(1, 5)
-                    };
-                }
-
-                options.SetTargetEnvironment(TargetEnvironment.Vulkan, EnvironmentVersion.Vulkan_1_2);
-                Compiler compiler = new Compiler(options);
-                var scr = compiler.Compile(glsl, "Ryu", GetShaderCShaderStage(stage));
-
-                lock (_shaderOptionsLock)
-                {
-                    options.Dispose();
-                }
-
-                if (scr.Status != Status.Success)
-                {
-                    Logger.Error?.Print(LogClass.Gpu, $"Shader compilation error: {scr.Status} {scr.ErrorMessage}");
-
-                    CompileStatus = ProgramLinkStatus.Failure;
-
-                    return;
-                }
-
-                var spirvBytes = new Span<byte>((void*)scr.CodePointer, (int)scr.CodeLength);
-
-                uint[] code = new uint[(scr.CodeLength + 3) / 4];
-
-                spirvBytes.CopyTo(MemoryMarshal.Cast<uint, byte>(new Span<uint>(code)).Slice(0, (int)scr.CodeLength));
-
-                fixed (uint* pCode = code)
-                {
-                    var shaderModuleCreateInfo = new ShaderModuleCreateInfo()
-                    {
-                        SType = StructureType.ShaderModuleCreateInfo,
-                        CodeSize = scr.CodeLength,
-                        PCode = pCode
-                    };
-
-                    api.CreateShaderModule(device, shaderModuleCreateInfo, null, out _module).ThrowOnError();
-                }
-
-                CompileStatus = ProgramLinkStatus.Success;
-            });
-        }
-
-        public unsafe Shader(Vk api, Device device, ShaderStage stage, ShaderBindings bindings, byte[] spirv)
-        {
-            _api = api;
-            _device = device;
-            Bindings = bindings;
+            Bindings = shaderSource.Bindings;
 
             CompileStatus = ProgramLinkStatus.Incomplete;
 
-            _stage = stage.Convert();
+            _stage = shaderSource.Stage.Convert();
             _entryPointName = Marshal.StringToHGlobalAnsi("main");
 
             CompileTask = Task.Run(() =>
             {
+                byte[] spirv = shaderSource.BinaryCode;
+
+                if (spirv == null)
+                {
+                    spirv = GlslToSpirv(shaderSource.Code, shaderSource.Stage);
+
+                    if (spirv == null)
+                    {
+                        CompileStatus = ProgramLinkStatus.Failure;
+
+                        return;
+                    }
+                }
+
                 fixed (byte* pCode = spirv)
                 {
                     var shaderModuleCreateInfo = new ShaderModuleCreateInfo()
@@ -127,16 +74,46 @@ namespace Ryujinx.Graphics.Vulkan
             });
         }
 
-        private static uint[] LoadShaderData(string filePath, out int codeSize)
+        private unsafe static byte[] GlslToSpirv(string glsl, ShaderStage stage)
         {
-            var fileBytes = File.ReadAllBytes(filePath);
-            var shaderData = new uint[(int)Math.Ceiling(fileBytes.Length / 4f)];
+            // TODO: We should generate the correct code on the shader translator instead of doing this compensation.
+            glsl = glsl.Replace("gl_VertexID", "(gl_VertexIndex - gl_BaseVertex)");
+            glsl = glsl.Replace("gl_InstanceID", "(gl_InstanceIndex - gl_BaseInstance)");
 
-            System.Buffer.BlockCopy(fileBytes, 0, shaderData, 0, fileBytes.Length);
+            Options options;
 
-            codeSize = fileBytes.Length;
+            lock (_shaderOptionsLock)
+            {
+                options = new Options(false)
+                {
+                    SourceLanguage = SourceLanguage.Glsl,
+                    TargetSpirVVersion = new SpirVVersion(1, 5)
+                };
+            }
 
-            return shaderData;
+            options.SetTargetEnvironment(TargetEnvironment.Vulkan, EnvironmentVersion.Vulkan_1_2);
+            Compiler compiler = new Compiler(options);
+            var scr = compiler.Compile(glsl, "Ryu", GetShaderCShaderStage(stage));
+
+            lock (_shaderOptionsLock)
+            {
+                options.Dispose();
+            }
+
+            if (scr.Status != Status.Success)
+            {
+                Logger.Error?.Print(LogClass.Gpu, $"Shader compilation error: {scr.Status} {scr.ErrorMessage}");
+
+                return null;
+            }
+
+            var spirvBytes = new Span<byte>((void*)scr.CodePointer, (int)scr.CodeLength);
+
+            byte[] code = new byte[(scr.CodeLength + 3) & ~3];
+
+            spirvBytes.CopyTo(code.AsSpan().Slice(0, (int)scr.CodeLength));
+
+            return code;
         }
 
         private static ShaderKind GetShaderCShaderStage(ShaderStage stage)
