@@ -1477,7 +1477,7 @@
                                     <property name="visible">True</property>
                                     <property name="can-focus">True</property>
                                     <property name="receives-default">False</property>
-                                    <property name="tooltip-text" translatable="yes">Enables or disables Vertical Sync</property>
+                                    <property name="tooltip-text" translatable="yes">Enables or disables guest Vertical Sync. This may speed up the game beyond what was intended or increase loading times.</property>
                                     <property name="halign">start</property>
                                     <property name="margin-top">5</property>
                                     <property name="margin-bottom">5</property>
