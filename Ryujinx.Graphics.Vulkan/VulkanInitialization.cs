@@ -27,7 +27,8 @@ namespace Ryujinx.Graphics.Vulkan
             "VK_EXT_robustness2",
             "VK_EXT_shader_subgroup_ballot",
             "VK_EXT_subgroup_size_control",
-            "VK_NV_geometry_shader_passthrough"
+            "VK_NV_geometry_shader_passthrough",
+            "VK_EXT_descriptor_indexing" // Enabling this works around an issue with disposed buffer bindings on RADV.
         };
 
         public static string[] RequiredExtensions { get; } = new string[]
