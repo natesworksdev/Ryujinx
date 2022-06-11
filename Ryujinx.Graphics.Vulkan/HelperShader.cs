@@ -1,6 +1,7 @@
 ﻿using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Shader;
 using Ryujinx.Graphics.Shader.Translation;
+using Ryujinx.Graphics.Vulkan.Shaders;
 using Silk.NET.Vulkan;
 using System;
 using VkFormat = Silk.NET.Vulkan.Format;
@@ -9,81 +10,6 @@ namespace Ryujinx.Graphics.Vulkan
 {
     class HelperShader : IDisposable
     {
-        private const string ColorBlitVertexShaderSource = @"#version 450 core
-
-layout (std140, binding = 1) uniform tex_coord_in
-{
-    vec4 tex_coord_in_data;
-};
-
-layout (location = 0) out vec2 tex_coord;
-
-void main()
-{
-    int low = gl_VertexIndex & 1;
-	int high = gl_VertexIndex >> 1;
-	tex_coord.x = tex_coord_in_data[low];
-	tex_coord.y = tex_coord_in_data[2 + high];
-    gl_Position.x = (float(low) - 0.5f) * 2.0f;
-    gl_Position.y = (float(high) - 0.5f) * 2.0f;
-    gl_Position.z = 0.0f;
-    gl_Position.w = 1.0f;
-}";
-
-        private const string ColorBlitFragmentShaderSource = @"#version 450 core
-
-layout (binding = 0, set = 2) uniform sampler2D tex;
-
-layout (location = 0) in vec2 tex_coord;
-layout (location = 0) out vec4 colour;
-
-void main()
-{
-    colour = texture(tex, tex_coord);
-}";
-
-        private const string ColorBlitClearAlphaFragmentShaderSource = @"#version 450 core
-
-layout (binding = 0, set = 2) uniform sampler2D tex;
-
-layout (location = 0) in vec2 tex_coord;
-layout (location = 0) out vec4 colour;
-
-void main()
-{
-    colour = vec4(texture(tex, tex_coord).rgb, 1.0f);
-}";
-
-        private const string ColorClearVertexShaderSource = @"#version 450 core
-
-layout (std140, binding = 1) uniform clear_colour_in
-{
-    vec4 clear_colour_in_data;
-};
-
-layout (location = 0) out vec4 clear_colour;
-
-void main()
-{
-    int low = gl_VertexIndex & 1;
-	int high = gl_VertexIndex >> 1;
-	clear_colour = clear_colour_in_data;
-    gl_Position.x = (float(low) - 0.5f) * 2.0f;
-    gl_Position.y = (float(high) - 0.5f) * 2.0f;
-    gl_Position.z = 0.0f;
-    gl_Position.w = 1.0f;
-}";
-
-        private const string ColorClearFragmentShaderSource = @"#version 450 core
-
-layout (location = 0) in vec4 clear_colour;
-layout (location = 0) out vec4 colour;
-
-void main()
-{
-    colour = clear_colour;
-}";
-
         private readonly PipelineHelperShader _pipeline;
         private readonly ISampler _samplerLinear;
         private readonly ISampler _samplerNearest;
@@ -130,14 +56,14 @@ void main()
 
             _programColorBlit = gd.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(ColorBlitVertexShaderSource, vertexBindings, ShaderStage.Vertex, TargetLanguage.Glsl),
-                new ShaderSource(ColorBlitFragmentShaderSource, fragmentBindings, ShaderStage.Fragment, TargetLanguage.Glsl),
+                new ShaderSource(ShaderBinaries.ColorBlitVertexShaderSource, vertexBindings, ShaderStage.Vertex, TargetLanguage.Glsl),
+                new ShaderSource(ShaderBinaries.ColorBlitFragmentShaderSource, fragmentBindings, ShaderStage.Fragment, TargetLanguage.Glsl),
             });
 
             _programColorBlitClearAlpha = gd.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(ColorBlitVertexShaderSource, vertexBindings, ShaderStage.Vertex, TargetLanguage.Glsl),
-                new ShaderSource(ColorBlitClearAlphaFragmentShaderSource, fragmentBindings, ShaderStage.Fragment, TargetLanguage.Glsl),
+                new ShaderSource(ShaderBinaries.ColorBlitVertexShaderSource, vertexBindings, ShaderStage.Vertex, TargetLanguage.Glsl),
+                new ShaderSource(ShaderBinaries.ColorBlitClearAlphaFragmentShaderSource, fragmentBindings, ShaderStage.Fragment, TargetLanguage.Glsl),
             });
 
             var fragmentBindings2 = new ShaderBindings(
@@ -148,8 +74,8 @@ void main()
 
             _programColorClear = gd.CreateProgramWithMinimalLayout(new[]
             {
-                new ShaderSource(ColorClearVertexShaderSource, vertexBindings, ShaderStage.Vertex, TargetLanguage.Glsl),
-                new ShaderSource(ColorClearFragmentShaderSource, fragmentBindings2, ShaderStage.Fragment, TargetLanguage.Glsl),
+                new ShaderSource(ShaderBinaries.ColorClearVertexShaderSource, vertexBindings, ShaderStage.Vertex, TargetLanguage.Glsl),
+                new ShaderSource(ShaderBinaries.ColorClearFragmentShaderSource, fragmentBindings2, ShaderStage.Fragment, TargetLanguage.Glsl),
             });
         }
 
