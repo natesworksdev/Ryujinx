@@ -17,11 +17,13 @@ namespace Ryujinx.Graphics.Vulkan
 
         public PipelineLayout PipelineLayout => _plce.PipelineLayout;
 
+        public bool HasMinimalLayout { get; }
+
         public uint Stages { get; }
 
         public int[][][] Bindings { get; }
 
-        public ProgramLinkStatus LinkStatus { private set; get; }
+        public ProgramLinkStatus LinkStatus { get; private set; }
 
         public bool IsLinked
         {
@@ -90,6 +92,8 @@ namespace Ryujinx.Graphics.Vulkan
             _plce = isMinimal
                 ? gd.PipelineLayoutCache.Create(gd, device, shaders)
                 : gd.PipelineLayoutCache.GetOrCreate(gd, device, stages);
+
+            HasMinimalLayout = isMinimal;
 
             Stages = stages;
 
