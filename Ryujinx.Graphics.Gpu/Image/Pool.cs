@@ -1,6 +1,7 @@
 using Ryujinx.Cpu.Tracking;
 using Ryujinx.Graphics.Gpu.Memory;
 using System;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Gpu.Image
 {
@@ -41,6 +42,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         private readonly CpuMultiRegionHandle _memoryTracking;
         private readonly Action<ulong, ulong> _modifiedDelegate;
 
+        private bool _modified;
+
         /// <summary>
         /// Creates a new instance of the GPU resource pool.
         /// </summary>
@@ -80,6 +83,16 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Gets a reference to the descriptor for a given ID.
+        /// </summary>
+        /// <param name="id">ID of the descriptor. This is effectively a zero-based index</param>
+        /// <returns>A reference to the descriptor</returns>
+        public ref readonly T2 GetDescriptorRef(int id)
+        {
+            return ref MemoryMarshal.Cast<byte, T2>(PhysicalMemory.GetSpan(Address + (ulong)id * DescriptorSize, DescriptorSize))[0];
+        }
+
+        /// <summary>
         /// Gets the GPU resource with the given ID.
         /// </summary>
         /// <param name="id">ID of the resource. This is effectively a zero-based index</param>
@@ -91,9 +104,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// This causes invalidation of pool entries,
         /// if a modification of entries by the CPU is detected.
         /// </summary>
-        public void SynchronizeMemory()
+        public bool SynchronizeMemory()
         {
+            _modified = false;
             _memoryTracking.QueryModified(_modifiedDelegate);
+            return _modified;
         }
 
         /// <summary>
@@ -103,6 +118,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="mSize">Size of the modified region</param>
         private void RegionModified(ulong mAddress, ulong mSize)
         {
+            _modified = true;
+
             if (mAddress < Address)
             {
                 mAddress = Address;
@@ -129,6 +146,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             if (write && Context.SequenceNumber == SequenceNumber)
             {
+                //Common.Logging.Logger.Error?.Print(Common.Logging.LogClass.Gpu, "Precise action...");
                 SequenceNumber--;
             }
 
