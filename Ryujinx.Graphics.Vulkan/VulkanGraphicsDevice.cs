@@ -477,14 +477,7 @@ namespace Ryujinx.Graphics.Vulkan
                 _ => $"0x{properties.VendorID:X}"
             };
 
-            Vendor = properties.VendorID switch
-            {
-                0x1002 => Vendor.Amd,
-                0x10DE => Vendor.Nvidia,
-                0x8086 => Vendor.Intel,
-                0x5143 => Vendor.Qualcomm,
-                _ => Vendor.Unknown
-            };
+            Vendor = VendorUtils.FromId(properties.VendorID);
 
             IsAmdWindows = Vendor == Vendor.Amd && RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             IsIntelWindows = Vendor == Vendor.Intel && RuntimeInformation.IsOSPlatform(OSPlatform.Windows);

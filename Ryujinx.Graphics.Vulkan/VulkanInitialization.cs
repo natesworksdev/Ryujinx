@@ -300,6 +300,9 @@ namespace Ryujinx.Graphics.Vulkan
                 PQueuePriorities = queuePriorities
             };
 
+            api.GetPhysicalDeviceProperties(physicalDevice, out var properties);
+            bool useRobustBufferAccess = VendorUtils.FromId(properties.VendorID) == Vendor.Nvidia;
+
             var supportedFeatures = api.GetPhysicalDeviceFeature(physicalDevice);
 
             var features = new PhysicalDeviceFeatures()
@@ -321,7 +324,8 @@ namespace Ryujinx.Graphics.Vulkan
                 // ShaderStorageImageReadWithoutFormat = true,
                 // ShaderStorageImageWriteWithoutFormat = true,
                 TessellationShader = true,
-                VertexPipelineStoresAndAtomics = true
+                VertexPipelineStoresAndAtomics = true,
+                RobustBufferAccess = useRobustBufferAccess
             };
 
             void* pExtendedFeatures = null;
