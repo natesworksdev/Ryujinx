@@ -298,50 +298,23 @@ namespace Ryujinx.Graphics.Vulkan
             _window = new ImageWindow(this, _physicalDevice, _device);
         }
 
-        public IShader CompileShader(ShaderStage stage, ShaderBindings bindings, string code)
-        {
-            return new Shader(Api, _device, stage, bindings, code);
-        }
-
-        public IShader CompileShader(ShaderStage stage, ShaderBindings bindings, byte[] code)
-        {
-            return new Shader(Api, _device, stage, bindings, code);
-        }
-
         public BufferHandle CreateBuffer(int size)
         {
             return BufferManager.CreateWithHandle(this, size, false);
         }
 
-        public IProgram CreateProgram(IShader[] shaders, ShaderInfo info)
+        public IProgram CreateProgram(ShaderSource[] sources, ShaderInfo info)
         {
-            bool isCompute = shaders.Length == 1 && ((Shader)shaders[0]).StageFlags == ShaderStageFlags.ShaderStageComputeBit;
+            bool isCompute = sources.Length == 1 && sources[0].Stage == ShaderStage.Compute;
 
             if (info.BackgroundCompile && (info.State.HasValue || isCompute) && VulkanConfiguration.UseDynamicState)
             {
-                return new ShaderCollection(this, _device, shaders, info.State.Value);
+                return new ShaderCollection(this, _device, sources, info.State.Value);
             }
             else
             {
-                return new ShaderCollection(this, _device, shaders);
+                return new ShaderCollection(this, _device, sources);
             }
-        }
-
-        public IProgram CreateProgram(ShaderSource[] sources, ShaderInfo info)
-        {
-            IShader[] shaders = new IShader[sources.Length];
-
-            for (int index = 0; index < sources.Length; index++)
-            {
-                var source = sources[index];
-                var shader = source.BinaryCode != null
-                    ? CompileShader(source.Stage, source.Bindings, source.BinaryCode)
-                    : CompileShader(source.Stage, source.Bindings, source.Code);
-
-                shaders[index] = shader;
-            }
-
-            return CreateProgram(shaders, info);
         }
 
         public ISampler CreateSampler(GAL.SamplerCreateInfo info)

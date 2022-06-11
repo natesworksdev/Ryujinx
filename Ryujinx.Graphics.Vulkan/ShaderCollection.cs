@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Vulkan
     class ShaderCollection : IProgram
     {
         private readonly PipelineShaderStageCreateInfo[] _infos;
-        private readonly IShader[] _shaders;
+        private readonly Shader[] _shaders;
 
         private readonly PipelineLayoutCacheEntry _plce;
 
@@ -49,11 +49,10 @@ namespace Ryujinx.Graphics.Vulkan
         private Task _compileTask;
         private bool _firstBackgroundUse;
 
-        public ShaderCollection(VulkanGraphicsDevice gd, Device device, IShader[] shaders)
+        public ShaderCollection(VulkanGraphicsDevice gd, Device device, ShaderSource[] shaders)
         {
             _gd = gd;
             _device = device;
-            _shaders = shaders;
 
             gd.Shaders.Add(this);
 
@@ -67,7 +66,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             for (int i = 0; i < shaders.Length; i++)
             {
-                var shader = (Shader)shaders[i];
+                var shader = new Shader(gd.Api, device, shaders[i]);
 
                 stages |= 1u << shader.StageFlags switch
                 {
@@ -85,6 +84,8 @@ namespace Ryujinx.Graphics.Vulkan
 
                 internalShaders[i] = shader;
             }
+
+            _shaders = internalShaders;
 
             _plce = gd.PipelineLayoutCache.GetOrCreate(gd, device, stages);
 
@@ -120,8 +121,8 @@ namespace Ryujinx.Graphics.Vulkan
         public ShaderCollection(
             VulkanGraphicsDevice gd,
             Device device,
-            IShader[] shaders,
-            ProgramPipelineState state) : this(gd, device, shaders)
+            ShaderSource[] sources,
+            ProgramPipelineState state) : this(gd, device, sources)
         {
             _state = state;
 
@@ -131,9 +132,9 @@ namespace Ryujinx.Graphics.Vulkan
 
         private async Task BackgroundCompilation()
         {
-            await Task.WhenAll(_shaders.Select(shader => ((Shader)shader).CompileTask));
+            await Task.WhenAll(_shaders.Select(shader => shader.CompileTask));
 
-            if (_shaders.Any(shader => ((Shader)shader).CompileStatus == ProgramLinkStatus.Failure))
+            if (_shaders.Any(shader => shader.CompileStatus == ProgramLinkStatus.Failure))
             {
                 LinkStatus = ProgramLinkStatus.Failure;
 
@@ -169,7 +170,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 for (int i = 0; i < _shaders.Length; i++)
                 {
-                    var shader = (Shader)_shaders[i];
+                    var shader = _shaders[i];
 
                     if (shader.CompileStatus != ProgramLinkStatus.Success)
                     {
@@ -211,7 +212,7 @@ namespace Ryujinx.Graphics.Vulkan
             PipelineState pipeline = new PipelineState();
             pipeline.Initialize();
 
-            pipeline.Stages[0] = ((Shader)_shaders[0]).GetInfo();
+            pipeline.Stages[0] = _shaders[0].GetInfo();
             pipeline.StagesCount = 1;
 
             pipeline.CreateComputePipeline(_gd, _device, this, (_gd.Pipeline as PipelineBase).PipelineCache);
@@ -236,7 +237,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             for (int i = 0; i < _shaders.Length; i++)
             {
-                stages[i] = ((Shader)_shaders[i]).GetInfo();
+                stages[i] = _shaders[i].GetInfo();
             }
 
             pipeline.StagesCount = (uint)_shaders.Length;

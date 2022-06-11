@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Shader;
+using Ryujinx.Graphics.Shader.Translation;
 using Silk.NET.Vulkan;
 using System;
 using VkFormat = Silk.NET.Vulkan.Format;
@@ -127,12 +128,17 @@ void main()
                 new[] { Constants.MaxTexturesPerStage * 2 },
                 Array.Empty<int>());
 
-            var colorBlitVertexShader = gd.CompileShader(ShaderStage.Vertex, vertexBindings, ColorBlitVertexShaderSource);
-            var colorBlitFragmentShader = gd.CompileShader(ShaderStage.Fragment, fragmentBindings, ColorBlitFragmentShaderSource);
-            var colorBlitClearAlphaFragmentShader = gd.CompileShader(ShaderStage.Fragment, fragmentBindings, ColorBlitClearAlphaFragmentShaderSource);
+            _programColorBlit = gd.CreateProgram(new[]
+            {
+                new ShaderSource(ColorBlitVertexShaderSource, vertexBindings, ShaderStage.Vertex, TargetLanguage.Glsl),
+                new ShaderSource(ColorBlitFragmentShaderSource, fragmentBindings, ShaderStage.Fragment, TargetLanguage.Glsl),
+            }, new ShaderInfo(-1));
 
-            _programColorBlit = gd.CreateProgram(new[] { colorBlitVertexShader, colorBlitFragmentShader }, new ShaderInfo(-1));
-            _programColorBlitClearAlpha = gd.CreateProgram(new[] { colorBlitVertexShader, colorBlitClearAlphaFragmentShader }, new ShaderInfo(-1));
+            _programColorBlitClearAlpha = gd.CreateProgram(new[]
+            {
+                new ShaderSource(ColorBlitVertexShaderSource, vertexBindings, ShaderStage.Vertex, TargetLanguage.Glsl),
+                new ShaderSource(ColorBlitClearAlphaFragmentShaderSource, fragmentBindings, ShaderStage.Fragment, TargetLanguage.Glsl),
+            }, new ShaderInfo(-1));
 
             var fragmentBindings2 = new ShaderBindings(
                 Array.Empty<int>(),
@@ -140,10 +146,11 @@ void main()
                 Array.Empty<int>(),
                 Array.Empty<int>());
 
-            var colorClearVertexShader = gd.CompileShader(ShaderStage.Vertex, vertexBindings, ColorClearVertexShaderSource);
-            var colorClearFragmentShader = gd.CompileShader(ShaderStage.Fragment, fragmentBindings2, ColorClearFragmentShaderSource);
-
-            _programColorClear = gd.CreateProgram(new[] { colorClearVertexShader, colorClearFragmentShader }, new ShaderInfo(-1));
+            _programColorClear = gd.CreateProgram(new[]
+            {
+                new ShaderSource(ColorClearVertexShaderSource, vertexBindings, ShaderStage.Vertex, TargetLanguage.Glsl),
+                new ShaderSource(ColorClearFragmentShaderSource, fragmentBindings2, ShaderStage.Fragment, TargetLanguage.Glsl),
+            }, new ShaderInfo(-1));
         }
 
         public void Blit(
