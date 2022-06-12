@@ -14,7 +14,6 @@ namespace Ryujinx.Graphics.Gpu.Image
     {
         private readonly GpuChannel _channel;
         private readonly ConcurrentQueue<Texture> _dereferenceQueue = new ConcurrentQueue<Texture>();
-        private int _modifiedSequenceNumber;
         private TextureDescriptor _defaultDescriptor;
 
         /// <summary>
@@ -106,10 +105,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 SequenceNumber = Context.SequenceNumber;
 
-                if (SynchronizeMemory())
-                {
-                    _modifiedSequenceNumber = SequenceNumber;
-                }
+                SynchronizeMemory();
             }
 
             GetInternal(id, out Texture texture);
@@ -142,20 +138,17 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <summary>
         /// Checks if the pool was modified, and returns the last sequence number where a modification was detected.
         /// </summary>
-        /// <returns>The last sequence number where a modifiaction was detected</returns>
+        /// <returns>A number that increments each time a modification is detected</returns>
         public int CheckModified()
         {
             if (SequenceNumber != Context.SequenceNumber)
             {
                 SequenceNumber = Context.SequenceNumber;
 
-                if (SynchronizeMemory())
-                {
-                    _modifiedSequenceNumber = SequenceNumber;
-                }
+                SynchronizeMemory();
             }
 
-            return _modifiedSequenceNumber;
+            return ModifiedSequenceNumber;
         }
 
         /// <summary>
