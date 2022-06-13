@@ -212,7 +212,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             for (int i = 0; i < stages.Length; i++)
             {
                 CachedShaderStage stage = stages[i];
-                if (stage != null)
+                if (stage != null && stage.Info != null)
                 {
                     var textures = stage.Info.Textures;
                     var images = stage.Info.Images;
