@@ -220,16 +220,18 @@ namespace Ryujinx.Graphics.Gpu.Shader
                     var texBindings = new Box<TextureSpecializationState>[textures.Count];
                     var imageBindings = new Box<TextureSpecializationState>[images.Count];
 
+                    int stageIndex = Math.Max(i - 1, 0); // Don't count VertexA for looking up spec state. No-Op for compute.
+
                     for (int j = 0; j < textures.Count; j++)
                     {
                         var texture = textures[j];
-                        texBindings[j] = GetTextureSpecState(i, texture.HandleIndex, texture.CbufSlot);
+                        texBindings[j] = GetTextureSpecState(stageIndex, texture.HandleIndex, texture.CbufSlot);
                     }
 
                     for (int j = 0; j < images.Count; j++)
                     {
                         var image = images[j];
-                        imageBindings[j] = GetTextureSpecState(i, image.HandleIndex, image.CbufSlot);
+                        imageBindings[j] = GetTextureSpecState(stageIndex, image.HandleIndex, image.CbufSlot);
                     }
 
                     _textureByBinding[i] = texBindings;
