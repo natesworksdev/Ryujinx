@@ -495,8 +495,8 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 }
 
                 ShaderInfo shaderInfo = compilation.SpecializationState.PipelineState.HasValue
-                    ? new ShaderInfo(fragmentOutputMap, compilation.SpecializationState.PipelineState.Value)
-                    : new ShaderInfo(fragmentOutputMap);
+                    ? new ShaderInfo(fragmentOutputMap, compilation.SpecializationState.PipelineState.Value, fromCache: true)
+                    : new ShaderInfo(fragmentOutputMap, fromCache: true);
 
                 IProgram hostProgram = _context.Renderer.CreateProgram(shaderSources, shaderInfo);
                 CachedShaderProgram program = new CachedShaderProgram(hostProgram, compilation.SpecializationState, compilation.Shaders);
