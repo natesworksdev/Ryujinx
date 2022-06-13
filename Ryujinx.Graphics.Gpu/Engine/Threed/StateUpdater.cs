@@ -277,7 +277,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
             if (!_channel.TextureManager.CommitGraphicsBindings(_shaderSpecState))
             {
-                Logger.Error?.Print(LogClass.Gpu, "Oh my");
+                // Shader must be reloaded.
                 UpdateShaderState();
             }
 

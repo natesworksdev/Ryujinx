@@ -469,7 +469,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// </summary>
         /// <param name="channel">GPU channel</param>
         /// <param name="isCompute">Indicates whenever the check is requested by the 3D or compute engine</param>
-        /// <param name="stageIndex">Stage index of the constant buffer</param>
         /// <param name="cachedTextureBufferIndex">The currently cached texture buffer index</param>
         /// <param name="cachedSamplerBufferIndex">The currently cached sampler buffer index</param>
         /// <param name="cachedTextureBuffer">The currently cached texture buffer data</param>
@@ -477,6 +476,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <param name="cachedStageIndex">The currently cached stage</param>
         /// <param name="textureBufferIndex">The new texture buffer index</param>
         /// <param name="samplerBufferIndex">The new sampler buffer index</param>
+        /// <param name="stageIndex">Stage index of the constant buffer</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void UpdateCachedBuffer(
             GpuChannel channel,
@@ -578,10 +578,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
                     ref readonly Image.TextureDescriptor descriptor = ref pool.GetDescriptorRef(textureId);
 
-                    Box<TextureSpecializationState> specializationState = kv.Value;
-
-                    if (specializationState.Value.QueriedFlags.HasFlag(QueriedTextureStateFlags.CoordNormalized) &&
-                        specializationState.Value.CoordNormalized != descriptor.UnpackTextureCoordNormalized())
+                    if (!MatchesTexture(kv.Value, descriptor))
                     {
                         return false;
                     }
@@ -597,6 +594,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <param name="specializationState">Texture specialization state</param>
         /// <param name="descriptor">Texture descriptor</param>
         /// <returns>True if the state matches, false otherwise</returns>
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool MatchesTexture(Box<TextureSpecializationState> specializationState, in Image.TextureDescriptor descriptor)
         {
             if (specializationState != null)
