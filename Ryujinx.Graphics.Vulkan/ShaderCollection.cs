@@ -128,12 +128,13 @@ namespace Ryujinx.Graphics.Vulkan
             VulkanGraphicsDevice gd,
             Device device,
             ShaderSource[] sources,
-            ProgramPipelineState state) : this(gd, device, sources)
+            ProgramPipelineState state,
+            bool fromCache) : this(gd, device, sources)
         {
             _state = state;
 
             _compileTask = BackgroundCompilation();
-            _firstBackgroundUse = true;
+            _firstBackgroundUse = !fromCache;
         }
 
         private async Task BackgroundCompilation()
@@ -220,6 +221,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             pipeline.Stages[0] = _shaders[0].GetInfo();
             pipeline.StagesCount = 1;
+            pipeline.PipelineLayout = PipelineLayout;
 
             pipeline.CreateComputePipeline(_gd, _device, this, (_gd.Pipeline as PipelineBase).PipelineCache);
             pipeline.Dispose();

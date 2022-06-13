@@ -309,9 +309,9 @@ namespace Ryujinx.Graphics.Vulkan
         {
             bool isCompute = sources.Length == 1 && sources[0].Stage == ShaderStage.Compute;
 
-            if (info.BackgroundCompile && (info.State.HasValue || isCompute) && VulkanConfiguration.UseDynamicState)
+            if ((info.State.HasValue || isCompute) && VulkanConfiguration.UseDynamicState)
             {
-                return new ShaderCollection(this, _device, sources, info.State.Value);
+                return new ShaderCollection(this, _device, sources, info.State ?? default, info.FromCache);
             }
             else
             {
