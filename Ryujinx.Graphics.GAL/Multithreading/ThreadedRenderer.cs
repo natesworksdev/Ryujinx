@@ -263,11 +263,6 @@ namespace Ryujinx.Graphics.GAL.Multithreading
         {
             var program = new ThreadedProgram(this);
 
-            if (info.State.HasValue)
-            {
-                info.BackgroundCompile = true;
-            }
-
             SourceProgramRequest request = new SourceProgramRequest(program, shaders, info);
 
             Programs.Add(request);

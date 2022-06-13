@@ -4,20 +4,20 @@ namespace Ryujinx.Graphics.GAL
     {
         public int FragmentOutputMap { get; }
         public ProgramPipelineState? State { get; }
-        public bool BackgroundCompile { get; set; }
+        public bool FromCache { get; set; }
 
-        public ShaderInfo(int fragmentOutputMap, ProgramPipelineState state)
+        public ShaderInfo(int fragmentOutputMap, ProgramPipelineState state, bool fromCache = false)
         {
             FragmentOutputMap = fragmentOutputMap;
             State = state;
-            BackgroundCompile = false;
+            FromCache = fromCache;
         }
 
-        public ShaderInfo(int fragmentOutputMap)
+        public ShaderInfo(int fragmentOutputMap, bool fromCache = false)
         {
             FragmentOutputMap = fragmentOutputMap;
             State = null;
-            BackgroundCompile = false;
+            FromCache = fromCache;
         }
     }
 }
