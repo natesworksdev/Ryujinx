@@ -211,10 +211,10 @@ namespace Ryujinx.Graphics.OpenGL
         private static bool IsLayered(TextureView view)
         {
             return view != null &&
-                    view.Target != Target.Texture1D &&
-                    view.Target != Target.Texture2D &&
-                    view.Target != Target.Texture2DMultisample &&
-                    view.Target != Target.TextureBuffer;
+                   view.Target != Target.Texture1D &&
+                   view.Target != Target.Texture2D &&
+                   view.Target != Target.Texture2DMultisample &&
+                   view.Target != Target.TextureBuffer;
         }
 
         public void Dispose()
