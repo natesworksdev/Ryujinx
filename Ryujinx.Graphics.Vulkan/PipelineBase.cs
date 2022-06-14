@@ -1066,8 +1066,8 @@ namespace Ryujinx.Graphics.Vulkan
                 0,
                 PipelineStageFlags.PipelineStageAllGraphicsBit,
                 PipelineStageFlags.PipelineStageAllGraphicsBit,
-                AccessFlags.AccessMemoryReadBit | AccessFlags.AccessMemoryWriteBit,
-                AccessFlags.AccessMemoryReadBit | AccessFlags.AccessMemoryWriteBit,
+                AccessFlags.AccessMemoryReadBit | AccessFlags.AccessMemoryWriteBit | AccessFlags.AccessColorAttachmentWriteBit,
+                AccessFlags.AccessMemoryReadBit | AccessFlags.AccessMemoryWriteBit | AccessFlags.AccessShaderReadBit,
                 0);
 
             fixed (AttachmentDescription* pAttachmentDescs = attachmentDescs)
