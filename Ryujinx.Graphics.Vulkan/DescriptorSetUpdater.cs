@@ -52,14 +52,21 @@ namespace Ryujinx.Graphics.Vulkan
             _gd = gd;
             _pipeline = pipeline;
 
-            _uniformBuffers = Array.Empty<DescriptorBufferInfo>();
-            _storageBuffers = Array.Empty<DescriptorBufferInfo>();
-            _textures = new DescriptorImageInfo[Constants.MaxTexturesPerStage * Constants.MaxShaderStages];
-            _textureRefs = new Auto<DisposableImageView>[Constants.MaxTexturesPerStage * Constants.MaxShaderStages];
-            _samplerRefs = new Auto<DisposableSampler>[Constants.MaxTexturesPerStage * Constants.MaxShaderStages];
-            _images = Array.Empty<DescriptorImageInfo>();
-            _bufferTextures = Array.Empty<BufferView>();
-            _bufferImages = Array.Empty<BufferView>();
+            _uniformBufferRefs = new Auto<DisposableBuffer>[Constants.MaxUniformBufferBindings];
+            _storageBufferRefs = new Auto<DisposableBuffer>[Constants.MaxStorageBufferBindings];
+            _textureRefs = new Auto<DisposableImageView>[Constants.MaxTextureBindings];
+            _samplerRefs = new Auto<DisposableSampler>[Constants.MaxTextureBindings];
+            _imageRefs = new Auto<DisposableImageView>[Constants.MaxImageBindings];
+            _bufferTextureRefs = new TextureBuffer[Constants.MaxTextureBindings];
+            _bufferImageRefs = new TextureBuffer[Constants.MaxImageBindings];
+            _bufferImageFormats = new GAL.Format[Constants.MaxImageBindings];
+
+            _uniformBuffers = new DescriptorBufferInfo[Constants.MaxUniformBufferBindings];
+            _storageBuffers = new DescriptorBufferInfo[Constants.MaxStorageBufferBindings];
+            _textures = new DescriptorImageInfo[Constants.MaxTextureBindings];
+            _images = new DescriptorImageInfo[Constants.MaxImageBindings];
+            _bufferTextures = new BufferView[Constants.MaxTextureBindings];
+            _bufferImages = new BufferView[Constants.MaxImageBindings];
 
             if (gd.Capabilities.SupportsNullDescriptors)
             {
@@ -120,32 +127,16 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (image is TextureBuffer imageBuffer)
             {
-                if (_bufferImages.Length <= binding)
-                {
-                    Array.Resize(ref _bufferImages, binding + 1);
-                    Array.Resize(ref _bufferImageRefs, binding + 1);
-                    Array.Resize(ref _bufferImageFormats, binding + 1);
-                }
-
                 _bufferImageRefs[binding] = imageBuffer;
                 _bufferImageFormats[binding] = imageFormat;
             }
-            else
+            else if (image is TextureView view)
             {
-                if (_images.Length <= binding)
+                _imageRefs[binding] = view.GetView(imageFormat).GetIdentityImageView();
+                _images[binding] = new DescriptorImageInfo()
                 {
-                    Array.Resize(ref _images, binding + 1);
-                    Array.Resize(ref _imageRefs, binding + 1);
-                }
-
-                if (image is TextureView view)
-                {
-                    _imageRefs[binding] = view.GetView(imageFormat).GetIdentityImageView();
-                    _images[binding] = new DescriptorImageInfo()
-                    {
-                        ImageLayout = ImageLayout.General
-                    };
-                }
+                    ImageLayout = ImageLayout.General
+                };
             }
 
             SignalDirty(DirtyFlags.Image);
@@ -153,12 +144,6 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetStorageBuffers(CommandBuffer commandBuffer, int first, ReadOnlySpan<BufferRange> buffers)
         {
-            if (_storageBuffers.Length < first + buffers.Length)
-            {
-                Array.Resize(ref _storageBuffers, first + buffers.Length);
-                Array.Resize(ref _storageBufferRefs, first + buffers.Length);
-            }
-
             for (int i = 0; i < buffers.Length; i++)
             {
                 var buffer = buffers[i];
@@ -184,23 +169,10 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (texture is TextureBuffer textureBuffer)
             {
-                if (_bufferTextures.Length <= binding)
-                {
-                    Array.Resize(ref _bufferTextures, binding + 1);
-                    Array.Resize(ref _bufferTextureRefs, binding + 1);
-                }
-
                 _bufferTextureRefs[binding] = textureBuffer;
             }
             else
             {
-                if (_textures.Length <= binding)
-                {
-                    Array.Resize(ref _textures, binding + 1);
-                    Array.Resize(ref _textureRefs, binding + 1);
-                    Array.Resize(ref _samplerRefs, binding + 1);
-                }
-
                 TextureView view = (TextureView)texture;
 
                 view.Storage.InsertBarrier(cbs, AccessFlags.AccessShaderReadBit, stage.ConvertToPipelineStageFlags());
@@ -219,12 +191,6 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetUniformBuffers(CommandBuffer commandBuffer, int first, ReadOnlySpan<BufferRange> buffers)
         {
-            if (_uniformBuffers.Length < first + buffers.Length)
-            {
-                Array.Resize(ref _uniformBuffers, first + buffers.Length);
-                Array.Resize(ref _uniformBufferRefs, first + buffers.Length);
-            }
-
             for (int i = 0; i < buffers.Length; i++)
             {
                 var buffer = buffers[i];
@@ -350,13 +316,6 @@ namespace Ryujinx.Graphics.Vulkan
 
                     if (setIndex == PipelineBase.UniformSetIndex)
                     {
-                        count = Math.Min(count, _uniformBuffers.Length - binding);
-
-                        if (count <= 0)
-                        {
-                            break;
-                        }
-
                         for (int i = 0; i < count; i++)
                         {
                             UpdateBuffer(cbs, ref _uniformBuffers[binding + i], _uniformBufferRefs[binding + i], dummyBuffer);
@@ -367,13 +326,6 @@ namespace Ryujinx.Graphics.Vulkan
                     }
                     else if (setIndex == PipelineBase.StorageSetIndex)
                     {
-                        count = Math.Min(count, _storageBuffers.Length - binding);
-
-                        if (count <= 0)
-                        {
-                            break;
-                        }
-
                         for (int i = 0; i < count; i++)
                         {
                             UpdateBuffer(cbs, ref _storageBuffers[binding + i], _storageBufferRefs[binding + i], dummyBuffer);
@@ -384,7 +336,7 @@ namespace Ryujinx.Graphics.Vulkan
                     }
                     else if (setIndex == PipelineBase.TextureSetIndex)
                     {
-                        if ((binding % (Constants.MaxTexturesPerStage * 2)) < Constants.MaxTexturesPerStage || program.HasMinimalLayout)
+                        if (((uint)binding % (Constants.MaxTexturesPerStage * 2)) < Constants.MaxTexturesPerStage || program.HasMinimalLayout)
                         {
                             for (int i = 0; i < count; i++)
                             {
@@ -410,13 +362,6 @@ namespace Ryujinx.Graphics.Vulkan
                         }
                         else
                         {
-                            count = Math.Min(count, _bufferTextures.Length - binding);
-
-                            if (count <= 0)
-                            {
-                                break;
-                            }
-
                             for (int i = 0; i < count; i++)
                             {
                                 _bufferTextures[binding + i] = _bufferTextureRefs[binding + i]?.GetBufferView(cbs) ?? default;
@@ -428,15 +373,8 @@ namespace Ryujinx.Graphics.Vulkan
                     }
                     else if (setIndex == PipelineBase.ImageSetIndex)
                     {
-                        if ((binding % (Constants.MaxImagesPerStage * 2)) < Constants.MaxImagesPerStage || program.HasMinimalLayout)
+                        if (((uint)binding % (Constants.MaxImagesPerStage * 2)) < Constants.MaxImagesPerStage || program.HasMinimalLayout)
                         {
-                            count = Math.Min(count, _images.Length - binding);
-
-                            if (count <= 0)
-                            {
-                                break;
-                            }
-
                             for (int i = 0; i < count; i++)
                             {
                                 _images[binding + i].ImageView = _imageRefs[binding + i]?.Get(cbs).Value ?? default;
@@ -447,13 +385,6 @@ namespace Ryujinx.Graphics.Vulkan
                         }
                         else
                         {
-                            count = Math.Min(count, _bufferImages.Length - binding);
-
-                            if (count <= 0)
-                            {
-                                break;
-                            }
-
                             for (int i = 0; i < count; i++)
                             {
                                 _bufferImages[binding + i] = _bufferImageRefs[binding + i]?.GetBufferView(cbs, _bufferImageFormats[binding + i]) ?? default;
