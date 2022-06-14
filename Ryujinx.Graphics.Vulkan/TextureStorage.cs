@@ -329,7 +329,8 @@ namespace Ryujinx.Graphics.Vulkan
             int dstLayers,
             int dstLevels,
             bool singleSlice,
-            ImageAspectFlags aspectFlags)
+            ImageAspectFlags aspectFlags,
+            bool forFlush)
         {
             bool is3D = Info.Target == Target.Texture3D;
             int width = Info.Width;
@@ -343,7 +344,12 @@ namespace Ryujinx.Graphics.Vulkan
 
             for (int level = 0; level < levels; level++)
             {
-                int mipSize = GetBufferDataLength(Info.GetMipSize(level));
+                int mipSize = Info.GetMipSize(level);
+
+                if (forFlush)
+                {
+                    mipSize = GetBufferDataLength(mipSize);
+                }
 
                 int endOffset = offset + mipSize;
 
