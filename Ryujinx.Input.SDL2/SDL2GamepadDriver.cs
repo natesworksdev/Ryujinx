@@ -79,10 +79,12 @@ namespace Ryujinx.Input.SDL2
                     return;
                 }
 
-                // sometimes a JoyStick connected event fires after the app starts even though it was connected before
-                // so it is rejected to avoid doubling the entries
+                // Sometimes a JoyStick connected event fires after the app starts even though it was connected before
+                // so it is rejected to avoid doubling the entries.
                 if (_gamepadsIds.Contains(id))
+                {
                     return;
+                }
 
                 if (_gamepadsInstanceIdsMapping.TryAdd(joystickInstanceId, id))
                 {
