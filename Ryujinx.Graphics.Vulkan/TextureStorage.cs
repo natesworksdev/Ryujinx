@@ -399,7 +399,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private bool NeedsD24S8Conversion()
         {
-            return Info.Format == GAL.Format.D24UnormS8Uint && VkFormat == VkFormat.D32SfloatS8Uint;
+            return FormatCapabilities.IsD24S8(Info.Format) && VkFormat == VkFormat.D32SfloatS8Uint;
         }
 
         public void SetModification(AccessFlags accessFlags, PipelineStageFlags stage)
