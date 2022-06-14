@@ -178,6 +178,11 @@ namespace Ryujinx.Graphics.Vulkan
             if (disposing)
             {
                 _buffer.Dispose();
+
+                while (_pendingCopies.TryDequeue(out var pc))
+                {
+                    pc.Fence.Put();
+                }
             }
         }
 
