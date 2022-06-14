@@ -45,7 +45,7 @@ namespace Ryujinx.Graphics.Vulkan
             _pendingQueryCopies.Clear();
         }
 
-        public void ClearRenderTargetColor(int index, uint componentMask, ColorF color)
+        public void ClearRenderTargetColor(int index, int layer, uint componentMask, ColorF color)
         {
             if (FramebufferParams == null)
             {
@@ -68,6 +68,7 @@ namespace Ryujinx.Graphics.Vulkan
                 clearColor[2] = color.Blue;
                 clearColor[3] = color.Alpha;
 
+                // TODO: Clear only the specified layer.
                 Gd.HelperShader.Clear(
                     Gd,
                     dstTexture,
@@ -80,7 +81,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
             else
             {
-                ClearRenderTargetColor(index, color);
+                ClearRenderTargetColor(index, layer, color);
             }
         }
 

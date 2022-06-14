@@ -149,14 +149,14 @@ namespace Ryujinx.Graphics.Vulkan
             return texture is TextureView view && view.Valid;
         }
 
-        public ClearRect GetClearRect(Rectangle<int> scissor)
+        public ClearRect GetClearRect(Rectangle<int> scissor, int layer)
         {
             int x = scissor.X;
             int y = scissor.Y;
             int width = Math.Min((int)Width - scissor.X, scissor.Width);
             int height = Math.Min((int)Height - scissor.Y, scissor.Height);
 
-            return new ClearRect(new Rect2D(new Offset2D(x, y), new Extent2D((uint)width, (uint)height)), 0, Layers);
+            return new ClearRect(new Rect2D(new Offset2D(x, y), new Extent2D((uint)width, (uint)height)), (uint)layer, 1);
         }
 
         public unsafe Auto<DisposableFramebuffer> Create(Vk api, CommandBufferScoped cbs, Auto<DisposableRenderPass> renderPass)

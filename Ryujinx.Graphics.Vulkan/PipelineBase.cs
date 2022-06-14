@@ -159,7 +159,7 @@ namespace Ryujinx.Graphics.Vulkan
                 size);
         }
 
-        public unsafe void ClearRenderTargetColor(int index, ColorF color)
+        public unsafe void ClearRenderTargetColor(int index, int layer, ColorF color)
         {
             if (FramebufferParams == null || !FramebufferParams.IsVaidColorAttachment(index))
             {
@@ -175,12 +175,12 @@ namespace Ryujinx.Graphics.Vulkan
 
             var clearValue = new ClearValue(new ClearColorValue(color.Red, color.Green, color.Blue, color.Alpha));
             var attachment = new ClearAttachment(ImageAspectFlags.ImageAspectColorBit, (uint)index, clearValue);
-            var clearRect = FramebufferParams?.GetClearRect(ClearScissor) ?? default;
+            var clearRect = FramebufferParams?.GetClearRect(ClearScissor, layer) ?? default;
 
             Gd.Api.CmdClearAttachments(CommandBuffer, 1, &attachment, 1, &clearRect);
         }
 
-        public unsafe void ClearRenderTargetDepthStencil(float depthValue, bool depthMask, int stencilValue, int stencilMask)
+        public unsafe void ClearRenderTargetDepthStencil(int layer, float depthValue, bool depthMask, int stencilValue, int stencilMask)
         {
             // TODO: Use stencilMask (fully)
 
@@ -205,7 +205,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             var attachment = new ClearAttachment(flags, 0, clearValue);
-            var clearRect = FramebufferParams?.GetClearRect(ClearScissor) ?? default;
+            var clearRect = FramebufferParams?.GetClearRect(ClearScissor, layer) ?? default;
 
             Gd.Api.CmdClearAttachments(CommandBuffer, 1, &attachment, 1, &clearRect);
         }
