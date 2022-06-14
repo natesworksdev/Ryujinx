@@ -592,7 +592,8 @@ namespace Ryujinx.Graphics.Vulkan
                     1,
                     levels,
                     true,
-                    aspectFlags);
+                    aspectFlags,
+                    false);
 
                 BufferHolder.InsertBufferBarrier(
                     gd,
@@ -618,7 +619,8 @@ namespace Ryujinx.Graphics.Vulkan
                     1,
                     levels,
                     true,
-                    aspectFlags);
+                    aspectFlags,
+                    false);
 
                 InsertImageBarrier(
                     gd.Api,
@@ -680,7 +682,8 @@ namespace Ryujinx.Graphics.Vulkan
                     1,
                     levels,
                     true,
-                    aspectFlags);
+                    aspectFlags,
+                    false);
 
                 BufferHolder.InsertBufferBarrier(
                     gd,
@@ -706,7 +709,8 @@ namespace Ryujinx.Graphics.Vulkan
                     1,
                     levels,
                     true,
-                    aspectFlags);
+                    aspectFlags,
+                    false);
             }
 
             SlowBlit(d32SrcStorage, d32DstStorage, ImageAspectFlags.ImageAspectDepthBit);
