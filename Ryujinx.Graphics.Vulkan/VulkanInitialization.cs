@@ -280,7 +280,7 @@ namespace Ryujinx.Graphics.Vulkan
             return devices;
         }
 
-        private static string StringFromIdPair(uint vendorId, uint deviceId)
+        public static string StringFromIdPair(uint vendorId, uint deviceId)
         {
             return $"0x{vendorId:X}_0x{deviceId:X}";
         }

@@ -36,7 +36,7 @@ namespace Ryujinx.Ava.Ui.Vulkan
         public Version ApiVersion { get; }
 
         internal static unsafe VulkanPhysicalDevice FindSuitablePhysicalDevice(VulkanInstance instance,
-            VulkanSurface surface, bool preferDiscreteGpu, uint? preferredDevice)
+            VulkanSurface surface, bool preferDiscreteGpu, string preferredDevice)
         {
             uint physicalDeviceCount;
 
@@ -58,9 +58,9 @@ namespace Ryujinx.Ava.Ui.Vulkan
                 physicalDeviceProperties.Add(physicalDevice, properties);
             }
 
-            if (preferredDevice.HasValue && preferredDevice != 0)
+            if (!string.IsNullOrWhiteSpace(preferredDevice))
             {
-                var physicalDevice = physicalDeviceProperties.FirstOrDefault(x => x.Value.DeviceID == preferredDevice);
+                var physicalDevice = physicalDeviceProperties.FirstOrDefault(x => VulkanInitialization.StringFromIdPair(x.Value.VendorID, x.Value.DeviceID) == preferredDevice);
                 if (physicalDevice.Key.Handle != 0 && IsSuitableDevice(instance.Api, physicalDevice.Key,
                     physicalDevice.Value, surface.ApiHandle, out var queueCount,
                     out var queueFamilyIndex))
