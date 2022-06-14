@@ -69,11 +69,10 @@ namespace Ryujinx.Graphics.Vulkan
                 requiredFeatures |= FormatFeatureFlags.FormatFeatureStorageImageBit;
             }
 
-            if (!FormatSupports(requiredFeatures, srcFormat) ||
-                (srcFormat == GAL.Format.D24UnormS8Uint && VulkanConfiguration.ForceD24S8Unsupported))
+            if (!FormatSupports(requiredFeatures, srcFormat) || (IsD24S8(srcFormat) && VulkanConfiguration.ForceD24S8Unsupported))
             {
                 // The format is not supported. Can we convert it to a higher precision format?
-                if (srcFormat == GAL.Format.D24UnormS8Uint)
+                if (IsD24S8(srcFormat))
                 {
                     format = VkFormat.D32SfloatS8Uint;
                 }
@@ -84,6 +83,11 @@ namespace Ryujinx.Graphics.Vulkan
             }
 
             return format;
+        }
+
+        public static bool IsD24S8(GAL.Format format)
+        {
+            return format == GAL.Format.D24UnormS8Uint || format == GAL.Format.S8UintD24Unorm;
         }
     }
 }
