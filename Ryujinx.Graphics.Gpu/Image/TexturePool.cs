@@ -114,7 +114,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Gets the texture descripor and texture with the given ID.
+        /// Gets the texture descriptor and texture with the given ID.
         /// </summary>
         /// <remarks>
         /// This method assumes that the pool has been manually synchronized before doing binding.

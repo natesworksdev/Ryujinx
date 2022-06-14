@@ -53,6 +53,9 @@ namespace Ryujinx.Graphics.Gpu.Image
         private int[] _textureBindingsCount;
         private int[] _imageBindingsCount;
 
+        private int _texturePoolSequence;
+        private int _samplerPoolSequence;
+
         private int _textureBufferIndex;
 
         private readonly float[] _scales;
@@ -324,9 +327,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
         }
 
-        private int _texturePoolSequence;
-        private int _samplerPoolSequence;
-
         /// <summary>
         /// Ensures that the bindings are visible to the host GPU.
         /// Note: this actually performs the binding using the host graphics API.
@@ -424,7 +424,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
             }
 
-            if (cachedSamplerBufferIndex != samplerBufferIndex)
+            if (samplerBufferIndex != cachedSamplerBufferIndex)
             {
                 ref BufferBounds bounds = ref _channel.BufferManager.GetUniformBufferBounds(_isCompute, stageIndex, samplerBufferIndex);
 
@@ -719,8 +719,8 @@ namespace Ryujinx.Graphics.Gpu.Image
             (int textureWordOffset, int samplerWordOffset, TextureHandleType handleType) = TextureHandle.UnpackOffsets(wordOffset);
 
             ulong textureBufferAddress = _isCompute
-                    ? _channel.BufferManager.GetComputeUniformBufferAddress(textureBufferIndex)
-                    : _channel.BufferManager.GetGraphicsUniformBufferAddress(stageIndex, textureBufferIndex);
+                ? _channel.BufferManager.GetComputeUniformBufferAddress(textureBufferIndex)
+                : _channel.BufferManager.GetGraphicsUniformBufferAddress(stageIndex, textureBufferIndex);
 
             int handle = _channel.MemoryManager.Physical.Read<int>(textureBufferAddress + (uint)textureWordOffset * 4);
 
@@ -733,8 +733,8 @@ namespace Ryujinx.Graphics.Gpu.Image
             if (handleType != TextureHandleType.CombinedSampler)
             {
                 ulong samplerBufferAddress = _isCompute
-                ? _channel.BufferManager.GetComputeUniformBufferAddress(samplerBufferIndex)
-                : _channel.BufferManager.GetGraphicsUniformBufferAddress(stageIndex, samplerBufferIndex);
+                    ? _channel.BufferManager.GetComputeUniformBufferAddress(samplerBufferIndex)
+                    : _channel.BufferManager.GetGraphicsUniformBufferAddress(stageIndex, samplerBufferIndex);
 
                 int samplerHandle = _channel.MemoryManager.Physical.Read<int>(samplerBufferAddress + (uint)samplerWordOffset * 4);
 

@@ -202,6 +202,10 @@ namespace Ryujinx.Graphics.Gpu.Shader
             }
         }
 
+        /// <summary>
+        /// Prepare the shader specialization state for quick binding lookups.
+        /// </summary>
+        /// <param name="stages">The shader stages</param>
         public void Prepare(CachedShaderStage[] stages)
         {
             _allTextures = _textureSpecialization.ToArray();
@@ -508,7 +512,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 }
             }
 
-            if (stageChange || cachedSamplerBufferIndex != samplerBufferIndex)
+            if (stageChange || samplerBufferIndex != cachedSamplerBufferIndex)
             {
                 ref BufferBounds bounds = ref channel.BufferManager.GetUniformBufferBounds(isCompute, stageIndex, samplerBufferIndex);
 

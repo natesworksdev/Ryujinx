@@ -379,7 +379,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
-        /// Gets the bounds of the compute uniform buffer currently bound at the given index.
+        /// Gets the bounds of the uniform buffer currently bound at the given index.
         /// </summary>
         /// <param name="isCompute">Indicates whenever the uniform is requested by the 3D or compute engine</param>
         /// <param name="stage">Index of the shader stage, if the uniform is for the 3D engine</param>

@@ -48,6 +48,8 @@ namespace Ryujinx.Graphics.Gpu.Image
                             Items[i] = null;
                         }
                     }
+
+                    UpdateModifiedSequence();
                 }
 
                 SequenceNumber = Context.SequenceNumber;
