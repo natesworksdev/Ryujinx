@@ -38,7 +38,7 @@ namespace Ryujinx.Ava.Ui.Vulkan
         /// <summary>
         /// Sets the device to use if available and suitable.
         /// </summary>
-        public uint? PreferredDevice { get; set; }
+        public string PreferredDevice { get; set; }
         
         /// <summary>
         /// Max number of device queues to request

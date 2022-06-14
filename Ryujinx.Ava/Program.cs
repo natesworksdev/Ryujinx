@@ -97,6 +97,7 @@ namespace Ryujinx.Ava
                     VulkanVersion = new Version(1, 2),
                     MaxQueueCount = 2,
                     PreferDiscreteGpu = true,
+                    PreferredDevice = !PreviewerDetached ? "" : ConfigurationState.Instance.Graphics.PreferredGpu.Value,
                     UseDebug = !PreviewerDetached ? false : ConfigurationState.Instance.Logger.GraphicsDebugLevel.Value != GraphicsDebugLevel.None,
                 })
                 .With(new SkiaOptions()
