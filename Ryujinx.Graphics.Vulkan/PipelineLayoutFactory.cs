@@ -12,7 +12,7 @@ namespace Ryujinx.Graphics.Vulkan
             ShaderStageFlags.ShaderStageFragmentBit |
             ShaderStageFlags.ShaderStageComputeBit;
 
-        public static unsafe DescriptorSetLayout[] Create(VulkanGraphicsDevice gd, Device device, uint stages, out PipelineLayout layout)
+        public static unsafe DescriptorSetLayout[] Create(VulkanGraphicsDevice gd, Device device, uint stages, bool usePd, out PipelineLayout layout)
         {
             int stagesCount = BitOperations.PopCount(stages);
 
@@ -92,7 +92,8 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 SType = StructureType.DescriptorSetLayoutCreateInfo,
                 PBindings = uLayoutBindings,
-                BindingCount = (uint)uCount
+                BindingCount = (uint)uCount,
+                Flags = usePd ? DescriptorSetLayoutCreateFlags.DescriptorSetLayoutCreatePushDescriptorBitKhr : 0
             };
 
             var sDescriptorSetLayoutCreateInfo = new DescriptorSetLayoutCreateInfo()
