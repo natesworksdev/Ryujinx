@@ -188,8 +188,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
             _channel.BufferManager.SetComputeStorageBufferBindings(info.SBuffers);
             _channel.BufferManager.SetComputeUniformBufferBindings(info.CBuffers);
 
-            int maxTextureBinding = 0;
-            int maxImageBinding = 0;
+            int maxTextureBinding = -1;
+            int maxImageBinding = -1;
 
             TextureBindingInfo[] textureBindings = _channel.TextureManager.RentComputeTextureBindings(info.Textures.Count);
 

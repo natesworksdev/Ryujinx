@@ -1153,8 +1153,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 return;
             }
 
-            int maxTextureBinding = 0;
-            int maxImageBinding = 0;
+            int maxTextureBinding = -1;
+            int maxImageBinding = -1;
 
             Span<TextureBindingInfo> textureBindings = _channel.TextureManager.RentGraphicsTextureBindings(stage, info.Textures.Count);
 

@@ -15,7 +15,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// </summary>
     class TextureBindingsManager : IDisposable
     {
-        private const int InitialTextureStateSize = 32; // Should match binding range for host.
+        private const int InitialTextureStateSize = 32;
         private const int InitialImageStateSize = 8;
 
         private readonly GpuContext _context;
@@ -484,7 +484,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
                 else
                 {
-                    samplerId = UnpackSamplerId(packedId);
+                    samplerId = TextureHandle.UnpackSamplerId(packedId);
                 }
 
                 ref TextureStatePerStage state = ref _textureState[bindingInfo.Binding];
@@ -747,16 +747,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
 
             return handle;
-        }
-
-        /// <summary>
-        /// Unpacks the sampler ID from the real texture handle.
-        /// </summary>
-        /// <param name="packedId">The real texture handle</param>
-        /// <returns>The sampler ID</returns>
-        private static int UnpackSamplerId(int packedId)
-        {
-            return (packedId >> 20) & 0xfff;
         }
 
         /// <summary>

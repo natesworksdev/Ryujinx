@@ -216,7 +216,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             for (int i = 0; i < stages.Length; i++)
             {
                 CachedShaderStage stage = stages[i];
-                if (stage != null && stage.Info != null)
+                if (stage?.Info != null)
                 {
                     var textures = stage.Info.Textures;
                     var images = stage.Info.Images;
@@ -600,7 +600,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <param name="specializationState">Texture specialization state</param>
         /// <param name="descriptor">Texture descriptor</param>
         /// <returns>True if the state matches, false otherwise</returns>
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool MatchesTexture(Box<TextureSpecializationState> specializationState, in Image.TextureDescriptor descriptor)
         {

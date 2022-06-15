@@ -52,10 +52,26 @@ namespace Ryujinx.Graphics.Shader
             return (handle & 0x3fff, (handle >> 14) & 0x3fff, (TextureHandleType)((uint)handle >> 28));
         }
 
+        /// <summary>
+        /// Unpacks the texture ID from the real texture handle.
+        /// </summary>
+        /// <param name="packedId">The real texture handle</param>
+        /// <returns>The texture ID</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int UnpackTextureId(int packedId)
         {
             return (packedId >> 0) & 0xfffff;
+        }
+
+        /// <summary>
+        /// Unpacks the sampler ID from the real texture handle.
+        /// </summary>
+        /// <param name="packedId">The real texture handle</param>
+        /// <returns>The sampler ID</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int UnpackSamplerId(int packedId)
+        {
+            return (packedId >> 20) & 0xfff;
         }
 
         /// <summary>

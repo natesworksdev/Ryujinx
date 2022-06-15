@@ -39,7 +39,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="id">ID of the texture. This is effectively a zero-based index</param>
         /// <param name="texture">The texture with the given ID</param>
         /// <returns>The texture descriptor with the given ID</returns>
-        public ref readonly TextureDescriptor GetInternal(int id, out Texture texture)
+        private ref readonly TextureDescriptor GetInternal(int id, out Texture texture)
         {
             texture = Items[id];
 

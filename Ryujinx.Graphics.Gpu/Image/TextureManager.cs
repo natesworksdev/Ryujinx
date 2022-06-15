@@ -361,7 +361,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Commits bindings on the compute pipeline.
         /// </summary>
         /// <param name="specState">Specialization state for the bound shader</param>
-        /// <returns>True if all bound textures match the current shader specialiation state, false otherwise</returns>
+        /// <returns>True if all bound textures match the current shader specialization state, false otherwise</returns>
         public bool CommitComputeBindings(ShaderSpecializationState specState)
         {
             // Every time we switch between graphics and compute work,
@@ -379,7 +379,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Commits bindings on the graphics pipeline.
         /// </summary>
         /// <param name="specState">Specialization state for the bound shader</param>
-        /// <returns>True if all bound textures match the current shader specialiation state, false otherwise</returns>
+        /// <returns>True if all bound textures match the current shader specialization state, false otherwise</returns>
         public bool CommitGraphicsBindings(ShaderSpecializationState specState)
         {
             bool result = _gpBindingsManager.CommitBindings(specState);
