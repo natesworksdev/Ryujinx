@@ -22,11 +22,11 @@ namespace Ryujinx.Graphics.Vulkan
             return plce;
         }
 
-        public PipelineLayoutCacheEntry GetOrCreate(VulkanGraphicsDevice gd, Device device, uint stages)
+        public PipelineLayoutCacheEntry GetOrCreate(VulkanGraphicsDevice gd, Device device, uint stages, bool usePd)
         {
             if (_plce[stages] == null)
             {
-                _plce[stages] = new PipelineLayoutCacheEntry(gd, device, stages);
+                _plce[stages] = new PipelineLayoutCacheEntry(gd, device, stages, usePd);
             }
 
             return _plce[stages];

@@ -223,22 +223,29 @@ namespace Ryujinx.Graphics.Vulkan
 
             if (_dirty.HasFlag(DirtyFlags.Uniform))
             {
-                UpdateAndBind(cbs, PipelineBase.UniformSetIndex, DirtyFlags.Uniform, pbp);
+                if (_program.UsePushDescriptors)
+                {
+                    UpdateAndBindUniformBufferPd(cbs, pbp);
+                }
+                else
+                {
+                    UpdateAndBind(cbs, PipelineBase.UniformSetIndex, pbp);
+                }
             }
 
             if (_dirty.HasFlag(DirtyFlags.Storage))
             {
-                UpdateAndBind(cbs, PipelineBase.StorageSetIndex, DirtyFlags.Storage, pbp);
+                UpdateAndBind(cbs, PipelineBase.StorageSetIndex, pbp);
             }
 
             if (_dirty.HasFlag(DirtyFlags.Texture))
             {
-                UpdateAndBind(cbs, PipelineBase.TextureSetIndex, DirtyFlags.Texture, pbp);
+                UpdateAndBind(cbs, PipelineBase.TextureSetIndex, pbp);
             }
 
             if (_dirty.HasFlag(DirtyFlags.Image))
             {
-                UpdateAndBind(cbs, PipelineBase.ImageSetIndex, DirtyFlags.Image, pbp);
+                UpdateAndBind(cbs, PipelineBase.ImageSetIndex, pbp);
             }
 
             _dirty = DirtyFlags.None;
@@ -263,7 +270,7 @@ namespace Ryujinx.Graphics.Vulkan
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void UpdateAndBind(CommandBufferScoped cbs, int setIndex, DirtyFlags flag, PipelineBindPoint pbp)
+        private void UpdateAndBind(CommandBufferScoped cbs, int setIndex, PipelineBindPoint pbp)
         {
             var program = _program;
             int stagesCount = program.Bindings[setIndex].Length;
@@ -400,6 +407,77 @@ namespace Ryujinx.Graphics.Vulkan
             var sets = dsc.GetSets();
 
             _gd.Api.CmdBindDescriptorSets(cbs.CommandBuffer, pbp, _program.PipelineLayout, (uint)setIndex, 1, sets, 0, ReadOnlySpan<uint>.Empty);
+        }
+
+        private unsafe void UpdateBuffers(
+            CommandBufferScoped cbs,
+            PipelineBindPoint pbp,
+            int baseBinding,
+            ReadOnlySpan<DescriptorBufferInfo> bufferInfo,
+            DescriptorType type)
+        {
+            if (bufferInfo.Length == 0)
+            {
+                return;
+            }
+
+            fixed (DescriptorBufferInfo* pBufferInfo = bufferInfo)
+            {
+                var writeDescriptorSet = new WriteDescriptorSet
+                {
+                    SType = StructureType.WriteDescriptorSet,
+                    DstBinding = (uint)baseBinding,
+                    DescriptorType = type,
+                    DescriptorCount = (uint)bufferInfo.Length,
+                    PBufferInfo = pBufferInfo
+                };
+
+                _gd.PushDescriptorApi.CmdPushDescriptorSet(cbs.CommandBuffer, pbp, _program.PipelineLayout, 0, 1, &writeDescriptorSet);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void UpdateAndBindUniformBufferPd(CommandBufferScoped cbs, PipelineBindPoint pbp)
+        {
+            var dummyBuffer = _dummyBuffer?.GetBuffer();
+            int stagesCount = _program.Bindings[PipelineBase.UniformSetIndex].Length;
+
+            Span<DescriptorBufferInfo> uniformBuffer = stackalloc DescriptorBufferInfo[1];
+
+            uniformBuffer[0] = new DescriptorBufferInfo()
+            {
+                Offset = 0,
+                Range = (ulong)SupportBuffer.RequiredSize,
+                Buffer = _gd.BufferManager.GetBuffer(cbs.CommandBuffer, _pipeline.SupportBufferUpdater.Handle, false).Get(cbs, 0, SupportBuffer.RequiredSize).Value
+            };
+
+            UpdateBuffers(cbs, pbp, 0, uniformBuffer, DescriptorType.UniformBuffer);
+
+            for (int stageIndex = 0; stageIndex < stagesCount; stageIndex++)
+            {
+                var stageBindings = _program.Bindings[PipelineBase.UniformSetIndex][stageIndex];
+                int bindingsCount = stageBindings.Length;
+                int count;
+
+                for (int bindingIndex = 0; bindingIndex < bindingsCount; bindingIndex += count)
+                {
+                    int binding = stageBindings[bindingIndex];
+                    count = 1;
+
+                    while (bindingIndex + count < bindingsCount && stageBindings[bindingIndex + count] == binding + count)
+                    {
+                        count++;
+                    }
+
+                    for (int i = 0; i < count; i++)
+                    {
+                        UpdateBuffer(cbs, ref _uniformBuffers[binding + i], _uniformBufferRefs[binding + i], dummyBuffer);
+                    }
+
+                    ReadOnlySpan<DescriptorBufferInfo> uniformBuffers = _uniformBuffers;
+                    UpdateBuffers(cbs, pbp, binding, uniformBuffers.Slice(binding, count), DescriptorType.UniformBuffer);
+                }
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
