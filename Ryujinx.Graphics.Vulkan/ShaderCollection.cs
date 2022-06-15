@@ -18,6 +18,7 @@ namespace Ryujinx.Graphics.Vulkan
         public PipelineLayout PipelineLayout => _plce.PipelineLayout;
 
         public bool HasMinimalLayout { get; }
+        public bool UsePushDescriptors { get; }
 
         public uint Stages { get; }
 
@@ -89,11 +90,14 @@ namespace Ryujinx.Graphics.Vulkan
 
             _shaders = internalShaders;
 
+            bool usePd = !isMinimal && VulkanConfiguration.UsePushDescriptors;
+
             _plce = isMinimal
                 ? gd.PipelineLayoutCache.Create(gd, device, shaders)
-                : gd.PipelineLayoutCache.GetOrCreate(gd, device, stages);
+                : gd.PipelineLayoutCache.GetOrCreate(gd, device, stages, usePd);
 
             HasMinimalLayout = isMinimal;
+            UsePushDescriptors = usePd;
 
             Stages = stages;
 
