@@ -8,6 +8,7 @@ namespace Ryujinx.Graphics.Vulkan
         public readonly bool SupportsExtendedDynamicState;
         public readonly bool SupportsMultiView;
         public readonly bool SupportsNullDescriptors;
+        public readonly bool SupportsPushDescriptors;
         public readonly bool SupportsTransformFeedback;
         public readonly bool SupportsTransformFeedbackQueries;
         public readonly bool SupportsGeometryShader;
@@ -20,6 +21,7 @@ namespace Ryujinx.Graphics.Vulkan
             bool supportsExtendedDynamicState,
             bool supportsMultiView,
             bool supportsNullDescriptors,
+            bool supportsPushDescriptors,
             bool supportsTransformFeedback,
             bool supportsTransformFeedbackQueries,
             bool supportsGeometryShader,
@@ -31,6 +33,7 @@ namespace Ryujinx.Graphics.Vulkan
             SupportsExtendedDynamicState = supportsExtendedDynamicState;
             SupportsMultiView = supportsMultiView;
             SupportsNullDescriptors = supportsNullDescriptors;
+            SupportsPushDescriptors = supportsPushDescriptors;
             SupportsTransformFeedback = supportsTransformFeedback;
             SupportsTransformFeedbackQueries = supportsTransformFeedbackQueries;
             SupportsGeometryShader = supportsGeometryShader;

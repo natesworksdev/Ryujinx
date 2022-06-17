@@ -212,6 +212,7 @@ namespace Ryujinx.Graphics.Vulkan
                 supportedExtensions.Contains(ExtExtendedDynamicState.ExtensionName),
                 features2.Features.MultiViewport,
                 featuresRobustness2.NullDescriptor,
+                supportedExtensions.Contains(KhrPushDescriptor.ExtensionName),
                 supportsTransformFeedback,
                 propertiesTransformFeedback.TransformFeedbackQueries,
                 supportedFeatures.GeometryShader,
