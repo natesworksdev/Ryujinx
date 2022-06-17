@@ -484,7 +484,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <param name="samplerBufferIndex">The new sampler buffer index</param>
         /// <param name="stageIndex">Stage index of the constant buffer</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void UpdateCachedBuffer(
+        private static void UpdateCachedBuffer(
             GpuChannel channel,
             bool isCompute,
             ref int cachedTextureBufferIndex,
