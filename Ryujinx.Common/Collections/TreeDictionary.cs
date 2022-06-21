@@ -10,7 +10,7 @@ namespace Ryujinx.Common.Collections
     /// </summary>
     /// <typeparam name="K">Key</typeparam>
     /// <typeparam name="V">Value</typeparam>
-    public class TreeDictionary<K, V> : IntrusiveRedBlackTree<Node<K, V>>, IDictionary<K, V> where K : IComparable<K>
+    public class TreeDictionary<K, V> : IntrusiveRedBlackTreeImpl<Node<K, V>>, IDictionary<K, V> where K : IComparable<K>
     {
         #region Public Methods
 
@@ -158,9 +158,8 @@ namespace Ryujinx.Common.Collections
             {
                 nodes.Enqueue(this.Root);
             }
-            while (nodes.Count > 0)
+            while (nodes.TryDequeue(out Node<K, V> node))
             {
-                Node<K, V> node = nodes.Dequeue();
                 list.Add(new KeyValuePair<K, V>(node.Key, node.Value));
                 if (node.Left != null)
                 {
@@ -610,9 +609,8 @@ namespace Ryujinx.Common.Collections
                 queue.Enqueue(Root);
             }
 
-            while (queue.Count > 0)
+            while (queue.TryDequeue(out Node<K, V> node))
             {
-                Node<K, V> node = queue.Dequeue();
                 set.Add(node.Key, node.Value);
                 if (null != node.Left)
                 {
@@ -635,21 +633,16 @@ namespace Ryujinx.Common.Collections
     /// </summary>
     /// <typeparam name="K">Key of the node</typeparam>
     /// <typeparam name="V">Value of the node</typeparam>
-    public class Node<K, V> : IntrusiveRedBlackTreeNode<Node<K, V>>, IComparable<Node<K, V>> where K : IComparable<K>
+    public class Node<K, V> : IntrusiveRedBlackTreeNode<Node<K, V>> where K : IComparable<K>
     {
-        public K Key;
-        public V Value;
+        internal K Key;
+        internal V Value;
 
-        public Node(K key, V value, Node<K, V> parent)
+        internal Node(K key, V value, Node<K, V> parent)
         {
             Key = key;
             Value = value;
             Parent = parent;
-        }
-
-        public int CompareTo(Node<K, V> other)
-        {
-            return Key.CompareTo(other.Key);
         }
     }
 }
