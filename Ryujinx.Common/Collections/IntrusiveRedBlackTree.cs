@@ -8,15 +8,14 @@ namespace Ryujinx.Common.Collections
     /// <typeparam name="T">Derived node type</typeparam>
     public class IntrusiveRedBlackTree<T> where T : IntrusiveRedBlackTreeNode<T>, IComparable<T>
     {
-        private const bool Black = true;
-        private const bool Red = false;
-        private T _root = null;
-        private int _count = 0;
+        protected const bool Black = true;
+        protected const bool Red = false;
+        protected T Root = null;
 
         /// <summary>
         /// Number of nodes on the tree.
         /// </summary>
-        public int Count => _count;
+        public int Count { get; protected set; }
 
         #region Public Methods
 
@@ -48,7 +47,7 @@ namespace Ryujinx.Common.Collections
             }
             if (Delete(node) != null)
             {
-                _count--;
+                Count--;
             }
         }
 
@@ -65,7 +64,7 @@ namespace Ryujinx.Common.Collections
                 throw new ArgumentNullException(nameof(searchNode));
             }
 
-            T node = _root;
+            T node = Root;
             while (node != null)
             {
                 int cmp = searchNode.CompareTo(node);
@@ -83,6 +82,46 @@ namespace Ryujinx.Common.Collections
                 }
             }
             return null;
+        }
+
+        /// <summary>
+        /// Finds the node whose key is immediately greater than <paramref name="node"/>.
+        /// </summary>
+        /// <param name="node">Node to find the successor of</param>
+        /// <returns>Successor of <paramref name="node"/></returns>
+        public static T SuccessorOf(T node)
+        {
+            if (node.Right != null)
+            {
+                return Minimum(node.Right);
+            }
+            T parent = node.Parent;
+            while (parent != null && node == parent.Right)
+            {
+                node = parent;
+                parent = parent.Parent;
+            }
+            return parent;
+        }
+
+        /// <summary>
+        /// Finds the node whose key is immediately less than <paramref name="node"/>.
+        /// </summary>
+        /// <param name="node">Node to find the predecessor of</param>
+        /// <returns>Predecessor of <paramref name="node"/></returns>
+        public static T PredecessorOf(T node)
+        {
+            if (node.Left != null)
+            {
+                return Maximum(node.Left);
+            }
+            T parent = node.Parent;
+            while (parent != null && node == parent.Left)
+            {
+                node = parent;
+                parent = parent.Parent;
+            }
+            return parent;
         }
 
         #endregion
@@ -111,7 +150,7 @@ namespace Ryujinx.Common.Collections
         private T BSTInsert(T newNode)
         {
             T parent = null;
-            T node = _root;
+            T node = Root;
 
             while (node != null)
             {
@@ -133,7 +172,7 @@ namespace Ryujinx.Common.Collections
             newNode.Parent = parent;
             if (parent == null)
             {
-                _root = newNode;
+                Root = newNode;
             }
             else if (newNode.CompareTo(parent) < 0)
             {
@@ -143,7 +182,7 @@ namespace Ryujinx.Common.Collections
             {
                 parent.Right = newNode;
             }
-            _count++;
+            Count++;
             return newNode;
         }
 
@@ -187,7 +226,7 @@ namespace Ryujinx.Common.Collections
 
                 if (parent == null)
                 {
-                    _root = child;
+                    Root = child;
                 }
                 else if (element == LeftOf(parent))
                 {
@@ -210,7 +249,7 @@ namespace Ryujinx.Common.Collections
 
                 if (ParentOf(old) == null)
                 {
-                    _root = element;
+                    Root = element;
                 }
                 else if (old == LeftOf(ParentOf(old)))
                 {
@@ -246,7 +285,7 @@ namespace Ryujinx.Common.Collections
 
             if (parent == null)
             {
-                _root = child;
+                Root = child;
             }
             else if (nodeToDelete == LeftOf(parent))
             {
@@ -314,7 +353,7 @@ namespace Ryujinx.Common.Collections
             {
                 throw new ArgumentNullException(nameof(node));
             }
-            T tmp = _root;
+            T tmp = Root;
 
             while (tmp != null)
             {
@@ -368,7 +407,7 @@ namespace Ryujinx.Common.Collections
             {
                 throw new ArgumentNullException(nameof(node));
             }
-            T tmp = _root;
+            T tmp = Root;
 
             while (tmp != null)
             {
@@ -410,55 +449,15 @@ namespace Ryujinx.Common.Collections
             return null;
         }
 
-        /// <summary>
-        /// Finds the node whose key is immediately greater than <paramref name="node"/>.
-        /// </summary>
-        /// <param name="node">Node to find the successor of</param>
-        /// <returns>Successor of <paramref name="node"/></returns>
-        public static T SuccessorOf(T node)
-        {
-            if (node.Right != null)
-            {
-                return Minimum(node.Right);
-            }
-            T parent = node.Parent;
-            while (parent != null && node == parent.Right)
-            {
-                node = parent;
-                parent = parent.Parent;
-            }
-            return parent;
-        }
-
-        /// <summary>
-        /// Finds the node whose key is immediately less than <paramref name="node"/>.
-        /// </summary>
-        /// <param name="node">Node to find the predecessor of</param>
-        /// <returns>Predecessor of <paramref name="node"/></returns>
-        public static T PredecessorOf(T node)
-        {
-            if (node.Left != null)
-            {
-                return Maximum(node.Left);
-            }
-            T parent = node.Parent;
-            while (parent != null && node == parent.Left)
-            {
-                node = parent;
-                parent = parent.Parent;
-            }
-            return parent;
-        }
-
         #endregion
 
-        #region Private Methods (RBL)
+        #region Internal Methods (RBL)
 
-        private void RestoreBalanceAfterRemoval(T balanceNode)
+        internal void RestoreBalanceAfterRemoval(T balanceNode)
         {
             T ptr = balanceNode;
 
-            while (ptr != _root && ColorOf(ptr) == Black)
+            while (ptr != Root && ColorOf(ptr) == Black)
             {
                 if (ptr == LeftOf(ParentOf(ptr)))
                 {
@@ -489,7 +488,7 @@ namespace Ryujinx.Common.Collections
                         SetColor(ParentOf(ptr), Black);
                         SetColor(RightOf(sibling), Black);
                         RotateLeft(ParentOf(ptr));
-                        ptr = _root;
+                        ptr = Root;
                     }
                 }
                 else
@@ -521,17 +520,17 @@ namespace Ryujinx.Common.Collections
                         SetColor(ParentOf(ptr), Black);
                         SetColor(LeftOf(sibling), Black);
                         RotateRight(ParentOf(ptr));
-                        ptr = _root;
+                        ptr = Root;
                     }
                 }
             }
             SetColor(ptr, Black);
         }
 
-        private void RestoreBalanceAfterInsertion(T balanceNode)
+        internal void RestoreBalanceAfterInsertion(T balanceNode)
         {
             SetColor(balanceNode, Red);
-            while (balanceNode != null && balanceNode != _root && ColorOf(ParentOf(balanceNode)) == Red)
+            while (balanceNode != null && balanceNode != Root && ColorOf(ParentOf(balanceNode)) == Red)
             {
                 if (ParentOf(balanceNode) == LeftOf(ParentOf(ParentOf(balanceNode))))
                 {
@@ -580,10 +579,10 @@ namespace Ryujinx.Common.Collections
                     }
                 }
             }
-            SetColor(_root, Black);
+            SetColor(Root, Black);
         }
 
-        private void RotateLeft(T node)
+        internal void RotateLeft(T node)
         {
             if (node != null)
             {
@@ -596,7 +595,7 @@ namespace Ryujinx.Common.Collections
                 right.Parent = ParentOf(node);
                 if (ParentOf(node) == null)
                 {
-                    _root = right;
+                    Root = right;
                 }
                 else if (node == LeftOf(ParentOf(node)))
                 {
@@ -611,7 +610,7 @@ namespace Ryujinx.Common.Collections
             }
         }
 
-        private void RotateRight(T node)
+        internal void RotateRight(T node)
         {
             if (node != null)
             {
@@ -624,7 +623,7 @@ namespace Ryujinx.Common.Collections
                 left.Parent = node.Parent;
                 if (ParentOf(node) == null)
                 {
-                    _root = left;
+                    Root = left;
                 }
                 else if (node == RightOf(ParentOf(node)))
                 {
@@ -650,7 +649,7 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="node">Node</param>
         /// <returns>The boolean color of <paramref name="node"/>, or black if null</returns>
-        private static bool ColorOf(T node)
+        internal static bool ColorOf(T node)
         {
             return node == null || node.Color;
         }
@@ -662,7 +661,7 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="node">Node to set the color of</param>
         /// <param name="color">Color (Boolean)</param>
-        private static void SetColor(T node, bool color)
+        internal static void SetColor(T node, bool color)
         {
             if (node != null)
             {
@@ -675,7 +674,7 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="node">Node to retrieve the left child from</param>
         /// <returns>Left child of <paramref name="node"/></returns>
-        private static T LeftOf(T node)
+        internal static T LeftOf(T node)
         {
             return node?.Left;
         }
@@ -685,7 +684,7 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="node">Node to retrieve the right child from</param>
         /// <returns>Right child of <paramref name="node"/></returns>
-        private static T RightOf(T node)
+        internal static T RightOf(T node)
         {
             return node?.Right;
         }
@@ -695,7 +694,7 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="node">Node to retrieve the parent from</param>
         /// <returns>Parent of <paramref name="node"/></returns>
-        private static T ParentOf(T node)
+        internal static T ParentOf(T node)
         {
             return node?.Parent;
         }
