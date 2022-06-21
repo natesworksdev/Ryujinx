@@ -10,12 +10,21 @@ namespace Ryujinx.Common.Collections
     {
         protected const bool Black = true;
         protected const bool Red = false;
-        internal T Root = null;
+        protected T Root = null;
 
         /// <summary>
         /// Number of nodes on the tree.
         /// </summary>
-        public int Count { get; internal set; }
+        public int Count { get; protected set; }
+
+        /// <summary>
+        /// Removes all nodes on the tree.
+        /// </summary>
+        public void Clear()
+        {
+            Root = null;
+            Count = 0;
+        }
 
         /// <summary>
         /// Finds the node whose key is immediately greater than <paramref name="node"/>.

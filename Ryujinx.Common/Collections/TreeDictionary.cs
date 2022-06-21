@@ -512,12 +512,6 @@ namespace Ryujinx.Common.Collections
             Add(item.Key, item.Value);
         }
 
-        public void Clear()
-        {
-            Root = null;
-            Count = 0;
-        }
-
         public bool Contains(KeyValuePair<K, V> item)
         {
             if (item.Key == null)

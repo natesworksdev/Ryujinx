@@ -468,12 +468,6 @@ namespace Ryujinx.Common.Collections
             }
             return GetNode(key) != null;
         }
-
-        public void Clear()
-        {
-            Root = null;
-            Count = 0;
-        }
     }
 
     /// <summary>
