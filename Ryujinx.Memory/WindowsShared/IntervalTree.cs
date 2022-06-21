@@ -343,7 +343,7 @@ namespace Ryujinx.Memory.WindowsShared
             }
             else
             {
-                replacementNode = PredecessorOf(nodeToDelete);
+                replacementNode = nodeToDelete.Predecessor;
             }
 
             IntervalTreeNode<K, V> tmp = LeftOf(replacementNode) ?? RightOf(replacementNode);

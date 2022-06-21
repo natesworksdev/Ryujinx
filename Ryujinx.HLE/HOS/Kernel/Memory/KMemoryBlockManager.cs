@@ -81,7 +81,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                         currBlock.Permission != oldPermission ||
                         currBlockAttr != oldAttribute)
                     {
-                        currBlock = IntrusiveRedBlackTree<KMemoryBlock>.SuccessorOf(currBlock);
+                        currBlock = currBlock.Successor;
 
                         continue;
                     }
@@ -109,7 +109,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     break;
                 }
 
-                currBlock = IntrusiveRedBlackTree<KMemoryBlock>.SuccessorOf(currBlock);
+                currBlock = currBlock.Successor;
             }
 
             _slabManager.Count += _blockTree.Count - oldCount;
@@ -163,7 +163,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     break;
                 }
 
-                currBlock = IntrusiveRedBlackTree<KMemoryBlock>.SuccessorOf(currBlock);
+                currBlock = currBlock.Successor;
             }
 
             _slabManager.Count += _blockTree.Count - oldCount;
@@ -219,7 +219,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     break;
                 }
 
-                currBlock = IntrusiveRedBlackTree<KMemoryBlock>.SuccessorOf(currBlock);
+                currBlock = currBlock.Successor;
             }
 
             _slabManager.Count += _blockTree.Count - oldCount;
@@ -240,7 +240,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                 expectedAddress = currBlock.BaseAddress + currBlock.PagesCount * PageSize;
 
-                currBlock = IntrusiveRedBlackTree<KMemoryBlock>.SuccessorOf(currBlock);
+                currBlock = currBlock.Successor;
             }
 
             Debug.Assert(expectedAddress == _addrSpaceEnd);
@@ -248,8 +248,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
         private KMemoryBlock MergeEqualStateNeighbors(KMemoryBlock block)
         {
-            KMemoryBlock previousBlock = IntrusiveRedBlackTree<KMemoryBlock>.PredecessorOf(block);
-            KMemoryBlock nextBlock = IntrusiveRedBlackTree<KMemoryBlock>.SuccessorOf(block);
+            KMemoryBlock previousBlock = block.Predecessor;
+            KMemoryBlock nextBlock = block.Successor;
 
             if (previousBlock != null && BlockStateEquals(block, previousBlock))
             {

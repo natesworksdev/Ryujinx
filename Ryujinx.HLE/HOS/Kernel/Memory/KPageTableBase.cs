@@ -1,5 +1,4 @@
 using Ryujinx.Common;
-using Ryujinx.Common.Collections;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using System;
@@ -2475,7 +2474,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     return false;
                 }
             }
-            while (info.Address + info.Size - 1 < endAddr - 1 && (currBlock = IntrusiveRedBlackTree<KMemoryBlock>.SuccessorOf(currBlock)) != null);
+            while (info.Address + info.Size - 1 < endAddr - 1 && (currBlock = currBlock.Successor) != null);
 
             outState = firstState;
             outPermission = firstPermission;
@@ -2520,7 +2519,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                 yield return info;
             }
-            while (info.Address + info.Size - 1 < end - 1 && (currBlock = IntrusiveRedBlackTree<KMemoryBlock>.SuccessorOf(currBlock)) != null);
+            while (info.Address + info.Size - 1 < end - 1 && (currBlock = currBlock.Successor) != null);
         }
 
         private ulong AllocateVa(ulong regionStart, ulong regionPagesCount, ulong neededPagesCount, int alignment)
@@ -2637,7 +2636,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     }
                 }
 
-                currBlock = IntrusiveRedBlackTree<KMemoryBlock>.SuccessorOf(currBlock);
+                currBlock = currBlock.Successor;
 
                 if (currBlock == null)
                 {

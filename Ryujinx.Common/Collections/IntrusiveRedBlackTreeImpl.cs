@@ -31,7 +31,7 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="node">Node to find the successor of</param>
         /// <returns>Successor of <paramref name="node"/></returns>
-        public static T SuccessorOf(T node)
+        internal static T SuccessorOf(T node)
         {
             if (node.Right != null)
             {
@@ -51,7 +51,7 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="node">Node to find the predecessor of</param>
         /// <returns>Predecessor of <paramref name="node"/></returns>
-        public static T PredecessorOf(T node)
+        internal static T PredecessorOf(T node)
         {
             if (node.Left != null)
             {
