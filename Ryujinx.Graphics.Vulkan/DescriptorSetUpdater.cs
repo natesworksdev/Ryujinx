@@ -56,21 +56,32 @@ namespace Ryujinx.Graphics.Vulkan
             _gd = gd;
             _pipeline = pipeline;
 
+            // Some of the bindings counts needs to be multiplied by 2 because we have buffer and
+            // regular textures/images interleaved on the same descriptor set.
+
             _uniformBufferRefs = new Auto<DisposableBuffer>[Constants.MaxUniformBufferBindings];
             _storageBufferRefs = new Auto<DisposableBuffer>[Constants.MaxStorageBufferBindings];
-            _textureRefs = new Auto<DisposableImageView>[Constants.MaxTextureBindings];
-            _samplerRefs = new Auto<DisposableSampler>[Constants.MaxTextureBindings];
-            _imageRefs = new Auto<DisposableImageView>[Constants.MaxImageBindings];
-            _bufferTextureRefs = new TextureBuffer[Constants.MaxTextureBindings];
-            _bufferImageRefs = new TextureBuffer[Constants.MaxImageBindings];
-            _bufferImageFormats = new GAL.Format[Constants.MaxImageBindings];
+            _textureRefs = new Auto<DisposableImageView>[Constants.MaxTextureBindings * 2];
+            _samplerRefs = new Auto<DisposableSampler>[Constants.MaxTextureBindings * 2];
+            _imageRefs = new Auto<DisposableImageView>[Constants.MaxImageBindings * 2];
+            _bufferTextureRefs = new TextureBuffer[Constants.MaxTextureBindings * 2];
+            _bufferImageRefs = new TextureBuffer[Constants.MaxImageBindings * 2];
+            _bufferImageFormats = new GAL.Format[Constants.MaxImageBindings * 2];
 
             _uniformBuffers = new DescriptorBufferInfo[Constants.MaxUniformBufferBindings];
             _storageBuffers = new DescriptorBufferInfo[Constants.MaxStorageBufferBindings];
-            _textures = new DescriptorImageInfo[Constants.MaxTextureBindings];
-            _images = new DescriptorImageInfo[Constants.MaxImageBindings];
-            _bufferTextures = new BufferView[Constants.MaxTextureBindings];
-            _bufferImages = new BufferView[Constants.MaxImageBindings];
+            _textures = new DescriptorImageInfo[Constants.MaxTexturesPerStage];
+            _images = new DescriptorImageInfo[Constants.MaxImagesPerStage];
+            _bufferTextures = new BufferView[Constants.MaxTexturesPerStage];
+            _bufferImages = new BufferView[Constants.MaxImagesPerStage];
+
+            var initialImageInfo = new DescriptorImageInfo()
+            {
+                ImageLayout = ImageLayout.General
+            };
+
+            _textures.AsSpan().Fill(initialImageInfo);
+            _images.AsSpan().Fill(initialImageInfo);
 
             _uniformSet = new bool[Constants.MaxUniformBufferBindings];
             _storageSet = new bool[Constants.MaxStorageBufferBindings];
@@ -140,10 +151,6 @@ namespace Ryujinx.Graphics.Vulkan
             else if (image is TextureView view)
             {
                 _imageRefs[binding] = view.GetView(imageFormat).GetIdentityImageView();
-                _images[binding] = new DescriptorImageInfo()
-                {
-                    ImageLayout = ImageLayout.General
-                };
             }
 
             SignalDirty(DirtyFlags.Image);
@@ -197,11 +204,6 @@ namespace Ryujinx.Graphics.Vulkan
 
                 _textureRefs[binding] = view.GetImageView();
                 _samplerRefs[binding] = ((SamplerHolder)sampler)?.GetSampler();
-
-                _textures[binding] = new DescriptorImageInfo()
-                {
-                    ImageLayout = ImageLayout.General
-                };
             }
 
             SignalDirty(DirtyFlags.Texture);
@@ -394,13 +396,14 @@ namespace Ryujinx.Graphics.Vulkan
                     {
                         if (((uint)binding % (Constants.MaxTexturesPerStage * 2)) < Constants.MaxTexturesPerStage || program.HasMinimalLayout)
                         {
+                            Span<DescriptorImageInfo> textures = _textures;
+
                             for (int i = 0; i < count; i++)
                             {
-                                ref var texture = ref _textures[binding + i];
+                                ref var texture = ref textures[i];
 
                                 texture.ImageView = _textureRefs[binding + i]?.Get(cbs).Value ?? default;
                                 texture.Sampler = _samplerRefs[binding + i]?.Get(cbs).Value ?? default;
-                                texture.ImageLayout = ImageLayout.General;
 
                                 if (texture.ImageView.Handle == 0)
                                 {
@@ -413,41 +416,43 @@ namespace Ryujinx.Graphics.Vulkan
                                 }
                             }
 
-                            ReadOnlySpan<DescriptorImageInfo> textures = _textures;
-                            dsc.UpdateImages(0, binding, textures.Slice(binding, count), DescriptorType.CombinedImageSampler);
+                            dsc.UpdateImages(0, binding, textures.Slice(0, count), DescriptorType.CombinedImageSampler);
                         }
                         else
                         {
+                            Span<BufferView> bufferTextures = _bufferTextures;
+
                             for (int i = 0; i < count; i++)
                             {
-                                _bufferTextures[binding + i] = _bufferTextureRefs[binding + i]?.GetBufferView(cbs) ?? default;
+                                bufferTextures[i] = _bufferTextureRefs[binding + i]?.GetBufferView(cbs) ?? default;
                             }
 
-                            ReadOnlySpan<BufferView> bufferTextures = _bufferTextures;
-                            dsc.UpdateBufferImages(0, binding, bufferTextures.Slice(binding, count), DescriptorType.UniformTexelBuffer);
+                            dsc.UpdateBufferImages(0, binding, bufferTextures.Slice(0, count), DescriptorType.UniformTexelBuffer);
                         }
                     }
                     else if (setIndex == PipelineBase.ImageSetIndex)
                     {
                         if (((uint)binding % (Constants.MaxImagesPerStage * 2)) < Constants.MaxImagesPerStage || program.HasMinimalLayout)
                         {
+                            Span<DescriptorImageInfo> images = _images;
+
                             for (int i = 0; i < count; i++)
                             {
-                                _images[binding + i].ImageView = _imageRefs[binding + i]?.Get(cbs).Value ?? default;
+                                images[i].ImageView = _imageRefs[binding + i]?.Get(cbs).Value ?? default;
                             }
 
-                            ReadOnlySpan<DescriptorImageInfo> images = _images;
-                            dsc.UpdateImages(0, binding, images.Slice(binding, count), DescriptorType.StorageImage);
+                            dsc.UpdateImages(0, binding, images.Slice(0, count), DescriptorType.StorageImage);
                         }
                         else
                         {
+                            Span<BufferView> bufferImages = _bufferImages;
+
                             for (int i = 0; i < count; i++)
                             {
-                                _bufferImages[binding + i] = _bufferImageRefs[binding + i]?.GetBufferView(cbs, _bufferImageFormats[binding + i]) ?? default;
+                                bufferImages[i] = _bufferImageRefs[binding + i]?.GetBufferView(cbs, _bufferImageFormats[binding + i]) ?? default;
                             }
 
-                            ReadOnlySpan<BufferView> bufferImages = _bufferImages;
-                            dsc.UpdateBufferImages(0, binding, bufferImages.Slice(binding, count), DescriptorType.StorageTexelBuffer);
+                            dsc.UpdateBufferImages(0, binding, bufferImages.Slice(0, count), DescriptorType.StorageTexelBuffer);
                         }
                     }
                 }
