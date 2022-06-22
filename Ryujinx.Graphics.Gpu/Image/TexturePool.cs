@@ -1,3 +1,4 @@
+using Ryujinx.Common.Collections;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Texture;
@@ -13,6 +14,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     class TexturePool : Pool<Texture, TextureDescriptor>
     {
         private readonly GpuChannel _channel;
+        private readonly BitMap _invalidMap;
         private readonly ConcurrentQueue<Texture> _dereferenceQueue = new ConcurrentQueue<Texture>();
         private TextureDescriptor _defaultDescriptor;
 
@@ -31,6 +33,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         public TexturePool(GpuContext context, GpuChannel channel, ulong address, int maximumId) : base(context, channel.MemoryManager.Physical, address, maximumId)
         {
             _channel = channel;
+            _invalidMap = new BitMap(maximumId + 1);
         }
 
         /// <summary>
@@ -47,6 +50,11 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (texture == null)
             {
+                if (_invalidMap.IsSet(id))
+                {
+                    return ref descriptor;
+                }
+
                 TextureInfo info = GetInfo(descriptor, out int layerSize);
 
                 ProcessDereferenceQueue();
@@ -56,6 +64,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 // If this happens, then the texture address is invalid, we can't add it to the cache.
                 if (texture == null)
                 {
+                    _invalidMap.Set(id);
                     return ref descriptor;
                 }
 
@@ -216,6 +225,8 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                     Items[id] = null;
                 }
+
+                _invalidMap.Clear(id);
             }
         }
 
