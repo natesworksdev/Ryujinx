@@ -43,7 +43,7 @@ namespace Ryujinx.Graphics.OpenGL
         private CounterQueueEvent _activeConditionalRender;
 
         private Vector4<int>[] _fpIsBgra = new Vector4<int>[SupportBuffer.FragmentIsBgraCount];
-        private Vector4<float>[] _renderScale = new Vector4<float>[65];
+        private Vector4<float>[] _renderScale = new Vector4<float>[73];
         private int _fragmentScaleCount;
 
         private TextureBase _unit0Texture;
@@ -110,7 +110,7 @@ namespace Ryujinx.Graphics.OpenGL
             Buffer.Clear(destination, offset, size, value);
         }
 
-        public void ClearRenderTargetColor(int index, uint componentMask, ColorF color)
+        public void ClearRenderTargetColor(int index, int layer, uint componentMask, ColorF color)
         {
             GL.ColorMask(
                 index,
@@ -119,14 +119,18 @@ namespace Ryujinx.Graphics.OpenGL
                 (componentMask & 4) != 0,
                 (componentMask & 8) != 0);
 
+            _framebuffer.AttachColorLayerForClear(index, layer);
+
             float[] colors = new float[] { color.Red, color.Green, color.Blue, color.Alpha };
 
             GL.ClearBuffer(OpenTK.Graphics.OpenGL.ClearBuffer.Color, index, colors);
 
+            _framebuffer.DetachColorLayerForClear(index);
+
             RestoreComponentMask(index);
         }
 
-        public void ClearRenderTargetDepthStencil(float depthValue, bool depthMask, int stencilValue, int stencilMask)
+        public void ClearRenderTargetDepthStencil(int layer, float depthValue, bool depthMask, int stencilValue, int stencilMask)
         {
             bool stencilMaskChanged =
                 stencilMask != 0 &&
@@ -144,6 +148,8 @@ namespace Ryujinx.Graphics.OpenGL
                 GL.DepthMask(depthMask);
             }
 
+            _framebuffer.AttachDepthStencilLayerForClear(layer);
+
             if (depthMask && stencilMask != 0)
             {
                 GL.ClearBuffer(ClearBufferCombined.DepthStencil, 0, depthValue, stencilValue);
@@ -156,6 +162,8 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 GL.ClearBuffer(OpenTK.Graphics.OpenGL.ClearBuffer.Stencil, 0, ref stencilValue);
             }
+
+            _framebuffer.DetachDepthStencilLayerForClear();
 
             if (stencilMaskChanged)
             {
@@ -597,6 +605,8 @@ namespace Ryujinx.Graphics.OpenGL
                         GL.EndTransformFeedback();
                     }
 
+                    GL.ClipControl(ClipOrigin.UpperLeft, ClipDepthMode.NegativeOneToOne);
+
                     _drawTexture.Draw(
                         view,
                         samp,
@@ -627,6 +637,8 @@ namespace Ryujinx.Graphics.OpenGL
                     {
                         GL.BeginTransformFeedback(_tfTopology);
                     }
+
+                    RestoreClipControl();
                 }
             }
         }
@@ -1094,45 +1106,45 @@ namespace Ryujinx.Graphics.OpenGL
             _framebuffer.SetDrawBuffers(colors.Length);
         }
 
-        public void SetSampler(int binding, ISampler sampler)
+        public unsafe void SetScissors(ReadOnlySpan<Rectangle<int>> regions)
         {
-            if (sampler == null)
+            int count = Math.Min(regions.Length, Constants.MaxViewports);
+
+            int* v = stackalloc int[count * 4];
+
+            for (int index = 0; index < count; index++)
             {
-                return;
-            }
+                int vIndex = index * 4;
 
-            Sampler samp = (Sampler)sampler;
+                var region = regions[index];
 
-            if (binding == 0)
-            {
-                _unit0Sampler = samp;
-            }
+                bool enabled = (region.X | region.Y) != 0 || region.Width != 0xffff || region.Height != 0xffff;
+                uint mask = 1u << index;
 
-            samp.Bind(binding);
-        }
-
-        public void SetScissor(int index, bool enable, int x, int y, int width, int height)
-        {
-            uint mask = 1u << index;
-
-            if (!enable)
-            {
-                if ((_scissorEnables & mask) != 0)
+                if (enabled)
                 {
-                    _scissorEnables &= ~mask;
-                    GL.Disable(IndexedEnableCap.ScissorTest, index);
+                    v[vIndex] = region.X;
+                    v[vIndex + 1] = region.Y;
+                    v[vIndex + 2] = region.Width;
+                    v[vIndex + 3] = region.Height;
+
+                    if ((_scissorEnables & mask) == 0)
+                    {
+                        _scissorEnables |= mask;
+                        GL.Enable(IndexedEnableCap.ScissorTest, index);
+                    }
                 }
-
-                return;
+                else
+                {
+                    if ((_scissorEnables & mask) != 0)
+                    {
+                        _scissorEnables &= ~mask;
+                        GL.Disable(IndexedEnableCap.ScissorTest, index);
+                    }
+                }
             }
 
-            if ((_scissorEnables & mask) == 0)
-            {
-                _scissorEnables |= mask;
-                GL.Enable(IndexedEnableCap.ScissorTest, index);
-            }
-
-            GL.ScissorIndexed(index, x, y, width, height);
+            GL.ScissorArray(0, count, v);
         }
 
         public void SetStencilTest(StencilTestDescriptor stencilTest)
@@ -1183,22 +1195,30 @@ namespace Ryujinx.Graphics.OpenGL
             SetBuffers(first, buffers, isStorage: true);
         }
 
-        public void SetTexture(int binding, ITexture texture)
+        public void SetTextureAndSampler(ShaderStage stage, int binding, ITexture texture, ISampler sampler)
         {
-            if (texture == null)
+            if (texture != null)
             {
-                return;
+                if (binding == 0)
+                {
+                    _unit0Texture = (TextureBase)texture;
+                }
+                else
+                {
+                    ((TextureBase)texture).Bind(binding);
+                }
             }
+
+            Sampler glSampler = (Sampler)sampler;
+
+            glSampler?.Bind(binding);
 
             if (binding == 0)
             {
-                _unit0Texture = (TextureBase)texture;
-            }
-            else
-            {
-                ((TextureBase)texture).Bind(binding);
+                _unit0Sampler = glSampler;
             }
         }
+
 
         public void SetTransformFeedbackBuffers(ReadOnlySpan<BufferRange> buffers)
         {

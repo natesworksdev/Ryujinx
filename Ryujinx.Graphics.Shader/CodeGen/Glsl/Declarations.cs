@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
     {
         public static void Declare(CodeGenContext context, StructuredProgramInfo info)
         {
-            context.AppendLine("#version 450 core");
+            context.AppendLine(context.Config.Options.TargetApi == TargetApi.Vulkan ? "#version 460 core" : "#version 450 core");
             context.AppendLine("#extension GL_ARB_gpu_shader_int64 : enable");
 
             if (context.Config.GpuAccessor.QueryHostSupportsShaderBallot())
@@ -43,8 +43,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                     context.AppendLine("#extension GL_INTEL_fragment_shader_ordering : enable");
                 }
             }
+            else
+            {
+                context.AppendLine("#extension GL_ARB_shader_viewport_layer_array : enable");
+            }
 
-            if (context.Config.GpPassthrough)
+            if (context.Config.GpPassthrough && context.Config.GpuAccessor.QueryHostSupportsGeometryShaderPassthrough())
             {
                 context.AppendLine("#extension GL_NV_geometry_shader_passthrough : enable");
             }
@@ -123,11 +127,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             {
                 if (context.Config.Stage == ShaderStage.Geometry)
                 {
-                    string inPrimitive = context.Config.GpuAccessor.QueryPrimitiveTopology().ToGlslString();
+                    InputTopology inputTopology = context.Config.GpuAccessor.QueryPrimitiveTopology();
+                    string inPrimitive = inputTopology.ToGlslString();
 
-                    context.AppendLine($"layout ({inPrimitive}) in;");
+                    context.AppendLine($"layout (invocations = {context.Config.ThreadsPerInputPrimitive}, {inPrimitive}) in;");
 
-                    if (context.Config.GpPassthrough)
+                    if (context.Config.GpPassthrough && context.Config.GpuAccessor.QueryHostSupportsGeometryShaderPassthrough())
                     {
                         context.AppendLine($"layout (passthrough) in gl_PerVertex");
                         context.EnterScope();
@@ -140,7 +145,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                     {
                         string outPrimitive = context.Config.OutputTopology.ToGlslString();
 
-                        int maxOutputVertices = context.Config.MaxOutputVertices;
+                        int maxOutputVertices = context.Config.GpPassthrough
+                            ? inputTopology.ToInputVertices()
+                            : context.Config.MaxOutputVertices;
 
                         context.AppendLine($"layout ({outPrimitive}, max_vertices = {maxOutputVertices}) out;");
                     }
@@ -196,12 +203,36 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                     context.Config.Stage != ShaderStage.Fragment &&
                     context.Config.TransformFeedbackEnabled)
                 {
-                    var tfOutput = context.GetTransformFeedbackOutput(AttributeConsts.PositionX);
-                    if (tfOutput.Valid)
+                    var tfPosition = context.GetTransformFeedbackOutput(AttributeConsts.PositionX);
+                    var tfPointSize = context.GetTransformFeedbackOutput(AttributeConsts.PointSize);
+                    var tfClipDistance = context.GetTransformFeedbackOutput(AttributeConsts.ClipDistance0);
+
+                    if (tfPosition.Valid || tfPointSize.Valid || tfClipDistance.Valid)
                     {
-                        context.AppendLine($"layout (xfb_buffer = {tfOutput.Buffer}, xfb_offset = {tfOutput.Offset}, xfb_stride = {tfOutput.Stride}) out gl_PerVertex");
+                        context.AppendLine("out gl_PerVertex");
                         context.EnterScope();
-                        context.AppendLine("vec4 gl_Position;");
+                        context.AppendLine($"{GetTfLayout(tfPosition)}vec4 gl_Position;");
+                        context.AppendLine($"{GetTfLayout(tfPointSize)}float gl_PointSize;");
+
+                        if (tfClipDistance.Valid)
+                        {
+                            int clipDistanceCount = 1;
+
+                            for (; clipDistanceCount < 8; clipDistanceCount++)
+                            {
+                                if (!context.GetTransformFeedbackOutput(AttributeConsts.ClipDistance0 + clipDistanceCount).Valid)
+                                {
+                                    break;
+                                }
+                            }
+
+                            context.AppendLine($"{GetTfLayout(tfClipDistance)}float gl_ClipDistance[{clipDistanceCount}];");
+                        }
+                        else
+                        {
+                            context.AppendLine("float gl_ClipDistance[];");
+                        }
+
                         context.LeaveScope(context.Config.Stage == ShaderStage.TessellationControl ? " gl_out[];" : ";");
                     }
                 }
@@ -311,6 +342,16 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
         }
 
+        private static string GetTfLayout(TransformFeedbackOutput tfOutput)
+        {
+            if (tfOutput.Valid)
+            {
+                return $"layout (xfb_buffer = {tfOutput.Buffer}, xfb_offset = {tfOutput.Offset}, xfb_stride = {tfOutput.Stride}) ";
+            }
+
+            return string.Empty;
+        }
+
         public static void DeclareLocals(CodeGenContext context, StructuredFunction function)
         {
             foreach (AstOperand decl in function.Locals)
@@ -326,11 +367,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             switch (type)
             {
                 case VariableType.Bool: return "bool";
-                case VariableType.F32:  return "precise float";
-                case VariableType.F64:  return "double";
+                case VariableType.F32: return "precise float";
+                case VariableType.F64: return "double";
                 case VariableType.None: return "void";
-                case VariableType.S32:  return "int";
-                case VariableType.U32:  return "uint";
+                case VariableType.S32: return "int";
+                case VariableType.U32: return "uint";
             }
 
             throw new ArgumentException($"Invalid variable type \"{type}\".");
@@ -417,10 +458,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                 if (context.Config.Options.TargetApi == TargetApi.Vulkan)
                 {
-                    bool isBuffer = (descriptor.Type & SamplerType.Mask) == SamplerType.TextureBuffer;
-                    int setIndex = isBuffer ? 4 : 2;
-
-                    layout = $", set = {setIndex}";
+                    layout = ", set = 2";
                 }
 
                 context.AppendLine($"layout (binding = {descriptor.Binding}{layout}) uniform {samplerTypeName} {samplerName};");
@@ -470,10 +508,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                 if (context.Config.Options.TargetApi == TargetApi.Vulkan)
                 {
-                    bool isBuffer = (descriptor.Type & SamplerType.Mask) == SamplerType.TextureBuffer;
-                    int setIndex = isBuffer ? 5 : 3;
-
-                    layout = $", set = {setIndex}{layout}";
+                    layout = $", set = 3{layout}";
                 }
 
                 context.AppendLine($"layout (binding = {descriptor.Binding}{layout}) uniform {imageTypeName} {imageName};");
@@ -525,29 +560,59 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 };
             }
 
-            string pass = (context.Config.PassthroughAttributes & (1 << attr)) != 0 ? "passthrough, " : string.Empty;
+            bool passthrough = (context.Config.PassthroughAttributes & (1 << attr)) != 0;
+            string pass = passthrough && context.Config.GpuAccessor.QueryHostSupportsGeometryShaderPassthrough() ? "passthrough, " : string.Empty;
             string name = $"{DefaultNames.IAttributePrefix}{attr}";
 
             if (context.Config.TransformFeedbackEnabled && context.Config.Stage != ShaderStage.Vertex)
             {
+                string type;
+
+                if (context.Config.Stage == ShaderStage.Vertex)
+                {
+                    type = context.Config.GpuAccessor.QueryAttributeType(attr).GetScalarType();
+                }
+                else
+                {
+                    type = AttributeType.Float.GetScalarType();
+                }
+
                 for (int c = 0; c < 4; c++)
                 {
                     char swzMask = "xyzw"[c];
 
-                    context.AppendLine($"layout ({pass}location = {attr}, component = {c}) {iq}in float {name}_{swzMask}{suffix};");
+                    context.AppendLine($"layout ({pass}location = {attr}, component = {c}) {iq}in {type} {name}_{swzMask}{suffix};");
                 }
             }
             else
             {
-                context.AppendLine($"layout ({pass}location = {attr}) {iq}in vec4 {name}{suffix};");
+                string type;
+
+                if (context.Config.Stage == ShaderStage.Vertex)
+                {
+                    type = context.Config.GpuAccessor.QueryAttributeType(attr).GetVec4Type();
+                }
+                else
+                {
+                    type = AttributeType.Float.GetVec4Type();
+                }
+
+                context.AppendLine($"layout ({pass}location = {attr}) {iq}in {type} {name}{suffix};");
             }
         }
 
         private static void DeclareInputAttributePerPatch(CodeGenContext context, int attr)
         {
+            string layout = string.Empty;
+
+            if (context.Config.Options.TargetApi == TargetApi.Vulkan)
+            {
+                layout = $"layout (location = {32 + attr}) ";
+            }
+
             string name = $"{DefaultNames.PerPatchAttributePrefix}{attr}";
 
-            context.AppendLine($"patch in vec4 {name};");
+            context.AppendLine($"{layout}patch in vec4 {name};");
         }
 
         private static void DeclareOutputAttributes(CodeGenContext context, StructuredProgramInfo info)
@@ -608,14 +673,21 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private static void DeclareOutputAttributePerPatch(CodeGenContext context, int attr)
         {
+            string layout = string.Empty;
+
+            if (context.Config.Options.TargetApi == TargetApi.Vulkan)
+            {
+                layout = $"layout (location = {32 + attr}) ";
+            }
+
             string name = $"{DefaultNames.PerPatchAttributePrefix}{attr}";
 
-            context.AppendLine($"patch out vec4 {name};");
+            context.AppendLine($"{layout}patch out vec4 {name};");
         }
 
         private static void DeclareSupportUniformBlock(CodeGenContext context, ShaderStage stage, int scaleElements)
         {
-            bool needsSupportBlock = stage == ShaderStage.Fragment || 
+            bool needsSupportBlock = stage == ShaderStage.Fragment ||
                 (context.Config.LastInVertexPipeline && context.Config.GpuAccessor.QueryViewportTransformDisable());
 
             if (!needsSupportBlock && scaleElements == 0)

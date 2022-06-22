@@ -41,6 +41,22 @@ namespace Ryujinx.Graphics.Gpu
         public const int TotalTransformFeedbackBuffers = 4;
 
         /// <summary>
+        /// Maximum number of textures on a single shader stage.
+        /// </summary>
+        /// <remarks>
+        /// The maximum number of textures is API limited, the hardware supports a unlimited amount.
+        /// </remarks>
+        public const int TotalTextures = 32;
+
+        /// <summary>
+        /// Maximum number of images on a single shader stage.
+        /// </summary>
+        /// <remarks>
+        /// The maximum number of images is API limited, the hardware supports a unlimited amount.
+        /// </remarks>
+        public const int TotalImages = 8;
+
+        /// <summary>
         /// Maximum number of render target color buffers.
         /// </summary>
         public const int TotalRenderTargets = 8;
@@ -53,7 +69,7 @@ namespace Ryujinx.Graphics.Gpu
         /// <summary>
         /// Maximum number of vertex attributes.
         /// </summary>
-        public const int TotalVertexAttribs = 16;
+        public const int TotalVertexAttribs = 16; // FIXME: Should be 32, but OpenGL only supports 16.
 
         /// <summary>
         /// Maximum number of vertex buffers.

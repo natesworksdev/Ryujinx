@@ -72,6 +72,7 @@ namespace Ryujinx.Ui
         private InputManager _inputManager;
         private IKeyboard _keyboardInterface;
         private GraphicsDebugLevel _glLogLevel;
+        private string _gpuBackendName;
         private string _gpuVendorName;
         private bool _isMouseInClient;
 
@@ -118,7 +119,12 @@ namespace Ryujinx.Ui
 
         public abstract void SwapBuffers(object image);
 
-        public abstract string GetGpuVendorName();
+        protected abstract string GetGpuBackendName();
+
+        private string GetGpuVendorName()
+        {
+            return Renderer.GetHardwareInfo().GpuVendor;
+        }
 
         private void HideCursorStateChanged(object sender, ReactiveEventArgs<bool> state)
         {
@@ -225,7 +231,7 @@ namespace Ryujinx.Ui
             WindowWidth = evnt.Width * monitor.ScaleFactor;
             WindowHeight = evnt.Height * monitor.ScaleFactor;
 
-            Renderer?.Window.SetSize(WindowWidth, WindowHeight);
+            Renderer?.Window?.SetSize(WindowWidth, WindowHeight);
 
             return result;
         }
@@ -306,7 +312,7 @@ namespace Ryujinx.Ui
             }
 
             Renderer = renderer;
-            Renderer?.Window.SetSize(WindowWidth, WindowHeight);
+            Renderer?.Window?.SetSize(WindowWidth, WindowHeight);
 
             if (Renderer != null)
             {
@@ -385,6 +391,7 @@ namespace Ryujinx.Ui
 
             Device.Gpu.Renderer.Initialize(_glLogLevel);
 
+            _gpuBackendName = GetGpuBackendName();
             _gpuVendorName = GetGpuVendorName();
 
             Device.Gpu.Renderer.RunLoop(() =>
@@ -430,6 +437,7 @@ namespace Ryujinx.Ui
                         StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
                             Device.EnableDeviceVsync,
                             Device.GetVolume(),
+                            _gpuBackendName,
                             dockedMode,
                             ConfigurationState.Instance.Graphics.AspectRatio.Value.ToText(),
                             $"Game: {Device.Statistics.GetGameFrameRate():00.00} FPS ({Device.Statistics.GetGameFrameTime():00.00} ms)",
