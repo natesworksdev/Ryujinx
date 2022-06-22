@@ -77,7 +77,8 @@ namespace Ryujinx.Graphics.Vulkan
 
             api.CreateCommandPool(device, commandPoolCreateInfo, null, out _pool).ThrowOnError();
 
-            _totalCommandBuffers = isLight ? 1 : MaxCommandBuffers;
+            // We need at least 2 command buffers to get texture data in some cases.
+            _totalCommandBuffers = isLight ? 2 : MaxCommandBuffers;
             _totalCommandBuffersMask = _totalCommandBuffers - 1;
 
             _commandBuffers = new ReservedCommandBuffer[_totalCommandBuffers];
@@ -236,9 +237,9 @@ namespace Ryujinx.Graphics.Vulkan
 
                     cursor = (cursor + 1) & _totalCommandBuffersMask;
                 }
-
-                return default;
             }
+
+            throw new InvalidOperationException($"Out of command buffers (In use: {_inUseCount}, queued: {_queuedCount}, total: {_totalCommandBuffers})");
         }
 
         public void Return(CommandBufferScoped cbs)
