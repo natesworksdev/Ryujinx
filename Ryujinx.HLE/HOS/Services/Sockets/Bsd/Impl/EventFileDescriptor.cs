@@ -8,7 +8,6 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
     {
         private ulong _value;
         private readonly EventFdFlags _flags;
-        private AutoResetEvent _event;
 
         private object _lock = new object();
 
@@ -19,9 +18,13 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
         public EventFileDescriptor(ulong value, EventFdFlags flags)
         {
+            // FIXME: We should support blocking operations.
+            // Right now they can't be supported because it would cause the
+            // service to lock up as we only have one thread processing requests.
+            flags |= EventFdFlags.NonBlocking;
+
             _value = value;
             _flags = flags;
-            _event = new AutoResetEvent(false);
 
             WriteEvent = new ManualResetEvent(true);
             ReadEvent = new ManualResetEvent(true);
@@ -31,7 +34,6 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
         public void Dispose()
         {
-            _event.Dispose();
             WriteEvent.Dispose();
             ReadEvent.Dispose();
         }
@@ -57,7 +59,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                     {
                         while (_value == 0)
                         {
-                            _event.WaitOne();
+                            Monitor.Wait(_lock);
                         }
                     }
                     else
@@ -106,7 +108,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                 {
                     if (Blocking)
                     {
-                        _event.WaitOne();
+                        Monitor.Wait(_lock);
                     }
                     else
                     {
@@ -119,7 +121,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                 writeSize = sizeof(ulong);
 
                 _value += count;
-                _event.Set();
+                Monitor.Pulse(_lock);
 
                 WriteEvent.Set();
 

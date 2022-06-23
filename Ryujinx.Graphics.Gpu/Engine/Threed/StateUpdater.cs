@@ -201,7 +201,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             // of the shader for the new state.
             if (_shaderSpecState != null)
             {
-                if (!_shaderSpecState.MatchesGraphics(_channel, GetPoolState(), GetGraphicsState()))
+                if (!_shaderSpecState.MatchesGraphics(_channel, GetPoolState(), GetGraphicsState(), false))
                 {
                     ForceShaderUpdate();
                 }
@@ -275,7 +275,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         {
             UpdateStorageBuffers();
 
-            _channel.TextureManager.CommitGraphicsBindings();
+            if (!_channel.TextureManager.CommitGraphicsBindings(_shaderSpecState))
+            {
+                // Shader must be reloaded.
+                UpdateShaderState();
+            }
+
             _channel.BufferManager.CommitGraphicsBindings();
         }
 
@@ -362,8 +367,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// Updates render targets (color and depth-stencil buffers) based on current render target state.
         /// </summary>
         /// <param name="useControl">Use draw buffers information from render target control register</param>
+        /// <param name="layered">Indicates if the texture is layered</param>
         /// <param name="singleUse">If this is not -1, it indicates that only the given indexed target will be used.</param>
-        public void UpdateRenderTargetState(bool useControl, int singleUse = -1)
+        public void UpdateRenderTargetState(bool useControl, bool layered = false, int singleUse = -1)
         {
             var memoryManager = _channel.MemoryManager;
             var rtControl = _state.State.RtControl;
@@ -399,7 +405,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 Image.Texture color = memoryManager.Physical.TextureCache.FindOrCreateTexture(
                     memoryManager,
                     colorState,
-                    _vtgWritesRtLayer,
+                    _vtgWritesRtLayer || layered,
                     samplesInX,
                     samplesInY,
                     sizeHint);
@@ -433,6 +439,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     memoryManager,
                     dsState,
                     dsSize,
+                    _vtgWritesRtLayer || layered,
                     samplesInX,
                     samplesInY,
                     sizeHint);
@@ -1148,6 +1155,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 return;
             }
 
+            int maxTextureBinding = -1;
+            int maxImageBinding = -1;
+
             Span<TextureBindingInfo> textureBindings = _channel.TextureManager.RentGraphicsTextureBindings(stage, info.Textures.Count);
 
             if (info.UsesRtLayer)
@@ -1167,6 +1177,11 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     descriptor.CbufSlot,
                     descriptor.HandleIndex,
                     descriptor.Flags);
+
+                if (descriptor.Binding > maxTextureBinding)
+                {
+                    maxTextureBinding = descriptor.Binding;
+                }
             }
 
             TextureBindingInfo[] imageBindings = _channel.TextureManager.RentGraphicsImageBindings(stage, info.Images.Count);
@@ -1185,7 +1200,14 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     descriptor.CbufSlot,
                     descriptor.HandleIndex,
                     descriptor.Flags);
+
+                if (descriptor.Binding > maxImageBinding)
+                {
+                    maxImageBinding = descriptor.Binding;
+                }
             }
+
+            _channel.TextureManager.SetGraphicsMaxBindings(maxTextureBinding, maxImageBinding);
 
             _channel.BufferManager.SetGraphicsStorageBufferBindings(stage, info.SBuffers);
             _channel.BufferManager.SetGraphicsUniformBufferBindings(stage, info.CBuffers);

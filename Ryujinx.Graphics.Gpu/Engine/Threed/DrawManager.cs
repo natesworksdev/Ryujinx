@@ -135,14 +135,16 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             {
                 _instancedDrawPending = true;
 
+                int ibCount = _drawState.IbStreamer.InlineIndexCount;
+
                 _instancedIndexed = _drawState.DrawIndexed;
-                _instancedIndexedInline = _drawState.IbStreamer.HasInlineIndexData;
+                _instancedIndexedInline = ibCount != 0;
 
                 _instancedFirstIndex = firstIndex;
                 _instancedFirstVertex = (int)_state.State.FirstVertex;
                 _instancedFirstInstance = (int)_state.State.FirstInstance;
 
-                _instancedIndexCount = indexCount;
+                _instancedIndexCount = ibCount != 0 ? ibCount : indexCount;
 
                 var drawState = _state.State.VertexBufferDrawState;
 
@@ -453,22 +455,18 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             {
                 _instancedDrawPending = false;
 
-                if (_instancedIndexedInline)
-                {
-                    int inlineIndexCount = _drawState.IbStreamer.GetAndResetInlineIndexCount();
-                    BufferRange br = new BufferRange(_drawState.IbStreamer.GetInlineIndexBuffer(), 0, inlineIndexCount * 4);
+                bool indexedInline = _instancedIndexedInline;
 
-                    _channel.BufferManager.SetIndexBuffer(br, IndexType.UInt);
-
-                    _context.Renderer.Pipeline.DrawIndexed(
-                        inlineIndexCount,
-                        _instanceIndex + 1,
-                        _instancedFirstIndex,
-                        _instancedFirstVertex,
-                        _instancedFirstInstance);
-                }
-                else if (_instancedIndexed)
+                if (_instancedIndexed || indexedInline)
                 {
+                    if (indexedInline)
+                    {
+                        int inlineIndexCount = _drawState.IbStreamer.GetAndResetInlineIndexCount();
+                        BufferRange br = new BufferRange(_drawState.IbStreamer.GetInlineIndexBuffer(), 0, inlineIndexCount * 4);
+
+                        _channel.BufferManager.SetIndexBuffer(br, IndexType.UInt);
+                    }
+
                     _context.Renderer.Pipeline.DrawIndexed(
                         _instancedIndexCount,
                         _instanceIndex + 1,
@@ -507,8 +505,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             }
 
             int index = (argument >> 6) & 0xf;
+            int layer = (argument >> 10) & 0x3ff;
 
-            engine.UpdateRenderTargetState(useControl: false, singleUse: index);
+            engine.UpdateRenderTargetState(useControl: false, layered: layer != 0, singleUse: index);
 
             // If there is a mismatch on the host clip region and the one explicitly defined by the guest
             // on the screen scissor state, then we need to force only one texture to be bound to avoid
@@ -583,7 +582,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
 
                 ColorF color = new ColorF(clearColor.Red, clearColor.Green, clearColor.Blue, clearColor.Alpha);
 
-                _context.Renderer.Pipeline.ClearRenderTargetColor(index, componentMask, color);
+                _context.Renderer.Pipeline.ClearRenderTargetColor(index, layer, componentMask, color);
             }
 
             if (clearDepth || clearStencil)
@@ -604,6 +603,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 }
 
                 _context.Renderer.Pipeline.ClearRenderTargetDepthStencil(
+                    layer,
                     depthValue,
                     clearDepth,
                     stencilValue,
