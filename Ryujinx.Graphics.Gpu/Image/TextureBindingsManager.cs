@@ -32,6 +32,9 @@ namespace Ryujinx.Graphics.Gpu.Image
         private readonly GpuChannel _channel;
         private readonly TexturePoolCache _texturePoolCache;
 
+        private TexturePool _cachedTexturePool;
+        private SamplerPool _cachedSamplerPool;
+
         private readonly TextureBindingInfo[][] _textureBindings;
         private readonly TextureBindingInfo[][] _imageBindings;
 
@@ -43,8 +46,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             public int TextureHandle;
             public int SamplerHandle;
             public int InvalidatedSequence;
-            public TexturePool CachedTexturePool;
-            public SamplerPool CachedSamplerPool;
             public Texture CachedTexture;
             public Sampler CachedSampler;
             public int ScaleIndex;
@@ -345,9 +346,14 @@ namespace Ryujinx.Graphics.Gpu.Image
                 ? _texturePoolCache.FindOrCreate(_channel, texturePoolAddress, _texturePoolMaximumId)
                 : null;
 
+            SamplerPool samplerPool = _samplerPool;
+
             // Check if the texture pool has been modified since bindings were last committed.
             // If it wasn't, then it's possible to avoid looking up textures again when the handle remains the same.
-            bool poolModified = false;
+            bool poolModified = _cachedTexturePool != texturePool || _cachedSamplerPool != samplerPool;
+
+            _cachedTexturePool = texturePool;
+            _cachedSamplerPool = samplerPool;
 
             if (texturePool != null)
             {
@@ -360,9 +366,9 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
             }
 
-            if (_samplerPool != null)
+            if (samplerPool != null)
             {
-                int samplerPoolSequence = _samplerPool.CheckModified();
+                int samplerPoolSequence = samplerPool.CheckModified();
 
                 if (_samplerPoolSequence != samplerPoolSequence)
                 {
@@ -495,8 +501,6 @@ namespace Ryujinx.Graphics.Gpu.Image
                 ref TextureState state = ref _textureState[bindingInfo.Binding];
 
                 if (!poolModified &&
-                    state.CachedTexturePool == pool &&
-                    state.CachedSamplerPool == samplerPool &&
                     state.TextureHandle == textureId &&
                     state.SamplerHandle == samplerId &&
                     state.CachedTexture != null &&
@@ -521,8 +525,6 @@ namespace Ryujinx.Graphics.Gpu.Image
                     continue;
                 }
 
-                state.CachedTexturePool = pool;
-                state.CachedSamplerPool = samplerPool;
                 state.TextureHandle = textureId;
                 state.SamplerHandle = samplerId;
 
