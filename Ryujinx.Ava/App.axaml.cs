@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using FluentAvalonia.Styling;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Controls;
