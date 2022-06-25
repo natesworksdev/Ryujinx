@@ -2,7 +2,6 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
-using Avalonia.Threading;
 using FluentAvalonia.Styling;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Controls;
@@ -16,7 +15,7 @@ using System.IO;
 
 namespace Ryujinx.Ava
 {
-    internal class App : Avalonia.Application
+    internal class App : Application
     {
         public override void Initialize()
         {
