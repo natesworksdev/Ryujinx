@@ -43,6 +43,8 @@ namespace Ryujinx.Graphics.Gpu.Image
             public int TextureHandle;
             public int SamplerHandle;
             public int InvalidatedSequence;
+            public TexturePool CachedTexturePool;
+            public SamplerPool CachedSamplerPool;
             public Texture CachedTexture;
             public Sampler CachedSampler;
             public int ScaleIndex;
@@ -493,6 +495,8 @@ namespace Ryujinx.Graphics.Gpu.Image
                 ref TextureState state = ref _textureState[bindingInfo.Binding];
 
                 if (!poolModified &&
+                    state.CachedTexturePool == pool &&
+                    state.CachedSamplerPool == samplerPool &&
                     state.TextureHandle == textureId &&
                     state.SamplerHandle == samplerId &&
                     state.CachedTexture != null &&
@@ -517,6 +521,8 @@ namespace Ryujinx.Graphics.Gpu.Image
                     continue;
                 }
 
+                state.CachedTexturePool = pool;
+                state.CachedSamplerPool = samplerPool;
                 state.TextureHandle = textureId;
                 state.SamplerHandle = samplerId;
 
