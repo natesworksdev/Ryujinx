@@ -129,10 +129,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
             // It should be empty at this point, but clear it just to be safe.
             Fifo.Clear();
 
-            var bufferCache = _processor.MemoryManager.Physical.BufferCache;
+            var bufferCache = _processor.MemoryManager.VirtualBufferCache;
 
-            var parameterBuffer = bufferCache.GetGpuBufferRange(_processor.MemoryManager, parameterBufferGpuVa, 4);
-            var indirectBuffer = bufferCache.GetGpuBufferRange(_processor.MemoryManager, indirectBufferGpuVa, (ulong)indirectBufferSize);
+            var parameterBuffer = bufferCache.GetGpuBufferRange(parameterBufferGpuVa, 4);
+            var indirectBuffer = bufferCache.GetGpuBufferRange(indirectBufferGpuVa, (ulong)indirectBufferSize);
 
             _processor.ThreedClass.MultiDrawIndirectCount(indexCount, topology, indirectBuffer, parameterBuffer, maxDrawCount, stride);
         }

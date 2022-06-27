@@ -13,16 +13,19 @@ namespace Ryujinx.Memory.Tracking
         /// A list of region handles for each granularity sized chunk of the whole region.
         /// </summary>
         private readonly RegionHandle[] _handles;
-        private readonly ulong Address;
-        private readonly ulong Granularity;
-        private readonly ulong Size;
+        private readonly ulong _address;
+        private readonly ulong _granularity;
+        private readonly ulong _size;
+
+        public ulong Address => _address;
+        public ulong Size => _size;
 
         public bool Dirty { get; private set; } = true;
 
         internal MultiRegionHandle(MemoryTracking tracking, ulong address, ulong size, IEnumerable<IRegionHandle> handles, ulong granularity)
         {
             _handles = new RegionHandle[size / granularity];
-            Granularity = granularity;
+            _granularity = granularity;
 
             int i = 0;
 
@@ -83,16 +86,16 @@ namespace Ryujinx.Memory.Tracking
                 _handles[i++] = handle;
             }
 
-            Address = address;
-            Size = size;
+            _address = address;
+            _size = size;
         }
 
         public void ForceDirty(ulong address, ulong size)
         {
             Dirty = true;
 
-            int startHandle = (int)((address - Address) / Granularity);
-            int lastHandle = (int)((address + (size - 1) - Address) / Granularity);
+            int startHandle = (int)((address - _address) / _granularity);
+            int lastHandle = (int)((address + (size - 1) - _address) / _granularity);
 
             for (int i = startHandle; i <= lastHandle; i++)
             {
@@ -120,13 +123,13 @@ namespace Ryujinx.Memory.Tracking
 
             Dirty = false;
 
-            QueryModified(Address, Size, modifiedAction);
+            QueryModified(_address, _size, modifiedAction);
         }
 
         public void QueryModified(ulong address, ulong size, Action<ulong, ulong> modifiedAction)
         {
-            int startHandle = (int)((address - Address) / Granularity);
-            int lastHandle = (int)((address + (size - 1) - Address) / Granularity);
+            int startHandle = (int)((address - _address) / _granularity);
+            int lastHandle = (int)((address + (size - 1) - _address) / _granularity);
 
             ulong rgStart = _handles[startHandle].Address;
             ulong rgSize = 0;
@@ -160,8 +163,8 @@ namespace Ryujinx.Memory.Tracking
 
         public void QueryModified(ulong address, ulong size, Action<ulong, ulong> modifiedAction, int sequenceNumber)
         {
-            int startHandle = (int)((address - Address) / Granularity);
-            int lastHandle = (int)((address + (size - 1) - Address) / Granularity);
+            int startHandle = (int)((address - _address) / _granularity);
+            int lastHandle = (int)((address + (size - 1) - _address) / _granularity);
 
             ulong rgStart = _handles[startHandle].Address;
             ulong rgSize = 0;
@@ -197,8 +200,8 @@ namespace Ryujinx.Memory.Tracking
 
         public void RegisterAction(ulong address, ulong size, RegionSignal action)
         {
-            int startHandle = (int)((address - Address) / Granularity);
-            int lastHandle = (int)((address + (size - 1) - Address) / Granularity);
+            int startHandle = (int)((address - _address) / _granularity);
+            int lastHandle = (int)((address + (size - 1) - _address) / _granularity);
 
             for (int i = startHandle; i <= lastHandle; i++)
             {
@@ -208,8 +211,8 @@ namespace Ryujinx.Memory.Tracking
 
         public void RegisterPreciseAction(ulong address, ulong size, PreciseRegionSignal action)
         {
-            int startHandle = (int)((address - Address) / Granularity);
-            int lastHandle = (int)((address + (size - 1) - Address) / Granularity);
+            int startHandle = (int)((address - _address) / _granularity);
+            int lastHandle = (int)((address + (size - 1) - _address) / _granularity);
 
             for (int i = startHandle; i <= lastHandle; i++)
             {

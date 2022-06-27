@@ -93,7 +93,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 for (int i = 0; i < count; i++)
                 {
                     BufferModifiedRange overlap = overlaps[i];
-                    
+
                     if (overlap.Address > address)
                     {
                         // The start of the remaining region is uncovered by this overlap. Call the action for it.
@@ -316,6 +316,65 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     rangeAction(range.Address, range.Size);
                 }
             }
+        }
+
+        public void InheritRanges(BufferModifiedRangeList ranges, Action<ulong, ulong> rangeAction, MultiRange bounds)
+        {
+            BufferModifiedRange[] inheritRanges;
+
+            lock (ranges._lock)
+            {
+                inheritRanges = ranges.ToArray();
+            }
+
+            lock (_lock)
+            {
+                foreach (BufferModifiedRange range in inheritRanges)
+                {
+                    if (TryClamp(bounds, range, out BufferModifiedRange clampedRange))
+                    {
+                        Add(clampedRange);
+                    }
+                }
+            }
+
+            ulong currentSync = _context.SyncNumber;
+            foreach (BufferModifiedRange range in inheritRanges)
+            {
+                if (range.SyncNumber != currentSync)
+                {
+                    if (TryClamp(bounds, range, out BufferModifiedRange clampedRange))
+                    {
+                        rangeAction(clampedRange.Address, clampedRange.Size);
+                    }
+                }
+            }
+        }
+
+        private static bool TryClamp(MultiRange bounds, BufferModifiedRange range, out BufferModifiedRange clampedRange)
+        {
+            for (int i = 0; i < bounds.Count; i++)
+            {
+                MemoryRange currentBounds = bounds.GetSubRange(i);
+                if (currentBounds.OverlapsWith(new MemoryRange(range.Address, range.Size)))
+                {
+                    ulong clampedAddress = Math.Max(range.Address, currentBounds.Address);
+                    ulong clampedEndAddress = Math.Min(range.EndAddress, currentBounds.EndAddress);
+
+                    if (clampedAddress < clampedEndAddress)
+                    {
+                        clampedRange = new BufferModifiedRange(clampedAddress, clampedEndAddress - clampedAddress, range.SyncNumber);
+                        return true;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+
+            clampedRange = null;
+            return false;
         }
 
         /// <summary>

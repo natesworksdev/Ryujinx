@@ -13,6 +13,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
     class ThreedClass : IDeviceState
     {
         private readonly GpuContext _context;
+        private readonly GpuChannel _channel;
         private readonly DeviceStateWithShadow<ThreedClassState> _state;
 
         private readonly InlineToMemoryClass _i2mClass;
@@ -29,6 +30,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         public ThreedClass(GpuContext context, GpuChannel channel)
         {
             _context = context;
+            _channel = channel;
             _state = new DeviceStateWithShadow<ThreedClassState>(new Dictionary<string, RwCallback>
             {
                 { nameof(ThreedClassState.LaunchDma), new RwCallback(LaunchDma, null) },
@@ -114,6 +116,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// </summary>
         public void UpdateState()
         {
+            // Make sure we are working with the latest memory mappings before binding anything.
+            _channel.MemoryManager.VirtualBufferCache.RefreshMappings();
+
             _cbUpdater.FlushUboDirty();
             _stateUpdater.Update();
         }

@@ -94,6 +94,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
         {
             var memoryManager = _channel.MemoryManager;
 
+            // Make sure we are working with the latest memory mappings before binding anything.
+            memoryManager.VirtualBufferCache.RefreshMappings();
+
             _3dEngine.FlushUboDirty();
 
             uint qmdAddress = _state.State.SendPcasA;
