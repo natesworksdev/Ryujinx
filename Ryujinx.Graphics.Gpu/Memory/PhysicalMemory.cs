@@ -7,6 +7,7 @@ using Ryujinx.Memory.Range;
 using Ryujinx.Memory.Tracking;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 namespace Ryujinx.Graphics.Gpu.Memory
@@ -326,6 +327,74 @@ namespace Ryujinx.Graphics.Gpu.Memory
         public CpuMultiRegionHandle BeginGranularTracking(ulong address, ulong size, IEnumerable<IRegionHandle> handles = null, ulong granularity = 4096)
         {
             return _cpuMemory.BeginGranularTracking(address, size, handles, granularity);
+        }
+
+        /// <summary>
+        /// Obtains a memory tracking handle for the given virtual region, with a specified granularity. This should be disposed when finished with.
+        /// </summary>
+        /// <param name="range">Ranges of physical memory where the data is located</param>
+        /// <param name="handles">Handles to inherit state from or reuse</param>
+        /// <param name="granularity">Desired granularity of write tracking</param>
+        /// <returns>The memory tracking handle</returns>
+        public GpuMultiRegionHandle BeginGranularTracking(MultiRange range, IEnumerable<IRegionHandle> handles = null, ulong granularity = 4096)
+        {
+            var cpuRegionHandles = new CpuMultiRegionHandle[range.Count];
+            int handlesCount = 0;
+
+            IRegionHandle[] handlesArray = null;
+            int currentIndex = 0;
+
+            for (int i = 0; i < range.Count; i++)
+            {
+                var currentRange = range.GetSubRange(i);
+
+                if (currentRange.Address != MemoryManager.PteUnmapped)
+                {
+                    IEnumerable<IRegionHandle> handlesForRange = handles;
+
+                    if (handles != null && range.Count > 1)
+                    {
+                        if (handlesArray == null)
+                        {
+                            handlesArray = handles.ToArray();
+                        }
+
+                        int previousIndex = currentIndex;
+                        ulong currentAddress = currentRange.Address;
+
+                        while (currentIndex < handlesArray.Length &&
+                            handlesArray[currentIndex].Address >= currentAddress &&
+                            handlesArray[currentIndex].EndAddress <= currentRange.EndAddress)
+                        {
+                            currentAddress = handlesArray[currentIndex].Address;
+                            currentIndex++;
+                        }
+
+                        int count = currentIndex - previousIndex;
+                        if (count != 0)
+                        {
+                            handlesForRange = new ArraySegment<IRegionHandle>(handlesArray, previousIndex, count);
+                        }
+                        else
+                        {
+                            handlesForRange = null;
+                        }
+                    }
+
+                    cpuRegionHandles[handlesCount++] = _cpuMemory.BeginGranularTracking(
+                        currentRange.Address,
+                        currentRange.Size,
+                        handlesForRange,
+                        granularity);
+                }
+            }
+
+            if (handlesCount != range.Count)
+            {
+                Array.Resize(ref cpuRegionHandles, handlesCount);
+            }
+
+            return new GpuMultiRegionHandle(cpuRegionHandles);
         }
 
         /// <summary>

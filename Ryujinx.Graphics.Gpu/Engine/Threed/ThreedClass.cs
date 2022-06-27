@@ -14,6 +14,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
     class ThreedClass : IDeviceState
     {
         private readonly GpuContext _context;
+        private readonly GpuChannel _channel;
         private readonly GPFifoClass _fifoClass;
         private readonly DeviceStateWithShadow<ThreedClassState> _state;
 
@@ -28,9 +29,11 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// </summary>
         /// <param name="context">GPU context</param>
         /// <param name="channel">GPU channel</param>
+        /// <param name="fifoClass">GPFifo class</param>
         public ThreedClass(GpuContext context, GpuChannel channel, GPFifoClass fifoClass)
         {
             _context = context;
+            _channel = channel;
             _fifoClass = fifoClass;
             _state = new DeviceStateWithShadow<ThreedClassState>(new Dictionary<string, RwCallback>
             {
@@ -118,6 +121,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         public void UpdateState()
         {
             _fifoClass.CreatePendingSyncs();
+
+            // Make sure we are working with the latest memory mappings before binding anything.
+            _channel.MemoryManager.VirtualBufferCache.RefreshMappings();
+
             _cbUpdater.FlushUboDirty();
             _stateUpdater.Update();
         }
@@ -523,22 +530,22 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
         /// Performs a indirect draw, with parameters from a GPU buffer.
         /// </summary>
         /// <param name="topology">Primitive topology</param>
-        /// <param name="indirectBufferAddress">Address of the buffer with the draw parameters, such as count, first index, etc</param>
-        /// <param name="parameterBufferAddress">Address of the buffer with the draw count</param>
+        /// <param name="indirectBufferGpuVa">Address of the buffer with the draw parameters, such as count, first index, etc</param>
+        /// <param name="parameterBufferGpuVa">Address of the buffer with the draw count</param>
         /// <param name="maxDrawCount">Maximum number of draws that can be made</param>
-        /// <param name="stride">Distance in bytes between each entry on the data pointed to by <paramref name="indirectBufferAddress"/></param>
+        /// <param name="stride">Distance in bytes between each entry on the data pointed to by <paramref name="indirectBufferGpuVa"/></param>
         /// <param name="indexCount">Maximum number of indices that the draw can consume</param>
         /// <param name="drawType">Type of the indirect draw, which can be indexed or non-indexed, with or without a draw count</param>
         public void DrawIndirect(
             PrimitiveTopology topology,
-            ulong indirectBufferAddress,
-            ulong parameterBufferAddress,
+            ulong indirectBufferGpuVa,
+            ulong parameterBufferGpuVa,
             int maxDrawCount,
             int stride,
             int indexCount,
             IndirectDrawType drawType)
         {
-            _drawManager.DrawIndirect(this, topology, indirectBufferAddress, parameterBufferAddress, maxDrawCount, stride, indexCount, drawType);
+            _drawManager.DrawIndirect(this, topology, indirectBufferGpuVa, parameterBufferGpuVa, maxDrawCount, stride, indexCount, drawType);
         }
 
         /// <summary>

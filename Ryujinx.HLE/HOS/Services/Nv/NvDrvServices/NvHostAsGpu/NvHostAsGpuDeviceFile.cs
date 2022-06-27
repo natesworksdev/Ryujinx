@@ -396,6 +396,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
             return NvInternalResult.Success;
         }
 
-        public override void Close() { }
+        public override void Close()
+        {
+            _asContext.Gmm.Dispose();
+        }
     }
 }

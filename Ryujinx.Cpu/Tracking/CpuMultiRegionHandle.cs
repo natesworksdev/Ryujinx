@@ -9,6 +9,8 @@ namespace Ryujinx.Cpu.Tracking
         private readonly MultiRegionHandle _impl;
 
         public bool Dirty => _impl.Dirty;
+        public ulong Address => _impl.Address;
+        public ulong Size => _impl.Size;
 
         internal CpuMultiRegionHandle(MultiRegionHandle impl)
         {

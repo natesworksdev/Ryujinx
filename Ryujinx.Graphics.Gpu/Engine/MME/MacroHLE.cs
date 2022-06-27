@@ -177,9 +177,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
 
             ulong indirectBufferGpuVa = count.GpuVa;
 
-            var bufferCache = _processor.MemoryManager.Physical.BufferCache;
+            var bufferCache = _processor.MemoryManager.VirtualBufferCache;
 
-            bool useBuffer = bufferCache.CheckModified(_processor.MemoryManager, indirectBufferGpuVa, IndirectIndexedDataEntrySize, out ulong indirectBufferAddress);
+            bool useBuffer = bufferCache.CheckModified(_processor.MemoryManager, indirectBufferGpuVa, IndirectIndexedDataEntrySize);
 
             if (useBuffer)
             {
@@ -187,7 +187,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
 
                 _processor.ThreedClass.DrawIndirect(
                     topology,
-                    indirectBufferAddress,
+                    indirectBufferGpuVa,
                     0,
                     1,
                     IndirectIndexedDataEntrySize,
@@ -283,17 +283,14 @@ namespace Ryujinx.Graphics.Gpu.Engine.MME
                 }
             }
 
-            var bufferCache = _processor.MemoryManager.Physical.BufferCache;
+            var bufferCache = _processor.MemoryManager.VirtualBufferCache;
 
             ulong indirectBufferSize = (ulong)maxDrawCount * (ulong)stride;
 
-            ulong indirectBufferAddress = bufferCache.TranslateAndCreateBuffer(_processor.MemoryManager, indirectBufferGpuVa, indirectBufferSize);
-            ulong parameterBufferAddress = bufferCache.TranslateAndCreateBuffer(_processor.MemoryManager, parameterBufferGpuVa, 4);
-
             _processor.ThreedClass.DrawIndirect(
                 topology,
-                indirectBufferAddress,
-                parameterBufferAddress,
+                indirectBufferGpuVa,
+                parameterBufferGpuVa,
                 maxDrawCount,
                 stride,
                 indexCount,

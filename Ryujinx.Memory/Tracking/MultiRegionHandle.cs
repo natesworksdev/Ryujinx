@@ -17,9 +17,12 @@ namespace Ryujinx.Memory.Tracking
         /// A list of region handles for each granularity sized chunk of the whole region.
         /// </summary>
         private readonly RegionHandle[] _handles;
-        private readonly ulong Address;
-        private readonly ulong Granularity;
-        private readonly ulong Size;
+        private readonly ulong _address;
+        private readonly ulong _granularity;
+        private readonly ulong _size;
+
+        public ulong Address => _address;
+        public ulong Size => _size;
 
         private ConcurrentBitmap _dirtyBitmap;
 
@@ -33,7 +36,7 @@ namespace Ryujinx.Memory.Tracking
         internal MultiRegionHandle(MemoryTracking tracking, ulong address, ulong size, IEnumerable<IRegionHandle> handles, ulong granularity)
         {
             _handles = new RegionHandle[size / granularity];
-            Granularity = granularity;
+            _granularity = granularity;
 
             _dirtyBitmap = new ConcurrentBitmap(_handles.Length, true);
             _sequenceNumberBitmap = new BitMap(_handles.Length);
@@ -106,8 +109,8 @@ namespace Ryujinx.Memory.Tracking
 
             _uncheckedHandles = _handles.Length;
 
-            Address = address;
-            Size = size;
+            _address = address;
+            _size = size;
         }
 
         public void SignalWrite()
@@ -124,8 +127,8 @@ namespace Ryujinx.Memory.Tracking
         {
             Dirty = true;
 
-            int startHandle = (int)((address - Address) / Granularity);
-            int lastHandle = (int)((address + (size - 1) - Address) / Granularity);
+            int startHandle = (int)((address - Address) / _granularity);
+            int lastHandle = (int)((address + (size - 1) - Address) / _granularity);
 
             for (int i = startHandle; i <= lastHandle; i++)
             {
@@ -147,7 +150,7 @@ namespace Ryujinx.Memory.Tracking
 
             Dirty = false;
 
-            QueryModified(Address, Size, modifiedAction);
+            QueryModified(_address, _size, modifiedAction);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -188,8 +191,8 @@ namespace Ryujinx.Memory.Tracking
 
         public void QueryModified(ulong address, ulong size, Action<ulong, ulong> modifiedAction)
         {
-            int startHandle = (int)((address - Address) / Granularity);
-            int lastHandle = (int)((address + (size - 1) - Address) / Granularity);
+            int startHandle = (int)((address - _address) / _granularity);
+            int lastHandle = (int)((address + (size - 1) - _address) / _granularity);
 
             ulong rgStart = _handles[startHandle].Address;
 
@@ -293,10 +296,10 @@ namespace Ryujinx.Memory.Tracking
 
         public void QueryModified(ulong address, ulong size, Action<ulong, ulong> modifiedAction, int sequenceNumber)
         {
-            int startHandle = (int)((address - Address) / Granularity);
-            int lastHandle = (int)((address + (size - 1) - Address) / Granularity);
+            int startHandle = (int)((address - _address) / _granularity);
+            int lastHandle = (int)((address + (size - 1) - _address) / _granularity);
 
-            ulong rgStart = Address + (ulong)startHandle * Granularity;
+            ulong rgStart = Address + (ulong)startHandle * _granularity;
 
             if (sequenceNumber != _sequenceNumber)
             {
@@ -377,8 +380,8 @@ namespace Ryujinx.Memory.Tracking
 
         public void RegisterAction(ulong address, ulong size, RegionSignal action)
         {
-            int startHandle = (int)((address - Address) / Granularity);
-            int lastHandle = (int)((address + (size - 1) - Address) / Granularity);
+            int startHandle = (int)((address - _address) / _granularity);
+            int lastHandle = (int)((address + (size - 1) - _address) / _granularity);
 
             for (int i = startHandle; i <= lastHandle; i++)
             {
@@ -388,8 +391,8 @@ namespace Ryujinx.Memory.Tracking
 
         public void RegisterPreciseAction(ulong address, ulong size, PreciseRegionSignal action)
         {
-            int startHandle = (int)((address - Address) / Granularity);
-            int lastHandle = (int)((address + (size - 1) - Address) / Granularity);
+            int startHandle = (int)((address - _address) / _granularity);
+            int lastHandle = (int)((address + (size - 1) - _address) / _granularity);
 
             for (int i = startHandle; i <= lastHandle; i++)
             {

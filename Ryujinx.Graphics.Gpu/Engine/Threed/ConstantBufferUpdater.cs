@@ -108,7 +108,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             if (_ubFollowUpAddress != 0)
             {
                 var memoryManager = _channel.MemoryManager;
-                memoryManager.Physical.BufferCache.ForceDirty(memoryManager, _ubFollowUpAddress - _ubByteCount, _ubByteCount);
+                memoryManager.VirtualBufferCache.ForceDirty(_ubFollowUpAddress - _ubByteCount, _ubByteCount);
 
                 _ubFollowUpAddress = 0;
             }

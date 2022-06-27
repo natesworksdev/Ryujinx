@@ -1,4 +1,6 @@
-﻿namespace Ryujinx.Graphics.Gpu.Memory
+﻿using Ryujinx.Memory.Range;
+
+namespace Ryujinx.Graphics.Gpu.Memory
 {
     /// <summary>
     /// A cached entry for easily locating a buffer that is used often internally.
@@ -6,9 +8,9 @@
     class BufferCacheEntry
     {
         /// <summary>
-        /// The CPU VA of the buffer destination.
+        /// The memory region of the buffer destination.
         /// </summary>
-        public ulong Address;
+        public MultiRange Range;
 
         /// <summary>
         /// The end GPU VA of the associated buffer, used to check if new data can fit.
@@ -29,13 +31,13 @@
         /// <summary>
         /// Create a new cache entry.
         /// </summary>
-        /// <param name="address">The CPU VA of the buffer destination</param>
+        /// <param name="range">Memory region of the buffer destination</param>
         /// <param name="gpuVa">The GPU VA of the buffer destination</param>
         /// <param name="buffer">The buffer object containing the target buffer</param>
-        public BufferCacheEntry(ulong address, ulong gpuVa, Buffer buffer)
+        public BufferCacheEntry(MultiRange range, ulong gpuVa, Buffer buffer)
         {
-            Address = address;
-            EndGpuAddress = gpuVa + (buffer.EndAddress - address);
+            Range = range;
+            EndGpuAddress = gpuVa + range.GetSize();
             Buffer = buffer;
             UnmappedSequence = buffer.UnmappedSequence;
         }

@@ -8,10 +8,13 @@ namespace Ryujinx.Memory.Range
     /// </summary>
     public struct MultiRange : IEquatable<MultiRange>
     {
+        public static MultiRange Empty => new MultiRange(0UL, 0UL);
+
         private readonly MemoryRange _singleRange;
         private readonly MemoryRange[] _ranges;
 
         private bool HasSingleRange => _ranges == null;
+        public bool IsNull => _ranges == null && _singleRange.Address == 0UL && _singleRange.Size == 0Ul;
 
         /// <summary>
         /// Total of physical sub-ranges on the virtual memory region.
@@ -343,6 +346,11 @@ namespace Ryujinx.Memory.Range
             }
 
             return hash.ToHashCode();
+        }
+
+        public override string ToString()
+        {
+            return HasSingleRange ? _singleRange.ToString() : string.Join(", ", _ranges);
         }
     }
 }
