@@ -363,7 +363,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
                         ulong currentAddress = currentRange.Address;
 
                         while (currentIndex < handlesArray.Length &&
-                            handlesArray[currentIndex].Address >= currentAddress &&
+                            (handlesArray[currentIndex].Address > currentAddress ||
+                            (handlesArray[currentIndex].Address == currentAddress && previousIndex == currentIndex)) &&
                             handlesArray[currentIndex].EndAddress <= currentRange.EndAddress)
                         {
                             currentAddress = handlesArray[currentIndex].Address;
