@@ -3,6 +3,7 @@ using Ryujinx.Memory.Range;
 using Ryujinx.Memory.Tracking;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Ryujinx.Graphics.Gpu.Memory
@@ -13,7 +14,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
     class Buffer : IDisposable
     {
         private readonly GpuContext _context;
-        private readonly PhysicalMemory _physicalMemory;
         private readonly BufferRegion[] _regions;
 
         /// <summary>
@@ -47,10 +47,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="physicalMemory">Physical memory where the buffer is mapped</param>
         /// <param name="range">Range of memory where the buffer data is located</param>
         /// <param name="baseHandles">Tracking handles to be inherited by this buffer</param>
-        public Buffer(GpuContext context, PhysicalMemory physicalMemory, MultiRange range, IEnumerable<IRegionHandle> baseHandles = null)
+        public Buffer(GpuContext context, PhysicalMemory physicalMemory, MultiRange range, IEnumerable<RegionHandleSegment> baseHandles = null)
         {
             _context = context;
-            _physicalMemory = physicalMemory;
             Range = range;
             Size = range.GetSize();
 
@@ -60,45 +59,19 @@ namespace Ryujinx.Graphics.Gpu.Memory
             int regionsCount = 0;
             ulong baseOffset = 0;
 
-            IRegionHandle[] handlesArray = null;
-            int currentIndex = 0;
-
-            for (int i = 0; i < range.Count; i++)
+            for (int index = 0; index < range.Count; index++)
             {
-                MemoryRange subRange = range.GetSubRange(i);
+                MemoryRange subRange = range.GetSubRange(index);
 
                 if (subRange.Address != MemoryManager.PteUnmapped)
                 {
-                    IEnumerable<IRegionHandle> handlesForRange = baseHandles;
+                    IEnumerable<IRegionHandle> handles = null;
 
-                    if (baseHandles != null && range.Count > 1)
+                    if (baseHandles != null)
                     {
-                        if (handlesArray == null)
-                        {
-                            handlesArray = baseHandles.ToArray();
-                        }
-
-                        int previousIndex = currentIndex;
-                        ulong currentAddress = subRange.Address;
-
-                        while (currentIndex < handlesArray.Length &&
-                            (handlesArray[currentIndex].Address > currentAddress ||
-                            (handlesArray[currentIndex].Address == currentAddress && previousIndex == currentIndex)) &&
-                            handlesArray[currentIndex].EndAddress <= subRange.EndAddress)
-                        {
-                            currentAddress = handlesArray[currentIndex].Address;
-                            currentIndex++;
-                        }
-
-                        int count = currentIndex - previousIndex;
-                        if (count != 0)
-                        {
-                            handlesForRange = new ArraySegment<IRegionHandle>(handlesArray, previousIndex, count);
-                        }
-                        else
-                        {
-                            handlesForRange = null;
-                        }
+                        handles = baseHandles
+                            .Where(x => x.BaseOffset >= baseOffset && x.BaseOffset + x.Size <= baseOffset + subRange.Size)
+                            .SelectMany(x => x.Handles);
                     }
 
                     regions[regionsCount++] = new BufferRegion(
@@ -108,7 +81,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                         subRange.Size,
                         Handle,
                         baseOffset,
-                        handlesForRange);
+                        handles);
                 }
 
                 baseOffset += subRange.Size;
@@ -124,29 +97,31 @@ namespace Ryujinx.Graphics.Gpu.Memory
             _views = new List<(RangeList<BufferView>, BufferView)>();
         }
 
-        public IEnumerable<IRegionHandle> GetTrackingHandles()
+        public IEnumerable<RegionHandleSegment> GetTrackingHandles(ulong baseOffset)
         {
             if (_regions.Length == 1)
             {
-                return _regions[0].GetTrackingHandles();
+                return Enumerable.Repeat(new RegionHandleSegment(baseOffset, _regions[0].Size, _regions[0].GetTrackingHandles()), 1);
             }
 
-            return _regions.SelectMany(x => x.GetTrackingHandles());
+            RegionHandleSegment[] handles = new RegionHandleSegment[_regions.Length];
+
+            for (int index = 0; index < _regions.Length; index++)
+            {
+                BufferRegion region = _regions[index];
+
+                handles[index] = new RegionHandleSegment(baseOffset + region.BaseOffset, region.Size, region.GetTrackingHandles());
+            }
+
+            return handles;
         }
 
-        public IEnumerable<IRegionHandle> GetTrackingHandlesSlice(ulong bufferOffset, ulong size)
+        public IEnumerable<RegionHandleSegment> GetTrackingHandlesSlice(ulong baseOffset, ulong bufferOffset, ulong size)
         {
             ulong bufferEndOffset = bufferOffset + size;
             int index = FindStartIndex(bufferOffset);
 
-            ulong skipSize = 0;
-
-            for (int i = 0; i < index; i++)
-            {
-                skipSize += _regions[i].Size;
-            }
-
-            ulong takeSize = 0;
+            List<RegionHandleSegment> handles = new List<RegionHandleSegment>();
 
             for (; index < _regions.Length; index++)
             {
@@ -157,21 +132,87 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     break;
                 }
 
-                if (bufferOffset > region.BaseOffset)
-                {
-                    skipSize += bufferOffset - region.BaseOffset;
-                }
+                ulong regionEndOffset = region.BaseOffset + region.Size;
 
                 ulong clampedOffset = Math.Max(bufferOffset, region.BaseOffset);
-                ulong clampedEndOffset = Math.Min(bufferEndOffset, region.BaseOffset + region.Size);
+                ulong clampedEndOffset = Math.Min(bufferEndOffset, regionEndOffset);
+                ulong clampedSize = clampedEndOffset - clampedOffset;
 
-                takeSize += clampedEndOffset - clampedOffset;
+                IEnumerable<IRegionHandle> regionHandles = region.GetTrackingHandles();
+
+                if (clampedOffset > region.BaseOffset || clampedEndOffset < regionEndOffset)
+                {
+                    ulong skipSize = clampedOffset - region.BaseOffset;
+
+                    int skipCount = (int)(skipSize / BufferRegion.GranularBufferThreshold);
+                    int takeCount = (int)(clampedSize / BufferRegion.GranularBufferThreshold);
+
+                    regionHandles = regionHandles.Skip(skipCount).Take(takeCount);
+                }
+
+                handles.Add(new RegionHandleSegment(baseOffset + (clampedOffset - bufferOffset), clampedSize, regionHandles));
             }
 
-            int skipCount = (int)(skipSize / BufferRegion.GranularBufferThreshold);
-            int takeCount = (int)(takeSize / BufferRegion.GranularBufferThreshold);
+            return handles;
+        }
 
-            return GetTrackingHandles().Skip(skipCount).Take(takeCount);
+        public void DisposeTrackingHandles(ulong bufferOffset, ulong size)
+        {
+            ulong bufferEndOffset = bufferOffset + size;
+            int index = FindStartIndex(bufferOffset);
+
+            for (; index < _regions.Length; index++)
+            {
+                BufferRegion region = _regions[index];
+
+                if (region.BaseOffset >= bufferEndOffset)
+                {
+                    break;
+                }
+
+                ulong regionEndOffset = region.BaseOffset + region.Size;
+
+                ulong clampedOffset = Math.Max(bufferOffset, region.BaseOffset);
+                ulong clampedEndOffset = Math.Min(bufferEndOffset, regionEndOffset);
+                ulong clampedSize = clampedEndOffset - clampedOffset;
+
+                IEnumerable<IRegionHandle> regionHandles = region.GetTrackingHandles();
+
+                if (clampedOffset > region.BaseOffset || clampedEndOffset < regionEndOffset)
+                {
+                    ulong skipSize = clampedOffset - region.BaseOffset;
+
+                    int skipCount = (int)(skipSize / BufferRegion.GranularBufferThreshold);
+                    int takeCount = (int)(clampedSize / BufferRegion.GranularBufferThreshold);
+
+                    foreach (IRegionHandle handle in regionHandles)
+                    {
+                        if (skipCount > 0)
+                        {
+                            skipCount--;
+                        }
+                        else if (takeCount > 0)
+                        {
+                            takeCount--;
+                            handle.Dispose();
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    Debug.Assert(skipCount == 0);
+                    Debug.Assert(takeCount == 0);
+                }
+                else
+                {
+                    foreach (IRegionHandle handle in regionHandles)
+                    {
+                        handle.Dispose();
+                    }
+                }
+            }
         }
 
         public void AddView(RangeList<BufferView> list, BufferView view)
