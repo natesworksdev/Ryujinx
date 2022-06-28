@@ -59,10 +59,6 @@ namespace Ryujinx.Graphics.OpenGL
 
         private uint _scissorEnables;
 
-        private bool _msAlphaToCoverageEnable;
-        private bool _msAlphaToCoverageDitherEnable;
-        private bool _fbMultisampled;
-
         private bool _tfEnabled;
         private TransformFeedbackPrimitiveType _tfTopology;
 
@@ -924,11 +920,6 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void SetMultisampleState(MultisampleDescriptor multisample)
         {
-            _msAlphaToCoverageEnable = multisample.AlphaToCoverageEnable;
-            _msAlphaToCoverageDitherEnable = multisample.AlphaToCoverageDitherEnable;
-
-            UpdateAlphaToCoverage();
-
             if (multisample.AlphaToCoverageEnable)
             {
                 GL.Enable(EnableCap.SampleAlphaToCoverage);
@@ -1111,7 +1102,6 @@ namespace Ryujinx.Graphics.OpenGL
             EnsureFramebuffer();
 
             bool isBgraChanged = false;
-            bool fbMultisampled = false;
 
             for (int index = 0; index < colors.Length; index++)
             {
@@ -1130,19 +1120,7 @@ namespace Ryujinx.Graphics.OpenGL
 
                         RestoreComponentMask(index);
                     }
-
-                    if (color.Target == Target.Texture2DMultisample ||
-                        color.Target == Target.Texture2DMultisampleArray)
-                    {
-                        fbMultisampled = true;
-                    }
                 }
-            }
-
-            if (_fbMultisampled != fbMultisampled)
-            {
-                _fbMultisampled = fbMultisampled;
-                UpdateAlphaToCoverage();
             }
 
             if (isBgraChanged)
@@ -1466,15 +1444,6 @@ namespace Ryujinx.Graphics.OpenGL
             }
 
             return (_boundDrawFramebuffer, _boundReadFramebuffer);
-        }
-
-        private void UpdateAlphaToCoverage()
-        {
-            bool enable = _msAlphaToCoverageEnable &&
-                          _msAlphaToCoverageDitherEnable &&
-                          !_fbMultisampled;
-
-            _supportBuffer.UpdateFragmentAlphaToCoverageDither(enable);
         }
 
         public void UpdateRenderScale(ReadOnlySpan<float> scales, int totalCount, int fragmentCount)

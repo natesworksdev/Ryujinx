@@ -16,7 +16,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
         public const string DataName = "data";
 
         public const string SupportBlockName = "support_block";
-        public const string SupportBlockAlphaToCoverageDitherName = "s_a2c_dither";
         public const string SupportBlockAlphaTestName = "s_alpha_test";
         public const string SupportBlockIsBgraName = "s_is_bgra";
         public const string SupportBlockViewportInverse = "s_viewport_inverse";

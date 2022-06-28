@@ -1249,7 +1249,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 _state.State.EarlyZForce,
                 _drawState.Topology,
                 _state.State.TessMode,
-                _state.State.ViewportTransformEnable == 0);
+                _state.State.ViewportTransformEnable == 0,
+                (_state.State.MultisampleControl & 1) != 0,
+                _state.State.AlphaToCoverageDitherEnable);
         }
 
         /// <summary>

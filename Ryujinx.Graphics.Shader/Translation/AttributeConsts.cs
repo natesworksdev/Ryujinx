@@ -64,9 +64,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         public const int FragmentOutputColorBase = 0x1000010;
         public const int FragmentOutputColorEnd  = FragmentOutputColorBase + 8 * 16;
 
-        public const int FragmentAlphaToCoverageDither = 0x1000100;
-
-        public const int FragmentOutputIsBgraBase = 0x1000110;
+        public const int FragmentOutputIsBgraBase = 0x1000100;
         public const int FragmentOutputIsBgraEnd  = FragmentOutputIsBgraBase + 8 * 4;
 
         public const int SupportBlockViewInverseX = 0x1000200;

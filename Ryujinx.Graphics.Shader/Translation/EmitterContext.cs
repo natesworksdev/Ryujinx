@@ -2,7 +2,6 @@ using Ryujinx.Graphics.Shader.Decoders;
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Numerics;
 using System.Runtime.CompilerServices;
 
 using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
@@ -271,8 +270,8 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         private void GenerateAlphaToCoverageDitherDiscard()
         {
-            // If alpha is not written, then we're done.
-            if ((Config.OmapTargets & 8) == 0)
+            // If the feature is disabled, or alpha is not written, then we're done.
+            if (!Config.GpuAccessor.QueryAlphaToCoverageDitherEnable() || (Config.OmapTargets & 8) == 0)
             {
                 return;
             }
@@ -280,10 +279,6 @@ namespace Ryujinx.Graphics.Shader.Translation
             // 11 11 11 10 10 10 10 00
             // 11 01 01 01 01 00 00 00
             Operand ditherMask = Const(unchecked((int)0xfbb99110u));
-
-            Operand a2cDitherEndLabel = Label();
-
-            this.BranchIfFalse(a2cDitherEndLabel, Attribute(AttributeConsts.FragmentAlphaToCoverageDither));
 
             Operand x = this.BitwiseAnd(this.FP32ConvertToU32(Attribute(AttributeConsts.PositionX)), Const(1));
             Operand y = this.BitwiseAnd(this.FP32ConvertToU32(Attribute(AttributeConsts.PositionY)), Const(1));
@@ -294,6 +289,8 @@ namespace Ryujinx.Graphics.Shader.Translation
             Operand quantizedAlpha = this.IMinimumU32(this.FP32ConvertToU32(scaledAlpha), Const(7));
             Operand shift = this.BitwiseOr(this.ShiftLeft(quantizedAlpha, Const(2)), xy);
             Operand opaque = this.BitwiseAnd(this.ShiftRightU32(ditherMask, shift), Const(1));
+
+            Operand a2cDitherEndLabel = Label();
 
             this.BranchIfTrue(a2cDitherEndLabel, opaque);
             this.Discard();

@@ -16,8 +16,7 @@ namespace Ryujinx.Graphics.Shader
         public static int FieldSize;
         public static int RequiredSize;
 
-        public static int FragmentAlphaToCoverageDitherOffset;
-        // public static int FragmentAlphaTestOffset;
+        public static int FragmentAlphaTestOffset;
         public static int FragmentIsBgraOffset;
         public static int ViewportInverseOffset;
         public static int FragmentRenderScaleCountOffset;
@@ -40,8 +39,7 @@ namespace Ryujinx.Graphics.Shader
 
             SupportBuffer instance = new SupportBuffer();
 
-            FragmentAlphaToCoverageDitherOffset = OffsetOf(ref instance, ref instance.FragmentAlphaToCoverageDither);
-            // FragmentAlphaTestOffset = OffsetOf(ref instance, ref instance.FragmentAlphaTest);
+            FragmentAlphaTestOffset = OffsetOf(ref instance, ref instance.FragmentAlphaTest);
             FragmentIsBgraOffset = OffsetOf(ref instance, ref instance.FragmentIsBgra);
             ViewportInverseOffset = OffsetOf(ref instance, ref instance.ViewportInverse);
             FragmentRenderScaleCountOffset = OffsetOf(ref instance, ref instance.FragmentRenderScaleCount);
@@ -49,8 +47,7 @@ namespace Ryujinx.Graphics.Shader
             ComputeRenderScaleOffset = GraphicsRenderScaleOffset + FieldSize;
         }
 
-        public Vector4<int> FragmentAlphaToCoverageDither;
-        // public Vector4<int> FragmentAlphaTest;
+        public Vector4<int> FragmentAlphaTest;
         public Array8<Vector4<int>> FragmentIsBgra;
         public Vector4<float> ViewportInverse;
         public Vector4<int> FragmentRenderScaleCount;
