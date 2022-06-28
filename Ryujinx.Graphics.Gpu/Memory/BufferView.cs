@@ -1,5 +1,6 @@
 using Ryujinx.Memory.Range;
 using System;
+using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Gpu.Memory
 {
@@ -45,6 +46,26 @@ namespace Ryujinx.Graphics.Gpu.Memory
             BaseOffset = offset;
             IsVirtual = isVirtual;
             Buffer = buffer;
+        }
+
+        public IEnumerable<RegionHandleSegment> GetTrackingHandles(ulong newAddress)
+        {
+            ulong offsetWithinNew = Address - newAddress;
+
+            if (BaseOffset == 0 && Size == Buffer.Size)
+            {
+                return Buffer.GetTrackingHandles(offsetWithinNew);
+            }
+
+            IEnumerable<RegionHandleSegment> slice = Buffer.GetTrackingHandlesSlice(offsetWithinNew, (ulong)BaseOffset, Size);
+
+            // Dispose tracking handles we are not going to inherit.
+            ulong viewEndOffset = (ulong)BaseOffset + Size;
+
+            Buffer.DisposeTrackingHandles(0, (ulong)BaseOffset);
+            Buffer.DisposeTrackingHandles(viewEndOffset, Buffer.Size - viewEndOffset);
+
+            return slice;
         }
 
         /// <summary>

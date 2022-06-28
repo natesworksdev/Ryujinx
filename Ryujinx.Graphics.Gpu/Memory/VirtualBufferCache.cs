@@ -141,12 +141,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             {
                 Buffer oldBuffer = view.Buffer;
                 ulong clampedSize = clampedEndAddress - clampedAddress;
-                var unmapRegionHandles = oldBuffer.GetTrackingHandlesSlice(clampedAddress - view.Address, clampedSize);
-
-                foreach (var handle in unmapRegionHandles)
-                {
-                    handle.Dispose();
-                }
+                oldBuffer.DisposeTrackingHandles(clampedAddress - view.Address, clampedSize);
             }
 
             // If we are doing a partial unmap, the tracking handles will be inherited by the new buffer(s).
@@ -160,15 +155,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             if (IsFullyUnmapped(splitRange))
             {
-                if (viewToSplit.IsVirtual)
-                {
-                    var handles = viewToSplit.Buffer.GetTrackingHandlesSlice(splitRangeOffset, splitSize);
-
-                    foreach (var handle in handles)
-                    {
-                        handle.Dispose();
-                    }
-                }
+                // No need to dispose tracking handles as unmapped ranges don't have any tracking handle.
 
                 return;
             }
@@ -181,7 +168,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 Buffer physicalBuffer = null;
                 Buffer oldBuffer = viewToSplit.Buffer;
 
-                var baseHandles = oldBuffer.GetTrackingHandlesSlice(splitRangeOffset, splitSize);
+                var baseHandles = oldBuffer.GetTrackingHandlesSlice(0, splitRangeOffset, splitSize);
 
                 if (splitRange.Count == 1)
                 {
@@ -392,7 +379,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 var handles = overlaps
                     .Take(overlapCount)
                     .Where(x => !x.Buffer.HasViews)
-                    .SelectMany(x => x.Buffer.GetTrackingHandles());
+                    .SelectMany(x => x.GetTrackingHandles(gpuVa));
 
                 buffer = new Buffer(_context, _memoryManager.Physical, range, handles);
                 view = new BufferView(gpuVa, size, 0, isVirtual: true, buffer);

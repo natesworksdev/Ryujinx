@@ -1,5 +1,4 @@
 using Ryujinx.Memory.Range;
-using Ryujinx.Memory.Tracking;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -64,7 +63,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             size = endAddress - address;
 
             MultiRange range = new MultiRange(address, size);
-            var handles = overlaps.Take(overlapsCount).SelectMany(x => x.Buffer.GetTrackingHandles());
+            var handles = overlaps.Take(overlapsCount).SelectMany(x => x.Buffer.GetTrackingHandles(x.Address - address));
             Buffer buffer = new Buffer(_context, _physicalMemory, range, handles);
 
             _buffers.Add(new BufferView(address, size, 0, isVirtual: false, buffer));
@@ -97,7 +96,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             return buffer;
         }
 
-        public Buffer TryCreateBuffer(ulong address, ulong size, IEnumerable<IRegionHandle> baseHandles)
+        public Buffer TryCreateBuffer(ulong address, ulong size, IEnumerable<RegionHandleSegment> baseHandles)
         {
             BufferView[] overlaps = _bufferOverlaps;
 
