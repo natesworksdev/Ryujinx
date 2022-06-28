@@ -318,7 +318,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
-        public void InheritRanges(BufferModifiedRangeList ranges, Action<ulong, ulong> rangeAction, MultiRange bounds)
+        public void InheritRanges(BufferModifiedRangeList ranges, Action<ulong, ulong> rangeAction, MemoryRange bounds)
         {
             BufferModifiedRange[] inheritRanges;
 
@@ -351,25 +351,17 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
-        private static bool TryClamp(MultiRange bounds, BufferModifiedRange range, out BufferModifiedRange clampedRange)
+        private static bool TryClamp(MemoryRange bounds, BufferModifiedRange range, out BufferModifiedRange clampedRange)
         {
-            for (int i = 0; i < bounds.Count; i++)
+            if (bounds.OverlapsWith(new MemoryRange(range.Address, range.Size)))
             {
-                MemoryRange currentBounds = bounds.GetSubRange(i);
-                if (currentBounds.OverlapsWith(new MemoryRange(range.Address, range.Size)))
-                {
-                    ulong clampedAddress = Math.Max(range.Address, currentBounds.Address);
-                    ulong clampedEndAddress = Math.Min(range.EndAddress, currentBounds.EndAddress);
+                ulong clampedAddress = Math.Max(range.Address, bounds.Address);
+                ulong clampedEndAddress = Math.Min(range.EndAddress, bounds.EndAddress);
 
-                    if (clampedAddress < clampedEndAddress)
-                    {
-                        clampedRange = new BufferModifiedRange(clampedAddress, clampedEndAddress - clampedAddress, range.SyncNumber);
-                        return true;
-                    }
-                    else
-                    {
-                        break;
-                    }
+                if (clampedAddress < clampedEndAddress)
+                {
+                    clampedRange = new BufferModifiedRange(clampedAddress, clampedEndAddress - clampedAddress, range.SyncNumber);
+                    return true;
                 }
             }
 

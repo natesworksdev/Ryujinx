@@ -76,14 +76,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 if (clampedSize != 0)
                 {
-                    ulong offset = clampedAddress - view.Address;
-                    MultiRange unmappedRange = view.Buffer.Range.GetSlice((ulong)view.BaseOffset + offset, clampedSize);
-
-                    for (int j = 0; j < unmappedRange.Count; j++)
-                    {
-                        MemoryRange subRange = unmappedRange.GetSubRange(j);
-                        view.Buffer.Unmapped(subRange.Address, subRange.Size);
-                    }
+                    view.Buffer.Unmapped((ulong)view.BaseOffset + (clampedAddress - view.Address), clampedSize);
                 }
             }
 
@@ -147,8 +140,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
             if (view.IsVirtual)
             {
                 Buffer oldBuffer = view.Buffer;
-                MultiRange unmapRange = oldBuffer.Range.GetSlice(clampedAddress - view.Address, clampedEndAddress - clampedAddress);
-                var unmapRegionHandles = oldBuffer.GetTrackingHandlesSlice(unmapRange);
+                ulong clampedSize = clampedEndAddress - clampedAddress;
+                var unmapRegionHandles = oldBuffer.GetTrackingHandlesSlice(clampedAddress - view.Address, clampedSize);
 
                 foreach (var handle in unmapRegionHandles)
                 {
@@ -169,7 +162,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             {
                 if (viewToSplit.IsVirtual)
                 {
-                    var handles = viewToSplit.Buffer.GetTrackingHandlesSlice(splitRange);
+                    var handles = viewToSplit.Buffer.GetTrackingHandlesSlice(splitRangeOffset, splitSize);
 
                     foreach (var handle in handles)
                     {
@@ -187,30 +180,24 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 // If this is using a virtual buffer, first we try to use a physical one instead if possible.
                 Buffer physicalBuffer = null;
                 Buffer oldBuffer = viewToSplit.Buffer;
-                Buffer newBuffer;
+
+                var baseHandles = oldBuffer.GetTrackingHandlesSlice(splitRangeOffset, splitSize);
 
                 if (splitRange.Count == 1)
                 {
                     MemoryRange subRange = splitRange.GetSubRange(0);
-                    physicalBuffer = _bufferCache.TryCreateBuffer(subRange.Address, subRange.Size, oldBuffer);
+                    physicalBuffer = _bufferCache.TryCreateBuffer(subRange.Address, subRange.Size, baseHandles);
                 }
 
-                if (physicalBuffer != null)
-                {
-                    newBuffer = physicalBuffer;
-                }
-                else
-                {
-                    newBuffer = new Buffer(_context, _memoryManager.Physical, splitRange, oldBuffer.GetTrackingHandlesSlice(splitRange));
-                }
+                Buffer newBuffer = physicalBuffer ?? new Buffer(_context, _memoryManager.Physical, splitRange, baseHandles);
 
                 newView = new BufferView(splitAddress, splitSize, 0, isVirtual: physicalBuffer == null, newBuffer);
                 newBuffer.AddView(_buffers, newView);
 
-                int offsetWithinOld = (int)(splitAddress - viewToSplit.Address);
+                ulong offsetWithinOld = splitAddress - viewToSplit.Address;
 
-                oldBuffer.CopyTo(newBuffer, offsetWithinOld, 0, (int)splitSize);
-                newBuffer.InheritModifiedRanges(oldBuffer, bounded: true);
+                oldBuffer.CopyTo(newBuffer, (int)offsetWithinOld, 0, (int)splitSize);
+                newBuffer.InheritModifiedRangesForSplit(oldBuffer, offsetWithinOld);
             }
             else
             {
@@ -242,22 +229,18 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 result.UnmappedSequence != result.Buffer.UnmappedSequence)
             {
                 CreateBuffer(gpuVa, size);
-                Buffer buffer = GetBuffer(gpuVa, size, write: false, out _, out MultiRange range);
+                Buffer buffer = GetBuffer(gpuVa, size, write: false, out int bufferOffset);
                 if (buffer == null)
                 {
                     return;
                 }
 
-                result = new BufferCacheEntry(range, gpuVa, buffer);
+                result = new BufferCacheEntry(bufferOffset, gpuVa, size, buffer);
 
                 _dirtyCache[gpuVa] = result;
             }
 
-            for (int index = 0; index < result.Range.Count; index++)
-            {
-                MemoryRange subRange = result.Range.GetSubRange(index);
-                result.Buffer.ForceDirty(subRange.Address, subRange.Size);
-            }
+            result.Buffer.ForceDirty((ulong)result.BufferOffset, result.Size);
         }
 
         /// <summary>
@@ -419,12 +402,13 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     ref BufferView overlapView = ref overlaps[index];
                     Buffer overlap = overlapView.Buffer;
 
+                    ulong offsetWithinOverlap = overlapView.Address - gpuVa;
                     bool inheritable = !overlap.HasViews;
 
                     if (inheritable)
                     {
                         // We can only inherit modified ranges if we are also inheriting tracking handles,
-                        buffer.InheritModifiedRanges(overlap);
+                        buffer.InheritModifiedRanges(overlap, offsetWithinOverlap);
                     }
                     else
                     {
@@ -432,20 +416,18 @@ namespace Ryujinx.Graphics.Gpu.Memory
                         // make sure the data we will copy is up-to-date.
                         // Also call sync on the new buffer to ensure the range we copied will not be immediately
                         // overwritten on a future sync.
-                        overlap.SynchronizeMemory(overlap.Range);
-                        buffer.SynchronizeMemory(overlap.Range);
+                        overlap.SynchronizeMemory((ulong)overlapView.BaseOffset, overlapView.Size);
+                        buffer.SynchronizeMemory(offsetWithinOverlap, overlapView.Size);
                     }
 
-                    int offsetWithinOverlap = (int)(overlapView.Address - gpuVa);
-
-                    overlap.CopyTo(buffer, offsetWithinOverlap);
+                    overlap.CopyTo(buffer, overlapView.BaseOffset, (int)offsetWithinOverlap, (int)overlapView.Size);
 
                     DeleteViewBuffer(ref overlapView, dataOnly: true);
                 }
 
                 if (overlapCount != 0)
                 {
-                    buffer.SynchronizeMemory(range);
+                    buffer.SynchronizeMemory(0, size);
 
                     _bufferCache.ForceBindingsUpdate();
                 }
@@ -531,8 +513,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
             CreateBuffer(srcVa, size);
             CreateBuffer(dstVa, size);
 
-            Buffer srcBuffer = GetBuffer(srcVa, size, write: false, out int srcOffset, out MultiRange srcRange);
-            Buffer dstBuffer = GetBuffer(dstVa, size, write: false, out int dstOffset, out MultiRange dstRange);
+            Buffer srcBuffer = GetBuffer(srcVa, size, write: false, out int srcOffset);
+            Buffer dstBuffer = GetBuffer(dstVa, size, write: false, out int dstOffset);
 
             if (srcBuffer == null || dstBuffer == null)
             {
@@ -546,16 +528,16 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 dstOffset,
                 (int)size);
 
-            if (srcBuffer.IsModified(srcRange))
+            if (srcBuffer.IsModified((ulong)srcOffset, size))
             {
-                dstBuffer.SignalModified(dstRange);
+                dstBuffer.SignalModified((ulong)dstOffset, size);
             }
             else
             {
                 // Optimization: If the data being copied is already in memory, then copy it directly instead of flushing from GPU.
 
-                dstBuffer.ClearModified(dstRange);
-                _memoryManager.Physical.WriteUntracked(dstRange, _memoryManager.Physical.GetSpan(srcRange));
+                dstBuffer.ClearModified((ulong)dstOffset, size);
+                _memoryManager.WriteUntracked(dstVa, _memoryManager.GetSpan(srcVa, (int)size));
             }
         }
 
@@ -573,7 +555,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             CreateBuffer(gpuVa, size);
 
-            Buffer buffer = GetBuffer(gpuVa, size, write: false, out int bufferOffset, out MultiRange range);
+            Buffer buffer = GetBuffer(gpuVa, size, write: false, out int bufferOffset);
 
             if (buffer == null)
             {
@@ -582,7 +564,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             _context.Renderer.Pipeline.ClearBuffer(buffer.Handle, bufferOffset, (int)size, value);
 
-            buffer.SignalModified(range);
+            buffer.SignalModified((ulong)bufferOffset, size);
         }
 
         /// <summary>
@@ -606,7 +588,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <returns>The buffer sub-range starting at the given memory address</returns>
         public BufferRange GetBufferRangeTillEnd(ulong gpuVa, ulong size, bool write = false)
         {
-            Buffer buffer = GetBuffer(gpuVa, size, write, out int bufferOffset, out _);
+            Buffer buffer = GetBuffer(gpuVa, size, write, out int bufferOffset);
 
             if (buffer == null)
             {
@@ -624,7 +606,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <returns>The buffer sub-range for the given range</returns>
         public BufferRange GetBufferRange(ulong gpuVa, ulong size, bool write = false)
         {
-            Buffer buffer = GetBuffer(gpuVa, size, write, out int bufferOffset, out _);
+            Buffer buffer = GetBuffer(gpuVa, size, write, out int bufferOffset);
 
             if (buffer == null)
             {
@@ -638,14 +620,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// Gets a buffer for a given memory range.
         /// A buffer overlapping with the specified range is assumed to already exist on the cache.
         /// </summary>
-        /// <param name="range">Ranges of memory that the buffer is using</param>
         /// <param name="write">Whether the buffer will be written to by this use</param>
         /// <returns>The buffer where the range is fully contained</returns>
-        private Buffer GetBuffer(ulong gpuVa, ulong size, bool write, out int bufferOffset, out MultiRange range)
+        private Buffer GetBuffer(ulong gpuVa, ulong size, bool write, out int bufferOffset)
         {
             Buffer buffer = null;
             bufferOffset = 0;
-            range = default;
 
             if (size != 0)
             {
@@ -661,13 +641,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 if (buffer != null)
                 {
-                    range = view.Buffer.Range.GetSlice((ulong)bufferOffset, size);
-
-                    buffer.SynchronizeMemory(range);
+                    buffer.SynchronizeMemory((ulong)bufferOffset, size);
 
                     if (write)
                     {
-                        buffer.SignalModified(range);
+                        buffer.SignalModified((ulong)bufferOffset, size);
                     }
                 }
             }
@@ -696,7 +674,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     return;
                 }
 
-                view.Buffer.SynchronizeMemory(view.Buffer.Range.GetSlice((ulong)view.BaseOffset + (gpuVa - view.Address), size));
+                view.Buffer.SynchronizeMemory((ulong)view.BaseOffset + (gpuVa - view.Address), size);
             }
         }
 

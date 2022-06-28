@@ -8,14 +8,19 @@ namespace Ryujinx.Graphics.Gpu.Memory
     class BufferCacheEntry
     {
         /// <summary>
-        /// The memory region of the buffer destination.
+        /// Offset of the data inside the buffer.
         /// </summary>
-        public MultiRange Range;
+        public int BufferOffset;
 
         /// <summary>
         /// The end GPU VA of the associated buffer, used to check if new data can fit.
         /// </summary>
         public ulong EndGpuAddress;
+
+        /// <summary>
+        /// Size of the data in bytes.
+        /// </summary>
+        public ulong Size;
 
         /// <summary>
         /// The buffer associated with this cache entry.
@@ -31,13 +36,15 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <summary>
         /// Create a new cache entry.
         /// </summary>
-        /// <param name="range">Memory region of the buffer destination</param>
+        /// <param name="bufferOffset">Offset of the data inside the buffer</param>
         /// <param name="gpuVa">The GPU VA of the buffer destination</param>
+        /// <param name="size">Size of the data in bytes</param>
         /// <param name="buffer">The buffer object containing the target buffer</param>
-        public BufferCacheEntry(MultiRange range, ulong gpuVa, Buffer buffer)
+        public BufferCacheEntry(int bufferOffset, ulong gpuVa, ulong size, Buffer buffer)
         {
-            Range = range;
-            EndGpuAddress = gpuVa + range.GetSize();
+            BufferOffset = bufferOffset;
+            EndGpuAddress = gpuVa + size;
+            Size = size;
             Buffer = buffer;
             UnmappedSequence = buffer.UnmappedSequence;
         }

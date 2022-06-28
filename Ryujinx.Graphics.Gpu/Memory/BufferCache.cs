@@ -1,5 +1,7 @@
 using Ryujinx.Memory.Range;
+using Ryujinx.Memory.Tracking;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Ryujinx.Graphics.Gpu.Memory
@@ -72,19 +74,19 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 ref BufferView view = ref overlaps[index];
                 Buffer overlap = view.Buffer;
 
-                int offsetWithinOverlap = (int)(view.Address - address);
+                ulong offsetWithinOverlap = view.Address - address;
 
-                overlap.CopyTo(buffer, offsetWithinOverlap);
+                overlap.CopyTo(buffer, (int)offsetWithinOverlap);
                 _buffers.Remove(view);
-                buffer.InheritModifiedRanges(overlap);
+                buffer.InheritModifiedRanges(overlap, offsetWithinOverlap);
 
                 overlap.DisposeData();
-                overlap.UpdateViews(buffer, offsetWithinOverlap);
+                overlap.UpdateViews(buffer, (int)offsetWithinOverlap);
             }
 
             if (overlapsCount != 0)
             {
-                buffer.SynchronizeMemory(range);
+                buffer.SynchronizeMemory(0, size);
 
                 // Existing buffers were modified, we need to rebind everything.
                 NotifyBuffersModified?.Invoke();
@@ -95,7 +97,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             return buffer;
         }
 
-        public Buffer TryCreateBuffer(ulong address, ulong size, Buffer parent)
+        public Buffer TryCreateBuffer(ulong address, ulong size, IEnumerable<IRegionHandle> baseHandles)
         {
             BufferView[] overlaps = _bufferOverlaps;
 
@@ -106,7 +108,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             if (overlapsCount == 0)
             {
                 MultiRange range = new MultiRange(address, size);
-                buffer = new Buffer(_context, _physicalMemory, range, parent.GetTrackingHandlesSlice(range));
+                buffer = new Buffer(_context, _physicalMemory, range, baseHandles);
 
                 _buffers.Add(new BufferView(address, size, 0, isVirtual: false, buffer));
             }
