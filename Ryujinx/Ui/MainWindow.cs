@@ -1,18 +1,10 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
-using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
-
-using ARMeilleure.Translation;
+﻿using ARMeilleure.Translation;
 using ARMeilleure.Translation.PTC;
-
 using Gtk;
-
 using LibHac.Common;
 using LibHac.Common.Keys;
 using LibHac.FsSystem;
+using LibHac.Ncm;
 using LibHac.Ns;
 using LibHac.Tools.FsSystem;
 using Ryujinx.Audio.Backends.Dummy;
@@ -24,12 +16,10 @@ using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.System;
-using Ryujinx.Configuration;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.GAL.Multithreading;
 using Ryujinx.Graphics.OpenGL;
 using Ryujinx.HLE.FileSystem;
-using Ryujinx.HLE.FileSystem.Content;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.HLE.HOS.SystemState;
@@ -38,13 +28,22 @@ using Ryujinx.Input.HLE;
 using Ryujinx.Input.SDL2;
 using Ryujinx.Modules;
 using Ryujinx.Ui.App;
+using Ryujinx.Ui.App.Common;
 using Ryujinx.Ui.Applet;
+using Ryujinx.Ui.Common;
+using Ryujinx.Ui.Common.Configuration;
+using Ryujinx.Ui.Common.Helper;
 using Ryujinx.Ui.Helper;
 using Ryujinx.Ui.Widgets;
 using Ryujinx.Ui.Windows;
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 
 using GUI = Gtk.Builder.ObjectAttribute;
-
 using PtcLoadingState = ARMeilleure.Translation.PTC.PtcLoadingState;
 using ShaderCacheLoadingState = Ryujinx.Graphics.Gpu.Shader.ShaderCacheState;
 
@@ -107,6 +106,7 @@ namespace Ryujinx.Ui
         [GUI] MenuItem        _hideUi;
         [GUI] MenuItem        _fullScreen;
         [GUI] CheckMenuItem   _startFullScreen;
+        [GUI] CheckMenuItem   _showConsole;
         [GUI] CheckMenuItem   _favToggle;
         [GUI] MenuItem        _firmwareInstallDirectory;
         [GUI] MenuItem        _firmwareInstallFile;
@@ -155,7 +155,7 @@ namespace Ryujinx.Ui
             DefaultWidth  = monitorWidth  < 1280 ? monitorWidth  : 1280;
             DefaultHeight = monitorHeight < 760  ? monitorHeight : 760;
 
-            Icon  = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.Resources.Logo_Ryujinx.png");
+            Icon  = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png");
             Title = $"Ryujinx {Program.Version}";
 
             // Hide emulation context status bar.
@@ -212,6 +212,9 @@ namespace Ryujinx.Ui
             {
                 _startFullScreen.Active = true;
             }
+
+            _showConsole.Active = ConfigurationState.Instance.Ui.ShowConsole.Value;
+            _showConsole.Visible = ConsoleHelper.SetConsoleWindowStateSupported;
 
             _actionMenu.Sensitive = false;
             _pauseEmulation.Sensitive = false;
@@ -1279,7 +1282,7 @@ namespace Ryujinx.Ui
 
         private void Load_Mii_Edit_Applet(object sender, EventArgs args)
         {
-            string contentPath = _contentManager.GetInstalledContentPath(0x0100000000001009, StorageId.NandSystem, NcaContentType.Program);
+            string contentPath = _contentManager.GetInstalledContentPath(0x0100000000001009, StorageId.BuiltInSystem, NcaContentType.Program);
 
             LoadApplication(contentPath);
         }
@@ -1531,6 +1534,13 @@ namespace Ryujinx.Ui
         private void StartFullScreen_Toggled(object sender, EventArgs args)
         {
             ConfigurationState.Instance.Ui.StartFullscreen.Value = _startFullScreen.Active;
+
+            SaveConfig();
+        }
+
+        private void ShowConsole_Toggled(object sender, EventArgs args)
+        {
+            ConfigurationState.Instance.Ui.ShowConsole.Value = _showConsole.Active;
 
             SaveConfig();
         }

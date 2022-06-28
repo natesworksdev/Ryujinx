@@ -146,7 +146,9 @@ namespace Ryujinx.Memory.Tracking
                     {
                         _preAction?.Invoke(address, size);
 
-                        _preAction = null;
+                        // The action is removed after it returns, to ensure that the null check above succeeds when
+                        // it's still in progress rather than continuing and possibly missing a required data flush.
+                        Interlocked.Exchange(ref _preAction, null);
                     }
                 }
                 finally
@@ -252,8 +254,7 @@ namespace Ryujinx.Memory.Tracking
 
             lock (_preActionLock)
             {
-                RegionSignal lastAction = _preAction;
-                _preAction = action;
+                RegionSignal lastAction = Interlocked.Exchange(ref _preAction, action);
 
                 if (lastAction == null && action != lastAction)
                 {

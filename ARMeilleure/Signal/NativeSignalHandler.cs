@@ -103,7 +103,7 @@ namespace ARMeilleure.Signal
                     // Unix siginfo struct locations.
                     // NOTE: These are incredibly likely to be different between kernel version and architectures.
 
-                    config.StructAddressOffset = 16; // si_addr
+                    config.StructAddressOffset = OperatingSystem.IsMacOS() ? 24 : 16; // si_addr
                     config.StructWriteOffset = 8; // si_code
 
                     _signalHandlerPtr = Marshal.GetFunctionPointerForDelegate(GenerateUnixSignalHandler(_handlerConfig));
@@ -191,7 +191,7 @@ namespace ARMeilleure.Signal
                 // Is the fault address within this tracked region?
                 Operand inRange = context.BitwiseAnd(
                     context.ICompare(faultAddress, rangeAddress, Comparison.GreaterOrEqualUI),
-                    context.ICompare(faultAddress, rangeEndAddress, Comparison.Less)
+                    context.ICompare(faultAddress, rangeEndAddress, Comparison.LessUI)
                     );
 
                 // Only call tracking if in range.

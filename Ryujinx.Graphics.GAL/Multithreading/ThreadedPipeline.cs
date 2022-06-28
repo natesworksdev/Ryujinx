@@ -1,7 +1,6 @@
 ﻿using Ryujinx.Graphics.GAL.Multithreading.Commands;
 using Ryujinx.Graphics.GAL.Multithreading.Model;
 using Ryujinx.Graphics.GAL.Multithreading.Resources;
-using Ryujinx.Graphics.Shader;
 using System;
 using System.Linq;
 
@@ -41,15 +40,15 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             _renderer.QueueCommand();
         }
 
-        public void ClearRenderTargetColor(int index, uint componentMask, ColorF color)
+        public void ClearRenderTargetColor(int index, int layer, uint componentMask, ColorF color)
         {
-            _renderer.New<ClearRenderTargetColorCommand>().Set(index, componentMask, color);
+            _renderer.New<ClearRenderTargetColorCommand>().Set(index, layer, componentMask, color);
             _renderer.QueueCommand();
         }
 
-        public void ClearRenderTargetDepthStencil(float depthValue, bool depthMask, int stencilValue, int stencilMask)
+        public void ClearRenderTargetDepthStencil(int layer, float depthValue, bool depthMask, int stencilValue, int stencilMask)
         {
-            _renderer.New<ClearRenderTargetDepthStencilCommand>().Set(depthValue, depthMask, stencilValue, stencilMask);
+            _renderer.New<ClearRenderTargetDepthStencilCommand>().Set(layer, depthValue, depthMask, stencilValue, stencilMask);
             _renderer.QueueCommand();
         }
 
@@ -305,9 +304,9 @@ namespace Ryujinx.Graphics.GAL.Multithreading
             _renderer.QueueCommand();
         }
 
-        public void SetViewports(int first, ReadOnlySpan<Viewport> viewports)
+        public void SetViewports(int first, ReadOnlySpan<Viewport> viewports, bool disableTransform)
         {
-            _renderer.New<SetViewportsCommand>().Set(first, _renderer.CopySpan(viewports));
+            _renderer.New<SetViewportsCommand>().Set(first, _renderer.CopySpan(viewports), disableTransform);
             _renderer.QueueCommand();
         }
 

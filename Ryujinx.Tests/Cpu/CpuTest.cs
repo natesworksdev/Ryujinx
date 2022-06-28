@@ -2,7 +2,7 @@ using ARMeilleure;
 using ARMeilleure.State;
 using ARMeilleure.Translation;
 using NUnit.Framework;
-using Ryujinx.Cpu;
+using Ryujinx.Cpu.Jit;
 using Ryujinx.Memory;
 using Ryujinx.Tests.Unicorn;
 using System;
@@ -54,9 +54,9 @@ namespace Ryujinx.Tests.Cpu
             _currAddress = CodeBaseAddress;
 
             _ram = new MemoryBlock(Size * 2);
-            _memory = new MemoryManager(1ul << 16);
+            _memory = new MemoryManager(_ram, 1ul << 16);
             _memory.IncrementReferenceCount();
-            _memory.Map(CodeBaseAddress, _ram.GetPointer(0, Size * 2), Size * 2);
+            _memory.Map(CodeBaseAddress, 0, Size * 2);
 
             _context = CpuContext.CreateExecutionContext();
             Translator.IsReadyForTranslation.Set();

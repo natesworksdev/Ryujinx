@@ -168,10 +168,11 @@ namespace Ryujinx.Graphics.Shader.Instructions
         {
             InstIsberd op = context.GetOp<InstIsberd>();
 
-            // This instruction performs a load from ISBE memory,
-            // however it seems to be only used to get some vertex
-            // input data, so we instead propagate the offset so that
-            // it can be used on the attribute load.
+            // This instruction performs a load from ISBE (Internal Stage Buffer Entry) memory.
+            // Here, we just propagate the offset, as the result from this instruction is usually
+            // used with ALD to perform vertex load on geometry or tessellation shaders.
+            // The offset is calculated as (PrimitiveIndex * VerticesPerPrimitive) + VertexIndex.
+            // Since we hardcode PrimitiveIndex to zero, then the offset will be just VertexIndex.
             context.Copy(GetDest(op.Dest), GetSrcReg(context, op.SrcA));
         }
 
@@ -205,7 +206,33 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             if (emit)
             {
-                context.EmitVertex();
+                if (context.Config.LastInVertexPipeline)
+                {
+                    context.PrepareForVertexReturn(out var tempXLocal, out var tempYLocal, out var tempZLocal);
+
+                    context.EmitVertex();
+
+                    // Restore output position value before transformation.
+
+                    if (tempXLocal != null)
+                    {
+                        context.Copy(Attribute(AttributeConsts.PositionX), tempXLocal);
+                    }
+
+                    if (tempYLocal != null)
+                    {
+                        context.Copy(Attribute(AttributeConsts.PositionY), tempYLocal);
+                    }
+
+                    if (tempZLocal != null)
+                    {
+                        context.Copy(Attribute(AttributeConsts.PositionZ), tempZLocal);
+                    }
+                }
+                else
+                {
+                    context.EmitVertex();
+                }
             }
 
             if (cut)

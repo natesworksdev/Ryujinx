@@ -1,6 +1,7 @@
 ﻿using OpenTK.Graphics.OpenGL;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
+using Ryujinx.Graphics.Shader;
 
 namespace Ryujinx.Graphics.OpenGL
 {
@@ -378,20 +379,28 @@ namespace Ryujinx.Graphics.OpenGL
             switch (op)
             {
                 case GAL.StencilOp.Keep:
+                case GAL.StencilOp.KeepGl:
                     return OpenTK.Graphics.OpenGL.StencilOp.Keep;
                 case GAL.StencilOp.Zero:
+                case GAL.StencilOp.ZeroGl:
                     return OpenTK.Graphics.OpenGL.StencilOp.Zero;
                 case GAL.StencilOp.Replace:
+                case GAL.StencilOp.ReplaceGl:
                     return OpenTK.Graphics.OpenGL.StencilOp.Replace;
                 case GAL.StencilOp.IncrementAndClamp:
+                case GAL.StencilOp.IncrementAndClampGl:
                     return OpenTK.Graphics.OpenGL.StencilOp.Incr;
                 case GAL.StencilOp.DecrementAndClamp:
+                case GAL.StencilOp.DecrementAndClampGl:
                     return OpenTK.Graphics.OpenGL.StencilOp.Decr;
                 case GAL.StencilOp.Invert:
+                case GAL.StencilOp.InvertGl:
                     return OpenTK.Graphics.OpenGL.StencilOp.Invert;
                 case GAL.StencilOp.IncrementAndWrap:
+                case GAL.StencilOp.IncrementAndWrapGl:
                     return OpenTK.Graphics.OpenGL.StencilOp.IncrWrap;
                 case GAL.StencilOp.DecrementAndWrap:
+                case GAL.StencilOp.DecrementAndWrapGl:
                     return OpenTK.Graphics.OpenGL.StencilOp.DecrWrap;
             }
 
@@ -444,8 +453,8 @@ namespace Ryujinx.Graphics.OpenGL
                     return TextureTarget.Texture2DArray;
                 case Target.Texture2DMultisample:
                     return TextureTarget.Texture2DMultisample;
-                case Target.Rectangle:
-                    return TextureTarget.TextureRectangle;
+                case Target.Texture2DMultisampleArray:
+                    return TextureTarget.Texture2DMultisampleArray;
                 case Target.Cubemap:
                     return TextureTarget.TextureCubeMap;
                 case Target.CubemapArray:
@@ -527,6 +536,20 @@ namespace Ryujinx.Graphics.OpenGL
             Logger.Debug?.Print(LogClass.Gpu, $"Invalid {nameof(LogicalOp)} enum value: {op}.");
 
             return All.Never;
+        }
+
+        public static ShaderType Convert(this ShaderStage stage)
+        {
+            return stage switch
+            {
+                ShaderStage.Compute => ShaderType.ComputeShader,
+                ShaderStage.Vertex => ShaderType.VertexShader,
+                ShaderStage.TessellationControl => ShaderType.TessControlShader,
+                ShaderStage.TessellationEvaluation => ShaderType.TessEvaluationShader,
+                ShaderStage.Geometry => ShaderType.GeometryShader,
+                ShaderStage.Fragment => ShaderType.FragmentShader,
+                _ => ShaderType.VertexShader
+            };
         }
     }
 }

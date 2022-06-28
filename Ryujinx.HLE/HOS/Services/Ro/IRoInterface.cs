@@ -5,6 +5,7 @@ using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.Loaders.Executables;
+using Ryujinx.Memory;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -29,6 +30,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
         private List<NroInfo> _nroInfos;
 
         private KProcess _owner;
+        private IVirtualMemoryManager _ownerMm;
 
         private static Random _random = new Random();
 
@@ -37,6 +39,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
             _nrrInfos = new List<NrrInfo>(MaxNrr);
             _nroInfos = new List<NroInfo>(MaxNro);
             _owner    = null;
+            _ownerMm  = null;
         }
 
         private ResultCode ParseNrr(out NrrInfo nrrInfo, ServiceCtx context, ulong nrrAddress, ulong nrrSize)
@@ -563,10 +566,26 @@ namespace Ryujinx.HLE.HOS.Services.Ro
                 return ResultCode.InvalidSession;
             }
 
-            _owner = context.Process.HandleTable.GetKProcess(context.Request.HandleDesc.ToCopy[0]);
-            context.Device.System.KernelContext.Syscall.CloseHandle(context.Request.HandleDesc.ToCopy[0]);
+            int processHandle = context.Request.HandleDesc.ToCopy[0];
+            _owner = context.Process.HandleTable.GetKProcess(processHandle);
+            _ownerMm = _owner?.CpuMemory;
+            context.Device.System.KernelContext.Syscall.CloseHandle(processHandle);
+
+            if (_ownerMm is IRefCounted rc)
+            {
+                rc.IncrementReferenceCount();
+            }
 
             return ResultCode.Success;
+        }
+
+        [CommandHipc(10)]
+        // LoadNrr2(u64, u64, u64, pid)
+        public ResultCode LoadNrr2(ServiceCtx context)
+        {
+            context.Device.System.KernelContext.Syscall.CloseHandle(context.Request.HandleDesc.ToCopy[0]);
+
+            return LoadNrr(context);
         }
 
         protected override void Dispose(bool isDisposing)
@@ -579,6 +598,11 @@ namespace Ryujinx.HLE.HOS.Services.Ro
                 }
 
                 _nroInfos.Clear();
+
+                if (_ownerMm is IRefCounted rc)
+                {
+                    rc.DecrementReferenceCount();
+                }
             }
         }
     }

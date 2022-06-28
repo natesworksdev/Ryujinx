@@ -100,6 +100,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public bool AlwaysFlushOnOverlap { get; private set; }
 
+        /// <summary>
+        /// Increments when the host texture is swapped, or when the texture is removed from all pools.
+        /// </summary>
+        public int InvalidatedSequence { get; private set; }
+
         private int _depth;
         private int _layers;
         public int FirstLayer { get; private set; }
@@ -1148,6 +1153,12 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 result = TextureCompatibility.PropagateViewCompatibility(result, TextureCompatibility.ViewTargetCompatible(Info, info));
 
+                bool bothMs = Info.Target.IsMultisample() && info.Target.IsMultisample();
+                if (bothMs && (Info.SamplesInX != info.SamplesInX || Info.SamplesInY != info.SamplesInY))
+                {
+                    result = TextureViewCompatibility.Incompatible;
+                }
+
                 if (result == TextureViewCompatibility.Full && Info.FormatInfo.Format != info.FormatInfo.Format && !_context.Capabilities.SupportsMismatchingViewFormat)
                 {
                     // AMD and Intel have a bug where the view format is always ignored;
@@ -1155,11 +1166,6 @@ namespace Ryujinx.Graphics.Gpu.Image
                     // Create a copy dependency to avoid this issue.
 
                     result = TextureViewCompatibility.CopyOnly;
-                }
-
-                if (Info.SamplesInX != info.SamplesInX || Info.SamplesInY != info.SamplesInY)
-                {
-                    result = TextureViewCompatibility.Incompatible;
                 }
             }
 
@@ -1406,6 +1412,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             DisposeTextures();
 
             HostTexture = hostTexture;
+            InvalidatedSequence++;
         }
 
         /// <summary>
@@ -1534,6 +1541,8 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 _poolOwners.Clear();
             }
+
+            InvalidatedSequence++;
         }
 
         /// <summary>

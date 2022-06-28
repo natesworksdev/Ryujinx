@@ -15,6 +15,8 @@ using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
+using Ryujinx.Ui.Common.Configuration;
+using Ryujinx.Ui.Common.Helper;
 using Ryujinx.Ui.Helper;
 using Ryujinx.Ui.Windows;
 using System;
@@ -86,22 +88,9 @@ namespace Ryujinx.Ui.Widgets
 
             if (ResultFs.TargetNotFound.Includes(result))
             {
-                // Savedata was not found. Ask the user if they want to create it
-                using MessageDialog messageDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Question, ButtonsType.YesNo, null)
-                {
-                    Title          = "Ryujinx",
-                    Icon           = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.Resources.Logo_Ryujinx.png"),
-                    Text           = $"There is no savedata for {titleName} [{titleId:x16}]",
-                    SecondaryText  = "Would you like to create savedata for this game?",
-                    WindowPosition = WindowPosition.Center
-                };
-
-                if (messageDialog.Run() != (int)ResponseType.Yes)
-                {
-                    return false;
-                }
-
                 ref ApplicationControlProperty control = ref controlHolder.Value;
+
+                Logger.Info?.Print(LogClass.Application, $"Creating save directory for Title: {titleName} [{titleId:x16}]");
 
                 if (Utilities.IsZeros(controlHolder.ByteSpan))
                 {
@@ -185,7 +174,7 @@ namespace Ryujinx.Ui.Widgets
 
             ResponseType response    = (ResponseType)fileChooser.Run();
             string       destination = fileChooser.Filename;
-            
+
             fileChooser.Dispose();
 
             if (response == ResponseType.Accept)
@@ -197,7 +186,7 @@ namespace Ryujinx.Ui.Widgets
                         _dialog = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Info, ButtonsType.Cancel, null)
                         {
                             Title          = "Ryujinx - NCA Section Extractor",
-                            Icon           = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.Resources.Logo_Ryujinx.png"),
+                            Icon           = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png"),
                             SecondaryText  = $"Extracting {ncaSectionType} section from {System.IO.Path.GetFileName(_titleFilePath)}...",
                             WindowPosition = WindowPosition.Center
                         };
@@ -319,7 +308,7 @@ namespace Ryujinx.Ui.Widgets
                                     MessageDialog dialog = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Info, ButtonsType.Ok, null)
                                     {
                                         Title          = "Ryujinx - NCA Section Extractor",
-                                        Icon           = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.Resources.Logo_Ryujinx.png"),
+                                        Icon           = new Gdk.Pixbuf(Assembly.GetAssembly(typeof(ConfigurationState)), "Ryujinx.Ui.Common.Resources.Logo_Ryujinx.png"),
                                         SecondaryText  = "Extraction completed successfully.",
                                         WindowPosition = WindowPosition.Center
                                     };
@@ -503,7 +492,7 @@ namespace Ryujinx.Ui.Widgets
         private void OpenPtcDir_Clicked(object sender, EventArgs args)
         {
             string ptcDir  = System.IO.Path.Combine(AppDataManager.GamesDirPath, _titleIdText, "cache", "cpu");
-            
+
             string mainPath   = System.IO.Path.Combine(ptcDir, "0");
             string backupPath = System.IO.Path.Combine(ptcDir, "1");
 
@@ -528,7 +517,7 @@ namespace Ryujinx.Ui.Widgets
 
             OpenHelper.OpenFolder(shaderCacheDir);
         }
-        
+
         private void PurgePtcCache_Clicked(object sender, EventArgs args)
         {
             DirectoryInfo mainDir   = new DirectoryInfo(System.IO.Path.Combine(AppDataManager.GamesDirPath, _titleIdText, "cache", "cpu", "0"));
@@ -539,7 +528,7 @@ namespace Ryujinx.Ui.Widgets
             List<FileInfo> cacheFiles = new List<FileInfo>();
 
             if (mainDir.Exists)
-            { 
+            {
                 cacheFiles.AddRange(mainDir.EnumerateFiles("*.cache"));
             }
 
@@ -552,9 +541,9 @@ namespace Ryujinx.Ui.Widgets
             {
                 foreach (FileInfo file in cacheFiles)
                 {
-                    try 
-                    { 
-                        file.Delete(); 
+                    try
+                    {
+                        file.Delete();
                     }
                     catch(Exception e)
                     {
@@ -570,18 +559,21 @@ namespace Ryujinx.Ui.Widgets
         {
             DirectoryInfo shaderCacheDir = new DirectoryInfo(System.IO.Path.Combine(AppDataManager.GamesDirPath, _titleIdText, "cache", "shader"));
 
-            MessageDialog warningDialog = GtkDialog.CreateConfirmationDialog("Warning", $"You are about to delete the shader cache for :\n\n<b>{_titleName}</b>\n\nAre you sure you want to proceed?");
+            using MessageDialog warningDialog = GtkDialog.CreateConfirmationDialog("Warning", $"You are about to delete the shader cache for :\n\n<b>{_titleName}</b>\n\nAre you sure you want to proceed?");
 
-            List<DirectoryInfo> cacheDirectory = new List<DirectoryInfo>();
+            List<DirectoryInfo> oldCacheDirectories = new List<DirectoryInfo>();
+            List<FileInfo> newCacheFiles = new List<FileInfo>();
 
             if (shaderCacheDir.Exists)
             {
-                cacheDirectory.AddRange(shaderCacheDir.EnumerateDirectories("*"));
+                oldCacheDirectories.AddRange(shaderCacheDir.EnumerateDirectories("*"));
+                newCacheFiles.AddRange(shaderCacheDir.GetFiles("*.toc"));
+                newCacheFiles.AddRange(shaderCacheDir.GetFiles("*.data"));
             }
 
-            if (cacheDirectory.Count > 0 && warningDialog.Run() == (int)ResponseType.Yes)
+            if ((oldCacheDirectories.Count > 0 || newCacheFiles.Count > 0) && warningDialog.Run() == (int)ResponseType.Yes)
             {
-                foreach (DirectoryInfo directory in cacheDirectory)
+                foreach (DirectoryInfo directory in oldCacheDirectories)
                 {
                     try
                     {
@@ -592,9 +584,19 @@ namespace Ryujinx.Ui.Widgets
                         GtkDialog.CreateErrorDialog($"Error purging shader cache at {directory.Name}: {e}");
                     }
                 }
-            }
 
-            warningDialog.Dispose();
+                foreach (FileInfo file in newCacheFiles)
+                {
+                    try
+                    {
+                        file.Delete();
+                    }
+                    catch (Exception e)
+                    {
+                        GtkDialog.CreateErrorDialog($"Error purging shader cache at {file.Name}: {e}");
+                    }
+                }
+            }
         }
     }
 }

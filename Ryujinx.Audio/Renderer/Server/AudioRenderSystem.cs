@@ -363,6 +363,9 @@ namespace Ryujinx.Audio.Renderer.Server
                 case 4:
                     _commandProcessingTimeEstimator = new CommandProcessingTimeEstimatorVersion4(_sampleCount, _mixBufferCount);
                     break;
+                case 5:
+                    _commandProcessingTimeEstimator = new CommandProcessingTimeEstimatorVersion5(_sampleCount, _mixBufferCount);
+                    break;
                 default:
                     throw new NotImplementedException($"Unsupported processing time estimator version {_behaviourContext.GetCommandProcessingTimeEstimatorVersion()}.");
             }
@@ -520,9 +523,7 @@ namespace Ryujinx.Audio.Renderer.Server
 
         private ulong GetSystemTicks()
         {
-            double ticks = ARMeilleure.State.ExecutionContext.ElapsedTicks * ARMeilleure.State.ExecutionContext.TickFrequency;
-
-            return (ulong)(ticks * Constants.TargetTimerFrequency);
+            return (ulong)(_manager.TickSource.ElapsedSeconds * Constants.TargetTimerFrequency);
         }
 
         private uint ComputeVoiceDrop(CommandBuffer commandBuffer, long voicesEstimatedTime, long deltaTimeDsp)

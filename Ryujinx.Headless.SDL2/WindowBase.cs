@@ -36,6 +36,8 @@ namespace Ryujinx.Headless.SDL2
         protected IntPtr WindowHandle { get; set; }
 
         public IHostUiTheme HostUiTheme { get; }
+        public int Width { get; private set; }
+        public int Height { get; private set; }
 
         protected SDL2MouseDriver MouseDriver;
         private InputManager _inputManager;
@@ -43,6 +45,7 @@ namespace Ryujinx.Headless.SDL2
         private GraphicsDebugLevel _glLogLevel;
         private readonly Stopwatch _chrono;
         private readonly long _ticksPerFrame;
+        private readonly CancellationTokenSource _gpuCancellationTokenSource;
         private readonly ManualResetEvent _exitEvent;
 
         private long _ticks;
@@ -66,6 +69,7 @@ namespace Ryujinx.Headless.SDL2
             _glLogLevel = glLogLevel;
             _chrono = new Stopwatch();
             _ticksPerFrame = Stopwatch.Frequency / TargetFps;
+            _gpuCancellationTokenSource = new CancellationTokenSource();
             _exitEvent = new ManualResetEvent(false);
             _aspectRatio = aspectRatio;
             _enableMouse = enableMouse;
@@ -117,6 +121,9 @@ namespace Ryujinx.Headless.SDL2
 
             _windowId = SDL_GetWindowID(WindowHandle);
             SDL2Driver.Instance.RegisterWindow(_windowId, HandleWindowEvent);
+
+            Width = DefaultWidth;
+            Height = DefaultHeight;
         }
 
         private void HandleWindowEvent(SDL_Event evnt)
@@ -126,8 +133,10 @@ namespace Ryujinx.Headless.SDL2
                 switch (evnt.window.windowEvent)
                 {
                     case SDL_WindowEventID.SDL_WINDOWEVENT_SIZE_CHANGED:
-                        Renderer?.Window.SetSize(evnt.window.data1, evnt.window.data2);
-                        MouseDriver.SetClientSize(evnt.window.data1, evnt.window.data2);
+                        Width = evnt.window.data1;
+                        Height = evnt.window.data2;
+                        Renderer?.Window.SetSize(Width, Height);
+                        MouseDriver.SetClientSize(Width, Height);
                         break;
                     case SDL_WindowEventID.SDL_WINDOWEVENT_CLOSE:
                         Exit();
@@ -146,7 +155,7 @@ namespace Ryujinx.Headless.SDL2
 
         protected abstract void FinalizeRenderer();
 
-        protected abstract void SwapBuffers();
+        protected abstract void SwapBuffers(object image);
 
         protected abstract string GetGpuVendorName();
 
@@ -162,7 +171,8 @@ namespace Ryujinx.Headless.SDL2
 
             Device.Gpu.Renderer.RunLoop(() =>
             {
-                Device.Gpu.InitializeShaderCache();
+                Device.Gpu.SetGpuThread();
+                Device.Gpu.InitializeShaderCache(_gpuCancellationTokenSource.Token);
                 Translator.IsReadyForTranslation.Set();
 
                 while (_isActive)
@@ -185,7 +195,7 @@ namespace Ryujinx.Headless.SDL2
 
                     while (Device.ConsumeFrameAvailable())
                     {
-                        Device.PresentFrame(SwapBuffers);
+                        Device.PresentFrame((texture) => { SwapBuffers(texture); });
                     }
 
                     if (_ticks >= _ticksPerFrame)
@@ -222,6 +232,8 @@ namespace Ryujinx.Headless.SDL2
             {
                 return;
             }
+
+            _gpuCancellationTokenSource.Cancel();
 
             _isStopped = true;
             _isActive = false;

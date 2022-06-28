@@ -34,6 +34,12 @@ namespace ARMeilleure.State
             GetStorage().ExclusiveAddress = ulong.MaxValue;
         }
 
+        public ulong GetPc()
+        {
+            // TODO: More precise tracking of PC value.
+            return GetStorage().DispatchAddress;
+        }
+
         public unsafe ulong GetX(int index)
         {
             if ((uint)index >= RegisterConsts.IntRegsCount)
@@ -93,6 +99,25 @@ namespace ARMeilleure.State
             }
 
             GetStorage().Flags[(int)flag] = value ? 1u : 0u;
+        }
+
+        public unsafe uint GetPstate()
+        {
+            uint value = 0;
+            for (int flag = 0; flag < RegisterConsts.FlagsCount; flag++)
+            {
+                value |= GetStorage().Flags[flag] != 0 ? 1u << flag : 0u;
+            }
+            return value;
+        }
+
+        public unsafe void SetPstate(uint value)
+        {
+            for (int flag = 0; flag < RegisterConsts.FlagsCount; flag++)
+            {
+                uint bit = 1u << flag;
+                GetStorage().Flags[flag] = (value & bit) == bit ? 1u : 0u;
+            }
         }
 
         public unsafe bool GetFPStateFlag(FPState flag)

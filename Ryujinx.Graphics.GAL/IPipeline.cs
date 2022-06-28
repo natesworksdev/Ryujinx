@@ -10,9 +10,10 @@ namespace Ryujinx.Graphics.GAL
 
         void ClearBuffer(BufferHandle destination, int offset, int size, uint value);
 
-        void ClearRenderTargetColor(int index, uint componentMask, ColorF color);
+        void ClearRenderTargetColor(int index, int layer, uint componentMask, ColorF color);
 
         void ClearRenderTargetDepthStencil(
+            int layer,
             float depthValue,
             bool depthMask,
             int stencilValue,
@@ -94,7 +95,7 @@ namespace Ryujinx.Graphics.GAL
         void SetVertexAttribs(ReadOnlySpan<VertexAttribDescriptor> vertexAttribs);
         void SetVertexBuffers(ReadOnlySpan<VertexBufferDescriptor> vertexBuffers);
 
-        void SetViewports(int first, ReadOnlySpan<Viewport> viewports);
+        void SetViewports(int first, ReadOnlySpan<Viewport> viewports, bool disableTransform);
 
         void TextureBarrier();
         void TextureBarrierTiled();

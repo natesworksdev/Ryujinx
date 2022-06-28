@@ -341,6 +341,16 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
+        /// Checks if a given memory page is mapped.
+        /// </summary>
+        /// <param name="address">CPU virtual address of the page</param>
+        /// <returns>True if mapped, false otherwise</returns>
+        public bool IsMapped(ulong address)
+        {
+            return _cpuMemory.IsMapped(address);
+        }
+
+        /// <summary>
         /// Release our reference to the CPU memory manager.
         /// </summary>
         public void Dispose()

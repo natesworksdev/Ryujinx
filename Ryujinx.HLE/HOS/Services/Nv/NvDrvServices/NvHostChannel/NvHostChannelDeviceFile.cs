@@ -251,7 +251,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
                         if (va != NvMemoryAllocator.PteUnmapped && va <= uint.MaxValue && (va + (uint)map.Size) <= uint.MaxValue)
                         {
                             _host1xContext.MemoryAllocator.AllocateRange(va, (uint)map.Size, freeAddressStartPosition);
-                            _host1xContext.Smmu.Map(map.Address, va, (uint)map.Size);
+                            _host1xContext.Smmu.Map(map.Address, va, (uint)map.Size, PteKind.Pitch); // FIXME: This should not use the GMMU.
                             map.DmaMapAddress = va;
                         }
                         else
@@ -429,8 +429,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
                 Channel.PushHostCommandBuffer(CreateWaitCommandBuffer(header.Fence));
             }
 
-            Channel.PushEntries(entries);
-
             header.Fence.Id = _channelSyncpoint.Id;
 
             if (header.Flags.HasFlag(SubmitGpfifoFlags.FenceIncrement) || header.Flags.HasFlag(SubmitGpfifoFlags.IncrementWithValue))
@@ -448,6 +446,8 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
             {
                 header.Fence.Value = _device.System.HostSyncpoint.ReadSyncpointMaxValue(header.Fence.Id);
             }
+
+            Channel.PushEntries(entries);
 
             if (header.Flags.HasFlag(SubmitGpfifoFlags.FenceIncrement))
             {

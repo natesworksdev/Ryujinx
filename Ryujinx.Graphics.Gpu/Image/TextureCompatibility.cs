@@ -2,7 +2,6 @@ using Ryujinx.Common;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Texture;
 using System;
-using System.Numerics;
 
 namespace Ryujinx.Graphics.Gpu.Image
 {
@@ -203,7 +202,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
 
                 if ((lhs.FormatInfo.Format == Format.D24UnormS8Uint ||
-                     lhs.FormatInfo.Format == Format.D24X8Unorm) && rhs.FormatInfo.Format == Format.B8G8R8A8Unorm)
+                     lhs.FormatInfo.Format == Format.S8UintD24Unorm) && rhs.FormatInfo.Format == Format.B8G8R8A8Unorm)
                 {
                     return TextureMatchQuality.FormatAlias;
                 }
@@ -657,6 +656,11 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 case Target.Texture2DMultisample:
                 case Target.Texture2DMultisampleArray:
+                    if (rhs.Target == Target.Texture2D || rhs.Target == Target.Texture2DArray)
+                    {
+                        return TextureViewCompatibility.CopyOnly;
+                    }
+
                     result = rhs.Target == Target.Texture2DMultisample ||
                              rhs.Target == Target.Texture2DMultisampleArray;
                     break;

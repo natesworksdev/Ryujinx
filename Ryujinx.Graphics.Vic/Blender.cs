@@ -10,17 +10,22 @@ namespace Ryujinx.Graphics.Vic
 {
     static class Blender
     {
-        public static void BlendOne(Surface dst, Surface src, ref SlotStruct slot)
+        public static void BlendOne(Surface dst, Surface src, ref SlotStruct slot, Rectangle targetRect)
         {
-            if (Sse41.IsSupported && (dst.Width & 3) == 0)
+            int x1 = targetRect.X;
+            int y1 = targetRect.Y;
+            int x2 = Math.Min(src.Width, x1 + targetRect.Width);
+            int y2 = Math.Min(src.Height, y1 + targetRect.Height);
+
+            if (Sse41.IsSupported && ((x1 | x2) & 3) == 0)
             {
-                BlendOneSse41(dst, src, ref slot);
+                BlendOneSse41(dst, src, ref slot, x1, y1, x2, y2);
                 return;
             }
 
-            for (int y = 0; y < dst.Height; y++)
+            for (int y = y1; y < y2; y++)
             {
-                for (int x = 0; x < dst.Width; x++)
+                for (int x = x1; x < x2; x++)
                 {
                     int inR = src.GetR(x, y);
                     int inG = src.GetG(x, y);
@@ -40,46 +45,18 @@ namespace Ryujinx.Graphics.Vic
             }
         }
 
-        private unsafe static void BlendOneSse41(Surface dst, Surface src, ref SlotStruct slot)
+        private unsafe static void BlendOneSse41(Surface dst, Surface src, ref SlotStruct slot, int x1, int y1, int x2, int y2)
         {
-            Debug.Assert((dst.Width & 3) == 0);
+            Debug.Assert(((x1 | x2) & 3) == 0);
 
             ref MatrixStruct mtx = ref slot.ColorMatrixStruct;
 
             int one = 1 << (mtx.MatrixRShift + 8);
 
-
-            // NOTE: This is buggy on .NET 5.0.100, we use a workaround for now (see https://github.com/dotnet/runtime/issues/44704)
-            // TODO: Uncomment this when fixed.
-            //Vector128<int> col1 = Vector128.Create(mtx.MatrixCoeff00, mtx.MatrixCoeff10, mtx.MatrixCoeff20, 0);
-            //Vector128<int> col2 = Vector128.Create(mtx.MatrixCoeff01, mtx.MatrixCoeff11, mtx.MatrixCoeff21, 0);
-            //Vector128<int> col3 = Vector128.Create(mtx.MatrixCoeff02, mtx.MatrixCoeff12, mtx.MatrixCoeff22, one);
-            //Vector128<int> col4 = Vector128.Create(mtx.MatrixCoeff03, mtx.MatrixCoeff13, mtx.MatrixCoeff23, 0);
-
-            Vector128<int> col1 = new Vector128<int>();
-            Vector128<int> col2 = new Vector128<int>();
-            Vector128<int> col3 = new Vector128<int>();
-            Vector128<int> col4 = new Vector128<int>();
-
-            col1 = Sse41.Insert(col1, mtx.MatrixCoeff00, 0);
-            col1 = Sse41.Insert(col1, mtx.MatrixCoeff10, 1);
-            col1 = Sse41.Insert(col1, mtx.MatrixCoeff20, 2);
-            col1 = Sse41.Insert(col1, 0, 3);
-
-            col2 = Sse41.Insert(col2, mtx.MatrixCoeff01, 0);
-            col2 = Sse41.Insert(col2, mtx.MatrixCoeff11, 1);
-            col2 = Sse41.Insert(col2, mtx.MatrixCoeff21, 2);
-            col2 = Sse41.Insert(col2, 0, 3);
-
-            col3 = Sse41.Insert(col3, mtx.MatrixCoeff02, 0);
-            col3 = Sse41.Insert(col3, mtx.MatrixCoeff12, 1);
-            col3 = Sse41.Insert(col3, mtx.MatrixCoeff22, 2);
-            col3 = Sse41.Insert(col3, one, 3);
-
-            col4 = Sse41.Insert(col4, mtx.MatrixCoeff03, 0);
-            col4 = Sse41.Insert(col4, mtx.MatrixCoeff13, 1);
-            col4 = Sse41.Insert(col4, mtx.MatrixCoeff23, 2);
-            col4 = Sse41.Insert(col4, 0, 3);
+            Vector128<int> col1 = Vector128.Create(mtx.MatrixCoeff00, mtx.MatrixCoeff10, mtx.MatrixCoeff20, 0);
+            Vector128<int> col2 = Vector128.Create(mtx.MatrixCoeff01, mtx.MatrixCoeff11, mtx.MatrixCoeff21, 0);
+            Vector128<int> col3 = Vector128.Create(mtx.MatrixCoeff02, mtx.MatrixCoeff12, mtx.MatrixCoeff22, one);
+            Vector128<int> col4 = Vector128.Create(mtx.MatrixCoeff03, mtx.MatrixCoeff13, mtx.MatrixCoeff23, 0);
 
             Vector128<int> rShift = Vector128.CreateScalar(mtx.MatrixRShift);
             Vector128<ushort> clMin = Vector128.Create((ushort)slot.SlotConfig.SoftClampLow);
@@ -90,9 +67,9 @@ namespace Ryujinx.Graphics.Vic
                 Pixel* ip = srcPtr;
                 Pixel* op = dstPtr;
 
-                for (int y = 0; y < dst.Height; y++, ip += src.Width, op += dst.Width)
+                for (int y = y1; y < y2; y++, ip += src.Width, op += dst.Width)
                 {
-                    for (int x = 0; x < dst.Width; x += 4)
+                    for (int x = x1; x < x2; x += 4)
                     {
                         Vector128<int> pixel1 = Sse41.ConvertToVector128Int32((ushort*)(ip + (uint)x));
                         Vector128<int> pixel2 = Sse41.ConvertToVector128Int32((ushort*)(ip + (uint)x + 1));

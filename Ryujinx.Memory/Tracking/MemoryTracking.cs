@@ -190,6 +190,30 @@ namespace Ryujinx.Memory.Tracking
 
         /// <summary>
         /// Signal that a virtual memory event happened at the given location.
+        /// This is similar VirtualMemoryEvent, but on Windows, it might also return true after a partial unmap.
+        /// This should only be called from the exception handler.
+        /// </summary>
+        /// <param name="address">Virtual address accessed</param>
+        /// <param name="size">Size of the region affected in bytes</param>
+        /// <param name="write">Whether the region was written to or read</param>
+        /// <param name="precise">True if the access is precise, false otherwise</param>
+        /// <returns>True if the event triggered any tracking regions, false otherwise</returns>
+        public bool VirtualMemoryEventEh(ulong address, ulong size, bool write, bool precise = false)
+        {
+            // Windows has a limitation, it can't do partial unmaps.
+            // For this reason, we need to unmap the whole range and then remap the sub-ranges.
+            // When this happens, we might have caused a undesirable access violation from the time that the range was unmapped.
+            // In this case, try again as the memory might be mapped now.
+            if (OperatingSystem.IsWindows() && MemoryManagementWindows.RetryFromAccessViolation())
+            {
+                return true;
+            }
+
+            return VirtualMemoryEvent(address, size, write, precise);
+        }
+
+        /// <summary>
+        /// Signal that a virtual memory event happened at the given location.
         /// This can be flagged as a precise event, which will avoid reprotection and call special handlers if possible.
         /// A precise event has an exact address and size, rather than triggering on page granularity.
         /// </summary>
@@ -203,6 +227,8 @@ namespace Ryujinx.Memory.Tracking
             // Look up the virtual region using the region list.
             // Signal up the chain to relevant handles.
 
+            bool shouldThrow = false;
+
             lock (TrackingLock)
             {
                 ref var overlaps = ref ThreadStaticArray<VirtualRegion>.Get();
@@ -211,32 +237,41 @@ namespace Ryujinx.Memory.Tracking
 
                 if (count == 0 && !precise)
                 {
-                    if (!_memoryManager.IsMapped(address))
+                    if (_memoryManager.IsMapped(address))
                     {
-                        _invalidAccessHandler?.Invoke(address);
-
-                        // We can't continue - it's impossible to remove protection from the page.
-                        // Even if the access handler wants us to continue, we wouldn't be able to.
-                        throw new InvalidMemoryRegionException();
-                    }
-
-                    _memoryManager.TrackingReprotect(address & ~(ulong)(_pageSize - 1), (ulong)_pageSize, MemoryPermission.ReadAndWrite);
-                    return false; // We can't handle this - it's probably a real invalid access.
-                }
-
-                for (int i = 0; i < count; i++)
-                {
-                    VirtualRegion region = overlaps[i];
-
-                    if (precise)
-                    {
-                        region.SignalPrecise(address, size, write);
+                        _memoryManager.TrackingReprotect(address & ~(ulong)(_pageSize - 1), (ulong)_pageSize, MemoryPermission.ReadAndWrite);
+                        return false; // We can't handle this - it's probably a real invalid access.
                     }
                     else
                     {
-                        region.Signal(address, size, write);
+                        shouldThrow = true;
                     }
                 }
+                else
+                {
+                    for (int i = 0; i < count; i++)
+                    {
+                        VirtualRegion region = overlaps[i];
+
+                        if (precise)
+                        {
+                            region.SignalPrecise(address, size, write);
+                        }
+                        else
+                        {
+                            region.Signal(address, size, write);
+                        }
+                    }
+                }
+            }
+
+            if (shouldThrow)
+            {
+                _invalidAccessHandler?.Invoke(address);
+
+                // We can't continue - it's impossible to remove protection from the page.
+                // Even if the access handler wants us to continue, we wouldn't be able to.
+                throw new InvalidMemoryRegionException();
             }
 
             return true;

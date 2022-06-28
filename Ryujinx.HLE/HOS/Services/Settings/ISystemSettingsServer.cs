@@ -3,9 +3,9 @@ using LibHac.Common;
 using LibHac.Fs;
 using LibHac.Fs.Fsa;
 using LibHac.FsSystem;
+using LibHac.Ncm;
 using LibHac.Tools.FsSystem.NcaUtils;
 using Ryujinx.Common.Logging;
-using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Utilities;
 using System;
@@ -222,12 +222,23 @@ namespace Ryujinx.HLE.HOS.Services.Settings
             return ResultCode.Success;
         }
 
-       [CommandHipc(60)]
+        [CommandHipc(60)]
         // IsUserSystemClockAutomaticCorrectionEnabled() -> bool
         public ResultCode IsUserSystemClockAutomaticCorrectionEnabled(ServiceCtx context)
         {
             // NOTE: When set to true, is automatically synced with the internet.
             context.ResponseData.Write(true);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet);
+
+            return ResultCode.Success;
+        }
+
+        [CommandHipc(62)]
+        // GetDebugModeFlag() -> bool
+        public ResultCode GetDebugModeFlag(ServiceCtx context)
+        {
+            context.ResponseData.Write(false);
 
             Logger.Stub?.PrintStub(LogClass.ServiceSet);
 
@@ -290,7 +301,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
         {
             const ulong SystemVersionTitleId = 0x0100000000000809;
 
-            string contentPath = device.System.ContentManager.GetInstalledContentPath(SystemVersionTitleId, StorageId.NandSystem, NcaContentType.Data);
+            string contentPath = device.System.ContentManager.GetInstalledContentPath(SystemVersionTitleId, StorageId.BuiltInSystem, NcaContentType.Data);
 
             if (string.IsNullOrWhiteSpace(contentPath))
             {
