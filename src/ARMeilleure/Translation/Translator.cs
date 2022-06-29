@@ -199,6 +199,7 @@ namespace ARMeilleure.Translation
 
             Statistics.StartTimer();
 
+            context.ResetCallDepth();
             ulong nextAddr = func.Execute(Stubs.ContextWrapper, context);
 
             Statistics.StopTimer(address);
