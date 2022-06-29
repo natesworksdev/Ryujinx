@@ -147,6 +147,8 @@ namespace ARMeilleure.State
         public bool GetRunning() => GetStorage().Running != 0;
         public void SetRunning(bool value) => GetStorage().Running = value ? 1 : 0;
 
+        public void ResetCallDepth() => GetStorage().CallDepth = 1;
+
         public unsafe static int GetRegisterOffset(Register reg)
         {
             if (reg.Type == RegisterType.Integer)
