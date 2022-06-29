@@ -332,6 +332,261 @@ namespace ARMeilleure.Instructions
         }
     }
 
+    static class SoftFloat16_64
+    {
+        public static double FPConvert(ushort valueBits)
+        {
+            ExecutionContext context = NativeInterface.GetContext();
+
+            double real = valueBits.FPUnpackCv(out FPType type, out bool sign, context);
+
+            double result;
+
+            if (type == FPType.SNaN || type == FPType.QNaN)
+            {
+                if ((context.Fpcr & FPCR.Dn) != 0)
+                {
+                    result = FPDefaultNaN();
+                }
+                else
+                {
+                    result = FPConvertNaN(valueBits);
+                }
+
+                if (type == FPType.SNaN)
+                {
+                    FPProcessException(FPException.InvalidOp, context);
+                }
+            }
+            else if (type == FPType.Infinity)
+            {
+                result = FPInfinity(sign);
+            }
+            else if (type == FPType.Zero)
+            {
+                result = FPZero(sign);
+            }
+            else
+            {
+                result = FPRoundCv(real, context);
+            }
+
+            return result;
+        }
+
+        private static double FPDefaultNaN()
+        {
+            return BitConverter.Int64BitsToDouble(0x7ff8000000000000l);
+        }
+
+        private static double FPInfinity(bool sign)
+        {
+            return sign ? double.NegativeInfinity : double.PositiveInfinity;
+        }
+
+        private static double FPZero(bool sign)
+        {
+            return sign ? -0d : +0d;
+        }
+
+        private static double FPMaxNormal(bool sign)
+        {
+            return sign ? double.MinValue : double.MaxValue;
+        }
+
+        private static double FPUnpackCv(
+            this ushort valueBits,
+            out FPType type,
+            out bool sign,
+            ExecutionContext context)
+        {
+            sign = (~(uint)valueBits & 0x8000u) == 0u;
+
+            uint exp16  = ((uint)valueBits & 0x7C00u) >> 10;
+            uint frac16 =  (uint)valueBits & 0x03FFu;
+
+            double real;
+
+            if (exp16 == 0u)
+            {
+                if (frac16 == 0u)
+                {
+                    type = FPType.Zero;
+                    real = 0d;
+                }
+                else
+                {
+                    type = FPType.Nonzero; // Subnormal.
+                    real = Math.Pow(2d, -14) * ((double)frac16 * Math.Pow(2d, -10));
+                }
+            }
+            else if (exp16 == 0x1Fu && (context.Fpcr & FPCR.Ahp) == 0)
+            {
+                if (frac16 == 0u)
+                {
+                    type = FPType.Infinity;
+                    real = Math.Pow(2d, 1000);
+                }
+                else
+                {
+                    type = (~frac16 & 0x0200u) == 0u ? FPType.QNaN : FPType.SNaN;
+                    real = 0d;
+                }
+            }
+            else
+            {
+                type = FPType.Nonzero; // Normal.
+                real = Math.Pow(2d, (int)exp16 - 15) * (1d + (double)frac16 * Math.Pow(2d, -10));
+            }
+
+            return sign ? -real : real;
+        }
+
+        private static double FPRoundCv(double real, ExecutionContext context)
+        {
+            const int minimumExp = -1022;
+
+            const int e = 11;
+            const int f = 52;
+
+            bool   sign;
+            double mantissa;
+
+            if (real < 0d)
+            {
+                sign     = true;
+                mantissa = -real;
+            }
+            else
+            {
+                sign     = false;
+                mantissa = real;
+            }
+
+            int exponent = 0;
+
+            while (mantissa < 1d)
+            {
+                mantissa *= 2d;
+                exponent--;
+            }
+
+            while (mantissa >= 2d)
+            {
+                mantissa /= 2d;
+                exponent++;
+            }
+
+            if ((context.Fpcr & FPCR.Fz) != 0 && exponent < minimumExp)
+            {
+                context.Fpsr |= FPSR.Ufc;
+
+                return FPZero(sign);
+            }
+
+            uint biasedExp = (uint)Math.Max(exponent - minimumExp + 1, 0);
+
+            if (biasedExp == 0u)
+            {
+                mantissa /= Math.Pow(2d, minimumExp - exponent);
+            }
+
+            ulong intMant = (ulong)Math.Floor(mantissa * Math.Pow(2d, f));
+            double error = mantissa * Math.Pow(2d, f) - (double)intMant;
+
+            if (biasedExp == 0u && (error != 0d || (context.Fpcr & FPCR.Ufe) != 0))
+            {
+                FPProcessException(FPException.Underflow, context);
+            }
+
+            bool overflowToInf;
+            bool roundUp;
+
+            switch (context.Fpcr.GetRoundingMode())
+            {
+                default:
+                case FPRoundingMode.ToNearest:
+                    roundUp       = (error > 0.5d || (error == 0.5d && (intMant & 1u) == 1u));
+                    overflowToInf = true;
+                    break;
+
+                case FPRoundingMode.TowardsPlusInfinity:
+                    roundUp       = (error != 0d && !sign);
+                    overflowToInf = !sign;
+                    break;
+
+                case FPRoundingMode.TowardsMinusInfinity:
+                    roundUp       = (error != 0d && sign);
+                    overflowToInf = sign;
+                    break;
+
+                case FPRoundingMode.TowardsZero:
+                    roundUp       = false;
+                    overflowToInf = false;
+                    break;
+            }
+
+            if (roundUp)
+            {
+                intMant++;
+
+                if (intMant == 1ul << f)
+                {
+                    biasedExp = 1u;
+                }
+
+                if (intMant == 1ul << (f + 1))
+                {
+                    biasedExp++;
+                    intMant >>= 1;
+                }
+            }
+
+            double result;
+
+            if (biasedExp >= (1u << e) - 1u)
+            {
+                result = overflowToInf ? FPInfinity(sign) : FPMaxNormal(sign);
+
+                FPProcessException(FPException.Overflow, context);
+
+                error = 1d;
+            }
+            else
+            {
+                result = BitConverter.Int64BitsToDouble(
+                    (long)((sign ? 1ul : 0ul) << 63 | (biasedExp & 0x7FFul) << 52 | (intMant & 0x000FFFFFFFFFFFFFul)));
+            }
+
+            if (error != 0d)
+            {
+                FPProcessException(FPException.Inexact, context);
+            }
+
+            return result;
+        }
+
+        private static double FPConvertNaN(ushort valueBits)
+        {
+            return BitConverter.Int64BitsToDouble(
+                (long)(((ulong)valueBits & 0x8000ul) << 48 | 0x7FF8000000000000ul | ((ulong)valueBits & 0x01FFul) << 42));
+        }
+
+        private static void FPProcessException(FPException exc, ExecutionContext context)
+        {
+            int enable = (int)exc + 8;
+
+            if ((context.Fpcr & (FPCR)(1 << enable)) != 0)
+            {
+                throw new NotImplementedException("Floating-point trap handling.");
+            }
+            else
+            {
+                context.Fpsr |= (FPSR)(1 << (int)exc);
+            }
+        }
+    }
+
     static class SoftFloat32_16
     {
         public static ushort FPConvert(float value)
@@ -1580,7 +1835,7 @@ namespace ARMeilleure.Instructions
                 {
                     product = FPMulFpscr(value1, value2, true);
                 }
-                
+
                 result = FPHalvedSub(FPThree(false), product, context, fpcr);
             }
 
@@ -1916,6 +2171,293 @@ namespace ARMeilleure.Instructions
             int enable = (int)exc + 8;
 
             if ((fpcr & (FPCR)(1 << enable)) != 0)
+            {
+                throw new NotImplementedException("Floating-point trap handling.");
+            }
+            else
+            {
+                context.Fpsr |= (FPSR)(1 << (int)exc);
+            }
+        }
+    }
+
+    static class SoftFloat64_16
+    {
+        public static ushort FPConvert(double value)
+        {
+            ExecutionContext context = NativeInterface.GetContext();
+
+            double real = value.FPUnpackCv(out FPType type, out bool sign, out ulong valueBits, context);
+
+            bool altHp = (context.Fpcr & FPCR.Ahp) != 0;
+
+            ushort resultBits;
+
+            if (type == FPType.SNaN || type == FPType.QNaN)
+            {
+                if (altHp)
+                {
+                    resultBits = FPZero(sign);
+                }
+                else if ((context.Fpcr & FPCR.Dn) != 0)
+                {
+                    resultBits = FPDefaultNaN();
+                }
+                else
+                {
+                    resultBits = FPConvertNaN(valueBits);
+                }
+
+                if (type == FPType.SNaN || altHp)
+                {
+                    FPProcessException(FPException.InvalidOp, context);
+                }
+            }
+            else if (type == FPType.Infinity)
+            {
+                if (altHp)
+                {
+                    resultBits = (ushort)((sign ? 1u : 0u) << 15 | 0x7FFFu);
+
+                    FPProcessException(FPException.InvalidOp, context);
+                }
+                else
+                {
+                    resultBits = FPInfinity(sign);
+                }
+            }
+            else if (type == FPType.Zero)
+            {
+                resultBits = FPZero(sign);
+            }
+            else
+            {
+                resultBits = FPRoundCv(real, context);
+            }
+
+            return resultBits;
+        }
+
+        private static ushort FPDefaultNaN()
+        {
+            return (ushort)0x7E00u;
+        }
+
+        private static ushort FPInfinity(bool sign)
+        {
+            return sign ? (ushort)0xFC00u : (ushort)0x7C00u;
+        }
+
+        private static ushort FPZero(bool sign)
+        {
+            return sign ? (ushort)0x8000u : (ushort)0x0000u;
+        }
+
+        private static ushort FPMaxNormal(bool sign)
+        {
+            return sign ? (ushort)0xFBFFu : (ushort)0x7BFFu;
+        }
+
+        private static double FPUnpackCv(
+            this double value,
+            out FPType type,
+            out bool sign,
+            out ulong valueBits,
+            ExecutionContext context)
+        {
+            valueBits = (ulong)BitConverter.DoubleToInt64Bits(value);
+
+            sign = (~valueBits & 0x8000000000000000ul) == 0u;
+
+            ulong exp64  = (valueBits & 0x7FF0000000000000ul) >> 52;
+            ulong frac64 =  valueBits & 0x000FFFFFFFFFFFFFul;
+
+            double real;
+
+            if (exp64 == 0u)
+            {
+                if (frac64 == 0u || (context.Fpcr & FPCR.Fz) != 0)
+                {
+                    type = FPType.Zero;
+                    real = 0d;
+
+                    if (frac64 != 0u)
+                    {
+                        FPProcessException(FPException.InputDenorm, context);
+                    }
+                }
+                else
+                {
+                    type = FPType.Nonzero; // Subnormal.
+                    real = Math.Pow(2d, -1022) * ((double)frac64 * Math.Pow(2d, -52));
+                }
+            }
+            else if (exp64 == 0x7FFul)
+            {
+                if (frac64 == 0u)
+                {
+                    type = FPType.Infinity;
+                    real = Math.Pow(2d, 1000000);
+                }
+                else
+                {
+                    type = (~frac64 & 0x0008000000000000ul) == 0u ? FPType.QNaN : FPType.SNaN;
+                    real = 0d;
+                }
+            }
+            else
+            {
+                type = FPType.Nonzero; // Normal.
+                real = Math.Pow(2d, (int)exp64 - 1023) * (1d + (double)frac64 * Math.Pow(2d, -52));
+            }
+
+            return sign ? -real : real;
+        }
+
+        private static ushort FPRoundCv(double real, ExecutionContext context)
+        {
+            const int minimumExp = -14;
+
+            const int e = 5;
+            const int f = 10;
+
+            bool   sign;
+            double mantissa;
+
+            if (real < 0d)
+            {
+                sign     = true;
+                mantissa = -real;
+            }
+            else
+            {
+                sign     = false;
+                mantissa = real;
+            }
+
+            int exponent = 0;
+
+            while (mantissa < 1d)
+            {
+                mantissa *= 2d;
+                exponent--;
+            }
+
+            while (mantissa >= 2d)
+            {
+                mantissa /= 2d;
+                exponent++;
+            }
+
+            uint biasedExp = (uint)Math.Max(exponent - minimumExp + 1, 0);
+
+            if (biasedExp == 0u)
+            {
+                mantissa /= Math.Pow(2d, minimumExp - exponent);
+            }
+
+            uint intMant = (uint)Math.Floor(mantissa * Math.Pow(2d, f));
+            double error = mantissa * Math.Pow(2d, f) - (double)intMant;
+
+            if (biasedExp == 0u && (error != 0d || (context.Fpcr & FPCR.Ufe) != 0))
+            {
+                FPProcessException(FPException.Underflow, context);
+            }
+
+            bool overflowToInf;
+            bool roundUp;
+
+            switch (context.Fpcr.GetRoundingMode())
+            {
+                default:
+                case FPRoundingMode.ToNearest:
+                    roundUp       = (error > 0.5d || (error == 0.5d && (intMant & 1u) == 1u));
+                    overflowToInf = true;
+                    break;
+
+                case FPRoundingMode.TowardsPlusInfinity:
+                    roundUp       = (error != 0d && !sign);
+                    overflowToInf = !sign;
+                    break;
+
+                case FPRoundingMode.TowardsMinusInfinity:
+                    roundUp       = (error != 0d && sign);
+                    overflowToInf = sign;
+                    break;
+
+                case FPRoundingMode.TowardsZero:
+                    roundUp       = false;
+                    overflowToInf = false;
+                    break;
+            }
+
+            if (roundUp)
+            {
+                intMant++;
+
+                if (intMant == 1u << f)
+                {
+                    biasedExp = 1u;
+                }
+
+                if (intMant == 1u << (f + 1))
+                {
+                    biasedExp++;
+                    intMant >>= 1;
+                }
+            }
+
+            ushort resultBits;
+
+            if ((context.Fpcr & FPCR.Ahp) == 0)
+            {
+                if (biasedExp >= (1u << e) - 1u)
+                {
+                    resultBits = overflowToInf ? FPInfinity(sign) : FPMaxNormal(sign);
+
+                    FPProcessException(FPException.Overflow, context);
+
+                    error = 1d;
+                }
+                else
+                {
+                    resultBits = (ushort)((sign ? 1u : 0u) << 15 | (biasedExp & 0x1Fu) << 10 | (intMant & 0x03FFu));
+                }
+            }
+            else
+            {
+                if (biasedExp >= 1u << e)
+                {
+                    resultBits = (ushort)((sign ? 1u : 0u) << 15 | 0x7FFFu);
+
+                    FPProcessException(FPException.InvalidOp, context);
+
+                    error = 0d;
+                }
+                else
+                {
+                    resultBits = (ushort)((sign ? 1u : 0u) << 15 | (biasedExp & 0x1Fu) << 10 | (intMant & 0x03FFu));
+                }
+            }
+
+            if (error != 0d)
+            {
+                FPProcessException(FPException.Inexact, context);
+            }
+
+            return resultBits;
+        }
+
+        private static ushort FPConvertNaN(ulong valueBits)
+        {
+            return (ushort)((valueBits & 0x8000000000000000ul) >> 48 | 0x7E00u | (valueBits & 0x0007FC0000000000ul) >> 42);
+        }
+
+        private static void FPProcessException(FPException exc, ExecutionContext context)
+        {
+            int enable = (int)exc + 8;
+
+            if ((context.Fpcr & (FPCR)(1 << enable)) != 0)
             {
                 throw new NotImplementedException("Floating-point trap handling.");
             }

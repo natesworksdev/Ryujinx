@@ -105,11 +105,21 @@ namespace ARMeilleure.Instructions
             }
             else if (op.Size == 1 && op.Opc == 3) // Double -> Half.
             {
-                throw new NotImplementedException("Double-precision to half-precision.");
+                Operand ne = context.VectorExtract(OperandType.FP64, GetVec(op.Rn), 0);
+
+                Operand res = context.Call(typeof(SoftFloat64_16).GetMethod(nameof(SoftFloat64_16.FPConvert)), ne);
+
+                res = context.ZeroExtend16(OperandType.I64, res);
+
+                context.Copy(GetVec(op.Rd), EmitVectorInsert(context, context.VectorZero(), res, 0, 1));
             }
-            else if (op.Size == 3 && op.Opc == 1) // Double -> Half.
+            else if (op.Size == 3 && op.Opc == 1) // Half -> Double.
             {
-                throw new NotImplementedException("Half-precision to double-precision.");
+                Operand ne = EmitVectorExtractZx(context, op.Rn, 0, 1);
+
+                Operand res = context.Call(typeof(SoftFloat16_64).GetMethod(nameof(SoftFloat16_64.FPConvert)), ne);
+
+                context.Copy(GetVec(op.Rd), context.VectorInsert(context.VectorZero(), res, 0));
             }
             else // Invalid encoding.
             {
