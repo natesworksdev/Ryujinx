@@ -12,6 +12,10 @@ namespace ARMeilleure.Instructions
 {
     static class InstEmitFlowHelper
     {
+        // How many calls we can have in our call stack before we give up and return to the dispatcher.
+        // This prevents stack overflows caused by deep recursive calls.
+        private const int MaxCallDepth = 200;
+
         public static void EmitCondBranch(ArmEmitterContext context, Operand target, Condition cond)
         {
             if (cond != Condition.Al)
@@ -163,17 +167,25 @@ namespace ARMeilleure.Instructions
         {
             if (isReturn)
             {
-                if (target.Type == OperandType.I32)
-                {
-                    target = context.ZeroExtend32(OperandType.I64, target);
-                }
-
-                context.Return(target);
+                EmitReturn(context, target);
             }
             else
             {
                 EmitTableBranch(context, target, isJump: true);
             }
+        }
+
+        public static void EmitReturn(ArmEmitterContext context, Operand target)
+        {
+            Operand nativeContext = context.LoadArgument(OperandType.I64, 0);
+            DecreaseCallDepth(context, nativeContext);
+
+            if (target.Type == OperandType.I32)
+            {
+                target = context.ZeroExtend32(OperandType.I64, target);
+            }
+
+            context.Return(target);
         }
 
         private static void EmitTableBranch(ArmEmitterContext context, Operand guestAddress, bool isJump)
@@ -218,6 +230,8 @@ namespace ARMeilleure.Instructions
             {
                 OpCode op = context.CurrOp;
 
+                EmitCallDepthCheckAndIncrement(context, nativeContext, guestAddress);
+
                 Operand returnAddress = context.Call(hostAddress, OperandType.I64, nativeContext);
 
                 context.LoadFromContext();
@@ -233,8 +247,41 @@ namespace ARMeilleure.Instructions
                 Operand lblContinue = context.GetLabel(nextAddr.Value);
                 context.BranchIf(lblContinue, returnAddress, nextAddr, Comparison.Equal, BasicBlockFrequency.Cold);
 
+                DecreaseCallDepth(context, nativeContext);
+
                 context.Return(returnAddress);
             }
+        }
+
+        private static void EmitCallDepthCheckAndIncrement(EmitterContext context, Operand nativeContext, Operand guestAddress)
+        {
+            if (!Optimizations.EnableDeepCallRecursionProtection)
+            {
+                return;
+            }
+
+            Operand callDepthAddr = context.Add(nativeContext, Const((ulong)NativeContext.GetCallDepthOffset()));
+            Operand currentCallDepth = context.Load(OperandType.I32, callDepthAddr);
+            Operand lblDoCall = Label();
+
+            context.BranchIf(lblDoCall, currentCallDepth, Const(MaxCallDepth), Comparison.LessUI);
+            context.Store(callDepthAddr, context.Subtract(currentCallDepth, Const(1)));
+            context.Return(guestAddress);
+
+            context.MarkLabel(lblDoCall);
+            context.Store(callDepthAddr, context.Add(currentCallDepth, Const(1)));
+        }
+
+        private static void DecreaseCallDepth(EmitterContext context, Operand nativeContext)
+        {
+            if (!Optimizations.EnableDeepCallRecursionProtection)
+            {
+                return;
+            }
+
+            Operand callDepthAddr = context.Add(nativeContext, Const((ulong)NativeContext.GetCallDepthOffset()));
+            Operand currentCallDepth = context.Load(OperandType.I32, callDepthAddr);
+            context.Store(callDepthAddr, context.Subtract(currentCallDepth, Const(1)));
         }
     }
 }
