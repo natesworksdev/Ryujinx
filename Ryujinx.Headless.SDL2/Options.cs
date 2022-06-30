@@ -177,7 +177,7 @@ namespace Ryujinx.Headless.SDL2
         [Value(0, MetaName = "input", HelpText = "Input to load.", Required = true)]
         public string InputPath { get; set; }
 
-        [Option("allow-unsafe-mem", Required = false, Default = false, HelpText = "Allows games and mods to access RAM they may not normally have access to. Required by some homebrew and game mods.")]
-        public bool UnsafeMem { get; set; }
+        [Option("allow-jit-code-mem", Required = false, Default = false, HelpText = "Allows mods to access areas of memory they normally shouldn't. Don't enable this setting unless a mod is crashing because it needs it.")]
+        public bool allowJitCodeMem { get; set; }
     }
 }

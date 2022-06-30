@@ -60,7 +60,7 @@ namespace Ryujinx.Ui.Windows
         [GUI] RadioButton     _mmHost;
         [GUI] RadioButton     _mmHostUnsafe;
         [GUI] CheckButton     _expandRamToggle;
-        [GUI] CheckButton     _unsafeMemToggle;
+        [GUI] CheckButton     _allowJitCodeMemToggle;
         [GUI] CheckButton     _ignoreToggle;
         [GUI] CheckButton     _directKeyboardAccess;
         [GUI] CheckButton     _directMouseAccess;
@@ -262,9 +262,9 @@ namespace Ryujinx.Ui.Windows
             {
                 _expandRamToggle.Click();
             }
-            if (ConfigurationState.Instance.System.UnsafeMem)
+            if (ConfigurationState.Instance.System.allowJitCodeMem)
             {
-                _unsafeMemToggle.Click();
+                _allowJitCodeMemToggle.Click();
             }
 
             if (ConfigurationState.Instance.System.IgnoreMissingServices)
@@ -519,7 +519,7 @@ namespace Ryujinx.Ui.Windows
             ConfigurationState.Instance.System.EnableFsIntegrityChecks.Value   = _fsicToggle.Active;
             ConfigurationState.Instance.System.MemoryManagerMode.Value         = memoryMode;
             ConfigurationState.Instance.System.ExpandRam.Value                 = _expandRamToggle.Active;
-            ConfigurationState.Instance.System.UnsafeMem.Value                 = _unsafeMemToggle.Active;
+            ConfigurationState.Instance.System.allowJitCodeMem.Value                 = _allowJitCodeMemToggle.Active;
             ConfigurationState.Instance.System.IgnoreMissingServices.Value     = _ignoreToggle.Active;
             ConfigurationState.Instance.Hid.EnableKeyboard.Value               = _directKeyboardAccess.Active;
             ConfigurationState.Instance.Hid.EnableMouse.Value                  = _directMouseAccess.Active;

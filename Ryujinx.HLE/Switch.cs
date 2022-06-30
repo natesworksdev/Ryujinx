@@ -74,7 +74,6 @@ namespace Ryujinx.HLE
             System.EnablePtc                        = Configuration.EnablePtc;
             System.FsIntegrityCheckLevel            = Configuration.FsIntegrityCheckLevel;
             System.GlobalAccessLogMode              = Configuration.FsGlobalAccessLogMode;
-            Syscall.allowUnsafeMemAccess            = Configuration.UnsafeMem;
         }
 
         public void LoadCart(string exeFsDir, string romFsFile = null)

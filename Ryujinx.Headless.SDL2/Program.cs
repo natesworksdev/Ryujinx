@@ -485,7 +485,7 @@ namespace Ryujinx.Headless.SDL2
                                                                   (bool)options.IgnoreMissingServices,
                                                                   options.AspectRatio,
                                                                   options.AudioVolume,
-                                                                  options.UnsafeMem);
+                                                                  options.allowJitCodeMem);
 
             return new Switch(configuration);
         }

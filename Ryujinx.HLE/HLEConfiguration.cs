@@ -90,7 +90,7 @@ namespace Ryujinx.HLE
         /// <summary>
         /// Controls whether code can access normally restricted memory areas.
         /// </summary>
-        internal readonly bool UnsafeMem;
+        internal readonly bool allowJitCodeMem;
         
         /// <summary>
         /// Control the initial state of the docked mode.
@@ -181,7 +181,7 @@ namespace Ryujinx.HLE
                                 bool                   ignoreMissingServices,
                                 AspectRatio            aspectRatio,
                                 float                  audioVolume,
-                                bool                   allowUnsafeMem);
+                                bool                   allowJitCodeMemOpt)
         {
             VirtualFileSystem      = virtualFileSystem;
             LibHacHorizonManager   = libHacHorizonManager;
@@ -206,7 +206,7 @@ namespace Ryujinx.HLE
             IgnoreMissingServices  = ignoreMissingServices;
             AspectRatio            = aspectRatio;
             AudioVolume            = audioVolume;
-            UnsafeMem              = allowUnsafeMem;
+            allowJitCodeMem        = allowJitCodeMemOpt;
         }
     }
 }
