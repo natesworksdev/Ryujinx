@@ -4,6 +4,7 @@ using Ryujinx.Common.Configuration;
 using Ryujinx.Graphics.Gpu;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
+using Ryujinx.HLE.HOS.Kernel.SupervisorCall;
 using Ryujinx.HLE.HOS.Services.Apm;
 using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.HLE.Ui;
@@ -73,6 +74,7 @@ namespace Ryujinx.HLE
             System.EnablePtc                        = Configuration.EnablePtc;
             System.FsIntegrityCheckLevel            = Configuration.FsIntegrityCheckLevel;
             System.GlobalAccessLogMode              = Configuration.FsGlobalAccessLogMode;
+            Syscall.allowUnsafeMemAccess            = Configuration.UnsafeMem;
         }
 
         public void LoadCart(string exeFsDir, string romFsFile = null)

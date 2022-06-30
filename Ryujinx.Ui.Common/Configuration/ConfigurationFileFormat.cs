@@ -14,7 +14,7 @@ namespace Ryujinx.Ui.Common.Configuration
         /// <summary>
         /// The current version of the file format
         /// </summary>
-        public const int CurrentVersion = 38;
+        public const int CurrentVersion = 39;
 
         /// <summary>
         /// Version of the configuration file format
@@ -201,6 +201,11 @@ namespace Ryujinx.Ui.Common.Configuration
         /// </summary>
         public bool ExpandRam { get; set; }
 
+        /// <summary>
+        /// Controls whether code can access normally restricted memory areas.
+        /// </summary>
+        public bool UnsafeMem { get; set; }
+        
         /// <summary>
         /// Enable or disable ignoring missing services
         /// </summary>

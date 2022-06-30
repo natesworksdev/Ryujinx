@@ -8,13 +8,16 @@ using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using System;
+using System.Management;
 using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 {
-    [SvcImpl]
+[SvcImpl]
     class Syscall
     {
+        public static bool allowUnsafeMemAccess;    
+
         private readonly KernelContext _context;
 
         public Syscall(KernelContext context)
@@ -537,7 +540,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return ReplyAndReceive(out handleIndex, handles, replyTargetHandle, timeout);
         }
 
-        public KernelResult ReplyAndReceive(out int handleIndex, ReadOnlySpan<int> handles, int replyTargetHandle, long timeout)
+        public KernelResult ReplyAndReceive(out int handleIndex, int[] handles, int replyTargetHandle, long timeout)
         {
             handleIndex = 0;
 
@@ -1413,7 +1416,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             // Newer versions of the kernel also returns an error here if the owner and process
             // where the operation will happen are the same. We do not return an error here
             // for homebrew because some of them requires this to be patched out to work (for JIT).
-            if (codeMemory == null || (!currentProcess.AllowCodeMemoryForJit && codeMemory.Owner == currentProcess))
+            if ((codeMemory == null) || (!allowUnsafeMemAccess &&((!currentProcess.AllowCodeMemoryForJit && codeMemory.Owner == currentProcess))))
             {
                 return KernelResult.InvalidHandle;
             }

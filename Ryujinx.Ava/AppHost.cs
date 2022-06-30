@@ -746,7 +746,8 @@ namespace Ryujinx.Ava
                                                                           ConfigurationState.Instance.System.MemoryManagerMode,
                                                                           ConfigurationState.Instance.System.IgnoreMissingServices,
                                                                           ConfigurationState.Instance.Graphics.AspectRatio,
-                                                                          ConfigurationState.Instance.System.AudioVolume);
+                                                                          ConfigurationState.Instance.System.AudioVolume,
+                                                                          ConfigurationState.Instance.System.UnsafeMem.Value);
 
             Device = new Switch(configuration);
         }

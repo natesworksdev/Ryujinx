@@ -88,6 +88,11 @@ namespace Ryujinx.HLE
         internal readonly bool EnableVsync;
 
         /// <summary>
+        /// Controls whether code can access normally restricted memory areas.
+        /// </summary>
+        internal readonly bool UnsafeMem;
+        
+        /// <summary>
         /// Control the initial state of the docked mode.
         /// </summary>
         internal readonly bool EnableDockedMode;
@@ -153,29 +158,13 @@ namespace Ryujinx.HLE
         /// </summary>
         public Action RefreshInputConfig { internal get; set; }
 
-        public HLEConfiguration(VirtualFileSystem      virtualFileSystem,
-                                LibHacHorizonManager   libHacHorizonManager,
-                                ContentManager         contentManager,
-                                AccountManager         accountManager,
-                                UserChannelPersistence userChannelPersistence,
-                                IRenderer              gpuRenderer,
-                                IHardwareDeviceDriver  audioDeviceDriver,
-                                MemoryConfiguration    memoryConfiguration,
-                                IHostUiHandler         hostUiHandler,
-                                SystemLanguage         systemLanguage,
-                                RegionCode             region,
-                                bool                   enableVsync,
-                                bool                   enableDockedMode,
-                                bool                   enablePtc,
-                                bool                   enableInternetAccess,
-                                IntegrityCheckLevel    fsIntegrityCheckLevel,
-                                int                    fsGlobalAccessLogMode,
-                                long                   systemTimeOffset,
-                                string                 timeZone,
-                                MemoryManagerMode      memoryManagerMode,
-                                bool                   ignoreMissingServices,
-                                AspectRatio            aspectRatio,
-                                float                  audioVolume)
+        public HLEConfiguration(VirtualFileSystem virtualFileSystem, LibHacHorizonManager libHacHorizonManager,
+            ContentManager contentManager, AccountManager accountManager, UserChannelPersistence userChannelPersistence,
+            IRenderer gpuRenderer, IHardwareDeviceDriver audioDeviceDriver, MemoryConfiguration memoryConfiguration,
+            IHostUiHandler hostUiHandler, SystemLanguage systemLanguage, RegionCode region, bool enableVsync,
+            bool enableDockedMode, bool enablePtc, bool enableInternetAccess, IntegrityCheckLevel fsIntegrityCheckLevel,
+            int fsGlobalAccessLogMode, long systemTimeOffset, string timeZone, MemoryManagerMode memoryManagerMode,
+            bool ignoreMissingServices, AspectRatio aspectRatio, float audioVolume, bool allowUnsafeMem)
         {
             VirtualFileSystem      = virtualFileSystem;
             LibHacHorizonManager   = libHacHorizonManager;
@@ -200,6 +189,7 @@ namespace Ryujinx.HLE
             IgnoreMissingServices  = ignoreMissingServices;
             AspectRatio            = aspectRatio;
             AudioVolume            = audioVolume;
+            UnsafeMem              = allowUnsafeMem;
         }
     }
 }
