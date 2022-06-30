@@ -158,13 +158,30 @@ namespace Ryujinx.HLE
         /// </summary>
         public Action RefreshInputConfig { internal get; set; }
 
-        public HLEConfiguration(VirtualFileSystem virtualFileSystem, LibHacHorizonManager libHacHorizonManager,
-            ContentManager contentManager, AccountManager accountManager, UserChannelPersistence userChannelPersistence,
-            IRenderer gpuRenderer, IHardwareDeviceDriver audioDeviceDriver, MemoryConfiguration memoryConfiguration,
-            IHostUiHandler hostUiHandler, SystemLanguage systemLanguage, RegionCode region, bool enableVsync,
-            bool enableDockedMode, bool enablePtc, bool enableInternetAccess, IntegrityCheckLevel fsIntegrityCheckLevel,
-            int fsGlobalAccessLogMode, long systemTimeOffset, string timeZone, MemoryManagerMode memoryManagerMode,
-            bool ignoreMissingServices, AspectRatio aspectRatio, float audioVolume, bool allowUnsafeMem)
+        public HLEConfiguration(VirtualFileSystem      virtualFileSystem,
+                                LibHacHorizonManager   libHacHorizonManager,
+                                ContentManager         contentManager,
+                                AccountManager         accountManager,
+                                UserChannelPersistence userChannelPersistence,
+                                IRenderer              gpuRenderer,
+                                IHardwareDeviceDriver  audioDeviceDriver,
+                                MemoryConfiguration    memoryConfiguration,
+                                IHostUiHandler         hostUiHandler,
+                                SystemLanguage         systemLanguage,
+                                RegionCode             region,
+                                bool                   enableVsync,
+                                bool                   enableDockedMode,
+                                bool                   enablePtc,
+                                bool                   enableInternetAccess,
+                                IntegrityCheckLevel    fsIntegrityCheckLevel,
+                                int                    fsGlobalAccessLogMode,
+                                long                   systemTimeOffset,
+                                string                 timeZone,
+                                MemoryManagerMode      memoryManagerMode,
+                                bool                   ignoreMissingServices,
+                                AspectRatio            aspectRatio,
+                                float                  audioVolume,
+                                bool                   allowUnsafeMem);
         {
             VirtualFileSystem      = virtualFileSystem;
             LibHacHorizonManager   = libHacHorizonManager;
