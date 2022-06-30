@@ -262,7 +262,7 @@ namespace Ryujinx.Ui.Windows
             {
                 _expandRamToggle.Click();
             }
-            if (ConfigurationState.Instance.System.allowJitCodeMem)
+            if (ConfigurationState.Instance.System.AllowJitCodeMem)
             {
                 _allowJitCodeMemToggle.Click();
             }
@@ -519,7 +519,7 @@ namespace Ryujinx.Ui.Windows
             ConfigurationState.Instance.System.EnableFsIntegrityChecks.Value   = _fsicToggle.Active;
             ConfigurationState.Instance.System.MemoryManagerMode.Value         = memoryMode;
             ConfigurationState.Instance.System.ExpandRam.Value                 = _expandRamToggle.Active;
-            ConfigurationState.Instance.System.allowJitCodeMem.Value                 = _allowJitCodeMemToggle.Active;
+            ConfigurationState.Instance.System.AllowJitCodeMem.Value           = _allowJitCodeMemToggle.Active;
             ConfigurationState.Instance.System.IgnoreMissingServices.Value     = _ignoreToggle.Active;
             ConfigurationState.Instance.Hid.EnableKeyboard.Value               = _directKeyboardAccess.Active;
             ConfigurationState.Instance.Hid.EnableMouse.Value                  = _directMouseAccess.Active;

@@ -575,7 +575,7 @@ namespace Ryujinx.Ui
                                                                           ConfigurationState.Instance.System.IgnoreMissingServices,
                                                                           ConfigurationState.Instance.Graphics.AspectRatio,
                                                                           ConfigurationState.Instance.System.AudioVolume,
-                                                                          ConfigurationState.Instance.System.allowJitCodeMem.Value);
+                                                                          ConfigurationState.Instance.System.AllowJitCodeMem.Value);
 
             _emulationContext = new HLE.Switch(configuration);
         }

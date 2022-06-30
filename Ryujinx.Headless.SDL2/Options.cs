@@ -178,6 +178,6 @@ namespace Ryujinx.Headless.SDL2
         public string InputPath { get; set; }
 
         [Option("allow-jit-code-mem", Required = false, Default = false, HelpText = "Allows mods to access areas of memory they normally shouldn't. Don't enable this setting unless a mod is crashing because it needs it.")]
-        public bool allowJitCodeMem { get; set; }
+        public bool AllowJitCodeMem { get; set; }
     }
 }

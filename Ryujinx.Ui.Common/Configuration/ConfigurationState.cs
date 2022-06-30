@@ -299,7 +299,7 @@ namespace Ryujinx.Ui.Common.Configuration
             /// <summary>
             /// Controls whether code can access normally restricted memory areas.
             /// </summary>
-            public ReactiveObject<bool> allowJitCodeMem { get; private set; }
+            public ReactiveObject<bool> AllowJitCodeMem { get; private set; }
             
             /// <summary>
             /// Enable or disable ignoring missing services
@@ -328,8 +328,8 @@ namespace Ryujinx.Ui.Common.Configuration
                 MemoryManagerMode.Event       += static (sender, e) => LogValueChange(sender, e, nameof(MemoryManagerMode));
                 ExpandRam                     = new ReactiveObject<bool>();
                 ExpandRam.Event               += static (sender, e) => LogValueChange(sender, e, nameof(ExpandRam));
-                allowJitCodeMem                     = new ReactiveObject<bool>();
-                allowJitCodeMem.Event               += static (sender, e) => LogValueChange(sender, e, nameof(allowJitCodeMem));
+                AllowJitCodeMem                     = new ReactiveObject<bool>();
+                AllowJitCodeMem.Event               += static (sender, e) => LogValueChange(sender, e, nameof(AllowJitCodeMem));
                 IgnoreMissingServices         = new ReactiveObject<bool>();
                 IgnoreMissingServices.Event   += static (sender, e) => LogValueChange(sender, e, nameof(IgnoreMissingServices));
                 AudioVolume                   = new ReactiveObject<float>();
@@ -542,7 +542,7 @@ namespace Ryujinx.Ui.Common.Configuration
                 AudioVolume               = System.AudioVolume,
                 MemoryManagerMode         = System.MemoryManagerMode,
                 ExpandRam                 = System.ExpandRam,
-                allowJitCodeMem           = System.allowJitCodeMem,
+                AllowJitCodeMem           = System.AllowJitCodeMem,
                 IgnoreMissingServices     = System.IgnoreMissingServices,
                 GuiColumns                = new GuiColumns
                 {
@@ -623,7 +623,7 @@ namespace Ryujinx.Ui.Common.Configuration
             System.AudioVolume.Value               = 1;
             System.MemoryManagerMode.Value         = MemoryManagerMode.HostMappedUnsafe;
             System.ExpandRam.Value                 = false;
-            System.allowJitCodeMem.Value                 = false;
+            System.AllowJitCodeMem.Value                 = false;
             System.IgnoreMissingServices.Value     = false;
             Ui.GuiColumns.FavColumn.Value          = true;
             Ui.GuiColumns.IconColumn.Value         = true;
@@ -1141,7 +1141,7 @@ namespace Ryujinx.Ui.Common.Configuration
             System.AudioVolume.Value               = configurationFileFormat.AudioVolume;
             System.MemoryManagerMode.Value         = configurationFileFormat.MemoryManagerMode;
             System.ExpandRam.Value                 = configurationFileFormat.ExpandRam;
-            System.allowJitCodeMem.Value           = configurationFileFormat.allowJitCodeMem;
+            System.AllowJitCodeMem.Value           = configurationFileFormat.AllowJitCodeMem;
             System.IgnoreMissingServices.Value     = configurationFileFormat.IgnoreMissingServices;
             Ui.GuiColumns.FavColumn.Value          = configurationFileFormat.GuiColumns.FavColumn;
             Ui.GuiColumns.IconColumn.Value         = configurationFileFormat.GuiColumns.IconColumn;

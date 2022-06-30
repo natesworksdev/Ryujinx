@@ -204,7 +204,7 @@ namespace Ryujinx.Ui.Common.Configuration
         /// <summary>
         /// Controls whether code can access normally restricted memory areas.
         /// </summary>
-        public bool allowJitCodeMem { get; set; }
+        public bool AllowJitCodeMem { get; set; }
         
         /// <summary>
         /// Enable or disable ignoring missing services

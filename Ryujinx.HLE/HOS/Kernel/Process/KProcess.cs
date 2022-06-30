@@ -103,7 +103,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
             Capabilities = new KProcessCapabilities();
 
-            AllowCodeMemoryForJit = context.Device.Configuration.allowJitCodeMem;
+            AllowCodeMemoryForJit = context.Device.Configuration.AllowJitCodeMem;
 
             RandomEntropy = new ulong[KScheduler.CpuCoresCount];
             PinnedThreads = new KThread[KScheduler.CpuCoresCount];
