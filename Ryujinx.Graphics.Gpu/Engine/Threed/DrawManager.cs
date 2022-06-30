@@ -559,7 +559,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     scissorH = (int)MathF.Ceiling(scissorH * scale);
                 }
 
-                _context.Renderer.Pipeline.SetScissor(0, true, scissorX, scissorY, scissorW, scissorH);
+                Span<Rectangle<int>> scissors = stackalloc Rectangle<int>[1];
+                scissors[0] = new Rectangle<int>(scissorX, scissorY, scissorW, scissorH);
+
+                _context.Renderer.Pipeline.SetScissors(scissors);
             }
 
             if (clipMismatch)

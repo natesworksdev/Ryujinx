@@ -43,7 +43,7 @@ namespace Ryujinx.Graphics.OpenGL
         private CounterQueueEvent _activeConditionalRender;
 
         private Vector4<int>[] _fpIsBgra = new Vector4<int>[SupportBuffer.FragmentIsBgraCount];
-        private Vector4<float>[] _renderScale = new Vector4<float>[65];
+        private Vector4<float>[] _renderScale = new Vector4<float>[73];
         private int _fragmentScaleCount;
 
         private TextureBase _unit0Texture;
@@ -1106,45 +1106,45 @@ namespace Ryujinx.Graphics.OpenGL
             _framebuffer.SetDrawBuffers(colors.Length);
         }
 
-        public void SetSampler(int binding, ISampler sampler)
+        public unsafe void SetScissors(ReadOnlySpan<Rectangle<int>> regions)
         {
-            if (sampler == null)
+            int count = Math.Min(regions.Length, Constants.MaxViewports);
+
+            int* v = stackalloc int[count * 4];
+
+            for (int index = 0; index < count; index++)
             {
-                return;
-            }
+                int vIndex = index * 4;
 
-            Sampler samp = (Sampler)sampler;
+                var region = regions[index];
 
-            if (binding == 0)
-            {
-                _unit0Sampler = samp;
-            }
+                bool enabled = (region.X | region.Y) != 0 || region.Width != 0xffff || region.Height != 0xffff;
+                uint mask = 1u << index;
 
-            samp.Bind(binding);
-        }
-
-        public void SetScissor(int index, bool enable, int x, int y, int width, int height)
-        {
-            uint mask = 1u << index;
-
-            if (!enable)
-            {
-                if ((_scissorEnables & mask) != 0)
+                if (enabled)
                 {
-                    _scissorEnables &= ~mask;
-                    GL.Disable(IndexedEnableCap.ScissorTest, index);
+                    v[vIndex] = region.X;
+                    v[vIndex + 1] = region.Y;
+                    v[vIndex + 2] = region.Width;
+                    v[vIndex + 3] = region.Height;
+
+                    if ((_scissorEnables & mask) == 0)
+                    {
+                        _scissorEnables |= mask;
+                        GL.Enable(IndexedEnableCap.ScissorTest, index);
+                    }
                 }
-
-                return;
+                else
+                {
+                    if ((_scissorEnables & mask) != 0)
+                    {
+                        _scissorEnables &= ~mask;
+                        GL.Disable(IndexedEnableCap.ScissorTest, index);
+                    }
+                }
             }
 
-            if ((_scissorEnables & mask) == 0)
-            {
-                _scissorEnables |= mask;
-                GL.Enable(IndexedEnableCap.ScissorTest, index);
-            }
-
-            GL.ScissorIndexed(index, x, y, width, height);
+            GL.ScissorArray(0, count, v);
         }
 
         public void SetStencilTest(StencilTestDescriptor stencilTest)
@@ -1195,22 +1195,30 @@ namespace Ryujinx.Graphics.OpenGL
             SetBuffers(first, buffers, isStorage: true);
         }
 
-        public void SetTexture(int binding, ITexture texture)
+        public void SetTextureAndSampler(ShaderStage stage, int binding, ITexture texture, ISampler sampler)
         {
-            if (texture == null)
+            if (texture != null)
             {
-                return;
+                if (binding == 0)
+                {
+                    _unit0Texture = (TextureBase)texture;
+                }
+                else
+                {
+                    ((TextureBase)texture).Bind(binding);
+                }
             }
+
+            Sampler glSampler = (Sampler)sampler;
+
+            glSampler?.Bind(binding);
 
             if (binding == 0)
             {
-                _unit0Texture = (TextureBase)texture;
-            }
-            else
-            {
-                ((TextureBase)texture).Bind(binding);
+                _unit0Sampler = glSampler;
             }
         }
+
 
         public void SetTransformFeedbackBuffers(ReadOnlySpan<BufferRange> buffers)
         {

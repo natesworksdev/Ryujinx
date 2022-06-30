@@ -298,6 +298,35 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Determines if the vertex stage requires a scale value.
+        /// </summary>
+        private bool VertexRequiresScale()
+        {
+            bool requiresScale = false;
+
+            for (int i = 0; i < _textureBindingsCount[0]; i++)
+            {
+                if ((_textureBindings[0][i].Flags & TextureUsageFlags.NeedsScaleValue) != 0)
+                {
+                    return true;
+                }
+            }
+
+            if (!requiresScale)
+            {
+                for (int i = 0; i < _imageBindingsCount[0]; i++)
+                {
+                    if ((_imageBindings[0][i].Flags & TextureUsageFlags.NeedsScaleValue) != 0)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Uploads texture and image scales to the backend when they are used.
         /// </summary>
         private void CommitRenderScale()
@@ -308,10 +337,10 @@ namespace Ryujinx.Graphics.Gpu.Image
             int fragmentIndex = (int)ShaderStage.Fragment - 1;
             int fragmentTotal = _isCompute ? 0 : (_textureBindingsCount[fragmentIndex] + _imageBindingsCount[fragmentIndex]);
 
-            if (total != 0 && fragmentTotal != _lastFragmentTotal)
+            if (total != 0 && fragmentTotal != _lastFragmentTotal && VertexRequiresScale())
             {
                 // Must update scales in the support buffer if:
-                // - Vertex stage has bindings.
+                // - Vertex stage has bindings that require scale.
                 // - Fragment stage binding count has been updated since last render scale update.
 
                 _scaleChanged = true;
@@ -444,6 +473,25 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Counts the total number of texture bindings used by all shader stages.
+        /// </summary>
+        /// <returns>The total amount of textures used</returns>
+        private int GetTextureBindingsCount()
+        {
+            int count = 0;
+
+            for (int i = 0; i < _textureBindings.Length; i++)
+            {
+                if (_textureBindings[i] != null)
+                {
+                    count += _textureBindings[i].Length;
+                }
+            }
+
+            return count;
+        }
+
+        /// <summary>
         /// Ensures that the texture bindings are visible to the host GPU.
         /// Note: this actually performs the binding using the host graphics API.
         /// </summary>
@@ -519,7 +567,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                         state.ScaleIndex = index;
                         state.UsageFlags = usageFlags;
 
-                        _context.Renderer.Pipeline.SetTexture(bindingInfo.Binding, hostTextureRebind);
+                        _context.Renderer.Pipeline.SetTextureAndSampler(stage, bindingInfo.Binding, hostTextureRebind, state.Sampler);
                     }
 
                     continue;
@@ -532,18 +580,21 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 specStateMatches &= specState.MatchesTexture(stage, index, descriptor);
 
+                Sampler sampler = _samplerPool?.Get(samplerId);
+
                 ITexture hostTexture = texture?.GetTargetTexture(bindingInfo.Target);
+                ISampler hostSampler = sampler?.GetHostSampler(texture);
 
                 if (hostTexture != null && texture.Target == Target.TextureBuffer)
                 {
                     // Ensure that the buffer texture is using the correct buffer as storage.
                     // Buffers are frequently re-created to accomodate larger data, so we need to re-bind
                     // to ensure we're not using a old buffer that was already deleted.
-                    _channel.BufferManager.SetBufferTextureStorage(hostTexture, texture.Range.GetSubRange(0).Address, texture.Size, bindingInfo, bindingInfo.Format, false);
+                    _channel.BufferManager.SetBufferTextureStorage(stage, hostTexture, texture.Range.GetSubRange(0).Address, texture.Size, bindingInfo, bindingInfo.Format, false);
                 }
                 else
                 {
-                    if (state.Texture != hostTexture)
+                    if (state.Texture != hostTexture || state.Sampler != hostSampler)
                     {
                         if (UpdateScale(texture, usageFlags, index, stage))
                         {
@@ -554,22 +605,13 @@ namespace Ryujinx.Graphics.Gpu.Image
                         state.ScaleIndex = index;
                         state.UsageFlags = usageFlags;
 
-                        _context.Renderer.Pipeline.SetTexture(bindingInfo.Binding, hostTexture);
-                    }
-
-                    Sampler sampler = samplerPool?.Get(samplerId);
-                    state.CachedSampler = sampler;
-
-                    ISampler hostSampler = sampler?.GetHostSampler(texture);
-
-                    if (state.Sampler != hostSampler)
-                    {
                         state.Sampler = hostSampler;
 
-                        _context.Renderer.Pipeline.SetSampler(bindingInfo.Binding, hostSampler);
+                        _context.Renderer.Pipeline.SetTextureAndSampler(stage, bindingInfo.Binding, hostTexture, hostSampler);
                     }
 
                     state.CachedTexture = texture;
+                    state.CachedSampler = sampler;
                     state.InvalidatedSequence = texture?.InvalidatedSequence ?? 0;
                 }
             }
@@ -681,7 +723,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                         format = texture.Format;
                     }
 
-                    _channel.BufferManager.SetBufferTextureStorage(hostTexture, texture.Range.GetSubRange(0).Address, texture.Size, bindingInfo, format, true);
+                    _channel.BufferManager.SetBufferTextureStorage(stage, hostTexture, texture.Range.GetSubRange(0).Address, texture.Size, bindingInfo, format, true);
                 }
                 else
                 {
