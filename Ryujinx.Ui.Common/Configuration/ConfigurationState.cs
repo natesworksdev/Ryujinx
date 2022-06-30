@@ -328,8 +328,8 @@ namespace Ryujinx.Ui.Common.Configuration
                 MemoryManagerMode.Event       += static (sender, e) => LogValueChange(sender, e, nameof(MemoryManagerMode));
                 ExpandRam                     = new ReactiveObject<bool>();
                 ExpandRam.Event               += static (sender, e) => LogValueChange(sender, e, nameof(ExpandRam));
-                AllowJitCodeMem                     = new ReactiveObject<bool>();
-                AllowJitCodeMem.Event               += static (sender, e) => LogValueChange(sender, e, nameof(AllowJitCodeMem));
+                AllowJitCodeMem               = new ReactiveObject<bool>();
+                AllowJitCodeMem.Event         += static (sender, e) => LogValueChange(sender, e, nameof(AllowJitCodeMem));
                 IgnoreMissingServices         = new ReactiveObject<bool>();
                 IgnoreMissingServices.Event   += static (sender, e) => LogValueChange(sender, e, nameof(IgnoreMissingServices));
                 AudioVolume                   = new ReactiveObject<float>();
@@ -623,7 +623,7 @@ namespace Ryujinx.Ui.Common.Configuration
             System.AudioVolume.Value               = 1;
             System.MemoryManagerMode.Value         = MemoryManagerMode.HostMappedUnsafe;
             System.ExpandRam.Value                 = false;
-            System.AllowJitCodeMem.Value                 = false;
+            System.AllowJitCodeMem.Value           = false;
             System.IgnoreMissingServices.Value     = false;
             Ui.GuiColumns.FavColumn.Value          = true;
             Ui.GuiColumns.IconColumn.Value         = true;
