@@ -410,6 +410,8 @@ namespace Ryujinx.Ui.App.Common
 
                                         continue;
                                     }
+
+                                    titleId = nca.Header.TitleId.ToString("x16");
                                 }
                                 catch (InvalidDataException)
                                 {
