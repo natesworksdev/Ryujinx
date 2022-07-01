@@ -102,6 +102,11 @@ namespace Ryujinx.Memory.Range
 
             if (leftLastRange.EndAddress == rightFirstRange.Address)
             {
+                if (left.Count == 1 && right.Count == 1)
+                {
+                    return new MultiRange(leftLastRange.Address, rightFirstRange.EndAddress - leftLastRange.Address);
+                }
+
                 MemoryRange[] ranges = new MemoryRange[left.Count + right.Count - 1];
 
                 for (int index = 0; index < left.Count - 1; index++)
