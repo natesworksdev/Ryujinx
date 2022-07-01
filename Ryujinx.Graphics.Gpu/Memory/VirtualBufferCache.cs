@@ -168,7 +168,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private void SplitAndAdd(ref BufferView viewToSplit, ulong splitAddress, ulong splitSize)
         {
             ulong splitRangeOffset = (ulong)viewToSplit.BaseOffset + (splitAddress - viewToSplit.Address);
-            MultiRange splitRange = viewToSplit.Buffer.Range.GetSlice(splitRangeOffset, splitSize);
+            MultiRange splitRange = viewToSplit.Buffer.Range.Slice(splitRangeOffset, splitSize);
 
             if (IsFullyUnmapped(splitRange))
             {
@@ -482,15 +482,15 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 ulong offsetWithinNew = overlapView.Address - gpuVa;
 
-                MultiRange existingSlice = overlapView.Buffer.Range.GetSlice((ulong)overlapView.BaseOffset, overlapView.Size);
-                MultiRange newSlice = newRange.GetSlice(offsetWithinNew, overlapView.Size);
+                MultiRange existingSlice = overlapView.Buffer.Range.Slice((ulong)overlapView.BaseOffset, overlapView.Size);
+                MultiRange newSlice = newRange.Slice(offsetWithinNew, overlapView.Size);
 
                 if (!existingSlice.Equals(newSlice))
                 {
                     ulong rightOffset = offsetWithinNew + overlapView.Size;
 
-                    MultiRange left = newRange.GetSlice(0, offsetWithinNew);
-                    MultiRange right = newRange.GetSlice(rightOffset, size - rightOffset);
+                    MultiRange left = newRange.Slice(0, offsetWithinNew);
+                    MultiRange right = newRange.Slice(rightOffset, size - rightOffset);
 
                     newRange = left.Append(existingSlice).Append(right);
                 }
