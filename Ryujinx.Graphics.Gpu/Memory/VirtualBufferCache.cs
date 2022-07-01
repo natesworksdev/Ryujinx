@@ -344,7 +344,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
         private void CreateView(ulong gpuVa, ulong size, BufferView[] overlaps, int overlapCount, bool forceVirtual)
         {
-            MultiRange range = _memoryManager.GetPhysicalRegions(gpuVa, size);
+            MultiRange range = GetRangeWithOldMappings(gpuVa, size, overlaps, overlapCount);
 
             // We do not want to create the view if the memory is completely unmapped,
             // as such a buffer would not be able to store any data.
@@ -376,10 +376,16 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 // GPU virtual memory ranges, as those will always be contiguous and coalescible.
 
                 // We can only inherit handles from buffers that no longer have any users, be it virtual or physical.
-                var handles = overlaps
-                    .Take(overlapCount)
-                    .Where(x => !x.Buffer.HasViews)
-                    .SelectMany(x => x.GetTrackingHandles(gpuVa));
+                List<RegionHandleSegment> handles = new List<RegionHandleSegment>();
+
+                for (int index = 0; index < overlapCount; index++)
+                {
+                    ref BufferView overlapView = ref overlaps[index];
+                    if (!overlapView.Buffer.HasViews)
+                    {
+                        handles.AddRange(overlapView.GetTrackingHandles(gpuVa));
+                    }
+                }
 
                 buffer = new Buffer(_context, _memoryManager.Physical, range, handles);
                 view = new BufferView(gpuVa, size, 0, isVirtual: true, buffer);
@@ -426,6 +432,38 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
 
             buffer.AddView(_buffers, view);
+        }
+
+        private MultiRange GetRangeWithOldMappings(ulong gpuVa, ulong size, BufferView[] overlaps, int overlapCount)
+        {
+            MultiRange newRange = _memoryManager.GetPhysicalRegions(gpuVa, size);
+
+            // If we have overlaps, place the overlap ranges over the new ranges.
+            // This is necessary because we inherit tracking handles, and the inheritance
+            // assumes that the mappings did not change for the buffers that overlap.
+            // Eventually, RefreshMappings should remove the stale mappings.
+
+            for (int index = 0; index < overlapCount; index++)
+            {
+                ref BufferView overlapView = ref overlaps[index];
+
+                ulong offsetWithinNew = overlapView.Address - gpuVa;
+
+                MultiRange existingSlice = overlapView.Buffer.Range.GetSlice((ulong)overlapView.BaseOffset, overlapView.Size);
+                MultiRange newSlice = newRange.GetSlice(offsetWithinNew, overlapView.Size);
+
+                if (!existingSlice.Equals(newSlice))
+                {
+                    ulong rightOffset = offsetWithinNew + overlapView.Size;
+
+                    MultiRange left = newRange.GetSlice(0, offsetWithinNew);
+                    MultiRange right = newRange.GetSlice(rightOffset, size - rightOffset);
+
+                    newRange = left.Append(existingSlice).Append(right);
+                }
+            }
+
+            return newRange;
         }
 
         private static bool IsFullyUnmapped(MultiRange range)
