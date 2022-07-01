@@ -80,6 +80,63 @@ namespace Ryujinx.Memory.Range
         }
 
         /// <summary>
+        /// Appends a multi-range at the end of this range.
+        /// </summary>
+        /// <param name="right">Range to append at the end</param>
+        /// <returns>A new range with <paramref name="right"/> appended at the end</returns>
+        public MultiRange Append(MultiRange right)
+        {
+            MultiRange left = this;
+
+            if (left.Count == 0)
+            {
+                return right;
+            }
+            else if (right.Count == 0)
+            {
+                return left;
+            }
+
+            MemoryRange leftLastRange = left.GetSubRange(left.Count - 1);
+            MemoryRange rightFirstRange = right.GetSubRange(0);
+
+            if (leftLastRange.EndAddress == rightFirstRange.Address)
+            {
+                MemoryRange[] ranges = new MemoryRange[left.Count + right.Count - 1];
+
+                for (int index = 0; index < left.Count - 1; index++)
+                {
+                    ranges[index] = left.GetSubRange(index);
+                }
+
+                for (int index = 1; index < right.Count; index++)
+                {
+                    ranges[left.Count - 1 + index] = right.GetSubRange(index);
+                }
+
+                ranges[left.Count - 1] = new MemoryRange(leftLastRange.Address, rightFirstRange.EndAddress - leftLastRange.Address);
+
+                return new MultiRange(ranges);
+            }
+            else
+            {
+                MemoryRange[] ranges = new MemoryRange[left.Count + right.Count];
+
+                for (int index = 0; index < left.Count; index++)
+                {
+                    ranges[index] = left.GetSubRange(index);
+                }
+
+                for (int index = 0; index < right.Count; index++)
+                {
+                    ranges[left.Count + index] = right.GetSubRange(index);
+                }
+
+                return new MultiRange(ranges);
+            }
+        }
+
+        /// <summary>
         /// Gets a slice of the multi-range.
         /// </summary>
         /// <param name="offset">Offset of the slice into the multi-range in bytes</param>
