@@ -1,5 +1,4 @@
 using Ryujinx.Graphics.Shader;
-using Ryujinx.Memory.Range;
 
 namespace Ryujinx.Graphics.Gpu.Memory
 {

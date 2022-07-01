@@ -39,6 +39,14 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         public Buffer Buffer { get; }
 
+        /// <summary>
+        /// Creates a new buffer view.
+        /// </summary>
+        /// <param name="address">Address of the buffer view</param>
+        /// <param name="size">Size in bytes of the view</param>
+        /// <param name="offset">Offset inside the buffer where <paramref name="address"/> starts</param>
+        /// <param name="isVirtual">True if the view is owned by the virtual buffer cache, false if owned by the physical buffer cache</param>
+        /// <param name="buffer">Buffer accessible by this view</param>
         public BufferView(ulong address, ulong size, int offset, bool isVirtual, Buffer buffer)
         {
             Address = address;
@@ -48,6 +56,15 @@ namespace Ryujinx.Graphics.Gpu.Memory
             Buffer = buffer;
         }
 
+        /// <summary>
+        /// Gets memory tracking handles for the buffer accessible by this view.
+        /// </summary>
+        /// <remarks>
+        /// After calling this, the view becomes unusable because the tracking handles are no longer owned by the buffer.
+        /// It's an error to call this method more than once.
+        /// </remarks>
+        /// <param name="newAddress">Offset where the inherited handles will be placed on the new buffer</param>
+        /// <returns>Tracking handles used by this view</returns>
         public IEnumerable<RegionHandleSegment> GetTrackingHandles(ulong newAddress)
         {
             ulong offsetWithinNew = Address - newAddress;
