@@ -362,46 +362,24 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
-        /// Gets the address of the compute uniform buffer currently bound at the given index.
+        /// Gets the GPU virtual address of the compute uniform buffer currently bound at the given index.
         /// </summary>
         /// <param name="index">Index of the uniform buffer binding</param>
         /// <returns>The uniform buffer address, or an undefined value if the buffer is not currently bound</returns>
-        public ulong GetComputeUniformBufferAddress(int index)
+        public ulong GetComputeUniformBufferGpuVa(int index)
         {
-            if (_cpUniformBuffers.Buffers[index].GpuVa == 0)
-            {
-                return 0;
-            }
-
-            ulong address = _channel.MemoryManager.Translate(_cpUniformBuffers.Buffers[index].GpuVa); // FIXME
-            if (address == MemoryManager.PteUnmapped)
-            {
-                return 0;
-            }
-
-            return address;
+            return _cpUniformBuffers.Buffers[index].GpuVa;
         }
 
         /// <summary>
-        /// Gets the address of the graphics uniform buffer currently bound at the given index.
+        /// Gets the GPU virtual address of the graphics uniform buffer currently bound at the given index.
         /// </summary>
         /// <param name="stage">Index of the shader stage</param>
         /// <param name="index">Index of the uniform buffer binding</param>
         /// <returns>The uniform buffer address, or an undefined value if the buffer is not currently bound</returns>
-        public ulong GetGraphicsUniformBufferAddress(int stage, int index)
+        public ulong GetGraphicsUniformBufferGpuVa(int stage, int index)
         {
-            if (_gpUniformBuffers[stage].Buffers[index].GpuVa == 0)
-            {
-                return 0;
-            }
-
-            ulong address = _channel.MemoryManager.Translate(_gpUniformBuffers[stage].Buffers[index].GpuVa); // FIXME
-            if (address == MemoryManager.PteUnmapped)
-            {
-                return 0;
-            }
-
-            return address;
+            return _gpUniformBuffers[stage].Buffers[index].GpuVa;
         }
 
         /// <summary>

@@ -46,11 +46,11 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <inheritdoc/>
         public uint ConstantBuffer1Read(int offset)
         {
-            ulong baseAddress = _compute
-                ? _channel.BufferManager.GetComputeUniformBufferAddress(1)
-                : _channel.BufferManager.GetGraphicsUniformBufferAddress(_stageIndex, 1);
+            ulong baseGpuVa = _compute
+                ? _channel.BufferManager.GetComputeUniformBufferGpuVa(1)
+                : _channel.BufferManager.GetGraphicsUniformBufferGpuVa(_stageIndex, 1);
 
-            return _channel.MemoryManager.Physical.Read<uint>(baseAddress + (ulong)offset);
+            return _channel.MemoryManager.Read<uint>(baseGpuVa + (ulong)offset);
         }
 
         /// <inheritdoc/>
