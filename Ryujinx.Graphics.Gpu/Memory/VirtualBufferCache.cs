@@ -281,18 +281,18 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 result.UnmappedSequence != result.Buffer.UnmappedSequence)
             {
                 CreateBuffer(alignedGpuVa, size);
-                Buffer buffer = GetBuffer(alignedGpuVa, size, write: false, out _, out MultiRange range);
+                Buffer buffer = GetBuffer(alignedGpuVa, size, write: false, out int bufferOffset);
                 if (buffer == null)
                 {
                     return false;
                 }
 
-                result = new BufferCacheEntry(range, alignedGpuVa, buffer);
+                result = new BufferCacheEntry(bufferOffset, alignedGpuVa, size, buffer);
 
                 _modifiedCache[alignedGpuVa] = result;
             }
 
-            return result.Buffer.IsModified(result.Range);
+            return result.Buffer.IsModified((ulong)result.BufferOffset, result.Size);
         }
 
         /// <summary>

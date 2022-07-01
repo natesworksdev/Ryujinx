@@ -804,12 +804,12 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             (int textureWordOffset, int samplerWordOffset, TextureHandleType handleType) = TextureHandle.UnpackOffsets(wordOffset);
 
-            ulong textureBufferAddress = _isCompute
-                ? _channel.BufferManager.GetComputeUniformBufferAddress(textureBufferIndex)
-                : _channel.BufferManager.GetGraphicsUniformBufferAddress(stageIndex, textureBufferIndex);
+            ulong textureBufferGpuVa = _isCompute
+                ? _channel.BufferManager.GetComputeUniformBufferGpuVa(textureBufferIndex)
+                : _channel.BufferManager.GetGraphicsUniformBufferGpuVa(stageIndex, textureBufferIndex);
 
-            int handle = textureBufferAddress != 0
-                ? _channel.MemoryManager.Physical.Read<int>(textureBufferAddress + (uint)textureWordOffset * 4)
+            int handle = textureBufferGpuVa != 0
+                ? _channel.MemoryManager.Read<int>(textureBufferGpuVa + (uint)textureWordOffset * 4)
                 : 0;
 
             // The "wordOffset" (which is really the immediate value used on texture instructions on the shader)
@@ -824,12 +824,12 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 if (handleType != TextureHandleType.SeparateConstantSamplerHandle)
                 {
-                    ulong samplerBufferAddress = _isCompute
-                        ? _channel.BufferManager.GetComputeUniformBufferAddress(samplerBufferIndex)
-                        : _channel.BufferManager.GetGraphicsUniformBufferAddress(stageIndex, samplerBufferIndex);
+                    ulong samplerBufferGpuVa = _isCompute
+                        ? _channel.BufferManager.GetComputeUniformBufferGpuVa(samplerBufferIndex)
+                        : _channel.BufferManager.GetGraphicsUniformBufferGpuVa(stageIndex, samplerBufferIndex);
 
-                    samplerHandle = samplerBufferAddress != 0
-                        ? _channel.MemoryManager.Physical.Read<int>(samplerBufferAddress + (uint)samplerWordOffset * 4)
+                    samplerHandle = samplerBufferGpuVa != 0
+                        ? _channel.MemoryManager.Read<int>(samplerBufferGpuVa + (uint)samplerWordOffset * 4)
                         : 0;
                 }
                 else
