@@ -527,18 +527,22 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             _drawState.DrawIndirect = true;
             _drawState.HasConstantBufferDrawParameters = true;
 
-            _channel.MemoryManager.VirtualBufferCache.CreateBuffer(indirectBufferGpuVa, (ulong)maxDrawCount * (ulong)stride);
+            ulong indirectBufferSize = (hasCount ? (ulong)maxDrawCount : 1UL) * (ulong)stride;
 
             if (hasCount)
             {
-                _channel.MemoryManager.VirtualBufferCache.CreateBuffer(parameterBufferGpuVa, 4);
+                _channel.BufferManager.SetIndirectBuffer(indirectBufferGpuVa, indirectBufferSize, parameterBufferGpuVa, 4);
+            }
+            else
+            {
+                _channel.BufferManager.SetIndirectBuffer(indirectBufferGpuVa, indirectBufferSize);
             }
 
             engine.UpdateState();
 
             if (hasCount)
             {
-                var indirectBuffer = _channel.MemoryManager.VirtualBufferCache.GetBufferRange(indirectBufferGpuVa, (ulong)maxDrawCount * (ulong)stride);
+                var indirectBuffer = _channel.MemoryManager.VirtualBufferCache.GetBufferRange(indirectBufferGpuVa, indirectBufferSize);
                 var parameterBuffer = _channel.MemoryManager.VirtualBufferCache.GetBufferRange(parameterBufferGpuVa, 4);
 
                 if (indexed)
@@ -552,7 +556,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             }
             else
             {
-                var indirectBuffer = _channel.MemoryManager.VirtualBufferCache.GetBufferRange(indirectBufferGpuVa, (ulong)stride);
+                var indirectBuffer = _channel.MemoryManager.VirtualBufferCache.GetBufferRange(indirectBufferGpuVa, indirectBufferSize);
 
                 if (indexed)
                 {
@@ -563,6 +567,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                     _context.Renderer.Pipeline.DrawIndirect(indirectBuffer);
                 }
             }
+
+            _channel.BufferManager.SetIndirectBuffer(0, 0, 0, 0);
 
             _drawState.DrawIndexed = false;
             _drawState.DrawIndirect = false;
