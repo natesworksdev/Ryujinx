@@ -582,6 +582,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="size">Size in bytes of the copy</param>
         public void CopyBuffer(ulong srcVa, ulong dstVa, ulong size)
         {
+            RefreshMappings();
+
             CreateBuffer(srcVa, size);
             CreateBuffer(dstVa, size);
 
@@ -624,6 +626,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="value">Value to be written into the buffer</param>
         public void ClearBuffer(ulong gpuVa, ulong size, uint value)
         {
+            RefreshMappings();
+
             CreateBuffer(gpuVa, size);
 
             Buffer buffer = GetBuffer(gpuVa, size, write: false, out int bufferOffset);
