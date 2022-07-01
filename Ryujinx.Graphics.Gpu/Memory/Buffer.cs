@@ -225,7 +225,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
-        /// <summary>
+                /// <summary>
         /// Inherit modified ranges from another buffer.
         /// </summary>
         /// <param name="from">The buffer to inherit from</param>
@@ -236,7 +236,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             for (int i = startIndex, j = 0; i < _regions.Length && j < from._regions.Length; i++)
             {
-                if (_regions[i].OverlapsWith(from._regions[j].Address, from._regions[j].Size))
+                ulong thisOffset = _regions[i].BaseOffset;
+                ulong thisEndOffset = thisOffset + _regions[i].Size;
+                ulong fromOffset = offsetWithinFrom + from._regions[j].BaseOffset;
+                ulong fromEndOffset = fromOffset + from._regions[j].Size;
+
+                if (thisOffset < fromEndOffset && fromOffset < thisEndOffset)
                 {
                     _regions[i].InheritModifiedRanges(from._regions[j++], bounded: false);
                 }
@@ -254,7 +259,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             for (int i = 0, j = startIndex; i < _regions.Length && j < from._regions.Length; i++)
             {
-                if (_regions[i].OverlapsWith(from._regions[j].Address, from._regions[j].Size))
+                ulong thisOffset = offsetWithinFrom + _regions[i].BaseOffset;
+                ulong thisEndOffset = thisOffset + _regions[i].Size;
+                ulong fromOffset = from._regions[j].BaseOffset;
+                ulong fromEndOffset = fromOffset + from._regions[j].Size;
+
+                if (thisOffset < fromEndOffset && fromOffset < thisEndOffset)
                 {
                     _regions[i].InheritModifiedRanges(from._regions[j++], bounded: true);
                 }
