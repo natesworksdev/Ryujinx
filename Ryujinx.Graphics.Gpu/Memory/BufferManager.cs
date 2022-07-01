@@ -26,6 +26,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private readonly List<BufferTextureBinding> _bufferTextures;
         private readonly BufferRange[] _ranges;
 
+        private BufferBounds _indirectBuffer;
+        private BufferBounds _parameterBuffer;
+
         /// <summary>
         /// Holds shader stage buffer state and binding information.
         /// </summary>
@@ -204,6 +207,23 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             _transformFeedbackBuffers[index] = new BufferBounds(gpuVa, size);
             _transformFeedbackBuffersDirty = true;
+        }
+
+        /// <summary>
+        /// Sets indirect and draw buffer used on indirect multi-draw on the graphics pipeline.
+        /// Those buffers are used to fetch parameters for indirect draws.
+        /// </summary>
+        /// <param name="indirectBufferGpuVa">GPU virtual address of the indirect buffer</param>
+        /// <param name="indirectBufferSize">Size of the indirect buffer in bytes</param>
+        /// <param name="parameterBufferGpuVa">GPU virtual address of the draw count buffer, for multi-draw</param>
+        /// <param name="parameterBufferSize">Size in bytes of the draw count buffer, for multi-draw</param>
+        public void SetIndirectBuffer(ulong indirectBufferGpuVa, ulong indirectBufferSize, ulong parameterBufferGpuVa, ulong parameterBufferSize)
+        {
+            _channel.MemoryManager.VirtualBufferCache.CreateBuffer(indirectBufferGpuVa, indirectBufferSize);
+            _channel.MemoryManager.VirtualBufferCache.CreateBuffer(parameterBufferGpuVa, parameterBufferSize);
+
+            _indirectBuffer = new BufferBounds(indirectBufferGpuVa, indirectBufferSize);
+            _parameterBuffer = new BufferBounds(parameterBufferGpuVa, parameterBufferSize);
         }
 
         /// <summary>
@@ -606,6 +626,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 EnsureBuffer(bufferCache, tfb.GpuVa, tfb.Size);
             }
+
+            EnsureBuffer(bufferCache, _indirectBuffer.GpuVa, _indirectBuffer.Size);
+            EnsureBuffer(bufferCache, _parameterBuffer.GpuVa, _parameterBuffer.Size);
 
             EnsureBuffer(bufferCache, _gpStorageBuffers);
             EnsureBuffer(bufferCache, _gpUniformBuffers);

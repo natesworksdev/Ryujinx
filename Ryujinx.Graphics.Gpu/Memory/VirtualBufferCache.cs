@@ -643,18 +643,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
-        /// Gets a buffer sub-range for a given GPU memory range.
-        /// </summary>
-        /// <param name="gpuVa">Start GPU virtual address of the buffer</param>
-        /// <param name="size">Size in bytes of the buffer</param>
-        /// <returns>The buffer sub-range for the given range</returns>
-        public BufferRange GetGpuBufferRange(ulong gpuVa, ulong size)
-        {
-            CreateBuffer(gpuVa, size);
-            return GetBufferRange(gpuVa, size);
-        }
-
-        /// <summary>
         /// Gets a buffer sub-range starting at a given memory address.
         /// </summary>
         /// <param name="gpuVa">Start GPU virtual address of the buffer</param>
