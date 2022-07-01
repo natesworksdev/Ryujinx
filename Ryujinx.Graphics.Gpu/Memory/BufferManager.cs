@@ -60,7 +60,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
             /// Sets the region of a buffer at a given slot.
             /// </summary>
             /// <param name="index">Buffer slot</param>
-            /// <param name="range">Region where the data is located</param>
+            /// <param name="gpuVa">GPU virtual address of the buffer</param>
+            /// <param name="size">Size of the buffer in bytes</param>
             /// <param name="flags">Buffer usage flags</param>
             public void SetBounds(int index, ulong gpuVa, ulong size, BufferUsageFlags flags = BufferUsageFlags.None)
             {
@@ -603,6 +604,10 @@ namespace Ryujinx.Graphics.Gpu.Memory
             _rebind = false;
         }
 
+        /// <summary>
+        /// Ensures that all buffers that will be used exists on the buffer cache.
+        /// </summary>
+        /// <param name="bufferCache">Buffer cache in use</param>
         private void RefreshMappings(VirtualBufferCache bufferCache)
         {
             // Make sure that all buffers that might be used exists in the cache.
@@ -628,6 +633,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
             EnsureBuffer(bufferCache, _gpUniformBuffers);
         }
 
+        /// <summary>
+        /// Ensures that buffers that can be accessed by shaders exists on the buffer cache.
+        /// </summary>
+        /// <param name="bufferCache">Buffer cache in use</param>
+        /// <param name="buffersPerStage">Buffers used by the shader stages</param>
         private static void EnsureBuffer(VirtualBufferCache bufferCache, BuffersPerStage[] buffersPerStage)
         {
             for (int index = 0; index < buffersPerStage.Length; index++)
@@ -640,6 +650,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
+        /// <summary>
+        /// Ensuress that a buffer exists in the cache.
+        /// </summary>
+        /// <param name="bufferCache">Buffer cache in use</param>
+        /// <param name="gpuVa">GPU virtual address of the buffer</param>
+        /// <param name="size">Size of the buffer in bytes</param>
         private static void EnsureBuffer(VirtualBufferCache bufferCache, ulong gpuVa, ulong size)
         {
             if (gpuVa != 0)
@@ -799,7 +815,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// Sets the buffer storage of a buffer texture. This will be bound when the buffer manager commits bindings.
         /// </summary>
         /// <param name="texture">Buffer texture</param>
-        /// <param name="range">Region of memory where the texture data is located</param>
+        /// <param name="gpuVa">GPU virtual address where the texture data is located</param>
+        /// <param name="size">Size of the texture data in bytes</param>
         /// <param name="bindingInfo">Binding info for the buffer texture</param>
         /// <param name="format">Format of the buffer texture</param>
         /// <param name="isImage">Whether the binding is for an image or a sampler</param>

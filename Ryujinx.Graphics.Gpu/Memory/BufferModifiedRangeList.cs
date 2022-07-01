@@ -62,9 +62,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
     {
         private const int BackingInitialSize = 8;
 
-        private GpuContext _context;
+        private readonly GpuContext _context;
 
-        private object _lock = new object();
+        private readonly object _lock = new object();
 
         /// <summary>
         /// Creates a new instance of a modified range list.
@@ -318,6 +318,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
+        /// <summary>
+        /// Inherit ranges from another modified range list.
+        /// </summary>
+        /// <param name="ranges">The range list to inherit from</param>
+        /// <param name="rangeAction">The action to call for each modified range</param>
+        /// <param name="bounds">Region to constrain <paramref name="ranges"/> into</param>
         public void InheritRanges(BufferModifiedRangeList ranges, Action<ulong, ulong> rangeAction, MemoryRange bounds)
         {
             BufferModifiedRange[] inheritRanges;
@@ -351,6 +357,13 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
+        /// <summary>
+        /// Clamps a memory range inside the specified <paramref name="bounds"/>.
+        /// </summary>
+        /// <param name="bounds">Region to constrain the range into</param>
+        /// <param name="range">Memory range</param>
+        /// <param name="clampedRange">Clamped memory range</param>
+        /// <returns>True if <paramref name="range"/> overlaps with <paramref name="bounds"/>, false otherwise</returns>
         private static bool TryClamp(MemoryRange bounds, BufferModifiedRange range, out BufferModifiedRange clampedRange)
         {
             if (bounds.OverlapsWith(new MemoryRange(range.Address, range.Size)))
@@ -403,6 +416,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
+        /// <summary>
+        /// Clears a sub-range of a buffer modified range, while leaving the remaining parts on the list.
+        /// </summary>
+        /// <param name="overlap">Overlap to be partially cleared</param>
+        /// <param name="address">Start address to clear</param>
+        /// <param name="endAddress">End address to clear</param>
         private void ClearPart(BufferModifiedRange overlap, ulong address, ulong endAddress)
         {
             Remove(overlap);

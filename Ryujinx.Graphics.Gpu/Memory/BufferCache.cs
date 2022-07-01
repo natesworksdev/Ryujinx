@@ -20,6 +20,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
         private BufferView[] _bufferOverlaps;
 
+        /// <summary>
+        /// Event that notifies when any buffer is deleted on the cache, and bindings needs to be updated due to that.
+        /// </summary>
         public event Action NotifyBuffersModified;
 
         /// <summary>
@@ -37,6 +40,13 @@ namespace Ryujinx.Graphics.Gpu.Memory
             _bufferOverlaps = new BufferView[OverlapsBufferInitialCapacity];
         }
 
+        /// <summary>
+        /// Tries to find an existing buffer on the cache, and if none is found, a new one is created.
+        /// </summary>
+        /// <param name="address">Address of the buffer to find or create</param>
+        /// <param name="size">Size in bytes of the buffer</param>
+        /// <param name="offset">If the buffer already exists, this is the offset where <paramref name="address"/> starts inside the buffer</param>
+        /// <returns>The buffer that fully contains the specified memory range</returns>
         public Buffer FindOrCreateBuffer(ulong address, ulong size, out int offset)
         {
             ulong requestedAddress = address;
@@ -96,6 +106,13 @@ namespace Ryujinx.Graphics.Gpu.Memory
             return buffer;
         }
 
+        /// <summary>
+        /// Tries to create a new buffer for the specified memory range, if none exists.
+        /// </summary>
+        /// <param name="address">Address of the buffer to create</param>
+        /// <param name="size">Size in bytes of the buffer</param>
+        /// <param name="baseHandles">Tracking handles to be inherited by the new buffer</param>
+        /// <returns>The new buffer, or null if none was created because it already exists</returns>
         public Buffer TryCreateBuffer(ulong address, ulong size, IEnumerable<RegionHandleSegment> baseHandles)
         {
             BufferView[] overlaps = _bufferOverlaps;
@@ -116,6 +133,15 @@ namespace Ryujinx.Graphics.Gpu.Memory
             return buffer;
         }
 
+        /// <summary>
+        /// Removes a buffer from the cache.
+        /// </summary>
+        /// <remarks>
+        /// This will remove all buffers that overlaps the specified range.
+        /// </remarks>
+        /// <param name="address">Address of the buffer to remove</param>
+        /// <param name="size">Size of the buffer to remove in bytes</param>
+        /// <param name="dataOnly">True to only delete the storage, false to delete everything</param>
         public void RemoveBuffer(ulong address, ulong size, bool dataOnly)
         {
             BufferView[] overlaps = _bufferOverlaps;
@@ -155,6 +181,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
+        /// <summary>
+        /// Forces buffer bindings to be updated. Should be called after any operation that deletes buffers.
+        /// </summary>
         public void ForceBindingsUpdate()
         {
             NotifyBuffersModified?.Invoke();

@@ -122,6 +122,10 @@ namespace Ryujinx.Graphics.Gpu.Memory
             _modifiedDelegate = new Action<ulong, ulong>(RegionModified);
         }
 
+        /// <summary>
+        /// Gets memory tracking handles for buffer handle inheritance.
+        /// </summary>
+        /// <returns>Tracking handles used by this buffer region</returns>
         public IEnumerable<IRegionHandle> GetTrackingHandles()
         {
             if (_useGranular)

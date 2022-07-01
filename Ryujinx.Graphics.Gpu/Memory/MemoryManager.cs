@@ -459,7 +459,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         /// <param name="va">GPU virtual address of the region</param>
         /// <param name="size">Size of the region</param>
-        /// <returns>Size of the contiguous and mapped memory in bytetes</returns>
+        /// <returns>Size of the contiguous and mapped memory in bytes</returns>
         public ulong GetContiguousMappedSize(ulong va, ulong size)
         {
             if (!ValidateAddress(va) || GetPte(va) == PteUnmapped)

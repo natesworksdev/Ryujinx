@@ -3,7 +3,6 @@ using Ryujinx.Memory.Range;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Ryujinx.Graphics.Gpu.Memory
 {
@@ -83,6 +82,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
             _pendingUnmaps.Enqueue(e);
         }
 
+        /// <summary>
+        /// Updates the internal mappings of the cache, removing buffer ranges that have been unmapped.
+        /// </summary>
+        /// <remarks>
+        /// This must be called before getting buffers from the cache for a GPU operation.
+        /// </remarks>
         public void RefreshMappings()
         {
             bool updated = false;
@@ -113,6 +118,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
+        /// <summary>
+        /// Remove a sub-range of a buffer on the cache.
+        /// </summary>
+        /// <param name="view">View to have a sub-range removed</param>
+        /// <param name="gpuVa">GPU virtual address of the sub-range to remove</param>
+        /// <param name="size">Size of the sub-range to remove in bytes</param>
         private void RemoveRange(ref BufferView view, ulong gpuVa, ulong size)
         {
             ulong clampedAddress = Math.Max(view.Address, gpuVa);
@@ -148,6 +159,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
             DeleteViewBuffer(ref view, dataOnly: view.IsVirtual);
         }
 
+        /// <summary>
+        /// Splits a given sub-range of a buffer view, and adds it to the cache.
+        /// </summary>
+        /// <param name="viewToSplit">Buffer view to be split</param>
+        /// <param name="splitAddress">GPU virtual address of the split sub-range</param>
+        /// <param name="splitSize">Size of the split sub-range in bytes</param>
         private void SplitAndAdd(ref BufferView viewToSplit, ulong splitAddress, ulong splitSize)
         {
             ulong splitRangeOffset = (ulong)viewToSplit.BaseOffset + (splitAddress - viewToSplit.Address);
@@ -206,7 +223,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// The buffer lookup for this function is cached in a dictionary for quick access, which
         /// accelerates common UBO updates.
         /// </summary>
-        /// <param name="memoryManager">GPU memory manager where the buffer is mapped</param>
         /// <param name="gpuVa">Start GPU virtual address of the buffer</param>
         /// <param name="size">Size in bytes of the buffer</param>
         public void ForceDirty(ulong gpuVa, ulong size)
@@ -342,6 +358,14 @@ namespace Ryujinx.Graphics.Gpu.Memory
             ShrinkOverlapsBufferIfNeeded();
         }
 
+        /// <summary>
+        /// Creates a buffer view for a new range of virtual memory.
+        /// </summary>
+        /// <param name="gpuVa">GPU virtual address where the view starts</param>
+        /// <param name="size">Size in bytes of the view</param>
+        /// <param name="overlaps">Buffer overlaps that are fully contained inside the view</param>
+        /// <param name="overlapCount">Number of overlaps in <paramref name="overlaps"/></param>
+        /// <param name="forceVirtual">If true, forces the buffer view to be "virtual", which may not support aliasing</param>
         private void CreateView(ulong gpuVa, ulong size, BufferView[] overlaps, int overlapCount, bool forceVirtual)
         {
             MultiRange range = GetRangeWithOldMappings(gpuVa, size, overlaps, overlapCount);
@@ -434,6 +458,15 @@ namespace Ryujinx.Graphics.Gpu.Memory
             buffer.AddView(_buffers, view);
         }
 
+        /// <summary>
+        /// Gets the physical ranges for a given virtual memory region,
+        /// while replacing new sub-ranges by old ones if they already exist in the cache.
+        /// </summary>
+        /// <param name="gpuVa">GPU virtual address of the range</param>
+        /// <param name="size">Size of the range in bytes</param>
+        /// <param name="overlaps">Existing buffer that overlaps the new range</param>
+        /// <param name="overlapCount">Number of overlaps in <paramref name="overlaps"/></param>
+        /// <returns>Physical regions where the specified virtual memory range is mapped to</returns>
         private MultiRange GetRangeWithOldMappings(ulong gpuVa, ulong size, BufferView[] overlaps, int overlapCount)
         {
             MultiRange newRange = _memoryManager.GetPhysicalRegions(gpuVa, size);
@@ -466,6 +499,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
             return newRange;
         }
 
+        /// <summary>
+        /// Checks if a multi-range is fully unmapped.
+        /// </summary>
+        /// <param name="range">Multi-range to check</param>
+        /// <returns>True if all pages are unmapped, false otherwise</returns>
         private static bool IsFullyUnmapped(MultiRange range)
         {
             for (int i = 0; i < range.Count; i++)
@@ -480,6 +518,10 @@ namespace Ryujinx.Graphics.Gpu.Memory
             return true;
         }
 
+        /// <summary>
+        /// Removes a buffer view from the cache.
+        /// </summary>
+        /// <param name="view">View to remove</param>
         private void RemoveView(ref BufferView view)
         {
             lock (_buffers)
@@ -490,6 +532,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
             view.Buffer.RemoveView(_buffers, view);
         }
 
+        /// <summary>
+        /// Deletes the buffer used by a buffer view if no longer accessible by any view.
+        /// </summary>
+        /// <param name="view">View using the buffer to be deleted</param>
+        /// <param name="dataOnly">True to keep the tracking handles, false to delete everything</param>
         private void DeleteViewBuffer(ref BufferView view, bool dataOnly)
         {
             if (!view.Buffer.HasViews)
@@ -572,7 +619,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <remarks>
         /// Both the address and size must be aligned to 4 bytes.
         /// </remarks>
-        /// <param name="memoryManager">GPU memory manager where the buffer is mapped</param>
         /// <param name="gpuVa">GPU virtual address of the region to clear</param>
         /// <param name="size">Number of bytes to clear</param>
         /// <param name="value">Value to be written into the buffer</param>
@@ -595,7 +641,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <summary>
         /// Gets a buffer sub-range for a given GPU memory range.
         /// </summary>
-        /// <param name="memoryManager">GPU memory manager where the buffer is mapped</param>
         /// <param name="gpuVa">Start GPU virtual address of the buffer</param>
         /// <param name="size">Size in bytes of the buffer</param>
         /// <returns>The buffer sub-range for the given range</returns>
@@ -608,7 +653,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <summary>
         /// Gets a buffer sub-range starting at a given memory address.
         /// </summary>
-        /// <param name="range">Ranges of memory that the buffer is using</param>
+        /// <param name="gpuVa">Start GPU virtual address of the buffer</param>
+        /// <param name="size">Size in bytes of the buffer</param>
         /// <param name="write">Whether the buffer will be written to by this use</param>
         /// <returns>The buffer sub-range starting at the given memory address</returns>
         public BufferRange GetBufferRangeTillEnd(ulong gpuVa, ulong size, bool write = false)
@@ -626,7 +672,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <summary>
         /// Gets a buffer sub-range for a given memory range.
         /// </summary>
-        /// <param name="range">Ranges of memory that the buffer is using</param>
+        /// <param name="gpuVa">Start GPU virtual address of the buffer</param>
+        /// <param name="size">Size in bytes of the buffer</param>
         /// <param name="write">Whether the buffer will be written to by this use</param>
         /// <returns>The buffer sub-range for the given range</returns>
         public BufferRange GetBufferRange(ulong gpuVa, ulong size, bool write = false)
@@ -645,7 +692,10 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// Gets a buffer for a given memory range.
         /// A buffer overlapping with the specified range is assumed to already exist on the cache.
         /// </summary>
+        /// <param name="gpuVa">Start GPU virtual address of the buffer</param>
+        /// <param name="size">Size in bytes of the buffer</param>
         /// <param name="write">Whether the buffer will be written to by this use</param>
+        /// <param name="bufferOffset">Offset in bytes of the buffer where <paramref name="gpuVa"/> starts</param>
         /// <returns>The buffer where the range is fully contained</returns>
         private Buffer GetBuffer(ulong gpuVa, ulong size, bool write, out int bufferOffset)
         {
@@ -681,8 +731,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <summary>
         /// Performs guest to host memory synchronization of a given memory range.
         /// </summary>
-        /// <param name="address">Start address of the memory range</param>
-        /// <param name="size">Size in bytes of the memory range</param>
+        /// <param name="gpuVa">Start GPU virtual address of the buffer</param>
+        /// <param name="size">Size in bytes of the buffer</param>
         public void SynchronizeBufferRange(ulong gpuVa, ulong size)
         {
             if (size != 0)
