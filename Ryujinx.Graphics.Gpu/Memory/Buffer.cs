@@ -225,7 +225,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
-                /// <summary>
+        /// <summary>
         /// Inherit modified ranges from another buffer.
         /// </summary>
         /// <param name="from">The buffer to inherit from</param>
