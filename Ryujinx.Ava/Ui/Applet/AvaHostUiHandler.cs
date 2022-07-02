@@ -62,7 +62,7 @@ namespace Ryujinx.Ava.Ui.Applet
                        title, 
                        message, 
                        "", 
-                       LocaleManager.Instance["DialogOpenSettingsWindow"], 
+                       LocaleManager.Instance["DialogOpenSettingsWindowLabel"], 
                        "", 
                        LocaleManager.Instance["SettingsButtonClose"], 
                        (int)Symbol.Important, 
