@@ -46,6 +46,9 @@ namespace Ryujinx.Graphics.Vulkan
         private AccessFlags _lastModificationAccess;
         private PipelineStageFlags _lastModificationStage;
 
+        private int _viewsCount;
+        private ulong _size;
+
         public VkFormat VkFormat { get; }
         public float ScaleFactor { get; }
 
@@ -135,6 +138,8 @@ namespace Ryujinx.Graphics.Vulkan
                     gd.Api.DestroyImage(device, _image, null);
                     throw new Exception("Image initialization failed.");
                 }
+
+                _size = requirements.Size;
 
                 gd.Api.BindImageMemory(device, _image, allocation.Memory, allocation.Offset).ThrowOnError();
 
@@ -455,6 +460,19 @@ namespace Ryujinx.Graphics.Vulkan
                     _info.Levels);
 
                 _lastModificationAccess = AccessFlags.AccessNoneKhr;
+            }
+        }
+
+        public void IncrementViewsCount()
+        {
+            _viewsCount++;
+        }
+
+        public void DecrementViewsCount()
+        {
+            if (--_viewsCount == 0)
+            {
+                _gd.PipelineInternal?.FlushCommandsIfWeightExceeding(_imageAuto, _size);
             }
         }
 

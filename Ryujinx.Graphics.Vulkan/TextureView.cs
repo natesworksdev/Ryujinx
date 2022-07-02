@@ -49,6 +49,8 @@ namespace Ryujinx.Graphics.Vulkan
             FirstLayer = firstLayer;
             FirstLevel = firstLevel;
 
+            storage.IncrementViewsCount();
+
             gd.Textures.Add(this);
 
             var format = _gd.FormatCapabilities.ConvertToVkFormat(info.Format);
@@ -1097,6 +1099,8 @@ namespace Ryujinx.Graphics.Vulkan
                     _imageViewIdentity.Dispose();
                     _imageView2dArray?.Dispose();
                     _flushStorage?.Dispose();
+
+                    Storage.DecrementViewsCount();
                 }
             }
         }
