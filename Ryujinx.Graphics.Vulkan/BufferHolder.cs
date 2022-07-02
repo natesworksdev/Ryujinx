@@ -385,6 +385,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void Dispose()
         {
+            _gd.PipelineInternal?.FlushCommandsIfWeightExceeding(_buffer, (ulong)Size);
+
             _buffer.Dispose();
             _allocationAuto.Dispose();
             _cachedConvertedIndexBuffers.Dispose();

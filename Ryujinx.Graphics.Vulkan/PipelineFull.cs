@@ -8,6 +8,8 @@ namespace Ryujinx.Graphics.Vulkan
 {
     class PipelineFull : PipelineBase, IPipeline
     {
+        private const ulong MinByteWeightForFlush = 256 * 1024 * 1024; // MB
+
         private bool _hasPendingQuery;
 
         private readonly List<QueryPool> _activeQueries;
@@ -15,6 +17,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         private readonly List<BufferedQuery> _pendingQueryCopies;
         private readonly List<BufferedQuery> _pendingQueryResets;
+
+        private ulong _byteWeight;
 
         public PipelineFull(VulkanGraphicsDevice gd, Device device) : base(gd, device)
         {
@@ -171,6 +175,30 @@ namespace Ryujinx.Graphics.Vulkan
             return PreloadCbs.Value;
         }
 
+        public void FlushCommandsIfWeightExceeding(IAuto disposedResource, ulong byteWeight)
+        {
+            bool usedByCurrentCb = disposedResource.HasCommandBufferDependency(Cbs);
+
+            if (PreloadCbs != null && !usedByCurrentCb)
+            {
+                usedByCurrentCb = disposedResource.HasCommandBufferDependency(PreloadCbs.Value);
+            }
+
+            if (usedByCurrentCb)
+            {
+                // Since we can only free memory after the command buffer that uses a given resource was executed,
+                // keeping the command buffer might cause a high amount of memory to be in use.
+                // To prevent that, we force submit command buffers if the memory usage by resources
+                // in use by the current command buffer is above a given limit, and those resources were disposed.
+                _byteWeight += byteWeight;
+
+                if (_byteWeight >= MinByteWeightForFlush)
+                {
+                    FlushCommandsImpl();
+                }
+            }
+        }
+
         public void FlushCommandsImpl([System.Runtime.CompilerServices.CallerMemberName] string caller = "")
         {
             // System.Console.WriteLine("flush by " + caller);
@@ -181,6 +209,8 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 Gd.Api.CmdEndQuery(CommandBuffer, queryPool, 0);
             }
+
+            _byteWeight = 0;
 
             if (PreloadCbs != null)
             {

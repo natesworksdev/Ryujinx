@@ -6,6 +6,8 @@ namespace Ryujinx.Graphics.Vulkan
 {
     interface IAuto
     {
+        bool HasCommandBufferDependency(CommandBufferScoped cbs);
+
         void IncrementReferenceCount();
         void DecrementReferenceCount(int cbIndex);
         void DecrementReferenceCount();
