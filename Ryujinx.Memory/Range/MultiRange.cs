@@ -12,7 +12,6 @@ namespace Ryujinx.Memory.Range
         private readonly MemoryRange[] _ranges;
 
         private bool HasSingleRange => _ranges == null;
-        public bool IsNull => _ranges == null && _singleRange.Address == 0UL && _singleRange.Size == 0Ul;
 
         /// <summary>
         /// Total of physical sub-ranges on the virtual memory region.
