@@ -15,6 +15,7 @@ using System.Threading;
 
 namespace Ryujinx.Tests.Memory
 {
+    [TestFixture]
     internal class PartialUnmaps
     {
         private static Translator _translator;
@@ -72,7 +73,7 @@ namespace Ryujinx.Tests.Memory
 
             EnsureTranslator();
 
-            ref var u = ref PartialUnmapState.GetRef();
+            ref var state = ref PartialUnmapState.GetRef();
 
             try
             {
@@ -130,21 +131,6 @@ namespace Ryujinx.Tests.Memory
                     });
                 }
 
-                /*
-                var testMethod = NativeSignalHandler.GenerateDebugPartialUnmap();
-
-                testThread = new Thread(() =>
-                {
-                    while (shouldAccess)
-                    {
-                        while (testMethod())
-                        {
-
-                        }
-                    }
-                });
-                */
-
                 testThread.Start();
 
                 // Create a smaller mapping, covering the larger mapping.
@@ -154,8 +140,6 @@ namespace Ryujinx.Tests.Memory
                 ulong pageSize = 0x1000;
                 int mappingExpandCount = (int)(vaSize / (pageSize * 2)) - 1;
                 ulong vaCenter = vaSize / 2;
-
-                System.IO.File.AppendAllText(@"C:\Users\Rhys\Documents\log.txt", " +-+ Begin\n");
 
                 for (int i = 1; i <= mappingExpandCount; i++)
                 {
@@ -167,19 +151,8 @@ namespace Ryujinx.Tests.Memory
                     memory.MapView(backing, startPa, start, size);
                 }
 
-                System.IO.File.AppendAllText(@"C:\Users\Rhys\Documents\log.txt", " +-+ End\n");
-                System.IO.File.AppendAllText(@"C:\Users\Rhys\Documents\log.txt", $"Readers: {u.PartialUnmapLock.ReaderCount}, Writes: {u.PartialUnmapLock.WriteLock}, UnmapCount: {u.PartialUnmapsCount}\n");
-                System.IO.File.AppendAllText(@"C:\Users\Rhys\Documents\log.txt", $"Handles: {u.ExceptionHandlerCount}, Done: {u.ExceptionDoneCount}\n");
-                System.IO.File.AppendAllText(@"C:\Users\Rhys\Documents\log.txt", $"Thread 0: {u.LocalCounts.ThreadIds[0]}: {u.LocalCounts.Structs[0]}\n");
-                System.IO.File.AppendAllText(@"C:\Users\Rhys\Documents\log.txt", $"Thread 1: {u.LocalCounts.ThreadIds[1]}: {u.LocalCounts.Structs[1]}\n");
-
-                Thread.Sleep(1000);
-                System.IO.File.AppendAllText(@"C:\Users\Rhys\Documents\log.txt", $"SLEEP Handles: {u.ExceptionHandlerCount}, Done: {u.ExceptionDoneCount}\n");
-
                 shouldAccess = false;
                 testThread.Join();
-
-                System.IO.File.AppendAllText(@"C:\Users\Rhys\Documents\log.txt", "Joined\n");
 
                 Assert.False(error);
 
@@ -194,17 +167,22 @@ namespace Ryujinx.Tests.Memory
                     // This shouldn't freeze.
                 }
 
-                // One thread should be present on the thread local map. Trimming should remove it.
-                Assert.AreEqual(1, CountThreads(ref u));
+                // On Windows, this should put unmap counts on the thread local map.
+                if (OperatingSystem.IsWindows())
+                {
+                    // One thread should be present on the thread local map. Trimming should remove it.
+                    Assert.AreEqual(1, CountThreads(ref state));
 
-                u.TrimThreads();
+                    state.TrimThreads();
 
-                Assert.AreEqual(0, CountThreads(ref u));
+                    Assert.AreEqual(0, CountThreads(ref state));
+                }
 
                 /*
-                memory.Reprotect(vaSize - 0x1000, 0x1000, MemoryPermission.None);
-                //memory.UnmapView(backing, vaSize - 0x1000, 0x1000);
-                memory.Read<int>(vaSize - 0x1000);
+                * Use this to test invalid access. Can't put this in the test suite unfortunately as invalid access crashes the test process.
+                * memory.Reprotect(vaSize - 0x1000, 0x1000, MemoryPermission.None);
+                * //memory.UnmapView(backing, vaSize - 0x1000, 0x1000);
+                * memory.Read<int>(vaSize - 0x1000);
                 */
             }
             finally
@@ -230,7 +208,7 @@ namespace Ryujinx.Tests.Memory
 
             EnsureTranslator();
 
-            ref var u = ref PartialUnmapState.GetRef();
+            ref var state = ref PartialUnmapState.GetRef();
 
             // Create some state to be used for managing the native writing loop.
             int stateSize = Unsafe.SizeOf<NativeWriteLoopState>();
@@ -296,12 +274,24 @@ namespace Ryujinx.Tests.Memory
         [Test]
         public void ThreadLocalMap()
         {
+            if (!OperatingSystem.IsWindows())
+            {
+                // Only test in Windows, as this is only used on Windows and uses Windows APIs for trimming.
+                return;
+            }
+
             PartialUnmapState.Reset();
             ref var state = ref PartialUnmapState.GetRef();
 
             bool running = true;
             var testThread = new Thread(() =>
             {
+                if (!OperatingSystem.IsWindows())
+                {
+                    // Need this here to avoid a warning.
+                    return;
+                }
+
                 PartialUnmapState.GetRef().RetryFromAccessViolation();
                 while (running)
                 {
@@ -330,6 +320,12 @@ namespace Ryujinx.Tests.Memory
         [Test]
         public unsafe void ThreadLocalMapNative()
         {
+            if (!OperatingSystem.IsWindows())
+            {
+                // Only test in Windows, as this is only used on Windows and uses Windows APIs for trimming.
+                return;
+            }
+
             EnsureTranslator();
 
             PartialUnmapState.Reset();

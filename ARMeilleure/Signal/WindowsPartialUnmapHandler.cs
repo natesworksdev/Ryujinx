@@ -17,10 +17,6 @@ namespace ARMeilleure.Signal
             IntPtr partialRemapStatePtr = PartialUnmapState.GlobalState;
             IntPtr localCountsPtr = IntPtr.Add(partialRemapStatePtr, PartialUnmapState.LocalCountsOffset);
 
-            IntPtr ehPtr = IntPtr.Add(partialRemapStatePtr, PartialUnmapState.ExceptionHandlerCountOffset);
-            Operand eh = context.Load(OperandType.I32, Const((ulong)ehPtr));
-            context.Store(Const((ulong)ehPtr), context.Add(eh, Const(1)));
-
             // Get the lock first.
             EmitNativeReaderLockAcquire(context, IntPtr.Add(partialRemapStatePtr, PartialUnmapState.PartialUnmapLockOffset));
 
@@ -64,10 +60,6 @@ namespace ARMeilleure.Signal
 
             // Finally, release the lock and return the retry value.
             EmitNativeReaderLockRelease(context, IntPtr.Add(partialRemapStatePtr, PartialUnmapState.PartialUnmapLockOffset));
-
-            IntPtr edPtr = IntPtr.Add(partialRemapStatePtr, PartialUnmapState.ExceptionDoneCountOffset);
-            Operand ed = context.Load(OperandType.I32, Const((ulong)edPtr));
-            context.Store(Const((ulong)edPtr), context.Add(ed, Const(1)));
 
             return retry;
         }

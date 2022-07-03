@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
+using System.Threading;
 
 namespace Ryujinx.Memory.WindowsShared
 {
@@ -17,6 +18,7 @@ namespace Ryujinx.Memory.WindowsShared
         private readonly IntervalTree<ulong, ulong> _mappings;
         private readonly IntervalTree<ulong, MemoryPermission> _protections;
         private readonly IntPtr _partialUnmapStatePtr;
+        private readonly Thread _partialUnmapTrimThread;
 
         /// <summary>
         /// Creates a new instance of the Windows memory placeholder manager.
@@ -27,6 +29,10 @@ namespace Ryujinx.Memory.WindowsShared
             _protections = new IntervalTree<ulong, MemoryPermission>();
 
             _partialUnmapStatePtr = PartialUnmapState.GlobalState;
+
+            _partialUnmapTrimThread = new Thread(TrimThreadLocalMapLoop);
+            _partialUnmapTrimThread.IsBackground = true;
+            _partialUnmapTrimThread.Start();
         }
 
         /// <summary>
@@ -39,12 +45,16 @@ namespace Ryujinx.Memory.WindowsShared
         }
 
         /// <summary>
-        /// Gets the pointer of the partial unmap state struct.
+        /// Trims inactive threads from the partial unmap state's thread mapping every few seconds.
+        /// Should be run in a Background thread so that it doesn't stop the program from closing.
         /// </summary>
-        /// <returns>The pointer of the partial unmap state struct</returns>
-        public IntPtr GetPartialUnmapStatePtr()
+        private void TrimThreadLocalMapLoop()
         {
-            return _partialUnmapStatePtr;
+            while (true)
+            {
+                Thread.Sleep(2000);
+                GetPartialUnmapState().TrimThreads();
+            }
         }
 
         /// <summary>
@@ -136,7 +146,7 @@ namespace Ryujinx.Memory.WindowsShared
         /// <param name="location">Address to map the view into</param>
         /// <param name="size">Size of the view in bytes</param>
         /// <exception cref="WindowsApiException">Thrown when the Windows API returns an error mapping the memory</exception>
-        private void MapViewInternal(IntPtr sharedMemory, ulong srcOffset, IntPtr location, IntPtr size, MemoryProtection protection = MemoryProtection.ReadWrite)
+        private void MapViewInternal(IntPtr sharedMemory, ulong srcOffset, IntPtr location, IntPtr size)
         {
             SplitForMap((ulong)location, (ulong)size, srcOffset);
 
@@ -147,7 +157,7 @@ namespace Ryujinx.Memory.WindowsShared
                 srcOffset,
                 size,
                 0x4000,
-                protection,
+                MemoryProtection.ReadWrite,
                 IntPtr.Zero,
                 0);
 
@@ -321,7 +331,7 @@ namespace Ryujinx.Memory.WindowsShared
                             {
                                 ulong remapSize = startAddress - overlapStart;
 
-                                MapViewInternal(sharedMemory, overlapValue, (IntPtr)overlapStart, (IntPtr)remapSize, MemoryProtection.ReadOnly);
+                                MapViewInternal(sharedMemory, overlapValue, (IntPtr)overlapStart, (IntPtr)remapSize);
                                 RestoreRangeProtection(overlapStart, remapSize);
                             }
 
@@ -332,7 +342,7 @@ namespace Ryujinx.Memory.WindowsShared
                                 ulong remapAddress = overlapStart + overlappedSize;
                                 ulong remapSize = overlapEnd - endAddress;
 
-                                MapViewInternal(sharedMemory, remapBackingOffset, (IntPtr)remapAddress, (IntPtr)remapSize, MemoryProtection.ReadOnly);
+                                MapViewInternal(sharedMemory, remapBackingOffset, (IntPtr)remapAddress, (IntPtr)remapSize);
                                 RestoreRangeProtection(remapAddress, remapSize);
                             }
                         }
@@ -688,22 +698,6 @@ namespace Ryujinx.Memory.WindowsShared
 
                 ReprotectViewInternal((IntPtr)protAddress, (IntPtr)(protEndAddress - protAddress), protection.Value, true);
             }
-        }
-
-        /// <summary>
-        /// Checks if an access violation handler should retry execution due to a fault caused by partial unmap.
-        /// </summary>
-        /// <remarks>
-        /// Due to Windows limitations, <see cref="UnmapView"/> might need to unmap more memory than requested.
-        /// The additional memory that was unmapped is later remapped, however this leaves a time gap where the
-        /// memory might be accessed but is unmapped. Users of the API must compensate for that by catching the
-        /// access violation and retrying if it happened between the unmap and remap operation.
-        /// This method can be used to decide if retrying in such cases is necessary or not.
-        /// </remarks>
-        /// <returns>True if execution should be retried, false otherwise</returns>
-        public bool RetryFromAccessViolation()
-        {
-            return GetPartialUnmapState().RetryFromAccessViolation();
         }
     }
 }

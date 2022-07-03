@@ -207,15 +207,5 @@ namespace Ryujinx.Memory
                 throw new ArgumentException("Invalid address.", nameof(address));
             }
         }
-
-        public static IntPtr GetPartialUnmapStatePtr()
-        {
-            return _placeholders.GetPartialUnmapStatePtr();
-        }
-
-        public static bool RetryFromAccessViolation()
-        {
-            return _placeholders.RetryFromAccessViolation();
-        }
     }
 }

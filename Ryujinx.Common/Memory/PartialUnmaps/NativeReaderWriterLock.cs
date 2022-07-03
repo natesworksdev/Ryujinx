@@ -5,6 +5,9 @@ using static Ryujinx.Common.Memory.PartialUnmaps.PartialUnmapHelpers;
 
 namespace Ryujinx.Common.Memory.PartialUnmaps
 {
+    /// <summary>
+    /// A simple implementation of a ReaderWriterLock which can be used from native code.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct NativeReaderWriterLock
     {
@@ -14,6 +17,9 @@ namespace Ryujinx.Common.Memory.PartialUnmaps
         public static int WriteLockOffset;
         public static int ReaderCountOffset;
 
+        /// <summary>
+        /// Populates the field offsets for use when emitting native code.
+        /// </summary>
         static NativeReaderWriterLock()
         {
             NativeReaderWriterLock instance = new NativeReaderWriterLock();
@@ -22,6 +28,9 @@ namespace Ryujinx.Common.Memory.PartialUnmaps
             ReaderCountOffset = OffsetOf(ref instance, ref instance.ReaderCount);
         }
 
+        /// <summary>
+        /// Acquires the reader lock.
+        /// </summary>
         public void AcquireReaderLock()
         {
             // Must take write lock for a very short time to become a reader.
@@ -36,11 +45,17 @@ namespace Ryujinx.Common.Memory.PartialUnmaps
             Interlocked.Exchange(ref WriteLock, 0);
         }
 
+        /// <summary>
+        /// Releases the reader lock.
+        /// </summary>
         public void ReleaseReaderLock()
         {
             Interlocked.Decrement(ref ReaderCount);
         }
 
+        /// <summary>
+        /// Upgrades to a writer lock. The reader lock is temporarily released while obtaining the writer lock.
+        /// </summary>
         public void UpgradeToWriterLock()
         {
             // Prevent any more threads from entering reader.
@@ -61,6 +76,9 @@ namespace Ryujinx.Common.Memory.PartialUnmaps
             } while (Interlocked.CompareExchange(ref ReaderCount, 1, 0) != 0);
         }
 
+        /// <summary>
+        /// Downgrades from a writer lock, back to a reader one.
+        /// </summary>
         public void DowngradeFromWriterLock()
         {
             // Release the WriteLock.
