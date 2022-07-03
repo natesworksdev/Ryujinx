@@ -487,8 +487,6 @@
   "SettingsTabAudio": "오디오",
   "SettingsTabNetwork": "회로망",
   "SettingsTabNetworkConnection" : "네트워크 연결",
-  "SettingsTabGraphicsFrameRate" : "호스트 새로 고침 빈도 :",
-  "SettingsTabGraphicsFrameRateTooltip" : "호스트 새로 고침 빈도를 설정합니다. 제한을 제거하려면 0으로 설정하십시오.",
   "SettingsTabCpuCache" : "CPU 캐시",
   "SettingsTabCpuMemory" : "CPU 메모리",
   "ControllerMotionTitle": "Motion Control Settings",

@@ -487,8 +487,6 @@
   "SettingsTabAudio": "Audio",
   "SettingsTabNetwork": "Red",
   "SettingsTabNetworkConnection" : "Conexión de red",
-  "SettingsTabGraphicsFrameRate" : "Velocidad máxima de fotogramas:",
-  "SettingsTabGraphicsFrameRateTooltip" : "Fija el límite de fotogramas del host. Elige 0 para deshabilitar el límite.",
   "SettingsTabCpuCache" : "Caché de CPU",
   "SettingsTabCpuMemory" : "Memoria de CPU",
   "ControllerMotionTitle": "Motion Control Settings",

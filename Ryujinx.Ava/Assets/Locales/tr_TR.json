@@ -489,8 +489,6 @@
   "SettingsTabAudio": "Ses",
   "SettingsTabNetwork": "Ağ",
   "SettingsTabNetworkConnection" : "Ağ Bağlantısı",
-  "SettingsTabGraphicsFrameRate" : "Host Yenileme Hızı:",
-  "SettingsTabGraphicsFrameRateTooltip" : "Host yenileme hızını ayarlar. Limiti kaldırmak için 0'ı seçin.",
   "SettingsTabCpuCache" : "CPU Cache",
   "SettingsTabCpuMemory" : "CPU Hafızası",
   "DialogUpdaterFlatpakNotSupportedMessage": "Lütfen Ryujinx'i FlatHub aracılığıyla güncelleyin.",

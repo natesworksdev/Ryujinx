@@ -489,8 +489,6 @@
   "SettingsTabAudio": "Ήχος",
   "SettingsTabNetwork": "Δίκτυο",
   "SettingsTabNetworkConnection" : "Σύνδεση δικτύου",
-  "SettingsTabGraphicsFrameRate" : "Ρυθμός Ανανέωσης Υπολογιστή:",
-  "SettingsTabGraphicsFrameRateTooltip" : "Προκαθορίζει το ρυθμό ανανέωσης του υπολογιστή. Ορίστε το στο 0 για να αφαιρέσετε το όριο.",
   "SettingsTabCpuCache" : "Προσωρινή Μνήμη CPU",
   "SettingsTabCpuMemory" : "Μνήμη CPU",
   "ControllerMotionTitle": "Motion Control Settings",

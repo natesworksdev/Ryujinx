@@ -489,8 +489,6 @@
   "SettingsTabAudio": "Audio",
   "SettingsTabNetwork": "Network",
   "SettingsTabNetworkConnection": "Network Connection",
-  "[REMOVE]SettingsTabGraphicsFrameRate": "Host Refresh Rate:",
-  "[REMOVE]SettingsTabGraphicsFrameRateTooltip": "Sets host refresh rate. Set to 0 to remove limit.",
   "SettingsTabCpuCache": "CPU Cache",
   "SettingsTabCpuMemory": "CPU Memory",
   "DialogUpdaterFlatpakNotSupportedMessage": "Please update Ryujinx via FlatHub.",

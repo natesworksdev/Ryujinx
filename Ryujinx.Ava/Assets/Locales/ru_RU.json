@@ -487,8 +487,6 @@
   "SettingsTabAudio": "Аудио",
   "SettingsTabNetwork": "Сеть",
   "SettingsTabNetworkConnection" : "Подключение к сети",
-  "SettingsTabGraphicsFrameRate" : "Частота обновления хоста:",
-  "SettingsTabGraphicsFrameRateTooltip" : "Устанавливает частоту обновления хоста. Установите на 0, чтобы снять ограничение.",
   "SettingsTabCpuCache" : "Кэш ЦП",
   "SettingsTabCpuMemory" : "Память ЦП",
   "ControllerMotionTitle": "Motion Control Settings",

@@ -489,8 +489,6 @@
     "SettingsTabAudio": "Audio",
     "SettingsTabNetwork": "Rete",
     "SettingsTabNetworkConnection": "Connessione di rete",
-    "SettingsTabGraphicsFrameRate": "Frequenza di aggiornamento dell'host:",
-    "SettingsTabGraphicsFrameRateTooltip": "Imposta la frequenza di aggiornamento dell'host. Imposta a 0 per rimuovere il limite.",
     "SettingsTabCpuCache": "Cache CPU",
     "SettingsTabCpuMemory": "Memoria CPU",
     "DialogUpdaterFlatpakNotSupportedMessage": "Per favore aggiorna Ryujinx via FlatHub.",
