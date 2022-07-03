@@ -23,13 +23,13 @@ using Key = Ryujinx.Input.Key;
 
 namespace Ryujinx.Ava.Ui.Windows
 {
-    internal class ControllerSettingsWindow : UserControl
+    public class ControllerSettingsWindow : UserControl
     {
         private bool _dialogOpen;
 
         public Grid SettingButtons { get; set; }
         private ButtonKeyAssigner _currentAssigner;
-        public ControllerSettingsViewModel ViewModel { get; set; }
+        internal ControllerSettingsViewModel ViewModel { get; set; }
 
         public ControllerSettingsWindow()
         {

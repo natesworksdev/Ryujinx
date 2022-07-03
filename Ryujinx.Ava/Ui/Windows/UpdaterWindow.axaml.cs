@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Ava.Ui.Windows
 {
-    internal class UpdaterWindow : StyleableWindow
+    public class UpdaterWindow : StyleableWindow
     {
         private readonly string _buildUrl;
         private readonly MainWindow _mainWindow;

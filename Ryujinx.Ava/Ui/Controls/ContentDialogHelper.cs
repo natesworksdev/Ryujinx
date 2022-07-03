@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.Ui.Controls
 {
-    internal static class ContentDialogHelper
+    public static class ContentDialogHelper
     {
         private static bool _isChoiceDialogOpen;
 

@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace Ryujinx.Ava.Ui.Windows
 {
-    internal class StyleableWindow : Window
+    public class StyleableWindow : Window
     {
         public ContentDialog ContentDialog { get; private set; }
         public IBitmap IconImage { get; set; }

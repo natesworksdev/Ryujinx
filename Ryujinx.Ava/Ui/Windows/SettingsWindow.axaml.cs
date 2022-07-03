@@ -28,7 +28,7 @@ using TimeZone = Ryujinx.Ava.Ui.Models.TimeZone;
 
 namespace Ryujinx.Ava.Ui.Windows
 {
-    internal class SettingsWindow : StyleableWindow
+    public class SettingsWindow : StyleableWindow
     {
         private ListBox _gameList;
         private TextBox _pathBox;
@@ -48,7 +48,7 @@ namespace Ryujinx.Ava.Ui.Windows
         private NavigationView _navPanel;
         private ButtonKeyAssigner _currentAssigner;
 
-        public SettingsViewModel ViewModel { get; set; }
+        internal SettingsViewModel ViewModel { get; set; }
 
         public SettingsWindow(VirtualFileSystem virtualFileSystem, ContentManager contentManager)
         {

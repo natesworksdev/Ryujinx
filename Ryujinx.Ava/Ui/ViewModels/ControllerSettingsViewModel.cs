@@ -32,7 +32,7 @@ using Key = Ryujinx.Common.Configuration.Hid.Key;
 
 namespace Ryujinx.Ava.Ui.ViewModels
 {
-    internal class ControllerSettingsViewModel : BaseModel, IDisposable
+    public class ControllerSettingsViewModel : BaseModel, IDisposable
     {
         private const string Disabled = "disabled";
         private const string ProControllerResource = "Ryujinx.Ui.Common/Resources/Controller_ProCon.svg";
@@ -57,7 +57,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public ObservableCollection<PlayerModel> PlayerIndexes { get; set; }
         public ObservableCollection<(DeviceType Type, string Id, string Name)> Devices { get; set; }
-        public ObservableCollection<ControllerModel> Controllers { get; set; }
+        internal ObservableCollection<ControllerModel> Controllers { get; set; }
         public AvaloniaList<string> ProfilesList { get; set; }
         public AvaloniaList<string> DeviceList { get; set; }
 

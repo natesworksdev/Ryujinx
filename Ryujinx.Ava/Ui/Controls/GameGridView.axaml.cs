@@ -10,7 +10,7 @@ using System;
 
 namespace Ryujinx.Ava.Ui.Controls
 {
-    internal partial class GameGridView : UserControl
+    public partial class GameGridView : UserControl
     {
         private ApplicationData _selectedApplication;
         public static readonly RoutedEvent<ApplicationOpenedEventArgs> ApplicationOpenedEvent =
