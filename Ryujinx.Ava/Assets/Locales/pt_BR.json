@@ -439,7 +439,7 @@
   "MemoryManagerTooltip": "Muda como a memória do sistema convidado é acessada. Tem um grande impacto na performance da CPU emulada.",
   "MemoryManagerSoftwareTooltip": "Usar uma tabela de página via software para tradução de endereços. Maior precisão, porém performance mais baixa.",
   "MemoryManagerHostTooltip": "Mapeia memória no espaço de endereço hóspede diretamente. Compilação e execução do JIT muito mais rápida.",
-  "MemoryManagerUnsafeTooltip": "Mapeia memória diretamente, mas sem limitar o acesso ao espaço de endereço do sistema convidado antes de acessar. Mais rápido, porém menos seguro. O aplicativo convidado pode acessar memória de qualquer parte do Ryujinx, então apenas rode programas em que você confia nesse modo.",
+  "MemoryManagerUnsafeTooltip": "Mapeia memória diretamente, mas sem limitar o acesso ao espaço de endereçamento do sistema convidado. Mais rápido, porém menos seguro. O aplicativo convidado pode acessar memória de qualquer parte do Ryujinx, então apenas rode programas em que você confia nesse modo.",
   "DRamTooltip": "Expande a memória do sistema emulado de 4GB para 6GB",
   "IgnoreMissingServicesTooltip": "Habilita ou desabilita a opção de ignorar serviços não implementados",
   "GraphicsBackendThreadingTooltip": "Habilita multithreading do backend gráfico",
