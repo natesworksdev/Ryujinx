@@ -72,7 +72,7 @@ namespace ARMeilleure.Signal
 
             context.Copy(i, Const(0));
 
-            // (Loop 1) Check all 20 slots for a matching Thread ID (while also trying to allocate)
+            // (Loop 1) Check all slots for a matching Thread ID (while also trying to allocate)
 
             Operand endLabel = Label();
 
@@ -90,7 +90,7 @@ namespace ARMeilleure.Signal
 
             context.Copy(i, context.Add(i, Const(1)));
 
-            context.BranchIfTrue(loopLabel, context.ICompareLess(i, Const(20)));
+            context.BranchIfTrue(loopLabel, context.ICompareLess(i, Const(ThreadLocalMap<int>.MapSize)));
 
             // (Loop 2) Try take a slot that is 0 with our Thread ID.
 
@@ -120,7 +120,7 @@ namespace ARMeilleure.Signal
 
             context.Copy(i, context.Add(i, Const(1)));
 
-            context.BranchIfTrue(loop2Label, context.ICompareLess(i, Const(20)));
+            context.BranchIfTrue(loop2Label, context.ICompareLess(i, Const(ThreadLocalMap<int>.MapSize)));
 
             context.Copy(i, Const(-1)); // Could not place the thread in the list.
 
