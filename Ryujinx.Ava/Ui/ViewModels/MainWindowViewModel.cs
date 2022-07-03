@@ -968,6 +968,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public void ChangeLanguage(object obj)
         {
+            LocaleManager.Instance.LoadDefaultLanguage();
             LocaleManager.Instance.LoadLanguage((string)obj);
         }
 
