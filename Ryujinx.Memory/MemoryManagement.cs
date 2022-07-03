@@ -223,5 +223,17 @@ namespace Ryujinx.Memory
                 throw new PlatformNotSupportedException();
             }
         }
+
+        public static IntPtr GetPartialUnmapStatePtr()
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                return MemoryManagementWindows.GetPartialUnmapStatePtr();
+            }
+            else
+            {
+                throw new PlatformNotSupportedException();
+            }
+        }
     }
 }

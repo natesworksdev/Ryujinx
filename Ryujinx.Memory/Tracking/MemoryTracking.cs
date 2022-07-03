@@ -200,15 +200,6 @@ namespace Ryujinx.Memory.Tracking
         /// <returns>True if the event triggered any tracking regions, false otherwise</returns>
         public bool VirtualMemoryEventEh(ulong address, ulong size, bool write, bool precise = false)
         {
-            // Windows has a limitation, it can't do partial unmaps.
-            // For this reason, we need to unmap the whole range and then remap the sub-ranges.
-            // When this happens, we might have caused a undesirable access violation from the time that the range was unmapped.
-            // In this case, try again as the memory might be mapped now.
-            if (OperatingSystem.IsWindows() && MemoryManagementWindows.RetryFromAccessViolation())
-            {
-                return true;
-            }
-
             return VirtualMemoryEvent(address, size, write, precise);
         }
 

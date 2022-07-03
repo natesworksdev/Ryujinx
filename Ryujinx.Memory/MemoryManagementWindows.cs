@@ -208,6 +208,11 @@ namespace Ryujinx.Memory
             }
         }
 
+        public static IntPtr GetPartialUnmapStatePtr()
+        {
+            return _placeholders.GetPartialUnmapStatePtr();
+        }
+
         public static bool RetryFromAccessViolation()
         {
             return _placeholders.RetryFromAccessViolation();
