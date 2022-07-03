@@ -540,7 +540,7 @@
   "ApiError": "API Hatası.",
   "LoadingHeading": "Yükleniyor {0}",
   "CompilingPPTC": "PTC derleniyor",
-  "CompilingShaders": "Shaderlar derleniyor"
+  "CompilingShaders": "Shaderlar derleniyor",
   "AllKeyboards": "Tüm klavyeler",
   "OpenFileDialogTitle": "Açılacak desteklenen bir dosya seçin",
   "OpenFolderDialogTitle": "Sıkıştırılmamış oyun içeren klasör seçin",
