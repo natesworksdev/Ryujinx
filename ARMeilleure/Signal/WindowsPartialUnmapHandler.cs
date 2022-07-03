@@ -46,15 +46,15 @@ namespace ARMeilleure.Signal
 
             context.BranchIfFalse(noRetryLabel, retry);
 
-            // if (retry)
+            // if (retry) {
+
             context.Store(threadLocalPartialUnmapsPtr, partialUnmapsCount);
 
             context.Branch(endLabel);
 
             context.MarkLabel(noRetryLabel);
 
-            // else
-            //EmitThreadLocalMapIntRelease(context, localCountsPtr, threadId, threadIndex);
+            // }
 
             context.MarkLabel(endLabel);
 

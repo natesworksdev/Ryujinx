@@ -151,6 +151,13 @@ namespace Ryujinx.Tests.Memory
                     memory.MapView(backing, startPa, start, size);
                 }
 
+                // On Windows, this should put unmap counts on the thread local map.
+                if (OperatingSystem.IsWindows())
+                {
+                    // One thread should be present on the thread local map. Trimming should remove it.
+                    Assert.AreEqual(1, CountThreads(ref state));
+                }
+
                 shouldAccess = false;
                 testThread.Join();
 
@@ -167,12 +174,8 @@ namespace Ryujinx.Tests.Memory
                     // This shouldn't freeze.
                 }
 
-                // On Windows, this should put unmap counts on the thread local map.
                 if (OperatingSystem.IsWindows())
                 {
-                    // One thread should be present on the thread local map. Trimming should remove it.
-                    Assert.AreEqual(1, CountThreads(ref state));
-
                     state.TrimThreads();
 
                     Assert.AreEqual(0, CountThreads(ref state));
