@@ -9,8 +9,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewModels="clr-namespace:Ryujinx.Ava.Ui.ViewModels"
     xmlns:window="clr-namespace:Ryujinx.Ava.Ui.Windows"
-    Width="1240"
-    Height="700"
+    Width="800"
+    Height="768"
     d:DesignWidth="800"
     d:DesignHeight="950"
     MinWidth="800"
@@ -176,7 +176,6 @@
                           VerticalScrollBarVisibility="Auto">
                 <Border>
                     <StackPanel Margin="4" Orientation="Vertical">
-                        <window:ControllerSettingsWindow Name="ControllerSettings" Margin="0,0,0,0" MinHeight="600" />
                         <StackPanel Orientation="Horizontal">
                             <CheckBox Margin="5,0"
                                       ToolTip.Tip="{locale:Locale DockModeToggleTooltip}"
@@ -195,6 +194,7 @@
                                 <TextBlock Text="{locale:Locale SettingsTabInputDirectMouseAccess}" />
                             </CheckBox>
                         </StackPanel>
+                        <window:ControllerSettingsWindow Name="ControllerSettings" Margin="0,0,0,0" MinHeight="600" />
                     </StackPanel>
                 </Border>
             </ScrollViewer>
