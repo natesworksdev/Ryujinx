@@ -116,6 +116,7 @@ namespace Ryujinx.Graphics.OpenGL
                 supportsGeometryShaderPassthrough: HwCapabilities.SupportsGeometryShaderPassthrough,
                 supportsImageLoadFormatted: HwCapabilities.SupportsImageLoadFormatted,
                 supportsMismatchingViewFormat: HwCapabilities.SupportsMismatchingViewFormat,
+                supportsCubemapView: true,
                 supportsNonConstantTextureOffset: HwCapabilities.SupportsNonConstantTextureOffset,
                 supportsShaderBallot: HwCapabilities.SupportsShaderBallot,
                 supportsTextureShadowLod: HwCapabilities.SupportsTextureShadowLod,

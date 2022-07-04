@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+
 namespace Ryujinx.Graphics.Vulkan
 {
     enum Vendor
@@ -11,6 +13,8 @@ namespace Ryujinx.Graphics.Vulkan
 
     static class VendorUtils
     {
+        public static Regex AmdGcnRegex = new Regex(@"Radeon ((HD|R(5|7|9|X)) (([2-5]\d{2})|([7-8]\d{3})|Fury|Nano))|(Pro Duo)");
+
         public static Vendor FromId(uint id)
         {
             return id switch

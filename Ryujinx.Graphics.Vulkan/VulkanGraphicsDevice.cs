@@ -82,6 +82,7 @@ namespace Ryujinx.Graphics.Vulkan
         internal Vendor Vendor { get; private set; }
         internal bool IsAmdWindows { get; private set; }
         internal bool IsIntelWindows { get; private set; }
+        internal bool IsAmdGcn { get; private set; }
         public string GpuVendor { get; private set; }
         public string GpuRenderer { get; private set; }
         public string GpuVersion { get; private set; }
@@ -425,6 +426,7 @@ namespace Ryujinx.Graphics.Vulkan
                 supportsGeometryShaderPassthrough: SupportsGeometryShaderPassthrough,
                 supportsImageLoadFormatted: features.ShaderStorageImageReadWithoutFormat,
                 supportsMismatchingViewFormat: true,
+                supportsCubemapView: !IsAmdGcn,
                 supportsNonConstantTextureOffset: false,
                 supportsShaderBallot: false,
                 supportsTextureShadowLod: false,
@@ -483,6 +485,8 @@ namespace Ryujinx.Graphics.Vulkan
             GpuVendor = vendorName;
             GpuRenderer = Marshal.PtrToStringAnsi((IntPtr)properties.DeviceName);
             GpuVersion = $"Vulkan v{ParseStandardVulkanVersion(properties.ApiVersion)}, Driver v{ParseDriverVersion(ref properties)}";
+
+            IsAmdGcn = Vendor == Vendor.Amd && VendorUtils.AmdGcnRegex.IsMatch(GpuRenderer);
 
             Logger.Notice.Print(LogClass.Gpu, $"{GpuVendor} {GpuRenderer} ({GpuVersion})");
         }
