@@ -671,9 +671,9 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="lhs">Texture information of the texture view</param
         /// <param name="rhs">Texture information of the texture view</param>
-        /// <param name="isCopy">True to check for copy rather than view compatibility</param>
+        /// <param name="caps">Host GPU capabilities</param>
         /// <returns>True if the targets are compatible, false otherwise</returns>
-        public static TextureViewCompatibility ViewTargetCompatible(TextureInfo lhs, TextureInfo rhs)
+        public static TextureViewCompatibility ViewTargetCompatible(TextureInfo lhs, TextureInfo rhs, ref Capabilities caps)
         {
             bool result = false;
             switch (lhs.Target)
@@ -690,14 +690,24 @@ namespace Ryujinx.Graphics.Gpu.Image
                     break;
 
                 case Target.Texture2DArray:
+                    result = rhs.Target == Target.Texture2D ||
+                             rhs.Target == Target.Texture2DArray;
+
+                    if (rhs.Target == Target.Cubemap || rhs.Target == Target.CubemapArray)
+                    {
+                        return caps.SupportsCubemapView ? TextureViewCompatibility.Full : TextureViewCompatibility.CopyOnly;
+                    }
+                    break;
                 case Target.Cubemap:
                 case Target.CubemapArray:
-                    result = rhs.Target == Target.Texture2D ||
-                             rhs.Target == Target.Texture2DArray ||
-                             rhs.Target == Target.Cubemap ||
+                    result = rhs.Target == Target.Cubemap ||
                              rhs.Target == Target.CubemapArray;
-                    break;
 
+                    if (rhs.Target == Target.Texture2D || rhs.Target == Target.Texture2DArray)
+                    {
+                        return caps.SupportsCubemapView ? TextureViewCompatibility.Full : TextureViewCompatibility.CopyOnly;
+                    }
+                    break;
                 case Target.Texture2DMultisample:
                 case Target.Texture2DMultisampleArray:
                     if (rhs.Target == Target.Texture2D || rhs.Target == Target.Texture2DArray)

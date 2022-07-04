@@ -22,6 +22,7 @@ namespace Ryujinx.Graphics.GAL
         public readonly bool SupportsGeometryShaderPassthrough;
         public readonly bool SupportsImageLoadFormatted;
         public readonly bool SupportsMismatchingViewFormat;
+        public readonly bool SupportsCubemapView;
         public readonly bool SupportsNonConstantTextureOffset;
         public readonly bool SupportsShaderBallot;
         public readonly bool SupportsTextureShadowLod;
@@ -54,6 +55,7 @@ namespace Ryujinx.Graphics.GAL
             bool supportsGeometryShaderPassthrough,
             bool supportsImageLoadFormatted,
             bool supportsMismatchingViewFormat,
+            bool supportsCubemapView,
             bool supportsNonConstantTextureOffset,
             bool supportsShaderBallot,
             bool supportsTextureShadowLod,
@@ -83,6 +85,7 @@ namespace Ryujinx.Graphics.GAL
             SupportsGeometryShaderPassthrough = supportsGeometryShaderPassthrough;
             SupportsImageLoadFormatted = supportsImageLoadFormatted;
             SupportsMismatchingViewFormat = supportsMismatchingViewFormat;
+            SupportsCubemapView = supportsCubemapView;
             SupportsNonConstantTextureOffset = supportsNonConstantTextureOffset;
             SupportsShaderBallot = supportsShaderBallot;
             SupportsTextureShadowLod = supportsTextureShadowLod;

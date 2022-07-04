@@ -96,7 +96,8 @@ namespace Ryujinx.Graphics.Vulkan
 
             var flags = ImageCreateFlags.ImageCreateMutableFormatBit;
 
-            bool cubeCompatible = info.Width == info.Height && layers >= 6;
+            // This flag causes mipmapped texture arrays to break on AMD GCN, so for that copy dependencies are forced instead.
+            bool cubeCompatible = !gd.IsAmdGcn && info.Width == info.Height && layers >= 6;
 
             if (type == ImageType.ImageType2D && cubeCompatible)
             {
