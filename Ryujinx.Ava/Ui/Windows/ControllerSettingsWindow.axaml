@@ -151,6 +151,7 @@
                             Items="{Binding ProfilesList}"
                             Text="{Binding ProfileName}" />
                         <Button
+                            MinWidth="60"
                             Margin="5,0,0,0"
                             VerticalAlignment="Center"
                             ToolTip.Tip="{locale:Locale ControllerSettingsLoadProfileToolTip}"
@@ -161,6 +162,7 @@
                                 Height="20" />
                         </Button>
                         <Button
+                            MinWidth="60"
                             Margin="5,0,0,0"
                             VerticalAlignment="Center"
                             ToolTip.Tip="{locale:Locale ControllerSettingsSaveProfileToolTip}"
@@ -171,6 +173,7 @@
                                 Height="20" />
                         </Button>
                         <Button
+                            MinWidth="60"
                             Margin="5,0,0,0"
                             VerticalAlignment="Center"
                             ToolTip.Tip="{locale:Locale ControllerSettingsRemoveProfileToolTip}"
