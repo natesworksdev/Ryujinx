@@ -11,7 +11,7 @@
         public const int MaxUniformBuffersPerStage = 18;
         public const int MaxStorageBuffersPerStage = 16;
         public const int MaxTexturesPerStage = 64;
-        public const int MaxImagesPerStage = 8;
+        public const int MaxImagesPerStage = 16;
         public const int MaxUniformBufferBindings = MaxUniformBuffersPerStage * MaxShaderStages;
         public const int MaxStorageBufferBindings = MaxStorageBuffersPerStage * MaxShaderStages;
         public const int MaxTextureBindings = MaxTexturesPerStage * MaxShaderStages;
