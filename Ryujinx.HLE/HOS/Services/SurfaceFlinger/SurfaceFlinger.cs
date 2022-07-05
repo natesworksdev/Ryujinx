@@ -151,6 +151,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 return ResultCode.InvalidArguments;
             }
 
+            layer.State = LayerState.ManagedOpened;
             producer = layer.Producer;
 
             return ResultCode.Success;
