@@ -35,7 +35,7 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             LoadedCheats = new AvaloniaList<CheatsList>();
 
-            Heading = $"Cheats Available for {titleName} [{titleId.ToUpper()}]";
+            Heading = string.Format(LocaleManager.Instance["CheatWindowHeading"], titleName, titleId.ToUpper());
 
             InitializeComponent();
 #if DEBUG

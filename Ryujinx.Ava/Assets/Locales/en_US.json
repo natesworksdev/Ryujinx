@@ -560,10 +560,13 @@
   "Unknown": "Unknown",
   "Usage": "Usage",
   "Writable": "Writable",
-  "SelectDLCDialogTitle": "Select DLC files",
+  "SelectDlcDialogTitle": "Select DLC files",
   "SelectUpdateDialogTitle": "Select update files",
   "UserProfileWindowTitle": "Manage User Profiles",
   "CheatWindowTitle": "Manage Game Cheats",
   "DlcWindowTitle": "Manage Game DLC",
-  "UpdateWindowTitle": "Manage Game Updates"
+  "UpdateWindowTitle": "Manage Game Updates",
+  "CheatWindowHeading": "Cheats Available for {0} [{1}]",
+  "DlcWindowHeading": "DLC Available for {0} [{1}]",
+  "GameUpdateWindowHeading": "DLC Available for {0} [{1}]"
 }

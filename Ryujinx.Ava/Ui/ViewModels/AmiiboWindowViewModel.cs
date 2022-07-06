@@ -22,7 +22,8 @@ namespace Ryujinx.Ava.Ui.ViewModels
 {
     public class AmiiboWindowViewModel : BaseModel, IDisposable
     {
-        private const string DEFAULT_JSON = "{ \"amiibo\": [] }";
+        private const string DefaultJson = "{ \"amiibo\": [] }";
+        private const float AmiiboImageSize = 350f;
 
         private readonly string _amiiboJsonPath;
         private readonly byte[] _amiiboLogoBytes;
@@ -44,7 +45,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
         public AmiiboWindowViewModel(StyleableWindow owner, string lastScannedAmiiboId, string titleId)
         {
             _owner = owner;
-            _httpClient = new HttpClient {Timeout = TimeSpan.FromMilliseconds(5000)};
+            _httpClient = new HttpClient { Timeout = TimeSpan.FromMilliseconds(5000) };
             LastScannedAmiiboId = lastScannedAmiiboId;
             TitleId = titleId;
 
@@ -177,12 +178,12 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public void Dispose()
         {
-            _httpClient?.Dispose();
+            _httpClient.Dispose();
         }
 
         private async Task LoadContentAsync()
         {
-            string amiiboJsonString = DEFAULT_JSON;
+            string amiiboJsonString = DefaultJson;
 
             if (File.Exists(_amiiboJsonPath))
             {
@@ -208,10 +209,10 @@ namespace Ryujinx.Ava.Ui.ViewModels
             _amiiboList = JsonSerializer.Deserialize<Amiibo.AmiiboJson>(amiiboJsonString).Amiibo;
             _amiiboList = _amiiboList.OrderBy(amiibo => amiibo.AmiiboSeries).ToList();
 
-            await ParseAmiiboData();
+            ParseAmiiboData();
         }
 
-        private async Task ParseAmiiboData()
+        private void ParseAmiiboData()
         {
             _amiiboSeries.Clear();
             _amiibos.Clear();
@@ -397,7 +398,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
             Close();
 
-            return DEFAULT_JSON;
+            return DefaultJson;
         }
 
         private void Close()
@@ -416,8 +417,8 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 {
                     Bitmap bitmap = new(memoryStream);
 
-                    double ratio = Math.Min(350f / bitmap.Size.Width,
-                        350f / bitmap.Size.Height);
+                    double ratio = Math.Min(AmiiboImageSize / bitmap.Size.Width,
+                        AmiiboImageSize / bitmap.Size.Height);
 
                     int resizeHeight = (int)(bitmap.Size.Height * ratio);
                     int resizeWidth = (int)(bitmap.Size.Width * ratio);

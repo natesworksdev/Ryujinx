@@ -30,9 +30,9 @@ namespace Ryujinx.Ava.Ui.ViewModels
     {
         private const int MaxImageTasks = 4;
         
-        private static readonly Dictionary<string, byte[]> AvatarStore = new();
-        private static Action LoadCompleteAction;
+        private static readonly Dictionary<string, byte[]> _avatarStore = new();
         private static bool _isPreloading;
+        private static Action _loadCompleteAction;
 
         private ObservableCollection<ProfileImageModel> _images;
         private Color _backgroundColor = Colors.White;
@@ -60,7 +60,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
             if (_isPreloading)
             {
-                LoadCompleteAction = loadCompleteAction;
+                _loadCompleteAction = loadCompleteAction;
             }
             else
             {
@@ -102,7 +102,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             }
         }
 
-        public int ImageCount => AvatarStore.Count;
+        public int ImageCount => _avatarStore.Count;
 
         public int ImagesLoaded
         {
@@ -158,7 +158,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 ImagesLoaded = 0;
                 IsIndeterminate = false;
 
-                var keys = AvatarStore.Keys.ToList();
+                var keys = _avatarStore.Keys.ToList();
 
                 var newImages = new List<ProfileImageModel>();
                 var tasks = new List<Task>();
@@ -183,7 +183,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                         }
 
                         var key = keys[i];
-                        var image = AvatarStore[keys[i]];
+                        var image = _avatarStore[keys[i]];
 
                         var data = ProcessImage(image);
                         newImages.Add(new ProfileImageModel(key, data));
@@ -219,7 +219,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
         {
             try
             {
-                if (AvatarStore.Count > 0)
+                if (_avatarStore.Count > 0)
                 {
                     return;
                 }
@@ -260,7 +260,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
                                     avatarImage.SaveAsPng(streamPng);
 
-                                    AvatarStore.Add(item.FullPath, streamPng.ToArray());
+                                    _avatarStore.Add(item.FullPath, streamPng.ToArray());
                                 }
                             }
                         }
@@ -270,7 +270,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             finally
             {
                 _isPreloading = false;
-                LoadCompleteAction?.Invoke();
+                _loadCompleteAction?.Invoke();
             }
         }
 
@@ -356,7 +356,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public void Dispose()
         {
-            LoadCompleteAction = null;
+            _loadCompleteAction = null;
             IsActive = false;
         }
     }

@@ -1,11 +1,12 @@
 using Ryujinx.Ava.Ui.ViewModels;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
+using Profile = Ryujinx.HLE.HOS.Services.Account.Acc.UserProfile;
 
 namespace Ryujinx.Ava.Ui.Models
 {
     public class UserProfile : BaseModel
     {
-        private readonly HLE.HOS.Services.Account.Acc.UserProfile _profile;
+        private readonly Profile _profile;
         private byte[] _image;
         private string _name;
         private UserId _userId;
@@ -40,7 +41,7 @@ namespace Ryujinx.Ava.Ui.Models
             }
         }
 
-        public UserProfile(HLE.HOS.Services.Account.Acc.UserProfile profile)
+        public UserProfile(Profile profile)
         {
             _profile = profile;
 

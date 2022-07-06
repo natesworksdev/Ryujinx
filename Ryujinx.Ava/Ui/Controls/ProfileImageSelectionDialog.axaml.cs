@@ -49,11 +49,12 @@ namespace Ryujinx.Ava.Ui.Controls
             OpenFileDialog dialog = new();
             dialog.Filters.Add(new FileDialogFilter
             {
-                Name = LocaleManager.Instance["AllSupportedFormats"], Extensions = {"jpg", "jpeg", "png", "bmp"}
+                Name = LocaleManager.Instance["AllSupportedFormats"],
+                Extensions = { "jpg", "jpeg", "png", "bmp" }
             });
-            dialog.Filters.Add(new FileDialogFilter {Name = "JPEG", Extensions = {"jpg", "jpeg"}});
-            dialog.Filters.Add(new FileDialogFilter {Name = "PNG", Extensions = {"png"}});
-            dialog.Filters.Add(new FileDialogFilter {Name = "BMP", Extensions = {"bmp"}});
+            dialog.Filters.Add(new FileDialogFilter { Name = "JPEG", Extensions = { "jpg", "jpeg" } });
+            dialog.Filters.Add(new FileDialogFilter { Name = "PNG", Extensions = { "png" } });
+            dialog.Filters.Add(new FileDialogFilter { Name = "BMP", Extensions = { "bmp" } });
 
             dialog.AllowMultiple = false;
 

@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 
@@ -10,13 +11,13 @@ namespace Ryujinx.Ava.Ui.Models
         {
             BuildId = buildId;
             Path = path;
-            this.CollectionChanged += CheatsList_CollectionChanged;
+            CollectionChanged += CheatsList_CollectionChanged;
         }
 
         private void CheatsList_CollectionChanged(object sender,
-            System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+            NotifyCollectionChangedEventArgs e)
         {
-            if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add)
+            if (e.Action == NotifyCollectionChangedAction.Add)
             {
                 (e.NewItems[0] as CheatModel).EnableToggled += Item_EnableToggled;
             }

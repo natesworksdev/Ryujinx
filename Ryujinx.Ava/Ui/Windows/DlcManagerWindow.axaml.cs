@@ -37,7 +37,7 @@ namespace Ryujinx.Ava.Ui.Windows
         public string TitleId { get; }
         public string TitleName { get; }
 
-        public string Heading => $"DLC Available for {TitleName} [{TitleId.ToUpper()}]";
+        public string Heading => string.Format(LocaleManager.Instance["DlcWindowHeading"], TitleName, TitleId.ToUpper());
 
         public DlcManagerWindow()
         {
@@ -184,12 +184,7 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             if (removeSelectedOnly)
             {
-                List<DlcModel> enabled = Dlcs.ToList().FindAll(x => x.IsEnabled);
-
-                foreach (DlcModel dlc in enabled)
-                {
-                    Dlcs.Remove(dlc);
-                }
+               Dlcs.RemoveAll(Dlcs.Where(x => x.IsEnabled));
             }
             else
             {
@@ -209,9 +204,9 @@ namespace Ryujinx.Ava.Ui.Windows
 
         public async void Add()
         {
-            OpenFileDialog dialog = new OpenFileDialog() {Title = LocaleManager.Instance["SelectDLCDialogTitle"], AllowMultiple = true};
+            OpenFileDialog dialog = new OpenFileDialog() { Title = LocaleManager.Instance["SelectDlcDialogTitle"], AllowMultiple = true };
 
-            dialog.Filters.Add(new FileDialogFilter {Name = "NSP", Extensions = {"nsp"}});
+            dialog.Filters.Add(new FileDialogFilter { Name = "NSP", Extensions = { "nsp" } });
 
             string[] files = await dialog.ShowAsync(this);
 
@@ -239,12 +234,14 @@ namespace Ryujinx.Ava.Ui.Windows
                         _dlcContainerList.Add(container);
                     }
 
-                    container = new DlcContainer {Path = dlc.ContainerPath, DlcNcaList = new List<DlcNca>()};
+                    container = new DlcContainer { Path = dlc.ContainerPath, DlcNcaList = new List<DlcNca>() };
                 }
 
                 container.DlcNcaList.Add(new DlcNca
                 {
-                    Enabled = dlc.IsEnabled, TitleId = Convert.ToUInt64(dlc.TitleId, 16), Path = dlc.FullPath
+                    Enabled = dlc.IsEnabled,
+                    TitleId = Convert.ToUInt64(dlc.TitleId, 16),
+                    Path = dlc.FullPath
                 });
             }
 

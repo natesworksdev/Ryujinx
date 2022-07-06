@@ -38,7 +38,7 @@ namespace Ryujinx.Ava.Ui.Windows
         public string TitleId { get; }
         public string TitleName { get; }
 
-        public string Heading => $"Updates Available for {TitleName} [{TitleId.ToUpper()}]";
+        public string Heading => string.Format(LocaleManager.Instance["GameUpdateWindowHeading"], TitleName, TitleId.ToUpper());
 
         public TitleUpdateWindow()
         {
@@ -105,8 +105,8 @@ namespace Ryujinx.Ava.Ui.Windows
             }
             else
             {
-                TitleUpdateModel selected = TitleUpdates.ToList().Find(x => x.Path == _titleUpdateWindowData.Selected);
-                List<TitleUpdateModel> enabled = TitleUpdates.ToList().FindAll(x => x.IsEnabled);
+                TitleUpdateModel selected = TitleUpdates.Where(x => x.Path == _titleUpdateWindowData.Selected).FirstOrDefault();
+                List<TitleUpdateModel> enabled = TitleUpdates.Where(x => x.IsEnabled).ToList();
 
                 foreach (TitleUpdateModel update in enabled)
                 {
@@ -124,7 +124,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
         private void AddUpdate(string path)
         {
-            if (File.Exists(path) && TitleUpdates.FirstOrDefault(x => x.Path == path) == null)
+            if (File.Exists(path) && !TitleUpdates.Any(x => x.Path == path))
             {
                 using (FileStream file = new(path, FileMode.Open, FileAccess.Read))
                 {
@@ -195,9 +195,9 @@ namespace Ryujinx.Ava.Ui.Windows
 
         public async void Add()
         {
-            OpenFileDialog dialog = new OpenFileDialog() {Title = LocaleManager.Instance["SelectUpdateDialogTitle"], AllowMultiple = true};
+            OpenFileDialog dialog = new OpenFileDialog() { Title = LocaleManager.Instance["SelectUpdateDialogTitle"], AllowMultiple = true };
 
-            dialog.Filters.Add(new FileDialogFilter {Name = "NSP", Extensions = {"nsp"}});
+            dialog.Filters.Add(new FileDialogFilter { Name = "NSP", Extensions = { "nsp" } });
 
             string[] files = await dialog.ShowAsync(this);
 
@@ -216,22 +216,19 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             var list = TitleUpdates.ToList();
 
-            list.Sort((x, y) =>
+            list.Sort((first, second) =>
             {
-                var v = x.Control.DisplayVersionString.ToString();
-                var u = y.Control.DisplayVersionString.ToString();
-
-                if (string.IsNullOrEmpty(v))
+                if (string.IsNullOrEmpty(first.Control.DisplayVersionString.ToString()))
                 {
                     return -1;
                 }
-                else if (string.IsNullOrEmpty(u))
+                else if (string.IsNullOrEmpty(second.Control.DisplayVersionString.ToString()))
                 {
                     return 1;
                 }
 
-                return Version.Parse(x.Control.DisplayVersionString.ToString())
-                    .CompareTo(Version.Parse(y.Control.DisplayVersionString.ToString())) * -1;
+                return Version.Parse(first.Control.DisplayVersionString.ToString())
+                    .CompareTo(Version.Parse(second.Control.DisplayVersionString.ToString())) * -1;
             });
 
             TitleUpdates.Clear();
