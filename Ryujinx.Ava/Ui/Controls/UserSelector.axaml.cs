@@ -19,6 +19,8 @@ namespace Ryujinx.Ava.Ui.Controls
 
         public UserProfileViewModel ViewModel { get; set; }
         
+        public Frame ContentFrame { get; set; }
+        
         public UserSelector()
         {
             InitializeComponent();
@@ -47,6 +49,8 @@ namespace Ryujinx.Ava.Ui.Controls
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+
+            ContentFrame = this.FindControl<Frame>("ContentFrame");
         }
 
         public static async Task Show(AccountManager ownerAccountManager, ContentManager ownerContentManager, VirtualFileSystem ownerVirtualFileSystem)
