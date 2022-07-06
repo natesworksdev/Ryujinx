@@ -16,7 +16,6 @@ namespace Ryujinx.Ava.Ui.Controls
         private static bool _isChoiceDialogOpen;
 
         private async static Task<UserResult> ShowContentDialog(
-            StyleableWindow window,
             string title,
             string primaryText,
             string secondaryText,
@@ -183,7 +182,6 @@ namespace Ryujinx.Ava.Ui.Controls
         }
 
         public static async Task<UserResult> CreateInfoDialog(
-            StyleableWindow window,
             string primary,
             string secondaryText,
             string acceptButton,
@@ -191,7 +189,6 @@ namespace Ryujinx.Ava.Ui.Controls
             string title)
         {
             return await ShowContentDialog(
-                window,
                 title,
                 primary,
                 secondaryText,
@@ -202,7 +199,6 @@ namespace Ryujinx.Ava.Ui.Controls
         }
 
         internal static async Task<UserResult> CreateConfirmationDialog(
-            StyleableWindow window,
             string primaryText,
             string secondaryText,
             string acceptButtonText,
@@ -211,7 +207,6 @@ namespace Ryujinx.Ava.Ui.Controls
             UserResult primaryButtonResult = UserResult.Yes)
         {
             return await ShowContentDialog(
-                window,
                 string.IsNullOrWhiteSpace(title) ? LocaleManager.Instance["DialogConfirmationTitle"] : title,
                 primaryText,
                 secondaryText,
@@ -227,10 +222,9 @@ namespace Ryujinx.Ava.Ui.Controls
             return new(mainText, secondaryText);
         }
 
-        internal static async void CreateUpdaterInfoDialog(StyleableWindow window, string primary, string secondaryText)
+        internal static async void CreateUpdaterInfoDialog(string primary, string secondaryText)
         {
             await ShowContentDialog(
-                window,
                 LocaleManager.Instance["DialogUpdaterTitle"],
                 primary,
                 secondaryText,
@@ -240,24 +234,9 @@ namespace Ryujinx.Ava.Ui.Controls
                 (int)Symbol.Important);
         }
 
-        internal static async void ShowNotAvailableMessage(StyleableWindow window)
-        {
-            // Temporary placeholder for features to be added
-            await ShowContentDialog(
-                window,
-                "Feature Not Available",
-                "The selected feature is not available in this version.",
-                "",
-                "",
-                "",
-                LocaleManager.Instance["InputDialogOk"],
-                (int)Symbol.Important);
-        }
-
-        internal static async void CreateWarningDialog(StyleableWindow window, string primary, string secondaryText)
+        internal static async void CreateWarningDialog(string primary, string secondaryText)
         {
             await ShowContentDialog(
-                window,
                 LocaleManager.Instance["DialogWarningTitle"],
                 primary,
                 secondaryText,
@@ -267,12 +246,11 @@ namespace Ryujinx.Ava.Ui.Controls
                 (int)Symbol.Important);
         }
 
-        internal static async void CreateErrorDialog(StyleableWindow owner, string errorMessage, string secondaryErrorMessage = "")
+        internal static async void CreateErrorDialog(string errorMessage, string secondaryErrorMessage = "")
         {
             Logger.Error?.Print(LogClass.Application, errorMessage);
 
             await ShowContentDialog(
-                owner,
                 LocaleManager.Instance["DialogErrorTitle"],
                 LocaleManager.Instance["DialogErrorMessage"],
                 errorMessage,
@@ -282,7 +260,7 @@ namespace Ryujinx.Ava.Ui.Controls
                 (int)Symbol.Dismiss);
         }
 
-        internal static async Task<bool> CreateChoiceDialog(StyleableWindow window, string title, string primary, string secondaryText)
+        internal static async Task<bool> CreateChoiceDialog(string title, string primary, string secondaryText)
         {
             if (_isChoiceDialogOpen)
             {
@@ -293,7 +271,6 @@ namespace Ryujinx.Ava.Ui.Controls
 
             UserResult response =
                 await ShowContentDialog(
-                    window,
                     title,
                     primary,
                     secondaryText,
@@ -308,19 +285,17 @@ namespace Ryujinx.Ava.Ui.Controls
             return response == UserResult.Yes;
         }
 
-        internal static async Task<bool> CreateExitDialog(StyleableWindow owner)
+        internal static async Task<bool> CreateExitDialog()
         {
             return await CreateChoiceDialog(
-                owner,
                 LocaleManager.Instance["DialogExitTitle"],
                 LocaleManager.Instance["DialogExitMessage"],
                 LocaleManager.Instance["DialogExitSubMessage"]);
         }
 
-        internal static async Task<bool> CreateStopEmulationDialog(StyleableWindow owner)
+        internal static async Task<bool> CreateStopEmulationDialog()
         {
             return await CreateChoiceDialog(
-                owner,
                 LocaleManager.Instance["DialogStopEmulationTitle"],
                 LocaleManager.Instance["DialogStopEmulationMessage"],
                 LocaleManager.Instance["DialogExitSubMessage"]);
@@ -330,12 +305,10 @@ namespace Ryujinx.Ava.Ui.Controls
             string title,
             string mainText,
             string subText,
-            StyleableWindow owner,
             uint maxLength = int.MaxValue,
             string input = "")
         {
             var result = await InputDialog.ShowInputDialog(
-                owner,
                 title,
                 mainText,
                 input,

@@ -125,8 +125,7 @@ namespace Ryujinx.Ava.Ui.Windows
             }
             catch (Exception ex)
             {
-                ContentDialogHelper.CreateErrorDialog(this,
-                    string.Format(LocaleManager.Instance[
+                ContentDialogHelper.CreateErrorDialog(string.Format(LocaleManager.Instance[
                         "DialogDlcLoadNcaErrorMessage"], ex.Message, containerPath));
             }
 
@@ -175,7 +174,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
                 if (!containsDlc)
                 {
-                    ContentDialogHelper.CreateErrorDialog(this, LocaleManager.Instance["DialogDlcNoDlcErrorMessage"]);
+                    ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance["DialogDlcNoDlcErrorMessage"]);
                 }
             }
         }

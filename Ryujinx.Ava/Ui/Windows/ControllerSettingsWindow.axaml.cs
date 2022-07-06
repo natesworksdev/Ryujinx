@@ -165,7 +165,6 @@ namespace Ryujinx.Ava.Ui.Windows
                 _dialogOpen = true;
 
                 var result = await ContentDialogHelper.CreateConfirmationDialog(
-                    this.GetVisualRoot() as StyleableWindow,
                     LocaleManager.Instance["DialogControllerSettingsModifiedConfirmMessage"],
                     LocaleManager.Instance["DialogControllerSettingsModifiedConfirmSubMessage"],
                     LocaleManager.Instance["InputDialogYes"],

@@ -194,7 +194,9 @@ namespace Ryujinx.Ava.Ui.Windows
                 string mainMessage = LocaleManager.Instance["DialogPerformanceCheckLoggingEnabledMessage"];
                 string secondaryMessage = LocaleManager.Instance["DialogPerformanceCheckLoggingEnabledConfirmMessage"];
 
-                UserResult result = await ContentDialogHelper.CreateConfirmationDialog(this, mainMessage, secondaryMessage, LocaleManager.Instance["InputDialogYes"], LocaleManager.Instance["InputDialogNo"], LocaleManager.Instance["RyujinxConfirm"]);
+                UserResult result = await ContentDialogHelper.CreateConfirmationDialog(mainMessage, secondaryMessage,
+                    LocaleManager.Instance["InputDialogYes"], LocaleManager.Instance["InputDialogNo"],
+                    LocaleManager.Instance["RyujinxConfirm"]);
 
                 if (result != UserResult.Yes)
                 {
@@ -207,9 +209,12 @@ namespace Ryujinx.Ava.Ui.Windows
             if (!string.IsNullOrWhiteSpace(ConfigurationState.Instance.Graphics.ShadersDumpPath.Value))
             {
                 string mainMessage = LocaleManager.Instance["DialogPerformanceCheckShaderDumpEnabledMessage"];
-                string secondaryMessage = LocaleManager.Instance["DialogPerformanceCheckShaderDumpEnabledConfirmMessage"];
+                string secondaryMessage =
+                    LocaleManager.Instance["DialogPerformanceCheckShaderDumpEnabledConfirmMessage"];
 
-                UserResult result = await ContentDialogHelper.CreateConfirmationDialog(this, mainMessage, secondaryMessage, LocaleManager.Instance["InputDialogYes"], LocaleManager.Instance["InputDialogNo"], LocaleManager.Instance["RyujinxConfirm"]);
+                UserResult result = await ContentDialogHelper.CreateConfirmationDialog(mainMessage, secondaryMessage,
+                    LocaleManager.Instance["InputDialogYes"], LocaleManager.Instance["InputDialogNo"],
+                    LocaleManager.Instance["RyujinxConfirm"]);
 
                 if (result != UserResult.Yes)
                 {
@@ -233,7 +238,7 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             if (AppHost != null)
             {
-                await ContentDialogHelper.CreateInfoDialog(this,
+                await ContentDialogHelper.CreateInfoDialog(
                     LocaleManager.Instance["DialogLoadAppGameAlreadyLoadedMessage"],
                     LocaleManager.Instance["DialogLoadAppGameAlreadyLoadedSubMessage"],
                     LocaleManager.Instance["InputDialogOk"],
@@ -705,7 +710,7 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             Dispatcher.UIThread.InvokeAsync(async () =>
            {
-               _isClosing = await ContentDialogHelper.CreateExitDialog(this);
+               _isClosing = await ContentDialogHelper.CreateExitDialog();
 
                if (_isClosing)
                {

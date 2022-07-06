@@ -1,3 +1,5 @@
+using Avalonia.Controls;
+using Avalonia.VisualTree;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.Windows;
@@ -14,7 +16,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
     {
         private const uint MaxProfileNameLength = 0x20;
 
-        private readonly UserProfileWindow _owner;
+        private readonly UserSelector _owner;
 
         private UserProfile _selectedProfile;
         private string _tempUserName;
@@ -24,7 +26,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             Profiles = new ObservableCollection<UserProfile>();
         }
 
-        public UserProfileViewModel(UserProfileWindow owner) : this()
+        public UserProfileViewModel(UserSelector owner) : this()
         {
             _owner = owner;
 
@@ -86,7 +88,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
         {
             ProfileImageSelectionDialog selectionDialog = new(_owner.ContentManager);
 
-            await selectionDialog.ShowDialog(_owner);
+            await selectionDialog.ShowDialog(_owner.GetVisualRoot() as Window);
 
             if (selectionDialog.BufferImageProfile != null)
             {
@@ -117,7 +119,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 MaxProfileNameLength);
 
             _tempUserName =
-                await ContentDialogHelper.CreateInputDialog(dlgTitle, dlgMainText, dlgSubText, _owner,
+                await ContentDialogHelper.CreateInputDialog(dlgTitle, dlgMainText, dlgSubText,
                     MaxProfileNameLength);
 
             if (!string.IsNullOrWhiteSpace(_tempUserName))
@@ -141,8 +143,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
                     if (profile == null)
                     {
-                        ContentDialogHelper.CreateErrorDialog(_owner,
-                            LocaleManager.Instance["DialogUserProfileDeletionWarningMessage"]);
+                        ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance["DialogUserProfileDeletionWarningMessage"]);
                         return;
                     }
 
@@ -150,8 +151,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 }
 
                 var result =
-                    await ContentDialogHelper.CreateConfirmationDialog(_owner,
-                        LocaleManager.Instance["DialogUserProfileDeletionConfirmMessage"], "",
+                    await ContentDialogHelper.CreateConfirmationDialog(LocaleManager.Instance["DialogUserProfileDeletionConfirmMessage"], "",
                         LocaleManager.Instance["InputDialogYes"], LocaleManager.Instance["InputDialogNo"], "");
 
                 if (result == UserResult.Yes)

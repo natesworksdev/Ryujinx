@@ -151,14 +151,12 @@ namespace Ryujinx.Ava.Ui.Windows
                         }
                         else
                         {
-                            ContentDialogHelper.CreateErrorDialog(this,
-                                LocaleManager.Instance["DialogUpdateAddUpdateErrorMessage"]);
+                            ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance["DialogUpdateAddUpdateErrorMessage"]);
                         }
                     }
                     catch (Exception ex)
                     {
-                        ContentDialogHelper.CreateErrorDialog(this,
-                            string.Format(LocaleManager.Instance["DialogDlcLoadNcaErrorMessage"], ex.Message, path));
+                        ContentDialogHelper.CreateErrorDialog(string.Format(LocaleManager.Instance["DialogDlcLoadNcaErrorMessage"], ex.Message, path));
                     }
                 }
             }
