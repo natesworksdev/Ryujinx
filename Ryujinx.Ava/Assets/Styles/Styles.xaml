@@ -234,7 +234,6 @@
         <SolidColorBrush x:Key="DataGridSelectionBackgroundBrush" Color="{DynamicResource DataGridSelectionColor}" />
         <SolidColorBrush x:Key="MenuFlyoutPresenterBorderBrush" Color="{DynamicResource MenuFlyoutPresenterBorderColor}" />
         <SolidColorBrush x:Key="FlyoutBorderThemeBrush" Color="{DynamicResource MenuFlyoutPresenterBorderColor}" />
-        <SolidColorBrush x:Key="ThemeAccentColorBrush" Color="{DynamicResource SystemAccentColor}" />
         <SolidColorBrush x:Key="ListBoxBackground" Color="{DynamicResource ThemeContentBackgroundColor}" />
         <SolidColorBrush x:Key="ThemeForegroundBrush" Color="{DynamicResource ThemeForegroundColor}" />
         <SolidColorBrush x:Key="ThemeAccentBrush4" Color="{DynamicResource ThemeAccentColor4}" />
