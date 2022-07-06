@@ -504,6 +504,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     state.TextureHandle == textureId &&
                     state.SamplerHandle == samplerId &&
                     state.CachedTexture != null &&
+                    state.CachedTexture.Target != Target.TextureBuffer &&
                     state.CachedTexture.InvalidatedSequence == state.InvalidatedSequence &&
                     state.CachedSampler?.IsDisposed != true)
                 {
@@ -631,6 +632,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 if (!poolModified &&
                     state.TextureHandle == textureId &&
                     state.CachedTexture != null &&
+                    state.CachedTexture.Target != Target.TextureBuffer &&
                     state.CachedTexture.InvalidatedSequence == state.InvalidatedSequence)
                 {
                     Texture cachedTexture = state.CachedTexture;
