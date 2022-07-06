@@ -50,14 +50,14 @@ using WindowState = Avalonia.Controls.WindowState;
 
 namespace Ryujinx.Ava
 {
-    public class AppHost
+    internal class AppHost
     {
         private const int CursorHideIdleTime = 8; // Hide Cursor seconds
 
         private static readonly Cursor InvisibleCursor = new Cursor(StandardCursorType.None);
 
         private readonly AccountManager _accountManager;
-        private UserChannelPersistence _userChannelPersistence;
+        private readonly UserChannelPersistence _userChannelPersistence;
 
         private readonly InputManager _inputManager;
 
@@ -82,7 +82,6 @@ namespace Ryujinx.Ava
         private bool _dialogShown;
 
         private WindowsMultimediaTimerResolution _windowsMultimediaTimerResolution;
-        private KeyboardStateSnapshot _lastKeyboardSnapshot;
 
         private readonly CancellationTokenSource _gpuCancellationTokenSource;
 
@@ -126,7 +125,6 @@ namespace Ryujinx.Ava
             _glLogLevel = ConfigurationState.Instance.Logger.GraphicsDebugLevel;
             _inputManager.SetMouseDriver(new AvaloniaMouseDriver(renderer));
             _keyboardInterface = (IKeyboard)_inputManager.KeyboardDriver.GetGamepad("0");
-            _lastKeyboardSnapshot = _keyboardInterface.GetKeyboardStateSnapshot();
 
             NpadManager = _inputManager.CreateNpadManager();
             TouchScreenManager = _inputManager.CreateTouchScreenManager();
@@ -177,7 +175,7 @@ namespace Ryujinx.Ava
         {
             if (_renderer != null)
             {
-                double scale = Program.WindowScaleFactor;
+                double scale = _parent.PlatformImpl.RenderScaling;
                 _renderer.Window.SetSize((int)(size.Width * scale), (int)(size.Height * scale));
             }
         }
@@ -722,9 +720,7 @@ namespace Ryujinx.Ava
                 }
             }
 
-            var memoryConfiguration = ConfigurationState.Instance.System.ExpandRam.Value
-                ? HLE.MemoryConfiguration.MemoryConfiguration6GB
-                : HLE.MemoryConfiguration.MemoryConfiguration4GB;
+            var memoryConfiguration = ConfigurationState.Instance.System.ExpandRam.Value ? HLE.MemoryConfiguration.MemoryConfiguration6GB : HLE.MemoryConfiguration.MemoryConfiguration4GB;
 
             IntegrityCheckLevel fsIntegrityCheckLevel = ConfigurationState.Instance.System.EnableFsIntegrityChecks ? IntegrityCheckLevel.ErrorOnInvalid : IntegrityCheckLevel.None;
 
@@ -809,7 +805,7 @@ namespace Ryujinx.Ava
             Width = (int)Renderer.Bounds.Width;
             Height = (int)Renderer.Bounds.Height;
 
-            _renderer.Window.SetSize((int)(Width * Program.WindowScaleFactor), (int)(Height * Program.WindowScaleFactor));
+            _renderer.Window.SetSize((int)(Width * _parent.PlatformImpl.RenderScaling), (int)(Height * _parent.PlatformImpl.RenderScaling));
 
             Device.Gpu.Renderer.RunLoop(() =>
             {
@@ -898,7 +894,7 @@ namespace Ryujinx.Ava
             }
         }
 
-        private void HandleScreenState(KeyboardStateSnapshot keyboard, KeyboardStateSnapshot lastKeyboard)
+        private void HandleScreenState()
         {
             if (ConfigurationState.Instance.Hid.EnableMouse)
             {
@@ -935,19 +931,12 @@ namespace Ryujinx.Ava
             {
                 Dispatcher.UIThread.Post(() =>
                 {
-                    KeyboardStateSnapshot keyboard = _keyboardInterface.GetKeyboardStateSnapshot();
+                    HandleScreenState();
 
-                    HandleScreenState(keyboard, _lastKeyboardSnapshot);
-
-                    if (keyboard.IsPressed(Key.Delete))
+                    if (_keyboardInterface.GetKeyboardStateSnapshot().IsPressed(Key.Delete) && _parent.WindowState != WindowState.FullScreen)
                     {
-                        if (_parent.WindowState != WindowState.FullScreen)
-                        {
-                            Ptc.Continue();
-                        }
+                        Ptc.Continue();
                     }
-
-                    _lastKeyboardSnapshot = keyboard;
                 });
             }
 

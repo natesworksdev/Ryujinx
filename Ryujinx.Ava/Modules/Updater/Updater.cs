@@ -23,7 +23,7 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.Modules
 {
-    public static class Updater
+    internal static class Updater
     {
         private const string GitHubApiURL = "https://api.github.com";
         internal static bool Running;
@@ -98,7 +98,7 @@ namespace Ryujinx.Modules
                         string assetState = (string)asset["state"];
                         string downloadURL = (string)asset["browser_download_url"];
 
-                        if (assetName.StartsWith("ava-ryujinx") && assetName.EndsWith(_platformExt))
+                        if (assetName.StartsWith("test-ava-ryujinx") && assetName.EndsWith(_platformExt))
                         {
                             _buildUrl = downloadURL;
 

@@ -110,7 +110,7 @@ namespace Ryujinx.Graphics.OpenGL
             Buffer.Clear(destination, offset, size, value);
         }
 
-        public void ClearRenderTargetColor(int index, uint componentMask, ColorF color)
+        public void ClearRenderTargetColor(int index, int layer, uint componentMask, ColorF color)
         {
             GL.ColorMask(
                 index,
@@ -119,14 +119,18 @@ namespace Ryujinx.Graphics.OpenGL
                 (componentMask & 4) != 0,
                 (componentMask & 8) != 0);
 
+            _framebuffer.AttachColorLayerForClear(index, layer);
+
             float[] colors = new float[] { color.Red, color.Green, color.Blue, color.Alpha };
 
             GL.ClearBuffer(OpenTK.Graphics.OpenGL.ClearBuffer.Color, index, colors);
 
+            _framebuffer.DetachColorLayerForClear(index);
+
             RestoreComponentMask(index);
         }
 
-        public void ClearRenderTargetDepthStencil(float depthValue, bool depthMask, int stencilValue, int stencilMask)
+        public void ClearRenderTargetDepthStencil(int layer, float depthValue, bool depthMask, int stencilValue, int stencilMask)
         {
             bool stencilMaskChanged =
                 stencilMask != 0 &&
@@ -144,6 +148,8 @@ namespace Ryujinx.Graphics.OpenGL
                 GL.DepthMask(depthMask);
             }
 
+            _framebuffer.AttachDepthStencilLayerForClear(layer);
+
             if (depthMask && stencilMask != 0)
             {
                 GL.ClearBuffer(ClearBufferCombined.DepthStencil, 0, depthValue, stencilValue);
@@ -156,6 +162,8 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 GL.ClearBuffer(OpenTK.Graphics.OpenGL.ClearBuffer.Stencil, 0, ref stencilValue);
             }
+
+            _framebuffer.DetachDepthStencilLayerForClear();
 
             if (stencilMaskChanged)
             {
@@ -597,6 +605,8 @@ namespace Ryujinx.Graphics.OpenGL
                         GL.EndTransformFeedback();
                     }
 
+                    GL.ClipControl(ClipOrigin.UpperLeft, ClipDepthMode.NegativeOneToOne);
+
                     _drawTexture.Draw(
                         view,
                         samp,
@@ -627,6 +637,8 @@ namespace Ryujinx.Graphics.OpenGL
                     {
                         GL.BeginTransformFeedback(_tfTopology);
                     }
+
+                    RestoreClipControl();
                 }
             }
         }
@@ -677,7 +689,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             GL.MultiDrawElementsIndirectCount(
                 _primitiveType,
-                (Version46)_elementsType,
+                (All)_elementsType,
                 (IntPtr)indirectBuffer.Offset,
                 (IntPtr)parameterBuffer.Offset,
                 maxDrawCount,
@@ -903,6 +915,34 @@ namespace Ryujinx.Graphics.OpenGL
             else
             {
                 GL.Disable(EnableCap.ColorLogicOp);
+            }
+        }
+
+        public void SetMultisampleState(MultisampleDescriptor multisample)
+        {
+            if (multisample.AlphaToCoverageEnable)
+            {
+                GL.Enable(EnableCap.SampleAlphaToCoverage);
+
+                if (multisample.AlphaToOneEnable)
+                {
+                    GL.Enable(EnableCap.SampleAlphaToOne);
+                }
+                else
+                {
+                    GL.Disable(EnableCap.SampleAlphaToOne);
+                }
+
+                if (HwCapabilities.SupportsAlphaToCoverageDitherControl)
+                {
+                    GL.NV.AlphaToCoverageDitherControl(multisample.AlphaToCoverageDitherEnable
+                        ? NvAlphaToCoverageDitherControl.AlphaToCoverageDitherEnableNv
+                        : NvAlphaToCoverageDitherControl.AlphaToCoverageDitherDisableNv);
+                }
+            }
+            else
+            {
+                GL.Disable(EnableCap.SampleAlphaToCoverage);
             }
         }
 

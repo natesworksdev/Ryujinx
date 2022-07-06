@@ -137,7 +137,6 @@ namespace Ryujinx.Ava
             }
 
             // Make process DPI aware for proper window sizing on high-res screens.
-            ForceDpiAware.Windows();
             WindowScaleFactor = ForceDpiAware.GetWindowScaleFactor();
 
             // Delete backup files after updating.
@@ -186,7 +185,7 @@ namespace Ryujinx.Ava
             }
         }
 
-        private static void ReloadConfig()
+        public static void ReloadConfig()
         {
             string localConfigurationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json");
             string appDataConfigurationPath = Path.Combine(AppDataManager.BaseDirPath, "Config.json");

@@ -90,7 +90,7 @@ namespace Ryujinx.HLE.HOS
 
             KMemoryRegionManager region = context.MemoryManager.MemoryRegions[(int)memoryRegion];
 
-            KernelResult result = region.AllocatePages((ulong)codePagesCount, false, out KPageList pageList);
+            KernelResult result = region.AllocatePages(out KPageList pageList, (ulong)codePagesCount);
 
             if (result != KernelResult.Success)
             {
@@ -101,7 +101,7 @@ namespace Ryujinx.HLE.HOS
 
             KProcess process = new KProcess(context);
 
-            var processContextFactory = new ArmProcessContextFactory(context.Device.Gpu);
+            var processContextFactory = new ArmProcessContextFactory(context.Device.System.CpuEngine, context.Device.Gpu);
 
             result = process.InitializeKip(
                 creationInfo,
@@ -264,7 +264,7 @@ namespace Ryujinx.HLE.HOS
                 return false;
             }
 
-            var processContextFactory = new ArmProcessContextFactory(context.Device.Gpu);
+            var processContextFactory = new ArmProcessContextFactory(context.Device.System.CpuEngine, context.Device.Gpu);
 
             result = process.Initialize(
                 creationInfo,
