@@ -19,6 +19,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
         private readonly UserSelector _owner;
 
         private UserProfile _selectedProfile;
+        private UserProfile _highlightedProfile;
         private string _tempUserName;
 
         public UserProfileViewModel()
@@ -43,12 +44,29 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 _selectedProfile = value;
 
                 OnPropertyChanged(nameof(SelectedProfile));
-                OnPropertyChanged(nameof(IsSelectedProfileDeletable));
+                OnPropertyChanged(nameof(IsHighlightedProfileDeletable));
+                OnPropertyChanged(nameof(IsHighlightedProfileEditable));
             }
         }
 
-        public bool IsSelectedProfileDeletable =>
-            _selectedProfile != null && _selectedProfile.UserId != AccountManager.DefaultUserId;
+        public bool IsHighlightedProfileEditable =>
+            _highlightedProfile != null;
+
+        public bool IsHighlightedProfileDeletable =>
+            _highlightedProfile != null && _highlightedProfile.UserId != AccountManager.DefaultUserId;
+
+        public UserProfile HighlightedProfile
+        {
+            get => _highlightedProfile;
+            set
+            {
+                _highlightedProfile = value;
+
+                OnPropertyChanged(nameof(HighlightedProfile));
+                OnPropertyChanged(nameof(IsHighlightedProfileDeletable));
+                OnPropertyChanged(nameof(IsHighlightedProfileEditable));
+            }
+        }
 
         public void Dispose()
         {
@@ -130,13 +148,18 @@ namespace Ryujinx.Ava.Ui.ViewModels
             _tempUserName = String.Empty;
         }
 
+        public async void EditUser()
+        {
+            
+        }
+
         public async void DeleteUser()
         {
-            if (_selectedProfile != null)
+            if (_highlightedProfile != null)
             {
                 var lastUserId = _owner.AccountManager.LastOpenedUser.UserId;
 
-                if (_selectedProfile.UserId == lastUserId)
+                if (_highlightedProfile.UserId == lastUserId)
                 {
                     // If we are deleting the currently open profile, then we must open something else before deleting.
                     var profile = Profiles.FirstOrDefault(x => x.UserId != lastUserId);
@@ -156,7 +179,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
                 if (result == UserResult.Yes)
                 {
-                    _owner.AccountManager.DeleteUser(_selectedProfile.UserId);
+                    _owner.AccountManager.DeleteUser(_highlightedProfile.UserId);
                 }
             }
 
