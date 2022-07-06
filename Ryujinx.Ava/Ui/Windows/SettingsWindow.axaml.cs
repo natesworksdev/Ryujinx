@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
@@ -48,6 +49,8 @@ namespace Ryujinx.Ava.Ui.Windows
         private NavigationView _navPanel;
         private ButtonKeyAssigner _currentAssigner;
 
+        internal ContentPresenter ContentPresenter { get; private set; }
+
         internal SettingsViewModel ViewModel { get; set; }
 
         public SettingsWindow(VirtualFileSystem virtualFileSystem, ContentManager contentManager)
@@ -92,6 +95,7 @@ namespace Ryujinx.Ava.Ui.Windows
             _gameList = this.FindControl<ListBox>("GameList");
             _timeZoneBox = this.FindControl<AutoCompleteBox>("TimeZoneBox");
             _controllerSettings = this.FindControl<ControllerSettingsWindow>("ControllerSettings");
+            ContentPresenter = this.FindControl<ContentPresenter>("ContentPresenter");
 
             _uiPage = this.FindControl<Control>("UiPage");
             _inputPage = this.FindControl<Control>("InputPage");

@@ -327,12 +327,12 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public async void ShowMotionConfig()
         {
-            await MotionSettingsWindow.Show(this, _owner.GetVisualRoot() as StyleableWindow);
+            await MotionSettingsWindow.Show(this);
         }
 
         public async void ShowRumbleConfig()
         {
-            await RumbleSettingsWindow.Show(this, _owner.GetVisualRoot() as StyleableWindow);
+            await RumbleSettingsWindow.Show(this);
         }
 
         private void LoadInputDriver()

@@ -24,8 +24,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
             _viewmodel = new InputConfiguration<GamepadInputId, StickInputId>()
             {
-                StrongRumble = config.StrongRumble,
-                WeakRumble = config.WeakRumble
+                StrongRumble = config.StrongRumble, WeakRumble = config.WeakRumble
             };
 
             InitializeComponent();
@@ -38,30 +37,27 @@ namespace Ryujinx.Ava.Ui.Windows
             AvaloniaXamlLoader.Load(this);
         }
 
-        public static async Task Show(ControllerSettingsViewModel viewmodel, StyleableWindow window)
+        public static async Task Show(ControllerSettingsViewModel viewmodel)
         {
-            ContentDialog contentDialog = window.ContentDialog;
-
-            string name = string.Empty;
-
             RumbleSettingsWindow content = new RumbleSettingsWindow(viewmodel);
 
-            if (contentDialog != null)
+            ContentDialog contentDialog = new ContentDialog
             {
-                contentDialog.Title = LocaleManager.Instance["ControllerRumbleTitle"];
-                contentDialog.PrimaryButtonText = LocaleManager.Instance["ControllerSettingsSave"];
-                contentDialog.SecondaryButtonText = "";
-                contentDialog.CloseButtonText = LocaleManager.Instance["ControllerSettingsClose"];
-                contentDialog.Content = content;
-                contentDialog.PrimaryButtonClick += (sender, args) =>
-                {
-                    var config = viewmodel.Configuration as InputConfiguration<GamepadInputId, StickInputId>;
-                    config.StrongRumble = content._viewmodel.StrongRumble;
-                    config.WeakRumble = content._viewmodel.WeakRumble;
-                };
-
-                await contentDialog.ShowAsync();
-            }
+                Title = LocaleManager.Instance["ControllerRumbleTitle"],
+                PrimaryButtonText = LocaleManager.Instance["ControllerSettingsSave"],
+                SecondaryButtonText = "",
+                CloseButtonText = LocaleManager.Instance["ControllerSettingsClose"],
+                Content = content,
+            };
+            
+            contentDialog.PrimaryButtonClick += (sender, args) =>
+            {
+                var config = viewmodel.Configuration as InputConfiguration<GamepadInputId, StickInputId>;
+                config.StrongRumble = content._viewmodel.StrongRumble;
+                config.WeakRumble = content._viewmodel.WeakRumble;
+            };
+            
+            await contentDialog.ShowAsync();
         }
     }
 }

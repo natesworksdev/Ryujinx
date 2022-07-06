@@ -59,7 +59,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
         public static async Task<(UserResult Result, string Input)> ShowInputDialog(StyleableWindow window, string title, SoftwareKeyboardUiArgs args)
         {
-            ContentDialog contentDialog = window.ContentDialog;
+            ContentDialog contentDialog = new ContentDialog();
 
             UserResult result = UserResult.Cancel;
 

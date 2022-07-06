@@ -32,15 +32,6 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition />
             </Grid.RowDefinitions>
-            <ContentControl
-                Focusable="False"
-                IsVisible="False"
-                KeyboardNavigation.IsTabStop="False">
-                <ui:ContentDialog Name="ContentDialog"
-                                  IsPrimaryButtonEnabled="True"
-                                  IsSecondaryButtonEnabled="True"
-                                  IsVisible="False" />
-            </ContentControl>
             <TextBlock Text="{Locale:Locale UserProfilesSelectedUserProfile}" />
             <Grid Grid.Row="1" Margin="10">
                 <Grid.ColumnDefinitions>

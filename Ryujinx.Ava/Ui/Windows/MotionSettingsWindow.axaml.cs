@@ -45,37 +45,33 @@ namespace Ryujinx.Ava.Ui.Windows
             AvaloniaXamlLoader.Load(this);
         }
 
-        public static async Task Show(ControllerSettingsViewModel viewmodel, StyleableWindow window)
+        public static async Task Show(ControllerSettingsViewModel viewmodel)
         {
-            ContentDialog contentDialog = window.ContentDialog;
-
-            string name = string.Empty;
-
             MotionSettingsWindow content = new MotionSettingsWindow(viewmodel);
 
-            if (contentDialog != null)
+            ContentDialog contentDialog = new ContentDialog
             {
-                contentDialog.Title = LocaleManager.Instance["ControllerMotionTitle"];
-                contentDialog.PrimaryButtonText = LocaleManager.Instance["ControllerSettingsSave"];
-                contentDialog.SecondaryButtonText = "";
-                contentDialog.CloseButtonText = LocaleManager.Instance["ControllerSettingsClose"];
-                contentDialog.Content = content;
-                contentDialog.PrimaryButtonClick += (sender, args) =>
-                {
-                    var config = viewmodel.Configuration as InputConfiguration<GamepadInputId, StickInputId>;
-                    config.Slot = content._viewmodel.Slot;
-                    config.EnableMotion = content._viewmodel.EnableMotion;
-                    config.Sensitivity = content._viewmodel.Sensitivity;
-                    config.GyroDeadzone = content._viewmodel.GyroDeadzone;
-                    config.AltSlot = content._viewmodel.AltSlot;
-                    config.DsuServerHost = content._viewmodel.DsuServerHost;
-                    config.DsuServerPort = content._viewmodel.DsuServerPort;
-                    config.EnableCemuHookMotion = content._viewmodel.EnableCemuHookMotion;
-                    config.MirrorInput = content._viewmodel.MirrorInput;
-                };
+                Title = LocaleManager.Instance["ControllerMotionTitle"],
+                PrimaryButtonText = LocaleManager.Instance["ControllerSettingsSave"],
+                SecondaryButtonText = "",
+                CloseButtonText = LocaleManager.Instance["ControllerSettingsClose"],
+                Content = content
+            };
+            contentDialog.PrimaryButtonClick += (sender, args) =>
+            {
+                var config = viewmodel.Configuration as InputConfiguration<GamepadInputId, StickInputId>;
+                config.Slot = content._viewmodel.Slot;
+                config.EnableMotion = content._viewmodel.EnableMotion;
+                config.Sensitivity = content._viewmodel.Sensitivity;
+                config.GyroDeadzone = content._viewmodel.GyroDeadzone;
+                config.AltSlot = content._viewmodel.AltSlot;
+                config.DsuServerHost = content._viewmodel.DsuServerHost;
+                config.DsuServerPort = content._viewmodel.DsuServerPort;
+                config.EnableCemuHookMotion = content._viewmodel.EnableCemuHookMotion;
+                config.MirrorInput = content._viewmodel.MirrorInput;
+            };
 
-                await contentDialog.ShowAsync();
-            }
+            await contentDialog.ShowAsync();
         }
     }
 }

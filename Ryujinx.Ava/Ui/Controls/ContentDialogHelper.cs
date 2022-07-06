@@ -28,35 +28,32 @@ namespace Ryujinx.Ava.Ui.Controls
         {
             UserResult result = UserResult.None;
 
-            ContentDialog contentDialog = window.ContentDialog;
+            ContentDialog contentDialog = new ContentDialog();
 
             await ShowDialog();
 
             async Task ShowDialog()
             {
-                if (contentDialog != null)
+                contentDialog.Title = title;
+                contentDialog.PrimaryButtonText = primaryButton;
+                contentDialog.SecondaryButtonText = secondaryButton;
+                contentDialog.CloseButtonText = closeButton;
+                contentDialog.Content = CreateDialogTextContent(primaryText, secondaryText, iconSymbol);
+
+                contentDialog.PrimaryButtonCommand = MiniCommand.Create(() =>
                 {
-                    contentDialog.Title = title;
-                    contentDialog.PrimaryButtonText = primaryButton;
-                    contentDialog.SecondaryButtonText = secondaryButton;
-                    contentDialog.CloseButtonText = closeButton;
-                    contentDialog.Content = CreateDialogTextContent(primaryText, secondaryText, iconSymbol);
+                    result = primaryButtonResult;
+                });
+                contentDialog.SecondaryButtonCommand = MiniCommand.Create(() =>
+                {
+                    result = UserResult.No;
+                });
+                contentDialog.CloseButtonCommand = MiniCommand.Create(() =>
+                {
+                    result = UserResult.Cancel;
+                });
 
-                    contentDialog.PrimaryButtonCommand = MiniCommand.Create(() =>
-                    {
-                        result = primaryButtonResult;
-                    });
-                    contentDialog.SecondaryButtonCommand = MiniCommand.Create(() =>
-                    {
-                        result = UserResult.No;
-                    });
-                    contentDialog.CloseButtonCommand = MiniCommand.Create(() =>
-                    {
-                        result = UserResult.Cancel;
-                    });
-
-                    await contentDialog.ShowAsync(ContentDialogPlacement.Popup);
-                };
+                await contentDialog.ShowAsync(ContentDialogPlacement.Popup);
             }
 
             return result;
@@ -78,35 +75,30 @@ namespace Ryujinx.Ava.Ui.Controls
 
             UserResult result = UserResult.None;
 
-            ContentDialog contentDialog = window.ContentDialog;
-
-            Window overlay = window;
-
-            if (contentDialog != null)
+            ContentDialog contentDialog = new ContentDialog
             {
-                contentDialog.PrimaryButtonClick += DeferClose;
-                contentDialog.Title = title;
-                contentDialog.PrimaryButtonText = primaryButton;
-                contentDialog.SecondaryButtonText = secondaryButton;
-                contentDialog.CloseButtonText = closeButton;
-                contentDialog.Content = CreateDialogTextContent(primaryText, secondaryText, iconSymbol); 
-
-                contentDialog.PrimaryButtonCommand = MiniCommand.Create(() =>
+                Title = title,
+                PrimaryButtonText = primaryButton,
+                SecondaryButtonText = secondaryButton,
+                CloseButtonText = closeButton,
+                Content = CreateDialogTextContent(primaryText, secondaryText, iconSymbol),
+                PrimaryButtonCommand = MiniCommand.Create(() =>
                 {
                     result = primaryButton == LocaleManager.Instance["InputDialogYes"] ? UserResult.Yes : UserResult.Ok;
-                });
-                contentDialog.SecondaryButtonCommand = MiniCommand.Create(() =>
-                {
-                    contentDialog.PrimaryButtonClick -= DeferClose;
-                    result = UserResult.No;
-                });
-                contentDialog.CloseButtonCommand = MiniCommand.Create(() =>
-                {
-                    contentDialog.PrimaryButtonClick -= DeferClose;
-                    result = UserResult.Cancel;
-                });
-                await contentDialog.ShowAsync(ContentDialogPlacement.Popup);
+                }),
             };
+            contentDialog.SecondaryButtonCommand = MiniCommand.Create(() =>
+            {
+                contentDialog.PrimaryButtonClick -= DeferClose;
+                result = UserResult.No;
+            });
+            contentDialog.CloseButtonCommand = MiniCommand.Create(() =>
+            {
+                contentDialog.PrimaryButtonClick -= DeferClose;
+                result = UserResult.Cancel;
+            });
+            contentDialog.PrimaryButtonClick += DeferClose;
+            await contentDialog.ShowAsync(ContentDialogPlacement.Popup);
 
             return result;
 
@@ -141,7 +133,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
                 if (doWhileDeferred != null)
                 {
-                    await doWhileDeferred(overlay);
+                    await doWhileDeferred(window);
 
                     deferResetEvent.Set();
                 }
