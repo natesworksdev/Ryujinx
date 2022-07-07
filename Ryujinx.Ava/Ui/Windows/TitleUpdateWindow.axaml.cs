@@ -105,7 +105,7 @@ namespace Ryujinx.Ava.Ui.Windows
             }
             else
             {
-                TitleUpdateModel selected = TitleUpdates.Where(x => x.Path == _titleUpdateWindowData.Selected).FirstOrDefault();
+                TitleUpdateModel selected = TitleUpdates.FirstOrDefault(x => x.Path == _titleUpdateWindowData.Selected);
                 List<TitleUpdateModel> enabled = TitleUpdates.Where(x => x.IsEnabled).ToList();
 
                 foreach (TitleUpdateModel update in enabled)
@@ -168,16 +168,11 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             if (removeSelectedOnly)
             {
-                List<TitleUpdateModel> enabled = TitleUpdates.ToList().FindAll(x => x.IsEnabled);
-
-                foreach (TitleUpdateModel update in enabled)
-                {
-                    TitleUpdates.Remove(update);
-                }
+                TitleUpdates.RemoveAll(TitleUpdates.Where(x => x.IsEnabled && !x.IsNoUpdate).ToList());
             }
             else
             {
-                TitleUpdates.Clear();
+                TitleUpdates.RemoveAll(TitleUpdates.Where(x => !x.IsNoUpdate).ToList());
             }
 
             SortUpdates();

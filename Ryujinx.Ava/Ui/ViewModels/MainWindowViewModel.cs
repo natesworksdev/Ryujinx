@@ -1262,7 +1262,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
             if (selection != null)
             {
-                DlcManagerWindow dlcManager = new(_owner.VirtualFileSystem, selection.TitleId, selection.TitleName);
+                DlcManagerWindow dlcManager = new(_owner.VirtualFileSystem, ulong.Parse(selection.TitleId, NumberStyles.HexNumber), selection.TitleName);
 
                 await dlcManager.ShowDialog(_owner);
             }

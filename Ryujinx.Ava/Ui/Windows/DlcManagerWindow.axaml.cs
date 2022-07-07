@@ -34,10 +34,10 @@ namespace Ryujinx.Ava.Ui.Windows
 
         public AvaloniaList<DlcModel> Dlcs { get; set; }
         public Grid DlcGrid { get; private set; }
-        public string TitleId { get; }
+        public ulong TitleId { get; }
         public string TitleName { get; }
 
-        public string Heading => string.Format(LocaleManager.Instance["DlcWindowHeading"], TitleName, TitleId.ToUpper());
+        public string Heading => string.Format(LocaleManager.Instance["DlcWindowHeading"], TitleName, TitleId.ToString("X16"));
 
         public DlcManagerWindow()
         {
@@ -49,13 +49,13 @@ namespace Ryujinx.Ava.Ui.Windows
             Title = $"Ryujinx {Program.Version} - " + LocaleManager.Instance["DlcWindowTitle"];
         }
 
-        public DlcManagerWindow(VirtualFileSystem virtualFileSystem, string titleId, string titleName)
+        public DlcManagerWindow(VirtualFileSystem virtualFileSystem, ulong titleId, string titleName)
         {
             VirtualFileSystem = virtualFileSystem;
             TitleId = titleId;
             TitleName = titleName;
 
-            _dlcJsonPath = Path.Combine(AppDataManager.GamesDirPath, titleId, "dlc.json");
+            _dlcJsonPath = Path.Combine(AppDataManager.GamesDirPath, titleId.ToString("x16"), "dlc.json");
 
             try
             {
@@ -162,7 +162,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
                     if (nca.Header.ContentType == NcaContentType.PublicData)
                     {
-                        if ((nca.Header.TitleId & 0xFFFFFFFFFFFFE000).ToString("x16") != TitleId)
+                        if ((nca.Header.TitleId & 0xFFFFFFFFFFFFE000) != TitleId)
                         {
                             break;
                         }
@@ -184,7 +184,7 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             if (removeSelectedOnly)
             {
-               Dlcs.RemoveAll(Dlcs.Where(x => x.IsEnabled));
+               Dlcs.RemoveAll(Dlcs.Where(x => x.IsEnabled).ToList());
             }
             else
             {
