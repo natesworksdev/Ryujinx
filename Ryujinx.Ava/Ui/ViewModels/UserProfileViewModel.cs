@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.VisualTree;
+using FluentAvalonia.UI.Media.Animation;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.Windows;
@@ -16,7 +17,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
     {
         private const uint MaxProfileNameLength = 0x20;
 
-        private readonly UserSelector _owner;
+        private readonly UserProfileWindow _owner;
 
         private UserProfile _selectedProfile;
         private UserProfile _highlightedProfile;
@@ -27,7 +28,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             Profiles = new ObservableCollection<UserProfile>();
         }
 
-        public UserProfileViewModel(UserSelector owner) : this()
+        public UserProfileViewModel(UserProfileWindow owner) : this()
         {
             _owner = owner;
 
@@ -97,60 +98,15 @@ namespace Ryujinx.Ava.Ui.ViewModels
             }
         }
 
-        public async void ChooseProfileImage()
+        public void AddUser()
         {
-            await SelectProfileImage();
+            UserProfile userProfile = null;
+            _owner.ContentFrame.Navigate(typeof(UserEditor), (this._owner, userProfile, true), new SlideNavigationTransitionInfo());
         }
 
-        public async Task SelectProfileImage(bool isNewUser = false)
+        public void EditUser()
         {
-            ProfileImageSelectionDialog selectionDialog = new(_owner.ContentManager);
-
-            await selectionDialog.ShowDialog(_owner.GetVisualRoot() as Window);
-
-            if (selectionDialog.BufferImageProfile != null)
-            {
-                if (isNewUser)
-                {
-                    if (!string.IsNullOrWhiteSpace(_tempUserName))
-                    {
-                        _owner.AccountManager.AddUser(_tempUserName, selectionDialog.BufferImageProfile);
-                    }
-                }
-                else if (SelectedProfile != null)
-                {
-                    _owner.AccountManager.SetUserImage(SelectedProfile.UserId, selectionDialog.BufferImageProfile);
-                    SelectedProfile.Image = selectionDialog.BufferImageProfile;
-
-                    SelectedProfile = null;
-                }
-
-                LoadProfiles();
-            }
-        }
-
-        public async void AddUser()
-        {
-            var dlgTitle = LocaleManager.Instance["InputDialogAddNewProfileTitle"];
-            var dlgMainText = LocaleManager.Instance["InputDialogAddNewProfileHeader"];
-            var dlgSubText = string.Format(LocaleManager.Instance["InputDialogAddNewProfileSubtext"],
-                MaxProfileNameLength);
-
-            _tempUserName =
-                await ContentDialogHelper.CreateInputDialog(dlgTitle, dlgMainText, dlgSubText,
-                    MaxProfileNameLength);
-
-            if (!string.IsNullOrWhiteSpace(_tempUserName))
-            {
-                await SelectProfileImage(true);
-            }
-
-            _tempUserName = String.Empty;
-        }
-
-        public async void EditUser()
-        {
-            //_owner.ContentFrame.Navigate();
+            _owner.ContentFrame.Navigate(typeof(UserEditor), (this._owner, _highlightedProfile, false), new SlideNavigationTransitionInfo());
         }
 
         public async void DeleteUser()

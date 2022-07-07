@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using FluentAvalonia.UI.Controls;
+using FluentAvalonia.UI.Navigation;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.ViewModels;
 using Ryujinx.HLE.FileSystem;
@@ -14,55 +15,32 @@ namespace Ryujinx.Ava.Ui.Controls
 {
     public partial class UserSelector : UserControl
     {
-        public AccountManager AccountManager { get; }
-        public ContentManager ContentManager { get; }
-
+        private UserProfileWindow _parent;
         public UserProfileViewModel ViewModel { get; set; }
         
         public UserSelector()
         {
             InitializeComponent();
-        }
-        
-        public UserSelector(AccountManager accountManager, ContentManager contentManager,
-            VirtualFileSystem virtualFileSystem)
-        {
-            AccountManager = accountManager;
-            ContentManager = contentManager;
-            ViewModel = new UserProfileViewModel(this);
 
-            DataContext = ViewModel;
-
-            InitializeComponent();
-            
-            if (contentManager.GetCurrentFirmwareVersion() != null)
+            if (Program.PreviewerDetached)
             {
-                Task.Run(() =>
+                AddHandler(Frame.NavigatedToEvent, (s, e) =>
                 {
-                    AvatarProfileViewModel.PreloadAvatars(contentManager, virtualFileSystem);
-                });
+                    NavigatedTo(e);
+                }, Avalonia.Interactivity.RoutingStrategies.Direct);
             }
         }
-
-        public static async Task Show(AccountManager ownerAccountManager, ContentManager ownerContentManager, VirtualFileSystem ownerVirtualFileSystem)
+        
+        private void NavigatedTo(NavigationEventArgs arg)
         {
-            var content = new UserSelector(ownerAccountManager, ownerContentManager, ownerVirtualFileSystem);
-            ContentDialog contentDialog = new ContentDialog
+            if (Program.PreviewerDetached)
             {
-                Title = LocaleManager.Instance["UserProfileWindowTitle"],
-                PrimaryButtonText = "",
-                SecondaryButtonText = "",
-                CloseButtonText = LocaleManager.Instance["UserProfilesClose"],
-                Content = content,
-                Padding = new Thickness(2, 2)
-            };
+                var args = ((UserProfileWindow parent, UserProfileViewModel viewModel)) arg.Parameter;
+                _parent = args.parent;
+                ViewModel = args.viewModel;
 
-            contentDialog.Closed += (sender, args) =>
-            {
-                content.ViewModel.Dispose();
-            };
-
-            await contentDialog.ShowAsync();
+                DataContext = ViewModel;
+            }
         }
         
         private void ProfilesList_DoubleTapped(object sender, RoutedEventArgs e)
@@ -75,7 +53,7 @@ namespace Ryujinx.Ava.Ui.Controls
                 {
                     ViewModel.SelectedProfile = ViewModel.Profiles[selectedIndex];
 
-                    AccountManager.OpenUser(ViewModel.SelectedProfile.UserId);
+                    _parent?.AccountManager?.OpenUser(ViewModel.SelectedProfile.UserId);
 
                     ViewModel.LoadProfiles();
 
