@@ -150,7 +150,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public async void EditUser()
         {
-            
+            //_owner.ContentFrame.Navigate();
         }
 
         public async void DeleteUser()

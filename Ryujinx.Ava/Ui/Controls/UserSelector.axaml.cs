@@ -12,14 +12,12 @@ using UserProfile = Ryujinx.Ava.Ui.Models.UserProfile;
 
 namespace Ryujinx.Ava.Ui.Controls
 {
-    public class UserSelector : UserControl
+    public partial class UserSelector : UserControl
     {
         public AccountManager AccountManager { get; }
         public ContentManager ContentManager { get; }
 
         public UserProfileViewModel ViewModel { get; set; }
-        
-        public Frame ContentFrame { get; set; }
         
         public UserSelector()
         {
@@ -44,13 +42,6 @@ namespace Ryujinx.Ava.Ui.Controls
                     AvatarProfileViewModel.PreloadAvatars(contentManager, virtualFileSystem);
                 });
             }
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-
-            ContentFrame = this.FindControl<Frame>("ContentFrame");
         }
 
         public static async Task Show(AccountManager ownerAccountManager, ContentManager ownerContentManager, VirtualFileSystem ownerVirtualFileSystem)

@@ -12,7 +12,7 @@ using Image = SixLabors.ImageSharp.Image;
 
 namespace Ryujinx.Ava.Ui.Controls
 {
-    public class ProfileImageSelectionDialog : StyleableWindow
+    public partial class ProfileImageSelectionDialog : StyleableWindow
     {
         private readonly ContentManager _contentManager;
 
@@ -37,11 +37,6 @@ namespace Ryujinx.Ava.Ui.Controls
 #if DEBUG
             this.AttachDevTools();
 #endif
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
 
         private async void Import_OnClick(object sender, RoutedEventArgs e)

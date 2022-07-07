@@ -8,7 +8,7 @@ using System;
 
 namespace Ryujinx.Ava.Ui.Windows
 {
-    public class AvatarWindow : StyleableWindow
+    public partial class AvatarWindow : StyleableWindow
     {
         public AvatarWindow(ContentManager contentManager)
         {
@@ -41,11 +41,6 @@ namespace Ryujinx.Ava.Ui.Windows
         public byte[] SelectedImage { get; set; }
 
         internal AvatarProfileViewModel ViewModel { get; set; }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-        }
 
         protected override void OnClosed(EventArgs e)
         {

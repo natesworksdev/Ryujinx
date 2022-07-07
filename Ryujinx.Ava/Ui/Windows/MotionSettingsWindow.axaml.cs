@@ -9,13 +9,14 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.Ui.Windows
 {
-    public class MotionSettingsWindow : UserControl
+    public partial class MotionSettingsWindow : UserControl
     {
         private readonly InputConfiguration<GamepadInputId, StickInputId> _viewmodel;
 
         public MotionSettingsWindow()
         {
             InitializeComponent();
+            DataContext = _viewmodel;
         }
 
         public MotionSettingsWindow(ControllerSettingsViewModel viewmodel)
@@ -36,13 +37,7 @@ namespace Ryujinx.Ava.Ui.Windows
             };
 
             InitializeComponent();
-        }
-
-        private void InitializeComponent()
-        {
             DataContext = _viewmodel;
-
-            AvaloniaXamlLoader.Load(this);
         }
 
         public static async Task Show(ControllerSettingsViewModel viewmodel)

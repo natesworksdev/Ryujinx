@@ -27,14 +27,14 @@ using LibHac.Tools.FsSystem;
 
 namespace Ryujinx.Ava.Ui.Windows
 {
-    public class TitleUpdateWindow : StyleableWindow
+    public partial class TitleUpdateWindow : StyleableWindow
     {
         private readonly string _updateJsonPath;
         private TitleUpdateMetadata _titleUpdateWindowData;
 
         public VirtualFileSystem VirtualFileSystem { get; }
 
-        internal AvaloniaList<TitleUpdateModel> TitleUpdates { get; set; }
+        internal AvaloniaList<TitleUpdateModel> TitleUpdates { get; set; } = new AvaloniaList<TitleUpdateModel>();
         public string TitleId { get; }
         public string TitleName { get; }
 
@@ -81,13 +81,6 @@ namespace Ryujinx.Ava.Ui.Windows
         private void AttachDebugDevTools()
         {
             this.AttachDevTools();
-        }
-
-        private void InitializeComponent()
-        {
-            TitleUpdates = new AvaloniaList<TitleUpdateModel>();
-
-            AvaloniaXamlLoader.Load(this);
         }
 
         private void LoadUpdates()

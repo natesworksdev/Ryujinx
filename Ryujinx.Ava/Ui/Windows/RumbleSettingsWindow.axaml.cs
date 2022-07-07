@@ -9,13 +9,14 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.Ui.Windows
 {
-    public class RumbleSettingsWindow : UserControl
+    public partial class RumbleSettingsWindow : UserControl
     {
         private readonly InputConfiguration<GamepadInputId, StickInputId> _viewmodel;
 
         public RumbleSettingsWindow()
         {
             InitializeComponent();
+            DataContext = _viewmodel;
         }
 
         public RumbleSettingsWindow(ControllerSettingsViewModel viewmodel)
@@ -28,13 +29,7 @@ namespace Ryujinx.Ava.Ui.Windows
             };
 
             InitializeComponent();
-        }
-
-        private void InitializeComponent()
-        {
             DataContext = _viewmodel;
-
-            AvaloniaXamlLoader.Load(this);
         }
 
         public static async Task Show(ControllerSettingsViewModel viewmodel)

@@ -25,7 +25,7 @@ using Path = System.IO.Path;
 
 namespace Ryujinx.Ava.Ui.Windows
 {
-    public class DlcManagerWindow : StyleableWindow
+    public partial class DlcManagerWindow : StyleableWindow
     {
         private readonly List<DlcContainer> _dlcContainerList;
         private readonly string _dlcJsonPath;
@@ -80,15 +80,6 @@ namespace Ryujinx.Ava.Ui.Windows
         private void AttachDebugDevTools()
         {
             this.AttachDevTools();
-        }
-
-        private void InitializeComponent()
-        {
-            Dlcs = new AvaloniaList<DlcModel>();
-
-            AvaloniaXamlLoader.Load(this);
-
-            DlcGrid = this.FindControl<Grid>("DlcGrid");
         }
 
         private void LoadDlcs()

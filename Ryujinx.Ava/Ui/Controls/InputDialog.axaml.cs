@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.Ui.Controls
 {
-    public class InputDialog : UserControl
+    public partial class InputDialog : UserControl
     {
         public string Message { get; set; }
         public string Input { get; set; }
@@ -24,18 +24,11 @@ namespace Ryujinx.Ava.Ui.Controls
             MaxLength = maxLength;
 
             DataContext = this;
-
-            InitializeComponent();
         }
 
         public InputDialog()
         {
             InitializeComponent();
-        }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
         }
 
         public static async Task<(UserResult Result, string Input)> ShowInputDialog(string title, string message,
