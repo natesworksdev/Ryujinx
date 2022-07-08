@@ -230,6 +230,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             _syncManager = new SyncManager(this, _device);
             _pipeline = new PipelineFull(this, _device);
+            _pipeline.Initialize();
 
             HelperShader = new HelperShader(this, _device);
 

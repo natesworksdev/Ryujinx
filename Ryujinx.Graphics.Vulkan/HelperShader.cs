@@ -20,6 +20,7 @@ namespace Ryujinx.Graphics.Vulkan
         public HelperShader(VulkanGraphicsDevice gd, Device device)
         {
             _pipeline = new PipelineHelperShader(gd, device);
+            _pipeline.Initialize();
 
             static GAL.SamplerCreateInfo GetSamplerCreateInfo(MinFilter minFilter, MagFilter magFilter)
             {
