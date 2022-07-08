@@ -36,13 +36,6 @@ namespace Ryujinx.Graphics.Vulkan
         internal KhrDrawIndirectCount DrawIndirectCountApi { get; private set; }
         internal ExtDebugReport DebugReportApi { get; private set; }
 
-        internal bool SupportsIndexTypeUint8 { get; private set; }
-        internal bool SupportsCustomBorderColor { get; private set; }
-        internal bool SupportsIndirectParameters { get; private set; }
-        internal bool SupportsFragmentShaderInterlock { get; private set; }
-        internal bool SupportsGeometryShaderPassthrough { get; private set; }
-        internal bool SupportsSubgroupSizeControl { get; private set; }
-
         internal uint QueueFamilyIndex { get; private set; }
         public bool IsOffScreen { get; }
         internal Queue Queue { get; private set; }
@@ -122,12 +115,6 @@ namespace Ryujinx.Graphics.Vulkan
             FormatCapabilities = new FormatCapabilities(Api, _physicalDevice);
 
             var supportedFeatures = Api.GetPhysicalDeviceFeature(_physicalDevice);
-            SupportsIndexTypeUint8 = supportedExtensions.Contains("VK_EXT_index_type_uint8");
-            SupportsCustomBorderColor = supportedExtensions.Contains("VK_EXT_custom_border_color");
-            SupportsIndirectParameters = supportedExtensions.Contains(KhrDrawIndirectCount.ExtensionName);
-            SupportsFragmentShaderInterlock = supportedExtensions.Contains("VK_EXT_fragment_shader_interlock");
-            SupportsGeometryShaderPassthrough = supportedExtensions.Contains("VK_NV_geometry_shader_passthrough");
-            SupportsSubgroupSizeControl = supportedExtensions.Contains("VK_EXT_subgroup_size_control");
 
             if (Api.TryGetDeviceExtension(_instance, _device, out ExtConditionalRendering conditionalRenderingApi))
             {
@@ -171,7 +158,7 @@ namespace Ryujinx.Graphics.Vulkan
                 SType = StructureType.PhysicalDeviceSubgroupSizeControlPropertiesExt
             };
 
-            if (SupportsSubgroupSizeControl)
+            if (Capabilities.SupportsSubgroupSizeControl)
             {
                 properties2.PNext = &propertiesSubgroupSizeControl;
             }
@@ -209,6 +196,12 @@ namespace Ryujinx.Graphics.Vulkan
             Api.GetPhysicalDeviceFeatures2(_physicalDevice, &features2);
 
             Capabilities = new HardwareCapabilities(
+                supportedExtensions.Contains("VK_EXT_index_type_uint8"),
+                supportedExtensions.Contains("VK_EXT_custom_border_color"),
+                supportedExtensions.Contains(KhrDrawIndirectCount.ExtensionName),
+                supportedExtensions.Contains("VK_EXT_fragment_shader_interlock"),
+                supportedExtensions.Contains("VK_NV_geometry_shader_passthrough"),
+                supportedExtensions.Contains("VK_EXT_subgroup_size_control"),
                 supportedExtensions.Contains(ExtConditionalRendering.ExtensionName),
                 supportedExtensions.Contains(ExtExtendedDynamicState.ExtensionName),
                 features2.Features.MultiViewport,
@@ -366,7 +359,6 @@ namespace Ryujinx.Graphics.Vulkan
 
         internal void FlushAllCommands()
         {
-            // System.Console.WriteLine("flush commands " + caller);
             _pipeline?.FlushCommandsImpl();
         }
 
@@ -421,9 +413,9 @@ namespace Ryujinx.Graphics.Vulkan
                 supports3DTextureCompression: true,
                 supportsBgraFormat: true,
                 supportsR4G4Format: false,
-                supportsFragmentShaderInterlock: SupportsFragmentShaderInterlock,
+                supportsFragmentShaderInterlock: Capabilities.SupportsFragmentShaderInterlock,
                 supportsFragmentShaderOrderingIntel: false,
-                supportsGeometryShaderPassthrough: SupportsGeometryShaderPassthrough,
+                supportsGeometryShaderPassthrough: Capabilities.SupportsGeometryShaderPassthrough,
                 supportsImageLoadFormatted: features.ShaderStorageImageReadWithoutFormat,
                 supportsMismatchingViewFormat: true,
                 supportsCubemapView: !IsAmdGcn,
@@ -431,7 +423,7 @@ namespace Ryujinx.Graphics.Vulkan
                 supportsShaderBallot: false,
                 supportsTextureShadowLod: false,
                 supportsViewportSwizzle: false,
-                supportsIndirectParameters: SupportsIndirectParameters,
+                supportsIndirectParameters: Capabilities.SupportsIndirectParameters,
                 maximumUniformBuffersPerStage: Constants.MaxUniformBuffersPerStage,
                 maximumStorageBuffersPerStage: Constants.MaxStorageBuffersPerStage,
                 maximumTexturesPerStage: Constants.MaxTexturesPerStage,

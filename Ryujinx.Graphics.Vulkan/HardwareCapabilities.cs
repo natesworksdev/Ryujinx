@@ -4,6 +4,12 @@ namespace Ryujinx.Graphics.Vulkan
 {
     struct HardwareCapabilities
     {
+        public readonly bool SupportsIndexTypeUint8;
+        public readonly bool SupportsCustomBorderColor;
+        public readonly bool SupportsIndirectParameters;
+        public readonly bool SupportsFragmentShaderInterlock;
+        public readonly bool SupportsGeometryShaderPassthrough;
+        public readonly bool SupportsSubgroupSizeControl;
         public readonly bool SupportsConditionalRendering;
         public readonly bool SupportsExtendedDynamicState;
         public readonly bool SupportsMultiView;
@@ -17,6 +23,12 @@ namespace Ryujinx.Graphics.Vulkan
         public readonly ShaderStageFlags RequiredSubgroupSizeStages;
 
         public HardwareCapabilities(
+            bool supportsIndexTypeUint8,
+            bool supportsCustomBorderColor,
+            bool supportsIndirectParameters,
+            bool supportsFragmentShaderInterlock,
+            bool supportsGeometryShaderPassthrough,
+            bool supportsSubgroupSizeControl,
             bool supportsConditionalRendering,
             bool supportsExtendedDynamicState,
             bool supportsMultiView,
@@ -29,6 +41,12 @@ namespace Ryujinx.Graphics.Vulkan
             uint maxSubgroupSize,
             ShaderStageFlags requiredSubgroupSizeStages)
         {
+            SupportsIndexTypeUint8 = supportsIndexTypeUint8;
+            SupportsCustomBorderColor = supportsCustomBorderColor;
+            SupportsIndirectParameters = supportsIndirectParameters;
+            SupportsFragmentShaderInterlock = supportsFragmentShaderInterlock;
+            SupportsGeometryShaderPassthrough = supportsGeometryShaderPassthrough;
+            SupportsSubgroupSizeControl = supportsSubgroupSizeControl;
             SupportsConditionalRendering = supportsConditionalRendering;
             SupportsExtendedDynamicState = supportsExtendedDynamicState;
             SupportsMultiView = supportsMultiView;

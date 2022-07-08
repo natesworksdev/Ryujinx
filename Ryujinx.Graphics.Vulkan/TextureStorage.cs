@@ -109,8 +109,6 @@ namespace Ryujinx.Graphics.Vulkan
                 flags |= ImageCreateFlags.ImageCreate2DArrayCompatibleBit;
             }
 
-            // System.Console.WriteLine("create image " + type + " " + format + " " + levels + " " + layers + " " + usage + " " + flags);
-
             var imageCreateInfo = new ImageCreateInfo()
             {
                 SType = StructureType.ImageCreateInfo,

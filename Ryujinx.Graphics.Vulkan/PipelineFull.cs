@@ -199,10 +199,8 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public void FlushCommandsImpl([System.Runtime.CompilerServices.CallerMemberName] string caller = "")
+        public void FlushCommandsImpl()
         {
-            // System.Console.WriteLine("flush by " + caller);
-
             EndRenderPass();
 
             foreach (var queryPool in _activeQueries)
