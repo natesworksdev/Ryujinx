@@ -539,7 +539,6 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             base.OnOpened(e);
 
-
             CheckLaunchState();
         }
 
