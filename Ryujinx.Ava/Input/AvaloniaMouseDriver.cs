@@ -33,9 +33,7 @@ namespace Ryujinx.Ava.Input
             PressedButtons = new bool[(int)MouseButton.Count];
 
             _size = new Size((int)parent.Bounds.Width, (int)parent.Bounds.Height);
-            IObservable<Rect> resizeObservable = parent.GetObservable(Control.BoundsProperty);
-
-            resizeObservable.Subscribe(Resized);
+            parent.GetObservable(Control.BoundsProperty).Subscribe(Resized);
         }
 
         private void Resized(Rect rect)
