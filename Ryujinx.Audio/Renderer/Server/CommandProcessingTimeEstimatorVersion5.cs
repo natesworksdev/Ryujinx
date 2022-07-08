@@ -1,4 +1,4 @@
-﻿//
+//
 // Copyright (c) 2019-2022 Ryujinx
 //
 // This program is free software: you can redistribute it and/or modify
