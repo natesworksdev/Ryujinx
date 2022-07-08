@@ -241,8 +241,6 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void Draw(int vertexCount, int instanceCount, int firstVertex, int firstInstance)
         {
-            // System.Console.WriteLine("draw");
-
             if (!_program.IsLinked)
             {
                 return;
@@ -270,8 +268,6 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void DrawIndexed(int indexCount, int instanceCount, int firstIndex, int firstVertex, int firstInstance)
         {
-            // System.Console.WriteLine("draw indexed");
-
             if (!_program.IsLinked)
             {
                 return;
@@ -355,7 +351,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void MultiDrawIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride)
         {
-            if (!Gd.SupportsIndirectParameters)
+            if (!Gd.Capabilities.SupportsIndirectParameters)
             {
                 throw new NotSupportedException();
             }
@@ -385,7 +381,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void MultiDrawIndexedIndirectCount(BufferRange indirectBuffer, BufferRange parameterBuffer, int maxDrawCount, int stride)
         {
-            if (!Gd.SupportsIndirectParameters)
+            if (!Gd.Capabilities.SupportsIndirectParameters)
             {
                 throw new NotSupportedException();
             }
@@ -501,7 +497,7 @@ namespace Ryujinx.Graphics.Vulkan
                 int offset = buffer.Offset;
                 int size = buffer.Size;
 
-                if (type == GAL.IndexType.UByte && !Gd.SupportsIndexTypeUint8)
+                if (type == GAL.IndexType.UByte && !Gd.Capabilities.SupportsIndexTypeUint8)
                 {
                     ib = Gd.BufferManager.GetBufferI8ToI16(Cbs, buffer.Handle, offset, size);
                     offset = 0;
@@ -1095,9 +1091,8 @@ namespace Ryujinx.Graphics.Vulkan
             _framebuffer = hasFramebuffer ? FramebufferParams.Create(Gd.Api, Cbs, _renderPass) : null;
         }
 
-        protected void SignalStateChange([System.Runtime.CompilerServices.CallerMemberName] string caller = "")
+        protected void SignalStateChange()
         {
-            // System.Console.WriteLine("state change by " + caller);
             _stateDirty = true;
         }
 
@@ -1201,7 +1196,6 @@ namespace Ryujinx.Graphics.Vulkan
             if (_renderPassActive)
             {
                 PauseTransformFeedbackInternal();
-                // System.Console.WriteLine("render pass ended " + caller);
                 Gd.Api.CmdEndRenderPass(CommandBuffer);
                 SignalRenderPassEnd();
                 _renderPassActive = false;

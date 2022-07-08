@@ -49,7 +49,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             SamplerCustomBorderColorCreateInfoEXT customBorderColor;
 
-            if (cantConstrain && gd.SupportsCustomBorderColor)
+            if (cantConstrain && gd.Capabilities.SupportsCustomBorderColor)
             {
                 var color = new ClearColorValue(
                     info.BorderColor.Red,

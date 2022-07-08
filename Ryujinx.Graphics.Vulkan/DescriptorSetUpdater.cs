@@ -250,8 +250,6 @@ namespace Ryujinx.Graphics.Vulkan
                 return;
             }
 
-            // System.Console.WriteLine("modified " + _dirty + " " + _modified + " on program " + _program.GetHashCode().ToString("X"));
-
             if (_dirty.HasFlag(DirtyFlags.Uniform))
             {
                 if (_program.UsePushDescriptors)

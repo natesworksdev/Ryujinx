@@ -74,7 +74,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 usage |= BufferUsageFlags.BufferUsageConditionalRenderingBitExt;
             }
-            else if (gd.SupportsIndirectParameters)
+            else if (gd.Capabilities.SupportsIndirectParameters)
             {
                 usage |= BufferUsageFlags.BufferUsageIndirectBufferBit;
             }

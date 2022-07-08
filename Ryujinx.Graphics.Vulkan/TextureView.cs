@@ -16,7 +16,6 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly Auto<DisposableImageView> _imageView;
         private readonly Auto<DisposableImageView> _imageViewIdentity;
         private readonly Auto<DisposableImageView> _imageView2dArray;
-        private BufferHolder _flushStorage;
         private Dictionary<GAL.Format, TextureView> _selfManagedViews;
 
         private TextureCreateInfo _info;
@@ -1098,7 +1097,6 @@ namespace Ryujinx.Graphics.Vulkan
                     _imageView.Dispose();
                     _imageViewIdentity.Dispose();
                     _imageView2dArray?.Dispose();
-                    _flushStorage?.Dispose();
 
                     Storage.DecrementViewsCount();
                 }

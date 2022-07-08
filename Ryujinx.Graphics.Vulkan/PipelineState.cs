@@ -339,7 +339,7 @@ namespace Ryujinx.Graphics.Vulkan
                 return pipeline;
             }
 
-            if (gd.SupportsSubgroupSizeControl)
+            if (gd.Capabilities.SupportsSubgroupSizeControl)
             {
                 UpdateStageRequiredSubgroupSizes(gd, 1);
             }
@@ -530,7 +530,7 @@ namespace Ryujinx.Graphics.Vulkan
                     pDynamicState = &pipelineDynamicStateCreateInfo;
                 }
 
-                if (gd.SupportsSubgroupSizeControl)
+                if (gd.Capabilities.SupportsSubgroupSizeControl)
                 {
                     UpdateStageRequiredSubgroupSizes(gd, (int)StagesCount);
                 }

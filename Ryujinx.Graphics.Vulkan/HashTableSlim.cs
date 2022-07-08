@@ -88,15 +88,6 @@ namespace Ryujinx.Graphics.Vulkan
         {
             int hashCode = key.GetHashCode();
 
-            /* for (int i = 0; i < _hashTable.Length; i++)
-            {
-                var b = _hashTable[i];
-                if (b != null)
-                {
-                    System.Console.WriteLine(typeof(K).Name + " " + i + " " + b.Length);
-                }
-            } */
-
             var bucket = _hashTable[hashCode & TotalBucketsMask];
             if (bucket != null)
             {
