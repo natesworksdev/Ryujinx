@@ -93,12 +93,15 @@ namespace Ryujinx.Graphics.Vulkan
             var defaultScale = new Vector4<float> { X = 1f, Y = 0f, Z = 0f, W = 0f };
             new Span<Vector4<float>>(_renderScale).Fill(defaultScale);
 
-            SupportBufferUpdater = new SupportBufferUpdater(gd);
-            SupportBufferUpdater.UpdateRenderScale(_renderScale, 0, SupportBuffer.RenderScaleMaxCount);
-
             _newState.Initialize();
             _newState.LineWidth = 1f;
             _newState.SamplesCount = 1;
+        }
+
+        public void Initialize()
+        {
+            SupportBufferUpdater = new SupportBufferUpdater(Gd);
+            SupportBufferUpdater.UpdateRenderScale(_renderScale, 0, SupportBuffer.RenderScaleMaxCount);
         }
 
         public unsafe void Barrier()
