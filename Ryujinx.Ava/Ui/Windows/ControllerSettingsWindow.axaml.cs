@@ -127,9 +127,7 @@ namespace Ryujinx.Ava.Ui.Windows
             }
             else if (device.Type == Models.DeviceType.Controller)
             {
-                InputConfig config = ConfigurationState.Instance.Hid.InputConfig.Value.Find(inputConfig => inputConfig.Id == ViewModel.SelectedGamepad.Id);
-
-                assigner = new GamepadButtonAssigner(ViewModel.SelectedGamepad, (config as StandardControllerInputConfig).TriggerThreshold, forStick);
+                assigner = new GamepadButtonAssigner(ViewModel.SelectedGamepad, (ViewModel.Config as StandardControllerInputConfig).TriggerThreshold, forStick);
             }
             else
             {
