@@ -56,7 +56,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             _amiiboSeries = new ObservableCollection<string>();
             _amiibos = new AvaloniaList<Amiibo.AmiiboApi>();
 
-            _amiiboLogoBytes = EmbeddedResources.Read("Ryujinx.Ava/Assets/Images/Logo_Amiibo.png");
+            _amiiboLogoBytes = EmbeddedResources.Read("Ryujinx.Ui.Common/Resources/Logo_Amiibo.png");
 
             _ = LoadContentAsync();
         }
