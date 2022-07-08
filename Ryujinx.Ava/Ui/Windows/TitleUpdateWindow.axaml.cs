@@ -175,6 +175,8 @@ namespace Ryujinx.Ava.Ui.Windows
                 TitleUpdates.RemoveAll(TitleUpdates.Where(x => !x.IsNoUpdate).ToList());
             }
 
+            TitleUpdates.FirstOrDefault(x => x.IsNoUpdate).IsEnabled = true;
+
             SortUpdates();
         }
 
