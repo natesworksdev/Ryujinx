@@ -8,6 +8,7 @@ using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Controls;
+using Ryujinx.Ava.Ui.Models;
 using Ryujinx.Ava.Ui.ViewModels;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Configuration.Hid.Controller;
@@ -182,8 +183,8 @@ namespace Ryujinx.Ava.Ui.Windows
 
                 if (e.AddedItems.Count > 0)
                 {
-                    (PlayerIndex key, _) = (KeyValuePair<PlayerIndex, string>)e.AddedItems[0];
-                    ViewModel.PlayerId = key;
+                    var player = (PlayerModel)e.AddedItems[0];
+                    ViewModel.PlayerId = player.Id;
                 }
             }
         }
