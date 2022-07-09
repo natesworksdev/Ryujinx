@@ -543,7 +543,7 @@
   "OpenFileDialogTitle": "选择支持的文件格式",
   "OpenFolderDialogTitle": "选择一个包含解包游戏的文件夹",
   "AllSupportedFormats": "全部支持的格式",
-  "RyujinxUpdater": "Ryujinx 更新程序"
+  "RyujinxUpdater": "Ryujinx 更新程序",
   "SettingsTabHotkeys": "快捷键",
   "SettingsTabHotkeysHotkeys": "键盘快捷键",
   "SettingsTabHotkeysToggleVsyncHotkey": "切换 VSync",
