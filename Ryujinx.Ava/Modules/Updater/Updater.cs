@@ -564,13 +564,11 @@ namespace Ryujinx.Modules
             {
                 if (ReleaseInformations.IsFlatHubBuild())
                 {
-                    ContentDialogHelper.CreateWarningDialog(parent,
-                        LocaleManager.Instance["UpdaterDisabledWarningTitle"], LocaleManager.Instance["DialogUpdaterFlatpakNotSupportedMessage"]);
+                    ContentDialogHelper.CreateWarningDialog(LocaleManager.Instance["UpdaterDisabledWarningTitle"], LocaleManager.Instance["DialogUpdaterFlatpakNotSupportedMessage"]);
                 }
                 else
                 {
-                    ContentDialogHelper.CreateWarningDialog(parent,
-                        LocaleManager.Instance["UpdaterDisabledWarningTitle"], LocaleManager.Instance["DialogUpdaterDirtyBuildSubMessage"]);
+                    ContentDialogHelper.CreateWarningDialog(LocaleManager.Instance["UpdaterDisabledWarningTitle"], LocaleManager.Instance["DialogUpdaterDirtyBuildSubMessage"]);
                 }
             }
 
