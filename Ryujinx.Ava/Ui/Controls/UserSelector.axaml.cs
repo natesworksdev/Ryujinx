@@ -1,14 +1,8 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml;
 using FluentAvalonia.UI.Controls;
 using FluentAvalonia.UI.Navigation;
-using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.ViewModels;
-using Ryujinx.HLE.FileSystem;
-using Ryujinx.HLE.HOS.Services.Account.Acc;
-using System.Threading.Tasks;
 using UserProfile = Ryujinx.Ava.Ui.Models.UserProfile;
 
 namespace Ryujinx.Ava.Ui.Controls
