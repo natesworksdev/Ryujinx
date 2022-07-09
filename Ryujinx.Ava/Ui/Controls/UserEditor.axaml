@@ -38,7 +38,7 @@
         </StackPanel>
         <StackPanel Grid.Row="0" Orientation="Vertical" HorizontalAlignment="Stretch" Grid.Column="1" Spacing="10"
                     Margin="5, 10">
-            <TextBox Name="NameBox" Width="300" Text="{Binding Name}"
+            <TextBox Name="NameBox" Width="300" Text="{Binding Name}" MaxLength="{Binding MaxProfileNameLength}"
                      HorizontalAlignment="Stretch" />
             <TextBlock Text="{Binding UserId}" />
         </StackPanel>

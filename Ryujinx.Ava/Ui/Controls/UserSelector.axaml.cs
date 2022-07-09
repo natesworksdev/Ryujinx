@@ -15,9 +15,9 @@ namespace Ryujinx.Ava.Ui.Controls
 {
     public partial class UserSelector : UserControl
     {
-        private UserProfileWindow _parent;
+        private NavigatableDialogHost _parent;
         public UserProfileViewModel ViewModel { get; set; }
-        
+
         public UserSelector()
         {
             InitializeComponent();
@@ -30,19 +30,23 @@ namespace Ryujinx.Ava.Ui.Controls
                 }, Avalonia.Interactivity.RoutingStrategies.Direct);
             }
         }
-        
+
         private void NavigatedTo(NavigationEventArgs arg)
         {
             if (Program.PreviewerDetached)
             {
-                var args = ((UserProfileWindow parent, UserProfileViewModel viewModel)) arg.Parameter;
-                _parent = args.parent;
-                ViewModel = args.viewModel;
+                switch (arg.NavigationMode)
+                {
+                    case NavigationMode.New:
+                        _parent = (NavigatableDialogHost)arg.Parameter;
+                        ViewModel = _parent.ViewModel;
+                        break;
+                }
 
                 DataContext = ViewModel;
             }
         }
-        
+
         private void ProfilesList_DoubleTapped(object sender, RoutedEventArgs e)
         {
             if (sender is ListBox listBox)

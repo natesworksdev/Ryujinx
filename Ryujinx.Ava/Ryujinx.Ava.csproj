@@ -80,6 +80,10 @@
       <DependentUpon>App.axaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+
+    <Compile Update="Ui\Controls\NavigatableDialogHost.axaml.cs">
+      <DependentUpon>NavigatableDialogHost.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Ui\Windows\MainWindow.axaml.cs">
       <DependentUpon>MainWindow.axaml</DependentUpon>
       <SubType>Code</SubType>

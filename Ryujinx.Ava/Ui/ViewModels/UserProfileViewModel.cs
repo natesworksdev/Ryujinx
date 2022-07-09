@@ -1,34 +1,27 @@
-using Avalonia.Controls;
-using Avalonia.VisualTree;
 using FluentAvalonia.UI.Media.Animation;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Controls;
-using Ryujinx.Ava.Ui.Windows;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading.Tasks;
 using UserProfile = Ryujinx.Ava.Ui.Models.UserProfile;
 
 namespace Ryujinx.Ava.Ui.ViewModels
 {
     public class UserProfileViewModel : BaseModel, IDisposable
     {
-        private const uint MaxProfileNameLength = 0x20;
-
-        private readonly UserProfileWindow _owner;
+        private readonly NavigatableDialogHost _owner;
 
         private UserProfile _selectedProfile;
         private UserProfile _highlightedProfile;
-        private string _tempUserName;
 
         public UserProfileViewModel()
         {
             Profiles = new ObservableCollection<UserProfile>();
         }
 
-        public UserProfileViewModel(UserProfileWindow owner) : this()
+        public UserProfileViewModel(NavigatableDialogHost owner) : this()
         {
             _owner = owner;
 
@@ -101,12 +94,12 @@ namespace Ryujinx.Ava.Ui.ViewModels
         public void AddUser()
         {
             UserProfile userProfile = null;
-            _owner.ContentFrame.Navigate(typeof(UserEditor), (this._owner, userProfile, true), new SlideNavigationTransitionInfo());
+            _owner.Navigate(typeof(UserEditor), (this._owner, userProfile, true));
         }
 
         public void EditUser()
         {
-            _owner.ContentFrame.Navigate(typeof(UserEditor), (this._owner, _highlightedProfile, false), new SlideNavigationTransitionInfo());
+            _owner.Navigate(typeof(UserEditor), (this._owner, _highlightedProfile, false));
         }
 
         public async void DeleteUser()

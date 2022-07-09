@@ -33,7 +33,6 @@ namespace Ryujinx.Ava.Ui.Windows
         public VirtualFileSystem VirtualFileSystem { get; }
 
         public AvaloniaList<DlcModel> Dlcs { get; set; }
-        public Grid DlcGrid { get; private set; }
         public ulong TitleId { get; }
         public string TitleName { get; }
 

@@ -568,7 +568,8 @@
   "UpdateWindowTitle": "Manage Game Updates",
   "CheatWindowHeading": "Cheats Available for {0} [{1}]",
   "DlcWindowHeading": "DLC Available for {0} [{1}]",
-  "GameUpdateWindowHeading": "DLC Available for {0} [{1}]",
+  "UserProfilesEditProfile": "Edit Selected Profile",
+  "UserProfilesEditProfile": "Edit Selected Profile",
   "Cancel": "Cancel",
   "Save": "Save"
 }

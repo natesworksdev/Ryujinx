@@ -1,65 +1,78 @@
-using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml;
-using Ryujinx.Ava.Common.Locale;
+using FluentAvalonia.UI.Controls;
+using FluentAvalonia.UI.Navigation;
+using Ryujinx.Ava.Ui.Controls;
+using Ryujinx.Ava.Ui.Models;
 using Ryujinx.Ava.Ui.ViewModels;
 using Ryujinx.HLE.FileSystem;
-using System;
 
 namespace Ryujinx.Ava.Ui.Windows
 {
-    public partial class AvatarWindow : StyleableWindow
+    public partial class AvatarWindow : UserControl
     {
+        private NavigatableDialogHost _parent;
+        private TempProfile _profile;
+
         public AvatarWindow(ContentManager contentManager)
         {
             ContentManager = contentManager;
-            ViewModel = new AvatarProfileViewModel(() => ViewModel.ReloadImages());
 
             DataContext = ViewModel;
 
             InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
-            Title = $"Ryujinx {Program.Version} - " + LocaleManager.Instance["AvatarWindowTitle"];
         }
 
         public AvatarWindow()
         {
             InitializeComponent();
-#if DEBUG
-            this.AttachDevTools();
-#endif
+
+            AddHandler(Frame.NavigatedToEvent, (s, e) =>
+            {
+                NavigatedTo(e);
+            }, RoutingStrategies.Direct);
+        }
+
+        private void NavigatedTo(NavigationEventArgs arg)
+        {
             if (Program.PreviewerDetached)
             {
-                Title = $"Ryujinx {Program.Version} - " + LocaleManager.Instance["AvatarWindowTitle"];
+                switch (arg.NavigationMode)
+                {
+                    case NavigationMode.New:
+                        (_parent, _profile) = ((NavigatableDialogHost, TempProfile))arg.Parameter;
+                        ContentManager = _parent.ContentManager;
+                        if (Program.PreviewerDetached)
+                        {
+                            ViewModel = new AvatarProfileViewModel(() => ViewModel.ReloadImages());
+                        }
+
+                        DataContext = ViewModel;
+                        break;
+                }
             }
         }
 
-        public ContentManager ContentManager { get; }
-
-        public byte[] SelectedImage { get; set; }
+        public ContentManager ContentManager { get; private set; }
 
         internal AvatarProfileViewModel ViewModel { get; set; }
 
-        protected override void OnClosed(EventArgs e)
-        {
-            ViewModel.Dispose();
-            base.OnClosed(e);
-        }
-
         private void CloseButton_OnClick(object sender, RoutedEventArgs e)
         {
-            Close();
+            ViewModel.Dispose();
+
+            _parent.GoBack();
         }
 
         private void ChooseButton_OnClick(object sender, RoutedEventArgs e)
         {
             if (ViewModel.SelectedIndex > -1)
             {
-                SelectedImage = ViewModel.SelectedImage;
+                _profile.Image = ViewModel.SelectedImage;
 
-                Close();
+                ViewModel.Dispose();
+
+                _parent.GoBack();
             }
         }
     }
