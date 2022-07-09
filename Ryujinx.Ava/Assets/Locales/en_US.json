@@ -579,5 +579,14 @@
   "SettingsTabHotkeysResScaleUpHotkey": "Increase resolution:",
   "SettingsTabHotkeysResScaleDownHotkey": "Decrease resolution:",
   "UserProfilesName": "Name:",
-  "UserProfilesUserId" : "User Id:"
+  "UserProfilesUserId" : "User Id:",
+  "SettingsTabGraphicsBackend": "Graphics Backend",
+  "SettingsTabGraphicsBackendTooltip": "Graphics Backend to use",
+  "SettingsEnableTextureRecompression": "Enable Texture Recompression",
+  "SettingsEnableTextureRecompressionTooltip": "Enables or disables Texture Recompression. Reduces VRAM usage at the cost of texture quality, and may also increase stuttering",
+  "SettingsTabGraphicsPreferredGpu": "Preferred GPU",
+  "SettingsTabGraphicsPreferredGpuTooltip": "Preferred GPU (Vulkan Only)",
+  "SettingsAppRequiredRestartMessage": "Ryujinx Restart Required",
+  "SettingsGpuBackendRestartMessage": "Graphics Backend or Gpu settings have been modified. This will require a restart to be applied",
+  "SettingsGpuBackendRestartSubMessage": "Do you want to restart now?"
 }
