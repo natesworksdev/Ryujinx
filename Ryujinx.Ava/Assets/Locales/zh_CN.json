@@ -566,7 +566,7 @@
   "CheatWindowTitle": "管理游戏作弊",
   "DlcWindowTitle": "管理游戏 DLC",
   "UpdateWindowTitle": "管理游戏更新",
-  "CheatWindowHeading": "适用于该游戏的金手指： {0} [{1}]",
-  "DlcWindowHeading": "适用于该游戏的 DLC： {0} [{1}] ",
-  "GameUpdateWindowHeading": "适用于该游戏的更新： {0} [{1}]"
+  "CheatWindowHeading": "适用于 {0} [{1}] 的金手指",
+  "DlcWindowHeading": "适用于 {0} [{1}] 的 DLC",
+  "GameUpdateWindowHeading": "适用于 {0} [{1}] 的更新"
 }
