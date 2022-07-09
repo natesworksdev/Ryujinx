@@ -449,7 +449,7 @@ namespace Ryujinx.Ava.Ui.Windows
             RefreshFirmwareStatus();
         }
 
-        protected async void CheckLaunchState()
+        protected void CheckLaunchState()
         {
             if (ShowKeyErrorOnLoad)
             {
