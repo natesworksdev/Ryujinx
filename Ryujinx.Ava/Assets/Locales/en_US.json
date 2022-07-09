@@ -568,5 +568,14 @@
   "UpdateWindowTitle": "Manage Game Updates",
   "CheatWindowHeading": "Cheats Available for {0} [{1}]",
   "DlcWindowHeading": "DLC Available for {0} [{1}]",
-  "GameUpdateWindowHeading": "Updates Available for {0} [{1}]"
+  "GameUpdateWindowHeading": "Updates Available for {0} [{1}]",
+  "SettingsTabGraphicsBackend": "Graphics Backend",
+  "SettingsTabGraphicsBackendTooltip": "Graphics Backend to use",
+  "SettingsEnableTextureRecompression": "Enable Texture Recompression",
+  "SettingsEnableTextureRecompressionTooltip": "Enables or disables Texture Recompression. Reduces VRAM usage at the cost of texture quality, and may also increase stuttering",
+  "SettingsTabGraphicsPreferredGpu": "Preferred GPU",
+  "SettingsTabGraphicsPreferredGpuTooltip": "Preferred GPU (Vulkan Only)",
+  "SettingsAppRequiredRestartMessage": "Ryujinx Restart Required",
+  "SettingsGpuBackendRestartMessage": "Graphics Backend or Gpu settings have been modified. This will require a restart to be applied",
+  "SettingsGpuBackendRestartSubMessage": "Do you want to restart now?"
 }

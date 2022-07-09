@@ -503,6 +503,10 @@
                                   ToolTip.Tip="{locale:Locale ShaderCacheToggleTooltip}">
                                 <TextBlock Text="{locale:Locale SettingsTabGraphicsEnableShaderCache}" />
                             </CheckBox>
+							<CheckBox IsChecked="{Binding EnableTextureRecompression}"
+                                  ToolTip.Tip="{locale:Locale SettingsEnableTextureRecompressionTooltip}">
+								<TextBlock Text="{locale:Locale SettingsEnableTextureRecompression}" />
+							</CheckBox>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock VerticalAlignment="Center"
                                            ToolTip.Tip="{locale:Locale AnisotropyTooltip}"
@@ -626,6 +630,34 @@
                                     </ComboBoxItem>
                                 </ComboBox>
                             </StackPanel>
+							<StackPanel Orientation="Horizontal">
+								<TextBlock VerticalAlignment="Center"
+                                           ToolTip.Tip="{locale:Locale SettingsTabGraphicsBackendTooltip}"
+                                           Text="{locale:Locale SettingsTabGraphicsBackend}"
+                                           Width="250" />
+								<ComboBox Width="350"
+                                          HorizontalContentAlignment="Left"
+                                          ToolTip.Tip="{locale:Locale SettingsTabGraphicsBackendTooltip}"
+                                          SelectedIndex="{Binding GraphicsBackendIndex}">
+									<ComboBoxItem>
+										<TextBlock Text="Vulkan" />
+									</ComboBoxItem>
+									<ComboBoxItem>
+										<TextBlock Text="OpenGL" />
+									</ComboBoxItem>
+								</ComboBox>
+							</StackPanel>
+							<StackPanel Orientation="Horizontal" IsVisible="{Binding IsVulkanSelected}">
+								<TextBlock VerticalAlignment="Center"
+                                           ToolTip.Tip="{locale:Locale SettingsTabGraphicsPreferredGpuTooltip}"
+                                           Text="{locale:Locale SettingsTabGraphicsPreferredGpu}"
+                                           Width="250" />
+								<ComboBox Width="350"
+                                          HorizontalContentAlignment="Left"
+                                          ToolTip.Tip="{locale:Locale SettingsTabGraphicsPreferredGpuTooltip}"
+                                          SelectedIndex="{Binding PreferredGpuIndex}"
+										  Items="{Binding AvailableGpus}"/>
+							</StackPanel>
                         </StackPanel>
                         <Separator Height="1" />
                         <TextBlock FontWeight="Bold" Text="{locale:Locale SettingsTabGraphicsDeveloperOptions}" />

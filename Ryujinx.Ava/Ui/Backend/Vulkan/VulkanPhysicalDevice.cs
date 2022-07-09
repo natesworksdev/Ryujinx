@@ -1,11 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
 using Ryujinx.Graphics.Vulkan;
 using Silk.NET.Core;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.KHR;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.Ava.Ui.Vulkan
 {
@@ -21,6 +21,7 @@ namespace Ryujinx.Ava.Ui.Vulkan
             api.GetPhysicalDeviceProperties(apiHandle, out var properties);
 
             DeviceName = Marshal.PtrToStringAnsi((IntPtr)properties.DeviceName);
+            DeviceId = VulkanInitialization.StringFromIdPair(properties.VendorID, properties.DeviceID);
 
             var version = (Version32)properties.ApiVersion;
             ApiVersion = new Version((int)version.Major, (int)version.Minor, 0, (int)version.Patch);
@@ -33,9 +34,12 @@ namespace Ryujinx.Ava.Ui.Vulkan
         public IntPtr Handle => InternalHandle.Handle;
 
         public string DeviceName { get; }
+        public string DeviceId { get; }
         public Version ApiVersion { get; }
+        public static Dictionary<PhysicalDevice, PhysicalDeviceProperties> PhysicalDevices { get; private set; }
+        public static List<KeyValuePair<PhysicalDevice, PhysicalDeviceProperties>> SuitableDevices { get; private set; }
 
-        internal static unsafe VulkanPhysicalDevice FindSuitablePhysicalDevice(VulkanInstance instance,
+        internal static void SelectAvailableDevices(VulkanInstance instance,
             VulkanSurface surface, bool preferDiscreteGpu, string preferredDevice)
         {
             uint physicalDeviceCount;
@@ -50,55 +54,67 @@ namespace Ryujinx.Ava.Ui.Vulkan
                     .ThrowOnError();
             }
 
-            var physicalDeviceProperties = new Dictionary<PhysicalDevice, PhysicalDeviceProperties>();
+            PhysicalDevices = new Dictionary<PhysicalDevice, PhysicalDeviceProperties>();
 
             foreach (var physicalDevice in physicalDevices)
             {
                 instance.Api.GetPhysicalDeviceProperties(physicalDevice, out var properties);
-                physicalDeviceProperties.Add(physicalDevice, properties);
+                PhysicalDevices.Add(physicalDevice, properties);
             }
+
+            SuitableDevices = PhysicalDevices.Where(x => IsSuitableDevice(
+                instance.Api,
+                x.Key,
+                x.Value,
+                surface.ApiHandle,
+                out _,
+                out _)).ToList();
+        }
+
+        internal static unsafe VulkanPhysicalDevice FindSuitablePhysicalDevice(VulkanInstance instance,
+            VulkanSurface surface, bool preferDiscreteGpu, string preferredDevice)
+        {
+            SelectAvailableDevices(instance, surface, preferDiscreteGpu, preferredDevice);
+
+            uint queueFamilyIndex = 0;
+            uint queueCount = 0;
 
             if (!string.IsNullOrWhiteSpace(preferredDevice))
             {
-                var physicalDevice = physicalDeviceProperties.FirstOrDefault(x => VulkanInitialization.StringFromIdPair(x.Value.VendorID, x.Value.DeviceID) == preferredDevice);
-                if (physicalDevice.Key.Handle != 0 && IsSuitableDevice(instance.Api, physicalDevice.Key,
-                    physicalDevice.Value, surface.ApiHandle, out var queueCount,
-                    out var queueFamilyIndex))
+                var physicalDevice = SuitableDevices.FirstOrDefault(x => VulkanInitialization.StringFromIdPair(x.Value.VendorID, x.Value.DeviceID) == preferredDevice);
+
+                queueFamilyIndex = FindSuitableQueueFamily(instance.Api, physicalDevice.Key,
+                    surface.ApiHandle, out queueCount);
+                if (queueFamilyIndex != int.MaxValue)
+                {
                     return new VulkanPhysicalDevice(physicalDevice.Key, instance.Api, queueCount, queueFamilyIndex);
+                }
             }
 
             if (preferDiscreteGpu)
             {
-                var discreteGpus = physicalDeviceProperties.Where(p => p.Value.DeviceType == PhysicalDeviceType.DiscreteGpu);
+                var discreteGpus = SuitableDevices.Where(p => p.Value.DeviceType == PhysicalDeviceType.DiscreteGpu);
 
                 foreach (var gpu in discreteGpus)
                 {
-                    if (IsSuitableDevice(
-                        instance.Api,
-                        gpu.Key,
-                        gpu.Value,
-                        surface.ApiHandle,
-                        out var queueCount,
-                        out var queueFamilyIndex))
+                    queueFamilyIndex = FindSuitableQueueFamily(instance.Api, gpu.Key,
+                    surface.ApiHandle, out queueCount);
+                    if (queueFamilyIndex != int.MaxValue)
                     {
                         return new VulkanPhysicalDevice(gpu.Key, instance.Api, queueCount, queueFamilyIndex);
                     }
-
-                    physicalDeviceProperties.Remove(gpu.Key);
                 }
             }
 
-            foreach (var physicalDevice in physicalDeviceProperties)
-                if (IsSuitableDevice(
-                    instance.Api,
-                    physicalDevice.Key,
-                    physicalDevice.Value,
-                    surface.ApiHandle,
-                    out var queueCount,
-                    out var queueFamilyIndex))
+            foreach (var physicalDevice in SuitableDevices)
+            {
+                queueFamilyIndex = FindSuitableQueueFamily(instance.Api, physicalDevice.Key,
+                     surface.ApiHandle, out queueCount);
+                if (queueFamilyIndex != int.MaxValue)
                 {
                     return new VulkanPhysicalDevice(physicalDevice.Key, instance.Api, queueCount, queueFamilyIndex);
                 }
+            }
 
             throw new Exception("No suitable physical device found");
         }

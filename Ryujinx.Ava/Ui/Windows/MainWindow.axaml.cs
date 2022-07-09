@@ -164,7 +164,8 @@ namespace Ryujinx.Ava.Ui.Windows
                     ViewModel.AspectRatioStatusText = args.AspectRatio;
                     ViewModel.GameStatusText = args.GameStatus;
                     ViewModel.FifoStatusText = args.FifoStatus;
-                    ViewModel.GpuStatusText = args.GpuName;
+                    ViewModel.GpuNameText = args.GpuName;
+                    ViewModel.BackendText = args.GpuBackend;
 
                     ViewModel.ShowStatusSeparator = true;
                 });
