@@ -10,19 +10,19 @@
                         Width="500" MinHeight="500" Height="500"
                         WindowStartupLocation="CenterOwner"
                         MinWidth="500">
-    <Window.Styles>
-        <Style Selector="TreeViewItem">
-            <Setter Property="IsExpanded" Value="True" />
-        </Style>
-    </Window.Styles>
-    <Grid Name="DlcGrid" Margin="15">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-        <TextBlock
+	<Window.Styles>
+		<Style Selector="TreeViewItem">
+			<Setter Property="IsExpanded" Value="True" />
+		</Style>
+	</Window.Styles>
+	<Grid Name="DlcGrid" Margin="15">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" />
+			<RowDefinition Height="Auto" />
+		</Grid.RowDefinitions>
+		<TextBlock
             Grid.Row="1"
             Margin="20,15,20,20"
             HorizontalAlignment="Center"
@@ -32,14 +32,14 @@
             TextWrapping="Wrap"
             Text="{Binding Heading}"
             TextAlignment="Center" />
-        <Border
+		<Border
             Grid.Row="2"
             Margin="5"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
             BorderBrush="Gray"
             BorderThickness="1">
-            <TreeView Items="{Binding LoadedCheats}"
+			<TreeView Items="{Binding LoadedCheats}"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
                       Name="CheatsView"
@@ -51,46 +51,46 @@
 						</Style>
 					</Styles>
 				</TreeView.Styles>
-                <TreeView.DataTemplates>
-                    <TreeDataTemplate DataType="model:CheatsList" ItemsSource="{Binding}">
-                        <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
-                            <CheckBox IsChecked="{Binding IsEnabled}" MinWidth="20" />
-                            <TextBlock Width="150"
+				<TreeView.DataTemplates>
+					<TreeDataTemplate DataType="model:CheatsList" ItemsSource="{Binding}">
+						<StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
+							<CheckBox IsChecked="{Binding IsEnabled}" MinWidth="20" />
+							<TextBlock Width="150"
                                        Text="{Binding BuildId}" />
-                            <TextBlock
+							<TextBlock
                                 Text="{Binding Path}" />
-                        </StackPanel>
-                    </TreeDataTemplate>
-                    <DataTemplate x:DataType="model:CheatModel">
-                        <StackPanel Orientation="Horizontal" Margin="0" HorizontalAlignment="Left">
-                            <CheckBox IsChecked="{Binding IsEnabled}" Padding="0" Margin="5, 0" MinWidth="20" />
-                            <TextBlock Text="{Binding CleanName}" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </DataTemplate>
-                </TreeView.DataTemplates>
-            </TreeView>
-        </Border>
-        <DockPanel
+						</StackPanel>
+					</TreeDataTemplate>
+					<DataTemplate x:DataType="model:CheatModel">
+						<StackPanel Orientation="Horizontal" Margin="0" HorizontalAlignment="Left">
+							<CheckBox IsChecked="{Binding IsEnabled}" Padding="0" Margin="5,0" MinWidth="20" />
+							<TextBlock Text="{Binding CleanName}" VerticalAlignment="Center" />
+						</StackPanel>
+					</DataTemplate>
+				</TreeView.DataTemplates>
+			</TreeView>
+		</Border>
+		<DockPanel
             Grid.Row="3"
             Margin="0"
             HorizontalAlignment="Stretch">
-            <DockPanel Margin="0" HorizontalAlignment="Right">
-                <Button
+			<DockPanel Margin="0" HorizontalAlignment="Right">
+				<Button
                     Name="SaveButton"
                     MinWidth="90"
                     Margin="5"
                     IsVisible="{Binding !NoCheatsFound}"
                     Command="{Binding Save}">
-                    <TextBlock Text="{locale:Locale SettingsButtonSave}" />
-                </Button>
-                <Button
+					<TextBlock Text="{locale:Locale SettingsButtonSave}" />
+				</Button>
+				<Button
                     Name="CancelButton"
                     MinWidth="90"
                     Margin="5"
                     Command="{Binding Close}">
-                    <TextBlock Text="{locale:Locale InputDialogCancel}" />
-                </Button>
-            </DockPanel>
-        </DockPanel>
-    </Grid>
+					<TextBlock Text="{locale:Locale InputDialogCancel}" />
+				</Button>
+			</DockPanel>
+		</DockPanel>
+	</Grid>
 </window:StyleableWindow>

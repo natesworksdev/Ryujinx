@@ -80,8 +80,9 @@ namespace Ryujinx.Ava.Common
                 {
                     Dispatcher.UIThread.Post(async () =>
                     {
-                        await ContentDialogHelper.CreateErrorDialog(_owner,
-                                                          string.Format(LocaleManager.Instance["DialogMessageCreateSaveErrorMessage"], result.ToStringWithName()));
+                        await ContentDialogHelper.CreateErrorDialog(
+                            _owner,
+                            string.Format(LocaleManager.Instance["DialogMessageCreateSaveErrorMessage"], result.ToStringWithName()));
                     });
 
                     return false;

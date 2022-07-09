@@ -1,34 +1,32 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <RuntimeIdentifiers>win10-x64;osx-x64;linux-x64</RuntimeIdentifiers>
-    <OutputType>Exe</OutputType>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Version>1.0.0-dirty</Version>
-	<TieredCompilation>true</TieredCompilation>
-	<TieredCompilationQuickJit>true</TieredCompilationQuickJit>
-    <DefineConstants Condition=" '$(ExtraDefineConstants)' != '' ">$(DefineConstants);$(ExtraDefineConstants)</DefineConstants>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<RuntimeIdentifiers>win10-x64;osx-x64;linux-x64</RuntimeIdentifiers>
+		<OutputType>Exe</OutputType>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<Version>1.0.0-dirty</Version>
+		<DefineConstants Condition=" '$(ExtraDefineConstants)' != '' ">$(DefineConstants);$(ExtraDefineConstants)</DefineConstants>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Ryujinx.Graphics.Nvdec.Dependencies" Version="4.4.0-build7" Condition="'$(RuntimeIdentifier)' != 'linux-x64' AND '$(RuntimeIdentifier)' != 'osx-x64'" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Ryujinx.Graphics.Nvdec.Dependencies" Version="4.4.0-build7" Condition="'$(RuntimeIdentifier)' != 'linux-x64' AND '$(RuntimeIdentifier)' != 'osx-x64'" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Ryujinx.Input\Ryujinx.Input.csproj" />
-    <ProjectReference Include="..\Ryujinx.Input.SDL2\Ryujinx.Input.SDL2.csproj" />
-    <ProjectReference Include="..\Ryujinx.Audio.Backends.SDL2\Ryujinx.Audio.Backends.SDL2.csproj" />
-    <ProjectReference Include="..\Ryujinx.Common\Ryujinx.Common.csproj" />
-    <ProjectReference Include="..\Ryujinx.HLE\Ryujinx.HLE.csproj" />
-    <ProjectReference Include="..\ARMeilleure\ARMeilleure.csproj" />
-    <ProjectReference Include="..\Ryujinx.Graphics.OpenGL\Ryujinx.Graphics.OpenGL.csproj" />
-    <ProjectReference Include="..\Ryujinx.Graphics.Gpu\Ryujinx.Graphics.Gpu.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Ryujinx.Input\Ryujinx.Input.csproj" />
+		<ProjectReference Include="..\Ryujinx.Input.SDL2\Ryujinx.Input.SDL2.csproj" />
+		<ProjectReference Include="..\Ryujinx.Audio.Backends.SDL2\Ryujinx.Audio.Backends.SDL2.csproj" />
+		<ProjectReference Include="..\Ryujinx.Common\Ryujinx.Common.csproj" />
+		<ProjectReference Include="..\Ryujinx.HLE\Ryujinx.HLE.csproj" />
+		<ProjectReference Include="..\ARMeilleure\ARMeilleure.csproj" />
+		<ProjectReference Include="..\Ryujinx.Graphics.OpenGL\Ryujinx.Graphics.OpenGL.csproj" />
+		<ProjectReference Include="..\Ryujinx.Graphics.Gpu\Ryujinx.Graphics.Gpu.csproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="CommandLineParser" Version="2.8.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="CommandLineParser" Version="2.8.0" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<ContentWithTargetPath Include="..\distribution\legal\THIRDPARTY.md">
@@ -37,15 +35,15 @@
 		</ContentWithTargetPath>
 	</ItemGroup>
 
-  <!-- Due to .net core 3.1 embedded resource loading -->
-  <PropertyGroup>
-    <EmbeddedResourceUseDependentUponConvention>false</EmbeddedResourceUseDependentUponConvention>
-    <ApplicationIcon>..\Ryujinx\Ryujinx.ico</ApplicationIcon>
-  </PropertyGroup>
+	<!-- Due to .net core 3.1 embedded resource loading -->
+	<PropertyGroup>
+		<EmbeddedResourceUseDependentUponConvention>false</EmbeddedResourceUseDependentUponConvention>
+		<ApplicationIcon>..\Ryujinx\Ryujinx.ico</ApplicationIcon>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(RuntimeIdentifier)' != ''">
-    <PublishSingleFile>true</PublishSingleFile>
-    <PublishTrimmed>true</PublishTrimmed>
-    <PublishReadyToRun>true</PublishReadyToRun>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(RuntimeIdentifier)' != ''">
+		<PublishSingleFile>true</PublishSingleFile>
+		<PublishTrimmed>true</PublishTrimmed>
+		<PublishReadyToRun>true</PublishReadyToRun>
+	</PropertyGroup>
 </Project>
