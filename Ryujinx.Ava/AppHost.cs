@@ -452,11 +452,12 @@ namespace Ryujinx.Ava
 
                         string message = string.Format(LocaleManager.Instance["DialogFirmwareInstallEmbeddedSuccessMessage"], firmwareVersion.VersionString);
 
-                        await ContentDialogHelper.CreateInfoDialog(string.Format(LocaleManager.Instance["DialogFirmwareInstalledMessage"], firmwareVersion.VersionString),
-                                                             message,
-                                                             LocaleManager.Instance["InputDialogOk"],
-                                                             "",
-                                                             LocaleManager.Instance["RyujinxInfo"]);
+                        await ContentDialogHelper.CreateInfoDialog(
+                            string.Format(LocaleManager.Instance["DialogFirmwareInstalledMessage"], firmwareVersion.VersionString),
+                            message,
+                            LocaleManager.Instance["InputDialogOk"],
+                            "",
+                            LocaleManager.Instance["RyujinxInfo"]);
                     }
                 }
                 else
@@ -897,7 +898,7 @@ namespace Ryujinx.Ava
             {
                 Dispatcher.UIThread.Post(() =>
                 {
-                    _parent.Cursor =  _isMouseInRenderer ? InvisibleCursor : Cursor.Default;
+                    _parent.Cursor = _isMouseInRenderer ? InvisibleCursor : Cursor.Default;
                 });
             }
             else

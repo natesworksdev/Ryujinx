@@ -44,7 +44,7 @@
         <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="10" Margin="10" HorizontalAlignment="Center">
             <Button Content="{Locale:Locale AvatarChoose}" Width="200" Name="ChooseButton" Click="ChooseButton_OnClick" />
             <ui:ColorPickerButton Color="{Binding BackgroundColor, Mode=TwoWay}" Name="ColorButton" />
-            <Button HorizontalAlignment="Right" Content="{Locale:Locale AvatarClose}" Click="CloseButton_OnClick"
+            <Button HorizontalAlignment="Right" Content="{Locale:Locale Discard}" Click="CloseButton_OnClick"
                     Name="CloseButton"
                     Width="200" />
         </StackPanel>

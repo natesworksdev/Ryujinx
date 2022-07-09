@@ -35,6 +35,10 @@
                     Name="ChangePictureButton"
                     Click="ChangePictureButton_Click"
                     HorizontalAlignment="Stretch"/>
+			<Button Margin="5" Content="{Locale:Locale UserProfilesSetProfileImage}"
+                    Name="AddPictureButton"
+                    Click="ChangePictureButton_Click"
+                    HorizontalAlignment="Stretch"/>
         </StackPanel>
         <StackPanel Grid.Row="0" Orientation="Vertical" HorizontalAlignment="Stretch" Grid.Column="1" Spacing="10"
                     Margin="5, 10">
@@ -42,9 +46,9 @@
                      HorizontalAlignment="Stretch" />
             <TextBlock Text="{Binding UserId}" />
         </StackPanel>
-        <StackPanel Grid.Column="0" Grid.ColumnSpan="2"  Grid.Row="1" Orientation="Horizontal" Margin="10,10" Spacing="10" HorizontalAlignment="Right">
+        <StackPanel Grid.Column="0" Grid.ColumnSpan="2"  Grid.Row="1" Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
             <Button Content="{Locale:Locale Save}" Name="SaveButton" Click="SaveButton_Click"/>
-            <Button HorizontalAlignment="Right" Content="{Locale:Locale Cancel}"
+            <Button HorizontalAlignment="Right" Content="{Locale:Locale Discard}"
                     Name="CloseButton" Click="CloseButton_Click"/>
         </StackPanel>
     </Grid>

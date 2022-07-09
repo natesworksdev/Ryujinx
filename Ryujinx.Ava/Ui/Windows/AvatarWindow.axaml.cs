@@ -11,7 +11,7 @@ namespace Ryujinx.Ava.Ui.Windows
 {
     public partial class AvatarWindow : UserControl
     {
-        private NavigatableDialogHost _parent;
+        private NavigationDialogHost _parent;
         private TempProfile _profile;
 
         public AvatarWindow(ContentManager contentManager)
@@ -37,18 +37,16 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             if (Program.PreviewerDetached)
             {
-                switch (arg.NavigationMode)
+                if (arg.NavigationMode == NavigationMode.New)
                 {
-                    case NavigationMode.New:
-                        (_parent, _profile) = ((NavigatableDialogHost, TempProfile))arg.Parameter;
-                        ContentManager = _parent.ContentManager;
-                        if (Program.PreviewerDetached)
-                        {
-                            ViewModel = new AvatarProfileViewModel(() => ViewModel.ReloadImages());
-                        }
+                    (_parent, _profile) = ((NavigationDialogHost, TempProfile))arg.Parameter;
+                    ContentManager = _parent.ContentManager;
+                    if (Program.PreviewerDetached)
+                    {
+                        ViewModel = new AvatarProfileViewModel(() => ViewModel.ReloadImages());
+                    }
 
-                        DataContext = ViewModel;
-                        break;
+                    DataContext = ViewModel;
                 }
             }
         }

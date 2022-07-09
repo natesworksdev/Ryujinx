@@ -703,7 +703,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             {
                 return;
             }
-            
+
             if (_owner.AppHost.Device.System.SearchingForAmiibo(out int deviceId))
             {
                 string titleId = _owner.AppHost.Device.Application.TitleIdText.ToUpper();
@@ -970,7 +970,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public async void ManageProfiles()
         {
-            await NavigatableDialogHost.Show(_owner.AccountManager, _owner.ContentManager, _owner.VirtualFileSystem);
+            await NavigationDialogHost.Show(_owner.AccountManager, _owner.ContentManager, _owner.VirtualFileSystem);
         }
 
         public async void OpenAboutWindow()

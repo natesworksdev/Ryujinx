@@ -3,14 +3,13 @@ using Avalonia.Interactivity;
 using FluentAvalonia.UI.Controls;
 using FluentAvalonia.UI.Navigation;
 using Ryujinx.Ava.Ui.Models;
-using System.Threading.Tasks;
 using UserProfile = Ryujinx.Ava.Ui.Models.UserProfile;
 
 namespace Ryujinx.Ava.Ui.Controls
 {
     public partial class UserEditor : UserControl
     {
-        private NavigatableDialogHost _parent;
+        private NavigationDialogHost _parent;
         private UserProfile _profile;
         private bool _isNewUser;
 
@@ -33,7 +32,7 @@ namespace Ryujinx.Ava.Ui.Controls
                 switch (arg.NavigationMode)
                 {
                     case NavigationMode.New:
-                        var args = ((NavigatableDialogHost parent, UserProfile profile, bool isNewUser))arg.Parameter;
+                        var args = ((NavigationDialogHost parent, UserProfile profile, bool isNewUser))arg.Parameter;
                         _isNewUser = args.isNewUser;
                         if (!_isNewUser)
                         {
@@ -50,6 +49,9 @@ namespace Ryujinx.Ava.Ui.Controls
                 }
 
                 DataContext = TempProfile;
+
+                AddPictureButton.IsVisible = _isNewUser;
+                ChangePictureButton.IsVisible = !_isNewUser;
             }
         }
 

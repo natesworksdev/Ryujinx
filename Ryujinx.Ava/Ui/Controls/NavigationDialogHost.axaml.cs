@@ -10,18 +10,18 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.Ava.Ui.Controls
 {
-    public partial class NavigatableDialogHost : UserControl
+    public partial class NavigationDialogHost : UserControl
     {
         public AccountManager AccountManager { get; }
         public ContentManager ContentManager { get; }
         public UserProfileViewModel ViewModel { get; set; }
 
-        public NavigatableDialogHost()
+        public NavigationDialogHost()
         {
             InitializeComponent();
         }
 
-        public NavigatableDialogHost(AccountManager accountManager, ContentManager contentManager,
+        public NavigationDialogHost(AccountManager accountManager, ContentManager contentManager,
             VirtualFileSystem virtualFileSystem)
         {
             AccountManager = accountManager;
@@ -56,7 +56,7 @@ namespace Ryujinx.Ava.Ui.Controls
 
         public static async Task Show(AccountManager ownerAccountManager, ContentManager ownerContentManager, VirtualFileSystem ownerVirtualFileSystem)
         {
-            var content = new NavigatableDialogHost(ownerAccountManager, ownerContentManager, ownerVirtualFileSystem);
+            var content = new NavigationDialogHost(ownerAccountManager, ownerContentManager, ownerVirtualFileSystem);
             ContentDialog contentDialog = new ContentDialog
             {
                 Title = LocaleManager.Instance["UserProfileWindowTitle"],

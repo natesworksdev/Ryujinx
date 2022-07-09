@@ -9,7 +9,7 @@ namespace Ryujinx.Ava.Ui.Controls
 {
     public partial class UserSelector : UserControl
     {
-        private NavigatableDialogHost _parent;
+        private NavigationDialogHost _parent;
         public UserProfileViewModel ViewModel { get; set; }
 
         public UserSelector()
@@ -32,7 +32,7 @@ namespace Ryujinx.Ava.Ui.Controls
                 switch (arg.NavigationMode)
                 {
                     case NavigationMode.New:
-                        _parent = (NavigatableDialogHost)arg.Parameter;
+                        _parent = (NavigationDialogHost)arg.Parameter;
                         ViewModel = _parent.ViewModel;
                         break;
                 }

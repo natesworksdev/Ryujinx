@@ -1,7 +1,6 @@
 using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 using LibHac.Common;
 using LibHac.Fs;
 using LibHac.Fs.Fsa;
@@ -44,7 +43,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
             InitializeComponent();
             AttachDebugDevTools();
-            
+
             Title = $"Ryujinx {Program.Version} - " + LocaleManager.Instance["DlcWindowTitle"];
         }
 
@@ -69,7 +68,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
             InitializeComponent();
             AttachDebugDevTools();
-            
+
             Title = $"Ryujinx {Program.Version} - " + LocaleManager.Instance["DlcWindowTitle"];
 
             LoadDlcs();
@@ -115,8 +114,7 @@ namespace Ryujinx.Ava.Ui.Windows
             }
             catch (Exception ex)
             {
-                ContentDialogHelper.CreateErrorDialog(string.Format(LocaleManager.Instance[
-                        "DialogDlcLoadNcaErrorMessage"], ex.Message, containerPath));
+                ContentDialogHelper.CreateErrorDialog(string.Format(LocaleManager.Instance["DialogDlcLoadNcaErrorMessage"], ex.Message, containerPath));
             }
 
             return null;
@@ -173,7 +171,7 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             if (removeSelectedOnly)
             {
-               Dlcs.RemoveAll(Dlcs.Where(x => x.IsEnabled).ToList());
+                Dlcs.RemoveAll(Dlcs.Where(x => x.IsEnabled).ToList());
             }
             else
             {

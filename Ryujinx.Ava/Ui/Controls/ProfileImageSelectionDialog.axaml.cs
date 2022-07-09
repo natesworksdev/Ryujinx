@@ -17,7 +17,7 @@ namespace Ryujinx.Ava.Ui.Controls
     public partial class ProfileImageSelectionDialog : UserControl
     {
         private ContentManager _contentManager;
-        private NavigatableDialogHost _parent;
+        private NavigationDialogHost _parent;
         private TempProfile _profile;
 
         public bool FirmwareFound => _contentManager.GetCurrentFirmwareVersion() != null;
@@ -38,7 +38,7 @@ namespace Ryujinx.Ava.Ui.Controls
                 switch (arg.NavigationMode)
                 {
                     case NavigationMode.New:
-                        (_parent, _profile) = ((NavigatableDialogHost, TempProfile))arg.Parameter;
+                        (_parent, _profile) = ((NavigationDialogHost, TempProfile))arg.Parameter;
                         _contentManager = _parent.ContentManager;
                         break;
                     case NavigationMode.Back:

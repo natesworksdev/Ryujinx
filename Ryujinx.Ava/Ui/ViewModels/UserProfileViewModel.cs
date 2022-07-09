@@ -1,4 +1,3 @@
-using FluentAvalonia.UI.Media.Animation;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
@@ -11,7 +10,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 {
     public class UserProfileViewModel : BaseModel, IDisposable
     {
-        private readonly NavigatableDialogHost _owner;
+        private readonly NavigationDialogHost _owner;
 
         private UserProfile _selectedProfile;
         private UserProfile _highlightedProfile;
@@ -21,7 +20,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             Profiles = new ObservableCollection<UserProfile>();
         }
 
-        public UserProfileViewModel(NavigatableDialogHost owner) : this()
+        public UserProfileViewModel(NavigationDialogHost owner) : this()
         {
             _owner = owner;
 
@@ -99,7 +98,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public void EditUser()
         {
-            _owner.Navigate(typeof(UserEditor), (this._owner, _highlightedProfile, false));
+            _owner.Navigate(typeof(UserEditor), (this._owner, _highlightedProfile ?? SelectedProfile, false));
         }
 
         public async void DeleteUser()
