@@ -212,7 +212,7 @@ namespace Ryujinx.Graphics.Texture.Utils
             return HashCode.Combine(R, G, B, A);
         }
 
-        public override bool Equals(object? obj)
+        public override bool Equals(object obj)
         {
             return obj is RgbaColor32 other && Equals(other);
         }
