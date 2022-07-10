@@ -574,5 +574,5 @@
   "Discard": "Discard",
   "UserProfilesSetProfileImage": "Set Profile Image",
   "UserProfileEmptyNameError": "Name is required",
-  "UserProfileEmptyNoImageError":  "Profile image must be set"
+  "UserProfileNoImageError":  "Profile image must be set"
 }
