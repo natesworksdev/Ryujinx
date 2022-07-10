@@ -225,6 +225,14 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
+        /// Unmark all ranges of the buffer that have been previously marked as modified.
+        /// </summary>
+        public void ClearModified()
+        {
+            _modifiedRanges?.Clear();
+        }
+
+        /// <summary>
         /// Indicate that mofifications in a given region of this buffer have been overwritten.
         /// </summary>
         /// <param name="address">The start address of the region</param>
@@ -477,14 +485,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
-        /// Disposes the host buffer's data, not its tracking handles.
-        /// </summary>
-        public void DisposeData()
-        {
-            _modifiedRanges?.Clear();
-        }
-
-        /// <summary>
         /// Disposes the host buffer.
         /// </summary>
         public void Dispose()
@@ -492,7 +492,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             _memoryTrackingGranular?.Dispose();
             _memoryTracking?.Dispose();
 
-            DisposeData();
+            ClearModified();
         }
     }
 }

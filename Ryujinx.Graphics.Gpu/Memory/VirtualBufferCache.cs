@@ -248,7 +248,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
         /// <summary>
         /// Creates a new buffer for the specified range, if it does not yet exist.
-        /// This can be used to ensure the existance of a buffer.
+        /// This can be used to ensure the existence of a buffer.
         /// </summary>
         /// <param name="gpuVa">GPU virtual address of the buffer in memory</param>
         /// <param name="size">Size of the buffer in bytes</param>
@@ -424,7 +424,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                     if (inheritable)
                     {
-                        // We can only inherit modified ranges if we are also inheriting tracking handles,
+                        // We can only inherit modified ranges if we are also inheriting tracking handles.
                         buffer.InheritModifiedRanges(overlap, offsetWithinOverlap);
                     }
                     else
@@ -572,7 +572,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
-        /// Copy a buffer data from a given address to another.
+        /// Copy a buffer's data from a given address to another.
         /// </summary>
         /// <remarks>
         /// This does a GPU side copy.

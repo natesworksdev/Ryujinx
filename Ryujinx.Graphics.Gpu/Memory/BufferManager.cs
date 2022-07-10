@@ -603,13 +603,13 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
-        /// Ensures that all buffers that will be used exists on the buffer cache.
+        /// Ensures that all buffers that will be used exist on the buffer cache.
         /// </summary>
         /// <param name="bufferCache">Buffer cache in use</param>
         private void RefreshMappings(VirtualBufferCache bufferCache)
         {
-            // Make sure that all buffers that might be used exists in the cache.
-            // This should be done every time the mappings changes and the cache is modified due to that.
+            // Make sure that all buffers that might be used exist in the cache.
+            // This should be done every time the mappings change and the cache is modified due to that.
 
             EnsureBuffer(bufferCache, _indexBuffer.GpuVa, _indexBuffer.Size);
 
@@ -635,7 +635,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
-        /// Ensures that buffers that can be accessed by shaders exists on the buffer cache.
+        /// Ensures that buffers that can be accessed by shaders exist on the buffer cache.
         /// </summary>
         /// <param name="bufferCache">Buffer cache in use</param>
         /// <param name="buffersPerStage">Buffers used by the shader stages</param>
