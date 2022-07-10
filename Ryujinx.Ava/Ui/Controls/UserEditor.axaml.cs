@@ -1,7 +1,9 @@
 using Avalonia.Controls;
+using Avalonia.Data;
 using Avalonia.Interactivity;
 using FluentAvalonia.UI.Controls;
 using FluentAvalonia.UI.Navigation;
+using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Models;
 using UserProfile = Ryujinx.Ava.Ui.Models.UserProfile;
 
@@ -61,12 +63,30 @@ namespace Ryujinx.Ava.Ui.Controls
             _parent?.GoBack();
         }
 
-        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        private async void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(TempProfile.Name) || TempProfile.Image == null)
+            DataValidationErrors.ClearErrors(NameBox);
+            bool isInvalid = false;
+
+            if (string.IsNullOrWhiteSpace(TempProfile.Name))
+            {
+                DataValidationErrors.SetError(NameBox, new DataValidationException(LocaleManager.Instance["UserProfileEmptyNameError"]));
+
+                isInvalid = true;
+            }
+
+            if (TempProfile.Image == null)
+            {
+                ContentDialogHelper.CreateWarningDialog(LocaleManager.Instance["UserProfileEmptyNoImageError"], "");
+
+                isInvalid = true;
+            }
+
+            if(isInvalid)
             {
                 return;
             }
+
             if (_profile != null)
             {
                 _profile.Name = TempProfile.Name;

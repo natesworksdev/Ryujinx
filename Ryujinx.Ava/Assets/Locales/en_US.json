@@ -572,5 +572,7 @@
   "Cancel": "Cancel",
   "Save": "Save",
   "Discard": "Discard",
-  "UserProfilesSetProfileImage": "Set Profile Image"
+  "UserProfilesSetProfileImage": "Set Profile Image",
+  "UserProfileEmptyNameError": "Name is required",
+  "UserProfileEmptyNoImageError":  "Profile image must be set"
 }
