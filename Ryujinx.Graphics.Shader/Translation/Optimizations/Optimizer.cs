@@ -1,6 +1,4 @@
-using Ryujinx.Graphics.Shader.Decoders;
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
