@@ -1,8 +1,8 @@
-using System;
 using Avalonia;
 using Ryujinx.Ava.Ui.Vulkan.Surfaces;
-using Silk.NET.Vulkan;
 using Ryujinx.Graphics.Vulkan;
+using Silk.NET.Vulkan;
+using System;
 
 namespace Ryujinx.Ava.Ui.Vulkan
 {
@@ -38,7 +38,7 @@ namespace Ryujinx.Ava.Ui.Vulkan
 
                 return new VulkanPlatformInterface(instance);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return null;
             }

@@ -493,20 +493,22 @@
                 VerticalScrollBarVisibility="Auto">
                 <Border>
                     <StackPanel
-                        Margin="10, 5"
+                        Margin="10,5"
                         HorizontalAlignment="Stretch"
                         Orientation="Vertical"
                         Spacing="10">
                         <TextBlock FontWeight="Bold" Text="{locale:Locale SettingsTabGraphicsEnhancements}" />
                         <StackPanel Margin="10,0,0,0" Orientation="Vertical" Spacing="10">
-                            <CheckBox IsChecked="{Binding EnableShaderCache}"
-                                  ToolTip.Tip="{locale:Locale ShaderCacheToggleTooltip}">
-                                <TextBlock Text="{locale:Locale SettingsTabGraphicsEnableShaderCache}" />
-                            </CheckBox>
-							<CheckBox IsChecked="{Binding EnableTextureRecompression}"
-                                  ToolTip.Tip="{locale:Locale SettingsEnableTextureRecompressionTooltip}">
-								<TextBlock Text="{locale:Locale SettingsEnableTextureRecompression}" />
-							</CheckBox>
+                            <StackPanel Orientation="Vertical">
+                                <CheckBox IsChecked="{Binding EnableShaderCache}"
+                                    ToolTip.Tip="{locale:Locale ShaderCacheToggleTooltip}">
+                                    <TextBlock Text="{locale:Locale SettingsTabGraphicsEnableShaderCache}" />
+                                </CheckBox>
+                                <CheckBox IsChecked="{Binding EnableTextureRecompression}"
+                                    ToolTip.Tip="{locale:Locale SettingsEnableTextureRecompressionTooltip}">
+                                    <TextBlock Text="{locale:Locale SettingsEnableTextureRecompression}" />
+                                </CheckBox>
+                            </StackPanel>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock VerticalAlignment="Center"
                                            ToolTip.Tip="{locale:Locale AnisotropyTooltip}"
