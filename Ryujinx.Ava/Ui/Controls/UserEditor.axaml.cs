@@ -51,6 +51,7 @@ namespace Ryujinx.Ava.Ui.Controls
                 DataContext = TempProfile;
 
                 AddPictureButton.IsVisible = _isNewUser;
+                IdLabel.IsVisible = !_isNewUser;
                 ChangePictureButton.IsVisible = !_isNewUser;
             }
         }

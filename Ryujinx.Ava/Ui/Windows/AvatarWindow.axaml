@@ -25,11 +25,11 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <ListBox Grid.Row="1" BorderThickness="0" SelectedIndex="{Binding SelectedIndex}" Width="600" Height="400"
+        <ListBox Grid.Row="1" BorderThickness="0" SelectedIndex="{Binding SelectedIndex}" Height="400"
                  Items="{Binding Images}" HorizontalAlignment="Stretch" VerticalAlignment="Center">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <WrapPanel Orientation="Horizontal" MaxWidth="600" Margin="0" HorizontalAlignment="Center" />
+                    <WrapPanel Orientation="Horizontal" MaxWidth="700" Margin="0" HorizontalAlignment="Center" />
                 </ItemsPanelTemplate>
             </ListBox.ItemsPanel>
             <ListBox.ItemTemplate>

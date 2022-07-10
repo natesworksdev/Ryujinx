@@ -44,7 +44,7 @@
                     Margin="5, 10">
             <TextBox Name="NameBox" Width="300" Text="{Binding Name}" MaxLength="{Binding MaxProfileNameLength}"
                      HorizontalAlignment="Stretch" />
-            <TextBlock Text="{Binding UserId}" />
+            <TextBlock Text="{Binding UserId}" Name="IdLabel" />
         </StackPanel>
         <StackPanel Grid.Column="0" Grid.ColumnSpan="2"  Grid.Row="1" Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
             <Button Content="{Locale:Locale Save}" Name="SaveButton" Click="SaveButton_Click"/>
