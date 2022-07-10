@@ -79,16 +79,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
-        public IRegionHandle GetHandle()
-        {
-            if (_cpuRegionHandles.Length == 1)
-            {
-                return _cpuRegionHandles[0].GetHandle();
-            }
-
-            throw new NotSupportedException();
-        }
-
         /// <summary>
         /// Register an action to perform when the tracked region is read or written.
         /// The action is automatically removed after it runs.

@@ -338,7 +338,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
-        /// Performs copy of all the buffer data from one buffer to another.
+        /// Performs copy of buffer data on the specified region from one buffer to another.
         /// </summary>
         /// <param name="destination">The destination buffer to copy the data into</param>
         /// <param name="srcOffset">The offset of the source buffer to copy from</param>
@@ -487,12 +487,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
-        /// Disposes the tracking handles at a speicifed buffer sub-range.
+        /// Disposes the tracking handles at a specified buffer sub-range.
         /// </summary>
         /// <remarks>
         /// This buffer should no longer be used after disposing tracking handles.
         /// It also can't be disposed using the regular Dispose method, instead one must use <see cref="DisposeData"/>
-        /// to dispose of the buffer storage, and this method to dispose of any other remaining tracking handle.
+        /// to dispose of the buffer storage, and this method to dispose of any other remaining tracking handles.
         /// </remarks>
         /// <param name="bufferOffset">Start offset of the range to have its tracking handles disposed</param>
         /// <param name="size">Size in bytes of the range</param>
@@ -562,7 +562,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             foreach (BufferRegion region in _regions)
             {
-                region.DisposeData();
+                region.ClearModified();
             }
 
             _context.Renderer.DeleteBuffer(Handle);
