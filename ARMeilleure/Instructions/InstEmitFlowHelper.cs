@@ -224,13 +224,13 @@ namespace ARMeilleure.Instructions
 
             if (isJump)
             {
+                DecreaseCallDepth(context, nativeContext);
+
                 context.Tailcall(hostAddress, nativeContext);
             }
             else
             {
                 OpCode op = context.CurrOp;
-
-                EmitCallDepthCheckAndIncrement(context, nativeContext, guestAddress);
 
                 Operand returnAddress = context.Call(hostAddress, OperandType.I64, nativeContext);
 
@@ -253,13 +253,14 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        private static void EmitCallDepthCheckAndIncrement(EmitterContext context, Operand nativeContext, Operand guestAddress)
+        public static void EmitCallDepthCheckAndIncrement(EmitterContext context, Operand guestAddress)
         {
             if (!Optimizations.EnableDeepCallRecursionProtection)
             {
                 return;
             }
 
+            Operand nativeContext = context.LoadArgument(OperandType.I64, 0);
             Operand callDepthAddr = context.Add(nativeContext, Const((ulong)NativeContext.GetCallDepthOffset()));
             Operand currentCallDepth = context.Load(OperandType.I32, callDepthAddr);
             Operand lblDoCall = Label();
