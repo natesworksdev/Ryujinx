@@ -40,7 +40,7 @@ namespace Ryujinx.Ava.Ui.Vulkan
         public static List<KeyValuePair<PhysicalDevice, PhysicalDeviceProperties>> SuitableDevices { get; private set; }
 
         internal static void SelectAvailableDevices(VulkanInstance instance,
-            VulkanSurface surface, bool preferDiscreteGpu, string preferredDevice)
+            VulkanSurface surface, bool preferDiscreteGpu)
         {
             uint physicalDeviceCount;
 
@@ -72,37 +72,22 @@ namespace Ryujinx.Ava.Ui.Vulkan
         }
 
         internal static unsafe VulkanPhysicalDevice FindSuitablePhysicalDevice(VulkanInstance instance,
-            VulkanSurface surface, bool preferDiscreteGpu, string preferredDevice)
+            VulkanSurface surface, bool preferDiscreteGpu)
         {
-            SelectAvailableDevices(instance, surface, preferDiscreteGpu, preferredDevice);
+            SelectAvailableDevices(instance, surface, preferDiscreteGpu);
 
             uint queueFamilyIndex = 0;
             uint queueCount = 0;
 
-            if (!string.IsNullOrWhiteSpace(preferredDevice))
-            {
-                var physicalDevice = SuitableDevices.FirstOrDefault(x => VulkanInitialization.StringFromIdPair(x.Value.VendorID, x.Value.DeviceID) == preferredDevice);
+            var preferredGpus = SuitableDevices.Where(p => p.Value.DeviceType == (preferDiscreteGpu ? PhysicalDeviceType.IntegratedGpu : PhysicalDeviceType.IntegratedGpu));
 
-                queueFamilyIndex = FindSuitableQueueFamily(instance.Api, physicalDevice.Key,
-                    surface.ApiHandle, out queueCount);
+            foreach (var gpu in preferredGpus)
+            {
+                queueFamilyIndex = FindSuitableQueueFamily(instance.Api, gpu.Key,
+                surface.ApiHandle, out queueCount);
                 if (queueFamilyIndex != int.MaxValue)
                 {
-                    return new VulkanPhysicalDevice(physicalDevice.Key, instance.Api, queueCount, queueFamilyIndex);
-                }
-            }
-
-            if (preferDiscreteGpu)
-            {
-                var discreteGpus = SuitableDevices.Where(p => p.Value.DeviceType == PhysicalDeviceType.DiscreteGpu);
-
-                foreach (var gpu in discreteGpus)
-                {
-                    queueFamilyIndex = FindSuitableQueueFamily(instance.Api, gpu.Key,
-                    surface.ApiHandle, out queueCount);
-                    if (queueFamilyIndex != int.MaxValue)
-                    {
-                        return new VulkanPhysicalDevice(gpu.Key, instance.Api, queueCount, queueFamilyIndex);
-                    }
+                    return new VulkanPhysicalDevice(gpu.Key, instance.Api, queueCount, queueFamilyIndex);
                 }
             }
 

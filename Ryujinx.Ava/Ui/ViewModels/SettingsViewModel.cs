@@ -385,8 +385,6 @@ namespace Ryujinx.Ava.Ui.ViewModels
                 config.System.TimeZone.Value = TimeZone;
             }
 
-            bool requiresRestart = config.Graphics.GraphicsBackend.Value != (GraphicsBackend)GraphicsBackendIndex;
-
             config.Logger.EnableError.Value = EnableError;
             config.Logger.EnableTrace.Value = EnableTrace;
             config.Logger.EnableWarn.Value = EnableWarn;
@@ -418,20 +416,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
             config.Ui.BaseStyle.Value = BaseStyleIndex == 0 ? "Light" : "Dark";
             config.System.Language.Value = (Language)Language;
             config.System.Region.Value = (Region)Region;
-
-            var selectedGpu = _gpuIds.ElementAtOrDefault(PreferredGpuIndex);
-            if (!requiresRestart)
-            {
-                var platform = AvaloniaLocator.Current.GetService<VulkanPlatformInterface>();
-                if (platform != null)
-                {
-                    var physicalDevice = platform.PhysicalDevice;
-
-                    requiresRestart = physicalDevice.DeviceId != selectedGpu;
-                }
-            }
-
-            config.Graphics.PreferredGpu.Value = selectedGpu;
+            config.Graphics.PreferredGpu.Value = _gpuIds.ElementAtOrDefault(PreferredGpuIndex);
 
             if (ConfigurationState.Instance.Graphics.BackendThreading != (BackendThreading)GraphicsBackendMultithreadingIndex)
             {
@@ -471,21 +456,6 @@ namespace Ryujinx.Ava.Ui.ViewModels
             MainWindow.UpdateGraphicsConfig();
 
             _previousVolumeLevel = Volume;
-
-            if (requiresRestart)
-            {
-                var choice = await ContentDialogHelper.CreateChoiceDialog(
-                    _owner,
-                    LocaleManager.Instance["SettingsAppRequiredRestartMessage"],
-                    LocaleManager.Instance["SettingsGpuBackendRestartMessage"],
-                    LocaleManager.Instance["SettingsGpuBackendRestartSubMessage"]);
-
-                if (choice)
-                {
-                    Process.Start(Environment.ProcessPath);
-                    Environment.Exit(0);
-                }
-            }
         }
 
         public void RevertIfNotSaved()

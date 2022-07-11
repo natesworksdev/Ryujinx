@@ -16,6 +16,8 @@ namespace Ryujinx.Graphics.Vulkan
             _memory = memory;
         }
 
+        public DeviceMemory Memory => _memory;
+
         public unsafe void Dispose()
         {
             _api.FreeMemory(_device, _memory, null);

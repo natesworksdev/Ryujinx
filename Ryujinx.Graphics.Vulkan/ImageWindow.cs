@@ -1,12 +1,16 @@
 ﻿using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
+using Silk.NET.Vulkan.Extensions.KHR;
 using System;
 using VkFormat = Silk.NET.Vulkan.Format;
+using ResetEvent = System.Threading.ManualResetEventSlim;
 
 namespace Ryujinx.Graphics.Vulkan
 {
     class ImageWindow : WindowBase, IWindow, IDisposable
     {
+        internal const VkFormat Format = VkFormat.R8G8B8A8Unorm;
+
         private const int ImageCount = 5;
         private const int SurfaceWidth = 1280;
         private const int SurfaceHeight = 720;
@@ -14,10 +18,16 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly VulkanRenderer _gd;
         private readonly PhysicalDevice _physicalDevice;
         private readonly Device _device;
+        private readonly Instance _instance;
 
         private Auto<DisposableImage>[] _images;
         private Auto<DisposableImageView>[] _imageViews;
-        private Auto<MemoryAllocation>[] _imageAllocationAuto;
+        private Auto<DisposableMemory>[] _imageMemory;
+        private ResetEvent[] _imageInUseEvents;
+        private ImageState[] _states;
+        private PresentImageInfo[] _presentedImages;
+        private unsafe void*[] _memoryMaps;
+
         private ulong[] _imageSizes;
         private ulong[] _imageOffsets;
 
@@ -26,24 +36,32 @@ namespace Ryujinx.Graphics.Vulkan
 
         private int _width = SurfaceWidth;
         private int _height = SurfaceHeight;
-        private VkFormat _format;
         private bool _recreateImages;
+        private bool _isSameGpu;
         private int _nextImage;
+        private Auto<DisposableImage> _stagingImage;
+        private Auto<DisposableImageView> _stagingImageView;
+        private ulong _stagingImageSizes;
+        private Auto<DisposableMemory> _stagingMemory;
 
         internal new bool ScreenCaptureRequested { get; set; }
 
-        public unsafe ImageWindow(VulkanRenderer gd, PhysicalDevice physicalDevice, Device device)
+        public unsafe ImageWindow(VulkanRenderer gd, Instance instance, PhysicalDevice physicalDevice, Device device, bool sameGpu)
         {
             _gd = gd;
             _physicalDevice = physicalDevice;
             _device = device;
-
-            _format = VkFormat.R8G8B8A8Unorm;
+            _isSameGpu = sameGpu;
+            _instance = instance;
 
             _images = new Auto<DisposableImage>[ImageCount];
-            _imageAllocationAuto = new Auto<MemoryAllocation>[ImageCount];
+            _imageMemory = new Auto<DisposableMemory>[ImageCount];
             _imageSizes = new ulong[ImageCount];
             _imageOffsets = new ulong[ImageCount];
+            _imageInUseEvents = new ResetEvent[ImageCount];
+            _states = new ImageState[ImageCount];
+            _presentedImages = new PresentImageInfo[ImageCount];
+            _memoryMaps = new void*[ImageCount];
 
             CreateImages();
 
@@ -60,9 +78,19 @@ namespace Ryujinx.Graphics.Vulkan
         {
             for (int i = 0; i < ImageCount; i++)
             {
+                _states[i].IsValid = false;
+                _imageInUseEvents[i].Wait();
                 _imageViews[i]?.Dispose();
-                _imageAllocationAuto[i]?.Dispose();
+                if (!_isSameGpu)
+                {
+                    _gd.Api.UnmapMemory(_device, _imageMemory[i].GetUnsafe().Memory);
+                }
+                _imageMemory[i]?.Dispose();
                 _images[i]?.Dispose();
+                _stagingImageView?.Dispose();
+                _stagingMemory?.Dispose();
+                _stagingImage?.Dispose();
+                _presentedImages = null;
             }
 
             CreateImages();
@@ -71,19 +99,118 @@ namespace Ryujinx.Graphics.Vulkan
         private void CreateImages()
         {
             _imageViews = new Auto<DisposableImageView>[ImageCount];
+            _presentedImages = new PresentImageInfo[ImageCount];
             unsafe
             {
                 var cbs = _gd.CommandBufferPool.Rent();
+                ExternalMemoryHandleTypeFlags flags = _isSameGpu ? default : ExternalMemoryHandleTypeFlags.ExternalMemoryHandleTypeHostAllocationBitExt;
+
+                if (_isSameGpu)
+                {
+                    if (OperatingSystem.IsWindows())
+                    {
+                        flags |= ExternalMemoryHandleTypeFlags.ExternalMemoryHandleTypeOpaqueWin32Bit;
+                    }
+                    else if (OperatingSystem.IsLinux())
+                    {
+                        flags |= ExternalMemoryHandleTypeFlags.ExternalMemoryHandleTypeOpaqueFDBit;
+                    }
+                }
+
+                var externalImageCreateInfo = new ExternalMemoryImageCreateInfo()
+                {
+                    SType = StructureType.ExternalMemoryImageCreateInfo,
+                    HandleTypes = flags,
+                };
+
+                var exportMemoryAllocateInfo = new ExportMemoryAllocateInfo()
+                {
+                    SType = StructureType.ExportMemoryAllocateInfo,
+                    HandleTypes = flags
+                };
+
+                var imageCreateInfo = new ImageCreateInfo
+                {
+                    SType = StructureType.ImageCreateInfo,
+                    ImageType = ImageType.ImageType2D,
+                    Format = Format,
+                    Extent =
+                            new Extent3D((uint?)_width,
+                                (uint?)_height, 1),
+                    MipLevels = 1,
+                    ArrayLayers = 1,
+                    Samples = SampleCountFlags.SampleCount1Bit,
+                    Tiling = _isSameGpu ? ImageTiling.Optimal : ImageTiling.Linear,
+                    Usage = _isSameGpu ? ImageUsageFlags.ImageUsageColorAttachmentBit | ImageUsageFlags.ImageUsageTransferSrcBit | ImageUsageFlags.ImageUsageTransferDstBit
+                    : ImageUsageFlags.ImageUsageSampledBit | ImageUsageFlags.ImageUsageTransferSrcBit | ImageUsageFlags.ImageUsageTransferDstBit,
+                    SharingMode = SharingMode.Exclusive,
+                    InitialLayout = ImageLayout.Undefined,
+                    Flags = ImageCreateFlags.ImageCreateMutableFormatBit,
+                    PNext = &externalImageCreateInfo
+                };
+
                 for (int i = 0; i < _images.Length; i++)
                 {
-                    var imageCreateInfo = new ImageCreateInfo
+                    _gd.Api.CreateImage(_device, imageCreateInfo, null, out var image).ThrowOnError();
+                    _images[i] = new Auto<DisposableImage>(new DisposableImage(_gd.Api, _device, image));
+
+                    _gd.Api.GetImageMemoryRequirements(_device, image,
+                        out var memoryRequirements);
+
+                    var memoryAllocateInfo = new MemoryAllocateInfo
+                    {
+                        SType = StructureType.MemoryAllocateInfo,
+                        AllocationSize = memoryRequirements.Size,
+                        MemoryTypeIndex = (uint)MemoryAllocator.FindSuitableMemoryTypeIndex(_gd.Api,
+                            _physicalDevice,
+                            memoryRequirements.MemoryTypeBits, _isSameGpu ? MemoryPropertyFlags.MemoryPropertyDeviceLocalBit :
+                             MemoryPropertyFlags.MemoryPropertyHostCachedBit | MemoryPropertyFlags.MemoryPropertyHostVisibleBit
+                             | MemoryPropertyFlags.MemoryPropertyHostCoherentBit),
+                        PNext = &exportMemoryAllocateInfo
+                    };
+
+                    _gd.Api.AllocateMemory(_device, memoryAllocateInfo, null, out var memory);
+
+                    _imageSizes[i] = memoryAllocateInfo.AllocationSize;
+                    _imageOffsets[i] = 0;
+
+                    _imageMemory[i] = new Auto<DisposableMemory>(new DisposableMemory(_gd.Api, _device, memory));
+
+                    _gd.Api.BindImageMemory(_device, image, memory, 0);
+
+                    _imageViews[i] = CreateImageView(_gd.Api, _device, image, Format);
+
+                    Transition(
+                        _gd.Api,
+                        cbs.CommandBuffer,
+                        image,
+                        0,
+                        0,
+                        ImageLayout.Undefined,
+                        _isSameGpu ? ImageLayout.ColorAttachmentOptimal : ImageLayout.TransferDstOptimal);
+
+                    _imageInUseEvents[i] = new ResetEvent(true);
+                    _states[i] = new ImageState();
+
+                    if (!_isSameGpu)
+                    {
+                        void* map = null;
+                        _gd.Api.MapMemory(_device, memory, 0, memoryAllocateInfo.AllocationSize, 0, (void**)(&map)).ThrowOnError();
+
+                        _memoryMaps[i] = map;
+                    }
+                }
+
+                if (!_isSameGpu)
+                {
+                    var stagingImageCreateInfo = new ImageCreateInfo
                     {
                         SType = StructureType.ImageCreateInfo,
                         ImageType = ImageType.ImageType2D,
-                        Format = _format,
+                        Format = Format,
                         Extent =
-                            new Extent3D((uint?)_width,
-                                (uint?)_height, 1),
+                                new Extent3D((uint?)_width,
+                                    (uint?)_height, 1),
                         MipLevels = 1,
                         ArrayLayers = 1,
                         Samples = SampleCountFlags.SampleCount1Bit,
@@ -91,40 +218,48 @@ namespace Ryujinx.Graphics.Vulkan
                         Usage = ImageUsageFlags.ImageUsageColorAttachmentBit | ImageUsageFlags.ImageUsageTransferSrcBit | ImageUsageFlags.ImageUsageTransferDstBit,
                         SharingMode = SharingMode.Exclusive,
                         InitialLayout = ImageLayout.Undefined,
-                        Flags = ImageCreateFlags.ImageCreateMutableFormatBit
+                        Flags = ImageCreateFlags.ImageCreateMutableFormatBit,
                     };
-
-                    _gd.Api.CreateImage(_device, imageCreateInfo, null, out var image).ThrowOnError();
-                    _images[i] = new Auto<DisposableImage>(new DisposableImage(_gd.Api, _device, image));
+                    _gd.Api.CreateImage(_device, stagingImageCreateInfo, null, out var image).ThrowOnError();
+                    _stagingImage = new Auto<DisposableImage>(new DisposableImage(_gd.Api, _device, image));
 
                     _gd.Api.GetImageMemoryRequirements(_device, image,
                         out var memoryRequirements);
 
-                    var allocation = _gd.MemoryAllocator.AllocateDeviceMemory(_physicalDevice, memoryRequirements, MemoryPropertyFlags.MemoryPropertyDeviceLocalBit);
+                    var memoryAllocateInfo = new MemoryAllocateInfo
+                    {
+                        SType = StructureType.MemoryAllocateInfo,
+                        AllocationSize = memoryRequirements.Size,
+                        MemoryTypeIndex = (uint)MemoryAllocator.FindSuitableMemoryTypeIndex(_gd.Api,
+                            _physicalDevice,
+                            memoryRequirements.MemoryTypeBits, MemoryPropertyFlags.MemoryPropertyDeviceLocalBit),
+                    };
 
-                    _imageSizes[i] = allocation.Size;
-                    _imageOffsets[i] = allocation.Offset;
+                    _gd.Api.AllocateMemory(_device, memoryAllocateInfo, null, out var memory);
 
-                    _imageAllocationAuto[i] = new Auto<MemoryAllocation>(allocation);
+                    _stagingImageSizes = memoryAllocateInfo.AllocationSize;
 
-                    _gd.Api.BindImageMemory(_device, image, allocation.Memory, allocation.Offset);
+                    _stagingMemory = new Auto<DisposableMemory>(new DisposableMemory(_gd.Api, _device, memory));
 
-                    _imageViews[i] = CreateImageView(image, _format);
+                    _gd.Api.BindImageMemory(_device, image, memory, 0);
+
+                    _stagingImageView = CreateImageView(_gd.Api, _device, image, Format);
 
                     Transition(
+                        _gd.Api,
                         cbs.CommandBuffer,
                         image,
                         0,
                         0,
                         ImageLayout.Undefined,
-                        ImageLayout.ColorAttachmentOptimal);
+                        ImageLayout.TransferSrcOptimal);
                 }
 
                 _gd.CommandBufferPool.Return(cbs);
             }
         }
 
-        private unsafe Auto<DisposableImageView> CreateImageView(Image image, VkFormat format)
+        internal static unsafe Auto<DisposableImageView> CreateImageView(Vk api, Device device, Image image, VkFormat format)
         {
             var componentMapping = new ComponentMapping(
                 ComponentSwizzle.R,
@@ -146,8 +281,8 @@ namespace Ryujinx.Graphics.Vulkan
                 SubresourceRange = subresourceRange
             };
 
-            _gd.Api.CreateImageView(_device, imageCreateInfo, null, out var imageView).ThrowOnError();
-            return new Auto<DisposableImageView>(new DisposableImageView(_gd.Api, _device, imageView));
+            api.CreateImageView(device, imageCreateInfo, null, out var imageView).ThrowOnError();
+            return new Auto<DisposableImageView>(new DisposableImageView(api, device, imageView));
         }
 
         public override unsafe void Present(ITexture texture, ImageCrop crop, Action<object> swapBuffersCallback)
@@ -165,11 +300,12 @@ namespace Ryujinx.Graphics.Vulkan
             var cbs = _gd.CommandBufferPool.Rent();
 
             Transition(
+                _gd.Api,
                 cbs.CommandBuffer,
-                image.GetUnsafe().Value,
+                _isSameGpu ? image.GetUnsafe().Value : _stagingImage.GetUnsafe().Value,
                 0,
                 AccessFlags.AccessTransferWriteBit,
-                ImageLayout.ColorAttachmentOptimal,
+                ImageLayout.TransferSrcOptimal,
                 ImageLayout.General);
 
             var view = (TextureView)texture;
@@ -233,38 +369,96 @@ namespace Ryujinx.Graphics.Vulkan
                 _gd,
                 cbs,
                 view,
-                _imageViews[_nextImage],
+                _isSameGpu ? _imageViews[_nextImage] : _stagingImageView,
                 _width,
                 _height,
-                _format,
+                Format,
                 new Extents2D(srcX0, srcY0, srcX1, srcY1),
                 new Extents2D(dstX0, dstY1, dstX1, dstY0),
                 true,
                 true);
 
+            if (!_isSameGpu)
+            {
+                var region = new ImageCopy()
+                {
+                    SrcSubresource = new ImageSubresourceLayers(ImageAspectFlags.ImageAspectColorBit,
+                    0, 0, 1),
+                    DstSubresource = new ImageSubresourceLayers(ImageAspectFlags.ImageAspectColorBit,
+                    0, 0, 1),
+                    SrcOffset = new Offset3D(0, 0),
+                    Extent = new Extent3D((uint)_width, (uint)_height, 1),
+                    DstOffset = new Offset3D(0, 0),
+                };
+
+                //_imageInUseEvents[_nextImage].Wait();
+
+                _gd.Api.CmdCopyImage(cbs.CommandBuffer, _stagingImage.GetUnsafe().Value,
+                    ImageLayout.General, _images[_nextImage].GetUnsafe().Value, ImageLayout.TransferDstOptimal, 1, region);
+
+                var mappedRegions = new MappedMemoryRange()
+                {
+                    Size = _imageSizes[_nextImage],
+                    SType = StructureType.MappedMemoryRange,
+                    Memory = _imageMemory[_nextImage].GetUnsafe().Memory,
+                    Offset = 0
+                };
+            }
+
             Transition(
+                _gd.Api,
                 cbs.CommandBuffer,
-                image.GetUnsafe().Value,
+                _isSameGpu ? image.GetUnsafe().Value : _stagingImage.GetUnsafe().Value,
                 0,
                 0,
                 ImageLayout.General,
-                ImageLayout.ColorAttachmentOptimal);
+                ImageLayout.TransferSrcOptimal);
 
             _gd.CommandBufferPool.Return(
                 cbs,
                 null,
-                new[] { PipelineStageFlags.PipelineStageColorAttachmentOutputBit },
+                new[] { PipelineStageFlags.PipelineStageAllCommandsBit },
                 null);
 
-            var memory = _imageAllocationAuto[_nextImage].GetUnsafe().Memory;
-            var presentInfo = new PresentImageInfo(image.GetUnsafe().Value, memory, _imageSizes[_nextImage], _imageOffsets[_nextImage], _renderFinishedSemaphore, _imageAvailableSemaphore);
+            if (!_isSameGpu)
+            {
+                cbs.GetFence().Wait();
+            }
 
-            swapBuffersCallback(presentInfo);
+            _imageInUseEvents[_nextImage].Reset();
 
-            _nextImage %= ImageCount;
+            var j = _nextImage;
+
+            PresentImageInfo info = _presentedImages[_nextImage];
+            if (info == null)
+            {
+                info = new PresentImageInfo(
+                                        image.GetUnsafe().Value,
+                                        _imageMemory[_nextImage].GetUnsafe().Memory,
+                                        _device,
+                                        _instance,
+                                        _physicalDevice,
+                                        _imageSizes[_nextImage],
+                                        _imageOffsets[_nextImage],
+                                        _renderFinishedSemaphore,
+                                        _imageAvailableSemaphore,
+                                        new Extent2D((uint)_width, (uint)_height),
+                                        _states[_nextImage],
+                                        _isSameGpu,
+                                        _memoryMaps[_nextImage],
+                                        cbs.GetFence().GetUnsafe(),
+                                        () => { _imageInUseEvents[j].Set(); });
+
+                _presentedImages[_nextImage] = info;
+            }
+
+            swapBuffersCallback(info);
+
+            _nextImage = (_nextImage + 1) % ImageCount;
         }
 
-        private unsafe void Transition(
+        internal static unsafe void Transition(
+            Vk api,
             CommandBuffer commandBuffer,
             Image image,
             AccessFlags srcAccess,
@@ -287,7 +481,7 @@ namespace Ryujinx.Graphics.Vulkan
                 SubresourceRange = subresourceRange
             };
 
-            _gd.Api.CmdPipelineBarrier(
+            api.CmdPipelineBarrier(
                 commandBuffer,
                 PipelineStageFlags.PipelineStageTopOfPipeBit,
                 PipelineStageFlags.PipelineStageAllCommandsBit,
@@ -326,12 +520,21 @@ namespace Ryujinx.Graphics.Vulkan
                 {
                     _gd.Api.DestroySemaphore(_device, _renderFinishedSemaphore, null);
                     _gd.Api.DestroySemaphore(_device, _imageAvailableSemaphore, null);
-
                     for (int i = 0; i < ImageCount; i++)
                     {
+                        _states[i].IsValid = false;
+                        _imageInUseEvents[i].Set();
+                        _imageInUseEvents[i].Dispose();
                         _imageViews[i]?.Dispose();
-                        _imageAllocationAuto[i]?.Dispose();
+                        if (!_isSameGpu)
+                        {
+                            _gd.Api.UnmapMemory(_device, _imageMemory[i].GetUnsafe().Memory);
+                        }
+                        _imageMemory[i]?.Dispose();
                         _images[i]?.Dispose();
+                        _stagingImageView?.Dispose();
+                        _stagingMemory?.Dispose();
+                        _stagingImage?.Dispose();
                     }
                 }
             }
@@ -343,23 +546,350 @@ namespace Ryujinx.Graphics.Vulkan
         }
     }
 
+    public class ImageState
+    {
+        private bool _isValid = true;
+
+        public bool IsValid
+        {
+            get => _isValid; internal set
+            {
+                _isValid = value;
+
+                StateChanged?.Invoke(this, _isValid);
+            }
+        }
+        public event EventHandler<bool> StateChanged;
+    }
+
     public class PresentImageInfo
     {
+        private Auto<DisposableMemory> _stagingMemory = null;
+        private Auto<DisposableImage> _stagingImage = null;
+        private Auto<DisposableImageView> _stagingImageView = null;
+        private Auto<DisposableMemory> _externalMemory = null;
+        private Auto<DisposableImage> _externalImage = null;
+        private bool _isSameGpu;
+
         public Image Image { get; }
         public DeviceMemory Memory { get; }
+        public Device Device { get; }
+        public Instance Instance { get; }
+        public PhysicalDevice PhysicalDevice { get; }
         public ulong MemorySize { get; set; }
         public ulong MemoryOffset { get; set; }
         public Semaphore ReadySemaphore { get; }
         public Semaphore AvailableSemaphore { get; }
+        public Extent2D Extent { get; }
+        public Action CompletionAction { get; }
+        public ImageState State { get; internal set; }
+        public unsafe void* Pointer { get; }
+        public Fence Fence { get; }
 
-        public PresentImageInfo(Image image, DeviceMemory memory, ulong memorySize, ulong memoryOffset, Semaphore readySemaphore, Semaphore availableSemaphore)
+        public unsafe PresentImageInfo(
+            Image image,
+            DeviceMemory memory,
+            Device device,
+            Instance instance,
+            PhysicalDevice physicalDevice,
+            ulong memorySize,
+            ulong memoryOffset,
+            Semaphore readySemaphore,
+            Semaphore availableSemaphore,
+            Extent2D extent2D,
+            ImageState state,
+            bool isSameGpu,
+            void* pointer,
+            Fence fence,
+            Action completionAction)
         {
-            this.Image = image;
-            this.Memory = memory;
-            this.MemorySize = memorySize;
-            this.MemoryOffset = memoryOffset;
-            this.ReadySemaphore = readySemaphore;
-            this.AvailableSemaphore = availableSemaphore;
+            Image = image;
+            Memory = memory;
+            Device = device;
+            Instance = instance;
+            PhysicalDevice = physicalDevice;
+            MemorySize = memorySize;
+            MemoryOffset = memoryOffset;
+            ReadySemaphore = readySemaphore;
+            AvailableSemaphore = availableSemaphore;
+            Extent = extent2D;
+            CompletionAction = completionAction;
+            State = state;
+            _isSameGpu = isSameGpu;
+            Pointer = pointer;
+            Fence = fence;
+
+            state.StateChanged += StateChanged;
+        }
+
+        private void StateChanged(object sender, bool e)
+        {
+            if(!e) {
+                if(_stagingImage != null) {
+                    _stagingMemory.Dispose();
+                    _stagingImageView.Dispose();
+                    _stagingImage.Dispose();
+                }
+
+                if(_externalImage != null) {
+                    _externalImage.Dispose();
+                    _externalMemory.Dispose();
+                }
+            }
+        }
+
+        public unsafe void GetImage(Device device, PhysicalDevice physicalDevice, CommandBuffer commandBuffer, out Image image, out DeviceMemory memory)
+        {
+            var api = Vk.GetApi();
+
+            memory = default;
+
+            if (_externalImage != null)
+            {
+                if (_isSameGpu)
+                {
+                    image = _externalImage.GetUnsafe().Value;
+                    memory = _externalMemory.GetUnsafe().Memory;
+                }
+                else
+                {
+                    var region = new ImageCopy()
+                    {
+                        SrcSubresource = new ImageSubresourceLayers(ImageAspectFlags.ImageAspectColorBit,
+                        0, 0, 1),
+                        DstSubresource = new ImageSubresourceLayers(ImageAspectFlags.ImageAspectColorBit,
+                        0, 0, 1),
+                        SrcOffset = new Offset3D(0, 0),
+                        Extent = new Extent3D(Extent.Width, Extent.Height, 1),
+                        DstOffset = new Offset3D(0, 0)
+                    };
+
+                    api.CmdCopyImage(commandBuffer, _externalImage.GetUnsafe().Value,
+                        ImageLayout.TransferSrcOptimal, _stagingImage.GetUnsafe().Value, ImageLayout.TransferDstOptimal, 1, region);
+
+                    image = _stagingImage.GetUnsafe().Value;
+                    memory = _stagingMemory.GetUnsafe().Memory;
+                }
+
+                return;
+            }
+
+            ExternalMemoryHandleTypeFlags flags = _isSameGpu ? default : ExternalMemoryHandleTypeFlags.ExternalMemoryHandleTypeHostAllocationBitExt;
+
+            if (_isSameGpu)
+            {
+                if (OperatingSystem.IsWindows())
+                {
+                    flags |= ExternalMemoryHandleTypeFlags.ExternalMemoryHandleTypeOpaqueWin32Bit;
+                }
+                else if (OperatingSystem.IsLinux())
+                {
+                    flags |= ExternalMemoryHandleTypeFlags.ExternalMemoryHandleTypeOpaqueFDBit;
+                }
+            }
+
+            var externalImageCreateInfo = new ExternalMemoryImageCreateInfo()
+            {
+                SType = StructureType.ExternalMemoryImageCreateInfo,
+                HandleTypes = flags,
+            };
+
+            var imageCreateInfo = new ImageCreateInfo
+            {
+                SType = StructureType.ImageCreateInfo,
+                ImageType = ImageType.ImageType2D,
+                Format = ImageWindow.Format,
+                Extent =
+                            new Extent3D(Extent.Width, Extent.Height, 1),
+                MipLevels = 1,
+                ArrayLayers = 1,
+                Samples = SampleCountFlags.SampleCount1Bit,
+                Tiling = _isSameGpu ? ImageTiling.Optimal : ImageTiling.Linear,
+                Usage = _isSameGpu ? ImageUsageFlags.ImageUsageColorAttachmentBit | ImageUsageFlags.ImageUsageTransferSrcBit | ImageUsageFlags.ImageUsageTransferDstBit :
+                  ImageUsageFlags.ImageUsageSampledBit |  ImageUsageFlags.ImageUsageColorAttachmentBit | ImageUsageFlags.ImageUsageTransferSrcBit | ImageUsageFlags.ImageUsageTransferDstBit,
+                SharingMode = SharingMode.Exclusive,
+                InitialLayout = ImageLayout.Undefined,
+                Flags = ImageCreateFlags.ImageCreateMutableFormatBit,
+                PNext = &externalImageCreateInfo
+            };
+
+            api.CreateImage(device, imageCreateInfo, null, out image).ThrowOnError();
+            api.GetImageMemoryRequirements(device, image,
+                                out var memoryRequirements);
+
+            var memoryAllocateInfo = new MemoryAllocateInfo
+            {
+                SType = StructureType.MemoryAllocateInfo,
+                AllocationSize = memoryRequirements.Size,
+                MemoryTypeIndex = (uint)MemoryAllocator.FindSuitableMemoryTypeIndex(api,
+                    physicalDevice,
+                    memoryRequirements.MemoryTypeBits, _isSameGpu ? MemoryPropertyFlags.MemoryPropertyDeviceLocalBit :
+                             MemoryPropertyFlags.MemoryPropertyHostCachedBit | MemoryPropertyFlags.MemoryPropertyHostVisibleBit
+                             | MemoryPropertyFlags.MemoryPropertyHostCoherentBit)
+            };
+
+            ImportMemoryHostPointerInfoEXT importmemoryInfo;
+            if (_isSameGpu)
+            {
+                if (OperatingSystem.IsWindows())
+                {
+                    nint handle = 0;
+                    if (api.TryGetDeviceExtension<KhrExternalMemoryWin32>(Instance, Device, out var win32Export))
+                    {
+                        var getInfo = new MemoryGetWin32HandleInfoKHR()
+                        {
+                            SType = StructureType.MemoryGetWin32HandleInfoKhr,
+                            HandleType = ExternalMemoryHandleTypeFlags.ExternalMemoryHandleTypeOpaqueWin32Bit,
+                            Memory = Memory
+                        };
+                        win32Export.GetMemoryWin32Handle(Device, getInfo, out handle).ThrowOnError();
+                    }
+
+                    if (handle != 0)
+                    {
+                        var getInfo = new ImportMemoryWin32HandleInfoKHR
+                        {
+                            SType = StructureType.ImportMemoryWin32HandleInfoKhr,
+                            HandleType = ExternalMemoryHandleTypeFlags.ExternalMemoryHandleTypeOpaqueWin32Bit,
+                            Handle = handle
+                        };
+
+                        memoryAllocateInfo.PNext = &getInfo;
+
+                        api.AllocateMemory(device, memoryAllocateInfo, null,
+                            out memory).ThrowOnError();
+                    }
+                    else
+                    {
+                        throw new Exception();
+                    }
+                }
+                else if (OperatingSystem.IsLinux())
+                {
+                    int handle = 0;
+                    if (api.TryGetDeviceExtension<KhrExternalMemoryFd>(Instance, Device, out var fdExport))
+                    {
+                        var getInfo = new MemoryGetFdInfoKHR()
+                        {
+                            SType = StructureType.MemoryGetFDInfoKhr,
+                            HandleType = ExternalMemoryHandleTypeFlags.ExternalMemoryHandleTypeOpaqueFDBit,
+                            Memory = Memory
+                        };
+                        fdExport.GetMemoryF(Device, &getInfo, out handle).ThrowOnError();
+                    }
+
+                    if (handle != 0)
+                    {
+                        var getInfo = new ImportMemoryFdInfoKHR
+                        {
+                            SType = StructureType.ImportMemoryFDInfoKhr,
+                            HandleType = ExternalMemoryHandleTypeFlags.ExternalMemoryHandleTypeOpaqueFDBit,
+                            Fd = handle
+                        };
+
+                        memoryAllocateInfo.PNext = &getInfo;
+                    }
+                    else
+                    {
+                        throw new Exception();
+                    }
+                }
+            }
+            else
+            {
+                importmemoryInfo = new ImportMemoryHostPointerInfoEXT()
+                {
+                    SType = StructureType.ImportMemoryHostPointerInfoExt,
+                    HandleType = ExternalMemoryHandleTypeFlags.ExternalMemoryHandleTypeHostAllocationBitExt,
+                    PHostPointer = Pointer
+                };
+
+                memoryAllocateInfo.PNext = &importmemoryInfo;
+            }
+
+            api.AllocateMemory(device, memoryAllocateInfo, null,
+                out memory).ThrowOnError();
+
+            api.BindImageMemory(device, image, memory, 0).ThrowOnError();
+
+            _externalImage = new Auto<DisposableImage>(new DisposableImage(api, device, image));
+            _externalMemory = new Auto<DisposableMemory>(new DisposableMemory(api, device, memory));
+
+            if (!_isSameGpu)
+            {
+                ImageWindow.Transition(
+                    api,
+                    commandBuffer,
+                    image,
+                    0,
+                    0,
+                    ImageLayout.Undefined,
+                    ImageLayout.TransferSrcOptimal);
+
+                var stagingImageCreateInfo = new ImageCreateInfo
+                {
+                    SType = StructureType.ImageCreateInfo,
+                    ImageType = ImageType.ImageType2D,
+                    Format = VkFormat.R8G8B8A8Unorm,
+                    Extent =
+                        new Extent3D(Extent.Width, Extent.Height, 1),
+                    MipLevels = 1,
+                    ArrayLayers = 1,
+                    Samples = SampleCountFlags.SampleCount1Bit,
+                    Tiling = ImageTiling.Optimal,
+                    Usage = ImageUsageFlags.ImageUsageColorAttachmentBit | ImageUsageFlags.ImageUsageTransferSrcBit | ImageUsageFlags.ImageUsageTransferDstBit,
+                    SharingMode = SharingMode.Exclusive,
+                    InitialLayout = ImageLayout.Undefined,
+                    Flags = ImageCreateFlags.ImageCreateMutableFormatBit,
+                };
+                api.CreateImage(device, stagingImageCreateInfo, null, out var stagingimage).ThrowOnError();
+                _stagingImage = new Auto<DisposableImage>(new DisposableImage(api, device, stagingimage));
+
+                api.GetImageMemoryRequirements(device, stagingimage,
+                    out memoryRequirements);
+
+                memoryAllocateInfo = new MemoryAllocateInfo
+                {
+                    SType = StructureType.MemoryAllocateInfo,
+                    AllocationSize = memoryRequirements.Size,
+                    MemoryTypeIndex = (uint)MemoryAllocator.FindSuitableMemoryTypeIndex(api,
+                        physicalDevice,
+                        memoryRequirements.MemoryTypeBits, MemoryPropertyFlags.MemoryPropertyDeviceLocalBit),
+                };
+
+                api.AllocateMemory(device, memoryAllocateInfo, null, out memory);
+
+                _stagingMemory = new Auto<DisposableMemory>(new DisposableMemory(api, device, memory));
+
+                api.BindImageMemory(device, stagingimage, memory, 0);
+
+                _stagingImageView = ImageWindow.CreateImageView(api, device, image, VkFormat.R8G8B8A8Unorm);
+
+                ImageWindow.Transition(
+                    api,
+                    commandBuffer,
+                    stagingimage,
+                    0,
+                    0,
+                    ImageLayout.Undefined,
+                    ImageLayout.TransferDstOptimal);
+
+                var region = new ImageCopy()
+                {
+                    SrcSubresource = new ImageSubresourceLayers(ImageAspectFlags.ImageAspectColorBit,
+                        0, 0, 1),
+                    DstSubresource = new ImageSubresourceLayers(ImageAspectFlags.ImageAspectColorBit,
+                        0, 0, 1),
+                    SrcOffset = new Offset3D(0, 0),
+                    Extent = stagingImageCreateInfo.Extent,
+                    DstOffset = new Offset3D(0, 0)
+                };
+
+                api.CmdCopyImage(commandBuffer, image,
+                    ImageLayout.TransferSrcOptimal, stagingimage, ImageLayout.TransferDstOptimal, 1, region);
+
+                image = stagingimage;
+            }
         }
     }
 }

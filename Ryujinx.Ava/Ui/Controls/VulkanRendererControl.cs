@@ -71,9 +71,9 @@ namespace Ryujinx.Ava.Ui.Controls
                 Bounds = _control.Bounds;
             }
 
-            public void Dispose()
+            public unsafe void Dispose()
             {
-
+                
             }
 
             public bool Equals(ICustomDrawOperation other)
@@ -86,67 +86,83 @@ namespace Ryujinx.Ava.Ui.Controls
                 return Bounds.Contains(p);
             }
 
-            public void Render(IDrawingContextImpl context)
+            public unsafe void Render(IDrawingContextImpl context)
             {
-                if (_control.Image == null || _control.RenderSize.Width == 0 || _control.RenderSize.Height == 0)
+                if (_control.Image == null || _control.RenderSize.Width == 0 || _control.RenderSize.Height == 0 || context is not ISkiaDrawingContextImpl skiaDrawingContextImpl)
                 {
                     return;
                 }
 
                 var image = (PresentImageInfo)_control.Image;
 
-                if (context is not ISkiaDrawingContextImpl skiaDrawingContextImpl)
+                try
                 {
-                    return;
-                }
 
-                _control._platformInterface.Device.QueueWaitIdle();
-
-                var gpu = AvaloniaLocator.Current.GetService<VulkanSkiaGpu>();
-
-                var imageInfo = new GRVkImageInfo()
-                {
-                    CurrentQueueFamily = _control._platformInterface.PhysicalDevice.QueueFamilyIndex,
-                    Format = (uint)Format.R8G8B8A8Unorm,
-                    Image = image.Image.Handle,
-                    ImageLayout = (uint)ImageLayout.ColorAttachmentOptimal,
-                    ImageTiling = (uint)ImageTiling.Optimal,
-                    ImageUsageFlags = (uint)(ImageUsageFlags.ImageUsageColorAttachmentBit
-                                             | ImageUsageFlags.ImageUsageTransferSrcBit
-                                             | ImageUsageFlags.ImageUsageTransferDstBit),
-                    LevelCount = 1,
-                    SampleCount = 1,
-                    Protected = false,
-                    Alloc = new GRVkAlloc()
+                    if (!image.State.IsValid)
                     {
-                        Memory = image.Memory.Handle,
-                        Flags = 0,
-                        Offset = image.MemoryOffset,
-                        Size = image.MemorySize
+                        return;
                     }
-                };
 
-                using var backendTexture = new GRBackendRenderTarget(
-                    (int)_control.RenderSize.Width,
-                    (int)_control.RenderSize.Height,
-                    1,
-                    imageInfo);
+                    var commandBuffer = _control._platformInterface.Device.CommandBufferPool.CreateCommandBuffer();
 
-                using var surface = SKSurface.Create(
-                    gpu.GrContext,
-                    backendTexture,
-                    GRSurfaceOrigin.TopLeft,
-                    SKColorType.Rgba8888);
+                    commandBuffer.BeginRecording();
 
-                if (surface == null)
-                {
-                    return;
+                    image.GetImage(_control._platformInterface.Device.InternalHandle, _control._platformInterface.PhysicalDevice.InternalHandle, commandBuffer.InternalHandle, out var currentImage, out var memory);
+
+                    commandBuffer.Submit();
+
+                    _control._platformInterface.Device.QueueWaitIdle();
+
+                    var gpu = AvaloniaLocator.Current.GetService<VulkanSkiaGpu>();
+
+                    var imageInfo = new GRVkImageInfo()
+                    {
+                        CurrentQueueFamily = _control._platformInterface.PhysicalDevice.QueueFamilyIndex,
+                        Format = (uint)Format.R8G8B8A8Unorm,
+                        Image = currentImage.Handle,
+                        ImageLayout = (uint)ImageLayout.ColorAttachmentOptimal,
+                        ImageTiling = (uint)ImageTiling.Optimal,
+                        ImageUsageFlags = (uint)(ImageUsageFlags.ImageUsageColorAttachmentBit
+                                                 | ImageUsageFlags.ImageUsageTransferSrcBit
+                                                 | ImageUsageFlags.ImageUsageTransferDstBit),
+                        LevelCount = 1,
+                        SampleCount = 1,
+                        Protected = false,
+                        Alloc = new GRVkAlloc()
+                        {
+                            Memory = memory.Handle,
+                            Flags = 0,
+                            Offset = image.MemoryOffset,
+                            Size = image.MemorySize
+                        }
+                    };
+
+                    using var backendTexture = new GRBackendRenderTarget(
+                        (int)image.Extent.Width,
+                        (int)image.Extent.Height,
+                        1,
+                        imageInfo);
+
+                    using var surface = SKSurface.Create(
+                        gpu.GrContext,
+                        backendTexture,
+                        GRSurfaceOrigin.TopLeft,
+                        SKColorType.Rgba8888);
+
+                    if (surface == null)
+                    {
+                        return;
+                    }
+
+                    var rect = new Rect(new Point(), new Size(image.Extent.Width, image.Extent.Height));
+
+                    using var snapshot = surface.Snapshot();
+                    skiaDrawingContextImpl.SkCanvas.DrawImage(snapshot, rect.ToSKRect(), _control.Bounds.ToSKRect(), new SKPaint());
                 }
-
-                var rect = new Rect(new Point(), _control.RenderSize);
-
-                using var snapshot = surface.Snapshot();
-                skiaDrawingContextImpl.SkCanvas.DrawImage(snapshot, rect.ToSKRect(), _control.Bounds.ToSKRect(), new SKPaint());
+                finally
+                {
+                    image.CompletionAction();
+                }
             }
         }
     }

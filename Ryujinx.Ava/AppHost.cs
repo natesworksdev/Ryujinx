@@ -592,12 +592,11 @@ namespace Ryujinx.Ava
             if (Program.UseVulkan)
             {
                 var vulkan = AvaloniaLocator.Current.GetService<VulkanPlatformInterface>();
+                
                 renderer = new VulkanRenderer(vulkan.Instance.InternalHandle,
-                    vulkan.Device.InternalHandle,
-                    vulkan.PhysicalDevice.InternalHandle,
-                    vulkan.Device.Queue.InternalHandle,
-                    vulkan.PhysicalDevice.QueueFamilyIndex,
-                    vulkan.Device.Lock);
+                    vulkan.Device.Lock,
+                    ConfigurationState.Instance.Graphics.PreferredGpu.Value,
+                    vulkan.PhysicalDevice.DeviceId);
             }
             else
             {

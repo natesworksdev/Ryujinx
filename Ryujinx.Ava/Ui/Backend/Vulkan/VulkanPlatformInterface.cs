@@ -63,7 +63,7 @@ namespace Ryujinx.Ava.Ui.Vulkan
             {
                 if (Device == null)
                 {
-                    PhysicalDevice = VulkanPhysicalDevice.FindSuitablePhysicalDevice(Instance, surface, _options.PreferDiscreteGpu, _options.PreferredDevice);
+                    PhysicalDevice = VulkanPhysicalDevice.FindSuitablePhysicalDevice(Instance, surface, _options.PreferDiscreteGpu);
                     var device = VulkanInitialization.CreateDevice(Instance.Api,
                                                                    PhysicalDevice.InternalHandle,
                                                                    PhysicalDevice.QueueFamilyIndex,

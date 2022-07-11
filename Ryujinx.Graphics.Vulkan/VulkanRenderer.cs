@@ -71,6 +71,7 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly Func<Instance, Vk, SurfaceKHR> _getSurface;
         private readonly Func<string[]> _getRequiredExtensions;
         private readonly string _preferredGpuId;
+        private readonly string _displayGpu;
 
         internal Vendor Vendor { get; private set; }
         internal bool IsAmdWindows { get; private set; }
@@ -94,16 +95,12 @@ namespace Ryujinx.Graphics.Vulkan
             Samplers = new HashSet<SamplerHolder>();
         }
 
-        public VulkanRenderer(Instance instance, Device device, PhysicalDevice physicalDevice, Queue queue, uint queueFamilyIndex, object lockObject)
+        public VulkanRenderer(Instance instance, object lockObject, string preferredGpuId, string displayGpu)
         {
             _instance = instance;
-            _physicalDevice = physicalDevice;
-            _device = device;
-            _queueFamilyIndex = queueFamilyIndex;
-
-            Queue = queue;
             QueueLock = lockObject;
-
+            _preferredGpuId = preferredGpuId;
+            _displayGpu = displayGpu;
             IsOffScreen = true;
             Shaders = new HashSet<ShaderCollection>();
             Textures = new HashSet<ITexture>();
@@ -243,17 +240,39 @@ namespace Ryujinx.Graphics.Vulkan
 
             Api = api;
 
-            _instance = VulkanInitialization.CreateInstance(api, logLevel, _getRequiredExtensions(), out ExtDebugReport debugReport, out _debugReportCallback);
+            ExtDebugReport debugReport;
+
+            if (!IsOffScreen)
+            {
+                _instance = VulkanInitialization.CreateInstance(api, logLevel, _getRequiredExtensions(), out debugReport, out _debugReportCallback);
+            }
+            else
+            {
+                VulkanInitialization.CreateDebugCallbacks(api, logLevel, _instance, out debugReport, out _debugReportCallback);
+            }
 
             DebugReportApi = debugReport;
 
-            if (api.TryGetInstanceExtension(_instance, out KhrSurface surfaceApi))
+            if (!IsOffScreen)
             {
-                SurfaceApi = surfaceApi;
+                if (api.TryGetInstanceExtension(_instance, out KhrSurface surfaceApi))
+                {
+                    SurfaceApi = surfaceApi;
+                }
+
+                _surface = _getSurface(_instance, api);
             }
 
-            _surface = _getSurface(_instance, api);
             _physicalDevice = VulkanInitialization.FindSuitablePhysicalDevice(api, _instance, _surface, _preferredGpuId);
+
+            var sameGpu = true;
+
+            if (!string.IsNullOrWhiteSpace(_displayGpu))
+            {
+                Api.GetPhysicalDeviceProperties(_physicalDevice, out var properties);
+                var deviceId = VulkanInitialization.StringFromIdPair(properties.VendorID, properties.DeviceID);
+                sameGpu = deviceId == _displayGpu;
+            }
 
             var queueFamilyIndex = VulkanInitialization.FindSuitableQueueFamily(api, _physicalDevice, _surface, out uint maxQueueCount);
             var supportedExtensions = VulkanInitialization.GetSupportedExtensions(api, _physicalDevice);
@@ -271,35 +290,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             LoadFeatures(supportedExtensions, maxQueueCount, queueFamilyIndex);
 
-            _window = new Window(this, _surface, _physicalDevice, _device);
-        }
-
-        private unsafe void SetupOffScreenContext(GraphicsDebugLevel logLevel)
-        {
-            var api = Vk.GetApi();
-
-            Api = api;
-
-            VulkanInitialization.CreateDebugCallbacks(api, logLevel, _instance, out var debugReport, out _debugReportCallback);
-
-            DebugReportApi = debugReport;
-
-            var supportedExtensions = VulkanInitialization.GetSupportedExtensions(api, _physicalDevice);
-
-            uint propertiesCount;
-
-            api.GetPhysicalDeviceQueueFamilyProperties(_physicalDevice, &propertiesCount, null);
-
-            QueueFamilyProperties[] queueFamilyProperties = new QueueFamilyProperties[propertiesCount];
-
-            fixed (QueueFamilyProperties* pProperties = queueFamilyProperties)
-            {
-                api.GetPhysicalDeviceQueueFamilyProperties(_physicalDevice, &propertiesCount, pProperties);
-            }
-
-            LoadFeatures(supportedExtensions, queueFamilyProperties[0].QueueCount, _queueFamilyIndex);
-
-            _window = new ImageWindow(this, _physicalDevice, _device);
+            _window = !IsOffScreen ? new Window(this, _surface, _physicalDevice, _device) : new ImageWindow(this, _instance, _physicalDevice, _device, sameGpu);
         }
 
         public BufferHandle CreateBuffer(int size)
@@ -494,14 +485,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void Initialize(GraphicsDebugLevel logLevel)
         {
-            if (IsOffScreen)
-            {
-                SetupOffScreenContext(logLevel);
-            }
-            else
-            {
-                SetupContext(logLevel);
-            }
+            SetupContext(logLevel);
 
             PrintGpuInformation();
         }
@@ -595,11 +579,11 @@ namespace Ryujinx.Graphics.Vulkan
                 sampler.Dispose();
             }
 
+            Api.DestroyDevice(_device, null);
+
             if (!IsOffScreen)
             {
                 SurfaceApi.DestroySurface(_instance, _surface, null);
-
-                Api.DestroyDevice(_device, null);
 
                 // Last step destroy the instance
                 Api.DestroyInstance(_instance, null);

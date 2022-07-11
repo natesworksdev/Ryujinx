@@ -60,8 +60,7 @@ namespace Ryujinx.Ava.Ui.Vulkan
             var applicationInfo = new ApplicationInfo
             {
                 PApplicationName = (byte*)applicationName,
-                ApiVersion = new Version32((uint)options.VulkanVersion.Major, (uint)options.VulkanVersion.Minor,
-                    (uint)options.VulkanVersion.Build),
+                ApiVersion = Vk.Version12.Value,
                 PEngineName = (byte*)engineName,
                 EngineVersion = new Version32(1, 0, 0),
                 ApplicationVersion = new Version32(1, 0, 0)
@@ -72,6 +71,7 @@ namespace Ryujinx.Ava.Ui.Vulkan
             if (options.UseDebug)
             {
                 enabledExtensions.Add(ExtDebugUtils.ExtensionName);
+                enabledExtensions.Add(ExtDebugReport.ExtensionName);
                 if (IsLayerAvailable(api, "VK_LAYER_KHRONOS_validation"))
                     enabledLayers.Add("VK_LAYER_KHRONOS_validation");
             }
