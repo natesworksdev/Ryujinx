@@ -14,7 +14,7 @@ namespace Ryujinx.Memory.Tracking
         /// </summary>
         /// <param name="address">Start address of the range</param>
         /// <param name="size">Size of the range</param>
-        public void ForceDirty(ulong address, ulong size);
+        void ForceDirty(ulong address, ulong size);
 
         /// <summary>
         /// Check if any part of the region has been modified, and perform an action for each.
@@ -36,7 +36,7 @@ namespace Ryujinx.Memory.Tracking
 
         /// <summary>
         /// Check if part of the region has been modified within a given range, and perform an action for each.
-        /// The sequence number provided is compared with each handle's saved sequence number. 
+        /// The sequence number provided is compared with each handle's saved sequence number.
         /// If it is equal, then the handle's dirty flag is ignored. Otherwise, the sequence number is saved.
         /// The range is aligned to the level of granularity of the contained handles.
         /// Contiguous modified regions are combined.

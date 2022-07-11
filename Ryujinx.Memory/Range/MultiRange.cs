@@ -19,16 +19,6 @@ namespace Ryujinx.Memory.Range
         public int Count => HasSingleRange ? 1 : _ranges.Length;
 
         /// <summary>
-        /// Minimum start address of all sub-ranges.
-        /// </summary>
-        public ulong MinAddress { get; }
-
-        /// <summary>
-        /// Maximum end address of all sub-ranges.
-        /// </summary>
-        public ulong MaxAddress { get; }
-
-        /// <summary>
         /// Creates a new multi-range with a single physical region.
         /// </summary>
         /// <param name="address">Start address of the region</param>
@@ -37,8 +27,6 @@ namespace Ryujinx.Memory.Range
         {
             _singleRange = new MemoryRange(address, size);
             _ranges = null;
-            MinAddress = address;
-            MaxAddress = address + size;
         }
 
         /// <summary>
@@ -50,29 +38,67 @@ namespace Ryujinx.Memory.Range
         {
             _singleRange = MemoryRange.Empty;
             _ranges = ranges ?? throw new ArgumentNullException(nameof(ranges));
+        }
 
-            if (ranges.Length != 0)
+        /// <summary>
+        /// Appends a multi-range at the end of this range.
+        /// </summary>
+        /// <param name="right">Range to append at the end</param>
+        /// <returns>A new range with <paramref name="right"/> appended at the end</returns>
+        public MultiRange Append(MultiRange right)
+        {
+            MultiRange left = this;
+
+            if (left.Count == 0)
             {
-                MinAddress = ulong.MaxValue;
-                MaxAddress = 0UL;
+                return right;
+            }
+            else if (right.Count == 0)
+            {
+                return left;
+            }
 
-                foreach (MemoryRange range in ranges)
+            MemoryRange leftLastRange = left.GetSubRange(left.Count - 1);
+            MemoryRange rightFirstRange = right.GetSubRange(0);
+
+            if (leftLastRange.EndAddress == rightFirstRange.Address)
+            {
+                if (left.Count == 1 && right.Count == 1)
                 {
-                    if (MinAddress > range.Address)
-                    {
-                        MinAddress = range.Address;
-                    }
-
-                    if (MaxAddress < range.EndAddress)
-                    {
-                        MaxAddress = range.EndAddress;
-                    }
+                    return new MultiRange(leftLastRange.Address, rightFirstRange.EndAddress - leftLastRange.Address);
                 }
+
+                MemoryRange[] ranges = new MemoryRange[left.Count + right.Count - 1];
+
+                for (int index = 0; index < left.Count - 1; index++)
+                {
+                    ranges[index] = left.GetSubRange(index);
+                }
+
+                for (int index = 1; index < right.Count; index++)
+                {
+                    ranges[left.Count - 1 + index] = right.GetSubRange(index);
+                }
+
+                ranges[left.Count - 1] = new MemoryRange(leftLastRange.Address, rightFirstRange.EndAddress - leftLastRange.Address);
+
+                return new MultiRange(ranges);
             }
             else
             {
-                MinAddress = 0UL;
-                MaxAddress = 0UL;
+                MemoryRange[] ranges = new MemoryRange[left.Count + right.Count];
+
+                for (int index = 0; index < left.Count; index++)
+                {
+                    ranges[index] = left.GetSubRange(index);
+                }
+
+                for (int index = 0; index < right.Count; index++)
+                {
+                    ranges[left.Count + index] = right.GetSubRange(index);
+                }
+
+                return new MultiRange(ranges);
             }
         }
 
@@ -82,7 +108,7 @@ namespace Ryujinx.Memory.Range
         /// <param name="offset">Offset of the slice into the multi-range in bytes</param>
         /// <param name="size">Size of the slice in bytes</param>
         /// <returns>A new multi-range representing the given slice of this one</returns>
-        public MultiRange GetSlice(ulong offset, ulong size)
+        public MultiRange Slice(ulong offset, ulong size)
         {
             if (HasSingleRange)
             {
@@ -343,6 +369,11 @@ namespace Ryujinx.Memory.Range
             }
 
             return hash.ToHashCode();
+        }
+
+        public override string ToString()
+        {
+            return HasSingleRange ? _singleRange.ToString() : string.Join(", ", _ranges);
         }
     }
 }

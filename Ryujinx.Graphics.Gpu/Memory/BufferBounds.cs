@@ -8,12 +8,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
     struct BufferBounds
     {
         /// <summary>
-        /// Region virtual address.
+        /// GPU virtual address of the buffer binding.
         /// </summary>
-        public ulong Address { get; }
+        public ulong GpuVa { get; }
 
         /// <summary>
-        /// Region size in bytes.
+        /// Size of the buffer binding in bytes.
         /// </summary>
         public ulong Size { get; }
 
@@ -25,12 +25,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <summary>
         /// Creates a new buffer region.
         /// </summary>
-        /// <param name="address">Region address</param>
-        /// <param name="size">Region size</param>
+        /// <param name="gpuVa">GPU virtual address of the buffer binding</param>
+        /// <param name="size">Size of the buffer binding in bytes</param>
         /// <param name="flags">Buffer usage flags</param>
-        public BufferBounds(ulong address, ulong size, BufferUsageFlags flags = BufferUsageFlags.None)
+        public BufferBounds(ulong gpuVa, ulong size, BufferUsageFlags flags = BufferUsageFlags.None)
         {
-            Address = address;
+            GpuVa = gpuVa;
             Size = size;
             Flags = flags;
         }

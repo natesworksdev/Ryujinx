@@ -74,5 +74,15 @@ namespace Ryujinx.Memory.Range
         {
             return HashCode.Combine(Address, Size);
         }
+
+        public override string ToString()
+        {
+            if (Address == ulong.MaxValue)
+            {
+                return $"[Unmapped 0x{Size:X}]";
+            }
+
+            return $"[0x{Address:X}, 0x{EndAddress:X})";
+        }
     }
 }

@@ -94,6 +94,9 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
         {
             var memoryManager = _channel.MemoryManager;
 
+            // Make sure we are working with the latest memory mappings before binding anything.
+            memoryManager.VirtualBufferCache.RefreshMappings();
+
             _3dEngine.FlushUboDirty();
 
             uint qmdAddress = _state.State.SendPcasA;
@@ -159,13 +162,13 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
                     continue;
                 }
 
-                ulong cbDescAddress = _channel.BufferManager.GetComputeUniformBufferAddress(0);
+                ulong cbDescGpuVa = _channel.BufferManager.GetComputeUniformBufferGpuVa(0);
 
                 int cbDescOffset = 0x260 + (cb.Slot - 8) * 0x10;
 
-                cbDescAddress += (ulong)cbDescOffset;
+                cbDescGpuVa += (ulong)cbDescOffset;
 
-                SbDescriptor cbDescriptor = _channel.MemoryManager.Physical.Read<SbDescriptor>(cbDescAddress);
+                SbDescriptor cbDescriptor = _channel.MemoryManager.Read<SbDescriptor>(cbDescGpuVa);
 
                 _channel.BufferManager.SetComputeUniformBuffer(cb.Slot, cbDescriptor.PackAddress(), (uint)cbDescriptor.Size);
             }
@@ -174,13 +177,13 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
             {
                 BufferDescriptor sb = info.SBuffers[index];
 
-                ulong sbDescAddress = _channel.BufferManager.GetComputeUniformBufferAddress(0);
+                ulong sbDescGpuVa = _channel.BufferManager.GetComputeUniformBufferGpuVa(0);
 
                 int sbDescOffset = 0x310 + sb.Slot * 0x10;
 
-                sbDescAddress += (ulong)sbDescOffset;
+                sbDescGpuVa += (ulong)sbDescOffset;
 
-                SbDescriptor sbDescriptor = _channel.MemoryManager.Physical.Read<SbDescriptor>(sbDescAddress);
+                SbDescriptor sbDescriptor = _channel.MemoryManager.Read<SbDescriptor>(sbDescGpuVa);
 
                 _channel.BufferManager.SetComputeStorageBuffer(sb.Slot, sbDescriptor.PackAddress(), (uint)sbDescriptor.Size, sb.Flags);
             }
@@ -238,8 +241,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.Compute
             _channel.TextureManager.SetComputeMaxBindings(maxTextureBinding, maxImageBinding);
 
             // Should never return false for mismatching spec state, since the shader was fetched above.
-            _channel.TextureManager.CommitComputeBindings(cs.SpecializationState); 
-            
+            _channel.TextureManager.CommitComputeBindings(cs.SpecializationState);
+
             _channel.BufferManager.CommitComputeBindings();
 
             _context.Renderer.Pipeline.DispatchCompute(qmd.CtaRasterWidth, qmd.CtaRasterHeight, qmd.CtaRasterDepth);

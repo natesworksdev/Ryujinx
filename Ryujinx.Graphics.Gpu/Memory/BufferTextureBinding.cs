@@ -14,12 +14,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
         public ITexture Texture { get; }
 
         /// <summary>
-        /// The base address of the buffer binding.
+        /// GPU virtual address of the buffer texture.
         /// </summary>
-        public ulong Address { get; }
+        public ulong GpuVa { get; }
 
         /// <summary>
-        /// The size of the buffer binding in bytes.
+        /// Size of the buffer texture in bytes.
         /// </summary>
         public ulong Size { get; }
 
@@ -42,15 +42,15 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// Create a new buffer texture binding.
         /// </summary>
         /// <param name="texture">Buffer texture</param>
-        /// <param name="address">Base address</param>
-        /// <param name="size">Size in bytes</param>
+        /// <param name="gpuVa">GPU virtual address of the buffer texture</param>
+        /// <param name="size">Size of the buffer texture in bytes</param>
         /// <param name="bindingInfo">Binding info</param>
         /// <param name="format">Binding format</param>
         /// <param name="isImage">Whether the binding is for an image or a sampler</param>
-        public BufferTextureBinding(ITexture texture, ulong address, ulong size, TextureBindingInfo bindingInfo, Format format, bool isImage)
+        public BufferTextureBinding(ITexture texture, ulong gpuVa, ulong size, TextureBindingInfo bindingInfo, Format format, bool isImage)
         {
             Texture = texture;
-            Address = address;
+            GpuVa = gpuVa;
             Size = size;
             BindingInfo = bindingInfo;
             Format = format;

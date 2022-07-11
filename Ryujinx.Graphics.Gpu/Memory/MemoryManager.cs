@@ -10,7 +10,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// <summary>
     /// GPU memory manager.
     /// </summary>
-    public class MemoryManager : IWritableBlock
+    public class MemoryManager : IWritableBlock, IDisposable
     {
         private const int PtLvl0Bits = 14;
         private const int PtLvl1Bits = 14;
@@ -31,6 +31,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         public const ulong PteUnmapped = ulong.MaxValue;
 
         private readonly ulong[][] _pageTable;
+        private readonly GpuContext _context;
 
         public event EventHandler<UnmapEventArgs> MemoryUnmapped;
 
@@ -40,6 +41,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
         internal PhysicalMemory Physical { get; }
 
         /// <summary>
+        /// Cache of GPU buffers, cached by GPU virtual memory regions.
+        /// </summary>
+        internal VirtualBufferCache VirtualBufferCache { get; }
+
+        /// <summary>
         /// Cache of GPU counters.
         /// </summary>
         internal CounterCache CounterCache { get; }
@@ -47,14 +53,17 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <summary>
         /// Creates a new instance of the GPU memory manager.
         /// </summary>
+        /// <param name="context">GPU context that the memory manager belongs to</param>
         /// <param name="physicalMemory">Physical memory that this memory manager will map into</param>
-        internal MemoryManager(PhysicalMemory physicalMemory)
+        internal MemoryManager(GpuContext context, PhysicalMemory physicalMemory)
         {
+            _context = context;
             Physical = physicalMemory;
+            VirtualBufferCache = new VirtualBufferCache(context, this);
             CounterCache = new CounterCache();
             _pageTable = new ulong[PtLvl0Size][];
             MemoryUnmapped += Physical.TextureCache.MemoryUnmappedHandler;
-            MemoryUnmapped += Physical.BufferCache.MemoryUnmappedHandler;
+            MemoryUnmapped += VirtualBufferCache.MemoryUnmappedHandler;
             MemoryUnmapped += CounterCache.MemoryUnmappedHandler;
         }
 
@@ -446,6 +455,44 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
+        /// Gets the size of the contiguous and mapped range from the start of the specified memory region.
+        /// </summary>
+        /// <param name="va">GPU virtual address of the region</param>
+        /// <param name="size">Size of the region</param>
+        /// <returns>Size of the contiguous and mapped memory in bytes</returns>
+        public ulong GetContiguousMappedSize(ulong va, ulong size)
+        {
+            if (!ValidateAddress(va) || GetPte(va) == PteUnmapped)
+            {
+                return 0;
+            }
+
+            ulong endVa = (va + size + PageMask) & ~PageMask;
+
+            va &= ~PageMask;
+            ulong startVa = va;
+
+            int pages = (int)((endVa - va) / PageSize);
+
+            for (int page = 0; page < pages - 1; page++)
+            {
+                if (!ValidateAddress(va + PageSize) || GetPte(va + PageSize) == PteUnmapped)
+                {
+                    break;
+                }
+
+                if (Translate(va) + PageSize != Translate(va + PageSize))
+                {
+                    break;
+                }
+
+                va += PageSize;
+            }
+
+            return (va - startVa) + PageSize;
+        }
+
+        /// <summary>
         /// Gets the physical regions that make up the given virtual address region.
         /// </summary>
         /// <param name="va">Virtual address of the range</param>
@@ -676,6 +723,24 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private static ulong UnpackPaFromPte(ulong pte)
         {
             return pte & 0xffffffffffffffUL;
+        }
+
+        /// <summary>
+        /// Disposes the memory manager.
+        /// It's an error to use the memory manager after disposal.
+        /// </summary>
+        public void Dispose()
+        {
+            _context.DeferredActions.Enqueue(Destroy);
+        }
+
+        /// <summary>
+        /// Performs disposal of the host GPU resources cached by the memory manager, that are not shared.
+        /// This must only be called from the render thread.
+        /// </summary>
+        private void Destroy()
+        {
+            VirtualBufferCache.Dispose();
         }
     }
 }

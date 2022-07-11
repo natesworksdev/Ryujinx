@@ -306,13 +306,13 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
                 {
                     BufferDescriptor sb = info.SBuffers[index];
 
-                    ulong sbDescAddress = _channel.BufferManager.GetGraphicsUniformBufferAddress(stage, 0);
+                    ulong sbDescGpuVa = _channel.BufferManager.GetGraphicsUniformBufferGpuVa(stage, 0);
 
                     int sbDescOffset = 0x110 + stage * 0x100 + sb.Slot * 0x10;
 
-                    sbDescAddress += (ulong)sbDescOffset;
+                    sbDescGpuVa += (ulong)sbDescOffset;
 
-                    SbDescriptor sbDescriptor = _channel.MemoryManager.Physical.Read<SbDescriptor>(sbDescAddress);
+                    SbDescriptor sbDescriptor = _channel.MemoryManager.Read<SbDescriptor>(sbDescGpuVa);
 
                     _channel.BufferManager.SetGraphicsStorageBuffer(stage, sb.Slot, sbDescriptor.PackAddress(), (uint)sbDescriptor.Size, sb.Flags);
                 }

@@ -1,10 +1,9 @@
-using Ryujinx.Common.Logging;
-using Ryujinx.Cpu.Tracking;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Memory.Range;
 using Ryujinx.Memory.Tracking;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Ryujinx.Graphics.Gpu.Memory
@@ -12,12 +11,10 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// <summary>
     /// Buffer, used to store vertex and index data, uniform and storage buffers, and others.
     /// </summary>
-    class Buffer : IRange, IDisposable
+    class Buffer : IDisposable
     {
-        private const ulong GranularBufferThreshold = 4096;
-
         private readonly GpuContext _context;
-        private readonly PhysicalMemory _physicalMemory;
+        private readonly BufferRegion[] _regions;
 
         /// <summary>
         /// Host buffer handle.
@@ -25,9 +22,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
         public BufferHandle Handle { get; }
 
         /// <summary>
-        /// Start address of the buffer in guest memory.
+        /// Ranges of memory where the buffer data resides.
         /// </summary>
-        public ulong Address { get; }
+        public MultiRange Range { get; }
 
         /// <summary>
         /// Size of the buffer in bytes.
@@ -35,157 +32,118 @@ namespace Ryujinx.Graphics.Gpu.Memory
         public ulong Size { get; }
 
         /// <summary>
-        /// End address of the buffer in guest memory.
-        /// </summary>
-        public ulong EndAddress => Address + Size;
-
-        /// <summary>
         /// Increments when the buffer is (partially) unmapped or disposed.
         /// </summary>
         public int UnmappedSequence { get; private set; }
 
         /// <summary>
-        /// Ranges of the buffer that have been modified on the GPU.
-        /// Ranges defined here cannot be updated from CPU until a CPU waiting sync point is reached.
-        /// Then, write tracking will signal, wait for GPU sync (generated at the syncpoint) and flush these regions.
+        /// Indicates if this buffer is accessible by any buffer view.
         /// </summary>
-        /// <remarks>
-        /// This is null until at least one modification occurs.
-        /// </remarks>
-        private BufferModifiedRangeList _modifiedRanges = null;
+        public bool HasViews => _views.Count != 0;
 
-        private readonly CpuMultiRegionHandle _memoryTrackingGranular;
-        private readonly CpuRegionHandle _memoryTracking;
-
-        private readonly RegionSignal _externalFlushDelegate;
-        private readonly Action<ulong, ulong> _loadDelegate;
-        private readonly Action<ulong, ulong> _modifiedDelegate;
-
-        private int _sequenceNumber;
-
-        private bool _useGranular;
-        private bool _syncActionRegistered;
+        /// <summary>
+        /// Buffer views that can access this buffer.
+        /// </summary>
+        private readonly List<(RangeList<BufferView>, BufferView)> _views;
 
         /// <summary>
         /// Creates a new instance of the buffer.
         /// </summary>
         /// <param name="context">GPU context that the buffer belongs to</param>
         /// <param name="physicalMemory">Physical memory where the buffer is mapped</param>
-        /// <param name="address">Start address of the buffer</param>
-        /// <param name="size">Size of the buffer in bytes</param>
-        /// <param name="baseBuffers">Buffers which this buffer contains, and will inherit tracking handles from</param>
-        public Buffer(GpuContext context, PhysicalMemory physicalMemory, ulong address, ulong size, IEnumerable<Buffer> baseBuffers = null)
+        /// <param name="range">Range of memory where the buffer data is located</param>
+        /// <param name="baseHandles">Tracking handles to be inherited by this buffer</param>
+        public Buffer(GpuContext context, PhysicalMemory physicalMemory, MultiRange range, IEnumerable<RegionHandleSegment> baseHandles = null)
         {
-            _context        = context;
-            _physicalMemory = physicalMemory;
-            Address         = address;
-            Size            = size;
+            _context = context;
+            Range = range;
+            Size = range.GetSize();
 
-            Handle = context.Renderer.CreateBuffer((int)size);
+            Handle = context.Renderer.CreateBuffer((int)Size);
 
-            _useGranular = size > GranularBufferThreshold;
+            BufferRegion[] regions = new BufferRegion[range.Count];
+            int regionsCount = 0;
+            ulong baseOffset = 0;
 
-            IEnumerable<IRegionHandle> baseHandles = null;
-
-            if (baseBuffers != null)
+            for (int index = 0; index < range.Count; index++)
             {
-                baseHandles = baseBuffers.SelectMany(buffer =>
+                MemoryRange subRange = range.GetSubRange(index);
+
+                if (subRange.Address != MemoryManager.PteUnmapped)
                 {
-                    if (buffer._useGranular)
+                    IEnumerable<IRegionHandle> handles = null;
+
+                    if (baseHandles != null)
                     {
-                        return buffer._memoryTrackingGranular.GetHandles();
+                        handles = baseHandles
+                            .Where(x => x.BaseOffset >= baseOffset && x.BaseOffset + x.Size <= baseOffset + subRange.Size)
+                            .SelectMany(x => x.Handles);
                     }
-                    else
-                    {
-                        return Enumerable.Repeat(buffer._memoryTracking.GetHandle(), 1);
-                    }
-                });
-            }
 
-            if (_useGranular)
-            {
-                _memoryTrackingGranular = physicalMemory.BeginGranularTracking(address, size, baseHandles);
-
-                _memoryTrackingGranular.RegisterPreciseAction(address, size, PreciseAction);
-            }
-            else
-            {
-                _memoryTracking = physicalMemory.BeginTracking(address, size);
-
-                if (baseHandles != null)
-                {
-                    _memoryTracking.Reprotect(false);
-
-                    foreach (IRegionHandle handle in baseHandles)
-                    {
-                        if (handle.Dirty)
-                        {
-                            _memoryTracking.Reprotect(true);
-                        }
-
-                        handle.Dispose();
-                    }
+                    regions[regionsCount++] = new BufferRegion(
+                        context,
+                        physicalMemory,
+                        subRange.Address,
+                        subRange.Size,
+                        Handle,
+                        baseOffset,
+                        handles);
                 }
 
-                _memoryTracking.RegisterPreciseAction(PreciseAction);
+                baseOffset += subRange.Size;
             }
 
-            _externalFlushDelegate = new RegionSignal(ExternalFlush);
-            _loadDelegate = new Action<ulong, ulong>(LoadRegion);
-            _modifiedDelegate = new Action<ulong, ulong>(RegionModified);
+            if (range.Count != regionsCount)
+            {
+                Array.Resize(ref regions, regionsCount);
+            }
+
+            _regions = regions;
+
+            _views = new List<(RangeList<BufferView>, BufferView)>();
         }
 
         /// <summary>
-        /// Gets a sub-range from the buffer, from a start address till the end of the buffer.
+        /// Adds a view to the list of views that can access this buffer.
         /// </summary>
-        /// <remarks>
-        /// This can be used to bind and use sub-ranges of the buffer on the host API.
-        /// </remarks>
-        /// <param name="address">Start address of the sub-range, must be greater than or equal to the buffer address</param>
-        /// <returns>The buffer sub-range</returns>
-        public BufferRange GetRange(ulong address)
+        /// <param name="list">List of views from the buffer cache where the view was added</param>
+        /// <param name="view">Buffer view that can access this buffer</param>
+        public void AddView(RangeList<BufferView> list, BufferView view)
         {
-            ulong offset = address - Address;
-
-            return new BufferRange(Handle, (int)offset, (int)(Size - offset));
+            _views.Add((list, view));
         }
 
         /// <summary>
-        /// Gets a sub-range from the buffer.
+        /// Removes a view from the list of views that can access this buffer.
         /// </summary>
-        /// <remarks>
-        /// This can be used to bind and use sub-ranges of the buffer on the host API.
-        /// </remarks>
-        /// <param name="address">Start address of the sub-range, must be greater than or equal to the buffer address</param>
-        /// <param name="size">Size in bytes of the sub-range, must be less than or equal to the buffer size</param>
-        /// <returns>The buffer sub-range</returns>
-        public BufferRange GetRange(ulong address, ulong size)
+        /// <param name="list">List of views from the buffer cache where the view was added</param>
+        /// <param name="view">Buffer view that can access this buffer</param>
+        public void RemoveView(RangeList<BufferView> list, BufferView view)
         {
-            int offset = (int)(address - Address);
-
-            return new BufferRange(Handle, offset, (int)size);
+            _views.Remove((list, view));
         }
 
         /// <summary>
-        /// Checks if a given range overlaps with the buffer.
+        /// Migrates the views that can access this buffer to a new buffer.
         /// </summary>
-        /// <param name="address">Start address of the range</param>
-        /// <param name="size">Size in bytes of the range</param>
-        /// <returns>True if the range overlaps, false otherwise</returns>
-        public bool OverlapsWith(ulong address, ulong size)
+        /// <param name="newBuffer">Buffer where the views should be migrated to</param>
+        /// <param name="offsetDelta">Delta between the start address of this buffer and the new one</param>
+        public void UpdateViews(Buffer newBuffer, int offsetDelta)
         {
-            return Address < address + size && address < EndAddress;
-        }
+            foreach ((RangeList<BufferView> list, BufferView view) in _views)
+            {
+                BufferView newView = new BufferView(view.Address, view.Size, view.BaseOffset + offsetDelta, view.IsVirtual, newBuffer);
 
-        /// <summary>
-        /// Checks if a given range is fully contained in the buffer.
-        /// </summary>
-        /// <param name="address">Start address of the range</param>
-        /// <param name="size">Size in bytes of the range</param>
-        /// <returns>True if the range is contained, false otherwise</returns>
-        public bool FullyContains(ulong address, ulong size)
-        {
-            return address >= Address && address + size <= EndAddress;
+                lock (list)
+                {
+                    list.Remove(view);
+                    list.Add(newView);
+                }
+
+                newBuffer.AddView(list, newView);
+            }
+
+            _views.Clear();
         }
 
         /// <summary>
@@ -195,93 +153,75 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// This causes the buffer data to be overwritten if a write was detected from the CPU,
         /// since the last call to this method.
         /// </remarks>
-        /// <param name="address">Start address of the range to synchronize</param>
-        /// <param name="size">Size in bytes of the range to synchronize</param>
-        public void SynchronizeMemory(ulong address, ulong size)
+        /// <param name="bufferOffset">Offset of the region inside the buffer</param>
+        /// <param name="size">Size of the region in bytes</param>
+        public void SynchronizeMemory(ulong bufferOffset, ulong size)
         {
-            if (_useGranular)
+            ulong bufferEndOffset = bufferOffset + size;
+            int index = FindStartIndex(bufferOffset);
+
+            for (; index < _regions.Length; index++)
             {
-                _memoryTrackingGranular.QueryModified(address, size, _modifiedDelegate, _context.SequenceNumber);
-            }
-            else
-            {
-                if (_context.SequenceNumber != _sequenceNumber && _memoryTracking.DirtyOrVolatile())
+                BufferRegion region = _regions[index];
+
+                if (region.BaseOffset >= bufferEndOffset)
                 {
-                    _memoryTracking.Reprotect();
-
-                    if (_modifiedRanges != null)
-                    {
-                        _modifiedRanges.ExcludeModifiedRegions(Address, Size, _loadDelegate);
-                    }
-                    else
-                    {
-                        _context.Renderer.SetBufferData(Handle, 0, _physicalMemory.GetSpan(Address, (int)Size));
-                    }
-
-                    _sequenceNumber = _context.SequenceNumber;
+                    break;
                 }
-            }
-        }
 
-        /// <summary>
-        /// Ensure that the modified range list exists.
-        /// </summary>
-        private void EnsureRangeList()
-        {
-            if (_modifiedRanges == null)
-            {
-                _modifiedRanges = new BufferModifiedRangeList(_context);
+                (ulong currentAddress, ulong currentSize) = GetRegionAddressAndSize(region, bufferOffset, bufferEndOffset);
+
+                region.SynchronizeMemory(currentAddress, currentSize);
             }
         }
 
         /// <summary>
         /// Signal that the given region of the buffer has been modified.
         /// </summary>
-        /// <param name="address">The start address of the modified region</param>
-        /// <param name="size">The size of the modified region</param>
-        public void SignalModified(ulong address, ulong size)
+        /// <param name="bufferOffset">Offset of the region inside the buffer</param>
+        /// <param name="size">Size of the region in bytes</param>
+        public void SignalModified(ulong bufferOffset, ulong size)
         {
-            EnsureRangeList();
+            ulong bufferEndOffset = bufferOffset + size;
+            int index = FindStartIndex(bufferOffset);
 
-            _modifiedRanges.SignalModified(address, size);
-
-            if (!_syncActionRegistered)
+            for (; index < _regions.Length; index++)
             {
-                _context.RegisterSyncAction(SyncAction);
-                _syncActionRegistered = true;
+                BufferRegion region = _regions[index];
+
+                if (region.BaseOffset >= bufferEndOffset)
+                {
+                    break;
+                }
+
+                (ulong currentAddress, ulong currentSize) = GetRegionAddressAndSize(region, bufferOffset, bufferEndOffset);
+
+                region.SignalModified(currentAddress, currentSize);
             }
         }
 
         /// <summary>
         /// Indicate that mofifications in a given region of this buffer have been overwritten.
         /// </summary>
-        /// <param name="address">The start address of the region</param>
-        /// <param name="size">The size of the region</param>
-        public void ClearModified(ulong address, ulong size)
+        /// <param name="bufferOffset">Offset of the region inside the buffer</param>
+        /// <param name="size">Size of the region in bytes</param>
+        public void ClearModified(ulong bufferOffset, ulong size)
         {
-            _modifiedRanges?.Clear(address, size);
-        }
+            ulong bufferEndOffset = bufferOffset + size;
+            int index = FindStartIndex(bufferOffset);
 
-        /// <summary>
-        /// Action to be performed when a syncpoint is reached after modification.
-        /// This will register read/write tracking to flush the buffer from GPU when its memory is used.
-        /// </summary>
-        private void SyncAction()
-        {
-            _syncActionRegistered = false;
-
-            if (_useGranular)
+            for (; index < _regions.Length; index++)
             {
-                _modifiedRanges?.GetRanges(Address, Size, (address, size) =>
+                BufferRegion region = _regions[index];
+
+                if (region.BaseOffset >= bufferEndOffset)
                 {
-                    _memoryTrackingGranular.RegisterAction(address, size, _externalFlushDelegate);
-                    SynchronizeMemory(address, size);
-                });
-            }
-            else
-            {
-                _memoryTracking.RegisterAction(_externalFlushDelegate);
-                SynchronizeMemory(Address, Size);
+                    break;
+                }
+
+                (ulong currentAddress, ulong currentSize) = GetRegionAddressAndSize(region, bufferOffset, bufferEndOffset);
+
+                region.ClearModified(currentAddress, currentSize);
             }
         }
 
@@ -289,38 +229,44 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// Inherit modified ranges from another buffer.
         /// </summary>
         /// <param name="from">The buffer to inherit from</param>
-        public void InheritModifiedRanges(Buffer from)
+        /// <param name="offsetWithinFrom">Offset of the from buffer inside this buffer</param>
+        public void InheritModifiedRanges(Buffer from, ulong offsetWithinFrom)
         {
-            if (from._modifiedRanges != null)
+            int startIndex = FindStartIndex(offsetWithinFrom);
+
+            for (int i = startIndex, j = 0; i < _regions.Length && j < from._regions.Length; i++)
             {
-                if (from._syncActionRegistered && !_syncActionRegistered)
+                ulong thisOffset = _regions[i].BaseOffset;
+                ulong thisEndOffset = thisOffset + _regions[i].Size;
+                ulong fromOffset = offsetWithinFrom + from._regions[j].BaseOffset;
+                ulong fromEndOffset = fromOffset + from._regions[j].Size;
+
+                if (thisOffset < fromEndOffset && fromOffset < thisEndOffset)
                 {
-                    _context.RegisterSyncAction(SyncAction);
-                    _syncActionRegistered = true;
+                    _regions[i].InheritModifiedRanges(from._regions[j++], bounded: false);
                 }
+            }
+        }
 
-                Action<ulong, ulong> registerRangeAction = (ulong address, ulong size) =>
-                {
-                    if (_useGranular)
-                    {
-                        _memoryTrackingGranular.RegisterAction(address, size, _externalFlushDelegate);
-                    }
-                    else
-                    {
-                        _memoryTracking.RegisterAction(_externalFlushDelegate);
-                    }
-                };
+        /// <summary>
+        /// Inherit modified ranges from another buffer.
+        /// </summary>
+        /// <param name="from">The buffer to inherit from</param>
+        /// <param name="offsetWithinFrom">Offset of this buffer inside the from buffer</param>
+        public void InheritModifiedRangesForSplit(Buffer from, ulong offsetWithinFrom)
+        {
+            int startIndex = from.FindStartIndex(offsetWithinFrom);
 
-                if (_modifiedRanges == null)
-                {
-                    _modifiedRanges = from._modifiedRanges;
-                    _modifiedRanges.ReregisterRanges(registerRangeAction);
+            for (int i = 0, j = startIndex; i < _regions.Length && j < from._regions.Length; i++)
+            {
+                ulong thisOffset = offsetWithinFrom + _regions[i].BaseOffset;
+                ulong thisEndOffset = thisOffset + _regions[i].Size;
+                ulong fromOffset = from._regions[j].BaseOffset;
+                ulong fromEndOffset = fromOffset + from._regions[j].Size;
 
-                    from._modifiedRanges = null;
-                }
-                else
+                if (thisOffset < fromEndOffset && fromOffset < thisEndOffset)
                 {
-                    _modifiedRanges.InheritRanges(from._modifiedRanges, registerRangeAction);
+                    _regions[i].InheritModifiedRanges(from._regions[j++], bounded: true);
                 }
             }
         }
@@ -328,77 +274,56 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <summary>
         /// Determine if a given region of the buffer has been modified, and must be flushed.
         /// </summary>
-        /// <param name="address">The start address of the region</param>
-        /// <param name="size">The size of the region</param>
-        /// <returns></returns>
-        public bool IsModified(ulong address, ulong size)
+        /// <param name="bufferOffset">Offset of the region inside the buffer</param>
+        /// <param name="size">Size of the region in bytes</param>
+        /// <returns>True if the region has been modified, false otherwise</returns>
+        public bool IsModified(ulong bufferOffset, ulong size)
         {
-            if (_modifiedRanges != null)
+            ulong bufferEndOffset = bufferOffset + size;
+            int index = FindStartIndex(bufferOffset);
+
+            for (; index < _regions.Length; index++)
             {
-                return _modifiedRanges.HasRange(address, size);
+                BufferRegion region = _regions[index];
+
+                if (region.BaseOffset >= bufferEndOffset)
+                {
+                    break;
+                }
+
+                (ulong currentAddress, ulong currentSize) = GetRegionAddressAndSize(region, bufferOffset, bufferEndOffset);
+
+                if (region.IsModified(currentAddress, currentSize))
+                {
+                    return true;
+                }
             }
 
             return false;
         }
 
         /// <summary>
-        /// Indicate that a region of the buffer was modified, and must be loaded from memory.
-        /// </summary>
-        /// <param name="mAddress">Start address of the modified region</param>
-        /// <param name="mSize">Size of the modified region</param>
-        private void RegionModified(ulong mAddress, ulong mSize)
-        {
-            if (mAddress < Address)
-            {
-                mAddress = Address;
-            }
-
-            ulong maxSize = Address + Size - mAddress;
-
-            if (mSize > maxSize)
-            {
-                mSize = maxSize;
-            }
-
-            if (_modifiedRanges != null)
-            {
-                _modifiedRanges.ExcludeModifiedRegions(mAddress, mSize, _loadDelegate);
-            }
-            else
-            {
-                LoadRegion(mAddress, mSize);
-            }
-        }
-
-        /// <summary>
-        /// Load a region of the buffer from memory.
-        /// </summary>
-        /// <param name="mAddress">Start address of the modified region</param>
-        /// <param name="mSize">Size of the modified region</param>
-        private void LoadRegion(ulong mAddress, ulong mSize)
-        {
-            int offset = (int)(mAddress - Address);
-
-            _context.Renderer.SetBufferData(Handle, offset, _physicalMemory.GetSpan(mAddress, (int)mSize));
-        }
-
-        /// <summary>
         /// Force a region of the buffer to be dirty. Avoids reprotection and nullifies sequence number check.
         /// </summary>
-        /// <param name="mAddress">Start address of the modified region</param>
-        /// <param name="mSize">Size of the region to force dirty</param>
-        public void ForceDirty(ulong mAddress, ulong mSize)
+        /// <param name="bufferOffset">Offset of the region inside the buffer</param>
+        /// <param name="size">Size of the region in bytes</param>
+        public void ForceDirty(ulong bufferOffset, ulong size)
         {
-            _modifiedRanges?.Clear(mAddress, mSize);
+            ulong bufferEndOffset = bufferOffset + size;
+            int index = FindStartIndex(bufferOffset);
 
-            if (_useGranular)
+            for (; index < _regions.Length; index++)
             {
-                _memoryTrackingGranular.ForceDirty(mAddress, mSize);
-            }
-            else
-            {
-                _memoryTracking.ForceDirty();
-                _sequenceNumber--;
+                BufferRegion region = _regions[index];
+
+                if (region.BaseOffset >= bufferEndOffset)
+                {
+                    break;
+                }
+
+                (ulong currentAddress, ulong currentSize) = GetRegionAddressAndSize(region, bufferOffset, bufferEndOffset);
+
+                region.ForceDirty(currentAddress, currentSize);
             }
         }
 
@@ -409,104 +334,225 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="dstOffset">The offset of the destination buffer to copy into</param>
         public void CopyTo(Buffer destination, int dstOffset)
         {
-            _context.Renderer.Pipeline.CopyBuffer(Handle, destination.Handle, 0, dstOffset, (int)Size);
+            CopyTo(destination, 0, dstOffset, (int)Size);
         }
 
         /// <summary>
-        /// Flushes a range of the buffer.
-        /// This writes the range data back into guest memory.
+        /// Performs copy of buffer data on the specified region from one buffer to another.
         /// </summary>
-        /// <param name="address">Start address of the range</param>
-        /// <param name="size">Size in bytes of the range</param>
-        public void Flush(ulong address, ulong size)
+        /// <param name="destination">The destination buffer to copy the data into</param>
+        /// <param name="srcOffset">The offset of the source buffer to copy from</param>
+        /// <param name="dstOffset">The offset of the destination buffer to copy into</param>
+        /// <param name="size">Number of bytes to copy</param>
+        public void CopyTo(Buffer destination, int srcOffset, int dstOffset, int size)
         {
-            int offset = (int)(address - Address);
-
-            ReadOnlySpan<byte> data = _context.Renderer.GetBufferData(Handle, offset, (int)size);
-
-            // TODO: When write tracking shaders, they will need to be aware of changes in overlapping buffers.
-            _physicalMemory.WriteUntracked(address, data);
-        }
-
-        /// <summary>
-        /// Align a given address and size region to page boundaries.
-        /// </summary>
-        /// <param name="address">The start address of the region</param>
-        /// <param name="size">The size of the region</param>
-        /// <returns>The page aligned address and size</returns>
-        private static (ulong address, ulong size) PageAlign(ulong address, ulong size)
-        {
-            ulong pageMask = MemoryManager.PageMask;
-            ulong rA = address & ~pageMask;
-            ulong rS = ((address + size + pageMask) & ~pageMask) - rA;
-            return (rA, rS);
-        }
-
-        /// <summary>
-        /// Flush modified ranges of the buffer from another thread.
-        /// This will flush all modifications made before the active SyncNumber was set, and may block to wait for GPU sync.
-        /// </summary>
-        /// <param name="address">Address of the memory action</param>
-        /// <param name="size">Size in bytes</param>
-        public void ExternalFlush(ulong address, ulong size)
-        {
-            _context.Renderer.BackgroundContextAction(() =>
-            {
-                var ranges = _modifiedRanges;
-
-                if (ranges != null)
-                {
-                    (address, size) = PageAlign(address, size);
-                    ranges.WaitForAndGetRanges(address, size, Flush);
-                }
-            }, true);
-        }
-
-        /// <summary>
-        /// An action to be performed when a precise memory access occurs to this resource.
-        /// For buffers, this skips flush-on-write by punching holes directly into the modified range list.
-        /// </summary>
-        /// <param name="address">Address of the memory action</param>
-        /// <param name="size">Size in bytes</param>
-        /// <param name="write">True if the access was a write, false otherwise</param>
-        private bool PreciseAction(ulong address, ulong size, bool write)
-        {
-            if (!write)
-            {
-                // We only want to skip flush-on-write.
-                return false;
-            }
-
-            if (address < Address)
-            {
-                address = Address;
-            }
-
-            ulong maxSize = Address + Size - address;
-
-            if (size > maxSize)
-            {
-                size = maxSize;
-            }
-
-            ForceDirty(address, size);
-
-            return true;
+            _context.Renderer.Pipeline.CopyBuffer(Handle, destination.Handle, srcOffset, dstOffset, size);
         }
 
         /// <summary>
         /// Called when part of the memory for this buffer has been unmapped.
         /// Calls are from non-GPU threads.
         /// </summary>
-        /// <param name="address">Start address of the unmapped region</param>
-        /// <param name="size">Size of the unmapped region</param>
-        public void Unmapped(ulong address, ulong size)
+        /// <param name="bufferOffset">Offset of the region inside the buffer</param>
+        /// <param name="size">Size of the region in bytes</param>
+        public void Unmapped(ulong bufferOffset, ulong size)
         {
-            BufferModifiedRangeList modifiedRanges = _modifiedRanges;
+            ulong bufferEndOffset = bufferOffset + size;
+            int index = FindStartIndex(bufferOffset);
 
-            modifiedRanges?.Clear(address, size);
+            for (; index < _regions.Length; index++)
+            {
+                BufferRegion region = _regions[index];
+
+                if (region.BaseOffset >= bufferEndOffset)
+                {
+                    break;
+                }
+
+                (ulong currentAddress, ulong currentSize) = GetRegionAddressAndSize(region, bufferOffset, bufferEndOffset);
+
+                region.Unmapped(currentAddress, currentSize);
+            }
 
             UnmappedSequence++;
+        }
+
+        /// <summary>
+        /// Finds the index of the first buffer that ends after <paramref name="bufferOffset"/> in the regions array.
+        /// </summary>
+        /// <param name="bufferOffset">Offset to find a overlap for</param>
+        /// <returns>Index of the first overlap, or the array length if none is found</returns>
+        private int FindStartIndex(ulong bufferOffset)
+        {
+            int index;
+
+            for (index = 0; index < _regions.Length; index++)
+            {
+                BufferRegion region = _regions[index];
+
+                if (region.BaseOffset + region.Size > bufferOffset)
+                {
+                    break;
+                }
+            }
+
+            return index;
+        }
+
+        /// <summary>
+        /// Gets the clamped buffer CPU virtual address and size from a buffer offset and size.
+        /// </summary>
+        /// <param name="region">Buffer that contains the specified range</param>
+        /// <param name="bufferOffset">Start offset into the buffer in bytes</param>
+        /// <param name="bufferEndOffset">End offset into the buffer in bytes</param>
+        /// <returns>The clamped CPU virtual address and size that is fully contained inside <paramref name="region"/></returns>
+        private static (ulong, ulong) GetRegionAddressAndSize(BufferRegion region, ulong bufferOffset, ulong bufferEndOffset)
+        {
+            ulong clampedOffset = Math.Max(region.BaseOffset, bufferOffset);
+            ulong clampedEndOffset = Math.Min(region.BaseOffset + region.Size, bufferEndOffset);
+            ulong clampedSize = clampedEndOffset - clampedOffset;
+
+            return (region.Address + (clampedOffset - region.BaseOffset), clampedSize);
+        }
+
+        /// <summary>
+        /// Gets all the tracking handles used by this buffer.
+        /// </summary>
+        /// <param name="baseOffset">Offset of this buffer inside the new buffer that will inherit the tracking handles</param>
+        /// <returns>Tracking handle segments</returns>
+        public IEnumerable<RegionHandleSegment> GetTrackingHandles(ulong baseOffset)
+        {
+            if (_regions.Length == 1)
+            {
+                return Enumerable.Repeat(new RegionHandleSegment(baseOffset, _regions[0].Size, _regions[0].GetTrackingHandles()), 1);
+            }
+
+            RegionHandleSegment[] handles = new RegionHandleSegment[_regions.Length];
+
+            for (int index = 0; index < _regions.Length; index++)
+            {
+                BufferRegion region = _regions[index];
+
+                handles[index] = new RegionHandleSegment(baseOffset + region.BaseOffset, region.Size, region.GetTrackingHandles());
+            }
+
+            return handles;
+        }
+
+        /// <summary>
+        /// Gets the tracking handles on a given sub-range of this buffer.
+        /// </summary>
+        /// <param name="baseOffset">Offset where the handles will be placed on the new buffer that will inherit them</param>
+        /// <param name="bufferOffset">Start offset of the range to get the tracking handles from</param>
+        /// <param name="size">Size in bytes of the range</param>
+        /// <returns>The tracking handles at the specified range</returns>
+        public IEnumerable<RegionHandleSegment> GetTrackingHandlesSlice(ulong baseOffset, ulong bufferOffset, ulong size)
+        {
+            ulong bufferEndOffset = bufferOffset + size;
+            int index = FindStartIndex(bufferOffset);
+
+            List<RegionHandleSegment> handles = new List<RegionHandleSegment>();
+
+            for (; index < _regions.Length; index++)
+            {
+                BufferRegion region = _regions[index];
+
+                if (region.BaseOffset >= bufferEndOffset)
+                {
+                    break;
+                }
+
+                ulong regionEndOffset = region.BaseOffset + region.Size;
+
+                ulong clampedOffset = Math.Max(bufferOffset, region.BaseOffset);
+                ulong clampedEndOffset = Math.Min(bufferEndOffset, regionEndOffset);
+                ulong clampedSize = clampedEndOffset - clampedOffset;
+
+                IEnumerable<IRegionHandle> regionHandles = region.GetTrackingHandles();
+
+                if (clampedOffset > region.BaseOffset || clampedEndOffset < regionEndOffset)
+                {
+                    ulong skipSize = clampedOffset - region.BaseOffset;
+
+                    int skipCount = (int)(skipSize / BufferRegion.GranularBufferThreshold);
+                    int takeCount = (int)(clampedSize / BufferRegion.GranularBufferThreshold);
+
+                    regionHandles = regionHandles.Skip(skipCount).Take(takeCount);
+                }
+
+                handles.Add(new RegionHandleSegment(baseOffset + (clampedOffset - bufferOffset), clampedSize, regionHandles));
+            }
+
+            return handles;
+        }
+
+        /// <summary>
+        /// Disposes the tracking handles at a specified buffer sub-range.
+        /// </summary>
+        /// <remarks>
+        /// This buffer should no longer be used after disposing tracking handles.
+        /// It also can't be disposed using the regular Dispose method, instead one must use <see cref="DisposeData"/>
+        /// to dispose of the buffer storage, and this method to dispose of any other remaining tracking handles.
+        /// </remarks>
+        /// <param name="bufferOffset">Start offset of the range to have its tracking handles disposed</param>
+        /// <param name="size">Size in bytes of the range</param>
+        public void DisposeTrackingHandles(ulong bufferOffset, ulong size)
+        {
+            ulong bufferEndOffset = bufferOffset + size;
+            int index = FindStartIndex(bufferOffset);
+
+            for (; index < _regions.Length; index++)
+            {
+                BufferRegion region = _regions[index];
+
+                if (region.BaseOffset >= bufferEndOffset)
+                {
+                    break;
+                }
+
+                ulong regionEndOffset = region.BaseOffset + region.Size;
+
+                ulong clampedOffset = Math.Max(bufferOffset, region.BaseOffset);
+                ulong clampedEndOffset = Math.Min(bufferEndOffset, regionEndOffset);
+                ulong clampedSize = clampedEndOffset - clampedOffset;
+
+                IEnumerable<IRegionHandle> regionHandles = region.GetTrackingHandles();
+
+                if (clampedOffset > region.BaseOffset || clampedEndOffset < regionEndOffset)
+                {
+                    ulong skipSize = clampedOffset - region.BaseOffset;
+
+                    int skipCount = (int)(skipSize / BufferRegion.GranularBufferThreshold);
+                    int takeCount = (int)(clampedSize / BufferRegion.GranularBufferThreshold);
+
+                    foreach (IRegionHandle handle in regionHandles)
+                    {
+                        if (skipCount > 0)
+                        {
+                            skipCount--;
+                        }
+                        else if (takeCount > 0)
+                        {
+                            takeCount--;
+                            handle.Dispose();
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    Debug.Assert(skipCount == 0);
+                    Debug.Assert(takeCount == 0);
+                }
+                else
+                {
+                    foreach (IRegionHandle handle in regionHandles)
+                    {
+                        handle.Dispose();
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -514,7 +560,10 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         public void DisposeData()
         {
-            _modifiedRanges?.Clear();
+            foreach (BufferRegion region in _regions)
+            {
+                region.ClearModified();
+            }
 
             _context.Renderer.DeleteBuffer(Handle);
 
@@ -526,10 +575,14 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         public void Dispose()
         {
-            _memoryTrackingGranular?.Dispose();
-            _memoryTracking?.Dispose();
+            foreach (BufferRegion region in _regions)
+            {
+                region.Dispose();
+            }
 
-            DisposeData();
+            _context.Renderer.DeleteBuffer(Handle);
+
+            UnmappedSequence++;
         }
     }
 }

@@ -522,14 +522,14 @@ namespace Ryujinx.Graphics.Gpu.Shader
             byte[] codeA,
             byte[] codeB)
         {
-            ulong cb1DataAddress = channel.BufferManager.GetGraphicsUniformBufferAddress(0, 1);
+            ulong cb1DataGpuVa = channel.BufferManager.GetGraphicsUniformBufferGpuVa(0, 1);
 
             var memoryManager = channel.MemoryManager;
 
-            codeA ??= memoryManager.GetSpan(vertexA.Address, vertexA.Size).ToArray();
-            codeB ??= memoryManager.GetSpan(currentStage.Address, currentStage.Size).ToArray();
-            byte[] cb1DataA = memoryManager.Physical.GetSpan(cb1DataAddress, vertexA.Cb1DataSize).ToArray();
-            byte[] cb1DataB = memoryManager.Physical.GetSpan(cb1DataAddress, currentStage.Cb1DataSize).ToArray();
+            codeA ??= ReadData(memoryManager, vertexA.Address, vertexA.Size);
+            codeB ??= ReadData(memoryManager, currentStage.Address, currentStage.Size);
+            byte[] cb1DataA = ReadData(memoryManager, cb1DataGpuVa, vertexA.Cb1DataSize);
+            byte[] cb1DataB = ReadData(memoryManager, cb1DataGpuVa, currentStage.Cb1DataSize);
 
             ShaderDumpPaths pathsA = default;
             ShaderDumpPaths pathsB = default;
@@ -563,12 +563,12 @@ namespace Ryujinx.Graphics.Gpu.Shader
         {
             var memoryManager = channel.MemoryManager;
 
-            ulong cb1DataAddress = context.Stage == ShaderStage.Compute
-                ? channel.BufferManager.GetComputeUniformBufferAddress(1)
-                : channel.BufferManager.GetGraphicsUniformBufferAddress(StageToStageIndex(context.Stage), 1);
+            ulong cb1DataGpuVa = context.Stage == ShaderStage.Compute
+                ? channel.BufferManager.GetComputeUniformBufferGpuVa(1)
+                : channel.BufferManager.GetGraphicsUniformBufferGpuVa(StageToStageIndex(context.Stage), 1);
 
-            byte[] cb1Data = memoryManager.Physical.GetSpan(cb1DataAddress, context.Cb1DataSize).ToArray();
-            code ??= memoryManager.GetSpan(context.Address, context.Size).ToArray();
+            byte[] cb1Data = ReadData(memoryManager, cb1DataGpuVa, context.Cb1DataSize);
+            code ??= ReadData(memoryManager, context.Address, context.Size);
 
             ShaderDumpPaths paths = dumper?.Dump(code, context.Stage == ShaderStage.Compute) ?? default;
             ShaderProgram program = context.Translate();
@@ -576,6 +576,23 @@ namespace Ryujinx.Graphics.Gpu.Shader
             paths.Prepend(program);
 
             return new TranslatedShader(new CachedShaderStage(program.Info, code, cb1Data), program);
+        }
+
+        /// <summary>
+        /// Reads data on a specified memory location into a byte array.
+        /// </summary>
+        /// <param name="memoryManager">Memory manager used to access the data</param>
+        /// <param name="gpuVa">GPU virtual address of the data</param>
+        /// <param name="size">Size of the data in bytes</param>
+        /// <returns>Data at the specified memory location</returns>
+        private static byte[] ReadData(MemoryManager memoryManager, ulong gpuVa, int size)
+        {
+            if (size == 0)
+            {
+                return Array.Empty<byte>();
+            }
+
+            return memoryManager.GetSpan(gpuVa, size).ToArray();
         }
 
         /// <summary>
