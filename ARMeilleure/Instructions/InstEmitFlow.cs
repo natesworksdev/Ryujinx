@@ -66,7 +66,7 @@ namespace ARMeilleure.Instructions
         {
             OpCodeBReg op = (OpCodeBReg)context.CurrOp;
 
-            context.Return(GetIntOrZR(context, op.Rn));
+            EmitReturn(context, GetIntOrZR(context, op.Rn));
         }
 
         public static void Tbnz(ArmEmitterContext context) => EmitTb(context, onNotZero: true);

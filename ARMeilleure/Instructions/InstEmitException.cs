@@ -19,7 +19,7 @@ namespace ARMeilleure.Instructions
 
             context.LoadFromContext();
 
-            context.Return(Const(op.Address));
+            InstEmitFlowHelper.EmitReturn(context, Const(op.Address));
         }
 
         public static void Svc(ArmEmitterContext context)
@@ -49,7 +49,7 @@ namespace ARMeilleure.Instructions
 
             context.LoadFromContext();
 
-            context.Return(Const(op.Address));
+            InstEmitFlowHelper.EmitReturn(context, Const(op.Address));
         }
     }
 }

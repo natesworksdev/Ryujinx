@@ -35,7 +35,7 @@ namespace ARMeilleure.Instructions
 
             context.LoadFromContext();
 
-            context.Return(Const(context.CurrOp.Address));
+            InstEmitFlowHelper.EmitReturn(context, Const(context.CurrOp.Address));
         }
     }
 }

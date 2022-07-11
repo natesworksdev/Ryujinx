@@ -227,8 +227,16 @@ namespace ARMeilleure.Translation
 
             Operand runningAddress = context.Add(nativeContext, Const((ulong)NativeContext.GetRunningOffset()));
             Operand dispatchAddress = context.Add(nativeContext, Const((ulong)NativeContext.GetDispatchAddressOffset()));
+            Operand callDepthAddress = context.Add(nativeContext, Const((ulong)NativeContext.GetCallDepthOffset()));
 
             context.MarkLabel(beginLbl);
+
+            if (Optimizations.EnableDeepCallRecursionProtection)
+            {
+                // Reset the call depth counter, since this is our first guest function call.
+                context.Store(callDepthAddress, Const(0));
+            }
+
             context.Store(dispatchAddress, guestAddress);
             context.Copy(guestAddress, context.Call(Const((ulong)DispatchStub), OperandType.I64, nativeContext));
             context.BranchIfFalse(endLbl, guestAddress);

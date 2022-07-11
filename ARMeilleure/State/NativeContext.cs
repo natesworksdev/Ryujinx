@@ -19,6 +19,7 @@ namespace ARMeilleure.State
             public ulong ExclusiveValueLow;
             public ulong ExclusiveValueHigh;
             public int Running;
+            public int CallDepth;
         }
 
         private static NativeCtxStorage _dummyStorage = new NativeCtxStorage();
@@ -146,6 +147,8 @@ namespace ARMeilleure.State
         public bool GetRunning() => GetStorage().Running != 0;
         public void SetRunning(bool value) => GetStorage().Running = value ? 1 : 0;
 
+        public void ResetCallDepth() => GetStorage().CallDepth = 0;
+
         public unsafe static int GetRegisterOffset(Register reg)
         {
             if (reg.Type == RegisterType.Integer)
@@ -209,6 +212,11 @@ namespace ARMeilleure.State
         public static int GetRunningOffset()
         {
             return StorageOffset(ref _dummyStorage, ref _dummyStorage.Running);
+        }
+
+        public static int GetCallDepthOffset()
+        {
+            return StorageOffset(ref _dummyStorage, ref _dummyStorage.CallDepth);
         }
 
         private static int StorageOffset<T>(ref NativeCtxStorage storage, ref T target)
