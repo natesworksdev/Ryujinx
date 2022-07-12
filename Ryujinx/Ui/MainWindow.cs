@@ -28,7 +28,6 @@ using Ryujinx.Input.GTK3;
 using Ryujinx.Input.HLE;
 using Ryujinx.Input.SDL2;
 using Ryujinx.Modules;
-using Ryujinx.Ui.App;
 using Ryujinx.Ui.App.Common;
 using Ryujinx.Ui.Applet;
 using Ryujinx.Ui.Common;
@@ -956,10 +955,6 @@ namespace Ryujinx.Ui
 
             RefreshFirmwareLabel();
             HandleRelaunch();
-
-            _actionMenu.Sensitive = false;
-            _firmwareInstallFile.Sensitive = true;
-            _firmwareInstallDirectory.Sensitive = true;
         }
 
         private void CreateGameWindow()
@@ -1522,6 +1517,9 @@ namespace Ryujinx.Ui
                 // otherwise, clear state.
                 _userChannelPersistence  = new UserChannelPersistence();
                 _currentEmulatedGamePath = null;
+                _actionMenu.Sensitive = false;
+                _firmwareInstallFile.Sensitive = true;
+                _firmwareInstallDirectory.Sensitive = true;
             }
         }
 
