@@ -34,6 +34,7 @@ namespace Ryujinx.Ui
         private const int SwitchPanelWidth = 1280;
         private const int SwitchPanelHeight = 720;
         private const int TargetFps = 60;
+        private const float MaxResolutionScale = 4.0f; // Max resolution hotkeys can scale to before wrapping.
 
         public ManualResetEvent WaitEvent { get; set; }
         public NpadManager NpadManager { get; }
@@ -44,8 +45,6 @@ namespace Ryujinx.Ui
         public bool ScreenshotRequested { get; set; }
         protected int WindowWidth { get; private set; }
         protected int WindowHeight { get; private set; }
-
-        private float _currentScale { get; set; }
 
         public static event EventHandler<StatusUpdatedEventArgs> StatusUpdatedEvent;
 
@@ -624,33 +623,14 @@ namespace Ryujinx.Ui
                 if (currentHotkeyState.HasFlag(KeyboardHotkeyState.ResScaleUp) &&
                     !_prevHotkeyState.HasFlag(KeyboardHotkeyState.ResScaleUp))
                 {
-                    _currentScale = GraphicsConfig.ResScale;
-
-                    // Cap this hotkey at 4x scaling.
-                    if (_currentScale < 4f)
-                    {
-                        // If custom scaling used then first round the float down then increase.
-                        float scaleRound = MathF.Floor(_currentScale);
-                        scaleRound += 1f;
-
-                        GraphicsConfig.ResScale = scaleRound;
-                    }
+                    GraphicsConfig.ResScale = GraphicsConfig.ResScale % MaxResolutionScale + 1;
                 }
 
                 if (currentHotkeyState.HasFlag(KeyboardHotkeyState.ResScaleDown) &&
                     !_prevHotkeyState.HasFlag(KeyboardHotkeyState.ResScaleDown))
                 {
-                    _currentScale = GraphicsConfig.ResScale;
-
-                    // Cap this hotkey at 1x scaling.
-                    if (_currentScale > 1f)
-                    {
-                        // If custom scaling used then first round the float up then decrease.
-                        float scaleRound = MathF.Ceiling(_currentScale);
-                        scaleRound -= 1f;
-
-                        GraphicsConfig.ResScale = scaleRound;
-                    }
+                    GraphicsConfig.ResScale =
+                    (MaxResolutionScale + GraphicsConfig.ResScale - 2)  % MaxResolutionScale + 1;
                 }
 
                 _prevHotkeyState = currentHotkeyState;

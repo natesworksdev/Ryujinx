@@ -53,6 +53,7 @@ namespace Ryujinx.Ava
     internal class AppHost
     {
         private const int CursorHideIdleTime = 8; // Hide Cursor seconds
+        private const float MaxResolutionScale = 4.0f; // Max resolution hotkeys can scale to before wrapping.
 
         private static readonly Cursor InvisibleCursor = new Cursor(StandardCursorType.None);
 
@@ -81,7 +82,6 @@ namespace Ryujinx.Ava
         private bool _renderingStarted;
         private bool _dialogShown;
         private float _currentScale { get; set; }
-        private const float MaxResolutionScale = 4.0f;
 
         private WindowsMultimediaTimerResolution _windowsMultimediaTimerResolution;
 
