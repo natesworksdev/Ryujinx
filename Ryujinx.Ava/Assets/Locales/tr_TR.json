@@ -551,6 +551,8 @@
   "SettingsTabHotkeysShowUiHotkey": "Arayüzü Göster:",
   "SettingsTabHotkeysPauseHotkey": "Duraklat:",
   "SettingsTabHotkeysToggleMuteHotkey": "Sustur:",
+  "SettingsTabHotkeysResScaleUpHotkey": "Çözünürlüğü artırın:",
+  "SettingsTabHotkeysResScaleDownHotkey": "Çözünürlüğü azaltın:",
   "ControllerMotionTitle": "Hareket Kontrol Seçenekleri",
   "ControllerRumbleTitle": "Titreşim Seçenekleri",
   "SettingsSelectThemeFileDialogTitle" : "Tema Dosyası Seçin",

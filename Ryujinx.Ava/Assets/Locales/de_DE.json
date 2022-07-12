@@ -551,6 +551,8 @@
   "SettingsTabHotkeysShowUiHotkey": "Zeige UI:",
   "SettingsTabHotkeysPauseHotkey": "Pausieren:",
   "SettingsTabHotkeysToggleMuteHotkey": "Stummschalten:",
+  "SettingsTabHotkeysResScaleUpHotkey": "Auflösung erhöhen:",
+  "SettingsTabHotkeysResScaleDownHotkey": "Auflösung vermindern:",
   "ControllerMotionTitle": "Bewegungssteuerung - Einstellungen",
   "ControllerRumbleTitle": "Vibration - Einstellungen",
   "SettingsSelectThemeFileDialogTitle" : "Wähle ein benutzerdefiniertes Thema",
