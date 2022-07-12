@@ -649,8 +649,8 @@ namespace Ryujinx.Ui.Common.Configuration
                 Screenshot = Key.F8,
                 ShowUi = Key.F4,
                 Pause = Key.F5,
-                ResScaleUp = Key.PageUp,
-                ResScaleDown = Key.PageDown
+                ResScaleUp = Key.Unbound,
+                ResScaleDown = Key.Unbound
             };
             Hid.InputConfig.Value = new List<InputConfig>
             {
