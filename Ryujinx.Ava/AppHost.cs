@@ -81,7 +81,6 @@ namespace Ryujinx.Ava
         private bool _isMouseInRenderer;
         private bool _renderingStarted;
         private bool _dialogShown;
-        private float _currentScale { get; set; }
 
         private WindowsMultimediaTimerResolution _windowsMultimediaTimerResolution;
 
@@ -980,7 +979,7 @@ namespace Ryujinx.Ava
                             GraphicsConfig.ResScale = GraphicsConfig.ResScale % MaxResolutionScale + 1;
                             break;
                         case KeyboardHotkeyState.ResScaleDown:
-                            Graphics.Gpu.GraphicsConfig.ResScale =
+                            GraphicsConfig.ResScale =
                             (MaxResolutionScale + GraphicsConfig.ResScale - 2)  % MaxResolutionScale + 1;
                             break;
                         case KeyboardHotkeyState.None:

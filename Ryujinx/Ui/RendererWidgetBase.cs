@@ -46,8 +46,6 @@ namespace Ryujinx.Ui
         protected int WindowWidth { get; private set; }
         protected int WindowHeight { get; private set; }
 
-        private float _currentScale { get; set; }
-
         public static event EventHandler<StatusUpdatedEventArgs> StatusUpdatedEvent;
 
         private bool _isActive;
@@ -619,38 +617,6 @@ namespace Ryujinx.Ui
                     else
                     {
                         Device.SetVolume(0);
-                    }
-                }
-
-                if (currentHotkeyState.HasFlag(KeyboardHotkeyState.ResScaleUp) &&
-                    !_prevHotkeyState.HasFlag(KeyboardHotkeyState.ResScaleUp))
-                {
-                    _currentScale = GraphicsConfig.ResScale;
-
-                    // Cap this hotkey at 4x scaling.
-                    if (_currentScale < 4f)
-                    {
-                        // If custom scaling used then first round the float down then increase.
-                        float scaleRound = MathF.Floor(_currentScale);
-                        scaleRound += 1f;
-
-                        GraphicsConfig.ResScale = scaleRound;
-                    }
-                }
-
-                if (currentHotkeyState.HasFlag(KeyboardHotkeyState.ResScaleDown) &&
-                    !_prevHotkeyState.HasFlag(KeyboardHotkeyState.ResScaleDown))
-                {
-                    _currentScale = GraphicsConfig.ResScale;
-
-                    // Cap this hotkey at 1x scaling.
-                    if (_currentScale > 1f)
-                    {
-                        // If custom scaling used then first round the float up then decrease.
-                        float scaleRound = MathF.Ceiling(_currentScale);
-                        scaleRound -= 1f;
-
-                        GraphicsConfig.ResScale = scaleRound;
                     }
                 }
 
