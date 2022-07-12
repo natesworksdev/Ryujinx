@@ -480,7 +480,7 @@ namespace Ryujinx.Headless.SDL2
                     }
                 }
 
-                renderer = new VulkanGraphicsDevice(
+                renderer = new VulkanRenderer(
                     (instance, vk) => new SurfaceKHR((ulong)(vulkanWindow.CreateWindowSurface(instance.Handle))),
                     vulkanWindow.GetRequiredInstanceExtensions,
                     preferredGpuId);
