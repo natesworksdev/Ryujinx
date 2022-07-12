@@ -80,6 +80,8 @@ namespace Ryujinx.Ava
         private bool _isMouseInRenderer;
         private bool _renderingStarted;
         private bool _dialogShown;
+        private float _currentScale { get; set; }
+        private const float MaxResolutionScale = 4.0f;
 
         private WindowsMultimediaTimerResolution _windowsMultimediaTimerResolution;
 
@@ -974,6 +976,13 @@ namespace Ryujinx.Ava
 
                             _parent.ViewModel.Volume = Device.GetVolume();
                             break;
+                        case KeyboardHotkeyState.ResScaleUp:
+                            GraphicsConfig.ResScale = GraphicsConfig.ResScale % MaxResolutionScale + 1;
+                            break;
+                        case KeyboardHotkeyState.ResScaleDown:
+                            Graphics.Gpu.GraphicsConfig.ResScale =
+                            (MaxResolutionScale + GraphicsConfig.ResScale - 2)  % MaxResolutionScale + 1;
+                            break;
                         case KeyboardHotkeyState.None:
                             (_keyboardInterface as AvaloniaKeyboard).Clear();
                             break;
@@ -1030,6 +1039,14 @@ namespace Ryujinx.Ava
             else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ToggleMute))
             {
                 state = KeyboardHotkeyState.ToggleMute;
+            }
+            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ResScaleUp))
+            {
+                state = KeyboardHotkeyState.ResScaleUp;
+            }
+            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ResScaleDown))
+            {
+                state = KeyboardHotkeyState.ResScaleDown;
             }
 
             return state;
