@@ -6,7 +6,7 @@ namespace Ryujinx.Graphics.Vulkan
 {
     static class PipelineConverter
     {
-        public static unsafe DisposableRenderPass ToRenderPass(this ProgramPipelineState state, VulkanGraphicsDevice gd, Device device)
+        public static unsafe DisposableRenderPass ToRenderPass(this ProgramPipelineState state, VulkanRenderer gd, Device device)
         {
             const int MaxAttachments = Constants.MaxRenderTargets + 1;
 
@@ -128,7 +128,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public static PipelineState ToVulkanPipelineState(this ProgramPipelineState state, VulkanGraphicsDevice gd)
+        public static PipelineState ToVulkanPipelineState(this ProgramPipelineState state, VulkanRenderer gd)
         {
             PipelineState pipeline = new PipelineState();
             pipeline.Initialize();

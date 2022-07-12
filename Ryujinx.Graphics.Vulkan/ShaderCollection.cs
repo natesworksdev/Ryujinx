@@ -42,7 +42,7 @@ namespace Ryujinx.Graphics.Vulkan
         private HashTableSlim<PipelineUid, Auto<DisposablePipeline>> _graphicsPipelineCache;
         private Auto<DisposablePipeline> _computePipeline;
 
-        private VulkanGraphicsDevice _gd;
+        private VulkanRenderer _gd;
         private Device _device;
         private bool _initialized;
         private bool _isCompute;
@@ -52,7 +52,7 @@ namespace Ryujinx.Graphics.Vulkan
         private Task _compileTask;
         private bool _firstBackgroundUse;
 
-        public ShaderCollection(VulkanGraphicsDevice gd, Device device, ShaderSource[] shaders, bool isMinimal = false)
+        public ShaderCollection(VulkanRenderer gd, Device device, ShaderSource[] shaders, bool isMinimal = false)
         {
             _gd = gd;
             _device = device;
@@ -129,7 +129,7 @@ namespace Ryujinx.Graphics.Vulkan
         }
 
         public ShaderCollection(
-            VulkanGraphicsDevice gd,
+            VulkanRenderer gd,
             Device device,
             ShaderSource[] sources,
             ProgramPipelineState state,
@@ -360,7 +360,7 @@ namespace Ryujinx.Graphics.Vulkan
         }
 
         public Auto<DescriptorSetCollection> GetNewDescriptorSetCollection(
-            VulkanGraphicsDevice gd,
+            VulkanRenderer gd,
             int commandBufferIndex,
             int setIndex,
             out bool isNew)

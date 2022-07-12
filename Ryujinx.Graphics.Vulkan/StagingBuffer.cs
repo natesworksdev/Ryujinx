@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Vulkan
         private int _freeOffset;
         private int _freeSize;
 
-        private readonly VulkanGraphicsDevice _gd;
+        private readonly VulkanRenderer _gd;
         private readonly BufferHolder _buffer;
 
         private struct PendingCopy
@@ -29,7 +29,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private readonly Queue<PendingCopy> _pendingCopies;
 
-        public StagingBuffer(VulkanGraphicsDevice gd, BufferManager bufferManager)
+        public StagingBuffer(VulkanRenderer gd, BufferManager bufferManager)
         {
             _gd = gd;
             _buffer = bufferManager.Create(gd, BufferSize);

@@ -41,7 +41,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public void BindTransformFeedbackBuffer(VulkanGraphicsDevice gd, CommandBufferScoped cbs, uint binding)
+        public void BindTransformFeedbackBuffer(VulkanRenderer gd, CommandBufferScoped cbs, uint binding)
         {
             if (_buffer != null)
             {
@@ -51,7 +51,7 @@ namespace Ryujinx.Graphics.Vulkan
             }
         }
 
-        public void BindVertexBuffer(VulkanGraphicsDevice gd, CommandBufferScoped cbs, uint binding)
+        public void BindVertexBuffer(VulkanRenderer gd, CommandBufferScoped cbs, uint binding)
         {
             if (_buffer != null)
             {

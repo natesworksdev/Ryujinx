@@ -329,7 +329,7 @@ namespace Ryujinx.Graphics.Vulkan
         }
 
         public unsafe Auto<DisposablePipeline> CreateComputePipeline(
-            VulkanGraphicsDevice gd,
+            VulkanRenderer gd,
             Device device,
             ShaderCollection program,
             PipelineCache cache)
@@ -369,7 +369,7 @@ namespace Ryujinx.Graphics.Vulkan
         }
 
         public unsafe Auto<DisposablePipeline> CreateGraphicsPipeline(
-            VulkanGraphicsDevice gd,
+            VulkanRenderer gd,
             Device device,
             ShaderCollection program,
             PipelineCache cache,
@@ -564,7 +564,7 @@ namespace Ryujinx.Graphics.Vulkan
             return pipeline;
         }
 
-        private unsafe void UpdateStageRequiredSubgroupSizes(VulkanGraphicsDevice gd, int count)
+        private unsafe void UpdateStageRequiredSubgroupSizes(VulkanRenderer gd, int count)
         {
             for (int index = 0; index < count; index++)
             {

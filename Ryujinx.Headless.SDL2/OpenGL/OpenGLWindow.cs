@@ -130,7 +130,7 @@ namespace Ryujinx.Headless.SDL2.OpenGL
             _openGLContext = new SDL2OpenGLContext(context, WindowHandle, false);
 
             // First take exclusivity on the OpenGL context.
-            ((Renderer)Renderer).InitializeBackgroundContext(SDL2OpenGLContext.CreateBackgroundContext(_openGLContext));
+            ((OpenGLRenderer)Renderer).InitializeBackgroundContext(SDL2OpenGLContext.CreateBackgroundContext(_openGLContext));
 
             _openGLContext.MakeCurrent();
 

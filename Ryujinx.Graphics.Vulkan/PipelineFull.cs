@@ -20,7 +20,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private ulong _byteWeight;
 
-        public PipelineFull(VulkanGraphicsDevice gd, Device device) : base(gd, device)
+        public PipelineFull(VulkanRenderer gd, Device device) : base(gd, device)
         {
             _activeQueries = new List<QueryPool>();
             _pendingQueryCopies = new();

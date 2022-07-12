@@ -28,7 +28,7 @@ namespace Ryujinx.Graphics.Vulkan
             AccessFlags.AccessTransferReadBit |
             AccessFlags.AccessTransferWriteBit;
 
-        private readonly VulkanGraphicsDevice _gd;
+        private readonly VulkanRenderer _gd;
 
         private readonly Device _device;
 
@@ -53,7 +53,7 @@ namespace Ryujinx.Graphics.Vulkan
         public float ScaleFactor { get; }
 
         public unsafe TextureStorage(
-            VulkanGraphicsDevice gd,
+            VulkanRenderer gd,
             PhysicalDevice physicalDevice,
             Device device,
             TextureCreateInfo info,

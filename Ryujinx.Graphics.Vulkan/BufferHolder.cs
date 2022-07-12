@@ -20,7 +20,7 @@ namespace Ryujinx.Graphics.Vulkan
             AccessFlags.AccessShaderReadBit |
             AccessFlags.AccessShaderWriteBit;
 
-        private readonly VulkanGraphicsDevice _gd;
+        private readonly VulkanRenderer _gd;
         private readonly Device _device;
         private readonly MemoryAllocation _allocation;
         private readonly Auto<DisposableBuffer> _buffer;
@@ -37,7 +37,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private bool _lastAccessIsWrite;
 
-        public BufferHolder(VulkanGraphicsDevice gd, Device device, VkBuffer buffer, MemoryAllocation allocation, int size)
+        public BufferHolder(VulkanRenderer gd, Device device, VkBuffer buffer, MemoryAllocation allocation, int size)
         {
             _gd = gd;
             _device = device;
@@ -280,7 +280,7 @@ namespace Ryujinx.Graphics.Vulkan
         }
 
         public static unsafe void Copy(
-            VulkanGraphicsDevice gd,
+            VulkanRenderer gd,
             CommandBufferScoped cbs,
             Auto<DisposableBuffer> src,
             Auto<DisposableBuffer> dst,
@@ -319,7 +319,7 @@ namespace Ryujinx.Graphics.Vulkan
         }
 
         public static unsafe void InsertBufferBarrier(
-            VulkanGraphicsDevice gd,
+            VulkanRenderer gd,
             CommandBuffer commandBuffer,
             VkBuffer buffer,
             AccessFlags srcAccessMask,

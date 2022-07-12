@@ -5,10 +5,10 @@ namespace Ryujinx.Graphics.Vulkan
 {
     class SamplerHolder : ISampler
     {
-        private readonly VulkanGraphicsDevice _gd;
+        private readonly VulkanRenderer _gd;
         private readonly Auto<DisposableSampler> _sampler;
 
-        public unsafe SamplerHolder(VulkanGraphicsDevice gd, Device device, GAL.SamplerCreateInfo info)
+        public unsafe SamplerHolder(VulkanRenderer gd, Device device, GAL.SamplerCreateInfo info)
         {
             _gd = gd;
 

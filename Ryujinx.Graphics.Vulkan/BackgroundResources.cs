@@ -7,13 +7,13 @@ namespace Ryujinx.Graphics.Vulkan
 {
     class BackgroundResource : IDisposable
     {
-        private VulkanGraphicsDevice _gd;
+        private VulkanRenderer _gd;
         private Device _device;
 
         private CommandBufferPool _pool;
         private PersistentFlushBuffer _flushBuffer;
 
-        public BackgroundResource(VulkanGraphicsDevice gd, Device device)
+        public BackgroundResource(VulkanRenderer gd, Device device)
         {
             _gd = gd;
             _device = device;
@@ -55,12 +55,12 @@ namespace Ryujinx.Graphics.Vulkan
 
     class BackgroundResources : IDisposable
     {
-        private VulkanGraphicsDevice _gd;
+        private VulkanRenderer _gd;
         private Device _device;
 
         private Dictionary<Thread, BackgroundResource> _resources;
 
-        public BackgroundResources(VulkanGraphicsDevice gd, Device device)
+        public BackgroundResources(VulkanRenderer gd, Device device)
         {
             _gd = gd;
             _device = device;

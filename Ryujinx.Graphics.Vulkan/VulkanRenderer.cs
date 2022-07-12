@@ -14,7 +14,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Vulkan
 {
-    public sealed class VulkanGraphicsDevice : IRenderer
+    public sealed class VulkanRenderer : IRenderer
     {
         private Instance _instance;
         private SurfaceKHR _surface;
@@ -84,7 +84,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public event EventHandler<ScreenCaptureImageInfo> ScreenCaptured;
 
-        public VulkanGraphicsDevice(Func<Instance, Vk, SurfaceKHR> surfaceFunc, Func<string[]> requiredExtensionsFunc, string preferredGpuId)
+        public VulkanRenderer(Func<Instance, Vk, SurfaceKHR> surfaceFunc, Func<string[]> requiredExtensionsFunc, string preferredGpuId)
         {
             _getSurface = surfaceFunc;
             _getRequiredExtensions = requiredExtensionsFunc;
@@ -94,7 +94,7 @@ namespace Ryujinx.Graphics.Vulkan
             Samplers = new HashSet<SamplerHolder>();
         }
 
-        public VulkanGraphicsDevice(Instance instance, Device device, PhysicalDevice physicalDevice, Queue queue, uint queueFamilyIndex, object lockObject)
+        public VulkanRenderer(Instance instance, Device device, PhysicalDevice physicalDevice, Queue queue, uint queueFamilyIndex, object lockObject)
         {
             _instance = instance;
             _physicalDevice = physicalDevice;

@@ -10,7 +10,7 @@ namespace Ryujinx.Graphics.Vulkan.Queries
     {
         private const int QueryPoolInitialSize = 100;
 
-        private readonly VulkanGraphicsDevice _gd;
+        private readonly VulkanRenderer _gd;
         private readonly Device _device;
         private readonly PipelineFull _pipeline;
 
@@ -32,7 +32,7 @@ namespace Ryujinx.Graphics.Vulkan.Queries
 
         private Thread _consumerThread;
 
-        internal CounterQueue(VulkanGraphicsDevice gd, Device device, PipelineFull pipeline, CounterType type)
+        internal CounterQueue(VulkanRenderer gd, Device device, PipelineFull pipeline, CounterType type)
         {
             _gd = gd;
             _device = device;

@@ -595,7 +595,7 @@ namespace Ryujinx.Ava
             if (Program.UseVulkan)
             {
                 var vulkan = AvaloniaLocator.Current.GetService<VulkanPlatformInterface>();
-                renderer = new VulkanGraphicsDevice(vulkan.Instance.InternalHandle,
+                renderer = new VulkanRenderer(vulkan.Instance.InternalHandle,
                     vulkan.Device.InternalHandle,
                     vulkan.PhysicalDevice.InternalHandle,
                     vulkan.Device.Queue.InternalHandle,
@@ -604,7 +604,7 @@ namespace Ryujinx.Ava
             }
             else
             {
-                renderer = new Renderer();
+                renderer = new OpenGLRenderer();
             }
 
             IHardwareDeviceDriver deviceDriver = new DummyHardwareDeviceDriver();
@@ -816,7 +816,7 @@ namespace Ryujinx.Ava
 
             if (!Program.UseVulkan)
             {
-                (_renderer as Renderer).InitializeBackgroundContext(SPBOpenGLContext.CreateBackgroundContext((Renderer as OpenGLRendererControl).GameContext));
+                (_renderer as OpenGLRenderer).InitializeBackgroundContext(SPBOpenGLContext.CreateBackgroundContext((Renderer as OpenGLRendererControl).GameContext));
 
                 Renderer.MakeCurrent();
             }

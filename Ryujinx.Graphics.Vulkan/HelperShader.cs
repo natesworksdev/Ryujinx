@@ -17,7 +17,7 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly IProgram _programColorBlitClearAlpha;
         private readonly IProgram _programColorClear;
 
-        public HelperShader(VulkanGraphicsDevice gd, Device device)
+        public HelperShader(VulkanRenderer gd, Device device)
         {
             _pipeline = new PipelineHelperShader(gd, device);
             _pipeline.Initialize();
@@ -81,7 +81,7 @@ namespace Ryujinx.Graphics.Vulkan
         }
 
         public void Blit(
-            VulkanGraphicsDevice gd,
+            VulkanRenderer gd,
             TextureView src,
             Auto<DisposableImageView> dst,
             int dstWidth,
@@ -100,7 +100,7 @@ namespace Ryujinx.Graphics.Vulkan
         }
 
         public void Blit(
-            VulkanGraphicsDevice gd,
+            VulkanRenderer gd,
             CommandBufferScoped cbs,
             TextureView src,
             Auto<DisposableImageView> dst,
@@ -191,7 +191,7 @@ namespace Ryujinx.Graphics.Vulkan
         }
 
         public void Clear(
-            VulkanGraphicsDevice gd,
+            VulkanRenderer gd,
             Auto<DisposableImageView> dst,
             ReadOnlySpan<float> clearColor,
             uint componentMask,
@@ -246,7 +246,7 @@ namespace Ryujinx.Graphics.Vulkan
         }
 
         public void DrawTexture(
-            VulkanGraphicsDevice gd,
+            VulkanRenderer gd,
             PipelineBase pipeline,
             TextureView src,
             ISampler srcSampler,
@@ -315,7 +315,7 @@ namespace Ryujinx.Graphics.Vulkan
             gd.BufferManager.Delete(bufferHandle);
         }
 
-        public unsafe void ConvertI8ToI16(VulkanGraphicsDevice gd, CommandBufferScoped cbs, BufferHolder src, BufferHolder dst, int srcOffset, int size)
+        public unsafe void ConvertI8ToI16(VulkanRenderer gd, CommandBufferScoped cbs, BufferHolder src, BufferHolder dst, int srcOffset, int size)
         {
             // TODO: Do this with a compute shader?
             var srcBuffer = src.GetBuffer().Get(cbs, srcOffset, size).Value;

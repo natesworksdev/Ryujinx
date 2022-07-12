@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Vulkan
         private const int SurfaceWidth = 1280;
         private const int SurfaceHeight = 720;
 
-        private readonly VulkanGraphicsDevice _gd;
+        private readonly VulkanRenderer _gd;
         private readonly PhysicalDevice _physicalDevice;
         private readonly Device _device;
 
@@ -32,7 +32,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         internal new bool ScreenCaptureRequested { get; set; }
 
-        public unsafe ImageWindow(VulkanGraphicsDevice gd, PhysicalDevice physicalDevice, Device device)
+        public unsafe ImageWindow(VulkanRenderer gd, PhysicalDevice physicalDevice, Device device)
         {
             _gd = gd;
             _physicalDevice = physicalDevice;

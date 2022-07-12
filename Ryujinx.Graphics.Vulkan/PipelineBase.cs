@@ -14,7 +14,7 @@ namespace Ryujinx.Graphics.Vulkan
         public const int TextureSetIndex = 2;
         public const int ImageSetIndex = 3;
 
-        protected readonly VulkanGraphicsDevice Gd;
+        protected readonly VulkanRenderer Gd;
         protected readonly Device Device;
         public readonly PipelineCache PipelineCache;
 
@@ -64,7 +64,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public ulong DrawCount { get; private set; }
 
-        public unsafe PipelineBase(VulkanGraphicsDevice gd, Device device)
+        public unsafe PipelineBase(VulkanRenderer gd, Device device)
         {
             Gd = gd;
             Device = device;

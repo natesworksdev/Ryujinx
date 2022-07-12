@@ -15,11 +15,11 @@ namespace Ryujinx.Graphics.Vulkan
 
         private ulong _firstHandle = 0;
 
-        private readonly VulkanGraphicsDevice _gd;
+        private readonly VulkanRenderer _gd;
         private readonly Device _device;
         private List<SyncHandle> _handles;
 
-        public SyncManager(VulkanGraphicsDevice gd, Device device)
+        public SyncManager(VulkanRenderer gd, Device device)
         {
             _gd = gd;
             _device = device;
