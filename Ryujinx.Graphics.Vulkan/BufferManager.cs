@@ -1,7 +1,6 @@
 ﻿using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
 using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using VkFormat = Silk.NET.Vulkan.Format;
@@ -37,7 +36,7 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly PhysicalDevice _physicalDevice;
         private readonly Device _device;
 
-        private readonly List<BufferHolder> _buffers;
+        private readonly ConcurrentIdList<BufferHolder> _buffers;
 
         public StagingBuffer StagingBuffer { get; }
 
@@ -45,7 +44,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             _physicalDevice = physicalDevice;
             _device = device;
-            _buffers = new List<BufferHolder>();
+            _buffers = new ConcurrentIdList<BufferHolder>();
             StagingBuffer = new StagingBuffer(gd, this);
         }
 
@@ -57,13 +56,9 @@ namespace Ryujinx.Graphics.Vulkan
                 return BufferHandle.Null;
             }
 
-            ulong handle64 = (ulong)_buffers.Count + 1;
+            ulong handle64 = (uint)_buffers.Add(holder);
 
-            var handle = Unsafe.As<ulong, BufferHandle>(ref handle64);
-
-            _buffers.Add(holder);
-
-            return handle;
+            return Unsafe.As<ulong, BufferHandle>(ref handle64);
         }
 
         public unsafe BufferHolder Create(VulkanGraphicsDevice gd, int size, bool forConditionalRendering = false, bool deviceLocal = false)
@@ -175,30 +170,22 @@ namespace Ryujinx.Graphics.Vulkan
             if (TryGetBuffer(handle, out var holder))
             {
                 holder.Dispose();
-                // _buffers.Remove(handle);
+                _buffers.Remove((int)Unsafe.As<BufferHandle, ulong>(ref handle));
             }
         }
 
         private bool TryGetBuffer(BufferHandle handle, out BufferHolder holder)
         {
-            int index = (int)Unsafe.As<BufferHandle, ulong>(ref handle) - 1;
-            if ((uint)index < _buffers.Count)
-            {
-                holder = _buffers[index];
-                return true;
-            }
-
-            holder = default;
-            return false;
+            return _buffers.TryGetValue((int)Unsafe.As<BufferHandle, ulong>(ref handle), out holder);
         }
 
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
             {
-                for (int i = 0; i < _buffers.Count; i++)
+                foreach (BufferHolder buffer in _buffers)
                 {
-                    _buffers[i].Dispose();
+                    buffer.Dispose();
                 }
 
                 StagingBuffer.Dispose();
