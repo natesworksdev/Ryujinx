@@ -441,7 +441,15 @@ namespace Ryujinx.Graphics.Vulkan
 
         public static DeviceInfo[] GetPhysicalDevices()
         {
-            return VulkanInitialization.GetSuitablePhysicalDevices(Vk.GetApi());
+            try
+            {
+                return VulkanInitialization.GetSuitablePhysicalDevices(Vk.GetApi());
+            }
+            catch (Exception)
+            {
+                // If we got an exception here, Vulkan is most likely not supported.
+                return Array.Empty<DeviceInfo>();
+            }
         }
 
         private static string ParseStandardVulkanVersion(uint version)
