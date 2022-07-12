@@ -9,7 +9,7 @@ using System;
 
 namespace Ryujinx.Graphics.OpenGL
 {
-    public sealed class Renderer : IRenderer
+    public sealed class OpenGLRenderer : IRenderer
     {
         private readonly Pipeline _pipeline;
 
@@ -41,7 +41,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public bool PreferThreading => true;
 
-        public Renderer()
+        public OpenGLRenderer()
         {
             _pipeline = new Pipeline();
             _counters = new Counters();

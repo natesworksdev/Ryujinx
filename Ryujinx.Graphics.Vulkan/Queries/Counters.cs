@@ -9,7 +9,7 @@ namespace Ryujinx.Graphics.Vulkan.Queries
         private readonly CounterQueue[] _counterQueues;
         private readonly PipelineFull _pipeline;
 
-        public Counters(VulkanGraphicsDevice gd, Device device, PipelineFull pipeline)
+        public Counters(VulkanRenderer gd, Device device, PipelineFull pipeline)
         {
             _pipeline = pipeline;
 

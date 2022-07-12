@@ -28,7 +28,7 @@ namespace Ryujinx.Graphics.Vulkan.Queries
 
         private long _defaultValue;
 
-        public unsafe BufferedQuery(VulkanGraphicsDevice gd, Device device, PipelineFull pipeline, CounterType type, bool result32Bit)
+        public unsafe BufferedQuery(VulkanRenderer gd, Device device, PipelineFull pipeline, CounterType type, bool result32Bit)
         {
             _api = gd.Api;
             _device = device;
@@ -62,7 +62,7 @@ namespace Ryujinx.Graphics.Vulkan.Queries
             _buffer = buffer;
         }
 
-        private bool QueryTypeSupported(VulkanGraphicsDevice gd, CounterType type)
+        private bool QueryTypeSupported(VulkanRenderer gd, CounterType type)
         {
             return type switch
             {

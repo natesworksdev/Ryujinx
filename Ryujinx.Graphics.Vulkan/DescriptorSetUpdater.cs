@@ -9,7 +9,7 @@ namespace Ryujinx.Graphics.Vulkan
 {
     class DescriptorSetUpdater
     {
-        private readonly VulkanGraphicsDevice _gd;
+        private readonly VulkanRenderer _gd;
         private readonly PipelineBase _pipeline;
 
         private ShaderCollection _program;
@@ -51,7 +51,7 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly TextureView _dummyTexture;
         private readonly SamplerHolder _dummySampler;
 
-        public DescriptorSetUpdater(VulkanGraphicsDevice gd, PipelineBase pipeline)
+        public DescriptorSetUpdater(VulkanRenderer gd, PipelineBase pipeline)
         {
             _gd = gd;
             _pipeline = pipeline;

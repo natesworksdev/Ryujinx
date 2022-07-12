@@ -85,7 +85,7 @@ namespace Ryujinx.Graphics.OpenGL
             _tfbTargets = new BufferRange[Constants.MaxTransformFeedbackBuffers];
         }
 
-        public void Initialize(Renderer renderer)
+        public void Initialize(OpenGLRenderer renderer)
         {
             _supportBuffer = new SupportBufferUpdater(renderer);
             GL.BindBufferBase(BufferRangeTarget.UniformBuffer, 0, Unsafe.As<BufferHandle, int>(ref _supportBuffer.Handle));

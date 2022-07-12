@@ -12,7 +12,7 @@ namespace Ryujinx.Graphics.Vulkan
             ShaderStageFlags.ShaderStageFragmentBit |
             ShaderStageFlags.ShaderStageComputeBit;
 
-        public static unsafe DescriptorSetLayout[] Create(VulkanGraphicsDevice gd, Device device, uint stages, bool usePd, out PipelineLayout layout)
+        public static unsafe DescriptorSetLayout[] Create(VulkanRenderer gd, Device device, uint stages, bool usePd, out PipelineLayout layout)
         {
             int stagesCount = BitOperations.PopCount(stages);
 
@@ -137,7 +137,7 @@ namespace Ryujinx.Graphics.Vulkan
             return layouts;
         }
 
-        public static unsafe DescriptorSetLayout[] CreateMinimal(VulkanGraphicsDevice gd, Device device, ShaderSource[] shaders, out PipelineLayout layout)
+        public static unsafe DescriptorSetLayout[] CreateMinimal(VulkanRenderer gd, Device device, ShaderSource[] shaders, out PipelineLayout layout)
         {
             int stagesCount = shaders.Length;
 

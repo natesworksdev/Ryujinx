@@ -40,7 +40,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public StagingBuffer StagingBuffer { get; }
 
-        public BufferManager(VulkanGraphicsDevice gd, PhysicalDevice physicalDevice, Device device)
+        public BufferManager(VulkanRenderer gd, PhysicalDevice physicalDevice, Device device)
         {
             _physicalDevice = physicalDevice;
             _device = device;
@@ -48,7 +48,7 @@ namespace Ryujinx.Graphics.Vulkan
             StagingBuffer = new StagingBuffer(gd, this);
         }
 
-        public BufferHandle CreateWithHandle(VulkanGraphicsDevice gd, int size, bool deviceLocal)
+        public BufferHandle CreateWithHandle(VulkanRenderer gd, int size, bool deviceLocal)
         {
             var holder = Create(gd, size, deviceLocal: deviceLocal);
             if (holder == null)
@@ -61,7 +61,7 @@ namespace Ryujinx.Graphics.Vulkan
             return Unsafe.As<ulong, BufferHandle>(ref handle64);
         }
 
-        public unsafe BufferHolder Create(VulkanGraphicsDevice gd, int size, bool forConditionalRendering = false, bool deviceLocal = false)
+        public unsafe BufferHolder Create(VulkanRenderer gd, int size, bool forConditionalRendering = false, bool deviceLocal = false)
         {
             var usage = DefaultBufferUsageFlags;
 

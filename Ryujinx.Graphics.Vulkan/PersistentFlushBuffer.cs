@@ -4,11 +4,11 @@ namespace Ryujinx.Graphics.Vulkan
 {
     internal class PersistentFlushBuffer : IDisposable
     {
-        private VulkanGraphicsDevice _gd;
+        private VulkanRenderer _gd;
 
         private BufferHolder _flushStorage;
 
-        public PersistentFlushBuffer(VulkanGraphicsDevice gd)
+        public PersistentFlushBuffer(VulkanRenderer gd)
         {
             _gd = gd;
         }

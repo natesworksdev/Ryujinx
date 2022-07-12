@@ -6,7 +6,7 @@ namespace Ryujinx.Graphics.Vulkan
 {
     class PipelineLayoutCacheEntry
     {
-        private readonly VulkanGraphicsDevice _gd;
+        private readonly VulkanRenderer _gd;
         private readonly Device _device;
 
         public DescriptorSetLayout[] DescriptorSetLayouts { get; }
@@ -16,7 +16,7 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly int[] _dsCacheCursor;
         private int _dsLastCbIndex;
 
-        private PipelineLayoutCacheEntry(VulkanGraphicsDevice gd, Device device)
+        private PipelineLayoutCacheEntry(VulkanRenderer gd, Device device)
         {
             _gd = gd;
             _device = device;
@@ -36,20 +36,20 @@ namespace Ryujinx.Graphics.Vulkan
             _dsCacheCursor = new int[PipelineBase.DescriptorSetLayouts];
         }
 
-        public PipelineLayoutCacheEntry(VulkanGraphicsDevice gd, Device device, uint stages, bool usePd) : this(gd, device)
+        public PipelineLayoutCacheEntry(VulkanRenderer gd, Device device, uint stages, bool usePd) : this(gd, device)
         {
             DescriptorSetLayouts = PipelineLayoutFactory.Create(gd, device, stages, usePd, out var pipelineLayout);
             PipelineLayout = pipelineLayout;
         }
 
-        public PipelineLayoutCacheEntry(VulkanGraphicsDevice gd, Device device, ShaderSource[] shaders) : this(gd, device)
+        public PipelineLayoutCacheEntry(VulkanRenderer gd, Device device, ShaderSource[] shaders) : this(gd, device)
         {
             DescriptorSetLayouts = PipelineLayoutFactory.CreateMinimal(gd, device, shaders, out var pipelineLayout);
             PipelineLayout = pipelineLayout;
         }
 
         public Auto<DescriptorSetCollection> GetNewDescriptorSetCollection(
-            VulkanGraphicsDevice gd,
+            VulkanRenderer gd,
             int commandBufferIndex,
             int setIndex,
             out bool isNew)

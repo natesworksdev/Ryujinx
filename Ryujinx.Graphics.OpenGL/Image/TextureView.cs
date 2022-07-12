@@ -6,7 +6,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
 {
     class TextureView : TextureBase, ITexture, ITextureInfo
     {
-        private readonly Renderer _renderer;
+        private readonly OpenGLRenderer _renderer;
 
         private readonly TextureStorage _parent;
 
@@ -16,7 +16,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
         public int FirstLevel { get; private set; }
 
         public TextureView(
-            Renderer          renderer,
+            OpenGLRenderer          renderer,
             TextureStorage    parent,
             TextureCreateInfo info,
             int               firstLayer,

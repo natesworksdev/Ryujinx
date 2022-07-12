@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Vulkan
         private const int SurfaceWidth = 1280;
         private const int SurfaceHeight = 720;
 
-        private readonly VulkanGraphicsDevice _gd;
+        private readonly VulkanRenderer _gd;
         private readonly SurfaceKHR _surface;
         private readonly PhysicalDevice _physicalDevice;
         private readonly Device _device;
@@ -27,7 +27,7 @@ namespace Ryujinx.Graphics.Vulkan
         private int _height;
         private VkFormat _format;
 
-        public unsafe Window(VulkanGraphicsDevice gd, SurfaceKHR surface, PhysicalDevice physicalDevice, Device device)
+        public unsafe Window(VulkanRenderer gd, SurfaceKHR surface, PhysicalDevice physicalDevice, Device device)
         {
             _gd = gd;
             _physicalDevice = physicalDevice;

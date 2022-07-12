@@ -9,7 +9,7 @@ namespace Ryujinx.Graphics.Vulkan
 {
     class TextureView : ITexture, IDisposable
     {
-        private readonly VulkanGraphicsDevice _gd;
+        private readonly VulkanRenderer _gd;
 
         private readonly Device _device;
 
@@ -34,7 +34,7 @@ namespace Ryujinx.Graphics.Vulkan
         public bool Valid { get; private set; }
 
         public TextureView(
-            VulkanGraphicsDevice gd,
+            VulkanRenderer gd,
             Device device,
             TextureCreateInfo info,
             TextureStorage storage,
@@ -249,7 +249,7 @@ namespace Ryujinx.Graphics.Vulkan
         }
 
         private static void CopyMSToNonMS(
-            VulkanGraphicsDevice gd,
+            VulkanRenderer gd,
             CommandBufferScoped cbs,
             TextureView src,
             TextureView dst,
@@ -364,7 +364,7 @@ namespace Ryujinx.Graphics.Vulkan
                 ImageAspectFlags.ImageAspectColorBit);
         }
 
-        private static TextureView CreateIntermmediateTexture(VulkanGraphicsDevice gd, TextureView src, ref TextureCreateInfo formatInfo, Target target, int depth, int levels)
+        private static TextureView CreateIntermmediateTexture(VulkanRenderer gd, TextureView src, ref TextureCreateInfo formatInfo, Target target, int depth, int levels)
         {
             return gd.CreateTextureView(new GAL.TextureCreateInfo(
                 src.Width,
@@ -536,7 +536,7 @@ namespace Ryujinx.Graphics.Vulkan
         }
 
         private static void BlitDepthStencilWithBuffer(
-            VulkanGraphicsDevice gd,
+            VulkanRenderer gd,
             CommandBufferScoped cbs,
             TextureView src,
             TextureView dst,

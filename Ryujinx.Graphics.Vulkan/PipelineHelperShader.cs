@@ -5,7 +5,7 @@ namespace Ryujinx.Graphics.Vulkan
 {
     class PipelineHelperShader : PipelineBase
     {
-        public PipelineHelperShader(VulkanGraphicsDevice gd, Device device) : base(gd, device)
+        public PipelineHelperShader(VulkanRenderer gd, Device device) : base(gd, device)
         {
         }
 

@@ -468,7 +468,7 @@ namespace Ryujinx.Headless.SDL2
                 if (!string.IsNullOrEmpty(options.PreferredGpuVendor))
                 {
                     string preferredGpuVendor = options.PreferredGpuVendor.ToLowerInvariant();
-                    var devices = VulkanGraphicsDevice.GetPhysicalDevices();
+                    var devices = VulkanRenderer.GetPhysicalDevices();
 
                     foreach (var device in devices)
                     {
@@ -488,7 +488,7 @@ namespace Ryujinx.Headless.SDL2
             else
             {
                 window = new OpenGLWindow(_inputManager, options.LoggingGraphicsDebugLevel, options.AspectRatio, (bool)options.EnableMouse);
-                renderer = new Renderer();
+                renderer = new OpenGLRenderer();
             }
 
             return (window, renderer);

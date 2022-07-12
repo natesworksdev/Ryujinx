@@ -8,7 +8,7 @@ namespace Ryujinx.Graphics.Vulkan
 {
     class TextureBuffer : ITexture
     {
-        private readonly VulkanGraphicsDevice _gd;
+        private readonly VulkanRenderer _gd;
 
         private BufferHandle _bufferHandle;
         private int _offset;
@@ -23,7 +23,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public float ScaleFactor { get; }
 
-        public TextureBuffer(VulkanGraphicsDevice gd, TextureCreateInfo info, float scale)
+        public TextureBuffer(VulkanRenderer gd, TextureCreateInfo info, float scale)
         {
             _gd = gd;
             Width = info.Width;

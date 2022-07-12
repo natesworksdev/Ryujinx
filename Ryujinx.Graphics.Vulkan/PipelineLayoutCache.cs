@@ -15,14 +15,14 @@ namespace Ryujinx.Graphics.Vulkan
             _plceMinimal = new List<PipelineLayoutCacheEntry>();
         }
 
-        public PipelineLayoutCacheEntry Create(VulkanGraphicsDevice gd, Device device, ShaderSource[] shaders)
+        public PipelineLayoutCacheEntry Create(VulkanRenderer gd, Device device, ShaderSource[] shaders)
         {
             var plce = new PipelineLayoutCacheEntry(gd, device, shaders);
             _plceMinimal.Add(plce);
             return plce;
         }
 
-        public PipelineLayoutCacheEntry GetOrCreate(VulkanGraphicsDevice gd, Device device, uint stages, bool usePd)
+        public PipelineLayoutCacheEntry GetOrCreate(VulkanRenderer gd, Device device, uint stages, bool usePd)
         {
             if (_plce[stages] == null)
             {
