@@ -1332,6 +1332,15 @@ namespace Ryujinx.Ui.Common.Configuration
                 configurationFileUpdated = true;
             }
 
+            if (configurationFileFormat.Version < 46)
+            {
+                Ryujinx.Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 45.");
+
+                configurationFileFormat.MultiplayerLanInterfaceId = "0";
+
+                configurationFileUpdated = true;
+            }
+
             Logger.EnableFileLog.Value                = configurationFileFormat.EnableFileLog;
             Graphics.ResScale.Value                   = configurationFileFormat.ResScale;
             Graphics.ResScaleCustom.Value             = configurationFileFormat.ResScaleCustom;
@@ -1390,12 +1399,12 @@ namespace Ryujinx.Ui.Common.Configuration
             Ui.ColumnSort.SortColumnId.Value          = configurationFileFormat.ColumnSort.SortColumnId;
             Ui.ColumnSort.SortAscending.Value         = configurationFileFormat.ColumnSort.SortAscending;
             Ui.GameDirs.Value                         = configurationFileFormat.GameDirs;
-            Ui.ShownFileTypes.NSP.Value              = configurationFileFormat.ShownFileTypes.NSP;
-            Ui.ShownFileTypes.PFS0.Value             = configurationFileFormat.ShownFileTypes.PFS0;
-            Ui.ShownFileTypes.XCI.Value              = configurationFileFormat.ShownFileTypes.XCI;
-            Ui.ShownFileTypes.NCA.Value              = configurationFileFormat.ShownFileTypes.NCA;
-            Ui.ShownFileTypes.NRO.Value              = configurationFileFormat.ShownFileTypes.NRO;
-            Ui.ShownFileTypes.NSO.Value              = configurationFileFormat.ShownFileTypes.NSO;
+            Ui.ShownFileTypes.NSP.Value               = configurationFileFormat.ShownFileTypes.NSP;
+            Ui.ShownFileTypes.PFS0.Value              = configurationFileFormat.ShownFileTypes.PFS0;
+            Ui.ShownFileTypes.XCI.Value               = configurationFileFormat.ShownFileTypes.XCI;
+            Ui.ShownFileTypes.NCA.Value               = configurationFileFormat.ShownFileTypes.NCA;
+            Ui.ShownFileTypes.NRO.Value               = configurationFileFormat.ShownFileTypes.NRO;
+            Ui.ShownFileTypes.NSO.Value               = configurationFileFormat.ShownFileTypes.NSO;
             Ui.EnableCustomTheme.Value                = configurationFileFormat.EnableCustomTheme;
             Ui.LanguageCode.Value                     = configurationFileFormat.LanguageCode;
             Ui.CustomThemePath.Value                  = configurationFileFormat.CustomThemePath;
