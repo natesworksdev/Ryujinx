@@ -36,7 +36,7 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly PhysicalDevice _physicalDevice;
         private readonly Device _device;
 
-        private readonly ConcurrentIdList<BufferHolder> _buffers;
+        private readonly IdList<BufferHolder> _buffers;
 
         public StagingBuffer StagingBuffer { get; }
 
@@ -44,7 +44,7 @@ namespace Ryujinx.Graphics.Vulkan
         {
             _physicalDevice = physicalDevice;
             _device = device;
-            _buffers = new ConcurrentIdList<BufferHolder>();
+            _buffers = new IdList<BufferHolder>();
             StagingBuffer = new StagingBuffer(gd, this);
         }
 
@@ -188,6 +188,7 @@ namespace Ryujinx.Graphics.Vulkan
                     buffer.Dispose();
                 }
 
+                _buffers.Clear();
                 StagingBuffer.Dispose();
             }
         }
