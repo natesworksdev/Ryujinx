@@ -106,8 +106,10 @@ namespace Ryujinx.Graphics.Nvdec.FFmpeg
                     break;
                 case AVLog.Verbose:
                 case AVLog.Debug:
-                case AVLog.Trace:
                     Logger.Debug?.Print(LogClass.FFmpeg, line);
+                    break;
+                case AVLog.Trace:
+                    Logger.Trace?.Print(LogClass.FFmpeg, line);
                     break;
             }
         }
