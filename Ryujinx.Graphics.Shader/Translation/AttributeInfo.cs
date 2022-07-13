@@ -134,5 +134,33 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             return (attr & AttributeConsts.SpecialMask) == 0;
         }
+
+        public static bool IsArrayAttributeGlsl(ShaderStage stage, bool isOutAttr)
+        {
+            if (isOutAttr)
+            {
+                return stage == ShaderStage.TessellationControl;
+            }
+            else
+            {
+                return stage == ShaderStage.TessellationControl ||
+                       stage == ShaderStage.TessellationEvaluation ||
+                       stage == ShaderStage.Geometry;
+            }
+        }
+
+        public static bool IsArrayAttributeSpirv(ShaderStage stage, bool isOutAttr)
+        {
+            if (isOutAttr)
+            {
+                return false;
+            }
+            else
+            {
+                return stage == ShaderStage.TessellationControl ||
+                       stage == ShaderStage.TessellationEvaluation ||
+                       stage == ShaderStage.Geometry;
+            }
+        }
     }
 }

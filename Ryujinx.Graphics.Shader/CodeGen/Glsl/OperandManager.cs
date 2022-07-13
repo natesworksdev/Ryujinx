@@ -200,7 +200,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 {
                     string name = $"{prefix}{(value >> 4)}_{swzMask}";
 
-                    if (!perPatch && IsArrayAttribute(config.Stage, isOutAttr))
+                    if (!perPatch && AttributeInfo.IsArrayAttributeGlsl(config.Stage, isOutAttr))
                     {
                         name += isOutAttr ? "[gl_InvocationID]" : $"[{indexExpr}]";
                     }
@@ -211,7 +211,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 {
                     string name = $"{prefix}{(value >> 4)}";
 
-                    if (!perPatch && IsArrayAttribute(config.Stage, isOutAttr))
+                    if (!perPatch && AttributeInfo.IsArrayAttributeGlsl(config.Stage, isOutAttr))
                     {
                         name += isOutAttr ? "[gl_InvocationID]" : $"[{indexExpr}]";
                     }
@@ -275,7 +275,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                     string name = builtInAttr.Name;
 
-                    if (!perPatch && IsArrayAttribute(config.Stage, isOutAttr) && AttributeInfo.IsArrayBuiltIn(value))
+                    if (!perPatch && AttributeInfo.IsArrayAttributeGlsl(config.Stage, isOutAttr) && AttributeInfo.IsArrayBuiltIn(value))
                     {
                         name = isOutAttr ? $"gl_out[gl_InvocationID].{name}" : $"gl_in[{indexExpr}].{name}";
                     }
@@ -301,20 +301,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
 
             return $"{name}[{attrExpr} >> 2][{attrExpr} & 3]";
-        }
-
-        public static bool IsArrayAttribute(ShaderStage stage, bool isOutAttr)
-        {
-            if (isOutAttr)
-            {
-                return stage == ShaderStage.TessellationControl;
-            }
-            else
-            {
-                return stage == ShaderStage.TessellationControl ||
-                       stage == ShaderStage.TessellationEvaluation ||
-                       stage == ShaderStage.Geometry;
-            }
         }
 
         public static string GetUbName(ShaderStage stage, int slot, bool cbIndexable)

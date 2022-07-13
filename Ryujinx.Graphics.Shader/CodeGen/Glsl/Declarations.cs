@@ -547,7 +547,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private static void DeclareInputAttribute(CodeGenContext context, StructuredProgramInfo info, int attr)
         {
-            string suffix = OperandManager.IsArrayAttribute(context.Config.Stage, isOutAttr: false) ? "[]" : string.Empty;
+            string suffix = AttributeInfo.IsArrayAttributeGlsl(context.Config.Stage, isOutAttr: false) ? "[]" : string.Empty;
             string iq = string.Empty;
 
             if (context.Config.Stage == ShaderStage.Fragment)
@@ -635,7 +635,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private static void DeclareOutputAttribute(CodeGenContext context, int attr)
         {
-            string suffix = OperandManager.IsArrayAttribute(context.Config.Stage, isOutAttr: true) ? "[]" : string.Empty;
+            string suffix = AttributeInfo.IsArrayAttributeGlsl(context.Config.Stage, isOutAttr: true) ? "[]" : string.Empty;
             string name = $"{DefaultNames.OAttributePrefix}{attr}{suffix}";
 
             if (context.Config.TransformFeedbackEnabled && context.Config.Stage != ShaderStage.Fragment)

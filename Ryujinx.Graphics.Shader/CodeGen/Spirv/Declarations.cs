@@ -530,9 +530,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             var attrType = context.GetType(attrInfo.Type, attrInfo.Length);
             bool builtInPassthrough = false;
 
-            if (context.Config.Stage == ShaderStage.Geometry && !isOutAttr && (!attrInfo.IsBuiltin || AttributeInfo.IsArrayBuiltIn(attr)))
+            if (AttributeInfo.IsArrayAttributeSpirv(context.Config.Stage, isOutAttr) && !perPatch && (!attrInfo.IsBuiltin || AttributeInfo.IsArrayBuiltIn(attr)))
             {
-                attrType = context.TypeArray(attrType, context.Constant(context.TypeU32(), (LiteralInteger)context.InputVertices));
+                int arraySize = context.Config.Stage == ShaderStage.Geometry ? context.InputVertices : 32;
+                attrType = context.TypeArray(attrType, context.Constant(context.TypeU32(), (LiteralInteger)arraySize));
 
                 if (context.Config.GpPassthrough && context.Config.GpuAccessor.QueryHostSupportsGeometryShaderPassthrough())
                 {
@@ -571,11 +572,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             else if (isUserAttr)
             {
                 int location = (attr - AttributeConsts.UserAttributeBase) / 16;
-
-                if (perPatch)
-                {
-                    location += 32;
-                }
 
                 context.Decorate(spvVar, Decoration.Location, (LiteralInteger)location);
 
@@ -622,9 +618,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             var storageClass = isOutAttr ? StorageClass.Output : StorageClass.Input;
             var attrType = context.GetType(attrInfo.Type & AggregateType.ElementTypeMask);
 
-            if (context.Config.Stage == ShaderStage.Geometry && !isOutAttr && (!attrInfo.IsBuiltin || AttributeInfo.IsArrayBuiltIn(attr)))
+            if (AttributeInfo.IsArrayAttributeSpirv(context.Config.Stage, isOutAttr) && (!attrInfo.IsBuiltin || AttributeInfo.IsArrayBuiltIn(attr)))
             {
-                attrType = context.TypeArray(attrType, context.Constant(context.TypeU32(), (LiteralInteger)context.InputVertices));
+                int arraySize = context.Config.Stage == ShaderStage.Geometry ? context.InputVertices : 32;
+                attrType = context.TypeArray(attrType, context.Constant(context.TypeU32(), (LiteralInteger)arraySize));
             }
 
             var spvType = context.TypePointer(storageClass, attrType);

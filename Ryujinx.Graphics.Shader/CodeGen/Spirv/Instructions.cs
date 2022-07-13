@@ -874,7 +874,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             if (src2 is AstOperand operand && operand.Type == OperandType.Constant)
             {
-                int attrOffset = baseAttr.Value + (operand.Value << 2);
+                int attrOffset = (baseAttr.Value & AttributeConsts.Mask) + (operand.Value << 2);
                 return new OperationResult(resultType, context.GetAttribute(resultType, attrOffset, isOutAttr: false, index));
             }
             else
@@ -1347,7 +1347,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             if (src2 is AstOperand operand && operand.Type == OperandType.Constant)
             {
-                int attrOffset = baseAttr.Value + (operand.Value << 2);
+                int attrOffset = (baseAttr.Value & AttributeConsts.Mask) + (operand.Value << 2);
                 elemPointer = context.GetAttributeElemPointer(attrOffset, isOutAttr: true, index: null, out elemType);
             }
             else

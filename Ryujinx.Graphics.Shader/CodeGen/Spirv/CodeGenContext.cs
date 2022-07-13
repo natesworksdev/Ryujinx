@@ -258,7 +258,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 elemIndex = Constant(TypeU32(), attrInfo.GetInnermostIndex());
                 var vecIndex = Constant(TypeU32(), (attr - AttributeConsts.UserAttributeBase) >> 4);
 
-                if (Config.Stage == ShaderStage.Geometry && !isOutAttr)
+                if (AttributeInfo.IsArrayAttributeSpirv(Config.Stage, isOutAttr))
                 {
                     return AccessChain(TypePointer(storageClass, GetType(elemType)), ioVariable, index, vecIndex, elemIndex);
                 }
@@ -296,7 +296,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             elemIndex = Constant(TypeU32(), attrInfo.GetInnermostIndex());
 
-            if (Config.Stage == ShaderStage.Geometry && !isOutAttr && (!attrInfo.IsBuiltin || AttributeInfo.IsArrayBuiltIn(attr)))
+            if (AttributeInfo.IsArrayAttributeSpirv(Config.Stage, isOutAttr) && (!attrInfo.IsBuiltin || AttributeInfo.IsArrayBuiltIn(attr)))
             {
                 return AccessChain(TypePointer(storageClass, GetType(elemType)), ioVariable, index, elemIndex);
             }
@@ -315,7 +315,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             var vecIndex = ShiftRightLogical(TypeS32(), attrIndex, Constant(TypeS32(), 2));
             var elemIndex = BitwiseAnd(TypeS32(), attrIndex, Constant(TypeS32(), 3));
 
-            if (Config.Stage == ShaderStage.Geometry && !isOutAttr)
+            if (AttributeInfo.IsArrayAttributeSpirv(Config.Stage, isOutAttr))
             {
                 return AccessChain(TypePointer(storageClass, GetType(elemType)), ioVariable, index, vecIndex, elemIndex);
             }
