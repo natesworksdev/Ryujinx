@@ -980,7 +980,7 @@ namespace Ryujinx.Ava
                             break;
                         case KeyboardHotkeyState.ResScaleDown:
                             GraphicsConfig.ResScale =
-                            (MaxResolutionScale + GraphicsConfig.ResScale - 2)  % MaxResolutionScale + 1;
+                            (MaxResolutionScale + GraphicsConfig.ResScale - 2) % MaxResolutionScale + 1;
                             break;
                         case KeyboardHotkeyState.None:
                             (_keyboardInterface as AvaloniaKeyboard).Clear();

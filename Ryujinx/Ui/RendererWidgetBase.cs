@@ -630,7 +630,7 @@ namespace Ryujinx.Ui
                     !_prevHotkeyState.HasFlag(KeyboardHotkeyState.ResScaleDown))
                 {
                     GraphicsConfig.ResScale =
-                    (MaxResolutionScale + GraphicsConfig.ResScale - 2)  % MaxResolutionScale + 1;
+                    (MaxResolutionScale + GraphicsConfig.ResScale - 2) % MaxResolutionScale + 1;
                 }
 
                 _prevHotkeyState = currentHotkeyState;
