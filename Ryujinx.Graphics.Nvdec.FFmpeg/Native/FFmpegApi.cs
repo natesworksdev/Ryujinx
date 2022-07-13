@@ -32,7 +32,7 @@ namespace Ryujinx.Graphics.Nvdec.FFmpeg.Native
             }
             else
             {
-                throw new NotImplementedException($"Unsupported OS for ffmpeg {RuntimeInformation.RuntimeIdentifier}");
+                throw new NotImplementedException($"Unsupported OS for FFmpeg: {RuntimeInformation.RuntimeIdentifier}");
             }
         }
 
@@ -113,7 +113,6 @@ namespace Ryujinx.Graphics.Nvdec.FFmpeg.Native
 
         [DllImport(AvCodecLibraryName, CallingConvention = CallingConvention.Cdecl)]
         internal static unsafe extern void avcodec_free_context(AVCodecContext** avctx);
-
 
         [DllImport(AvCodecLibraryName, CallingConvention = CallingConvention.Cdecl)]
         internal static unsafe extern AVPacket* av_packet_alloc();
