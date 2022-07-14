@@ -273,8 +273,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Dma
 
                 unsafe bool Convert<T>(Span<byte> dstSpan, ReadOnlySpan<byte> srcSpan) where T : unmanaged
                 {
-                    if (srcLinear && dstLinear &&
-                        srcBpp == dstBpp)
+                    if (srcLinear && dstLinear && srcBpp == dstBpp)
                     {
                         // Optimized path for purely linear copies - we don't need to calculate every single byte offset,
                         // and we can make use of Span.CopyTo which is very very fast (even compared to pointers)
