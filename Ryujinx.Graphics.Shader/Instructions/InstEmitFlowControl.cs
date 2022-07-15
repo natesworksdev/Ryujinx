@@ -104,11 +104,16 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return;
             }
 
-            // TODO: Figure out how this is supposed to work in the
-            // presence of other condition codes.
             if (op.Ccc == Ccc.T)
             {
                 context.Return();
+            }
+            else
+            {
+                Operand lblSkip = Label();
+                context.BranchIfFalse(lblSkip, GetCondition(context, op.Ccc));
+                context.Return();
+                context.MarkLabel(lblSkip);
             }
         }
 
