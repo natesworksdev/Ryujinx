@@ -322,7 +322,7 @@ namespace Ryujinx.Audio.Renderer.Server
             // TODO: Eventually, we should try to use the guest supplied work buffer instead of allocating
             // our own. However, it was causing problems on some applications that would unmap the memory
             // before the audio renderer was fully disposed.
-            Memory<byte> workBufferMemory = new byte[workBufferSize];
+            Memory<byte> workBufferMemory = GC.AllocateArray<byte>((int)workBufferSize, pinned: true);
 
             ResultCode result = audioRenderer.Initialize(
                 ref parameter,
