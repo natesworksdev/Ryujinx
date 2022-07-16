@@ -179,6 +179,10 @@
                                     Command="{ReflectionBinding ChangeLanguage}"
                                     CommandParameter="zh_CN"
                                     Header="Simplified Chinese" />
+                                <MenuItem
+                                    Command="{ReflectionBinding ChangeLanguage}"
+                                    CommandParameter="zh_TW"
+                                    Header="Traditional Chinese (Taiwan)" />
                             </MenuItem>
                             <Separator />
                             <MenuItem
