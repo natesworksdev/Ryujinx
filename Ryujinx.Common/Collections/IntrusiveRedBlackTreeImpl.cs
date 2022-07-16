@@ -12,6 +12,8 @@ namespace Ryujinx.Common.Collections
         protected const bool Red = false;
         protected T Root = null;
 
+        internal T RootNode => Root;
+
         /// <summary>
         /// Number of nodes on the tree.
         /// </summary>

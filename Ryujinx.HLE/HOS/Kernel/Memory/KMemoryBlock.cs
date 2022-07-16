@@ -3,7 +3,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Kernel.Memory
 {
-    class KMemoryBlock : IntrusiveRedBlackTreeNode<KMemoryBlock>, IComparable<KMemoryBlock>
+    class KMemoryBlock : IntrusiveRedBlackTreeNode<KMemoryBlock>, IComparable<KMemoryBlock>, IComparable<ulong>
     {
         public ulong BaseAddress { get; private set; }
         public ulong PagesCount { get; private set; }
@@ -134,6 +134,22 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             else
             {
                 return 1;
+            }
+        }
+
+        public int CompareTo(ulong address)
+        {
+            if (address < BaseAddress)
+            {
+                return 1;
+            }
+            else if (address <= BaseAddress + PagesCount * KPageTableBase.PageSize - 1UL)
+            {
+                return 0;
+            }
+            else
+            {
+                return -1;
             }
         }
     }

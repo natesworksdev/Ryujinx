@@ -282,7 +282,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
         public KMemoryBlock FindBlock(ulong address)
         {
-            return _blockTree.GetNode(new KMemoryBlock(address, 1UL, MemoryState.Unmapped, KMemoryPermission.None, MemoryAttribute.None));
+            return _blockTree.GetNodeByKey(address);
         }
     }
 }

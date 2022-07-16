@@ -257,4 +257,37 @@ namespace Ryujinx.Common.Collections
 
         #endregion
     }
+
+    public static class IntrusiveRedBlackTreeExtensions
+    {
+        /// <summary>
+        /// Retrieve the node that is considered equal to the key by the comparator.
+        /// </summary>
+        /// <param name="tree">Tree to search at</param>
+        /// <param name="key">Key of the node to be found</param>
+        /// <returns>Node that is equal to <paramref name="key"/></returns>
+        public static N GetNodeByKey<N, K>(this IntrusiveRedBlackTree<N> tree, K key)
+            where N : IntrusiveRedBlackTreeNode<N>, IComparable<N>, IComparable<K>
+            where K : struct
+        {
+            N node = tree.RootNode;
+            while (node != null)
+            {
+                int cmp = node.CompareTo(key);
+                if (cmp < 0)
+                {
+                    node = node.Right;
+                }
+                else if (cmp > 0)
+                {
+                    node = node.Left;
+                }
+                else
+                {
+                    return node;
+                }
+            }
+            return null;
+        }
+    }
 }
