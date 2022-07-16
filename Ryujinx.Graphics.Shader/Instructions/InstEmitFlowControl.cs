@@ -110,10 +110,16 @@ namespace Ryujinx.Graphics.Shader.Instructions
             }
             else
             {
-                Operand lblSkip = Label();
-                context.BranchIfFalse(lblSkip, GetCondition(context, op.Ccc));
-                context.Return();
-                context.MarkLabel(lblSkip);
+                Operand cond = GetCondition(context, op.Ccc, IrConsts.False);
+
+                // If the condition is always false, we don't need to do anything.
+                if (cond.Type != OperandType.Constant || cond.Value != IrConsts.False)
+                {
+                    Operand lblSkip = Label();
+                    context.BranchIfFalse(lblSkip, cond);
+                    context.Return();
+                    context.MarkLabel(lblSkip);
+                }
             }
         }
 
@@ -255,7 +261,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
             }
         }
 
-        private static Operand GetCondition(EmitterContext context, Ccc cond)
+        private static Operand GetCondition(EmitterContext context, Ccc cond, int defaultCond = IrConsts.True)
         {
             // TODO: More condition codes, figure out how they work.
             switch (cond)
@@ -268,7 +274,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     return context.BitwiseNot(GetZF());
             }
 
-            return Const(IrConsts.True);
+            return Const(defaultCond);
         }
     }
 }
