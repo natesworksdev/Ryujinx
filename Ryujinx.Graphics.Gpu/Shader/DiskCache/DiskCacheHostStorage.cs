@@ -57,14 +57,14 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             public uint Padding;
 
             /// <summary>
-            /// Reserved space, to be used in the future. Write as zero.
+            /// Timestamp of when the file was first created.
             /// </summary>
-            public ulong Reserved;
+            public ulong Timestamp;
 
             /// <summary>
             /// Reserved space, to be used in the future. Write as zero.
             /// </summary>
-            public ulong Reserved2;
+            public ulong Reserved;
         }
 
         /// <summary>
@@ -191,7 +191,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 return 0;
             }
 
-            return (int)((new FileInfo(tocFilePath).Length - Unsafe.SizeOf<TocHeader>()) / sizeof(ulong));
+            return Math.Max((int)((new FileInfo(tocFilePath).Length - Unsafe.SizeOf<TocHeader>()) / sizeof(ulong)), 0);
         }
 
         /// <summary>
@@ -366,7 +366,8 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                             ref hostTocFileStream,
                             ref hostDataFileStream,
                             guestShaders,
-                            programIndex);
+                            programIndex,
+                            header.Timestamp);
 
                         if (hostCode != null)
                         {
@@ -426,13 +427,15 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         /// <param name="dataFileStream">Host data file stream, initialized if needed</param>
         /// <param name="guestShaders">Guest shader code for each active stage</param>
         /// <param name="programIndex">Index of the program on the cache</param>
+        /// <param name="expectedTimestamp">Timestamp of the shared cache file. The host file must be newer than it</param>
         /// <returns>Host binary code, or null if not found</returns>
         private (byte[], CachedShaderStage[]) ReadHostCode(
             GpuContext context,
             ref Stream tocFileStream,
             ref Stream dataFileStream,
             GuestCodeAndCbData?[] guestShaders,
-            int programIndex)
+            int programIndex,
+            ulong expectedTimestamp)
         {
             if (tocFileStream == null && dataFileStream == null)
             {
@@ -446,6 +449,17 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
 
                 tocFileStream = DiskCacheCommon.OpenFile(_basePath, GetHostTocFileName(context), writable: false);
                 dataFileStream = DiskCacheCommon.OpenFile(_basePath, GetHostDataFileName(context), writable: false);
+
+                BinarySerializer tempTocReader = new BinarySerializer(tocFileStream);
+
+                TocHeader header = new TocHeader();
+
+                tempTocReader.Read(ref header);
+
+                if (header.Timestamp < expectedTimestamp)
+                {
+                    return (null, null);
+                }
             }
 
             int offset = Unsafe.SizeOf<TocHeader>() + programIndex * Unsafe.SizeOf<OffsetAndSize>();
@@ -543,10 +557,12 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             var tocFileStream = streams != null ? streams.TocFileStream : DiskCacheCommon.OpenFile(_basePath, SharedTocFileName, writable: true);
             var dataFileStream = streams != null ? streams.DataFileStream : DiskCacheCommon.OpenFile(_basePath, SharedDataFileName, writable: true);
 
+            ulong timestamp = (ulong)DateTime.UtcNow.Subtract(DateTime.UnixEpoch).TotalSeconds;
+
             if (tocFileStream.Length == 0)
             {
                 TocHeader header = new TocHeader();
-                CreateToc(tocFileStream, ref header, TocsMagic, CodeGenVersion);
+                CreateToc(tocFileStream, ref header, TocsMagic, CodeGenVersion, timestamp);
             }
 
             tocFileStream.Seek(0, SeekOrigin.End);
@@ -594,7 +610,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
                 return;
             }
 
-            WriteHostCode(context, hostCode, program.Shaders, streams);
+            WriteHostCode(context, hostCode, program.Shaders, streams, timestamp);
         }
 
         /// <summary>
@@ -638,7 +654,13 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         /// <param name="hostCode">Host binary code</param>
         /// <param name="shaders">Shader stages to be added to the host cache</param>
         /// <param name="streams">Output streams to use</param>
-        private void WriteHostCode(GpuContext context, ReadOnlySpan<byte> hostCode, CachedShaderStage[] shaders, DiskCacheOutputStreams streams = null)
+        /// <param name="timestamp">File creation timestamp</param>
+        private void WriteHostCode(
+            GpuContext context,
+            ReadOnlySpan<byte> hostCode,
+            CachedShaderStage[] shaders,
+            DiskCacheOutputStreams streams,
+            ulong timestamp)
         {
             var tocFileStream = streams != null ? streams.HostTocFileStream : DiskCacheCommon.OpenFile(_basePath, GetHostTocFileName(context), writable: true);
             var dataFileStream = streams != null ? streams.HostDataFileStream : DiskCacheCommon.OpenFile(_basePath, GetHostDataFileName(context), writable: true);
@@ -646,7 +668,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             if (tocFileStream.Length == 0)
             {
                 TocHeader header = new TocHeader();
-                CreateToc(tocFileStream, ref header, TochMagic, 0);
+                CreateToc(tocFileStream, ref header, TochMagic, 0, timestamp);
             }
 
             tocFileStream.Seek(0, SeekOrigin.End);
@@ -693,7 +715,8 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         /// <param name="header">Set to the TOC file header</param>
         /// <param name="magic">Magic value to be written</param>
         /// <param name="codegenVersion">Shader codegen version, only valid for the host file</param>
-        private void CreateToc(Stream tocFileStream, ref TocHeader header, uint magic, uint codegenVersion)
+        /// <param name="timestamp">File creation timestamp</param>
+        private void CreateToc(Stream tocFileStream, ref TocHeader header, uint magic, uint codegenVersion, ulong timestamp)
         {
             BinarySerializer writer = new BinarySerializer(tocFileStream);
 
@@ -702,7 +725,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             header.CodeGenVersion = codegenVersion;
             header.Padding = 0;
             header.Reserved = 0;
-            header.Reserved2 = 0;
+            header.Timestamp = timestamp;
 
             if (tocFileStream.Length > 0)
             {
