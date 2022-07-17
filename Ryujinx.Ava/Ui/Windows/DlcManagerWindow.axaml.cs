@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
+using Avalonia.Threading;
 using LibHac.Common;
 using LibHac.Fs;
 using LibHac.Fs.Fsa;
@@ -20,6 +21,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Path = System.IO.Path;
 
 namespace Ryujinx.Ava.Ui.Windows
@@ -114,13 +116,17 @@ namespace Ryujinx.Ava.Ui.Windows
             }
             catch (Exception ex)
             {
-                ContentDialogHelper.CreateErrorDialog(string.Format(LocaleManager.Instance["DialogDlcLoadNcaErrorMessage"], ex.Message, containerPath));
+                Dispatcher.UIThread.InvokeAsync(async () =>
+                {
+                    await ContentDialogHelper.CreateErrorDialog(string.Format(LocaleManager.Instance[
+                        "DialogDlcLoadNcaErrorMessage"], ex.Message, containerPath));
+                });
             }
 
             return null;
         }
 
-        private void AddDlc(string path)
+        private async Task AddDlc(string path)
         {
             if (!File.Exists(path) || Dlcs.FirstOrDefault(x => x.ContainerPath == path) != null)
             {
@@ -162,7 +168,7 @@ namespace Ryujinx.Ava.Ui.Windows
 
                 if (!containsDlc)
                 {
-                    ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance["DialogDlcNoDlcErrorMessage"]);
+                    await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance["DialogDlcNoDlcErrorMessage"]);
                 }
             }
         }
@@ -201,7 +207,7 @@ namespace Ryujinx.Ava.Ui.Windows
             {
                 foreach (string file in files)
                 {
-                    AddDlc(file);
+                   await AddDlc(file);
                 }
             }
         }

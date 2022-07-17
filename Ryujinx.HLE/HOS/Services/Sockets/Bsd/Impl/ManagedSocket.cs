@@ -184,18 +184,35 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 
         public LinuxError Receive(out int receiveSize, Span<byte> buffer, BsdSocketFlags flags)
         {
+            LinuxError result;
+
+            bool shouldBlockAfterOperation = false;
+
             try
             {
+                if (Blocking && flags.HasFlag(BsdSocketFlags.DontWait))
+                {
+                    Blocking = false;
+                    shouldBlockAfterOperation = true;
+                }
+
                 receiveSize = Socket.Receive(buffer, ConvertBsdSocketFlags(flags));
 
-                return LinuxError.SUCCESS;
+                result = LinuxError.SUCCESS;
             }
             catch (SocketException exception)
             {
                 receiveSize = -1;
 
-                return WinSockHelper.ConvertError((WsaError)exception.ErrorCode);
+                result = WinSockHelper.ConvertError((WsaError)exception.ErrorCode);
             }
+
+            if (shouldBlockAfterOperation)
+            {
+                Blocking = true;
+            }
+
+            return result;
         }
 
         public LinuxError ReceiveFrom(out int receiveSize, Span<byte> buffer, int size, BsdSocketFlags flags, out IPEndPoint remoteEndPoint)
@@ -304,7 +321,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
                     return LinuxError.EOPNOTSUPP;
                 }
 
-                int value = MemoryMarshal.Read<int>(optionValue);
+                int value = optionValue.Length >= 4 ? MemoryMarshal.Read<int>(optionValue) : MemoryMarshal.Read<byte>(optionValue);
 
                 if (option == BsdSocketOption.SoLinger)
                 {

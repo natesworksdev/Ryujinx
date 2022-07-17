@@ -222,7 +222,7 @@ namespace Ryujinx.Ava.Ui.Controls
             return new(mainText, secondaryText);
         }
 
-        internal static async void CreateUpdaterInfoDialog(string primary, string secondaryText)
+        internal static async Task CreateUpdaterInfoDialog(string primary, string secondaryText)
         {
             await ShowContentDialog(
                 LocaleManager.Instance["DialogUpdaterTitle"],
@@ -234,7 +234,7 @@ namespace Ryujinx.Ava.Ui.Controls
                 (int)Symbol.Important);
         }
 
-        internal static async void CreateWarningDialog(string primary, string secondaryText)
+        internal static async Task CreateWarningDialog(string primary, string secondaryText)
         {
             await ShowContentDialog(
                 LocaleManager.Instance["DialogWarningTitle"],
@@ -246,7 +246,7 @@ namespace Ryujinx.Ava.Ui.Controls
                 (int)Symbol.Important);
         }
 
-        internal static async void CreateErrorDialog(string errorMessage, string secondaryErrorMessage = "")
+        internal static async Task CreateErrorDialog(string errorMessage, string secondaryErrorMessage = "")
         {
             Logger.Error?.Print(LogClass.Application, errorMessage);
 

@@ -1,3 +1,4 @@
+using Avalonia.Threading;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
@@ -114,7 +115,11 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
                     if (profile == null)
                     {
-                        ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance["DialogUserProfileDeletionWarningMessage"]);
+                        Dispatcher.UIThread.Post(async () =>
+                        {
+                            await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance["DialogUserProfileDeletionWarningMessage"]);
+                        });
+
                         return;
                     }
 
