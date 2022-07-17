@@ -1,4 +1,5 @@
-﻿using Ryujinx.Graphics.GAL;
+﻿using Ryujinx.Common;
+using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
@@ -96,8 +97,9 @@ namespace Ryujinx.Graphics.Vulkan
 
             var flags = ImageCreateFlags.ImageCreateMutableFormatBit;
 
-            // This flag causes mipmapped texture arrays to break on AMD GCN, so for that copy dependencies are forced instead.
-            bool cubeCompatible = !gd.IsAmdGcn && info.Width == info.Height && layers >= 6;
+            // This flag causes mipmapped texture arrays to break on AMD GCN, so for that copy dependencies are forced for aliasing as cube.
+            bool isCube = info.Target == Target.Cubemap || info.Target == Target.CubemapArray;
+            bool cubeCompatible = gd.IsAmdGcn ? isCube : (info.Width == info.Height && layers >= 6);
 
             if (type == ImageType.ImageType2D && cubeCompatible)
             {
@@ -374,7 +376,13 @@ namespace Ryujinx.Graphics.Vulkan
 
                 int z = is3D ? dstLayer : 0;
 
-                var region = new BufferImageCopy((ulong)offset, (uint)rowLength, (uint)height, sl, new Offset3D(x, y, z), extent);
+                var region = new BufferImageCopy(
+                    (ulong)offset,
+                    (uint)BitUtils.AlignUp(rowLength, Info.BlockWidth),
+                    (uint)BitUtils.AlignUp(height, Info.BlockHeight),
+                    sl,
+                    new Offset3D(x, y, z),
+                    extent);
 
                 if (to)
                 {

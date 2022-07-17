@@ -1,4 +1,5 @@
-﻿using Ryujinx.Graphics.GAL;
+﻿using Ryujinx.Common;
+using Ryujinx.Graphics.GAL;
 using Silk.NET.Vulkan;
 using System;
 using System.Collections.Generic;
@@ -1024,7 +1025,13 @@ namespace Ryujinx.Graphics.Vulkan
 
                 int z = is3D ? dstLayer : 0;
 
-                var region = new BufferImageCopy((ulong)offset, (uint)rowLength, (uint)height, sl, new Offset3D(0, 0, z), extent);
+                var region = new BufferImageCopy(
+                    (ulong)offset,
+                    (uint)BitUtils.AlignUp(rowLength, Info.BlockWidth),
+                    (uint)BitUtils.AlignUp(height, Info.BlockHeight),
+                    sl,
+                    new Offset3D(0, 0, z),
+                    extent);
 
                 if (to)
                 {
@@ -1069,7 +1076,13 @@ namespace Ryujinx.Graphics.Vulkan
 
             var extent = new Extent3D((uint)width, (uint)height, 1);
 
-            var region = new BufferImageCopy(0, (uint)width, (uint)height, sl, new Offset3D(x, y, 0), extent);
+            var region = new BufferImageCopy(
+                0,
+                (uint)BitUtils.AlignUp(width, Info.BlockWidth),
+                (uint)BitUtils.AlignUp(height, Info.BlockHeight),
+                sl,
+                new Offset3D(x, y, 0),
+                extent);
 
             if (to)
             {
