@@ -10,7 +10,7 @@ namespace Ryujinx.Graphics.Vulkan
         private readonly Device _device;
         private Fence _fence;
         private int _referenceCount;
-        public bool _disposed;
+        private bool _disposed;
 
         public unsafe FenceHolder(Vk api, Device device)
         {
