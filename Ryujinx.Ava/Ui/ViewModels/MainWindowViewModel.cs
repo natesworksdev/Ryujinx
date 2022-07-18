@@ -997,7 +997,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public async void ManageProfiles()
         {
-            await NavigationDialogHost.Show(_owner.AccountManager, _owner.ContentManager, _owner.VirtualFileSystem);
+            await NavigationDialogHost.Show(_owner.AccountManager, _owner.ContentManager, _owner.VirtualFileSystem, _owner.LibHacHorizonManager.RyujinxClient);
         }
 
         public async void OpenAboutWindow()

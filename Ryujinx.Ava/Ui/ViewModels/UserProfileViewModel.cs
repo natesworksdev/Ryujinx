@@ -1,4 +1,6 @@
+using Avalonia;
 using Avalonia.Threading;
+using FluentAvalonia.UI.Controls;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
@@ -91,6 +93,25 @@ namespace Ryujinx.Ava.Ui.ViewModels
             UserProfile userProfile = null;
 
             _owner.Navigate(typeof(UserEditor), (this._owner, userProfile, true));
+        }
+
+        public async void ManageSaves()
+        {
+            UserProfile userProfile = _highlightedProfile ?? SelectedProfile;
+
+            SaveManager manager = new SaveManager(userProfile, _owner.HorizonClient, _owner.VirtualFileSystem);
+            
+            ContentDialog contentDialog = new ContentDialog
+            {
+                Title = string.Format(LocaleManager.Instance["SaveManagerHeading"], userProfile.Name),
+                PrimaryButtonText = "",
+                SecondaryButtonText = "",
+                CloseButtonText = LocaleManager.Instance["UserProfilesClose"],
+                Content = manager,
+                Padding = new Thickness(0)
+            };
+
+            await contentDialog.ShowAsync();
         }
 
         public void EditUser()

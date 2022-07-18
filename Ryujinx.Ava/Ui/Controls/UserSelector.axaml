@@ -94,11 +94,16 @@
             HorizontalAlignment="Center"
             Orientation="Horizontal"
             Spacing="10">
-            <Button Command="{Binding AddUser}" Content="{Locale:Locale UserProfilesAddNewProfile}" />
+            <Button 
+                Command="{Binding AddUser}" 
+                Content="{Locale:Locale UserProfilesAddNewProfile}" />
             <Button
                 Command="{Binding EditUser}"
                 Content="{Locale:Locale UserProfilesEditProfile}"
                 IsEnabled="{Binding IsSelectedProfiledEditable}" />
+            <Button 
+                Content="{Locale:Locale UserProfilesManageSaves}" 
+                Command="{Binding ManageSaves}" />
             <Button
                 Command="{Binding DeleteUser}"
                 Content="{Locale:Locale UserProfilesDeleteSelectedProfile}"
