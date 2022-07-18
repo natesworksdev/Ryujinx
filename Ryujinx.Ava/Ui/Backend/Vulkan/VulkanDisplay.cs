@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using Avalonia;
 using Ryujinx.Ava.Ui.Vulkan.Surfaces;
+using Ryujinx.Ui.Common.Configuration;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.KHR;
 
@@ -22,6 +23,8 @@ namespace Ryujinx.Ava.Ui.Vulkan
         private Image[] _swapchainImages;
         private VulkanDevice _device { get; }
         private ImageView[] _swapchainImageViews = new ImageView[0];
+        private bool _vsyncStateChanged;
+        private bool _vsyncEnabled;
 
         public VulkanCommandBufferPool CommandBufferPool { get; set; }
 
@@ -70,7 +73,7 @@ namespace Ryujinx.Ava.Ui.Vulkan
 
         private static unsafe SwapchainKHR CreateSwapchain(VulkanInstance instance, VulkanDevice device,
             VulkanPhysicalDevice physicalDevice, VulkanSurface surface, out Extent2D swapchainExtent,
-            VulkanDisplay oldDisplay = null)
+            VulkanDisplay oldDisplay = null, bool vsyncEnabled = true)
         {
             if (_swapchainExtension == null)
             {
@@ -130,12 +133,22 @@ namespace Ryujinx.Ava.Ui.Vulkan
             PresentModeKHR presentMode;
             var modes = presentModes.ToList();
 
-            if (modes.Contains(PresentModeKHR.PresentModeImmediateKhr))
+            if (!vsyncEnabled && modes.Contains(PresentModeKHR.PresentModeImmediateKhr))
+            {
                 presentMode = PresentModeKHR.PresentModeImmediateKhr;
+            }
             else if (modes.Contains(PresentModeKHR.PresentModeMailboxKhr))
+            {
                 presentMode = PresentModeKHR.PresentModeMailboxKhr;
+            }
+            else if (modes.Contains(PresentModeKHR.PresentModeImmediateKhr))
+            {
+                presentMode = PresentModeKHR.PresentModeImmediateKhr;
+            }
             else
+            {
                 presentMode = PresentModeKHR.PresentModeFifoKhr;
+            }
 
             var compositeAlphaFlags = CompositeAlphaFlagsKHR.CompositeAlphaOpaqueBitKhr;
 
@@ -178,11 +191,10 @@ namespace Ryujinx.Ava.Ui.Vulkan
             return swapchain;
         }
 
-
         internal static VulkanDisplay CreateDisplay(VulkanInstance instance, VulkanDevice device,
             VulkanPhysicalDevice physicalDevice, VulkanSurface surface)
         {
-            var swapchain = CreateSwapchain(instance, device, physicalDevice, surface, out var extent);
+            var swapchain = CreateSwapchain(instance, device, physicalDevice, surface, out var extent, null, true);
 
             return new VulkanDisplay(instance, device, physicalDevice, surface, swapchain, extent);
         }
@@ -225,10 +237,16 @@ namespace Ryujinx.Ava.Ui.Vulkan
             }
         }
 
+        internal void ChangeVSyncMode(bool vsyncEnabled)
+        {
+            _vsyncStateChanged = true;
+            _vsyncEnabled = vsyncEnabled;
+        }
+
         private void Recreate()
         {
             _device.WaitIdle();
-            _swapchain = CreateSwapchain(_instance, _device, _physicalDevice, _surface, out var extent, this);
+            _swapchain = CreateSwapchain(_instance, _device, _physicalDevice, _surface, out var extent, this, _vsyncEnabled);
 
             _swapchainExtent = extent;
 
@@ -263,8 +281,10 @@ namespace Ryujinx.Ava.Ui.Vulkan
 
         public bool EnsureSwapchainAvailable()
         {
-            if (Size != _surface.SurfaceSize)
+            if (Size != _surface.SurfaceSize || _vsyncStateChanged)
             {
+                _vsyncStateChanged = false;
+
                 Recreate();
 
                 return false;

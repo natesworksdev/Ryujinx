@@ -20,6 +20,7 @@ namespace Ryujinx.Ava.Ui.Vulkan
         public VulkanInstance Instance { get; }
         public VulkanDevice Device { get; set; }
         public Vk Api { get; private set; }
+        public VulkanSurfaceRenderTarget MainSurface { get; set; }
 
         public void Dispose()
         {
@@ -76,9 +77,18 @@ namespace Ryujinx.Ava.Ui.Vulkan
             catch (Exception)
             {
                 surface.Dispose();
+                surface = null;
             }
 
-            return new VulkanSurfaceRenderTarget(this, surface);
+            var renderTarget = new VulkanSurfaceRenderTarget(this, surface);
+
+            if (MainSurface == null && surface != null)
+            {
+                MainSurface = renderTarget;
+                MainSurface.Display.ChangeVSyncMode(false);
+            }
+
+            return renderTarget;
         }
     }
 }

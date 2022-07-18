@@ -369,6 +369,7 @@ namespace Ryujinx.Ava
             ConfigurationState.Instance.System.IgnoreMissingServices.Event -= UpdateIgnoreMissingServicesState;
             ConfigurationState.Instance.Graphics.AspectRatio.Event -= UpdateAspectRatioState;
             ConfigurationState.Instance.System.EnableDockedMode.Event -= UpdateDockedModeState;
+            ConfigurationState.Instance.System.AudioVolume.Event -= UpdateAudioVolumeState;
 
             _gpuCancellationTokenSource.Cancel();
             _gpuCancellationTokenSource.Dispose();
