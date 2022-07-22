@@ -10,7 +10,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// A tracking handle for a texture group, which represents a range of views in a storage texture.
     /// Retains a list of overlapping texture views, a modified flag, and tracking for each
     /// CPU VA range that the views cover.
-    /// Also tracks copy dependencies for the handle - references to other handles that must be kept 
+    /// Also tracks copy dependencies for the handle - references to other handles that must be kept
     /// in sync with this one before use.
     /// </summary>
     class TextureGroupHandle : IDisposable
@@ -251,7 +251,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                     Modified = false;
                 }
-                
+
                 // If the difference is <= 0, no data is not ready yet. Flush any data we can without waiting or removing modified flag.
             }
             else
@@ -267,6 +267,14 @@ namespace Ryujinx.Graphics.Gpu.Image
         public void ClearActionRegistered()
         {
             Interlocked.Exchange(ref _actionRegistered, 0);
+
+            // If we have a pending SyncAction, make sure that it won't do anything as data was already flushed.
+            if (_syncActionRegistered)
+            {
+                SignalModifiedDirty();
+
+                _syncActionRegistered = false;
+            }
         }
 
         /// <summary>
@@ -274,6 +282,21 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// This action will register a read tracking action on the memory tracking handle so that a flush from CPU can happen.
         /// </summary>
         private void SyncAction()
+        {
+            if (_syncActionRegistered)
+            {
+                SignalModifiedDirty();
+
+                _syncActionRegistered = false;
+            }
+
+            _registeredSync = _modifiedSync;
+        }
+
+        /// <summary>
+        /// Notifies all textures that they should signal modified again if the data is modified from GPU.
+        /// </summary>
+        private void SignalModifiedDirty()
         {
             // The storage will need to signal modified again to update the sync number in future.
             _group.Storage.SignalModifiedDirty();
@@ -284,15 +307,6 @@ namespace Ryujinx.Graphics.Gpu.Image
                 {
                     texture.SignalModifiedDirty();
                 }
-            }
-
-            // Register region tracking for CPU? (again)
-            _registeredSync = _modifiedSync;
-            _syncActionRegistered = false;
-
-            if (Interlocked.Exchange(ref _actionRegistered, 1) == 0)
-            {
-                _group.RegisterAction(this);
             }
         }
 
