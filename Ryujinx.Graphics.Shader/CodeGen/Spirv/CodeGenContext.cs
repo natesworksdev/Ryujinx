@@ -289,14 +289,16 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
             ioVariable = isOutAttr ? Outputs[attrOffset] : Inputs[attrOffset];
 
+            bool isIndexed = AttributeInfo.IsArrayAttributeSpirv(Config.Stage, isOutAttr) && (!attrInfo.IsBuiltin || AttributeInfo.IsArrayBuiltIn(attr));
+
             if ((type & (AggregateType.Array | AggregateType.Vector)) == 0)
             {
-                return ioVariable;
+                return isIndexed ? AccessChain(TypePointer(storageClass, GetType(elemType)), ioVariable, index) : ioVariable;
             }
 
             elemIndex = Constant(TypeU32(), attrInfo.GetInnermostIndex());
 
-            if (AttributeInfo.IsArrayAttributeSpirv(Config.Stage, isOutAttr) && (!attrInfo.IsBuiltin || AttributeInfo.IsArrayBuiltIn(attr)))
+            if (isIndexed)
             {
                 return AccessChain(TypePointer(storageClass, GetType(elemType)), ioVariable, index, elemIndex);
             }
