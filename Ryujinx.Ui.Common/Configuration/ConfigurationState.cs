@@ -1109,8 +1109,8 @@ namespace Ryujinx.Ui.Common.Configuration
                     ShowUi = configurationFileFormat.Hotkeys.ShowUi,
                     Pause = configurationFileFormat.Hotkeys.Pause,
                     ToggleMute = configurationFileFormat.Hotkeys.ToggleMute,
-                    ResScaleUp = configurationFileFormat.Hotkeys.ResScaleUp,
-                    ResScaleDown = configurationFileFormat.Hotkeys.ResScaleDown
+                    ResScaleUp = Key.Unbound,
+                    ResScaleDown = Key.Unbound
                 };
             }
 
