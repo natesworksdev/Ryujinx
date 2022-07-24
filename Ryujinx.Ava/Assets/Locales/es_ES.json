@@ -551,8 +551,6 @@
   "SettingsTabHotkeysShowUiHotkey": "Mostrar interfaz:",
   "SettingsTabHotkeysPauseHotkey": "Pausar:",
   "SettingsTabHotkeysToggleMuteHotkey": "Silenciar:",
-  "SettingsTabHotkeysResScaleUpHotkey": "Aumentar la resolución:",
-  "SettingsTabHotkeysResScaleDownHotkey": "Disminuir la resolución:",
   "ControllerMotionTitle": "Opciones de controles de movimiento",
   "ControllerRumbleTitle": "Opciones de vibración",
   "SettingsSelectThemeFileDialogTitle": "Selecciona un archivo de tema",
@@ -570,5 +568,7 @@
   "UpdateWindowTitle": "Administrar actualizaciones",
   "CheatWindowHeading": "Cheats disponibles para {0} [{1}]",
   "DlcWindowHeading": "Contenido descargable disponible para {0} [{1}]",
-  "GameUpdateWindowHeading": "Actualizaciones disponibles para {0} [{1}]"
+  "GameUpdateWindowHeading": "Actualizaciones disponibles para {0} [{1}]",
+  "SettingsTabHotkeysResScaleUpHotkey": "Aumentar la resolución:",
+  "SettingsTabHotkeysResScaleDownHotkey": "Disminuir la resolución:"
 }

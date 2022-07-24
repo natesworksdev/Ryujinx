@@ -551,8 +551,6 @@
   "SettingsTabHotkeysShowUiHotkey": "Show UI:",
   "SettingsTabHotkeysPauseHotkey": "Pause:",
   "SettingsTabHotkeysToggleMuteHotkey": "Mute:",
-  "SettingsTabHotkeysResScaleUpHotkey": "Increase resolution:",
-  "SettingsTabHotkeysResScaleDownHotkey": "Decrease resolution:",
   "ControllerMotionTitle": "Motion Control Settings",
   "ControllerRumbleTitle": "Rumble Settings",
   "SettingsSelectThemeFileDialogTitle": "Select Theme File",
@@ -570,5 +568,7 @@
   "UpdateWindowTitle": "Manage Game Updates",
   "CheatWindowHeading": "Cheats Available for {0} [{1}]",
   "DlcWindowHeading": "DLC Available for {0} [{1}]",
-  "GameUpdateWindowHeading": "Updates Available for {0} [{1}]"
+  "GameUpdateWindowHeading": "Updates Available for {0} [{1}]",
+  "SettingsTabHotkeysResScaleUpHotkey": "Increase resolution:",
+  "SettingsTabHotkeysResScaleDownHotkey": "Decrease resolution:"
 }
