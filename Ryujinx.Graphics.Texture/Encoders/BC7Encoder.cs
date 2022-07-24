@@ -981,6 +981,13 @@ namespace Ryujinx.Graphics.Texture.Encoders
 
             if (alphaDepth != 0)
             {
+                // If alpha is 0, let's assume the color information is not too important and prefer
+                // to preserve alpha instead.
+                if ((color >> 24) == 0)
+                {
+                    return 0;
+                }
+
                 mask |= 0x80000000u >> alphaDepth;
             }
 
