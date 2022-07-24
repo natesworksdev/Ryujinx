@@ -474,7 +474,6 @@ namespace Ryujinx.Ava.Ui.ViewModels
             if (requiresRestart)
             {
                 var choice = await ContentDialogHelper.CreateChoiceDialog(
-                    _owner,
                     LocaleManager.Instance["SettingsAppRequiredRestartMessage"],
                     LocaleManager.Instance["SettingsGpuBackendRestartMessage"],
                     LocaleManager.Instance["SettingsGpuBackendRestartSubMessage"]);
