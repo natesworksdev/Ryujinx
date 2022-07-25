@@ -17,10 +17,13 @@ namespace Ryujinx.Graphics.Gpu.Image
         private TextureDescriptor _defaultDescriptor;
 
         /// <summary>
-        /// Intrusive linked list node used on the texture pool cache.
+        /// Linked list node used on the texture pool cache.
         /// </summary>
         public LinkedListNode<TexturePool> CacheNode { get; set; }
 
+        /// <summary>
+        /// Timestamp used by the texture pool cache, updated on every use of this texture pool.
+        /// </summary>
         public ulong CacheTimestamp { get; set; }
 
         /// <summary>

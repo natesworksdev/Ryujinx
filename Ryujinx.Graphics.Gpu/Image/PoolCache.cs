@@ -15,7 +15,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         ulong Address { get; }
 
         /// <summary>
-        /// Intrusive linked list node used on the texture pool cache.
+        /// Linked list node used on the texture pool cache.
         /// </summary>
         LinkedListNode<T> CacheNode { get; set; }
 

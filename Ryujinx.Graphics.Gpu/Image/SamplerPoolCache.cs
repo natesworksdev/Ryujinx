@@ -26,6 +26,5 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             return new SamplerPool(context, channel.MemoryManager.Physical, address, maximumId);
         }
-
     }
 }

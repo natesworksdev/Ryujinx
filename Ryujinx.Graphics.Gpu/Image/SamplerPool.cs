@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         private float _forcedAnisotropy;
 
         /// <summary>
-        /// Intrusive linked list node used on the sampler pool cache.
+        /// Linked list node used on the sampler pool cache.
         /// </summary>
         public LinkedListNode<SamplerPool> CacheNode { get; set; }
 
