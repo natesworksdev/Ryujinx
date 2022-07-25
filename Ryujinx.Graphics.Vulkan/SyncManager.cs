@@ -78,7 +78,7 @@ namespace Ryujinx.Graphics.Vulkan
                     bool signaled = result.Waitable.WaitForFences(_gd.Api, _device, 1000000000);
                     if (!signaled)
                     {
-                        Logger.Error?.PrintMsg(LogClass.Gpu, $"GL Sync Object {result.ID} failed to signal within 1000ms. Continuing...");
+                        Logger.Error?.PrintMsg(LogClass.Gpu, $"VK Sync Object {result.ID} failed to signal within 1000ms. Continuing...");
                     }
                 }
             }

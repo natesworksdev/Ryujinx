@@ -202,14 +202,6 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
         private static string GetHostFileName(GpuContext context)
         {
             string apiName = context.Capabilities.Api.ToString().ToLowerInvariant();
-
-            // We are just storing SPIR-V directly on Vulkan, so the code won't change per vendor.
-            // We can just have a single file for all vendors.
-            if (context.Capabilities.Api == TargetApi.Vulkan)
-            {
-                return apiName;
-            }
-
             string vendorName = RemoveInvalidCharacters(context.Capabilities.VendorName.ToLowerInvariant());
             return $"{apiName}_{vendorName}";
         }

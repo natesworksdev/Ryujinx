@@ -112,7 +112,6 @@ namespace Ryujinx.Graphics.Vulkan
                 _cachedConvertedIndexBuffers.Clear();
             }
 
-            // InsertBarrier(commandBuffer, isWrite);
             return _buffer;
         }
 
@@ -173,7 +172,6 @@ namespace Ryujinx.Graphics.Vulkan
             if (_map != IntPtr.Zero)
             {
                 // If persistently mapped, set the data directly if the buffer is not currently in use.
-                // bool needsFlush = _gd.CommandBufferPool.HasWaitableOnRentedCommandBuffer(_waitable, offset, dataSize);
                 bool isRented = _buffer.HasRentedCommandBufferDependency(_gd.CommandBufferPool);
 
                 // If the buffer is rented, take a little more time and check if the use overlaps this handle.

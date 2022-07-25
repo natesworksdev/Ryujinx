@@ -295,7 +295,6 @@ namespace Ryujinx.Graphics.Vulkan
                 int ptr = (_queuedIndexesPtr + _queuedCount) % _totalCommandBuffers;
                 _queuedIndexes[ptr] = cbIndex;
                 _queuedCount++;
-                // _api.QueueWaitIdle(_queue);
             }
         }
 

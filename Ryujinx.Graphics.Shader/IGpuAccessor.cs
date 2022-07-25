@@ -34,16 +34,30 @@ namespace Ryujinx.Graphics.Shader
         /// <returns>Span of the memory location</returns>
         ReadOnlySpan<ulong> GetCode(ulong address, int minimumSize);
 
+        /// <summary>
+        /// Queries the alpha test comparison operator that is being used currently.
+        /// If alpha test is disabled, it can will be set to <see cref="AlphaTestOp.Always"/>.
+        /// </summary>
+        /// <returns>Current alpha test comparison</returns>
         AlphaTestOp QueryAlphaTestCompare()
         {
             return AlphaTestOp.Always;
         }
 
+        /// <summary>
+        /// Queries the current alpha test reference value used on the comparison.
+        /// </summary>
+        /// <returns>Current alpha test reference value</returns>
         float QueryAlphaTestReference()
         {
             return 0f;
         }
 
+        /// <summary>
+        /// Queries the type of a vertex shader input attribute at the specified <paramref name="location"/>.
+        /// </summary>
+        /// <param name="location">Location of the input</param>
+        /// <returns>Input type</returns>
         AttributeType QueryAttributeType(int location)
         {
             return AttributeType.Float;
@@ -253,11 +267,20 @@ namespace Ryujinx.Graphics.Shader
             return true;
         }
 
+        /// <summary>
+        /// Queries the point size from the GPU state, used when it is not explicitly set on the shader.
+        /// </summary>
+        /// <returns>Current point size</returns>
         float QueryPointSize()
         {
             return 1f;
         }
 
+        /// <summary>
+        /// Queries the state that indicates if the program point size should be explicitly set on the shader
+        /// or read from the GPU state.
+        /// </summary>
+        /// <returns>True if the shader is expected to set the point size explicitly, false otherwise</returns>
         bool QueryProgramPointSize()
         {
             return true;
@@ -336,6 +359,10 @@ namespace Ryujinx.Graphics.Shader
             return TextureFormat.R8G8B8A8Unorm;
         }
 
+        /// <summary>
+        /// Queries depth mode information from the GPU state.
+        /// </summary>
+        /// <returns>True if current depth mode is -1 to 1, false if 0 to 1</returns>
         bool QueryTransformDepthMinusOneToOne()
         {
             return false;

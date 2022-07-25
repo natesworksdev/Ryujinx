@@ -68,6 +68,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.DiskCache
             /// Creates a new program validation entry.
             /// </summary>
             /// <param name="cachedProgram">Cached shader program</param>
+            /// <param name="binaryCode">Optional binary code. If not null, it is used instead of the backend host binary</param>
             /// <param name="programIndex">Program index</param>
             /// <param name="isCompute">Indicates if the program is a compute shader</param>
             /// <param name="isBinary">Indicates if the program is a host binary shader</param>

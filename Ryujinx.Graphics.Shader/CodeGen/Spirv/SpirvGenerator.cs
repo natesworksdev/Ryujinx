@@ -201,24 +201,17 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                 }
                 else if (context.Config.Stage == ShaderStage.Geometry)
                 {
-                    switch (context.Config.GpuAccessor.QueryPrimitiveTopology())
+                    InputTopology inputTopology = context.Config.GpuAccessor.QueryPrimitiveTopology();
+
+                    context.AddExecutionMode(spvFunc, inputTopology switch
                     {
-                        case InputTopology.Points:
-                            context.AddExecutionMode(spvFunc, ExecutionMode.InputPoints);
-                            break;
-                        case InputTopology.Lines:
-                            context.AddExecutionMode(spvFunc, ExecutionMode.InputLines);
-                            break;
-                        case InputTopology.LinesAdjacency:
-                            context.AddExecutionMode(spvFunc, ExecutionMode.InputLinesAdjacency);
-                            break;
-                        case InputTopology.Triangles:
-                            context.AddExecutionMode(spvFunc, ExecutionMode.Triangles);
-                            break;
-                        case InputTopology.TrianglesAdjacency:
-                            context.AddExecutionMode(spvFunc, ExecutionMode.InputTrianglesAdjacency);
-                            break;
-                    }
+                        InputTopology.Points => ExecutionMode.InputPoints,
+                        InputTopology.Lines => ExecutionMode.InputLines,
+                        InputTopology.LinesAdjacency => ExecutionMode.InputLinesAdjacency,
+                        InputTopology.Triangles => ExecutionMode.Triangles,
+                        InputTopology.TrianglesAdjacency => ExecutionMode.InputTrianglesAdjacency,
+                        _ => throw new InvalidOperationException($"Invalid input topology \"{inputTopology}\".")
+                    });
 
                     context.AddExecutionMode(spvFunc, ExecutionMode.Invocations, (SpvLiteralInteger)context.Config.ThreadsPerInputPrimitive);
 

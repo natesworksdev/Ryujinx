@@ -1,15 +1,16 @@
+using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Engine.Threed;
 using Ryujinx.Graphics.Gpu.Engine.Types;
 using Ryujinx.Graphics.Gpu.Image;
 using Ryujinx.Graphics.Gpu.Memory;
-using Ryujinx.Graphics.Gpu.Shader.Cache;
 using Ryujinx.Graphics.Gpu.Shader.DiskCache;
 using Ryujinx.Graphics.Shader;
 using Ryujinx.Graphics.Shader.Translation;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 
@@ -100,7 +101,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             _programsToSaveQueue = new Queue<ProgramToSave>();
 
             string diskCacheTitleId = GraphicsConfig.EnableShaderCache && GraphicsConfig.TitleId != null
-                ? CacheHelper.GetBaseCacheDirectory(GraphicsConfig.TitleId)
+                ? Path.Combine(AppDataManager.GamesDirPath, GraphicsConfig.TitleId, "cache", "shader")
                 : null;
 
             _computeShaderCache = new ComputeShaderCacheHashTable();
@@ -148,18 +149,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
         {
             if (_diskCacheHostStorage.CacheEnabled)
             {
-                // Migration disabled as Vulkan added a lot of new state,
-                // most migrated shaders would be unused due to the state not matching.
-                /* if (!_diskCacheHostStorage.CacheExists())
-                {
-                    // If we don't have a shader cache on the new format, try to perform migration from the old shader cache.
-                    Logger.Info?.Print(LogClass.Gpu, "No shader cache found, trying to migrate from legacy shader cache...");
-
-                    int migrationCount = Migration.MigrateFromLegacyCache(_context, _diskCacheHostStorage);
-
-                    Logger.Info?.Print(LogClass.Gpu, $"Migrated {migrationCount} shaders.");
-                } */
-
                 ParallelDiskCacheLoader loader = new ParallelDiskCacheLoader(
                     _context,
                     _graphicsShaderCache,
