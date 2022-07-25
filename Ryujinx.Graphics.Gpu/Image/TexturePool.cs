@@ -10,7 +10,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// <summary>
     /// Texture pool.
     /// </summary>
-    class TexturePool : Pool<Texture, TextureDescriptor>
+    class TexturePool : Pool<Texture, TextureDescriptor>, IPool<TexturePool>
     {
         private readonly GpuChannel _channel;
         private readonly ConcurrentQueue<Texture> _dereferenceQueue = new ConcurrentQueue<Texture>();
@@ -21,8 +21,10 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public LinkedListNode<TexturePool> CacheNode { get; set; }
 
+        public ulong CacheTimestamp { get; set; }
+
         /// <summary>
-        /// Constructs a new instance of the texture pool.
+        /// Creates a new instance of the texture pool.
         /// </summary>
         /// <param name="context">GPU context that the texture pool belongs to</param>
         /// <param name="channel">GPU channel that the texture pool belongs to</param>
