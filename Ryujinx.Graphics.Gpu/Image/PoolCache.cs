@@ -32,7 +32,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     class PoolCache<T> : IDisposable where T : IPool<T>, IDisposable
     {
         private const int MaxCapacity = 2;
-        private const ulong MinDeltaForRemoval = 5000;
+        private const ulong MinDeltaForRemoval = 20000;
 
         private readonly GpuContext _context;
         private readonly Func<GpuContext, GpuChannel, ulong, int, T> _factory;
