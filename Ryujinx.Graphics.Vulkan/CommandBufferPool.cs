@@ -230,7 +230,7 @@ namespace Ryujinx.Graphics.Vulkan
                             SType = StructureType.CommandBufferBeginInfo
                         };
 
-                        _api.BeginCommandBuffer(entry.CommandBuffer, commandBufferBeginInfo);
+                        _api.BeginCommandBuffer(entry.CommandBuffer, commandBufferBeginInfo).ThrowOnError();
 
                         return new CommandBufferScoped(this, entry.CommandBuffer, cursor);
                     }
@@ -267,7 +267,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                 var commandBuffer = entry.CommandBuffer;
 
-                _api.EndCommandBuffer(commandBuffer);
+                _api.EndCommandBuffer(commandBuffer).ThrowOnError();
 
                 fixed (Semaphore* pWaitSemaphores = waitSemaphores, pSignalSemaphores = signalSemaphores)
                 {
@@ -287,7 +287,7 @@ namespace Ryujinx.Graphics.Vulkan
 
                         lock (_queueLock)
                         {
-                            _api.QueueSubmit(_queue, 1, sInfo, entry.Fence.GetUnsafe());
+                            _api.QueueSubmit(_queue, 1, sInfo, entry.Fence.GetUnsafe()).ThrowOnError();
                         }
                     }
                 }
