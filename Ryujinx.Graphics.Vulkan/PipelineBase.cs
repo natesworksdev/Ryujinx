@@ -806,7 +806,6 @@ namespace Ryujinx.Graphics.Vulkan
             SignalStateChange();
         }
 
-        // TODO: Remove first parameter.
         public void SetViewports(ReadOnlySpan<GAL.Viewport> viewports, bool disableTransform)
         {
             int maxViewports = Gd.Capabilities.SupportsMultiView ? Constants.MaxViewports : 1;
