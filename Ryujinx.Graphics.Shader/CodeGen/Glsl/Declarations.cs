@@ -201,36 +201,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                 if (context.Config.TransformFeedbackEnabled && context.Config.LastInVertexPipeline)
                 {
-                    var tfPosition = context.GetTransformFeedbackOutput(AttributeConsts.PositionX);
-                    var tfPointSize = context.GetTransformFeedbackOutput(AttributeConsts.PointSize);
-                    var tfClipDistance = context.GetTransformFeedbackOutput(AttributeConsts.ClipDistance0);
-
-                    if (tfPosition.Valid || tfPointSize.Valid || tfClipDistance.Valid)
+                    var tfOutput = context.GetTransformFeedbackOutput(AttributeConsts.PositionX);
+                    if (tfOutput.Valid)
                     {
-                        context.AppendLine("out gl_PerVertex");
+                        context.AppendLine($"layout (xfb_buffer = {tfOutput.Buffer}, xfb_offset = {tfOutput.Offset}, xfb_stride = {tfOutput.Stride}) out gl_PerVertex");
                         context.EnterScope();
-                        context.AppendLine($"{GetTfLayout(tfPosition)}vec4 gl_Position;");
-                        context.AppendLine($"{GetTfLayout(tfPointSize)}float gl_PointSize;");
-
-                        if (tfClipDistance.Valid)
-                        {
-                            int clipDistanceCount = 1;
-
-                            for (; clipDistanceCount < 8; clipDistanceCount++)
-                            {
-                                if (!context.GetTransformFeedbackOutput(AttributeConsts.ClipDistance0 + clipDistanceCount).Valid)
-                                {
-                                    break;
-                                }
-                            }
-
-                            context.AppendLine($"{GetTfLayout(tfClipDistance)}float gl_ClipDistance[{clipDistanceCount}];");
-                        }
-                        else
-                        {
-                            context.AppendLine("float gl_ClipDistance[];");
-                        }
-
+                        context.AppendLine("vec4 gl_Position;");
                         context.LeaveScope(context.Config.Stage == ShaderStage.TessellationControl ? " gl_out[];" : ";");
                     }
                 }
