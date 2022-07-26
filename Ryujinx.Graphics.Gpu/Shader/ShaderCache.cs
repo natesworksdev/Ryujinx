@@ -227,6 +227,13 @@ namespace Ryujinx.Graphics.Gpu.Shader
             return cpShader;
         }
 
+        /// <summary>
+        /// Updates the shader pipeline state based on the current GPU state.
+        /// </summary>
+        /// <param name="state">Current GPU 3D engine state</param>
+        /// <param name="pipeline">Shader pipeline state to be updated</param>
+        /// <param name="graphicsState">Current graphics state</param>
+        /// <param name="channel">Current GPU channel</param>
         private void UpdatePipelineInfo(
             ref ThreedClassState state,
             ref ProgramPipelineState pipeline,
@@ -648,6 +655,11 @@ namespace Ryujinx.Graphics.Gpu.Shader
             };
         }
 
+        /// <summary>
+        /// Gets information about the bindings used by a shader program.
+        /// </summary>
+        /// <param name="info">Shader program information to get the information from</param>
+        /// <returns>Shader bindings</returns>
         public static ShaderBindings GetBindings(ShaderProgramInfo info)
         {
             var uniformBufferBindings = info.CBuffers.Select(x => x.Binding).ToArray();
@@ -662,6 +674,13 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 imageBindings);
         }
 
+        /// <summary>
+        /// Creates shader translation options with the requested graphics API and flags.
+        /// The shader language is choosen based on the current configuration and graphics API.
+        /// </summary>
+        /// <param name="api">Target graphics API</param>
+        /// <param name="flags">Translation flags</param>
+        /// <returns>Translation options</returns>
         private static TranslationOptions CreateTranslationOptions(TargetApi api, TranslationFlags flags)
         {
             TargetLanguage lang = GraphicsConfig.EnableSpirvCompilationOnVulkan && api == TargetApi.Vulkan

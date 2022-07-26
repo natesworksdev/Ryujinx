@@ -192,7 +192,7 @@ namespace Ryujinx.Graphics.Vulkan
                 }
 
                 // TODO: Support buffer textures and images here.
-                // This is only used for the helper shaders on the backkend, and we don't use buffer textures on them
+                // This is only used for the helper shaders on the backend, and we don't use buffer textures on them
                 // so far, so it's not really necessary right now.
                 Set(uLayoutBindings, DescriptorType.UniformBuffer, ref uIndex, shader.Bindings.UniformBufferBindings);
                 SetStorage(sLayoutBindings, ref sIndex, shader.Bindings.StorageBufferBindings.Count);

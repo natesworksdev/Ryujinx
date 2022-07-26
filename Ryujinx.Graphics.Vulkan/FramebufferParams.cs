@@ -139,7 +139,7 @@ namespace Ryujinx.Graphics.Vulkan
             return _attachments[index];
         }
 
-        public bool IsVaidColorAttachment(int bindIndex)
+        public bool IsValidColorAttachment(int bindIndex)
         {
             return (uint)bindIndex < Constants.MaxRenderTargets && (_validColorAttachments & (1u << bindIndex)) != 0;
         }

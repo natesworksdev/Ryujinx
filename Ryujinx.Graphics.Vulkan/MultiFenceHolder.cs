@@ -1,5 +1,4 @@
 ﻿using Silk.NET.Vulkan;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -30,51 +29,50 @@ namespace Ryujinx.Graphics.Vulkan
         public MultiFenceHolder(int size)
         {
             _fences = new Dictionary<FenceHolder, int>();
-
-            if (VulkanConfiguration.UseGranularBufferTracking)
-            {
-                _bufferUsageBitmap = new BufferUsageBitmap(size, BufferUsageTrackingGranularity);
-            }
+            _bufferUsageBitmap = new BufferUsageBitmap(size, BufferUsageTrackingGranularity);
         }
 
+        /// <summary>
+        /// Adds buffer usage information to the uses list.
+        /// </summary>
+        /// <param name="cbIndex">Index of the command buffer where the buffer is used</param>
+        /// <param name="offset">Offset of the buffer being used</param>
+        /// <param name="size">Size of the buffer region being used, in bytes</param>
         public void AddBufferUse(int cbIndex, int offset, int size)
         {
-            if (VulkanConfiguration.UseGranularBufferTracking)
-            {
-                _bufferUsageBitmap.Add(cbIndex, offset, size);
-            }
+            _bufferUsageBitmap.Add(cbIndex, offset, size);
         }
 
+        /// <summary>
+        /// Removes all buffer usage information for a given command buffer.
+        /// </summary>
+        /// <param name="cbIndex">Index of the command buffer where the buffer is used</param>
         public void RemoveBufferUses(int cbIndex)
         {
-            if (VulkanConfiguration.UseGranularBufferTracking)
-            {
-                _bufferUsageBitmap?.Clear(cbIndex);
-            }
+            _bufferUsageBitmap?.Clear(cbIndex);
         }
 
+        /// <summary>
+        /// Checks if a given range of a buffer is being used by a command buffer still being processed by the GPU.
+        /// </summary>
+        /// <param name="cbIndex">Index of the command buffer where the buffer is used</param>
+        /// <param name="offset">Offset of the buffer being used</param>
+        /// <param name="size">Size of the buffer region being used, in bytes</param>
+        /// <returns>True if in use, false otherwise</returns>
         public bool IsBufferRangeInUse(int cbIndex, int offset, int size)
         {
-            if (VulkanConfiguration.UseGranularBufferTracking)
-            {
-                return _bufferUsageBitmap.OverlapsWith(cbIndex, offset, size);
-            }
-            else
-            {
-                return true;
-            }
+            return _bufferUsageBitmap.OverlapsWith(cbIndex, offset, size);
         }
 
+        /// <summary>
+        /// Checks if a given range of a buffer is being used by any command buffer still being processed by the GPU.
+        /// </summary>
+        /// <param name="offset">Offset of the buffer being used</param>
+        /// <param name="size">Size of the buffer region being used, in bytes</param>
+        /// <returns>True if in use, false otherwise</returns>
         public bool IsBufferRangeInUse(int offset, int size)
         {
-            if (VulkanConfiguration.UseGranularBufferTracking)
-            {
-                return _bufferUsageBitmap.OverlapsWith(offset, size);
-            }
-            else
-            {
-                return true;
-            }
+            return _bufferUsageBitmap.OverlapsWith(offset, size);
         }
 
         /// <summary>
@@ -106,7 +104,7 @@ namespace Ryujinx.Graphics.Vulkan
         /// <summary>
         /// Wait until all the fences on the holder are signaled.
         /// </summary>
-        /// <param name="api"></param>
+        /// <param name="api">Vulkan API instance</param>
         /// <param name="device">GPU device that the fences belongs to</param>
         public void WaitForFences(Vk api, Device device)
         {
@@ -116,10 +114,10 @@ namespace Ryujinx.Graphics.Vulkan
         /// <summary>
         /// Wait until all the fences on the holder with buffer uses overlapping the specified range are signaled.
         /// </summary>
-        /// <param name="api"></param>
-        /// <param name="device"></param>
-        /// <param name="offset"></param>
-        /// <param name="size"></param>
+        /// <param name="api">Vulkan API instance</param>
+        /// <param name="device">GPU device that the fences belongs to</param>
+        /// <param name="offset">Start offset of the buffer range</param>
+        /// <param name="size">Size of the buffer range in bytes</param>
         public void WaitForFences(Vk api, Device device, int offset, int size)
         {
             WaitForFencesImpl(api, device, offset, size, false, 0UL);
@@ -128,7 +126,7 @@ namespace Ryujinx.Graphics.Vulkan
         /// <summary>
         /// Wait until all the fences on the holder are signaled, or the timeout expires.
         /// </summary>
-        /// <param name="api"></param>
+        /// <param name="api">Vulkan API instance</param>
         /// <param name="device">GPU device that the fences belongs to</param>
         /// <param name="timeout">Timeout in nanoseconds</param>
         /// <returns>True if all fences were signaled, false otherwise</returns>
@@ -137,6 +135,16 @@ namespace Ryujinx.Graphics.Vulkan
             return WaitForFencesImpl(api, device, 0, 0, true, timeout);
         }
 
+        /// <summary>
+        /// Wait until all the fences on the holder with buffer uses overlapping the specified range are signaled.
+        /// </summary>
+        /// <param name="api">Vulkan API instance</param>
+        /// <param name="device">GPU device that the fences belongs to</param>
+        /// <param name="offset">Start offset of the buffer range</param>
+        /// <param name="size">Size of the buffer range in bytes</param>
+        /// <param name="hasTimeout">Indicates if <paramref name="timeout"/> should be used</param>
+        /// <param name="timeout">Timeout in nanoseconds</param>
+        /// <returns>True if all fences were signaled before the timeout expired, false otherwise</returns>
         private bool WaitForFencesImpl(Vk api, Device device, int offset, int size, bool hasTimeout, ulong timeout)
         {
             FenceHolder[] fenceHolders;
@@ -144,7 +152,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             lock (_fences)
             {
-                fenceHolders = size != 0 && VulkanConfiguration.UseGranularBufferTracking ? GetOverlappingFences(offset, size) : _fences.Keys.ToArray();
+                fenceHolders = size != 0 ? GetOverlappingFences(offset, size) : _fences.Keys.ToArray();
                 fences = new Fence[fenceHolders.Length];
 
                 for (int i = 0; i < fenceHolders.Length; i++)
@@ -177,37 +185,12 @@ namespace Ryujinx.Graphics.Vulkan
             return signaled;
         }
 
-        public bool MayWait(Vk api, Device device, int offset, int size)
-        {
-            if (_fences.Count == 0)
-            {
-                return false;
-            }
-
-            if (VulkanConfiguration.UseGranularBufferTracking)
-            {
-                lock (_fences)
-                {
-                    foreach (var kv in _fences)
-                    {
-                        var fence = kv.Key;
-                        var ownerCbIndex = kv.Value;
-
-                        if (_bufferUsageBitmap.OverlapsWith(ownerCbIndex, offset, size))
-                        {
-                            return true;
-                        }
-                    }
-                }
-
-                return false;
-            }
-            else
-            {
-                return true;
-            }
-        }
-
+        /// <summary>
+        /// Gets fences to wait for use of a given buffer region.
+        /// </summary>
+        /// <param name="offset">Offset of the range</param>
+        /// <param name="size">Size of the range in bytes</param>
+        /// <returns>Fences for the specified region</returns>
         private FenceHolder[] GetOverlappingFences(int offset, int size)
         {
             List<FenceHolder> overlapping = new List<FenceHolder>();

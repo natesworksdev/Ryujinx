@@ -1314,7 +1314,7 @@ namespace Ryujinx.Graphics.OpenGL
             _vertexArray.SetVertexBuffers(vertexBuffers);
         }
 
-        public void SetViewports(int first, ReadOnlySpan<Viewport> viewports, bool disableTransform)
+        public void SetViewports(ReadOnlySpan<Viewport> viewports, bool disableTransform)
         {
             Array.Resize(ref _viewportArray, viewports.Length * 4);
             Array.Resize(ref _depthRangeArray, viewports.Length * 2);
@@ -1351,8 +1351,8 @@ namespace Ryujinx.Graphics.OpenGL
 
             SetOrigin(flipY ? ClipOrigin.UpperLeft : ClipOrigin.LowerLeft);
 
-            GL.ViewportArray(first, viewports.Length, viewportArray);
-            GL.DepthRangeArray(first, viewports.Length, depthRangeArray);
+            GL.ViewportArray(0, viewports.Length, viewportArray);
+            GL.DepthRangeArray(0, viewports.Length, depthRangeArray);
 
             float disableTransformF = disableTransform ? 1.0f : 0.0f;
             if (_supportBuffer.Data.ViewportInverse.W != disableTransformF || disableTransform)
@@ -1360,8 +1360,8 @@ namespace Ryujinx.Graphics.OpenGL
                 float scale = _renderScale[0].X;
                 _supportBuffer.UpdateViewportInverse(new Vector4<float>
                 {
-                    X = scale * 2f / viewports[first].Region.Width,
-                    Y = scale * 2f / viewports[first].Region.Height,
+                    X = scale * 2f / viewports[0].Region.Width,
+                    Y = scale * 2f / viewports[0].Region.Height,
                     Z = 1,
                     W = disableTransformF
                 });

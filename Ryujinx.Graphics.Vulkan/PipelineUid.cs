@@ -62,19 +62,6 @@ namespace Ryujinx.Graphics.Vulkan
                 return false;
             }
 
-            if (!VulkanConfiguration.UseDynamicState)
-            {
-                if (!SequenceEqual<Viewport>(Viewports.ToSpan(), other.Viewports.ToSpan(), ViewportsCount))
-                {
-                    return false;
-                }
-
-                if (!SequenceEqual<Rect2D>(Scissors.ToSpan(), other.Scissors.ToSpan(), ScissorsCount))
-                {
-                    return false;
-                }
-            }
-
             if (!SequenceEqual<PipelineColorBlendAttachmentState>(ColorBlendAttachmentState.ToSpan(), other.ColorBlendAttachmentState.ToSpan(), ColorBlendAttachmentStateCount))
             {
                 return false;

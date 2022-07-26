@@ -42,7 +42,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         private static string[] _excludedMessages = new string[]
         {
-            // NOTE: Done on purpuse right now.
+            // NOTE: Done on purpose right now.
             "UNASSIGNED-CoreValidation-Shader-OutputNotConsumed",
             // TODO: Figure out if fixable
             "VUID-vkCmdDrawIndexed-None-04584",
@@ -451,6 +451,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 SType = StructureType.PhysicalDeviceVulkan12Features,
                 PNext = pExtendedFeatures,
+                DescriptorIndexing = supportedExtensions.Contains("VK_EXT_descriptor_indexing"),
                 DrawIndirectCount = supportedExtensions.Contains(KhrDrawIndirectCount.ExtensionName)
             };
 
@@ -557,8 +558,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 if (!api.TryGetInstanceExtension(instance, out debugReport))
                 {
-                    throw new Exception();
-                    // TODO: Exception.
+                    throw new VulkanException("Failed to get debug report extension.");
                 }
 
                 var flags = logLevel switch

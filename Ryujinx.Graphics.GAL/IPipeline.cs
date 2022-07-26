@@ -96,7 +96,7 @@ namespace Ryujinx.Graphics.GAL
         void SetVertexAttribs(ReadOnlySpan<VertexAttribDescriptor> vertexAttribs);
         void SetVertexBuffers(ReadOnlySpan<VertexBufferDescriptor> vertexBuffers);
 
-        void SetViewports(int first, ReadOnlySpan<Viewport> viewports, bool disableTransform);
+        void SetViewports(ReadOnlySpan<Viewport> viewports, bool disableTransform);
 
         void TextureBarrier();
         void TextureBarrierTiled();

@@ -362,11 +362,6 @@ namespace Ryujinx.Graphics.Vulkan
             _waitable.WaitForFences(_gd.Api, _device, offset, size);
         }
 
-        public bool MayWait(int offset, int size)
-        {
-            return _waitable.MayWait(_gd.Api, _device, offset, size);
-        }
-
         public Auto<DisposableBuffer> GetBufferI8ToI16(CommandBufferScoped cbs, int offset, int size)
         {
             if (!_cachedConvertedIndexBuffers.TryGetValue(offset, size, out var holder))

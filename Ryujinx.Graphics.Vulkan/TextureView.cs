@@ -131,7 +131,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             _imageViewIdentity = CreateImageView(identityComponentMapping, subresourceRangeDepth, type);
 
-            // Framebuffer attachments also requires 3D textures to be bound as 2D array.
+            // Framebuffer attachments also require 3D textures to be bound as 2D array.
             if (info.Target == Target.Texture3D)
             {
                 subresourceRange = new ImageSubresourceRange(aspectFlags, (uint)firstLevel, levels, (uint)firstLayer, (uint)info.Depth);

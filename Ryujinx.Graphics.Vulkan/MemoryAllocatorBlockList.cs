@@ -15,7 +15,7 @@ namespace Ryujinx.Graphics.Vulkan
             public DeviceMemory Memory { get; private set; }
             public IntPtr HostPointer { get; private set; }
             public ulong Size { get; }
-            public bool Maped => HostPointer != IntPtr.Zero;
+            public bool Mapped => HostPointer != IntPtr.Zero;
 
             private struct Range : IComparable<Range>
             {
@@ -142,7 +142,7 @@ namespace Ryujinx.Graphics.Vulkan
 
             public unsafe void Destroy(Vk api, Device device)
             {
-                if (Maped)
+                if (Mapped)
                 {
                     api.UnmapMemory(device, Memory);
                     HostPointer = IntPtr.Zero;
@@ -186,7 +186,7 @@ namespace Ryujinx.Graphics.Vulkan
             {
                 var block = _blocks[i];
 
-                if (block.Maped == map && block.Size >= size)
+                if (block.Mapped == map && block.Size >= size)
                 {
                     ulong offset = block.Allocate(size, alignment);
                     if (offset != InvalidOffset)

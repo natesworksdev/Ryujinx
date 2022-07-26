@@ -678,7 +678,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.Threed
             }
 
             _context.Renderer.Pipeline.SetDepthMode(GetDepthMode());
-            _context.Renderer.Pipeline.SetViewports(0, viewports, disableTransform);
+            _context.Renderer.Pipeline.SetViewports(viewports, disableTransform);
         }
 
         /// <summary>

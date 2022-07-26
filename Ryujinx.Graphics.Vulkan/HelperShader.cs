@@ -22,24 +22,6 @@ namespace Ryujinx.Graphics.Vulkan
             _pipeline = new PipelineHelperShader(gd, device);
             _pipeline.Initialize();
 
-            static GAL.SamplerCreateInfo GetSamplerCreateInfo(MinFilter minFilter, MagFilter magFilter)
-            {
-                return new GAL.SamplerCreateInfo(
-                    minFilter,
-                    magFilter,
-                    false,
-                    AddressMode.ClampToEdge,
-                    AddressMode.ClampToEdge,
-                    AddressMode.ClampToEdge,
-                    CompareMode.None,
-                    GAL.CompareOp.Always,
-                    new ColorF(0f, 0f, 0f, 0f),
-                    0f,
-                    0f,
-                    0f,
-                    1f);
-            }
-
             _samplerLinear = gd.CreateSampler(GetSamplerCreateInfo(MinFilter.Linear, MagFilter.Linear));
             _samplerNearest = gd.CreateSampler(GetSamplerCreateInfo(MinFilter.Nearest, MagFilter.Nearest));
 
@@ -78,6 +60,24 @@ namespace Ryujinx.Graphics.Vulkan
                 new ShaderSource(ShaderBinaries.ColorClearVertexShaderSource, vertexBindings, ShaderStage.Vertex, TargetLanguage.Glsl),
                 new ShaderSource(ShaderBinaries.ColorClearFragmentShaderSource, fragmentBindings2, ShaderStage.Fragment, TargetLanguage.Glsl),
             });
+        }
+
+        private static GAL.SamplerCreateInfo GetSamplerCreateInfo(MinFilter minFilter, MagFilter magFilter)
+        {
+            return new GAL.SamplerCreateInfo(
+                minFilter,
+                magFilter,
+                false,
+                AddressMode.ClampToEdge,
+                AddressMode.ClampToEdge,
+                AddressMode.ClampToEdge,
+                CompareMode.None,
+                GAL.CompareOp.Always,
+                new ColorF(0f, 0f, 0f, 0f),
+                0f,
+                0f,
+                0f,
+                1f);
         }
 
         public void Blit(
@@ -182,7 +182,7 @@ namespace Ryujinx.Graphics.Vulkan
                 _pipeline.ClearRenderTargetColor(0, 0, new ColorF(0f, 0f, 0f, 1f));
             }
 
-            _pipeline.SetViewports(0, viewports, false);
+            _pipeline.SetViewports(viewports, false);
             _pipeline.SetPrimitiveTopology(GAL.PrimitiveTopology.TriangleStrip);
             _pipeline.Draw(4, 1, 0, 0);
             _pipeline.Finish();
@@ -236,7 +236,7 @@ namespace Ryujinx.Graphics.Vulkan
             _pipeline.SetProgram(_programColorClear);
             _pipeline.SetRenderTarget(dst, (uint)dstWidth, (uint)dstHeight, false, dstFormat);
             _pipeline.SetRenderTargetColorMasks(new uint[] { componentMask });
-            _pipeline.SetViewports(0, viewports, false);
+            _pipeline.SetViewports(viewports, false);
             _pipeline.SetScissors(scissors);
             _pipeline.SetPrimitiveTopology(GAL.PrimitiveTopology.TriangleStrip);
             _pipeline.Draw(4, 1, 0, 0);
@@ -308,7 +308,7 @@ namespace Ryujinx.Graphics.Vulkan
             Span<Rectangle<int>> scissors = stackalloc Rectangle<int>[1];
 
             pipeline.SetProgram(_programColorBlit);
-            pipeline.SetViewports(0, viewports, false);
+            pipeline.SetViewports(viewports, false);
             pipeline.SetPrimitiveTopology(GAL.PrimitiveTopology.TriangleStrip);
             pipeline.Draw(4, 1, 0, 0);
 

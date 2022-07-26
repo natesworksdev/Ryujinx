@@ -13,6 +13,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
     static class Instructions
     {
+        private const  MemorySemanticsMask DefaultMemorySemantics =
+            MemorySemanticsMask.ImageMemory |
+            MemorySemanticsMask.AtomicCounterMemory |
+            MemorySemanticsMask.WorkgroupMemory |
+            MemorySemanticsMask.UniformMemory |
+            MemorySemanticsMask.AcquireRelease;
+
         private static readonly Func<CodeGenContext, AstOperation, OperationResult>[] InstTable;
 
         static Instructions()
@@ -238,9 +245,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         private static OperationResult GenerateBarrier(CodeGenContext context, AstOperation operation)
         {
             context.ControlBarrier(
-                context.Constant(context.TypeU32(), 2),
-                context.Constant(context.TypeU32(), 2),
-                context.Constant(context.TypeU32(), 264));
+                context.Constant(context.TypeU32(), Scope.Workgroup),
+                context.Constant(context.TypeU32(), Scope.Workgroup),
+                context.Constant(context.TypeU32(), MemorySemanticsMask.WorkgroupMemory | MemorySemanticsMask.AcquireRelease));
 
             return OperationResult.Invalid;
         }
@@ -582,7 +589,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateGroupMemoryBarrier(CodeGenContext context, AstOperation operation)
         {
-            context.MemoryBarrier(context.Constant(context.TypeU32(), 2), context.Constant(context.TypeU32(), 3400));
+            context.MemoryBarrier(context.Constant(context.TypeU32(), Scope.Workgroup), context.Constant(context.TypeU32(), DefaultMemorySemantics));
             return OperationResult.Invalid;
         }
 
@@ -1105,7 +1112,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
 
         private static OperationResult GenerateMemoryBarrier(CodeGenContext context, AstOperation operation)
         {
-            context.MemoryBarrier(context.Constant(context.TypeU32(), 1), context.Constant(context.TypeU32(), 3400));
+            context.MemoryBarrier(context.Constant(context.TypeU32(), Scope.Device), context.Constant(context.TypeU32(), DefaultMemorySemantics));
             return OperationResult.Invalid;
         }
 

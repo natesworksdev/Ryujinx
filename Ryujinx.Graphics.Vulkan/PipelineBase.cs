@@ -164,7 +164,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public unsafe void ClearRenderTargetColor(int index, int layer, ColorF color)
         {
-            if (FramebufferParams == null || !FramebufferParams.IsVaidColorAttachment(index))
+            if (FramebufferParams == null || !FramebufferParams.IsValidColorAttachment(index))
             {
                 return;
             }
@@ -307,7 +307,7 @@ namespace Ryujinx.Graphics.Vulkan
                 var oldDepthTestEnable = _newState.DepthTestEnable;
                 var oldDepthWriteEnable = _newState.DepthWriteEnable;
                 var oldTopology = _newState.Topology;
-                var oldViewports = VulkanConfiguration.UseDynamicState ? _dynamicState.Viewports : _newState.Internal.Viewports;
+                var oldViewports = _dynamicState.Viewports;
                 var oldViewportsCount = _newState.ViewportsCount;
 
                 _newState.CullMode = CullModeFlags.CullModeNone;
@@ -330,16 +330,9 @@ namespace Ryujinx.Graphics.Vulkan
                 _newState.DepthWriteEnable = oldDepthWriteEnable;
                 _newState.Topology = oldTopology;
 
-                if (VulkanConfiguration.UseDynamicState)
-                {
-                    _dynamicState.Viewports = oldViewports;
-                    _dynamicState.ViewportsCount = (int)oldViewportsCount;
-                    _dynamicState.SetViewportsDirty();
-                }
-                else
-                {
-                    _newState.Internal.Viewports = oldViewports;
-                }
+                _dynamicState.Viewports = oldViewports;
+                _dynamicState.ViewportsCount = (int)oldViewportsCount;
+                _dynamicState.SetViewportsDirty();
 
                 _newState.ViewportsCount = oldViewportsCount;
                 SignalStateChange();
@@ -414,7 +407,9 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetAlphaTest(bool enable, float reference, GAL.CompareOp op)
         {
-            // TODO.
+            // This is currently handled using shader specialization, as Vulkan does not support alpha test.
+            // In the future, we may want to use this to write the reference value into the support buffer,
+            // to avoid creating one version of the shader per reference value used.
         }
 
         public void SetBlendState(int index, BlendDescriptor blend)
@@ -439,16 +434,7 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetDepthBias(PolygonModeMask enables, float factor, float units, float clamp)
         {
-            if (VulkanConfiguration.UseDynamicState)
-            {
-                _dynamicState.SetDepthBias(factor, units, clamp);
-            }
-            else
-            {
-                _newState.DepthBiasSlopeFactor = factor;
-                _newState.DepthBiasConstantFactor = units;
-                _newState.DepthBiasClamp = clamp;
-            }
+            _dynamicState.SetDepthBias(factor, units, clamp);
 
             _newState.DepthBiasEnable = enables != 0;
             SignalStateChange();
@@ -462,7 +448,8 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetDepthMode(DepthMode mode)
         {
-            // TODO.
+            // Currently this is emulated on the shader, because Vulkan had no support for changing the depth mode.
+            // In the future, we may want to use the VK_EXT_depth_clip_control extension to change it here.
         }
 
         public void SetDepthTest(DepthTestDescriptor depthTest)
@@ -666,20 +653,10 @@ namespace Ryujinx.Graphics.Vulkan
                 var offset = new Offset2D(region.X, region.Y);
                 var extent = new Extent2D((uint)region.Width, (uint)region.Height);
 
-                if (VulkanConfiguration.UseDynamicState)
-                {
-                    _dynamicState.SetScissor(i, new Rect2D(offset, extent));
-                }
-                else
-                {
-                    _newState.Internal.Scissors[i] = new Rect2D(offset, extent);
-                }
+                _dynamicState.SetScissor(i, new Rect2D(offset, extent));
             }
 
-            if (VulkanConfiguration.UseDynamicState)
-            {
-                _dynamicState.ScissorsCount = count;
-            }
+            _dynamicState.ScissorsCount = count;
 
             _newState.ScissorsCount = (uint)count;
             SignalStateChange();
@@ -687,25 +664,13 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetStencilTest(StencilTestDescriptor stencilTest)
         {
-            if (VulkanConfiguration.UseDynamicState)
-            {
-                _dynamicState.SetStencilMasks(
-                    (uint)stencilTest.BackFuncMask,
-                    (uint)stencilTest.BackMask,
-                    (uint)stencilTest.BackFuncRef,
-                    (uint)stencilTest.FrontFuncMask,
-                    (uint)stencilTest.FrontMask,
-                    (uint)stencilTest.FrontFuncRef);
-            }
-            else
-            {
-                _newState.StencilBackCompareMask = (uint)stencilTest.BackFuncMask;
-                _newState.StencilBackWriteMask = (uint)stencilTest.BackMask;
-                _newState.StencilBackReference = (uint)stencilTest.BackFuncRef;
-                _newState.StencilFrontCompareMask = (uint)stencilTest.FrontFuncMask;
-                _newState.StencilFrontWriteMask = (uint)stencilTest.FrontMask;
-                _newState.StencilFrontReference = (uint)stencilTest.FrontFuncRef;
-            }
+            _dynamicState.SetStencilMasks(
+                (uint)stencilTest.BackFuncMask,
+                (uint)stencilTest.BackMask,
+                (uint)stencilTest.BackFuncRef,
+                (uint)stencilTest.FrontFuncMask,
+                (uint)stencilTest.FrontMask,
+                (uint)stencilTest.FrontFuncRef);
 
             _newState.StencilTestEnable = stencilTest.TestEnable;
             _newState.StencilBackFailOp = stencilTest.BackSFail.Convert();
@@ -842,7 +807,7 @@ namespace Ryujinx.Graphics.Vulkan
         }
 
         // TODO: Remove first parameter.
-        public void SetViewports(int first, ReadOnlySpan<GAL.Viewport> viewports, bool disableTransform)
+        public void SetViewports(ReadOnlySpan<GAL.Viewport> viewports, bool disableTransform)
         {
             int maxViewports = Gd.Capabilities.SupportsMultiView ? Constants.MaxViewports : 1;
             int count = Math.Min(maxViewports, viewports.Length);
@@ -852,39 +817,20 @@ namespace Ryujinx.Graphics.Vulkan
                 return Math.Clamp(value, 0f, 1f);
             }
 
-            if (VulkanConfiguration.UseDynamicState)
+            for (int i = 0; i < count; i++)
             {
-                for (int i = 0; i < count; i++)
-                {
-                    var viewport = viewports[i];
+                var viewport = viewports[i];
 
-                    _dynamicState.SetViewport(i, new Silk.NET.Vulkan.Viewport(
-                        viewport.Region.X,
-                        viewport.Region.Y,
-                        viewport.Region.Width == 0f ? 1f : viewport.Region.Width,
-                        viewport.Region.Height == 0f ? 1f : viewport.Region.Height,
-                        Clamp(viewport.DepthNear),
-                        Clamp(viewport.DepthFar)));
-                }
-
-                _dynamicState.ViewportsCount = count;
+                _dynamicState.SetViewport(i, new Silk.NET.Vulkan.Viewport(
+                    viewport.Region.X,
+                    viewport.Region.Y,
+                    viewport.Region.Width == 0f ? 1f : viewport.Region.Width,
+                    viewport.Region.Height == 0f ? 1f : viewport.Region.Height,
+                    Clamp(viewport.DepthNear),
+                    Clamp(viewport.DepthFar)));
             }
-            else
-            {
-                for (int i = 0; i < count; i++)
-                {
-                    var viewport = viewports[i];
 
-                    ref var vkViewport = ref _newState.Internal.Viewports[i];
-
-                    vkViewport.X = viewport.Region.X;
-                    vkViewport.Y = viewport.Region.Y;
-                    vkViewport.Width = viewport.Region.Width == 0f ? 1f : viewport.Region.Width;
-                    vkViewport.Height = viewport.Region.Height == 0f ? 1f : viewport.Region.Height;
-                    vkViewport.MinDepth = Clamp(viewport.DepthNear);
-                    vkViewport.MaxDepth = Clamp(viewport.DepthFar);
-                }
-            }
+            _dynamicState.ViewportsCount = count;
 
             float disableTransformF = disableTransform ? 1.0f : 0.0f;
             if (SupportBufferUpdater.Data.ViewportInverse.W != disableTransformF || disableTransform)
@@ -892,8 +838,8 @@ namespace Ryujinx.Graphics.Vulkan
                 float scale = _renderScale[0].X;
                 SupportBufferUpdater.UpdateViewportInverse(new Vector4<float>
                 {
-                    X = scale * 2f / viewports[first].Region.Width,
-                    Y = scale * 2f / viewports[first].Region.Height,
+                    X = scale * 2f / viewports[0].Region.Width,
+                    Y = scale * 2f / viewports[0].Region.Height,
                     Z = 1,
                     W = disableTransformF
                 });
@@ -1163,7 +1109,6 @@ namespace Ryujinx.Graphics.Vulkan
                 if (_currentPipelineHandle != pipelineHandle)
                 {
                     _currentPipelineHandle = pipelineHandle;
-                    // _pipeline?.Dispose();
                     Pipeline = pipeline;
 
                     PauseTransformFeedbackInternal();
