@@ -1,20 +1,3 @@
-﻿//
-// Copyright (c) 2019-2021 Ryujinx
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-//
-
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -41,11 +24,11 @@ namespace Ryujinx.Audio.Backends.CompatLayer
             public short Right;
         }
 
-        private const int Q15Bits        = 16;
-        private const int RawQ15One      = 1 << Q15Bits;
-        private const int RawQ15HalfOne  = (int)(0.5f * RawQ15One);
-        private const int Minus3dBInQ15  = (int)(0.707f * RawQ15One);
-        private const int Minus6dBInQ15  = (int)(0.501f * RawQ15One);
+        private const int Q15Bits = 16;
+        private const int RawQ15One = 1 << Q15Bits;
+        private const int RawQ15HalfOne = (int)(0.5f * RawQ15One);
+        private const int Minus3dBInQ15 = (int)(0.707f * RawQ15One);
+        private const int Minus6dBInQ15 = (int)(0.501f * RawQ15One);
         private const int Minus12dBInQ15 = (int)(0.251f * RawQ15One);
 
         private static readonly int[] DefaultSurroundToStereoCoefficients = new int[4]
@@ -63,8 +46,8 @@ namespace Ryujinx.Audio.Backends.CompatLayer
         };
 
         private const int SurroundChannelCount = 6;
-        private const int StereoChannelCount   = 2;
-        private const int MonoChannelCount     = 1;
+        private const int StereoChannelCount = 2;
+        private const int MonoChannelCount = 1;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static ReadOnlySpan<Channel51FormatPCM16> GetSurroundBuffer(ReadOnlySpan<short> data)
@@ -103,7 +86,7 @@ namespace Ryujinx.Audio.Backends.CompatLayer
             {
                 Channel51FormatPCM16 channel = channels[i];
 
-                downmixedBuffer[i * 2]     = DownMixSurroundToStereo(coefficients, channel.BackLeft, channel.LowFrequency, channel.FrontCenter, channel.FrontLeft);
+                downmixedBuffer[i * 2] = DownMixSurroundToStereo(coefficients, channel.BackLeft, channel.LowFrequency, channel.FrontCenter, channel.FrontLeft);
                 downmixedBuffer[i * 2 + 1] = DownMixSurroundToStereo(coefficients, channel.BackRight, channel.LowFrequency, channel.FrontCenter, channel.FrontRight);
             }
 

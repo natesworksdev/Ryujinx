@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Ava.Ui.Windows
 {
-    public class UpdaterWindow : StyleableWindow
+    public partial class UpdaterWindow : StyleableWindow
     {
         private readonly string _buildUrl;
         private readonly MainWindow _mainWindow;
@@ -36,21 +36,6 @@ namespace Ryujinx.Ava.Ui.Windows
             _buildUrl = buildUrl;
         }
 
-        public TextBlock MainText { get; set; }
-        public TextBlock SecondaryText { get; set; }
-        public ProgressBar ProgressBar { get; set; }
-        public StackPanel ButtonBox { get; set; }
-
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-
-            MainText = this.FindControl<TextBlock>("MainText");
-            SecondaryText = this.FindControl<TextBlock>("SecondaryText");
-            ProgressBar = this.FindControl<ProgressBar>("ProgressBar");
-            ButtonBox = this.FindControl<StackPanel>("ButtonBox");
-        }
-
         [DllImport("libc", SetLastError = true)]
         private static extern int chmod(string path, uint mode);
 
@@ -58,7 +43,7 @@ namespace Ryujinx.Ava.Ui.Windows
         {
             if (_restartQuery)
             {
-                string ryuName = OperatingSystem.IsWindows() ? "Ryujinx.exe" : "Ryujinx";
+                string ryuName = OperatingSystem.IsWindows() ? "Ryujinx.Ava.exe" : "Ryujinx.Ava";
                 string ryuExe = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ryuName);
                 string ryuArg = string.Join(" ", Environment.GetCommandLineArgs().AsEnumerable().Skip(1).ToArray());
 

@@ -50,9 +50,10 @@ using WindowState = Avalonia.Controls.WindowState;
 
 namespace Ryujinx.Ava
 {
-    public class AppHost
+    internal class AppHost
     {
         private const int CursorHideIdleTime = 8; // Hide Cursor seconds
+        private const float MaxResolutionScale = 4.0f; // Max resolution hotkeys can scale to before wrapping.
 
         private static readonly Cursor InvisibleCursor = new Cursor(StandardCursorType.None);
 
@@ -77,7 +78,7 @@ namespace Ryujinx.Ava
         private IRenderer _renderer;
         private readonly Thread _renderingThread;
 
-        private bool _isMouseInClient;
+        private bool _isMouseInRenderer;
         private bool _renderingStarted;
         private bool _dialogShown;
 
@@ -142,7 +143,6 @@ namespace Ryujinx.Ava
 
             ConfigurationState.Instance.HideCursorOnIdle.Event += HideCursorState_Changed;
 
-            _parent.PointerEnter += Parent_PointerEntered;
             _parent.PointerLeave += Parent_PointerLeft;
             _parent.PointerMoved += Parent_PointerMoved;
 
@@ -157,18 +157,15 @@ namespace Ryujinx.Ava
         private void Parent_PointerMoved(object sender, PointerEventArgs e)
         {
             _lastCursorMoveTime = Stopwatch.GetTimestamp();
+            var p = e.GetCurrentPoint(_parent).Position;
+            var r = _parent.InputHitTest(p);
+            _isMouseInRenderer = r == Renderer;
         }
 
         private void Parent_PointerLeft(object sender, PointerEventArgs e)
         {
-            Renderer.Cursor = ConfigurationState.Instance.Hid.EnableMouse ? InvisibleCursor : Cursor.Default;
-
-            _isMouseInClient = false;
-        }
-
-        private void Parent_PointerEntered(object sender, PointerEventArgs e)
-        {
-            _isMouseInClient = true;
+            _isMouseInRenderer = false;
+            _parent.Cursor = Cursor.Default;
         }
 
         private void SetRendererWindowSize(Size size)
@@ -421,10 +418,12 @@ namespace Ryujinx.Ava
                 {
                     if (userError == UserError.NoFirmware)
                     {
-                        string message = string.Format(LocaleManager.Instance["DialogFirmwareInstallEmbeddedMessage"], firmwareVersion.VersionString);
+                        string message = string.Format(LocaleManager.Instance["DialogFirmwareInstallEmbeddedMessage"],
+                            firmwareVersion.VersionString);
 
-                        UserResult result = await ContentDialogHelper.CreateConfirmationDialog(_parent,
-                            LocaleManager.Instance["DialogFirmwareNoFirmwareInstalledMessage"], message, LocaleManager.Instance["InputDialogYes"], LocaleManager.Instance["InputDialogNo"], "");
+                        UserResult result = await ContentDialogHelper.CreateConfirmationDialog(
+                            LocaleManager.Instance["DialogFirmwareNoFirmwareInstalledMessage"], message,
+                            LocaleManager.Instance["InputDialogYes"], LocaleManager.Instance["InputDialogNo"], "");
 
                         if (result != UserResult.Yes)
                         {
@@ -454,12 +453,12 @@ namespace Ryujinx.Ava
 
                         string message = string.Format(LocaleManager.Instance["DialogFirmwareInstallEmbeddedSuccessMessage"], firmwareVersion.VersionString);
 
-                        await ContentDialogHelper.CreateInfoDialog(_parent,
-                                                             string.Format(LocaleManager.Instance["DialogFirmwareInstalledMessage"], firmwareVersion.VersionString),
-                                                             message,
-                                                             LocaleManager.Instance["InputDialogOk"],
-                                                             "",
-                                                             LocaleManager.Instance["RyujinxInfo"]);
+                        await ContentDialogHelper.CreateInfoDialog(
+                            string.Format(LocaleManager.Instance["DialogFirmwareInstalledMessage"], firmwareVersion.VersionString),
+                            message,
+                            LocaleManager.Instance["InputDialogOk"],
+                            "",
+                            LocaleManager.Instance["RyujinxInfo"]);
                     }
                 }
                 else
@@ -883,7 +882,7 @@ namespace Ryujinx.Ava
                 }
 
                 _dialogShown = true;
-                shouldExit = await ContentDialogHelper.CreateStopEmulationDialog(_parent);
+                shouldExit = await ContentDialogHelper.CreateStopEmulationDialog();
 
                 _dialogShown = false;
             }
@@ -898,13 +897,10 @@ namespace Ryujinx.Ava
         {
             if (ConfigurationState.Instance.Hid.EnableMouse)
             {
-                if (_isMouseInClient)
+                Dispatcher.UIThread.Post(() =>
                 {
-                    Dispatcher.UIThread.Post(() =>
-                    {
-                        _parent.Cursor = InvisibleCursor;
-                    });
-                }
+                    _parent.Cursor = _isMouseInRenderer ? InvisibleCursor : Cursor.Default;
+                });
             }
             else
             {
@@ -981,6 +977,13 @@ namespace Ryujinx.Ava
 
                             _parent.ViewModel.Volume = Device.GetVolume();
                             break;
+                        case KeyboardHotkeyState.ResScaleUp:
+                            GraphicsConfig.ResScale = GraphicsConfig.ResScale % MaxResolutionScale + 1;
+                            break;
+                        case KeyboardHotkeyState.ResScaleDown:
+                            GraphicsConfig.ResScale =
+                            (MaxResolutionScale + GraphicsConfig.ResScale - 2) % MaxResolutionScale + 1;
+                            break;
                         case KeyboardHotkeyState.None:
                             (_keyboardInterface as AvaloniaKeyboard).Clear();
                             break;
@@ -1037,6 +1040,14 @@ namespace Ryujinx.Ava
             else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ToggleMute))
             {
                 state = KeyboardHotkeyState.ToggleMute;
+            }
+            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ResScaleUp))
+            {
+                state = KeyboardHotkeyState.ResScaleUp;
+            }
+            else if (_keyboardInterface.IsPressed((Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ResScaleDown))
+            {
+                state = KeyboardHotkeyState.ResScaleDown;
             }
 
             return state;

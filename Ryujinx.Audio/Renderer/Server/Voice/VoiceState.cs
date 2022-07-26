@@ -1,20 +1,3 @@
-//
-// Copyright (c) 2019-2021 Ryujinx
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Lesser General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-//
-
 using Ryujinx.Audio.Common;
 using Ryujinx.Audio.Renderer.Common;
 using Ryujinx.Audio.Renderer.Parameter;
@@ -217,7 +200,7 @@ namespace Ryujinx.Audio.Renderer.Server.Voice
             SampleFormat = SampleFormat.Invalid;
             ChannelsCount = 0;
             Pitch = 0.0f;
-            Volume= 0.0f;
+            Volume = 0.0f;
             PreviousVolume = 0.0f;
             BiquadFilters.ToSpan().Fill(new BiquadFilterParameter());
             WaveBuffersCount = 0;
@@ -277,7 +260,7 @@ namespace Ryujinx.Audio.Renderer.Server.Voice
             }
 
             return DataSourceStateAddressInfo.CpuAddress != parameter.DataSourceStateAddress ||
-                   DataSourceStateAddressInfo.Size != parameter.DataSourceStateSize           ||
+                   DataSourceStateAddressInfo.Size != parameter.DataSourceStateSize ||
                    DataSourceStateUnmapped;
         }
 

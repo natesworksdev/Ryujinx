@@ -38,18 +38,6 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <controls:OffscreenTextBox Name="HiddenTextBox" Grid.Row="0" />
-        <ContentControl
-            Grid.Row="1"
-            Focusable="False"
-            IsVisible="False"
-            KeyboardNavigation.IsTabStop="False">
-            <ui:ContentDialog
-                Name="ContentDialog"
-                IsPrimaryButtonEnabled="True"
-                IsSecondaryButtonEnabled="True"
-                IsVisible="True"
-                KeyboardNavigation.IsTabStop="False" />
-        </ContentControl>
         <StackPanel Grid.Row="0" IsVisible="False">
             <controls:HotKeyControl Name="FullscreenHotKey" Command="{ReflectionBinding ToggleFullscreen}" />
             <controls:HotKeyControl Name="FullscreenHotKey2" Command="{ReflectionBinding ToggleFullscreen}" />
@@ -123,14 +111,20 @@
                                 Command="{ReflectionBinding ToggleFullscreen}"
                                 Header="{locale:Locale MenuBarOptionsToggleFullscreen}"
                                 InputGesture="F11" />
-                            <MenuItem Header="{locale:Locale MenuBarOptionsStartGamesInFullscreen}">
+                            <MenuItem>
                                 <MenuItem.Icon>
-                                    <CheckBox IsChecked="{Binding StartGamesInFullscreen, Mode=TwoWay}" />
+                                    <CheckBox IsChecked="{Binding StartGamesInFullscreen, Mode=TwoWay}"
+                                              MinWidth="250">
+                                        <TextBlock Text="{locale:Locale MenuBarOptionsStartGamesInFullscreen}"/>
+                                    </CheckBox>
                                 </MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem Header="{locale:Locale MenuBarOptionsShowConsole}">
+                            <MenuItem IsVisible="{Binding ShowConsoleVisible}">
                                 <MenuItem.Icon>
-                                    <CheckBox IsChecked="{Binding ShowConsole, Mode=TwoWay}" />
+                                    <CheckBox IsChecked="{Binding ShowConsole, Mode=TwoWay}"
+                                              MinWidth="250">
+                                        <TextBlock Text="{locale:Locale MenuBarOptionsShowConsole}"/>
+                                    </CheckBox>
                                 </MenuItem.Icon>
                             </MenuItem>
                             <Separator />
@@ -179,6 +173,10 @@
                                     Command="{ReflectionBinding ChangeLanguage}"
                                     CommandParameter="zh_CN"
                                     Header="Simplified Chinese" />
+                                <MenuItem
+                                    Command="{ReflectionBinding ChangeLanguage}"
+                                    CommandParameter="zh_TW"
+                                    Header="Traditional Chinese (Taiwan)" />
                             </MenuItem>
                             <Separator />
                             <MenuItem

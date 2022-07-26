@@ -23,12 +23,13 @@ using System;
 using System.Buffers;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using static LibHac.Fs.ApplicationSaveDataManagement;
 using Path = System.IO.Path;
 
 namespace Ryujinx.Ava.Common
 {
-    public static class ApplicationHelper
+    internal static class ApplicationHelper
     {
         private static HorizonClient _horizonClient;
         private static AccountManager _accountManager;
@@ -77,8 +78,11 @@ namespace Ryujinx.Ava.Common
 
                 if (result.IsFailure())
                 {
-                    ContentDialogHelper.CreateErrorDialog(_owner,
-                                                          string.Format(LocaleManager.Instance["DialogMessageCreateSaveErrorMessage"], result.ToStringWithName()));
+                    Dispatcher.UIThread.Post(async () =>
+                    {
+                        await ContentDialogHelper.CreateErrorDialog(
+                            string.Format(LocaleManager.Instance["DialogMessageCreateSaveErrorMessage"], result.ToStringWithName()));
+                    });
 
                     return false;
                 }
@@ -94,8 +98,10 @@ namespace Ryujinx.Ava.Common
                 return true;
             }
 
-            ContentDialogHelper.CreateErrorDialog(_owner,
-                string.Format(LocaleManager.Instance["DialogMessageFindSaveErrorMessage"], result.ToStringWithName()));
+            Dispatcher.UIThread.Post(async () =>
+            {
+                await ContentDialogHelper.CreateErrorDialog(string.Format(LocaleManager.Instance["DialogMessageFindSaveErrorMessage"], result.ToStringWithName()));
+            });
 
             return false;
         }
@@ -137,7 +143,7 @@ namespace Ryujinx.Ava.Common
             }
         }
 
-        public static async void ExtractSection(NcaSectionType ncaSectionType, string titleFilePath,
+        public static async Task ExtractSection(NcaSectionType ncaSectionType, string titleFilePath,
             int programIndex = 0)
         {
             OpenFolderDialog folderDialog = new() { Title = LocaleManager.Instance["FolderDialogExtractTitle"] };
@@ -153,7 +159,6 @@ namespace Ryujinx.Ava.Common
                     Dispatcher.UIThread.Post(async () =>
                     {
                         UserResult result = await ContentDialogHelper.CreateConfirmationDialog(
-                            _owner,
                             string.Format(LocaleManager.Instance["DialogNcaExtractionMessage"], ncaSectionType, Path.GetFileName(titleFilePath)),
                             "",
                             "",
@@ -222,9 +227,9 @@ namespace Ryujinx.Ava.Common
                         {
                             Logger.Error?.Print(LogClass.Application,
                                 "Extraction failure. The main NCA was not present in the selected file");
-                            Dispatcher.UIThread.InvokeAsync(() =>
+                            Dispatcher.UIThread.InvokeAsync(async () =>
                             {
-                                ContentDialogHelper.CreateErrorDialog(_owner, LocaleManager.Instance["DialogNcaExtractionMainNcaNotFoundErrorMessage"]);
+                                await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance["DialogNcaExtractionMainNcaNotFoundErrorMessage"]);
                             });
                             return;
                         }
@@ -263,9 +268,9 @@ namespace Ryujinx.Ava.Common
                                 {
                                     Logger.Error?.Print(LogClass.Application,
                                         $"LibHac returned error code: {resultCode.Value.ErrorCode}");
-                                    Dispatcher.UIThread.InvokeAsync(() =>
+                                    Dispatcher.UIThread.InvokeAsync(async () =>
                                     {
-                                        ContentDialogHelper.CreateErrorDialog(_owner, LocaleManager.Instance["DialogNcaExtractionCheckLogErrorMessage"]);
+                                        await ContentDialogHelper.CreateErrorDialog(LocaleManager.Instance["DialogNcaExtractionCheckLogErrorMessage"]);
                                     });
                                 }
                                 else if (resultCode.Value.IsSuccess())
@@ -273,7 +278,6 @@ namespace Ryujinx.Ava.Common
                                     Dispatcher.UIThread.InvokeAsync(async () =>
                                     {
                                         await ContentDialogHelper.CreateInfoDialog(
-                                            _owner,
                                             LocaleManager.Instance["DialogNcaExtractionSuccessMessage"],
                                             "",
                                             LocaleManager.Instance["InputDialogOk"],
@@ -288,9 +292,9 @@ namespace Ryujinx.Ava.Common
                         }
                         catch (ArgumentException ex)
                         {
-                            Dispatcher.UIThread.InvokeAsync(() =>
+                            Dispatcher.UIThread.InvokeAsync(async () =>
                             {
-                                ContentDialogHelper.CreateErrorDialog(_owner, ex.Message);
+                                await ContentDialogHelper.CreateErrorDialog(ex.Message);
                             });
                         }
                     }
