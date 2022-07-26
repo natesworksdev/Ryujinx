@@ -29,16 +29,6 @@ namespace Ryujinx.Graphics.Vulkan
             Size = size;
         }
 
-        public MemoryAllocation(DeviceMemory memory, IntPtr hostPointer, ulong size)
-        {
-            _owner = null;
-            _block = null;
-            Memory = memory;
-            HostPointer = hostPointer;
-            Offset = 0;
-            Size = size;
-        }
-
         public void Dispose()
         {
             _owner.Free(_block, Offset, Size);
