@@ -168,11 +168,11 @@
                                 <MenuItem
                                     Command="{ReflectionBinding ChangeLanguage}"
                                     CommandParameter="zh_CN"
-                                    Header="汉语" />
+                                    Header="简体中文" />
                                 <MenuItem
                                     Command="{ReflectionBinding ChangeLanguage}"
                                     CommandParameter="zh_TW"
-                                    Header="漢語" />
+                                    Header="繁體中文" />
                                 <MenuItem
                                     Command="{ReflectionBinding ChangeLanguage}"
                                     CommandParameter="ko_KR"
