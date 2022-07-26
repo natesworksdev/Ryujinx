@@ -148,20 +148,18 @@ namespace Ryujinx.Ava.Ui.Vulkan
             _currentAccessFlags = destinationAccessFlags;
         }
 
-        public void TransitionLayout(uint destinationLayout, uint destinationAccessFlags)
-        {
-            TransitionLayout((ImageLayout)destinationLayout, (AccessFlags)destinationAccessFlags);
-        }
-
         public unsafe void Dispose()
         {
-            _device.Api.DestroyImageView(_device.InternalHandle, _imageView.Value, null);
-            _device.Api.DestroyImage(_device.InternalHandle, InternalHandle.Value, null);
-            _device.Api.FreeMemory(_device.InternalHandle, _imageMemory, null);
+            if (InternalHandle != null)
+            {
+                _device.Api.DestroyImageView(_device.InternalHandle, _imageView.Value, null);
+                _device.Api.DestroyImage(_device.InternalHandle, InternalHandle.Value, null);
+                _device.Api.FreeMemory(_device.InternalHandle, _imageMemory, null);
 
-            _imageView = default;
-            InternalHandle = default;
-            _imageMemory = default;
+                _imageView = default;
+                InternalHandle = null;
+                _imageMemory = default;
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using Avalonia;
 using Avalonia.Skia;
 using Ryujinx.Ava.Ui.Vulkan;
 using Ryujinx.Ava.Ui.Vulkan.Surfaces;
@@ -8,7 +9,14 @@ namespace Ryujinx.Ava.Ui.Backend.Vulkan
 {
     internal class VulkanRenderTarget : ISkiaGpuRenderTarget
     {
-        public GRContext GrContext { get; set; }
+        public GRContext GrContext
+        {
+            get
+            {
+                var gpu = AvaloniaLocator.Current.GetService<VulkanSkiaGpu>();
+                return gpu.GrContext;
+            }
+        }
 
         private readonly VulkanSurfaceRenderTarget _surface;
         private readonly IVulkanPlatformSurface _vulkanPlatformSurface;

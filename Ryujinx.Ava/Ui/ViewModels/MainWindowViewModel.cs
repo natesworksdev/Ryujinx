@@ -54,6 +54,7 @@ namespace Ryujinx.Ava.Ui.ViewModels
         private bool _isLoading;
         private int _progressMaximum;
         private int _progressValue;
+        private long _lastFullscreenToggle = Environment.TickCount64;
         private bool _showLoadProgress;
         private bool _showMenuAndStatusBar = true;
         private bool _showStatusSeparator;
@@ -929,6 +930,13 @@ namespace Ryujinx.Ava.Ui.ViewModels
 
         public void ToggleFullscreen()
         {
+            if (Environment.TickCount64 - _lastFullscreenToggle < 500)
+            {
+                return;
+            }
+
+            _lastFullscreenToggle = Environment.TickCount64;
+
             WindowState state = _owner.WindowState;
 
             if (state == WindowState.FullScreen)

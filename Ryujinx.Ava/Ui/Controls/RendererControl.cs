@@ -13,22 +13,10 @@ namespace Ryujinx.Ava.Ui.Controls
     {
         protected object _image;
 
-        static RendererControl()
-        {
-            AffectsRender<RendererControl>(ImageProperty);
-        }
-
-        public readonly static StyledProperty<object> ImageProperty =
-            AvaloniaProperty.Register<RendererControl, object>(
-                nameof(Image),
-                0,
-                inherits: true,
-                defaultBindingMode: BindingMode.TwoWay);
-
         protected object Image
         {
             get => _image;
-            set => SetAndRaise(ImageProperty, ref _image, value);
+            set => _image = value;
         }
 
         public event EventHandler<EventArgs> RendererInitialized;
@@ -60,8 +48,6 @@ namespace Ryujinx.Ava.Ui.Controls
             if (!rect.IsEmpty)
             {
                 RenderSize = rect.Size * VisualRoot.RenderScaling;
-
-                DrawOperation?.Dispose();
                 DrawOperation = CreateDrawOperation();
             }
         }

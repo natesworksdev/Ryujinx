@@ -14,10 +14,9 @@ namespace Ryujinx.Ava.Ui.Vulkan
 
             api.GetDeviceQueue(apiHandle, physicalDevice.QueueFamilyIndex, 0, out var queue);
 
-            var vulkanQueue = new VulkanQueue(this, queue);
-            Queue = vulkanQueue;
+            Queue = new VulkanQueue(this, queue);
 
-            PresentQueue = vulkanQueue;
+            PresentQueue = Queue;
 
             CommandBufferPool = new VulkanCommandBufferPool(this, physicalDevice);
         }

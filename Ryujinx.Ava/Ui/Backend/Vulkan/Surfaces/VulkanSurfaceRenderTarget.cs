@@ -24,7 +24,6 @@ namespace Ryujinx.Ava.Ui.Vulkan.Surfaces
             Surface = surface;
 
             // Skia seems to only create surfaces from images with unorm format
-
             IsRgba = Display.SurfaceFormat.Format >= Format.R8G8B8A8Unorm &&
                      Display.SurfaceFormat.Format <= Format.R8G8B8A8Srgb;
 
@@ -87,6 +86,7 @@ namespace Ryujinx.Ava.Ui.Vulkan.Surfaces
         {
             _platformInterface.Device.WaitIdle();
             Image?.Dispose();
+            Image = null;
         }
     }
 }

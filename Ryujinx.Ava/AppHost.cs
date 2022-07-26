@@ -12,6 +12,7 @@ using Ryujinx.Audio.Integration;
 using Ryujinx.Ava.Common;
 using Ryujinx.Ava.Common.Locale;
 using Ryujinx.Ava.Input;
+using Ryujinx.Ava.Ui.Backend.Vulkan;
 using Ryujinx.Ava.Ui.Controls;
 using Ryujinx.Ava.Ui.Models;
 using Ryujinx.Ava.Ui.Vulkan;
@@ -596,6 +597,7 @@ namespace Ryujinx.Ava
             if (Program.UseVulkan)
             {
                 var vulkan = AvaloniaLocator.Current.GetService<VulkanPlatformInterface>();
+                
                 renderer = new VulkanRenderer(vulkan.Instance.InternalHandle,
                     vulkan.Device.InternalHandle,
                     vulkan.PhysicalDevice.InternalHandle,
@@ -775,7 +777,10 @@ namespace Ryujinx.Ava
             Width = (int)e.Width;
             Height = (int)e.Height;
 
-            SetRendererWindowSize(e);
+            if (!Program.UseVulkan)
+            {
+                SetRendererWindowSize(e);
+            }
         }
 
         private void MainLoop()
@@ -888,6 +893,16 @@ namespace Ryujinx.Ava
                 LocaleManager.Instance["Game"] + $": {Device.Statistics.GetGameFrameRate():00.00} FPS ({Device.Statistics.GetGameFrameTime():00.00} ms)",
                 $"FIFO: {Device.Statistics.GetFifoPercent():00.00} %",
                 $"GPU: {_renderer.GetHardwareInfo().GpuVendor}"));
+
+            if (Program.UseVulkan)
+            {
+                var platformInterface = AvaloniaLocator.Current.GetService<VulkanPlatformInterface>();
+                if (platformInterface.MainSurface.Display.NotifySurfaceChanged)
+                {
+                    SetRendererWindowSize(new Size(Width, Height));
+                    return;
+                }
+            }
 
             Renderer.Present(image);
         }

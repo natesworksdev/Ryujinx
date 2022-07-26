@@ -57,6 +57,8 @@ namespace Ryujinx.Ava.Ui.Controls
             Dispatcher.UIThread.InvokeAsync(() =>
             {
                 Image = (int)image;
+
+                InvalidateVisual();
             }).Wait();
 
             if (_fence != IntPtr.Zero)

@@ -94,7 +94,6 @@ namespace Ryujinx.Ava
                 .With(new Ui.Vulkan.VulkanOptions()
                 {
                     ApplicationName = "Ryujinx.Graphics.Vulkan",
-                    VulkanVersion = new Version(1, 2),
                     MaxQueueCount = 2,
                     PreferDiscreteGpu = true,
                     PreferredDevice = !PreviewerDetached ? "" : ConfigurationState.Instance.Graphics.PreferredGpu.Value,
