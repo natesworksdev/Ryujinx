@@ -64,7 +64,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                 context.LeaveFunction();
             }
 
-            if (config.TransformFeedbackEnabled)
+            if (config.TransformFeedbackEnabled && config.LastInVertexPipeline)
             {
                 for (int tfbIndex = 0; tfbIndex < 4; tfbIndex++)
                 {

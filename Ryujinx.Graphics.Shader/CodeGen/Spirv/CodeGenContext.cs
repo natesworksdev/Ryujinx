@@ -280,8 +280,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             elemType = attrInfo.Type & AggregateType.ElementTypeMask;
 
             if (isUserAttr && Config.TransformFeedbackEnabled &&
-                ((isOutAttr && Config.Stage != ShaderStage.Fragment) ||
-                (!isOutAttr && Config.Stage != ShaderStage.Vertex)))
+                ((isOutAttr && Config.LastInVertexPipeline) ||
+                (!isOutAttr && Config.Stage == ShaderStage.Fragment)))
             {
                 attrOffset = attr;
                 type = elemType;

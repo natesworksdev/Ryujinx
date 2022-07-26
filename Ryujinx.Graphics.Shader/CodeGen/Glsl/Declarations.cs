@@ -199,9 +199,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                     context.AppendLine();
                 }
 
-                if (context.Config.Stage != ShaderStage.Compute &&
-                    context.Config.Stage != ShaderStage.Fragment &&
-                    context.Config.TransformFeedbackEnabled)
+                if (context.Config.TransformFeedbackEnabled && context.Config.LastInVertexPipeline)
                 {
                     var tfPosition = context.GetTransformFeedbackOutput(AttributeConsts.PositionX);
                     var tfPointSize = context.GetTransformFeedbackOutput(AttributeConsts.PointSize);
@@ -560,32 +558,21 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 };
             }
 
-            bool passthrough = (context.Config.PassthroughAttributes & (1 << attr)) != 0;
-            string pass = passthrough && context.Config.GpuAccessor.QueryHostSupportsGeometryShaderPassthrough() ? "passthrough, " : string.Empty;
             string name = $"{DefaultNames.IAttributePrefix}{attr}";
 
-            if (context.Config.TransformFeedbackEnabled && context.Config.Stage != ShaderStage.Vertex)
+            if (context.Config.TransformFeedbackEnabled && context.Config.Stage == ShaderStage.Fragment)
             {
-                string type;
-
-                if (context.Config.Stage == ShaderStage.Vertex)
-                {
-                    type = context.Config.GpuAccessor.QueryAttributeType(attr).GetScalarType();
-                }
-                else
-                {
-                    type = AttributeType.Float.GetScalarType();
-                }
-
                 for (int c = 0; c < 4; c++)
                 {
                     char swzMask = "xyzw"[c];
 
-                    context.AppendLine($"layout ({pass}location = {attr}, component = {c}) {iq}in {type} {name}_{swzMask}{suffix};");
+                    context.AppendLine($"layout (location = {attr}, component = {c}) {iq}in float {name}_{swzMask}{suffix};");
                 }
             }
             else
             {
+                bool passthrough = (context.Config.PassthroughAttributes & (1 << attr)) != 0;
+                string pass = passthrough && context.Config.GpuAccessor.QueryHostSupportsGeometryShaderPassthrough() ? "passthrough, " : string.Empty;
                 string type;
 
                 if (context.Config.Stage == ShaderStage.Vertex)
@@ -638,7 +625,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             string suffix = AttributeInfo.IsArrayAttributeGlsl(context.Config.Stage, isOutAttr: true) ? "[]" : string.Empty;
             string name = $"{DefaultNames.OAttributePrefix}{attr}{suffix}";
 
-            if (context.Config.TransformFeedbackEnabled && context.Config.Stage != ShaderStage.Fragment)
+            if (context.Config.TransformFeedbackEnabled && context.Config.LastInVertexPipeline)
             {
                 for (int c = 0; c < 4; c++)
                 {

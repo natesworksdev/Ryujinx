@@ -508,8 +508,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
         {
             bool isUserAttr = attr >= AttributeConsts.UserAttributeBase && attr < AttributeConsts.UserAttributeEnd;
             if (isUserAttr && context.Config.TransformFeedbackEnabled && !perPatch &&
-                ((isOutAttr && context.Config.Stage != ShaderStage.Fragment) ||
-                (!isOutAttr && context.Config.Stage != ShaderStage.Vertex)))
+                ((isOutAttr && context.Config.LastInVertexPipeline) ||
+                (!isOutAttr && context.Config.Stage == ShaderStage.Fragment)))
             {
                 DeclareInputOrOutput(context, attr, (attr >> 2) & 3, isOutAttr, iq);
                 return;
@@ -558,7 +558,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             {
                 context.Decorate(spvVar, Decoration.BuiltIn, (LiteralInteger)GetBuiltIn(context, attrInfo.BaseValue));
 
-                if (context.Config.TransformFeedbackEnabled && isOutAttr)
+                if (context.Config.TransformFeedbackEnabled && context.Config.LastInVertexPipeline && isOutAttr)
                 {
                     var tfOutput = context.GetTransformFeedbackOutput(attrInfo.BaseValue);
                     if (tfOutput.Valid)

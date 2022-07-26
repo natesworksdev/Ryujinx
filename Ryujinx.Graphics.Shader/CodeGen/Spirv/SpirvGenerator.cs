@@ -56,7 +56,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
             context.AddCapability(Capability.SubgroupBallotKHR);
             context.AddCapability(Capability.SubgroupVoteKHR);
 
-            if (config.TransformFeedbackEnabled && config.Stage != ShaderStage.Fragment)
+            if (config.TransformFeedbackEnabled && config.LastInVertexPipeline)
             {
                 context.AddCapability(Capability.TransformFeedback);
             }
@@ -263,7 +263,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Spirv
                         localSizeZ);
                 }
 
-                if (context.Config.TransformFeedbackEnabled && context.Config.Stage != ShaderStage.Fragment)
+                if (context.Config.TransformFeedbackEnabled && context.Config.LastInVertexPipeline)
                 {
                     context.AddExecutionMode(spvFunc, ExecutionMode.Xfb);
                 }

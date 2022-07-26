@@ -196,7 +196,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                     return name + $"[{(value >> 4)}]." + swzMask;
                 }
-                else if (config.TransformFeedbackEnabled && (config.Stage != ShaderStage.Vertex || isOutAttr))
+                else if (config.TransformFeedbackEnabled &&
+                    ((config.LastInVertexPipeline && isOutAttr) ||
+                    (config.Stage == ShaderStage.Fragment && !isOutAttr)))
                 {
                     string name = $"{prefix}{(value >> 4)}_{swzMask}";
 
